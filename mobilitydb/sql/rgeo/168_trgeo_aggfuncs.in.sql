@@ -67,7 +67,7 @@ CREATE AGGREGATE wCount(trgeometry, interval) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION mergeAggTransition(internal, trgeometry)
+CREATE FUNCTION mergeTransition(internal, trgeometry)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -76,20 +76,8 @@ CREATE FUNCTION trgeometry_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(trgeometry) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = trgeometry_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-CREATE AGGREGATE mergeAgg(trgeometry) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = trgeometry_tagg_finalfn,
@@ -104,20 +92,20 @@ CREATE AGGREGATE mergeAgg(trgeometry) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(trgeometry, trgeometry)
+CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(trgeometry, trgeometry,
+CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry,
     interp text DEFAULT NULL)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(trgeometry, trgeometry,
+CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry,
     interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
     maxt interval DEFAULT NULL)
   RETURNS trgeometry
@@ -129,46 +117,22 @@ CREATE FUNCTION temporal_append_finalfn(trgeometry)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(trgeometry) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = trgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(trgeometry) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(trgeometry, text) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = trgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(trgeometry, text) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = trgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(trgeometry, text, float, interval) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -177,21 +141,13 @@ CREATE AGGREGATE appendInstantAgg(trgeometry, text, float, interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceAggTransition(trgeometry, trgeometry)
+CREATE FUNCTION appendSequenceTransition(trgeometry, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(trgeometry) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = trgeometry,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendSequenceAgg(trgeometry) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = trgeometry,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

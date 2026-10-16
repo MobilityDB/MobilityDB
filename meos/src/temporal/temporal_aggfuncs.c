@@ -1832,7 +1832,7 @@ tbox_extent_transfn(TBox *state, const TBox *box)
  * @param[in] maxdist Maximum distance
  * @param[in] maxt Maximum duration, may be `NULL`
  * @csqlfn #Temporal_app_tinst_transfn()
- * @csqlaggfn #appendInstantAggTransition()
+ * @csqlaggfn #appendInstantTransition()
  */
 Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
@@ -1867,7 +1867,7 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
  * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] seq Temporal sequence to aggregate
  * @csqlfn #Temporal_app_tseq_transfn()
- * @csqlaggfn #appendSequenceAggTransition()
+ * @csqlaggfn #appendSequenceTransition()
  */
 Temporal *
 temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)

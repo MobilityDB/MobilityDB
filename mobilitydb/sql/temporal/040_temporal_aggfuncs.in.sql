@@ -243,7 +243,7 @@ CREATE FUNCTION tCountTransition(internal, tbigint)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tMinAggTransition(internal, tint)
+CREATE FUNCTION tMinTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -251,7 +251,7 @@ CREATE FUNCTION tint_tmin_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tMaxAggTransition(internal, tint)
+CREATE FUNCTION tMaxTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -268,7 +268,7 @@ CREATE FUNCTION tint_tsum_combinefn(internal, internal)
   AS 'MODULE_PATHNAME', 'Tint_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tMinAggTransition(internal, tbigint)
+CREATE FUNCTION tMinTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -276,7 +276,7 @@ CREATE FUNCTION tbigint_tmin_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tMaxAggTransition(internal, tbigint)
+CREATE FUNCTION tMaxTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -330,10 +330,8 @@ CREATE AGGREGATE tCount(tbigint) (
   PARALLEL = SAFE
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMin(tint) (
-  SFUNC = tMinAggTransition,
+  SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmin_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -342,30 +340,8 @@ CREATE AGGREGATE tMin(tint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tMinAgg(tint) (
-  SFUNC = tMinAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tint_tmin_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMax(tint) (
-  SFUNC = tMaxAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tint_tmax_combinefn,
-  FINALFUNC = tint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tMaxAgg(tint) (
-  SFUNC = tMaxAggTransition,
+  SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tint_tmax_combinefn,
   FINALFUNC = tint_tagg_finalfn,
@@ -393,10 +369,8 @@ CREATE AGGREGATE tAvg(tint) (
   PARALLEL = SAFE
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMin(tbigint) (
-  SFUNC = tMinAggTransition,
+  SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmin_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -405,30 +379,8 @@ CREATE AGGREGATE tMin(tbigint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tMinAgg(tbigint) (
-  SFUNC = tMinAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tbigint_tmin_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMax(tbigint) (
-  SFUNC = tMaxAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tbigint_tmax_combinefn,
-  FINALFUNC = tbigint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tMaxAgg(tbigint) (
-  SFUNC = tMaxAggTransition,
+  SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tbigint_tmax_combinefn,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -462,7 +414,7 @@ CREATE FUNCTION tCountTransition(internal, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tMinAggTransition(internal, tfloat)
+CREATE FUNCTION tMinTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -470,7 +422,7 @@ CREATE FUNCTION tfloat_tmin_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tMaxAggTransition(internal, tfloat)
+CREATE FUNCTION tMaxTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -506,10 +458,8 @@ CREATE AGGREGATE tCount(tfloat) (
   PARALLEL = SAFE
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMin(tfloat) (
-  SFUNC = tMinAggTransition,
+  SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmin_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -518,30 +468,8 @@ CREATE AGGREGATE tMin(tfloat) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tMinAgg(tfloat) (
-  SFUNC = tMinAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tfloat_tmin_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMax(tfloat) (
-  SFUNC = tMaxAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = tfloat_tmax_combinefn,
-  FINALFUNC = tfloat_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tMaxAgg(tfloat) (
-  SFUNC = tMaxAggTransition,
+  SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = tfloat_tmax_combinefn,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -577,7 +505,7 @@ CREATE FUNCTION tCountTransition(internal, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tMinAggTransition(internal, ttext)
+CREATE FUNCTION tMinTransition(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -585,7 +513,7 @@ CREATE FUNCTION ttext_tmin_combinefn(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tMaxAggTransition(internal, ttext)
+CREATE FUNCTION tMaxTransition(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -608,10 +536,8 @@ CREATE AGGREGATE tCount(ttext) (
   PARALLEL = SAFE
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMin(ttext) (
-  SFUNC = tMinAggTransition,
+  SFUNC = tMinTransition,
   STYPE = internal,
   COMBINEFUNC = ttext_tmin_combinefn,
   FINALFUNC = ttext_tagg_finalfn,
@@ -620,30 +546,8 @@ CREATE AGGREGATE tMin(ttext) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = SAFE
 );
-CREATE AGGREGATE tMinAgg(ttext) (
-  SFUNC = tMinAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = ttext_tmin_combinefn,
-  FINALFUNC = ttext_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE tMax(ttext) (
-  SFUNC = tMaxAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = ttext_tmax_combinefn,
-  FINALFUNC = ttext_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = SAFE
-);
-CREATE AGGREGATE tMaxAgg(ttext) (
-  SFUNC = tMaxAggTransition,
+  SFUNC = tMaxTransition,
   STYPE = internal,
   COMBINEFUNC = ttext_tmax_combinefn,
   FINALFUNC = ttext_tagg_finalfn,
@@ -656,23 +560,23 @@ CREATE AGGREGATE tMaxAgg(ttext) (
 /*****************************************************************************/
 
 -- The function is not strict
-CREATE FUNCTION mergeAggTransition(internal, tbool)
+CREATE FUNCTION mergeTransition(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeAggTransition(internal, tint)
+CREATE FUNCTION mergeTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeAggTransition(internal, tbigint)
+CREATE FUNCTION mergeTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeAggTransition(internal, tfloat)
+CREATE FUNCTION mergeTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeAggTransition(internal, ttext)
+CREATE FUNCTION mergeTransition(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -682,10 +586,8 @@ CREATE FUNCTION mergeCombine(internal, internal)
   AS 'MODULE_PATHNAME', 'Temporal_merge_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tbool) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tbool_tagg_finalfn,
@@ -694,20 +596,8 @@ CREATE AGGREGATE merge(tbool) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-CREATE AGGREGATE mergeAgg(tbool) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tbool_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tint) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tint_tagg_finalfn,
@@ -716,20 +606,8 @@ CREATE AGGREGATE merge(tint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-CREATE AGGREGATE mergeAgg(tint) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tbigint) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tbigint_tagg_finalfn,
@@ -738,20 +616,8 @@ CREATE AGGREGATE merge(tbigint) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-CREATE AGGREGATE mergeAgg(tbigint) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tbigint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tfloat) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tfloat_tagg_finalfn,
@@ -760,30 +626,8 @@ CREATE AGGREGATE merge(tfloat) (
   DESERIALFUNC = taggstate_deserialize,
   PARALLEL = safe
 );
-CREATE AGGREGATE mergeAgg(tfloat) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tfloat_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(ttext) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = ttext_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-CREATE AGGREGATE mergeAgg(ttext) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = ttext_tagg_finalfn,
@@ -798,71 +642,71 @@ CREATE AGGREGATE mergeAgg(ttext) (
  *****************************************************************************/
 
 -- Default interpolation based on the base type
-CREATE FUNCTION appendInstantAggTransition(tbool, tbool)
+CREATE FUNCTION appendInstantTransition(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tint, tint)
+CREATE FUNCTION appendInstantTransition(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tbigint, tbigint)
+CREATE FUNCTION appendInstantTransition(tbigint, tbigint)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tfloat, tfloat)
+CREATE FUNCTION appendInstantTransition(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(ttext, ttext)
+CREATE FUNCTION appendInstantTransition(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- Interpolation given by the user
-CREATE FUNCTION appendInstantAggTransition(tbool, tbool, interp text)
+CREATE FUNCTION appendInstantTransition(tbool, tbool, interp text)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tint, tint, interp text)
+CREATE FUNCTION appendInstantTransition(tint, tint, interp text)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tbigint, tbigint, interp text)
+CREATE FUNCTION appendInstantTransition(tbigint, tbigint, interp text)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tfloat, tfloat, interp text)
+CREATE FUNCTION appendInstantTransition(tfloat, tfloat, interp text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(ttext, ttext, interp text)
+CREATE FUNCTION appendInstantTransition(ttext, ttext, interp text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- These functions are not strict
-CREATE FUNCTION appendInstantAggTransition(tbool, tbool, interp text,
+CREATE FUNCTION appendInstantTransition(tbool, tbool, interp text,
     maxt interval)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tint, tint, interp text,
+CREATE FUNCTION appendInstantTransition(tint, tint, interp text,
     maxdist float, maxt interval)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tbigint, tbigint, interp text,
+CREATE FUNCTION appendInstantTransition(tbigint, tbigint, interp text,
     maxdist float, maxt interval)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(tfloat, tfloat, interp text,
+CREATE FUNCTION appendInstantTransition(tfloat, tfloat, interp text,
     maxdist float, maxt interval)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantAggTransition(ttext, ttext, interp text,
+CREATE FUNCTION appendInstantTransition(ttext, ttext, interp text,
     maxt interval)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -889,222 +733,99 @@ CREATE FUNCTION temporal_append_finalfn(ttext)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbool) (
-  SFUNC = appendInstantAggTransition(tbool, tbool),
+  SFUNC = appendInstantTransition(tbool, tbool),
   STYPE = tbool,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tbool) (
-  SFUNC = appendInstantAggTransition(tbool, tbool),
-  STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbool, interp text) (
-  SFUNC = appendInstantAggTransition(tbool, tbool, text),
+  SFUNC = appendInstantTransition(tbool, tbool, text),
   STYPE = tbool,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tbool, interp text) (
-  SFUNC = appendInstantAggTransition(tbool, tbool, text),
-  STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(tbool, tbool, text, maxt),
-  STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tbool, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(tbool, tbool, text, maxt),
+  SFUNC = appendInstantTransition(tbool, tbool, text, maxt),
   STYPE = tbool,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tint) (
-  SFUNC = appendInstantAggTransition(tint, tint),
+  SFUNC = appendInstantTransition(tint, tint),
   STYPE = tint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tint) (
-  SFUNC = appendInstantAggTransition(tint, tint),
-  STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tint, interp text) (
-  SFUNC = appendInstantAggTransition(tint, tint, text),
+  SFUNC = appendInstantTransition(tint, tint, text),
   STYPE = tint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tint, interp text) (
-  SFUNC = appendInstantAggTransition(tint, tint, text),
-  STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, 
     maxt interval) (
-  SFUNC = appendInstantAggTransition(tint, tint, text, maxdist, maxt),
-  STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tint, interp text, maxdist float, 
-    maxt interval) (
-  SFUNC = appendInstantAggTransition(tint, tint, text, maxdist, maxt),
+  SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),
   STYPE = tint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbigint) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint),
+  SFUNC = appendInstantTransition(tbigint, tbigint),
   STYPE = tbigint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tbigint) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint),
-  STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbigint, interp text) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint, text),
+  SFUNC = appendInstantTransition(tbigint, tbigint, text),
   STYPE = tbigint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tbigint, interp text) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint, text),
-  STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, 
     maxt interval) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint, text, maxdist, maxt),
-  STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tbigint, interp text, maxdist float, 
-    maxt interval) (
-  SFUNC = appendInstantAggTransition(tbigint, tbigint, text, maxdist, maxt),
+  SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),
   STYPE = tbigint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tfloat) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat),
+  SFUNC = appendInstantTransition(tfloat, tfloat),
   STYPE = tfloat,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tfloat) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat),
-  STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tfloat, interp text) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat, text),
+  SFUNC = appendInstantTransition(tfloat, tfloat, text),
   STYPE = tfloat,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(tfloat, interp text) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat, text),
-  STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, 
     maxt interval) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat, text, maxdist, maxt),
-  STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tfloat, interp text, maxdist float, 
-    maxt interval) (
-  SFUNC = appendInstantAggTransition(tfloat, tfloat, text, maxdist, maxt),
+  SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),
   STYPE = tfloat,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(ttext) (
-  SFUNC = appendInstantAggTransition(ttext, ttext),
+  SFUNC = appendInstantTransition(ttext, ttext),
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(ttext) (
-  SFUNC = appendInstantAggTransition(ttext, ttext),
-  STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(ttext, interp text) (
-  SFUNC = appendInstantAggTransition(ttext, ttext, text),
+  SFUNC = appendInstantTransition(ttext, ttext, text),
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(ttext, interp text) (
-  SFUNC = appendInstantAggTransition(ttext, ttext, text),
-  STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(ttext, ttext, text, maxt),
-  STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(ttext, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(ttext, ttext, text, maxt),
+  SFUNC = appendInstantTransition(ttext, ttext, text, maxt),
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -1113,93 +834,53 @@ CREATE AGGREGATE appendInstantAgg(ttext, interp text, maxt interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceAggTransition(tbool, tbool)
+CREATE FUNCTION appendSequenceTransition(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceAggTransition(tint, tint)
+CREATE FUNCTION appendSequenceTransition(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceAggTransition(tbigint, tbigint)
+CREATE FUNCTION appendSequenceTransition(tbigint, tbigint)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceAggTransition(tfloat, tfloat)
+CREATE FUNCTION appendSequenceTransition(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceAggTransition(ttext, ttext)
+CREATE FUNCTION appendSequenceTransition(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tbool) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tbool,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendSequenceAgg(tbool) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tbool,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tint) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendSequenceAgg(tint) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tbigint) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tbigint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendSequenceAgg(tbigint) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tbigint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tfloat) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tfloat,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendSequenceAgg(tfloat) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tfloat,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(ttext) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = ttext,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendSequenceAgg(ttext) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = ttext,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

@@ -83,13 +83,13 @@ CREATE AGGREGATE wCount(th3index, interval) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION mergeAggTransition(internal, th3index)
+CREATE FUNCTION mergeTransition(internal, th3index)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE mergeAgg(th3index) (
-  SFUNC = mergeAggTransition,
+CREATE AGGREGATE merge(th3index) (
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = th3index_tagg_finalfn,
@@ -99,18 +99,18 @@ CREATE AGGREGATE mergeAgg(th3index) (
   PARALLEL = safe
 );
 
-CREATE FUNCTION appendInstantAggTransition(th3index, th3index)
+CREATE FUNCTION appendInstantTransition(th3index, th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION appendInstantAggTransition(th3index, th3index, interp text)
+CREATE FUNCTION appendInstantTransition(th3index, th3index, interp text)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(th3index, th3index, interp text,
+CREATE FUNCTION appendInstantTransition(th3index, th3index, interp text,
     maxt interval)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -121,20 +121,20 @@ CREATE FUNCTION temporal_append_finalfn(th3index)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE appendInstantAgg(th3index) (
-  SFUNC = appendInstantAggTransition(th3index, th3index),
+CREATE AGGREGATE appendInstant(th3index) (
+  SFUNC = appendInstantTransition(th3index, th3index),
   STYPE = th3index,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(th3index, interp text) (
-  SFUNC = appendInstantAggTransition(th3index, th3index, text),
+CREATE AGGREGATE appendInstant(th3index, interp text) (
+  SFUNC = appendInstantTransition(th3index, th3index, text),
   STYPE = th3index,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(th3index, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(th3index, th3index, text, maxt),
+CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (
+  SFUNC = appendInstantTransition(th3index, th3index, text, maxt),
   STYPE = th3index,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -143,13 +143,13 @@ CREATE AGGREGATE appendInstantAgg(th3index, interp text, maxt interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceAggTransition(th3index, th3index)
+CREATE FUNCTION appendSequenceTransition(th3index, th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE appendSequenceAgg(th3index) (
-  SFUNC = appendSequenceAggTransition,
+CREATE AGGREGATE appendSequence(th3index) (
+  SFUNC = appendSequenceTransition,
   STYPE = th3index,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

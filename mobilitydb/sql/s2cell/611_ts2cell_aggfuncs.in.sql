@@ -83,13 +83,13 @@ CREATE AGGREGATE wCount(ts2cell, interval) (
 );
 
 -- The function is not STRICT
-CREATE FUNCTION mergeAggTransition(internal, ts2cell)
+CREATE FUNCTION mergeTransition(internal, ts2cell)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE mergeAgg(ts2cell) (
-  SFUNC = mergeAggTransition,
+CREATE AGGREGATE merge(ts2cell) (
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = ts2cell_tagg_finalfn,
@@ -99,18 +99,18 @@ CREATE AGGREGATE mergeAgg(ts2cell) (
   PARALLEL = safe
 );
 
-CREATE FUNCTION appendInstantAggTransition(ts2cell, ts2cell)
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION appendInstantAggTransition(ts2cell, ts2cell, interp text)
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(ts2cell, ts2cell, interp text,
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text,
     maxt interval)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -121,20 +121,20 @@ CREATE FUNCTION temporal_append_finalfn(ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE AGGREGATE appendInstantAgg(ts2cell) (
-  SFUNC = appendInstantAggTransition(ts2cell, ts2cell),
+CREATE AGGREGATE appendInstant(ts2cell) (
+  SFUNC = appendInstantTransition(ts2cell, ts2cell),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(ts2cell, interp text) (
-  SFUNC = appendInstantAggTransition(ts2cell, ts2cell, text),
+CREATE AGGREGATE appendInstant(ts2cell, interp text) (
+  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
-CREATE AGGREGATE appendInstantAgg(ts2cell, interp text, maxt interval) (
-  SFUNC = appendInstantAggTransition(ts2cell, ts2cell, text, maxt),
+CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (
+  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -143,13 +143,13 @@ CREATE AGGREGATE appendInstantAgg(ts2cell, interp text, maxt interval) (
 /*****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceAggTransition(ts2cell, ts2cell)
+CREATE FUNCTION appendSequenceTransition(ts2cell, ts2cell)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE appendSequenceAgg(ts2cell) (
-  SFUNC = appendSequenceAggTransition,
+CREATE AGGREGATE appendSequence(ts2cell) (
+  SFUNC = appendSequenceTransition,
   STYPE = ts2cell,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

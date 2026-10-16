@@ -2726,7 +2726,7 @@ raster_grid(const Raster *rast)
  * @param[in] rast Raster
  * @errval NULL
  * @csqlfn #Raster_same_alignment_transfn()
- * @csqlaggfn #sameAlignmentAggTransition()
+ * @csqlaggfn #sameAlignmentTransition()
  */
 RasterAlignState *
 raster_same_alignment_transfn(RasterAlignState *state, const Raster *rast)
