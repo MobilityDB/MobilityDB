@@ -222,6 +222,9 @@ extern Set *quadbinset_make(const Quadbin *values, int count);
 
 /* Accessor functions of `quadbinset` */
 
+extern Quadbin quadbinset_end_value(const Set *s);
+extern Quadbin quadbinset_start_value(const Set *s);
+extern bool quadbinset_value_n(const Set *s, int n, Quadbin *result);
 extern Quadbin *quadbinset_values(const Set *s, int *count);
 
 /* Set operations of `quadbinset` */

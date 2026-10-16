@@ -37,7 +37,11 @@
  * program verifies that quadbinset_values, s2cellset_values and
  * h3indexset_values answer the values of the set in its order with no error
  * left behind, and that each reports a null set with MEOS_ERR_INVALID_ARG and
- * an integer set with MEOS_ERR_INVALID_ARG_TYPE.
+ * an integer set with MEOS_ERR_INVALID_ARG_TYPE. It verifies as well that the
+ * start value, the end value and the n-th value of each set are the first,
+ * the last and the n-th of those values, that a number outside the set answers
+ * no value and no error, and that the accessors report a null set and an
+ * integer set as the values function does.
  *
  * The program can be build as follows
  * @code
@@ -71,6 +75,35 @@
     meos_errno_reset(); \
   } while (0)
 
+/* The start, end and n-th values of a set are the values the values function
+ * answers, a number outside the set answers no value and no error, and a null
+ * set and a set of another type are refused as the values function refuses
+ * them */
+#define CHECK_ACCESSORS(fam, CT, set, vals, count, other) \
+  do { \
+    assert(fam##set_start_value(set) == vals[0] && meos_errno() == 0); \
+    assert(fam##set_end_value(set) == vals[count - 1] && meos_errno() == 0); \
+    for (int i = 1; i <= count; i++) \
+    { \
+      CT v = 0; \
+      assert(fam##set_value_n(set, i, &v) && v == vals[i - 1]); \
+    } \
+    CT none = 0; \
+    assert(! fam##set_value_n(set, 0, &none) && meos_errno() == 0); \
+    assert(! fam##set_value_n(set, count + 1, &none) && meos_errno() == 0); \
+    printf(#fam "set start, end and %d n-th values: ok\n", count); \
+    assert(fam##set_start_value(NULL) == 0 && \
+      meos_errno() == MEOS_ERR_INVALID_ARG); \
+    meos_errno_reset(); \
+    assert(fam##set_end_value(other) == 0 && \
+      meos_errno() == MEOS_ERR_INVALID_ARG_TYPE); \
+    meos_errno_reset(); \
+    assert(! fam##set_value_n(set, 1, NULL) && \
+      meos_errno() == MEOS_ERR_INVALID_ARG); \
+    meos_errno_reset(); \
+    printf(#fam "set start, end and n-th values refuse their errors: ok\n"); \
+  } while (0)
+
 /* Main program */
 int main(void)
 {
@@ -91,6 +124,7 @@ int main(void)
   assert(qv && count == 2 && meos_errno() == 0);
   assert(qv[0] == quadbin_in("480fffffffffffff"));
   assert(qv[1] == quadbin_in("48427fffffffffff"));
+  CHECK_ACCESSORS(quadbin, Quadbin, qs, qv, count, intset);
   free(qv); free(qs);
   CHECK_ERRORS(quadbinset_values, intset);
 
@@ -101,6 +135,7 @@ int main(void)
   assert(sv && count == 2 && meos_errno() == 0);
   assert(sv[0] == s2cell_in("47c3c3"));
   assert(sv[1] == s2cell_in("54b5c9"));
+  CHECK_ACCESSORS(s2cell, S2CellId, ss, sv, count, intset);
   free(sv); free(ss);
   CHECK_ERRORS(s2cellset_values, intset);
 
@@ -119,6 +154,7 @@ int main(void)
     assert(str && strcmp(str, expected[i]) == 0);
     free(str); free(one);
   }
+  CHECK_ACCESSORS(h3index, H3Index, hs, hv, count, intset);
   free(hv); free(hs);
   CHECK_ERRORS(h3indexset_values, intset);
 

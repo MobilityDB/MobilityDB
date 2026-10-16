@@ -231,6 +231,9 @@ extern Set *s2cellset_make(const S2CellId *values, int count);
 
 /* Accessor functions of `s2cellset` */
 
+extern S2CellId s2cellset_end_value(const Set *s);
+extern S2CellId s2cellset_start_value(const Set *s);
+extern bool s2cellset_value_n(const Set *s, int n, S2CellId *result);
 extern S2CellId *s2cellset_values(const Set *s, int *count);
 
 /* Set operations of `s2cellset` */

@@ -168,6 +168,56 @@ s2cellset_values(const Set *s, int *count)
   return result;
 }
 
+/**
+ * @ingroup meos_s2cell_set_accessor
+ * @brief Return the start value of an S2 cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_start_value()
+ */
+S2CellId
+s2cellset_start_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, 0);
+  return DatumGetS2Cell(SET_VAL_N(s, 0));
+}
+
+/**
+ * @ingroup meos_s2cell_set_accessor
+ * @brief Return the end value of an S2 cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_end_value()
+ */
+S2CellId
+s2cellset_end_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, 0);
+  return DatumGetS2Cell(SET_VAL_N(s, s->count - 1));
+}
+
+/**
+ * @ingroup meos_s2cell_set_accessor
+ * @brief Return in the last argument the n-th value of an S2 cell set
+ * @param[in] s Set
+ * @param[in] n Number (1-based)
+ * @param[out] result Value
+ * @return Return true if the value is found
+ * @csqlfn #Set_value_n()
+ */
+bool
+s2cellset_value_n(const Set *s, int n, S2CellId *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_S2CELLSET(s, false); VALIDATE_NOT_NULL(result, false);
+  if (n < 1 || n > s->count)
+    return false;
+  *result = DatumGetS2Cell(SET_VAL_N(s, n - 1));
+  return true;
+}
+
 /*****************************************************************************
  * Traversal
  *****************************************************************************/
@@ -295,7 +345,7 @@ s2cellset_cover_cells(const Set *cells, int resolution)
 
 /**
  * @ingroup meos_s2cell_set_conversion
- * @brief Convert an S2 cell into a S2 cell set
+ * @brief Convert an S2 cell into an S2 cell set
  * @param[in] cell Value
  * @csqlfn #Value_to_set()
  */

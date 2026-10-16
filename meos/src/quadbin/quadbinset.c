@@ -163,6 +163,56 @@ quadbinset_values(const Set *s, int *count)
   return result;
 }
 
+/**
+ * @ingroup meos_quadbin_set_accessor
+ * @brief Return the start value of a QUADBIN cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_start_value()
+ */
+Quadbin
+quadbinset_start_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, 0);
+  return DatumGetQuadbin(SET_VAL_N(s, 0));
+}
+
+/**
+ * @ingroup meos_quadbin_set_accessor
+ * @brief Return the end value of a QUADBIN cell set
+ * @param[in] s Set
+ * @errval 0
+ * @csqlfn #Set_end_value()
+ */
+Quadbin
+quadbinset_end_value(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, 0);
+  return DatumGetQuadbin(SET_VAL_N(s, s->count - 1));
+}
+
+/**
+ * @ingroup meos_quadbin_set_accessor
+ * @brief Return in the last argument the n-th value of a QUADBIN cell set
+ * @param[in] s Set
+ * @param[in] n Number (1-based)
+ * @param[out] result Value
+ * @return Return true if the value is found
+ * @csqlfn #Set_value_n()
+ */
+bool
+quadbinset_value_n(const Set *s, int n, Quadbin *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_QUADBINSET(s, false); VALIDATE_NOT_NULL(result, false);
+  if (n < 1 || n > s->count)
+    return false;
+  *result = DatumGetQuadbin(SET_VAL_N(s, n - 1));
+  return true;
+}
+
 /*****************************************************************************
  * Grid traversal
  *****************************************************************************/

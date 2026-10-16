@@ -293,6 +293,9 @@ extern Set    *h3indexset_make(const H3Index *values, int count);
 
 /* Accessor functions of `h3indexset` */
 
+extern H3Index h3indexset_end_value(const Set *s);
+extern H3Index h3indexset_start_value(const Set *s);
+extern bool    h3indexset_value_n(const Set *s, int n, H3Index *result);
 extern H3Index *h3indexset_values(const Set *s, int *count);
 
 /* Set operations of `h3indexset` */
