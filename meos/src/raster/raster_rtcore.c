@@ -1680,6 +1680,200 @@ raster_dump_as_polygons(const Raster *rast, int band, bool exclude_nodata,
 }
 
 /**
+ * @brief Read a band of a raster, the raster deserialized in full
+ * @details The band the accessors of this family read: one the raster does
+ * not have is an error, as it is for #raster_dump_as_polygons, rather than
+ * the empty set PostGIS answers
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[out] raster Raster deserialized, which the caller destroys
+ * @return The band
+ * @errval NULL
+ */
+static rt_band
+raster_read_band(const Raster *rast, int band, rt_raster *raster)
+{
+  *raster = rt_raster_deserialize((void *) rast, 0);
+  if (! *raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(*raster);
+  rt_band result = (band >= 1 && band <= numbands) ?
+    rt_raster_get_band(*raster, (uint32_t) (band - 1)) : NULL;
+  if (! result)
+  {
+    raster_destroy(*raster);
+    *raster = NULL;
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The raster has no band %d, it has %d", band, numbands);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Free an array of pixels
+ * @param[in] pixarr Array of pixels
+ * @param[in] count Number of elements in the array
+ */
+void
+pixel_arr_free(Pixel *pixarr, int count)
+{
+  if (! pixarr)
+    return;
+  for (int i = 0; i < count; i++)
+    if (pixarr[i].geom)
+      pfree(pixarr[i].geom);
+  pfree(pixarr);
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the pixels of a raster band as points
+ * @details The points of PostGIS's `ST_PixelAsPoints`: for each pixel, row by
+ * row, its upper-left corner in the reference system of the raster, its value
+ * and its column and row, starting at 1. With @p exclude_nodata the pixels the
+ * band states as nodata are left out, which a band stating no nodata value
+ * leaves none of; otherwise a nodata pixel keeps the value the band holds
+ * for it
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to leave the nodata pixels out
+ * @param[out] count Number of pixels answered
+ * @return An array the caller releases with #pixel_arr_free(), or NULL where
+ * no pixel is answered, in which case @p count is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_pixel_as_points()
+ */
+Pixel *
+raster_pixel_as_points(const Raster *rast, int band, bool exclude_nodata,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  rt_raster raster;
+  rt_band rtband = raster_read_band(rast, band, &raster);
+  if (! rtband)
+    return NULL;
+  int width = (int) rt_raster_get_width(raster);
+  int height = (int) rt_raster_get_height(raster);
+  int32_t srid = (int32_t) rt_raster_get_srid(raster);
+  if (width < 1 || height < 1)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  Pixel *result = palloc0(sizeof(Pixel) * (size_t) width * (size_t) height);
+  int n = 0;
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < width; x++)
+    {
+      double value, xw, yw;
+      int isnodata = 0;
+      if (rt_band_get_pixel(rtband, x, y, &value, &isnodata) != ES_NONE ||
+          rt_raster_cell_to_geopoint(raster, x, y, &xw, &yw, NULL) != ES_NONE)
+      {
+        pixel_arr_free(result, n);
+        raster_destroy(raster);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not read the pixel (%d, %d) of band %d", x + 1, y + 1, band);
+        return NULL;
+      }
+      if (isnodata && exclude_nodata)
+        continue;
+      LWGEOM *point = lwpoint_as_lwgeom(lwpoint_make2d(srid, xw, yw));
+      result[n].x = x + 1;
+      result[n].y = y + 1;
+      result[n].nodata = (isnodata != 0);
+      result[n].value = value;
+      result[n].geom = geo_serialize(point);
+      lwgeom_free(point);
+      n++;
+    }
+  }
+  raster_destroy(raster);
+  if (! n)
+  {
+    pfree(result);
+    return NULL;
+  }
+  *count = n;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return the values of a raster band
+ * @details The values of PostGIS's `ST_DumpValues`, row by row, the
+ * @p count of them the width times the height of the raster. With
+ * @p exclude_nodata, @p nodata states the pixels the band states as nodata,
+ * which PostGIS answers as NULL; otherwise every value is the one the band
+ * holds and @p nodata states none
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] exclude_nodata True to state the nodata pixels
+ * @param[out] nodata Array of the same length, true for a nodata pixel
+ * stated, which the caller frees
+ * @param[out] count Number of values answered
+ * @return An array of values the caller frees, or NULL where the raster has
+ * no pixel, in which case @p count is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_dump_values()
+ */
+double *
+raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
+  bool **nodata, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(nodata, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  *nodata = NULL;
+  *count = 0;
+  rt_raster raster;
+  rt_band rtband = raster_read_band(rast, band, &raster);
+  if (! rtband)
+    return NULL;
+  int width = (int) rt_raster_get_width(raster);
+  int height = (int) rt_raster_get_height(raster);
+  if (width < 1 || height < 1)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+
+  size_t n = (size_t) width * (size_t) height;
+  double *result = palloc(sizeof(double) * n);
+  bool *isnull = palloc(sizeof(bool) * n);
+  for (int y = 0; y < height; y++)
+  {
+    for (int x = 0; x < width; x++)
+    {
+      size_t i = (size_t) y * (size_t) width + (size_t) x;
+      int isnodata = 0;
+      if (rt_band_get_pixel(rtband, x, y, &result[i], &isnodata) != ES_NONE)
+      {
+        pfree(result); pfree(isnull);
+        raster_destroy(raster);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not read the pixel (%d, %d) of band %d", x + 1, y + 1, band);
+        return NULL;
+      }
+      isnull[i] = exclude_nodata && isnodata;
+    }
+  }
+  raster_destroy(raster);
+  *nodata = isnull;
+  *count = (int) n;
+  return result;
+}
+
+/**
  * @ingroup meos_raster_base_accessor
  * @brief Return what the pixels of a raster band amount to
  * @details The band is read ONCE and answers one value carrying every

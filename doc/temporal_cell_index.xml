@@ -2979,6 +2979,45 @@ ORDER BY val;
 -- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_pixelAsPoints">
+				<indexterm significance="normal"><primary><varname>pixelAsPoints</varname></primary></indexterm>
+				<para>Return the pixels of a raster band as points &SRF;
+</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixelAsPoints(rast raster,band integer=1,exclude_nodata_value boolean=true)
+  → setof (geom geometry,val float,x integer,y integer)
+</programlisting>
+				<para>The points of PostGIS's <varname>ST_PixelAsPoints</varname>: for each pixel, row by row, its upper-left corner in the reference system of the raster, its value, and its column and row, starting at 1. The pixels the band states as nodata are left out unless <varname>exclude_nodata_value</varname> is false, in which case they keep the value the band holds for them, and a band stating no nodata value leaves none out. A band the raster does not have raises an error, where PostGIS answers no row.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT ST_AsText(geom), val, x, y FROM rast, pixelAsPoints(r) LIMIT 2;
+-- POINT(10 20) | 1.5 | 1 | 1
+-- POINT(14 20) |   3 | 3 | 1
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_dumpValues">
+				<indexterm significance="normal"><primary><varname>dumpValues</varname></primary></indexterm>
+				<para>Return the values of the bands of a raster as arrays</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dumpValues(rast raster,nband integer[]=NULL,exclude_nodata_value boolean=true)
+  → setof (nband integer,valarray float[])
+dumpValues(rast raster,nband integer,exclude_nodata_value boolean=true) → float[]
+</programlisting>
+				<para>The values of PostGIS's <varname>ST_DumpValues</varname>: an array per band, a row of the array per row of the raster, in the order of the bands given in <varname>nband</varname>, every band when it is <varname>NULL</varname>; the form with one band answers its array alone. A pixel the band states as nodata is <varname>NULL</varname> unless <varname>exclude_nodata_value</varname> is false, in which case it is the value the band holds for it. A band the raster does not have, or a <varname>NULL</varname> band number, raises an error, where PostGIS answers no row or skips it.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT dumpValues(r, 1), dumpValues(r, 1, false) FROM rast;
+-- {{1.5,NULL,3},{4,5,6}} | {{1.5,-9999,3},{4,5,6}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Sample a <varname>raquet</varname> raster tile along a trajectory</para>

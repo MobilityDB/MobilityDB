@@ -157,6 +157,14 @@ static const char *raster_all_nodata =
   "004000000000000000000000000000000000e6100000020002006a003c1cc6003c1cc6"
   "003c1cc6003c1cc6003c1cc6";
 
+/* A 3x2 raster over 2x1 unit pixels from (10, 20) in SRID 3857, a 32BF band
+ * holding 1.5, nodata, 3 / 4, 5, 6 with -9999 as its nodata value and an 8BUI
+ * band holding 7 without one, written by PostGIS */
+static const char *raster_pixels =
+  "01000002000000000000000040000000000000f0bf00000000000024400000000000"
+  "00344000000000000000000000000000000000110f0000030002004a003c1cc60000"
+  "c03f003c1cc600004040000080400000a0400000c0400400070707070707";
+
 /* Main program */
 int main(void)
 {
@@ -1724,6 +1732,65 @@ int main(void)
   assert(rasteralignstate_deserialize(NULL, 4) == NULL);
   assert(meos_errno() != 0);
   free(al_base); free(al_east1); free(al_easthalf); free(al_3857);
+
+  /* The pixels of a band as points and its values: every row below is the
+   * one PostGIS 3.6.4 answers for ST_PixelAsPoints and ST_DumpValues over the
+   * same raster */
+  Raster *px = raster_from_hexwkb(raster_pixels);
+  assert(px != NULL);
+  int npx = 0;
+  meos_errno_reset();
+  Pixel *pxarr = raster_pixel_as_points(px, 1, true, &npx);
+  assert(pxarr != NULL && meos_errno() == 0);
+  printf("raster_pixel_as_points(pixels):");
+  for (int i = 0; i < npx; i++)
+  {
+    char *pxwkt = geo_as_text(pxarr[i].geom, 0);
+    printf(" (%s, %g, %d, %d)", pxwkt, pxarr[i].value, pxarr[i].x,
+      pxarr[i].y);
+    free(pxwkt);
+  }
+  printf("\n");
+  assert(npx == 5);
+  assert(pxarr[1].x == 3 && pxarr[1].y == 1 && pxarr[1].value == 3.0);
+  assert(pxarr[4].x == 3 && pxarr[4].y == 2 && pxarr[4].value == 6.0);
+  pixel_arr_free(pxarr, npx);
+  /* Kept, a nodata pixel holds the value the band holds for it */
+  pxarr = raster_pixel_as_points(px, 1, false, &npx);
+  assert(npx == 6 && pxarr[1].nodata && pxarr[1].value == -9999.0);
+  pixel_arr_free(pxarr, npx);
+  /* A band stating no nodata value leaves no pixel out */
+  pxarr = raster_pixel_as_points(px, 2, true, &npx);
+  assert(npx == 6 && pxarr[5].value == 7.0 && ! pxarr[5].nodata);
+  pixel_arr_free(pxarr, npx);
+
+  bool *pxnodata = NULL;
+  double *pxvals = raster_dump_values(px, 1, true, &pxnodata, &npx);
+  assert(pxvals != NULL && npx == 6);
+  printf("raster_dump_values(pixels):");
+  for (int i = 0; i < npx; i++)
+  {
+    if (pxnodata[i])
+      printf(" NULL");
+    else
+      printf(" %g", pxvals[i]);
+  }
+  printf("\n");
+  assert(pxnodata[1] && ! pxnodata[0] && pxvals[0] == 1.5 &&
+    pxvals[5] == 6.0);
+  free(pxvals); free(pxnodata);
+  pxvals = raster_dump_values(px, 1, false, &pxnodata, &npx);
+  assert(npx == 6 && ! pxnodata[1] && pxvals[1] == -9999.0);
+  free(pxvals); free(pxnodata);
+
+  /* A band the raster does not have and a null argument are refused */
+  meos_errno_reset();
+  assert(raster_pixel_as_points(px, 3, true, &npx) == NULL && npx == 0);
+  assert(raster_dump_values(px, 0, true, &pxnodata, &npx) == NULL);
+  assert(raster_pixel_as_points(NULL, 1, true, &npx) == NULL);
+  assert(raster_dump_values(px, 1, true, NULL, &npx) == NULL);
+  assert(meos_errno() != 0);
+  free(px);
 
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 

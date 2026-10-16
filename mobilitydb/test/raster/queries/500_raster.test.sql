@@ -2340,4 +2340,54 @@ SELECT sameAlignmentAgg(x) FROM (VALUES
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326)),
   (ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 3857))) t(x);
 
+
+-------------------------------------------------------------------------------
+-- Pixels as points and values as arrays
+-------------------------------------------------------------------------------
+
+-- A 3x2 raster over 2x1 unit pixels from (10, 20): a 32BF band holding 1.5,
+-- nodata, 3 / 4, 5, 6 with -9999 as its nodata value, and an 8BUI band
+-- holding 7 without one.
+CREATE TEMP TABLE tbl_pixels AS
+SELECT ST_SetValues(ST_AddBand(ST_AddBand(
+    ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 0.0::float8, -9999.0::float8),
+    '8BUI'::text, 7.0::float8, NULL::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r;
+
+SELECT ST_AsText(geom), val, x, y FROM tbl_pixels, pixelAsPoints(r);
+SELECT dumpValues(r, 1) AS band1, dumpValues(r, 1, false) AS band1_nodata
+FROM tbl_pixels;
+SELECT d.* FROM tbl_pixels, dumpValues(r) d;
+
+-- Every pixel and every array is the one PostGIS answers, the points byte
+-- for byte, over each band, keeping or leaving out the nodata pixels, and
+-- the arrays in the order of the bands asked for.
+SELECT b, e,
+  (SELECT array_agg(ROW(ST_AsHEXEWKB(geom), val, x, y)::text ORDER BY y, x)
+    FROM pixelAsPoints(r, b, e)) =
+  (SELECT array_agg(ROW(ST_AsHEXEWKB(geom), val, x, y)::text ORDER BY y, x)
+    FROM ST_PixelAsPoints(r, b, e)) AS points,
+  dumpValues(r, b, e) IS NOT DISTINCT FROM ST_DumpValues(r, b, e) AS band,
+  (SELECT array_agg(ROW(nband, valarray)::text) FROM dumpValues(r,
+    ARRAY[b, 3 - b], e)) =
+  (SELECT array_agg(ROW(nband, valarray)::text) FROM ST_DumpValues(r,
+    ARRAY[b, 3 - b], e)) AS bands
+FROM tbl_pixels, generate_series(1, 2) b, unnest(ARRAY[true, false]) e
+ORDER BY b, e;
+
+-- The corner of a pixel of a skewed raster carries the skew.
+SELECT ST_AsText(geom), val, x, y FROM pixelAsPoints(ST_AddBand(
+  ST_MakeEmptyRaster(2, 1, 0.0, 0.0, 1.0, -1.0, 0.5, 0.0, 3857), '8BUI'::text,
+  1.0::float8, NULL::float8));
+
+-- A band the raster does not have is refused, where PostGIS answers no row.
+SELECT count(*) FROM tbl_pixels, pixelAsPoints(r, 3);
+SELECT dumpValues(r, 3) FROM tbl_pixels;
+SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[3]);
+-- A NULL band number is refused, where PostGIS skips it.
+SELECT count(*) FROM tbl_pixels, dumpValues(r, ARRAY[1, NULL]);
+
+DROP TABLE tbl_pixels;
+
 /*****************************************************************************/

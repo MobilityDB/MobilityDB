@@ -2978,6 +2978,45 @@ ORDER BY val;
 -- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
 </programlisting>
 			</listitem>
+			<listitem xml:id="raster_pixelAsPoints">
+				<indexterm significance="normal"><primary><varname>pixelAsPoints</varname></primary></indexterm>
+				<para>Devuelve los píxeles de una banda de ráster como puntos &SRF;
+</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixelAsPoints(rast raster,band integer=1,exclude_nodata_value boolean=true)
+  → setof (geom geometry,val float,x integer,y integer)
+</programlisting>
+				<para>Los puntos de <varname>ST_PixelAsPoints</varname> de PostGIS: para cada píxel, fila por fila, su esquina superior izquierda en el sistema de referencia del ráster, su valor y su columna y su fila, empezando en 1. Los píxeles que la banda declara como nodata quedan fuera salvo que <varname>exclude_nodata_value</varname> sea falso, en cuyo caso conservan el valor que la banda tiene para ellos, y una banda que no declara valor nodata no deja ninguno fuera. Una banda que el ráster no tiene genera un error, donde PostGIS no devuelve ninguna fila.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT ST_AsText(geom), val, x, y FROM rast, pixelAsPoints(r) LIMIT 2;
+-- POINT(10 20) | 1.5 | 1 | 1
+-- POINT(14 20) |   3 | 3 | 1
+</programlisting>
+			</listitem>
+
+			<listitem xml:id="raster_dumpValues">
+				<indexterm significance="normal"><primary><varname>dumpValues</varname></primary></indexterm>
+				<para>Devuelve los valores de las bandas de un ráster como arreglos</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+dumpValues(rast raster,nband integer[]=NULL,exclude_nodata_value boolean=true)
+  → setof (nband integer,valarray float[])
+dumpValues(rast raster,nband integer,exclude_nodata_value boolean=true) → float[]
+</programlisting>
+				<para>Los valores de <varname>ST_DumpValues</varname> de PostGIS: un arreglo por banda, una fila del arreglo por fila del ráster, en el orden de las bandas dadas en <varname>nband</varname>, todas las bandas cuando es <varname>NULL</varname>; la forma con una banda devuelve solo su arreglo. Un píxel que la banda declara como nodata es <varname>NULL</varname> salvo que <varname>exclude_nodata_value</varname> sea falso, en cuyo caso es el valor que la banda tiene para él. Una banda que el ráster no tiene, o un número de banda <varname>NULL</varname>, genera un error, donde PostGIS no devuelve ninguna fila o lo omite.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857), '32BF'::text, 0.0::float8, -9999.0::float8), 1, 1, 1,
+    ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
+SELECT dumpValues(r, 1), dumpValues(r, 1, false) FROM rast;
+-- {{1.5,NULL,3},{4,5,6}} | {{1.5,-9999,3},{4,5,6}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_rasterTileValue">
 				<indexterm significance="normal"><primary><varname>rasterTileValue</varname></primary></indexterm>
 				<para>Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>

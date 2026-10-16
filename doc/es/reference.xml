@@ -3464,6 +3464,12 @@
 					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_pixelAsPoints"><varname>pixelAsPoints</varname></link>: Devuelve los píxeles de una banda de ráster como puntos &SRF;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_dumpValues"><varname>dumpValues</varname></link>: Devuelve los valores de las bandas de un ráster como arreglos</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_rasterTileValue"><varname>rasterTileValue</varname></link>: Muestrea una tesela ráster <varname>raquet</varname> a lo largo de una trayectoria</para>
 				</listitem>
 				<listitem>
