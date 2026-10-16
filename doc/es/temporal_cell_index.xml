@@ -2703,6 +2703,28 @@ FROM r;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_rasterUnion">
+				<indexterm significance="normal"><primary><varname>rasterUnion</varname></primary></indexterm>
+				<para>Devuelve la unión de los rásteres de una columna</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+rasterUnion(raster) → raster
+rasterUnion(raster,nband integer) → raster
+rasterUnion(raster,uniontype text) → raster
+rasterUnion(raster,nband integer,uniontype text) → raster
+</programlisting>
+				<para>El agregado <varname>ST_Union</varname> de PostGIS sobre rásteres, nombrado como <varname>geoUnion</varname> nombra la unión de geometrías, ya que <varname>union</varname> es una palabra clave de SQL. El resultado cubre la unión de las extensiones de los rásteres, cada píxel la operación de píxeles de los píxeles que tienen un valor allí: <varname>LAST</varname>, por defecto, <varname>FIRST</varname>, <varname>MIN</varname>, <varname>MAX</varname>, <varname>COUNT</varname>, <varname>SUM</varname>, <varname>MEAN</varname> o <varname>RANGE</varname>, sin distinguir mayúsculas de minúsculas. Sin <varname>nband</varname> se unen todas las bandas, y una banda que le falta a un ráster se lee como nodata; con <varname>nband</varname> solo esa banda, que todo ráster debe tener. El tipo de píxel y el valor nodata son los de la banda leída primero, y un conteo es una banda de enteros sin signo de 32 bits sin valor nodata. Un ráster <varname>NULL</varname> se omite, y sobre ningún ráster el agregado devuelve <varname>NULL</varname>. El agregado se ejecuta en paralelo, combinando las uniones de los procesos, mientras que el de PostGIS no tiene función de combinación; <varname>LAST</varname> y <varname>FIRST</varname> dependen del orden de los rásteres, que un <varname>ORDER BY</varname> en el agregado fija. Rásteres con SRID distintos o sobre rejillas distintas producen un error, y también una operación de píxeles distinta de estas, que PostGIS lee como <varname>LAST</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+WITH tiles AS (
+  SELECT 1 AS id, ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT 2, ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) FROM tiles;
+-- {{1,1,NULL},{1,2,3},{NULL,3,3}}
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_reclass">
 				<indexterm significance="normal"><primary><varname>reclass</varname></primary></indexterm>
 				<para>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</para>

@@ -2604,6 +2604,153 @@ Rasteralignstate_deserialize(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Raster type: union
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_union_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_union_transfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Transition function of the aggregate uniting rasters
+ * @details The third argument is the band or the pixel operation, as
+ * PostGIS's `RASTER_union_transfn` reads it; a NULL band unites every band
+ * and a NULL pixel operation is `LAST`. The state lives in the aggregate
+ * context, as #Raster_same_alignment_transfn keeps its own
+ * @sqlfn raster_union_transfn()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Raster_union_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_union_transfn called in non-aggregate context");
+  RasterUnionState *state = PG_ARGISNULL(0) ? NULL :
+    (RasterUnionState *) PG_GETARG_POINTER(0);
+  int band = 0;
+  char *uniontype = NULL;
+  int nargs = PG_NARGS();
+  if (nargs > 2 && ! PG_ARGISNULL(2))
+  {
+    if (get_fn_expr_argtype(fcinfo->flinfo, 2) == TEXTOID)
+      uniontype = text_to_cstring(PG_GETARG_TEXT_P(2));
+    else
+      band = PG_GETARG_INT32(2);
+  }
+  if (nargs > 3 && ! PG_ARGISNULL(3))
+    uniontype = text_to_cstring(PG_GETARG_TEXT_P(3));
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = raster_union_transfn(state, rast, band, uniontype);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (uniontype)
+    pfree(uniontype);
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Raster_union_combinefn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_union_combinefn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Combine function of the aggregate uniting rasters
+ * @details The states are combined as #Raster_same_alignment_combinefn
+ * combines its own
+ * @sqlfn raster_union_combinefn()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Raster_union_combinefn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_union_combinefn called in non-aggregate context");
+  RasterUnionState *state1 = PG_ARGISNULL(0) ? NULL :
+    (RasterUnionState *) PG_GETARG_POINTER(0);
+  RasterUnionState *state2 = PG_ARGISNULL(1) ? NULL :
+    (RasterUnionState *) PG_GETARG_POINTER(1);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterUnionState *result = raster_union_combinefn(state1, state2);
+  MemoryContextSwitchTo(oldctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_union_finalfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_union_finalfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Final function of the aggregate uniting rasters
+ * @details An aggregate over no raster answers NULL, as for PostGIS
+ * @sqlfn raster_union_finalfn()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Raster_union_finalfn(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  RasterUnionState *state = (RasterUnionState *) PG_GETARG_POINTER(0);
+  Raster *result = raster_union_finalfn(state);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Rasterunionstate_serialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasterunionstate_serialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Serialize the state of the aggregate uniting rasters
+ * @details The bytes are wrapped as #Rasteralignstate_serialize wraps its own
+ * @sqlfn rasterunionstate_serialize()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Rasterunionstate_serialize(PG_FUNCTION_ARGS)
+{
+  RasterUnionState *state = (RasterUnionState *) PG_GETARG_POINTER(0);
+  size_t size;
+  uint8_t *bytes = rasterunionstate_serialize(state, &size);
+  bytea *result = palloc(VARHDRSZ + size);
+  SET_VARSIZE(result, VARHDRSZ + size);
+  memcpy(VARDATA(result), bytes, size);
+  pfree(bytes);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Rasterunionstate_deserialize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Rasterunionstate_deserialize);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Deserialize the state of the aggregate uniting rasters
+ * @details The state is built in the aggregate context, as
+ * #Rasteralignstate_deserialize builds its own
+ * @sqlfn rasterunionstate_deserialize()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Rasterunionstate_deserialize(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR,
+      "Rasterunionstate_deserialize called in non-aggregate context");
+  bytea *data = PG_GETARG_BYTEA_P(0);
+  MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+  RasterUnionState *result = rasterunionstate_deserialize(
+    (uint8_t *) VARDATA(data), VARSIZE(data) - VARHDRSZ);
+  MemoryContextSwitchTo(oldctx);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * Raster type: value count
  *****************************************************************************/
 
