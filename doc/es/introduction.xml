@@ -343,6 +343,12 @@ ctest -R '021_tbox'
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
 ctest -R '022_*'
 </programlisting>
+			<para>
+				Las pruebas se ejecutan en un clúster temporal de PostgreSQL en el directorio <varname>tmptest</varname> del directorio de compilación, cuyo servidor escucha en un socket de dominio Unix en ese directorio. Como PostgreSQL no arranca cuando la ruta del socket supera los 107 bytes, un directorio de compilación profundo en el sistema de archivos necesita un directorio más corto para el clúster, que la variable <varname>MOBILITYDB_TEST_TMPDIR</varname> indica en la configuración
+			</para>
+			<programlisting language="bash" xml:space="preserve" format="linespecific">
+cmake -DMOBILITYDB_TEST_TMPDIR=/tmp/mobilitydb-test ..
+</programlisting>
 		</sect2>
 
 		<sect2 xml:id="documentation">
