@@ -3986,6 +3986,830 @@ raster_map_algebra(const Raster *rast, int band, const char *stat,
 }
 
 /*****************************************************************************
+ * Union aggregate
+ *****************************************************************************/
+
+/**
+ * @brief Pixel operations of a union of rasters
+ * @details Those PostGIS's `ST_Union` names, in its order
+ */
+typedef enum
+{
+  UNIONTYPE_LAST,
+  UNIONTYPE_FIRST,
+  UNIONTYPE_MIN,
+  UNIONTYPE_MAX,
+  UNIONTYPE_COUNT,
+  UNIONTYPE_SUM,
+  UNIONTYPE_MEAN,
+  UNIONTYPE_RANGE,
+} RasterUnionType;
+
+/**
+ * @brief Unite a pixel of the union built so far with a pixel of a raster
+ * @details A callback of `rt_raster_iterator` over two rasters, the union
+ * built so far and the raster read, computing the pixel operation of
+ * PostGIS's `rtpg_union_callback`: where one of the two pixels is nodata the
+ * other one is the result, and where both are the result is nodata, but for
+ * `COUNT`, which counts the pixels holding a value. `MEAN` and `RANGE` are
+ * united as their two parts, a count and a sum, a minimum and a maximum
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+raster_union_callback(rt_iterator_arg arg, void *userarg, double *value,
+  int *nodata)
+{
+  RasterUnionType utype = *(RasterUnionType *) userarg;
+  double value0 = arg->values[0][0][0], value1 = arg->values[1][0][0];
+  int nodata0 = arg->nodata[0][0][0], nodata1 = arg->nodata[1][0][0];
+  *value = 0;
+  *nodata = 0;
+  if (utype != UNIONTYPE_COUNT)
+  {
+    if (nodata0 && nodata1)
+    {
+      *nodata = 1;
+      return 1;
+    }
+    if (nodata1)
+    {
+      *value = value0;
+      return 1;
+    }
+    if (nodata0)
+    {
+      *value = value1;
+      return 1;
+    }
+  }
+  switch (utype)
+  {
+    case UNIONTYPE_LAST:
+      *value = value1;
+      break;
+    case UNIONTYPE_FIRST:
+      *value = value0;
+      break;
+    case UNIONTYPE_MIN:
+      *value = value0 < value1 ? value0 : value1;
+      break;
+    case UNIONTYPE_MAX:
+      *value = value0 > value1 ? value0 : value1;
+      break;
+    case UNIONTYPE_COUNT:
+      if (nodata0 && nodata1)
+        *value = 0;
+      else if (nodata1)
+        *value = value0;
+      else if (nodata0)
+        *value = 1;
+      else
+        *value = value0 + 1;
+      break;
+    case UNIONTYPE_SUM:
+      *value = value0 + value1;
+      break;
+    case UNIONTYPE_MEAN:
+    case UNIONTYPE_RANGE:
+      /* Never reached: a mean and a range are united as their two parts */
+      return 0;
+  }
+  return 1;
+}
+
+/**
+ * @brief Compute the mean or the range of a pixel of a union from its parts
+ * @details A callback of `rt_raster_iterator` over the two parts of a union,
+ * the mean of PostGIS's `rtpg_union_mean_callback`, the sum divided by the
+ * count, and the range of its `rtpg_union_range_callback`, the maximum minus
+ * the minimum. A pixel missing a part, or counted by no raster, is nodata
+ */
+static int
+/* cppcheck-suppress constParameterCallback */
+raster_union_final_callback(rt_iterator_arg arg, void *userarg,
+  double *value, int *nodata)
+{
+  RasterUnionType utype = *(RasterUnionType *) userarg;
+  *value = 0;
+  *nodata = 1;
+  if (arg->nodata[0][0][0] || arg->nodata[1][0][0])
+    return 1;
+  if (utype == UNIONTYPE_MEAN)
+  {
+    if (FLT_NEQ(arg->values[0][0][0], 0.0))
+    {
+      *value = arg->values[1][0][0] / arg->values[0][0][0];
+      *nodata = 0;
+    }
+  }
+  else
+  {
+    *value = arg->values[1][0][0] - arg->values[0][0][0];
+    *nodata = 0;
+  }
+  return 1;
+}
+
+/**
+ * @brief Copy the pixels of a band into another band from a pixel on
+ */
+static bool
+raster_union_copy_band(rt_band from, uint16_t width, uint16_t height,
+  rt_band to, int x, int y)
+{
+  for (uint16_t row = 0; row < height; row++)
+  {
+    void *vals = NULL;
+    uint16_t nvals = 0;
+    if (rt_band_get_pixel_line(from, 0, row, width, &vals, &nvals) != ES_NONE)
+      return false;
+    rt_errorstate status = rt_band_set_pixel_line(to, x, y + row, vals,
+      nvals);
+    rtdealloc(vals);
+    if (status != ES_NONE)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the union built so far of a band, united with a band of a
+ * raster
+ * @details The step of PostGIS's `RASTER_union_transfn` for one band and one
+ * part. Where both rasters hold the band, the result covers the union of
+ * their extents, holding the union built so far and, over the extent of the
+ * raster read, the pixel operation of the two; otherwise the iterator reads
+ * the union of their extents, a missing band read as nodata where
+ * @p nbnodata is true. The pixel type and the nodata value are those of the
+ * band of the union, or of the band read, or of a 64-bit float band, its
+ * minimum value standing for nodata where the band states none, but for a
+ * count, an unsigned 32-bit band without a nodata value
+ * @param[in] work Union built so far, NULL before the first raster
+ * @param[in] raster Raster read
+ * @param[in] nband Band of the raster read, starting at 0
+ * @param[in] utype Pixel operation
+ * @param[in] counts True when both bands are counts, united by their sum
+ * @param[in] nbnodata True when a missing band is read as nodata
+ * @return The new union, NULL when neither raster is given
+ * @errval NULL
+ */
+static rt_raster
+raster_union_step(rt_raster work, rt_raster raster, uint16_t nband,
+  RasterUnionType utype, bool counts, bool nbnodata)
+{
+  bool hasband0 = ! rt_raster_is_empty(work) && rt_raster_has_band(work, 0);
+  bool hasband1 = ! rt_raster_is_empty(raster) &&
+    rt_raster_has_band(raster, nband);
+  rt_band band = hasband0 ? rt_raster_get_band(work, 0) :
+    (hasband1 ? rt_raster_get_band(raster, nband) : NULL);
+  rt_pixtype pixtype = PT_64BF;
+  int hasnodata = 1;
+  double nodataval = rt_pixtype_get_min_value(PT_64BF);
+  if (band)
+  {
+    pixtype = rt_band_get_pixtype(band);
+    if (rt_band_get_hasnodata_flag(band))
+      rt_band_get_nodata(band, &nodataval);
+    else
+      nodataval = rt_band_get_min_value(band);
+  }
+  if (utype == UNIONTYPE_COUNT)
+  {
+    pixtype = PT_32BUI;
+    hasnodata = 0;
+    nodataval = 0;
+  }
+  RasterUnionType op = counts ? UNIONTYPE_SUM : utype;
+
+  struct rt_iterator_t itrset[2];
+  itrset[0].raster = work;
+  itrset[0].nband = 0;
+  itrset[0].nbnodata = nbnodata ? 1 : 0;
+  itrset[1].raster = raster;
+  itrset[1].nband = nband;
+  itrset[1].nbnodata = nbnodata ? 1 : 0;
+
+  rt_raster result = NULL;
+  if (! hasband0 || ! hasband1)
+  {
+    if (rt_raster_iterator(itrset, 2, ET_UNION, NULL, pixtype, hasnodata,
+        nodataval, 0, 0, NULL, &op, raster_union_callback, &result) !=
+          ES_NONE)
+    {
+      if (result) raster_destroy(result);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Could not unite the rasters");
+      return NULL;
+    }
+    return result;
+  }
+
+  /* Both rasters hold the band: the union of their extents receives the
+   * union built so far, then the pixel operation over the raster read */
+  double offset[4] = {0};
+  if (rt_raster_from_two_rasters(work, raster, ET_UNION, &result, offset) !=
+        ES_NONE || ! result)
+  {
+    if (result) rt_raster_destroy(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not compute the extent of the union");
+    return NULL;
+  }
+  rt_raster piece = NULL;
+  bool ok = rt_raster_generate_new_band(result, pixtype, nodataval,
+    hasnodata, nodataval, 0) != -1;
+  rt_band rband = ok ? rt_raster_get_band(result, 0) : NULL;
+  ok = ok && raster_union_copy_band(band, rt_raster_get_width(work),
+    rt_raster_get_height(work), rband, (int) offset[0], (int) offset[1]);
+  ok = ok && rt_raster_iterator(itrset, 2, ET_LAST, NULL, pixtype,
+    hasnodata, nodataval, 0, 0, NULL, &op, raster_union_callback, &piece) ==
+      ES_NONE && piece;
+  ok = ok && raster_union_copy_band(rt_raster_get_band(piece, 0),
+    rt_raster_get_width(piece), rt_raster_get_height(piece), rband,
+    (int) offset[2], (int) offset[3]);
+  if (piece) raster_destroy(piece);
+  if (! ok)
+  {
+    raster_destroy(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not unite the rasters");
+    return NULL;
+  }
+  return result;
+}
+
+/**
+ * @brief Return the raster of a part of a union, NULL where none is built
+ */
+static rt_raster
+raster_union_part(const RasterUnionState *state, int i)
+{
+  if (! state->rasters[i])
+    return NULL;
+  rt_raster result = rt_raster_deserialize((void *) state->rasters[i], 0);
+  if (! result)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+  return result;
+}
+
+/**
+ * @brief Replace a part of a union by a raster, which is freed
+ */
+static bool
+raster_union_set_part(RasterUnionState *state, int i, rt_raster raster)
+{
+  Raster *part = NULL;
+  if (raster)
+  {
+    part = raster_serialize_destroy(raster);
+    if (! part)
+      return false;
+  }
+  if (state->rasters[i])
+    pfree(state->rasters[i]);
+  state->rasters[i] = part;
+  return true;
+}
+
+/**
+ * @brief Return the number of parts of each band of a union
+ */
+static inline int
+raster_union_numparts(const RasterUnionState *state)
+{
+  return (state->uniontype == UNIONTYPE_MEAN ||
+    state->uniontype == UNIONTYPE_RANGE) ? 2 : 1;
+}
+
+/**
+ * @brief Return the pixel operation of a part of a band of a union
+ * @details A mean is a count and a sum, a range a minimum and a maximum, as
+ * PostGIS keeps them
+ */
+static RasterUnionType
+raster_union_part_type(const RasterUnionState *state, int part)
+{
+  if (state->uniontype == UNIONTYPE_MEAN)
+    return part == 0 ? UNIONTYPE_COUNT : UNIONTYPE_SUM;
+  if (state->uniontype == UNIONTYPE_RANGE)
+    return part == 0 ? UNIONTYPE_MIN : UNIONTYPE_MAX;
+  return (RasterUnionType) state->uniontype;
+}
+
+/**
+ * @brief Give a union more bands
+ * @details A band added after the first raster starts from the extent of the
+ * union of the first band, without pixels, as PostGIS starts it from a
+ * shallow clone of that union
+ */
+static bool
+raster_union_grow(RasterUnionState *state, int numbands)
+{
+  if (numbands <= state->numbands)
+    return true;
+  Raster **rasters = palloc0(sizeof(Raster *) * 2 * numbands);
+  if (state->numbands)
+  {
+    memcpy(rasters, state->rasters, sizeof(Raster *) * 2 * state->numbands);
+    pfree(state->rasters);
+  }
+  state->rasters = rasters;
+  Raster *extent = NULL;
+  if (state->numbands && state->rasters[0])
+  {
+    rt_raster header = raster_header(state->rasters[0]);
+    if (! header)
+      return false;
+    if (! rt_raster_is_empty(header))
+    {
+      rt_raster clone = rt_raster_clone(header, 0);
+      rt_raster_destroy(header);
+      extent = raster_serialize_destroy(clone);
+      if (! extent)
+        return false;
+    }
+    else
+      rt_raster_destroy(header);
+  }
+  int numparts = raster_union_numparts(state);
+  for (int i = state->numbands; i < numbands; i++)
+    for (int j = 0; j < numparts; j++)
+      state->rasters[2 * i + j] = extent ? raster_copy(extent) : NULL;
+  if (extent)
+    pfree(extent);
+  state->numbands = numbands;
+  return true;
+}
+
+/**
+ * @brief Ensure that a raster can be united with the union built so far
+ */
+static bool
+raster_union_ensure_valid(const RasterUnionState *state, rt_raster raster)
+{
+  if (rt_raster_is_empty(raster))
+    return true;
+  for (int i = 0; i < 2 * state->numbands; i++)
+  {
+    if (! state->rasters[i])
+      continue;
+    rt_raster header = raster_header(state->rasters[i]);
+    if (! header)
+      return false;
+    const char *reason = NULL;
+    bool valid = ensure_same_srid((int32_t) rt_raster_get_srid(header),
+      (int32_t) rt_raster_get_srid(raster));
+    if (valid && ! rt_raster_is_empty(header) &&
+        ! raster_grids_aligned(header, raster, &reason))
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", reason);
+      valid = false;
+    }
+    rt_raster_destroy(header);
+    return valid;
+  }
+  return true;
+}
+
+/**
+ * @brief Free the state of the aggregate uniting rasters
+ */
+static void
+rasterunionstate_free(RasterUnionState *state)
+{
+  for (int i = 0; i < 2 * state->numbands; i++)
+    if (state->rasters[i])
+      pfree(state->rasters[i]);
+  if (state->rasters)
+    pfree(state->rasters);
+  pfree(state);
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Transition function of the aggregate uniting rasters
+ * @details The aggregate of PostGIS's `ST_Union(raster)`, keeping per band
+ * the union built so far as PostGIS's `RASTER_union_transfn` keeps it: the
+ * union of the extents of the rasters read, each pixel the pixel operation
+ * of the pixels of the rasters holding a value there. A `MEAN` keeps a count
+ * and a sum and a `RANGE` a minimum and a maximum, which the final function
+ * reads.
+ *
+ * With @p band 0 every band is united, a band a raster lacks read as nodata;
+ * otherwise only that band, which every raster must hold. The band and the
+ * pixel operation are those of the first raster read. A NULL raster leaves
+ * the state as it is, rasters in different reference systems or on different
+ * grids raise an error, and so does a pixel operation outside those named,
+ * where PostGIS reads it as `LAST`
+ * @param[in,out] state Current aggregate state, NULL before the first raster
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1, or 0 for every band
+ * @param[in] uniontype Pixel operation: `LAST`, `FIRST`, `MIN`, `MAX`,
+ * `COUNT`, `SUM`, `MEAN` or `RANGE`, regardless of case, or NULL for `LAST`
+ * @errval NULL
+ * @csqlfn #Raster_union_transfn()
+ * @csqlaggfn #rasterUnionTransition()
+ */
+RasterUnionState *
+raster_union_transfn(RasterUnionState *state, const Raster *rast, int band,
+  const char *uniontype)
+{
+  if (band < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The band of a union starts at 1, or is 0 for every band");
+    return NULL;
+  }
+  int utype = UNIONTYPE_LAST;
+  if (uniontype)
+  {
+    static const char * const unionnames[] = {"LAST", "FIRST", "MIN", "MAX",
+      "COUNT", "SUM", "MEAN", "RANGE"};
+    utype = raster_name_index(uniontype, unionnames,
+      (int) (sizeof(unionnames) / sizeof(unionnames[0])));
+    if (utype < 0)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Unknown union type: %s", uniontype);
+      return NULL;
+    }
+  }
+  /* Null raster: return state */
+  if (! rast)
+    return state;
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  /* A state created here is freed on error, a state of the caller is left
+   * to it */
+  RasterUnionState *created = NULL;
+  if (! state)
+  {
+    state = created = palloc0(sizeof(RasterUnionState));
+    state->band = band;
+    state->uniontype = utype;
+    state->named = (uniontype != NULL);
+  }
+  bool ok = created || raster_union_ensure_valid(state, raster);
+
+  /* The bands of the union: the one asked for, or as many as the rasters
+   * read have, at least one where a pixel operation is named, as PostGIS
+   * counts them */
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  bool empty = rt_raster_is_empty(raster);
+  int target = state->numbands;
+  if (state->band > 0)
+  {
+    if (ok && ! empty && state->band > numbands)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The raster has no band %d, it has %d", state->band, numbands);
+      ok = false;
+    }
+    target = 1;
+  }
+  else if (state->named)
+    target = Max(Max(target, numbands), 1);
+  else if (! empty)
+    target = Max(target, numbands);
+  ok = ok && raster_union_grow(state, target);
+
+  int numparts = raster_union_numparts(state);
+  for (int i = 0; ok && i < state->numbands; i++)
+  {
+    uint16_t nband = (uint16_t) (state->band > 0 ? state->band - 1 : i);
+    for (int j = 0; ok && j < numparts; j++)
+    {
+      rt_raster work = raster_union_part(state, 2 * i + j);
+      if (state->rasters[2 * i + j] && ! work)
+      {
+        ok = false;
+        break;
+      }
+      rt_raster result = raster_union_step(work, raster, nband,
+        raster_union_part_type(state, j), false, state->band == 0);
+      ok = (result || (rt_raster_is_empty(work) && empty));
+      if (work) raster_destroy(work);
+      ok = ok && raster_union_set_part(state, 2 * i + j, result);
+    }
+  }
+  raster_destroy(raster);
+  if (! ok)
+  {
+    if (created)
+      rasterunionstate_free(created);
+    return NULL;
+  }
+  return state;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Combine function of the aggregate uniting rasters
+ * @details The union of the second state is united with the union of the
+ * first, part by part, by the pixel operation of the aggregate, the rasters
+ * read by the first state taken as read before those of the second: two
+ * counts are united by their sum. PostGIS's `ST_Union` has no combine
+ * function
+ * @param[in,out] state1 Current aggregate state
+ * @param[in] state2 Aggregate state to combine with the first one
+ * @return The first state, or a copy of the second where the first is NULL;
+ * the second state is left to the caller
+ * @errval NULL
+ * @csqlfn #Raster_union_combinefn()
+ */
+RasterUnionState *
+raster_union_combinefn(RasterUnionState *state1,
+  const RasterUnionState *state2)
+{
+  if (! state2)
+    return state1;
+  if (! state1)
+  {
+    RasterUnionState *result = palloc(sizeof(RasterUnionState));
+    *result = *state2;
+    result->rasters = NULL;
+    if (state2->numbands)
+    {
+      result->rasters = palloc0(sizeof(Raster *) * 2 * state2->numbands);
+      for (int i = 0; i < 2 * state2->numbands; i++)
+        if (state2->rasters[i])
+          result->rasters[i] = raster_copy(state2->rasters[i]);
+    }
+    return result;
+  }
+  if (state1->band != state2->band || state1->uniontype != state2->uniontype)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The states of a union unite different bands or pixel operations");
+    return NULL;
+  }
+  int numparts = raster_union_numparts(state1);
+  for (int k = 0; k < 2 * state2->numbands; k++)
+  {
+    if (! state2->rasters[k])
+      continue;
+    rt_raster other = raster_union_part(state2, k);
+    if (! other)
+      return NULL;
+    bool valid = raster_union_ensure_valid(state1, other);
+    raster_destroy(other);
+    if (! valid)
+      return NULL;
+    break;
+  }
+  if (! raster_union_grow(state1, state2->numbands))
+    return NULL;
+  for (int i = 0; i < state2->numbands; i++)
+  {
+    for (int j = 0; j < numparts; j++)
+    {
+      int k = 2 * i + j;
+      if (! state2->rasters[k])
+        continue;
+      rt_raster work = raster_union_part(state1, k);
+      rt_raster other = raster_union_part(state2, k);
+      if ((state1->rasters[k] && ! work) || ! other)
+      {
+        if (work) raster_destroy(work);
+        if (other) raster_destroy(other);
+        return NULL;
+      }
+      RasterUnionType utype = raster_union_part_type(state1, j);
+      rt_raster result = raster_union_step(work, other, 0, utype,
+        utype == UNIONTYPE_COUNT, true);
+      bool failed = (! result && ! (rt_raster_is_empty(work) &&
+        rt_raster_is_empty(other)));
+      if (work) raster_destroy(work);
+      raster_destroy(other);
+      if (failed || ! raster_union_set_part(state1, k, result))
+        return NULL;
+    }
+  }
+  return state1;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Final function of the aggregate uniting rasters
+ * @details The bands of the union, a mean or a range computed from its two
+ * parts as PostGIS's `RASTER_union_finalfn` computes them. The state is
+ * freed, as #raster_same_alignment_finalfn frees its own. A NULL state, an
+ * aggregate over no raster, answers NULL
+ * @param[in] state Aggregate state
+ * @errval NULL
+ * @csqlfn #Raster_union_finalfn()
+ * @csqlaggfn #rasterUnionFinal()
+ */
+Raster *
+raster_union_finalfn(RasterUnionState *state)
+{
+  if (! state)
+    return NULL;
+  rt_raster result = NULL;
+  bool ok = true;
+  for (int i = 0; ok && i < state->numbands; i++)
+  {
+    rt_raster bandrast = NULL;
+    if (raster_union_numparts(state) == 2)
+    {
+      rt_raster part0 = raster_union_part(state, 2 * i);
+      rt_raster part1 = raster_union_part(state, 2 * i + 1);
+      rt_band band1 = rt_raster_is_empty(part1) ? NULL :
+        rt_raster_get_band(part1, 0);
+      if (part0 && band1)
+      {
+        /* The result takes the pixel type of the sum or of the maximum */
+        rt_pixtype pixtype = rt_band_get_pixtype(band1);
+        int hasnodata = rt_band_get_hasnodata_flag(band1);
+        double nodataval = 0;
+        if (hasnodata)
+          rt_band_get_nodata(band1, &nodataval);
+        struct rt_iterator_t itrset[2];
+        itrset[0].raster = part0;
+        itrset[0].nband = 0;
+        itrset[0].nbnodata = 0;
+        itrset[1].raster = part1;
+        itrset[1].nband = 0;
+        itrset[1].nbnodata = 0;
+        RasterUnionType utype = (RasterUnionType) state->uniontype;
+        if (rt_raster_iterator(itrset, 2, ET_UNION, NULL, pixtype, hasnodata,
+            nodataval, 0, 0, NULL, &utype, raster_union_final_callback,
+            &bandrast) != ES_NONE)
+          ok = false;
+      }
+      if (part0) raster_destroy(part0);
+      if (part1) raster_destroy(part1);
+    }
+    else
+    {
+      bandrast = raster_union_part(state, 2 * i);
+      if (state->rasters[2 * i] && ! bandrast)
+        ok = false;
+    }
+    if (! ok || ! bandrast)
+      continue;
+    if (! result)
+    {
+      uint32_t bandnums[1] = {0};
+      result = rt_raster_from_band(bandrast, bandnums, 1);
+      ok = (result != NULL);
+    }
+    else
+      ok = rt_raster_copy_band(result, bandrast, 0,
+        (int) rt_raster_get_num_bands(result)) >= 0;
+    raster_destroy(bandrast);
+  }
+  rasterunionstate_free(state);
+  if (! ok)
+  {
+    if (result) raster_destroy(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not build the bands of the union");
+    return NULL;
+  }
+  if (! result)
+    return NULL;
+  return raster_serialize_destroy(result);
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the bytes of the state of the aggregate uniting rasters,
+ * read back by #rasterunionstate_deserialize
+ * @details The bytes are the band, the pixel operation, whether it is named
+ * and the number of bands, followed for each part of each band by its size
+ * and the Well-Known Binary of its raster, a size of 0 for a part not built,
+ * as #rasteralignstate_serialize writes the Well-Known Binary of its grid
+ * @param[in] state State
+ * @param[out] size_out Size of the result in bytes
+ * @errval NULL
+ * @csqlfn #Rasterunionstate_serialize()
+ */
+uint8_t *
+rasterunionstate_serialize(const RasterUnionState *state, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  int count = 2 * state->numbands;
+  uint8_t **wkbs = count ? palloc0(sizeof(uint8_t *) * count) : NULL;
+  size_t *sizes = count ? palloc0(sizeof(size_t) * count) : NULL;
+  size_t size = 3 * sizeof(int32) + 1 + count * sizeof(uint32);
+  for (int i = 0; i < count; i++)
+  {
+    if (! state->rasters[i])
+      continue;
+    wkbs[i] = raster_as_wkb(state->rasters[i], 0, &sizes[i]);
+    if (! wkbs[i])
+    {
+      for (int j = 0; j < i; j++)
+        if (wkbs[j]) pfree(wkbs[j]);
+      pfree(wkbs); pfree(sizes);
+      return NULL;
+    }
+    size += sizes[i];
+  }
+  uint8_t *result = palloc(size);
+  uint8_t *ptr = result;
+  int32 ints[3] = {state->band, state->uniontype, state->numbands};
+  memcpy(ptr, ints, sizeof(ints));
+  ptr += sizeof(ints);
+  *ptr++ = state->named ? 1 : 0;
+  for (int i = 0; i < count; i++)
+  {
+    uint32 partsize = (uint32) sizes[i];
+    memcpy(ptr, &partsize, sizeof(uint32));
+    ptr += sizeof(uint32);
+    if (wkbs[i])
+    {
+      memcpy(ptr, wkbs[i], sizes[i]);
+      ptr += sizes[i];
+      pfree(wkbs[i]);
+    }
+  }
+  if (wkbs) pfree(wkbs);
+  if (sizes) pfree(sizes);
+  *size_out = size;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_agg
+ * @brief Return the state of the aggregate uniting rasters, written by
+ * #rasterunionstate_serialize
+ * @param[in] bytes Bytes
+ * @param[in] size Size of the bytes
+ * @errval NULL
+ * @csqlfn #Rasterunionstate_deserialize()
+ */
+RasterUnionState *
+rasterunionstate_deserialize(const uint8_t *bytes, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(bytes, NULL);
+  int32 ints[3];
+  if (size < sizeof(ints) + 1)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a union state are too short");
+    return NULL;
+  }
+  memcpy(ints, bytes, sizeof(ints));
+  const uint8_t *ptr = bytes + sizeof(ints);
+  const uint8_t *end = bytes + size;
+  if (ints[0] < 0 || ints[1] < UNIONTYPE_LAST || ints[1] > UNIONTYPE_RANGE ||
+      ints[2] < 0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a union state are invalid");
+    return NULL;
+  }
+  RasterUnionState *result = palloc0(sizeof(RasterUnionState));
+  result->band = ints[0];
+  result->uniontype = ints[1];
+  result->named = (*ptr++ != 0);
+  int count = 2 * ints[2];
+  if (count)
+    result->rasters = palloc0(sizeof(Raster *) * count);
+  result->numbands = ints[2];
+  for (int i = 0; i < count; i++)
+  {
+    uint32 partsize;
+    if ((size_t) (end - ptr) < sizeof(uint32))
+      break;
+    memcpy(&partsize, ptr, sizeof(uint32));
+    ptr += sizeof(uint32);
+    if (! partsize)
+      continue;
+    if ((size_t) (end - ptr) < partsize)
+    {
+      ptr = NULL;
+      break;
+    }
+    result->rasters[i] = raster_from_wkb(ptr, partsize);
+    if (! result->rasters[i])
+    {
+      rasterunionstate_free(result);
+      return NULL;
+    }
+    ptr += partsize;
+  }
+  if (ptr != end)
+  {
+    rasterunionstate_free(result);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The bytes of a union state are invalid");
+    return NULL;
+  }
+  return result;
+}
+
+/*****************************************************************************
  * Conversion functions
  *****************************************************************************/
 

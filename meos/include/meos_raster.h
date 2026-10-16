@@ -187,6 +187,24 @@ typedef struct
   bool aligned;    /**< True while every raster read is aligned with it */
 } RasterAlignState;
 
+/**
+ * @brief State of the aggregate uniting rasters
+ * @details The shape of PostGIS's state of @p ST_Union: per band of the
+ * union, the raster the pixel operation has built so far, and a second one
+ * where the operation is `MEAN`, kept as a count and a sum, or `RANGE`, kept
+ * as a minimum and a maximum
+ */
+typedef struct
+{
+  int band;          /**< Band united, starting at 1, or 0 for every band */
+  int uniontype;     /**< Pixel operation, in the order `LAST`, `FIRST`,
+                          `MIN`, `MAX`, `COUNT`, `SUM`, `MEAN`, `RANGE` */
+  bool named;        /**< True when the pixel operation is named */
+  int numbands;      /**< Number of bands of the union */
+  Raster **rasters;  /**< Two parts per band, the second for `MEAN` and
+                          `RANGE` only, NULL where none is built */
+} RasterUnionState;
+
 /* Input and output functions for PostGIS rasters */
 
 extern Raster *raster_from_wkb(const uint8_t *wkb, size_t size);
@@ -284,9 +302,18 @@ extern RasterAlignState *raster_same_alignment_combinefn(
 extern bool raster_same_alignment_finalfn(RasterAlignState *state);
 extern RasterAlignState *raster_same_alignment_transfn(
   RasterAlignState *state, const Raster *rast);
+extern RasterUnionState *raster_union_combinefn(RasterUnionState *state1,
+  const RasterUnionState *state2);
+extern Raster *raster_union_finalfn(RasterUnionState *state);
+extern RasterUnionState *raster_union_transfn(RasterUnionState *state,
+  const Raster *rast, int band, const char *uniontype);
 extern RasterAlignState *rasteralignstate_deserialize(const uint8_t *bytes,
   size_t size);
 extern uint8_t *rasteralignstate_serialize(const RasterAlignState *state,
+  size_t *size_out);
+extern RasterUnionState *rasterunionstate_deserialize(const uint8_t *bytes,
+  size_t size);
+extern uint8_t *rasterunionstate_serialize(const RasterUnionState *state,
   size_t *size_out);
 
 /* Conversion functions for Raquet tiles */

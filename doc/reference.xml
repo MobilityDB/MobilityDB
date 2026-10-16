@@ -3443,6 +3443,9 @@
 					<para><link linkend="raster_notSameAlignmentReason"><varname>notSameAlignmentReason</varname></link>: Return why two rasters do not lie on the same grid</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_rasterUnion"><varname>rasterUnion</varname></link>: Return the union of the rasters of a column</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_reclass"><varname>reclass</varname></link>: Return a raster whose band holds the classes an expression maps its values to</para>
 				</listitem>
 				<listitem>
