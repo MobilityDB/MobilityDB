@@ -40,7 +40,7 @@ CREATE FUNCTION extentTransition(intspan, intspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(intspan, intspan)
+CREATE FUNCTION extentCombine(intspan, intspan)
   RETURNS intspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -49,7 +49,7 @@ CREATE FUNCTION extentTransition(bigintspan, bigintspan)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(bigintspan, bigintspan)
+CREATE FUNCTION extentCombine(bigintspan, bigintspan)
   RETURNS bigintspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -58,7 +58,7 @@ CREATE FUNCTION extentTransition(floatspan, floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(floatspan, floatspan)
+CREATE FUNCTION extentCombine(floatspan, floatspan)
   RETURNS floatspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -67,7 +67,7 @@ CREATE FUNCTION extentTransition(datespan, datespan)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(datespan, datespan)
+CREATE FUNCTION extentCombine(datespan, datespan)
   RETURNS datespan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -76,7 +76,7 @@ CREATE FUNCTION extentTransition(tstzspan, tstzspan)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)
+CREATE FUNCTION extentCombine(tstzspan, tstzspan)
   RETURNS tstzspan
   AS 'MODULE_PATHNAME', 'Span_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -84,31 +84,31 @@ CREATE FUNCTION span_extent_combinefn(tstzspan, tstzspan)
 CREATE AGGREGATE extent(intspan) (
   SFUNC = extentTransition,
   STYPE = intspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintspan) (
   SFUNC = extentTransition,
   STYPE = bigintspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatspan) (
   SFUNC = extentTransition,
   STYPE = floatspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(datespan) (
   SFUNC = extentTransition,
   STYPE = datespan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzspan) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -140,31 +140,31 @@ CREATE FUNCTION extentTransition(tstzspan, timestamptz)
 CREATE AGGREGATE extent(integer) (
   SFUNC = extentTransition,
   STYPE = intspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigint) (
   SFUNC = extentTransition,
   STYPE = bigintspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(float) (
   SFUNC = extentTransition,
   STYPE = floatspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(date) (
   SFUNC = extentTransition,
   STYPE = datespan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(timestamptz) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -196,31 +196,31 @@ CREATE FUNCTION extentTransition(tstzspan, tstzset)
 CREATE AGGREGATE extent(intset) (
   SFUNC = extentTransition,
   STYPE = intspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintset) (
   SFUNC = extentTransition,
   STYPE = bigintspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatset) (
   SFUNC = extentTransition,
   STYPE = floatspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(dateset) (
   SFUNC = extentTransition,
   STYPE = datespan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzset) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -249,31 +249,31 @@ CREATE FUNCTION extentTransition(tstzspan, tstzspanset)
 CREATE AGGREGATE extent(intspanset) (
   SFUNC = extentTransition,
   STYPE = intspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(bigintspanset) (
   SFUNC = extentTransition,
   STYPE = bigintspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(floatspanset) (
   SFUNC = extentTransition,
   STYPE = floatspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(datespanset) (
   SFUNC = extentTransition,
   STYPE = datespan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tstzspanset) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -301,7 +301,11 @@ CREATE FUNCTION spanUnionTransition(internal, tstzspan)
   AS 'MODULE_PATHNAME', 'Span_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION spanset_union_combinefn(internal, internal)
+CREATE FUNCTION spanUnionCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Spanset_union_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION spansetUnionCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Spanset_union_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -359,7 +363,7 @@ CREATE FUNCTION spansetUnionFinal(internal, tstzspanset)
 CREATE AGGREGATE spanUnion(intspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spanUnionCombine,
   FINALFUNC = spanUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -370,7 +374,7 @@ CREATE AGGREGATE spanUnion(intspan) (
 CREATE AGGREGATE spanUnion(bigintspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spanUnionCombine,
   FINALFUNC = spanUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -381,7 +385,7 @@ CREATE AGGREGATE spanUnion(bigintspan) (
 CREATE AGGREGATE spanUnion(floatspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spanUnionCombine,
   FINALFUNC = spanUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -392,7 +396,7 @@ CREATE AGGREGATE spanUnion(floatspan) (
 CREATE AGGREGATE spanUnion(datespan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spanUnionCombine,
   FINALFUNC = spanUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -403,7 +407,7 @@ CREATE AGGREGATE spanUnion(datespan) (
 CREATE AGGREGATE spanUnion(tstzspan) (
   SFUNC = spanUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spanUnionCombine,
   FINALFUNC = spanUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -439,7 +443,7 @@ CREATE FUNCTION spansetUnionTransition(internal, tstzspanset)
 CREATE AGGREGATE spansetUnion(intspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spansetUnionCombine,
   FINALFUNC = spansetUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -450,7 +454,7 @@ CREATE AGGREGATE spansetUnion(intspanset) (
 CREATE AGGREGATE spansetUnion(bigintspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spansetUnionCombine,
   FINALFUNC = spansetUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -461,7 +465,7 @@ CREATE AGGREGATE spansetUnion(bigintspanset) (
 CREATE AGGREGATE spansetUnion(floatspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spansetUnionCombine,
   FINALFUNC = spansetUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -472,7 +476,7 @@ CREATE AGGREGATE spansetUnion(floatspanset) (
 CREATE AGGREGATE spansetUnion(datespanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spansetUnionCombine,
   FINALFUNC = spansetUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -483,7 +487,7 @@ CREATE AGGREGATE spansetUnion(datespanset) (
 CREATE AGGREGATE spansetUnion(tstzspanset) (
   SFUNC = spansetUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = spanset_union_combinefn,
+  COMBINEFUNC = spansetUnionCombine,
   FINALFUNC = spansetUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

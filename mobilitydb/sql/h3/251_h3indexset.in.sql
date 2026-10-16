@@ -301,7 +301,7 @@ CREATE FUNCTION setUnionFinal(internal, h3indexset)
 CREATE AGGREGATE setUnion(h3index) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -313,7 +313,7 @@ CREATE AGGREGATE setUnion(h3index) (
 CREATE AGGREGATE setUnion(h3indexset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

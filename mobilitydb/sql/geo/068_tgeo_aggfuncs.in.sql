@@ -45,13 +45,13 @@ CREATE FUNCTION extentTransition(stbox, tgeography)
 CREATE AGGREGATE extent(tgeometry) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeography) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -75,7 +75,7 @@ CREATE FUNCTION tCountFinal(internal, tgeometry)
 CREATE AGGREGATE tCount(tgeometry) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -90,7 +90,7 @@ CREATE FUNCTION tCountFinal(internal, tgeography)
 CREATE AGGREGATE tCount(tgeography) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -115,7 +115,7 @@ CREATE FUNCTION wCountFinal(internal, tgeometry, interval)
 CREATE AGGREGATE wCount(tgeometry, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -129,7 +129,7 @@ CREATE FUNCTION wCountFinal(internal, tgeography, interval)
 CREATE AGGREGATE wCount(tgeography, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

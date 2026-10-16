@@ -416,7 +416,7 @@ CREATE FUNCTION setUnionFinal(internal, geogset)
 CREATE AGGREGATE setUnion(geometry) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -427,7 +427,7 @@ CREATE AGGREGATE setUnion(geometry) (
 CREATE AGGREGATE setUnion(geography) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -439,7 +439,7 @@ CREATE AGGREGATE setUnion(geography) (
 CREATE AGGREGATE setUnion(geomset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -450,7 +450,7 @@ CREATE AGGREGATE setUnion(geomset) (
 CREATE AGGREGATE setUnion(geogset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

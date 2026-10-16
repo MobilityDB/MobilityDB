@@ -27,12 +27,12 @@ aggregate_families:
   - fns:
     - {sig: "extentTransition(tstzspan, tbool)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "extentTransition(tstzspan, ttext)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tbool) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(ttext) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tbool) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(ttext) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "extentTransition(tbox, tint)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "extentTransition(tbox, tbigint)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false}
     - {sig: "extentTransition(tbox, tfloat)", ret: "tbox", sym: "Tnumber_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tint) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tbigint) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tfloat) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = tbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tint) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tbigint) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tfloat) (\n  SFUNC = extentTransition,\n  STYPE = tbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "taggstate_serialize(internal)", ret: "bytea", sym: "Taggstate_serialize"}
   - lit: "\n"
@@ -46,44 +46,46 @@ aggregate_families:
     - {sig: "tCountTransition(internal, tstzspanset)", ret: "internal", sym: "Tstzspanset_tcount_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "tcount_combinefn(internal, internal)", ret: "internal", sym: "Temporal_tcount_combinefn", strict: false}
+    - {sig: "tCountCombine(internal, internal)", ret: "internal", sym: "Temporal_tcount_combinefn", strict: false}
+    - {sig: "tnpointsCombine(internal, internal)", ret: "internal", sym: "Temporal_tcount_combinefn", strict: false}
+    - {sig: "tdensityCombine(internal, internal)", ret: "internal", sym: "Temporal_tcount_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, timestamptz)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(timestamptz) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(timestamptz) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tstzset)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tstzset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tstzset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tstzspan)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tstzspan) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tstzspan) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tstzspanset)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tstzspanset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tstzspanset) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tbool)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tAndTransition(internal, tbool)", ret: "internal", sym: "Tbool_tand_transfn", strict: false}
-    - {sig: "tbool_tand_combinefn(internal, internal)", ret: "internal", sym: "Tbool_tand_combinefn", strict: false}
+    - {sig: "tAndCombine(internal, internal)", ret: "internal", sym: "Tbool_tand_combinefn", strict: false}
     - {sig: "tOrTransition(internal, tbool)", ret: "internal", sym: "Tbool_tor_transfn", strict: false}
-    - {sig: "tbool_tor_combinefn(internal, internal)", ret: "internal", sym: "Tbool_tor_combinefn", strict: false}
+    - {sig: "tOrCombine(internal, internal)", ret: "internal", sym: "Tbool_tor_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tbool)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tbool) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tbool) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tAndFinal(internal, tbool)", ret: "tbool", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tAnd(tbool) (\n  SFUNC = tAndTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tand_combinefn,\n  FINALFUNC = tAndFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tAnd(tbool) (\n  SFUNC = tAndTransition,\n  STYPE = internal,\n  COMBINEFUNC = tAndCombine,\n  FINALFUNC = tAndFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tOrFinal(internal, tbool)", ret: "tbool", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tOr(tbool) (\n  SFUNC = tOrTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbool_tor_combinefn,\n  FINALFUNC = tOrFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tOr(tbool) (\n  SFUNC = tOrTransition,\n  STYPE = internal,\n  COMBINEFUNC = tOrCombine,\n  FINALFUNC = tOrFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -91,118 +93,115 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tMinTransition(internal, tint)", ret: "internal", sym: "Tint_tmin_transfn", strict: false}
-    - {sig: "tint_tmin_combinefn(internal, internal)", ret: "internal", sym: "Tint_tmin_combinefn", strict: false}
+    - {sig: "tMinCombine(internal, internal)", ret: "internal", sym: "Temporal_tmin_combinefn", strict: false}
+    - {sig: "wMinCombine(internal, internal)", ret: "internal", sym: "Temporal_tmin_combinefn", strict: false}
     - {sig: "tMaxTransition(internal, tint)", ret: "internal", sym: "Tint_tmax_transfn", strict: false}
-    - {sig: "tint_tmax_combinefn(internal, internal)", ret: "internal", sym: "Tint_tmax_combinefn", strict: false}
+    - {sig: "tMaxCombine(internal, internal)", ret: "internal", sym: "Temporal_tmax_combinefn", strict: false}
+    - {sig: "wMaxCombine(internal, internal)", ret: "internal", sym: "Temporal_tmax_combinefn", strict: false}
     - {sig: "tSumTransition(internal, tint)", ret: "internal", sym: "Tint_tsum_transfn", strict: false}
-    - {sig: "tint_tsum_combinefn(internal, internal)", ret: "internal", sym: "Tint_tsum_combinefn", strict: false}
+    - {sig: "tSumCombine(internal, internal)", ret: "internal", sym: "Tnumber_tsum_combinefn", strict: false}
+    - {sig: "wSumCombine(internal, internal)", ret: "internal", sym: "Tnumber_tsum_combinefn", strict: false}
+    - {sig: "wCountCombine(internal, internal)", ret: "internal", sym: "Tnumber_tsum_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tMinTransition(internal, tbigint)", ret: "internal", sym: "Tbigint_tmin_transfn", strict: false}
-    - {sig: "tbigint_tmin_combinefn(internal, internal)", ret: "internal", sym: "Tbigint_tmin_combinefn", strict: false}
     - {sig: "tMaxTransition(internal, tbigint)", ret: "internal", sym: "Tbigint_tmax_transfn", strict: false}
-    - {sig: "tbigint_tmax_combinefn(internal, internal)", ret: "internal", sym: "Tbigint_tmax_combinefn", strict: false}
     - {sig: "tSumTransition(internal, tbigint)", ret: "internal", sym: "Tbigint_tsum_transfn", strict: false}
-    - {sig: "tbigint_tsum_combinefn(internal, internal)", ret: "internal", sym: "Tbigint_tsum_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tAvgTransition(internal, tint)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false}
     - {sig: "tAvgTransition(internal, tbigint)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false}
-    - {sig: "tavg_combinefn(internal, internal)", ret: "internal", sym: "Tnumber_tavg_combinefn", strict: false}
+    - {sig: "tAvgCombine(internal, internal)", ret: "internal", sym: "Tnumber_tavg_combinefn", strict: false}
+    - {sig: "wAvgCombine(internal, internal)", ret: "internal", sym: "Tnumber_tavg_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tbigint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tbigint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tbigint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tMinFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMin(tint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMin(tint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMinCombine,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tMaxFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMax(tint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMax(tint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMaxCombine,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tSumFinal(internal, tint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tSum(tint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tSum(tint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tSumCombine,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tAvgFinal(internal, tint)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tAvg(tint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tAvg(tint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tAvgCombine,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tMinFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMin(tbigint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMin(tbigint) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMinCombine,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tMaxFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMax(tbigint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMax(tbigint) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMaxCombine,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tSumFinal(internal, tbigint)", ret: "tbigint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tSum(tbigint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tbigint_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tSum(tbigint) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tSumCombine,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tAvgFinal(internal, tbigint)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tAvg(tbigint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tAvg(tbigint) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tAvgCombine,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tfloat)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tMinTransition(internal, tfloat)", ret: "internal", sym: "Tfloat_tmin_transfn", strict: false}
-    - {sig: "tfloat_tmin_combinefn(internal, internal)", ret: "internal", sym: "Tfloat_tmin_combinefn", strict: false}
     - {sig: "tMaxTransition(internal, tfloat)", ret: "internal", sym: "Tfloat_tmax_transfn", strict: false}
-    - {sig: "tfloat_tmax_combinefn(internal, internal)", ret: "internal", sym: "Tfloat_tmax_combinefn", strict: false}
     - {sig: "tSumTransition(internal, tfloat)", ret: "internal", sym: "Tfloat_tsum_transfn", strict: false}
-    - {sig: "tfloat_tsum_combinefn(internal, internal)", ret: "internal", sym: "Tfloat_tsum_combinefn", strict: false}
   - fns:
     - {sig: "tAvgTransition(internal, tfloat)", ret: "internal", sym: "Tnumber_tavg_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tfloat)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tfloat) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tfloat) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tMinFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMin(tfloat) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMin(tfloat) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMinCombine,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tMaxFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMax(tfloat) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMax(tfloat) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMaxCombine,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tSumFinal(internal, tfloat)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tSum(tfloat) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tfloat_tsum_combinefn,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tSum(tfloat) (\n  SFUNC = tSumTransition,\n  STYPE = internal,\n  COMBINEFUNC = tSumCombine,\n  FINALFUNC = tSumFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tAvgFinal(internal, tfloat)", ret: "tfloat", sym: "Tnumber_tavg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tAvg(tfloat) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tavg_combinefn,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tAvg(tfloat) (\n  SFUNC = tAvgTransition,\n  STYPE = internal,\n  COMBINEFUNC = tAvgCombine,\n  FINALFUNC = tAvgFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, ttext)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tMinTransition(internal, ttext)", ret: "internal", sym: "Ttext_tmin_transfn", strict: false}
-    - {sig: "ttext_tmin_combinefn(internal, internal)", ret: "internal", sym: "Ttext_tmin_combinefn", strict: false}
     - {sig: "tMaxTransition(internal, ttext)", ret: "internal", sym: "Ttext_tmax_transfn", strict: false}
-    - {sig: "ttext_tmax_combinefn(internal, internal)", ret: "internal", sym: "Ttext_tmax_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, ttext)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(ttext) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(ttext) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tMinFinal(internal, ttext)", ret: "ttext", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMin(ttext) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmin_combinefn,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMin(ttext) (\n  SFUNC = tMinTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMinCombine,\n  FINALFUNC = tMinFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "tMaxFinal(internal, ttext)", ret: "ttext", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tMax(ttext) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = ttext_tmax_combinefn,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tMax(ttext) (\n  SFUNC = tMaxTransition,\n  STYPE = internal,\n  COMBINEFUNC = tMaxCombine,\n  FINALFUNC = tMaxFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tbool)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -353,7 +352,7 @@ aggregate_families:
   - fns:
     - {sig: "extentTransition(stbox, tgeometry)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "extentTransition(stbox, tgeography)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tgeometry) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tgeography) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tgeometry) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tgeography) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tgeometry)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
@@ -362,11 +361,11 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tgeometry)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tgeography)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tgeography) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tgeography) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tgeometry, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -374,11 +373,11 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tgeometry, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tgeography, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tgeography, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tgeography, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tgeometry)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -452,7 +451,7 @@ aggregate_families:
   - fns:
     - {sig: "extentTransition(stbox, tgeompoint)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
     - {sig: "extentTransition(stbox, tgeogpoint)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tgeompoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tgeogpoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tgeompoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\nCREATE AGGREGATE extent(tgeogpoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tgeompoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
@@ -461,11 +460,11 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tgeompoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tgeompoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tgeompoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tgeogpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tgeogpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tgeogpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tgeompoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -473,19 +472,19 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tgeompoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tgeompoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tgeompoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tgeogpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tgeogpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tgeogpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCentroidTransition(internal, tgeompoint)", ret: "internal", sym: "Tpoint_tcentroid_transfn", strict: false, pre: "-- The function is not strict\n"}
-    - {sig: "tcentroid_combinefn(internal, internal)", ret: "internal", sym: "Tpoint_tcentroid_combinefn", strict: false}
+    - {sig: "tCentroidCombine(internal, internal)", ret: "internal", sym: "Tpoint_tcentroid_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCentroidFinal(internal, tgeompoint)", ret: "tgeompoint", sym: "Tpoint_tcentroid_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCentroid(tgeompoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCentroid(tgeompoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCentroidCombine,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tgeompoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -558,20 +557,20 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal circular buffers\n */\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tcbuffer)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not strict\n"}
-  - lit: "\nCREATE AGGREGATE extent(tcbuffer) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tcbuffer) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tcbuffer)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tcbuffer)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tcbuffer) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tcbuffer) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tcbuffer, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tcbuffer, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tcbuffer, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tcbuffer, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tcbuffer)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The functions are not strict\n"}
@@ -615,27 +614,27 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal network points\n */\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tnpoint)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tnpoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tnpoint) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tnpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tnpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tnpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tnpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tnpoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tnpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tnpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tnpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCentroidTransition(internal, tnpoint)", ret: "internal", sym: "Tnpoint_tcentroid_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "tCentroidFinal(internal, tnpoint)", ret: "tgeompoint", sym: "Tpoint_tcentroid_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCentroid(tnpoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcentroid_combinefn,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCentroid(tnpoint) (\n  SFUNC = tCentroidTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCentroidCombine,\n  FINALFUNC = tCentroidFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tnpoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -685,17 +684,17 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tpose)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tpose) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tpose) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tpose)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "CREATE AGGREGATE extent(tpose) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "CREATE AGGREGATE extent(tpose) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tpose, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tpose, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tpose, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tpose, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tpose)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -746,17 +745,17 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tposechain)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tposechain) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tposechain) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tposechain)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "CREATE AGGREGATE extent(tposechain) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "CREATE AGGREGATE extent(tposechain) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tposechain, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tposechain, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tposechain, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tposechain, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tposechain)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -807,14 +806,14 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, trgeometry)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(trgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(trgeometry) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, trgeometry, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not strict\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, trgeometry, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(trgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(trgeometry, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, trgeometry)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -854,7 +853,7 @@ aggregate_families:
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "extentTransition(stbox, trgeometry)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(trgeometry) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n"
+  - lit: "\nCREATE AGGREGATE extent(trgeometry) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = SAFE\n);\n\n/*****************************************************************************/\n"
 - family: json
   file: mobilitydb/sql/json/464_tjsonb_aggfuncs.in.sql
   reference: true
@@ -864,21 +863,21 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal JSONB\n */\n\n"
   - fns:
     - {sig: "extentTransition(tstzspan, tjsonb)", ret: "tstzspan", sym: "Temporal_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE extent(tjsonb) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = span_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tjsonb) (\n  SFUNC = extentTransition,\n  STYPE = tstzspan,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tjsonb)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tjsonb)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tjsonb) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tjsonb) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tjsonb, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tjsonb, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tjsonb, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tjsonb, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tjsonb)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -925,39 +924,39 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for the pgPointCloud temporal types\n */\n\n"
   - fns:
     - {sig: "extentTransition(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_transfn", strict: false}
-    - {sig: "tpcbox_extent_combinefn(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_combinefn", strict: false}
+    - {sig: "extentCombine(tpcbox, tpcbox)", ret: "tpcbox", sym: "Tpcbox_extent_combinefn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "extentTransition(tpcbox, tpcpoint)", ret: "tpcbox", sym: "Tpc_extent_transfn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "extentTransition(tpcbox, tpcpatch)", ret: "tpcbox", sym: "Tpc_extent_transfn", strict: false}
-  - lit: "\nCREATE AGGREGATE extent(tpcbox) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpoint) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpatch) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = tpcbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Temporal count and window count\n *****************************************************************************/\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tpcbox) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpoint) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\nCREATE AGGREGATE extent(tpcpatch) (\n  SFUNC = extentTransition,\n  STYPE = tpcbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n/*****************************************************************************\n * Temporal count and window count\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tpcpoint)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
     - {sig: "tCountTransition(internal, tpcpatch)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false}
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tpcpoint)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tpcpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tpcpoint) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tCountFinal(internal, tpcpatch)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tpcpatch) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tpcpatch) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tnpointsTransition(internal, tpcpatch)", ret: "internal", sym: "Tpcpatch_tnpoints_transfn", strict: false, pre: "-- tnpoints(tpcpatch) — running temporal sum of per-instant pcpatch\n-- npoints. Distinct from tcount(tpcpatch), which counts the number\n-- of patches (always 1 per instant). For drone LiDAR this is \"how\n-- many points were in the cloud at time t\".\n"}
   - lit: "\n"
   - fns:
     - {sig: "tnpointsFinal(internal, tpcpatch)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tnpoints(tpcpatch) (\n  SFUNC = tnpointsTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tnpointsFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tnpoints(tpcpatch) (\n  SFUNC = tnpointsTransition,\n  STYPE = internal,\n  COMBINEFUNC = tnpointsCombine,\n  FINALFUNC = tnpointsFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "tdensityTransition(internal, tpcpatch)", ret: "internal", sym: "Tpcpatch_tdensity_transfn", strict: false, pre: "-- tdensity(tpcpatch) — running temporal sum of per-instant density\n-- (npoints / xy-bbox-area). 1-point or co-linear patches yield\n-- +Infinity for that instant; filter with isfinite() if needed.\n"}
   - lit: "\n"
   - fns:
     - {sig: "tdensityFinal(internal, tpcpatch)", ret: "tfloat", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tdensity(tpcpatch) (\n  SFUNC = tdensityTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tdensityFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tdensity(tpcpatch) (\n  SFUNC = tdensityTransition,\n  STYPE = internal,\n  COMBINEFUNC = tdensityCombine,\n  FINALFUNC = tdensityFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tpcpoint, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false}
@@ -965,11 +964,11 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tpcpoint, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tpcpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tpcpoint, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountFinal(internal, tpcpatch, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tpcpatch, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tpcpatch, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n/*****************************************************************************\n * Merge — combine multiple temporal values into one\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tpcpoint)", ret: "internal", sym: "Temporal_merge_transfn", strict: false}
@@ -1028,21 +1027,21 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal H3 cells\n */\n\n"
   - fns:
     - {sig: "extentTransition(stbox, th3index)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE extent(th3index) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(th3index) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, th3index)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, th3index)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(th3index) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(th3index) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, th3index, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, th3index, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(th3index, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(th3index, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, th3index)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -1090,21 +1089,21 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal quadbin cells\n */\n\n"
   - fns:
     - {sig: "extentTransition(stbox, tquadbin)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE extent(tquadbin) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(tquadbin) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, tquadbin)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, tquadbin)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(tquadbin) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(tquadbin) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, tquadbin, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, tquadbin, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(tquadbin, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(tquadbin, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, tquadbin)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -1151,21 +1150,21 @@ aggregate_families:
   - lit: "/**\n * @file\n * @brief Aggregate functions for temporal S2 cells\n */\n\n"
   - fns:
     - {sig: "extentTransition(stbox, ts2cell)", ret: "stbox", sym: "Tspatial_extent_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\nCREATE AGGREGATE extent(ts2cell) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = stbox_extent_combinefn,\n  PARALLEL = safe\n);\n\n"
+  - lit: "\nCREATE AGGREGATE extent(ts2cell) (\n  SFUNC = extentTransition,\n  STYPE = stbox,\n  COMBINEFUNC = extentCombine,\n  PARALLEL = safe\n);\n\n"
   - fns:
     - {sig: "tCountTransition(internal, ts2cell)", ret: "internal", sym: "Temporal_tcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - lit: "\n"
   - fns:
     - {sig: "tCountFinal(internal, ts2cell)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE tCount(ts2cell) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tcount_combinefn,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE tCount(ts2cell) (\n  SFUNC = tCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tCountCombine,\n  FINALFUNC = tCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "wCountTransition(internal, ts2cell, interval)", ret: "internal", sym: "Temporal_wcount_transfn", strict: false, pre: "-- The function is not STRICT\n"}
   - lit: "\n"
   - fns:
     - {sig: "wCountFinal(internal, ts2cell, interval)", ret: "tint", sym: "Temporal_tagg_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE wCount(ts2cell, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = tint_tsum_combinefn,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
+  - lit: "CREATE AGGREGATE wCount(ts2cell, interval) (\n  SFUNC = wCountTransition,\n  STYPE = internal,\n  COMBINEFUNC = wCountCombine,\n  FINALFUNC = wCountFinal,\n  FINALFUNC_EXTRA,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = SAFE\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "mergeTransition(internal, ts2cell)", ret: "internal", sym: "Temporal_merge_transfn", strict: false, pre: "-- The function is not STRICT\n"}

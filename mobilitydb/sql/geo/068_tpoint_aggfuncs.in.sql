@@ -45,13 +45,13 @@ CREATE FUNCTION extentTransition(stbox, tgeogpoint)
 CREATE AGGREGATE extent(tgeompoint) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tgeogpoint) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -75,7 +75,7 @@ CREATE FUNCTION tCountFinal(internal, tgeompoint)
 CREATE AGGREGATE tCount(tgeompoint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -90,7 +90,7 @@ CREATE FUNCTION tCountFinal(internal, tgeogpoint)
 CREATE AGGREGATE tCount(tgeogpoint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -115,7 +115,7 @@ CREATE FUNCTION wCountFinal(internal, tgeompoint, interval)
 CREATE AGGREGATE wCount(tgeompoint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -129,7 +129,7 @@ CREATE FUNCTION wCountFinal(internal, tgeogpoint, interval)
 CREATE AGGREGATE wCount(tgeogpoint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -142,7 +142,7 @@ CREATE FUNCTION tCentroidTransition(internal, tgeompoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tcentroid_combinefn(internal, internal)
+CREATE FUNCTION tCentroidCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tpoint_tcentroid_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -154,7 +154,7 @@ CREATE FUNCTION tCentroidFinal(internal, tgeompoint)
 CREATE AGGREGATE tCentroid(tgeompoint) (
   SFUNC = tCentroidTransition,
   STYPE = internal,
-  COMBINEFUNC = tcentroid_combinefn,
+  COMBINEFUNC = tCentroidCombine,
   FINALFUNC = tCentroidFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

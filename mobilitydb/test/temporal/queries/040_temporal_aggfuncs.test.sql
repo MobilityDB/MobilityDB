@@ -655,20 +655,20 @@ SELECT numInstants(appendSequence(seq ORDER BY seq)) FROM temp2;
 -- which is what makes these the first cases to reach it at all.
 -------------------------------------------------------------------------------
 
-SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)',
+SELECT extentCombine(tstzspan '[2001-01-01,2001-01-03)',
   tstzspan '[2001-01-05,2001-01-07)');
-SELECT span_extent_combinefn(NULL::tstzspan, tstzspan '[2001-01-05,2001-01-07)');
-SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)', NULL::tstzspan);
-SELECT span_extent_combinefn(NULL::tstzspan, NULL::tstzspan);
+SELECT extentCombine(NULL::tstzspan, tstzspan '[2001-01-05,2001-01-07)');
+SELECT extentCombine(tstzspan '[2001-01-01,2001-01-03)', NULL::tstzspan);
+SELECT extentCombine(NULL::tstzspan, NULL::tstzspan);
 
 -- The temporal number extent measures a box, whose span type states what the
 -- value dimension holds, so two different ones are a refusal
-SELECT tbox_extent_combinefn(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])',
+SELECT extentCombine(tbox 'TBOXINT XT([1,2],[2001-01-01,2001-01-02])',
   tbox 'TBOXINT XT([3,4],[2001-01-03,2001-01-04])');
-SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
-SELECT tbox_extent_combinefn(NULL::tbox, tbox 'TBOXINT X([3,4])');
-SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', NULL::tbox);
-SELECT tbox_extent_combinefn(NULL::tbox, NULL::tbox);
+SELECT extentCombine(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT extentCombine(NULL::tbox, tbox 'TBOXINT X([3,4])');
+SELECT extentCombine(tbox 'TBOXINT X([1,2])', NULL::tbox);
+SELECT extentCombine(NULL::tbox, NULL::tbox);
 
 -------------------------------------------------------------------------------
 
@@ -691,10 +691,10 @@ INSERT INTO tbl_extent_state VALUES (tstzspan '[2001-01-01, 2001-01-02]',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])',
   tbox 'TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])');
 SELECT extentTransition(s, tbool 't@2001-02-01'),
-  span_extent_combinefn(s, tstzspan '[2001-03-01, 2001-03-02]'),
+  extentCombine(s, tstzspan '[2001-03-01, 2001-03-02]'),
   extentTransition(b, tfloat '100@2001-02-01'),
   extentTransition(b, tbox 'TBOXFLOAT XT([200, 201],[2001-03-01, 2001-03-02])'),
-  tbox_extent_combinefn(b, tbox 'TBOXFLOAT XT([300, 301],[2001-04-01, 2001-04-02])')
+  extentCombine(b, tbox 'TBOXFLOAT XT([300, 301],[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
 SELECT s = s0, b = b0 FROM tbl_extent_state;
 DROP TABLE tbl_extent_state;

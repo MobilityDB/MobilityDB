@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Tpoint_tcentroid_combinefn);
 /**
  * @ingroup mobilitydb_geo_agg
  * @brief Combine function for temporal centroid aggregation of temporal points
- * @sqlfn tcentroid_combinefn()
+ * @sqlfn tCentroidCombine()
  * @sqlaggfn tCentroid()
  */
 Datum

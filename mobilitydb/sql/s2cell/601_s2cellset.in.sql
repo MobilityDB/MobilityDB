@@ -301,7 +301,7 @@ CREATE FUNCTION setUnionFinal(internal, s2cellset)
 CREATE AGGREGATE setUnion(s2cell) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -313,7 +313,7 @@ CREATE AGGREGATE setUnion(s2cell) (
 CREATE AGGREGATE setUnion(s2cellset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
