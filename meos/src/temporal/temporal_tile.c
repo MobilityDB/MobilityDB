@@ -327,6 +327,141 @@ timestamptz_get_bin(TimestampTz t, const Interval *duration,
   return timestamptz_bin_start(t, size, torigin);
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bin that contains an integer
+ * @details The bin is the half-open integer span starting at the value
+ * #int_get_bin returns
+ * @param[in] value Input value
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @csqlfn #Value_bin()
+ */
+Span *
+intspan_get_bin(int value, int vsize, int vorigin)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive(vsize))
+    return NULL;
+  int lower = int_get_bin(value, vsize, vorigin);
+  /* The error value of #int_get_bin is among the starts of a bin whose upper
+   * bound exceeds the integer range */
+  if (lower > PG_INT32_MAX - vsize)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+    return NULL;
+  }
+  return span_make(Int32GetDatum(lower), Int32GetDatum(lower + vsize), true,
+    false, T_INT4);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bin that contains a big integer
+ * @details The bin is the half-open big integer span starting at the value
+ * #bigint_get_bin returns
+ * @param[in] value Input value
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @csqlfn #Value_bin()
+ */
+Span *
+bigintspan_get_bin(int64 value, int64 vsize, int64 vorigin)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8))
+    return NULL;
+  int64 lower = bigint_get_bin(value, vsize, vorigin);
+  /* The error value of #bigint_get_bin is among the starts of a bin whose
+   * upper bound exceeds the big integer range */
+  if (lower > PG_INT64_MAX - vsize)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+    return NULL;
+  }
+  return span_make(Int64GetDatum(lower), Int64GetDatum(lower + vsize), true,
+    false, T_INT8);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bin that contains a float
+ * @details The bin is the half-open float span starting at the value
+ * #float_get_bin returns
+ * @param[in] value Input value
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @csqlfn #Value_bin()
+ */
+Span *
+floatspan_get_bin(double value, double vsize, double vorigin)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
+    return NULL;
+  double lower = float_get_bin(value, vsize, vorigin);
+  if (lower == DBL_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "number out of span");
+    return NULL;
+  }
+  return span_make(Float8GetDatum(lower), Float8GetDatum(lower + vsize), true,
+    false, T_FLOAT8);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bin that contains a date
+ * @details The bin is the half-open date span starting at the date
+ * #date_get_bin returns
+ * @param[in] d Input date
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @csqlfn #Date_bin()
+ */
+Span *
+datespan_get_bin(DateADT d, const Interval *duration, DateADT torigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_valid_day_duration(duration))
+    return NULL;
+  DateADT lower = date_get_bin(d, duration, torigin);
+  int32 ndays = interval_units(duration) / USECS_PER_DAY;
+  DateADT upper = add_date_int(lower, ndays);
+  return span_make(DateADTGetDatum(lower), DateADTGetDatum(upper), true,
+    false, T_DATE);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bin that contains a timestamptz
+ * @details The bin is the half-open timestamptz span starting at the
+ * timestamp #timestamptz_get_bin returns
+ * @param[in] t Input timestamp
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @csqlfn #Timestamptz_bin()
+ */
+Span *
+tstzspan_get_bin(TimestampTz t, const Interval *duration, TimestampTz torigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  TimestampTz lower = timestamptz_get_bin(t, duration, torigin);
+  /* A finite timestamp has a finite bin, so the end of time is the error
+   * value of #timestamptz_get_bin */
+  if (lower == DT_NOEND)
+    return NULL;
+  TimestampTz upper = lower + interval_units(duration);
+  return span_make(TimestampTzGetDatum(lower), TimestampTzGetDatum(upper),
+    true, false, T_TIMESTAMPTZ);
+}
+
 /*****************************************************************************
  * Bin functions for spans
  *****************************************************************************/
@@ -870,11 +1005,11 @@ tbox_tile_state_next(TboxGridState *state)
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] basetype Type of the value
- * @param[in] spantype Type of the value span
- * @csqlfn #Tbox_get_value_time_tile()
+ * @param[in] spantype Type of the value span, a time span type for a tile
+ * without value dimension
  */
 TBox *
-tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize,
+tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   MeosType basetype, MeosType spantype)
 {
@@ -901,6 +1036,71 @@ tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize,
   tbox_tile_state_set(value_bin, time_bin, vsize, tunits, basetype, spantype,
     result);
   return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the value and time grid of a temporal box
+ * @param[in] value Value
+ * @param[in] t Timestamp
+ * @param[in] vsize Value size of the tiles
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_get_value_time_tile()
+ */
+TBox *
+tbox_get_value_time_tile(double value, TimestampTz t, double vsize,
+  const Interval *duration, double vorigin, TimestampTz torigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tbox_value_time_tile(Float8GetDatum(value), t, Float8GetDatum(vsize),
+    duration, Float8GetDatum(vorigin), torigin, T_FLOAT8, T_FLOATSPAN);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the value grid of a temporal box
+ * @param[in] value Value
+ * @param[in] vsize Value size of the tiles
+ * @param[in] vorigin Value origin of the tiles
+ * @csqlfn #Tbox_get_value_tile()
+ */
+TBox *
+tbox_get_value_tile(double value, double vsize, double vorigin)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
+    return NULL;
+  return tbox_value_time_tile(Float8GetDatum(value), 0, Float8GetDatum(vsize),
+    NULL, Float8GetDatum(vorigin), 0, T_FLOAT8, T_FLOATSPAN);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return a tile in the time grid of a temporal box
+ * @param[in] t Timestamp
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @csqlfn #Tbox_get_time_tile()
+ */
+TBox *
+tbox_get_time_tile(TimestampTz t, const Interval *duration,
+  TimestampTz torigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  /* A time span type states that the tile has no value dimension */
+  return tbox_value_time_tile(Float8GetDatum(0.0), t, Float8GetDatum(0.0),
+    duration, Float8GetDatum(0.0), torigin, T_TIMESTAMPTZ, T_TSTZSPAN);
 }
 
 /*****************************************************************************

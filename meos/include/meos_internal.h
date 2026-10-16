@@ -1483,7 +1483,7 @@ extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool bo
 extern Span *tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin, bool border_inc, int *count);
 extern TBox *tnumber_value_time_boxes(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, bool border_inc, int *count);
 extern Temporal **tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin, bool border_inc, Datum **bins, int *count);
-extern TBox *tbox_get_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, MeosType basetype, MeosType spantype);
+extern TBox *tbox_value_time_tile(Datum value, TimestampTz t, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, MeosType basetype, MeosType spantype);
 extern TBox *tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, bool border_inc, int *count);
 extern Temporal **tnumber_value_time_split(const Temporal *temp, Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin, bool border_inc, Datum **value_bins, TimestampTz **time_bins, int *count);
 
