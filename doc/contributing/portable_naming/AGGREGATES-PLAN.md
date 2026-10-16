@@ -105,7 +105,7 @@ declarations chapter 18 gives them, as the functions behind the operators took t
 
 | | repository | change | waits on |
 |---|---|---|---|
-| AG1 | MobilityDB, MEOS-API | MobilityDB: `@altsqlfn tAndAgg()`, `tOrAgg()`, `setUnionAgg()`, `spanUnionAgg()`, `spansetUnionAgg()` on the transition wrappers of the five, beside their `@sqlaggfn` (`Tbool_tand_transfn`: `@sqlfn tAndTransition()`, `@sqlaggfn tAnd()`, `@altsqlfn tAndAgg()`), doc comments only, its SQL unchanged; MEOS-API: `attach_alt_sql_names` reads it into `altSqlName` on every entry of the `aggregates` section whose transition is that wrapper, the `@altsqlfn` of a wrapper carrying `@sqlaggfn` naming the aggregate, never the transition | ruling R1 |
+| AG1 | MobilityDB, MEOS-API | MobilityDB: `@altsqlfn tAndAgg()`, `tOrAgg()`, `setUnionAgg()`, `spanUnionAgg()`, `spansetUnionAgg()` on the transition wrappers of the five, beside their `@sqlaggfn` (`Tbool_tand_transfn`: `@sqlfn tAndTransition()`, `@sqlaggfn tAnd()`, `@altsqlfn tAndAgg()`), doc comments only, its SQL unchanged; MEOS-API: `attach_alt_sql_names` reads it into `altSqlName` on every entry of the `aggregates` section whose transition is that wrapper, the `@altsqlfn` of a wrapper carrying `@sqlaggfn` naming the aggregate, never the transition | — |
 | AG2 | MobilityDB | the finals: each aggregate declares `<agg>Final` once per type of value with `FINALFUNC_EXTRA`, over the C function the final calls today; the 46 underscored finals go | — |
 | AG3 | MobilityDB | the combines: one public MEOS combine per aggregate for the seven whose per-type combines collide (`tMinAgg`, `tMaxAgg`, `tSum`, `wMin`, `wMax`, `wSum`, `wCount`), choosing its comparison from the base type of the state and validating its states at entry, its PostgreSQL wrapper `<agg>Combine`; the other combines renamed to `<agg>Combine`, a forwarder per aggregate where one serves several | ruling R2 |
 | AG4 | MEOS-API | the catalog states AG2's finals and AG3's combines: one public MEOS function per combine and final role of an aggregate, `FINALFUNC_EXTRA` read into the final's signature (`attach_aggregates` reads it) | AG2, AG3 |
@@ -119,11 +119,11 @@ names the catalog states for it, and answers as MobilityDB does.
 
 ## Rulings owed
 
-- **R1 — the engines' name of the five dual-name aggregates comes from `@altsqlfn`.**
-  MobilityDB keeps `tAnd`, `tOr`, `setUnion`, `spanUnion` and `spansetUnion`; the tag on their
-  transition wrappers states `tAndAgg`, `tOrAgg`, `setUnionAgg`, `spanUnionAgg` and
-  `spansetUnionAgg`, the names DuckDB, Spark and Flink already use, the catalog reads it as it
-  reads `floatRound`, and every generator registers it in place of its own `Agg` rule.
+The engines' name of the five aggregates whose name a function also holds is derived, not
+ruled: the `@altsqlfn` tag already states, for 174 functions, the name an engine publishes where
+it cannot take the PostgreSQL one, and AG1 extends it to the aggregates without changing
+MobilityDB's SQL. Two questions remain, each about a surface:
+
 - **R2 — seven public MEOS combines.** `temporal_tmin_combinefn` and its six siblings are added to
   the public MEOS C API, which the constraint leaves open, MobilityDB's user SQL unchanged; the catalog refuses an aggregate whose combine role two public MEOS
   functions carry under one SQL signature, so four per-type combines cannot stand behind one
