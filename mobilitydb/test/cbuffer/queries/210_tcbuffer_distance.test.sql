@@ -153,6 +153,12 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-10 5), 0.2)@2001-
 SELECT round(minValue(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2001-01-01, Cbuffer(Point(15 15), 0.3)@2001-01-02]' <-> geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
 SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2001-01-01, Cbuffer(Point(15 15), 0.3)@2001-01-02]', geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))')::numeric, 6);
 
+-- A buffer whose radius changes is nearest a point inside its segment, and the
+-- answer is the double nearest the exact least: 6 sqrt(6) / 5 - 1 for a radius
+-- growing from 0 to 2, sqrt(1599) / 40 - 1/2 for one growing from 0.25 to 0.75
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 3), 0)@2001-01-01, Cbuffer(Point(10 3), 2)@2001-01-02]', geometry 'Point(5 0)') = 1.9393876913398138;
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(-10 1), 0.25)@2001-01-01, Cbuffer(Point(10 1), 0.75)@2001-01-02]', geometry 'Point(0 0)') = 0.49968745115661023;
+
 -- A circular-arc geometry stays arc-exact, sharing the edge decomposition of
 -- the already arc-exact nad_tcbuffer_geo kernel
 SELECT round(minValue(tcbuffer 'Cbuffer(Point(0 8), 1)@2001-01-01' <-> geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);

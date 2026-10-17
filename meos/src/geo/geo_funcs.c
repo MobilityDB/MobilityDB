@@ -4098,12 +4098,13 @@ wide_dyadic_approx(const WideDyadic *a)
  * discs are within where `q(f) = |w(f)|^2 - L(f)^2 = A f^2 + 2 B f + C` is not
  * positive, with `A = |w1|^2 - dL^2`, `B = w0 . w1 - L0 dL` and
  * `C = |w0|^2 - L0^2`, each a sum of products of the input doubles, held
- * exactly as #point_motion_squares holds its sums
+ * exactly as #point_motion_squares holds its sums. The distance is the sum
+ * @p d + @p dlo, exactly, so that the midpoint of two doubles can be one
  */
 static void
 point_motion_dwithin_coeffs(const double *a0, const double *a1,
   const double *b0, const double *b1, int ndims, double ra0, double ra1,
-  double rb0, double rb1, double d, WideDyadic *A, WideDyadic *B,
+  double rb0, double rb1, double d, double dlo, WideDyadic *A, WideDyadic *B,
   WideDyadic *C)
 {
   WideDyadic w0, w1, sq, l0, dl;
@@ -4131,6 +4132,7 @@ point_motion_dwithin_coeffs(const double *a0, const double *a1,
   wide_dyadic_accumulate_double(&l0, ra0, 1);
   wide_dyadic_accumulate_double(&l0, rb0, 1);
   wide_dyadic_accumulate_double(&l0, d, 1);
+  wide_dyadic_accumulate_double(&l0, dlo, 1);
   dl.sign = 0; dl.len = 0; dl.exp = 0;
   wide_dyadic_accumulate_double(&dl, ra1, 1);
   wide_dyadic_accumulate_double(&dl, rb1, 1);
@@ -4338,9 +4340,9 @@ dwithin_grid_root(const DWithinGrid *g, double root, int64 D, bool rising,
 }
 
 /**
- * @brief Return 1 or 0 where two discs moving linearly over a segment are
- * certainly within a distance over the whole segment or certainly never
- * within it, -1 where doubles cannot decide
+ * @brief Return 1, 2 or 0 where two discs moving linearly over a segment are
+ * certainly within a distance over the whole segment, certainly within it at
+ * some instant, or certainly never within it, -1 where doubles cannot decide
  * @details The twin of #point_motion_dwithin_filter for the quadratic of
  * #point_motion_dwithin_coeffs, read on the rounded differences `w0`, `w1`,
  * `L0` and `dL`. With `M` the largest magnitude of the inputs, each rounded
@@ -4416,8 +4418,9 @@ point_motion_dwithin_period_filter(const double *a0, const double *a1,
   bool out1 = point_motion_filter_exceeds(q1 - e1, 0.0);
   if (in0 && in1)
     return 1;
+  /* Within at an end, so within at some instant */
   if (! out0 || ! out1)
-    return -1;
+    return (in0 || in1) ? 2 : -1;
   /* A parabola lies at most A / 4 below the chord of its ends, so the least
    * is certainly positive where the lesser end exceeds that, which settles a
    * segment at rest, A = 0, and every one moving slowly against the gap */
@@ -4440,6 +4443,11 @@ point_motion_dwithin_period_filter(const double *a0, const double *a1,
     0x1p-51 * (fabs(ac) + bb));
   if (point_motion_filter_exceeds(ac - bb - ed, 0.0))
     return 0;
+  /* Within at the vertex, certainly inside, so within at some instant */
+  if (point_motion_filter_exceeds(0.0, B + E) &&
+      point_motion_filter_exceeds(A + B - 2.0 * E, 0.0) &&
+      point_motion_filter_exceeds(0.0, ac - bb + ed))
+    return 2;
   return -1;
 }
 
@@ -4516,7 +4524,7 @@ point_motion_dwithin_period_wide(const double *a0, const double *a1,
 {
   DWithinGrid g;
   WideDyadic B, C, B2, t, q1;
-  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d,
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
     &g.A, &B, &C);
   /* q(1) = A + 2 B + C */
   wide_dyadic_set_int(&t, 2);
@@ -4619,7 +4627,7 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
   double rb0, double rb1, double d, bool start)
 {
   WideDyadic A, B, C, B2, t, q1, apb;
-  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d,
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
     &A, &B, &C);
   if (start)
     return C.sign == 0 && (B.sign > 0 || (B.sign == 0 && A.sign > 0));
@@ -4629,6 +4637,281 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
   wide_dyadic_accumulate(&q1, &C);
   wide_dyadic_add(&A, &B, &apb);
   return q1.sign == 0 && (apb.sign < 0 || (apb.sign == 0 && A.sign > 0));
+}
+
+/**
+ * @brief Return the sign of the least, over a segment, of the gap between a
+ * disc moving linearly and a point, less a distance `d + dlo`, exactly
+ * @details The gap `|w(f)| - L(f)` and the quadratic `q(f)` of
+ * #point_motion_dwithin_coeffs have the same sign at every fraction, `L`
+ * being not negative, so the sign of the least gap is that of the least of
+ * `q` over [0, 1]: at an end, or at the vertex `-B / A` where the parabola is
+ * convex and the vertex lies inside, there `(A C - B^2) / A`
+ */
+typedef struct
+{
+  WideDyadic A;     /**< A, which no distance changes */
+  WideDyadic B0;    /**< B at the distance 0 */
+  WideDyadic C0;    /**< C at the distance 0 */
+  WideDyadic R1;    /**< The radius at the start, L0 at the distance 0 */
+  WideDyadic DR;    /**< The change of the radius, dL */
+} PointMotionGap;
+
+/**
+ * @brief Set the parts of the quadratic of #point_motion_dwithin_coeffs for a
+ * disc moving against a point that no distance changes, so that each
+ * distance a search asks costs two products (#point_motion_gap_sign)
+ */
+static void
+point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2)
+{
+  point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, 0.0,
+    0.0, &g->A, &g->B0, &g->C0);
+  wide_dyadic_set_double(&g->R1, r1);
+  g->DR = g->R1;
+  g->DR.sign = - g->DR.sign;
+  wide_dyadic_accumulate_double(&g->DR, r2, 1);
+  return;
+}
+
+/**
+ * @brief Return the sign of the least, over a segment, of the gap between a
+ * disc moving linearly and a point, less a distance `d + dlo`, exactly, from
+ * the parts of #point_motion_gap_init: with `L = d + dlo` the distance adds
+ * `L` to `L0` and nothing to `dL`, so `B = B0 - L dL` and
+ * `C = C0 - L (2 r1 + L)`
+ * @details As #point_motion_gap_sign
+ */
+static int
+point_motion_gap_sign_at(const PointMotionGap *g, double d, double dlo)
+{
+  WideDyadic L, t, t2, B, C, B2, q1, apb, bb, ac, v, two;
+  wide_dyadic_set_double(&L, d);
+  wide_dyadic_accumulate_double(&L, dlo, 1);
+  wide_dyadic_mul(&L, &g->DR, &t);
+  t.sign = - t.sign;
+  wide_dyadic_add(&g->B0, &t, &B);
+  wide_dyadic_set_int(&two, 2);
+  wide_dyadic_mul(&g->R1, &two, &t);
+  wide_dyadic_add(&t, &L, &t2);
+  wide_dyadic_mul(&L, &t2, &t);
+  t.sign = - t.sign;
+  wide_dyadic_add(&g->C0, &t, &C);
+  const WideDyadic *A = &g->A;
+  wide_dyadic_mul(&B, &two, &B2);
+  wide_dyadic_add(A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
+  wide_dyadic_add(A, &B, &apb);
+  if (A->sign > 0 && B.sign < 0 && apb.sign > 0)
+  {
+    wide_dyadic_mul(A, &C, &ac);
+    wide_dyadic_mul(&B, &B, &bb);
+    bb.sign = - bb.sign;
+    wide_dyadic_add(&ac, &bb, &v);
+    if (v.sign < sign)
+      sign = v.sign;
+  }
+  return sign;
+}
+
+static int
+point_motion_gap_sign(const double *c1, const double *c2, const double *p,
+  int ndims, double r1, double r2, double d, double dlo)
+{
+  WideDyadic A, B, C, B2, t, q1, apb, bb, ac, v;
+  point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, d, dlo,
+    &A, &B, &C);
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_add(&A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
+  wide_dyadic_add(&A, &B, &apb);
+  if (A.sign > 0 && B.sign < 0 && apb.sign > 0)
+  {
+    wide_dyadic_mul(&A, &C, &ac);
+    wide_dyadic_mul(&B, &B, &bb);
+    bb.sign = - bb.sign;
+    wide_dyadic_add(&ac, &bb, &v);
+    if (v.sign < sign)
+      sign = v.sign;
+  }
+  return sign;
+}
+
+/**
+ * @brief Return true if a disc moving linearly over a segment is certainly
+ * never within a distance of a point, false where it is or doubles cannot
+ * tell (#point_motion_dwithin_period_filter)
+ */
+bool
+point_motion_dwithin_never(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d)
+{
+  return point_motion_dwithin_period_filter(c1, c2, p, p, ndims, r1, r2, 0.0,
+    0.0, d) == 0;
+}
+
+/**
+ * @brief Return 1 or 0 where a disc moving linearly over a segment is
+ * certainly within a distance of a point at some instant or certainly never
+ * within it, -1 where doubles cannot tell
+ * (#point_motion_dwithin_period_filter)
+ */
+static int
+point_motion_dwithin_ever_filter(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d)
+{
+  int filter = point_motion_dwithin_period_filter(c1, c2, p, p, ndims, r1,
+    r2, 0.0, 0.0, d);
+  return (filter == 1 || filter == 2) ? 1 : filter;
+}
+
+/**
+ * @brief Return the least distance of a disc moving linearly to a point, less
+ * the radius, the double nearest its exact value, or 0 where the disc reaches
+ * the point
+ * @details The disc moves from @p c1 with radius @p r1 to @p c2 with radius
+ * @p r2. Its least distance less the radius exceeds a value `x` exactly where
+ * it is never within `x` of the point, the sign of
+ * #point_motion_gap_sign at the distance `x`, a quadratic in rationals of the
+ * input doubles. The answer is the smallest double whose upper midpoint the
+ * least does not pass, the midpoint being the sum of the double and half the
+ * gap to the next one, and a tie going to the even double, found by a gallop
+ * from the double estimate of its closed form and halving the bracket, as
+ * #wide_dyadic_nearest_root finds its answer, so no root of a rounded value
+ * decides it
+ * @param[in] c1,c2 Centre of the disc at the start and at the end
+ * @param[in] p The point
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r1,r2 Radius at the start and at the end, not negative
+ */
+double
+point_motion_point_offset_exact(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2)
+{
+  /* The disc reaches the point where it is ever within 0 of it, which the
+   * filter tells but near a contact */
+  int reach = point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, 0.0);
+  if (reach == 1 || (reach < 0 &&
+      point_motion_gap_sign(c1, c2, p, ndims, r1, r2, 0.0, 0.0) <= 0))
+    return 0.0;
+  /* The estimate: the least of the ends and of the stationary point of
+   * |u + f v| - (r1 + f k), inside where |k| < |v| */
+  /* Read in extended precision, so that the search starts within a unit or
+   * two in the last place of the answer and the filter answers its steps but
+   * the last ones */
+  long double uu = 0.0L, uv = 0.0L, vv = 0.0L, ee = 0.0L, cr = 0.0L;
+  for (int i = 0; i < ndims; i++)
+  {
+    long double u = (long double) c1[i] - p[i];
+    long double w = (long double) c2[i] - c1[i];
+    long double e = (long double) c2[i] - p[i];
+    uu += u * u; uv += u * w; vv += w * w; ee += e * e;
+  }
+  /* |u x v|, componentwise in the plane and by Lagrange's identity beyond */
+  if (ndims == 2)
+    cr = fabsl(((long double) c1[0] - p[0]) * ((long double) c2[1] - c1[1]) -
+      ((long double) c1[1] - p[1]) * ((long double) c2[0] - c1[0]));
+  else
+    cr = sqrtl(fmaxl(uu * vv - uv * uv, 0.0L));
+  long double k = (long double) r2 - r1;
+  long double est = fminl(sqrtl(uu) - r1, sqrtl(ee) - r2);
+  if (vv > k * k)
+  {
+    long double sd = sqrtl(vv - k * k);
+    long double ts = (- uv + k * cr / sd) / vv;
+    if (ts > 0.0L && ts < 1.0L)
+      est = fminl(est, (cr * sd + k * uv) / vv - r1);
+  }
+  double c = (double) est;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+  PointMotionGap gap;
+  point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2);
+#define PMO_BEYOND(bb, res) \
+  do { \
+    double cc, nn; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nn, &b2, sizeof(nn)); \
+    /* Beyond where certainly never within the upper neighbour, and not \
+     * where certainly within the double itself: the filter answers every \
+     * step but those next to the answer */ \
+    if (! isinf(nn) && point_motion_dwithin_ever_filter(c1, c2, p, ndims, \
+        r1, r2, nn) == 0) \
+    { \
+      (res) = true; \
+      break; \
+    } \
+    if (point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, cc) == 1) \
+    { \
+      (res) = false; \
+      break; \
+    } \
+    double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0; \
+    int s = point_motion_gap_sign_at(&gap, cc, hh); \
+    (res) = s > 0 || (s == 0 && (b1 & 1) != 0); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  PMO_BEYOND(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (true)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      PMO_BEYOND(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+        return 0.0;
+      lo = (hi > step) ? hi - step : 0;
+      PMO_BEYOND(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      if (lo == 0)
+        return 0.0;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    PMO_BEYOND(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef PMO_BEYOND
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return result;
 }
 
 /**
