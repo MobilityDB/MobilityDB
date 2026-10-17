@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">temporal_aggfuncs.h File Reference</div></div>
 </div><!--header-->
@@ -88,6 +89,15 @@ $(function() {
 </div>
 <p><a href="temporal__aggfuncs_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:ab881655393e8bfa121a82a94c5ccb1f6"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6">taggOp</a> { <a class="el" href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6a7f6742d6fcabb21c2741a100dd5d252b">TAGG_MIN</a>
+, <a class="el" href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6a24e25632200fadc44a11274338580974">TAGG_MAX</a>
+, <a class="el" href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6ac98dbeac36799885acbfa7e6464a6151">TAGG_SUM</a>
+ }</td></tr>
+<tr class="memdesc:ab881655393e8bfa121a82a94c5ccb1f6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Operation of a temporal aggregate whose combine function reads the type of the values from the states.  <a href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6">More...</a><br /></td></tr>
+<tr class="separator:ab881655393e8bfa121a82a94c5ccb1f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a64bb8e93400857ddf0892eb74cb5244a"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__aggfuncs_8h_a64bb8e93400857ddf0892eb74cb5244a.html#a64bb8e93400857ddf0892eb74cb5244a">datum_max_float8</a> (Datum l, Datum r)</td></tr>
@@ -132,6 +142,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a3373a11ac5643ed0ce57da18992af909"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__aggfuncs_8h_a3373a11ac5643ed0ce57da18992af909.html#a3373a11ac5643ed0ce57da18992af909">datum_sum_int64</a> (Datum l, Datum r)</td></tr>
 <tr class="memdesc:a3373a11ac5643ed0ce57da18992af909"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the sum of the two arguments.  <a href="temporal__aggfuncs_8h_a3373a11ac5643ed0ce57da18992af909.html#a3373a11ac5643ed0ce57da18992af909">More...</a><br /></td></tr>
 <tr class="separator:a3373a11ac5643ed0ce57da18992af909"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1195fbcf76212d710d2003233b5282fd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__aggfuncs_8h_a1195fbcf76212d710d2003233b5282fd.html#a1195fbcf76212d710d2003233b5282fd">tagg_combine_func</a> (<a class="el" href="structSkipList.html">SkipList</a> *state1, <a class="el" href="structSkipList.html">SkipList</a> *state2, <a class="el" href="temporal__aggfuncs_8h_ab881655393e8bfa121a82a94c5ccb1f6.html#ab881655393e8bfa121a82a94c5ccb1f6">taggOp</a> op, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> *func, bool *<a class="el" href="trgeo__distance_8txt_aef9a7f631ab345098b07116002454504.html#aef9a7f631ab345098b07116002454504">crossings</a>)</td></tr>
+<tr class="memdesc:a1195fbcf76212d710d2003233b5282fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last two arguments the function and the crossings with which <a class="el" href="meos_2src_2temporal_2temporal__aggfuncs_8c_a489cdcb188b3f37c2012228865282bf1.html#a489cdcb188b3f37c2012228865282bf1" title="Generic combine function for aggregating temporal values.">temporal_tagg_combinefn</a> combines two states of a temporal minimum, maximum or sum aggregate, read from the type of their values.  <a href="temporal__aggfuncs_8h_a1195fbcf76212d710d2003233b5282fd.html#a1195fbcf76212d710d2003233b5282fd">More...</a><br /></td></tr>
+<tr class="separator:a1195fbcf76212d710d2003233b5282fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad20fc949f5182d42bc7abffc4253f7a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSkipList.html">SkipList</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="temporal__aggfuncs_8h_ad20fc949f5182d42bc7abffc4253f7a6.html#ad20fc949f5182d42bc7abffc4253f7a6">tcontseq_tagg_transfn</a> (<a class="el" href="structSkipList.html">SkipList</a> *state, const <a class="el" href="structTSequence.html">TSequence</a> *seq, <a class="el" href="meos__internal_8h_ab1980f05b1867926cafa7e8f5eb87769.html#ab1980f05b1867926cafa7e8f5eb87769">datum_func2</a> func, bool interpoint)</td></tr>
 <tr class="memdesc:ad20fc949f5182d42bc7abffc4253f7a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generic transition function for aggregating temporal values of sequence subtype.  <a href="temporal__aggfuncs_8h_ad20fc949f5182d42bc7abffc4253f7a6.html#ad20fc949f5182d42bc7abffc4253f7a6">More...</a><br /></td></tr>
 <tr class="separator:ad20fc949f5182d42bc7abffc4253f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
