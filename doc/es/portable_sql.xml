@@ -9,16 +9,22 @@
    ****************************************************************************
 -->
 <chapter xml:id="portable_sql">
-	<title>Dialecto Portable de Funciones con Nombre</title>
+	<title>Escritura de consultas portables</title>
 
-	<para>MobilityDB se usa desde varios motores SQL: PostgreSQL mediante el propio MobilityDB, DuckDB mediante MobilityDuck, Apache Spark mediante MobilitySpark y Apache Flink mediante MobilityFlink. PostgreSQL permite a MobilityDB registrar operadores como <literal>&amp;&amp;</literal> o <literal>&lt;&lt;#</literal>, pero los demás motores no pueden registrarlos todos: DuckDB, por ejemplo, reserva <literal>#</literal> para las referencias posicionales de columna y no acepta ningún operador que lo contenga. Una consulta escrita con operadores se ejecuta por lo tanto en PostgreSQL pero no en todos los motores.</para>
+	<para>MobilityDB se usa desde varios motores SQL: PostgreSQL mediante MobilityDB mismo, DuckDB mediante MobilityDuck, Apache Spark mediante MobilitySpark y Apache Flink mediante MobilityFlink. Los tipos y las funciones son los mismos en todos ellos, pero los operadores no: PostgreSQL permite a MobilityDB definir operadores como <literal>&amp;&amp;</literal> o <literal>&lt;&lt;#</literal>, mientras que los otros motores aceptan solo algunos de ellos o ninguno. DuckDB, por ejemplo, reserva <literal>#</literal> para las referencias posicionales a columnas, por lo que no acepta ningún operador que lo contenga.</para>
 
-	<para>Por esta razón todo operador es también una función con nombre, que reutiliza la implementación del operador y devuelve por lo tanto exactamente el mismo resultado, y una consulta escrita únicamente con funciones con nombre se ejecuta sin cambios en todos los motores. Como estas funciones forman un único dialecto en todos los motores, cada nombre debe estar libre en todos ellos: una comparación cuantificada escribe su operación por completo, como en <varname>eLessThan</varname>, porque <varname>eLt</varname> coincidiría con la función <varname>elt</varname> de Spark y Flink, y una prueba topológica o de posición lleva el prefijo de la clase que compara, como en <varname>spanLeft</varname> y <varname>stboxOverlaps</varname>, porque <varname>left</varname> y <varname>right</varname> son funciones de ambos motores y <varname>contains</varname> y <varname>overlaps</varname> son funciones o palabras reservadas de ellos. Las relaciones espaciales (<varname>eIntersects</varname>, <varname>eDwithin</varname>, …), las restricciones (<varname>atTime</varname>, <varname>atValue</varname>, …) y el comparador de ordenación <varname>cmp(a, b)</varname>, que devuelve <literal>-1</literal>, <literal>0</literal> o <literal>1</literal>, no tienen operador y ya son funciones con nombre.</para>
+	<para>Por esta razón todo operador es también una función, que ejecuta el mismo código y devuelve exactamente el mismo resultado, y una consulta escrita solo con funciones se ejecuta sin cambios en todos los motores. La superposición de cajas delimitadoras <literal>t1.trip &amp;&amp; t2.trip</literal>, por ejemplo, se escribe <literal>stboxOverlaps(t1.trip, t2.trip)</literal>, y la prueba de posición temporal <literal>p1.period &lt;&lt;# p2.period</literal> se escribe <literal>spanBefore(p1.period, p2.period)</literal>. Las secciones siguientes dan la función de cada operador, agrupadas como las agrupan los capítulos de cada tipo.</para>
 
-	<para>Las secciones siguientes dan la función con nombre de cada operador, agrupadas como las agrupan los capítulos de cada tipo. Un operador aritmético o de conjuntos lleva el prefijo de la familia de su operando: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname>, y <varname>t</varname> para un valor temporal. Un operador topológico o de posición lleva el prefijo de la clase que compara: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname> según el primer operando que no es un valor base; para un cuadro delimitador o un valor temporal el tipo de su cuadro delimitador, <varname>tbox</varname>, <varname>stbox</varname> o <varname>tpcbox</varname>, sea cual sea el orden de los argumentos, llevando <varname>span</varname> un valor temporal booleano, de texto o JSONB, el rango de tiempo que lo delimita; y dos valores base comparados con <literal>~=</literal> llevan el nombre de su tipo, como en <varname>cbufferSame</varname>. Así, <literal>t1.trip &amp;&amp; t2.trip</literal> se escribe <literal>stboxOverlaps(t1.trip, t2.trip)</literal>, la posición temporal <literal>p1.period &lt;&lt;# p2.period</literal> se escribe <literal>spanBefore(p1.period, p2.period)</literal>, y la comparación temporal <literal>#=</literal> se escribe <varname>tEqual</varname>. Los operadores <literal>#@&gt;</literal> y <literal>&lt;@#</literal> son la contención de los rangos de tiempo de dos valores JSONB temporales, o de uno y un rango de tiempo, marcando <literal>#</literal> el tiempo como en las posiciones temporales, ya que <literal>@&gt;</literal> y <literal>&lt;@</literal> entre valores JSONB temporales son la contención de sus valores JSON. La <xref linkend="portable_sql_porting"/> indica lo que una consulta necesita además para ejecutarse en Spark y Flink.</para>
+	<para>El nombre de una función dice sobre qué opera. Una operación aritmética o de conjuntos toma el prefijo de la familia de su argumento: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname>, y <varname>t</varname> para un valor temporal, como en <varname>spanUnion</varname> o <varname>tAdd</varname>. Una prueba de posición toma el prefijo de lo que compara: <varname>set</varname>, <varname>span</varname> o <varname>spanset</varname>, o, para una caja o un valor temporal, el tipo de su caja delimitadora, <varname>tbox</varname>, <varname>stbox</varname> o <varname>tpcbox</varname>; un valor temporal booleano, de texto o JSONB se compara mediante el intervalo de tiempo que lo delimita, y toma por ello <varname>span</varname>. Estos nombres están además libres en todos los motores: <varname>left</varname> y <varname>right</varname> son funciones de Spark y Flink, por lo que las pruebas de posición se llaman <varname>spanLeft</varname> o <varname>stboxLeft</varname>, y una comparación «alguna vez» o «siempre» escribe su operación completa, como en <varname>eLessThan</varname>, porque <varname>eLt</varname> se leería como la función <varname>elt</varname> de Spark y Flink, que ignoran las mayúsculas de un nombre.</para>
+
+	<para>Algunas operaciones no tienen operador y se escriben de la misma manera en todas partes: las relaciones espaciales (<varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eTouches</varname>, <varname>eDwithin</varname>, …), las restricciones (<varname>atTime</varname>, <varname>atGeometry</varname>, <varname>atValue</varname>, …) y la comparación de orden <varname>cmp(a, b)</varname>, que devuelve <literal>-1</literal>, <literal>0</literal> o <literal>1</literal>.</para>
+
+	<para>Spark y Flink piden algunos cambios más además de las funciones, que describe <xref linkend="portable_sql_porting"/>.</para>
 
 	<sect1 xml:id="portable_sql_set_operations">
 		<title>Operaciones de conjuntos</title>
+
+		<para>La unión, la intersección y la diferencia de dos conjuntos, rangos o conjuntos de rangos, y la concatenación de dos conjuntos o de dos valores temporales.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -45,8 +51,12 @@
 	<sect1 xml:id="portable_sql_bbox_operations">
 		<title>Operaciones de cuadro delimitador</title>
 
+		<para>Estas operaciones comparan las cajas delimitadoras de sus argumentos: el rango de un conjunto o de un conjunto de rangos, o la caja de un valor temporal, <varname>tbox</varname>, <varname>stbox</varname> o <varname>tpcbox</varname>.</para>
+
 	<sect2 xml:id="portable_sql_bbox_operations_topological">
 		<title>Operaciones topológicas</title>
+
+		<para>Si dos cajas delimitadoras se superponen, se contienen una a otra, son adyacentes o son la misma. Las últimas filas prueban el intervalo de tiempo de un valor JSONB temporal y los identificadores de ruta de los puntos de red.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -79,6 +89,8 @@
 
 	<sect2 xml:id="portable_sql_bbox_operations_position">
 		<title>Operaciones de posición</title>
+
+		<para>Si una caja delimitadora está estrictamente antes, después, a la izquierda, a la derecha, debajo, encima, delante o detrás de otra y, en las formas que empiezan por <varname>over</varname>, si no se extiende más allá de ella por ese lado.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -118,6 +130,8 @@
 	<sect1 xml:id="portable_sql_distance">
 		<title>Operaciones de distancia</title>
 
+		<para><varname>tDistance</varname> devuelve la distancia entre dos valores en cada instante, como un flotante temporal, y <varname>nearestApproachDistance</varname> la menor de estas distancias. <varname>distance</varname> y sus formas de conjunto, rango y conjunto de rangos devuelven la distancia entre dos valores, y <varname>th3GridDistance</varname> la distancia en la cuadrícula entre dos celdas H3 temporales en cada instante, como un entero grande temporal.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="3*"/>
@@ -146,6 +160,8 @@
 	<sect2 xml:id="portable_sql_comparisons_traditional">
 		<title>Comparaciones tradicionales</title>
 
+		<para>Las comparaciones de dos valores del mismo tipo. Con <varname>cmp</varname> ordenan valores, como lo hace un <literal>ORDER BY</literal>.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="1*"/>
@@ -170,6 +186,8 @@
 
 	<sect2 xml:id="portable_sql_comparisons_ever_always">
 		<title>Comparaciones alguna vez y siempre</title>
+
+		<para>Si un valor temporal es alguna vez, o siempre, igual a, distinto de, menor que o mayor que un valor u otro valor temporal.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -204,6 +222,8 @@
 	<sect2 xml:id="portable_sql_comparisons_temporal">
 		<title>Comparaciones temporales</title>
 
+		<para>La comparación de dos valores en cada instante, que devuelve un booleano temporal.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="1*"/>
@@ -230,6 +250,8 @@
 	<sect1 xml:id="portable_sql_boolean">
 		<title>Operaciones booleanas</title>
 
+		<para>La conjunción, la disyunción y la negación de booleanos temporales en cada instante.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="1*"/>
@@ -251,6 +273,8 @@
 
 	<sect1 xml:id="portable_sql_mathematical">
 		<title>Operaciones matemáticas</title>
+
+		<para>La aritmética de números temporales en cada instante, y la de rásteres píxel a píxel.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="2" align="left" colsep="1" rowsep="1">
@@ -274,6 +298,8 @@
 
 	<sect1 xml:id="portable_sql_json">
 		<title>Operaciones JSON temporales</title>
+
+		<para>El acceso a los campos y elementos de los conjuntos JSONB y de los valores JSONB temporales, la existencia de claves, las consultas de rutas JSON y el borrado de una ruta. Cada función toma el prefijo del tipo de su primer argumento, <varname>jsonbset</varname> o <varname>tjsonb</varname>.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -304,7 +330,9 @@
 	<sect1 xml:id="portable_sql_host_base_values">
 		<title>Valores base provistos por el anfitrión</title>
 
-		<para>Algunos tipos base de MobilityDB los provee en PostgreSQL la propia base de datos o una extensión que MobilityDB requiere: <varname>jsonb</varname> y <varname>jsonpath</varname> PostgreSQL, <varname>h3index</varname> la extensión <varname>h3</varname>, y <varname>pcpoint</varname> y <varname>pcpatch</varname> la extensión <varname>pointcloud</varname>. Los operadores y funciones del proveedor conservan su escritura, y todos los motores, PostgreSQL incluido, invocan además estas operaciones con los nombres siguientes. Sus comparaciones son las funciones de <xref linkend="portable_sql_comparisons_traditional"/> junto con <varname>cmp</varname>, y sus funciones hash son <varname>hash</varname> y <varname>hashExtended</varname>, que Apache Spark y Apache Flink llaman <varname>jsonbHash</varname>, <varname>jsonbHashExtended</varname>, <varname>h3indexHash</varname> y <varname>h3indexHashExtended</varname>, como llaman las funciones hash de todos los demás tipos por el nombre del tipo. Un valor se lee de su texto con <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname> y <varname>h3indexFromText</varname> y se escribe con <varname>asText</varname>, a los que en PostgreSQL llegan un literal y una conversión desde y hacia <varname>text</varname>. El texto de un <varname>pcpoint</varname> y de un <varname>pcpatch</varname> es el hexadecimal de su representación binaria conocida, que leen <varname>pcpointFromHexWKB</varname> y <varname>pcpatchFromHexWKB</varname> y escribe <varname>asHexWKB</varname>.</para>
+		<para>Algunos tipos base de MobilityDB provienen de PostgreSQL mismo o de una extensión que MobilityDB requiere: <varname>jsonb</varname> y <varname>jsonpath</varname> de PostgreSQL, <varname>h3index</varname> de la extensión <varname>h3</varname>, y <varname>pcpoint</varname> y <varname>pcpatch</varname> de la extensión <varname>pointcloud</varname>. En PostgreSQL sus operadores y funciones conservan los nombres que les da quien los provee, y todos los motores, PostgreSQL incluido, los llaman también con los nombres de la tabla siguiente.</para>
+
+		<para>Sus valores se comparan con las funciones de <xref linkend="portable_sql_comparisons_traditional"/> y con <varname>cmp</varname>, y se resumen con <varname>hash</varname> y <varname>hashExtended</varname>, que Spark y Flink llaman <varname>jsonbHash</varname>, <varname>jsonbHashExtended</varname>, <varname>h3indexHash</varname> y <varname>h3indexHashExtended</varname>, pues estos motores nombran la función de resumen de cada tipo según el tipo. Un valor se lee de su texto con <varname>jsonbFromText</varname>, <varname>jsonpathFromText</varname> y <varname>h3indexFromText</varname>, y se escribe como texto con <varname>asText</varname>; en PostgreSQL un literal y una conversión desde o hacia <varname>text</varname> hacen lo mismo. Un <varname>pcpoint</varname> o un <varname>pcpatch</varname> se escribe como la forma hexadecimal de su Well-Known Binary, se lee con <varname>pcpointFromHexWKB</varname> y <varname>pcpatchFromHexWKB</varname> y se escribe con <varname>asHexWKB</varname>.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2"?>
@@ -373,7 +401,13 @@
 	<sect1 xml:id="portable_sql_aggregates">
 		<title>Agregaciones</title>
 
-		<para>Las funciones de agregación siguen el mismo principio y se enumeran en su propia tabla a continuación, de modo que un motor pueda localizar la maquinaria que necesita sin rastrear el texto. Una agregación SQL se compone de hasta tres funciones de la maquinaria de PostgreSQL, cada una expuesta bajo un nombre canónico formado a partir del nombre de la agregación y su rol: una función de transición <varname>&lt;agregación&gt;Transition</varname> (siempre presente), una función de combinación <varname>&lt;agregación&gt;Combine</varname> usada para la agregación en paralelo, y una función final <varname>&lt;agregación&gt;Final</varname>. Los roles de combinación y final son opcionales: una agregación cuyo estado de transición ya es su resultado no tiene función final (por ejemplo <varname>extent</varname>), y una agregación que no admite la agregación parcial no tiene función de combinación (por ejemplo las agregaciones de anexado). Los roles se mantienen distintos y con un nombre uniforme para que cada <foreignphrase>binding</foreignphrase> pueda reconstruir la agregación a partir del catálogo. La siguiente tabla enumera cada agregación y sus funciones de maquinaria; un guion (—) indica un rol que la agregación no define. Las agregaciones <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>sameAlignment</varname>, <varname>tAnd</varname>, <varname>tOr</varname>, <varname>setUnion</varname>, <varname>spanUnion</varname> y <varname>spansetUnion</varname> comparten su nombre con una función, lo que PostgreSQL permite y DuckDB, Apache Spark y Apache Flink no: estos motores las llaman por el nombre con <varname>Agg</varname> (<xref linkend="portable_sql_porting_names"/>).</para>
+		<para>Todo agregado de MobilityDB, como <varname>tCount</varname>, <varname>tSum</varname> o <varname>extent</varname>, se llama con el mismo nombre en todos los motores, con una excepción. Once agregados comparten su nombre con una función: <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname>, <varname>appendSequence</varname>, <varname>sameAlignment</varname>, <varname>tAnd</varname>, <varname>tOr</varname>, <varname>setUnion</varname>, <varname>spanUnion</varname> y <varname>spansetUnion</varname>. PostgreSQL permite que un agregado y una función compartan un nombre, y MobilityDB llama a estos agregados por él. DuckDB, Apache Spark y Apache Flink tienen una sola función por nombre, y los llaman con el nombre seguido de <varname>Agg</varname>: <varname>tMinAgg</varname>, <varname>mergeAgg</varname>, <varname>setUnionAgg</varname>, etc. (<xref linkend="portable_sql_porting_names"/>).</para>
+
+		<para>Un agregado calcula su resultado en hasta tres pasos, cada uno una función nombrada según el agregado y el paso. La función de transición <varname>&lt;aggregate&gt;Transition</varname> añade un valor a un estado en curso, la función de combinación <varname>&lt;aggregate&gt;Combine</varname> une dos estados calculados en paralelo, y la función final <varname>&lt;aggregate&gt;Final</varname> convierte el estado en el resultado. Los pasos de combinación y final son opcionales: <varname>extent</varname> no tiene función final, pues su estado es ya su resultado, y los agregados de adición no tienen función de combinación, pues añaden sus valores en orden temporal. Una consulta nunca llama a estas funciones; cada motor construye el agregado a partir de ellas.</para>
+
+		<para>La función de transición toma el estado y un valor, y tiene una versión por tipo de valor, como el agregado: <varname>tMinTransition</varname> toma un <varname>tint</varname>, un <varname>tbigint</varname>, un <varname>tfloat</varname> o un <varname>ttext</varname>. Las funciones de combinación y final toman solo estados, y un estado conoce el tipo de los valores que contiene, por lo que cada una es una sola función por agregado: <varname>tMinCombine</varname> combina los estados del mínimo temporal de todos los tipos de valor. En PostgreSQL, donde una función final declara el tipo que devuelve, la función final se declara una vez por tipo de valor con <varname>FINALFUNC_EXTRA</varname>, como <varname>tMinFinal(internal, tint)</varname> que devuelve un <varname>tint</varname>, y todas sus versiones ejecutan el mismo código. En Spark y Flink cada agregado es un solo objeto, que elige su función de transición según el tipo del valor.</para>
+
+		<para>La tabla siguiente lista todos los agregados y sus funciones; un guion (—) marca un paso que el agregado no tiene.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<?dblatex table-width="autowidth.column: 1 2 3 4"?>
@@ -418,9 +452,9 @@
 	</sect1>
 
 	<sect1 xml:id="portable_sql_porting">
-		<title>Portar una Aplicación a Apache Spark y Apache Flink</title>
+		<title>Ejecución de una consulta en Apache Spark y Apache Flink</title>
 
-		<para>Las funciones con nombre hacen una consulta independiente de los operadores. Spark y Flink piden tres cambios más, porque difieren de PostgreSQL de tres maneras. Ya poseen algunos de los nombres que MobilityDB usa: ambos definen <varname>round</varname>, <varname>lower</varname> y <varname>length</varname>, y el analizador sintáctico de Flink rechaza <varname>set</varname> y <varname>unnest</varname> sin comillas; tal nombre lleva un prefijo que designa la clase o el tipo base de su argumento (<xref linkend="portable_sql_porting_names"/>). No llaman implícitamente ninguna función de entrada o salida de un tipo, de modo que un literal, una conversión y el texto de un valor se vuelven llamadas que la consulta nombra (<xref linkend="portable_sql_porting_io"/>). Y cada motor llama a una función que devuelve filas a su manera (<xref linkend="portable_sql_porting_rows"/>). La tabla siguiente resume los cambios; una función que no cubre conserva su nombre.</para>
+		<para>Escrita solo con funciones, una consulta ya no depende de los operadores. Spark y Flink difieren de PostgreSQL en otras tres cosas, y cada una pide un cambio. Ya definen algunos de los nombres que MobilityDB usa: ambos tienen <varname>round</varname>, <varname>lower</varname> y <varname>length</varname>, y Flink rechaza <varname>set</varname> y <varname>unnest</varname> sin comillas; tal nombre toma un prefijo que nombra la clase o el tipo base de su argumento (<xref linkend="portable_sql_porting_names"/>). Nunca llaman por usted a la función de entrada o de salida de un tipo, por lo que un literal, una conversión y el texto de un valor se convierten en llamadas a funciones que la consulta escribe (<xref linkend="portable_sql_porting_io"/>). Y cada motor llama a su manera a una función que devuelve filas (<xref linkend="portable_sql_porting_rows"/>). La tabla siguiente resume estos cambios; una función que no lista conserva su nombre.</para>
 
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -449,7 +483,7 @@
 		<sect2 xml:id="portable_sql_porting_names">
 			<title>Los nombres que poseen los motores</title>
 
-			<para>Un nombre que el motor posee lleva el prefijo de la clase o del tipo base de su argumento, y las funciones que van juntas llevan el mismo prefijo: <varname>spanLowerInc</varname> va con <varname>spanLower</varname>, <varname>geoCumulativeLength</varname> con <varname>geoLength</varname>. Spark y Flink llevan un único conjunto de nombres: cada uno registra tal función solo bajo su nombre con prefijo, de modo que una consulta escrita para uno se ejecuta en el otro, y <literal>round(1.23456, 2)</literal> sigue siendo el redondeo propio del motor de un número. Los nombres que cambian son los siguientes.</para>
+			<para>Un nombre que el motor ya define toma el prefijo de la clase o del tipo base de su argumento, y las funciones que van juntas toman el mismo prefijo: <varname>spanLowerInc</varname> va con <varname>spanLower</varname>, <varname>geoCumulativeLength</varname> con <varname>geoLength</varname>. Spark y Flink usan los mismos nombres, por lo que una consulta escrita para uno se ejecuta en el otro, y <literal>round(1.23456, 2)</literal> sigue significando el redondeo propio del motor de un número. Los nombres que cambian son los siguientes.</para>
 
 			<informaltable frame="all" colsep="1" rowsep="1">
 				<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -500,7 +534,7 @@
 		<sect2 xml:id="portable_sql_porting_io">
 			<title>Lectura y escritura de valores</title>
 
-			<para>PostgreSQL lee y escribe un valor mediante las cuatro funciones que declara su tipo, y las llama implícitamente: un literal con tipo, una conversión desde texto y un <literal>COPY</literal> de texto pasan por la función de entrada, el texto que imprime un cliente por la función de salida, y un <literal>COPY</literal> binario o un controlador en modo binario por las funciones de recepción y envío. Spark y Flink no llaman ninguna de ellas: un valor viaja como sus bytes WKB, y cada dirección es una función que la consulta nombra, la inversa de otra, como muestra la tabla siguiente.</para>
+			<para>PostgreSQL lee y escribe un valor mediante las cuatro funciones que declara su tipo, y las llama por usted: un literal tipado, una conversión desde texto y un <literal>COPY</literal> de texto pasan por la función de entrada, el texto que muestra un cliente por la función de salida, y un <literal>COPY</literal> binario o un controlador en modo binario por las funciones de recepción y envío. Spark y Flink no llaman a ninguna de ellas. Un valor viaja entre ellos como sus bytes Well-Known Binary (WKB), y cada conversión es una función que la consulta llama, cada una con su inversa, como muestra la tabla siguiente.</para>
 
 			<informaltable frame="all" colsep="1" rowsep="1">
 				<tgroup cols="3" align="left" colsep="1" rowsep="1">
@@ -524,13 +558,15 @@
 				</tgroup>
 			</informaltable>
 
-			<para>Todo tipo tiene cada par que puede expresar, las formas <literal>E</literal> cuando sus formas de texto y binaria omiten el SRID que lleva y MF-JSON cuando es temporal, incluidos los tipos que PostgreSQL lee y escribe solo mediante sus cuatro funciones: los tipos de conjunto, de rango y de conjunto de rangos de enteros, enteros grandes, flotantes, fechas y marcas de tiempo, <type>textset</type> y <type>jsonbset</type>, <type>tbox</type> y <type>stbox</type>, <type>tbool</type>, <type>tint</type>, <type>tbigint</type>, <type>tfloat</type> y <type>ttext</type>, y <type>quadbin</type>, <type>s2cell</type>, <type>nsegment</type> y <type>tpcbox</type>. Un tipo cuyo texto es su WKB hexadecimal, <type>raquet</type>, lee y escribe su texto mediante <varname>raquetFromHexWKB</varname> y <varname>asHexWKB</varname>, como un ráster de PostGIS mediante <varname>ST_RastFromHexWKB</varname> y <varname>ST_AsHexWKB</varname>. Una caja, <type>stbox</type> o <type>tpcbox</type>, escribe su SRID en su texto y en su WKB, por lo que no necesita formas <literal>E</literal>. Toda salida WKB acepta el orden de bytes <literal>endian</literal>, y toda salida de texto de un valor con números flotantes o coordenadas la precisión <literal>maxdecimaldigits</literal>. Una columna de bytes WKB, por ejemplo una columna TemporalParquet, entra así en todos los motores por el constructor binario de su tipo, como en <literal>tgeompointFromBinary(col)</literal>.</para>
+			<para>Cada tipo tiene las funciones de la tabla que se le aplican: las formas <literal>E</literal> cuando lleva un SRID que sus formas de texto y binaria simples omiten, y MF-JSON cuando es temporal. Esto incluye los tipos que PostgreSQL lee y escribe solo mediante sus cuatro funciones: los tipos de conjunto, rango y conjunto de rangos de enteros, enteros grandes, flotantes, fechas y marcas de tiempo, <type>textset</type> y <type>jsonbset</type>, <type>tbox</type> y <type>stbox</type>, <type>tbool</type>, <type>tint</type>, <type>tbigint</type>, <type>tfloat</type> y <type>ttext</type>, y <type>quadbin</type>, <type>s2cell</type>, <type>nsegment</type> y <type>tpcbox</type>.</para>
+
+		<para>El texto de un <type>raquet</type> es su WKB hexadecimal, por lo que se lee con <varname>raquetFromHexWKB</varname> y se escribe con <varname>asHexWKB</varname>, como un ráster de PostGIS con <varname>ST_RastFromHexWKB</varname> y <varname>ST_AsHexWKB</varname>. Una caja, <type>stbox</type> o <type>tpcbox</type>, escribe su SRID tanto en su texto como en su WKB, y no tiene por ello forma <literal>E</literal>. Toda salida WKB toma el orden de bytes <literal>endian</literal>, y toda salida de texto de un valor con flotantes o coordenadas el número de dígitos decimales <literal>maxdecimaldigits</literal>. Una columna de bytes WKB, como una columna TemporalParquet, se lee en todos los motores con el constructor binario de su tipo, como en <literal>tgeompointFromBinary(col)</literal>.</para>
 		</sect2>
 
 		<sect2 xml:id="portable_sql_porting_rows">
 			<title>Funciones que devuelven filas</title>
 
-			<para>Una función que devuelve un conjunto de filas, como <varname>timeSplit</varname> o <varname>unnest</varname>, se llama como función de tabla en la cláusula <literal>FROM</literal> en PostgreSQL. En Flink y en Spark la misma función, <varname>unnest</varname> bajo los nombres <varname>setUnnest</varname> y <varname>temporalUnnest</varname>, devuelve un arreglo, un elemento por fila, un arreglo de registros cuando devuelve varias columnas; Flink lo despliega en filas con <literal>CROSS JOIN UNNEST</literal>, y Spark con <literal>LATERAL VIEW explode</literal>, o <literal>inline</literal> para un arreglo de registros.</para>
+			<para>Una función que devuelve varias filas, como <varname>timeSplit</varname> o <varname>unnest</varname>, se llama en PostgreSQL como una tabla en la cláusula <literal>FROM</literal>. En Spark y Flink la misma función, <varname>unnest</varname> bajo los nombres <varname>setUnnest</varname> y <varname>temporalUnnest</varname>, devuelve un arreglo con un elemento por fila, un arreglo de registros cuando devuelve varias columnas. Flink convierte el arreglo en filas con <literal>CROSS JOIN UNNEST</literal>, y Spark con <literal>LATERAL VIEW explode</literal>, o <literal>inline</literal> para un arreglo de registros.</para>
 		</sect2>
 
 		<sect2 xml:id="portable_sql_porting_example">
@@ -548,7 +584,7 @@ SELECT vehicle, round(geoLength(trip), 1), spanLower(timeSpan(trip))
 FROM Trips
 WHERE stboxOverlaps(trip, stboxFromText('SRID=3857;STBOX X((0,0),(1000,1000))'));
 </programlisting>
-			<para>donde <varname>round</varname> del número resultante es el del propio motor.</para>
+			<para>Aquí <varname>round</varname> se aplica a un número, por lo que es la función propia del motor y conserva su nombre.</para>
 		</sect2>
 
 	</sect1>
