@@ -50,7 +50,7 @@ typedef enum
 {
   ARR_ANSWERED,     /**< The boundary is answered */
   ARR_NOT_CLOSED,   /**< The edges are not closed curves sharing their ends */
-  ARR_OVERLAP,      /**< Two edges run along each other */
+  ARR_OVERLAP,      /**< Two arcs run along each other */
   ARR_MEETING,      /**< Where two edges meet is not decided */
   ARR_ORDER,        /**< The order of two meetings along an edge is not
                          decided */

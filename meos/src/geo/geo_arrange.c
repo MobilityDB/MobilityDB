@@ -47,6 +47,12 @@
  * caller then answers by another route -- so no tolerance decides anything.
  * A point the arrangement constructs, a crossing interior to two edges, is
  * rounded once and is a node by its identity, never located again.
+ *
+ * Segments running along each other are read as the stretches they share,
+ * each weighted by the rise of the winding number all of them give across it
+ * (#arr_merge_overlaps): every end of such a stretch is an input vertex, so
+ * the stretches are decided exactly, and the curves may share any part of
+ * their boundaries.
  */
 
 /* C */
@@ -364,6 +370,9 @@ typedef struct
                           itself for a vertex */
   bool vertex;
   int32_t cross;     /**< The crossing it is, or -1 */
+  bool merged;       /**< Several edges cross at it, its cuts merged
+                          (#arr_node_merge): ordered around by their
+                          directions rather than as a crossing of two */
 } ArrNode;
 
 /* How the point of a cut arises, as #MeetPoint states it with the indices
@@ -420,6 +429,10 @@ typedef struct
 {
   const Edge *e;
   uint32_t n;
+  int32_t *w;             /**< The weight of each edge, the curves running
+                               along it counted by their sense
+                               (#arr_merge_overlaps), or NULL where every
+                               edge is one curve */
   Ival *ccx, *ccy, *cr2;  /**< The circle of each arc edge */
   bool *ccw;              /**< The sense each arc edge turns */
   ArrNode *nodes;
@@ -437,6 +450,9 @@ typedef struct
   uint32_t vmask;
   ArrPiece *pieces;
   uint32_t npieces;
+  uint32_t *nrep;         /**< The node standing for each node, where cuts
+                               of an edge at one point merged them
+                               (#arr_pieces) */
   ArrHalf *halves;        /**< The halves of every node, node by node */
   uint32_t *hoff;         /**< First half of each node, one past the last */
   double (*box)[4];       /**< The box of every edge (#arr_box) */
@@ -452,6 +468,7 @@ arr_node_new(Arr *a, double x, double y, bool vertex, int32_t cross)
   }
   ArrNode *nd = &a->nodes[a->nnodes];
   nd->x = x; nd->y = y; nd->vertex = vertex; nd->cross = cross;
+  nd->merged = false;
   nd->bx = ival(x); nd->by = ival(y);
   return a->nnodes++;
 }
@@ -522,6 +539,15 @@ static inline bool
 arr_is_arc(const Edge *e)
 {
   return e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC;
+}
+
+/* The weight of an edge: by how much the winding number rises from its right
+ * to its left. An accessor of the arrangement's per-edge data, as
+ * #arr_is_arc reads the kind of an edge */
+static inline int32_t
+arr_weight(const Arr *a, uint32_t edge)
+{
+  return a->w ? a->w[edge] : 1;
 }
 
 /* The position of a point lying exactly on a segment, as an interval of its
@@ -1133,45 +1159,80 @@ arr_sweep_cmp(const ArrSweep *p, const ArrSweep *q)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
-/**
- * @brief Node every pair of edges whose boxes meet
- */
-static ArrangeStatus
-arr_node_all(Arr *a)
+/* A pair of edges whose boxes meet */
+typedef struct
 {
-  uint32_t n = a->n;
-  double (*box)[4] = a->box = palloc(sizeof(double[4]) * n);
-  ArrSweep *sw = palloc(sizeof(ArrSweep) * n);
+  uint32_t i, j;
+} ArrPair;
+
+/**
+ * @brief Return the pairs of edges whose boxes meet, in the order a sweep
+ * over the left ends of the boxes meets them
+ * @details The boxes an edge's box meets follow it in the sweep until the
+ * left end of one passes its right end, and none after that can. The pairs
+ * are read once for the whole arrangement: #arr_merge_overlaps reads the
+ * segments among them that run along each other, and #arr_node_all the
+ * meetings of all of them (#arr_mapped_pairs)
+ * @param[in] box The box of every edge (#arr_box)
+ * @param[in] n Number of edges
+ * @param[out] npairs Number of pairs
+ */
+static ArrPair *
+arr_box_pairs(const double (*box)[4], uint32_t n, uint32_t *npairs)
+{
+  ArrSweep *sw = palloc(sizeof(ArrSweep) * Max(n, 1u));
   for (uint32_t i = 0; i < n; i++)
   {
-    arr_box(&a->e[i], box[i]);
     sw[i].xmin = box[i][0];
     sw[i].id = i;
   }
   arr_sweep_sort(sw, n);
-  ArrangeStatus st = ARR_ANSWERED;
-  for (uint32_t k = 0; k < n && st == ARR_ANSWERED; k++)
+  uint32_t cap = Max(2 * n, 16u), count = 0;
+  ArrPair *pairs = palloc(sizeof(ArrPair) * cap);
+  for (uint32_t k = 0; k < n; k++)
   {
     uint32_t i = sw[k].id;
-    for (uint32_t l = k + 1; l < n && st == ARR_ANSWERED; l++)
+    for (uint32_t l = k + 1; l < n; l++)
     {
       uint32_t j = sw[l].id;
       if (box[j][0] > box[i][1])
         break;
       if (box[j][2] > box[i][3] || box[i][2] > box[j][3])
         continue;
-      bool ai = arr_is_arc(&a->e[i]), aj = arr_is_arc(&a->e[j]);
-      if (! ai && ! aj)
-        st = arr_meet_segments(a, i, j);
-      else if (! ai)
-        st = arr_meet_segment_arc(a, i, j);
-      else if (! aj)
-        st = arr_meet_segment_arc(a, j, i);
-      else
-        st = arr_meet_arcs(a, i, j);
+      if (count == cap)
+      {
+        cap *= 2;
+        pairs = repalloc(pairs, sizeof(ArrPair) * cap);
+      }
+      pairs[count].i = i;
+      pairs[count++].j = j;
     }
   }
   pfree(sw);
+  *npairs = count;
+  return pairs;
+}
+
+/**
+ * @brief Node every pair of edges whose boxes meet (#arr_box_pairs)
+ */
+static ArrangeStatus
+arr_node_all(Arr *a, const ArrPair *pairs, uint32_t npairs)
+{
+  ArrangeStatus st = ARR_ANSWERED;
+  for (uint32_t k = 0; k < npairs && st == ARR_ANSWERED; k++)
+  {
+    uint32_t i = pairs[k].i, j = pairs[k].j;
+    bool ai = arr_is_arc(&a->e[i]), aj = arr_is_arc(&a->e[j]);
+    if (! ai && ! aj)
+      st = arr_meet_segments(a, i, j);
+    else if (! ai)
+      st = arr_meet_segment_arc(a, i, j);
+    else if (! aj)
+      st = arr_meet_segment_arc(a, j, i);
+    else
+      st = arr_meet_arcs(a, i, j);
+  }
   return st;
 }
 
@@ -1209,8 +1270,8 @@ arr_meet_point(const Arr *a, const ArrMeet *m)
 }
 
 /* Return how two cuts of an edge are ordered along it: by their intervals,
- * and where those overlap by #meets_order_exact; 0 for one node, 2 for two
- * nodes at one point or an order that cannot be told */
+ * and where those overlap by #meets_order_exact; 0 for one node, 3 for two
+ * nodes at one point, 2 for an order that cannot be told */
 static int
 arr_cut_order(const Arr *a, uint32_t edge, const ArrCut *c1,
   const ArrCut *c2)
@@ -1224,15 +1285,51 @@ arr_cut_order(const Arr *a, uint32_t edge, const ArrCut *c1,
   MeetPoint m1 = arr_meet_point(a, &c1->meet);
   MeetPoint m2 = arr_meet_point(a, &c2->meet);
   int c = meets_order_exact(&a->e[edge], a->ccw[edge], &m1, &m2);
-  return (c == 0) ? 2 : c;
+  return (c == 0) ? 3 : c;
+}
+
+/* The node standing for a node, halving the path walked */
+static uint32_t
+arr_node_rep(Arr *a, uint32_t v)
+{
+  while (a->nrep[v] != v)
+  {
+    a->nrep[v] = a->nrep[a->nrep[v]];
+    v = a->nrep[v];
+  }
+  return v;
+}
+
+/* Make one node of two at one point: an input vertex, whose coordinates are
+ * exact, stands for both where one of them is, and the node is no crossing
+ * of two edges any more but a node several edges pass through, ordered
+ * around by their directions (#arr_order_nodes); a crossing standing for
+ * both keeps the edges that place it exactly */
+static void
+arr_node_merge(Arr *a, uint32_t v, uint32_t w)
+{
+  v = arr_node_rep(a, v);
+  w = arr_node_rep(a, w);
+  if (v == w)
+    return;
+  if (a->nodes[w].vertex && ! a->nodes[v].vertex)
+  {
+    uint32_t t = v; v = w; w = t;
+  }
+  a->nrep[w] = v;
+  a->nodes[v].merged = true;
+  return;
 }
 
 /**
  * @brief Cut every edge into pieces at its nodes, in their order along it
  * @details A node cut twice into one edge is one cut. Two cuts at distinct
- * nodes whose intervals overlap are ordered exactly (#meets_order_exact);
- * two distinct nodes at one point, or an order that cannot be told, leave
- * the arrangement unanswered
+ * nodes whose intervals overlap are ordered exactly (#meets_order_exact),
+ * and two distinct nodes at one point, as where three edges cross at one
+ * point, are made one node (#arr_node_merge); an order that cannot be told
+ * leaves the arrangement unanswered. The cuts of every edge are put in order
+ * first and the pieces cut after, so that a node merged while ordering a
+ * later edge is one node in the pieces of the earlier ones too
  */
 static ArrangeStatus
 arr_pieces(Arr *a)
@@ -1253,8 +1350,9 @@ arr_pieces(Arr *a)
   if (a->cuts)
     pfree(a->cuts);
   a->cuts = grouped;
-  a->pieces = palloc(sizeof(ArrPiece) * Max(n + a->ncuts, 1u));
-  a->npieces = 0;
+  a->nrep = palloc(sizeof(uint32_t) * Max(a->nnodes, 1u));
+  for (uint32_t v = 0; v < a->nnodes; v++)
+    a->nrep[v] = v;
   for (uint32_t i = 0; i < n; i++)
   {
     ArrCut *cuts = &a->cuts[a->coff[i]];
@@ -1269,12 +1367,24 @@ arr_pieces(Arr *a)
         int o = arr_cut_order(a, i, &cuts[m - 1], &cuts[m]);
         if (o == 2)
           return ARR_ORDER;
-        if (o <= 0)
+        if (o == 3)
+          arr_node_merge(a, cuts[m - 1].node, cuts[m].node);
+        if (o <= 0 || o == 3)
           break;
         ArrCut t = cuts[m]; cuts[m] = cuts[m - 1];
         cuts[m - 1] = t;
       }
-    uint32_t from = a->start[i], end = a->end[i];
+  }
+  a->pieces = palloc(sizeof(ArrPiece) * Max(n + a->ncuts, 1u));
+  a->npieces = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    ArrCut *cuts = &a->cuts[a->coff[i]];
+    uint32_t ncut = a->coff[i + 1] - a->coff[i];
+    for (uint32_t k = 0; k < ncut; k++)
+      cuts[k].node = arr_node_rep(a, cuts[k].node);
+    uint32_t from = arr_node_rep(a, a->start[i]);
+    uint32_t end = arr_node_rep(a, a->end[i]);
     /* A segment runs from 0 to 1 and an arc from 0 on, see
      * #arr_arc_position */
     Ival pfrom = ival(0.0);
@@ -1416,7 +1526,7 @@ arr_order_nodes(Arr *a)
     if (deg <= 2)
       continue;
     const ArrNode *nd = &a->nodes[v];
-    if (nd->cross >= 0)
+    if (nd->cross >= 0 && ! nd->merged)
     {
       /* A crossing: the two pieces of each edge, ordered by the side the
        * second edge crosses the first from */
@@ -1477,22 +1587,23 @@ arr_order_nodes(Arr *a)
 }
 
 /*
- * The winding number of a piece rises by one from its right to its left, the
- * side the curves wind around, so each piece is labelled by either side, and
- * a node passes its labels around it: turning counterclockwise past a half
- * leaving the node crosses its piece from right to left, past one arriving
- * from left to right.
+ * The winding number of a piece rises by the weight of its edge from its
+ * right to its left, the side the curves wind around -- by one where a single
+ * curve runs along it (#arr_weight) -- so each piece is labelled by either
+ * side, and a node passes its labels around it: turning counterclockwise past
+ * a half leaving the node crosses its piece from right to left, past one
+ * arriving from left to right.
  */
 
 /* Label a piece by the winding number on its right; false where it carries
  * another */
 static bool
-arr_label(ArrPiece *p, int right)
+arr_label(const Arr *a, ArrPiece *p, int right)
 {
   if (p->right != INT_MIN)
     return p->right == right;
   p->right = right;
-  p->left = right + 1;
+  p->left = right + arr_weight(a, p->edge);
   return true;
 }
 
@@ -1525,7 +1636,7 @@ arr_label_node(Arr *a, uint32_t v, uint32_t *queue, uint32_t *qn,
     ArrPiece *p = &a->pieces[hk->piece];
     /* The sector before this half is w: its right where it leaves, its left
      * where it arrives */
-    if (! arr_label(p, hk->out ? w : w - 1))
+    if (! arr_label(a, p, hk->out ? w : w - arr_weight(a, p->edge)))
       return false;
     w = arr_sector_after(p, hk);
     uint32_t other = hk->out ? p->to : p->from;
@@ -1574,12 +1685,54 @@ arr_piece_holds_right(const Arr *a, const ArrPiece *p, Ival *x)
 }
 
 /**
+ * @brief Return the side of the horizontal line y = @p py a node lies on:
+ * -1 below, 0 on it, 1 above, 2 where it is not told
+ * @details A vertex is read off its coordinates. A crossing of segments P and
+ * Q lies at P1 + t (P2 - P1) with t = ((Q1 - P1) x S) / (R x S), R = P2 - P1
+ * and S = Q2 - Q1, so its height less @p py has the sign of R x S times
+ * (P1y - py) (R x S) + Ry ((Q1 - P1) x S), a polynomial of degree three in
+ * differences of the doubles of the two segments, whose sign is decided
+ * exactly (#polynomial_sign_exact)
+ */
+static int
+arr_node_side(const Arr *a, uint32_t v, double py)
+{
+  const ArrNode *nd = &a->nodes[v];
+  if (nd->vertex)
+    return (nd->y > py) - (nd->y < py);
+  if (nd->cross < 0)
+    return 2;
+  const ArrCross *c = &a->cross[nd->cross];
+  const Edge *p = &a->e[c->a], *q = &a->e[c->b];
+  if (arr_is_arc(p) || arr_is_arc(q) || c->sign == 0)
+    return 2;
+  /* The exact sums: P1y - py, Rx, Ry, Sx, Sy, Q1x - P1x, Q1y - P1y */
+  double t[7][2] = {
+    {p->y1, -py}, {p->x2, -p->x1}, {p->y2, -p->y1}, {q->x2, -q->x1},
+    {q->y2, -q->y1}, {q->x1, -p->x1}, {q->y1, -p->y1}};
+  ExactSum sums[7];
+  for (int k = 0; k < 7; k++)
+    exact_sum_set(&sums[k], t[k], 2);
+  /* (P1y - py) (Rx Sy - Ry Sx) + Ry ((Q1x - P1x) Sy - (Q1y - P1y) Sx) */
+  PolyTerm terms[4] = {
+    {1.0, 3, {0, 1, 4, 0}}, {-1.0, 3, {0, 2, 3, 0}},
+    {1.0, 3, {2, 5, 4, 0}}, {-1.0, 3, {2, 6, 3, 0}}};
+  return c->sign * polynomial_sign_exact(sums, terms, 4);
+}
+
+/**
  * @brief Count a crossing of a piece by the ray from a point along the
  * positive x axis
- * @details A crossing adds to @p w one where the piece runs upward in the
- * sense of its edge, minus one where it runs downward, and to @p c one
- * @return false where the intervals cannot tell a crossing, a ray through an
- * end of the piece among them, which no half-open rule here counts
+ * @details A crossing adds to @p w the weight of the piece's edge
+ * (#arr_weight) where the piece runs upward in the sense of its edge, minus
+ * it where it runs downward, and to @p c one. A segment piece is read by the
+ * half-open rule: it is crossed where one of its ends lies above the ray and
+ * the other does not (#arr_node_side), right of the point where the point
+ * lies left of a rising edge or right of a falling one, all of it decided
+ * exactly, so a ray through an end of a piece or along a piece is counted
+ * like any other
+ * @return false where a side is not told, or the point lies on the piece,
+ * or the intervals cannot tell where the ray meets an arc
  */
 static bool
 arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
@@ -1593,31 +1746,23 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
   const Edge *e = &a->e[p->edge];
   if (! arr_is_arc(e))
   {
-    /* The line of the segment meets the ray right of the point where the
-     * point stands left of an upward segment or right of a downward one */
-    if (e->y1 == e->y2)
-      return e->y1 != py;
-    bool up = e->y2 > e->y1;
-    if ((py < e->y1 && py < e->y2) || (py > e->y1 && py > e->y2))
-      return true;
-    Ival s = ival_cross(ival_sub(ival(e->x2), ival(e->x1)),
-      ival_sub(ival(e->y2), ival(e->y1)), ival_sub(px, ival(e->x1)),
-      ival_sub(ival(py), ival(e->y1)));
-    /* Within the piece: the parameter of the meeting along the segment
-     * between those of the piece's ends. A meeting off the piece is passed
-     * over first, as where the point lies on another piece of the edge */
-    Ival t = ival_div(ival_sub(ival(py), ival(e->y1)),
-      ival_sub(ival(e->y2), ival(e->y1)));
-    if (t.hi < p->pfrom.lo || t.lo > p->pto.hi)
-      return true;
-    int ss = ival_sign(s);
-    if (ss == 2 || ss == 0)
+    if (px.lo != px.hi)
       return false;
-    if (up ? ss < 0 : ss > 0)
-      return true;
-    if (! (t.lo > p->pfrom.hi && t.hi < p->pto.lo))
+    /* The piece runs from p->from to p->to in the sense of its edge */
+    int sf = arr_node_side(a, p->from, py), st = arr_node_side(a, p->to, py);
+    if (sf == 2 || st == 2)
       return false;
-    *w += up ? 1 : -1;
+    bool below_from = sf <= 0, below_to = st <= 0;
+    if (below_from == below_to)
+      return true;
+    bool up = below_from;
+    int side = cross_product_sign(e->x1, e->y1, e->x2, e->y2, e->x1, e->y1,
+      px.lo, py);
+    if (side == 0)
+      return false;
+    if (up ? side < 0 : side > 0)
+      return true;
+    *w += up ? arr_weight(a, p->edge) : -arr_weight(a, p->edge);
     (*c)++;
     return true;
   }
@@ -1655,7 +1800,7 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
       return false;
     /* Upward on the right of a counterclockwise circle */
     bool up = (side > 0) == a->ccw[j];
-    *w += up ? 1 : -1;
+    *w += up ? arr_weight(a, p->edge) : -arr_weight(a, p->edge);
     (*c)++;
   }
   return true;
@@ -1694,8 +1839,95 @@ arr_winding_at(const Arr *a, const uint32_t *cpieces, const uint32_t *coff,
 }
 
 /**
+ * @brief Return the rightmost point of the pieces of a component, false where
+ * the intervals cannot tell which point lies furthest right
+ * @details A vertex, or the point of an arc's circle furthest along x where
+ * the arc passes it (#arr_piece_holds_right)
+ * @param[in] a Arrangement
+ * @param[in] comp,cn The nodes of the component
+ * @param[out] out Its rightmost point
+ */
+static bool
+arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
+  ArrExtreme *out)
+{
+  ArrExtreme ex = {false, UINT32_MAX, UINT32_MAX, {-INFINITY, -INFINITY}};
+  bool unsure = false;
+  for (uint32_t c = 0; c < cn; c++)
+  {
+    const ArrNode *nd = &a->nodes[comp[c]];
+    if (! nd->vertex)
+      continue;
+    if (ex.node == UINT32_MAX || nd->x > ex.x.lo)
+    {
+      ex.node = comp[c];
+      ex.x = ival(nd->x);
+    }
+  }
+  for (uint32_t c = 0; c < cn && ! unsure; c++)
+  {
+    uint32_t v = comp[c];
+    for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
+    {
+      if (! a->halves[k].out)
+        continue;
+      const ArrPiece *p = &a->pieces[a->halves[k].piece];
+      if (! arr_is_arc(&a->e[p->edge]))
+        continue;
+      /* An arc whose box ends left of the rightmost point found holds no
+       * point further right */
+      if (a->box[p->edge][1] < ex.x.lo)
+        continue;
+      Ival x;
+      int holds = arr_piece_holds_right(a, p, &x);
+      if (holds == 0)
+        continue;
+      /* A vertex on the circle of the arc, an end of its edge, stands left
+       * of the point of the circle furthest along x where the piece holds
+       * that point strictly within it, however close the intervals put
+       * them */
+      const Edge *ae = &a->e[p->edge];
+      const ArrNode *xn = &a->nodes[ex.node];
+      if (holds == 1 && ! ex.on_arc &&
+          (arr_same(xn->x, xn->y, ae->x1, ae->y1) ||
+           arr_same(xn->x, xn->y, ae->x2, ae->y2)))
+      {
+        ex.on_arc = true;
+        ex.piece = a->halves[k].piece;
+        ex.x = x;
+        continue;
+      }
+      if (holds == 2 || (x.hi >= ex.x.lo && x.lo <= ex.x.hi))
+      {
+        if (holds == 2 && x.hi < ex.x.lo)
+          continue;
+        unsure = true;
+        break;
+      }
+      if (x.lo > ex.x.hi)
+      {
+        ex.on_arc = true;
+        ex.piece = a->halves[k].piece;
+        ex.x = x;
+      }
+    }
+  }
+  *out = ex;
+  return ! unsure;
+}
+
+/**
  * @brief Label every piece with the winding numbers on each side, component
  * by component, each from its rightmost point
+ * @details A component enclosing another lies further right than it: the ray
+ * from the inner one's rightmost point along the positive x axis crosses the
+ * outer one, whose rightmost point lies beyond that crossing. The components
+ * are therefore labelled from the one whose rightmost point lies furthest
+ * right, which lies within none of the others, so that the winding number
+ * outside each is read off components already labelled, every one enclosing
+ * it among them (#arr_winding_at). Two components whose rightmost points the
+ * intervals do not order, and whose boxes do not show that neither lies
+ * within the other, leave the labels unanswered
  */
 static ArrangeStatus
 arr_label_all(Arr *a, uint32_t *outer_piece)
@@ -1703,38 +1935,28 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   uint32_t nn = a->nnodes;
   bool *queued = palloc0(sizeof(bool) * Max(nn, 1u));
   uint32_t *queue = palloc(sizeof(uint32_t) * Max(nn, 1u));
-  /* The nodes of the component walked, cleared after each, and the first
-   * piece that may still be unlabelled */
-  uint32_t *comp = palloc(sizeof(uint32_t) * Max(nn, 1u));
+  /* Every component: its nodes, walked once, its rightmost point and its
+   * box */
+  uint32_t *cnodes = palloc(sizeof(uint32_t) * Max(nn, 1u));
   bool *incomp = palloc0(sizeof(bool) * Max(nn, 1u));
-  uint32_t cursor = 0;
-  /* The pieces of every component labelled, component by component, and
-   * the box of each, which the rays of the later ones read */
-  uint32_t *cpieces = palloc(sizeof(uint32_t) * Max(a->npieces, 1u));
-  uint32_t ccap = 16, ncomp = 0;
-  uint32_t *coff = palloc(sizeof(uint32_t) * (ccap + 1));
+  uint32_t ccap = 16, ncomp = 0, total = 0;
+  uint32_t *cnoff = palloc(sizeof(uint32_t) * (ccap + 1));
+  ArrExtreme *cex = palloc(sizeof(ArrExtreme) * ccap);
   double (*cbox)[4] = palloc(sizeof(double[4]) * ccap);
-  coff[0] = 0;
+  cnoff[0] = 0;
   ArrangeStatus st = ARR_ANSWERED;
   *outer_piece = UINT32_MAX;
-  bool first = true;
-  for (;;)
+  for (uint32_t seed = 0; seed < a->npieces && st == ARR_ANSWERED; seed++)
   {
-    /* The component of the first piece not labelled yet */
-    uint32_t seed = UINT32_MAX;
-    for (; cursor < a->npieces && seed == UINT32_MAX; cursor++)
-      if (a->pieces[cursor].right == INT_MIN)
-        seed = cursor;
-    if (seed == UINT32_MAX)
-      break;
-    /* Its nodes and pieces, by walking it */
-    uint32_t qn = 0;
-    uint32_t cn = 0;
-    comp[cn++] = a->pieces[seed].from;
-    incomp[a->pieces[seed].from] = true;
-    for (uint32_t c = 0; c < cn; c++)
+    uint32_t v0 = a->pieces[seed].from;
+    if (incomp[v0])
+      continue;
+    uint32_t c0 = total;
+    cnodes[total++] = v0;
+    incomp[v0] = true;
+    for (uint32_t c = c0; c < total; c++)
     {
-      uint32_t v = comp[c];
+      uint32_t v = cnodes[c];
       for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
       {
         const ArrPiece *p = &a->pieces[a->halves[k].piece];
@@ -1742,77 +1964,75 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         if (! incomp[o])
         {
           incomp[o] = true;
-          comp[cn++] = o;
+          cnodes[total++] = o;
         }
       }
     }
-    /* Its rightmost point */
-    ArrExtreme ex = {false, UINT32_MAX, UINT32_MAX, {-INFINITY, -INFINITY}};
-    bool unsure = false;
-    for (uint32_t c = 0; c < cn; c++)
+    if (ncomp == ccap)
     {
-      const ArrNode *nd = &a->nodes[comp[c]];
-      if (! nd->vertex)
-        continue;
-      if (ex.node == UINT32_MAX || nd->x > ex.x.lo)
-      {
-        ex.node = comp[c];
-        ex.x = ival(nd->x);
-      }
+      ccap *= 2;
+      cnoff = repalloc(cnoff, sizeof(uint32_t) * (ccap + 1));
+      cex = repalloc(cex, sizeof(ArrExtreme) * ccap);
+      cbox = repalloc(cbox, sizeof(double[4]) * ccap);
     }
-    for (uint32_t c = 0; c < cn && ! unsure; c++)
-    {
-      uint32_t v = comp[c];
-      for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
-      {
-        if (! a->halves[k].out)
-          continue;
-        const ArrPiece *p = &a->pieces[a->halves[k].piece];
-        if (! arr_is_arc(&a->e[p->edge]))
-          continue;
-        /* An arc whose box ends left of the rightmost point found holds no
-         * point further right */
-        if (a->box[p->edge][1] < ex.x.lo)
-          continue;
-        Ival x;
-        int holds = arr_piece_holds_right(a, p, &x);
-        if (holds == 0)
-          continue;
-        /* A vertex on the circle of the arc, an end of its edge, stands left
-         * of the point of the circle furthest along x where the piece holds
-         * that point strictly within it, however close the intervals put
-         * them */
-        const Edge *ae = &a->e[p->edge];
-        const ArrNode *xn = &a->nodes[ex.node];
-        if (holds == 1 && ! ex.on_arc &&
-            (arr_same(xn->x, xn->y, ae->x1, ae->y1) ||
-             arr_same(xn->x, xn->y, ae->x2, ae->y2)))
-        {
-          ex.on_arc = true;
-          ex.piece = a->halves[k].piece;
-          ex.x = x;
-          continue;
-        }
-        if (holds == 2 || (x.hi >= ex.x.lo && x.lo <= ex.x.hi))
-        {
-          if (holds == 2 && x.hi < ex.x.lo)
-            continue;
-          unsure = true;
-          break;
-        }
-        if (x.lo > ex.x.hi)
-        {
-          ex.on_arc = true;
-          ex.piece = a->halves[k].piece;
-          ex.x = x;
-        }
-      }
-    }
-    if (unsure)
-    {
+    if (! arr_component_extreme(a, &cnodes[c0], total - c0, &cex[ncomp]))
       st = ARR_DEPTH;
-      break;
+    double *cb = cbox[ncomp];
+    cb[0] = cb[2] = INFINITY;
+    cb[1] = cb[3] = -INFINITY;
+    for (uint32_t c = c0; c < total; c++)
+      for (uint32_t k = a->hoff[cnodes[c]]; k < a->hoff[cnodes[c] + 1]; k++)
+      {
+        const double *b = a->box[a->pieces[a->halves[k].piece].edge];
+        cb[0] = fmin(cb[0], b[0]); cb[1] = fmax(cb[1], b[1]);
+        cb[2] = fmin(cb[2], b[2]); cb[3] = fmax(cb[3], b[3]);
+      }
+    cnoff[++ncomp] = total;
+  }
+  pfree(incomp);
+
+  /* The components from the one whose rightmost point lies furthest right,
+   * the sweep's records holding minus the lower bound of each point */
+  ArrSweep *order = palloc(sizeof(ArrSweep) * Max(ncomp, 1u));
+  for (uint32_t c = 0; c < ncomp; c++)
+  {
+    order[c].xmin = - cex[c].x.lo;
+    order[c].id = c;
+  }
+  if (st == ARR_ANSWERED)
+    arr_sweep_sort(order, ncomp);
+  for (uint32_t k = 0; k < ncomp && st == ARR_ANSWERED; k++)
+    for (uint32_t m = k + 1; m < ncomp && st == ARR_ANSWERED; m++)
+    {
+      const Ival *xk = &cex[order[k].id].x, *xm = &cex[order[m].id].x;
+      /* Rightmost points told apart, or equal: a component enclosing
+       * another lies strictly further right */
+      if (xm->hi < xk->lo || (xk->lo == xk->hi && xm->lo == xm->hi))
+        continue;
+      const double *bk = cbox[order[k].id], *bm = cbox[order[m].id];
+      bool kinm = bk[0] >= bm[0] && bk[1] <= bm[1] && bk[2] >= bm[2] &&
+        bk[3] <= bm[3];
+      bool mink = bm[0] >= bk[0] && bm[1] <= bk[1] && bm[2] >= bk[2] &&
+        bm[3] <= bk[3];
+      if (kinm || mink)
+        st = ARR_DEPTH;
     }
+
+  /* The pieces of every component labelled, component by component, and
+   * the box of each, which the rays of the later ones read */
+  uint32_t *cpieces = palloc(sizeof(uint32_t) * Max(a->npieces, 1u));
+  uint32_t *coff = palloc(sizeof(uint32_t) * (ncomp + 1));
+  double (*lbox)[4] = palloc(sizeof(double[4]) * Max(ncomp, 1u));
+  coff[0] = 0;
+  uint32_t nlab = 0;
+  for (uint32_t ord = 0; ord < ncomp && st == ARR_ANSWERED; ord++)
+  {
+    uint32_t cid = order[ord].id;
+    const uint32_t *comp = &cnodes[cnoff[cid]];
+    uint32_t cn = cnoff[cid + 1] - cnoff[cid];
+    ArrExtreme ex = cex[cid];
+    bool first = (ord == 0);
+    uint32_t qn = 0;
     /* The winding number outside the component: zero for the first, the one
      * the components labelled before give its rightmost point otherwise */
     int outside = 0;
@@ -1823,8 +2043,8 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
        * the one the whole component lies in, as it meets none of them */
       Ival px = ival(a->nodes[ex.node].x);
       double py = a->nodes[ex.node].y;
-      if (! arr_winding_at(a, cpieces, coff, (const double (*)[4]) cbox,
-          ncomp, px, py, &outside))
+      if (! arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
+          nlab, px, py, &outside))
       {
         st = ARR_DEPTH;
         break;
@@ -1837,7 +2057,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
        * turns counterclockwise, so the outside is on its right */
       ArrPiece *p = &a->pieces[ex.piece];
       bool ccw = a->ccw[p->edge];
-      arr_label(p, ccw ? outside : outside - 1);
+      arr_label(a, p, ccw ? outside : outside - arr_weight(a, p->edge));
       if (first)
         *outer_piece = ex.piece;
       const uint32_t ends[2] = {p->from, p->to};
@@ -1887,7 +2107,8 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       ArrPiece *p = &a->pieces[h[before].piece];
       /* The sector after half k is its left where it leaves, its right
        * where it arrives */
-      arr_label(p, h[before].out ? outside - 1 : outside);
+      arr_label(a, p, h[before].out ? outside - arr_weight(a, p->edge) :
+        outside);
       if (first)
         *outer_piece = h[before].piece;
       if (! queued[v])
@@ -1899,46 +2120,23 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     for (uint32_t q = 0; q < qn && st == ARR_ANSWERED; q++)
       if (! arr_label_node(a, queue[q], queue, &qn, queued))
         st = ARR_DEPTH;
-    for (uint32_t c = 0; c < cn; c++)
-      incomp[comp[c]] = false;
     if (st != ARR_ANSWERED)
       break;
     /* The component's pieces, each leaving one of its nodes once, and its
-     * box, read by the rays of the components after it: none is read where
-     * no piece is left unlabelled */
-    while (cursor < a->npieces && a->pieces[cursor].right != INT_MIN)
-      cursor++;
-    if (cursor == a->npieces)
-      break;
-    if (ncomp == ccap)
-    {
-      ccap *= 2;
-      coff = repalloc(coff, sizeof(uint32_t) * (ccap + 1));
-      cbox = repalloc(cbox, sizeof(double[4]) * ccap);
-    }
-    double *cb = cbox[ncomp];
-    cb[0] = cb[2] = INFINITY;
-    cb[1] = cb[3] = -INFINITY;
-    uint32_t np = coff[ncomp];
+     * box, read by the rays of the components after it */
+    uint32_t np = coff[nlab];
     for (uint32_t c = 0; c < cn; c++)
     {
       uint32_t v = comp[c];
-      for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
-      {
-        if (! a->halves[k].out)
-          continue;
-        uint32_t pc = a->halves[k].piece;
-        cpieces[np++] = pc;
-        const double *b = a->box[a->pieces[pc].edge];
-        cb[0] = fmin(cb[0], b[0]); cb[1] = fmax(cb[1], b[1]);
-        cb[2] = fmin(cb[2], b[2]); cb[3] = fmax(cb[3], b[3]);
-      }
+      for (uint32_t h = a->hoff[v]; h < a->hoff[v + 1]; h++)
+        if (a->halves[h].out)
+          cpieces[np++] = a->halves[h].piece;
     }
-    coff[++ncomp] = np;
-    first = false;
+    memcpy(lbox[nlab], cbox[cid], sizeof(double[4]));
+    coff[++nlab] = np;
   }
-  pfree(queued); pfree(queue); pfree(comp); pfree(incomp);
-  pfree(cpieces); pfree(coff); pfree(cbox);
+  pfree(queued); pfree(queue); pfree(cnodes); pfree(cnoff); pfree(cex);
+  pfree(cbox); pfree(order); pfree(cpieces); pfree(coff); pfree(lbox);
   return st;
 }
 
@@ -1990,13 +2188,148 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
   return;
 }
 
+/* Return true where two segments written one after the other retrace each
+ * other. The boundary of the region never runs back along itself, so such a
+ * pair is a stretch narrower than the doubles resolve, which writing its
+ * nodes, each rounded once (#arr_piece_write), folds onto itself: it bounds
+ * no area the coordinates can state, as a piece whose ends are written at
+ * one point bounds none */
+static inline bool
+arr_pieces_retrace(const ArrangePiece *p, const ArrangePiece *q)
+{
+  return ! p->arc && ! q->arc && p->x1 == q->x2 && p->y1 == q->y2 &&
+    p->x2 == q->x1 && p->y2 == q->y1;
+}
+
+/* The node a piece of the boundary is walked from, and the one it is walked
+ * to */
+static inline uint32_t
+arr_walk_from(const ArrPiece *p)
+{
+  return p->flip ? p->to : p->from;
+}
+
+static inline uint32_t
+arr_walk_to(const ArrPiece *p)
+{
+  return p->flip ? p->from : p->to;
+}
+
+/**
+ * @brief Return a ring written from the pieces of a closed walk, or NULL
+ * where it bounds nothing the coordinates can state
+ * @details A piece whose ends are written at one point is left out, and two
+ * segments that retrace each other are taken back together
+ * (#arr_pieces_retrace), across the closing piece as well
+ */
+static MeosArray *
+arr_ring_write(const Arr *a, const uint32_t *pieces, uint32_t m)
+{
+  MeosArray *ring = meos_array_create(sizeof(ArrangePiece));
+  for (uint32_t t = 0; t < m; t++)
+  {
+    if (ring->count >= ring->capacity)
+      edge_array_reserve(ring, 1);
+    ArrangePiece *pe = &((ArrangePiece *) ring->elems)[ring->count];
+    arr_piece_write(a, &a->pieces[pieces[t]], pe);
+    if (pe->x1 == pe->x2 && pe->y1 == pe->y2)
+      continue;
+    if (ring->count > 0 && arr_pieces_retrace(pe - 1, pe))
+      ring->count--;
+    else
+      ring->count++;
+  }
+  ArrangePiece *pr = (ArrangePiece *) ring->elems;
+  while (ring->count >= 2 &&
+         arr_pieces_retrace(&pr[ring->count - 1], &pr[0]))
+  {
+    memmove(&pr[0], &pr[1], sizeof(ArrangePiece) * (ring->count - 2));
+    ring->count -= 2;
+  }
+  if (ring->count == 0)
+  {
+    meos_array_destroy(ring);
+    return NULL;
+  }
+  return ring;
+}
+
+/**
+ * @brief Split a closed walk at the nodes it passes more than once into the
+ * simple loops it is made of, the loop through its first piece first
+ * @details The region's boundary is walked as the boundary of a face, which
+ * passes a node twice where the region touches itself there: a hole
+ * touching its shell at a point, two parts of the region meeting at one.
+ * Each loop the walk closes at a node already on it is cut off where it
+ * closes, so that every loop passes each of its nodes once, and the loops
+ * are then rings that meet at most at nodes, which their containment
+ * classifies (#arr_surfaces)
+ * @param[in] a Arrangement
+ * @param[in,out] walk Pieces of the walk, written back loop by loop
+ * @param[in] m Number of pieces
+ * @param[in,out] onstack For every node, -1, as it is left
+ * @param[out] scratch Room for twice @p m pieces
+ * @param[out] ends End of each loop in @p walk, room for @p m
+ * @return Number of loops
+ */
+static uint32_t
+arr_walk_loops(const Arr *a, uint32_t *walk, uint32_t m, int32_t *onstack,
+  uint32_t *scratch, uint32_t *ends)
+{
+  uint32_t *stack = scratch, *loops = scratch + m;
+  uint32_t top = 0, nl = 0, lp = 0;
+  uint32_t v0 = arr_walk_from(&a->pieces[walk[0]]);
+  onstack[v0] = 0;
+  for (uint32_t t = 0; t < m; t++)
+  {
+    stack[top++] = walk[t];
+    uint32_t v = arr_walk_to(&a->pieces[walk[t]]);
+    if (onstack[v] < 0)
+    {
+      onstack[v] = (int32_t) top;
+      continue;
+    }
+    /* The pieces from the one leaving v on are a loop through v, which
+     * stays on the stack as the node the walk goes on from */
+    uint32_t d = (uint32_t) onstack[v];
+    for (uint32_t q = d; q < top; q++)
+    {
+      loops[lp++] = stack[q];
+      if (q > d)
+        onstack[arr_walk_from(&a->pieces[stack[q]])] = -1;
+    }
+    ends[nl++] = lp;
+    top = d;
+  }
+  onstack[v0] = -1;
+  /* The walk closes at its first node, so the last loop cut off holds its
+   * first piece: it is written first, the others after it in the order they
+   * were cut off, their ends read into the stack's room, free by now */
+  uint32_t *newends = stack;
+  uint32_t last = (nl > 1) ? ends[nl - 2] : 0, w = 0, prev = 0;
+  for (uint32_t q = last; q < lp; q++)
+    walk[w++] = loops[q];
+  newends[0] = w;
+  for (uint32_t k = 0; k + 1 < nl; k++)
+  {
+    for (uint32_t q = prev; q < ends[k]; q++)
+      walk[w++] = loops[q];
+    prev = ends[k];
+    newends[k + 1] = w;
+  }
+  memcpy(ends, newends, sizeof(uint32_t) * nl);
+  return nl;
+}
+
 /**
  * @brief Link the pieces that bound the region into rings
  * @details A piece bounds the region where the winding number is at least
  * one on one side of it and not on the other, and is walked with the region
  * on its left. At a node the walk takes the first piece leaving it clockwise
  * from the one it arrives along, which keeps the region on its left and
- * closes the smallest ring
+ * closes the smallest ring. Where the rings are classified into surfaces
+ * (@p ring_pieces given), a walk passing a node twice is split there into
+ * the simple loops it is made of (#arr_walk_loops)
  */
 static ArrangeStatus
 arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
@@ -2018,27 +2351,32 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
   uint32_t *roff = palloc(sizeof(uint32_t) * (cap + 1));
   uint32_t np = 0;
   roff[0] = 0;
+  /* Where walks are split into loops, the stack of nodes the split reads */
+  bool split = (ring_pieces != NULL);
+  int32_t *onstack = NULL;
+  uint32_t *scratch = NULL, *ends = NULL;
+  if (split)
+  {
+    onstack = palloc(sizeof(int32_t) * Max(a->nnodes, 1u));
+    for (uint32_t v = 0; v < a->nnodes; v++)
+      onstack[v] = -1;
+    scratch = palloc(sizeof(uint32_t) * 2 * Max(a->npieces, 1u));
+    ends = palloc(sizeof(uint32_t) * Max(a->npieces, 1u));
+  }
   /* The ring through the outermost piece first: it is the shell */
   uint32_t order0 = outer_piece;
-  for (uint32_t pass = 0; pass <= a->npieces; pass++)
+  ArrangeStatus st = ARR_ANSWERED;
+  for (uint32_t pass = 0; pass <= a->npieces && st == ARR_ANSWERED; pass++)
   {
     uint32_t k = (pass == 0) ? order0 : pass - 1;
     if (k >= a->npieces || ! a->pieces[k].result || a->pieces[k].used)
       continue;
-    MeosArray *ring = meos_array_create(sizeof(ArrangePiece));
     uint32_t cur = k, np0 = np;
     for (;;)
     {
       ArrPiece *p = &a->pieces[cur];
       p->used = true;
       rp[np++] = cur;
-      /* Written in place, kept where its ends differ */
-      if (ring->count >= ring->capacity)
-        edge_array_reserve(ring, 1);
-      ArrangePiece *pe = &((ArrangePiece *) ring->elems)[ring->count];
-      arr_piece_write(a, p, pe);
-      if (pe->x1 != pe->x2 || pe->y1 != pe->y2)
-        ring->count++;
       uint32_t v = p->flip ? p->from : p->to;
       ArrHalf *h = &a->halves[a->hoff[v]];
       uint32_t deg = a->hoff[v + 1] - a->hoff[v];
@@ -2056,40 +2394,59 @@ arr_rings(Arr *a, int sgn, uint32_t outer_piece, MeosArray ***rings,
         if (q->result && hm->out != q->flip)
           next = hm->piece;
       }
-      if (next == UINT32_MAX)
+      if (next == UINT32_MAX || (next != k && a->pieces[next].used))
       {
-        meos_array_destroy(ring);
-        arrange_rings_free(out, n);
-        pfree(rp); pfree(roff);
-        return ARR_DEPTH;
+        st = ARR_DEPTH;
+        break;
       }
       if (next == k)
         break;
-      if (a->pieces[next].used)
-      {
-        meos_array_destroy(ring);
-        arrange_rings_free(out, n);
-        pfree(rp); pfree(roff);
-        return ARR_DEPTH;
-      }
       cur = next;
     }
-    /* A ring every piece of which has ends written at one point bounds
-     * nothing the coordinates can state */
-    if (ring->count == 0)
+    if (st != ARR_ANSWERED)
+      break;
+    /* The walk, split into its loops where they are classified */
+    uint32_t m = np - np0, nl = 1;
+    const uint32_t whole[1] = {m};
+    const uint32_t *lend = whole;
+    if (split)
     {
-      meos_array_destroy(ring);
-      np = np0;
-      continue;
+      nl = arr_walk_loops(a, &rp[np0], m, onstack, scratch, ends);
+      lend = ends;
     }
-    if (n == cap)
+    /* Each loop written as a ring; one bounding nothing the coordinates can
+     * state is left out with its pieces */
+    uint32_t from = np0, keep = np0;
+    for (uint32_t l = 0; l < nl; l++)
     {
-      cap *= 2;
-      out = repalloc(out, sizeof(MeosArray *) * cap);
-      roff = repalloc(roff, sizeof(uint32_t) * (cap + 1));
+      uint32_t to = np0 + lend[l];
+      MeosArray *ring = arr_ring_write(a, &rp[from], to - from);
+      if (ring)
+      {
+        memmove(&rp[keep], &rp[from], sizeof(uint32_t) * (to - from));
+        keep += to - from;
+        if (n == cap)
+        {
+          cap *= 2;
+          out = repalloc(out, sizeof(MeosArray *) * cap);
+          roff = repalloc(roff, sizeof(uint32_t) * (cap + 1));
+        }
+        out[n++] = ring;
+        roff[n] = keep;
+      }
+      from = to;
     }
-    out[n++] = ring;
-    roff[n] = np;
+    np = keep;
+  }
+  if (split)
+  {
+    pfree(onstack); pfree(scratch); pfree(ends);
+  }
+  if (st != ARR_ANSWERED)
+  {
+    arrange_rings_free(out, n);
+    pfree(rp); pfree(roff);
+    return st;
   }
   *rings = out;
   *nrings = n;
@@ -2309,6 +2666,325 @@ arrange_rings_free(MeosArray **rings, uint32_t nrings)
   return;
 }
 
+/* The root of an edge's class of segments running along each other, halving
+ * the path walked */
+static uint32_t
+arr_class_root(uint32_t *parent, uint32_t i)
+{
+  while (parent[i] != i)
+  {
+    parent[i] = parent[parent[i]];
+    i = parent[i];
+  }
+  return i;
+}
+
+/* Points of one line in their order along it: by x, then by y, which on a
+ * line that is not vertical is the order of x alone, and on a vertical one
+ * that of y */
+static inline int
+arr_line_cmp(const POINT2D *p, const POINT2D *q)
+{
+  if (p->x != q->x)
+    return (p->x < q->x) ? -1 : 1;
+  if (p->y != q->y)
+    return (p->y < q->y) ? -1 : 1;
+  return 0;
+}
+
+/* Sort the points of a line with their order written into the sort, as
+ * #arr_sweep_sort does */
+#define ST_SORT arr_line_sort
+#define ST_ELEMENT_TYPE POINT2D
+#define ST_COMPARE(a, b) arr_line_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
+
+/* The place of a point among the distinct sorted points of a line it is one
+ * of */
+static uint32_t
+arr_line_find(const POINT2D *pts, uint32_t npts, const POINT2D *p)
+{
+  uint32_t lo = 0, hi = npts;
+  while (hi - lo > 1)
+  {
+    uint32_t mid = lo + (hi - lo) / 2;
+    if (arr_line_cmp(&pts[mid], p) <= 0)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  return lo;
+}
+
+/* Where the edges of an arrangement went when the segments running along
+ * each other were merged (#arr_merge_overlaps): an edge in a class of one is
+ * the edge at newof, and the edges of a larger class, whose root is root,
+ * are the scount stretches from sfirst on of that root */
+typedef struct
+{
+  uint32_t *root;
+  uint32_t *newof;
+  uint32_t *sfirst;
+  uint32_t *scount;
+} ArrMerge;
+
+/**
+ * @brief Replace the segments running along each other by the stretches
+ * they share, each weighted by the segments running along it
+ * @details Two segments run along each other where they lie on one line and
+ * share a stretch of it (#linesegm_intersect, exact), and the segments
+ * related that way, directly or through others, lie on one line. Every end
+ * of the stretch two of them share is an end of one of them, an input
+ * vertex, so the line is cut at the ends of the segments of the class alone,
+ * ordered along it by their coordinates (#arr_line_cmp) and decided exactly.
+ * Each stretch between two consecutive ends is written once, in the order
+ * of the line, weighted by the segments covering it, each counted by its
+ * sense: plus one where it runs in the order of the line, minus one where it
+ * runs against it. That is the rise of the winding number across the stretch
+ * all of them together give, so the stretch stands for them; a stretch
+ * whose weight is zero bounds nothing and is left out. The pairs asked are
+ * those whose boxes meet (#arr_box_pairs).
+ * @param[in] edges The edges of the curves
+ * @param[in] pairs,npairs The pairs of edges whose boxes meet
+ * @param[out] merged The edges, every class written as its stretches
+ * @param[out] weights The weight of each of them
+ * @param[out] mg Where every edge went, released by the caller
+ * @return false where no two segments run along each other, which leaves
+ * the edges as they are
+ */
+static bool
+arr_merge_overlaps(const MeosArray *edges, const ArrPair *pairs,
+  uint32_t npairs, MeosArray **merged, int32_t **weights, ArrMerge *mg)
+{
+  uint32_t n = edges->count;
+  const Edge *e = (const Edge *) edges->elems;
+  uint32_t *parent = NULL;
+  for (uint32_t k = 0; k < npairs; k++)
+  {
+    uint32_t i = pairs[k].i, j = pairs[k].j;
+    if (arr_is_arc(&e[i]) || arr_is_arc(&e[j]))
+      continue;
+    /* Segments whose directions are not parallel do not run along each
+     * other, which the bound of the cross product of their directions shows
+     * for most pairs without the meeting test (#arr_cross_ival) */
+    Ival par = arr_cross_ival(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[j].x1,
+      e[j].y1, e[j].x2, e[j].y2);
+    if (par.lo > 0.0 || par.hi < 0.0)
+      continue;
+    IntersectResult r = linesegm_intersect(e[i].x1, e[i].y1, e[i].x2,
+      e[i].y2, e[j].x1, e[j].y1, e[j].x2, e[j].y2);
+    if (r.type != INTERSECT_OVERLAP)
+      continue;
+    if (! parent)
+    {
+      parent = palloc(sizeof(uint32_t) * n);
+      for (uint32_t m = 0; m < n; m++)
+        parent[m] = m;
+    }
+    uint32_t ri = arr_class_root(parent, i), rj = arr_class_root(parent, j);
+    if (ri != rj)
+      parent[Max(ri, rj)] = Min(ri, rj);
+  }
+  if (! parent)
+    return false;
+
+  /* The members of each class, class by class, in the order of the edges */
+  uint32_t *root = palloc(sizeof(uint32_t) * n);
+  uint32_t *moff = palloc0(sizeof(uint32_t) * (n + 1));
+  for (uint32_t i = 0; i < n; i++)
+  {
+    root[i] = arr_class_root(parent, i);
+    moff[root[i] + 1]++;
+  }
+  for (uint32_t i = 0; i < n; i++)
+    moff[i + 1] += moff[i];
+  uint32_t *members = palloc(sizeof(uint32_t) * n);
+  uint32_t *fill = palloc(sizeof(uint32_t) * n);
+  memcpy(fill, moff, sizeof(uint32_t) * n);
+  for (uint32_t i = 0; i < n; i++)
+    members[fill[root[i]]++] = i;
+  pfree(fill);
+
+  /* A class of m segments writes at most 2m - 1 stretches */
+  MeosArray *out = meos_array_create(sizeof(Edge));
+  int32_t *w = palloc(sizeof(int32_t) * 2 * n);
+  POINT2D *pts = palloc(sizeof(POINT2D) * 2 * n);
+  int32_t *rise = palloc(sizeof(int32_t) * 2 * n);
+  mg->root = root;
+  mg->newof = palloc(sizeof(uint32_t) * n);
+  mg->sfirst = palloc0(sizeof(uint32_t) * n);
+  mg->scount = palloc0(sizeof(uint32_t) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t r = root[i], m = moff[r + 1] - moff[r];
+    if (m == 1)
+    {
+      mg->newof[i] = out->count;
+      w[out->count] = 1;
+      meos_array_add(out, (void *) &e[i]);
+      continue;
+    }
+    mg->newof[i] = UINT32_MAX;
+    /* A class is written where its first member stands */
+    if (r != i)
+      continue;
+    mg->sfirst[r] = out->count;
+    const uint32_t *mem = &members[moff[r]];
+    uint32_t npts = 0;
+    for (uint32_t k = 0; k < m; k++)
+    {
+      pts[npts].x = e[mem[k]].x1; pts[npts++].y = e[mem[k]].y1;
+      pts[npts].x = e[mem[k]].x2; pts[npts++].y = e[mem[k]].y2;
+    }
+    arr_line_sort(pts, npts);
+    uint32_t nd = 1;
+    for (uint32_t k = 1; k < npts; k++)
+      if (arr_line_cmp(&pts[k], &pts[nd - 1]) != 0)
+        pts[nd++] = pts[k];
+    memset(rise, 0, sizeof(int32_t) * nd);
+    for (uint32_t k = 0; k < m; k++)
+    {
+      const Edge *s = &e[mem[k]];
+      POINT2D p1 = {s->x1, s->y1}, p2 = {s->x2, s->y2};
+      bool forward = arr_line_cmp(&p1, &p2) < 0;
+      uint32_t lo = arr_line_find(pts, nd, forward ? &p1 : &p2);
+      uint32_t hi = arr_line_find(pts, nd, forward ? &p2 : &p1);
+      rise[lo] += forward ? 1 : -1;
+      rise[hi] -= forward ? 1 : -1;
+    }
+    int32_t weight = 0;
+    for (uint32_t k = 0; k + 1 < nd; k++)
+    {
+      weight += rise[k];
+      if (weight == 0)
+        continue;
+      w[out->count] = weight;
+      edges_add_segment(out, &pts[k], &pts[k + 1]);
+    }
+    mg->scount[r] = out->count - mg->sfirst[r];
+  }
+  pfree(pts); pfree(rise); pfree(members); pfree(moff);
+  pfree(parent);
+  *merged = out;
+  *weights = w;
+  return true;
+}
+
+/* Append a pair to an array of pairs, growing it as needed */
+static inline void
+arr_pair_add(ArrPair **pairs, uint32_t *count, uint32_t *cap, uint32_t i,
+  uint32_t j)
+{
+  if (*count == *cap)
+  {
+    *cap *= 2;
+    *pairs = repalloc(*pairs, sizeof(ArrPair) * (*cap));
+  }
+  (*pairs)[*count].i = i;
+  (*pairs)[(*count)++].j = j;
+}
+
+/* Whether the boxes of two edges meet, as #arr_box_pairs reads them */
+static inline bool
+arr_boxes_meet(const double (*box)[4], uint32_t s, uint32_t t)
+{
+  return ! (box[t][0] > box[s][1] || box[s][0] > box[t][1] ||
+    box[t][2] > box[s][3] || box[s][2] > box[t][3]);
+}
+
+/**
+ * @brief Return the pairs of merged edges whose boxes meet, read off the
+ * pairs of the edges they come from
+ * @details An edge kept whole keeps its pairs. A stretch of a class lies on
+ * a segment of the class that covers it, so its box lies within that
+ * segment's, and a box it meets is met by the segment's: the pairs of the
+ * stretches of a class are read off the edges its segments pair with, each
+ * of them once, which a stamp of the class marks, as the meeting test asked
+ * twice of one pair would add its crossing twice. Two classes are paired
+ * once, from the one of the smaller root. Two stretches of one class lie on
+ * one line and meet only at the ends they share, which are nodes already
+ * @param[in] box The box of every merged edge
+ * @param[in] pairs,npairs The pairs of the edges they come from
+ * @param[in] n Number of the edges they come from
+ * @param[in] mg Where every edge went (#arr_merge_overlaps)
+ * @param[out] nout Number of pairs returned
+ */
+static ArrPair *
+arr_mapped_pairs(const double (*box)[4], const ArrPair *pairs,
+  uint32_t npairs, uint32_t n, const ArrMerge *mg, uint32_t *nout)
+{
+  uint32_t cap = Max(npairs, 16u), count = 0;
+  ArrPair *out = palloc(sizeof(ArrPair) * cap);
+  /* The edges each class's segments pair with, class by class */
+  uint32_t *poff = palloc0(sizeof(uint32_t) * (n + 1));
+  for (uint32_t k = 0; k < npairs; k++)
+  {
+    uint32_t i = pairs[k].i, j = pairs[k].j;
+    uint32_t ni = mg->newof[i], nj = mg->newof[j];
+    if (ni != UINT32_MAX && nj != UINT32_MAX)
+    {
+      arr_pair_add(&out, &count, &cap, ni, nj);
+      continue;
+    }
+    if (ni == UINT32_MAX)
+      poff[mg->root[i] + 1]++;
+    if (nj == UINT32_MAX)
+      poff[mg->root[j] + 1]++;
+  }
+  for (uint32_t r = 0; r < n; r++)
+    poff[r + 1] += poff[r];
+  uint32_t *partner = palloc(sizeof(uint32_t) * Max(poff[n], 1u));
+  uint32_t *fill = palloc(sizeof(uint32_t) * Max(n, 1u));
+  memcpy(fill, poff, sizeof(uint32_t) * n);
+  for (uint32_t k = 0; k < npairs; k++)
+  {
+    uint32_t i = pairs[k].i, j = pairs[k].j;
+    if (mg->newof[i] == UINT32_MAX)
+      partner[fill[mg->root[i]]++] = j;
+    if (mg->newof[j] == UINT32_MAX)
+      partner[fill[mg->root[j]]++] = i;
+  }
+  pfree(fill);
+  /* The edge kept whole, or the root of the class, already read for the
+   * class being read */
+  uint32_t *stamp = palloc0(sizeof(uint32_t) * Max(n, 1u));
+  for (uint32_t r = 0; r < n; r++)
+  {
+    if (poff[r + 1] == poff[r])
+      continue;
+    uint32_t s0 = mg->sfirst[r], s1 = s0 + mg->scount[r];
+    for (uint32_t k = poff[r]; k < poff[r + 1]; k++)
+    {
+      uint32_t x = partner[k];
+      uint32_t key = (mg->newof[x] != UINT32_MAX) ? x : mg->root[x];
+      if (stamp[key] == r + 1)
+        continue;
+      stamp[key] = r + 1;
+      if (mg->newof[x] != UINT32_MAX)
+      {
+        for (uint32_t s = s0; s < s1; s++)
+          if (arr_boxes_meet(box, s, mg->newof[x]))
+            arr_pair_add(&out, &count, &cap, s, mg->newof[x]);
+        continue;
+      }
+      uint32_t q = mg->root[x];
+      if (q <= r)
+        continue;
+      uint32_t t0 = mg->sfirst[q], t1 = t0 + mg->scount[q];
+      for (uint32_t s = s0; s < s1; s++)
+        for (uint32_t t = t0; t < t1; t++)
+          if (arr_boxes_meet(box, s, t))
+            arr_pair_add(&out, &count, &cap, s, t);
+    }
+  }
+  pfree(stamp); pfree(partner); pfree(poff);
+  *nout = count;
+  return out;
+}
+
 /*
  * The arrangement of the curves and the rings bounding the region they wind
  * around: as #arrange_wound_boundary answers them where @p owner is NULL,
@@ -2344,9 +3020,45 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     if (arr_same(e->x1, e->y1, e->x2, e->y2))
       return ARR_NOT_CLOSED;
   }
+  /* The pairs of edges whose boxes meet, read once */
+  a.box = palloc(sizeof(double[4]) * n);
+  for (uint32_t i = 0; i < n; i++)
+    arr_box(&a.e[i], a.box[i]);
+  uint32_t npairs;
+  ArrPair *pairs = arr_box_pairs((const double (*)[4]) a.box, n, &npairs);
+  /* Segments running along each other are one stretch of the curves, read
+   * once with the rise of the winding number they give across it */
+  MeosArray *merged = NULL;
+  ArrMerge mg;
+  if (arr_merge_overlaps(edges, pairs, npairs, &merged, &a.w, &mg))
+  {
+    pfree(a.box);
+    a.box = NULL;
+    if (merged->count == 0)
+    {
+      meos_array_destroy(merged);
+      pfree(a.w); pfree(pairs);
+      pfree(mg.root); pfree(mg.newof); pfree(mg.sfirst); pfree(mg.scount);
+      return ARR_NOT_CLOSED;
+    }
+    a.e = (const Edge *) merged->elems;
+    a.n = n = merged->count;
+    a.box = palloc(sizeof(double[4]) * n);
+    for (uint32_t i = 0; i < n; i++)
+      arr_box(&a.e[i], a.box[i]);
+    uint32_t nmapped;
+    ArrPair *mapped = arr_mapped_pairs((const double (*)[4]) a.box, pairs,
+      npairs, edges->count, &mg, &nmapped);
+    pfree(pairs);
+    pairs = mapped;
+    npairs = nmapped;
+    pfree(mg.root); pfree(mg.newof); pfree(mg.sfirst); pfree(mg.scount);
+  }
   /* The circles of the arcs */
   a.ccx = palloc(sizeof(Ival) * n); a.ccy = palloc(sizeof(Ival) * n);
-  a.cr2 = palloc(sizeof(Ival) * n); a.ccw = palloc(sizeof(bool) * n);
+  /* A segment turns neither way: its sense reads false where the order of
+   * the edges around a node reads it (#arr_half_cmp) */
+  a.cr2 = palloc(sizeof(Ival) * n); a.ccw = palloc0(sizeof(bool) * n);
   for (uint32_t i = 0; i < n; i++)
     if (arr_is_arc(&a.e[i]))
     {
@@ -2376,13 +3088,14 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
   a.cuts = palloc(sizeof(ArrCut) * a.capcuts);
   a.ncuts = 0;
   a.coff = NULL;
-  /* Closed curves: as many edges start at every vertex as end there */
+  /* Closed curves: as many curves start at every vertex as end there, an
+   * edge counting for the curves its weight stands for */
   ArrangeStatus st = ARR_ANSWERED;
   int32_t *balance = palloc0(sizeof(int32_t) * a.nnodes);
   for (uint32_t i = 0; i < n; i++)
   {
-    balance[a.start[i]]++;
-    balance[a.end[i]]--;
+    balance[a.start[i]] += arr_weight(&a, i);
+    balance[a.end[i]] -= arr_weight(&a, i);
   }
   for (uint32_t v = 0; v < a.nnodes && st == ARR_ANSWERED; v++)
     if (balance[v] != 0)
@@ -2390,7 +3103,8 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
   pfree(balance);
 
   if (st == ARR_ANSWERED)
-    st = arr_node_all(&a);
+    st = arr_node_all(&a, pairs, npairs);
+  pfree(pairs);
   if (st == ARR_ANSWERED)
     st = arr_pieces(&a);
   if (st == ARR_ANSWERED)
@@ -2440,10 +3154,17 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     pfree(a.pieces);
   if (a.halves)
     pfree(a.halves);
+  if (a.nrep)
+    pfree(a.nrep);
   if (a.hoff)
     pfree(a.hoff);
   if (a.box)
     pfree(a.box);
+  if (merged)
+  {
+    meos_array_destroy(merged);
+    pfree(a.w);
+  }
   return st;
 }
 
