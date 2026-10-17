@@ -2540,6 +2540,25 @@ span_families:
   - {stmt: "CREATE CAST ({vs} AS stbox) WITH FUNCTION stbox({vs});"}
   - lit: "\n"
 
+- family: posechainset_conversions
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n"
+  end: "/*****************************************************************************\n * Transformation functions"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
+  blocks:
+  - lit: "/******************************************************************************\n * Conversion functions\n ******************************************************************************/\n\n"
+  - {sig: "set({v})", ret: "{vs}", sym: Value_to_set}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({v} AS {vs}) WITH FUNCTION set({v});"}
+  - lit: "\n"
+  - {sig: "stbox({vs})", ret: "stbox", sym: Spatialset_to_stbox}
+  - lit: "\n"
+  - {stmt: "CREATE CAST ({vs} AS stbox) WITH FUNCTION stbox({vs});"}
+  - lit: "\n"
+
 - family: cbufferset_conversions
   file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
   reference: true
@@ -2636,6 +2655,19 @@ span_families:
   order: [pose]
   insts:
     pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
+  - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
+  - lit: "\n"
+
+- family: posechainset_constructors
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Conversion functions"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
   blocks:
   - lit: "/******************************************************************************\n * Constructors\n ******************************************************************************/\n\n"
   - {sig: "set({v}[])", ret: "{vs}", sym: Set_constructor}
@@ -3295,6 +3327,25 @@ span_families:
   - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
   - lit: "\n"
 
+- family: posechainset_srs
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/******************************************************************************\n * SRID\n ******************************************************************************/\n"
+  end: "/******************************************************************************\n * Transformation set of values <-> set"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
+  blocks:
+  - lit: "/******************************************************************************\n * SRID\n ******************************************************************************/\n\n"
+  - {sig: "SRID({vs})", ret: "integer", sym: Spatialset_srid}
+  - lit: "\n"
+  - {sig: "setSRID({vs}, integer)", ret: "{vs}", sym: Spatialset_set_srid}
+  - lit: "\n"
+  - {sig: "transform({vs}, integer)", ret: "{vs}", sym: Spatialset_transform}
+  - lit: "\n"
+  - {sig: "transformPipeline({vs}, text, srid integer DEFAULT 0,\n    is_forward boolean DEFAULT true)", ret: "{vs}", sym: Spatialset_transform_pipeline}
+  - lit: "\n"
+
 - family: cbufferset_srs
   file: mobilitydb/sql/cbuffer/201_cbufferset.in.sql
   reference: true
@@ -3344,6 +3395,25 @@ span_families:
   order: [pose]
   insts:
     pose: {v: pose, vs: poseset}
+  blocks:
+  - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
+  - {stmt: "CREATE FUNCTION setUnionTransition(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION setUnionTransition(internal, {vs})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Set_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION setUnionFinal(internal, {v})\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - {stmt: "CREATE FUNCTION setUnionFinal(internal, {vs})\n  RETURNS {vs}\n  AS 'MODULE_PATHNAME', 'Set_union_finalfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
+  - lit: "\n"
+  - {stmt: "CREATE AGGREGATE setUnion({v}) (\n  SFUNC = setUnionTransition,\n  STYPE = internal,\n  COMBINEFUNC = setUnionCombine,\n  FINALFUNC = setUnionFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = setstate_serialize,\n  DESERIALFUNC = setstate_deserialize,\n  PARALLEL = safe\n);"}
+  - {stmt: "CREATE AGGREGATE setUnion({vs}) (\n  SFUNC = setUnionTransition,\n  STYPE = internal,\n  COMBINEFUNC = setUnionCombine,\n  FINALFUNC = setUnionFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = setstate_serialize,\n  DESERIALFUNC = setstate_deserialize,\n  PARALLEL = safe\n);"}
+  - lit: "\n"
+
+- family: posechainset_setunion
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "/*****************************************************************************/\n\n-- The function is not STRICT\nCREATE FUNCTION setUnionTransition(internal, posechain)"
+  end: "/******************************************************************************\n * Comparison functions and B-tree indexing"
+  order: [posechain]
+  insts:
+    posechain: {v: posechain, vs: posechainset}
   blocks:
   - lit: "/*****************************************************************************/\n\n-- The function is not STRICT\n"
   - {stmt: "CREATE FUNCTION setUnionTransition(internal, {v})\n  RETURNS internal\n  AS 'MODULE_PATHNAME', 'Value_union_transfn'\n  LANGUAGE C IMMUTABLE PARALLEL SAFE;"}
