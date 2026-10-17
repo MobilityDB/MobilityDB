@@ -3432,6 +3432,25 @@ int main(void)
     free(part1); free(part2); free(both); free(tfloat_result);
     free(char_result);
   }
+  /* The window sum shares the combine of the sum */
+  Temporal *wpart1 = temporal_tagg_finalfn(tfloat_wsum_transfn(NULL,
+    (Temporal *) tfloatinst1, interv3));
+  Temporal *wpart2 = temporal_tagg_finalfn(tfloat_wsum_transfn(NULL,
+    (Temporal *) tfloatinst2, interv3));
+  sklist1 = temporal_to_taggstate(wpart1);
+  sklist2 = temporal_to_taggstate(wpart2);
+  sklist = tnumber_tsum_combinefn(sklist1, sklist2);
+  free(temporal_tagg_finalfn(sklist == sklist1 ? sklist2 : sklist1));
+  tfloat_result = temporal_tagg_finalfn(sklist);
+  Temporal *wboth = temporal_tagg_finalfn(tfloat_wsum_transfn(
+    tfloat_wsum_transfn(NULL, (Temporal *) tfloatinst1, interv3),
+    (Temporal *) tfloatinst2, interv3));
+  char_result = tfloat_out(tfloat_result, 6);
+  printf("tnumber_tsum_combinefn of two partial window sums\n");
+  printf("%s\n", char_result);
+  assert(temporal_eq(tfloat_result, wboth));
+  free(wpart1); free(wpart2); free(wboth); free(tfloat_result);
+  free(char_result);
 
   /* SkipList *tfloat_tmax_transfn(SkipList *state, const Temporal *temp); */
   sklist = tfloat_tmax_transfn(NULL, tfloat1);
