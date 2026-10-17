@@ -2910,6 +2910,9 @@
 					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extract a temporal alphanumeric value from a temporal JSONB value given by a key</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tjsonb_tgeo"><varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname></link>: Extract a temporal geo value from a temporal JSONB value given by a key</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tjsonb_concat"><varname>||</varname></link>: Temporal JSONB concatenation</para>
 				</listitem>
 				<listitem>

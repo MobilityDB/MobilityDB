@@ -110,6 +110,7 @@ extern Datum datum_jsonb_to_text(Datum jb);
 extern Datum datum_text_to_jsonb(Datum txt);
 extern Datum jsonb_to_alphanum_error(MeosType basetype);
 extern Datum datum_jsonb_to_alphanum(Datum jb, Datum key, Datum temptype, Datum null_handle);
+extern Datum datum_jsonb_to_spatial(Datum jb, Datum key, Datum restype, Datum null_handle);
 
 /*****************************************************************************
  * Temporal JSONB operations
@@ -117,6 +118,8 @@ extern Datum datum_jsonb_to_alphanum(Datum jb, Datum key, Datum temptype, Datum 
 
 extern Temporal *tjsonb_to_talphanum(const Temporal *temp, const char *key,
   MeosType resbasetype, interpType interp, nullHandleType null_handle);
+extern Temporal *tjsonb_to_tspatial(const Temporal *temp, const char *key,
+  MeosType restype, interpType interp, nullHandleType null_handle);
 
 /*****************************************************************************
  * Set wrappers for JSONB operations

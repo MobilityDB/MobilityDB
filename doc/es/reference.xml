@@ -2901,6 +2901,9 @@
 					<para><link linkend="tjsonb_talphanum"><varname>tbool</varname>, <varname>tint</varname>, <varname>tfloat</varname>, <varname>ttext</varname></link>: Extrae un valor alfanumérico temporal de un valor JSONB temporal dado por una clave</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tjsonb_tgeo"><varname>tgeompoint</varname>, <varname>tgeogpoint</varname>, <varname>tgeometry</varname>, <varname>tgeography</varname></link>: Extrae un valor geo temporal de un valor JSONB temporal dado por una clave</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tjsonb_concat"><varname>||</varname></link>: Concatenación JSONB temporal</para>
 				</listitem>
 				<listitem>

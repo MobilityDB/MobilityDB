@@ -41,9 +41,12 @@
 #include "utils/varlena.h"
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
 #include <meos_json.h>
 #include <meos_internal.h>
+#include <meos_internal_geo.h>
 #include <pgtypes.h>
+#include "geo/geo_funcs.h"
 #include "temporal/meos_catalog.h"
 #include "temporal/temporal.h"
 #include "temporal/lifting.h"
@@ -1037,21 +1040,11 @@ jsonb_to_alphanum(const Jsonb *jb, const char *key, MeosType resbasetype,
 {
   assert(jb); assert(key); assert(alphanum_basetype(resbasetype));
 
-  /* Lookup key in the JSONB object */
-  JsonbValue k, *v;
-  k.type = jbvString;
-  k.val.string.len = strlen(key);
-  k.val.string.val = (char *) key;
-  v = findJsonbValueFromContainer(&((Jsonb *) jb)->root, JB_FOBJECT, &k);
-  /* The value found points into the container, so a copy of it outlives the
-   * allocation the lookup returns */
+  /* Lookup key in the JSONB object, which writes the value found */
   JsonbValue found;
-  if (v)
-  {
-    found = *v;
-    pfree(v);
-    v = &found;
-  }
+  JsonbValue *v = JsonContainerIsObject(&jb->root) ?
+    getKeyJsonValueFromContainer((JsonbContainer *) &jb->root, key,
+      strlen(key), &found) : NULL;
 
   /* If value is NULL */
   if (! v)
@@ -1185,6 +1178,88 @@ datum_jsonb_to_alphanum(Datum jb, Datum key, Datum resbasetype,
 }
 
 /**
+ * @brief Convert a JSONB value into a spatial value by extracting one key
+ * @details The value of the key is a string in the text input format of the
+ * base type of the result, as #basetype_in reads it, and it is a point when
+ * the result is a temporal point. This is the spatial counterpart of
+ * #jsonb_to_alphanum, whose treatment of a missing key it follows.
+ * @param[in] jb JSONB value
+ * @param[in] key Key to extract from the JSONB object
+ * @param[in] restype Resulting temporal type
+ * @param[in] null_handle States the null value treatment
+ * @return The value, or NULL when the key is missing or its value is invalid
+ */
+static Datum
+jsonb_to_spatial(const Jsonb *jb, const char *key, MeosType restype,
+  nullHandleType null_handle)
+{
+  assert(jb); assert(key); assert(tgeo_type_all(restype));
+
+  /* Lookup key in the JSONB object, which writes the value found */
+  JsonbValue found;
+  JsonbValue *v = JsonContainerIsObject(&jb->root) ?
+    getKeyJsonValueFromContainer((JsonbContainer *) &jb->root, key,
+      strlen(key), &found) : NULL;
+  if (! v)
+  {
+    if (null_handle == NULL_ERROR)
+    {
+      meos_error(ERROR, MEOS_ERR_NULL_RESULT,
+        "The lifted operation returned NULL");
+      return PointerGetDatum(NULL);
+    }
+    if (null_handle != NULL_RETURN && null_handle != NULL_DELETE)
+    {
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Invalid null_handle value: %d", null_handle);
+      return PointerGetDatum(NULL);
+    }
+    return PointerGetDatum(NULL);
+  }
+  if (v->type != jbvString)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value of key \"%s\" is not a string", key);
+    return PointerGetDatum(NULL);
+  }
+
+  /* Read the value in the input format of the base type */
+  char *buf = palloc(v->val.string.len + 1);
+  memcpy(buf, v->val.string.val, v->val.string.len);
+  buf[v->val.string.len] = '\0';
+  Datum result;
+  bool valid = basetype_in(buf, temptype_basetype(restype), true, &result);
+  pfree(buf);
+  if (! valid)
+    return PointerGetDatum(NULL);
+  if (tpoint_type(restype))
+  {
+    const GSERIALIZED *gs = DatumGetGserializedP(result);
+    if (! ensure_point_type(gs) || ! ensure_not_empty(gs))
+    {
+      pfree(DatumGetPointer(result));
+      return PointerGetDatum(NULL);
+    }
+  }
+  return result;
+}
+
+/**
+ * @brief Convert a JSONB value into a spatial value by extracting one key
+ * @param[in] jb JSONB value
+ * @param[in] key Key to extract from the JSONB object
+ * @param[in] restype Resulting temporal type
+ * @param[in] null_handle States the null value treatment
+ */
+Datum
+datum_jsonb_to_spatial(Datum jb, Datum key, Datum restype, Datum null_handle)
+{
+  return jsonb_to_spatial(DatumGetJsonbP(jb),
+    (const char *) DatumGetPointer(key), (MeosType) DatumGetInt32(restype),
+    (nullHandleType) DatumGetInt32(null_handle));
+}
+
+/**
  * @brief Convert a temporal JSONB value into a temporal alphanumeric value by
  * extracting one key
  * @param[in] temp Temporal JSONB value
@@ -1308,6 +1383,114 @@ tjsonb_to_ttext_key(const Temporal *temp, const char *key,
   /* Ensure the validity of the arguments */
   VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
   return tjsonb_to_talphanum(temp, key, T_TTEXT, STEP, null_handle);
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Convert a temporal JSONB value into a temporal geo value by
+ * extracting one key
+ * @details This is the spatial counterpart of #tjsonb_to_talphanum
+ * @param[in] temp Temporal JSONB value
+ * @param[in] key Key to extract from the JSONB object
+ * @param[in] restype Resulting temporal type
+ * @param[in] interp Interpolation
+ * @param[in] null_handle States the null value treatment
+ */
+Temporal *
+tjsonb_to_tspatial(const Temporal *temp, const char *key, MeosType restype,
+  interpType interp, nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  assert(temp); assert(key); assert(temp->temptype == T_TJSONB);
+  assert(tgeo_type_all(restype));
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_jsonb_to_spatial;
+  lfinfo.argtype[0] = T_JSONB;
+  lfinfo.numparam = 3;
+  lfinfo.param[0] = PointerGetDatum(key);
+  lfinfo.param[1] = Int32GetDatum(restype);
+  lfinfo.param[2] = null_handle;
+  lfinfo.restype = restype;
+  lfinfo.reslinear = (interp == LINEAR);
+  lfinfo.resnull = null_handle; /* per-instant result may be NULL */
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Convert a temporal JSONB value to a temporal geometry point by
+ * extracting one key whose value is a point in a text format
+ * @param[in] temp Temporal JSONB object
+ * @param[in] key Key to extract
+ * @param[in] interp Interpolation
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_to_tgeompoint()
+ */
+Temporal *
+tjsonb_to_tgeompoint(const Temporal *temp, const char *key,
+  interpType interp, nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_to_tspatial(temp, key, T_TGEOMPOINT, interp, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Convert a temporal JSONB value to a temporal geography point by
+ * extracting one key whose value is a point in a text format
+ * @param[in] temp Temporal JSONB object
+ * @param[in] key Key to extract
+ * @param[in] interp Interpolation
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_to_tgeogpoint()
+ */
+Temporal *
+tjsonb_to_tgeogpoint(const Temporal *temp, const char *key,
+  interpType interp, nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_to_tspatial(temp, key, T_TGEOGPOINT, interp, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Convert a temporal JSONB value to a temporal geometry by extracting
+ * one key whose value is a geometry in a text format
+ * @param[in] temp Temporal JSONB object
+ * @param[in] key Key to extract
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_to_tgeometry()
+ */
+Temporal *
+tjsonb_to_tgeometry(const Temporal *temp, const char *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_to_tspatial(temp, key, T_TGEOMETRY, STEP, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Convert a temporal JSONB value to a temporal geography by extracting
+ * one key whose value is a geography in a text format
+ * @param[in] temp Temporal JSONB object
+ * @param[in] key Key to extract
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_to_tgeography()
+ */
+Temporal *
+tjsonb_to_tgeography(const Temporal *temp, const char *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_to_tspatial(temp, key, T_TGEOGRAPHY, STEP, null_handle);
 }
 
 /*****************************************************************************/
