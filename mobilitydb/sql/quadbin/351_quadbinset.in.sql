@@ -288,7 +288,11 @@ CREATE FUNCTION setUnionTransition(internal, quadbinset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION quadbinset_union_finalfn(internal)
+CREATE FUNCTION setUnionFinal(internal, quadbin)
+  RETURNS quadbinset
+  AS 'MODULE_PATHNAME', 'Set_union_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION setUnionFinal(internal, quadbinset)
   RETURNS quadbinset
   AS 'MODULE_PATHNAME', 'Set_union_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -297,7 +301,8 @@ CREATE AGGREGATE setUnion(quadbin) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = quadbinset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
@@ -308,7 +313,8 @@ CREATE AGGREGATE setUnion(quadbinset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
   COMBINEFUNC = set_union_combinefn,
-  FINALFUNC = quadbinset_union_finalfn,
+  FINALFUNC = setUnionFinal,
+  FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
   SERIALFUNC = setstate_serialize,
   DESERIALFUNC = setstate_deserialize,
