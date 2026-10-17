@@ -270,6 +270,10 @@ extern int point_motion_dwithin_period_exact(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, int64 D,
   int64 *n1, int64 *n2);
+extern bool point_motion_dwithin_never(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d);
+extern double point_motion_point_offset_exact(const double *c1,
+  const double *c2, const double *p, int ndims, double r1, double r2);
 extern bool point_motion_dwithin_only_at_end(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, bool start);
