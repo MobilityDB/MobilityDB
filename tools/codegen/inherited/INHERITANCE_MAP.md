@@ -100,10 +100,13 @@ Temporal<T>              temporal_type      = ALL temporal types
   members, which is what shows membership carries no obligation.
 - **`posechain`** is a base type carrying a nested chain of reference frames.
   Its own surface is `550_posechain.in.sql` and its set type is
-  `551_posechainset.in.sql`; the type files, their accessors and their
-  comparisons are hand-written, as `pose_base`'s are, and their generated
-  surface is the `representation_families` entries `posechain_base` and
-  `posechainset_*`. `spatial_basetype()` admits it, so the SRID and
+  `551_posechainset.in.sql`. The base type file is hand-written but for its
+  representations, the `representation_families` entry `posechain_base`, as
+  `pose_base`'s are; the set file is generated as `101_poseset.in.sql` is, by
+  the `span_families` entries `posechainset_*` (I/O, constructors,
+  conversions, transformations, accessors, SRID, `unnest` and `setUnion`) and
+  the comparison, hash, set-operation and topological entries `posechainset`.
+  `spatial_basetype()` admits it, so the SRID and
   bounding-box dispatchers reach it.
 - **`tposechain`** stands on it, so the family deploys the inherited temporal
   surface: `552_tposechain.in.sql` (the type file, I/O, constructors,
