@@ -246,7 +246,8 @@ PG_FUNCTION_INFO_V1(Tfloat_wsum_transfn);
 inline Datum
 Tfloat_wsum_transfn(PG_FUNCTION_ARGS)
 {
-  return Temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN, CROSSINGS);
+  return Temporal_wagg_transfn(fcinfo, &datum_sum_float8, GET_MIN,
+    CROSSINGS_NO);
 }
 
 PGDLLEXPORT Datum Temporal_wcount_transfn(PG_FUNCTION_ARGS);

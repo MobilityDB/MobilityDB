@@ -679,7 +679,7 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
   if (! ensure_temporal_isof_type(temp, T_TFLOAT))
     return NULL;
   return temporal_wagg_transfn(state, temp, interv, &datum_sum_float8,
-    GET_MIN, CROSSINGS);
+    GET_MIN, CROSSINGS_NO);
 }
 
 /**
