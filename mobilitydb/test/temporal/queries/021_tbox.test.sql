@@ -436,17 +436,17 @@ SELECT extent(box) FROM test;
 -- operator. The combine is reached by a parallel plan alone, so it is called
 -- directly here
 SELECT extentTransition(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
-SELECT tbox_extent_combinefn(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT extentCombine(tbox 'TBOXINT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
 SELECT extentTransition(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
-SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
+SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT X([3,4])');
 -- A box carrying no value span states no span type, so it is comparable with
 -- any box, and a null side leaves the other untouched
-SELECT tbox_extent_combinefn(NULL, tbox 'TBOXFLOAT X([3,4])');
-SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])', NULL);
+SELECT extentCombine(NULL, tbox 'TBOXFLOAT X([3,4])');
+SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])', NULL);
 -- Which dimensions a box holds is the second question, asked after the first
 SELECT extentTransition(tbox 'TBOXFLOAT X([1,2])',
   tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
-SELECT tbox_extent_combinefn(tbox 'TBOXFLOAT X([1,2])',
+SELECT extentCombine(tbox 'TBOXFLOAT X([1,2])',
   tbox 'TBOXFLOAT XT([3,4],[2001-01-03,2001-01-04])');
 
 -------------------------------------------------------------------------------

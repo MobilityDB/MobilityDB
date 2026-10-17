@@ -300,7 +300,7 @@ CREATE FUNCTION setUnionFinal(internal, quadbinset)
 CREATE AGGREGATE setUnion(quadbin) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -312,7 +312,7 @@ CREATE AGGREGATE setUnion(quadbin) (
 CREATE AGGREGATE setUnion(quadbinset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

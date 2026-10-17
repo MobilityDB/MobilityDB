@@ -821,7 +821,7 @@ CREATE FUNCTION setUnionTransition(internal, tstzset)
   AS 'MODULE_PATHNAME', 'Set_union_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION set_union_combinefn(internal, internal)
+CREATE FUNCTION setUnionCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Set_union_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -887,7 +887,7 @@ CREATE FUNCTION setUnionFinal(internal, textset)
 CREATE AGGREGATE setUnion(integer) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -898,7 +898,7 @@ CREATE AGGREGATE setUnion(integer) (
 CREATE AGGREGATE setUnion(bigint) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -909,7 +909,7 @@ CREATE AGGREGATE setUnion(bigint) (
 CREATE AGGREGATE setUnion(float) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -920,7 +920,7 @@ CREATE AGGREGATE setUnion(float) (
 CREATE AGGREGATE setUnion(text) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -931,7 +931,7 @@ CREATE AGGREGATE setUnion(text) (
 CREATE AGGREGATE setUnion(date) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -942,7 +942,7 @@ CREATE AGGREGATE setUnion(date) (
 CREATE AGGREGATE setUnion(timestamptz) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -954,7 +954,7 @@ CREATE AGGREGATE setUnion(timestamptz) (
 CREATE AGGREGATE setUnion(intset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -965,7 +965,7 @@ CREATE AGGREGATE setUnion(intset) (
 CREATE AGGREGATE setUnion(bigintset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -976,7 +976,7 @@ CREATE AGGREGATE setUnion(bigintset) (
 CREATE AGGREGATE setUnion(floatset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -987,7 +987,7 @@ CREATE AGGREGATE setUnion(floatset) (
 CREATE AGGREGATE setUnion(textset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -998,7 +998,7 @@ CREATE AGGREGATE setUnion(textset) (
 CREATE AGGREGATE setUnion(dateset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -1009,7 +1009,7 @@ CREATE AGGREGATE setUnion(dateset) (
 CREATE AGGREGATE setUnion(tstzset) (
   SFUNC = setUnionTransition,
   STYPE = internal,
-  COMBINEFUNC = set_union_combinefn,
+  COMBINEFUNC = setUnionCombine,
   FINALFUNC = setUnionFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

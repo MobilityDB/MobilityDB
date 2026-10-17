@@ -178,17 +178,17 @@ SELECT numSpans(spansetUnion(t)) FROM tbl_tstzspanset;
 -- which is what makes these the first cases to reach it at all.
 -------------------------------------------------------------------------------
 
-SELECT span_extent_combinefn(intspan '[1,3)', intspan '[5,7)');
-SELECT span_extent_combinefn(bigintspan '[1,3)', bigintspan '[5,7)');
-SELECT span_extent_combinefn(floatspan '[1.5,3.5)', floatspan '[5.5,7.5)');
-SELECT span_extent_combinefn(datespan '[2001-01-01,2001-01-03)',
+SELECT extentCombine(intspan '[1,3)', intspan '[5,7)');
+SELECT extentCombine(bigintspan '[1,3)', bigintspan '[5,7)');
+SELECT extentCombine(floatspan '[1.5,3.5)', floatspan '[5.5,7.5)');
+SELECT extentCombine(datespan '[2001-01-01,2001-01-03)',
   datespan '[2001-01-05,2001-01-07)');
-SELECT span_extent_combinefn(tstzspan '[2001-01-01,2001-01-03)',
+SELECT extentCombine(tstzspan '[2001-01-01,2001-01-03)',
   tstzspan '[2001-01-05,2001-01-07)');
 -- A null state on either side leaves the other untouched
-SELECT span_extent_combinefn(NULL::intspan, intspan '[5,7)');
-SELECT span_extent_combinefn(intspan '[1,3)', NULL::intspan);
-SELECT span_extent_combinefn(NULL::intspan, NULL::intspan);
+SELECT extentCombine(NULL::intspan, intspan '[5,7)');
+SELECT extentCombine(intspan '[1,3)', NULL::intspan);
+SELECT extentCombine(NULL::intspan, NULL::intspan);
 
 -------------------------------------------------------------------------------
 -- A direct call expands a copy of the span it is given
@@ -198,7 +198,7 @@ INSERT INTO tbl_extent_state VALUES (intspan '[1, 3]', intspan '[1, 3]');
 SELECT extentTransition(s, intspan '[10, 20]'), extentTransition(s, 30),
   extentTransition(s, intset '{40}'),
   extentTransition(s, intspanset '{[50, 60]}'),
-  span_extent_combinefn(s, intspan '[70, 80]')
+  extentCombine(s, intspan '[70, 80]')
 FROM tbl_extent_state;
 SELECT s = s0 FROM tbl_extent_state;
 DROP TABLE tbl_extent_state;

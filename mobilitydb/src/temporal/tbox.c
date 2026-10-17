@@ -1098,7 +1098,7 @@ PG_FUNCTION_INFO_V1(Tbox_extent_combinefn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for extent aggregation of temporal boxes and
  * temporal numbers
- * @sqlfn tbox_extent_combinefn()
+ * @sqlfn extentCombine()
  * @sqlaggfn extent()
  */
 Datum

@@ -238,7 +238,7 @@ INSERT INTO tbl_extent_state VALUES (stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01
   stbox 'STBOX XT(((1, 1),(2, 2)),[2001-01-01, 2001-01-02])');
 SELECT extentTransition(b, tgeompoint 'Point(100 100)@2001-02-01'),
   extentTransition(b, stbox 'STBOX XT(((200, 200),(201, 201)),[2001-03-01, 2001-03-02])'),
-  stbox_extent_combinefn(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
+  extentCombine(b, stbox 'STBOX XT(((300, 300),(301, 301)),[2001-04-01, 2001-04-02])')
 FROM tbl_extent_state;
 SELECT b = b0 FROM tbl_extent_state;
 DROP TABLE tbl_extent_state;

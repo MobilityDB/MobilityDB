@@ -45,13 +45,13 @@ CREATE FUNCTION extentTransition(tstzspan, ttext)
 CREATE AGGREGATE extent(tbool) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(ttext) (
   SFUNC = extentTransition,
   STYPE = tstzspan,
-  COMBINEFUNC = span_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -72,19 +72,19 @@ CREATE FUNCTION extentTransition(tbox, tfloat)
 CREATE AGGREGATE extent(tint) (
   SFUNC = extentTransition,
   STYPE = tbox,
-  COMBINEFUNC = tbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tbigint) (
   SFUNC = extentTransition,
   STYPE = tbox,
-  COMBINEFUNC = tbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 CREATE AGGREGATE extent(tfloat) (
   SFUNC = extentTransition,
   STYPE = tbox,
-  COMBINEFUNC = tbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -120,7 +120,15 @@ CREATE FUNCTION tCountTransition(internal, tstzspanset)
   AS 'MODULE_PATHNAME', 'Tstzspanset_tcount_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE FUNCTION tcount_combinefn(internal, internal)
+CREATE FUNCTION tCountCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tnpointsCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION tdensityCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_tcount_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -132,7 +140,7 @@ CREATE FUNCTION tCountFinal(internal, timestamptz)
 CREATE AGGREGATE tCount(timestamptz) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -147,7 +155,7 @@ CREATE FUNCTION tCountFinal(internal, tstzset)
 CREATE AGGREGATE tCount(tstzset) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -162,7 +170,7 @@ CREATE FUNCTION tCountFinal(internal, tstzspan)
 CREATE AGGREGATE tCount(tstzspan) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -177,7 +185,7 @@ CREATE FUNCTION tCountFinal(internal, tstzspanset)
 CREATE AGGREGATE tCount(tstzspanset) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -197,7 +205,7 @@ CREATE FUNCTION tAndTransition(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tand_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbool_tand_combinefn(internal, internal)
+CREATE FUNCTION tAndCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tand_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -205,7 +213,7 @@ CREATE FUNCTION tOrTransition(internal, tbool)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tor_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbool_tor_combinefn(internal, internal)
+CREATE FUNCTION tOrCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbool_tor_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -217,7 +225,7 @@ CREATE FUNCTION tCountFinal(internal, tbool)
 CREATE AGGREGATE tCount(tbool) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -232,7 +240,7 @@ CREATE FUNCTION tAndFinal(internal, tbool)
 CREATE AGGREGATE tAnd(tbool) (
   SFUNC = tAndTransition,
   STYPE = internal,
-  COMBINEFUNC = tbool_tand_combinefn,
+  COMBINEFUNC = tAndCombine,
   FINALFUNC = tAndFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -246,7 +254,7 @@ CREATE FUNCTION tOrFinal(internal, tbool)
 CREATE AGGREGATE tOr(tbool) (
   SFUNC = tOrTransition,
   STYPE = internal,
-  COMBINEFUNC = tbool_tor_combinefn,
+  COMBINEFUNC = tOrCombine,
   FINALFUNC = tOrFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -270,50 +278,54 @@ CREATE FUNCTION tMinTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_tmin_combinefn(internal, internal)
+CREATE FUNCTION tMinCombine(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tint_tmin_combinefn'
+  AS 'MODULE_PATHNAME', 'Temporal_tmin_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION wMinCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tmin_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tMaxTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_tmax_combinefn(internal, internal)
+CREATE FUNCTION tMaxCombine(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tint_tmax_combinefn'
+  AS 'MODULE_PATHNAME', 'Temporal_tmax_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION wMaxCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Temporal_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tSumTransition(internal, tint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tint_tsum_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tint_tsum_combinefn(internal, internal)
+CREATE FUNCTION tSumCombine(internal, internal)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tint_tsum_combinefn'
+  AS 'MODULE_PATHNAME', 'Tnumber_tsum_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION wSumCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tnumber_tsum_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION wCountCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tnumber_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tMinTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbigint_tmin_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tbigint_tmin_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tMaxTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbigint_tmax_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tbigint_tmax_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tSumTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tbigint_tsum_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tbigint_tsum_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tbigint_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tAvgTransition(internal, tint)
@@ -324,7 +336,11 @@ CREATE FUNCTION tAvgTransition(internal, tbigint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tavg_combinefn(internal, internal)
+CREATE FUNCTION tAvgCombine(internal, internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Tnumber_tavg_combinefn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION wAvgCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tnumber_tavg_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -336,7 +352,7 @@ CREATE FUNCTION tCountFinal(internal, tint)
 CREATE AGGREGATE tCount(tint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -351,7 +367,7 @@ CREATE FUNCTION tCountFinal(internal, tbigint)
 CREATE AGGREGATE tCount(tbigint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -366,7 +382,7 @@ CREATE FUNCTION tMinFinal(internal, tint)
 CREATE AGGREGATE tMin(tint) (
   SFUNC = tMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tmin_combinefn,
+  COMBINEFUNC = tMinCombine,
   FINALFUNC = tMinFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -381,7 +397,7 @@ CREATE FUNCTION tMaxFinal(internal, tint)
 CREATE AGGREGATE tMax(tint) (
   SFUNC = tMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tmax_combinefn,
+  COMBINEFUNC = tMaxCombine,
   FINALFUNC = tMaxFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -396,7 +412,7 @@ CREATE FUNCTION tSumFinal(internal, tint)
 CREATE AGGREGATE tSum(tint) (
   SFUNC = tSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = tSumCombine,
   FINALFUNC = tSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -410,7 +426,7 @@ CREATE FUNCTION tAvgFinal(internal, tint)
 CREATE AGGREGATE tAvg(tint) (
   SFUNC = tAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = tAvgCombine,
   FINALFUNC = tAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -425,7 +441,7 @@ CREATE FUNCTION tMinFinal(internal, tbigint)
 CREATE AGGREGATE tMin(tbigint) (
   SFUNC = tMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tmin_combinefn,
+  COMBINEFUNC = tMinCombine,
   FINALFUNC = tMinFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -440,7 +456,7 @@ CREATE FUNCTION tMaxFinal(internal, tbigint)
 CREATE AGGREGATE tMax(tbigint) (
   SFUNC = tMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tmax_combinefn,
+  COMBINEFUNC = tMaxCombine,
   FINALFUNC = tMaxFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -455,7 +471,7 @@ CREATE FUNCTION tSumFinal(internal, tbigint)
 CREATE AGGREGATE tSum(tbigint) (
   SFUNC = tSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tsum_combinefn,
+  COMBINEFUNC = tSumCombine,
   FINALFUNC = tSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -469,7 +485,7 @@ CREATE FUNCTION tAvgFinal(internal, tbigint)
 CREATE AGGREGATE tAvg(tbigint) (
   SFUNC = tAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = tAvgCombine,
   FINALFUNC = tAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -487,25 +503,13 @@ CREATE FUNCTION tMinTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_tmin_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tfloat_tmin_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tMaxTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tmax_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_tmax_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tfloat_tmax_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tSumTransition(internal, tfloat)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Tfloat_tsum_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tfloat_tsum_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Tfloat_tsum_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not strict
 CREATE FUNCTION tAvgTransition(internal, tfloat)
@@ -520,7 +524,7 @@ CREATE FUNCTION tCountFinal(internal, tfloat)
 CREATE AGGREGATE tCount(tfloat) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -535,7 +539,7 @@ CREATE FUNCTION tMinFinal(internal, tfloat)
 CREATE AGGREGATE tMin(tfloat) (
   SFUNC = tMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tmin_combinefn,
+  COMBINEFUNC = tMinCombine,
   FINALFUNC = tMinFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -550,7 +554,7 @@ CREATE FUNCTION tMaxFinal(internal, tfloat)
 CREATE AGGREGATE tMax(tfloat) (
   SFUNC = tMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tmax_combinefn,
+  COMBINEFUNC = tMaxCombine,
   FINALFUNC = tMaxFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -565,7 +569,7 @@ CREATE FUNCTION tSumFinal(internal, tfloat)
 CREATE AGGREGATE tSum(tfloat) (
   SFUNC = tSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tsum_combinefn,
+  COMBINEFUNC = tSumCombine,
   FINALFUNC = tSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -579,7 +583,7 @@ CREATE FUNCTION tAvgFinal(internal, tfloat)
 CREATE AGGREGATE tAvg(tfloat) (
   SFUNC = tAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = tAvgCombine,
   FINALFUNC = tAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -599,17 +603,9 @@ CREATE FUNCTION tMinTransition(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmin_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION ttext_tmin_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Ttext_tmin_combinefn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION tMaxTransition(internal, ttext)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Ttext_tmax_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION ttext_tmax_combinefn(internal, internal)
-  RETURNS internal
-  AS 'MODULE_PATHNAME', 'Ttext_tmax_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION tCountFinal(internal, ttext)
@@ -619,7 +615,7 @@ CREATE FUNCTION tCountFinal(internal, ttext)
 CREATE AGGREGATE tCount(ttext) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -634,7 +630,7 @@ CREATE FUNCTION tMinFinal(internal, ttext)
 CREATE AGGREGATE tMin(ttext) (
   SFUNC = tMinTransition,
   STYPE = internal,
-  COMBINEFUNC = ttext_tmin_combinefn,
+  COMBINEFUNC = tMinCombine,
   FINALFUNC = tMinFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,
@@ -649,7 +645,7 @@ CREATE FUNCTION tMaxFinal(internal, ttext)
 CREATE AGGREGATE tMax(ttext) (
   SFUNC = tMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = ttext_tmax_combinefn,
+  COMBINEFUNC = tMaxCombine,
   FINALFUNC = tMaxFinal,
   FINALFUNC_EXTRA,
   FINALFUNC_MODIFY = READ_WRITE,

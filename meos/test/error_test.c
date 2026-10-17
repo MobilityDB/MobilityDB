@@ -353,6 +353,33 @@ int main(void)
   free(magg1); free(magg2);
   meos_errno_reset();
 
+  /* The minimum, maximum and sum combines read the type of the values from
+   * the states, so two states of different types have no comparison or sum
+   * in common, and each combine declines them rather than applying the one
+   * of the first state to the values of the second */
+  Temporal *cagg1 = tint_in("[1@2001-01-01, 3@2001-01-03]");
+  Temporal *cagg2 = tfloat_in("[1.5@2001-01-02, 2.5@2001-01-04]");
+  assert(cagg1 != NULL && cagg2 != NULL && meos_errno() == 0);
+  SkipList *(*ccombines[])(SkipList *, SkipList *) = {
+    &temporal_tmin_combinefn, &temporal_tmax_combinefn,
+    &tnumber_tsum_combinefn };
+  const char *ccombnames[] = { "temporal_tmin_combinefn",
+    "temporal_tmax_combinefn", "tnumber_tsum_combinefn" };
+  for (int i = 0; i < 3; i++)
+  {
+    SkipList *cst1 = temporal_to_taggstate(cagg1);
+    SkipList *cst2 = temporal_to_taggstate(cagg2);
+    assert(cst1 != NULL && cst2 != NULL && meos_errno() == 0);
+    SkipList *ccomb = ccombines[i](cst1, cst2);
+    int cerr = meos_errno();
+    printf("%s of a tint and a tfloat state: declined, errno %d\n",
+      ccombnames[i], cerr);
+    assert(ccomb == NULL && cerr == MEOS_ERR_AGGREGATION_ERROR);
+    skiplist_free(cst1); skiplist_free(cst2);
+    meos_errno_reset();
+  }
+  free(cagg1); free(cagg2);
+
   /* A sequence set is held to ONE temporal type. tsequenceset_make_exp labels
    * the result with the type of the FIRST sequence and sizes its bounding box
    * from it, and tseqarr_compute_bbox then dispatches on that type and reads

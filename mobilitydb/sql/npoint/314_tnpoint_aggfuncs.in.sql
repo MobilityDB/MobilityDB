@@ -40,7 +40,7 @@ CREATE FUNCTION extentTransition(stbox, tnpoint)
 CREATE AGGREGATE extent(tnpoint) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -57,7 +57,7 @@ CREATE FUNCTION tCountFinal(internal, tnpoint)
 CREATE AGGREGATE tCount(tnpoint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -78,7 +78,7 @@ CREATE FUNCTION wCountFinal(internal, tnpoint, interval)
 CREATE AGGREGATE wCount(tnpoint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -99,7 +99,7 @@ CREATE FUNCTION tCentroidFinal(internal, tnpoint)
 CREATE AGGREGATE tCentroid(tnpoint) (
   SFUNC = tCentroidTransition,
   STYPE = internal,
-  COMBINEFUNC = tcentroid_combinefn,
+  COMBINEFUNC = tCentroidCombine,
   FINALFUNC = tCentroidFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

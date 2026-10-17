@@ -61,7 +61,7 @@ CREATE FUNCTION wMinFinal(internal, tint, interval)
 CREATE AGGREGATE wMin(tint, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tmin_combinefn,
+  COMBINEFUNC = wMinCombine,
   FINALFUNC = wMinFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -75,7 +75,7 @@ CREATE FUNCTION wMaxFinal(internal, tint, interval)
 CREATE AGGREGATE wMax(tint, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tmax_combinefn,
+  COMBINEFUNC = wMaxCombine,
   FINALFUNC = wMaxFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -89,7 +89,7 @@ CREATE FUNCTION wSumFinal(internal, tint, interval)
 CREATE AGGREGATE wSum(tint, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wSumCombine,
   FINALFUNC = wSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -103,7 +103,7 @@ CREATE FUNCTION wCountFinal(internal, tint, interval)
 CREATE AGGREGATE wCount(tint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -117,7 +117,7 @@ CREATE FUNCTION wAvgFinal(internal, tint, interval)
 CREATE AGGREGATE wAvg(tint, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = wAvgCombine,
   FINALFUNC = wAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -156,7 +156,7 @@ CREATE FUNCTION wMinFinal(internal, tbigint, interval)
 CREATE AGGREGATE wMin(tbigint, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tmin_combinefn,
+  COMBINEFUNC = wMinCombine,
   FINALFUNC = wMinFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -170,7 +170,7 @@ CREATE FUNCTION wMaxFinal(internal, tbigint, interval)
 CREATE AGGREGATE wMax(tbigint, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tmax_combinefn,
+  COMBINEFUNC = wMaxCombine,
   FINALFUNC = wMaxFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -184,7 +184,7 @@ CREATE FUNCTION wSumFinal(internal, tbigint, interval)
 CREATE AGGREGATE wSum(tbigint, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tsum_combinefn,
+  COMBINEFUNC = wSumCombine,
   FINALFUNC = wSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -198,7 +198,7 @@ CREATE FUNCTION wCountFinal(internal, tbigint, interval)
 CREATE AGGREGATE wCount(tbigint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tbigint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -212,7 +212,7 @@ CREATE FUNCTION wAvgFinal(internal, tbigint, interval)
 CREATE AGGREGATE wAvg(tbigint, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = wAvgCombine,
   FINALFUNC = wAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -251,7 +251,7 @@ CREATE FUNCTION wMinFinal(internal, tfloat, interval)
 CREATE AGGREGATE wMin(tfloat, interval) (
   SFUNC = wMinTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tmin_combinefn,
+  COMBINEFUNC = wMinCombine,
   FINALFUNC = wMinFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -265,7 +265,7 @@ CREATE FUNCTION wMaxFinal(internal, tfloat, interval)
 CREATE AGGREGATE wMax(tfloat, interval) (
   SFUNC = wMaxTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tmax_combinefn,
+  COMBINEFUNC = wMaxCombine,
   FINALFUNC = wMaxFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -279,7 +279,7 @@ CREATE FUNCTION wSumFinal(internal, tfloat, interval)
 CREATE AGGREGATE wSum(tfloat, interval) (
   SFUNC = wSumTransition,
   STYPE = internal,
-  COMBINEFUNC = tfloat_tsum_combinefn,
+  COMBINEFUNC = wSumCombine,
   FINALFUNC = wSumFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -293,7 +293,7 @@ CREATE FUNCTION wCountFinal(internal, tfloat, interval)
 CREATE AGGREGATE wCount(tfloat, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -307,7 +307,7 @@ CREATE FUNCTION wAvgFinal(internal, tfloat, interval)
 CREATE AGGREGATE wAvg(tfloat, interval) (
   SFUNC = wAvgTransition,
   STYPE = internal,
-  COMBINEFUNC = tavg_combinefn,
+  COMBINEFUNC = wAvgCombine,
   FINALFUNC = wAvgFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

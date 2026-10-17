@@ -81,6 +81,20 @@ extern SkipList *tcontseq_tagg_transfn(SkipList *state, const TSequence *seq,
 extern SkipList *temporal_tagg_combinefn(SkipList *state1, SkipList *state2,
   datum_func2 func, bool crossings);
 
+/**
+ * Operation of a temporal aggregate whose combine function reads the type of
+ * the values from the states
+ */
+typedef enum
+{
+  TAGG_MIN,
+  TAGG_MAX,
+  TAGG_SUM,
+} taggOp;
+
+extern bool tagg_combine_func(SkipList *state1, SkipList *state2, taggOp op,
+  datum_func2 *func, bool *crossings);
+
 extern SkipList *tinstant_tagg_transfn(SkipList *state, const TInstant *inst,
   datum_func2 func);
 extern TSequence *tinstant_tavg_finalfn(TInstant **instants, int count);

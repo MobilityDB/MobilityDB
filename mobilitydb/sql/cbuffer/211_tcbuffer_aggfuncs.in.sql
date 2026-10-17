@@ -41,7 +41,7 @@ CREATE FUNCTION extentTransition(stbox, tcbuffer)
 CREATE AGGREGATE extent(tcbuffer) (
   SFUNC = extentTransition,
   STYPE = stbox,
-  COMBINEFUNC = stbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -58,7 +58,7 @@ CREATE FUNCTION tCountFinal(internal, tcbuffer)
 CREATE AGGREGATE tCount(tcbuffer) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -79,7 +79,7 @@ CREATE FUNCTION wCountFinal(internal, tcbuffer, interval)
 CREATE AGGREGATE wCount(tcbuffer, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

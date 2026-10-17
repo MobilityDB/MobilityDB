@@ -36,7 +36,7 @@ CREATE FUNCTION extentTransition(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_extent_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION tpcbox_extent_combinefn(tpcbox, tpcbox)
+CREATE FUNCTION extentCombine(tpcbox, tpcbox)
   RETURNS tpcbox
   AS 'MODULE_PATHNAME', 'Tpcbox_extent_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -54,21 +54,21 @@ CREATE FUNCTION extentTransition(tpcbox, tpcpatch)
 CREATE AGGREGATE extent(tpcbox) (
   SFUNC = extentTransition,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpoint) (
   SFUNC = extentTransition,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
 CREATE AGGREGATE extent(tpcpatch) (
   SFUNC = extentTransition,
   STYPE = tpcbox,
-  COMBINEFUNC = tpcbox_extent_combinefn,
+  COMBINEFUNC = extentCombine,
   PARALLEL = safe
 );
 
@@ -92,7 +92,7 @@ CREATE FUNCTION tCountFinal(internal, tpcpoint)
 CREATE AGGREGATE tCount(tpcpoint) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -107,7 +107,7 @@ CREATE FUNCTION tCountFinal(internal, tpcpatch)
 CREATE AGGREGATE tCount(tpcpatch) (
   SFUNC = tCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tCountCombine,
   FINALFUNC = tCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -131,7 +131,7 @@ CREATE FUNCTION tnpointsFinal(internal, tpcpatch)
 CREATE AGGREGATE tnpoints(tpcpatch) (
   SFUNC = tnpointsTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tnpointsCombine,
   FINALFUNC = tnpointsFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -154,7 +154,7 @@ CREATE FUNCTION tdensityFinal(internal, tpcpatch)
 CREATE AGGREGATE tdensity(tpcpatch) (
   SFUNC = tdensityTransition,
   STYPE = internal,
-  COMBINEFUNC = tcount_combinefn,
+  COMBINEFUNC = tdensityCombine,
   FINALFUNC = tdensityFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -178,7 +178,7 @@ CREATE FUNCTION wCountFinal(internal, tpcpoint, interval)
 CREATE AGGREGATE wCount(tpcpoint, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,
@@ -193,7 +193,7 @@ CREATE FUNCTION wCountFinal(internal, tpcpatch, interval)
 CREATE AGGREGATE wCount(tpcpatch, interval) (
   SFUNC = wCountTransition,
   STYPE = internal,
-  COMBINEFUNC = tint_tsum_combinefn,
+  COMBINEFUNC = wCountCombine,
   FINALFUNC = wCountFinal,
   FINALFUNC_EXTRA,
   SERIALFUNC = taggstate_serialize,

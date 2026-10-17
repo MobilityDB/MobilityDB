@@ -950,6 +950,73 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
 }
 
 /**
+ * @brief Return in the last two arguments the function and the crossings with
+ * which #temporal_tagg_combinefn combines two states of a temporal minimum,
+ * maximum or sum aggregate, read from the type of their values
+ * @details Validates, as #ensure_same_skiplist_subtype validates the subtype,
+ * that the states hold values of one type and that the aggregate takes it.
+ * The function is `NULL` when neither state holds a value, the combine then
+ * answering a state without calling it. Only the float minimum and maximum
+ * add the crossings, as their transitions do.
+ * @param[in] state1, state2 Current aggregate states, may be `NULL`
+ * @param[in] op Operation of the aggregate
+ * @param[out] func Function
+ * @param[out] crossings True if turning points are added in the segments
+ */
+bool
+tagg_combine_func(SkipList *state1, SkipList *state2, taggOp op,
+  datum_func2 *func, bool *crossings)
+{
+  MeosType type1 = (state1 && state1->length > 0) ?
+    ((Temporal *) skiplist_headval(state1))->temptype : T_UNKNOWN;
+  MeosType type2 = (state2 && state2->length > 0) ?
+    ((Temporal *) skiplist_headval(state2))->temptype : T_UNKNOWN;
+  if (type1 != T_UNKNOWN && type2 != T_UNKNOWN && type1 != type2)
+  {
+    meos_error(ERROR, MEOS_ERR_AGGREGATION_ERROR,
+      "Cannot aggregate temporal values of different type");
+    return false;
+  }
+  MeosType temptype = (type1 != T_UNKNOWN) ? type1 : type2;
+  *func = NULL;
+  *crossings = CROSSINGS_NO;
+  switch (temptype)
+  {
+    case T_UNKNOWN:
+      return true;
+    case T_TINT:
+      *func = (op == TAGG_MIN) ? &datum_min_int32 :
+        (op == TAGG_MAX) ? &datum_max_int32 : &datum_sum_int32;
+      return true;
+    case T_TBIGINT:
+      *func = (op == TAGG_MIN) ? &datum_min_int64 :
+        (op == TAGG_MAX) ? &datum_max_int64 : &datum_sum_int64;
+      return true;
+    case T_TFLOAT:
+      *func = (op == TAGG_MIN) ? &datum_min_float8 :
+        (op == TAGG_MAX) ? &datum_max_float8 : &datum_sum_float8;
+      *crossings = (op != TAGG_SUM) ? CROSSINGS : CROSSINGS_NO;
+      return true;
+    case T_TTEXT:
+      if (op != TAGG_SUM)
+      {
+        *func = (op == TAGG_MIN) ? &datum_min_text : &datum_max_text;
+        return true;
+      }
+      /* The sum takes no temporal text */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "The aggregate does not take temporal values of type %s",
+        meostype_name(temptype));
+      return false;
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "The aggregate does not take temporal values of type %s",
+        meostype_name(temptype));
+      return false;
+  }
+}
+
+/**
  * @brief Return a copy of the temporal values contained in the skiplist
  */
 Temporal **
