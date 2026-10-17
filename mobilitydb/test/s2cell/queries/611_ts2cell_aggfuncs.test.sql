@@ -59,7 +59,7 @@ SELECT asText(wCount(temp, interval '1 day')) FROM (VALUES
 -- Merge, and the bare form against its Agg twin in one query
 -------------------------------------------------------------------------------
 
-SELECT asText(mergeAgg(temp)) FROM (VALUES
+SELECT asText(merge(temp)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(temp);
 
@@ -67,11 +67,7 @@ SELECT asText(mergeAgg(temp)) FROM (VALUES
 -- Append
 -------------------------------------------------------------------------------
 
-SELECT asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
-  (ts2cell '47c3c3@2001-01-01'),
-  (ts2cell '47c3c4@2001-01-02')) t(inst);
-SELECT asText(appendInstantAgg(inst ORDER BY inst))
-  = asText(appendInstantAgg(inst ORDER BY inst)) FROM (VALUES
+SELECT asText(appendInstant(inst ORDER BY inst)) FROM (VALUES
   (ts2cell '47c3c3@2001-01-01'),
   (ts2cell '47c3c4@2001-01-02')) t(inst);
 

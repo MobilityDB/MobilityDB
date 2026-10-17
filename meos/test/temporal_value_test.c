@@ -36,7 +36,10 @@
  * program verifies, for every temporal type, that the value of an instant is
  * the value its start value function answers, and that a sequence, a null
  * value and a value of another type are refused with the error codes 11, 10
- * and 11 and the error value of the function.
+ * and 11 and the error value of the function. For a temporal pose chain it
+ * verifies as well that the start, end and n-th values of a sequence are the
+ * chains the sequence holds, that a number past its count answers no value,
+ * and that a number that is not positive is refused with the error code 12.
  *
  * The program can be build as follows
  * @code
@@ -337,11 +340,37 @@ int main(void)
     "PoseChain(Pose(Point(1 0), 0))@2001-01-02}");
   PoseChain *pc = tposechain_value(inst);
   PoseChain **pcs = tposechain_values(inst, &count);
+  PoseChain *pc2 = tposechain_start_value(inst);
   str = posechain_out(pc, 6);
   printf("tposechain_value: %s, errno %d\n", str, meos_errno());
   assert(count == 1 && posechain_num_poses(pc) == 2 &&
-    posechain_eq(pc, pcs[0]) && meos_errno() == 0);
-  free(pc); free(pcs[0]); free(pcs); free(str);
+    posechain_eq(pc, pcs[0]) && posechain_eq(pc, pc2) && meos_errno() == 0);
+  free(pc); free(pc2); free(pcs[0]); free(pcs); free(str);
+  /* The start, end and n-th values of a sequence are the chains it holds, in
+   * its order, a number past its count answers no value and no error, and a
+   * number that is not positive is refused */
+  PoseChain *first = posechain_in("PoseChain(Pose(Point(0 0), 0))");
+  PoseChain *last = posechain_in("PoseChain(Pose(Point(1 0), 0))");
+  PoseChain *start = tposechain_start_value(seq);
+  PoseChain *end = tposechain_end_value(seq);
+  PoseChain *nth1 = NULL, *nth2 = NULL, *none = NULL;
+  assert(tposechain_value_n(seq, 1, &nth1) &&
+    tposechain_value_n(seq, 2, &nth2));
+  printf("tposechain start, end and n-th values: errno %d\n", meos_errno());
+  assert(posechain_eq(start, first) && posechain_eq(end, last) &&
+    posechain_eq(nth1, first) && posechain_eq(nth2, last) &&
+    meos_errno() == 0);
+  assert(! tposechain_value_n(seq, 3, &none) && none == NULL &&
+    meos_errno() == 0);
+  free(first); free(last); free(start); free(end); free(nth1); free(nth2);
+  REFUSED("tposechain_value_n(0)", ! tposechain_value_n(seq, 0, &none),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  REFUSED("tposechain_start_value(NULL)", tposechain_start_value(NULL) == NULL,
+    MEOS_ERR_INVALID_ARG);
+  REFUSED("tposechain_end_value(tfloat)", tposechain_end_value(other) == NULL,
+    MEOS_ERR_INVALID_ARG_TYPE);
+  REFUSED("tposechain_value_n(NULL result)",
+    ! tposechain_value_n(seq, 1, NULL), MEOS_ERR_INVALID_ARG);
   REFUSED("tposechain_value(sequence)", tposechain_value(seq) == NULL,
     MEOS_ERR_INVALID_ARG_TYPE);
   REFUSED("tposechain_value(NULL)", tposechain_value(NULL) == NULL,

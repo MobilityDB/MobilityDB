@@ -175,11 +175,11 @@ CREATE AGGREGATE wCount(tpcpatch, interval) (
  * Merge — combine multiple temporal values into one
  *****************************************************************************/
 
-CREATE FUNCTION mergeAggTransition(internal, tpcpoint)
+CREATE FUNCTION mergeTransition(internal, tpcpoint)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION mergeAggTransition(internal, tpcpatch)
+CREATE FUNCTION mergeTransition(internal, tpcpatch)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Temporal_merge_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -193,20 +193,8 @@ CREATE FUNCTION tpcpatch_tagg_finalfn(internal)
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tpcpoint) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tpcpoint_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-CREATE AGGREGATE mergeAgg(tpcpoint) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpoint_tagg_finalfn,
@@ -216,20 +204,8 @@ CREATE AGGREGATE mergeAgg(tpcpoint) (
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE merge(tpcpatch) (
-  SFUNC = mergeAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = mergeCombine,
-  FINALFUNC = tpcpatch_tagg_finalfn,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = taggstate_serialize,
-  DESERIALFUNC = taggstate_deserialize,
-  PARALLEL = safe
-);
-CREATE AGGREGATE mergeAgg(tpcpatch) (
-  SFUNC = mergeAggTransition,
+  SFUNC = mergeTransition,
   STYPE = internal,
   COMBINEFUNC = mergeCombine,
   FINALFUNC = tpcpatch_tagg_finalfn,
@@ -244,12 +220,12 @@ CREATE AGGREGATE mergeAgg(tpcpatch) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(tpcpoint, tpcpoint)
+CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(tpcpoint, tpcpoint,
+CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint,
     interp text DEFAULT NULL, maxt interval DEFAULT NULL)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -260,31 +236,15 @@ CREATE FUNCTION temporal_append_finalfn(tpcpoint)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpoint) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = tpcpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tpcpoint) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = tpcpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tpcpoint, text, interval) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -292,7 +252,7 @@ CREATE AGGREGATE appendInstantAgg(tpcpoint, text, interval) (
 
 -- tpcpatch
 -- The function is not STRICT
-CREATE FUNCTION appendInstantAggTransition(tpcpatch, tpcpatch)
+CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -302,16 +262,8 @@ CREATE FUNCTION temporal_append_finalfn(tpcpatch)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendInstant(tpcpatch) (
-  SFUNC = appendInstantAggTransition,
-  STYPE = tpcpatch,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendInstantAgg(tpcpatch) (
-  SFUNC = appendInstantAggTransition,
+  SFUNC = appendInstantTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
@@ -322,40 +274,24 @@ CREATE AGGREGATE appendInstantAgg(tpcpatch) (
  *****************************************************************************/
 
 -- The function is not STRICT
-CREATE FUNCTION appendSequenceAggTransition(tpcpoint, tpcpoint)
+CREATE FUNCTION appendSequenceTransition(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendSequenceAggTransition(tpcpatch, tpcpatch)
+CREATE FUNCTION appendSequenceTransition(tpcpatch, tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_app_tseq_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tpcpoint) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tpcpoint,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendSequenceAgg(tpcpoint) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tpcpoint,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe
 );
 
-/* Function deprecated in 1.4
-   Some bindings require Agg suffix to disambiguate from the scalar function */
 CREATE AGGREGATE appendSequence(tpcpatch) (
-  SFUNC = appendSequenceAggTransition,
-  STYPE = tpcpatch,
-  FINALFUNC = temporal_append_finalfn,
-  PARALLEL = safe
-);
-CREATE AGGREGATE appendSequenceAgg(tpcpatch) (
-  SFUNC = appendSequenceAggTransition,
+  SFUNC = appendSequenceTransition,
   STYPE = tpcpatch,
   FINALFUNC = temporal_append_finalfn,
   PARALLEL = safe

@@ -135,6 +135,10 @@ SELECT intset(jsonbset '{"{\"a\":\"1\", \"b\":2.5}"}', text 'a');
 SELECT floatset(jsonbset '{"{\"a\":true, \"b\":2.5}"}', text 'a');
 SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'a');
 SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
+-- A key whose value is zero is extracted as zero
+SELECT intset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+SELECT bigintset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+SELECT floatset(jsonbset '{"{\"a\":0}", "{\"a\":2.5}"}', text 'a');
 /* Errors */
 SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
 SELECT intset(jsonbset '{"{\"a\":\"xxx\", \"b\":2.5}"}', text 'a');

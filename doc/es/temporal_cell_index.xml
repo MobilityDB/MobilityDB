@@ -1869,22 +1869,22 @@ SELECT wCount(temp, interval '1 day') FROM (VALUES
 			</listitem>
 
 			<listitem xml:id="tcell_agg_twins">
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 				<para>Agregar un conjunto de celdas temporales fusionándolas, o ensamblándolas en una secuencia o en un conjunto de secuencias</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-mergeAgg(tcell) → tcell
-appendInstantAgg(tcell,interp text='step',maxt interval) → tcell
-appendSequenceAgg(tcell) → tcell
+merge(tcell) → tcell
+appendInstant(tcell,interp text='step',maxt interval) → tcell
+appendSequence(tcell) → tcell
 </programlisting>
 				<para>Cada una lleva una grafía escueta que se conserva por compatibilidad hacia atrás con PostgreSQL.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT mergeAgg(temp) FROM (VALUES (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
+SELECT merge(temp) FROM (VALUES (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
 -- {831c02fffffffff@2001-01-01}
-SELECT mergeAgg(temp) FROM (VALUES (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
+SELECT merge(temp) FROM (VALUES (tquadbin '48a6227affffffff@2001-01-01')) AS t(temp);
 -- {48a6227affffffff@2001-01-01}
-SELECT mergeAgg(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
+SELECT merge(temp) FROM (VALUES (ts2cell '47c3c@2001-01-01')) AS t(temp);
 -- {47c3c@2001-01-01}
 </programlisting>
 			</listitem>
@@ -2587,7 +2587,7 @@ SELECT tripid, avgValue(rasterValue(trip, elev)) AS mean_elev FROM trips,
 SELECT tripid FROM trips, elevation_raster
 WHERE atSpan(rasterValue(trip, elev), floatspan '[200, 9999]') IS NOT NULL;
 </programlisting>
-				<para>Un ráster cargado como una tabla de teselas, como lo carga <varname>raster2pgsql -t</varname>, se lee a lo largo de una trayectoria fusionando las lecturas de sus teselas con <varname>mergeAgg</varname>. Una posición se encuentra en un píxel de una sola tesela, de modo que las lecturas de las teselas ocupan tiempos disjuntos, y su fusión responde la lectura del ráster que las teselas cubren, incluido un viaje que pasa de una tesela a la siguiente.</para>
+				<para>Un ráster cargado como una tabla de teselas, como lo carga <varname>raster2pgsql -t</varname>, se lee a lo largo de una trayectoria fusionando las lecturas de sus teselas con <varname>merge</varname>. Una posición se encuentra en un píxel de una sola tesela, de modo que las lecturas de las teselas ocupan tiempos disjuntos, y su fusión responde la lectura del ráster que las teselas cubren, incluido un viaje que pasa de una tesela a la siguiente.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- A 4x4 raster read along a trip whole, and as its four tiles of 2x2 pixels
 WITH r AS (
@@ -2600,7 +2600,7 @@ WITH r AS (
 t AS (
   SELECT tgeompoint 'SRID=4326;[POINT(0.5 3.5)@2001-01-01, POINT(3.5 0.5)@2001-01-02]'
     AS trip )
-SELECT mergeAgg(rasterValue(trip, tile)) = (SELECT rasterValue(trip, rast) FROM t, r)
+SELECT merge(rasterValue(trip, tile)) = (SELECT rasterValue(trip, rast) FROM t, r)
 FROM t, r, ST_Tile(rast, 2, 2) AS tile;
 -- true
 </programlisting>
@@ -2664,11 +2664,10 @@ SELECT valuePercent(r, 2::float), valuePercent(r, 3::float) FROM rast;
 
 			<listitem xml:id="raster_sameAlignment">
 				<indexterm significance="normal"><primary><varname>sameAlignment</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>sameAlignmentAgg</varname></primary></indexterm>
-				<para>Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
+								<para>Devuelve verdadero si los rásteres están sobre la misma rejilla</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 sameAlignment(rast1 raster,rast2 raster) → boolean
-sameAlignmentAgg(raster) → boolean
+sameAlignment(raster) → boolean
 sameAlignment(raster) → boolean
 </programlisting>
 				<para>La prueba de <varname>ST_SameAlignment</varname> de PostGIS: dos rásteres están alineados cuando tienen la misma escala y la misma inclinación y una esquina de píxel de uno cae sobre una esquina de píxel del otro, de modo que sus píxeles pueden combinarse uno a uno. El agregado responde si cada ráster de una columna está alineado con el primero, omitiendo un ráster <varname>NULL</varname> como <varname>setUnion</varname> omite un conjunto <varname>NULL</varname>, donde PostGIS responde <varname>NULL</varname>; sobre ningún ráster responde <varname>NULL</varname>. Rásteres de SRID distintos producen un error, donde PostGIS responde falso con un aviso.</para>
@@ -2678,7 +2677,7 @@ WITH r AS (SELECT
   ST_MakeEmptyRaster(3, 3, 1.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS east1,
   ST_MakeEmptyRaster(3, 3, 0.5, 3.0, 1.0, -1.0, 0.0, 0.0, 4326) AS easthalf)
 SELECT sameAlignment(base, east1), sameAlignment(base, easthalf),
-  (SELECT sameAlignmentAgg(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
+  (SELECT sameAlignment(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
 FROM r;
 -- t | f | f
 </programlisting>

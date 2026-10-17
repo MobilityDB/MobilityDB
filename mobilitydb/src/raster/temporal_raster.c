@@ -2492,8 +2492,9 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_transfn);
  * the same grid
  * @details The state lives in the aggregate context, as #Set_union_transfn
  * keeps its own
- * @sqlfn sameAlignmentAggTransition()
- * @sqlaggfn sameAlignmentAgg()
+ * @sqlfn sameAlignmentTransition()
+ * @sqlaggfn sameAlignment()
+ * @altsqlfn sameAlignmentAgg()
  */
 Datum
 Raster_same_alignment_transfn(PG_FUNCTION_ARGS)
@@ -2523,8 +2524,8 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_combinefn);
  * @brief Combine function of the aggregate testing whether rasters lie on the
  * same grid
  * @details The states are combined as #Set_union_combinefn combines its own
- * @sqlfn sameAlignmentAggCombine()
- * @sqlaggfn sameAlignmentAgg()
+ * @sqlfn sameAlignmentCombine()
+ * @sqlaggfn sameAlignment()
  */
 Datum
 Raster_same_alignment_combinefn(PG_FUNCTION_ARGS)
@@ -2552,8 +2553,8 @@ PG_FUNCTION_INFO_V1(Raster_same_alignment_finalfn);
  * @brief Final function of the aggregate testing whether rasters lie on the
  * same grid
  * @details An aggregate over no raster answers NULL, as for PostGIS
- * @sqlfn sameAlignmentAggFinal()
- * @sqlaggfn sameAlignmentAgg()
+ * @sqlfn sameAlignmentFinal()
+ * @sqlaggfn sameAlignment()
  */
 Datum
 Raster_same_alignment_finalfn(PG_FUNCTION_ARGS)
@@ -2571,8 +2572,8 @@ PG_FUNCTION_INFO_V1(Rasteralignstate_serialize);
  * @brief Serialize the state of the aggregate testing whether rasters lie on
  * the same grid
  * @details The bytes are wrapped as #Setstate_serialize wraps its own
- * @sqlfn sameAlignmentAggSerialize()
- * @sqlaggfn sameAlignmentAgg()
+ * @sqlfn sameAlignmentSerialize()
+ * @sqlaggfn sameAlignment()
  */
 Datum
 Rasteralignstate_serialize(PG_FUNCTION_ARGS)
@@ -2595,8 +2596,8 @@ PG_FUNCTION_INFO_V1(Rasteralignstate_deserialize);
  * on the same grid
  * @details The state is built in the aggregate context, as
  * #Setstate_deserialize builds its own
- * @sqlfn sameAlignmentAggDeserialize()
- * @sqlaggfn sameAlignmentAgg()
+ * @sqlfn sameAlignmentDeserialize()
+ * @sqlaggfn sameAlignment()
  */
 Datum
 Rasteralignstate_deserialize(PG_FUNCTION_ARGS)

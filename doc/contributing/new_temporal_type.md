@@ -397,7 +397,7 @@ A new temporal type is at *parity* when it exposes the same shape of surface as 
 | Distance | `tdistance_*`, `nad_*` (failure sentinel = `DBL_MAX`), `nai_*`, `shortestline_*` for every cross-type combo | every spatial type |
 | Comparison | `eq/ne/lt/le/gt/ge` (orderable types only — skip lt/gt for non-orderable like cbuffer / pose) | every type |
 | Spatial relationships | `contains/covers/disjoint/intersects/touches/dwithin` × `{ever, always, t}` for each cross-type | spatial types |
-| Aggregates | `extent` (returns the spatiotemporal `STBox`), `tcount`, `mergeAgg`, `appendInstantAgg`, `appendSequenceAgg` | every type |
+| Aggregates | `extent` (returns the spatiotemporal `STBox`), `tCount`, `merge`, `appendInstant`, `appendSequence` (DuckDB, Spark and Flink call the last three `mergeAgg`, `appendInstantAgg`, `appendSequenceAgg`, from the `@altsqlfn` of their transitions) | every type |
 | Index opclasses | GiST + SP-GiST registered for both `tfoobox` and `tfoo` | every type |
 | Set / span / spanset | `fooset` exists and supports the standard set ops (`@<`, `@>`, `&&`, `+`, `-`, `*`) | every type |
 | MEOS example program | `meos/examples/foo_*.c` exercising a realistic end-to-end workload | tgeo (`trgeo_distance.c`), tpose (synthetic-trajectory) |

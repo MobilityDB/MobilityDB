@@ -102,7 +102,7 @@ PG_FUNCTION_INFO_V1(Temporal_tagg_finalfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Generic final function for temporal aggregation
  * @sqlfn tCount(), merge(), ...
- * @sqlaggfn merge(), mergeAgg(), tAnd(), tCount(), tMax(), tMaxAgg(), tMin(), tMinAgg(), tOr(), tSum(), tdensity(), tnpoints(), wCount(), wMax(), wMin(), wSum()
+ * @sqlaggfn merge(), tAnd(), tCount(), tMax(), tMin(), tOr(), tSum(), tdensity(), tnpoints(), wCount(), wMax(), wMin(), wSum()
  */
 Datum
 Temporal_tagg_finalfn(PG_FUNCTION_ARGS)
@@ -343,6 +343,7 @@ PG_FUNCTION_INFO_V1(Tbool_tand_transfn);
  * @brief Transition function for temporal and aggregation of temporal booleans
  * @sqlfn tAndTransition()
  * @sqlaggfn tAnd()
+ * @altsqlfn tAndAgg()
  */
 Datum
 Tbool_tand_transfn(PG_FUNCTION_ARGS)
@@ -371,6 +372,7 @@ PG_FUNCTION_INFO_V1(Tbool_tor_transfn);
  * @brief Transition function for temporal or aggregation of temporal booleans
  * @sqlfn tOrTransition()
  * @sqlaggfn tOr()
+ * @altsqlfn tOrAgg()
  */
 Datum
 Tbool_tor_transfn(PG_FUNCTION_ARGS)
@@ -400,8 +402,9 @@ PG_FUNCTION_INFO_V1(Tint_tmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal
  * integers
- * @sqlfn tMinAggTransition()
- * @sqlaggfn tMin(), tMinAgg()
+ * @sqlfn tMinTransition()
+ * @sqlaggfn tMin()
+ * @altsqlfn tMinAgg()
  */
 Datum
 Tint_tmin_transfn(PG_FUNCTION_ARGS)
@@ -416,7 +419,7 @@ PG_FUNCTION_INFO_V1(Tint_tmin_combinefn);
  * @brief Combine function for temporal minimum aggregation of temporal
  * integers
  * @sqlfn tint_tmin_combinefn()
- * @sqlaggfn tMin(), tMinAgg(), wMin()
+ * @sqlaggfn tMin(), wMin()
  */
 Datum
 Tint_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -430,8 +433,9 @@ PG_FUNCTION_INFO_V1(Tint_tmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal
  * integers
- * @sqlfn tMaxAggTransition()
- * @sqlaggfn tMax(), tMaxAgg()
+ * @sqlfn tMaxTransition()
+ * @sqlaggfn tMax()
+ * @altsqlfn tMaxAgg()
  */
 Datum
 Tint_tmax_transfn(PG_FUNCTION_ARGS)
@@ -446,7 +450,7 @@ PG_FUNCTION_INFO_V1(Tint_tmax_combinefn);
  * @brief Combine function for temporal maximum aggregation of temporal
  * integers
  * @sqlfn tint_tmax_combinefn()
- * @sqlaggfn tMax(), tMaxAgg(), wMax()
+ * @sqlaggfn tMax(), wMax()
  */
 Datum
 Tint_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -490,8 +494,9 @@ PG_FUNCTION_INFO_V1(Tbigint_tmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal
  * big integers
- * @sqlfn tMinAggTransition()
- * @sqlaggfn tMin(), tMinAgg()
+ * @sqlfn tMinTransition()
+ * @sqlaggfn tMin()
+ * @altsqlfn tMinAgg()
  */
 Datum
 Tbigint_tmin_transfn(PG_FUNCTION_ARGS)
@@ -506,7 +511,7 @@ PG_FUNCTION_INFO_V1(Tbigint_tmin_combinefn);
  * @brief Combine function for temporal minimum aggregation of temporal
  * big integers
  * @sqlfn tbigint_tmin_combinefn()
- * @sqlaggfn tMin(), tMinAgg(), wMin()
+ * @sqlaggfn tMin(), wMin()
  */
 Datum
 Tbigint_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -520,8 +525,9 @@ PG_FUNCTION_INFO_V1(Tbigint_tmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal
  * big integers
- * @sqlfn tMaxAggTransition()
- * @sqlaggfn tMax(), tMaxAgg()
+ * @sqlfn tMaxTransition()
+ * @sqlaggfn tMax()
+ * @altsqlfn tMaxAgg()
  */
 Datum
 Tbigint_tmax_transfn(PG_FUNCTION_ARGS)
@@ -536,7 +542,7 @@ PG_FUNCTION_INFO_V1(Tbigint_tmax_combinefn);
  * @brief Combine function for temporal maximum aggregation of temporal
  * big integers
  * @sqlfn tbigint_tmax_combinefn()
- * @sqlaggfn tMax(), tMaxAgg(), wMax()
+ * @sqlaggfn tMax(), wMax()
  */
 Datum
 Tbigint_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -582,8 +588,9 @@ PG_FUNCTION_INFO_V1(Tfloat_tmin_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal
  * floats
- * @sqlfn tMinAggTransition()
- * @sqlaggfn tMin(), tMinAgg()
+ * @sqlfn tMinTransition()
+ * @sqlaggfn tMin()
+ * @altsqlfn tMinAgg()
  */
 Datum
 Tfloat_tmin_transfn(PG_FUNCTION_ARGS)
@@ -597,7 +604,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmin_combinefn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal minimum aggregation of temporal floats
  * @sqlfn tfloat_tmin_combinefn()
- * @sqlaggfn tMin(), tMinAgg(), wMin()
+ * @sqlaggfn tMin(), wMin()
  */
 Datum
 Tfloat_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -611,8 +618,9 @@ PG_FUNCTION_INFO_V1(Tfloat_tmax_transfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal
  * floats
- * @sqlfn tMaxAggTransition()
- * @sqlaggfn tMax(), tMaxAgg()
+ * @sqlfn tMaxTransition()
+ * @sqlaggfn tMax()
+ * @altsqlfn tMaxAgg()
  */
 Datum
 Tfloat_tmax_transfn(PG_FUNCTION_ARGS)
@@ -627,7 +635,7 @@ PG_FUNCTION_INFO_V1(Tfloat_tmax_combinefn);
  * @brief Combine function for temporal maximum aggregation of temporal floats
  * values
  * @sqlfn tfloat_tmax_combinefn()
- * @sqlaggfn tMax(), tMaxAgg(), wMax()
+ * @sqlaggfn tMax(), wMax()
  */
 Datum
 Tfloat_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -670,8 +678,9 @@ PG_FUNCTION_INFO_V1(Ttext_tmin_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal minimum aggregation of temporal texts
- * @sqlfn tMinAggTransition()
- * @sqlaggfn tMin(), tMinAgg()
+ * @sqlfn tMinTransition()
+ * @sqlaggfn tMin()
+ * @altsqlfn tMinAgg()
  */
 Datum
 Ttext_tmin_transfn(PG_FUNCTION_ARGS)
@@ -685,7 +694,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmin_combinefn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal minimum aggregation of temporal texts
  * @sqlfn ttext_tmin_combinefn()
- * @sqlaggfn tMin(), tMinAgg()
+ * @sqlaggfn tMin()
  */
 Datum
 Ttext_tmin_combinefn(PG_FUNCTION_ARGS)
@@ -698,8 +707,9 @@ PG_FUNCTION_INFO_V1(Ttext_tmax_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for temporal maximum aggregation of temporal texts
- * @sqlfn tMaxAggTransition()
- * @sqlaggfn tMax(), tMaxAgg()
+ * @sqlfn tMaxTransition()
+ * @sqlaggfn tMax()
+ * @altsqlfn tMaxAgg()
  */
 Datum
 Ttext_tmax_transfn(PG_FUNCTION_ARGS)
@@ -713,7 +723,7 @@ PG_FUNCTION_INFO_V1(Ttext_tmax_combinefn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for temporal maximum aggregation of temporal texts
  * @sqlfn ttext_tmax_combinefn()
- * @sqlaggfn tMax(), tMaxAgg()
+ * @sqlaggfn tMax()
  */
 Datum
 Ttext_tmax_combinefn(PG_FUNCTION_ARGS)
@@ -786,8 +796,9 @@ PG_FUNCTION_INFO_V1(Temporal_merge_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for merge aggregate of temporal values
- * @sqlfn mergeAggTransition()
- * @sqlaggfn merge(), mergeAgg()
+ * @sqlfn mergeTransition()
+ * @sqlaggfn merge()
+ * @altsqlfn mergeAgg()
  */
 Datum
 Temporal_merge_transfn(PG_FUNCTION_ARGS)
@@ -801,7 +812,7 @@ PG_FUNCTION_INFO_V1(Temporal_merge_combinefn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Combine function for merge aggregate of temporal values
  * @sqlfn mergeCombine()
- * @sqlaggfn merge(), mergeAgg()
+ * @sqlaggfn merge()
  */
 Datum
 Temporal_merge_combinefn(PG_FUNCTION_ARGS)
@@ -818,8 +829,9 @@ PG_FUNCTION_INFO_V1(Temporal_app_tinst_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal instant aggregate
- * @sqlfn appendInstantAggTransition()
- * @sqlaggfn appendInstant(), appendInstantAgg()
+ * @sqlfn appendInstantTransition()
+ * @sqlaggfn appendInstant()
+ * @altsqlfn appendInstantAgg()
  */
 Datum
 Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
@@ -887,8 +899,9 @@ PG_FUNCTION_INFO_V1(Temporal_app_tseq_transfn);
 /**
  * @ingroup mobilitydb_temporal_agg
  * @brief Transition function for append temporal sequence aggregate
- * @sqlfn appendSequenceAggTransition()
- * @sqlaggfn appendSequence(), appendSequenceAgg()
+ * @sqlfn appendSequenceTransition()
+ * @sqlaggfn appendSequence()
+ * @altsqlfn appendSequenceAgg()
  */
 Datum
 Temporal_app_tseq_transfn(PG_FUNCTION_ARGS)
@@ -918,7 +931,7 @@ PG_FUNCTION_INFO_V1(Temporal_append_finalfn);
  * @ingroup mobilitydb_temporal_agg
  * @brief Final function for append temporal instant/sequence aggregate
  * @sqlfn temporal_append_finalfn()
- * @sqlaggfn appendInstant(), appendInstantAgg(), appendSequence(), appendSequenceAgg()
+ * @sqlaggfn appendInstant(), appendSequence()
  */
 Datum
 Temporal_append_finalfn(PG_FUNCTION_ARGS)

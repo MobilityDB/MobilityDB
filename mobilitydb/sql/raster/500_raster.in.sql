@@ -1162,45 +1162,35 @@ CREATE FUNCTION notSameAlignmentReason(rast1 raster, rast2 raster)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The functions are not STRICT
-CREATE FUNCTION sameAlignmentAggTransition(internal, raster)
+CREATE FUNCTION sameAlignmentTransition(internal, raster)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION sameAlignmentAggCombine(internal, internal)
+CREATE FUNCTION sameAlignmentCombine(internal, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_combinefn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION sameAlignmentAggSerialize(internal)
+CREATE FUNCTION sameAlignmentSerialize(internal)
   RETURNS bytea
   AS 'MODULE_PATHNAME', 'Rasteralignstate_serialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sameAlignmentAggDeserialize(bytea, internal)
+CREATE FUNCTION sameAlignmentDeserialize(bytea, internal)
   RETURNS internal
   AS 'MODULE_PATHNAME', 'Rasteralignstate_deserialize'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION sameAlignmentAggFinal(internal)
+CREATE FUNCTION sameAlignmentFinal(internal)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Raster_same_alignment_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
-CREATE AGGREGATE sameAlignmentAgg(raster) (
-  SFUNC = sameAlignmentAggTransition,
-  STYPE = internal,
-  COMBINEFUNC = sameAlignmentAggCombine,
-  FINALFUNC = sameAlignmentAggFinal,
-  FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = sameAlignmentAggSerialize,
-  DESERIALFUNC = sameAlignmentAggDeserialize,
-  PARALLEL = safe
-);
 CREATE AGGREGATE sameAlignment(raster) (
-  SFUNC = sameAlignmentAggTransition,
+  SFUNC = sameAlignmentTransition,
   STYPE = internal,
-  COMBINEFUNC = sameAlignmentAggCombine,
-  FINALFUNC = sameAlignmentAggFinal,
+  COMBINEFUNC = sameAlignmentCombine,
+  FINALFUNC = sameAlignmentFinal,
   FINALFUNC_MODIFY = READ_WRITE,
-  SERIALFUNC = sameAlignmentAggSerialize,
-  DESERIALFUNC = sameAlignmentAggDeserialize,
+  SERIALFUNC = sameAlignmentSerialize,
+  DESERIALFUNC = sameAlignmentDeserialize,
   PARALLEL = safe
 );
 

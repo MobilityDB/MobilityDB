@@ -27,7 +27,7 @@
 		</itemizedlist>
 
 		<note>
-			<para>The names <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname>, and <varname>appendSequence</varname> each denote both a scalar function and an aggregate. The canonical name of the aggregate form carries an <varname>Agg</varname> suffix (<varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname>, and <varname>appendSequenceAgg</varname>), so that the scalar and aggregate names are distinct. The bare aggregate names remain available as backward-compatibility aliases and are deprecated; they will be removed in a future major release. The scalar forms (the box accessors <varname>tMin</varname>/<varname>tMax</varname> and the binary builder <varname>merge</varname>) keep their names.</para>
+			<para>The names <varname>tMin</varname>, <varname>tMax</varname>, <varname>merge</varname>, <varname>appendInstant</varname> and <varname>appendSequence</varname> each denote both a scalar function and an aggregate, which PostgreSQL tells apart by their arguments: the scalar <varname>tMin(tbox)</varname> is the minimum of a box, the aggregate <varname>tMin(tint)</varname> the temporal minimum of a set of rows. DuckDB, Apache Spark and Apache Flink hold one function per name, and call these aggregates <varname>tMinAgg</varname>, <varname>tMaxAgg</varname>, <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname> and <varname>appendSequenceAgg</varname> (<xref linkend="portable_sql_porting_names"/>).</para>
 		</note>
 
 		<para>In the examples that follow, we suppose the tables <varname>Department</varname> and <varname>Trip</varname> contain the two tuples introduced in <xref linkend="ttype_examples"/>.</para>
@@ -75,22 +75,21 @@ SELECT tOr(NoEmps #&gt; 6) FROM Department;
 			</listitem>
 
 			<listitem xml:id="ttype_tMin">
-				<indexterm significance="normal"><primary><varname>tMinAgg</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tMaxAgg</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>tMax</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tSum</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>tAvg</varname></primary></indexterm>
 				<para>Temporal minimum, maximum, sum, and average</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tMinAgg(ttype) → ttype
-tMaxAgg(ttype) → ttype
+tMin(ttype) → ttype
+tMax(ttype) → ttype
 tSum(tnumber) → {tnumberSeq,tnumberSeqSet}
 tAvg(tnumber) → {tfloatSeq,tfloatSeqSet}
 </programlisting>
-				<para>The names <varname>tMin</varname> and <varname>tMax</varname> name the same aggregates and are kept for backward compatibility.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tMinAgg(NoEmps) FROM Department;
+SELECT tMin(NoEmps) FROM Department;
 -- {[10@2001-01-01, 4@2001-02-01, 6@2001-06-01, 6@2001-10-01)}
-SELECT tMaxAgg(NoEmps) FROM Department;
+SELECT tMax(NoEmps) FROM Department;
 -- {[10@2001-01-01, 12@2001-04-01, 6@2001-08-01, 6@2001-10-01)}
 SELECT tSum(NoEmps) FROM Department;
 /* {[10@2001-01-01, 14@2001-02-01, 16@2001-04-01, 18@2001-06-01, 6@2001-08-01,

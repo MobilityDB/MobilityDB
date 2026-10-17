@@ -362,6 +362,24 @@ SELECT floatset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'b');
  {2.5}
 (1 row)
 
+SELECT intset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+ intset 
+--------
+ {0, 2}
+(1 row)
+
+SELECT bigintset(jsonbset '{"{\"a\":0}", "{\"a\":2}"}', text 'a');
+ bigintset 
+-----------
+ {0, 2}
+(1 row)
+
+SELECT floatset(jsonbset '{"{\"a\":0}", "{\"a\":2.5}"}', text 'a');
+ floatset 
+----------
+ {0, 2.5}
+(1 row)
+
 /* Errors */
 SELECT intset(jsonbset '{"{\"a\":1, \"b\":2.5}"}', text 'xxx');
 ERROR:  The lifted operation returned NULL

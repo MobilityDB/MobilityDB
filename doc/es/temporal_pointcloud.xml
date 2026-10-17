@@ -2414,15 +2414,14 @@ SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 
 			<listitem xml:id="tpcpoint_mergeAgg">
 				<indexterm significance="normal"><primary><varname>merge</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>mergeAgg</varname></primary></indexterm>
-				<para>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</para>
+								<para>Combina múltiples valores temporales en uno solo con todos los instantes de entrada fusionados en orden temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-mergeAgg(tpcpoint) → tpcpoint
-mergeAgg(tpcpatch) → tpcpatch
+merge(tpcpoint) → tpcpoint
+merge(tpcpatch) → tpcpatch
 </programlisting>
 				<para>Todas las entradas deben compartir el mismo pcid y subtipo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
+SELECT numInstants(merge(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- 2
@@ -2432,14 +2431,12 @@ SELECT numInstants(mergeAgg(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
 			<listitem xml:id="tpcpoint_appendInstantAgg">
 				<indexterm significance="normal"><primary><varname>appendInstant</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>appendInstantAgg</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>appendSequenceAgg</varname></primary></indexterm>
-				<para>Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias</para>
+												<para>Agregados de construcción en flujo: <varname>appendInstant</varname> ensambla instantes en una secuencia; <varname>appendSequence</varname> ensambla secuencias en un conjunto de secuencias</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-appendInstantAgg(tpcpoint[,interp text,maxt interval]) → tpcpoint
-appendInstantAgg(tpcpatch) → tpcpatch
-appendSequenceAgg(tpcpoint) → tpcpoint
-appendSequenceAgg(tpcpatch) → tpcpatch
+appendInstant(tpcpoint[,interp text,maxt interval]) → tpcpoint
+appendInstant(tpcpatch) → tpcpatch
+appendSequence(tpcpoint) → tpcpoint
+appendSequence(tpcpatch) → tpcpatch
 </programlisting>
 				<para>Útil para cargadores de trayectorias que consumen filas en orden temporal.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
