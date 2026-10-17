@@ -2312,11 +2312,11 @@ int main(void)
     /* the areal arm, whose surfaces stay apart */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON((9 9,9 11,11 11,11 9,9 9))",
-      "MULTIPOLYGON(((0 0,0 2,2 2,2 0,0 0)),((9 9,9 11,11 11,11 9,9 9)))" },
+      "MULTIPOLYGON(((9 9,11 9,11 11,9 11,9 9)),((0 0,2 0,2 2,0 2,0 0)))" },
     /* the areal arm, dissolving a pair whose interiors meet */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON((1 1,1 3,3 3,3 1,1 1))",
-      "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))" },
+      "POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))" },
     /* both arms together, each half sharing its dimensions and the two halves
      * not sharing them with each other */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))", "LINESTRING(5 5,6 6)",
@@ -2375,23 +2375,23 @@ int main(void)
      * elevated by the edges carrying them, which agree */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON Z((1 1 1,1 3 1,3 3 1,3 1 1,1 1 1))",
-      "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))" },
+      "POLYGON Z ((2 1 1,3 1 1,3 3 1,1 3 1,1 2 1,0 2 1,0 0 1,2 0 1,2 1 1))" },
     /* the same pair on the sloping plane Z = x, which the added nodes are
      * read onto: (1 2) takes 1 and (2 1) takes 2 */
     { "POLYGON Z((0 0 0,0 2 0,2 2 2,2 0 2,0 0 0))",
       "POLYGON Z((1 1 1,1 3 1,3 3 3,3 1 3,1 1 1))",
-      "POLYGON Z ((1 2 1,0 2 0,0 0 0,2 0 2,2 1 2,3 1 3,3 3 3,1 3 1,1 2 1))" },
+      "POLYGON Z ((2 1 2,3 1 3,3 3 3,1 3 1,1 2 1,0 2 0,0 0 0,2 0 2,2 1 2))" },
     /* two surfaces crossing at DIFFERENT elevations: the nodes have none, so
      * the answer is the planar figure rather than one carrying a mean */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON Z((1 1 7,1 3 7,3 3 7,3 1 7,1 1 7))",
-      "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))" },
+      "POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))" },
     /* two surfaces MEETING along an edge at different elevations: the shared
      * edge is where they disagree, and the shell is traversed counter-clockwise
      * as #buffer_normalize_ring_orientation() leaves every shell it builds */
     { "POLYGON Z((0 0 1,0 2 1,2 2 1,2 0 1,0 0 1))",
       "POLYGON Z((2 0 7,2 2 7,4 2 7,4 0 7,2 0 7))",
-      "POLYGON((2 2,0 2,0 0,2 0,4 0,4 2,2 2))" },
+      "POLYGON((2 0,4 0,4 2,2 2,0 2,0 0,2 0))" },
     /* linework coinciding over a stretch, dissolved into one curve that keeps
      * the elevation both members carry */
     { "LINESTRING Z(0 0 1,6 6 1)", "LINESTRING Z(3 3 1,10 10 1)",
@@ -2400,11 +2400,11 @@ int main(void)
      * one that is determined and drops the one that is not */
     { "POLYGON ZM((0 0 1 5,0 2 1 5,2 2 1 5,2 0 1 5,0 0 1 5))",
       "POLYGON ZM((1 1 1 9,1 3 1 9,3 3 1 9,3 1 1 9,1 1 1 9))",
-      "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))" },
+      "POLYGON Z ((2 1 1,3 1 1,3 3 1,1 3 1,1 2 1,0 2 1,0 0 1,2 0 1,2 1 1))" },
     /* and the other way round */
     { "POLYGON ZM((0 0 1 5,0 2 1 5,2 2 1 5,2 0 1 5,0 0 1 5))",
       "POLYGON ZM((1 1 7 5,1 3 7 5,3 3 7 5,3 1 7 5,1 1 7 5))",
-      "POLYGON M ((1 2 5,0 2 5,0 0 5,2 0 5,2 1 5,3 1 5,3 3 5,1 3 5,1 2 5))" },
+      "POLYGON M ((2 1 5,3 1 5,3 3 5,1 3 5,1 2 5,0 2 5,0 0 5,2 0 5,2 1 5))" },
   };
   for (size_t i = 0; i < sizeof(liftcases) / sizeof(liftcases[0]); i++)
   {
@@ -2575,11 +2575,44 @@ int main(void)
   printf("the dissolve of two surfaces at one elevation: %s\n", uzwkt1);
   printf("the dissolve of two surfaces at two elevations: %s\n", uzwkt2);
   assert(strcmp(uzwkt1,
-    "POLYGON Z ((1 2 1,0 2 1,0 0 1,2 0 1,2 1 1,3 1 1,3 3 1,1 3 1,1 2 1))")
+    "POLYGON Z ((2 1 1,3 1 1,3 3 1,1 3 1,1 2 1,0 2 1,0 0 1,2 0 1,2 1 1))")
     == 0);
   assert(strcmp(uzwkt2,
-    "POLYGON((1 2,0 2,0 0,2 0,2 1,3 1,3 3,1 3,1 2))") == 0);
+    "POLYGON((2 1,3 1,3 3,1 3,1 2,0 2,0 0,2 0,2 1))") == 0);
   free(uz1); free(uz2); free(uzu1); free(uzu2); free(uzwkt1); free(uzwkt2);
+  meos_errno_reset();
+
+  /* Three placements of a vessel turning slowly at a berth, as the traversed
+   * area of a temporal rigid geometry unites them: they share their stern
+   * vertices exactly and run along each other over the stretches between
+   * them, so the dissolve reads the stretches two boundaries share and the
+   * crossings of edges meeting at a shallow angle, each exactly. The answer
+   * is written by the native dissolve, its shell counter-clockwise */
+  GSERIALIZED *berth = geom_in("MULTIPOLYGON("
+    "((593200.9222788501 6367186.415668754,593196.6244864528 6367210.789660641,"
+    "593201.5931393816 6367220.043037758,593202.3734409399 6367220.06086347,"
+    "593210.2072888003 6367213.064912662,593214.5050811976 6367188.690920775,"
+    "593201.7025804084 6367186.433494465,593200.9222788501 6367186.415668754)),"
+    "((593200.9222788501 6367186.415668754,593196.6244864528 6367210.789660641,"
+    "593201.5931393816 6367220.043037758,593209.426987242 6367213.04708695,"
+    "593213.7247796393 6367188.673095063,593200.9222788501 6367186.415668754)),"
+    "((593200.9222788501 6367186.415668754,593196.6244864528 6367210.789660641,"
+    "593201.5931393816 6367220.043037758,593201.7131857754 6367220.045780165,"
+    "593209.5470336358 6367213.049829357,593213.8448260331 6367188.67583747,"
+    "593201.0423252439 6367186.418411161,593200.9222788501 6367186.415668754)))",
+    -1);
+  assert(berth != NULL);
+  GSERIALIZED *berthu = geom_unary_union(berth, -1);
+  assert(berthu != NULL);
+  assert(meos_errno() == 0);
+  char *berthwkt = geo_as_text(berthu, 3);
+  printf("the dissolve of three placements at a berth: %s\n", berthwkt);
+  assert(strcmp(berthwkt,
+    "POLYGON((593201.703 6367186.433,593214.505 6367188.691,"
+    "593210.207 6367213.065,593202.373 6367220.061,593201.593 6367220.043,"
+    "593196.624 6367210.79,593200.922 6367186.416,593201.042 6367186.418,"
+    "593201.042 6367186.418,593201.703 6367186.433))") == 0);
+  free(berth); free(berthu); free(berthwkt);
   meos_errno_reset();
 
   /* Which positions of a set are equal is read from their coordinates, on the
