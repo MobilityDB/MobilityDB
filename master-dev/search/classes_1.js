@@ -16,7 +16,9 @@ var searchData=
   ['arrextreme_13',['ArrExtreme',['../structArrExtreme.html',1,'']]],
   ['arrhalf_14',['ArrHalf',['../structArrHalf.html',1,'']]],
   ['arrmeet_15',['ArrMeet',['../structArrMeet.html',1,'']]],
-  ['arrnode_16',['ArrNode',['../structArrNode.html',1,'']]],
-  ['arrpiece_17',['ArrPiece',['../structArrPiece.html',1,'']]],
-  ['arrsweep_18',['ArrSweep',['../structArrSweep.html',1,'']]]
+  ['arrmerge_16',['ArrMerge',['../structArrMerge.html',1,'']]],
+  ['arrnode_17',['ArrNode',['../structArrNode.html',1,'']]],
+  ['arrpair_18',['ArrPair',['../structArrPair.html',1,'']]],
+  ['arrpiece_19',['ArrPiece',['../structArrPiece.html',1,'']]],
+  ['arrsweep_20',['ArrSweep',['../structArrSweep.html',1,'']]]
 ];
