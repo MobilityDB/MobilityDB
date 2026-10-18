@@ -52,6 +52,12 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
+#if CBUFFER
+  #include "cbuffer/cbuffer.h"
+#endif
+#if POSE
+  #include "pose/pose.h"
+#endif
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_distance.h"
@@ -186,6 +192,15 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags,
 #if NPOINT
   if (type == T_NPOINT)
     return DatumGetFloat8(datum_npoint_distance(value1, value2));
+#endif
+#if CBUFFER
+  if (type == T_CBUFFER)
+    return cbuffer_distance(DatumGetCbufferP(value1),
+      DatumGetCbufferP(value2));
+#endif
+#if POSE
+  if (type == T_POSE)
+    return DatumGetFloat8(pose_distance(value1, value2));
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));

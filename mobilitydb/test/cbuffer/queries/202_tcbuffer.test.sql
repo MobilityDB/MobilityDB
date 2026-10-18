@@ -203,6 +203,14 @@ SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', tcbu
 SELECT asText(appendInstant(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2001-01-04'));
 SELECT asText(appendInstant(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', tcbuffer 'Cbuffer(Point(1 1), 0.7)@2001-01-04'));
 SELECT asText(appendInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05] }', tcbuffer 'Cbuffer(Point(2 2), 0.7)@2001-01-06'));
+-- The aggregate starts a sequence where consecutive circular buffers lie
+-- farther apart than the maximum distance; a buffer growing in place meets
+-- the previous one
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01'), (tcbuffer 'Cbuffer(Point(3 4), 1)@2001-01-02'),
+  (tcbuffer 'Cbuffer(Point(30 40), 1)@2001-01-03')) t(inst);
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01'), (tcbuffer 'Cbuffer(Point(0 0), 20)@2001-01-02')) t(inst);
 
 -------------------------------------------------------------------------------
 

@@ -670,6 +670,21 @@ SELECT asText(appendInstant(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbu
  {[Cbuffer(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Cbuffer(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Cbuffer(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST, Cbuffer(POINT(2 2),0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01'), (tcbuffer 'Cbuffer(Point(3 4), 1)@2001-01-02'),
+  (tcbuffer 'Cbuffer(Point(30 40), 1)@2001-01-03')) t(inst);
+                                                                               astext                                                                               
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Cbuffer(POINT(0 0),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(3 4),1)@Tue Jan 02 00:00:00 2001 PST], [Cbuffer(POINT(30 40),1)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01'), (tcbuffer 'Cbuffer(Point(0 0), 20)@2001-01-02')) t(inst);
+                                                  astext                                                   
+-----------------------------------------------------------------------------------------------------------
+ [Cbuffer(POINT(0 0),1)@Mon Jan 01 00:00:00 2001 PST, Cbuffer(POINT(0 0),20)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT asText(appendSequence(tcbuffer '{Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(2 2), 0.4)@2001-01-02}', tcbuffer '{Cbuffer(Point(3 3), 0.6)@2001-01-03}'));
                                                                                astext                                                                               
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------

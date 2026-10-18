@@ -186,6 +186,13 @@ SELECT asText(appendInstant(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', tpose 'Pos
 SELECT asText(appendInstant(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}', tpose 'Pose(Point(1 1), 0.7)@2001-01-04'));
 SELECT asText(appendInstant(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]', tpose 'Pose(Point(1 1), 0.7)@2001-01-04'));
 SELECT asText(appendInstant(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }', tpose 'Pose(Point(2 2), 0.7)@2001-01-06'));
+-- The aggregate starts a sequence where consecutive poses lie farther apart
+-- than the maximum distance; a rotation in place moves no position
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tpose 'Pose(Point(0 0), 0)@2001-01-01'), (tpose 'Pose(Point(3 4), 0)@2001-01-02'),
+  (tpose 'Pose(Point(30 40), 0)@2001-01-03')) t(inst);
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tpose 'Pose(Point(0 0), 0)@2001-01-01'), (tpose 'Pose(Point(0 0), 3)@2001-01-02')) t(inst);
 
 -------------------------------------------------------------------------------
 
