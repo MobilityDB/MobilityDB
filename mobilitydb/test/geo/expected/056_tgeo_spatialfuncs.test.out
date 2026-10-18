@@ -1340,7 +1340,7 @@ SELECT asText(atGeometry(tgeometry 'GeometryCollection(Linestring(0 2,4 2),Multi
 SELECT asText(atGeometry(tgeometry 'GeometryCollection(Triangle((4 7,5 2,7 7,4 7)),MultiPolygon(((0 4,1 4,1 7,0 7,0 4)),((6 0,10 0,10 3,6 3,6 0))))@2001-01-01', geometry 'MultiPolygon(((0 7,1 7,1 9,0 9,0 7)),((3 1,5 1,5 5,3 5,3 1)),((6 1,8 1,8 4,6 4,6 1)))'), 6);
                                                               astext                                                              
 ----------------------------------------------------------------------------------------------------------------------------------
- GEOMETRYCOLLECTION(LINESTRING(0 7,1 7),POLYGON((5 2,5 5,4.4 5,5 2)),POLYGON((6 1,8 1,8 3,6 3,6 1)))@Mon Jan 01 00:00:00 2001 PST
+ GEOMETRYCOLLECTION(LINESTRING(0 7,1 7),POLYGON((6 1,8 1,8 3,6 3,6 1)),POLYGON((5 2,5 5,4.4 5,5 2)))@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT asText(atGeometry(tgeometry 'CurvePolygon(CompoundCurve((2 4,3.6 0.8,4.4 0.8),CircularString(4.4 0.8,4.8 2.8,2 4)))@2001-01-01', geometry 'Triangle((0 0,4 0,2 4,0 0))'), 6);
