@@ -385,13 +385,9 @@ static int
 tnumberinst_transform_wavg(const TInstant *inst, const Interval *interv,
   TSequence **result)
 {
-  /* TODO: Should be an additional attribute */
-  float8 value = 0.0;
   assert(tnumber_type(inst->temptype));
-  if (inst->temptype == T_TINT)
-    value = DatumGetInt32(tinstant_value_p(inst));
-  else /* inst->temptype == T_TFLOAT */
-    value = DatumGetFloat8(tinstant_value_p(inst));
+  double value = datum_double(tinstant_value_p(inst),
+    temptype_basetype(inst->temptype));
   double2 dvalue;
   double2_set(value, 1, &dvalue);
   TimestampTz upper = add_timestamptz_interval(inst->t, (Interval *) interv);
@@ -452,7 +448,8 @@ tintseq_transform_wavg(const TSequence *seq, const Interval *interv,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
     bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
-    double value = DatumGetInt32(tinstant_value_p(inst1));
+    double value = datum_double(tinstant_value_p(inst1),
+      temptype_basetype(inst1->temptype));
     double2 dvalue;
     double2_set(value, 1, &dvalue);
     TimestampTz upper = add_timestamptz_interval(inst2->t, (Interval *) interv);
