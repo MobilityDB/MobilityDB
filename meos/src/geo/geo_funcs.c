@@ -1158,6 +1158,78 @@ exact_sum_set(ExactSum *sum, const double *terms, int nterms)
 }
 
 /**
+ * @brief Return the sign of a polynomial in exact sums where its evaluation
+ * in pairs of doubles carries it, and 0 where it cannot tell
+ * @details The second filter of #polynomial_sign_exact. Each exact sum is read
+ * as a pair, its largest component and the rounded sum of the others, within
+ * 2 u of those others, u being DBL_EPSILON / 2. Each term is a pair, its
+ * coefficient times its sums: the product of two pairs is the exact product of
+ * their larger parts (#two_product) plus the rounded cross terms, within
+ * 8.1 u^2 of the product of the larger parts, besides the errors the factors
+ * carry, which the bound carries through the product. The terms are added
+ * into a pair (#two_sum), each rounding of the smaller part adding u of it.
+ * Where the pair stands clear of twice the bound, every bound inflated for its
+ * own rounding, its sign is the polynomial's. A product of the larger parts
+ * outside 2^-900 to 2^900, which could lose its error to underflow, declines.
+ * Mirrors #incircle_sign_filter
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ */
+static int
+polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  const double u = DBL_EPSILON / 2.0, inflate = 1.0 + 16.0 * DBL_EPSILON;
+  double H = 0.0, L = 0.0, E = 0.0;
+  for (int i = 0; i < nterms; i++)
+  {
+    /* The term, starting from its coefficient, which is exact */
+    double h = terms[i].coef, l = 0.0, e = 0.0;
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      /* The sum as a pair */
+      double rest = 0.0, restmag = 0.0;
+      for (int j = 0; j < s->n - 1; j++)
+      {
+        rest += s->e[j];
+        restmag += fabs(s->e[j]);
+      }
+      double sh, sl;
+      two_sum(s->e[s->n - 1], rest, &sh, &sl);
+      double se = 2.0 * u * restmag * inflate;
+      /* The product of the two pairs */
+      double p, pe;
+      two_product(h, sh, &p, &pe);
+      double ap = fabs(p);
+      if (! isfinite(p) || (ap != 0.0 && (ap < 0x1p-900 || ap > 0x1p900)))
+        return 0;
+      double c = (pe + h * sl) + l * sh;
+      double ne = (e * (fabs(sh) + fabs(sl)) + (fabs(h) + fabs(l)) * se +
+        e * se + 8.1 * u * u * fabs(h) * fabs(sh)) * inflate;
+      two_sum(p, c, &h, &l);
+      e = ne;
+    }
+    /* The term added to the total */
+    double x;
+    two_sum(H, h, &H, &x);
+    double l1 = L + x;
+    L = l1 + l;
+    E = (E + e + u * (fabs(l1) + fabs(L))) * inflate;
+  }
+  double v = H + L;
+  double bound = 2.0 * (E + 8.0 * DBL_MIN * nterms * POLY_TERM_MAXDEG) *
+    inflate;
+  if (! isfinite(v) || ! isfinite(bound))
+    return 0;
+  if (v > bound)
+    return 1;
+  if (v < - bound)
+    return -1;
+  return 0;
+}
+
+/**
  * @brief Return the sign of a polynomial in exact sums, computed exactly
  * @details The polynomial is first evaluated in doubles together with a bound
  * on the error of every operation, each rounding contributing at most
@@ -1165,7 +1237,9 @@ exact_sum_set(ExactSum *sum, const double *terms, int nterms)
  * the exact one. Otherwise every term is formed as an expansion, the product
  * of its coefficient and of its exact sums (#expansion_product), the terms are
  * added (#expansion_sum), and the expansions are compressed as they grow; the
- * last component of the total carries the exact sign
+ * last component of the total carries the exact sign. Between the two, the
+ * evaluation in pairs of doubles of #polynomial_sign_pairs is read against
+ * its own bound
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
  * @return -1, 0, or 1
@@ -1197,6 +1271,9 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   double bound = err * (1.0 + 1e-6) + DBL_MIN;
   if (isfinite(val) && isfinite(bound) && fabs(val) > bound)
     return (val > 0.0) ? 1 : -1;
+  int sign = polynomial_sign_pairs(sums, terms, nterms);
+  if (sign != 0)
+    return sign;
 
   /* Exact evaluation */
   int tlen = 0;
@@ -4367,16 +4444,97 @@ incircle_sign_exact(double ax, double ay, double bx, double by, double cx,
 }
 
 /**
+ * @brief Set the sum of two products of doubles as a pair of doubles, its
+ * rounded value and the rest, and the sum of the magnitudes of the products
+ * @details The products are exact as their rounded values and their errors
+ * (#two_product), the rounded values are added exactly (#two_sum), and the
+ * errors are added to the error of that sum, two roundings that together lie
+ * within 3.01 u^2 times the magnitude, u being DBL_EPSILON / 2
+ */
+static inline void
+incircle_pair(double a, double b, double c, double d, double *h, double *l,
+  double *mag)
+{
+  double p, pe, q, qe, s, se;
+  two_product(a, b, &p, &pe);
+  two_product(c, d, &q, &qe);
+  two_sum(p, q, &s, &se);
+  two_sum(s, se + (pe + qe), h, l);
+  *mag = fabs(p) + fabs(q);
+}
+
+/**
+ * @brief Return the sign of the incircle determinant of four points where its
+ * evaluation in pairs of doubles carries it, and 0 where it cannot tell
+ * @details The second filter between the one of #incircle_sign and
+ * #incircle_sign_exact, for four points whose coordinate differences from D
+ * are exact doubles, as those of nearby points are (Sterbenz). Each lift and
+ * each cross product is a pair of doubles within 3.01 u^2 of its magnitude
+ * (#incircle_pair), u being DBL_EPSILON / 2; each term, the product of two
+ * pairs, is a pair within 14.1 u^2 of the product of their magnitudes; and
+ * the sum of the three terms is a pair within 26.2 u^2 of the permanent, the
+ * sum of those products. Where the pair stands clear of 128 u^2 times the
+ * permanent as computed, its sign is the determinant's. Where a difference
+ * is not exact, or lies outside 2^-200 to 2^200, which keeps every product
+ * and every error of a product a normal double, it declines. Mirrors
+ * #point_motion_dwithin_filter, the second filter of a distance
+ */
+static int
+incircle_sign_filter(double ax, double ay, double bx, double by, double cx,
+  double cy, double dx, double dy)
+{
+  /* The differences A - D, B - D and C - D, x then y */
+  const double from[6] = {ax, ay, bx, by, cx, cy};
+  const double to[6] = {dx, dy, dx, dy, dx, dy};
+  double v[6];
+  for (int i = 0; i < 6; i++)
+  {
+    double err;
+    two_diff(from[i], to[i], &v[i], &err);
+    double m = fabs(v[i]);
+    if (err != 0.0 || (m != 0.0 && (m < 0x1p-200 || m > 0x1p200)))
+      return 0;
+  }
+  /* Each lift times the cross product of the other two points */
+  static const int cu[3] = {2, 4, 0}, cv[3] = {4, 0, 2};
+  double th[3], tl[3], permanent = 0.0;
+  for (int k = 0; k < 3; k++)
+  {
+    double lh, ll, lmag, ch, cl, cmag;
+    incircle_pair(v[2 * k], v[2 * k], v[2 * k + 1], v[2 * k + 1], &lh, &ll,
+      &lmag);
+    int u = cu[k], w = cv[k];
+    incircle_pair(v[u], v[w + 1], - v[w], v[u + 1], &ch, &cl, &cmag);
+    double p, pe;
+    two_product(lh, ch, &p, &pe);
+    two_sum(p, (pe + lh * cl) + ll * ch, &th[k], &tl[k]);
+    permanent += lmag * cmag;
+  }
+  /* The sum of the three terms */
+  double s1, e1, s2, e2;
+  two_sum(th[0], th[1], &s1, &e1);
+  two_sum(s1, th[2], &s2, &e2);
+  double det = s2 + ((((e1 + e2) + tl[0]) + tl[1]) + tl[2]);
+  double bound = 32.0 * DBL_EPSILON * DBL_EPSILON * permanent;
+  if (det > bound)
+    return 1;
+  if (det < - bound)
+    return -1;
+  return 0;
+}
+
+/**
  * @brief Return the sign of the incircle determinant of four points, decided
  * exactly
  * @details Positive where D lies inside the circle through A, B and C taken
  * counterclockwise, negative where it lies outside, and 0 exactly where the
  * four points lie on one circle. The determinant is evaluated in double and
- * read against Shewchuk's bound for it, formed from its own terms; a filter,
- * never a tolerance, since where the bound cannot tell the exact sign is
- * computed (#incircle_sign_exact)
+ * read against Shewchuk's bound for it, formed from its own terms; where it
+ * cannot tell, the evaluation in pairs of doubles of #incircle_sign_filter
+ * is read against its own bound. Both are filters, never tolerances, since
+ * where neither can tell the exact sign is computed (#incircle_sign_exact)
  */
-static int
+int
 incircle_sign(double ax, double ay, double bx, double by, double cx,
   double cy, double dx, double dy)
 {
@@ -4398,6 +4556,9 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
     return 1;
   if (det < - bound)
     return -1;
+  int sign = incircle_sign_filter(ax, ay, bx, by, cx, cy, dx, dy);
+  if (sign != 0)
+    return sign;
   return incircle_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
 }
 
