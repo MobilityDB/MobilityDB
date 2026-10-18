@@ -1876,10 +1876,10 @@ SELECT wCount(temp, interval '1 day') FROM (VALUES
 				<para>Aggregate a set of temporal cells by merging them, or by assembling them into a sequence or a sequence set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 merge(tcell) → tcell
-appendInstant(tcell,interp text='step',maxt interval) → tcell
+appendInstant(tcell[,interp text[,maxt interval]]) → tcell
 appendSequence(tcell) → tcell
 </programlisting>
-				<para>Each carries a bare spelling kept for PostgreSQL backward compatibility.</para>
+				<para>DuckDB, Apache Spark and Apache Flink call them <varname>mergeAgg</varname>, <varname>appendInstantAgg</varname> and <varname>appendSequenceAgg</varname> (<xref linkend="portable_sql_porting_names"/>).</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT merge(temp) FROM (VALUES (th3index '831c02fffffffff@2001-01-01')) AS t(temp);
 -- {831c02fffffffff@2001-01-01}

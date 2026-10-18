@@ -185,7 +185,7 @@ CREATE AGGREGATE merge(tgeography) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
@@ -195,28 +195,24 @@ CREATE FUNCTION appendInstantTransition(tgeography, tgeography)
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry,
-    interp text DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry, interp text)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tgeography, tgeography,
-    interp text DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(tgeography, tgeography, interp text)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
 CREATE FUNCTION appendInstantTransition(tgeometry, tgeometry,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL,
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tgeography, tgeography,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -233,6 +229,31 @@ CREATE AGGREGATE appendInstant(tgeometry) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
+CREATE FUNCTION appendInstantFinal(tgeometry, tgeometry, interp text)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tgeometry, interp text) (
+  SFUNC = appendInstantTransition,
+  STYPE = tgeometry,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+CREATE FUNCTION appendInstantFinal(tgeometry, tgeometry, interp text, maxdist float,
+    maxt interval)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tgeometry, interp text, maxdist float,
+    maxt interval) (
+  SFUNC = appendInstantTransition,
+  STYPE = tgeometry,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+
 CREATE FUNCTION appendInstantFinal(tgeography, tgeography)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
@@ -244,46 +265,24 @@ CREATE AGGREGATE appendInstant(tgeography) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tgeometry, tgeometry, text)
-  RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tgeometry, text) (
-  SFUNC = appendInstantTransition,
-  STYPE = tgeometry,
-  FINALFUNC = appendInstantFinal,
-  FINALFUNC_EXTRA,
-  PARALLEL = safe
-);
-CREATE FUNCTION appendInstantFinal(tgeography, tgeography, text)
+CREATE FUNCTION appendInstantFinal(tgeography, tgeography, interp text)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tgeography, text) (
+CREATE AGGREGATE appendInstant(tgeography, interp text) (
   SFUNC = appendInstantTransition,
   STYPE = tgeography,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tgeometry, tgeometry, text, float, interval)
-  RETURNS tgeometry
-  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (
-  SFUNC = appendInstantTransition,
-  STYPE = tgeometry,
-  FINALFUNC = appendInstantFinal,
-  FINALFUNC_EXTRA,
-  PARALLEL = safe
-);
-CREATE FUNCTION appendInstantFinal(tgeography, tgeography, text, float, interval)
+CREATE FUNCTION appendInstantFinal(tgeography, tgeography, interp text, maxdist float,
+    maxt interval)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tgeography, text, float, interval) (
+CREATE AGGREGATE appendInstant(tgeography, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tgeography,
   FINALFUNC = appendInstantFinal,

@@ -74,6 +74,13 @@ SELECT asText(appendInstant(inst)) FROM (VALUES
 SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
   (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02')) t(inst);
+-- A pose chain has no distance: its gaps are stated by time alone
+SELECT asText(appendInstant(inst, 'linear', interval '1 day')) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),
+  (tposechain 'PoseChain(Pose(Point(2 2), 0.2))@2001-01-02'),
+  (tposechain 'PoseChain(Pose(Point(3 3), 0.3))@2001-01-05')) t(inst);
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '1 day')) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01')) t(inst);
 
 SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),

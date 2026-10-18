@@ -763,73 +763,74 @@ CREATE AGGREGATE merge(ttext) (
  * Append aggregate functions
  *****************************************************************************/
 
--- Default interpolation based on the base type
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tbool, tbool)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tint, tint)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tbigint, tbigint)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tfloat, tfloat)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(ttext, ttext)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- Interpolation given by the user
 CREATE FUNCTION appendInstantTransition(tbool, tbool, interp text)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tint, tint, interp text)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tbigint, tbigint, interp text)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(tfloat, tfloat, interp text)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION appendInstantTransition(ttext, ttext, interp text)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- These functions are not strict
-CREATE FUNCTION appendInstantTransition(tbool, tbool, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(tbool, tbool,
+    interp text, maxt interval)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tint, tint, interp text,
-    maxdist float, maxt interval)
+CREATE FUNCTION appendInstantTransition(tint, tint,
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tbigint, tbigint, interp text,
-    maxdist float, maxt interval)
+CREATE FUNCTION appendInstantTransition(tbigint, tbigint,
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tfloat, tfloat, interp text,
-    maxdist float, maxt interval)
+CREATE FUNCTION appendInstantTransition(tfloat, tfloat,
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(ttext, ttext, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(ttext, ttext,
+    interp text, maxt interval)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -840,7 +841,7 @@ CREATE FUNCTION appendInstantFinal(tbool, tbool)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool) (
-  SFUNC = appendInstantTransition(tbool, tbool),
+  SFUNC = appendInstantTransition,
   STYPE = tbool,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -851,7 +852,7 @@ CREATE FUNCTION appendInstantFinal(tbool, tbool, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool, interp text) (
-  SFUNC = appendInstantTransition(tbool, tbool, text),
+  SFUNC = appendInstantTransition,
   STYPE = tbool,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -862,7 +863,7 @@ CREATE FUNCTION appendInstantFinal(tbool, tbool, interp text, maxt interval)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(tbool, tbool, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tbool,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -874,7 +875,7 @@ CREATE FUNCTION appendInstantFinal(tint, tint)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tint) (
-  SFUNC = appendInstantTransition(tint, tint),
+  SFUNC = appendInstantTransition,
   STYPE = tint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -885,20 +886,20 @@ CREATE FUNCTION appendInstantFinal(tint, tint, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tint, interp text) (
-  SFUNC = appendInstantTransition(tint, tint, text),
+  SFUNC = appendInstantTransition,
   STYPE = tint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-CREATE FUNCTION appendInstantFinal(tint, tint, interp text, maxdist float, 
+CREATE FUNCTION appendInstantFinal(tint, tint, interp text, maxdist float,
     maxt interval)
   RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, 
+CREATE AGGREGATE appendInstant(tint, interp text, maxdist float,
     maxt interval) (
-  SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -910,7 +911,7 @@ CREATE FUNCTION appendInstantFinal(tbigint, tbigint)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbigint) (
-  SFUNC = appendInstantTransition(tbigint, tbigint),
+  SFUNC = appendInstantTransition,
   STYPE = tbigint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -921,20 +922,20 @@ CREATE FUNCTION appendInstantFinal(tbigint, tbigint, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tbigint, interp text) (
-  SFUNC = appendInstantTransition(tbigint, tbigint, text),
+  SFUNC = appendInstantTransition,
   STYPE = tbigint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-CREATE FUNCTION appendInstantFinal(tbigint, tbigint, interp text, maxdist float, 
+CREATE FUNCTION appendInstantFinal(tbigint, tbigint, interp text, maxdist float,
     maxt interval)
   RETURNS tbigint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, 
+CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float,
     maxt interval) (
-  SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tbigint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -946,7 +947,7 @@ CREATE FUNCTION appendInstantFinal(tfloat, tfloat)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tfloat) (
-  SFUNC = appendInstantTransition(tfloat, tfloat),
+  SFUNC = appendInstantTransition,
   STYPE = tfloat,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -957,20 +958,20 @@ CREATE FUNCTION appendInstantFinal(tfloat, tfloat, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tfloat, interp text) (
-  SFUNC = appendInstantTransition(tfloat, tfloat, text),
+  SFUNC = appendInstantTransition,
   STYPE = tfloat,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-CREATE FUNCTION appendInstantFinal(tfloat, tfloat, interp text, maxdist float, 
+CREATE FUNCTION appendInstantFinal(tfloat, tfloat, interp text, maxdist float,
     maxt interval)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, 
+CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float,
     maxt interval) (
-  SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tfloat,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -982,7 +983,7 @@ CREATE FUNCTION appendInstantFinal(ttext, ttext)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext) (
-  SFUNC = appendInstantTransition(ttext, ttext),
+  SFUNC = appendInstantTransition,
   STYPE = ttext,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -993,7 +994,7 @@ CREATE FUNCTION appendInstantFinal(ttext, ttext, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext, interp text) (
-  SFUNC = appendInstantTransition(ttext, ttext, text),
+  SFUNC = appendInstantTransition,
   STYPE = ttext,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -1004,7 +1005,7 @@ CREATE FUNCTION appendInstantFinal(ttext, ttext, interp text, maxt interval)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(ttext, ttext, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = ttext,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,

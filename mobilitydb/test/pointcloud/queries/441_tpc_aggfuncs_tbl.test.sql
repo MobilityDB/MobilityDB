@@ -72,6 +72,19 @@ SELECT numInstants(wcount(inst, '1 day'::interval)) > 0 FROM tbl_tpcpatch_inst;
 SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_seq;
 
 -------------------------------------------------------------------------------
+-- appendInstant — the forms every type without a distance takes: the
+-- interpolation, and the maximum time interval between consecutive instants
+-------------------------------------------------------------------------------
+
+SELECT numInstants(appendInstant(inst ORDER BY getTimestamp(inst))) =
+    count(DISTINCT getTimestamp(inst)),
+  numInstants(appendInstant(inst, 'step' ORDER BY getTimestamp(inst))) =
+    count(DISTINCT getTimestamp(inst)),
+  numSequences(appendInstant(inst, 'step', interval '1 microsecond'
+    ORDER BY getTimestamp(inst))) = count(DISTINCT getTimestamp(inst))
+FROM (SELECT DISTINCT ON (getTimestamp(inst)) inst FROM tbl_tpcpatch_inst) t;
+
+-------------------------------------------------------------------------------
 -- merge — combines instants across rows into one temporal value.
 -- pcid must propagate to the result.
 -------------------------------------------------------------------------------

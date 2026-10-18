@@ -251,15 +251,33 @@ CREATE AGGREGATE merge(tpcpatch) (
  * Append-instant aggregate (streaming trajectory construction)
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint,
-    interp text DEFAULT NULL, maxt interval DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint, interp text)
   RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch, interp text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+CREATE FUNCTION appendInstantTransition(tpcpoint, tpcpoint,
+    interp text, maxt interval)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch,
+    interp text, maxt interval)
+  RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
@@ -275,12 +293,22 @@ CREATE AGGREGATE appendInstant(tpcpoint) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tpcpoint, tpcpoint, text, interval)
+CREATE FUNCTION appendInstantFinal(tpcpoint, tpcpoint, interp text)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (
+CREATE AGGREGATE appendInstant(tpcpoint, interp text) (
+  SFUNC = appendInstantTransition,
+  STYPE = tpcpoint,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+CREATE FUNCTION appendInstantFinal(tpcpoint, tpcpoint, interp text, maxt interval)
+  RETURNS tpcpoint
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tpcpoint, interp text, maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tpcpoint,
   FINALFUNC = appendInstantFinal,
@@ -288,19 +316,33 @@ CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (
   PARALLEL = safe
 );
 
--- tpcpatch
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpcpatch, tpcpatch)
-  RETURNS tpcpatch
-  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
-
-
 CREATE FUNCTION appendInstantFinal(tpcpatch, tpcpatch)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tpcpatch) (
+  SFUNC = appendInstantTransition,
+  STYPE = tpcpatch,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+CREATE FUNCTION appendInstantFinal(tpcpatch, tpcpatch, interp text)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tpcpatch, interp text) (
+  SFUNC = appendInstantTransition,
+  STYPE = tpcpatch,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+CREATE FUNCTION appendInstantFinal(tpcpatch, tpcpatch, interp text, maxt interval)
+  RETURNS tpcpatch
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tpcpatch, interp text, maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tpcpatch,
   FINALFUNC = appendInstantFinal,

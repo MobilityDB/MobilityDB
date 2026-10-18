@@ -135,23 +135,20 @@ CREATE AGGREGATE merge(tnpoint) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tnpoint, tnpoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tnpoint, tnpoint,
-    interp text DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(tnpoint, tnpoint, interp text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
 CREATE FUNCTION appendInstantTransition(tnpoint, tnpoint,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -168,24 +165,24 @@ CREATE AGGREGATE appendInstant(tnpoint) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tnpoint, tnpoint, text)
+CREATE FUNCTION appendInstantFinal(tnpoint, tnpoint, interp text)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tnpoint, text) (
+CREATE AGGREGATE appendInstant(tnpoint, interp text) (
   SFUNC = appendInstantTransition,
   STYPE = tnpoint,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tnpoint, tnpoint, text, float, interval)
+CREATE FUNCTION appendInstantFinal(tnpoint, tnpoint, interp text, maxdist float,
+    maxt interval)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (
+CREATE AGGREGATE appendInstant(tnpoint, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tnpoint,
   FINALFUNC = appendInstantFinal,

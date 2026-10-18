@@ -102,23 +102,20 @@ CREATE AGGREGATE merge(trgeometry) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry,
-    interp text DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry, interp text)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
 CREATE FUNCTION appendInstantTransition(trgeometry, trgeometry,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -135,24 +132,24 @@ CREATE AGGREGATE appendInstant(trgeometry) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(trgeometry, trgeometry, text)
+CREATE FUNCTION appendInstantFinal(trgeometry, trgeometry, interp text)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(trgeometry, text) (
+CREATE AGGREGATE appendInstant(trgeometry, interp text) (
   SFUNC = appendInstantTransition,
   STYPE = trgeometry,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(trgeometry, trgeometry, text, float, interval)
+CREATE FUNCTION appendInstantFinal(trgeometry, trgeometry, interp text, maxdist float,
+    maxt interval)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (
+CREATE AGGREGATE appendInstant(trgeometry, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = trgeometry,
   FINALFUNC = appendInstantFinal,
