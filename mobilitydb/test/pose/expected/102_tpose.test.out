@@ -567,6 +567,21 @@ SELECT asText(appendInstant(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Poin
  {[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.6)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.6)@Fri Jan 05 00:00:00 2001 PST, Pose(POINT(2 2),0.7)@Sat Jan 06 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tpose 'Pose(Point(0 0), 0)@2001-01-01'), (tpose 'Pose(Point(3 4), 0)@2001-01-02'),
+  (tpose 'Pose(Point(30 40), 0)@2001-01-03')) t(inst);
+                                                                          astext                                                                           
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 4),0)@Tue Jan 02 00:00:00 2001 PST], [Pose(POINT(30 40),0)@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(appendInstant(inst, 'linear', 10.0, interval '2 days')) FROM (VALUES
+  (tpose 'Pose(Point(0 0), 0)@2001-01-01'), (tpose 'Pose(Point(0 0), 3)@2001-01-02')) t(inst);
+                                               astext                                               
+----------------------------------------------------------------------------------------------------
+ [Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(0 0),3)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT asText(appendSequence(tpose '{Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(2 2), 0.4)@2001-01-02}', tpose '{Pose(Point(3 3), 0.6)@2001-01-03}'));
                                                                           astext                                                                           
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
