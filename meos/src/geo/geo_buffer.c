@@ -7675,8 +7675,8 @@ buffer_triangle_as_poly(const LWTRIANGLE *tri)
   return lwpoly_as_lwgeom(lwpoly_construct(tri->srid, NULL, 1, rings));
 }
 
-static LWGEOM *buffer_surfaces_from_edges(const MeosArray *edges,
-  int32_t srid);
+static LWGEOM *buffer_surfaces_from_rings(MeosArray **rings,
+  uint32_t nrings, int32_t *owner, int32_t srid);
 
 /**
  * @brief Add to an edge array the edges of a ring, turning in the sense
@@ -7709,16 +7709,15 @@ buffer_ring_add_edges(const POINTARRAY *pa, bool ccw, MeosArray *edges)
 }
 
 /**
- * @brief Return the union of surfaces bounded by segments, read in one
- * arrangement of their rings
+ * @brief Return the union of surfaces bounded by segments, merged pairwise in
+ * exact arrangements of their boundaries
  * @details A point lies in the union where it lies in one of the surfaces at
  * least, which is where the rings of all of them, the shells turning
  * counterclockwise and the holes clockwise, wind around it at least once.
- * That region is read off the arrangement of the rings
- * (#arrange_wound_surfaces), which decides every crossing, every order along
- * an edge and every stretch two boundaries share exactly, and rounds only the
- * crossings it writes, as #buffer_surfaces_from_edges reads the region a
- * buffer's offset curves wind around
+ * The surfaces are merged pairwise, each merge the arrangement of the
+ * boundaries of two unions (#arrange_union_surfaces), which decides every
+ * crossing, every order along an edge and every stretch two boundaries share
+ * exactly, and only the last of them rounds the crossings it writes
  * @param[in] coll Surfaces, on the plane, none carrying an arc
  * @param[in] srid Spatial reference identifier
  * @return The union, or @p NULL where the arrangement leaves the region
@@ -7729,27 +7728,38 @@ buffer_union_segment_surfaces(const LWCOLLECTION *coll, int32_t srid)
 {
   assert(coll);
   MeosArray *edges = meos_array_create(sizeof(Edge));
+  uint32_t *soff = palloc(sizeof(uint32_t) * (coll->ngeoms + 1));
+  uint32_t nsurf = 0;
+  soff[0] = 0;
   for (uint32_t i = 0; i < coll->ngeoms; i++)
   {
     const LWGEOM *g = coll->geoms[i];
     if (lwgeom_is_empty(g))
       continue;
     if (g->type == TRIANGLETYPE)
-    {
       buffer_ring_add_edges(((const LWTRIANGLE *) g)->points, true, edges);
-      continue;
+    else
+    {
+      /* A curve polygon carrying no arc is the polygon of its points */
+      LWGEOM *straight = (g->type == CURVEPOLYTYPE) ?
+        lwgeom_stroke(g, 0) : NULL;
+      const LWPOLY *poly = (const LWPOLY *) (straight ? straight : g);
+      for (uint32_t r = 0; r < poly->nrings; r++)
+        buffer_ring_add_edges(poly->rings[r], r == 0, edges);
+      if (straight)
+        lwgeom_free(straight);
     }
-    /* A curve polygon carrying no arc is the polygon of its points */
-    LWGEOM *straight = (g->type == CURVEPOLYTYPE) ? lwgeom_stroke(g, 0) : NULL;
-    const LWPOLY *poly = (const LWPOLY *) (straight ? straight : g);
-    for (uint32_t r = 0; r < poly->nrings; r++)
-      buffer_ring_add_edges(poly->rings[r], r == 0, edges);
-    if (straight)
-      lwgeom_free(straight);
+    soff[++nsurf] = edges->count;
   }
-  LWGEOM *result = (edges->count > 0) ?
-    buffer_surfaces_from_edges(edges, srid) : NULL;
+  LWGEOM *result = NULL;
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  if (edges->count > 0 && arrange_union_surfaces(edges, soff, nsurf, &rings,
+        &nrings, &owner) == ARR_ANSWERED)
+    result = buffer_surfaces_from_rings(rings, nrings, owner, srid);
   meos_array_destroy(edges);
+  pfree(soff);
   return result;
 }
 
@@ -7802,10 +7812,10 @@ meos_areal_union(const LWGEOM *geom)
   if (coll->ngeoms == 1)
     return lwgeom_clone_deep(coll->geoms[0]);
 
-  /* Surfaces bounded by segments are dissolved exactly, in one arrangement of
-   * their rings, and only there: a union that arrangement leaves unanswered
-   * is left to the caller, as the routes below read their nodes within a
-   * tolerance */
+  /* Surfaces bounded by segments are dissolved exactly, merged pairwise in
+   * arrangements of their boundaries, and only there: a union those leave
+   * unanswered is left to the caller, as the routes below read their nodes
+   * within a tolerance */
   bool arc = false;
   for (uint32_t i = 0; i < coll->ngeoms && ! arc; i++)
     arc = lwgeom_has_arc(coll->geoms[i]);
@@ -8896,20 +8906,16 @@ buffer_ring_box(const MeosArray *pieces, GBOX *box)
 }
 
 /**
- * @brief Return the region offset curves wind around, read off their
- * arrangement (#arrange_wound_surfaces), as a curve polygon where it is one
- * surface and a multisurface otherwise
- * @return NULL where the arrangement leaves the region unanswered
+ * @brief Return the region rings an arrangement answers bound, as a curve
+ * polygon where it is one surface and a multisurface otherwise
+ * @param[in] rings,nrings The rings, released here
+ * @param[in] owner The shell owning each ring, -1 for a shell, released here
+ * @param[in] srid Spatial reference identifier
  */
 static LWGEOM *
-buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
+buffer_surfaces_from_rings(MeosArray **rings, uint32_t nrings, int32_t *owner,
+  int32_t srid)
 {
-  MeosArray **rings;
-  uint32_t nrings;
-  int32_t *owner;
-  ArrangeStatus st = arrange_wound_surfaces(edges, &rings, &nrings, &owner);
-  if (st != ARR_ANSWERED)
-    return NULL;
   uint32_t nshells = 0;
   for (uint32_t i = 0; i < nrings; i++)
     if (owner[i] < 0)
@@ -8974,6 +8980,24 @@ buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
     result->bbox->ymin = box.ymin; result->bbox->ymax = box.ymax;
   }
   return result;
+}
+
+/**
+ * @brief Return the region offset curves wind around, read off their
+ * arrangement (#arrange_wound_surfaces), as a curve polygon where it is one
+ * surface and a multisurface otherwise
+ * @return NULL where the arrangement leaves the region unanswered
+ */
+static LWGEOM *
+buffer_surfaces_from_edges(const MeosArray *edges, int32_t srid)
+{
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  ArrangeStatus st = arrange_wound_surfaces(edges, &rings, &nrings, &owner);
+  if (st != ARR_ANSWERED)
+    return NULL;
+  return buffer_surfaces_from_rings(rings, nrings, owner, srid);
 }
 
 /**
