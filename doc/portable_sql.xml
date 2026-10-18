@@ -522,6 +522,7 @@
 						<row><entry>tMin, tMax, merge, appendInstant, appendSequence, tAnd, tOr (the aggregates)</entry><entry>temporal</entry><entry>tMinAgg, tMaxAgg, mergeAgg, appendInstantAgg, appendSequenceAgg, tAndAgg, tOrAgg</entry></row>
 						<row><entry>setUnion, spanUnion, spansetUnion (the aggregates)</entry><entry>base value, set, span, span set</entry><entry>setUnionAgg, spanUnionAgg, spansetUnionAgg</entry></row>
 						<row><entry>sameAlignment (the aggregate)</entry><entry>raster</entry><entry>sameAlignmentAgg</entry></row>
+						<row><entry>wAvg (the aggregate)</entry><entry>tint, tbigint, tfloat</entry><entry>wAvgAgg</entry></row>
 						<row><entry>unnest</entry><entry>set, temporal</entry><entry>setUnnest, temporalUnnest</entry></row>
 						<row><entry>set (the constructor)</entry><entry>any</entry><entry>setMake</entry></row>
 					</tbody>

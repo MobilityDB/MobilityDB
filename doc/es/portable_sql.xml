@@ -522,6 +522,7 @@
 						<row><entry>tMin, tMax, merge, appendInstant, appendSequence, tAnd, tOr (los agregados)</entry><entry>temporal</entry><entry>tMinAgg, tMaxAgg, mergeAgg, appendInstantAgg, appendSequenceAgg, tAndAgg, tOrAgg</entry></row>
 						<row><entry>setUnion, spanUnion, spansetUnion (los agregados)</entry><entry>valor base, conjunto, rango, conjunto de rangos</entry><entry>setUnionAgg, spanUnionAgg, spansetUnionAgg</entry></row>
 						<row><entry>sameAlignment (el agregado)</entry><entry>raster</entry><entry>sameAlignmentAgg</entry></row>
+						<row><entry>wAvg (el agregado)</entry><entry>tint, tbigint, tfloat</entry><entry>wAvgAgg</entry></row>
 						<row><entry>unnest</entry><entry>conjunto, temporal</entry><entry>setUnnest, temporalUnnest</entry></row>
 						<row><entry>set (el constructor)</entry><entry>cualquiera</entry><entry>setMake</entry></row>
 					</tbody>

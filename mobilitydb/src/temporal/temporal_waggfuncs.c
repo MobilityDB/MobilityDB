@@ -274,6 +274,7 @@ PG_FUNCTION_INFO_V1(Tnumber_wavg_transfn);
  * temporal numbers
  * @sqlfn wAvgTransition()
  * @sqlaggfn wAvg()
+ * @altsqlfn wAvgAgg()
  */
 inline Datum
 Tnumber_wavg_transfn(PG_FUNCTION_ARGS)
