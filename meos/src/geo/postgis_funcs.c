@@ -7510,84 +7510,265 @@ typedef struct
 } Circle;
 
 /**
- * @brief Return the distance between two points
+ * @brief Points defining a circle: one point, the two ends of a diameter, or
+ * three points that turn
  */
-static inline double
-distance_point2d(POINT2D a, POINT2D b)
+typedef struct
 {
-  double dx = a.x - b.x;
-  double dy = a.y - b.y;
-  return sqrt(dx * dx + dy * dy);
+  POINT2D p[3];
+  int n;
+} MecSupport;
+
+/**
+ * @brief Return true if a point lies inside or on the circle of a support,
+ * decided exactly
+ * @details A single point encloses only itself. A point lies inside the
+ * circle of a diameter where the vectors to its two ends have a dot product
+ * that is not positive (Thales), which is the sign of a cross product
+ * (#cross_product_sign). It lies inside the circle of three points where
+ * #incircle_sign, positive inside for three points turning counterclockwise,
+ * read against the turn they make, is not negative. The operands are input
+ * points, so the answer is the same at every scale, which the distance to a
+ * constructed centre compared with a constructed radius cannot give. Mirrors
+ * #arc_circle_side
+ */
+static bool
+mec_encloses(POINT2D q, const MecSupport *s)
+{
+  const POINT2D *a = &s->p[0], *b = &s->p[1], *c = &s->p[2];
+  if (s->n == 1)
+    return q.x == a->x && q.y == a->y;
+  if (s->n == 2)
+    /* (q - a) . (q - b), written as the cross product of q - a with the
+     * vector (b.y - q.y, q.x - b.x) */
+    return cross_product_sign(a->x, a->y, q.x, q.y, q.y, b->x, b->y, q.x) <=
+      0;
+  int turn = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x,
+    c->y);
+  return turn * incircle_sign(a->x, a->y, b->x, b->y, c->x, c->y, q.x, q.y)
+    >= 0;
 }
 
 /**
- * @brief Return true if a point is inside a circle
+ * @brief Return the support of the smallest circle with three points on or
+ * inside it, two of them on it
+ * @details Three points that turn define their circle. Three collinear points
+ * lie on no circle, and the smallest circle enclosing them has its diameter
+ * between the two outer ones, those whose diameter circle holds the third
+ * (#mec_encloses)
  */
-static inline bool
-mec_inside(POINT2D p, Circle c)
+static MecSupport
+mec_support3(POINT2D a, POINT2D b, POINT2D c)
 {
-  return distance_point2d(p, c.center) <= c.radius + MEOS_GEOM_TOLERANCE;
+  MecSupport s = {{a, b, c}, 3};
+  if (cross_product_sign(a.x, a.y, b.x, b.y, a.x, a.y, c.x, c.y) != 0)
+    return s;
+  s.n = 2;
+  if (mec_encloses(c, &s))
+    return s;
+  s.p[1] = c;
+  if (mec_encloses(b, &s))
+    return s;
+  s.p[0] = b;
+  return s;
 }
 
 /**
- * @brief Circle constructor for 2 points
+ * @brief Exact sums of the circle through three points A, B and C that turn:
+ * the coordinates of u = B - A, v = C - A and w = B - C, and a slot for the
+ * midpoint a candidate is compared with
  */
-static inline Circle
-mec_circle2(POINT2D a, POINT2D b)
+typedef struct
 {
-  Circle c;
-  c.center.x = (a.x + b.x) * 0.5;
-  c.center.y = (a.y + b.y) * 0.5;
-  c.radius = distance_point2d(a,b) * 0.5;
-  return c;
+  ExactSum s[7];   /**< ux, uy, vx, vy, wx, wy, then the midpoint */
+  double a[2];     /**< Coordinates of A */
+  int turn;        /**< Sign of the cross product of u and v */
+} MecExact;
+
+/**
+ * @brief Return true where a coordinate of the centre (`which` 0 or 1) or the
+ * radius (`which` 2) of the circle of #MecExact lies beyond the midpoint from
+ * a double to its upper neighbour
+ * @details With G = 2 (u x v), the centre is A + (Nx, Ny) / G, where
+ * Nx = vy |u|^2 - uy |v|^2 and Ny = ux |v|^2 - vx |u|^2, so a coordinate of
+ * it lies beyond a midpoint m where G (A - m) + N has the sign of G. The
+ * radius is |u| |v| |w| / |G|, so it lies beyond a positive m where
+ * |u|^2 |v|^2 |w|^2 - m^2 G^2 is positive. Both are polynomials in exact sums
+ * of doubles that #polynomial_sign_exact decides. A tie is beyond when the
+ * last bit of the double is odd, so the double nearest the value, a tie going
+ * to the even one, is the smallest for which this is false. Mirrors
+ * #point_segment_beyond
+ */
+static bool
+mec_beyond(MecExact *e, int which, double c)
+{
+  double up = nextafter(c, INFINITY);
+  if (isinf(up))
+    return false;
+  double h = (up - c) / 2.0;
+  int sign;
+  if (which < 2)
+  {
+    const double t[3] = {e->a[which], -c, -h};
+    exact_sum_set(&e->s[6], t, 3);
+    /* G (A - m) + N, the factor 2 of G spelled in the coefficients */
+    static const PolyTerm x[6] = {
+      { 2.0, 3, {6, 0, 3}}, {-2.0, 3, {6, 1, 2}}, { 1.0, 3, {3, 0, 0}},
+      { 1.0, 3, {3, 1, 1}}, {-1.0, 3, {1, 2, 2}}, {-1.0, 3, {1, 3, 3}}};
+    static const PolyTerm y[6] = {
+      { 2.0, 3, {6, 0, 3}}, {-2.0, 3, {6, 1, 2}}, { 1.0, 3, {0, 2, 2}},
+      { 1.0, 3, {0, 3, 3}}, {-1.0, 3, {2, 0, 0}}, {-1.0, 3, {2, 1, 1}}};
+    sign = e->turn * polynomial_sign_exact(e->s, which == 0 ? x : y, 6);
+  }
+  else
+  {
+    if (c < 0.0)
+      return true;
+    const double m[2] = {c, h};
+    exact_sum_set(&e->s[6], m, 2);
+    /* |u|^2 |v|^2 |w|^2 - 4 m^2 (ux vy - uy vx)^2 */
+    static const PolyTerm r[11] = {
+      { 1.0, 6, {0, 0, 2, 2, 4, 4}}, { 1.0, 6, {0, 0, 2, 2, 5, 5}},
+      { 1.0, 6, {0, 0, 3, 3, 4, 4}}, { 1.0, 6, {0, 0, 3, 3, 5, 5}},
+      { 1.0, 6, {1, 1, 2, 2, 4, 4}}, { 1.0, 6, {1, 1, 2, 2, 5, 5}},
+      { 1.0, 6, {1, 1, 3, 3, 4, 4}}, { 1.0, 6, {1, 1, 3, 3, 5, 5}},
+      {-4.0, 6, {6, 6, 0, 0, 3, 3}}, { 8.0, 6, {6, 6, 0, 3, 1, 2}},
+      {-4.0, 6, {6, 6, 1, 1, 2, 2}}};
+    sign = polynomial_sign_exact(e->s, r, 11);
+  }
+  uint64 bits;
+  memcpy(&bits, &c, sizeof(bits));
+  return sign > 0 || (sign == 0 && (bits & 1));
 }
 
 /**
- * @brief Circle constructor for 3 points
+ * @brief Return the unsigned key ordering the doubles as their values do
+ * @details The bit pattern of a positive double with its sign bit set, and
+ * the complement of that of a negative one, so the difference of two keys
+ * never overflows
+ */
+static uint64
+mec_key(double d)
+{
+  uint64 bits;
+  memcpy(&bits, &d, sizeof(bits));
+  return (bits >> 63) ? ~ bits : bits | ((uint64) 1 << 63);
+}
+
+/**
+ * @brief Return the double of a key of #mec_key
+ */
+static double
+mec_value(uint64 key)
+{
+  uint64 bits = (key >> 63) ? key & ~ ((uint64) 1 << 63) : ~ key;
+  double d;
+  memcpy(&d, &bits, sizeof(d));
+  return d;
+}
+
+/**
+ * @brief Return the double nearest a coordinate of the centre or the radius
+ * of the circle of #MecExact, a tie going to the even one
+ * @details The answer is the smallest double that is not beyond (#mec_beyond):
+ * gallop from the candidate to bracket it, then halve the bracket. A zero is
+ * the positive one. Mirrors #point_segment_distance_offset_exact
+ */
+static double
+mec_nearest(MecExact *e, int which, double cand)
+{
+  const uint64 maxkey = mec_key(DBL_MAX), minkey = mec_key(-DBL_MAX);
+  uint64 lo, hi, step = 1;
+  if (! isfinite(cand))
+    cand = 0.0;
+  uint64 key = mec_key(cand);
+  if (mec_beyond(e, which, cand))
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = key;
+    while (true)
+    {
+      hi = (step > maxkey - lo) ? maxkey : lo + step;
+      if (hi == maxkey || ! mec_beyond(e, which, mec_value(hi)))
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond */
+    hi = key;
+    while (true)
+    {
+      lo = (step > hi - minkey) ? minkey : hi - step;
+      if (lo == minkey || mec_beyond(e, which, mec_value(lo)))
+        break;
+      hi = lo;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64 mid = lo + (hi - lo) / 2;
+    if (mec_beyond(e, which, mec_value(mid)))
+      lo = mid;
+    else
+      hi = mid;
+  }
+  double result = mec_value(hi);
+  return (result == 0.0) ? 0.0 : result;
+}
+
+/**
+ * @brief Return the centre and radius of the circle of a support, each the
+ * double nearest the exact value
+ * @details The circle of a support is a rational function of the input
+ * coordinates. The midpoint of a diameter is the half of the rounded sum of
+ * its ends, and its radius the half of their distance rounded once
+ * (#point_distance_exact), both exact halvings. The centre and the radius of
+ * the circle of three points are searched from the rounded formulas by
+ * #mec_nearest
+ * @note Correctly rounded where no product of six coordinate differences
+ * overflows or underflows
  */
 static Circle
-mec_circle3(POINT2D a, POINT2D b, POINT2D c)
+mec_circle(const MecSupport *s)
 {
-  double A = b.x - a.x;
-  double B = b.y - a.y;
-  double C = c.x - a.x;
-  double D = c.y - a.y;
-  double E = A * (a.x + b.x) + B * (a.y + b.y);
-  double F = C * (a.x + c.x) + D * (a.y + c.y);
-  double G = 2.0 * (A * (c.y - b.y) - B * (c.x - b.x));
-
-  /* Zero-init so the early-exit return doesn't leave circ.center
-   * uninitialised — cppcheck flags this as `uninitvar`, and a downstream
-   * caller that ignored circ.radius == -1 would read garbage. */
-  Circle circ = { .center = {0.0, 0.0}, .radius = 0.0 };
-  if (fabs(G) < MEOS_GEOM_TOLERANCE)
+  POINT2D a = s->p[0], b = s->p[1], c = s->p[2];
+  Circle circ;
+  if (s->n == 1)
   {
-    circ.radius = -1;
+    circ.center = a;
+    circ.radius = 0.0;
     return circ;
   }
-  circ.center.x = (D * E - B * F) / G;
-  circ.center.y = (A * F - C * E) / G;
-  circ.radius = distance_point2d(circ.center,a);
-  return circ;
-}
-
-/**
- * @brief Return the minimum enclosing circle for 3 points, handling the
- * collinear case by falling back to the best 2-point circle
- */
-static Circle
-mec_circle3_safe(POINT2D a, POINT2D b, POINT2D c)
-{
-  Circle circ = mec_circle3(a, b, c);
-  if (circ.radius >= 0)
+  if (s->n == 2)
+  {
+    const double pa[2] = {a.x, a.y}, pb[2] = {b.x, b.y};
+    circ.center.x = (a.x + b.x) * 0.5;
+    circ.center.y = (a.y + b.y) * 0.5;
+    circ.radius = point_distance_exact(pa, pb, 2) * 0.5;
     return circ;
-  /* Collinear: pick the largest 2-point circle */
-  Circle c1 = mec_circle2(a, b);
-  Circle c2 = mec_circle2(a, c);
-  Circle c3 = mec_circle2(b, c);
-  if (c2.radius > c1.radius) c1 = c2;
-  if (c3.radius > c1.radius) c1 = c3;
-  return c1;
+  }
+  MecExact e;
+  const double terms[6][2] = {{b.x, -a.x}, {b.y, -a.y}, {c.x, -a.x},
+    {c.y, -a.y}, {b.x, -c.x}, {b.y, -c.y}};
+  for (int i = 0; i < 6; i++)
+    exact_sum_set(&e.s[i], terms[i], 2);
+  e.a[0] = a.x;
+  e.a[1] = a.y;
+  e.turn = cross_product_sign(a.x, a.y, b.x, b.y, a.x, a.y, c.x, c.y);
+  /* The candidates, from the rounded formulas */
+  double ux = b.x - a.x, uy = b.y - a.y, vx = c.x - a.x, vy = c.y - a.y;
+  double wx = b.x - c.x, wy = b.y - c.y;
+  double uu = ux * ux + uy * uy, vv = vx * vx + vy * vy;
+  double G = 2.0 * (ux * vy - uy * vx);
+  circ.center.x = mec_nearest(&e, 0, a.x + (vy * uu - uy * vv) / G);
+  circ.center.y = mec_nearest(&e, 1, a.y + (ux * vv - vx * uu) / G);
+  circ.radius = mec_nearest(&e, 2,
+    sqrt(uu) * sqrt(vv) * sqrt(wx * wx + wy * wy) / fabs(G));
+  return circ;
 }
 
 /**
@@ -7595,35 +7776,38 @@ mec_circle3_safe(POINT2D a, POINT2D b, POINT2D c)
  * @details Equivalent to the recursive Welzl algorithm but uses constant
  * stack space. The three nested loops correspond to the three levels of
  * recursion (boundary set size 0, 1, 2). Despite appearing O(n^3), the
- * expected runtime is O(n) with random shuffling.
+ * expected runtime is O(n) with random shuffling. The circle is held as the
+ * points defining it, every point is put inside or outside it exactly
+ * (#mec_encloses), and its centre and radius are computed once, from the final
+ * support (#mec_circle)
  * @param[in] P Array of points (must be shuffled beforehand)
  * @param[in] n Number of points
  * @pre n >= 1
  */
 static Circle
-mec_welzl(POINT2D *P, int n)
+mec_welzl(const POINT2D *P, int n)
 {
-  Circle C = (Circle){P[0], 0};
+  MecSupport S = {{P[0]}, 1};
   for (int i = 1; i < n; i++)
   {
-    if (! mec_inside(P[i], C))
+    if (! mec_encloses(P[i], &S))
     {
-      C = (Circle){P[i], 0};
+      S = (MecSupport){{P[i]}, 1};
       for (int j = 0; j < i; j++)
       {
-        if (! mec_inside(P[j], C))
+        if (! mec_encloses(P[j], &S))
         {
-          C = mec_circle2(P[i], P[j]);
+          S = (MecSupport){{P[i], P[j]}, 2};
           for (int k = 0; k < j; k++)
           {
-            if (! mec_inside(P[k], C))
-              C = mec_circle3_safe(P[i], P[j], P[k]);
+            if (! mec_encloses(P[k], &S))
+              S = mec_support3(P[i], P[j], P[k]);
           }
         }
       }
     }
   }
-  return C;
+  return mec_circle(&S);
 }
 
 /**
@@ -7686,6 +7870,25 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 }
 
 /**
+ * @brief Return the Minimum Enclosing Circle of an array of points, which it
+ * shuffles
+ * @pre The array holds at least one point
+ */
+static Circle
+mec_points(POINT2D *pts, int count)
+{
+  /* Fisher-Yates shuffle */
+  for (int i = count - 1; i > 0; i--)
+  {
+    int j = rand() % (i + 1);
+    POINT2D tmp = pts[i];
+    pts[i] = pts[j];
+    pts[j] = tmp;
+  }
+  return mec_welzl(pts, count);
+}
+
+/**
  * @brief Computation of the Minimum Enclosing Circle
  * @pre The geometry is not empty and is one of the supported gemetry types
  */
@@ -7697,19 +7900,95 @@ lwgeom_mec(const LWGEOM *geom)
   /* Ensure that there is at least one point given the precondition */
   assert(array->count > 0);
   /* Reuse the array->elems array that contains the points */
-  POINT2D *pts = (POINT2D *) array->elems;
-
-  /* Fisher-Yates shuffle */
-  for (int i = array->count - 1; i > 0; i--)
-  {
-    int j = rand() % (i + 1);
-    POINT2D tmp = pts[i];
-    pts[i] = pts[j];
-    pts[j] = tmp;
-  }
-  Circle result = mec_welzl(pts, array->count);
+  Circle result = mec_points((POINT2D *) array->elems, array->count);
   meos_array_destroy(array);
   return result;
+}
+
+/**
+ * @brief Collect the 2D coordinates of the geometry serialized at a position,
+ * without deserializing it
+ * @details The coordinates are read in place, as #geo_walk_measure reads
+ * them, and appended to the points in their order
+ * @param[in] p Position of the geometry in the serialized form
+ * @param[in] ndims Number of coordinates of a point
+ * @param[out] pts Points, with room for every point of the geometry
+ * @param[in,out] count Number of points held in @p pts
+ * @param[out] size Number of bytes the geometry takes
+ * @return #WALK_CURVE for a geometry holding a curve, which is read on its
+ * deserialized form, and #WALK_ERROR with an error for a type word naming no
+ * geometry type
+ */
+static WalkStatus
+geo_walk_points(const uint8_t *p, uint32_t ndims, POINT2D *pts, int *count,
+  size_t *size)
+{
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  switch (type)
+  {
+    case POINTTYPE:
+    case LINETYPE:
+    case TRIANGLETYPE:
+    {
+      /* The serialized form stores the coordinates as doubles aligned on 8
+       * bytes, as the point arrays of PostGIS read them */
+      const void *coords = p + 8;
+      const double *c = coords;
+      for (uint32_t i = 0; i < num; i++, c += ndims)
+        pts[(*count)++] = (POINT2D) {c[0], c[1]};
+      *size = 8 + (size_t) num * ndims * sizeof(double);
+      return WALK_DONE;
+    }
+    case POLYGONTYPE:
+    {
+      /* The numbers of points of the rings, padded to a multiple of 8 bytes,
+       * precede the coordinates of the rings */
+      const uint8_t *counts = p + 8;
+      const void *coords = counts + 4 * num + ((num % 2) ? 4 : 0);
+      const double *c = coords;
+      for (uint32_t r = 0; r < num; r++)
+      {
+        uint32_t npoints;
+        memcpy(&npoints, counts + 4 * r, 4);
+        for (uint32_t i = 0; i < npoints; i++, c += ndims)
+          pts[(*count)++] = (POINT2D) {c[0], c[1]};
+      }
+      *size = (size_t) ((const uint8_t *) c - p);
+      return WALK_DONE;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COLLECTIONTYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    {
+      size_t off = 8;
+      for (uint32_t i = 0; i < num; i++)
+      {
+        size_t subsize;
+        WalkStatus status = geo_walk_points(p + off, ndims, pts, count,
+          &subsize);
+        if (status != WALK_DONE)
+          return status;
+        off += subsize;
+      }
+      *size = off;
+      return WALK_DONE;
+    }
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+      return WALK_CURVE;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown geometry type: %d", type);
+      return WALK_ERROR;
+  }
 }
 
 /**
@@ -7753,6 +8032,34 @@ geom_minimum_bounding_radius(const GSERIALIZED *geom, double *radius)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(radius, NULL);
+
+  /* The points are read on the serialized form (#geo_walk_points); a
+   * geometry holding a curve, or holding no point, is read deserialized. A
+   * point takes at least the bytes of its coordinates */
+  uint32_t ndims = (uint32_t) G2FLAGS_NDIMS(geom->gflags);
+  POINT2D *pts = palloc(sizeof(POINT2D) *
+    (VARSIZE(geom) / (ndims * sizeof(double)) + 1));
+  int count = 0;
+  size_t size;
+  WalkStatus status = geo_walk_points(gs_geometry_ptr(geom), ndims, pts,
+    &count, &size);
+  if (status == WALK_ERROR)
+  {
+    pfree(pts);
+    return NULL;
+  }
+  if (status == WALK_DONE && count > 0)
+  {
+    Circle c = mec_points(pts, count);
+    pfree(pts);
+    LWGEOM *center = (LWGEOM *) lwpoint_make2d(gserialized_get_srid(geom),
+      c.center.x, c.center.y);
+    *radius = c.radius;
+    GSERIALIZED *result = geo_serialize(center);
+    lwgeom_free(center);
+    return result;
+  }
+  pfree(pts);
 
   LWGEOM *input = lwgeom_from_gserialized(geom);
   LWGEOM *center;
