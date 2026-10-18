@@ -453,6 +453,20 @@ The hand overloads left by the catalog group of their SQL name, the largest firs
 `merge`), `meos_rgeo_restrict` 174, `meos_temporal_restrict` 170, `meos_rgeo_modif` 133,
 `meos_setspan_accessor` 127, `meos_geo_accessor` 72; a name several groups declare counts in each.
 
+At MobilityDuck `f76d7a8f8b` (the head of AG6, MobilityDuck #461, over MobilityDB `fa02361fa6`), read the
+same way, with the generated registrations and with nothing of MobilityDuck as the two other reads:
+aggregates 259 generated and 0 by hand; scalars 8,839 generated and 742 by hand (241 names); table
+functions 52 generated and 54 by hand (`setUnnest` 15, `timeSplit` 18, `valueSplit` 6,
+`valueTimeSplit` 6, `spaceSplit` 3, `spaceTimeSplit` 4, the two index scans); the 64 types register
+from the hand path, and the casts, which `duckdb_functions()` does not list, are registered by hand.
+The 796 hand overloads by the task that generates them: D9.2–D9.4 the boxes 76 and most of the 159
+operators and comparisons, D9.5 the input and output 152, D9.6 the constructors 103, D9.7 the
+tiles, boxes and splits 81, D9.8 the raster 24, D9.9 the sets and spans 105, D9.10 the temporal
+leftovers 62, D9.11 `avgValue` 2, D9.12 30 (`tempDump` 4, `setUnnest` 15, the version functions,
+`temporalFooter`, `pointCloudSchemaRegister`, `collect_gs`, `distance_gs`). MobilityDuck's
+aggregate `wAvg` replaces DuckDB's macro `wavg` (`weighted_avg` stays): `wavg(x, w)` over two
+numbers finds no function once MobilityDuck loads.
+
 ### MobilityDB
 
 | PR | Topic | What it changes |
@@ -498,6 +512,12 @@ The hand overloads left by the catalog group of their SQL name, the largest firs
 G61 first, then D2's merge; D2a on it; G62 beside D2a; D3–D6 and D9 are one PR, retiring the hand registration, one commit per group, MobilityDuck #434 while it stays open and one PR after it otherwise; D7
 after D3–D6, since the operators of the restricted and modified values reach it; D8 on its own;
 D9 last.
+
+## Left for later
+
+| | Task | What it is |
+|---|---|---|
+| O1 | MobilityDB answers every signature for the engines | A generator in MobilityDB `tools/codegen` writes one query per SQL signature and per aggregate entry of the catalog, over sample values of each SQL type (a table of samples per type with per-function overrides, absorbing the canned inputs of `tools/codegen/gen_smoketest/gen_smoketest.py`), into generated regression test files of MobilityDB whose expected output is MobilityDB's answer; MEOS-API carries each query and answer to the catalog keyed by the catalog entry, the engines run it under the name they register (`altSqlName` where the entry has one), and each engine's generator writes one test per signature from it. Over the catalog at MobilityDB `fa02361fa6`: 12,212 SQL signatures under 1,377 names over 129 argument types, and 267 aggregates; the 28,777 literal-only queries of MobilityDB's regression files reach 730 of the names. Until then the engines' tests state MobilityDB's answers themselves (AG8 of the [aggregates plan](AGGREGATES-PLAN.md)). |
 
 ## Acceptance of the whole
 
