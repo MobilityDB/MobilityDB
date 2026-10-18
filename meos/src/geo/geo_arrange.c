@@ -53,6 +53,14 @@
  * (#arr_merge_overlaps): every end of such a stretch is an input vertex, so
  * the stretches are decided exactly, and the curves may share any part of
  * their boundaries.
+ *
+ * The union of many surfaces bounded by segments is merged pairwise
+ * (#arrange_union_surfaces): the boundary of each union reaches the next
+ * arrangement as stretches of input segments between two ends, each an input
+ * vertex or the crossing of two input segments (#ArrStretch). Every node of
+ * every merge is therefore placed by the input doubles alone, every question
+ * keeps the degree it has in one arrangement of all the rings, and only the
+ * last merge rounds the crossings it writes.
  */
 
 /* C */
@@ -67,6 +75,7 @@
 #include <meos.h>
 #include "geo/geo_arrange.h"
 #include "geo/geo_funcs.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Intervals
@@ -370,6 +379,11 @@ typedef struct
                           itself for a vertex */
   bool vertex;
   int32_t cross;     /**< The crossing it is, or -1 */
+  const Edge *xp, *xq; /**< For a crossing, the two edges whose crossing it
+                          is, which place it exactly: input segments where
+                          the edges are stretches (#ArrStretch) */
+  int xsign;         /**< The sign of the cross product of their
+                          directions */
   bool merged;       /**< Several edges cross at it, its cuts merged
                           (#arr_node_merge): ordered around by their
                           directions rather than as a crossing of two */
@@ -380,7 +394,7 @@ typedef struct
 typedef struct
 {
   MeetKind kind;
-  uint32_t p, q;
+  const Edge *p, *q;
   int sigma;
   double x, y;
 } ArrMeet;
@@ -416,6 +430,29 @@ typedef struct
                           known yet */
   bool result, flip, used;
 } ArrPiece;
+
+/* An end of a stretch: an input vertex, exact, or the crossing of the lines
+ * of two input segments, which places it exactly, its coordinates rounded
+ * once where it was found */
+typedef struct
+{
+  double x, y;
+  const Edge *p, *q;   /**< The two segments, NULL for a vertex */
+} ArrEnd;
+
+/* A stretch of the boundary of a region: the part of the line of an input
+ * segment between two ends, walked from the one to the other with the region
+ * on its left. The boundary of the union of surfaces is carried from one
+ * arrangement to the next as its stretches (#arrange_union_surfaces), so that
+ * every node of every arrangement is an input vertex or the crossing of two
+ * input segments, decided as exactly as those of the first */
+typedef struct
+{
+  const Edge *s;       /**< The input segment it lies on */
+  bool rev;            /**< Walked from the end of the segment towards its
+                            start */
+  ArrEnd from, to;
+} ArrStretch;
 
 /* A piece seen from a node: leaving it along the piece's direction, or
  * arriving at it */
@@ -456,7 +493,39 @@ typedef struct
   ArrHalf *halves;        /**< The halves of every node, node by node */
   uint32_t *hoff;         /**< First half of each node, one past the last */
   double (*box)[4];       /**< The box of every edge (#arr_box) */
+  /* Where the edges are stretches (#ArrStretch), each the line of its input
+   * segment, walked in its sense, between the nodes of its two ends */
+  const Edge **sup;       /**< The input segment of each edge, or NULL */
+  bool *erev;             /**< Whether the edge runs against it */
+  Ival *tfrom, *tto;      /**< The positions of its ends along it */
+  ArrMeet *mfrom, *mto;   /**< The meetings its ends are */
+  int32_t *xtab;          /**< The crossing nodes by their segments */
+  uint32_t xmask;
+  uint32_t (*same)[2];    /**< Pairs of nodes found at one point, merged
+                               once the cuts are grouped (#arr_pieces) */
+  uint32_t nsame, capsame;
 } Arr;
+
+/* The edge a meeting or a crossing refers to: the input segment of a
+ * stretch, which outlives the arrangement, or the edge itself */
+static inline const Edge *
+arr_edge_ref(const Arr *a, uint32_t i)
+{
+  return a->sup ? a->sup[i] : &a->e[i];
+}
+
+/* A meeting as #meets_order_exact reads it */
+static MeetPoint
+arr_meet_point(const ArrMeet *m)
+{
+  MeetPoint r;
+  r.kind = m->kind;
+  r.p = (m->kind == MEET_VERTEX) ? NULL : m->p;
+  r.q = (m->kind == MEET_VERTEX) ? NULL : m->q;
+  r.sigma = m->sigma;
+  r.x = m->x; r.y = m->y;
+  return r;
+}
 
 static uint32_t
 arr_node_new(Arr *a, double x, double y, bool vertex, int32_t cross)
@@ -469,6 +538,8 @@ arr_node_new(Arr *a, double x, double y, bool vertex, int32_t cross)
   ArrNode *nd = &a->nodes[a->nnodes];
   nd->x = x; nd->y = y; nd->vertex = vertex; nd->cross = cross;
   nd->merged = false;
+  nd->xp = nd->xq = NULL;
+  nd->xsign = 0;
   nd->bx = ival(x); nd->by = ival(y);
   return a->nnodes++;
 }
@@ -532,6 +603,14 @@ arr_cross_new(Arr *a, uint32_t node, uint32_t ea, uint32_t eb, int sign)
   }
   ArrCross *c = &a->cross[a->ncross];
   c->node = node; c->a = ea; c->b = eb; c->sign = sign;
+  ArrNode *nd = &a->nodes[node];
+  nd->xp = arr_edge_ref(a, ea);
+  nd->xq = arr_edge_ref(a, eb);
+  /* The edge of a stretch may run against its segment, which the sign of
+   * the crossing read off the segments follows */
+  nd->xsign = a->sup ? cross_product_sign(nd->xp->x1, nd->xp->y1,
+    nd->xp->x2, nd->xp->y2, nd->xq->x1, nd->xq->y1, nd->xq->x2, nd->xq->y2) :
+    sign;
   return (int32_t) a->ncross++;
 }
 
@@ -578,7 +657,7 @@ arr_cut_vertex(Arr *a, uint32_t i, double x, double y)
   Ival pos = arr_is_arc(e) ?
     arr_arc_position(e, a->ccx[i], a->ccy[i], ival(x), ival(y)) :
     arr_segment_position(e, ival(x), ival(y));
-  ArrMeet m = {MEET_VERTEX, 0, 0, 0, x, y};
+  ArrMeet m = {MEET_VERTEX, NULL, NULL, 0, x, y};
   arr_cut(a, i, arr_vertex(a, x, y), pos, m);
   return;
 }
@@ -600,6 +679,26 @@ arr_cross_ival(double ax, double ay, double bx, double by, double cx,
   double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
     (fabs(left) + fabs(right)) * (1.0 + 4.0 * DBL_EPSILON) + 0x1p-1072;
   return ival_out(det - bound, det + bound);
+}
+
+/* The crossing of the lines of two segments P and Q, as the positions along
+ * each, t = (C - A) x S / (R x S), every cross product of differences of the
+ * four ends held by its value and the bound of #arr_cross_ival, and as the
+ * intervals of its coordinates */
+static void
+arr_cross_ivals(const Edge *p, const Edge *q, Ival *tp, Ival *tq, Ival *bx,
+  Ival *by)
+{
+  Ival den = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
+    q->y2);
+  *tp = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, q->x1, q->y1,
+    q->x2, q->y2), den);
+  *tq = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, p->x1, p->y1,
+    p->x2, p->y2), den);
+  double rx = p->x2 - p->x1, ry = p->y2 - p->y1;
+  *bx = ival_add(ival(p->x1), ival_mul(*tp, ival_out(rx, rx)));
+  *by = ival_add(ival(p->y1), ival_mul(*tp, ival_out(ry, ry)));
+  return;
 }
 
 /**
@@ -649,21 +748,283 @@ arr_meet_segments(Arr *a, uint32_t i, uint32_t j)
     q->x2, q->y2);
   uint32_t node = arr_node_new(a, x, y, false, -1);
   a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
-  /* The positions along each, t = (C - A) x S / (R x S), every cross
-   * product of differences of the four ends held by its value and the bound
-   * of #arr_cross_ival */
-  Ival den = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
-    q->y2);
-  Ival tp = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, q->x1, q->y1,
-    q->x2, q->y2), den);
-  Ival tq = ival_div(arr_cross_ival(p->x1, p->y1, q->x1, q->y1, p->x1, p->y1,
-    p->x2, p->y2), den);
-  ArrMeet m = {MEET_SEGSEG, i, j, 0, 0.0, 0.0};
-  double rx = p->x2 - p->x1, ry = p->y2 - p->y1;
-  a->nodes[node].bx = ival_add(ival(p->x1), ival_mul(tp, ival_out(rx, rx)));
-  a->nodes[node].by = ival_add(ival(p->y1), ival_mul(tp, ival_out(ry, ry)));
+  Ival tp, tq;
+  arr_cross_ivals(p, q, &tp, &tq, &a->nodes[node].bx, &a->nodes[node].by);
+  ArrMeet m = {MEET_SEGSEG, arr_edge_ref(a, i), arr_edge_ref(a, j), 0,
+    0.0, 0.0};
   arr_cut(a, i, node, tp, m);
   arr_cut(a, j, node, tq, m);
+  return ARR_ANSWERED;
+}
+
+/*****************************************************************************
+ * Stretches: the arrangement of the boundaries of two regions
+ *****************************************************************************/
+
+/* Record that two nodes are one point, merged once the cuts are grouped
+ * (#arr_pieces) */
+static void
+arr_same_add(Arr *a, uint32_t v, uint32_t w)
+{
+  if (a->nsame == a->capsame)
+  {
+    a->capsame = a->capsame ? 2 * a->capsame : 16;
+    a->same = a->same ? repalloc(a->same, sizeof(uint32_t[2]) * a->capsame) :
+      palloc(sizeof(uint32_t[2]) * a->capsame);
+  }
+  a->same[a->nsame][0] = v;
+  a->same[a->nsame++][1] = w;
+  return;
+}
+
+/* Return how two points of the line of an edge are ordered along it, by
+ * their positions and, where the intervals overlap, by #meets_order_exact:
+ * -1, 1, 0 for one point, 2 where it cannot be told */
+static int
+arr_line_order(const Arr *a, uint32_t i, Ival t1, const ArrMeet *m1, Ival t2,
+  const ArrMeet *m2)
+{
+  if (t1.hi < t2.lo)
+    return -1;
+  if (t2.hi < t1.lo)
+    return 1;
+  MeetPoint p1 = arr_meet_point(m1), p2 = arr_meet_point(m2);
+  return meets_order_exact(&a->e[i], false, &p1, &p2);
+}
+
+/* Where a point of the line of a stretch lies against it */
+typedef enum
+{
+  ARR_OFF,        /**< Before its start or after its end */
+  ARR_AT_FROM,    /**< At its start */
+  ARR_AT_TO,      /**< At its end */
+  ARR_WITHIN,     /**< Strictly between its ends */
+  ARR_UNTOLD      /**< The order cannot be told */
+} ArrWhere;
+
+static ArrWhere
+arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
+{
+  int c = arr_line_order(a, i, t, m, a->tfrom[i], &a->mfrom[i]);
+  if (c == 2)
+    return ARR_UNTOLD;
+  if (c <= 0)
+    return (c < 0) ? ARR_OFF : ARR_AT_FROM;
+  c = arr_line_order(a, i, t, m, a->tto[i], &a->mto[i]);
+  if (c == 2)
+    return ARR_UNTOLD;
+  if (c >= 0)
+    return (c > 0) ? ARR_OFF : ARR_AT_TO;
+  return ARR_WITHIN;
+}
+
+/* The node of an end of a stretch where a point lies at it */
+static inline uint32_t
+arr_stretch_end_node(const Arr *a, uint32_t i, ArrWhere w)
+{
+  return (w == ARR_AT_FROM) ? a->start[i] : a->end[i];
+}
+
+static inline const ArrMeet *
+arr_stretch_end_meet(const Arr *a, uint32_t i, ArrWhere w)
+{
+  return (w == ARR_AT_FROM) ? &a->mfrom[i] : &a->mto[i];
+}
+
+/* The position of a node along the line of an edge holding it: 0 or 1 at
+ * an end of the edge's segment, else read off the intervals holding it */
+static Ival
+arr_node_position(const Edge *e, const ArrNode *nd)
+{
+  if (nd->vertex)
+  {
+    if (arr_same(nd->x, nd->y, e->x1, e->y1))
+      return ival(0.0);
+    if (arr_same(nd->x, nd->y, e->x2, e->y2))
+      return ival(1.0);
+  }
+  return arr_segment_position(e, nd->bx, nd->by);
+}
+
+/* The positions of the ends of stretch j along the line of stretch i, which
+ * holds them */
+static void
+arr_stretch_on(const Arr *a, uint32_t i, uint32_t j, Ival *tf, Ival *tt)
+{
+  const ArrNode *nf = &a->nodes[a->start[j]], *nt = &a->nodes[a->end[j]];
+  *tf = arr_node_position(&a->e[i], nf);
+  *tt = arr_node_position(&a->e[i], nt);
+  return;
+}
+
+/**
+ * @brief Return whether two stretches on one line share a stretch of it: 1
+ * where they do, 0 where they do not, 2 where it cannot be told; where they
+ * only touch at an end, the nodes of the two ends are made one
+ */
+static int
+arr_stretches_share(Arr *a, uint32_t i, uint32_t j)
+{
+  Ival tf, tt;
+  arr_stretch_on(a, i, j, &tf, &tt);
+  int dir = arr_line_order(a, i, tf, &a->mfrom[j], tt, &a->mto[j]);
+  if (dir != -1 && dir != 1)
+    return 2;
+  /* The ends of j in the order of i */
+  Ival tlo = (dir < 0) ? tf : tt, thi = (dir < 0) ? tt : tf;
+  const ArrMeet *mlo = (dir < 0) ? &a->mfrom[j] : &a->mto[j];
+  const ArrMeet *mhi = (dir < 0) ? &a->mto[j] : &a->mfrom[j];
+  uint32_t nlo = (dir < 0) ? a->start[j] : a->end[j];
+  uint32_t nhi = (dir < 0) ? a->end[j] : a->start[j];
+  int c1 = arr_line_order(a, i, tlo, mlo, a->tto[i], &a->mto[i]);
+  int c2 = arr_line_order(a, i, thi, mhi, a->tfrom[i], &a->mfrom[i]);
+  if (c1 == 2 || c2 == 2)
+    return 2;
+  if (c1 > 0 || c2 < 0)
+    return 0;
+  if (c1 == 0)
+  {
+    if (nlo != a->end[i])
+      arr_same_add(a, nlo, a->end[i]);
+    return 0;
+  }
+  if (c2 == 0)
+  {
+    if (nhi != a->start[i])
+      arr_same_add(a, nhi, a->start[i]);
+    return 0;
+  }
+  return 1;
+}
+
+/* Whether the lines of two segments are one line */
+static inline bool
+arr_one_line(const Edge *p, const Edge *q)
+{
+  return cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
+      q->y2) == 0 &&
+    cross_product_sign(p->x1, p->y1, p->x2, p->y2, p->x1, p->y1, q->x1,
+      q->y1) == 0;
+}
+
+/* The order of two segments by their coordinates, which makes the rounding
+ * of their crossing independent of the order they are met in */
+static int
+arr_segment_cmp(const Edge *p, const Edge *q)
+{
+  const double a[4] = {p->x1, p->y1, p->x2, p->y2};
+  const double b[4] = {q->x1, q->y1, q->x2, q->y2};
+  for (int k = 0; k < 4; k++)
+    if (a[k] != b[k])
+      return (a[k] < b[k]) ? -1 : 1;
+  return 0;
+}
+
+/**
+ * @brief Node two stretches where they meet
+ * @details Where the lines of their segments cross, the point is an input
+ * vertex, where an end of either segment lies on the other, or else the
+ * crossing of the two, and it is placed against the ends of each stretch
+ * exactly (#arr_stretch_where). A point strictly within both is a node of
+ * both; within one and at an end of the other, it is the node of that end,
+ * which cuts the first; at an end of both, the two ends are one node. Two
+ * stretches on one line that share a stretch of it leave it to the merge
+ * that runs before (#arr_merge_stretches)
+ */
+static ArrangeStatus
+arr_meet_stretches(Arr *a, uint32_t i, uint32_t j)
+{
+  const Edge *p = &a->e[i], *q = &a->e[j];
+  int sign = cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
+    q->x2, q->y2);
+  if (sign == 0)
+  {
+    if (! arr_one_line(p, q))
+      return ARR_ANSWERED;
+    int sh = arr_stretches_share(a, i, j);
+    return (sh == 0) ? ARR_ANSWERED : (sh == 1 ? ARR_OVERLAP : ARR_ORDER);
+  }
+  /* Two stretches sharing an end meet at that end only */
+  if (a->start[i] == a->start[j] || a->start[i] == a->end[j] ||
+      a->end[i] == a->start[j] || a->end[i] == a->end[j])
+    return ARR_ANSWERED;
+  IntersectResult r = linesegm_intersect(p->x1, p->y1, p->x2, p->y2, q->x1,
+    q->y1, q->x2, q->y2);
+  if (r.type == INTERSECT_NONE)
+    return ARR_ANSWERED;
+  /* The point, as a meeting, and its position along each */
+  const Edge *edges[2] = {p, q};
+  bool vertex = false;
+  double x = 0.0, y = 0.0;
+  for (int k = 0; k < 4 && ! vertex; k++)
+  {
+    const Edge *own = edges[k / 2], *other = edges[1 - k / 2];
+    x = (k % 2 == 0) ? own->x1 : own->x2;
+    y = (k % 2 == 0) ? own->y1 : own->y2;
+    vertex = point_on_segment_exact(x, y, other->x1, other->y1, other->x2,
+      other->y2);
+  }
+  ArrMeet m;
+  Ival ti, tj, bx, by;
+  if (vertex)
+  {
+    m = (ArrMeet) {MEET_VERTEX, NULL, NULL, 0, x, y};
+    ti = arr_segment_position(p, ival(x), ival(y));
+    tj = arr_segment_position(q, ival(x), ival(y));
+  }
+  else
+  {
+    m = (ArrMeet) {MEET_SEGSEG, a->sup[i], a->sup[j], 0, 0.0, 0.0};
+    arr_cross_ivals(p, q, &ti, &tj, &bx, &by);
+  }
+  ArrWhere wi = arr_stretch_where(a, i, ti, &m);
+  ArrWhere wj = arr_stretch_where(a, j, tj, &m);
+  if (wi == ARR_UNTOLD || wj == ARR_UNTOLD)
+    return ARR_ORDER;
+  if (wi == ARR_OFF || wj == ARR_OFF)
+    return ARR_ANSWERED;
+  if (wi == ARR_WITHIN && wj == ARR_WITHIN)
+  {
+    uint32_t node;
+    if (vertex)
+      node = arr_vertex(a, x, y);
+    else
+    {
+      /* Rounded once, from the two segments in the order of their
+       * coordinates */
+      const Edge *s1 = a->sup[i], *s2 = a->sup[j];
+      if (arr_segment_cmp(s1, s2) > 0)
+      {
+        const Edge *t = s1; s1 = s2; s2 = t;
+      }
+      IntersectResult rs = linesegm_intersect(s1->x1, s1->y1, s1->x2, s1->y2,
+        s2->x1, s2->y1, s2->x2, s2->y2);
+      node = arr_node_new(a, s1->x1 + rs.t0 * (s1->x2 - s1->x1),
+        s1->y1 + rs.t0 * (s1->y2 - s1->y1), false, -1);
+      a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
+      a->nodes[node].bx = bx;
+      a->nodes[node].by = by;
+    }
+    arr_cut(a, i, node, ti, m);
+    arr_cut(a, j, node, tj, m);
+    return ARR_ANSWERED;
+  }
+  if (wi == ARR_WITHIN)
+  {
+    arr_cut(a, i, arr_stretch_end_node(a, j, wj), ti,
+      *arr_stretch_end_meet(a, j, wj));
+    return ARR_ANSWERED;
+  }
+  if (wj == ARR_WITHIN)
+  {
+    arr_cut(a, j, arr_stretch_end_node(a, i, wi), tj,
+      *arr_stretch_end_meet(a, i, wi));
+    return ARR_ANSWERED;
+  }
+  uint32_t ni = arr_stretch_end_node(a, i, wi);
+  uint32_t nj = arr_stretch_end_node(a, j, wj);
+  if (ni != nj)
+    arr_same_add(a, ni, nj);
   return ARR_ANSWERED;
 }
 
@@ -808,7 +1169,8 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
         a->nodes[node].cross = arr_cross_new(a, node, i, j, - st);
         Ival px = ival_add(ax, ival_mul(t, rx)), py = ival_add(ay,
           ival_mul(t, ry));
-        ArrMeet am = {MEET_SEGARC, i, j, m[k].sigma, 0.0, 0.0};
+        ArrMeet am = {MEET_SEGARC, &a->e[i], &a->e[j], m[k].sigma, 0.0,
+          0.0};
         a->nodes[node].bx = px;
         a->nodes[node].by = py;
         arr_cut(a, i, node, t, am);
@@ -868,7 +1230,7 @@ arr_arc_crossing(Arr *a, uint32_t i, uint32_t j, Ival px, Ival py, int sign,
   a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
   a->nodes[node].bx = px;
   a->nodes[node].by = py;
-  ArrMeet m = {MEET_ARCARC, i, j, sigma, 0.0, 0.0};
+  ArrMeet m = {MEET_ARCARC, &a->e[i], &a->e[j], sigma, 0.0, 0.0};
   arr_cut(a, i, node, arr_arc_position(&a->e[i], a->ccx[i], a->ccy[i], px,
     py), m);
   arr_cut(a, j, node, arr_arc_position(&a->e[j], a->ccx[j], a->ccy[j], px,
@@ -1064,7 +1426,7 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
     a->nodes[node].cross = arr_cross_new(a, node, i, j, - s1 * c1 * c2);
     a->nodes[node].bx = qx;
     a->nodes[node].by = qy;
-    ArrMeet m = {MEET_ARCARC_REFLECT, i, j, 0, jx, jy};
+    ArrMeet m = {MEET_ARCARC_REFLECT, &a->e[i], &a->e[j], 0, jx, jy};
     arr_cut(a, i, node, arr_arc_position(p, a->ccx[i], a->ccy[i], qx, qy), m);
     arr_cut(a, j, node, arr_arc_position(q, a->ccx[j], a->ccy[j], qx, qy), m);
     return ARR_ANSWERED;
@@ -1224,7 +1586,9 @@ arr_node_all(Arr *a, const ArrPair *pairs, uint32_t npairs)
   {
     uint32_t i = pairs[k].i, j = pairs[k].j;
     bool ai = arr_is_arc(&a->e[i]), aj = arr_is_arc(&a->e[j]);
-    if (! ai && ! aj)
+    if (a->sup)
+      st = arr_meet_stretches(a, i, j);
+    else if (! ai && ! aj)
       st = arr_meet_segments(a, i, j);
     else if (! ai)
       st = arr_meet_segment_arc(a, i, j);
@@ -1256,19 +1620,6 @@ arr_cut_cmp(const ArrCut *p, const ArrCut *q)
 #define ST_DEFINE
 #include "port/sort_template.h"
 
-/* The meeting of a cut as #meets_order_exact reads it */
-static MeetPoint
-arr_meet_point(const Arr *a, const ArrMeet *m)
-{
-  MeetPoint r;
-  r.kind = m->kind;
-  r.p = (m->kind == MEET_VERTEX) ? NULL : &a->e[m->p];
-  r.q = (m->kind == MEET_VERTEX) ? NULL : &a->e[m->q];
-  r.sigma = m->sigma;
-  r.x = m->x; r.y = m->y;
-  return r;
-}
-
 /* Return how two cuts of an edge are ordered along it: by their intervals,
  * and where those overlap by #meets_order_exact; 0 for one node, 3 for two
  * nodes at one point, 2 for an order that cannot be told */
@@ -1282,8 +1633,8 @@ arr_cut_order(const Arr *a, uint32_t edge, const ArrCut *c1,
     return -1;
   if (c2->pos.hi < c1->pos.lo)
     return 1;
-  MeetPoint m1 = arr_meet_point(a, &c1->meet);
-  MeetPoint m2 = arr_meet_point(a, &c2->meet);
+  MeetPoint m1 = arr_meet_point(&c1->meet);
+  MeetPoint m2 = arr_meet_point(&c2->meet);
   int c = meets_order_exact(&a->e[edge], a->ccw[edge], &m1, &m2);
   return (c == 0) ? 3 : c;
 }
@@ -1353,6 +1704,8 @@ arr_pieces(Arr *a)
   a->nrep = palloc(sizeof(uint32_t) * Max(a->nnodes, 1u));
   for (uint32_t v = 0; v < a->nnodes; v++)
     a->nrep[v] = v;
+  for (uint32_t k = 0; k < a->nsame; k++)
+    arr_node_merge(a, a->same[k][0], a->same[k][1]);
   for (uint32_t i = 0; i < n; i++)
   {
     ArrCut *cuts = &a->cuts[a->coff[i]];
@@ -1386,9 +1739,10 @@ arr_pieces(Arr *a)
     uint32_t from = arr_node_rep(a, a->start[i]);
     uint32_t end = arr_node_rep(a, a->end[i]);
     /* A segment runs from 0 to 1 and an arc from 0 on, see
-     * #arr_arc_position */
-    Ival pfrom = ival(0.0);
-    Ival pend = ival(arr_is_arc(&a->e[i]) ? INFINITY : 1.0);
+     * #arr_arc_position; a stretch between the positions of its ends */
+    Ival pfrom = a->tfrom ? a->tfrom[i] : ival(0.0);
+    Ival pend = a->tto ? a->tto[i] :
+      ival(arr_is_arc(&a->e[i]) ? INFINITY : 1.0);
     const ArrCut *prev = NULL;
     for (uint32_t k = 0; k < ncut; k++)
     {
@@ -1700,11 +2054,8 @@ arr_node_side(const Arr *a, uint32_t v, double py)
   const ArrNode *nd = &a->nodes[v];
   if (nd->vertex)
     return (nd->y > py) - (nd->y < py);
-  if (nd->cross < 0)
-    return 2;
-  const ArrCross *c = &a->cross[nd->cross];
-  const Edge *p = &a->e[c->a], *q = &a->e[c->b];
-  if (arr_is_arc(p) || arr_is_arc(q) || c->sign == 0)
+  const Edge *p = nd->xp, *q = nd->xq;
+  if (! p || arr_is_arc(p) || arr_is_arc(q) || nd->xsign == 0)
     return 2;
   /* The exact sums: P1y - py, Rx, Ry, Sx, Sy, Q1x - P1x, Q1y - P1y */
   double t[7][2] = {
@@ -1717,7 +2068,7 @@ arr_node_side(const Arr *a, uint32_t v, double py)
   PolyTerm terms[4] = {
     {1.0, 3, {0, 1, 4, 0}}, {-1.0, 3, {0, 2, 3, 0}},
     {1.0, 3, {2, 5, 4, 0}}, {-1.0, 3, {2, 6, 3, 0}}};
-  return c->sign * polynomial_sign_exact(sums, terms, 4);
+  return nd->xsign * polynomial_sign_exact(sums, terms, 4);
 }
 
 /**
@@ -1838,6 +2189,39 @@ arr_winding_at(const Arr *a, const uint32_t *cpieces, const uint32_t *coff,
   return true;
 }
 
+/* The meeting a node is, as #meets_order_exact reads it: its coordinates for
+ * a vertex, the two edges placing it for a crossing */
+static ArrMeet
+arr_node_meet(const Arr *a, uint32_t v)
+{
+  const ArrNode *nd = &a->nodes[v];
+  ArrMeet m = {nd->vertex ? MEET_VERTEX : MEET_SEGSEG,
+    nd->vertex ? NULL : nd->xp, nd->vertex ? NULL : nd->xq, 0, nd->x, nd->y};
+  return m;
+}
+
+/* Return how the x coordinates of two nodes compare, exactly: their order
+ * along a horizontal segment pointing along the positive x axis
+ * (#meets_order_exact); 2 where it cannot be told */
+static int
+arr_node_x_cmp(const Arr *a, uint32_t v, uint32_t w)
+{
+  const ArrNode *nv = &a->nodes[v];
+  if (! nv->vertex && (! nv->xp || arr_is_arc(nv->xp)))
+    return 2;
+  const ArrNode *nw = &a->nodes[w];
+  if (! nw->vertex && (! nw->xp || arr_is_arc(nw->xp)))
+    return 2;
+  Edge h;
+  memset(&h, 0, sizeof(Edge));
+  h.etype = EDGE_LINESEG;
+  h.x1 = nv->x; h.y1 = h.y2 = nv->y;
+  h.x2 = nv->x + fmax(1.0, fabs(nv->x));
+  ArrMeet mv = arr_node_meet(a, v), mw = arr_node_meet(a, w);
+  MeetPoint pv = arr_meet_point(&mv), pw = arr_meet_point(&mw);
+  return meets_order_exact(&h, false, &pv, &pw);
+}
+
 /**
  * @brief Return the rightmost point of the pieces of a component, false where
  * the intervals cannot tell which point lies furthest right
@@ -1853,16 +2237,35 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
 {
   ArrExtreme ex = {false, UINT32_MAX, UINT32_MAX, {-INFINITY, -INFINITY}};
   bool unsure = false;
-  for (uint32_t c = 0; c < cn; c++)
+  for (uint32_t c = 0; c < cn && ! unsure; c++)
   {
     const ArrNode *nd = &a->nodes[comp[c]];
-    if (! nd->vertex)
+    /* Stretches end at crossings as well, which are told apart from the
+     * others by their intervals and exactly where those overlap */
+    if (! nd->vertex && ! a->sup)
       continue;
-    if (ex.node == UINT32_MAX || nd->x > ex.x.lo)
+    if (ex.node == UINT32_MAX || nd->bx.lo > ex.x.hi)
     {
       ex.node = comp[c];
-      ex.x = ival(nd->x);
+      ex.x = nd->bx;
+      continue;
     }
+    if (nd->bx.hi < ex.x.lo || (nd->vertex &&
+        a->nodes[ex.node].vertex && nd->x <= ex.x.lo))
+      continue;
+    int cmp = arr_node_x_cmp(a, comp[c], ex.node);
+    if (cmp == 2)
+      unsure = true;
+    else if (cmp > 0)
+    {
+      ex.node = comp[c];
+      ex.x = nd->bx;
+    }
+  }
+  if (unsure)
+  {
+    *out = ex;
+    return false;
   }
   for (uint32_t c = 0; c < cn && ! unsure; c++)
   {
@@ -1914,6 +2317,60 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
   }
   *out = ex;
   return ! unsure;
+}
+
+static bool arr_piece_clear(const Arr *a, const ArrPiece *p, double lox,
+  double hix, double loy, double hiy);
+
+/**
+ * @brief Return a point of a component the ray of #arr_winding_at may start
+ * from, false where none can be given
+ * @details The rightmost node where it is a vertex, else any vertex of the
+ * component. A component of stretches may have none, every end of its
+ * stretches a crossing: a crossing is then read at its coordinates, rounded
+ * once, which lie in the face of the pieces labelled before the crossing
+ * lies in where none of them reaches the box holding both
+ * (#arr_piece_clear), as #arr_ring_within reads a ring
+ * @param[in] a Arrangement
+ * @param[in] comp,cn The nodes of the component
+ * @param[in] node Its rightmost node
+ * @param[in] lpieces,loff,lbox,nl The pieces of the components labelled
+ * before, component by component, and the box of each
+ * @param[out] px,py The point
+ */
+static bool
+arr_component_ray_point(const Arr *a, const uint32_t *comp, uint32_t cn,
+  uint32_t node, const uint32_t *lpieces, const uint32_t *loff,
+  const double (*lbox)[4], uint32_t nl, double *px, double *py)
+{
+  uint32_t v = node;
+  for (uint32_t c = 0; c < cn && ! a->nodes[v].vertex; c++)
+    if (a->nodes[comp[c]].vertex)
+      v = comp[c];
+  const ArrNode *nd = &a->nodes[v];
+  *px = nd->x;
+  *py = nd->y;
+  if (nd->vertex)
+    return true;
+  double lox = fmin(nd->bx.lo, nd->x), hix = fmax(nd->bx.hi, nd->x);
+  double loy = fmin(nd->by.lo, nd->y), hiy = fmax(nd->by.hi, nd->y);
+  for (uint32_t m = 0; m < nl; m++)
+  {
+    /* A component whose box keeps clear of the box is passed over whole */
+    const double *cb = lbox[m];
+    if (cb[0] > hix || cb[1] < lox || cb[2] > hiy || cb[3] < loy)
+      continue;
+    for (uint32_t k = loff[m]; k < loff[m + 1]; k++)
+    {
+      const ArrPiece *p = &a->pieces[lpieces[k]];
+      const double *b = a->box[p->edge];
+      if (b[0] > hix || b[1] < lox || b[2] > hiy || b[3] < loy)
+        continue;
+      if (! arr_piece_clear(a, p, lox, hix, loy, hiy))
+        return false;
+    }
+  }
+  return true;
 }
 
 /**
@@ -2038,13 +2495,15 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     int outside = 0;
     if (! first)
     {
-      /* The ray counts crossings from a point it holds exactly: the
-       * rightmost vertex, whose face of the components labelled before is
-       * the one the whole component lies in, as it meets none of them */
-      Ival px = ival(a->nodes[ex.node].x);
-      double py = a->nodes[ex.node].y;
-      if (! arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
-          nlab, px, py, &outside))
+      /* The ray counts crossings from a point it holds exactly: a vertex
+       * of the component, the rightmost where it is one, whose face of the
+       * components labelled before is the one the whole component lies in,
+       * as it meets none of them */
+      double px, py;
+      if (! arr_component_ray_point(a, comp, cn, ex.node, cpieces, coff,
+            (const double (*)[4]) lbox, nlab, &px, &py) ||
+          ! arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
+            nlab, ival(px), py, &outside))
       {
         st = ARR_DEPTH;
         break;
@@ -2486,10 +2945,16 @@ arr_ring_box(const Arr *a, const uint32_t *rp, uint32_t from, uint32_t to,
     }
     else
     {
-      box[0] = fmin(box[0], fmin(e->x1, e->x2));
-      box[1] = fmax(box[1], fmax(e->x1, e->x2));
-      box[2] = fmin(box[2], fmin(e->y1, e->y2));
-      box[3] = fmax(box[3], fmax(e->y1, e->y2));
+      /* The piece's ends, the intervals holding a crossing: the edge of a
+       * stretch is the whole of its segment */
+      const ArrNode *ends[2] = {&a->nodes[p->from], &a->nodes[p->to]};
+      for (int m = 0; m < 2; m++)
+      {
+        box[0] = fmin(box[0], ends[m]->bx.lo);
+        box[1] = fmax(box[1], ends[m]->bx.hi);
+        box[2] = fmin(box[2], ends[m]->by.lo);
+        box[3] = fmax(box[3], ends[m]->by.hi);
+      }
     }
   }
   return;
@@ -2509,7 +2974,6 @@ arr_piece_clear(const Arr *a, const ArrPiece *p, double lox, double hix,
   const Edge *e = &a->e[p->edge];
   const double cx[4] = {lox, hix, lox, hix}, cy[4] = {loy, loy, hiy, hiy};
   int side[4];
-  Ival pos[4];
   for (int k = 0; k < 4; k++)
   {
     if (arr_is_arc(e))
@@ -2518,19 +2982,21 @@ arr_piece_clear(const Arr *a, const ArrPiece *p, double lox, double hix,
       Ival dy = ival_sub(ival(cy[k]), a->ccy[p->edge]);
       side[k] = ival_sign(ival_sub(ival_dot(dx, dy, dx, dy),
         a->cr2[p->edge]));
-      pos[k] = arr_arc_position(e, a->ccx[p->edge], a->ccy[p->edge],
-        ival(cx[k]), ival(cy[k]));
     }
     else
-    {
       side[k] = cross_product_sign(e->x1, e->y1, e->x2, e->y2, e->x1,
         e->y1, cx[k], cy[k]);
-      pos[k] = arr_segment_position(e, ival(cx[k]), ival(cy[k]));
-    }
   }
   if ((side[0] == 1 || side[0] == -1) && side[1] == side[0] &&
       side[2] == side[0] && side[3] == side[0])
     return true;
+  /* The positions, read only where the sides do not tell */
+  Ival pos[4];
+  for (int k = 0; k < 4; k++)
+    pos[k] = arr_is_arc(e) ?
+      arr_arc_position(e, a->ccx[p->edge], a->ccy[p->edge], ival(cx[k]),
+        ival(cy[k])) :
+      arr_segment_position(e, ival(cx[k]), ival(cy[k]));
   Ival h = ival_hull(ival_hull(pos[0], pos[1]), ival_hull(pos[2], pos[3]));
   return h.hi < p->pfrom.lo || h.lo > p->pto.hi;
 }
@@ -2985,6 +3451,132 @@ arr_mapped_pairs(const double (*box)[4], const ArrPair *pairs,
   return out;
 }
 
+static ArrangeStatus arr_stretches_write(Arr *a, int sgn, uint32_t outer,
+  ArrStretch **out, uint32_t *nout);
+
+/**
+ * @brief Node, cut and label the edges of an arrangement set up by its
+ * caller, and answer the region they wind around
+ * @details As rings (#arr_rings), classified into surfaces where @p owner is
+ * given, or as the stretches of its boundary where @p sout is given
+ * (#arr_stretches_write). Every array the setup and the steps allocate is
+ * released, but the edges, their weights and the arrays of stretches, which
+ * the caller owns
+ * @param[in,out] a Arrangement, its edges, nodes, ends and boxes set
+ * @param[in] pairs,npairs The pairs of edges whose boxes meet, released
+ */
+static ArrangeStatus
+arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout)
+{
+  /* Room for a few cuts an edge, the doubling of #arr_cut taking over where
+   * the edges cross more */
+  uint32_t n = a->n;
+  a->capcuts = 4 * n + 64;
+  a->cuts = palloc(sizeof(ArrCut) * a->capcuts);
+  a->ncuts = 0;
+  a->coff = NULL;
+  /* Closed curves: as many curves start at every vertex as end there, an
+   * edge counting for the curves its weight stands for */
+  ArrangeStatus st = ARR_ANSWERED;
+  int32_t *balance = palloc0(sizeof(int32_t) * a->nnodes);
+  /* Ends found at one point are one node (#arr_same_add) */
+  uint32_t *root = NULL;
+  if (a->nsame > 0)
+  {
+    root = palloc(sizeof(uint32_t) * a->nnodes);
+    for (uint32_t v = 0; v < a->nnodes; v++)
+      root[v] = v;
+    for (uint32_t k = 0; k < a->nsame; k++)
+    {
+      uint32_t r1 = arr_class_root(root, a->same[k][0]);
+      uint32_t r2 = arr_class_root(root, a->same[k][1]);
+      if (r1 != r2)
+        root[Max(r1, r2)] = Min(r1, r2);
+    }
+  }
+  for (uint32_t i = 0; i < n; i++)
+  {
+    uint32_t s = root ? arr_class_root(root, a->start[i]) : a->start[i];
+    uint32_t e = root ? arr_class_root(root, a->end[i]) : a->end[i];
+    balance[s] += arr_weight(a, i);
+    balance[e] -= arr_weight(a, i);
+  }
+  if (root)
+    pfree(root);
+  for (uint32_t v = 0; v < a->nnodes && st == ARR_ANSWERED; v++)
+    if (balance[v] != 0)
+      st = ARR_NOT_CLOSED;
+  pfree(balance);
+
+  if (st == ARR_ANSWERED)
+    st = arr_node_all(a, pairs, npairs);
+  pfree(pairs);
+  if (st == ARR_ANSWERED)
+    st = arr_pieces(a);
+  if (st == ARR_ANSWERED)
+    st = arr_order_nodes(a);
+  uint32_t outer = UINT32_MAX;
+  if (st == ARR_ANSWERED)
+    st = arr_label_all(a, &outer);
+  if (st == ARR_ANSWERED)
+  {
+    /* The sense of the region: the side of the outermost piece away from the
+     * outside */
+    const ArrPiece *p = &a->pieces[outer];
+    int inner = (p->left == 0) ? p->right : p->left;
+    int sgn = (inner > 0) ? 1 : -1;
+    uint32_t *rp = NULL, *roff = NULL;
+    if (sout)
+      st = arr_stretches_write(a, sgn, outer, sout, nsout);
+    else
+      st = arr_rings(a, sgn, outer, rings, nrings, owner ? &rp : NULL,
+        owner ? &roff : NULL);
+    if (st == ARR_ANSWERED && owner)
+    {
+      *owner = palloc(sizeof(int32_t) * Max(*nrings, 1u));
+      st = arr_surfaces(a, *nrings, rp, roff, *owner);
+      if (st != ARR_ANSWERED)
+      {
+        pfree(*owner);
+        *owner = NULL;
+        arrange_rings_free(*rings, *nrings);
+        *rings = NULL;
+        *nrings = 0;
+      }
+    }
+    if (rp)
+    {
+      pfree(rp); pfree(roff);
+    }
+  }
+  /* Release */
+  if (a->cuts)
+    pfree(a->cuts);
+  if (a->coff)
+    pfree(a->coff);
+  pfree(a->start); pfree(a->end); pfree(a->vtab);
+  pfree(a->nodes);
+  pfree(a->ccx); pfree(a->ccy); pfree(a->cr2); pfree(a->ccw);
+  if (a->cross)
+    pfree(a->cross);
+  if (a->pieces)
+    pfree(a->pieces);
+  if (a->halves)
+    pfree(a->halves);
+  if (a->nrep)
+    pfree(a->nrep);
+  if (a->hoff)
+    pfree(a->hoff);
+  if (a->box)
+    pfree(a->box);
+  if (a->xtab)
+    pfree(a->xtab);
+  if (a->same)
+    pfree(a->same);
+  return st;
+}
+
 /*
  * The arrangement of the curves and the rings bounding the region they wind
  * around: as #arrange_wound_boundary answers them where @p owner is NULL,
@@ -3082,89 +3674,647 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     a.start[i] = arr_vertex(&a, a.e[i].x1, a.e[i].y1);
     a.end[i] = arr_vertex(&a, a.e[i].x2, a.e[i].y2);
   }
-  /* Room for a few cuts an edge, the doubling of #arr_cut taking over where
-   * the edges cross more */
-  a.capcuts = 4 * n + 64;
-  a.cuts = palloc(sizeof(ArrCut) * a.capcuts);
-  a.ncuts = 0;
-  a.coff = NULL;
-  /* Closed curves: as many curves start at every vertex as end there, an
-   * edge counting for the curves its weight stands for */
-  ArrangeStatus st = ARR_ANSWERED;
-  int32_t *balance = palloc0(sizeof(int32_t) * a.nnodes);
-  for (uint32_t i = 0; i < n; i++)
-  {
-    balance[a.start[i]] += arr_weight(&a, i);
-    balance[a.end[i]] -= arr_weight(&a, i);
-  }
-  for (uint32_t v = 0; v < a.nnodes && st == ARR_ANSWERED; v++)
-    if (balance[v] != 0)
-      st = ARR_NOT_CLOSED;
-  pfree(balance);
-
-  if (st == ARR_ANSWERED)
-    st = arr_node_all(&a, pairs, npairs);
-  pfree(pairs);
-  if (st == ARR_ANSWERED)
-    st = arr_pieces(&a);
-  if (st == ARR_ANSWERED)
-    st = arr_order_nodes(&a);
-  uint32_t outer = UINT32_MAX;
-  if (st == ARR_ANSWERED)
-    st = arr_label_all(&a, &outer);
-  if (st == ARR_ANSWERED)
-  {
-    /* The sense of the region: the side of the outermost piece away from the
-     * outside */
-    const ArrPiece *p = &a.pieces[outer];
-    int inner = (p->left == 0) ? p->right : p->left;
-    int sgn = (inner > 0) ? 1 : -1;
-    uint32_t *rp = NULL, *roff = NULL;
-    st = arr_rings(&a, sgn, outer, rings, nrings, owner ? &rp : NULL,
-      owner ? &roff : NULL);
-    if (st == ARR_ANSWERED && owner)
-    {
-      *owner = palloc(sizeof(int32_t) * Max(*nrings, 1u));
-      st = arr_surfaces(&a, *nrings, rp, roff, *owner);
-      if (st != ARR_ANSWERED)
-      {
-        pfree(*owner);
-        *owner = NULL;
-        arrange_rings_free(*rings, *nrings);
-        *rings = NULL;
-        *nrings = 0;
-      }
-    }
-    if (rp)
-    {
-      pfree(rp); pfree(roff);
-    }
-  }
-  /* Release */
-  if (a.cuts)
-    pfree(a.cuts);
-  if (a.coff)
-    pfree(a.coff);
-  pfree(a.start); pfree(a.end); pfree(a.vtab);
-  pfree(a.nodes);
-  pfree(a.ccx); pfree(a.ccy); pfree(a.cr2); pfree(a.ccw);
-  if (a.cross)
-    pfree(a.cross);
-  if (a.pieces)
-    pfree(a.pieces);
-  if (a.halves)
-    pfree(a.halves);
-  if (a.nrep)
-    pfree(a.nrep);
-  if (a.hoff)
-    pfree(a.hoff);
-  if (a.box)
-    pfree(a.box);
+  ArrangeStatus st = arr_finish(&a, pairs, npairs, rings, nrings, owner,
+    NULL, NULL);
   if (merged)
   {
     meos_array_destroy(merged);
     pfree(a.w);
   }
+  return st;
+}
+
+/*****************************************************************************
+ * The union of surfaces, merged pairwise as the stretches of their boundaries
+ *****************************************************************************/
+
+/* The edge of a stretch: its input segment, walked in its sense */
+static void
+arr_stretch_edge(const ArrStretch *st, Edge *e)
+{
+  const Edge *s = st->s;
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYSEG;
+  e->x1 = st->rev ? s->x2 : s->x1; e->y1 = st->rev ? s->y2 : s->y1;
+  e->x2 = st->rev ? s->x1 : s->x2; e->y2 = st->rev ? s->y1 : s->y2;
+  e->xmin = Min(e->x1, e->x2); e->xmax = Max(e->x1, e->x2);
+  e->ymin = Min(e->y1, e->y2); e->ymax = Max(e->y1, e->y2);
+  return;
+}
+
+/* The box of a stretch: that of its ends, the intervals holding a crossing */
+static void
+arr_stretch_box(Arr *a, uint32_t i)
+{
+  const ArrNode *f = &a->nodes[a->start[i]], *t = &a->nodes[a->end[i]];
+  a->box[i][0] = fmin(f->bx.lo, t->bx.lo);
+  a->box[i][1] = fmax(f->bx.hi, t->bx.hi);
+  a->box[i][2] = fmin(f->by.lo, t->by.lo);
+  a->box[i][3] = fmax(f->by.hi, t->by.hi);
+  return;
+}
+
+static uint32_t
+arr_hash_pair(const Edge *p, const Edge *q)
+{
+  uint64_t hp = (uint64_t) (uintptr_t) p, hq = (uint64_t) (uintptr_t) q;
+  uint64_t h = hp * UINT64CONST(0x9E3779B97F4A7C15) ^
+    hq * UINT64CONST(0xC2B2AE3D27D4EB4F);
+  h ^= h >> 29;
+  h *= UINT64CONST(0xBF58476D1CE4E5B9);
+  h ^= h >> 32;
+  return (uint32_t) h;
+}
+
+/* The node of an end of a stretch: the one node of a vertex's coordinates
+ * (#arr_vertex), or the one node of the crossing of two segments, whatever
+ * their order */
+static uint32_t
+arr_end_node(Arr *a, const ArrEnd *end)
+{
+  if (! end->p)
+    return arr_vertex(a, end->x, end->y);
+  const Edge *p = end->p, *q = end->q;
+  if ((uintptr_t) p > (uintptr_t) q)
+  {
+    const Edge *t = p; p = q; q = t;
+  }
+  uint32_t h = arr_hash_pair(p, q) & a->xmask;
+  while (a->xtab[h] >= 0)
+  {
+    const ArrNode *nd = &a->nodes[a->xtab[h]];
+    if (nd->xp == p && nd->xq == q)
+      return (uint32_t) a->xtab[h];
+    h = (h + 1) & a->xmask;
+  }
+  uint32_t id = arr_node_new(a, end->x, end->y, false, -1);
+  ArrNode *nd = &a->nodes[id];
+  nd->xp = p;
+  nd->xq = q;
+  nd->xsign = cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
+    q->x2, q->y2);
+  Ival tp, tq;
+  arr_cross_ivals(p, q, &tp, &tq, &nd->bx, &nd->by);
+  a->xtab[h] = (int32_t) id;
+  return id;
+}
+
+/* The meeting an end of a stretch is */
+static ArrMeet
+arr_end_meet(const ArrEnd *end)
+{
+  ArrMeet m = {end->p ? MEET_SEGSEG : MEET_VERTEX, end->p, end->q, 0, end->x,
+    end->y};
+  return m;
+}
+
+/* The end a node is, as a stretch carries it */
+static ArrEnd
+arr_node_end(const Arr *a, uint32_t v)
+{
+  const ArrNode *nd = &a->nodes[v];
+  ArrEnd end = {nd->x, nd->y, nd->vertex ? NULL : nd->xp,
+    nd->vertex ? NULL : nd->xq};
+  return end;
+}
+
+/* A point of the line of a class of stretches running along each other: an
+ * end of one of them, at its position along the line */
+typedef struct
+{
+  Ival t;
+  ArrMeet m;
+  uint32_t node;
+  uint32_t member;
+  bool to;
+} ArrLinePoint;
+
+/* The per-edge arrays of an arrangement of stretches, written anew where the
+ * stretches running along each other are merged */
+typedef struct
+{
+  Edge *e;
+  const Edge **sup;
+  bool *erev;
+  uint32_t *start, *end;
+  Ival *tfrom, *tto;
+  ArrMeet *mfrom, *mto;
+  int32_t *w;
+} ArrStretchEdges;
+
+static void
+arr_stretch_edges_alloc(ArrStretchEdges *se, uint32_t n)
+{
+  n = Max(n, 1u);
+  se->e = palloc(sizeof(Edge) * n);
+  se->sup = palloc(sizeof(const Edge *) * n);
+  se->erev = palloc(sizeof(bool) * n);
+  se->start = palloc(sizeof(uint32_t) * n);
+  se->end = palloc(sizeof(uint32_t) * n);
+  se->tfrom = palloc(sizeof(Ival) * n);
+  se->tto = palloc(sizeof(Ival) * n);
+  se->mfrom = palloc(sizeof(ArrMeet) * n);
+  se->mto = palloc(sizeof(ArrMeet) * n);
+  se->w = palloc(sizeof(int32_t) * n);
+  return;
+}
+
+/* Release the per-edge arrays an arrangement of stretches holds */
+static void
+arr_stretch_edges_free(Arr *a, Edge *e)
+{
+  pfree(e); pfree(a->sup); pfree(a->erev);
+  pfree(a->tfrom); pfree(a->tto); pfree(a->mfrom); pfree(a->mto);
+  if (a->w)
+    pfree(a->w);
+  return;
+}
+
+/**
+ * @brief Replace the stretches running along each other by the stretches
+ * they share, each weighted by the stretches running along it
+ * @details As #arr_merge_overlaps merges segments, but the ends of a stretch
+ * are input vertices or crossings, so the ends of a class are ordered along
+ * its line exactly (#arr_line_order) rather than by their coordinates, and
+ * ends at one point are one node. Each stretch written lies on the segment of
+ * one of the stretches covering it, walked in the order of the line, so that
+ * the segment of every edge holds the edge
+ * @param[in,out] a Arrangement of stretches, its per-edge arrays replaced
+ * where any two run along each other
+ * @param[in] pairs,npairs The pairs of edges whose boxes meet
+ * @param[in,out] ecopy The edges the arrangement owns
+ * @param[out] done Whether any two ran along each other
+ * @param[out] mg Where every edge went, set where @p done
+ */
+static ArrangeStatus
+arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
+  Edge **ecopy, bool *done, ArrMerge *mg)
+{
+  *done = false;
+  uint32_t n = a->n;
+  uint32_t *parent = NULL;
+  for (uint32_t k = 0; k < npairs; k++)
+  {
+    uint32_t i = pairs[k].i, j = pairs[k].j;
+    const Edge *p = &a->e[i], *q = &a->e[j];
+    Ival par = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
+      q->y2);
+    if (par.lo > 0.0 || par.hi < 0.0 || ! arr_one_line(p, q))
+      continue;
+    int sh = arr_stretches_share(a, i, j);
+    if (sh == 2)
+    {
+      if (parent)
+        pfree(parent);
+      return ARR_ORDER;
+    }
+    if (sh == 0)
+      continue;
+    if (! parent)
+    {
+      parent = palloc(sizeof(uint32_t) * n);
+      for (uint32_t m = 0; m < n; m++)
+        parent[m] = m;
+    }
+    uint32_t ri = arr_class_root(parent, i), rj = arr_class_root(parent, j);
+    if (ri != rj)
+      parent[Max(ri, rj)] = Min(ri, rj);
+  }
+  if (! parent)
+    return ARR_ANSWERED;
+  *done = true;
+
+  /* The members of each class, class by class, in the order of the edges */
+  uint32_t *root = palloc(sizeof(uint32_t) * n);
+  uint32_t *moff = palloc0(sizeof(uint32_t) * (n + 1));
+  for (uint32_t i = 0; i < n; i++)
+  {
+    root[i] = arr_class_root(parent, i);
+    moff[root[i] + 1]++;
+  }
+  for (uint32_t i = 0; i < n; i++)
+    moff[i + 1] += moff[i];
+  uint32_t *members = palloc(sizeof(uint32_t) * n);
+  uint32_t *fill = palloc(sizeof(uint32_t) * n);
+  memcpy(fill, moff, sizeof(uint32_t) * n);
+  for (uint32_t i = 0; i < n; i++)
+    members[fill[root[i]]++] = i;
+  pfree(fill);
+
+  /* A class of m stretches writes at most 2m - 1 stretches */
+  ArrStretchEdges se;
+  arr_stretch_edges_alloc(&se, 2 * n);
+  ArrLinePoint *pts = palloc(sizeof(ArrLinePoint) * 2 * n);
+  uint32_t *rep = palloc(sizeof(uint32_t) * 2 * n);
+  int32_t *rise = palloc(sizeof(int32_t) * 2 * n);
+  uint32_t *lo = palloc(sizeof(uint32_t) * n), *hi = palloc(sizeof(uint32_t) * n);
+  bool *fwd = palloc(sizeof(bool) * n);
+  mg->root = root;
+  mg->newof = palloc(sizeof(uint32_t) * n);
+  mg->sfirst = palloc0(sizeof(uint32_t) * n);
+  mg->scount = palloc0(sizeof(uint32_t) * n);
+  ArrangeStatus st = ARR_ANSWERED;
+  uint32_t c = 0;
+  for (uint32_t i = 0; i < n && st == ARR_ANSWERED; i++)
+  {
+    uint32_t r = root[i], m = moff[r + 1] - moff[r];
+    if (m == 1)
+    {
+      mg->newof[i] = c;
+      se.e[c] = a->e[i]; se.sup[c] = a->sup[i]; se.erev[c] = a->erev[i];
+      se.start[c] = a->start[i]; se.end[c] = a->end[i];
+      se.tfrom[c] = a->tfrom[i]; se.tto[c] = a->tto[i];
+      se.mfrom[c] = a->mfrom[i]; se.mto[c] = a->mto[i];
+      se.w[c++] = arr_weight(a, i);
+      continue;
+    }
+    mg->newof[i] = UINT32_MAX;
+    /* A class is written where its first member stands */
+    if (r != i)
+      continue;
+    mg->sfirst[r] = c;
+    const uint32_t *mem = &members[moff[r]];
+    /* The ends of the class in the order of the line of its root */
+    uint32_t npts = 0;
+    for (uint32_t k = 0; k < m; k++)
+      for (int to = 0; to < 2; to++)
+      {
+        uint32_t node = to ? a->end[mem[k]] : a->start[mem[k]];
+        const ArrNode *nd = &a->nodes[node];
+        ArrLinePoint *lp = &pts[npts++];
+        lp->t = arr_node_position(&a->e[r], nd);
+        lp->m = to ? a->mto[mem[k]] : a->mfrom[mem[k]];
+        lp->node = node;
+        lp->member = k;
+        lp->to = (to != 0);
+      }
+    for (uint32_t k = 1; k < npts && st == ARR_ANSWERED; k++)
+      for (uint32_t q = k; q > 0; q--)
+      {
+        int o = arr_line_order(a, r, pts[q - 1].t, &pts[q - 1].m, pts[q].t,
+          &pts[q].m);
+        if (o == 2)
+        {
+          st = ARR_ORDER;
+          break;
+        }
+        if (o <= 0)
+          break;
+        ArrLinePoint t = pts[q]; pts[q] = pts[q - 1]; pts[q - 1] = t;
+      }
+    if (st != ARR_ANSWERED)
+      break;
+    /* The distinct points, each standing for the ends at it, a vertex
+     * where one of them is */
+    uint32_t nd = 0;
+    for (uint32_t q = 0; q < npts && st == ARR_ANSWERED; q++)
+    {
+      int o = (nd == 0) ? -1 : arr_line_order(a, r, pts[rep[nd - 1]].t,
+        &pts[rep[nd - 1]].m, pts[q].t, &pts[q].m);
+      if (o == 2)
+        st = ARR_ORDER;
+      else if (o != 0)
+        rep[nd++] = q;
+      else if (pts[q].node != pts[rep[nd - 1]].node)
+      {
+        arr_same_add(a, pts[rep[nd - 1]].node, pts[q].node);
+        if (a->nodes[pts[q].node].vertex &&
+            ! a->nodes[pts[rep[nd - 1]].node].vertex)
+          rep[nd - 1] = q;
+      }
+      uint32_t d = nd - 1;
+      if (pts[q].to)
+        hi[pts[q].member] = d;
+      else
+        lo[pts[q].member] = d;
+    }
+    if (st != ARR_ANSWERED)
+      break;
+    /* The rise of the winding number across each stretch */
+    memset(rise, 0, sizeof(int32_t) * nd);
+    for (uint32_t k = 0; k < m; k++)
+    {
+      fwd[k] = lo[k] < hi[k];
+      if (! fwd[k])
+      {
+        uint32_t t = lo[k]; lo[k] = hi[k]; hi[k] = t;
+      }
+      int32_t wk = arr_weight(a, mem[k]);
+      rise[lo[k]] += fwd[k] ? wk : -wk;
+      rise[hi[k]] -= fwd[k] ? wk : -wk;
+    }
+    int32_t weight = 0;
+    for (uint32_t d = 0; d + 1 < nd; d++)
+    {
+      weight += rise[d];
+      if (weight == 0)
+        continue;
+      /* The segment of a member covering it, walked along the line */
+      uint32_t k = 0;
+      while (k < m && ! (lo[k] <= d && hi[k] > d))
+        k++;
+      if (k == m)
+      {
+        st = ARR_ORDER;
+        break;
+      }
+      uint32_t x = mem[k];
+      se.e[c] = a->e[x];
+      se.sup[c] = a->sup[x];
+      se.erev[c] = a->erev[x];
+      if (! fwd[k])
+      {
+        Edge *ex = &se.e[c];
+        double t;
+        t = ex->x1; ex->x1 = ex->x2; ex->x2 = t;
+        t = ex->y1; ex->y1 = ex->y2; ex->y2 = t;
+        se.erev[c] = ! se.erev[c];
+      }
+      const ArrLinePoint *p0 = &pts[rep[d]], *p1 = &pts[rep[d + 1]];
+      const ArrNode *n0 = &a->nodes[p0->node], *n1 = &a->nodes[p1->node];
+      se.start[c] = p0->node; se.end[c] = p1->node;
+      se.tfrom[c] = arr_node_position(&se.e[c], n0);
+      se.tto[c] = arr_node_position(&se.e[c], n1);
+      se.mfrom[c] = p0->m; se.mto[c] = p1->m;
+      se.w[c++] = weight;
+    }
+    mg->scount[r] = c - mg->sfirst[r];
+  }
+  pfree(pts); pfree(rep); pfree(rise); pfree(lo); pfree(hi); pfree(fwd);
+  pfree(members); pfree(moff); pfree(parent);
+  /* The arrangement takes the merged edges */
+  pfree(a->start); pfree(a->end);
+  arr_stretch_edges_free(a, *ecopy);
+  *ecopy = se.e;
+  a->e = se.e; a->n = c;
+  a->sup = se.sup; a->erev = se.erev;
+  a->start = se.start; a->end = se.end;
+  a->tfrom = se.tfrom; a->tto = se.tto;
+  a->mfrom = se.mfrom; a->mto = se.mto;
+  a->w = se.w;
+  if (st != ARR_ANSWERED)
+  {
+    pfree(mg->root); pfree(mg->newof); pfree(mg->sfirst); pfree(mg->scount);
+    *done = false;
+  }
+  return st;
+}
+
+/**
+ * @brief Write the boundary of the region as its stretches
+ * @details A piece bounds the region where the winding number is at least
+ * one on one side of it and not on the other, as #arr_rings reads it; it is
+ * written with the region on its left, and the pieces of one edge that follow
+ * each other along it, walked the same way, as one stretch
+ */
+static ArrangeStatus
+arr_stretches_write(Arr *a, int sgn, uint32_t outer, ArrStretch **out,
+  uint32_t *nout)
+{
+  for (uint32_t k = 0; k < a->npieces; k++)
+  {
+    ArrPiece *p = &a->pieces[k];
+    bool inl = sgn * p->left >= 1, inr = sgn * p->right >= 1;
+    p->result = inl != inr;
+    p->flip = inr;
+  }
+  if (outer == UINT32_MAX || ! a->pieces[outer].result)
+    return ARR_SHELLS;
+  ArrStretch *res = palloc(sizeof(ArrStretch) * Max(a->npieces, 1u));
+  uint32_t c = 0;
+  for (uint32_t k = 0; k < a->npieces; )
+  {
+    const ArrPiece *p = &a->pieces[k];
+    if (! p->result)
+    {
+      k++;
+      continue;
+    }
+    uint32_t last = k;
+    while (last + 1 < a->npieces)
+    {
+      const ArrPiece *q = &a->pieces[last + 1];
+      if (q->edge != p->edge || ! q->result || q->flip != p->flip ||
+          q->from != a->pieces[last].to)
+        break;
+      last++;
+    }
+    ArrStretch *s = &res[c++];
+    s->s = a->sup[p->edge];
+    s->rev = (a->erev[p->edge] != p->flip);
+    s->from = arr_node_end(a, p->flip ? a->pieces[last].to : p->from);
+    s->to = arr_node_end(a, p->flip ? p->from : a->pieces[last].to);
+    k = last + 1;
+  }
+  *out = res;
+  *nout = c;
+  return ARR_ANSWERED;
+}
+
+/**
+ * @brief The arrangement of stretches and the region they wind around: as
+ * #arr_arrange answers it, as rings or, where @p sout is given, as the
+ * stretches of its boundary
+ */
+static ArrangeStatus
+arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout)
+{
+  if (n == 0)
+    return ARR_NOT_CLOSED;
+  Arr a;
+  memset(&a, 0, sizeof(Arr));
+  Edge *ecopy = palloc(sizeof(Edge) * n);
+  a.sup = palloc(sizeof(const Edge *) * n);
+  a.erev = palloc(sizeof(bool) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    arr_stretch_edge(&st[i], &ecopy[i]);
+    a.sup[i] = st[i].s;
+    a.erev[i] = st[i].rev;
+  }
+  a.e = ecopy;
+  a.n = n;
+  /* The nodes of the ends, vertices and crossings each found once */
+  a.capnodes = 2 * n + 16;
+  a.nodes = palloc(sizeof(ArrNode) * a.capnodes);
+  a.vmask = 1;
+  while (a.vmask < 4 * n)
+    a.vmask <<= 1;
+  a.vtab = palloc(sizeof(int32_t) * a.vmask);
+  a.xtab = palloc(sizeof(int32_t) * a.vmask);
+  for (uint32_t h = 0; h < a.vmask; h++)
+    a.vtab[h] = a.xtab[h] = -1;
+  a.vmask -= 1;
+  a.xmask = a.vmask;
+  a.start = palloc(sizeof(uint32_t) * n);
+  a.end = palloc(sizeof(uint32_t) * n);
+  a.mfrom = palloc(sizeof(ArrMeet) * n);
+  a.mto = palloc(sizeof(ArrMeet) * n);
+  a.tfrom = palloc(sizeof(Ival) * n);
+  a.tto = palloc(sizeof(Ival) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    a.start[i] = arr_end_node(&a, &st[i].from);
+    a.end[i] = arr_end_node(&a, &st[i].to);
+    a.mfrom[i] = arr_end_meet(&st[i].from);
+    a.mto[i] = arr_end_meet(&st[i].to);
+  }
+  a.box = palloc(sizeof(double[4]) * n);
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const ArrNode *nf = &a.nodes[a.start[i]], *nt = &a.nodes[a.end[i]];
+    a.tfrom[i] = arr_node_position(&ecopy[i], nf);
+    a.tto[i] = arr_node_position(&ecopy[i], nt);
+    arr_stretch_box(&a, i);
+  }
+  uint32_t npairs;
+  ArrPair *pairs = arr_box_pairs((const double (*)[4]) a.box, n, &npairs);
+  /* Stretches running along each other are one stretch of the boundaries,
+   * read once with the rise of the winding number they give across it */
+  bool done;
+  ArrMerge mg;
+  ArrangeStatus status = arr_merge_stretches(&a, pairs, npairs, &ecopy, &done,
+    &mg);
+  if (status == ARR_ANSWERED && done)
+  {
+    pfree(a.box);
+    a.box = palloc(sizeof(double[4]) * Max(a.n, 1u));
+    for (uint32_t i = 0; i < a.n; i++)
+      arr_stretch_box(&a, i);
+    uint32_t nmapped;
+    ArrPair *mapped = arr_mapped_pairs((const double (*)[4]) a.box, pairs,
+      npairs, n, &mg, &nmapped);
+    pfree(pairs);
+    pairs = mapped;
+    npairs = nmapped;
+    pfree(mg.root); pfree(mg.newof); pfree(mg.sfirst); pfree(mg.scount);
+    if (a.n == 0)
+      status = ARR_NOT_CLOSED;
+  }
+  if (status != ARR_ANSWERED)
+  {
+    pfree(pairs);
+    pfree(a.start); pfree(a.end); pfree(a.vtab); pfree(a.xtab);
+    pfree(a.nodes); pfree(a.box);
+    if (a.same)
+      pfree(a.same);
+    arr_stretch_edges_free(&a, ecopy);
+    return status;
+  }
+  /* No arcs */
+  a.ccx = palloc(sizeof(Ival) * a.n); a.ccy = palloc(sizeof(Ival) * a.n);
+  a.cr2 = palloc(sizeof(Ival) * a.n); a.ccw = palloc0(sizeof(bool) * a.n);
+  status = arr_finish(&a, pairs, npairs, rings, nrings, owner, sout, nsout);
+  arr_stretch_edges_free(&a, ecopy);
+  return status;
+}
+
+/**
+ * @brief Return the rings bounding the union of surfaces bounded by
+ * segments, as surfaces: each shell and the holes it owns
+ * @details A point lies in the union where it lies in one of the surfaces,
+ * which is where the rings of the surfaces of either half of them wind around
+ * it at least once, so the union is merged pairwise: each surface is the
+ * stretches of its rings, and two unions are merged in the arrangement of the
+ * stretches of their boundaries (#arr_arrange_stretches), which answers the
+ * stretches of the boundary of their union. Every end of a stretch is an
+ * input vertex or the crossing of two input segments, whatever the depth of
+ * the merge, so every question is the one the arrangement of all the rings
+ * asks, decided as exactly, and only the last arrangement rounds the
+ * crossings it writes. The edges an arrangement reads are those of two
+ * boundaries, not those of every surface beneath them, which is what the
+ * merge saves where the surfaces overlap
+ * @param[in] edges The segments of the rings of the surfaces, the shells
+ * turning counterclockwise and the holes clockwise, each ring's segments
+ * consecutive and closed
+ * @param[in] soff First segment of each surface, one past the last
+ * @param[in] nsurf Number of surfaces
+ * @param[out] rings,nrings The rings, released by #arrange_rings_free
+ * @param[out] owner For every ring, the index of the shell owning it where it
+ * is a hole, -1 where it is a shell; released by the caller
+ * @return #ARR_ANSWERED, or the question left unanswered
+ */
+ArrangeStatus
+arrange_union_surfaces(const MeosArray *edges, const uint32_t *soff,
+  uint32_t nsurf, MeosArray ***rings, uint32_t *nrings, int32_t **owner)
+{
+  assert(edges); assert(soff); assert(rings); assert(nrings); assert(owner);
+  *rings = NULL;
+  *nrings = 0;
+  *owner = NULL;
+  const Edge *e = (const Edge *) edges->elems;
+  /* The boundary of each surface, as its stretches */
+  ArrStretch **part = palloc(sizeof(ArrStretch *) * Max(nsurf, 1u));
+  uint32_t *count = palloc(sizeof(uint32_t) * Max(nsurf, 1u));
+  uint32_t m = 0;
+  for (uint32_t k = 0; k < nsurf; k++)
+  {
+    uint32_t ne = soff[k + 1] - soff[k];
+    if (ne == 0)
+      continue;
+    part[m] = palloc(sizeof(ArrStretch) * ne);
+    for (uint32_t i = 0; i < ne; i++)
+    {
+      const Edge *s = &e[soff[k] + i];
+      ArrStretch *sk = &part[m][i];
+      sk->s = s;
+      sk->rev = false;
+      sk->from = (ArrEnd) {s->x1, s->y1, NULL, NULL};
+      sk->to = (ArrEnd) {s->x2, s->y2, NULL, NULL};
+    }
+    count[m++] = ne;
+  }
+  ArrangeStatus st = (m > 0) ? ARR_ANSWERED : ARR_NOT_CLOSED;
+  /* Two unions merged at a time, level by level, until the last two */
+  while (m > 2 && st == ARR_ANSWERED)
+  {
+    uint32_t k = 0;
+    for (uint32_t g = 0; g < m; g += 2)
+    {
+      if (g + 1 == m || st != ARR_ANSWERED)
+      {
+        part[k] = part[g];
+        count[k++] = count[g];
+        if (g + 1 < m)
+        {
+          part[k] = part[g + 1];
+          count[k++] = count[g + 1];
+        }
+        continue;
+      }
+      /* The union of many surfaces is long, so it can be stopped between two
+       * merges */
+      meos_check_for_interrupts();
+      uint32_t nboth = count[g] + count[g + 1];
+      ArrStretch *both = palloc(sizeof(ArrStretch) * nboth);
+      memcpy(both, part[g], sizeof(ArrStretch) * count[g]);
+      memcpy(both + count[g], part[g + 1], sizeof(ArrStretch) * count[g + 1]);
+      pfree(part[g]); pfree(part[g + 1]);
+      ArrStretch *out = NULL;
+      uint32_t nout = 0;
+      st = arr_arrange_stretches(both, nboth, NULL, NULL, NULL, &out, &nout);
+      pfree(both);
+      part[k] = out;
+      count[k++] = (st == ARR_ANSWERED) ? nout : 0;
+    }
+    m = k;
+  }
+  if (st == ARR_ANSWERED)
+  {
+    uint32_t total = 0;
+    for (uint32_t g = 0; g < m; g++)
+      total += count[g];
+    ArrStretch *all = palloc(sizeof(ArrStretch) * Max(total, 1u));
+    for (uint32_t g = 0, at = 0; g < m; at += count[g], g++)
+      memcpy(all + at, part[g], sizeof(ArrStretch) * count[g]);
+    st = arr_arrange_stretches(all, total, rings, nrings, owner, NULL, NULL);
+    pfree(all);
+  }
+  for (uint32_t g = 0; g < m; g++)
+    if (part[g])
+      pfree(part[g]);
+  pfree(part); pfree(count);
   return st;
 }
 
