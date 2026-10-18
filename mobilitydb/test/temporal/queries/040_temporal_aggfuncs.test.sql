@@ -360,6 +360,18 @@ WITH temp(inst) AS (
   SELECT ttext 'EE@2001-01-05' )
 SELECT appendInstant(inst ORDER BY inst) FROM temp;
 
+-- Over a single row every form answers a sequence of one instant, a type
+-- with a distance and a type without alike
+SELECT appendInstant(inst), appendInstant(inst, 'step'),
+  appendInstant(inst, 'step', NULL, interval '1 day')
+FROM (VALUES (tint '1@2001-01-01')) t(inst);
+SELECT appendInstant(inst), appendInstant(inst, 'step'),
+  appendInstant(inst, 'step', interval '1 day')
+FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
+-- A type without a distance takes no maximum distance
+SELECT appendInstant(inst, 'step', 1.0, interval '1 day')
+FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
+
 WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )

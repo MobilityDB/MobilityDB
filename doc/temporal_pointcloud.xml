@@ -2433,8 +2433,7 @@ SELECT numInstants(merge(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
 				<indexterm significance="normal"><primary><varname>appendSequence</varname></primary></indexterm>
 												<para>Streaming construction aggregates: <varname>appendInstant</varname> assembles instants into a sequence; <varname>appendSequence</varname> assembles sequences into a sequence set</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-appendInstant(tpcpoint[,interp text,maxt interval]) → tpcpoint
-appendInstant(tpcpatch) → tpcpatch
+appendInstant({tpcpoint,tpcpatch}[,interp text[,maxt interval]]) → {tpcpoint,tpcpatch}
 appendSequence(tpcpoint) → tpcpoint
 appendSequence(tpcpatch) → tpcpatch
 </programlisting>

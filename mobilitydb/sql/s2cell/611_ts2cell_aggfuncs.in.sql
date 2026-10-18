@@ -110,19 +110,19 @@ CREATE AGGREGATE merge(ts2cell) (
   PARALLEL = safe
 );
 
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(ts2cell, ts2cell,
+    interp text, maxt interval)
   RETURNS ts2cell
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -133,7 +133,7 @@ CREATE FUNCTION appendInstantFinal(ts2cell, ts2cell)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ts2cell) (
-  SFUNC = appendInstantTransition(ts2cell, ts2cell),
+  SFUNC = appendInstantTransition,
   STYPE = ts2cell,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -144,7 +144,7 @@ CREATE FUNCTION appendInstantFinal(ts2cell, ts2cell, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ts2cell, interp text) (
-  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),
+  SFUNC = appendInstantTransition,
   STYPE = ts2cell,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -155,7 +155,7 @@ CREATE FUNCTION appendInstantFinal(ts2cell, ts2cell, interp text, maxt interval)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = ts2cell,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,

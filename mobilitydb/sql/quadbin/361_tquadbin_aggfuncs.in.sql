@@ -110,19 +110,19 @@ CREATE AGGREGATE merge(tquadbin) (
   PARALLEL = safe
 );
 
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tquadbin, tquadbin)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION appendInstantTransition(tquadbin, tquadbin, interp text)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tquadbin, tquadbin, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(tquadbin, tquadbin,
+    interp text, maxt interval)
   RETURNS tquadbin
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -133,7 +133,7 @@ CREATE FUNCTION appendInstantFinal(tquadbin, tquadbin)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tquadbin) (
-  SFUNC = appendInstantTransition(tquadbin, tquadbin),
+  SFUNC = appendInstantTransition,
   STYPE = tquadbin,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -144,7 +144,7 @@ CREATE FUNCTION appendInstantFinal(tquadbin, tquadbin, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tquadbin, interp text) (
-  SFUNC = appendInstantTransition(tquadbin, tquadbin, text),
+  SFUNC = appendInstantTransition,
   STYPE = tquadbin,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -155,7 +155,7 @@ CREATE FUNCTION appendInstantFinal(tquadbin, tquadbin, interp text, maxt interva
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(tquadbin, tquadbin, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tquadbin,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,

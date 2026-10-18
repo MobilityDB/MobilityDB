@@ -113,23 +113,20 @@ CREATE AGGREGATE merge(tpose) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The function is not STRICT
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tpose, tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tpose, tpose,
-    interp text DEFAULT NULL)
+CREATE FUNCTION appendInstantTransition(tpose, tpose, interp text)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
 CREATE FUNCTION appendInstantTransition(tpose, tpose,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -146,24 +143,24 @@ CREATE AGGREGATE appendInstant(tpose) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tpose, tpose, text)
+CREATE FUNCTION appendInstantFinal(tpose, tpose, interp text)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tpose, text) (
+CREATE AGGREGATE appendInstant(tpose, interp text) (
   SFUNC = appendInstantTransition,
   STYPE = tpose,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tpose, tpose, text, float, interval)
+CREATE FUNCTION appendInstantFinal(tpose, tpose, interp text, maxdist float,
+    maxt interval)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tpose, text, float, interval) (
+CREATE AGGREGATE appendInstant(tpose, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tpose,
   FINALFUNC = appendInstantFinal,

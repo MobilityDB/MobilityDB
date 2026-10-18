@@ -1866,7 +1866,11 @@ SELECT extent(temp) FROM (VALUES (NULL::tposechain),
 				<para>Agrega los instantes agregados en una secuencia</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 appendInstant({tpose,tposechain}) &#8594; {tpose,tposechain}
+appendInstant({tpose,tposechain},interp text) &#8594; {tpose,tposechain}
+appendInstant(tpose,interp text,maxdist float,maxt interval) &#8594; tpose
+appendInstant(tposechain,interp text,maxt interval) &#8594; tposechain
 </programlisting>
+				<para>Una pose tiene una distancia, que lee una distancia máxima entre instantes consecutivos; una cadena de poses no tiene ninguna, por lo que sus brechas se establecen solo por el tiempo.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),

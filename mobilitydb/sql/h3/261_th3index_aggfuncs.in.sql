@@ -110,19 +110,19 @@ CREATE AGGREGATE merge(th3index) (
   PARALLEL = safe
 );
 
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(th3index, th3index)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 CREATE FUNCTION appendInstantTransition(th3index, th3index, interp text)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(th3index, th3index, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(th3index, th3index,
+    interp text, maxt interval)
   RETURNS th3index
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -133,7 +133,7 @@ CREATE FUNCTION appendInstantFinal(th3index, th3index)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index) (
-  SFUNC = appendInstantTransition(th3index, th3index),
+  SFUNC = appendInstantTransition,
   STYPE = th3index,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -144,7 +144,7 @@ CREATE FUNCTION appendInstantFinal(th3index, th3index, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index, interp text) (
-  SFUNC = appendInstantTransition(th3index, th3index, text),
+  SFUNC = appendInstantTransition,
   STYPE = th3index,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -155,7 +155,7 @@ CREATE FUNCTION appendInstantFinal(th3index, th3index, interp text, maxt interva
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(th3index, th3index, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = th3index,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,

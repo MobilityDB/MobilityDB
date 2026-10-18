@@ -115,22 +115,24 @@ CREATE AGGREGATE merge(tcbuffer) (
  * Append tinstant aggregate functions
  *****************************************************************************/
 
--- The functions are not strict
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer,
-    interp text DEFAULT NULL)
+
+CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer, interp text)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION appendInstantTransition(tcbuffer, tcbuffer,
-    interp text DEFAULT NULL, maxdist float DEFAULT NULL, 
-    maxt interval DEFAULT NULL)
+    interp text, maxdist float,
+    maxt interval)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 
 CREATE FUNCTION appendInstantFinal(tcbuffer, tcbuffer)
   RETURNS tcbuffer
@@ -143,24 +145,24 @@ CREATE AGGREGATE appendInstant(tcbuffer) (
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tcbuffer, tcbuffer, text)
+CREATE FUNCTION appendInstantFinal(tcbuffer, tcbuffer, interp text)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tcbuffer, text) (
+CREATE AGGREGATE appendInstant(tcbuffer, interp text) (
   SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
   PARALLEL = safe
 );
-
-CREATE FUNCTION appendInstantFinal(tcbuffer, tcbuffer, text, float, interval)
+CREATE FUNCTION appendInstantFinal(tcbuffer, tcbuffer, interp text, maxdist float,
+    maxt interval)
   RETURNS tcbuffer
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
-CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (
+CREATE AGGREGATE appendInstant(tcbuffer, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tcbuffer,
   FINALFUNC = appendInstantFinal,

@@ -110,19 +110,19 @@ CREATE AGGREGATE merge(tjsonb) (
   PARALLEL = safe
 );
 
+-- The functions are not STRICT, so that one row answers a sequence
 CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
- 
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb, interp text)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
--- The function is not STRICT
-CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb, interp text,
-    maxt interval)
+CREATE FUNCTION appendInstantTransition(tjsonb, tjsonb,
+    interp text, maxt interval)
   RETURNS tjsonb
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
@@ -133,7 +133,7 @@ CREATE FUNCTION appendInstantFinal(tjsonb, tjsonb)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tjsonb) (
-  SFUNC = appendInstantTransition(tjsonb, tjsonb),
+  SFUNC = appendInstantTransition,
   STYPE = tjsonb,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -144,7 +144,7 @@ CREATE FUNCTION appendInstantFinal(tjsonb, tjsonb, interp text)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tjsonb, interp text) (
-  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),
+  SFUNC = appendInstantTransition,
   STYPE = tjsonb,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
@@ -155,7 +155,7 @@ CREATE FUNCTION appendInstantFinal(tjsonb, tjsonb, interp text, maxt interval)
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (
-  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),
+  SFUNC = appendInstantTransition,
   STYPE = tjsonb,
   FINALFUNC = appendInstantFinal,
   FINALFUNC_EXTRA,
