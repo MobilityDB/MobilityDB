@@ -894,6 +894,26 @@ tsequenceset_tagg_transfn(SkipList *state, const TSequenceSet *ss,
 }
 
 /**
+ * @brief Return the reference geometry the values a state aggregates carry,
+ * `NULL` where they carry none
+ * @details A state aggregating values that carry a reference geometry holds
+ * the values #temporal_strip_geom answers for them, temporal poses, and keeps
+ * the geometry as its extra data. The temporal centroid keeps other extra
+ * data, over values of another type.
+ * @param[in] state Skiplist containing the state
+ */
+static const GSERIALIZED *
+tagg_state_geom(SkipList *state)
+{
+#if RGEO
+  if (state && state->extra && state->length > 0 &&
+      ((Temporal *) skiplist_headval(state))->temptype == T_TPOSE)
+    return (const GSERIALIZED *) state->extra;
+#endif /* RGEO */
+  return NULL;
+}
+
+/**
  * @brief Generic transition function for aggregating temporal values
  * of sequence set subtype
  * @param[in,out] state Skiplist containing the state, may be `NULL`
@@ -906,6 +926,24 @@ temporal_tagg_transfn(SkipList *state, const Temporal *temp, datum_func2 func,
   bool crossings)
 {
   assert(temp); assert(temptype_subtype(temp->subtype));
+  /* A value carrying a reference geometry is aggregated as the value
+   * #temporal_strip_geom answers, the state keeping the geometry, which every
+   * value aggregated shares and #temporal_tagg_finalfn gives back */
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  if (geom)
+  {
+    if (! temporal_geom_combinable(tagg_state_geom(state), geom))
+    {
+      pfree(work);
+      return NULL;
+    }
+    state = temporal_tagg_transfn(state, work, func, crossings);
+    pfree(work);
+    if (state && ! state->extra)
+      skiplist_set_extra(state, (void *) geom, VARSIZE(geom));
+    return state;
+  }
   switch (temp->subtype)
   {
     case TINSTANT:
@@ -941,6 +979,11 @@ temporal_tagg_combinefn(SkipList *state1, SkipList *state2, datum_func2 func,
     return state2;
   if (state2->length == 0)
     return state1;
+  /* Two states of values carrying a reference geometry combine only where the
+   * geometry is the same */
+  if (! temporal_geom_combinable(tagg_state_geom(state1),
+      tagg_state_geom(state2)))
+    return NULL;
 
   int count2 = state2->length;
   void **values2 = skiplist_values(state2);
@@ -1046,6 +1089,15 @@ temporal_tagg_finalfn(SkipList *state)
     return NULL;
   /* A copy of the values is needed for switching from aggregate context,
    * for this reason the #skiplist_values cannot be used */
+  /* The reference geometry the values carry, copied since freeing the state
+   * frees it */
+  const GSERIALIZED *state_geom = tagg_state_geom(state);
+  GSERIALIZED *geom = NULL;
+  if (state_geom)
+  {
+    geom = palloc(VARSIZE(state_geom));
+    memcpy(geom, state_geom, VARSIZE(state_geom));
+  }
   Temporal **values = (Temporal **) skiplist_temporal_values(state);
   Temporal *result = NULL;
   assert(values[0]->subtype == TINSTANT || values[0]->subtype == TSEQUENCE);
@@ -1056,6 +1108,9 @@ temporal_tagg_finalfn(SkipList *state)
     result = (Temporal *) tsequenceset_make_free((TSequence **) values,
       state->length, NORMALIZE);
   skiplist_free(state);
+  result = temporal_attach_geom(geom, result);
+  if (geom)
+    pfree(geom);
   return result;
 }
 
@@ -1914,9 +1969,16 @@ temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    /* Arbitrary initialization to 64 elements */
-    Temporal *result = (Temporal *) tsequence_make_exp((TInstant **) &inst,
-      1, 64, true, true, interp, NORMALIZE_NO);
+    /* A value carrying a reference geometry is built anew at each append, as
+     * #temporal_append_tinstant builds it, so it reserves no space; any other
+     * is initialized to an arbitrary 64 elements */
+    const GSERIALIZED *geom;
+    Temporal *work = temporal_strip_geom((const Temporal *) inst, &geom);
+    Temporal *result = (Temporal *) tsequence_make_exp((TInstant **) &work,
+      1, geom ? 1 : 64, true, true, interp, NORMALIZE_NO);
+    if (work != (const Temporal *) inst)
+      pfree(work);
+    result = temporal_attach_geom(geom, result);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
@@ -1948,9 +2010,16 @@ temporal_app_tseq_transfn(Temporal *state, const TSequence *seq)
 #if ! MEOS
     MemoryContext ctx = set_aggregation_context(fetch_fcinfo());
 #endif /* ! MEOS */
-    /* Arbitrary initialization to 64 elements */
-    Temporal *result = (Temporal *) tsequenceset_make_exp((TSequence **) &seq,
-      1, 64, NORMALIZE_NO);
+    /* A value carrying a reference geometry is built anew at each append, as
+     * #temporal_append_tsequence builds it, so it reserves no space; any other
+     * is initialized to an arbitrary 64 elements */
+    const GSERIALIZED *geom;
+    Temporal *work = temporal_strip_geom((const Temporal *) seq, &geom);
+    Temporal *result = (Temporal *) tsequenceset_make_exp(
+      (TSequence **) &work, 1, geom ? 1 : 64, NORMALIZE_NO);
+    if (work != (const Temporal *) seq)
+      pfree(work);
+    result = temporal_attach_geom(geom, result);
 #if ! MEOS
     unset_aggregation_context(ctx);
 #endif /* ! MEOS */
