@@ -78,6 +78,10 @@ SELECT wavg(temp, NULL) FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT wavg(temp, NULL) FROM (VALUES (NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
+-- The average of the values themselves, a bigint beyond 32 bits included
+SELECT wavg(temp, interval '2 days') FROM (VALUES ('1@2001-01-01'::tbigint),('2@2001-01-02'::tbigint)) t(temp);
+SELECT wavg(temp, interval '1 day') FROM (VALUES ('[5000000000@2001-01-01, 5000000002@2001-01-02]'::tbigint),('[5000000004@2001-01-01, 5000000004@2001-01-03]'::tbigint)) t(temp);
+SELECT wavg(temp, interval '1 day') FROM (VALUES ('{[5000000000@2001-01-01, 5000000002@2001-01-02], [7000000000@2001-01-04, 7000000000@2001-01-05]}'::tbigint)) t(temp);
 
 -------------------------------------------------------------------------------
 
