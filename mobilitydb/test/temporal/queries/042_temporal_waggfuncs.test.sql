@@ -68,6 +68,9 @@ SELECT wcount(temp, NULL) FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT wcount(temp, NULL) FROM (VALUES (NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
 SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);
+-- The count is a tint, as for every temporal type
+SELECT pg_typeof(wcount(temp, interval '2 days')) FROM (VALUES ('1@2001-01-01'::tbigint),('2@2001-01-02'::tbigint)) t(temp);
+SELECT wcount(temp, interval '2 days') #= tint '[1@2001-01-01, 1@2001-01-05]' FROM (VALUES ('1@2001-01-01'::tbigint),('2@2001-01-02'::tbigint)) t(temp);
 
 SELECT wsum(temp, NULL) FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
 SELECT wsum(temp, NULL) FROM (VALUES (NULL::tbigint),('1@2001-01-01'::tbigint)) t(temp);

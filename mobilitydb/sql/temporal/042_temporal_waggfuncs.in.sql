@@ -192,7 +192,7 @@ CREATE AGGREGATE wSum(tbigint, interval) (
   PARALLEL = SAFE
 );
 CREATE FUNCTION wCountFinal(internal, tbigint, interval)
-  RETURNS tbigint
+  RETURNS tint
   AS 'MODULE_PATHNAME', 'Temporal_tagg_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE wCount(tbigint, interval) (
