@@ -1692,15 +1692,26 @@ temporal_compact(const Temporal *temp)
 {
   assert(temp);
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  /* A value rebuilt from its instants reproduces the poses of a value
+   * carrying a reference geometry and not the geometry, which is given back
+   * through #temporal_strip_geom and #temporal_attach_geom */
+  const GSERIALIZED *geom;
+  Temporal *work = temporal_strip_geom(temp, &geom);
+  Temporal *result;
+  switch (work->subtype)
   {
     case TINSTANT:
-      return (Temporal *) tinstant_copy((TInstant *) temp);
+      result = (Temporal *) tinstant_copy((TInstant *) work);
+      break;
     case TSEQUENCE:
-      return (Temporal *) tsequence_compact((TSequence *) temp);
+      result = (Temporal *) tsequence_compact((TSequence *) work);
+      break;
     default: /* TSEQUENCESET */
-      return (Temporal *) tsequenceset_compact((TSequenceSet *) temp);
+      result = (Temporal *) tsequenceset_compact((TSequenceSet *) work);
   }
+  if (work != temp)
+    pfree(work);
+  return temporal_attach_geom(geom, result);
 }
 
 #if MEOS

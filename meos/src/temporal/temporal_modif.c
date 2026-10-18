@@ -2511,6 +2511,15 @@ temporal_append_tsequence(Temporal *temp, const TSequence *seq, bool expand)
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
     return NULL;
 
+#if RGEO
+  /* A temporal rigid geometry carries a reference geometry that a value
+   * rebuilt from sequences does not reproduce. It appends as the poses it is
+   * made of and takes its body back afterwards, which the rigid geometry
+   * entry does, as #temporal_append_tinstant routes it */
+  if (temp->temptype == T_TRGEOMETRY)
+    return trgeometry_append_tsequence(temp, seq, expand);
+#endif /* RGEO */
+
   /* The test to ensure the increasing timestamps must be done in the
    * subtype function since the inclusive/exclusive bounds must be
    * taken into account for temporal sequences and sequence sets */

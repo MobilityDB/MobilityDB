@@ -1805,8 +1805,12 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(inst, NULL);
+  /* The instant is the same body, as #trgeometry_merge requires of its two
+   * arguments, since the answer carries a single reference geometry */
   if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||
-      ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))
+      ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT) ||
+      ! ensure_same_geom(trgeo_geom_p(temp),
+          trgeo_geom_p((const Temporal *) inst)))
     return NULL;
 
   Temporal *tpose = trgeometry_to_tpose(temp);
@@ -1846,10 +1850,14 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(seq, NULL);
+  /* The sequence is the same body, as #trgeometry_merge requires of its two
+   * arguments, since the answer carries a single reference geometry */
   if ((temp->subtype != TINSTANT &&
       ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
-      ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE))
+      ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
+      ! ensure_same_geom(trgeo_geom_p(temp),
+          trgeo_geom_p((const Temporal *) seq)))
     return NULL;
 
   Temporal *tpose = trgeometry_to_tpose(temp);
