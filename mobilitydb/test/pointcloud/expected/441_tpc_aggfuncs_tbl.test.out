@@ -84,6 +84,18 @@ SELECT numInstants(wcount(seq,  '1 day'::interval)) > 0 FROM tbl_tpcpatch_seq;
  t
 (1 row)
 
+SELECT numInstants(appendInstant(inst ORDER BY getTimestamp(inst))) =
+    count(DISTINCT getTimestamp(inst)),
+  numInstants(appendInstant(inst, 'step' ORDER BY getTimestamp(inst))) =
+    count(DISTINCT getTimestamp(inst)),
+  numSequences(appendInstant(inst, 'step', interval '1 microsecond'
+    ORDER BY getTimestamp(inst))) = count(DISTINCT getTimestamp(inst))
+FROM (SELECT DISTINCT ON (getTimestamp(inst)) inst FROM tbl_tpcpatch_inst) t;
+ ?column? | ?column? | ?column? 
+----------+----------+----------
+ t        | t        | t
+(1 row)
+
 SELECT pcid(merge(inst)) FROM tbl_tpcpoint_inst;
  pcid 
 ------

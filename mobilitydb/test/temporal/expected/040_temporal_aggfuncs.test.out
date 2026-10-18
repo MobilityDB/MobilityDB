@@ -667,6 +667,28 @@ SELECT appendInstant(inst ORDER BY inst) FROM temp;
  ["AA"@Mon Jan 01 00:00:00 2001 PST, "BB"@Tue Jan 02 00:00:00 2001 PST, "CC"@Wed Jan 03 00:00:00 2001 PST, "DD"@Thu Jan 04 00:00:00 2001 PST, "EE"@Fri Jan 05 00:00:00 2001 PST]
 (1 row)
 
+SELECT appendInstant(inst), appendInstant(inst, 'step'),
+  appendInstant(inst, 'step', NULL, interval '1 day')
+FROM (VALUES (tint '1@2001-01-01')) t(inst);
+          appendinstant           |          appendinstant           |          appendinstant           
+----------------------------------+----------------------------------+----------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST] | [1@Mon Jan 01 00:00:00 2001 PST] | [1@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT appendInstant(inst), appendInstant(inst, 'step'),
+  appendInstant(inst, 'step', interval '1 day')
+FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
+            appendinstant            |            appendinstant            |            appendinstant            
+-------------------------------------+-------------------------------------+-------------------------------------
+ ["AA"@Mon Jan 01 00:00:00 2001 PST] | ["AA"@Mon Jan 01 00:00:00 2001 PST] | ["AA"@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
+SELECT appendInstant(inst, 'step', 1.0, interval '1 day')
+FROM (VALUES (ttext 'AA@2001-01-01')) t(inst);
+ERROR:  function appendinstant(ttext, unknown, numeric, interval) does not exist
+LINE 1: SELECT appendInstant(inst, 'step', 1.0, interval '1 day')
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
 WITH temp(inst) AS (
   SELECT tint(extract(day from d)::int % 2, d)
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )

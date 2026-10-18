@@ -234,86 +234,85 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(ttext) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tbool, tbool)", ret: "tbool", sym: "Temporal_app_tinst_transfn", pre: "-- Default interpolation based on the base type\n"}
-    - {sig: "appendInstantTransition(tint, tint)", ret: "tint", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(ttext, ttext)", ret: "ttext", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(tbool, tbool)", ret: "tbool", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
+    - {sig: "appendInstantTransition(tint, tint)", ret: "tint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(ttext, ttext)", ret: "ttext", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tbool, tbool, interp text)", ret: "tbool", sym: "Temporal_app_tinst_transfn", pre: "-- Interpolation given by the user\n"}
-    - {sig: "appendInstantTransition(tint, tint, interp text)", ret: "tint", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(tbigint, tbigint, interp text)", ret: "tbigint", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(tfloat, tfloat, interp text)", ret: "tfloat", sym: "Temporal_app_tinst_transfn"}
-    - {sig: "appendInstantTransition(ttext, ttext, interp text)", ret: "ttext", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(tbool, tbool, interp text)", ret: "tbool", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tint, tint, interp text)", ret: "tint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tbigint, tbigint, interp text)", ret: "tbigint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tfloat, tfloat, interp text)", ret: "tfloat", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(ttext, ttext, interp text)", ret: "ttext", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tbool, tbool, interp text,\n    maxt interval)", ret: "tbool", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- These functions are not strict\n"}
-    - {sig: "appendInstantTransition(tint, tint, interp text,\n    maxdist float, maxt interval)", ret: "tint", sym: "Temporal_app_tinst_transfn", strict: false}
-    - {sig: "appendInstantTransition(tbigint, tbigint, interp text,\n    maxdist float, maxt interval)", ret: "tbigint", sym: "Temporal_app_tinst_transfn", strict: false}
-    - {sig: "appendInstantTransition(tfloat, tfloat, interp text,\n    maxdist float, maxt interval)", ret: "tfloat", sym: "Temporal_app_tinst_transfn", strict: false}
-    - {sig: "appendInstantTransition(ttext, ttext, interp text,\n    maxt interval)", ret: "ttext", sym: "Temporal_app_tinst_transfn", strict: false}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tbool, tbool,\n    interp text, maxt interval)", ret: "tbool", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tint, tint,\n    interp text, maxdist float,\n    maxt interval)", ret: "tint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tbigint, tbigint,\n    interp text, maxdist float,\n    maxt interval)", ret: "tbigint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tfloat, tfloat,\n    interp text, maxdist float,\n    maxt interval)", ret: "tfloat", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(ttext, ttext,\n    interp text, maxt interval)", ret: "ttext", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tbool, tbool)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbool) (\n  SFUNC = appendInstantTransition(tbool, tbool),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tbool) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tbool, tbool, interp text)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text) (\n  SFUNC = appendInstantTransition(tbool, tbool, text),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tbool, tbool, interp text, maxt interval)", ret: "tbool", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tbool, tbool, text, maxt),\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tbool, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbool,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tint, tint)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tint) (\n  SFUNC = appendInstantTransition(tint, tint),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tint, tint, interp text)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tint, interp text) (\n  SFUNC = appendInstantTransition(tint, tint, text),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tint, tint, interp text, maxdist float, \n    maxt interval)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tint, tint, text, maxdist, maxt),\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tint, tint, interp text, maxdist float,\n    maxt interval)", ret: "tint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tint, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tbigint, tbigint)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbigint) (\n  SFUNC = appendInstantTransition(tbigint, tbigint),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tbigint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tbigint, tbigint, interp text)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tbigint, tbigint, interp text, maxdist float, \n    maxt interval)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tbigint, tbigint, text, maxdist, maxt),\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tbigint, tbigint, interp text, maxdist float,\n    maxt interval)", ret: "tbigint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tbigint, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tbigint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tfloat, tfloat)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tfloat) (\n  SFUNC = appendInstantTransition(tfloat, tfloat),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tfloat) (\n  SFUNC = appendInstantTransition,\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tfloat, tfloat, interp text)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tfloat, tfloat, interp text, maxdist float, \n    maxt interval)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float, \n    maxt interval) (\n  SFUNC = appendInstantTransition(tfloat, tfloat, text, maxdist, maxt),\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tfloat, tfloat, interp text, maxdist float,\n    maxt interval)", ret: "tfloat", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tfloat, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tfloat,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(ttext, ttext)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ttext) (\n  SFUNC = appendInstantTransition(ttext, ttext),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ttext) (\n  SFUNC = appendInstantTransition,\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(ttext, ttext, interp text)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text) (\n  SFUNC = appendInstantTransition(ttext, ttext, text),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(ttext, ttext, interp text, maxt interval)", ret: "ttext", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ttext, ttext, text, maxt),\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ttext, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = ttext,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tbool, tbool)", ret: "tbool", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -393,41 +392,40 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tgeography) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
     - {sig: "appendInstantTransition(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeometry, tgeometry,\n    interp text DEFAULT NULL)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-    - {sig: "appendInstantTransition(tgeography, tgeography,\n    interp text DEFAULT NULL)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeometry, tgeometry, interp text)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeography, tgeography, interp text)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeometry, tgeometry,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL,\n    maxt interval DEFAULT NULL)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-    - {sig: "appendInstantTransition(tgeography, tgeography,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tgeometry, tgeometry,\n    interp text, maxdist float,\n    maxt interval)", ret: "tgeometry", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeography, tgeography,\n    interp text, maxdist float,\n    maxt interval)", ret: "tgeography", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
+    - {sig: "appendInstantFinal(tgeometry, tgeometry, interp text)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeometry, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeometry, tgeometry, interp text, maxdist float,\n    maxt interval)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeometry, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
     - {sig: "appendInstantFinal(tgeography, tgeography)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tgeography) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantFinal(tgeometry, tgeometry, text)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tgeography, tgeography, text)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeography, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantFinal(tgeometry, tgeometry, text, float, interval)", ret: "tgeometry", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tgeography, tgeography, interp text)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeography, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tgeography, tgeography, text, float, interval)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeography, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tgeography, tgeography, interp text, maxdist float,\n    maxt interval)", ret: "tgeography", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeography, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeography,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tgeometry, tgeometry)", ret: "tgeometry", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -500,41 +498,40 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tgeogpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
     - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeompoint, tgeompoint,\n    interp text DEFAULT NULL)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-    - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint,\n    interp text DEFAULT NULL)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeompoint, tgeompoint, interp text)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint, interp text)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tgeompoint, tgeompoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL,\n    maxt interval DEFAULT NULL)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-    - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tgeompoint, tgeompoint,\n    interp text, maxdist float,\n    maxt interval)", ret: "tgeompoint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tgeogpoint, tgeogpoint,\n    interp text, maxdist float,\n    maxt interval)", ret: "tgeogpoint", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tgeompoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
+    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, interp text)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, interp text, maxdist float,\n    maxt interval)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
+  - fns:
     - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tgeogpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, text)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, text)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantFinal(tgeompoint, tgeompoint, text, float, interval)", ret: "tgeompoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeompoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeompoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, interp text)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, text, float, interval)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tgeogpoint, tgeogpoint, interp text, maxdist float,\n    maxt interval)", ret: "tgeogpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tgeogpoint, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tgeogpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tgeompoint, tgeompoint)", ret: "tgeompoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -580,23 +577,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tcbuffer) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not strict\n"}
-  - fns:
-    - {sig: "appendInstantTransition(tcbuffer, tcbuffer,\n    interp text DEFAULT NULL)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
-  - fns:
-    - {sig: "appendInstantTransition(tcbuffer, tcbuffer,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
+  - fns:
+    - {sig: "appendInstantTransition(tcbuffer, tcbuffer, interp text)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantTransition(tcbuffer, tcbuffer,\n    interp text, maxdist float,\n    maxt interval)", ret: "tcbuffer", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tcbuffer) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, text)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, interp text)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, text, float, interval)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tcbuffer, tcbuffer, interp text, maxdist float,\n    maxt interval)", ret: "tcbuffer", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tcbuffer, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tcbuffer,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tcbuffer, tcbuffer)", ret: "tcbuffer", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not strict\n"}
@@ -644,26 +643,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tnpoint) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tnpoint, tnpoint,\n    interp text DEFAULT NULL)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tnpoint, tnpoint, interp text)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tnpoint, tnpoint,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tnpoint, tnpoint,\n    interp text, maxdist float,\n    maxt interval)", ret: "tnpoint", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tnpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tnpoint, tnpoint, text)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tnpoint, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+    - {sig: "appendInstantFinal(tnpoint, tnpoint, interp text)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tnpoint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tnpoint, tnpoint, text, float, interval)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tnpoint, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tnpoint, tnpoint, interp text, maxdist float,\n    maxt interval)", ret: "tnpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tnpoint, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tnpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tnpoint, tnpoint)", ret: "tnpoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -704,26 +702,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tpose) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tpose, tpose)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tpose, tpose)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tpose, tpose,\n    interp text DEFAULT NULL)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tpose, tpose, interp text)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tpose, tpose,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tpose, tpose,\n    interp text, maxdist float,\n    maxt interval)", ret: "tpose", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tpose, tpose)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tpose) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tpose, tpose, text)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tpose, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+    - {sig: "appendInstantFinal(tpose, tpose, interp text)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpose, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tpose, tpose, text, float, interval)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tpose, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tpose, tpose, interp text, maxdist float,\n    maxt interval)", ret: "tpose", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpose, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpose,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tpose, tpose)", ret: "tpose", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -765,26 +762,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tposechain) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text DEFAULT NULL)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tposechain, tposechain, interp text)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text, maxt interval)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tposechain) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tposechain, tposechain, text)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tposechain, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+    - {sig: "appendInstantFinal(tposechain, tposechain, interp text)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(tposechain, tposechain, text, float, interval)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tposechain, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(tposechain, tposechain, interp text, maxt interval)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -823,26 +819,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(trgeometry) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append tinstant aggregate functions\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(trgeometry, trgeometry,\n    interp text DEFAULT NULL)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(trgeometry, trgeometry, interp text)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(trgeometry, trgeometry,\n    interp text DEFAULT NULL, maxdist float DEFAULT NULL, \n    maxt interval DEFAULT NULL)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(trgeometry, trgeometry,\n    interp text, maxdist float,\n    maxt interval)", ret: "trgeometry", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(trgeometry) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(trgeometry, trgeometry, text)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(trgeometry, text) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
+    - {sig: "appendInstantFinal(trgeometry, trgeometry, interp text)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(trgeometry, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantFinal(trgeometry, trgeometry, text, float, interval)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(trgeometry, text, float, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+    - {sig: "appendInstantFinal(trgeometry, trgeometry, interp text, maxdist float,\n    maxt interval)", ret: "trgeometry", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(trgeometry, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = trgeometry,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(trgeometry, trgeometry)", ret: "trgeometry", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -887,26 +882,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tjsonb) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn"}
-  - lit: " \n"
-  - fns:
-    - {sig: "appendInstantTransition(tjsonb, tjsonb, interp text)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tjsonb, tjsonb, interp text,\n    maxt interval)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tjsonb, tjsonb, interp text)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
-  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantTransition(tjsonb, tjsonb,\n    interp text, maxt interval)", ret: "tjsonb", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tjsonb) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb) (\n  SFUNC = appendInstantTransition,\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tjsonb, tjsonb, interp text)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tjsonb, tjsonb, interp text, maxt interval)", ret: "tjsonb", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tjsonb, tjsonb, text, maxt),\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tjsonb, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tjsonb,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tjsonb, tjsonb)", ret: "tjsonb", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -984,26 +978,40 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tpcpatch) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append-instant aggregate (streaming trajectory construction)\n *****************************************************************************/\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
+    - {sig: "appendInstantTransition(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tpcpoint, tpcpoint,\n    interp text DEFAULT NULL, maxt interval DEFAULT NULL)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
+    - {sig: "appendInstantTransition(tpcpoint, tpcpoint, interp text)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tpcpatch, tpcpatch, interp text)", ret: "tpcpatch", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
-  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantTransition(tpcpoint, tpcpoint,\n    interp text, maxt interval)", ret: "tpcpoint", sym: "Temporal_app_tinst_transfn", strict: false}
+    - {sig: "appendInstantTransition(tpcpatch, tpcpatch,\n    interp text, maxt interval)", ret: "tpcpatch", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tpcpoint) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantFinal(tpcpoint, tpcpoint, text, interval)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tpcpoint, text, interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
-  - lit: "\n\n"
-  - fns:
-    - {sig: "appendInstantTransition(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- tpcpatch\n-- The function is not STRICT\n"}
   - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpcpoint, tpcpoint, interp text)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpoint, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpcpoint, tpcpoint, interp text, maxt interval)", ret: "tpcpoint", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpoint, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpoint,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tpcpatch, tpcpatch)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tpcpatch) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpcpatch, tpcpatch, interp text)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpatch, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tpcpatch, tpcpatch, interp text, maxt interval)", ret: "tpcpatch", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tpcpatch, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tpcpatch,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************\n * Append-sequence aggregate\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tpcpoint, tpcpoint)", ret: "tpcpoint", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -1051,26 +1059,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(th3index) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
-    - {sig: "appendInstantTransition(th3index, th3index)", ret: "th3index", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(th3index, th3index)", ret: "th3index", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(th3index, th3index, interp text)", ret: "th3index", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(th3index, th3index, interp text)", ret: "th3index", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(th3index, th3index, interp text,\n    maxt interval)", ret: "th3index", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(th3index, th3index,\n    interp text, maxt interval)", ret: "th3index", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(th3index, th3index)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(th3index) (\n  SFUNC = appendInstantTransition(th3index, th3index),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(th3index) (\n  SFUNC = appendInstantTransition,\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(th3index, th3index, interp text)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text) (\n  SFUNC = appendInstantTransition(th3index, th3index, text),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(th3index, th3index, interp text, maxt interval)", ret: "th3index", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(th3index, th3index, text, maxt),\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(th3index, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = th3index,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(th3index, th3index)", ret: "th3index", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -1113,26 +1120,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(tquadbin) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
-    - {sig: "appendInstantTransition(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tquadbin, tquadbin, interp text)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(tquadbin, tquadbin, interp text)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(tquadbin, tquadbin, interp text,\n    maxt interval)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(tquadbin, tquadbin,\n    interp text, maxt interval)", ret: "tquadbin", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tquadbin) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin) (\n  SFUNC = appendInstantTransition,\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tquadbin, tquadbin, interp text)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(tquadbin, tquadbin, interp text, maxt interval)", ret: "tquadbin", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(tquadbin, tquadbin, text, maxt),\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(tquadbin, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tquadbin,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tquadbin, tquadbin)", ret: "tquadbin", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
@@ -1174,26 +1180,25 @@ aggregate_families:
   - lit: "CREATE AGGREGATE merge(ts2cell) (\n  SFUNC = mergeTransition,\n  STYPE = internal,\n  COMBINEFUNC = mergeCombine,\n  FINALFUNC = mergeFinal,\n  FINALFUNC_EXTRA,\n  FINALFUNC_MODIFY = READ_WRITE,\n  SERIALFUNC = taggstate_serialize,\n  DESERIALFUNC = taggstate_deserialize,\n  PARALLEL = safe\n);"
   - lit: "\n\n"
   - fns:
-    - {sig: "appendInstantTransition(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The functions are not STRICT, so that one row answers a sequence\n"}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(ts2cell, ts2cell, interp text)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn"}
+    - {sig: "appendInstantTransition(ts2cell, ts2cell, interp text)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n"
   - fns:
-    - {sig: "appendInstantTransition(ts2cell, ts2cell, interp text,\n    maxt interval)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false, pre: "-- The function is not STRICT\n"}
-  - lit: "\n"
-  - lit: "\n"
+    - {sig: "appendInstantTransition(ts2cell, ts2cell,\n    interp text, maxt interval)", ret: "ts2cell", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ts2cell) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell) (\n  SFUNC = appendInstantTransition,\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(ts2cell, ts2cell, interp text)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text) (\n  SFUNC = appendInstantTransition,\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n"
   - fns:
     - {sig: "appendInstantFinal(ts2cell, ts2cell, interp text, maxt interval)", ret: "ts2cell", sym: "Temporal_append_finalfn", strict: false}
-  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (\n  SFUNC = appendInstantTransition(ts2cell, ts2cell, text, maxt),\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "CREATE AGGREGATE appendInstant(ts2cell, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = ts2cell,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(ts2cell, ts2cell)", ret: "ts2cell", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}
