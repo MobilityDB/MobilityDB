@@ -268,6 +268,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a04a3909d9b922347def4e32da597a59d.html#a04a3909d9b922347def4e32da597a59d">buffer_split_point_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a7f005f0cc523cf1a017c6c13bd397d9a.html#a7f005f0cc523cf1a017c6c13bd397d9a">buffer_split_segment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a3060ffa740f5fbcff9902ac44c3bef89.html#a3060ffa740f5fbcff9902ac44c3bef89">buffer_surfaces_from_edges</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_aaa1c6aa347ca4bf8f5cc1bf02b40d62f.html#aaa1c6aa347ca4bf8f5cc1bf02b40d62f">buffer_surfaces_from_rings</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a877f6ffffbeccf2e5c5e6023f7ac6177.html#a877f6ffffbeccf2e5c5e6023f7ac6177">buffer_sweep_edge_cmp</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a286760cc5bba8627dd8efb4c36241b31.html#a286760cc5bba8627dd8efb4c36241b31">BUFFER_SWEEP_MIN_PAIRS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__buffer_8c_a97d03644edf555b2ac08506acb0c0d80.html#a97d03644edf555b2ac08506acb0c0d80">buffer_triangle_as_poly</a></td></tr>
@@ -353,8 +354,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the union of surfaces bounded by segments, read in one arrangement of their rings. </p>
-<p >A point lies in the union where it lies in one of the surfaces at least, which is where the rings of all of them, the shells turning counterclockwise and the holes clockwise, wind around it at least once. That region is read off the arrangement of the rings (<a class="el" href="geo__arrange_8h_aaae5d8799e2469c132a96deda020754a.html#aaae5d8799e2469c132a96deda020754a" title="Return the rings bounding the region closed curves wind around, as surfaces: each shell and the holes...">arrange_wound_surfaces</a>), which decides every crossing, every order along an edge and every stretch two boundaries share exactly, and rounds only the crossings it writes, as <a class="el" href="geo__buffer_8c_a3060ffa740f5fbcff9902ac44c3bef89.html#a3060ffa740f5fbcff9902ac44c3bef89" title="Return the region offset curves wind around, read off their arrangement (arrange_wound_surfaces),...">buffer_surfaces_from_edges</a> reads the region a buffer's offset curves wind around </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return the union of surfaces bounded by segments, merged pairwise in exact arrangements of their boundaries. </p>
+<p >A point lies in the union where it lies in one of the surfaces at least, which is where the rings of all of them, the shells turning counterclockwise and the holes clockwise, wind around it at least once. The surfaces are merged pairwise, each merge the arrangement of the boundaries of two unions (<a class="el" href="geo__arrange_8h_a917b585fdaa2e5b2ff182791d770e5d3.html#a917b585fdaa2e5b2ff182791d770e5d3" title="Return the rings bounding the union of surfaces bounded by segments, as surfaces: each shell and the ...">arrange_union_surfaces</a>), which decides every crossing, every order along an edge and every stretch two boundaries share exactly, and only the last of them rounds the crossings it writes </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">coll</td><td>Surfaces, on the plane, none carrying an arc </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
