@@ -42,6 +42,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tpcbox` read and write their text form (G14, #2901), and every type reads its text through
   `<type>FromText` (G13, #2908). The
   catalog's `typeEncodings` states, class by class, the reader and writer of each SQL type (A6).
+- **A term of an exact polynomial multiplies up to six exact sums** (`POLY_TERM_MAXDEG` of
+  `meos/include/geo/geo_funcs.h`), outside the plan: the smallest enclosing circle searches the
+  double nearest its radius by a polynomial of degree six, and every term of degree up to four
+  reads as before. Branch `fix/enclosing-circle-is-the-exact-minimum` rewrites `34247bccf3` there,
+  as the owner approved on 2026-10-19.
 - **Open pull requests** on 2026-10-02: MobilityDB #2861 (these notes) and #2919, which names an
   operation over a base value as MobilityDB names it over its own types (decision 0.5); #2920
   touches the GEOS checker's baseline only; #785, #777 and #677 touch none of these names or
