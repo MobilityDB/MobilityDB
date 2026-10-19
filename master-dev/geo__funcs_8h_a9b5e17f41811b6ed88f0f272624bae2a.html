@@ -161,6 +161,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af0f95da9e7c3b32070ca68e800c88358.html#af0f95da9e7c3b32070ca68e800c88358">geopoint_eq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed">geopoint_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">geopoint_same</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415">incircle_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54">linesegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a432549bd59fd6c29b13b12e4a4b9f24d.html#a432549bd59fd6c29b13b12e4a4b9f24d">linesegm_param</a></td></tr>
@@ -267,7 +268,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if a point lies exactly on the circle of an arc. </p>
-<p >The circle is the one the arc's input points fix: its start, middle and end, or the two ends of the diameter of a half of a full circle. A point lies on the first where it is cocircular with the three (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a399fc09d87fddc25f636a634df78e838.html#a399fc09d87fddc25f636a634df78e838" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>), and on the second where it sees the diameter at a right angle, the vectors to its two ends then having a zero dot product (Thales), which is the sign of a cross product (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>). Either way an input point is put on the circle or off it exactly, at every scale, which the radial distance from a constructed centre cannot do </p>
+<p >The circle is the one the arc's input points fix: its start, middle and end, or the two ends of the diameter of a half of a full circle. A point lies on the first where it is cocircular with the three (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>), and on the second where it sees the diameter at a right angle, the vectors to its two ends then having a zero dot product (Thales), which is the sign of a cross product (<a class="el" href="geo__funcs_8h_a6a7a9b57d4a2a7fd276af0b008f0b393.html#a6a7a9b57d4a2a7fd276af0b008f0b393" title="Return the sign of the cross product of the vectors B - A and D - C.">cross_product_sign</a>). Either way an input point is put on the circle or off it exactly, at every scale, which the radial distance from a constructed centre cannot do </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: mec_inside</title>
+<title>MobilityDB: mec_key</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -86,7 +86,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga6a9bdabd59ba858f695b275a43542268.html#ga6a9bdabd59ba858f695b275a43542268">box3d_out</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a239989d44283bbf6e735fed379751809.html#a239989d44283bbf6e735fed379751809">box3d_to_lwgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af19ca88b68d7d9dfd7efdb6b8042b3d3.html#af19ca88b68d7d9dfd7efdb6b8042b3d3">cart_to_lwpoint</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af4c5c27795db151e3d74b2a556c42c08.html#af4c5c27795db151e3d74b2a556c42c08">distance_point2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga271a5a7161444390c12e4d4b089c7783.html#ga271a5a7161444390c12e4d4b089c7783">gbox_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_ga25f17a8aa694050180826528d80e825d.html#ga25f17a8aa694050180826528d80e825d">gbox_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__inout_gab2b7f79b9772a38b6f402d55add45f65.html#gab2b7f79b9772a38b6f402d55add45f65">gbox_out</a></td></tr>
@@ -139,6 +138,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_af5473b1810a2b8d9e97ed87551b443a7.html#af5473b1810a2b8d9e97ed87551b443a7">geo_union_parts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a534d4c89efd1d0c7d65be9af756d4c1e.html#a534d4c89efd1d0c7d65be9af756d4c1e">geo_unsupported_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_adafdc7d197fbab1c1a5d21c9c2c6bc8e.html#adafdc7d197fbab1c1a5d21c9c2c6bc8e">geo_walk_measure</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a67cc4dc880a6d3f546b9a1a80b629790.html#a67cc4dc880a6d3f546b9a1a80b629790">geo_walk_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ab910eddb2897d3ec94bc432a38c6463a.html#ab910eddb2897d3ec94bc432a38c6463a">geo_wound_segments</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__spatial_ga1cca69a7ce41801a70c34079f082d7ff.html#ga1cca69a7ce41801a70c34079f082d7ff">geoarr_collect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__accessor_ga523b91b48ef9af6cd35a8dd81b361673.html#ga523b91b48ef9af6cd35a8dd81b361673">geog_area</a></td></tr>
@@ -248,11 +248,15 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a92facb394f948b753c4f709e8cc02b2d.html#a92facb394f948b753c4f709e8cc02b2d">lwmsurface_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3547f02bc4ce55e1e6d8d43626036369.html#a3547f02bc4ce55e1e6d8d43626036369">MAX_LEN_BOX3D</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a3444e9732902eede17476a05b72d2fd5.html#a3444e9732902eede17476a05b72d2fd5">MAX_LEN_GBOX</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a0dfb1180be7c1bff9c1a434ee68fd678.html#a0dfb1180be7c1bff9c1a434ee68fd678">mec_circle2</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a8d855051480d93060c58489b11dc022d.html#a8d855051480d93060c58489b11dc022d">mec_circle3</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a63f091e415e0f43ba51c2ce7cd180d09.html#a63f091e415e0f43ba51c2ce7cd180d09">mec_circle3_safe</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a290af8198c1b3a6179cce6c8a77d8694.html#a290af8198c1b3a6179cce6c8a77d8694">mec_inside</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aeece618bd6f2d9400823cb5fd79fb817.html#aeece618bd6f2d9400823cb5fd79fb817">mec_welzl</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a21d6b0059edbdb5e55a08fa809085836.html#a21d6b0059edbdb5e55a08fa809085836">mec_beyond</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_afc1ede9076c52ff0b68a6aa07c18b39f.html#afc1ede9076c52ff0b68a6aa07c18b39f">mec_circle</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a28b16caace0828098c008737282ff09f.html#a28b16caace0828098c008737282ff09f">mec_encloses</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8c_a0902bf47b5c0c9af7a486bd13ee2409d.html#a0902bf47b5c0c9af7a486bd13ee2409d">mec_key</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a2b4ae2f54bc2b45ba1eded7f0581de58.html#a2b4ae2f54bc2b45ba1eded7f0581de58">mec_nearest</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a35e52e272ba4db9f0ce8c8f386d91cc8.html#a35e52e272ba4db9f0ce8c8f386d91cc8">mec_points</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ac8075c9c2b76bb158a893014f7b501c7.html#ac8075c9c2b76bb158a893014f7b501c7">mec_support3</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aa6decdb46fdb6c8c573f40973bdf58a3.html#aa6decdb46fdb6c8c573f40973bdf58a3">mec_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_a553532d96facd239e25332a948c9a509.html#a553532d96facd239e25332a948c9a509">mec_welzl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_ac5eb3eb437e95e156582756f6f92507b.html#ac5eb3eb437e95e156582756f6f92507b">meos_point_in_polygon</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_adb5e820c58dec63ccdf40981c110cd3f.html#adb5e820c58dec63ccdf40981c110cd3f">PG_PARSER_ERROR</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8c_aab142b3a5f9616ad28ed439a613ac51d.html#aab142b3a5f9616ad28ed439a613ac51d">pip_point_in_mpoly</a></td></tr>
@@ -281,8 +285,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a290af8198c1b3a6179cce6c8a77d8694" name="a290af8198c1b3a6179cce6c8a77d8694"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a290af8198c1b3a6179cce6c8a77d8694">&#9670;&#160;</a></span>mec_inside()</h2>
+<a id="a0902bf47b5c0c9af7a486bd13ee2409d" name="a0902bf47b5c0c9af7a486bd13ee2409d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0902bf47b5c0c9af7a486bd13ee2409d">&#9670;&#160;</a></span>mec_key()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -291,31 +295,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool mec_inside </td>
+          <td class="memname">static uint64 mec_key </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structPOINT2D.html">POINT2D</a>&#160;</td>
-          <td class="paramname"><em>p</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>d</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structCircle.html">Circle</a>&#160;</td>
-          <td class="paramname"><em>c</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return true if a point is inside a circle. </p>
+<p>Return the unsigned key ordering the doubles as their values do. </p>
+<p >The bit pattern of a positive double with its sign bit set, and the complement of that of a negative one, so the difference of two keys never overflows </p>
 
 </div>
 </div>

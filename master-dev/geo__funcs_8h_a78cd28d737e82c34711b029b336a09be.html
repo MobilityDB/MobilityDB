@@ -161,6 +161,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af0f95da9e7c3b32070ca68e800c88358.html#af0f95da9e7c3b32070ca68e800c88358">geopoint_eq</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac97cd2d4e9f389366d8e9454b96ff9ed.html#ac97cd2d4e9f389366d8e9454b96ff9ed">geopoint_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">geopoint_same</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415">incircle_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a994bab40ad09a41cd92442285329120c.html#a994bab40ad09a41cd92442285329120c">IntersectType</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8f027e7f6fed84bad331b1a24de1fa54.html#a8f027e7f6fed84bad331b1a24de1fa54">linesegm_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a432549bd59fd6c29b13b12e4a4b9f24d.html#a432549bd59fd6c29b13b12e4a4b9f24d">linesegm_param</a></td></tr>
@@ -267,7 +268,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the side of the circle of an arc a point lies on, decided exactly: -1 inside it, 0 on it, 1 outside it. </p>
-<p >The circle is the one <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a9b5e17f41811b6ed88f0f272624bae2a.html#a9b5e17f41811b6ed88f0f272624bae2a" title="Return true if a point lies exactly on the circle of an arc.">point_on_arc_circle</a> reads. For a half of a full circle the side is the sign of the dot product of the vectors from the point to the two ends of the diameter, negative where the point sees the diameter at an obtuse angle, which is inside (Thales). For an arc given by three points it is the sign of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a399fc09d87fddc25f636a634df78e838.html#a399fc09d87fddc25f636a634df78e838" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>, positive inside the circle of three points turning counterclockwise, read against the turn they make </p>
+<p >The circle is the one <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a9b5e17f41811b6ed88f0f272624bae2a.html#a9b5e17f41811b6ed88f0f272624bae2a" title="Return true if a point lies exactly on the circle of an arc.">point_on_arc_circle</a> reads. For a half of a full circle the side is the sign of the dot product of the vectors from the point to the two ends of the diameter, negative where the point sees the diameter at an obtuse angle, which is inside (Thales). For an arc given by three points it is the sign of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4ad1074be21bf39cd2407c898ecf2415.html#a4ad1074be21bf39cd2407c898ecf2415" title="Return the sign of the incircle determinant of four points, decided exactly.">incircle_sign</a>, positive inside the circle of three points turning counterclockwise, read against the turn they make </p>
 
 </div>
 </div>
