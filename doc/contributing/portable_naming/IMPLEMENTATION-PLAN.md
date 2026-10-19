@@ -47,6 +47,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   double nearest its radius by a polynomial of degree six, and every term of degree up to four
   reads as before. Branch `fix/enclosing-circle-is-the-exact-minimum` rewrites `34247bccf3` there,
   as the owner approved on 2026-10-19.
+- **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
+  plan: the shuffle of the smallest enclosing circle (`mec_points` of
+  `meos/src/geo/postgis_funcs.c`) draws from a generator of its own call instead of the C
+  library's `rand()`. Branch `fix/enclosing-circle-shuffle-own-generator` rewrites `adbb2ebad1`
+  there, the one line calling `rand()`, as the owner approved on 2026-10-19.
 - **Open pull requests** on 2026-10-02: MobilityDB #2861 (these notes) and #2919, which names an
   operation over a base value as MobilityDB names it over its own types (decision 0.5); #2920
   touches the GEOS checker's baseline only; #785, #777 and #677 touch none of these names or
