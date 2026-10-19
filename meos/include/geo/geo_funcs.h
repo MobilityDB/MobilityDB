@@ -244,7 +244,7 @@ typedef struct
 
 /* A term of a polynomial in exact sums: a coefficient, exactly representable,
  * times the product of up to POLY_TERM_MAXDEG exact sums given by index */
-#define POLY_TERM_MAXDEG 4
+#define POLY_TERM_MAXDEG 6
 typedef struct
 {
   double coef;                   /**< Coefficient */
@@ -257,6 +257,8 @@ extern int polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   int nterms);
 extern int triple_product_sign_exact(const POINT3D *p, const POINT3D *q,
   const POINT3D *r);
+extern int incircle_sign(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy);
 extern bool point_on_arc_circle(const Edge *e, double qx, double qy);
 extern int arc_circle_side(const Edge *e, double qx, double qy);
 extern bool arc_same_circle(const Edge *a, const Edge *b);

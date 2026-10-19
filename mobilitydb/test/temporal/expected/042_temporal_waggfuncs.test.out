@@ -190,6 +190,18 @@ SELECT wcount(temp, interval '5 minutes') FROM (VALUES (NULL::tbigint),('1@2001-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Mon Jan 01 00:05:00 2001 PST]}
 (1 row)
 
+SELECT pg_typeof(wcount(temp, interval '2 days')) FROM (VALUES ('1@2001-01-01'::tbigint),('2@2001-01-02'::tbigint)) t(temp);
+ pg_typeof 
+-----------
+ tint
+(1 row)
+
+SELECT wcount(temp, interval '2 days') #= tint '[1@2001-01-01, 1@2001-01-05]' FROM (VALUES ('1@2001-01-01'::tbigint),('2@2001-01-02'::tbigint)) t(temp);
+                                                                               ?column?                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], (t@Wed Jan 03 00:00:00 2001 PST, t@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
 SELECT wsum(temp, NULL) FROM (VALUES (NULL::tbigint),(NULL::tbigint)) t(temp);
  wsum 
 ------
