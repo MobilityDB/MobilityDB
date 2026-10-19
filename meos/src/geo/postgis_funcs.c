@@ -44,6 +44,7 @@
 #include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/pg_prng.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
 #include <varatt.h>
 #include <pgtypes.h>
@@ -8637,9 +8638,14 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 static void
 mec_shuffle(POINT2D *pts, int count)
 {
+  /* The order is drawn from a generator of this call: no state is shared
+   * with any other caller or thread, and the same geometry is visited in the
+   * same order at every call */
+  pg_prng_state rng;
+  pg_prng_seed(&rng, 0);
   for (int i = count - 1; i > 0; i--)
   {
-    int j = rand() % (i + 1);
+    int j = (int) pg_prng_uint64_range(&rng, 0, (uint64) i);
     POINT2D tmp = pts[i];
     pts[i] = pts[j];
     pts[j] = tmp;
