@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/windows_msys2.yml'
       - '.github/actions/msys2-toolchain-report/**'
+      - '.github/actions/msys2-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
@@ -19,6 +20,7 @@ on:
     paths:
       - '.github/workflows/windows_msys2.yml'
       - '.github/actions/msys2-toolchain-report/**'
+      - '.github/actions/msys2-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'mobilitydb/**'
