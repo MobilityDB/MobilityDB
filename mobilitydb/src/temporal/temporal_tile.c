@@ -72,12 +72,37 @@ Datum
 Span_bins(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum vsize = PG_GETARG_DATUM(1);
-  Datum vorigin = PG_GETARG_DATUM(2);
   bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = span_bins(s, vsize, vorigin, border_inc, &count);
+  Span *spans;
+  switch (s->spantype)
+  {
+    case T_INTSPAN:
+      spans = intspan_bins(s, PG_GETARG_INT32(1), PG_GETARG_INT32(2),
+        border_inc, &count);
+      break;
+    case T_BIGINTSPAN:
+      spans = bigintspan_bins(s, PG_GETARG_INT64(1), PG_GETARG_INT64(2),
+        border_inc, &count);
+      break;
+    case T_FLOATSPAN:
+      spans = floatspan_bins(s, PG_GETARG_FLOAT8(1), PG_GETARG_FLOAT8(2),
+        border_inc, &count);
+      break;
+    case T_DATESPAN:
+      spans = datespan_bins(s, PG_GETARG_INTERVAL_P(1), PG_GETARG_DATEADT(2),
+        border_inc, &count);
+      break;
+    case T_TSTZSPAN:
+      spans = tstzspan_bins(s, PG_GETARG_INTERVAL_P(1),
+        PG_GETARG_TIMESTAMPTZ(2), border_inc, &count);
+      break;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE, "Unknown span type: %s",
+        meostype_name(s->spantype));
+      PG_RETURN_NULL();
+  }
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
@@ -97,12 +122,37 @@ Datum
 Spanset_bins(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
-  Datum vsize = PG_GETARG_DATUM(1);
-  Datum vorigin = PG_GETARG_DATUM(2);
   bool border_inc = PG_GETARG_BOOL(3);
   /* Get the spans */
   int count;
-  Span *spans = spanset_bins(ss, vsize, vorigin, border_inc, &count);
+  Span *spans;
+  switch (ss->spantype)
+  {
+    case T_INTSPAN:
+      spans = intspanset_bins(ss, PG_GETARG_INT32(1), PG_GETARG_INT32(2),
+        border_inc, &count);
+      break;
+    case T_BIGINTSPAN:
+      spans = bigintspanset_bins(ss, PG_GETARG_INT64(1), PG_GETARG_INT64(2),
+        border_inc, &count);
+      break;
+    case T_FLOATSPAN:
+      spans = floatspanset_bins(ss, PG_GETARG_FLOAT8(1), PG_GETARG_FLOAT8(2),
+        border_inc, &count);
+      break;
+    case T_DATESPAN:
+      spans = datespanset_bins(ss, PG_GETARG_INTERVAL_P(1),
+        PG_GETARG_DATEADT(2), border_inc, &count);
+      break;
+    case T_TSTZSPAN:
+      spans = tstzspanset_bins(ss, PG_GETARG_INTERVAL_P(1),
+        PG_GETARG_TIMESTAMPTZ(2), border_inc, &count);
+      break;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE, "Unknown span type: %s",
+        meostype_name(ss->spantype));
+      PG_RETURN_NULL();
+  }
   ArrayType *result = spanarr_to_array(spans, count);
   /* Clean up and return */
   pfree(spans);
