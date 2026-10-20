@@ -335,7 +335,7 @@ minus_set_cbuffer(const Set *s, const Cbuffer *cb)
 /**
  * @ingroup meos_cbuffer_set_setops
  * @brief Transition function for set union aggregate of circular buffers
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] cb Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

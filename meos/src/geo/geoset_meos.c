@@ -364,7 +364,7 @@ minus_set_geo(const Set *s, const GSERIALIZED *gs)
 /**
  * @ingroup meos_geo_set_setops
  * @brief Transition function for set union aggregate of geometries/geographies
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] gs Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

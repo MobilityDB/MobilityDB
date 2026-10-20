@@ -212,7 +212,7 @@ set_append_value(Set *set, Datum value)
 /**
  * @ingroup meos_internal_setspan_agg
  * @brief Transition function for set union aggregate of values
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @return When the state variable has space for adding the new value, the 
@@ -253,7 +253,7 @@ value_union_transfn(Set *state, Datum value, MeosType basetype)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of sets
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] s Set to aggregate
  * @return When the state variable has space for adding the new set, the 
  * function returns the current state variable. Otherwise, a NEW state 

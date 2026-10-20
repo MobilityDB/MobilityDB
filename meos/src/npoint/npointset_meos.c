@@ -355,7 +355,7 @@ minus_set_npoint(const Set *s, const Npoint *np)
 /**
  * @ingroup meos_npoint_set_setops
  * @brief Transition function for set union aggregate of network points
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] np Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
