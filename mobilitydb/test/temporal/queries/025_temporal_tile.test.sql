@@ -37,6 +37,9 @@ SELECT bins(intspan '[15, 25]', 2);
 
 SELECT bins(bigintspan '[1, 10]', 2) LIMIT 3;
 SELECT bins(bigintspan '[1, 10]', 2, 1) LIMIT 3;
+SELECT pg_typeof(bins(bigintspan '[1, 10]', 3));
+SELECT pg_typeof(b), b FROM unnest(bins(bigintspan '[1, 10]', 3)) AS b;
+SELECT b @> 5000000001::bigint FROM unnest(bins(bigintspan '[5000000000, 5000000010]', 4)) AS b;
 
 SELECT bins(floatspan '(1, 10)', 2.5) LIMIT 3;
 SELECT bins(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
@@ -75,6 +78,9 @@ SELECT getBin('2020-01-01', '1 month', timestamptz '2001-06-01');
 
 SELECT bins(intspanset '{[1, 10]}', 2) LIMIT 3;
 SELECT bins(intspanset '{[1, 10]}', 2, 1) LIMIT 3;
+
+SELECT pg_typeof(bins(bigintspanset '{[1, 10]}', 3));
+SELECT pg_typeof(b), b FROM unnest(bins(bigintspanset '{[1, 3], [7, 10]}', 3)) AS b;
 
 SELECT bins(floatspanset '{(1, 10)}', 2.5) LIMIT 3;
 SELECT bins(floatspanset '{(1, 10)}', 2.5, 1.5) LIMIT 3;

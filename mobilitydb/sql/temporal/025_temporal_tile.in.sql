@@ -45,7 +45,7 @@ CREATE FUNCTION bins(intspan, vsize integer, vorigin integer DEFAULT 0,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(bigintspan, vsize bigint, vorigin bigint DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
-  RETURNS intspan[]
+  RETURNS bigintspan[]
   AS 'MODULE_PATHNAME', 'Span_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(floatspan, vsize float, vorigin float DEFAULT 0.0,
@@ -76,7 +76,7 @@ CREATE FUNCTION bins(intspanset, vsize integer, vorigin integer DEFAULT 0,
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(bigintspanset, vsize bigint, vorigin bigint DEFAULT 0,
     borderInc boolean DEFAULT TRUE)
-  RETURNS intspan[]
+  RETURNS bigintspan[]
   AS 'MODULE_PATHNAME', 'Spanset_bins'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION bins(floatspanset, vsize float, vorigin float DEFAULT 0.0,
