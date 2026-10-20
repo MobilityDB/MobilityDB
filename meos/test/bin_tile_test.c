@@ -45,6 +45,10 @@
  * timestamp, and that a size that is not positive, a missing duration and a
  * bin outside the range of the type are reported by setting #meos_errno.
  *
+ * The program also verifies that `tbox_time_tiles`, which answers the SQL
+ * function `timeTiles(tbox, ...)`, gives for a box of any number type the
+ * time tiles of the function of its value type.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o bin_tile_test bin_tile_test.c -L/usr/local/lib -lmeos -lm
@@ -84,6 +88,34 @@ check_box(const char *what, TBox *box, const char *expected)
   TBox *exp = tbox_in(expected);
   check(what, box && exp && tbox_eq(box, exp));
   free(box); free(exp);
+}
+
+/* An array of boxes that must equal the boxes of the texts */
+static void
+check_boxes(const char *what, TBox *boxes, int count, const char **expected,
+  int nexpected)
+{
+  bool ok = boxes && count == nexpected;
+  for (int i = 0; ok && i < count; i++)
+  {
+    TBox *exp = tbox_in(expected[i]);
+    ok = exp && tbox_eq(&boxes[i], exp);
+    free(exp);
+  }
+  check(what, ok);
+  free(boxes);
+}
+
+/* Two arrays of boxes that must be equal */
+static void
+check_same_boxes(const char *what, TBox *boxes1, int count1, TBox *boxes2,
+  int count2)
+{
+  bool ok = boxes1 && boxes2 && count1 == count2;
+  for (int i = 0; ok && i < count1; i++)
+    ok = tbox_eq(&boxes1[i], &boxes2[i]);
+  check(what, ok);
+  free(boxes1); free(boxes2);
 }
 
 /* A call that must be refused with a given error */
@@ -175,6 +207,59 @@ int main(void)
     span_eq(tspan, tbin));
   free(tile); free(xspan); free(tspan); free(xbin); free(tbin);
 
+  /* The time tiles of a box of any number type, the float and time ones
+   * from 025_temporal_tile.test.sql */
+  Interval *day = interval_in("1 day", -1);
+  TimestampTz sep1 = timestamptz_in("2001-09-01", -1);
+  TBox *intbox = tbox_in("TBOXINT XT([1, 5],[2001-09-01, 2001-09-03])");
+  TBox *bigintbox = tbox_in("TBOXBIGINT XT([1, 5],[2001-09-01, 2001-09-03])");
+  TBox *floatbox = tbox_in("TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])");
+  TBox *timebox = tbox_in("TBOX T([2001-01-15, 2001-01-25])");
+  int count1, count2;
+  const char *float_tiles[] = {
+    "TBOXFLOAT XT([1, 6),[2001-09-01, 2001-09-02))",
+    "TBOXFLOAT XT([1, 6),[2001-09-02, 2001-09-03))",
+    "TBOXFLOAT XT([1, 6),[2001-09-03, 2001-09-04))"};
+  TBox *boxes = tbox_time_tiles(floatbox, day, sep1, true, &count1);
+  check_boxes("tbox_time_tiles(TBOXFLOAT, 1 day, 2001-09-01, true)", boxes,
+    count1, float_tiles, 3);
+  boxes = tbox_time_tiles(floatbox, day, sep1, false, &count1);
+  check_boxes("tbox_time_tiles(TBOXFLOAT, 1 day, 2001-09-01, false)", boxes,
+    count1, float_tiles, 2);
+  const char *int_tiles[] = {
+    "TBOXINT XT([1, 6),[2001-09-01, 2001-09-02))",
+    "TBOXINT XT([1, 6),[2001-09-02, 2001-09-03))",
+    "TBOXINT XT([1, 6),[2001-09-03, 2001-09-04))"};
+  boxes = tbox_time_tiles(intbox, day, sep1, true, &count1);
+  check_boxes("tbox_time_tiles(TBOXINT, 1 day, 2001-09-01, true)", boxes,
+    count1, int_tiles, 3);
+  const char *bigint_tiles[] = {
+    "TBOXBIGINT XT([1, 6),[2001-09-01, 2001-09-02))",
+    "TBOXBIGINT XT([1, 6),[2001-09-02, 2001-09-03))",
+    "TBOXBIGINT XT([1, 6),[2001-09-03, 2001-09-04))"};
+  boxes = tbox_time_tiles(bigintbox, day, sep1, true, &count1);
+  check_boxes("tbox_time_tiles(TBOXBIGINT, 1 day, 2001-09-01, true)", boxes,
+    count1, bigint_tiles, 3);
+  const char *time_tiles[] = {
+    "TBOX T([2001-01-15, 2001-01-22))", "TBOX T([2001-01-22, 2001-01-29))"};
+  boxes = tbox_time_tiles(timebox, week, torig, true, &count1);
+  check_boxes("tbox_time_tiles(TBOX T, 1 week, 2001-01-01, true)", boxes,
+    count1, time_tiles, 2);
+
+  /* The time tiles of a box are those of the function of its value type */
+  TBox *boxes1 = tbox_time_tiles(intbox, hour, sep1, true, &count1);
+  TBox *boxes2 = tintbox_time_tiles(intbox, hour, sep1, true, &count2);
+  check_same_boxes("tbox_time_tiles is tintbox_time_tiles", boxes1, count1,
+    boxes2, count2);
+  boxes1 = tbox_time_tiles(bigintbox, hour, sep1, false, &count1);
+  boxes2 = tbigintbox_time_tiles(bigintbox, hour, sep1, false, &count2);
+  check_same_boxes("tbox_time_tiles is tbigintbox_time_tiles", boxes1, count1,
+    boxes2, count2);
+  boxes1 = tbox_time_tiles(floatbox, hour, sep1, true, &count1);
+  boxes2 = tfloatbox_time_tiles(floatbox, hour, sep1, true, &count2);
+  check_same_boxes("tbox_time_tiles is tfloatbox_time_tiles", boxes1, count1,
+    boxes2, count2);
+
   /* A size that is not positive and a missing duration are refused */
   Interval *zero = interval_in("0 seconds", -1);
   check_refused("intspan_get_bin, size 0", intspan_get_bin(3, 0, 0),
@@ -195,6 +280,12 @@ int main(void)
     MEOS_ERR_INVALID_ARG_VALUE);
   check_refused("tbox_get_time_tile, no duration",
     tbox_get_time_tile(t, NULL, torig), MEOS_ERR_INVALID_ARG);
+  check_refused("tbox_time_tiles, no duration",
+    tbox_time_tiles(floatbox, NULL, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tbox_time_tiles, duration 0",
+    tbox_time_tiles(intbox, zero, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
 
   /* A bin outside the range of the type is refused */
   check_refused("intspan_get_bin, bin past the greatest integer",
@@ -206,6 +297,8 @@ int main(void)
     MEOS_ERR_VALUE_OUT_OF_RANGE);
 
   free(week); free(hour); free(zero);
+  free(day);
+  free(intbox); free(bigintbox); free(floatbox); free(timebox);
   meos_finalize();
 
   printf("%d check(s) failed\n", failures);

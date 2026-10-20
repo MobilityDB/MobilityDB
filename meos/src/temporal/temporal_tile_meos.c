@@ -266,7 +266,7 @@ tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
 
 /**
  * @ingroup meos_temporal_analytics_tile
- * @brief Return the time tiles of a temporal integer box
+ * @brief Return the time tiles of a temporal box
  * @param[in] box Input box to split
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Time origin of the tiles
@@ -274,6 +274,31 @@ tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
  * extent
  * @param[out] count Number of elements in the output array
  * @csqlfn #Tbox_time_tiles()
+ */
+TBox *
+tbox_time_tiles(const TBox *box, const Interval *duration,
+  TimestampTz torigin, bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_valid_tbox_tiles(box, 0.0, duration, box->span.spantype))
+    return NULL;
+  /* The value size of the tiles is zero in the base type of the box */
+  Datum vzero = (box->span.basetype == T_FLOAT8) ? Float8GetDatum(0.0) :
+    (box->span.basetype == T_INT8) ? Int64GetDatum(0) : Int32GetDatum(0);
+  return tbox_value_time_tiles(box, vzero, duration, vzero, torigin,
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the time tiles of a temporal integer box
+ * @param[in] box Input box to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
  */
 TBox *
 tintbox_time_tiles(const TBox *box, const Interval *duration,
@@ -292,7 +317,6 @@ tintbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tbox_time_tiles()
  */
 TBox *
 tbigintbox_time_tiles(const TBox *box, const Interval *duration,
@@ -311,7 +335,6 @@ tbigintbox_time_tiles(const TBox *box, const Interval *duration,
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tbox_time_tiles()
  */
 TBox *
 tfloatbox_time_tiles(const TBox *box, const Interval *duration,
