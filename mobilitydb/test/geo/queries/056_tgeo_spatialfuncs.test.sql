@@ -297,8 +297,8 @@ POLYHEDRALSURFACE Z (
 
 --------------------------------------------------------
 -- transform(geometry, integer) / transform(geography, integer)
--- MobilityDB name for base-geometry SRID reprojection; in the extension it
--- delegates to PostGIS ST_Transform, so it must agree with it exactly.
+-- MEOS transforms a geometry as PostGIS ST_Transform does, so the two agree
+-- exactly.
 --------------------------------------------------------
 
 SELECT ST_AsText(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3812)) =
@@ -306,8 +306,8 @@ SELECT ST_AsText(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3812)) =
 SELECT ST_AsText(transform(geometry 'SRID=4326;Linestring(4.35 50.85,4.40 50.90)', 3812)) =
        ST_AsText(ST_Transform(geometry 'SRID=4326;Linestring(4.35 50.85,4.40 50.90)', 3812));
 SELECT ST_SRID(transform(geometry 'SRID=3812;Point(150000 170000)', 4326));
--- geography stays in a lon/lat system (projected targets are correctly rejected
--- by the underlying ST_Transform); a same-system reprojection is a no-op
+-- geography stays in a lon/lat system (MEOS refuses a projected target); a
+-- same-system reprojection is a no-op
 SELECT ST_SRID(transform(geography 'SRID=4326;Point(4.35 50.85)', 4326));
 
 -- asEWKT(geometry/geography): MobilityDB EWKT serialization, must equal ST_AsEWKT
