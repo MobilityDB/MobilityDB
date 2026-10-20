@@ -41,6 +41,11 @@
  * returning NULL and setting #meos_errno, and that a valid call still answers
  * with no error left behind.
  *
+ * It also verifies that an object whose key is followed by no colon, read by
+ * #jsonb_in and by #tjsonb_in between valid values, is reported as an invalid
+ * value and frees its key once, so that the values read after it still
+ * answer. Run under valgrind, the program reports no invalid free.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o json_inout_validity_test json_inout_validity_test.c -L/usr/local/lib -lmeos
@@ -111,6 +116,21 @@ int main(void)
   expect_value(jsonb_to_text(jb), "jsonb_to_text(jsonb)");
   expect_value(jsonpath_in("strict $.a"), "jsonpath_in(strict $.a)");
   expect_value(jsonpath_out(jp), "jsonpath_out(jsonpath)");
+
+  /* An object key followed by no colon, or by a token that is not one, is
+   * reported between valid values, in a JSONB and in a temporal JSONB */
+  expect_value(jsonb_in("{\"geom\": 1}"), "jsonb_in({\"geom\": 1})");
+  expect_error(jsonb_in("{\"geom\"}"), MEOS_ERR_INVALID_ARG_VALUE,
+    "jsonb_in({\"geom\"})");
+  expect_error(jsonb_in("{\"geom\" ~ 1}"), MEOS_ERR_INVALID_ARG_VALUE,
+    "jsonb_in({\"geom\" ~ 1})");
+  expect_value(jsonb_in("{\"geom\": 1}"), "jsonb_in({\"geom\": 1})");
+  expect_value(tjsonb_in("\"{\\\"geom\\\": 1}\"@2012-01-01"),
+    "tjsonb_in(\"{\\\"geom\\\": 1}\"@2012-01-01)");
+  expect_error(tjsonb_in("\"{\\\"geom\\\"}\"@2012-01-01"),
+    MEOS_ERR_INVALID_ARG_VALUE, "tjsonb_in(\"{\\\"geom\\\"}\"@2012-01-01)");
+  expect_value(tjsonb_in("{\"{\\\"geom\\\": \\\"Point(1 1)\\\"}\"@2012-01-01}"),
+    "tjsonb_in({\"{\\\"geom\\\": \\\"Point(1 1)\\\"}\"@2012-01-01})");
 
   free(jb); free(jp); free(txt);
 
