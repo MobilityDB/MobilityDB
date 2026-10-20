@@ -572,7 +572,9 @@ WITH g(geom, srid) AS (VALUES
   (geometry 'SRID=3857;Point(484245.3 6594434.7)', 4326),
   (geometry 'SRID=4326;Point Z(4.35 50.85 100)', 4978),
   (geometry 'SRID=4326;Point(4.35 50.85)', 4326),
-  (geometry 'SRID=4326;Point empty', 3857))
+  (geometry 'SRID=4326;Point empty', 3857),
+  (ST_Segmentize(geometry 'SRID=4326;Polygon((-35.58 24.60,44.83 24.60,44.83 84.73,
+    -35.58 84.73,-35.58 24.60))', 1), 3035))
 SELECT count(*) FILTER (WHERE ST_AsEWKB(transform(geom, srid)) IS DISTINCT FROM
   ST_AsEWKB(ST_Transform(geom, srid))) AS transform
 FROM g;
