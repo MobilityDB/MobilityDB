@@ -11,6 +11,10 @@ description: >
   build had never asked for it. This asks again for whatever is missing with
   those exact revisions taken as satisfied by what is installed, and fails
   here, naming the package, if the repository still does not provide it.
+  The same rolling rebuild can also drop a function that a package built
+  against the previous revision still imports, which fails only when a DLL of
+  the chain is loaded; the second step finds every such function and rolls the
+  library back to the newest earlier revision that exports it.
 
 inputs:
   packages:
@@ -113,3 +117,88 @@ runs:
           fi
         done
         exit $status
+
+    - name: Roll back a library whose rebuild dropped what a dependent imports
+      shell: msys2 {0}
+      run: |
+        # A rebuild of one library can drop functions that a package built
+        # against its previous revision still imports, and the repository then
+        # serves the two together. Nothing fails at install time: the loader
+        # fails later, when a DLL of the chain is loaded, with "The specified
+        # procedure could not be found" -- hdf5 2.2.0-4 drops H5Pset_fapl_ros3,
+        # which libnetcdf 4.10.1-2 imports, and GDAL, PostGIS raster and every
+        # MEOS build that links GDAL fail to load through it. So every function
+        # each DLL of the prefix imports from another DLL of the prefix is
+        # looked up in that DLL's exports, and a library missing one goes back
+        # to the newest earlier revision of its package on the repository that
+        # exports all of them. Where nothing is missing, nothing is changed.
+        bin="$MSYSTEM_PREFIX/bin"
+        repo="https://repo.msys2.org/mingw/${MSYSTEM_PREFIX#/}"
+        work=$(mktemp -d)
+        scan() {
+          : > "$work/imports"
+          rm -f "$work"/exp.*
+          for f in "$bin"/*.dll; do
+            me=$(basename "$f")
+            : > "$work/exp.$me"
+            objdump -p "$f" | awk -v me="$me" -v w="$work" '
+              /DLL Name:/ { cur = $3; next }
+              /\[Ordinal\/Name Pointer\] Table/ { t = 1; next }
+              t && /^\t\[ *[0-9]+\] / { print $NF >> (w "/exp." me); next }
+              t && /^$/ { t = 0 }
+              cur != "" && /^\t[0-9a-f]+ +<none> +[0-9a-f]+ +[A-Za-z_]/ {
+                print me, cur, $4 >> (w "/imports") }'
+          done
+          while read -r me lib fn; do
+            [ -f "$work/exp.$lib" ] || continue
+            grep -qxF "$fn" "$work/exp.$lib" || echo "$me $lib $fn"
+          done < "$work/imports" | sort -u > "$work/missing"
+        }
+
+        scan
+        if [ ! -s "$work/missing" ]; then
+          echo "every function a DLL of $bin imports from another is exported"
+          exit 0
+        fi
+        sed 's/^/missing: /' "$work/missing"
+
+        status=0
+        for lib in $(awk '{ print $2 }' "$work/missing" | sort -u); do
+          pkg=$(pacman -Qoq "$bin/$lib")
+          now=$(pacman -Q "$pkg" | awk '{ print $2 }')
+          awk -v l="$lib" '$2 == l { print $3 }' "$work/missing" | sort -u > "$work/want"
+          found=""
+          for file in $(curl -fsSL "$repo/" |
+                          grep -oE "\"$pkg-[^\"/]+-any\.pkg\.tar\.zst\"" |
+                          tr -d '"' | sort -urV); do
+            rev=${file#"$pkg"-}
+            rev=${rev%-any.pkg.tar.zst}
+            [ "$(vercmp "$rev" "$now")" -lt 0 ] || continue
+            curl -fsSL -o "$work/$file" "$repo/$file" || continue
+            tar --zstd -xOf "$work/$file" "${MSYSTEM_PREFIX#/}/bin/$lib" > "$work/cand.dll" 2>/dev/null || continue
+            objdump -p "$work/cand.dll" | awk '
+              /\[Ordinal\/Name Pointer\] Table/ { t = 1; next }
+              t && /^\t\[ *[0-9]+\] / { print $NF }
+              t && /^$/ { t = 0 }' | sort -u > "$work/cand.exp"
+            if comm -23 "$work/want" "$work/cand.exp" | grep -q .; then
+              continue
+            fi
+            found=$file
+            break
+          done
+          if [ -z "$found" ]; then
+            echo "::error::no earlier revision of $pkg exports what the DLLs of $bin import from $lib"
+            status=1
+            continue
+          fi
+          echo "rolling $pkg back from $now to ${found%-any.pkg.tar.zst}: $(tr '\n' ' ' < "$work/want")"
+          pacman -U --noconfirm "$work/$found" 2>&1 | sed 's/^/  | /'
+        done
+        [ $status -eq 0 ] || exit $status
+
+        scan
+        if [ -s "$work/missing" ]; then
+          sed 's/^/::error::still missing: /' "$work/missing"
+          exit 1
+        fi
+        echo "every function a DLL of $bin imports from another is exported"

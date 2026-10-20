@@ -22,6 +22,7 @@ on:
     paths:
       - '.github/workflows/windows_msys2_meos.yml'
       - '.github/actions/msys2-toolchain-report/**'
+      - '.github/actions/msys2-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
@@ -32,6 +33,7 @@ on:
     paths:
       - '.github/workflows/windows_msys2_meos.yml'
       - '.github/actions/msys2-toolchain-report/**'
+      - '.github/actions/msys2-resilient/**'
       - 'cmake/**'
       - 'meos/**'
       - 'pgtypes/**'
