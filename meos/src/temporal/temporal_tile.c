@@ -833,6 +833,7 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   if (hasx && datum_gt(vsize, 0, box->span.basetype))
   {
     /* The given vsize is greater than 0 */
+    state->valuegrid = true;
     state->vsize = vsize;
     state->max_coords[0] = span_num_bins(&box->span, vsize, vorigin,
       border_inc, &start_bin, &end_bin) - 1;
@@ -842,12 +843,8 @@ tbox_tile_state_make(const Temporal *temp, const TBox *box, Datum vsize,
   }
   else if (hasx)
   {
-    /* If the given vsize is 0, set the vsize to the value size of the box */
-    state->vsize = datum_sub(box->span.upper, box->span.lower,
-      box->span.basetype);
-    /* The upper bound of an integer span in canonical form is non exclusive */
-    if (! span_canon_basetype(box->span.basetype))
-      state->vsize = Float8GetDatum(DatumGetFloat8(state->vsize) + 1.0);
+    /* A value size of 0 leaves the value dimension undivided: the vsize of
+     * the state stays 0 and every tile keeps the value span of the box */
     state->max_coords[0] = 0;
     span_set(box->span.lower, box->span.upper, box->span.lower_inc,
       box->span.upper_inc, box->span.basetype, box->span.spantype,
@@ -923,7 +920,15 @@ tbox_tile_state_get(TboxGridState *state, TBox *box)
     return false;
   /* Get the box of the current tile */
   tbox_tile_state_set(state->value, state->t, state->vsize, state->tunits,
-    state->box.span.basetype, state->box.span.spantype, box);
+    state->box.span.basetype,
+    state->valuegrid ? state->box.span.spantype : T_UNKNOWN, box);
+  /* A grid that does not divide the value dimension keeps the value span of
+   * the box, with its bounds, in every tile */
+  if (! state->valuegrid && MEOS_FLAGS_GET_X(state->box.flags))
+  {
+    box->span = state->box.span;
+    MEOS_FLAGS_SET_X(box->flags, true);
+  }
   return true;
 }
 

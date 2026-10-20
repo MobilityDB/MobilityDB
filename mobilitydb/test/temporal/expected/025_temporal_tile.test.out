@@ -403,15 +403,15 @@ SELECT getValueTile(15.5, 2.5, 1.5);
 SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week') LIMIT 3;
                                          timetiles                                         
 -------------------------------------------------------------------------------------------
- (1,"TBOXFLOAT XT([15, 26),[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
- (2,"TBOXFLOAT XT([15, 26),[Mon Jan 22 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST))")
+ (1,"TBOXFLOAT XT([15, 25],[Mon Jan 15 00:00:00 2001 PST, Mon Jan 22 00:00:00 2001 PST))")
+ (2,"TBOXFLOAT XT([15, 25],[Mon Jan 22 00:00:00 2001 PST, Mon Jan 29 00:00:00 2001 PST))")
 (2 rows)
 
 SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '1 week', '2020-06-15') LIMIT 3;
                                          timetiles                                         
 -------------------------------------------------------------------------------------------
- (1,"TBOXFLOAT XT([15, 26),[Sun Jan 14 23:00:00 2001 PST, Sun Jan 21 23:00:00 2001 PST))")
- (2,"TBOXFLOAT XT([15, 26),[Sun Jan 21 23:00:00 2001 PST, Sun Jan 28 23:00:00 2001 PST))")
+ (1,"TBOXFLOAT XT([15, 25],[Sun Jan 14 23:00:00 2001 PST, Sun Jan 21 23:00:00 2001 PST))")
+ (2,"TBOXFLOAT XT([15, 25],[Sun Jan 21 23:00:00 2001 PST, Sun Jan 28 23:00:00 2001 PST))")
 (2 rows)
 
 SELECT timeTiles(tbox 'TBOX T([2001-01-15, 2001-01-25])', '1 week');
@@ -1262,12 +1262,33 @@ SELECT b, (timeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', durat
   FROM (VALUES (true), (false)) t(b);
  b | index |                                       tile                                        
 ---+-------+-----------------------------------------------------------------------------------
- t |     1 | TBOXFLOAT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
- t |     2 | TBOXFLOAT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
- t |     3 | TBOXFLOAT XT([1, 6),[Mon Sep 03 00:00:00 2001 PDT, Tue Sep 04 00:00:00 2001 PDT))
- f |     1 | TBOXFLOAT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
- f |     2 | TBOXFLOAT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+ t |     1 | TBOXFLOAT XT([1, 5],[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+ t |     2 | TBOXFLOAT XT([1, 5],[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+ t |     3 | TBOXFLOAT XT([1, 5],[Mon Sep 03 00:00:00 2001 PDT, Tue Sep 04 00:00:00 2001 PDT))
+ f |     1 | TBOXFLOAT XT([1, 5],[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+ f |     2 | TBOXFLOAT XT([1, 5],[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
 (5 rows)
+
+SELECT (timeTiles(tbox 'TBOXFLOAT XT((1, 5),[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+ index |                                       tile                                        
+-------+-----------------------------------------------------------------------------------
+     1 | TBOXFLOAT XT((1, 5),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+     2 | TBOXFLOAT XT((1, 5),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+(2 rows)
+
+SELECT (timeTiles(tbox 'TBOXINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+ index |                                      tile                                       
+-------+---------------------------------------------------------------------------------
+     1 | TBOXINT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+     2 | TBOXINT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+(2 rows)
+
+SELECT (timeTiles(tbox 'TBOXBIGINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+ index |                                        tile                                        
+-------+------------------------------------------------------------------------------------
+     1 | TBOXBIGINT XT([1, 6),[Sat Sep 01 00:00:00 2001 PDT, Sun Sep 02 00:00:00 2001 PDT))
+     2 | TBOXBIGINT XT([1, 6),[Sun Sep 02 00:00:00 2001 PDT, Mon Sep 03 00:00:00 2001 PDT))
+(2 rows)
 
 SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b),
   valueTimeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, '1 day', 1.0,

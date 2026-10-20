@@ -88,8 +88,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
   TBox *result = palloc0(sizeof(TBox) * count1);
   for (int i = 0; i < count1; i++)
   {
-    tbox_tile_state_set(state->value, state->t, state->vsize, state->tunits,
-      state->box.span.basetype, state->box.span.spantype, &result[i]);
+    tbox_tile_state_get(state, &result[i]);
     tbox_tile_state_next(state);
   }
   *count = count1;

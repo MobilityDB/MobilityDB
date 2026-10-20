@@ -325,6 +325,9 @@ SELECT b, (valueTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0,
   FROM (VALUES (true), (false)) t(b);
 SELECT b, (timeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', duration := '1 day', torigin := '2001-09-01', borderInc := b)).*
   FROM (VALUES (true), (false)) t(b);
+SELECT (timeTiles(tbox 'TBOXFLOAT XT((1, 5),[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+SELECT (timeTiles(tbox 'TBOXINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+SELECT (timeTiles(tbox 'TBOXBIGINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
 SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b),
   valueTimeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, '1 day', 1.0,
     '2001-09-01', b) GROUP BY b ORDER BY b DESC;
