@@ -2224,7 +2224,8 @@ tbox_eq(const TBox *box1, const TBox *box2)
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
 
   if (MEOS_FLAGS_GET_X(box1->flags) != MEOS_FLAGS_GET_X(box2->flags) ||
-      MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags))
+      MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags) ||
+      box1->span.spantype != box2->span.spantype)
     return false;
   if (! span_eq(&box1->span, &box2->span) ||
       ! span_eq(&box1->period, &box2->period))
@@ -2251,7 +2252,10 @@ tbox_ne(const TBox *box1, const TBox *box2)
  * is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Temporal boxes
  * @errval INT_MAX
- * @note The time dimension is compared first and then the value dimension
+ * @note The flags stating the dimensions are compared first, then the span
+ * type of the value dimension, then the time dimension, and finally the value
+ * dimension, so that boxes of different dimensions or value types are totally
+ * ordered
  * @csqlfn #Tbox_cmp()
  */
 int
@@ -2260,28 +2264,32 @@ tbox_cmp(const TBox *box1, const TBox *box2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, INT_MAX); VALIDATE_NOT_NULL(box2, INT_MAX);
 
-  bool hasx = MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags);
-  bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
+  /* Compare the flags and the span type of the value dimension, so that the
+   * dimensions read below are those of both boxes and of the same type */
+  if (box1->flags < box2->flags)
+    return -1;
+  if (box1->flags > box2->flags)
+    return 1;
+  if (box1->span.spantype < box2->span.spantype)
+    return -1;
+  if (box1->span.spantype > box2->span.spantype)
+    return 1;
+
   int cmp;
-  if (hast)
+  if (MEOS_FLAGS_GET_T(box1->flags))
   {
     cmp = span_cmp(&box1->period, &box2->period);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;
   }
-  if (hasx)
+  if (MEOS_FLAGS_GET_X(box1->flags))
   {
     cmp = span_cmp(&box1->span, &box2->span);
     /* Compare the box minima */
     if (cmp != 0)
       return cmp;
   }
-  /* Finally compare the flags */
-  if (box1->flags < box2->flags)
-    return -1;
-  if (box1->flags > box2->flags)
-    return 1;
   /* The two boxes are equal */
   return 0;
 }

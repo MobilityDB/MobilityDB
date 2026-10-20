@@ -1017,7 +1017,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 	<sect1 xml:id="box_comparisons">
 		<title>Comparisons</title>
 
-		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on box types. These operators compare first the timestamps and if those are equal, compare the values.</para>
+		<para>The traditional comparison operators (<varname>=</varname>, <varname>&lt;</varname>, and so on) can be applied to box types. Excepted equality  and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on box types. These operators define a total order. They compare first the SRID of spatiotemporal boxes, then the dimensions the boxes have, whether spatiotemporal boxes are geodetic, and the value type of temporal boxes. Boxes agreeing on all of these are compared on their time dimension and, if those are equal, on their value or space dimension.</para>
 
 		<itemizedlist>
 			<listitem xml:id="box_eq">
