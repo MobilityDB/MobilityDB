@@ -1964,8 +1964,8 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by two intervals
  * @param[in] temp Temporal value
- * @param[in] shift Interval for shift
- * @param[in] duration Interval for scale
+ * @param[in] shift Interval for shift, may be `NULL`
+ * @param[in] duration Interval for scale, may be `NULL`
  * @pre The duration is greater than 0 if is not NULL
  * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
  *   #Temporal_shift_scale_time()
