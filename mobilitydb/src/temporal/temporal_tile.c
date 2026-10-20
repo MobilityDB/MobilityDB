@@ -294,8 +294,7 @@ Tbox_value_time_tiles_common(FunctionCallInfo fcinfo, bool valuetiles,
   Datum values[2]; /* used to construct the composite return value */
   values[0] = Int32GetDatum(state->i);
   /* Generate box */
-  tbox_tile_state_set(state->value, state->t, state->vsize, state->tunits,
-    state->box.span.basetype, state->box.span.spantype, box);
+  tbox_tile_state_get(state, box);
   values[1] = PointerGetDatum(box);
   /* Advance state */
   tbox_tile_state_next(state);
