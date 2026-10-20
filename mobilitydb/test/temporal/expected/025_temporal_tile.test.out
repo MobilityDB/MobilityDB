@@ -67,6 +67,12 @@ SELECT bins(tstzspan '[2001-01-01, 2001-01-10]', '1 week', '2001-01-01') LIMIT 3
 /* Errors */
 SELECT bins(datespan '[2001-01-01, 2001-01-10]', '-1 week') LIMIT 3;
 ERROR:  The interval must be positive: -7 days
+SELECT bins(intspan '[1, 10]', 0);
+ERROR:  The value must be strictly positive: 0
+SELECT bins(bigintspan '[1, 10]', 0::bigint);
+ERROR:  The value must be strictly positive: 0
+SELECT bins(floatspan '(1, 10)', 0.0);
+ERROR:  The value must be strictly positive: 0.000000
 SELECT getBin(3, 2);
  getbin 
 --------
@@ -202,6 +208,11 @@ SELECT bins(tstzspanset '{[2001-01-01, 2001-01-10]}', '1 week', '2020-06-15') LI
  {"[Mon Jan 01 00:00:00 2001 PST, Sun Jan 07 23:00:00 2001 PST)","[Sun Jan 07 23:00:00 2001 PST, Wed Jan 10 00:00:00 2001 PST]"}
 (1 row)
 
+/* Errors */
+SELECT bins(intspanset '{[1, 10]}', 0);
+ERROR:  The value must be strictly positive: 0
+SELECT bins(floatspanset '{(1, 10)}', 0.0);
+ERROR:  The value must be strictly positive: 0.000000
 SELECT valueBins(tint '[15@2001-01-15, 25@2001-01-25]', 2);
         valuebins        
 -------------------------

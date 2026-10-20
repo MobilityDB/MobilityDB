@@ -49,6 +49,9 @@ SELECT bins(tstzspan '[2001-01-01, 2001-01-10]', '1 week', '2001-01-01') LIMIT 3
 
 /* Errors */
 SELECT bins(datespan '[2001-01-01, 2001-01-10]', '-1 week') LIMIT 3;
+SELECT bins(intspan '[1, 10]', 0);
+SELECT bins(bigintspan '[1, 10]', 0::bigint);
+SELECT bins(floatspan '(1, 10)', 0.0);
 
 SELECT getBin(3, 2);
 SELECT getBin(3, 2, 1);
@@ -84,6 +87,9 @@ SELECT bins(datespanset '{[2001-01-01, 2001-01-10]}', '1 week', '2020-06-15') LI
 
 SELECT bins(tstzspanset '{[2001-01-01, 2001-01-10]}', '1 week') LIMIT 3;
 SELECT bins(tstzspanset '{[2001-01-01, 2001-01-10]}', '1 week', '2020-06-15') LIMIT 3;
+/* Errors */
+SELECT bins(intspanset '{[1, 10]}', 0);
+SELECT bins(floatspanset '{(1, 10)}', 0.0);
 
 -------------------------------------------------------------------------------
 
