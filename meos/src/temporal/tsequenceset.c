@@ -704,8 +704,17 @@ tsequenceset_from_base_tstzspanset(Datum value, MeosType temptype,
   assert(ss);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
+  {
     sequences[i] = tsequence_from_base_tstzspan(value, temptype,
       SPANSET_SP_N(ss, i), interp);
+    /* A sequence the interpolation does not admit leaves nothing to
+     * construct: release the ones already built and report the refusal */
+    if (! sequences[i])
+    {
+      pfree_array((void **) sequences, i);
+      return NULL;
+    }
+  }
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
