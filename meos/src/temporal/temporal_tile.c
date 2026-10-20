@@ -604,10 +604,10 @@ span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc,
   /* The out parameter is defined even when a later check fails */
   *count = 0;
   assert(numspan_type(s->spantype) || timespan_type(s->spantype));
-  if ((numspan_type(s->spantype) && 
-        ! ensure_not_negative_datum(vsize, s->basetype)) ||
-      (timespan_type(s->spantype) && 
-        ! ensure_positive_duration(DatumGetIntervalP(vsize))))
+  /* The size of the time bins is an interval, a date span among them */
+  if (timespan_type(s->spantype) ?
+        ! ensure_positive_duration(DatumGetIntervalP(vsize)) :
+        ! ensure_positive_datum(vsize, s->basetype))
     return NULL;
 
   /* Convert an interval into time units */
@@ -657,10 +657,10 @@ spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc,
   /* The out parameter is defined even when a later check fails */
   *count = 0;
   assert(numspan_type(ss->spantype) || timespan_type(ss->spantype));
-  if ((numspan_type(ss->spantype) && 
-        ! ensure_not_negative_datum(vsize, ss->basetype)) ||
-      (timespan_type(ss->spantype) && 
-        ! ensure_positive_duration(DatumGetIntervalP(vsize))))
+  /* The size of the time bins is an interval, a date span among them */
+  if (timespan_type(ss->spantype) ?
+        ! ensure_positive_duration(DatumGetIntervalP(vsize)) :
+        ! ensure_positive_datum(vsize, ss->basetype))
     return NULL;
 
   /* Convert an interval into time units */
