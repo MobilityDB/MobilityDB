@@ -2137,6 +2137,7 @@ extern TBox *tbigintbox_value_time_tiles(const TBox *box, int64 vsize, const Int
 extern TBox *tbox_get_time_tile(TimestampTz t, const Interval *duration, TimestampTz torigin);
 extern TBox *tbox_get_value_tile(double value, double vsize, double vorigin);
 extern TBox *tbox_get_value_time_tile(double value, TimestampTz t, double vsize, const Interval *duration, double vorigin, TimestampTz torigin);
+extern TBox *tbox_time_tiles(const TBox *box, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 extern TBox *tfloat_time_boxes(const Temporal *temp, const Interval *duration, TimestampTz torigin, bool border_inc, int *count);
 extern Span *tfloat_value_bins(const Temporal *temp, double vsize, double vorigin, bool border_inc, int *count);
 extern TBox *tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin, bool border_inc, int *count);
