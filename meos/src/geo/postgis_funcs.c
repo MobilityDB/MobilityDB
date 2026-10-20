@@ -2257,6 +2257,110 @@ geo_reverse(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return true if a geography holds a non-empty line or polygon, the
+ * values whose densification on the sphere reads the maximum segment length
+ * @details The value is walked as #lwgeom_segmentize_sphere walks it, which
+ * clones an empty value, a point and a multipoint without reading the length
+ */
+static bool
+lwgeom_has_sphere_segment(const LWGEOM *geom)
+{
+  if (lwgeom_is_empty(geom))
+    return false;
+  if (geom->type == LINETYPE || geom->type == POLYGONTYPE)
+    return true;
+  if (geom->type == MULTILINETYPE || geom->type == MULTIPOLYGONTYPE ||
+      geom->type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *col = lwgeom_as_lwcollection(geom);
+    for (uint32_t i = 0; i < col->ngeoms; i++)
+      if (lwgeom_has_sphere_segment(col->geoms[i]))
+        return true;
+  }
+  return false;
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry or a geography densified so that no segment is
+ * longer than a distance
+ * @details A geometry is densified in the plane, the distance in the units of
+ * its spatial reference system, and a geography on the sphere, the distance
+ * in meters, chosen by the geodetic flag as #geo_length chooses. A point, a
+ * multipoint and an empty value are returned unchanged, and so are a
+ * triangle, a TIN and a polyhedral surface of a geometry. A geometry whose
+ * densification needs more than @p INT32_MAX segments in an edge returns
+ * @p NULL with a notice, as the PostGIS function does
+ * @param[in] gs Geometry/geography
+ * @param[in] max_seg_length Maximum length of a segment
+ * @errval NULL
+ * @note PostGIS functions: @p LWGEOM_segmentize2d(PG_FUNCTION_ARGS) and
+ * @p geography_segmentize(PG_FUNCTION_ARGS)
+ * @csqlfn #Geo_segmentize()
+ */
+GSERIALIZED *
+geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+
+  uint32_t type = gserialized_get_type(gs);
+  if (FLAGS_GET_GEODETIC(gs->gflags))
+  {
+    if (type == POINTTYPE || type == MULTIPOINTTYPE || gserialized_is_empty(gs))
+      return geo_copy(gs);
+    LWGEOM *geom = lwgeom_from_gserialized(gs);
+    /* The densification on the sphere refuses a length that is not positive
+     * where it reads one; it is refused here, before liblwgeom builds a line
+     * over the point array it does not return */
+    if (max_seg_length <= 0.0 && lwgeom_has_sphere_segment(geom))
+    {
+      lwgeom_free(geom);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "geo_segmentize: maximum segment length must be positive");
+      return NULL;
+    }
+    LWGEOM *res = lwgeom_segmentize_sphere(geom, max_seg_length / WGS84_RADIUS);
+    lwgeom_free(geom);
+    /* The boxes are computed again after the geodetic flag is set */
+    lwgeom_set_geodetic(res, true);
+    lwgeom_drop_bbox(res);
+    GSERIALIZED *result = geog_serialize(res);
+    lwgeom_free(res);
+    return result;
+  }
+
+  if (type == POINTTYPE || type == MULTIPOINTTYPE || type == TRIANGLETYPE ||
+      type == TINTYPE || type == POLYHEDRALSURFACETYPE)
+    return geo_copy(gs);
+  if (max_seg_length <= 0.0)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "geo_segmentize: maximum segment length must be positive");
+    return NULL;
+  }
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  if (lwgeom_is_empty(geom))
+  {
+    lwgeom_free(geom);
+    return geo_copy(gs);
+  }
+  LWGEOM *res = lwgeom_segmentize2d(geom, max_seg_length);
+  if (! res)
+  {
+    lwgeom_free(geom);
+    return NULL;
+  }
+  /* The box of the input, if any, is the box of its densification */
+  if (geom->bbox)
+    res->bbox = gbox_copy(geom->bbox);
+  GSERIALIZED *result = geom_serialize(res);
+  lwgeom_free(geom);
+  lwgeom_free(res);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_accessor
  * @brief Return in the last argument the azimuth of a segment defined by two
  * points

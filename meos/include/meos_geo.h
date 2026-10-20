@@ -397,6 +397,7 @@ extern GSERIALIZED *geo_rotate_z(const GSERIALIZED *gs, double angle);
 extern GSERIALIZED *geo_round(const GSERIALIZED *gs, int maxdd);
 extern GSERIALIZED *geo_scale(const GSERIALIZED *gs, double xfactor, double yfactor, double zfactor);
 extern GSERIALIZED *geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
+extern GSERIALIZED *geo_segmentize(const GSERIALIZED *gs, double max_seg_length);
 extern GSERIALIZED *geo_translate(const GSERIALIZED *gs, double deltax, double deltay, double deltaz);
 extern GSERIALIZED *geo_transscale(const GSERIALIZED *gs, double deltax, double deltay, double xfactor, double yfactor);
 

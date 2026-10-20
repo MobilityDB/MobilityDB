@@ -3719,6 +3719,33 @@ int main(void)
   assert(strcmp(fwd_txt, "LINESTRING(1 1,2 2,3 5)") == 0);
   free(fwd); free(rev); free(fwd_txt); free(rev_txt);
 
+  /* A line is densified in the plane and on the sphere, a point is returned
+   * unchanged whatever the length, and a length that is not positive is
+   * refused where a segment reads it */
+  GSERIALIZED *sline = geom_in("Linestring(0 0,3 0)", -1);
+  GSERIALIZED *sgline = geog_in("Linestring(4.35 50.85,2.35 48.85)", -1);
+  GSERIALIZED *sgpoint = geog_in("Point(4.35 50.85)", -1);
+  assert(sline && sgline && sgpoint);
+  GSERIALIZED *seg = geo_segmentize(sline, 1);
+  char *seg_txt = geo_as_text(seg, 6);
+  printf("geo_segmentize: %s\n", seg_txt);
+  assert(strcmp(seg_txt, "LINESTRING(0 0,1 0,2 0,3 0)") == 0);
+  free(seg); free(seg_txt);
+  seg = geo_segmentize(sgline, 100000);
+  seg_txt = geo_as_text(seg, 4);
+  printf("geo_segmentize: %s\n", seg_txt);
+  assert(strcmp(seg_txt, "LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,"
+    "2.8347 49.3532,2.35 48.85)") == 0);
+  free(seg); free(seg_txt);
+  seg = geo_segmentize(sgpoint, -1);
+  assert(seg != NULL && meos_errno() == 0);
+  free(seg);
+  assert(geo_segmentize(sline, 0) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  assert(geo_segmentize(sgline, 0) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  free(sline); free(sgline); free(sgpoint);
+
   /* The affine family answers through its own functions, each the
    * transformation its SQL function names. A rotation by pi/2 leaves the
    * residue of cos(pi/2) in the coordinates, so every answer is read rounded

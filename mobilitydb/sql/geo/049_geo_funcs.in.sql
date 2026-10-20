@@ -201,6 +201,19 @@ CREATE FUNCTION lineLocatePoint(geometry, geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
+ * Densification
+ *****************************************************************************/
+
+CREATE FUNCTION segmentize(geometry, float)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Geo_segmentize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION segmentize(geography, float)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Geo_segmentize'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************
  * Constructors
  *****************************************************************************/
 
