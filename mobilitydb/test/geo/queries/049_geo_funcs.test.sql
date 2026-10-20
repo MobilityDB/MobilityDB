@@ -581,10 +581,48 @@ FROM g;
 SELECT asEWKB(transform(geography 'Point(4.35 50.85)', 4269)) =
   ST_AsEWKB(ST_Transform(geometry 'SRID=4326;Point(4.35 50.85)', 4269));
 SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
+
+/* The densification of a geometry and of a geography, byte for byte */
+WITH g(geom, len) AS (VALUES
+  (geometry 'Point(1 1)', 0.5),
+  (geometry 'MultiPoint(1 1,5 5)', 0.5),
+  (geometry 'Linestring(0 0,3 0)', 1),
+  (geometry 'Linestring(0 0,4 0)', 1.5),
+  (geometry 'SRID=3857;Linestring Z(0 0 0,10 10 10)', 3),
+  (geometry 'Linestring M(0 0 0,10 0 5)', 4),
+  (geometry 'Polygon((0 0,4 0,4 4,0 4,0 0),(1 1,2 1,2 2,1 1))', 1),
+  (geometry 'MultiPolygon(((0 0,2 0,2 2,0 0)),((5 5,7 5,7 7,5 5)))', 0.7),
+  (geometry 'GeometryCollection(Point(1 1),Linestring(0 0,3 3))', 1),
+  (geometry 'CircularString(0 0,1 1,2 0)', 0.1),
+  (geometry 'Triangle((0 0,4 0,0 4,0 0))', 1),
+  (geometry 'Linestring empty', 1),
+  (geometry 'SRID=4326;Polygon((-35.58 24.60,44.83 24.60,44.83 84.73,
+    -35.58 84.73,-35.58 24.60))', 1))
+SELECT count(*) AS rows,
+  count(*) FILTER (WHERE ST_AsEWKB(segmentize(geom, len)) IS DISTINCT FROM
+    ST_AsEWKB(ST_Segmentize(geom, len))) AS segmentize
+FROM g;
+WITH g(geog, len) AS (VALUES
+  (geography 'Point(4.35 50.85)', 1000),
+  (geography 'MultiPoint(4.35 50.85,2.35 48.85)', -1),
+  (geography 'Linestring(4.35 50.85,2.35 48.85)', 50000),
+  (geography 'Linestring Z(0 0 0,0 1 100)', 20000),
+  (geography 'Polygon((0 0,1 0,1 1,0 1,0 0))', 30000),
+  (geography 'GeometryCollection(Point(1 1),Linestring(0 0,1 1))', 40000),
+  (geography 'Linestring empty', 1000))
+SELECT count(*) AS rows,
+  count(*) FILTER (WHERE ST_AsEWKB(segmentize(geog, len)::geometry) IS DISTINCT FROM
+    ST_AsEWKB(ST_Segmentize(geog, len)::geometry)) AS segmentize
+FROM g;
+SELECT ST_AsText(segmentize(geometry 'Linestring(0 0,3 0)', 1));
+SELECT ST_NPoints(segmentize(geometry 'SRID=4326;Polygon((-35.58 24.60,44.83 24.60,
+  44.83 84.73,-35.58 84.73,-35.58 24.60))', 1));
 /* Errors */
 SELECT transform(geography 'Point(4.35 50.85)', 3857);
 SELECT transform(geogset '{"Point(4.35 50.85)"}', 3857);
 SELECT transform(geometry 'Point(1 1)', 3857);
+SELECT segmentize(geometry 'Linestring(0 0,3 0)', 0);
+SELECT segmentize(geography 'Linestring(0 0,0 1)', 0);
 SELECT asGeoJSON(geometry 'CircularString(0 0,1 1,2 0)');
 
 -------------------------------------------------------------------------------

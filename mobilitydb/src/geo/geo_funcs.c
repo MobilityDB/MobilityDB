@@ -643,6 +643,32 @@ Line_locate_point(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Densification
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Geo_segmentize(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_segmentize);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry or a geography densified so that no segment is
+ * longer than a distance, in meters for a geography
+ * @details A null answer of #geo_segmentize is returned as a null value, as
+ * #Geo_reverse returns one
+ * @sqlfn segmentize()
+ */
+Datum
+Geo_segmentize(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double max_seg_length = PG_GETARG_FLOAT8(1);
+  GSERIALIZED *result = geo_segmentize(gs, max_seg_length);
+  PG_FREE_IF_COPY(gs, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+/*****************************************************************************
  * Constructors
  *****************************************************************************/
 
