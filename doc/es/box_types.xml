@@ -1017,7 +1017,7 @@ SELECT stbox 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])' #&amp;&gt;
 	<sect1 xml:id="box_comparisons">
 		<title>Comparaciones</title>
 
-		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) se pueden aplicar a tipos de cuadro delimitador. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten construir índices de árbol B en tipos de cuadro delimitador. Estos operadores comparan primero los valores de tiempo y, si son iguales, comparan los valores.</para>
+		<para>Los operadores de comparación tradicionales (<varname>=</varname>, <varname>&lt;</varname>, etc.) se pueden aplicar a tipos de cuadro delimitador. Exceptuando la igualdad y la no igualdad, los otros operadores de comparación no son útiles en el mundo real pero permiten construir índices de árbol B en tipos de cuadro delimitador. Estos operadores definen un orden total. Comparan primero el SRID de los cuadros espaciotemporales, luego las dimensiones que tienen los cuadros, si los cuadros espaciotemporales son geodésicos y el tipo de valor de los cuadros temporales. Los cuadros que coinciden en todo esto se comparan en su dimensión temporal y, si son iguales, en su dimensión de valor o espacial.</para>
 
 		<itemizedlist>
 			<listitem xml:id="box_eq">

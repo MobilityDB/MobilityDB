@@ -466,6 +466,21 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])', tbox 'TBOXFLO
 SELECT cmp(tbox 'TBOXFLOAT X([1,2])', tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])');
 SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLOAT X([1,2])');
 
+-- Boxes of different dimensions or value types are ordered by them first
+SELECT cmp(tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT X([1,1])');
+SELECT cmp(tbox 'TBOXFLOAT X([1,1])', tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])');
+SELECT cmp(tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])');
+SELECT cmp(tbox 'TBOXINT X([1,1])', tbox 'TBOXFLOAT X([1,1])');
+SELECT tbox 'TBOXINT X([1,1])' = tbox 'TBOXFLOAT X([1,1])';
+SELECT b FROM (VALUES
+  (tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])'),
+  (tbox 'TBOXFLOAT X([1,1])'),
+  (tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])'),
+  (tbox 'TBOX T([2001-01-01,2001-01-01])'),
+  (tbox 'TBOXINT X([1,1])'),
+  (tbox 'TBOXINT XT([0,0],[2001-01-03,2001-01-03])')) t(b)
+ORDER BY b;
+
 SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])' = floatspan '[1, 2]'::tbox;
 
 -------------------------------------------------------------------------------

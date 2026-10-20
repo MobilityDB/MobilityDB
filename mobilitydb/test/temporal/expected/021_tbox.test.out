@@ -1464,6 +1464,54 @@ SELECT cmp(tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])', tbox 'TBOXFLO
    1
 (1 row)
 
+SELECT cmp(tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT X([1,1])');
+ cmp 
+-----
+   1
+(1 row)
+
+SELECT cmp(tbox 'TBOXFLOAT X([1,1])', tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])');
+ cmp 
+-----
+  -1
+(1 row)
+
+SELECT cmp(tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])', tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])');
+ cmp 
+-----
+   1
+(1 row)
+
+SELECT cmp(tbox 'TBOXINT X([1,1])', tbox 'TBOXFLOAT X([1,1])');
+ cmp 
+-----
+   1
+(1 row)
+
+SELECT tbox 'TBOXINT X([1,1])' = tbox 'TBOXFLOAT X([1,1])';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT b FROM (VALUES
+  (tbox 'TBOXFLOAT XT([0,0],[2001-01-02,2001-01-02])'),
+  (tbox 'TBOXFLOAT X([1,1])'),
+  (tbox 'TBOXFLOAT XT([2,2],[2001-01-01,2001-01-01])'),
+  (tbox 'TBOX T([2001-01-01,2001-01-01])'),
+  (tbox 'TBOXINT X([1,1])'),
+  (tbox 'TBOXINT XT([0,0],[2001-01-03,2001-01-03])')) t(b)
+ORDER BY b;
+                                         b                                         
+-----------------------------------------------------------------------------------
+ TBOXFLOAT X([1, 1])
+ TBOXINT X([1, 2))
+ TBOX T([Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+ TBOXFLOAT XT([2, 2],[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+ TBOXFLOAT XT([0, 0],[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+ TBOXINT XT([0, 1),[Wed Jan 03 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])
+(6 rows)
+
 SELECT tbox 'TBOXFLOAT XT([1.0,1.0],[2001-01-02,2001-01-02])' = floatspan '[1, 2]'::tbox;
  ?column? 
 ----------

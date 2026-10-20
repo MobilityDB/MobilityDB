@@ -555,6 +555,20 @@ SELECT cmp(stbox 'STBOX X((1,1),(2,2))', stbox 'SRID=5676;STBOX X((1,1),(2,2))')
 SELECT cmp(stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])', stbox 'STBOX Z((1,2,3),(1,2,3))');
 SELECT cmp(stbox 'STBOX Z((1,2,3),(1,2,3))', stbox 'STBOX ZT(((1,2,3),(1,2,3)),[2001-01-04,2001-01-04])');
 
+-- Boxes of different dimensions are ordered by their dimensions first
+SELECT cmp(stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])', stbox 'STBOX X((1,0),(1,0))');
+SELECT cmp(stbox 'STBOX X((1,0),(1,0))', stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])');
+SELECT cmp(stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])', stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])');
+SELECT b FROM (VALUES
+  (stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])'),
+  (stbox 'STBOX X((1,0),(1,0))'),
+  (stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])'),
+  (stbox 'STBOX T([2001-01-01,2001-01-01])'),
+  (stbox 'STBOX Z((1,0,5),(1,0,5))'),
+  (stbox 'GEODSTBOX X((0,0),(0,0))'),
+  (stbox 'SRID=4326;STBOX X((0,0),(0,0))')) t(b)
+ORDER BY b;
+
 -------------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;

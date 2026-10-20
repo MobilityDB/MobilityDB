@@ -1945,6 +1945,44 @@ SELECT cmp(stbox 'STBOX Z((1,2,3),(1,2,3))', stbox 'STBOX ZT(((1,2,3),(1,2,3)),[
   -1
 (1 row)
 
+SELECT cmp(stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])', stbox 'STBOX X((1,0),(1,0))');
+ cmp 
+-----
+   1
+(1 row)
+
+SELECT cmp(stbox 'STBOX X((1,0),(1,0))', stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])');
+ cmp 
+-----
+  -1
+(1 row)
+
+SELECT cmp(stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])', stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])');
+ cmp 
+-----
+   1
+(1 row)
+
+SELECT b FROM (VALUES
+  (stbox 'STBOX XT(((0,0),(0,0)),[2001-01-02,2001-01-02])'),
+  (stbox 'STBOX X((1,0),(1,0))'),
+  (stbox 'STBOX XT(((2,0),(2,0)),[2001-01-01,2001-01-01])'),
+  (stbox 'STBOX T([2001-01-01,2001-01-01])'),
+  (stbox 'STBOX Z((1,0,5),(1,0,5))'),
+  (stbox 'GEODSTBOX X((0,0),(0,0))'),
+  (stbox 'SRID=4326;STBOX X((0,0),(0,0))')) t(b)
+ORDER BY b;
+                                          b                                           
+--------------------------------------------------------------------------------------
+ STBOX X((1,0),(1,0))
+ STBOX Z((1,0,5),(1,0,5))
+ STBOX T([Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+ STBOX XT(((2,0),(2,0)),[Mon Jan 01 00:00:00 2001 PST, Mon Jan 01 00:00:00 2001 PST])
+ STBOX XT(((0,0),(0,0)),[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST])
+ SRID=4326;STBOX X((0,0),(0,0))
+ SRID=4326;GEODSTBOX X((0,0),(0,0))
+(7 rows)
+
 SELECT COUNT(*) FROM tbl_stbox t1, tbl_stbox t2 WHERE t1.b = t2.b;
  count 
 -------
