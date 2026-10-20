@@ -2388,15 +2388,19 @@ temporal_max_value(const Temporal *temp)
 }
 
 /**
- * @ingroup meos_internal_temporal_accessor
+ * @ingroup meos_temporal_accessor
  * @brief Return the average value of a temporal number
  * @param[in] temp Temporal value
+ * @errval DBL_MAX
  * @csqlfn #Tnumber_avg_value()
  */
 double
 tnumber_avg_value(const Temporal *temp)
 {
-  assert(temp); assert(temp->subtype);
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNUMBER(temp, DBL_MAX);
+
+  assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
