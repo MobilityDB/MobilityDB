@@ -217,9 +217,9 @@ int main(void)
   TBox *timebox = tbox_in("TBOX T([2001-01-15, 2001-01-25])");
   int count1, count2;
   const char *float_tiles[] = {
-    "TBOXFLOAT XT([1, 6),[2001-09-01, 2001-09-02))",
-    "TBOXFLOAT XT([1, 6),[2001-09-02, 2001-09-03))",
-    "TBOXFLOAT XT([1, 6),[2001-09-03, 2001-09-04))"};
+    "TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-02))",
+    "TBOXFLOAT XT([1, 5],[2001-09-02, 2001-09-03))",
+    "TBOXFLOAT XT([1, 5],[2001-09-03, 2001-09-04))"};
   TBox *boxes = tbox_time_tiles(floatbox, day, sep1, true, &count1);
   check_boxes("tbox_time_tiles(TBOXFLOAT, 1 day, 2001-09-01, true)", boxes,
     count1, float_tiles, 3);
