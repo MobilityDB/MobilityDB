@@ -39,6 +39,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
@@ -421,6 +422,87 @@ tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa)
   return temporal_restrict_value(temp, PointerGetDatum(pa), REST_MINUS);
 }
 
+/*****************************************************************************
+ * Schema and point count accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the pgPointCloud schema id (pcid) of a temporal pgpointcloud
+ * patch
+ * @details Every instant of the value carries the same pcid, which its
+ * constructors enforce, so the pcid of the start instant is read in place
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Tpcpatch_pcid()
+ */
+uint32_t
+tpcpatch_pcid(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, INT_MAX);
+  const TInstant *inst = temporal_start_inst(temp);
+  return DatumGetPcpatchP(tinstant_value_p(inst))->pcid;
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the number of points of the start value of a temporal
+ * pgpointcloud patch
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Tpcpatch_start_npoints()
+ */
+uint32_t
+tpcpatch_start_npoints(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, INT_MAX);
+  const TInstant *inst = temporal_start_inst(temp);
+  return DatumGetPcpatchP(tinstant_value_p(inst))->npoints;
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the number of points of the end value of a temporal
+ * pgpointcloud patch
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Tpcpatch_end_npoints()
+ */
+uint32_t
+tpcpatch_end_npoints(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, INT_MAX);
+  const TInstant *inst = temporal_end_inst(temp);
+  return DatumGetPcpatchP(tinstant_value_p(inst))->npoints;
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the total number of points of the instants of a temporal
+ * pgpointcloud patch
+ * @details The count of a patch is in its header, so no patch is
+ * decompressed, and the total is a 64-bit integer since a long sequence of
+ * dense patches exceeds the range of a 32-bit one
+ * @param[in] temp Temporal value
+ * @errval INT64_MAX
+ * @csqlfn #Tpcpatch_npoints()
+ */
+int64
+tpcpatch_npoints(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, INT64_MAX);
+  int count;
+  const TInstant **instants = temporal_insts_p(temp, &count);
+  int64 result = 0;
+  for (int i = 0; i < count; i++)
+    result += (int64) DatumGetPcpatchP(tinstant_value_p(instants[i]))->npoints;
+  pfree(instants);
+  return result;
+}
 
 /*****************************************************************************
  * Aggregate functions
