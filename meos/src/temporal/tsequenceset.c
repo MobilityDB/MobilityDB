@@ -1402,7 +1402,7 @@ tsequenceset_compact(const TSequenceSet *ss)
  * @brief Return a temporal sequence set restared by keeping only the last n
  * sequences
  * @param[in] ss Temporal sequence set
- * @param[out] count Number of sequences kept
+ * @param[in] count Number of sequences kept
  */
 void
 tsequenceset_restart(TSequenceSet *ss, int count)
@@ -1443,7 +1443,7 @@ tsequenceset_restart(TSequenceSet *ss, int count)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal instant transformed into a temporal sequence set
  * @param[in] inst Temporal instant
- * @param[out] interp Interpolation
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
@@ -1506,7 +1506,7 @@ tsequence_to_tsequenceset_free(TSequence *seq)
  * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal sequence transformed into a temporal sequence set
  * @param[in] seq Temporal sequence
- * @param[out] interp Interpolation
+ * @param[in] interp Interpolation
  * @csqlfn #Temporal_to_tsequenceset()
  */
 TSequenceSet *
