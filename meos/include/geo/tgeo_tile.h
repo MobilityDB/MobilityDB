@@ -124,7 +124,7 @@ extern STBox *stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
 extern STboxGridState *stbox_space_time_tile_init(const STBox *bounds,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool border_inc,
-  int *ntiles);
+  bool hasx, bool hast, int *ntiles);
 extern STboxGridState *tgeo_space_time_split_init(const Temporal *temp,
   double xsize, double ysize, double zsize, const Interval *duration,
   const GSERIALIZED *sorigin, TimestampTz torigin, bool bitmatrix,

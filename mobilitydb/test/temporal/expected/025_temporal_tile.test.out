@@ -494,6 +494,14 @@ SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5,
 ERROR:  The value size and origin of the tiles of a box of int4 values cannot be of type float8
 SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week');
 ERROR:  The value size and origin of the tiles of a box of int8 values cannot be of type int4
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 0, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 0::bigint, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 0.0, '1 week');
+ERROR:  The value must be strictly positive: 0.000000
+SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '0 days');
+ERROR:  The interval must be positive: 00:00:00
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week');
                                    getvaluetimetile                                    
 ---------------------------------------------------------------------------------------
@@ -506,6 +514,11 @@ SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week', 
  TBOXFLOAT XT([14, 16.5),[Sun Jan 14 23:00:00 2001 PST, Sun Jan 21 23:00:00 2001 PST))
 (1 row)
 
+/* Errors */
+SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 0.0, interval '1 week');
+ERROR:  The value must be strictly positive: 0.000000
+SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '0 days');
+ERROR:  The interval must be positive: 00:00:00
 SELECT valueBoxes(tint '1@2001-01-01', 2);
                                      valueboxes                                      
 -------------------------------------------------------------------------------------
@@ -813,6 +826,15 @@ SELECT valueTimeBoxes(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@
  {"TBOXFLOAT XT([1.5, 1.5],[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])","TBOXFLOAT XT([2.5, 2.5],[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","TBOXFLOAT XT([3.5, 3.5],[Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+/* Errors */
+SELECT valueTimeBoxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeBoxes(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
+ERROR:  The value must be strictly positive: 0.000000
+SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
+ERROR:  The interval must be positive: 00:00:00
 SELECT valueSplit(tint '1@2001-01-01', 2);
               valuesplit              
 --------------------------------------
@@ -1133,6 +1155,15 @@ SELECT valueTimeSplit(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@
  (3.5,"Mon Jan 01 00:00:00 2001 PST","Interp=Step;{[3.5@Thu Jan 04 00:00:00 2001 PST, 3.5@Fri Jan 05 00:00:00 2001 PST]}")
 (3 rows)
 
+/* Errors */
+SELECT valueTimeSplit(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeSplit(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+ERROR:  The value must be strictly positive: 0
+SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
+ERROR:  The value must be strictly positive: 0.000000
+SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
+ERROR:  The interval must be positive: 00:00:00
 SELECT bins(bigintspan '[5000000000, 5000000010]', vsize := 4, vorigin := 5000000001);
                                                      bins                                                      
 ---------------------------------------------------------------------------------------------------------------

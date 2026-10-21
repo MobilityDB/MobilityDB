@@ -97,10 +97,12 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
 }
 
 /**
- * @brief Ensure the validity of the arguments for tiling a temporal box
- * @details At least one dimension is given, a value dimension needs a box
- * with a value span of the given type, as #tintbox_shift_scale needs, and a
- * time dimension needs a box with a period and a positive duration
+ * @brief Ensure the validity of a temporal box and the grid laid over it
+ * @details Each caller tests the sizes of the dimensions it takes, so a value
+ * size of 0 is a value dimension the caller does not take. A value dimension
+ * needs a box with a value span of the given type, as #tintbox_shift_scale
+ * needs, and a time dimension needs a box with a period and a positive
+ * duration
  * @param[in] box Temporal box
  * @param[in] vsize Value size of the tiles, 0 when the value dimension is not
  * used for tiling
@@ -111,12 +113,6 @@ static bool
 ensure_valid_tbox_tiles(const TBox *box, double vsize,
   const Interval *duration, MeosType spantype)
 {
-  if (vsize <= 0 && ! duration)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG,
-      "At least one of the arguments vsize or duration must be given");
-    return false;
-  }
   if (vsize > 0 && (! ensure_has_X(T_TBOX, box->flags) ||
       ! ensure_span_isof_type(&box->span, spantype)))
     return false;
@@ -130,8 +126,9 @@ ensure_valid_tbox_tiles(const TBox *box, double vsize,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the tiles of a temporal integer box
  * @param[in] box Input box to split
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the grid contains the upper border of the
@@ -145,7 +142,8 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_negative_datum(Int32GetDatum(vsize), T_INT4) ||
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_INTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int32GetDatum(vsize), duration,
@@ -156,8 +154,9 @@ tintbox_value_time_tiles(const TBox *box, int vsize, const Interval *duration,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the tiles of a temporal big integer box
  * @param[in] box Input box to split
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the grid contains the upper border of the
@@ -172,7 +171,8 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_negative_datum(Int64GetDatum(vsize), T_INT8) ||
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
       ! ensure_valid_tbox_tiles(box, (double) vsize, duration, T_BIGINTSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Int64GetDatum(vsize), duration,
@@ -183,8 +183,9 @@ tbigintbox_value_time_tiles(const TBox *box, int64 vsize,
  * @ingroup meos_temporal_analytics_tile
  * @brief Return the tiles of a temporal float box
  * @param[in] box Input box to split
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the grid contains the upper border of the
@@ -199,7 +200,8 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_negative_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_valid_tbox_tiles(box, vsize, duration, T_FLOATSPAN))
     return NULL;
   return tbox_value_time_tiles(box, Float8GetDatum(vsize), duration,
@@ -222,10 +224,12 @@ tintbox_value_tiles(const TBox *box, int vsize, int vorigin, bool border_inc,
   int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
+      ! ensure_valid_tbox_tiles(box, (double) vsize, NULL, T_INTSPAN))
     return NULL;
-  return tintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
-    count);
+  return tbox_value_time_tiles(box, Int32GetDatum(vsize), NULL,
+    Int32GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -244,10 +248,12 @@ tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
+      ! ensure_valid_tbox_tiles(box, (double) vsize, NULL, T_BIGINTSPAN))
     return NULL;
-  return tbigintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
-    count);
+  return tbox_value_time_tiles(box, Int64GetDatum(vsize), NULL,
+    Int64GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -266,10 +272,12 @@ tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
   bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+      ! ensure_valid_tbox_tiles(box, vsize, NULL, T_FLOATSPAN))
     return NULL;
-  return tfloatbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
-    count);
+  return tbox_value_time_tiles(box, Float8GetDatum(vsize), NULL,
+    Float8GetDatum(vorigin), 0, border_inc, count);
 }
 
 /**
@@ -289,6 +297,7 @@ tbox_time_tiles(const TBox *box, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_valid_tbox_tiles(box, 0.0, duration, box->span.spantype))
     return NULL;
   /* The value size of the tiles is zero in the base type of the box */
@@ -312,8 +321,7 @@ TBox *
 tintbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  return tintbox_value_time_tiles(box, 0, duration, 0, torigin, border_inc,
-    count);
+  return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
 /**
@@ -330,8 +338,7 @@ TBox *
 tbigintbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  return tbigintbox_value_time_tiles(box, 0, duration, 0, torigin, border_inc,
-    count);
+  return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
 /**
@@ -348,8 +355,7 @@ TBox *
 tfloatbox_time_tiles(const TBox *box, const Interval *duration,
   TimestampTz torigin, bool border_inc, int *count)
 {
-  return tfloatbox_value_time_tiles(box, 0.0, duration, 0.0, torigin,
-    border_inc, count);
+  return tbox_time_tiles(box, duration, torigin, border_inc, count);
 }
 
 /*****************************************************************************
@@ -401,31 +407,6 @@ tint_time_boxes(const Temporal *temp, const Interval *duration,
     Int32GetDatum(0), torigin, border_inc, count);
 }
 
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the temporal boxes of a temporal number split with respect to
- * a value and possibly a time grid
- * @param[in] temp Temporal value
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
- * @param[in] vorigin Value origin of the tiles
- * @param[in] torigin Time origin of the tiles
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] count Number of elements in the output array
- * @csqlfn #Tnumber_value_time_boxes()
- */
-TBox *
-tint_value_time_boxes(const Temporal *temp, int vsize,
-  const Interval *duration, int vorigin, TimestampTz torigin, bool border_inc,
-  int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
-    Int32GetDatum(vorigin), torigin, border_inc, count);
-}
-
 /*****************************************************************************/
 
 /**
@@ -473,31 +454,6 @@ tbigint_time_boxes(const Temporal *temp, const Interval *duration,
     Int64GetDatum(0), torigin, border_inc, count);
 }
 
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the temporal boxes of a temporal big integer split with
- * respect to a value and possibly a time grid
- * @param[in] temp Temporal value
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
- * @param[in] vorigin Value origin of the tiles
- * @param[in] torigin Time origin of the tiles
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] count Number of elements in the output array
- * @csqlfn #Tnumber_value_time_boxes()
- */
-TBox *
-tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
-  const Interval *duration, int64 vorigin, TimestampTz torigin,
-  bool border_inc, int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), duration,
-    Int64GetDatum(vorigin), torigin, border_inc, count);
-}
-
 /*****************************************************************************/
 
 /**
@@ -543,31 +499,6 @@ tfloat_time_boxes(const Temporal *temp, const Interval *duration,
   VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(0.0), duration,
     Float8GetDatum(0.0), torigin, border_inc, count);
-}
-
-/**
- * @ingroup meos_temporal_analytics_tile
- * @brief Return the temporal boxes of a temporal number split with respect to
- * a value and possibly a time grid
- * @param[in] temp Temporal value
- * @param[in] vsize Value size of the tiles
- * @param[in] duration Interval defining the size of the bins
- * @param[in] vorigin Value origin of the tiles
- * @param[in] torigin Time origin of the tiles
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] count Number of elements in the output array
- * @csqlfn #Tnumber_value_time_boxes()
- */
-TBox *
-tfloat_value_time_boxes(const Temporal *temp, double vsize,
-  const Interval *duration, double vorigin, TimestampTz torigin,
-  bool border_inc, int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
-    Float8GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /*****************************************************************************

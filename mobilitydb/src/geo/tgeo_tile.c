@@ -79,11 +79,11 @@ static void
 Stbox_tiles_start(FunctionCallInfo fcinfo, FuncCallContext *funcctx,
   const STBox *bounds, double xsize, double ysize, double zsize,
   const Interval *duration, const GSERIALIZED *sorigin, TimestampTz torigin,
-  bool border_inc)
+  bool border_inc, bool hasx, bool hast)
 {
   int ntiles;
   funcctx->user_fctx = stbox_space_time_tile_init(bounds, xsize, ysize, zsize,
-    duration, sorigin, torigin, border_inc, &ntiles);
+    duration, sorigin, torigin, border_inc, hasx, hast, &ntiles);
   get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
   BlessTupleDesc(funcctx->tuple_desc);
   return;
@@ -148,7 +148,7 @@ Stbox_space_tiles(PG_FUNCTION_ARGS)
     GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(i++);
     bool border_inc = PG_GETARG_BOOL(i++);
     Stbox_tiles_start(fcinfo, funcctx, bounds, xsize, ysize, zsize, NULL,
-      sorigin, 0, border_inc);
+      sorigin, 0, border_inc, true, false);
     MemoryContextSwitchTo(oldcontext);
   }
   return Stbox_tiles_next(fcinfo);
@@ -174,7 +174,7 @@ Stbox_time_tiles(PG_FUNCTION_ARGS)
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
     bool border_inc = PG_GETARG_BOOL(3);
     Stbox_tiles_start(fcinfo, funcctx, bounds, 0.0, 0.0, 0.0, duration, NULL,
-      torigin, border_inc);
+      torigin, border_inc, false, true);
     MemoryContextSwitchTo(oldcontext);
   }
   return Stbox_tiles_next(fcinfo);
@@ -209,7 +209,7 @@ Stbox_space_time_tiles(PG_FUNCTION_ARGS)
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(i++);
     bool border_inc = PG_GETARG_BOOL(i++);
     Stbox_tiles_start(fcinfo, funcctx, bounds, xsize, ysize, zsize, duration,
-      sorigin, torigin, border_inc);
+      sorigin, torigin, border_inc, true, true);
     MemoryContextSwitchTo(oldcontext);
   }
   return Stbox_tiles_next(fcinfo);
@@ -351,8 +351,8 @@ Tgeo_time_boxes(PG_FUNCTION_ARGS)
   bool bitmatrix = PG_GETARG_BOOL(3);
   bool border_inc = PG_GETARG_BOOL(4);
   int count;
-  STBox *boxes = tgeo_space_time_boxes(temp, 0.0, 0.0, 0.0, duration, NULL,
-    torigin, bitmatrix, border_inc, &count);
+  STBox *boxes = tgeo_time_boxes(temp, duration, torigin, bitmatrix,
+    border_inc, &count);
   PG_FREE_IF_COPY(temp, 0);
   return Stbox_boxes_array(boxes, count);
 }

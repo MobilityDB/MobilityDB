@@ -155,9 +155,16 @@ SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2
 /* Errors */
 SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '1 week');
 SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 2, '1 week');
+SELECT valueTimeTiles(tbox 'TBOXINT XT([15, 25],[2001-01-15, 2001-01-25])', 0, '1 week');
+SELECT valueTimeTiles(tbox 'TBOXBIGINT XT([15, 25],[2001-01-15, 2001-01-25])', 0::bigint, '1 week');
+SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 0.0, '1 week');
+SELECT valueTimeTiles(tbox 'TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-25])', 2.5, '0 days');
 
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week');
 SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '1 week', 1.5, '2020-06-15');
+/* Errors */
+SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 0.0, interval '1 week');
+SELECT getValueTimeTile(15.5, timestamptz '2001-01-15', 2.5, interval '0 days');
 
 -------------------------------------------------------------------------------
 -- valueBoxes
@@ -233,6 +240,12 @@ SELECT valueTimeBoxes(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2
 SELECT valueTimeBoxes(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
 SELECT valueTimeBoxes(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
 
+/* Errors */
+SELECT valueTimeBoxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+SELECT valueTimeBoxes(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
+SELECT valueTimeBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
+
 -------------------------------------------------------------------------------
 -- valueSplit
 -------------------------------------------------------------------------------
@@ -305,6 +318,12 @@ SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]',
 SELECT valueTimeSplit(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '1 week');
 SELECT valueTimeSplit(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
 SELECT valueTimeSplit(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', 0.5, '1 week');
+
+/* Errors */
+SELECT valueTimeSplit(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+SELECT valueTimeSplit(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0, '1 week');
+SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0, '1 week');
+SELECT valueTimeSplit(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.5, '0 days');
 
 -- Grid arguments named by their dimension
 SELECT bins(bigintspan '[5000000000, 5000000010]', vsize := 4, vorigin := 5000000001);
