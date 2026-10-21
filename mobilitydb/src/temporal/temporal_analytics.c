@@ -60,7 +60,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_tprecision);
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return the initial timestamptz of the bin in which a timestamptz
  * falls
- * @sqlfn tPrecision()
+ * @sqlfn tprecision()
  */
 Datum
 Timestamptz_tprecision(PG_FUNCTION_ARGS)
@@ -76,7 +76,7 @@ PG_FUNCTION_INFO_V1(Tstzset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzset with the precision set to time bins
- * @sqlfn tPrecision()
+ * @sqlfn tprecision()
  */
 Datum
 Tstzset_tprecision(PG_FUNCTION_ARGS)
@@ -92,7 +92,7 @@ PG_FUNCTION_INFO_V1(Tstzspan_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzspan with the precision set to time bins
- * @sqlfn tPrecision()
+ * @sqlfn tprecision()
  */
 Datum
 Tstzspan_tprecision(PG_FUNCTION_ARGS)
@@ -108,7 +108,7 @@ PG_FUNCTION_INFO_V1(Tstzspanset_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a tstzspanset value with the precision set to time bins
- * @sqlfn tPrecision()
+ * @sqlfn tprecision()
  */
 Datum
 Tstzspanset_tprecision(PG_FUNCTION_ARGS)
@@ -130,7 +130,7 @@ PG_FUNCTION_INFO_V1(Temporal_tprecision);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a temporal value with the precision set to time bins
- * @sqlfn tPrecision()
+ * @sqlfn tprecision()
  */
 Datum
 Temporal_tprecision(PG_FUNCTION_ARGS)
@@ -148,7 +148,7 @@ PG_FUNCTION_INFO_V1(Temporal_tsample);
 /**
  * @ingroup mobilitydb_temporal_analytics_reduction
  * @brief Return a temporal value sampled at time bins
- * @sqlfn tSample()
+ * @sqlfn tsample()
  */
 Datum
 Temporal_tsample(PG_FUNCTION_ARGS)
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Temporal_simplify_max_dist);
  * @ingroup mobilitydb_temporal_analytics_simplify
  * @brief Return a temporal sequence (set) float or point simplified using a
  * single-pass Douglas-Peucker line simplification algorithm
- * @sqlfn maxDistSimplify
+ * @sqlfn maxDistSimplify()
  */
 Datum
 Temporal_simplify_max_dist(PG_FUNCTION_ARGS)

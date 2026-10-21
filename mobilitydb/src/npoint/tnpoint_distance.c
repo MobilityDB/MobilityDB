@@ -162,7 +162,7 @@ PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach instant between a geometry and a temporal
  * network point
- * @sqlfn nearestApproachInstant()
+ * @sqlfn NearestApproachInstant()
  */
 Datum
 NAI_geo_tnpoint(PG_FUNCTION_ARGS)
@@ -183,7 +183,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach instant between a temporal network point
  * and a geometry
- * @sqlfn nearestApproachInstant()
+ * @sqlfn NearestApproachInstant()
  */
 Datum
 NAI_tnpoint_geo(PG_FUNCTION_ARGS)
@@ -204,7 +204,7 @@ PG_FUNCTION_INFO_V1(NAI_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach instant between a network point and a
  * temporal network point
- * @sqlfn nearestApproachInstant()
+ * @sqlfn NearestApproachInstant()
  */
 Datum
 NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
@@ -222,7 +222,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach instant between a temporal network point
  * and a network point
- * @sqlfn nearestApproachInstant()
+ * @sqlfn NearestApproachInstant()
  */
 Datum
 NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
@@ -240,7 +240,7 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach instant between two temporal network
  * points
- * @sqlfn nearestApproachInstant()
+ * @sqlfn NearestApproachInstant()
  */
 Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
@@ -347,7 +347,7 @@ PG_FUNCTION_INFO_V1(NAD_npoint_tnpoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach distance between a network point and a
  * temporal network point
- * @sqlfn nearestApproachDistance()
+ * @sqlfn NearestApproachDistance()
  * @sqlop |=|
  */
 Datum
@@ -366,7 +366,7 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_npoint);
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the nearest approach distance between a temporal network point
  * and a network point
- * @sqlfn nearestApproachDistance()
+ * @sqlfn NearestApproachDistance()
  * @sqlop |=|
  */
 Datum

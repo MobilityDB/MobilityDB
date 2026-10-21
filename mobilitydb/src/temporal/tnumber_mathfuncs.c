@@ -487,7 +487,7 @@ PG_FUNCTION_INFO_V1(Tfloat_exp);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the natural logarithm of a temporal number
- * @sqlfn ln()
+ * @sqlfn exp()
  */
 Datum
 Tfloat_exp(PG_FUNCTION_ARGS)
@@ -523,7 +523,7 @@ PG_FUNCTION_INFO_V1(Tfloat_log10);
 /**
  * @ingroup mobilitydb_temporal_math
  * @brief Return the natural logarithm of a temporal number
- * @sqlfn ln()
+ * @sqlfn log10()
  */
 Datum
 Tfloat_log10(PG_FUNCTION_ARGS)

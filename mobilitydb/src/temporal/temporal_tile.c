@@ -114,7 +114,7 @@ PG_FUNCTION_INFO_V1(Value_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for number spans
- * @sqlfn getValueBin()
+ * @sqlfn getBin()
  */
 Datum
 Value_bin(PG_FUNCTION_ARGS)
@@ -134,7 +134,7 @@ PG_FUNCTION_INFO_V1(Date_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for date spans
- * @sqlfn getTimeBin()
+ * @sqlfn getBin()
  */
 Datum
 Date_bin(PG_FUNCTION_ARGS)
@@ -155,7 +155,7 @@ PG_FUNCTION_INFO_V1(Timestamptz_bin);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a span bin in a bin list for timestamptz spans
- * @sqlfn getTimeBin()
+ * @sqlfn getBin()
  */
 Datum
 Timestamptz_bin(PG_FUNCTION_ARGS)
@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(Temporal_time_bins);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the value spans of a temporal number split with respect to
  * value bins
- * @sqlfn timeSpans()
+ * @sqlfn timeBins()
  */
 Datum
 Temporal_time_bins(PG_FUNCTION_ARGS)
@@ -203,7 +203,7 @@ PG_FUNCTION_INFO_V1(Tnumber_value_bins);
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the value spans of a temporal number split with respect to
  * value bins
- * @sqlfn valueSpans()
+ * @sqlfn valueBins()
  */
 Datum
 Tnumber_value_bins(PG_FUNCTION_ARGS)
@@ -313,7 +313,7 @@ PG_FUNCTION_INFO_V1(Tbox_value_tiles);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the tile list of a temporal box
- * @sqlfn valueTimeTiles()
+ * @sqlfn valueTiles()
  */
 inline Datum
 Tbox_value_tiles(PG_FUNCTION_ARGS)
@@ -326,7 +326,7 @@ PG_FUNCTION_INFO_V1(Tbox_time_tiles);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return the tile list of a temporal box
- * @sqlfn valueTimeTiles()
+ * @sqlfn timeTiles()
  */
 inline Datum
 Tbox_time_tiles(PG_FUNCTION_ARGS)
@@ -388,7 +388,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
- * @sqlfn tile()
+ * @sqlfn getValueTile()
  */
 inline Datum
 Tbox_get_value_tile(PG_FUNCTION_ARGS)
@@ -401,7 +401,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
- * @sqlfn tile()
+ * @sqlfn getTBoxTimeTile()
  */
 inline Datum
 Tbox_get_time_tile(PG_FUNCTION_ARGS)
@@ -414,7 +414,7 @@ PG_FUNCTION_INFO_V1(Tbox_get_value_time_tile);
 /**
  * @ingroup mobilitydb_temporal_analytics_tile
  * @brief Return a tile in a multidimensional grid for temporal numbers
- * @sqlfn tile()
+ * @sqlfn getValueTimeTile()
  */
 inline Datum
 Tbox_get_value_time_tile(PG_FUNCTION_ARGS)

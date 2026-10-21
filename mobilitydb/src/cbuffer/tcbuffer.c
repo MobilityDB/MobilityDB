@@ -147,7 +147,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_constructor);
  * @ingroup mobilitydb_cbuffer_constructor
  * @brief Construct a temporal circular buffer from a temporal point and a
  * temporal float
- * @sqlfn tcbuffer_constructor()
+ * @sqlfn tcbuffer()
  */
 Datum
 Tcbuffer_constructor(PG_FUNCTION_ARGS)
@@ -244,7 +244,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_radius);
 /**
  * @ingroup mobilitydb_cbuffer_accessor
  * @brief Return the set of radii of a temporal circular buffer
- * @sqlfn points()
+ * @sqlfn radius()
  */
 Datum
 Tcbuffer_radius(PG_FUNCTION_ARGS)
@@ -375,7 +375,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_at_stbox);
  * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal circular buffer restricted to a circular buffer
  * @note Only 2D is supported
- * @sqlfn atValue()
+ * @sqlfn atStbox()
  */
 inline Datum
 Tcbuffer_at_stbox(PG_FUNCTION_ARGS)
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(Tcbuffer_minus_stbox);
  * @ingroup mobilitydb_geo_restrict
  * @brief Return a temporal circular buffer restricted to the complement of a
  * circular buffer
- * @sqlfn minusValue()
+ * @sqlfn minusStbox()
  */
 inline Datum
 Tcbuffer_minus_stbox(PG_FUNCTION_ARGS)

@@ -799,7 +799,7 @@ PG_FUNCTION_INFO_V1(Cbuffer_hash_extended);
 /**
  * @ingroup mobilitydb_cbuffer_base_accessor
  * @brief Return the 64-bit hash value of a circular buffer using a seed
- * @sqlfn hash_extended()
+ * @sqlfn cbuffer_hash_extended()
  */
 Datum
 Cbuffer_hash_extended(PG_FUNCTION_ARGS)
