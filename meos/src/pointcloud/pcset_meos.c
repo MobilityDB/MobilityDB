@@ -384,7 +384,7 @@ minus_set_pcpoint(const Set *s, const Pcpoint *pt)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Transition function for set union aggregate of pcpoint values
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] pt Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -672,7 +672,7 @@ minus_set_pcpatch(const Set *s, const Pcpatch *pa)
 /**
  * @ingroup meos_pointcloud_set_setops
  * @brief Transition function for set union aggregate of pcpatch values
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state, may be `NULL`
  * @param[in] pa Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

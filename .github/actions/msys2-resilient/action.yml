@@ -135,24 +135,30 @@ runs:
         bin="$MSYSTEM_PREFIX/bin"
         repo="https://repo.msys2.org/mingw/${MSYSTEM_PREFIX#/}"
         work=$(mktemp -d)
+        # One awk reads the tables of every DLL and answers the lookup itself: a process
+        # per DLL and a grep per imported function cost minutes on Windows, where every
+        # process start is slow. objdump runs on batches of DLLs, which keeps each
+        # command line under the Windows limit. A DLL name compares without case, as the
+        # loader resolves it.
         scan() {
-          : > "$work/imports"
-          rm -f "$work"/exp.*
-          for f in "$bin"/*.dll; do
-            me=$(basename "$f")
-            : > "$work/exp.$me"
-            objdump -p "$f" | awk -v me="$me" -v w="$work" '
-              /DLL Name:/ { cur = $3; next }
-              /\[Ordinal\/Name Pointer\] Table/ { t = 1; next }
-              t && /^\t\[ *[0-9]+\] / { print $NF >> (w "/exp." me); next }
-              t && /^$/ { t = 0 }
-              cur != "" && /^\t[0-9a-f]+ +<none> +[0-9a-f]+ +[A-Za-z_]/ {
-                print me, cur, $4 >> (w "/imports") }'
-          done
-          while read -r me lib fn; do
-            [ -f "$work/exp.$lib" ] || continue
-            grep -qxF "$fn" "$work/exp.$lib" || echo "$me $lib $fn"
-          done < "$work/imports" | sort -u > "$work/missing"
+          printf '%s\n' "$bin"/*.dll | xargs -d '\n' -n 50 objdump -p | awk '
+            / file format / { me = $1; sub(/:$/, "", me); sub(/.*\//, "", me)
+                              have[tolower(me)] = 1; ndll++; cur = ""; t = 0; next }
+            /DLL Name:/ { cur = $3; next }
+            /\[Ordinal\/Name Pointer\] Table/ { t = 1; next }
+            t && /^\t\[ *[0-9]+\] / { exported[tolower(me) SUBSEP $NF] = 1; next }
+            t && /^$/ { t = 0 }
+            cur != "" && /^\t[0-9a-f]+ +<none> +[0-9a-f]+ +[A-Za-z_]/ {
+              imp[++nimp] = me " " cur " " $4 }
+            END {
+              for (i = 1; i <= nimp; i++) {
+                split(imp[i], a, " ")
+                if (!(tolower(a[2]) in have)) continue
+                within++
+                if (!((tolower(a[2]) SUBSEP a[3]) in exported)) print imp[i]
+              }
+              printf "read %d DLLs: %d imports between them\n", ndll, within > "/dev/stderr"
+            }' | sort -u > "$work/missing"
         }
 
         scan

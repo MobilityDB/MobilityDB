@@ -909,6 +909,8 @@ tagg_state_geom(SkipList *state)
   if (state && state->extra && state->length > 0 &&
       ((Temporal *) skiplist_headval(state))->temptype == T_TPOSE)
     return (const GSERIALIZED *) state->extra;
+#else
+  (void) state;
 #endif /* RGEO */
   return NULL;
 }

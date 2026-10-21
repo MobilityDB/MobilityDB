@@ -2046,7 +2046,7 @@ extern SkipList *tbool_tor_combinefn(SkipList *state1, SkipList *state2);
 extern Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt);
 extern Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq);
 extern Temporal *temporal_append_finalfn(const Temporal *state);
-extern Span *temporal_extent_transfn(Span *s, const Temporal *temp);
+extern Span *temporal_extent_transfn(Span *state, const Temporal *temp);
 extern Temporal *temporal_tagg_finalfn(SkipList *state);
 extern SkipList *temporal_tcount_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *temporal_tcount_combinefn(SkipList *state1, SkipList *state2);
@@ -2068,7 +2068,7 @@ extern SkipList *tint_wmax_transfn(SkipList *state, const Temporal *temp, const 
 extern SkipList *tint_wmin_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern SkipList *tint_wsum_transfn(SkipList *state, const Temporal *temp, const Interval *interv);
 extern TBox *tbox_extent_transfn(TBox *state, const TBox *box);
-extern TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp);
+extern TBox *tnumber_extent_transfn(TBox *state, const Temporal *temp);
 extern Temporal *tnumber_tavg_finalfn(SkipList *state);
 extern SkipList *tnumber_tavg_transfn(SkipList *state, const Temporal *temp);
 extern SkipList *tnumber_tavg_combinefn(SkipList *state1, SkipList *state2);
