@@ -37,24 +37,6 @@
 /*****************************************************************************/
 
 /**
- * Struct for storing the state that persists across multiple calls generating
- * the bin list
- */
-typedef struct SpanBinState
-{
-  bool done;            /**< True when the state is consumed */
-  uint8 basetype;       /**< span basetype */
-  int i;                /**< Current tile number */
-  Datum size;           /**< Size of the values */
-  Datum origin;         /**< Origin of the values */
-  Span span;            /**< Bounding span */
-  const void *to_split; /**< NULL when generating bins, used for splitting
-                         * span sets or temporal values*/
-  Datum value;          /**< Current value */
-  int nbins;            /**< Total number of bins */
-} SpanBinState;
-
-/**
  * @brief Struct for storing the state for tiling operations
  */
 typedef struct TboxGridState
@@ -82,8 +64,9 @@ extern int span_num_bins(const Span *s, Datum size, Datum origin,
 extern Span *span_bins(const Span *s, Datum vsize, Datum vorigin, bool border_inc, int *count);
 extern Span *spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc, int *count);
 
-extern SpanBinState *temporal_time_bin_init(const Temporal *temp,
-  const Interval *duration, TimestampTz torigin, bool border_inc, int *nbins);
+extern Temporal **temporal_time_split_intl(const Temporal *temp,
+  TimestampTz start, TimestampTz end, int64 tunits, TimestampTz torigin,
+  int count, TimestampTz **bins, int *newcount);
 
 extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   const TBox *box, Datum vsize, const Interval *duration, Datum xorigin,

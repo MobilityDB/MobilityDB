@@ -1013,6 +1013,17 @@ SELECT timeSplit(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2
  ("Mon Jan 01 00:00:00 2001 PST","{[""AAA""@Mon Jan 01 00:00:00 2001 PST, ""BBB""@Tue Jan 02 00:00:00 2001 PST, ""AAA""@Wed Jan 03 00:00:00 2001 PST], [""CCC""@Thu Jan 04 00:00:00 2001 PST, ""CCC""@Fri Jan 05 00:00:00 2001 PST]}")
 (1 row)
 
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tf, span((s).time,
+    (s).time + interval '7 minutes')) <> (s).temp)
+  AS fragments_stating_another_value
+FROM (SELECT tfloat '[0.1@2001-01-01, 1000.3@2001-01-03, -77.7@2001-01-09 13:17:19.123]' AS tf) t,
+  LATERAL timeSplit(t.tf, interval '7 minutes', timestamptz '2001-01-01') s;
+ fragments | fragments_stating_another_value 
+-----------+---------------------------------
+      1760 |                               0
+(1 row)
+
 /* Errors */
 SELECT timeSplit(tbool 't@2001-01-01', '-1 week');
 ERROR:  The interval must be positive: -7 days

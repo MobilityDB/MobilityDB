@@ -270,6 +270,15 @@ SELECT timeSplit(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}', '1 we
 SELECT timeSplit(ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]', '1 week');
 SELECT timeSplit(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}', '1 week');
 
+-- Every fragment is the value restricted to its bin, also on segments
+-- crossing many bins
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tf, span((s).time,
+    (s).time + interval '7 minutes')) <> (s).temp)
+  AS fragments_stating_another_value
+FROM (SELECT tfloat '[0.1@2001-01-01, 1000.3@2001-01-03, -77.7@2001-01-09 13:17:19.123]' AS tf) t,
+  LATERAL timeSplit(t.tf, interval '7 minutes', timestamptz '2001-01-01') s;
+
 /* Errors */
 SELECT timeSplit(tbool 't@2001-01-01', '-1 week');
 
