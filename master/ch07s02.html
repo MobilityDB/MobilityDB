@@ -177,7 +177,15 @@ SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
 -- SRID=3857;POINT(484239.78 6594803.23)
 SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
 -- ERROR:  Only lon/lat coordinate systems are supported
-</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5903"></a><a class="indexterm" name="id5906"></a><a class="indexterm" name="id5909"></a><a class="indexterm" name="id5912"></a><p>Return the clusters of an array of geometries</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_segmentize"></a><a class="indexterm" name="id5903"></a><p>Densify a geometry or a geography so that no segment is longer than a distance</p><pre class="programlisting">
+segmentize(geometry,float) → geometry
+segmentize(geography,float) → geography
+</pre><p>A geometry is densified in the plane, the distance in the units of its spatial reference system, and a geography on the sphere, the distance in meters, as the PostGIS function <code class="varname">ST_Segmentize</code> densifies them. A point, a multipoint and an empty value are returned unchanged, and so are a triangle, a TIN and a polyhedral surface. A distance that is not positive is refused.</p><pre class="programlisting">
+SELECT ST_AsText(segmentize(geometry 'Linestring(0 0,3 0)', 1));
+-- LINESTRING(0 0,1 0,2 0,3 0)
+SELECT asText(segmentize(geography 'Linestring(4.35 50.85,2.35 48.85)', 100000), 4);
+-- LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,2.8347 49.3532,2.35 48.85)
+</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5912"></a><a class="indexterm" name="id5915"></a><a class="indexterm" name="id5918"></a><a class="indexterm" name="id5921"></a><p>Return the clusters of an array of geometries</p><pre class="programlisting">
 clusterKMeans(geometry[],k integer) → integer[]
 clusterDBSCAN(geometry[],eps float,minpoints integer) → integer[]
 clusterIntersecting(geometry[]) → geometry[]
@@ -192,7 +200,7 @@ SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometr
 SELECT array_length(clusterWithin(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
   geometry 'Point(11 10)', geometry 'Point(30 30)'], 2), 1);
 -- 3
-</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5930"></a><p>Return the region two geometries share</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5939"></a><p>Return the region two geometries share</p><pre class="programlisting">
 intersection(geometry,geometry) → geometry
 </pre><p>The four Boolean operations of this section answer over the (multi)polygons the temporal types whose values are regions carry, and each takes the name of the PostGIS function it answers for without the <code class="varname">ST_</code> prefix, so a query reaches this engine by dropping the prefix and PostGIS by keeping it. They are planar and two-dimensional: a geography, a Z dimension and a geometry that is not a (multi)polygon are refused. An empty result is answered as <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -204,13 +212,13 @@ SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5940"></a><p>Return the region two geometries cover together</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5949"></a><p>Return the region two geometries cover together</p><pre class="programlisting">
 geoUnion(geometry,geometry) → geometry
 </pre><p><code class="varname">UNION</code> is a reserved word of SQL, so this one carries the name of the type it answers over, as <code class="varname">setUnion</code> and <code class="varname">spanUnion</code> do. Two geometries that do not meet are answered as a multipolygon.</p><pre class="programlisting">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
-</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5951"></a><p>Return the region of the first geometry that the second does not cover</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5960"></a><p>Return the region of the first geometry that the second does not cover</p><pre class="programlisting">
 difference(geometry,geometry) → geometry
 </pre><p>A second geometry lying inside the first leaves a hole rather than dividing it.</p><pre class="programlisting">
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -219,7 +227,7 @@ SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
 -- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
-</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5959"></a><p>Return the region exactly one of two geometries covers</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5968"></a><p>Return the region exactly one of two geometries covers</p><pre class="programlisting">
 symDifference(geometry,geometry) → geometry
 </pre><p>It is the union of the two geometries less the region they share, so a geometry against itself is answered as <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',

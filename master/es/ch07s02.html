@@ -177,7 +177,15 @@ SELECT asEWKT(transform(geometry 'SRID=4326;Point(4.35 50.85)', 3857), 2);
 -- SRID=3857;POINT(484239.78 6594803.23)
 SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
 -- ERROR:  Only lon/lat coordinate systems are supported
-</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5330"></a><a class="indexterm" name="id5333"></a><a class="indexterm" name="id5336"></a><a class="indexterm" name="id5339"></a><p>Devuelve los grupos de un arreglo de geometrías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_segmentize"></a><a class="indexterm" name="id5330"></a><p>Densifica una geometría o una geografía de modo que ningún segmento sea más largo que una distancia</p><pre class="programlisting">
+segmentize(geometry,float) → geometry
+segmentize(geography,float) → geography
+</pre><p>Una geometría se densifica en el plano, la distancia en las unidades de su sistema de referencia espacial, y una geografía sobre la esfera, la distancia en metros, como las densifica la función de PostGIS <code class="varname">ST_Segmentize</code>. Un punto, un multipunto y un valor vacío se devuelven sin cambios, al igual que un triángulo, un TIN y una superficie poliédrica. Una distancia que no es positiva se rechaza.</p><pre class="programlisting">
+SELECT ST_AsText(segmentize(geometry 'Linestring(0 0,3 0)', 1));
+-- LINESTRING(0 0,1 0,2 0,3 0)
+SELECT asText(segmentize(geography 'Linestring(4.35 50.85,2.35 48.85)', 100000), 4);
+-- LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,2.8347 49.3532,2.35 48.85)
+</pre></li><li class="listitem"><a name="geo_clustering"></a><a class="indexterm" name="id5339"></a><a class="indexterm" name="id5342"></a><a class="indexterm" name="id5345"></a><a class="indexterm" name="id5348"></a><p>Devuelve los grupos de un arreglo de geometrías</p><pre class="programlisting">
 clusterKMeans(geometry[],k integer) → integer[]
 clusterDBSCAN(geometry[],eps float,minpoints integer) → integer[]
 clusterIntersecting(geometry[]) → geometry[]
@@ -192,7 +200,7 @@ SELECT clusterDBSCAN(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometr
 SELECT array_length(clusterWithin(ARRAY[geometry 'Point(0 0)', geometry 'Point(1 0)', geometry 'Point(10 10)',
   geometry 'Point(11 10)', geometry 'Point(30 30)'], 2), 1);
 -- 3
-</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5357"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_intersection"></a><a class="indexterm" name="id5366"></a><p>Devuelve la región que dos geometrías comparten</p><pre class="programlisting">
 intersection(geometry,geometry) → geometry
 </pre><p>Las cuatro operaciones booleanas de esta sección responden sobre los (multi)polígonos que llevan los tipos temporales cuyos valores son regiones, y cada una toma el nombre de la función de PostGIS para la que responde sin el prefijo <code class="varname">ST_</code>, de modo que una consulta alcanza este motor quitando el prefijo y PostGIS conservándolo. Son planas y bidimensionales: se rechazan una geografía, una dimensión Z y una geometría que no sea un (multi)polígono. Un resultado vacío se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -204,13 +212,13 @@ SELECT ST_AsText(intersection(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT intersection(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))',
   geometry 'Polygon((10 10,10 11,11 11,11 10,10 10))') IS NULL;
 -- true
-</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5367"></a><p>Devuelve la región que dos geometrías cubren en conjunto</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_geounion"></a><a class="indexterm" name="id5376"></a><p>Devuelve la región que dos geometrías cubren en conjunto</p><pre class="programlisting">
 geoUnion(geometry,geometry) → geometry
 </pre><p><code class="varname">UNION</code> es una palabra reservada de SQL, por lo que esta lleva el nombre del tipo sobre el que responde, como hacen <code class="varname">setUnion</code> y <code class="varname">spanUnion</code>. Dos geometrías que no se tocan se responden como un multipolígono.</p><pre class="programlisting">
 SELECT ST_AsText(geoUnion(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((3 3,3 7,7 7,7 3,3 3))'));
 -- POLYGON((5 1,1 1,1 5,3 5,3 7,7 7,7 3,5 3,5 1))
-</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5378"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_difference"></a><a class="indexterm" name="id5387"></a><p>Devuelve la región de la primera geometría que la segunda no cubre</p><pre class="programlisting">
 difference(geometry,geometry) → geometry
 </pre><p>Una segunda geometría situada dentro de la primera deja un agujero en lugar de dividirla.</p><pre class="programlisting">
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
@@ -219,7 +227,7 @@ SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
 SELECT ST_AsText(difference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
   geometry 'Polygon((2 2,2 4,4 4,4 2,2 2))'));
 -- POLYGON((5 1,1 1,1 5,5 5,5 1),(2 4,2 2,4 2,4 4,2 4))
-</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5386"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="geo_symdifference"></a><a class="indexterm" name="id5395"></a><p>Devuelve la región que cubre exactamente una de dos geometrías</p><pre class="programlisting">
 symDifference(geometry,geometry) → geometry
 </pre><p>Es la unión de las dos geometrías menos la región que comparten, por lo que una geometría contra sí misma se responde como <code class="varname">NULL</code>.</p><pre class="programlisting">
 SELECT ST_AsText(symDifference(geometry 'Polygon((1 1,1 5,5 5,5 1,1 1))',
