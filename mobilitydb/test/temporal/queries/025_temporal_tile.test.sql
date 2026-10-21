@@ -37,6 +37,9 @@ SELECT bins(intspan '[15, 25]', 2);
 
 SELECT bins(bigintspan '[1, 10]', 2) LIMIT 3;
 SELECT bins(bigintspan '[1, 10]', 2, 1) LIMIT 3;
+SELECT pg_typeof(bins(bigintspan '[1, 10]', 3));
+SELECT pg_typeof(b), b FROM unnest(bins(bigintspan '[1, 10]', 3)) AS b;
+SELECT b @> 5000000001::bigint FROM unnest(bins(bigintspan '[5000000000, 5000000010]', 4)) AS b;
 
 SELECT bins(floatspan '(1, 10)', 2.5) LIMIT 3;
 SELECT bins(floatspan '(1, 10)', 2.5, 1.5) LIMIT 3;
@@ -49,6 +52,9 @@ SELECT bins(tstzspan '[2001-01-01, 2001-01-10]', '1 week', '2001-01-01') LIMIT 3
 
 /* Errors */
 SELECT bins(datespan '[2001-01-01, 2001-01-10]', '-1 week') LIMIT 3;
+SELECT bins(intspan '[1, 10]', 0);
+SELECT bins(bigintspan '[1, 10]', 0::bigint);
+SELECT bins(floatspan '(1, 10)', 0.0);
 
 SELECT getBin(3, 2);
 SELECT getBin(3, 2, 1);
@@ -76,6 +82,9 @@ SELECT getBin('2020-01-01', '1 month', timestamptz '2001-06-01');
 SELECT bins(intspanset '{[1, 10]}', 2) LIMIT 3;
 SELECT bins(intspanset '{[1, 10]}', 2, 1) LIMIT 3;
 
+SELECT pg_typeof(bins(bigintspanset '{[1, 10]}', 3));
+SELECT pg_typeof(b), b FROM unnest(bins(bigintspanset '{[1, 3], [7, 10]}', 3)) AS b;
+
 SELECT bins(floatspanset '{(1, 10)}', 2.5) LIMIT 3;
 SELECT bins(floatspanset '{(1, 10)}', 2.5, 1.5) LIMIT 3;
 
@@ -84,6 +93,9 @@ SELECT bins(datespanset '{[2001-01-01, 2001-01-10]}', '1 week', '2020-06-15') LI
 
 SELECT bins(tstzspanset '{[2001-01-01, 2001-01-10]}', '1 week') LIMIT 3;
 SELECT bins(tstzspanset '{[2001-01-01, 2001-01-10]}', '1 week', '2020-06-15') LIMIT 3;
+/* Errors */
+SELECT bins(intspanset '{[1, 10]}', 0);
+SELECT bins(floatspanset '{(1, 10)}', 0.0);
 
 -------------------------------------------------------------------------------
 
@@ -313,6 +325,9 @@ SELECT b, (valueTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0,
   FROM (VALUES (true), (false)) t(b);
 SELECT b, (timeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', duration := '1 day', torigin := '2001-09-01', borderInc := b)).*
   FROM (VALUES (true), (false)) t(b);
+SELECT (timeTiles(tbox 'TBOXFLOAT XT((1, 5),[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+SELECT (timeTiles(tbox 'TBOXINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
+SELECT (timeTiles(tbox 'TBOXBIGINT XT([1, 5],[2001-09-01, 2001-09-02])', '1 day', '2001-09-01')).*;
 SELECT b, COUNT(*) FROM (VALUES (true), (false)) t(b),
   valueTimeTiles(tbox 'TBOXFLOAT XT([1, 5],[2001-09-01, 2001-09-03])', 2.0, '1 day', 1.0,
     '2001-09-01', b) GROUP BY b ORDER BY b DESC;

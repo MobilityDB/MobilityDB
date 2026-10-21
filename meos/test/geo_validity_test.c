@@ -174,6 +174,24 @@ int main(void)
   assert(meos_errno() == 0);
   free(inst); free(seq); free(point); free(period);
 
+  /* A geometry cannot vary linearly between samples, so a temporal geometry
+   * built over a span set with linear interpolation is refused for every
+   * span and nothing is constructed */
+  GSERIALIZED *geo = geom_in("LINESTRING(1 1,2 2)", -1);
+  SpanSet *periods = tstzspanset_in("{[2001-01-01, 2001-01-02], "
+    "[2001-01-03, 2001-01-04]}");
+  TSequenceSet *seqset = tgeoseqset_from_base_tstzspanset(geo, periods,
+    LINEAR);
+  printf("tgeoseqset_from_base_tstzspanset(LINESTRING, ..., LINEAR): %s, "
+    "errno %d\n", seqset ? "a value" : "NULL", meos_errno());
+  assert(seqset == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  seqset = tgeoseqset_from_base_tstzspanset(geo, periods, STEP);
+  assert(seqset != NULL);
+  assert(meos_errno() == 0);
+  free(seqset); free(periods); free(geo);
+
   /* The elevation restriction reads the Z coordinate of a point, so it
    * refuses a temporal geometry whose values are polygons, and restricts a
    * temporal point */

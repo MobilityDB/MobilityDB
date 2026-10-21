@@ -354,6 +354,22 @@ SELECT asEWKT(transform(geography 'Point(4.35 50.85)', 3857));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_segmentize">
+				<indexterm significance="normal"><primary><varname>segmentize</varname></primary></indexterm>
+				<para>Densify a geometry or a geography so that no segment is longer than a distance</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+segmentize(geometry,float) → geometry
+segmentize(geography,float) → geography
+</programlisting>
+				<para>A geometry is densified in the plane, the distance in the units of its spatial reference system, and a geography on the sphere, the distance in meters, as the PostGIS function <varname>ST_Segmentize</varname> densifies them. A point, a multipoint and an empty value are returned unchanged, and so are a triangle, a TIN and a polyhedral surface. A distance that is not positive is refused.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(segmentize(geometry 'Linestring(0 0,3 0)', 1));
+-- LINESTRING(0 0,1 0,2 0,3 0)
+SELECT asText(segmentize(geography 'Linestring(4.35 50.85,2.35 48.85)', 100000), 4);
+-- LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,2.8347 49.3532,2.35 48.85)
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="geo_clustering">
 				<indexterm significance="normal"><primary><varname>clusterKMeans</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>clusterDBSCAN</varname></primary></indexterm>

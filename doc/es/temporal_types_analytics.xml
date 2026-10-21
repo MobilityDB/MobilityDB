@@ -662,7 +662,7 @@ timeTiles(tbox,duration interval,torigin timestamptz='2000-01-03',
 valueTimeTiles(tbox,vsize number,duration interval,vorigin number=0,
   torigin timestamptz='2000-01-03',borderInc boolean=true) → {(index,tile)}
 </programlisting>
-					<para>El resultado es un conjunto de pares <varname>(index,tile)</varname>. Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente. El tamaño y el origen de los valores tienen el tipo base de los valores de la caja, y una caja de flotantes también acepta valores enteros. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la caja y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
+					<para>El resultado es un conjunto de pares <varname>(index,tile)</varname>. Si el origen de la dimensión de valores y/o de tiempo no se especifica, su valor se establece por defecto en 0 y en el lunes 3 de enero de 2000, respectivamente. El tamaño y el origen de los valores tienen el tipo base de los valores de la caja, y una caja de flotantes también acepta valores enteros. Los mosaicos de tiempo de una caja con dimensión de valores conservan el intervalo de valores de la caja, con sus límites. El argumento opcional <varname>borderInc</varname> indica si se incluye el borde superior de la caja y, por lo tanto, se generan mosaicos adicionales que contienen el borde.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT (gr).index, (gr).tile
 FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS gr) t;
@@ -672,9 +672,9 @@ FROM (SELECT valueTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, 2.0) AS g
 -- ...
 SELECT (gr).index, (gr).tile
 FROM (SELECT timeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox, '2 days') AS gr) t;
--- 1 | TBOX T([2001-01-15, 2001-01-17))
--- 2 | TBOX T([2001-01-17, 2001-01-19))
--- 3 | TBOX T([2001-01-19, 2001-01-21))
+-- 1 | TBOXFLOAT XT([15, 25],[2001-01-15, 2001-01-17))
+-- 2 | TBOXFLOAT XT([15, 25],[2001-01-17, 2001-01-19))
+-- 3 | TBOXFLOAT XT([15, 25],[2001-01-19, 2001-01-21))
 -- ...
 SELECT (gr).index,
   (gr).tile FROM (SELECT valueTimeTiles(tfloat '[15@2001-01-15, 25@2001-01-25]'::tbox,

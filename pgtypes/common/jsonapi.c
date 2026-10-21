@@ -1322,8 +1322,6 @@ parse_object_field(JsonLexContext *lex, const JsonSemAction *sem)
     fname = STRDUP(lex->strval->data);
     if (fname == NULL)
       return JSON_OUT_OF_MEMORY;
-    /* Add fname to the values that need to be freed */
-    json_add_tofree((void *) fname);
   }
   result = json_lex(lex);
   if (result != JSON_SUCCESS)
@@ -1338,6 +1336,12 @@ parse_object_field(JsonLexContext *lex, const JsonSemAction *sem)
     FREE(fname);
     return result;
   }
+
+  /* MEOS: the list of values freed after the parse owns fname from here on,
+   * where the callbacks may keep it. A field name the two exits above free
+   * is never in that list, which json_reset_tofree() would free again. */
+  if (fname)
+    json_add_tofree((void *) fname);
 
   tok = lex_peek(lex);
   isnull = tok == JSON_TOKEN_NULL;

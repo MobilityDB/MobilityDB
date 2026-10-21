@@ -2977,6 +2977,9 @@ stbox_ne(const STBox *box1, const STBox *box2)
  * box is less than, equal to, or greater than the second one
  * @param[in] box1,box2 Spatiotemporal boxes
  * @errval INT_MAX
+ * @note The SRID is compared first, then the flags stating the dimensions
+ * and whether the box is geodetic, then the time dimension, and finally the
+ * space dimension, so that boxes of different dimensions are totally ordered
  * @csqlfn #Stbox_cmp()
  */
 int
@@ -2991,9 +2994,16 @@ stbox_cmp(const STBox *box1, const STBox *box2)
   if (box1->srid > box2->srid)
     return 1;
 
-  bool hasx, hasz, hast, geodetic;
-  stbox_stbox_flags(box1, box2, &hasx, &hasz, &hast, &geodetic);
-  if (hast)
+  /* Compare the flags, so that the dimensions read below are those of both
+   * boxes */
+  if (box1->flags < box2->flags)
+    return -1;
+  if (box1->flags > box2->flags)
+    return 1;
+
+  bool hasx = MEOS_FLAGS_GET_X(box1->flags);
+  bool hasz = MEOS_FLAGS_GET_Z(box1->flags);
+  if (MEOS_FLAGS_GET_T(box1->flags))
   {
     int cmp = span_cmp(&box1->period, &box2->period);
     /* Compare the box minima */
@@ -3035,11 +3045,6 @@ stbox_cmp(const STBox *box1, const STBox *box2)
         return 1;
     }
   }
-  /* Finally compare the flags */
-  if (box1->flags < box2->flags)
-    return -1;
-  if (box1->flags > box2->flags)
-    return 1;
   /* The two boxes are equal */
   return 0;
 }

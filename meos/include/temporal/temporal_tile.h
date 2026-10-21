@@ -61,7 +61,9 @@ typedef struct TboxGridState
 {
   bool done;            /**< True when the state is consumed */
   int i;                /**< Current tile number */
-  Datum vsize;          /**< Value size */
+  bool valuegrid;       /**< True when a grid divides the value dimension */
+  Datum vsize;          /**< Value size, 0 when the value dimension is not
+                         * divided */
   int64 tunits;         /**< Time size */
   TBox box;             /**< Bounding box */
   const Temporal *temp; /**< Optional temporal number to be split */
