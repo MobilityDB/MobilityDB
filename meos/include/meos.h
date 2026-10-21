@@ -1066,9 +1066,17 @@ extern bool right_text_set(const text *txt, const Set *s);
  *****************************************************************************/
 
 extern Set *intersection_bigint_set(int64 i, const Set *s);
+extern Span *intersection_bigint_span(int64 i, const Span *s);
+extern SpanSet *intersection_bigint_spanset(int64 i, const SpanSet *ss);
 extern Set *intersection_date_set(DateADT d, const Set *s);
+extern Span *intersection_date_span(DateADT d, const Span *s);
+extern SpanSet *intersection_date_spanset(DateADT d, const SpanSet *ss);
 extern Set *intersection_float_set(double d, const Set *s);
+extern Span *intersection_float_span(double d, const Span *s);
+extern SpanSet *intersection_float_spanset(double d, const SpanSet *ss);
 extern Set *intersection_int_set(int i, const Set *s);
+extern Span *intersection_int_span(int i, const Span *s);
+extern SpanSet *intersection_int_spanset(int i, const SpanSet *ss);
 extern Set *intersection_set_bigint(const Set *s, int64 i);
 extern Set *intersection_set_date(const Set *s, DateADT d);
 extern Set *intersection_set_float(const Set *s, double d);
@@ -1092,6 +1100,8 @@ extern SpanSet *intersection_spanset_spanset(const SpanSet *ss1, const SpanSet *
 extern SpanSet *intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t);
 extern Set *intersection_text_set(const text *txt, const Set *s);
 extern Set *intersection_timestamptz_set(TimestampTz t, const Set *s);
+extern Span *intersection_timestamptz_span(TimestampTz t, const Span *s);
+extern SpanSet *intersection_timestamptz_spanset(TimestampTz t, const SpanSet *ss);
 extern Set *minus_bigint_set(int64 i, const Set *s);
 extern SpanSet *minus_bigint_span(int64 i, const Span *s);
 extern SpanSet *minus_bigint_spanset(int64 i, const SpanSet *ss);

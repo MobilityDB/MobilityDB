@@ -1125,6 +1125,19 @@ intersection_spanset_int(const SpanSet *ss, int i)
 
 /**
  * @ingroup meos_setspan_set
+ * @brief Return the intersection of an integer and a span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Intersection_value_spanset()
+ */
+SpanSet *
+intersection_int_spanset(int i, const SpanSet *ss)
+{
+  return intersection_spanset_int(ss, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span set and a big integer
  * @param[in] ss Span set
  * @param[in] i Value
@@ -1136,6 +1149,19 @@ intersection_spanset_bigint(const SpanSet *ss, int64 i)
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPANSET(ss, NULL);
   return intersection_spanset_value(ss, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a big integer and a span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Intersection_value_spanset()
+ */
+SpanSet *
+intersection_bigint_spanset(int64 i, const SpanSet *ss)
+{
+  return intersection_spanset_bigint(ss, i);
 }
 
 /**
@@ -1155,6 +1181,19 @@ intersection_spanset_float(const SpanSet *ss, double d)
 
 /**
  * @ingroup meos_setspan_set
+ * @brief Return the intersection of a float and a span set
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Intersection_value_spanset()
+ */
+SpanSet *
+intersection_float_spanset(double d, const SpanSet *ss)
+{
+  return intersection_spanset_float(ss, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span set and a date
  * @param[in] ss Span set
  * @param[in] d Value
@@ -1170,6 +1209,19 @@ intersection_spanset_date(const SpanSet *ss, DateADT d)
 
 /**
  * @ingroup meos_setspan_set
+ * @brief Return the intersection of a date and a span set
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @csqlfn #Intersection_value_spanset()
+ */
+SpanSet *
+intersection_date_spanset(DateADT d, const SpanSet *ss)
+{
+  return intersection_spanset_date(ss, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span set and a timestamptz
  * @param[in] ss Span set
  * @param[in] t Value
@@ -1181,6 +1233,19 @@ intersection_spanset_timestamptz(const SpanSet *ss, TimestampTz t)
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
   return intersection_spanset_value(ss, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a timestamptz and a span set
+ * @param[in] t Value
+ * @param[in] ss Span set
+ * @csqlfn #Intersection_value_spanset()
+ */
+SpanSet *
+intersection_timestamptz_spanset(TimestampTz t, const SpanSet *ss)
+{
+  return intersection_spanset_timestamptz(ss, t);
 }
 
 /*****************************************************************************
