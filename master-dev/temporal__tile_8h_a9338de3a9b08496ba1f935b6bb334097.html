@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: temporal_time_bin_init</title>
+<title>MobilityDB: temporal_time_split_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,7 +83,6 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ad6a56f9814cb3cadec1ec7f871e54500.html#ad6a56f9814cb3cadec1ec7f871e54500">interval_units</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__bin_ga7995d8d2c74f20c3629959bd11b38cda.html#ga7995d8d2c74f20c3629959bd11b38cda">span_bins</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ac96b0b8b6d9559862841343cd769c261.html#ac96b0b8b6d9559862841343cd769c261">span_num_bins</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a9071c4f5008bf99bdddb32174095b44a.html#a9071c4f5008bf99bdddb32174095b44a">SpanBinState</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__setspan__bin_ga3628d13390b32ac5374f6996374bb92c.html#ga3628d13390b32ac5374f6996374bb92c">spanset_bins</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a0843b1df1d8c1a87a7baea7c8be064ad.html#a0843b1df1d8c1a87a7baea7c8be064ad">tbox_tile_state_get</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a18dae57ec10aa3b2198927a7117f39a4.html#a18dae57ec10aa3b2198927a7117f39a4">tbox_tile_state_make</a></td></tr>
@@ -91,21 +90,21 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a18897c0fd2fa3f4d287d1af830e0d366.html#a18897c0fd2fa3f4d287d1af830e0d366">tbox_tile_state_set</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a5ceef19ccf484999b950331f86b2eb81.html#a5ceef19ccf484999b950331f86b2eb81">tbox_value_time_tile_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ac535cd7c14f21ac0c5784dd467856e5d.html#ac535cd7c14f21ac0c5784dd467856e5d">TboxGridState</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile_8h_a0b653046a6b52b2a7dfcbce9ed8895e9.html#a0b653046a6b52b2a7dfcbce9ed8895e9">temporal_time_bin_init</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__tile_8h_a9338de3a9b08496ba1f935b6bb334097.html#a9338de3a9b08496ba1f935b6bb334097">temporal_time_split_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_ab6bbe0feb62d5ebd2e055714a4a016f5.html#ab6bbe0feb62d5ebd2e055714a4a016f5">timestamptz_bin_start</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__tile_8h_a158ce0cb51d7c9dd5b4fa7e22d4d4b16.html#a158ce0cb51d7c9dd5b4fa7e22d4d4b16">tnumber_value_time_tile_init</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a0b653046a6b52b2a7dfcbce9ed8895e9" name="a0b653046a6b52b2a7dfcbce9ed8895e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b653046a6b52b2a7dfcbce9ed8895e9">&#9670;&#160;</a></span>temporal_time_bin_init()</h2>
+<a id="a9338de3a9b08496ba1f935b6bb334097" name="a9338de3a9b08496ba1f935b6bb334097"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9338de3a9b08496ba1f935b6bb334097">&#9670;&#160;</a></span>temporal_time_split_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structSpanBinState.html">SpanBinState</a> * temporal_time_bin_init </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** temporal_time_split_intl </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -113,8 +112,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structInterval.html">Interval</a> *&#160;</td>
-          <td class="paramname"><em>duration</em>, </td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>start</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz&#160;</td>
+          <td class="paramname"><em>end</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int64&#160;</td>
+          <td class="paramname"><em>tunits</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -125,14 +136,20 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>border_inc</em>, </td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">TimestampTz **&#160;</td>
+          <td class="paramname"><em>bins</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int *&#160;</td>
-          <td class="paramname"><em>nbins</em>&#160;</td>
+          <td class="paramname"><em>newcount</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -142,14 +159,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the state with a temporal value and a time bin for splitting or obtaining a set of spans. </p>
+<p>Return the fragments of a temporal value split according to time bins. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the grid contains the upper border of the extent </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">nbins</td><td>Number of bins </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start,end</td><td>Start and end timestamps of the bins </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tunits</td><td>Size of the time bins in PostgreSQL time units </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Time origin of the tiles </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of bins </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">bins</td><td>Start timestamp of the bins containing a fragment </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">newcount</td><td>Number of values in the output array </td></tr>
   </table>
   </dd>
 </dl>
