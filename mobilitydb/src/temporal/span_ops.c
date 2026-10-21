@@ -519,7 +519,7 @@ PG_FUNCTION_INFO_V1(Minus_value_span);
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a value and a span
  * @sqlfn span_intersection()
- * @sqlop @p *
+ * @sqlop @p -
  */
 Datum
 Minus_value_span(PG_FUNCTION_ARGS)
@@ -538,7 +538,7 @@ PG_FUNCTION_INFO_V1(Minus_span_value);
  * @ingroup mobilitydb_setspan_set
  * @brief Return the difference of a span and a value
  * @sqlfn span_intersection()
- * @sqlop @p *
+ * @sqlop @p -
  */
 Datum
 Minus_span_value(PG_FUNCTION_ARGS)

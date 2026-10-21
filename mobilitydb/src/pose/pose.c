@@ -401,7 +401,6 @@ PG_FUNCTION_INFO_V1(Pose_timestamptz_to_stbox);
  * @ingroup mobilitydb_pose_base_box
  * @brief Construct a spatiotemporal box from a pose and a timestamptz
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Pose_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -417,7 +416,6 @@ PG_FUNCTION_INFO_V1(Pose_tstzspan_to_stbox);
  * @ingroup mobilitydb_pose_base_box
  * @brief Construct a spatiotemporal box from a pose and a timestamptz span
  * @sqlfn stbox()
- * @sqlop @p
  */
 Datum
 Pose_tstzspan_to_stbox(PG_FUNCTION_ARGS)
