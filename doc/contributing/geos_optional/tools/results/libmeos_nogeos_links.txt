@@ -1,0 +1,20 @@
+# readelf -d libmeos.so | grep NEEDED
+ 0x0000000000000001 (NEEDED)             Shared library: [libjson-c.so.5]
+ 0x0000000000000001 (NEEDED)             Shared library: [libproj.so.25]
+ 0x0000000000000001 (NEEDED)             Shared library: [libgdal.so.34]
+ 0x0000000000000001 (NEEDED)             Shared library: [libxml2.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [libz.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libstdc++.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-x86-64.so.2]
+# nm -D --undefined-only libmeos.so | grep -ci geos
+0
+# ldd libmeos.so | grep -i 'geos|gdal'
+	libgdal.so.34 => /lib/x86_64-linux-gnu/libgdal.so.34 (0x00007f50991f5000)
+	libgeos_c.so.1 => /lib/x86_64-linux-gnu/libgeos_c.so.1 (0x00007f5095d9f000)
+	libgeos.so.3.12.1 => /lib/x86_64-linux-gnu/libgeos.so.3.12.1 (0x00007f5092d92000)
+# ldd of that libgdal | grep -i geos
+	libgeos_c.so.1 => /lib/x86_64-linux-gnu/libgeos_c.so.1 (0x00007fc13526b000)
+	libgeos.so.3.12.1 => /lib/x86_64-linux-gnu/libgeos.so.3.12.1 (0x00007fc131b4c000)

@@ -1,0 +1,17 @@
+  other         tgeo_traversed_area        [Point(0 0)@2000-01-01, Point(4 4)@2000-01-02]: The temporal value must be a temporal geometry or geography
+  other         tgeo_minus_geom            tgeompoint seq with POLYHEDRAL: NULL, no error
+  other         tgeo_traversed_area        {[Point(0 0)@2000-01-01, Point(4 4)@2000-01-02], [Point(4 0)@2000-01-03, Point(0 4)@2000-01-04]}: The temporal value must be a temporal geometry or geography
+  other         tgeo_minus_geom            tgeompoint seqset with POLYHEDRAL: NULL, no error
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a MULTIPOLYGON value
+  REACHES GEOS  tgeo_at_geom               tgeometry with a MULTIPOLYGON value, with GC(POINT,MULTIPOLYGON)
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a MULTISURFACE value
+  REACHES GEOS  tgeo_at_geom               tgeometry with a MULTISURFACE value, with GC(POINT,MULTIPOLYGON)
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a TIN value
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a POLYHEDRAL value
+  REACHES GEOS  tgeo_at_geom               tgeometry with a POLYHEDRAL value, with GC(POINT,MULTIPOLYGON)
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a GC(POINT,MULTIPOLYGON) value
+  REACHES GEOS  tgeo_at_geom               tgeometry with a GC(POINT,MULTIPOLYGON) value, with GC(POINT,MULTIPOLYGON)
+  REACHES GEOS  tgeo_traversed_area        tgeometry with a GC(LINE,POLYGON) value
+  REACHES GEOS  tgeo_at_geom               tgeometry with a GC(LINE,POLYGON) value, with GC(POINT,MULTIPOLYGON)
+
+calls answered 322, reaching GEOS 11, other outcomes 4

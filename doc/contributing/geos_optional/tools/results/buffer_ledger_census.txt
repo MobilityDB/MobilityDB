@@ -1,0 +1,11 @@
+# buffer ledger census (generator gen_ledger.py, scorer score_ledger.py, kept outside the tree)
+# parent of the repair, 5113541449:
+BUFFER LEDGER CENSUS   1840 queries, 1644 answered, 196 declined
+T    ALL           460      64       63       1       1
+S    ALL           368     113       91      15      46
+C    ALL           880     120       76       0      44
+# with the frame, 289dcbb8d3:
+BUFFER LEDGER CENSUS   1840 queries, 1680 answered, 160 declined
+T    ALL           460      40       40       0       0
+S    ALL           368      32       32       0       0
+C    ALL           880     124       80       0      44

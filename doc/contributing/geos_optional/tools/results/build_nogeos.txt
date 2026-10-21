@@ -1,0 +1,9 @@
+# configure: cmake -S . -B build-nogeos -DMEOS=ON -DALL=ON -DGEOS=OFF -DCMAKE_BUILD_TYPE=Release
+-- Excluding the GEOS library
+-- POSTGIS_GEOS_VERSION: 0
+-- GDAL version '3.8.4' found (required by RASTER)
+# lines containing 'warning:' in the build log
+0
+# last lines of the build log
+[100%] Built target trgeo_distwalk_rand_unit
+exit=0

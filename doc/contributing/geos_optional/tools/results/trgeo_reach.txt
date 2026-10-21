@@ -1,0 +1,8 @@
+Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]
+  trgeometry_traversed_area    answered
+  trgeometry_convex_hull       answered
+MultiPolygon(((0 0,1 0,1 1,0 1,0 0)),((2 2,3 2,3 3,2 3,2 2)));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]
+  UNREADABLE: Only polygon or polyhedral surface geometries accepted
+PolyhedralSurface Z(((0 0 0,1 0 0,1 1 0,0 1 0,0 0 0)),((0 0 0,0 1 0,0 1 1,0 0 1,0 0 0)));[Pose(Point Z(0 0 0),0,0,0,1)@2001-01-01, Pose(Point Z(4 0 0),0,0,0,1)@2001-01-05]
+  trgeometry_traversed_area    REACHES GEOS: The unary union asked for on a precision grid, and the one of a geomet
+  trgeometry_convex_hull       answered
