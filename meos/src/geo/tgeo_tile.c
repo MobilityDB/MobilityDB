@@ -888,7 +888,7 @@ stbox_space_time_tile(const GSERIALIZED *point, TimestampTz t,
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
- * @csqlfn Stbox_get_space_time_tile()
+ * @csqlfn #Stbox_get_space_time_tile()
  */
 inline STBox *
 stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
@@ -905,7 +905,7 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
  * @param[in] point Point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] sorigin Origin for the space dimension
- * @csqlfn Stbox_get_space_tile()
+ * @csqlfn #Stbox_get_space_tile()
  */
 inline STBox *
 stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
@@ -921,7 +921,7 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
  * @param[in] t Timestamp
  * @param[in] duration Size of the time dimension as an interval
  * @param[in] torigin Origin for the time dimension
- * @csqlfn Stbox_get_time_tile()
+ * @csqlfn #Stbox_get_time_tile()
  */
 inline STBox *
 stbox_get_time_tile(TimestampTz t, const Interval *duration,
@@ -937,6 +937,7 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_geo_bbox_split
  * @brief Return the spatiotemporal boxes of a temporal point split with
  * respect to a space and possibly a time grid
  * @param[in] temp Temporal point
@@ -948,7 +949,7 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
- * @csqlfn #Tgeo_space_time_boxes_common
+ * @csqlfn #Tgeo_space_time_boxes(), #Tgeo_time_boxes()
  */
 STBox *
 tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
@@ -1033,6 +1034,7 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
  * @param[out] count Number of elements in the output array
+ * @csqlfn #Tgeo_space_boxes()
  */
 inline STBox *
 tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
@@ -1362,6 +1364,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * @note This function in MEOS corresponds to the MobilityDB function
  * #Tgeo_space_time_split_common. Note that the test for the validity of the
  * arguments is done in #tgeo_space_time_tile_init
+ * @csqlfn #Tgeo_space_time_split()
  */
 Temporal **
 tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
@@ -1455,6 +1458,7 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * the upper border is assumed as outside of the box.
  * @param[out] space_bins Array of space bins
  * @param[out] count Number of elements in the output arrays
+ * @csqlfn #Tgeo_space_split()
  */
 inline Temporal **
 tgeo_space_split(const Temporal *temp, double xsize, double ysize,

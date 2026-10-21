@@ -673,6 +673,7 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
  * @brief Return a spatiotemporal value transformed to another SRID
  * @param[in] temp Spatiotemporal value
  * @param[in] srid_to Target SRID
+ * @csqlfn #Tspatial_transform()
  */
 Temporal *
 tspatial_transform(const Temporal *temp, int32_t srid_to)
@@ -708,6 +709,7 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
  * @param[in] pipeline Pipeline string
  * @param[in] srid_to Target SRID, may be @p SRID_UNKNOWN
  * @param[in] is_forward True when the transformation is forward
+ * @csqlfn #Tspatial_transform_pipeline()
  */
 Temporal *
 tspatial_transform_pipeline(const Temporal *temp, const char *pipeline,

@@ -72,6 +72,7 @@ spanbase_extent_transfn(Span *state, Datum value, meosType basetype)
  * @brief Transition function for span extent aggregate of sets
  * @param[in,out] state Current aggregate state
  * @param[in] s Set to aggregate
+ * @csqlfn #Set_extent_transfn()
  */
 Span *
 set_extent_transfn(Span *state, const Set *s)
@@ -102,6 +103,7 @@ set_extent_transfn(Span *state, const Set *s)
  * @brief Transition function for span extent aggregate of spans
  * @param[in,out] state Current aggregate state
  * @param[in] s Span to aggregate
+ * @csqlfn #Span_extent_transfn()
  */
 Span *
 span_extent_transfn(Span *state, const Span *s)
@@ -129,6 +131,7 @@ span_extent_transfn(Span *state, const Span *s)
  * @brief Transition function for span extent aggregate of span sets
  * @param[in,out] state Current aggregate state
  * @param[in] ss Span set to aggregate
+ * @csqlfn #Spanset_extent_transfn()
  */
 Span *
 spanset_extent_transfn(Span *state, const SpanSet *ss)

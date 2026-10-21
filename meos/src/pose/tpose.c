@@ -451,6 +451,7 @@ tpose_to_tpoint(const Temporal *temp)
  * @ingroup meos_pose_accessor
  * @brief Return a the rotation of a temporal pose as a temporal float
  * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_rotation()
  */
 Temporal *
 tpose_rotation(const Temporal *temp)

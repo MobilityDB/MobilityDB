@@ -489,7 +489,7 @@ tstzspanset_upper(const SpanSet *ss)
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
- * @csqlfn #Numspanset_width(()
+ * @csqlfn #Numspanset_width()(()
  */
 int
 intspanset_width(const SpanSet *ss, bool boundspan)
@@ -505,7 +505,7 @@ intspanset_width(const SpanSet *ss, bool boundspan)
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
- * @csqlfn #Numspanset_width(()
+ * @csqlfn #Numspanset_width()(()
  */
 int64
 bigintspanset_width(const SpanSet *ss, bool boundspan)
@@ -521,7 +521,7 @@ bigintspanset_width(const SpanSet *ss, bool boundspan)
  * @param[in] ss Span
  * @param[in] boundspan True when the potential time gaps are ignored
  * @return On error return -1
- * @csqlfn #Numspanset_width(()
+ * @csqlfn #Numspanset_width()(()
  */
 double
 floatspanset_width(const SpanSet *ss, bool boundspan)

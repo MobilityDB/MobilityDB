@@ -972,6 +972,7 @@ ensure_temptype_mfjson(const char *typestr)
  * @see #tinstant_from_mfjson()
  * @see #tsequence_from_mfjson()
  * @see #tsequenceset_from_mfjson()
+ * @csqlfn #Temporal_from_mfjson()
  */
 Temporal *
 temporal_from_mfjson(const char *mfjson, meosType temptype)

@@ -2399,8 +2399,7 @@ tpoint_length(const Temporal *temp)
  * @ingroup meos_geo_accessor
  * @brief Return the speed of a temporal point sequence (set)
  * @param[in] temp Temporal point
- * @return On error return -1.0
- * @csqlfn #Tpoint_length()
+ * @return On error return NULL
  */
 Temporal *
 tpoint_speed(const Temporal *temp)
