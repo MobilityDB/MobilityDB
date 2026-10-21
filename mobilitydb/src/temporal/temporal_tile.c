@@ -535,132 +535,6 @@ Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
  * Split functions
  *****************************************************************************/
 
-/**
- * @brief Create the initial state for tiling operations
- * @param[in] to_split Value to split, currently either a spanset or a temporal
- * value, may be @p NULL
- * @param[in] s Bounds for generating the bins
- * @param[in] size Size of the bins
- * @param[in] origin Origin of the bins
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @note The first argument is NULL when generating the bins, otherwise
- * it is a spanset or a temporal value to be split and in this case is the
- * bounding span of the value to split
- */
-SpanBinState *
-span_bin_state_make(const void *to_split, const Span *s, Datum size,
-  Datum origin, bool border_inc)
-{
-  assert(s); assert(positive_datum(size, s->basetype));
-
-  /* Use palloc0 for initialization */
-  SpanBinState *state = palloc0(sizeof(SpanBinState));
-  /* Fill in state */
-  state->done = false;
-  state->basetype = s->basetype;
-  state->i = 1;
-  state->size = size;
-  state->origin = origin;
-  /* Get the span bounds of the state */
-  Datum start_bin, end_bin;
-  state->nbins = span_num_bins(s, size, origin, border_inc, &start_bin,
-    &end_bin);
-  /* Set the span of the state */
-  span_set(start_bin, end_bin, true, false, s->basetype, s->spantype,
-    &state->span);
-  state->value = start_bin;
-  state->to_split = to_split;
-  return state;
-}
-
-/**
- * @brief Generate an integer or float span bin from a bin list
- * @param[in] lower Start value of the bin
- * @param[in] size Size of the bins
- * @param[in] basetype Type of the arguments
- * @param[in] spantype Span type of the arguments
- * @param[out] span Output span
- */
-void
-span_bin_state_set(Datum lower, Datum size, MeosType basetype,
-  MeosType spantype, Span *span)
-{
-  assert(span);
-
-  Datum upper = datum_add(lower, size, basetype);
-  span_set(lower, upper, true, false, basetype, spantype, span);
-  return;
-}
-
-/**
- * @brief Get the current bin of the bins
- * @param[in] state State to increment
- * @param[out] span Current bin
- */
-bool
-span_bin_state_get(SpanBinState *state, Span *span)
-{
-  if (! state || state->done)
-    return false;
-  /* Get the box of the current tile */
-  span_bin_state_set(state->value, state->size, state->span.basetype,
-    state->span.spantype, span);
-  return true;
-}
-
-/**
- * @brief Increment the current state to the next bin of the bins
- * @param[in] state State to increment
- */
-void
-span_bin_state_next(SpanBinState *state)
-{
-  if (! state || state->done)
-    return;
-  /* Move to the next bin */
-  state->i++;
-  state->value = datum_add(state->value, state->size, state->basetype);
-  if (state->i > state->nbins)
-    state->done = true;
-  return;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Set the state with a temporal value and a time bin for splitting
- * or obtaining a set of spans
- * @param[in] temp Temporal value
- * @param[in] duration Size of the time dimension as an interval
- * @param[in] torigin Origin for the time dimension
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] nbins Number of bins
- */
-SpanBinState *
-temporal_time_bin_init(const Temporal *temp, const Interval *duration,
-  TimestampTz torigin, bool border_inc, int *nbins)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  VALIDATE_NOT_NULL(nbins, NULL);
-  if (! ensure_positive_duration(duration))
-    return NULL;
-
-  /* Set bounding box */
-  Span bounds;
-  temporal_set_tstzspan(temp, &bounds);
-  /* Create function state */
-  int64 tunits = interval_units(duration);
-  SpanBinState *state = span_bin_state_make((const void *) temp, &bounds,
-    tunits, torigin, border_inc);
-  *nbins = state->nbins;
-  return state;
-}
-
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Temporal_time_split(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Temporal_time_split);
 /**
@@ -674,82 +548,43 @@ Temporal_time_split(PG_FUNCTION_ARGS)
 {
   FuncCallContext *funcctx;
 
-  /* If the function is being called for the first time */
   if (SRF_IS_FIRSTCALL())
   {
-    /* Initialize the FuncCallContext */
     funcctx = SRF_FIRSTCALL_INIT();
-    /* Switch to memory context appropriate for multiple function calls */
+    /* The fragments are kept across the calls, so they are computed in the
+     * context that outlives them */
     MemoryContext oldcontext =
       MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-
-    /* Get input parameters */
     Temporal *temp = PG_GETARG_TEMPORAL_P(0);
     Interval *duration = PG_GETARG_INTERVAL_P(1);
     TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(2);
     bool border_inc = PG_GETARG_BOOL(3);
-
-    /* Initialize state and verify parameter validity */
-    int nbins;
-    SpanBinState *state = temporal_time_bin_init(temp, duration, torigin,
-      border_inc, &nbins);
-
-    /* Create function state */
+    TimestampTz *bins;
+    int count;
+    Temporal **frags = temporal_time_split(temp, duration, torigin,
+      border_inc, &bins, &count);
+    Datum *state = palloc(sizeof(Datum) * 2);
+    state[0] = PointerGetDatum(bins);
+    state[1] = PointerGetDatum(frags);
     funcctx->user_fctx = state;
-
-    /* Build a tuple description for a multidimensional grid tuple */
+    funcctx->max_calls = count;
     get_call_result_type(fcinfo, 0, &funcctx->tuple_desc);
     BlessTupleDesc(funcctx->tuple_desc);
     MemoryContextSwitchTo(oldcontext);
   }
 
-  /* Stuff done on every call of the function */
   funcctx = SRF_PERCALL_SETUP();
-  /* State that no value is null */
-  bool isnull[2] = {0,0};
-  /* Get state */
-  SpanBinState *state = funcctx->user_fctx;
-  /* We need to loop since atTbox may be NULL */
-  while (true)
-  {
-    /* Stop when we have used up all the grid tiles */
-    if (state->done)
-    {
-      /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext =
-        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      pfree(state);
-      MemoryContextSwitchTo(oldcontext);
-      SRF_RETURN_DONE(funcctx);
-    }
-
-    /* Get current tile (if any) and advance state */
-    Span span;
-    if (! span_bin_state_get(state, &span))
-    {
-      /* Switch to memory context appropriate for multiple function calls */
-      MemoryContext oldcontext =
-        MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
-      pfree(state);
-      MemoryContextSwitchTo(oldcontext);
-      SRF_RETURN_DONE(funcctx);
-    }
-    span_bin_state_next(state);
-
-    /* Restrict the temporal point to the span */
-    Temporal *atspan = temporal_restrict_tstzspan(state->to_split, &span,
-      REST_AT);
-    if (! atspan)
-      continue;
-
-    /* Form tuple and return */
-    Datum tuple_arr[2]; /* used to construct the composite return value */
-    tuple_arr[0] = span.lower;
-    tuple_arr[1] = PointerGetDatum(atspan);
-    HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, tuple_arr, isnull);
-    Datum result = HeapTupleGetDatum(tuple);
-    SRF_RETURN_NEXT(funcctx, result);
-  }
+  if (funcctx->call_cntr >= funcctx->max_calls)
+    SRF_RETURN_DONE(funcctx);
+  Datum *state = (Datum *) funcctx->user_fctx;
+  const TimestampTz *bins = (const TimestampTz *) DatumGetPointer(state[0]);
+  Temporal **frags = (Temporal **) DatumGetPointer(state[1]);
+  Datum values[2];
+  bool isnull[2] = {false, false};
+  values[0] = TimestampTzGetDatum(bins[funcctx->call_cntr]);
+  values[1] = PointerGetDatum(frags[funcctx->call_cntr]);
+  HeapTuple tuple = heap_form_tuple(funcctx->tuple_desc, values, isnull);
+  SRF_RETURN_NEXT(funcctx, HeapTupleGetDatum(tuple));
 }
 
 /*****************************************************************************/

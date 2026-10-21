@@ -448,6 +448,17 @@ SELECT array_length(spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@20
 -- An empty point lies in no tile
 SELECT getSpaceTile(geometry 'Point EMPTY', 2.0) IS NULL AS no_tile;
 
+-- Every fragment of a time split is the trip restricted to its bin, also on a
+-- segment of five hours crossing 32 bins of ten minutes
+SELECT count(*) AS fragments,
+  count(*) FILTER (WHERE atTime(t.tp, span((s).time,
+    (s).time + interval '10 minutes')) <> (s).temp)
+  AS fragments_stating_another_value
+FROM (SELECT tgeompoint 'SRID=3035;['
+  'Point Z(6616978.472527464 2446349.3560603186 10294.62)@2026-03-01 06:19:48.583+00, '
+  'Point Z(4818620.253322104 2574188.6956469184 10500.36)@2026-03-01 11:26:59.267+00]' AS tp) t,
+  LATERAL timeSplit(t.tp, interval '10 minutes', timestamptz '2026-03-01') s;
+
 /* Errors */
 SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, -1.0, 2.0);
 SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
