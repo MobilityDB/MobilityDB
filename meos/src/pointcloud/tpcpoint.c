@@ -39,6 +39,7 @@
 /* C */
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
@@ -416,6 +417,29 @@ tpcpoint_minus_value(const Temporal *temp, const Pcpoint *pt)
   /* Restrict the temporal pgpointcloud point to the instants where it does not
    * equal the given pt */
   return temporal_restrict_value(temp, PointerGetDatum(pt), REST_MINUS);
+}
+
+/*****************************************************************************
+ * Schema accessor functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the pgPointCloud schema id (pcid) of a temporal pgpointcloud
+ * point
+ * @details Every instant of the value carries the same pcid, which its
+ * constructors enforce, so the pcid of the start instant is read in place
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Tpcpoint_pcid()
+ */
+uint32_t
+tpcpoint_pcid(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, INT_MAX);
+  const TInstant *inst = temporal_start_inst(temp);
+  return DatumGetPcpointP(tinstant_value_p(inst))->pcid;
 }
 
 /*****************************************************************************/
