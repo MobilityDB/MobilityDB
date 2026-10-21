@@ -1051,6 +1051,9 @@ STBox *
 stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
   return stbox_space_time_tiles(bounds, xsize, ysize, zsize, NULL, sorigin, 0,
     border_inc, count);
 }
@@ -1351,6 +1354,9 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
   return tgeo_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin, 0,
     bitmatrix, border_inc, count);
 }
@@ -1821,6 +1827,9 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin, bool bitmatrix, bool border_inc,
   GSERIALIZED ***space_bins, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
   return tgeo_space_time_split(temp, xsize, ysize, zsize, NULL, sorigin, 0,
     bitmatrix, border_inc, space_bins, NULL, count);
 }
