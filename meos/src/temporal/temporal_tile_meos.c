@@ -221,6 +221,9 @@ TBox *
 tintbox_value_tiles(const TBox *box, int vsize, int vorigin, bool border_inc,
   int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4))
+    return NULL;
   return tintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
     count);
 }
@@ -240,6 +243,9 @@ TBox *
 tbigintbox_value_tiles(const TBox *box, int64 vsize, int64 vorigin,
   bool border_inc, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8))
+    return NULL;
   return tbigintbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
     count);
 }
@@ -259,6 +265,9 @@ TBox *
 tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
   bool border_inc, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
+    return NULL;
   return tfloatbox_value_time_tiles(box, vsize, NULL, vorigin, 0, border_inc,
     count);
 }
@@ -387,6 +396,7 @@ tint_time_boxes(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Int32GetDatum(0), duration,
     Int32GetDatum(0), torigin, border_inc, count);
 }
@@ -458,6 +468,7 @@ tbigint_time_boxes(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Int64GetDatum(0), duration,
     Int64GetDatum(0), torigin, border_inc, count);
 }
@@ -529,6 +540,7 @@ tfloat_time_boxes(const Temporal *temp, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return tnumber_value_time_boxes(temp, Float8GetDatum(0.0), duration,
     Float8GetDatum(0.0), torigin, border_inc, count);
 }
@@ -1299,7 +1311,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
-  if (! ensure_positive(vsize))
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return NULL;
 
   Datum *datum_bins;
@@ -1436,7 +1448,8 @@ tfloat_value_time_split(const Temporal *temp, double vsize,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_positive(vsize) || ! ensure_positive_duration(duration))
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+      ! ensure_positive_duration(duration))
     return NULL;
 
   Datum *datum_bins;

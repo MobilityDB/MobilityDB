@@ -399,6 +399,103 @@ int main(void)
   check_refused("tbox_time_tiles, duration 0",
     tbox_time_tiles(intbox, zero, sep1, true, &count1),
     MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tintbox_value_tiles, size 0",
+    tintbox_value_tiles(intbox, 0, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tintbox_value_tiles, negative size",
+    tintbox_value_tiles(intbox, -2, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigintbox_value_tiles, size 0",
+    tbigintbox_value_tiles(bigintbox, 0, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigintbox_value_tiles, negative size",
+    tbigintbox_value_tiles(bigintbox, -2, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloatbox_value_tiles, size 0",
+    tfloatbox_value_tiles(floatbox, 0.0, 0.0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloatbox_value_tiles, negative size",
+    tfloatbox_value_tiles(floatbox, -2.5, 0.0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  /* A positive size still answers the value tiles */
+  boxes = tintbox_value_tiles(intbox, 2, 0, true, &count1);
+  check("tintbox_value_tiles, size 2", boxes && count1 > 0);
+  free(boxes);
+
+  /* The bins, boxes and splits of a temporal number and the time bins of a
+   * span refuse a size that is not positive and a missing duration */
+  Temporal *tint1 = tint_in("[1@2001-01-01, 5@2001-01-03]");
+  Temporal *tbigint1 = tbigint_in("[1@2001-01-01, 5@2001-01-03]");
+  Temporal *tfloat1 = tfloat_in("[1@2001-01-01, 5@2001-01-03]");
+  Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-03]");
+  Span *datespan1 = datespan_in("[2001-01-01, 2001-01-03]");
+  SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-03]}");
+  SpanSet *datespanset1 = datespanset_in("{[2001-01-01, 2001-01-03]}");
+  DateADT dorig = date_in("2001-01-01");
+  check_refused("tint_value_bins, size 0",
+    tint_value_bins(tint1, 0, 0, true, &count1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigint_value_bins, size 0",
+    tbigint_value_bins(tbigint1, 0, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloat_value_bins, negative size",
+    tfloat_value_bins(tfloat1, -1.5, 0.0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tint_value_boxes, size 0",
+    tint_value_boxes(tint1, 0, 0, true, &count1), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigint_value_boxes, size 0",
+    tbigint_value_boxes(tbigint1, 0, 0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloat_value_boxes, size 0",
+    tfloat_value_boxes(tfloat1, 0.0, 0.0, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tint_time_boxes, no duration",
+    tint_time_boxes(tint1, NULL, torig, true, &count1), MEOS_ERR_INVALID_ARG);
+  check_refused("tbigint_time_boxes, no duration",
+    tbigint_time_boxes(tbigint1, NULL, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tfloat_time_boxes, no duration",
+    tfloat_time_boxes(tfloat1, NULL, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tstzspan_bins, no duration",
+    tstzspan_bins(tstzspan1, NULL, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("datespan_bins, no duration",
+    datespan_bins(datespan1, NULL, dorig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tstzspanset_bins, no duration",
+    tstzspanset_bins(tstzspanset1, NULL, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("datespanset_bins, no duration",
+    datespanset_bins(datespanset1, NULL, dorig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  TimestampTz *split_tbins = NULL;
+  check_refused("temporal_time_split, no duration",
+    temporal_time_split(tfloat1, NULL, torig, true, &split_tbins, &count1),
+    MEOS_ERR_INVALID_ARG);
+  /* A positive size still answers, a float one below one included */
+  Span *vbins = tint_value_bins(tint1, 2, 0, true, &count1);
+  check("tint_value_bins, size 2", vbins && count1 > 0);
+  free(vbins);
+  TBox *vboxes = tfloat_value_boxes(tfloat1, 0.5, 0.0, true, &count1);
+  check("tfloat_value_boxes, size 0.5", vboxes && count1 > 0);
+  free(vboxes);
+  Temporal *tfloatinst = tfloat_in("3.2@2001-01-01");
+  double *split_fbins = NULL;
+  Temporal **split_frags = tfloat_value_split(tfloatinst, 0.5, 0.0, true,
+    &split_fbins, &count1);
+  check("tfloat_value_split, size 0.5", split_frags && count1 > 0);
+  for (int i = 0; split_frags && i < count1; i++)
+    free(split_frags[i]);
+  free(split_frags); free(split_fbins);
+  split_fbins = NULL;
+  split_frags = tfloat_value_time_split(tfloatinst, 0.5, day, 0.0, torig, true,
+    &split_fbins, &split_tbins, &count1);
+  check("tfloat_value_time_split, size 0.5", split_frags && count1 > 0);
+  for (int i = 0; split_frags && i < count1; i++)
+    free(split_frags[i]);
+  free(split_frags); free(split_fbins); free(split_tbins);
+  free(tint1); free(tbigint1); free(tfloat1); free(tfloatinst);
+  free(tstzspan1); free(datespan1); free(tstzspanset1); free(datespanset1);
 
   /* A size that is not positive and a span of another type are refused by
    * the bins functions */

@@ -80,6 +80,8 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
 
   return tspatial_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin,
     0, bitmatrix, border_inc, &trgeo_restrict_stbox, count);

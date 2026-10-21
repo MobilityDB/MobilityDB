@@ -638,6 +638,13 @@ SELECT valueBoxes(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001
  {"TBOXFLOAT XT([1.5, 1.5],[Mon Jan 01 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST])","TBOXFLOAT XT([2.5, 2.5],[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST))","TBOXFLOAT XT([3.5, 3.5],[Thu Jan 04 00:00:00 2001 PST, Fri Jan 05 00:00:00 2001 PST])"}
 (1 row)
 
+/* Errors */
+SELECT valueBoxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0);
+ERROR:  The value must be strictly positive: 0
+SELECT valueBoxes(tbigint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]', 0);
+ERROR:  The value must be strictly positive: 0
+SELECT valueBoxes(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 0.0);
+ERROR:  The value must be strictly positive: 0.000000
 SELECT timeBoxes(tint '1@2001-01-01', '1 week');
                                       timeboxes                                      
 -------------------------------------------------------------------------------------
