@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_x);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox()
+ * @sqlfn stboxX()
  */
 inline Datum
 Stbox_constructor_x(PG_FUNCTION_ARGS)
@@ -301,7 +301,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_z);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_z()
+ * @sqlfn stboxZ()
  */
 inline Datum
 Stbox_constructor_z(PG_FUNCTION_ARGS)
@@ -314,7 +314,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_t);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_t()
+ * @sqlfn stboxT()
  */
 inline Datum
 Stbox_constructor_t(PG_FUNCTION_ARGS)
@@ -327,7 +327,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_xt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_xt()
+ * @sqlfn stboxXT()
  */
 inline Datum
 Stbox_constructor_xt(PG_FUNCTION_ARGS)
@@ -340,7 +340,7 @@ PG_FUNCTION_INFO_V1(Stbox_constructor_zt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn stbox_zt()
+ * @sqlfn stboxZT()
  */
 inline Datum
 Stbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -356,7 +356,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_z);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_z()
+ * @sqlfn geodstboxZ()
  */
 inline Datum
 Geodstbox_constructor_z(PG_FUNCTION_ARGS)
@@ -369,7 +369,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_t);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_t()
+ * @sqlfn geodstboxT()
  */
 inline Datum
 Geodstbox_constructor_t(PG_FUNCTION_ARGS)
@@ -382,7 +382,7 @@ PG_FUNCTION_INFO_V1(Geodstbox_constructor_zt);
 /**
  * @ingroup mobilitydb_geo_box_constructor
  * @brief Return a spatiotemporal box constructed from the arguments
- * @sqlfn geodstbox_zt()
+ * @sqlfn geodstboxZT()
  */
 inline Datum
 Geodstbox_constructor_zt(PG_FUNCTION_ARGS)
@@ -834,7 +834,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmin_inc);
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return true if the minimum timestamptz value of a spatiotemporal box
  * is inclusive, if any
- * @sqlfn Tmin_inc()
+ * @sqlfn TminInc()
  */
 Datum
 Stbox_tmin_inc(PG_FUNCTION_ARGS)
@@ -869,7 +869,7 @@ PG_FUNCTION_INFO_V1(Stbox_tmax_inc);
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return true if the maximum timestamptz value of a spatiotemporal box
  * is inclusive, if any
- * @sqlfn Tmax_inc()
+ * @sqlfn TmaxInc()
  */
 Datum
 Stbox_tmax_inc(PG_FUNCTION_ARGS)
@@ -921,7 +921,7 @@ PG_FUNCTION_INFO_V1(Stbox_perimeter);
 /**
  * @ingroup mobilitydb_geo_box_accessor
  * @brief Return the area of a spatiotemporal box
- * @sqlfn area()
+ * @sqlfn perimeter()
  */
 Datum
 Stbox_perimeter(PG_FUNCTION_ARGS)
@@ -1024,7 +1024,7 @@ PG_FUNCTION_INFO_V1(Stbox_expand_time);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return a spatiotemporal box with the time span expanded/shrinked by
  * an interval
- * @sqlfn Stbox_expand_time()
+ * @sqlfn expandTime()
  */
 Datum
 Stbox_expand_time(PG_FUNCTION_ARGS)
@@ -1250,7 +1250,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is to the left of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_left()
  * @sqlop @p <<
  */
 Datum
@@ -1267,7 +1267,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overleft()
  * @sqlop @p &<
  */
 Datum
@@ -1284,7 +1284,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is to the right of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_right()
  * @sqlop @p >>
  */
 Datum
@@ -1301,7 +1301,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overright()
  * @sqlop @p &>
  */
 Datum
@@ -1318,7 +1318,7 @@ PG_FUNCTION_INFO_V1(Below_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is below the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_below()
  * @sqlop @p <<|
  */
 Datum
@@ -1335,7 +1335,7 @@ PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend above of
  * the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overbelow()
  * @sqlop @p &<|
  */
 Datum
@@ -1352,7 +1352,7 @@ PG_FUNCTION_INFO_V1(Above_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is above of the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_above()
  * @sqlop @p |>>
  */
 Datum
@@ -1369,7 +1369,7 @@ PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend below of
  * the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overabove()
  * @sqlop @p |&>
  */
 Datum
@@ -1386,7 +1386,7 @@ PG_FUNCTION_INFO_V1(Front_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is in front of the second
  * one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_front()
  * @sqlop @p <</
  */
 Datum
@@ -1403,7 +1403,7 @@ PG_FUNCTION_INFO_V1(Overfront_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * back of the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overfront()
  * @sqlop @p &</
  */
 Datum
@@ -1420,7 +1420,7 @@ PG_FUNCTION_INFO_V1(Back_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is at the back of the
  * second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_back()
  * @sqlop @p />>
  */
 Datum
@@ -1437,7 +1437,7 @@ PG_FUNCTION_INFO_V1(Overback_stbox_stbox);
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box does not extend to the
  * front of the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overback()
  * @sqlop @p /&>
  */
 Datum
@@ -1453,7 +1453,7 @@ PG_FUNCTION_INFO_V1(Before_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is before the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_before()
  * @sqlop @p <<#
  */
 Datum
@@ -1469,7 +1469,7 @@ PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first temporal box is not after the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overbefore()
  * @sqlop @p &<#
  */
 Datum
@@ -1485,7 +1485,7 @@ PG_FUNCTION_INFO_V1(After_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first spatiotemporal box is after the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_after()
  * @sqlop @p #>>
  */
 Datum
@@ -1501,7 +1501,7 @@ PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
  * @brief Return true if the first temporal box is not before the second one
- * @sqlfn temporal_below()
+ * @sqlfn stbox_overafter()
  * @sqlop @p #&>
  */
 Datum
@@ -1561,7 +1561,7 @@ PG_FUNCTION_INFO_V1(Stbox_quad_split);
  * @ingroup mobilitydb_geo_box_transf
  * @brief Return a spatiotemporal box split with respect to its space bounds
  * in four quadrants (2D) or eight octants (3D)
- * @sqlfn stbox_intersection()
+ * @sqlfn quadSplit()
  */
 Datum
 Stbox_quad_split(PG_FUNCTION_ARGS)

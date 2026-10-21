@@ -261,7 +261,7 @@ PG_FUNCTION_INFO_V1(Overlaps_stbox_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * spatiotemporal value overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn temporal_overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -276,7 +276,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tspatial_stbox);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn temporal_overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -291,7 +291,7 @@ PG_FUNCTION_INFO_V1(Overlaps_tspatial_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values overlap
- * @sqlfn overlaps_bbox()
+ * @sqlfn temporal_overlaps()
  * @sqlop @p &&
  */
 inline Datum
@@ -310,7 +310,7 @@ PG_FUNCTION_INFO_V1(Contains_stbox_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box contains the one of a temporal
  * point
- * @sqlfn contains_bbox()
+ * @sqlfn temporal_contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -325,7 +325,7 @@ PG_FUNCTION_INFO_V1(Contains_tspatial_stbox);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value
  * contains a spatiotemporal box
- * @sqlfn contains_bbox()
+ * @sqlfn temporal_contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -340,7 +340,7 @@ PG_FUNCTION_INFO_V1(Contains_tspatial_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of the first spatiotemporal
  * value contains the one of the second spatiotemporal value
- * @sqlfn contains_bbox()
+ * @sqlfn temporal_contains()
  * @sqlop @p \@>
  */
 inline Datum
@@ -359,7 +359,7 @@ PG_FUNCTION_INFO_V1(Contained_stbox_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box is contained in the
  * spatiotemporal box of a spatiotemporal value
- * @sqlfn contained_bbox()
+ * @sqlfn temporal_contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -374,7 +374,7 @@ PG_FUNCTION_INFO_V1(Contained_tspatial_stbox);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value is
  * contained in the spatiotemporal box
- * @sqlfn contained_bbox()
+ * @sqlfn temporal_contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -389,7 +389,7 @@ PG_FUNCTION_INFO_V1(Contained_tspatial_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of the first spatiotemporal
  * value is contained in the one of the second spatiotemporal value
- * @sqlfn contained_bbox()
+ * @sqlfn temporal_contained()
  * @sqlop @p <@
  */
 inline Datum
@@ -408,7 +408,7 @@ PG_FUNCTION_INFO_V1(Same_stbox_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * spatiotemporal value are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn temporal_same()
  * @sqlop @p ~=
  */
 inline Datum
@@ -423,7 +423,7 @@ PG_FUNCTION_INFO_V1(Same_tspatial_stbox);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value and
  * a spatiotemporal box are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn temporal_same()
  * @sqlop @p ~=
  */
 inline Datum
@@ -438,7 +438,7 @@ PG_FUNCTION_INFO_V1(Same_tspatial_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values are equal in the common dimensions
- * @sqlfn same_bbox()
+ * @sqlfn temporal_same()
  * @sqlop @p ~=
  */
 inline Datum
@@ -457,7 +457,7 @@ PG_FUNCTION_INFO_V1(Adjacent_stbox_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if a spatiotemporal box and the spatiotemporal box of a
  * spatiotemporal value are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn temporal_adjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -472,7 +472,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tspatial_stbox);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal box of a spatiotemporal value
  * and a spatiotemporal box are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn temporal_adjacent()
  * @sqlop @p -|-
  */
 inline Datum
@@ -487,7 +487,7 @@ PG_FUNCTION_INFO_V1(Adjacent_tspatial_tspatial);
  * @ingroup mobilitydb_geo_bbox_topo
  * @brief Return true if the spatiotemporal boxes of two spatiotemporal
  * values are adjacent
- * @sqlfn adjacent_bbox()
+ * @sqlfn temporal_adjacent()
  * @sqlop @p -|-
  */
 inline Datum

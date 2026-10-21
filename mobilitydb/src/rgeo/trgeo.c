@@ -255,7 +255,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_inst_constructor);
  * @ingroup mobilitydb_rgeo_constructor
  * @brief Construct a temporal rigid geometry instant from a geometry, a pose,
  * and a timestamptz
- * @sqlfn trgeometryInst()
+ * @sqlfn trgeometry()
  */
 Datum
 Trgeometry_inst_constructor(PG_FUNCTION_ARGS)
@@ -336,7 +336,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_seqset_constructor_gaps);
  * @brief Construct a temporal rigid geometry sequence set from an array of
  * temporal instants accounting for potential gaps
  * @note The SQL function is not strict
- * @sqlfn trgeoSeqsetGaps()
+ * @sqlfn trgeometrySeqSetGaps()
  */
 Datum
 Trgeometry_seqset_constructor_gaps(PG_FUNCTION_ARGS)
@@ -579,7 +579,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_to_tsequenceset);
  * @brief Return a temporal rigid geometry transformed into a temporal sequence
  * set
  * @note The SQL function is not strict
- * @sqlfn trgeoSeqSet()
+ * @sqlfn trgeometrySeqSet()
  */
 Datum
 Trgeometry_to_tsequenceset(PG_FUNCTION_ARGS)

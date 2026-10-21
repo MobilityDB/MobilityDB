@@ -55,7 +55,7 @@ PG_FUNCTION_INFO_V1(Tdistance_geo_tgeo);
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a geometry/geography and a
  * temporal geo
- * @sqlfn tDistance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 Datum
@@ -77,7 +77,7 @@ PG_FUNCTION_INFO_V1(Tdistance_tgeo_geo);
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
  * geometry/geography
- * @sqlfn tDistance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 Datum
@@ -98,7 +98,7 @@ PG_FUNCTION_INFO_V1(Tdistance_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between two temporal geos
- * @sqlfn tDistance()
+ * @sqlfn tdistance()
  * @sqlop @p <->
  */
 Datum

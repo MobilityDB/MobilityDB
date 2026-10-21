@@ -179,7 +179,7 @@ PG_FUNCTION_INFO_V1(Pose_from_hexwkb);
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return a pose from its ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation
- * @sqlfn poseFromHexWKB()
+ * @sqlfn poseFromHexEWKB()
  */
 Datum
 Pose_from_hexwkb(PG_FUNCTION_ARGS)
@@ -263,7 +263,7 @@ PG_FUNCTION_INFO_V1(Pose_as_ewkb);
 /**
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return the Well-Known Binary (WKB) representation of a pose
- * @sqlfn asBinary()
+ * @sqlfn asEWKB()
  */
 Datum
 Pose_as_ewkb(PG_FUNCTION_ARGS)
@@ -278,7 +278,7 @@ PG_FUNCTION_INFO_V1(Pose_as_hexwkb);
  * @ingroup mobilitydb_pose_base_inout
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a pose
- * @sqlfn asHexWKB()
+ * @sqlfn asHexEWKB()
  */
 Datum
 Pose_as_hexwkb(PG_FUNCTION_ARGS)
@@ -785,7 +785,7 @@ PG_FUNCTION_INFO_V1(Pose_hash_extended);
 /**
  * @ingroup mobilitydb_pose_base_accessor
  * @brief Return the 64-bit hash value of a pose using a seed
- * @sqlfn hash_extended()
+ * @sqlfn pose_hash_extended()
  */
 Datum
 Pose_hash_extended(PG_FUNCTION_ARGS)

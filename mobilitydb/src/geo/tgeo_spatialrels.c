@@ -317,7 +317,7 @@ PG_FUNCTION_INFO_V1(Acovers_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
  * @brief Return true if a temporal geometry always covers another one
- * @sqlfn eCovers()
+ * @sqlfn aCovers()
  */
 inline Datum
 Acovers_tgeo_tgeo(PG_FUNCTION_ARGS)

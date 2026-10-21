@@ -560,7 +560,7 @@ PG_FUNCTION_INFO_V1(Eintersects_cbuffer_tcbuffer);
  * @ingroup mobilitydb_cbuffer_rel_ever
  * @brief Return true if a circular buffer and a temporal
  * circular buffer ever intersect
- * @sqlfn eIntersects()
+ * @sqlfn eintersects()
  */
 inline Datum
 Eintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
@@ -590,7 +590,7 @@ PG_FUNCTION_INFO_V1(Eintersects_tcbuffer_cbuffer);
  * @ingroup mobilitydb_cbuffer_rel_ever
  * @brief Return true if a temporal circular buffer and a circular buffer 
  * ever intersect
- * @sqlfn eIntersects()
+ * @sqlfn eintersects()
  */
 inline Datum
 Eintersects_tcbuffer_cbuffer(PG_FUNCTION_ARGS)

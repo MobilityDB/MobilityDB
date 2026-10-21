@@ -1534,7 +1534,7 @@ PG_FUNCTION_INFO_V1(Temporalarr_round);
  * @ingroup mobilitydb_temporal_transf
  * @brief Return an array of temporal floats with the precision of the values
  * set to a number of decimal places
- * @sqlfn asText()
+ * @sqlfn round()
  */
 Datum
 Temporalarr_round(PG_FUNCTION_ARGS)
@@ -1994,7 +1994,7 @@ PG_FUNCTION_INFO_V1(Temporal_at_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to a base value
- * @sqlfn atValue()
+ * @sqlfn atValues()
  */
 Datum
 Temporal_at_value(PG_FUNCTION_ARGS)
@@ -2007,7 +2007,7 @@ PG_FUNCTION_INFO_V1(Temporal_minus_value);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the complement of a base value
- * @sqlfn minusValue()
+ * @sqlfn minusValues()
  */
 Datum
 Temporal_minus_value(PG_FUNCTION_ARGS)
@@ -2086,7 +2086,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_span);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to a span of base values
- * @sqlfn atSpan()
+ * @sqlfn atValues()
  */
 Datum
 Tnumber_at_span(PG_FUNCTION_ARGS)
@@ -2100,7 +2100,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_span);
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the complement of a span of
  * base values
- * @sqlfn minusSpan()
+ * @sqlfn minusValues()
  */
 Datum
 Tnumber_minus_span(PG_FUNCTION_ARGS)
@@ -2132,7 +2132,7 @@ PG_FUNCTION_INFO_V1(Tnumber_at_spanset);
 /**
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to a span set of base values
- * @sqlfn atSpanset()
+ * @sqlfn atValues()
  */
 Datum
 Tnumber_at_spanset(PG_FUNCTION_ARGS)
@@ -2146,7 +2146,7 @@ PG_FUNCTION_INFO_V1(Tnumber_minus_spanset);
  * @ingroup mobilitydb_temporal_restrict
  * @brief Return a temporal value restricted to the complement of a span set of
  * base values
- * @sqlfn minusSpanset()
+ * @sqlfn minusValues()
  */
 Datum
 Tnumber_minus_spanset(PG_FUNCTION_ARGS)
@@ -2772,7 +2772,7 @@ PG_FUNCTION_INFO_V1(Temporal_eq);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if two temporal values are equal
- * @sqlfn tint_eq(), tfloat_eq(), ...
+ * @sqlfn temporal_eq()
  * @sqlop =
  */
 Datum
@@ -2791,7 +2791,7 @@ PG_FUNCTION_INFO_V1(Temporal_ne);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if two temporal values are different
- * @sqlfn tint_ne(), tfloat_ne(), ...
+ * @sqlfn temporal_ne()
  * @sqlop <>
  */
 Datum
@@ -2813,7 +2813,7 @@ PG_FUNCTION_INFO_V1(Temporal_cmp);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return -1, 0, or 1 depending on whether the first temporal value
  * is less than, equal to, or greater than the second temporal value
- * @sqlfn tint_cmp(), tfloat_cmp(), ...
+ * @sqlfn temporal_cmp()
  */
 Datum
 Temporal_cmp(PG_FUNCTION_ARGS)
@@ -2831,7 +2831,7 @@ PG_FUNCTION_INFO_V1(Temporal_lt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than the second one
- * @sqlfn tint_lt(), tfloat_lt(), ...
+ * @sqlfn temporal_lt()
  * @sqlop @p <
  */
 Datum
@@ -2851,7 +2851,7 @@ PG_FUNCTION_INFO_V1(Temporal_le);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is less than or equal to
  * the second one
- * @sqlfn tint_le(), tfloat_le(), ...
+ * @sqlfn temporal_le()
  * @sqlop @p <=
  */
 Datum
@@ -2871,7 +2871,7 @@ PG_FUNCTION_INFO_V1(Temporal_ge);
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than or equal to
  * the second one
- * @sqlfn tint_ge(), tfloat_ge(), ...
+ * @sqlfn temporal_ge()
  * @sqlop =@p >=
  */
 Datum
@@ -2890,7 +2890,7 @@ PG_FUNCTION_INFO_V1(Temporal_gt);
 /**
  * @ingroup mobilitydb_temporal_comp_trad
  * @brief Return true if the first temporal value is greater than the second one
- * @sqlfn tint_gt(), tfloat_gt(), ...
+ * @sqlfn temporal_gt()
  * @sqlop @p >
  */
 Datum
@@ -2913,7 +2913,7 @@ PG_FUNCTION_INFO_V1(Temporal_hash);
 /**
  * @ingroup mobilitydb_temporal_accessor
  * @brief Return the hash value of a temporal value
- * @sqlfn tint_hash(), tfloat_hash(), ...
+ * @sqlfn temporal_hash()
  */
 Datum
 Temporal_hash(PG_FUNCTION_ARGS)
