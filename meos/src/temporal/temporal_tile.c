@@ -702,6 +702,219 @@ spanset_bins(const SpanSet *ss, Datum vsize, Datum vorigin, bool border_inc,
   return bins;
 }
 
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of an integer span
+ * @param[in] s Input span to split
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Span_bins()
+ */
+Span *
+intspan_bins(const Span *s, int vsize, int vorigin, bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return span_bins(s, Int32GetDatum(vsize), Int32GetDatum(vorigin), border_inc,
+    count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a big integer span
+ * @param[in] s Input span to split
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Span_bins()
+ */
+Span *
+bigintspan_bins(const Span *s, int64 vsize, int64 vorigin, bool border_inc,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return span_bins(s, Int64GetDatum(vsize), Int64GetDatum(vorigin), border_inc,
+    count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a float span
+ * @param[in] s Input span to split
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Span_bins()
+ */
+Span *
+floatspan_bins(const Span *s, double vsize, double vorigin, bool border_inc,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  return span_bins(s, Float8GetDatum(vsize), Float8GetDatum(vorigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a date span
+ * @param[in] s Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Span_bins()
+ */
+Span *
+datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(torigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a timestamptz span
+ * @param[in] s Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Span_bins()
+ */
+Span *
+tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(torigin),
+    border_inc, count);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of an integer span set
+ * @param[in] ss SpanSet number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Spanset_bins()
+ */
+Span *
+intspanset_bins(const SpanSet *ss, int vsize, int vorigin, bool border_inc,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPANSET(ss, NULL);
+  return spanset_bins(ss, Int32GetDatum(vsize), Int32GetDatum(vorigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a big integer span set
+ * @param[in] ss SpanSet number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Spanset_bins()
+ */
+Span *
+bigintspanset_bins(const SpanSet *ss, int64 vsize, int64 vorigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPANSET(ss, NULL);
+  return spanset_bins(ss, Int64GetDatum(vsize), Int64GetDatum(vorigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a float span set
+ * @param[in] ss SpanSet number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Spanset_bins()
+ */
+Span *
+floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPANSET(ss, NULL);
+  return spanset_bins(ss, Float8GetDatum(vsize), Float8GetDatum(vorigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a date span set
+ * @param[in] ss Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Spanset_bins()
+ */
+Span *
+datespanset_bins(const SpanSet *ss, const Interval *duration,
+  DateADT torigin, bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPANSET(ss, NULL);
+  return spanset_bins(ss, PointerGetDatum(duration), DateADTGetDatum(torigin),
+    border_inc, count);
+}
+
+/**
+ * @ingroup meos_setspan_bin
+ * @brief Return the bins of a timestamptz span set
+ * @param[in] ss Input span to split
+ * @param[in] duration Interval defining the size of the bins
+ * @param[in] torigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Spanset_bins()
+ */
+Span *
+tstzspanset_bins(const SpanSet *ss, const Interval *duration,
+  TimestampTz torigin, bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return spanset_bins(ss, PointerGetDatum(duration),
+    TimestampTzGetDatum(torigin), border_inc, count);
+}
+
 /*****************************************************************************
  * Bins functions for temporal types
  *****************************************************************************/

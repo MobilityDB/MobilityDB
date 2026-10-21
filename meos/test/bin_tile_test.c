@@ -49,6 +49,11 @@
  * function `timeTiles(tbox, ...)`, gives for a box of any number type the
  * time tiles of the function of its value type.
  *
+ * The program also tests the functions answering the SQL function `bins`. The
+ * bins of a span are the bins that intersect the span, and the bins of a span
+ * set are those bins restricted to the span set. A size that is not positive
+ * and a span of another type are refused by these functions.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o bin_tile_test bin_tile_test.c -L/usr/local/lib -lmeos -lm
@@ -118,6 +123,23 @@ check_same_boxes(const char *what, TBox *boxes1, int count1, TBox *boxes2,
   free(boxes1); free(boxes2);
 }
 
+/* An array of bins that must equal the spans of the texts */
+static void
+check_bins(const char *what, Span *bins, const int *count,
+  Span *(*in)(const char *), const char **expected, int nexp)
+{
+  /* The count is read once the call that sets it has returned */
+  bool ok = bins && *count == nexp;
+  for (int i = 0; ok && i < nexp; i++)
+  {
+    Span *exp = in(expected[i]);
+    ok = exp && span_eq(&bins[i], exp);
+    free(exp);
+  }
+  check(what, ok);
+  free(bins);
+}
+
 /* A call that must be refused with a given error */
 static void
 check_refused(const char *what, const void *result, int err)
@@ -133,6 +155,82 @@ int main(void)
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
+
+  /* The bins of the SQL function bins, from 025_temporal_tile.test.sql */
+  int count;
+  Span *s = intspan_in("[15, 25]");
+  const char *intbins[] = {"[14, 16)", "[16, 18)", "[18, 20)", "[20, 22)",
+    "[22, 24)", "[24, 26)"};
+  check_bins("intspan_bins([15, 25], 2, 0)",
+    intspan_bins(s, 2, 0, true, &count), &count, intspan_in, intbins, 6);
+  free(s);
+  s = bigintspan_in("[5000000000, 5000000010]");
+  const char *bigintbins[] = {"[4999999997, 5000000001)",
+    "[5000000001, 5000000005)", "[5000000005, 5000000009)",
+    "[5000000009, 5000000013)"};
+  check_bins("bigintspan_bins([5000000000, 5000000010], 4, 5000000001)",
+    bigintspan_bins(s, 4, 5000000001, true, &count), &count, bigintspan_in,
+    bigintbins, 4);
+  free(s);
+  s = floatspan_in("(1, 10)");
+  const char *floatbins[] = {"[-1, 1.5)", "[1.5, 4)", "[4, 6.5)", "[6.5, 9)",
+    "[9, 11.5)"};
+  check_bins("floatspan_bins((1, 10), 2.5, 1.5)",
+    floatspan_bins(s, 2.5, 1.5, true, &count), &count, floatspan_in,
+    floatbins, 5);
+  free(s);
+  Interval *binsize = interval_in("1 week", -1);
+  s = datespan_in("[2001-01-01, 2001-01-10]");
+  const char *datebins[] = {"[2001-01-01, 2001-01-08)",
+    "[2001-01-08, 2001-01-15)"};
+  check_bins("datespan_bins([2001-01-01, 2001-01-10], 1 week, 2001-01-01)",
+    datespan_bins(s, binsize, date_in("2001-01-01"), true, &count), &count,
+    datespan_in, datebins, 2);
+  free(s);
+  s = tstzspan_in("[2001-01-01, 2001-01-10]");
+  const char *tstzbins[] = {"[2001-01-01, 2001-01-08)",
+    "[2001-01-08, 2001-01-15)"};
+  check_bins("tstzspan_bins([2001-01-01, 2001-01-10], 1 week, 2001-01-01)",
+    tstzspan_bins(s, binsize, timestamptz_in("2001-01-01", -1), true, &count),
+    &count, tstzspan_in, tstzbins, 2);
+  free(s);
+
+  SpanSet *ss = intspanset_in("{[1, 10]}");
+  const char *intssbins[] = {"[1, 2)", "[2, 4)", "[4, 6)", "[6, 8)",
+    "[8, 10)", "[10, 11)"};
+  check_bins("intspanset_bins({[1, 10]}, 2, 0)",
+    intspanset_bins(ss, 2, 0, true, &count), &count, intspan_in, intssbins, 6);
+  free(ss);
+  ss = bigintspanset_in("{[1, 10]}");
+  const char *bigintssbins[] = {"[1, 3)", "[3, 5)", "[5, 7)", "[7, 9)",
+    "[9, 11)"};
+  check_bins("bigintspanset_bins({[1, 10]}, 2, 1)",
+    bigintspanset_bins(ss, 2, 1, true, &count), &count, bigintspan_in,
+    bigintssbins, 5);
+  free(ss);
+  ss = floatspanset_in("{(1, 10)}");
+  const char *floatssbins[] = {"(1, 1.5)", "[1.5, 4)", "[4, 6.5)", "[6.5, 9)",
+    "[9, 10)"};
+  check_bins("floatspanset_bins({(1, 10)}, 2.5, 1.5)",
+    floatspanset_bins(ss, 2.5, 1.5, true, &count), &count, floatspan_in,
+    floatssbins, 5);
+  free(ss);
+  ss = datespanset_in("{[2001-01-01, 2001-01-10]}");
+  const char *datessbins[] = {"[2001-01-01, 2001-01-08)",
+    "[2001-01-08, 2001-01-11)"};
+  check_bins("datespanset_bins({[2001-01-01, 2001-01-10]}, 1 week, "
+    "2020-06-15)", datespanset_bins(ss, binsize, date_in("2020-06-15"), true,
+    &count), &count, datespan_in, datessbins, 2);
+  free(ss);
+  ss = tstzspanset_in("{[2001-01-01, 2001-01-10]}");
+  const char *tstzssbins[] = {"[2001-01-01, 2001-01-08)",
+    "[2001-01-08, 2001-01-10]"};
+  check_bins("tstzspanset_bins({[2001-01-01, 2001-01-10]}, 1 week, "
+    "2001-01-01)", tstzspanset_bins(ss, binsize,
+    timestamptz_in("2001-01-01", -1), true, &count), &count, tstzspan_in,
+    tstzssbins, 2);
+  free(ss);
+  free(binsize);
 
   /* The answers of the SQL functions, from 025_temporal_tile.test.sql */
   check_span("intspan_get_bin(3, 2, 0)", intspan_get_bin(3, 2, 0),
@@ -286,6 +384,20 @@ int main(void)
   check_refused("tbox_time_tiles, duration 0",
     tbox_time_tiles(intbox, zero, sep1, true, &count1),
     MEOS_ERR_INVALID_ARG_VALUE);
+
+  /* A size that is not positive and a span of another type are refused by
+   * the bins functions */
+  s = intspan_in("[15, 25]");
+  check_refused("intspan_bins, negative size",
+    intspan_bins(s, -2, 0, true, &count), MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tstzspan_bins, intspan",
+    tstzspan_bins(s, week, torig, true, &count), MEOS_ERR_INVALID_ARG_TYPE);
+  free(s);
+  ss = datespanset_in("{[2001-01-01, 2001-01-10]}");
+  check_refused("datespanset_bins, duration 0",
+    datespanset_bins(ss, zero, date_in("2001-01-01"), true, &count),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  free(ss);
 
   /* A bin outside the range of the type is refused */
   check_refused("intspan_get_bin, bin past the greatest integer",
