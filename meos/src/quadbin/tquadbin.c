@@ -239,6 +239,7 @@ tquadbin_out(const Temporal *temp)
  * @brief Build a temporal quadbin cell instant
  * @param[in] value The quadbin cell value
  * @param[in] t The instant's timestamp
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 tquadbininst_make(Quadbin value, TimestampTz t)

@@ -247,6 +247,7 @@ th3index_out(const Temporal *temp)
  * @brief Build a temporal H3 cell instant
  * @param[in] value The H3 cell value
  * @param[in] t The instant's timestamp
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 th3indexinst_make(H3Index value, TimestampTz t)

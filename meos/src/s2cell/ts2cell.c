@@ -235,6 +235,7 @@ ts2cell_out(const Temporal *temp)
  * @brief Return a temporal S2 cell instant from a cell and a timestamptz
  * @param[in] value S2 cell value
  * @param[in] t Timestamp
+ * @csqlfn #Tinstant_constructor()
  */
 TInstant *
 ts2cellinst_make(S2CellId value, TimestampTz t)
