@@ -48,6 +48,15 @@ SELECT pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0))::text =
 SELECT numPoints(tpcpatch(
   pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)),
   '2024-01-01'::timestamptz)) = 2;
+-- A value and a span (set) build a step sequence (set)
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]')),
+  interp(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]'));
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}')),
+  interp(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}'));
 -- the static accessors of a pcpatch
 SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
 SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 2)
