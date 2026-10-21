@@ -639,6 +639,8 @@ Temporal *
 tpoint_parse(const char **str, meosType temptype)
 {
   Temporal *result = tspatial_parse(str, temptype);
+  if (! result)
+    return NULL;
   const TInstant *inst = temporal_start_inst(result);
   const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
   if (! ensure_point_type(gs) || ! ensure_has_not_M_geo(gs))
