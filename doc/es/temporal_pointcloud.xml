@@ -842,8 +842,8 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tpcpoint(pcpoint,timestamptz) → tpcpointInst
 tpcpoint(pcpoint,tstzset) → tpcpointDiscSeq
-tpcpoint(pcpoint,tstzspan,interp text='step') → tpcpointContSeq
-tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
+tpcpoint(pcpoint,tstzspan) → tpcpointContSeq
+tpcpoint(pcpoint,tstzspanset) → tpcpointSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
@@ -1706,14 +1706,20 @@ FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_tpcpatch">
 					<indexterm significance="normal"><primary><varname>tpcpatch</varname></primary></indexterm>
-					<para>Construye un pcpatch temporal de subtipo instante</para>
+					<para>Constructor para parches de nube de puntos temporales con un valor constante</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpatch(pcpatch,timestamptz) → tpcpatch
+tpcpatch(pcpatch,timestamptz) → tpcpatchInst
+tpcpatch(pcpatch,tstzset) → tpcpatchDiscSeq
+tpcpatch(pcpatch,tstzspan) → tpcpatchContSeq
+tpcpatch(pcpatch,tstzspanset) → tpcpatchSeqSet
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
 -- Instant
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]'));
+-- Sequence
 </programlisting>
 				</listitem>
 

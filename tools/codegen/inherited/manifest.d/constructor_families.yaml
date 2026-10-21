@@ -291,7 +291,7 @@ constructor_families:
   begin: "\n * Constructors\n"
   end: "\n * Accessors"
   interp: step
-  span_interp: true
+  span_interp: false
   pairs:
   - base: pcpoint
     temp: tpcpoint
@@ -302,10 +302,7 @@ constructor_families:
   - ops:
     - from_tstzset
   - ops:
-    - op: from_tstzspan
-      pre: '-- Interpolation default ''step'' to match tpcpoint''s natural semantics.
-
-        '
+    - from_tstzspan
   - ops:
     - from_tstzspanset
   - ops:
@@ -318,7 +315,7 @@ constructor_families:
   begin: "\n * Constructors\n"
   end: "\n * Accessors\n"
   interp: step
-  span_interp: true
+  span_interp: false
   pairs:
   - base: pcpatch
     temp: tpcpatch

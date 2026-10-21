@@ -234,13 +234,12 @@ CREATE FUNCTION tpcpoint(pcpoint, tstzset)
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
--- Interpolation default 'step' to match tpcpoint's natural semantics.
-CREATE FUNCTION tpcpoint(pcpoint, tstzspan, text DEFAULT 'step')
+CREATE FUNCTION tpcpoint(pcpoint, tstzspan)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcpoint(pcpoint, tstzspanset, text DEFAULT 'step')
+CREATE FUNCTION tpcpoint(pcpoint, tstzspanset)
   RETURNS tpcpoint
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

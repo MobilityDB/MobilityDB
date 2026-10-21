@@ -3917,7 +3917,7 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpcpatch_tpcpatch"><varname>tpcpatch</varname></link>: Construct a temporal pcpatch of instant subtype</para>
+						<para><link linkend="tpcpatch_tpcpatch"><varname>tpcpatch</varname></link>: Constructor for temporal point cloud patches having a constant value</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_tpcpatchSeq"><varname>tpcpatchSeq</varname></link>: Construct a temporal pcpatch of sequence subtype</para>

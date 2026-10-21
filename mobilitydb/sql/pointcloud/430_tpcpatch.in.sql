@@ -220,12 +220,12 @@ CREATE FUNCTION tpcpatch(pcpatch, tstzset)
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcpatch(pcpatch, tstzspan, text DEFAULT 'step')
+CREATE FUNCTION tpcpatch(pcpatch, tstzspan)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Tsequence_from_base_tstzspan'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-CREATE FUNCTION tpcpatch(pcpatch, tstzspanset, text DEFAULT 'step')
+CREATE FUNCTION tpcpatch(pcpatch, tstzspanset)
   RETURNS tpcpatch
   AS 'MODULE_PATHNAME', 'Tsequenceset_from_base_tstzspanset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
