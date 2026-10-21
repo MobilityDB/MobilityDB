@@ -399,7 +399,6 @@ PG_FUNCTION_INFO_V1(Geo_timestamptz_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz
  * @sqlfn stbox()
- * @sqlop @p ::
  */
 Datum
 Geo_timestamptz_to_stbox(PG_FUNCTION_ARGS)
@@ -420,7 +419,6 @@ PG_FUNCTION_INFO_V1(Geo_tstzspan_to_stbox);
  * @brief Return a spatiotemporal box constructed from a geometry/geography and
  * a timestamptz span
  * @sqlfn stbox()
- * @sqlop @p ::
  */
 Datum
 Geo_tstzspan_to_stbox(PG_FUNCTION_ARGS)
@@ -1253,7 +1251,7 @@ PG_FUNCTION_INFO_V1(Left_stbox_stbox);
  * @brief Return true if the first spatiotemporal box is to the left of the
  * second one
  * @sqlfn temporal_below()
- * @sqlop @p >>
+ * @sqlop @p <<
  */
 Datum
 Left_stbox_stbox(PG_FUNCTION_ARGS)
@@ -1270,7 +1268,7 @@ PG_FUNCTION_INFO_V1(Overleft_stbox_stbox);
  * @brief Return true if the first spatiotemporal box does not extend to the
  * right of the second one
  * @sqlfn temporal_below()
- * @sqlop @p &>
+ * @sqlop @p &<
  */
 Datum
 Overleft_stbox_stbox(PG_FUNCTION_ARGS)
@@ -1287,7 +1285,7 @@ PG_FUNCTION_INFO_V1(Right_stbox_stbox);
  * @brief Return true if the first spatiotemporal box is to the right of the
  * second one
  * @sqlfn temporal_below()
- * @sqlop @p <<
+ * @sqlop @p >>
  */
 Datum
 Right_stbox_stbox(PG_FUNCTION_ARGS)
@@ -1304,7 +1302,7 @@ PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
  * @brief Return true if the first spatio temporal box does not extend to the
  * left of the second one
  * @sqlfn temporal_below()
- * @sqlop @p &<
+ * @sqlop @p &>
  */
 Datum
 Overright_stbox_stbox(PG_FUNCTION_ARGS)
@@ -1564,7 +1562,6 @@ PG_FUNCTION_INFO_V1(Stbox_quad_split);
  * @brief Return a spatiotemporal box split with respect to its space bounds
  * in four quadrants (2D) or eight octants (3D)
  * @sqlfn stbox_intersection()
- * @sqlop @p *
  */
 Datum
 Stbox_quad_split(PG_FUNCTION_ARGS)
