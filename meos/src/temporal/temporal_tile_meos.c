@@ -1374,6 +1374,9 @@ tnumberseq_cont_value_split(const TSequence *seq, Datum start_bin, Datum size,
       values[nfrags++] = bin_value;
     }
     bin_value = datum_add(bin_value, size, basetype);
+    /* Clean up */
+    for (int j = 0; j < nseqs[i]; j++)
+      pfree(sequences[seq->count * i + j]);
   }
   pfree(sequences);
   pfree(nseqs);

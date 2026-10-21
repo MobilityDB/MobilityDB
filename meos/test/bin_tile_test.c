@@ -54,6 +54,10 @@
  * set are those bins restricted to the span set. A size that is not positive
  * and a span of another type are refused by these functions.
  *
+ * The program also splits a temporal integer, big integer and float into value
+ * bins, over a sequence of several bins and a sequence set, and releases what
+ * the splits return, so that a leak in a split shows under valgrind.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o bin_tile_test bin_tile_test.c -L/usr/local/lib -lmeos -lm
@@ -137,6 +141,17 @@ check_bins(const char *what, Span *bins, const int *count,
     free(exp);
   }
   check(what, ok);
+  free(bins);
+}
+
+/* The fragments of a split and their bins, which the caller owns, freed as
+ * #check_bins frees the bins it reads */
+static void
+free_frags(Temporal **frags, int count, void *bins)
+{
+  for (int i = 0; frags && i < count; i++)
+    free(frags[i]);
+  free(frags);
   free(bins);
 }
 
@@ -407,6 +422,43 @@ int main(void)
   check_refused("tstzspan_get_bin, infinite timestamp",
     tstzspan_get_bin(timestamptz_in("infinity", -1), hour, torig),
     MEOS_ERR_VALUE_OUT_OF_RANGE);
+
+  /* The value splits of a continuous sequence over several bins, linear and
+   * step, and of a sequence set, whose fragments the caller owns */
+  Temporal *tfseq = tfloat_in("[1@2001-01-01, 5@2001-01-03]");
+  Temporal *tfstep = tfloat_in("Interp=Step;[1@2001-01-01, 3@2001-01-02, "
+    "5@2001-01-03]");
+  Temporal *tiseq = tint_in("[1@2001-01-01, 5@2001-01-02, 3@2001-01-03]");
+  Temporal *tbseq = tbigint_in("[1@2001-01-01, 5@2001-01-02, 3@2001-01-03]");
+  Temporal *tfss = tfloat_in("{[1@2001-01-01, 5@2001-01-03], "
+    "[2@2001-01-05, 6@2001-01-06]}");
+  double *fbins;
+  int *ibins;
+  int64 *bbins;
+  TimestampTz *tbins;
+  int nsplit;
+  Temporal **frags = tfloat_value_split(tfseq, 2.0, 0.0, true, &fbins, &nsplit);
+  check("tfloat_value_split, linear sequence over 3 bins",
+    frags && nsplit == 3);
+  free_frags(frags, nsplit, fbins);
+  frags = tfloat_value_split(tfstep, 2.0, 0.0, true, &fbins, &nsplit);
+  check("tfloat_value_split, step sequence over 3 bins", frags && nsplit == 3);
+  free_frags(frags, nsplit, fbins);
+  frags = tint_value_split(tiseq, 2, 0, true, &ibins, &nsplit);
+  check("tint_value_split, sequence over 3 bins", frags && nsplit == 3);
+  free_frags(frags, nsplit, ibins);
+  frags = tbigint_value_split(tbseq, 2, 0, true, &bbins, &nsplit);
+  check("tbigint_value_split, sequence over 3 bins", frags && nsplit == 3);
+  free_frags(frags, nsplit, bbins);
+  frags = tfloat_value_split(tfss, 2.0, 0.0, true, &fbins, &nsplit);
+  check("tfloat_value_split, sequence set over 4 bins", frags && nsplit == 4);
+  free_frags(frags, nsplit, fbins);
+  frags = tfloat_value_time_split(tfseq, 2.0, day, 0.0, sep1, true, &fbins,
+    &tbins, &nsplit);
+  check("tfloat_value_time_split, linear sequence", frags && nsplit > 0);
+  free(tbins);
+  free_frags(frags, nsplit, fbins);
+  free(tfseq); free(tfstep); free(tiseq); free(tbseq); free(tfss);
 
   free(week); free(hour); free(zero);
   free(day);
