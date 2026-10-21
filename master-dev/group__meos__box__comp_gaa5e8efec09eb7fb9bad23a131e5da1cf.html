@@ -126,7 +126,7 @@ $(function() {
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return INT_MAX </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>The time dimension is compared first and then the value dimension @csqlfn <a class="el" href="group__mobilitydb__box__comp_ga95b5e694071e9b120ed40925c5159eb2.html#ga95b5e694071e9b120ed40925c5159eb2" title="Return -1, 0, or 1 depending on whether the first temporal box is less than, equal to,...">Tbox_cmp()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The flags stating the dimensions are compared first, then the span type of the value dimension, then the time dimension, and finally the value dimension, so that boxes of different dimensions or value types are totally ordered @csqlfn <a class="el" href="group__mobilitydb__box__comp_ga95b5e694071e9b120ed40925c5159eb2.html#ga95b5e694071e9b120ed40925c5159eb2" title="Return -1, 0, or 1 depending on whether the first temporal box is less than, equal to,...">Tbox_cmp()</a> </dd></dl>
 
 </div>
 </div>
