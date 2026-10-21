@@ -13,6 +13,24 @@ SELECT numPoints(tpcpatch(
  t
 (1 row)
 
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]')),
+  interp(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]'));
+ tempsubtype | interp 
+-------------+--------
+ Sequence    | Step
+(1 row)
+
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}')),
+  interp(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspanset '{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}'));
+ tempsubtype | interp 
+-------------+--------
+ SequenceSet | Step
+(1 row)
+
 SELECT numPoints(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)));
  numpoints 
 -----------
