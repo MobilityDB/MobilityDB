@@ -783,6 +783,7 @@ datespan_bins(const Span *s, const Interval *duration, DateADT torigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPAN(s, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return span_bins(s, PointerGetDatum(duration), DateADTGetDatum(torigin),
     border_inc, count);
 }
@@ -804,6 +805,7 @@ tstzspan_bins(const Span *s, const Interval *duration, TimestampTz torigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return span_bins(s, PointerGetDatum(duration), TimestampTzGetDatum(torigin),
     border_inc, count);
 }
@@ -890,6 +892,7 @@ datespanset_bins(const SpanSet *ss, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_DATESPANSET(ss, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return spanset_bins(ss, PointerGetDatum(duration), DateADTGetDatum(torigin),
     border_inc, count);
 }
@@ -911,6 +914,7 @@ tstzspanset_bins(const SpanSet *ss, const Interval *duration,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   return spanset_bins(ss, PointerGetDatum(duration),
     TimestampTzGetDatum(torigin), border_inc, count);
 }
@@ -993,6 +997,8 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
   /* Compute the spans and create the resulting array */
   int nbins;
   Span *bins = span_bins(&bounds, vsize, vorigin, border_inc, &nbins);
+  if (! bins)
+    return NULL;
   Span *result = palloc(sizeof(Span) * nbins);
   int count1 = 0;
   for (int i = 0; i < nbins; i++)
@@ -1350,7 +1356,10 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
   *ntiles = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TNUMBER(temp, NULL);
-  if (! ensure_not_negative_datum(vsize, temptype_basetype(temp->temptype)) ||
+  /* A grid without a time dimension needs a positive value size */
+  MeosType basetype = temptype_basetype(temp->temptype);
+  if (! ensure_not_negative_datum(vsize, basetype) ||
+      (! duration && ! ensure_positive_datum(vsize, basetype)) ||
       (duration && ! ensure_positive_duration(duration)))
     return NULL;
 
@@ -1881,7 +1890,8 @@ temporal_time_split(const Temporal *temp, const Interval *duration,
   VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL);  
+  VALIDATE_NOT_NULL(temp, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
   if (! ensure_positive_duration(duration))
     return NULL;
 

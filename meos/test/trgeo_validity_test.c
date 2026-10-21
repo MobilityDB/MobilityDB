@@ -41,7 +41,9 @@
  * The program verifies that #trgeometry_stboxes reports a null temporal value,
  * a null count and a temporal value of another type by returning NULL, setting
  * #meos_errno and leaving the count at zero, and that a valid call still
- * answers with no error left behind.
+ * answers with no error left behind. It also verifies that
+ * #trgeometry_space_boxes reports a size that is not positive in the same way,
+ * and that a positive size still answers.
  *
  * The program can be build as follows
  * @code
@@ -112,6 +114,27 @@ int main(void)
   assert(count == 1);
   assert(meos_errno() == 0);
   free(boxes);
+
+  /* A size that is not positive is reported rather than read as a missing
+   * space dimension, and a positive size still answers */
+  GSERIALIZED *origin = geom_in("Point(0 0)", -1);
+  assert(origin);
+  count = -1;
+  boxes = trgeometry_space_boxes(trgeo, 0, 0, 0, origin, false, true, &count);
+  printf("trgeometry_space_boxes(trgeo, 0, ...): %s, count %d, errno %d\n",
+    boxes ? "a value" : "NULL", count, meos_errno());
+  assert(boxes == NULL);
+  assert(count == 0);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  boxes = trgeometry_space_boxes(trgeo, 1, 0, 0, origin, false, true, &count);
+  printf("trgeometry_space_boxes(trgeo, 1, ...): %s, errno %d\n",
+    boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes != NULL);
+  assert(count > 0);
+  assert(meos_errno() == 0);
+  free(boxes);
+  free(origin);
 
   free(trgeo);
   free(tint);

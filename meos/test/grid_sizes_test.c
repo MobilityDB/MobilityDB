@@ -192,8 +192,14 @@ int main(void)
   check_tile("stbox_get_space_tile 2D, one size", pt2, 2, 0, 0, 2, 2, o3);
   check_tile("stbox_get_space_tile 3D, one size", pt3, 2, 0, 0, 2, 2, o3);
 
-  /* A size that is negative, not a number or infinite is refused */
+  /* A size that is zero, negative, not a number or infinite is refused */
   int n = 0;
+  check_refused("stbox_space_tiles, xsize 0",
+    stbox_space_tiles(box2, 0, 0, 0, o3, true, &n));
+  check_refused("tgeo_space_boxes, xsize 0",
+    tgeo_space_boxes(tpt2, 0, 0, 0, o3, true, true, &n));
+  check_refused("tgeo_space_split, xsize 0",
+    tgeo_space_split(tpt2, 0, 0, 0, o3, true, true, NULL, &n));
   check_refused("stbox_space_tiles, negative ysize",
     stbox_space_tiles(box2, 2, -1, 0, o3, true, &n));
   check_refused("tgeo_space_boxes, xsize not a number",
