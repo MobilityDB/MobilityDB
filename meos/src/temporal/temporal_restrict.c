@@ -413,7 +413,7 @@ temporal_restrict_minmax(const Temporal *temp, bool min, bool atfunc)
  * @param[in] temp Temporal value
  * @param[in] t Timestamp
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
- * @csqlfn #Temporal_at_timestamptz(), Temporal_minus_timestamptz()
+ * @csqlfn #Temporal_at_timestamptz(), #Temporal_minus_timestamptz()
  */
 Temporal *
 temporal_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
@@ -3782,7 +3782,7 @@ temporal_before_timestamptz(const Temporal *temp, TimestampTz t, bool strict)
  * @param[in] t Timestamp
  * @param[in] strict True if the restriction is strictly after, false when
  * the restriction is after or equal
- * @csqlfn #Temporal_after_timestamptz(), Temporal_after_eq_timestamptz()
+ * @csqlfn #Temporal_after_timestamptz()
  */
 Temporal *
 temporal_after_timestamptz(const Temporal *temp, TimestampTz t, bool strict)

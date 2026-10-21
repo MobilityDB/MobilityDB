@@ -225,6 +225,7 @@ value_union_transfn(Set *state, Datum value, meosType basetype)
  * @code
  * state = set_union_transfn(state, set);
  * @endcode
+ * @csqlfn #Set_union_transfn()
  */
 Set *
 set_union_transfn(Set *state, Set *s)

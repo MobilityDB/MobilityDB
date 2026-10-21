@@ -781,7 +781,7 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs)
  * boxes
  * @param[in] box1,box2 Spatiotemporal boxes
  * @return On error or if the time frames do not intersect return infinity
- * @csqlfn #NAD_stbox_stbox ()
+ * @csqlfn #NAD_stbox_stbox() ()
  */
 double
 nad_stbox_stbox(const STBox *box1, const STBox *box2)
