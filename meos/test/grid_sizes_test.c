@@ -43,6 +43,10 @@
  * `xsize` answers, for a box, a temporal point and a point, with and without
  * Z, and that an invalid size or origin is reported by setting #meos_errno.
  *
+ * The functions laying a space and a time grid together take both sizes, so
+ * an `xsize` of 0 and a missing duration are refused by them, as
+ * `stbox_get_space_time_tile` refuses them.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o grid_sizes_test grid_sizes_test.c -L/usr/local/lib -lmeos -lm
@@ -214,6 +218,59 @@ int main(void)
     tgeo_space_boxes(tpt3, 2, 0, 0, o2, true, true, &n));
   check_refused("stbox_space_tiles 3D, origin without Z",
     stbox_space_tiles(box3, 2, 0, 0, o2, true, &n));
+
+  /* The functions laying a space and a time grid take both sizes, so an
+   * xsize of 0 and a missing duration are refused */
+  STBox *boxt = stbox_in("STBOX XT(((0,0),(10,10)),[2001-01-01, 2001-01-02])");
+  Interval *dur = interval_in("6 hours", -1);
+  TimestampTz torig = timestamptz_in("2001-01-01", -1);
+  check_refused("stbox_space_time_tiles, xsize 0",
+    stbox_space_time_tiles(boxt, 0, 0, 0, dur, o3, torig, true, &n));
+  check_refused("tgeo_space_time_boxes, xsize 0",
+    tgeo_space_time_boxes(tpt2, 0, 0, 0, dur, o3, torig, true, true, &n));
+  check_refused("tgeo_space_time_split, xsize 0",
+    tgeo_space_time_split(tpt2, 0, 0, 0, dur, o3, torig, true, true, NULL,
+      NULL, &n));
+  STBox *tiles = stbox_space_time_tiles(boxt, 5, 0, 0, NULL, o3, torig, true,
+    &n);
+  check("stbox_space_time_tiles, no duration",
+    tiles == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  STBox *boxes = tgeo_space_time_boxes(tpt2, 5, 0, 0, NULL, o3, torig, true,
+    true, &n);
+  check("tgeo_space_time_boxes, no duration",
+    boxes == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  Temporal **frags = tgeo_space_time_split(tpt2, 5, 0, 0, NULL, o3, torig,
+    true, true, NULL, NULL, &n);
+  check("tgeo_space_time_split, no duration",
+    frags == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  /* Both sizes still answer, and each function of one dimension answers the
+   * grid of its dimension */
+  tiles = stbox_space_time_tiles(boxt, 5, 0, 0, dur, o3, torig, true, &n);
+  check("stbox_space_time_tiles, xsize 5 and 6 hours",
+    meos_errno() == 0 && tiles && n > 0);
+  free(tiles);
+  tiles = stbox_time_tiles(boxt, dur, torig, true, &n);
+  check("stbox_time_tiles, 6 hours", meos_errno() == 0 && tiles && n > 0);
+  free(tiles);
+  boxes = tgeo_time_boxes(tpt2, NULL, torig, true, true, &n);
+  check("tgeo_time_boxes, no duration",
+    boxes == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  boxes = tgeo_time_boxes(tpt2, dur, torig, true, true, &n);
+  check("tgeo_time_boxes, 6 hours", meos_errno() == 0 && boxes && n > 0);
+  free(boxes);
+  boxes = tgeo_space_time_boxes(tpt2, 5, 0, 0, dur, o3, torig, true, true,
+    &n);
+  check("tgeo_space_time_boxes, xsize 5 and 6 hours",
+    meos_errno() == 0 && boxes && n > 0);
+  free(boxes);
+  frags = tgeo_space_time_split(tpt2, 5, 0, 0, dur, o3, torig, true, true,
+    NULL, NULL, &n);
+  check("tgeo_space_time_split, xsize 5 and 6 hours",
+    meos_errno() == 0 && frags && n > 0);
+  for (int i = 0; frags && i < n; i++)
+    free(frags[i]);
+  free(frags);
+  free(boxt); free(dur);
 
   free(box2); free(box3); free(tpt2); free(tpt3);
   free(pt2); free(pt3); free(o2); free(o3);

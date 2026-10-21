@@ -134,6 +134,47 @@ int main(void)
   assert(count > 0);
   assert(meos_errno() == 0);
   free(boxes);
+
+  /* The spatiotemporal boxes take both sizes, so an xsize of 0 and a missing
+   * duration are refused rather than read as a missing dimension, and both
+   * sizes still answer */
+  Interval *duration = interval_in("12 hours", -1);
+  TimestampTz torigin = timestamptz_in("2001-01-01", -1);
+  count = -1;
+  boxes = trgeometry_space_time_boxes(trgeo, 0, 0, 0, duration, origin,
+    torigin, false, true, &count);
+  printf("trgeometry_space_time_boxes(trgeo, 0, ..., 12 hours, ...): %s, "
+    "count %d, errno %d\n", boxes ? "a value" : "NULL", count, meos_errno());
+  assert(boxes == NULL);
+  assert(count == 0);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  count = -1;
+  boxes = trgeometry_space_time_boxes(trgeo, 1, 0, 0, NULL, origin, torigin,
+    false, true, &count);
+  printf("trgeometry_space_time_boxes(trgeo, 1, ..., NULL, ...): %s, "
+    "count %d, errno %d\n", boxes ? "a value" : "NULL", count, meos_errno());
+  assert(boxes == NULL);
+  assert(count == 0);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxes = trgeometry_space_time_boxes(trgeo, 1, 0, 0, duration, origin,
+    torigin, false, true, &count);
+  printf("trgeometry_space_time_boxes(trgeo, 1, ..., 12 hours, ...): %s, "
+    "errno %d\n", boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes != NULL);
+  assert(count > 0);
+  assert(meos_errno() == 0);
+  free(boxes);
+  boxes = trgeometry_time_boxes(trgeo, duration, torigin, false, true,
+    &count);
+  printf("trgeometry_time_boxes(trgeo, 12 hours, ...): %s, errno %d\n",
+    boxes ? "a value" : "NULL", meos_errno());
+  assert(boxes != NULL);
+  assert(count > 0);
+  assert(meos_errno() == 0);
+  free(boxes);
+  free(duration);
   free(origin);
 
   free(trgeo);

@@ -78,12 +78,14 @@ int main(void)
   TBox *boxes;
   Span *spans;
   int count;
-  if (valuesplit)
+  if (valuesplit && timesplit)
     boxes = intspan ?
-      tintbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
-        true, &count) :
-      tfloatbox_value_time_tiles(box, 5, timesplit ? interv : NULL, 1, torigin,
-        true, &count);
+      tintbox_value_time_tiles(box, 5, interv, 1, torigin, true, &count) :
+      tfloatbox_value_time_tiles(box, 5, interv, 1, torigin, true, &count);
+  else if (valuesplit)
+    boxes = intspan ?
+      tintbox_value_tiles(box, 5, 1, true, &count) :
+      tfloatbox_value_tiles(box, 5, 1, true, &count);
   else
     spans = tstzspan_bins(&box->period, interv, torigin, true, &count);
 
