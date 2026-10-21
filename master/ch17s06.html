@@ -49,12 +49,18 @@ SELECT tpcpatchFromMFJSON(asMFJSON(t)) = t
 FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz) AS t) s;
 -- t
-</pre></li></ul></div><p>As for a <code class="varname">tpcpoint</code>, <code class="varname">asText</code> takes no <code class="varname">maxdecimaldigits</code> argument.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tpcpatch"></a><a class="indexterm" name="id17164"></a><p>Construct a temporal pcpatch of instant subtype</p><pre class="programlisting">
-tpcpatch(pcpatch,timestamptz) → tpcpatch
+</pre></li></ul></div><p>As for a <code class="varname">tpcpoint</code>, <code class="varname">asText</code> takes no <code class="varname">maxdecimaldigits</code> argument.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tpcpatch"></a><a class="indexterm" name="id17164"></a><p>Constructor for temporal point cloud patches having a constant value</p><pre class="programlisting">
+tpcpatch(pcpatch,timestamptz) → tpcpatchInst
+tpcpatch(pcpatch,tstzset) → tpcpatchDiscSeq
+tpcpatch(pcpatch,tstzspan) → tpcpatchContSeq
+tpcpatch(pcpatch,tstzspanset) → tpcpatchSeqSet
 </pre><pre class="programlisting">
 SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
 -- Instant
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]'));
+-- Sequence
 </pre></li><li class="listitem"><a name="tpcpatch_tpcpatchSeq"></a><a class="indexterm" name="id17171"></a><p>Construct a temporal pcpatch of sequence subtype</p><pre class="programlisting">
 tpcpatchSeq(tpcpatch[]) → tpcpatch
 tpcpatchSeq(tpcpatch[],text) → tpcpatch

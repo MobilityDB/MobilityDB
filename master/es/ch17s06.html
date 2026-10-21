@@ -49,12 +49,18 @@ SELECT tpcpatchFromMFJSON(asMFJSON(t)) = t
 FROM (SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
   '2001-01-01'::timestamptz) AS t) s;
 -- t
-</pre></li></ul></div><p>Como para un <code class="varname">tpcpoint</code>, <code class="varname">asText</code> no toma un argumento <code class="varname">maxdecimaldigits</code>.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tpcpatch"></a><a class="indexterm" name="id16594"></a><p>Construye un pcpatch temporal de subtipo instante</p><pre class="programlisting">
-tpcpatch(pcpatch,timestamptz) → tpcpatch
+</pre></li></ul></div><p>Como para un <code class="varname">tpcpoint</code>, <code class="varname">asText</code> no toma un argumento <code class="varname">maxdecimaldigits</code>.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_constructors"></a>Constructores</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tpcpatch"></a><a class="indexterm" name="id16594"></a><p>Constructor para parches de nube de puntos temporales con un valor constante</p><pre class="programlisting">
+tpcpatch(pcpatch,timestamptz) → tpcpatchInst
+tpcpatch(pcpatch,tstzset) → tpcpatchDiscSeq
+tpcpatch(pcpatch,tstzspan) → tpcpatchContSeq
+tpcpatch(pcpatch,tstzspanset) → tpcpatchSeqSet
 </pre><pre class="programlisting">
 SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz));
 -- Instant
+SELECT tempSubtype(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), tstzspan '[2001-01-01, 2001-01-02]'));
+-- Sequence
 </pre></li><li class="listitem"><a name="tpcpatch_tpcpatchSeq"></a><a class="indexterm" name="id16601"></a><p>Construye un pcpatch temporal de subtipo secuencia</p><pre class="programlisting">
 tpcpatchSeq(tpcpatch[]) → tpcpatch
 tpcpatchSeq(tpcpatch[],text) → tpcpatch

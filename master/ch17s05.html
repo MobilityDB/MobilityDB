@@ -54,8 +54,8 @@ SELECT tpcpointFromEWKT('SRID=4326;' ||
 </pre></li></ul></div><p><code class="varname">asText</code> takes no <code class="varname">maxdecimaldigits</code> argument, a <code class="varname">pcpoint</code> printing as the hex of its pgPointCloud WKB, the text the type output function of pgPointCloud writes, which has no decimal places to round. MF-JSON carries a <code class="varname">"bbox"</code> key when <code class="varname">options</code> is 1, a TPCBox JSON object adding a <code class="varname">"pcid"</code> field next to the standard stbox-shaped <code class="varname">"bbox"</code> array.</p></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpoint_constructors"></a>Constructors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpoint_tpcpoint"></a><a class="indexterm" name="id16589"></a><p>Constructor for temporal point cloud points having a constant value</p><pre class="programlisting">
 tpcpoint(pcpoint,timestamptz) → tpcpointInst
 tpcpoint(pcpoint,tstzset) → tpcpointDiscSeq
-tpcpoint(pcpoint,tstzspan,interp text='step') → tpcpointContSeq
-tpcpoint(pcpoint,tstzspanset,interp text='step') → tpcpointSeqSet
+tpcpoint(pcpoint,tstzspan) → tpcpointContSeq
+tpcpoint(pcpoint,tstzspanset) → tpcpointSeqSet
 </pre><pre class="programlisting">
 SELECT asText(tpcpoint(pcpoint(1, 1, 1, 1), timestamptz '2001-01-01'));
 -- 0101000000640000006400000064000000@2001-01-01
