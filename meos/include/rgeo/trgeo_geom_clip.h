@@ -39,8 +39,7 @@
  * a distinct geometric object.
  *
  * Sibling of `tpoint_geom_clip.c`, which handles the static-edge ×
- * polygon case. The two will share a unified Edge / point-in-polygon
- * infrastructure once both wire into the build.
+ * polygon case with its own Edge and point-in-polygon infrastructure.
  */
 
 #ifndef __TRGEO_GEOM_CLIP_H__
