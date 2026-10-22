@@ -60,8 +60,7 @@ Datum
 Jsonbset_as_textset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = jsonbfunc_jsonbset(s, &datum_jsonb_to_text, T_JSONBSET,
-    T_TEXT);
+  Set *result = jsonbset_to_textset(s);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -78,8 +77,7 @@ Datum
 Textset_as_jsonbset(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
-  Set *result = jsonbfunc_jsonbset(s, &datum_text_to_jsonb, T_TEXTSET,
-    T_JSONB);
+  Set *result = textset_to_jsonbset(s);
   PG_FREE_IF_COPY(s, 0);
   if (! result)
     PG_RETURN_NULL();
