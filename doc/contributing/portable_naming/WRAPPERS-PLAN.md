@@ -1,0 +1,507 @@
+<!--
+  MobilityDB — Portable Naming: The SQL functions MEOS answers
+  Copyright(c) MobilityDB Contributors
+
+  This documentation is licensed under a Creative Commons Attribution-Share
+  Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+-->
+
+# The SQL functions MEOS answers
+
+[Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md) · [I/O plan](IO-PLAN.md)
+
+A binding generated from the MEOS catalog reaches a MobilityDB SQL function only when the catalog
+states that function's signature. This document lists every SQL signature the catalog does not
+state, says which of them are out of the bindings' scope, and gives the public MEOS function each
+of the others needs. MobilityDB's SQL surface does not change: every SQL function keeps its name,
+signature and answer, and only the C behind it moves into MEOS.
+
+## How a binding reaches a SQL function
+
+The `@csqlfn` tag of a MEOS function names the PostgreSQL wrappers that call it. MEOS-API reads
+every wrapper a tag names (`_meos_to_mdb` in `parser/sqlfn.py`), and gives each wrapper's
+`CREATE FUNCTION` signatures to that function as its `sqlSignatures`. Each signature carries its
+own SQL name. `right_set_set`, tagged `@csqlfn #Right_set_set(), #After_set_set()`, therefore
+states `setRight(intset, intset)` and the other number sets, and `setAfter(dateset, dateset)`
+and `setAfter(tstzset, tstzset)`. `mdbC` and `sqlfn` name the first wrapper only, as the
+representative of the function.
+
+Three readings complete the rule:
+
+- **Type scope.** A function keeps only the signatures of the types it accepts. `@csqlfn` of
+  `eintersects_tgeo_geo` names `#Eintersects_tnpoint_geo()`, but the function refuses a
+  `tnpoint` (`VALIDATE_TGEO`), so `eIntersects(tnpoint, geometry)` is not one of its signatures.
+- **Compositions.** A wrapper that converts an argument through a public cast and then calls a
+  public function is stated in the catalog's `compositions`:
+  `eIntersects(tnpoint, geometry)` is `eintersects_tgeo_geo(tnpoint_to_tgeompoint(t), g)`.
+- **Bindings.** The generators read `sqlSignatures` and `compositions`, signature by signature:
+  `published_name` in JMEOS `tools/codegen_spark_udfs.py` for Spark and Flink, `signatures` in
+  `tools/codegen_jvm.py` for the typed surfaces.
+
+A wrapper census that reads `mdbC` alone counts every wrapper named after the first position as
+unlinked (203 wrappers on master), and counts a wrapper as linked when the type scope drops some
+of its signatures. The census below is therefore taken by signature: a SQL signature is reached
+when the catalog states it, as a signature of a public function or as a composition.
+
+Measured at MobilityDB master `1cbb831a57` with MEOS-API master `fa5f240`. The signatures are
+those `_wrapper_sql_sigs` of MEOS-API `parser/sqlfn.py` reads from the `CREATE FUNCTION`
+statements of `mobilitydb/sql`, keyed by SQL name (case-insensitive) and argument types; a
+signature is stated when an entry of `sqlSignatures` of a public function (its `sqlName`, else
+the function's `sqlfn`) or of `compositions` (whose `call` is public) carries the same key. The
+support functions are those whose wrapper or SQL name matches the type, index, planner and
+aggregate support suffixes (`_in`, `_out`, `_recv`, `_send`, `_sel`, `_gist`, `_transfn`, ...).
+
+| | wrappers | SQL signatures |
+|---|---|---|
+| bound to a C wrapper | 2820 | 8765 |
+| stated by the catalog | | 8296 |
+| not stated | 301 | 469 |
+| of which PostgreSQL's type, index, planner and aggregate support | 112 | 176 |
+| of which out of the bindings' scope | 24 | 59 |
+| of which the I/O plan's | 3 | 40 |
+| **of which this plan's** | **162** | **194** |
+
+The 194 signatures fall into three groups: 46 need a tag only, 80 need the wrapper to call the
+public function, and 68 need a new public MEOS function. The appendix lists each one with its
+wrapper and the MEOS function it reaches.
+
+## The rule
+
+1. **Every SQL function a binding projects answers through one public MEOS function** that its
+   wrapper calls. The function validates its arguments at entry; the wrapper only reads its
+   arguments and returns the result.
+2. **The function is named and shaped like its sibling** on master, the same operation over the
+   neighbouring family. Where the internal kernel takes an `invert` flag, there is one public
+   function per argument order, as with `contains_set_bigint(const Set *, int64)` and
+   `contained_bigint_set(int64, const Set *)`. It lives in the `_meos.c` twin of the file that
+   defines the kernel it calls.
+3. **The tag states what the wrapper calls.** A MEOS function names in its `@csqlfn` every wrapper
+   that calls it, and only those. The catalog then states every signature of those wrappers that
+   the function accepts.
+
+## Out of the bindings' scope (24 wrappers, 59 signatures)
+
+- PostgreSQL's range and multirange conversions (`span(int4range)`, `range(intspan)`,
+  `spanset(int4multirange)`, `multirange(intspanset)`), the GIN support of sets and network
+  points, the typmod enforcement of the temporal types, and `fill_oid_cache`.
+- The constructors of the PostgreSQL geometric types (`point`, `line`, `lseg`, `box`, `circle`,
+  `path`, `polygon`), `transformGK`, the compatibility link to SECONDO, and `createTrip`, the trip
+  generator of the BerlinMOD benchmark. They stay in MobilityDB as they are.
+
+## Covered elsewhere
+
+- **The text and binary input and output.** On master every reader and writer of a single value
+  is stated, as the second wrapper of the type's `_in`, `_out` or `_as_wkb` function
+  (`Quadbin_as_text` of `quadbin_out`, `Tpcbox_as_wkb` of `tpcbox_as_wkb`, `Set_from_text` of
+  `intset_in` and its siblings). The writers of an array remain, 3 wrappers and 40 signatures
+  (`asText(<temporal>[])`, `asText(<spatial>[])`, `asEWKT(<spatial>[])`), since
+  `temparr_out` and `spatialarr_wkt_out` are internal: the [I/O plan](IO-PLAN.md) states them
+  among its MEOS gaps.
+- **The pcid and point counts of the temporal point clouds**: merged as MobilityDB #3137
+  (`1cbb831a57`).
+- **The cell instant constructors** `th3index(h3index, timestamptz)`,
+  `tquadbin(quadbin, timestamptz)`, `ts2cell(s2cell, timestamptz)`: branch
+  `meos/cell-instants-answer-the-constructor` (`0eb70440a8`).
+
+## The tag only (44 wrappers, 46 signatures)
+
+The wrapper already calls a public MEOS function, and the function's `@csqlfn` gains the
+wrapper. Where the wrapper passes a literal, the catalog records it as a bound argument of that
+signature, as `jsonbPathExistsTz` carries `tz = true` on `jsonb_path_exists`.
+
+- **JSON**: the `Opr`, `Text`, `TextOpr` and `Tz` forms of `tjsonb`, `tjson` and `jsonbset`
+  (`tjsonbObjectFieldText`, `jsonbsetPathMatchTz`, ...) and `tjsonbSetLax`, `jsonbsetSetLax`
+  (28 wrappers).
+- **`tjsonbContained`** over `(jsonb, tjsonb)`, `(tjsonb, jsonb)` and `(tjsonb, tjsonb)`: the
+  wrappers call `contains_tjsonb_*`, which answers `@>` where `<@` is asked. Branch
+  `fix/tjsonb-contained-operand-order` (`6df5be849f`) corrects the call, and the tag follows the
+  corrected call.
+- **Constructors**: `stbox(box2d)` (`gbox_to_stbox`), `pcpoint(integer, double precision[])`
+  (`pcpoint_make`), the three `pose` constructors (`pose_make_2d`, `pose_make_point2d`,
+  `pose_make_point3d_ypr`), the five `tpcbox` constructors (`tpcbox_make`),
+  `trgeometry(geometry, tpose)` and `trgeometrySeqSetGaps`.
+- **`geometry(trgeometry)`** (`trgeometry_geom`).
+
+## The wrapper calls the public function (58 wrappers, 80 signatures)
+
+The public function exists, but the wrapper reaches it through an internal function or builds
+the call itself. The wrapper calls the public function, which names it in its `@csqlfn`.
+
+- **Geometry first, over `tcbuffer`**: `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`,
+  `eTouches`, `aTouches`, `eDwithin`, `aDwithin` with a geometry or a `cbuffer` first reach the
+  symmetric public function (`edisjoint_tcbuffer_geo`, ...) through an internal `ea_*` function
+  or call it without being named by it (16 wrappers). The 6 geometry-first wrappers over
+  `trgeometry` belong to the rigid geometry relations, the last task of the campaign.
+- **The geography operator forms** `nearestApproachDistanceOp`, `tDistanceOp` and
+  `setDistanceOp` over `tgeography`, `tgeogpoint`, `geogset` and `stbox` (`nad_tgeo_geo`,
+  `tdistance_tgeo_geo`, `distance_set_geo`, ...).
+- **Box constructors**: `stboxT`, `stboxXT`, `stboxZ`, `stboxZT`, `geodstboxZ`, `geodstboxZT`
+  (`stbox_make`), `tbox(numeric)` (`float_to_tbox`).
+- **`spanDistance(span, spanset)`** and **`nearestApproachDistance(tbox, tnumber)`**: the typed
+  functions `distance_intspanset_intspan`, `nad_tint_tbox` and their siblings.
+- **JSON paths**: `tjsonbExtractPathText`, `tjsonbExtractPathOpr`, the `jsonbset` and `tjson`
+  forms (`tjsonb_extract_path`, `jsonbset_extract_path`, `tjson_extract_path`).
+- **Others**: `point(pose)` (`pose_to_point`), `trgeometrySeq` and `trgeometrySeqSet`
+  (`trgeometryseq_make`, `trgeometryseqset_make`), and `dumpValues`, `valueCount`,
+  `valuePercent` over `raster` (`raster_dump_values`, `raster_value_count`).
+
+## The MEOS functions to add (60 wrappers, 68 signatures)
+
+One pull request per family. Every wrapper keeps its SQL answer, which the regression suite
+proves unchanged.
+
+### Network point route operations (20)
+
+`npoint/tnpoint_routeops.h` is internal and takes `bool invert`. The public functions take one
+argument order each, after `contains_set_bigint`, `contained_bigint_set`, `contains_set_set`,
+`overlaps_set_set` (`meos.h`) and `contains_set_npoint` (`meos_npoint.h`). Branch
+`meos/npoint-public` (`6734c74994`).
+
+- `containsRid`: `contains_rid_tnpoint_bigint`, `contains_rid_tnpoint_bigintset`,
+  `contains_rid_tnpoint_npoint`, `contains_rid_bigintset_tnpoint`, `contains_rid_tnpoint_tnpoint`
+- `containedRid`: `contained_rid_bigint_tnpoint`, `contained_rid_bigintset_tnpoint`,
+  `contained_rid_npoint_tnpoint`, `contained_rid_tnpoint_bigintset`,
+  `contained_rid_tnpoint_tnpoint`
+- `overlapsRid`: `overlaps_rid_bigintset_tnpoint`, `overlaps_rid_tnpoint_bigintset`,
+  `overlaps_rid_tnpoint_tnpoint`
+- `sameRid`: `same_rid_bigint_tnpoint`, `same_rid_bigintset_tnpoint`, `same_rid_npoint_tnpoint`,
+  `same_rid_tnpoint_bigint`, `same_rid_tnpoint_bigintset`, `same_rid_tnpoint_npoint`,
+  `same_rid_tnpoint_tnpoint`
+
+### Circular buffer (2)
+
+Branch `meos/cbuffer-public` (`2e8df4dd3f`).
+
+- `eContains(geometry, tcbuffer)`: `econtains_geo_tcbuffer`, after `acontains_geo_tcbuffer`
+- `aTouches(tcbuffer, tcbuffer)`: `atouches_tcbuffer_tcbuffer` is declared in `meos_cbuffer.h`
+  under `@ingroup meos_internal_geo_rel_ever` and moves to the public group of its sibling
+  `etouches_tcbuffer_tcbuffer`
+
+### Rigid geometry (11)
+
+- `eContains`, `aContains(trgeometry, geometry)`: `econtains_trgeometry_geo`,
+  `acontains_trgeometry_geo`, after `ecovers_trgeometry_geo`
+- `eContains`, `aContains`, `eCovers`, `aCovers`, `eTouches`, `aTouches(trgeometry, trgeometry)`:
+  `econtains_trgeometry_trgeometry` and its five siblings, after `edisjoint_trgeometry_trgeometry`
+- `valueAtTimestamp(trgeometry, timestamptz)`: `trgeometry_value_at_timestamptz`, after
+  `tgeo_value_at_timestamptz`
+- `_trgeometry_geom_clip_polygon` and `_trgeometry_geom_clip_polygon_posed` reach only the
+  internal `trgeo_geom_clip_lwgeom` kernels
+
+The eight relations, and every other wrapper of a rigid geometry relation, are the last task of
+the campaign: their kernels answer over the union of the placements, and an assessment of whether
+an exact algorithm with the correct semantics exists comes first. No such wrapper is published or
+rerouted before it.
+
+### Geometry (2)
+
+- `symDifference(geometry, geometry)`: `geom_symdifference2d`, after `geom_difference2d`
+- `difference(geometry, geometry)`: waits for the owner's decision (see Open)
+
+### JSON sets (2)
+
+Branch `meos/json-public` (`f03e888159`).
+
+- `textset(jsonbset)`: `jsonbset_to_textset`, after `tjsonb_to_ttext`
+- `jsonbset(textset)`: `textset_to_jsonbset`, after `ttext_to_tjsonb`
+
+### Sets of the extension types (3 wrappers, 9 signatures)
+
+`setDistance` over `cbufferset`, `npointset` and `poseset` reaches only the internal
+`distance_set_set`, `distance_set_value` and `distance_value_set`; the public typed functions
+cover the number, time and geo sets only.
+
+- `setDistance(cbufferset, cbufferset)`, `(npointset, npointset)`, `(poseset, poseset)`:
+  `distance_cbufferset_cbufferset`, `distance_npointset_npointset`, `distance_poseset_poseset`,
+  after `distance_geoset_geoset`
+- `setDistance` between such a set and a value, in either order: `distance_set_cbuffer`,
+  `distance_set_npoint`, `distance_set_pose`, the set first as in `distance_set_geo`
+
+### Temporal numbers and pose chains (3)
+
+- `tDistance(tbigint, bigint)` and `tDistance(bigint, tbigint)`: `tdistance_tbigint_bigint`,
+  after `tdistance_tint_int`; waits for the owner's decision (see Open)
+- `valueAtTimestamp(tposechain, timestamptz)`: `tposechain_value_at_timestamptz`, after
+  `tpose_value_at_timestamptz`
+
+### Point clouds (16)
+
+- `SRID(pcpoint)`, `SRID(pcpatch)`: `pcpoint_srid`, `pcpatch_srid`, after `tpcbox_srid`
+- `getX`, `getY`, `getZ(tpcpoint)`: `tpcpoint_get_x`, `_y`, `_z`, after `tpoint_get_x`
+- `getDim(tpcpoint, text)`: `tpcpoint_get_dim`, after `pcpoint_get_dim`
+- `points(tpcpatch)`: `tpcpatch_points`, after `pcpatch_points`
+- `eIntersects(tpcpatch, geometry)`: `eintersects_tpcpatch_geo`, after `eintersects_tpcpoint_geo`
+- `atTpcbox`, `minusTpcbox(tpcpoint, tpcbox)`: `tpcpoint_at_tpcbox`, `tpcpoint_minus_tpcbox`,
+  after `tgeo_at_stbox`
+- `atTpcbox`, `minusTpcbox`, `atTpcboxFine`, `minusTpcboxFine(tpcpatch, tpcbox)`:
+  `tpcpatch_at_tpcbox`, `tpcpatch_minus_tpcbox`, `tpcpatch_at_tpcbox_fine`,
+  `tpcpatch_minus_tpcbox_fine`
+- `atGeometry`, `minusGeometry(tpcpatch, geometry)`: `tpcpatch_at_geom`, `tpcpatch_minus_geom`,
+  after `tgeo_at_geom`
+
+`atTpcbox` keeps a patch whole when its bounds overlap the box; `atTpcboxFine` keeps only the
+points inside the box. The patch-level test reads the patch bounds in x and y only, so a box with
+Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it before the move.
+
+## Consistency of the tags
+
+- **The jsonpath functions under `#if MEOS`.** `jsonb_path_exists`, `jsonb_path_match`,
+  `jsonb_path_query_all`, `jsonb_path_query_array`, `jsonb_path_query_first`
+  (`pgtypes/utils/jsonpath_exec.c`) and `jsonb_exists_array` (`pgtypes/utils/jsonb_op.c`) are
+  compiled only under `#if MEOS`. Their tags name `jsonbPathExistsTz` and its siblings and
+  `jsonbExistsAll`, so the catalog states them and the bindings reach them. In the PostgreSQL
+  build, however, those wrappers call `pg_jsonb_path_*` twins, which breaks rule 3. The gate goes,
+  and the wrappers call the public functions.
+- **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
+  `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
+  operator per signature closes it, for the bindings that register operators.
+
+## Open
+
+- **Rigid geometry relations**, the last task: does an exact algorithm with the correct semantics
+  exist for the relations whose kernels answer over the union of the placements?
+- **`difference(geometry, geometry)`** calls the polygon-only Clipper2 `clip_poly_poly`, while
+  `geom_difference2d` overlays through GEOS: which one should the SQL function call?
+- **`tdistance_tbigint_bigint`**: add it, after `tdistance_tint_int`?
+- **The underscore functions** `_trgeometry_geom_clip_polygon` and
+  `_trgeometry_geom_clip_polygon_posed`: public MEOS functions, or internal ones that stay out of
+  the bindings?
+- **A step `tpcpoint` cut as linear** by `atTpcbox` through `tpcpoint_to_tgeompoint`.
+- Five SQL functions are commented out in `mobilitydb/sql` and have no C body: `h3index(bigint)`,
+  `tjsonbPathQuery`, `tjsonbPathQueryTz`, `tdirection(tgeompoint)` and `quaternion(tpose)`. They
+  are outside the census, which reads `CREATE FUNCTION` statements.
+
+## The plan
+
+- MobilityDB: the `@csqlfn` tags of the 44 wrappers that already call a public function.
+- MobilityDB: the 58 wrappers that call the public function they reach through an internal
+  one, each named in its tag.
+- MobilityDB: the jsonpath functions and `jsonb_exists_array` moved outside `#if MEOS`, with the
+  `Tz` and `ExistsAll` wrappers calling them.
+- MobilityDB: the Z extent of a patch against a box, and the operand order of `tjsonbContained`,
+  each a defect on its own branch, before its family.
+- MobilityDB: one pull request per family of the functions to add, each adding the public
+  functions, the wrappers calling them, and a C test.
+- MEOS-API: the operator stated per signature.
+
+## Acceptance
+
+The census by signature over master reads 0 signatures that are not stated, apart from
+PostgreSQL's support, the out-of-scope functions and the I/O plan's array writers, and the
+regression suite answers as before.
+
+## Appendix: every SQL signature the catalog does not state
+
+### The tag only: the wrapper calls a public function that does not name it (44 wrappers, 46 signatures)
+
+| wrapper | SQL signatures | MEOS function |
+|---|---|---|
+| `Box2d_to_stbox` | stbox(box2d) | gbox_to_stbox |
+| `Contained_jsonb_tjsonb` | tjsonbContained(jsonb, tjsonb) | contains_tjsonb_jsonb |
+| `Contained_tjsonb_jsonb` | tjsonbContained(tjsonb, jsonb) | contains_tjsonb_jsonb |
+| `Contained_tjsonb_tjsonb` | tjsonbContained(tjsonb, tjsonb) | contains_tjsonb_tjsonb |
+| `Jsonbset_array_element_opr` | jsonbsetArrayElementOpr(jsonbset, integer) | jsonbset_array_element |
+| `Jsonbset_array_element_text` | jsonbsetArrayElementText(jsonbset, integer, text) | jsonbset_array_element |
+| `Jsonbset_array_element_text_opr` | jsonbsetArrayElementTextOpr(jsonbset, integer) | jsonbset_array_element |
+| `Jsonbset_object_field_opr` | jsonbsetObjectFieldOpr(jsonbset, text) | jsonbset_object_field |
+| `Jsonbset_object_field_text` | jsonbsetObjectFieldText(jsonbset, text, text) | jsonbset_object_field |
+| `Jsonbset_object_field_text_opr` | jsonbsetObjectFieldTextOpr(jsonbset, text) | jsonbset_object_field |
+| `Jsonbset_path_exists_opr` | jsonbsetPathExistsOpr(jsonbset, jsonpath) | jsonbset_path_exists |
+| `Jsonbset_path_exists_tz` | jsonbsetPathExistsTz(jsonbset, jsonpath, jsonb, boolean) | jsonbset_path_exists |
+| `Jsonbset_path_match_opr` | jsonbsetPathMatchOpr(jsonbset, jsonpath) | jsonbset_path_match |
+| `Jsonbset_path_match_tz` | jsonbsetPathMatchTz(jsonbset, jsonpath, jsonb, boolean) | jsonbset_path_match |
+| `Jsonbset_path_query_array_tz` | jsonbsetPathQueryArrayTz(jsonbset, jsonpath, jsonb, boolean) | jsonbset_path_query_array |
+| `Jsonbset_path_query_first_tz` | jsonbsetPathQueryFirstTz(jsonbset, jsonpath, jsonb, boolean) | jsonbset_path_query_first |
+| `Jsonbset_set_lax` | jsonbsetSetLax(jsonbset, text[], jsonb, boolean, text) | jsonbset_set |
+| `Pcpoint_make_coords` | pcpoint(integer, double precision[]) | pcpoint_make |
+| `Pose_constructor` | pose(double precision, double precision, double precision, integer); pose(double precision, double precision, double precision, double precision, double precision, double precision, double precision, integer) | pose_make_2d |
+| `Pose_constructor_point` | pose(geometry, double precision); pose(geometry, double precision, double precision, double precision, double precision) | pose_make_point2d |
+| `Pose_constructor_point_ypr` | pose(geometry, double precision, double precision, double precision) | pose_make_point3d_ypr |
+| `Tjson_array_element_opr` | tjsonArrayElementOpr(ttext, integer) | tjson_array_element |
+| `Tjson_object_field_opr` | tjsonObjectFieldOpr(ttext, text) | tjson_object_field |
+| `Tjsonb_array_element_opr` | tjsonbArrayElementOpr(tjsonb, integer) | tjsonb_array_element |
+| `Tjsonb_array_element_text` | tjsonbArrayElementText(tjsonb, integer, text) | tjsonb_array_element |
+| `Tjsonb_array_element_text_opr` | tjsonbArrayElementTextOpr(tjsonb, integer) | tjsonb_array_element |
+| `Tjsonb_object_field_opr` | tjsonbObjectFieldOpr(tjsonb, text) | tjsonb_object_field |
+| `Tjsonb_object_field_text` | tjsonbObjectFieldText(tjsonb, text, text) | tjsonb_object_field |
+| `Tjsonb_object_field_text_opr` | tjsonbObjectFieldTextOpr(tjsonb, text) | tjsonb_object_field |
+| `Tjsonb_path_exists_opr` | tjsonbPathExistsOpr(tjsonb, jsonpath) | tjsonb_path_exists |
+| `Tjsonb_path_exists_tz` | tjsonbPathExistsTz(tjsonb, jsonpath, jsonb, boolean) | tjsonb_path_exists |
+| `Tjsonb_path_match_opr` | tjsonbPathMatchOpr(tjsonb, jsonpath) | tjsonb_path_match |
+| `Tjsonb_path_match_tz` | tjsonbPathMatchTz(tjsonb, jsonpath, jsonb, boolean) | tjsonb_path_match |
+| `Tjsonb_path_query_array_tz` | tjsonbPathQueryArrayTz(tjsonb, jsonpath, jsonb, boolean) | tjsonb_path_query_array |
+| `Tjsonb_path_query_first_tz` | tjsonbPathQueryFirstTz(tjsonb, jsonpath, jsonb, boolean) | tjsonb_path_query_first |
+| `Tjsonb_set_lax` | tjsonbSetLax(tjsonb, text[], jsonb, boolean, text) | tjsonb_set |
+| `Tpcbox_constructor_2d` | tpcboxX(float, float, float, float, integer) | tpcbox_make |
+| `Tpcbox_constructor_3d` | tpcboxZ(float, float, float, float, float, float, integer) | tpcbox_make |
+| `Tpcbox_constructor_t` | tpcboxT(tstzspan, integer) | tpcbox_make |
+| `Tpcbox_constructor_xt` | tpcboxXT(float, float, float, float, tstzspan, integer) | tpcbox_make |
+| `Tpcbox_constructor_zt` | tpcboxZT(float, float, float, float, float, float, tstzspan, integer) | tpcbox_make |
+| `Trgeometry_constructor` | trgeometry(geometry, tpose) | geometry_tpose_to_trgeometry |
+| `Trgeometry_seqset_constructor_gaps` | trgeometrySeqSetGaps(trgeometry[], interval, float, text) | trgeometryseqset_make_gaps |
+| `Trgeometry_to_geom` | geometry(trgeometry) | trgeometry_geom |
+
+### The wrapper calls the public function: it reaches it through an internal one or composes it (58 wrappers, 80 signatures)
+
+| wrapper | SQL signatures | MEOS function |
+|---|---|---|
+| `Adisjoint_cbuffer_tcbuffer` | aDisjoint(cbuffer, tcbuffer) | adisjoint_tcbuffer_cbuffer |
+| `Adisjoint_geo_tcbuffer` | aDisjoint(geometry, tcbuffer) | adisjoint_tcbuffer_geo |
+| `Adisjoint_geo_trgeometry` | aDisjoint(geometry, trgeometry) | adisjoint_trgeometry_geo |
+| `Adwithin_cbuffer_tcbuffer` | aDwithin(cbuffer, tcbuffer, float) | adwithin_tcbuffer_cbuffer |
+| `Adwithin_geo_tcbuffer` | aDwithin(geometry, tcbuffer, float) | adwithin_tcbuffer_geo |
+| `Aintersects_cbuffer_tcbuffer` | aIntersects(cbuffer, tcbuffer) | aintersects_tcbuffer_cbuffer |
+| `Aintersects_geo_tcbuffer` | aIntersects(geometry, tcbuffer) | aintersects_tcbuffer_geo |
+| `Aintersects_geo_trgeometry` | aIntersects(geometry, trgeometry) | aintersects_trgeometry_geo |
+| `Atouches_cbuffer_tcbuffer` | aTouches(cbuffer, tcbuffer) | atouches_tcbuffer_cbuffer |
+| `Atouches_geo_tcbuffer` | aTouches(geometry, tcbuffer) | atouches_tcbuffer_geo |
+| `Atouches_geo_trgeometry` | aTouches(geometry, trgeometry) | atouches_trgeometry_geo |
+| `Distance_geo_geoset_op` | setDistanceOp(geography, geogset) | distance_set_geo |
+| `Distance_geoset_geo_op` | setDistanceOp(geogset, geography) | distance_set_geo |
+| `Distance_geoset_geoset_op` | setDistanceOp(geogset, geogset) | distance_geoset_geoset |
+| `Distance_span_spanset` | spanDistance(intspan, intspanset); spanDistance(bigintspan, bigintspanset); spanDistance(floatspan, floatspanset); spanDistance(datespan, datespanset); spanDistance(tstzspan, tstzspanset) | distance_intspanset_intspan, distance_bigintspanset_bigintspan, distance_floatspanset_floatspan |
+| `Edisjoint_cbuffer_tcbuffer` | eDisjoint(cbuffer, tcbuffer) | edisjoint_tcbuffer_cbuffer |
+| `Edisjoint_geo_tcbuffer` | eDisjoint(geometry, tcbuffer) | edisjoint_tcbuffer_geo |
+| `Edisjoint_geo_trgeometry` | eDisjoint(geometry, trgeometry) | edisjoint_trgeometry_geo |
+| `Edwithin_cbuffer_tcbuffer` | eDwithin(cbuffer, tcbuffer, float) | edwithin_tcbuffer_cbuffer |
+| `Edwithin_geo_tcbuffer` | eDwithin(geometry, tcbuffer, float) | edwithin_tcbuffer_geo |
+| `Eintersects_cbuffer_tcbuffer` | eIntersects(cbuffer, tcbuffer) | eintersects_tcbuffer_cbuffer |
+| `Eintersects_geo_tcbuffer` | eIntersects(geometry, tcbuffer) | eintersects_tcbuffer_geo |
+| `Eintersects_geo_trgeometry` | eIntersects(geometry, trgeometry) | eintersects_trgeometry_geo |
+| `Etouches_cbuffer_tcbuffer` | eTouches(cbuffer, tcbuffer) | etouches_tcbuffer_cbuffer |
+| `Etouches_geo_tcbuffer` | eTouches(geometry, tcbuffer) | etouches_tcbuffer_geo |
+| `Etouches_geo_trgeometry` | eTouches(geometry, trgeometry) | etouches_trgeometry_geo |
+| `Geodstbox_constructor_z` | geodstboxZ(float, float, float, float, float, float, integer) | stbox_make |
+| `Geodstbox_constructor_zt` | geodstboxZT(float, float, float, float, float, float, timestamptz, integer); geodstboxZT(float, float, float, float, float, float, tstzspan, integer) | stbox_make |
+| `Jsonbset_extract_path_opr` | jsonbsetExtractPathOpr(jsonbset, text[]) | jsonbset_extract_path |
+| `Jsonbset_extract_path_text` | jsonbsetExtractPathText(jsonbset, text[], text) | jsonbset_extract_path |
+| `Jsonbset_extract_path_text_opr` | jsonbsetExtractPathTextOpr(jsonbset, text[]) | jsonbset_extract_path |
+| `NAD_geo_stbox_op` | nearestApproachDistanceOp(geography, stbox) | nad_stbox_geo |
+| `NAD_geo_tgeo_op` | nearestApproachDistanceOp(geography, tgeography); nearestApproachDistanceOp(geography, tgeogpoint) | nad_tgeo_geo |
+| `NAD_stbox_geo_op` | nearestApproachDistanceOp(stbox, geography) | nad_stbox_geo |
+| `NAD_stbox_stbox_op` | nearestApproachDistanceOp(stbox, stbox) | nad_stbox_stbox |
+| `NAD_stbox_tgeo_op` | nearestApproachDistanceOp(stbox, tgeography); nearestApproachDistanceOp(stbox, tgeogpoint) | nad_tgeo_stbox |
+| `NAD_tbox_tnumber` | nearestApproachDistance(tbox, tint); nearestApproachDistance(tbox, tbigint); nearestApproachDistance(tbox, tfloat) | nad_tint_tbox, nad_tbigint_tbox, nad_tfloat_tbox |
+| `NAD_tgeo_geo_op` | nearestApproachDistanceOp(tgeography, geography); nearestApproachDistanceOp(tgeogpoint, geography) | nad_tgeo_geo |
+| `NAD_tgeo_stbox_op` | nearestApproachDistanceOp(tgeography, stbox); nearestApproachDistanceOp(tgeogpoint, stbox) | nad_tgeo_stbox |
+| `NAD_tgeo_tgeo_op` | nearestApproachDistanceOp(tgeography, tgeography); nearestApproachDistanceOp(tgeogpoint, tgeogpoint) | nad_tgeo_tgeo |
+| `Numeric_to_tbox` | tbox(numeric) | float_to_tbox |
+| `Pose_point` | point(pose) | pose_to_point |
+| `Raster_dump_values_band` | dumpValues(raster, integer, boolean) | raster_dump_values |
+| `Raster_value_count_value` | valueCount(raster, integer, boolean, float, float); valueCount(raster, integer, float, float); valueCount(raster, float, float) | raster_value_count |
+| `Raster_value_percent_value` | valuePercent(raster, integer, boolean, float, float); valuePercent(raster, integer, float, float); valuePercent(raster, float, float) | raster_value_count |
+| `Stbox_constructor_t` | stboxT(timestamptz); stboxT(tstzspan) | stbox_make |
+| `Stbox_constructor_xt` | stboxXT(float, float, float, float, timestamptz, integer); stboxXT(float, float, float, float, tstzspan, integer) | stbox_make |
+| `Stbox_constructor_z` | stboxZ(float, float, float, float, float, float, integer) | stbox_make |
+| `Stbox_constructor_zt` | stboxZT(float, float, float, float, float, float, timestamptz, integer); stboxZT(float, float, float, float, float, float, tstzspan, integer) | stbox_make |
+| `Tdistance_geo_tgeo_op` | tDistanceOp(geography, tgeography); tDistanceOp(geography(Point), tgeogpoint) | tdistance_tgeo_geo |
+| `Tdistance_tgeo_geo_op` | tDistanceOp(tgeography, geography); tDistanceOp(tgeogpoint, geography(Point)) | tdistance_tgeo_geo |
+| `Tdistance_tgeo_tgeo_op` | tDistanceOp(tgeography, tgeography); tDistanceOp(tgeogpoint, tgeogpoint) | tdistance_tgeo_tgeo |
+| `Tjson_extract_path_opr` | tjsonExtractPathOpr(ttext, text[]) | tjson_extract_path |
+| `Tjsonb_extract_path_opr` | tjsonbExtractPathOpr(tjsonb, text[]) | tjsonb_extract_path |
+| `Tjsonb_extract_path_text` | tjsonbExtractPathText(tjsonb, text[], text) | tjsonb_extract_path |
+| `Tjsonb_extract_path_text_opr` | tjsonbExtractPathTextOpr(tjsonb, text[]) | tjsonb_extract_path |
+| `Trgeometry_seq_constructor` | trgeometrySeq(trgeometry[], text, boolean, boolean) | trgeometryseq_make |
+| `Trgeometry_seqset_constructor` | trgeometrySeqSet(trgeometry[]) | trgeometryseqset_make |
+
+### A public MEOS function to add (60 wrappers, 68 signatures)
+
+| wrapper | SQL signatures | MEOS function |
+|---|---|---|
+| `Acontains_trgeometry_geo` | aContains(trgeometry, geometry) | ea_contains_trgeo_geo -> propose int acontains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs) |
+| `Acontains_trgeometry_trgeometry` | aContains(trgeometry, trgeometry) | ea_contains_trgeo_trgeo -> propose int acontains_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Acovers_trgeometry_trgeometry` | aCovers(trgeometry, trgeometry) | ea_covers_trgeo_trgeo -> propose int acovers_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Atouches_tcbuffer_tcbuffer` | aTouches(tcbuffer, tcbuffer) | ea_touches_tcbuffer_tcbuffer -> atouches_tcbuffer_tcbuffer exists (meos_cbuffer.h:362) but @ingroup meos_internal_geo_rel_ever; fix = public @ingroup and call it |
+| `Atouches_trgeometry_trgeometry` | aTouches(trgeometry, trgeometry) | ea_touches_trgeo_trgeo -> propose int atouches_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Contained_rid_bigint_tnpoint` | containedRid(bigint, tnpoint) | contained_rid_tnpoint_bigint(INVERT) -> propose bool contained_rid_bigint_tnpoint(int64 rid, const Temporal *temp) |
+| `Contained_rid_bigintset_tnpoint` | containedRid(bigintset, tnpoint) | contained_rid_tnpoint_bigintset(INVERT) -> propose bool contained_rid_bigintset_tnpoint(const Set *s, const Temporal *temp) |
+| `Contained_rid_npoint_tnpoint` | containedRid(npoint, tnpoint) | contained_rid_npoint_tnpoint(temp, np, INVERT) -> propose bool contained_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp) |
+| `Contained_rid_tnpoint_bigintset` | containedRid(tnpoint, bigintset) | contained_rid_tnpoint_bigintset(INVERT_NO) -> propose bool contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s) |
+| `Contained_rid_tnpoint_tnpoint` | containedRid(tnpoint, tnpoint) | contained_rid_tnpoint_tnpoint (no invert param) -> make public as is |
+| `Contains_rid_bigintset_tnpoint` | containsRid(bigintset, tnpoint) | contains_rid_tnpoint_bigintset(INVERT) -> propose bool contains_rid_bigintset_tnpoint(const Set *s, const Temporal *temp) |
+| `Contains_rid_tnpoint_bigint` | containsRid(tnpoint, bigint) | contains_rid_tnpoint_bigint(invert UNUSED) -> propose bool contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid) |
+| `Contains_rid_tnpoint_bigintset` | containsRid(tnpoint, bigintset) | contains_rid_tnpoint_bigintset(INVERT_NO) -> propose bool contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s) |
+| `Contains_rid_tnpoint_npoint` | containsRid(tnpoint, npoint) | contains_rid_tnpoint_npoint(invert UNUSED) -> propose bool contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np) |
+| `Contains_rid_tnpoint_tnpoint` | containsRid(tnpoint, tnpoint) | contains_rid_tnpoint_tnpoint (no invert param) -> make public as is |
+| `Distance_set_set` | setDistance(cbufferset, cbufferset); setDistance(npointset, npointset); setDistance(poseset, poseset) | distance_cbufferset_cbufferset, distance_npointset_npointset, distance_poseset_poseset (after distance_geoset_geoset) |
+| `Distance_set_value` | setDistance(cbufferset, cbuffer); setDistance(npointset, npoint); setDistance(poseset, pose) | distance_set_cbuffer, distance_set_npoint, distance_set_pose (after distance_set_geo) |
+| `Distance_value_set` | setDistance(cbuffer, cbufferset); setDistance(npoint, npointset); setDistance(pose, poseset) | distance_set_cbuffer, distance_set_npoint, distance_set_pose, the set first as in distance_set_geo |
+| `Econtains_geo_tcbuffer` | eContains(geometry, tcbuffer) | ea_contains_geo_tcbuffer -> propose int econtains_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp) |
+| `Econtains_trgeometry_geo` | eContains(trgeometry, geometry) | ea_contains_trgeo_geo -> propose int econtains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs) |
+| `Econtains_trgeometry_trgeometry` | eContains(trgeometry, trgeometry) | ea_contains_trgeo_trgeo -> propose int econtains_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Ecovers_trgeometry_trgeometry` | eCovers(trgeometry, trgeometry) | ea_covers_trgeo_trgeo -> propose int ecovers_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Eintersects_tpcpatch_geo` | eIntersects(tpcpatch, geometry) | propose bool eintersects_tpcpatch_geo(const Temporal *temp, const GSERIALIZED *gs) |
+| `Etouches_trgeometry_trgeometry` | eTouches(trgeometry, trgeometry) | ea_touches_trgeo_trgeo -> propose int etouches_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2) |
+| `Geom_difference` | difference(geometry, geometry) | clip_poly_poly(subj, clip, CL_DIFFERENCE) (geo/geo_poly_clip.h:64, Clipper2, polygons only, 2D planar) |
+| `Geom_sym_difference` | symDifference(geometry, geometry) | clip_poly_poly(CL_XOR) -> propose GSERIALIZED *geom_symdifference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2) |
+| `Jsonbset_as_textset` | textset(jsonbset) | jsonbfunc_jsonbset(s, datum_jsonb_to_text) -> propose Set *jsonbset_to_textset(const Set *s) |
+| `Overlaps_rid_bigintset_tnpoint` | overlapsRid(bigintset, tnpoint) | overlaps_rid_tnpoint_bigintset(invert UNUSED) -> propose bool overlaps_rid_bigintset_tnpoint(const Set *s, const Temporal *temp) |
+| `Overlaps_rid_tnpoint_bigintset` | overlapsRid(tnpoint, bigintset) | overlaps_rid_tnpoint_bigintset(invert UNUSED) -> propose bool overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s) |
+| `Overlaps_rid_tnpoint_tnpoint` | overlapsRid(tnpoint, tnpoint) | overlaps_rid_tnpoint_tnpoint (no invert param) -> make public as is |
+| `Pcpatch_srid` | SRID(pcpatch) | propose int32_t pcpatch_srid(const Pcpatch *pa) |
+| `Pcpoint_srid` | SRID(pcpoint) | propose int32_t pcpoint_srid(const Pcpoint *pt) |
+| `Same_rid_bigint_tnpoint` | sameRid(bigint, tnpoint) | same_rid_tnpoint_bigint(invert UNUSED) -> propose bool same_rid_bigint_tnpoint(int64 rid, const Temporal *temp) |
+| `Same_rid_bigintset_tnpoint` | sameRid(bigintset, tnpoint) | same_rid_tnpoint_bigintset(invert UNUSED) -> propose bool same_rid_bigintset_tnpoint(const Set *s, const Temporal *temp) |
+| `Same_rid_npoint_tnpoint` | sameRid(npoint, tnpoint) | same_rid_tnpoint_npoint(invert UNUSED) -> propose bool same_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp) |
+| `Same_rid_tnpoint_bigint` | sameRid(tnpoint, bigint) | same_rid_tnpoint_bigint(invert UNUSED) -> propose bool same_rid_tnpoint_bigint(const Temporal *temp, int64 rid) |
+| `Same_rid_tnpoint_bigintset` | sameRid(tnpoint, bigintset) | same_rid_tnpoint_bigintset(invert UNUSED) -> propose bool same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s) |
+| `Same_rid_tnpoint_npoint` | sameRid(tnpoint, npoint) | same_rid_tnpoint_npoint(invert UNUSED) -> propose bool same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np) |
+| `Same_rid_tnpoint_tnpoint` | sameRid(tnpoint, tnpoint) | same_rid_tnpoint_tnpoint (no invert param) -> make public as is |
+| `Tdistance_number_tnumber` | tDistance(bigint, tbigint) | tdistance_tbigint_bigint, the argument order of the C function being the temporal value first (after tdistance_tint_int) |
+| `Tdistance_tnumber_number` | tDistance(tbigint, bigint) | tdistance_tbigint_bigint (after tdistance_tint_int) |
+| `Temporal_value_at_timestamptz` | valueAtTimestamp(tposechain, timestamptz) | tposechain_value_at_timestamptz (after tpose_value_at_timestamptz) |
+| `Textset_as_jsonbset` | jsonbset(textset) | jsonbfunc_jsonbset(s, datum_text_to_jsonb) -> propose Set *textset_to_jsonbset(const Set *s) |
+| `Tinstant_constructor` | th3index(h3index, timestamptz); tquadbin(quadbin, timestamptz); ts2cell(s2cell, timestamptz) | the cell instant constructors, branch meos/cell-instants-answer-the-constructor |
+| `Tpcpatch_at_geometry` | atGeometry(tpcpatch, geometry) | propose Temporal *tpcpatch_at_geom(const Temporal *temp, const GSERIALIZED *gs) |
+| `Tpcpatch_at_tpcbox` | atTpcbox(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_at_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Tpcpatch_at_tpcbox_fine` | atTpcboxFine(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_at_tpcbox_fine(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Tpcpatch_minus_geometry` | minusGeometry(tpcpatch, geometry) | propose Temporal *tpcpatch_minus_geom(const Temporal *temp, const GSERIALIZED *gs) |
+| `Tpcpatch_minus_tpcbox` | minusTpcbox(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Tpcpatch_minus_tpcbox_fine` | minusTpcboxFine(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_minus_tpcbox_fine(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Tpcpatch_points` | points(tpcpatch) | propose Pcpoint **tpcpatch_points(const Temporal *temp, TimestampTz **times, int *count) |
+| `Tpcpoint_at_tpcbox` | atTpcbox(tpcpoint, tpcbox, boolean) | propose Temporal *tpcpoint_at_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Tpcpoint_get_dim` | getDim(tpcpoint, text) | propose Temporal *tpcpoint_get_dim(const Temporal *temp, const char *name) |
+| `Tpcpoint_get_x` | getX(tpcpoint) | propose Temporal *tpcpoint_get_x(const Temporal *temp) |
+| `Tpcpoint_get_y` | getY(tpcpoint) | propose Temporal *tpcpoint_get_y(const Temporal *temp) |
+| `Tpcpoint_get_z` | getZ(tpcpoint) | propose Temporal *tpcpoint_get_z(const Temporal *temp) |
+| `Tpcpoint_minus_tpcbox` | minusTpcbox(tpcpoint, tpcbox, boolean) | propose Temporal *tpcpoint_minus_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc) |
+| `Trgeometry_geom_clip_polygon` | _trgeometry_geom_clip_polygon(geometry, geometry, geometry, geometry, geometry) | trgeo_geom_clip_lwgeom (internal, LWGEOM) -> propose SpanSet *trgeometry_geom_clip_polygon(const GSERIALIZED *a1, const GSERIALIZED *b1, const GSERIALIZED *a2, const GSERIALIZED *b2, const GSERIALIZED *poly) |
+| `Trgeometry_geom_clip_polygon_posed` | _trgeometry_geom_clip_polygon_posed(geometry, geometry, pose, pose, geometry) | trgeo_geom_clip_lwgeom_posed (internal) -> propose SpanSet *trgeometry_geom_clip_polygon_posed(const GSERIALIZED *pa, const GSERIALIZED *pb, const Pose *pose1, const Pose *pose2, const GSERIALIZED *poly) |
+| `Trgeometry_value_at_timestamptz` | valueAtTimestamp(trgeometry, timestamptz) | trgeo_value_at_timestamptz (rgeo/trgeo.h:82, Datum *) -> propose bool trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value) |
+
+### The I/O plan: the writers of an array (3 wrappers, 40 signatures)
+
+| wrapper | SQL signatures | MEOS function |
+|---|---|---|
+| `Spatialarr_as_ewkt` | asEWKT(cbuffer[], integer); asEWKT(tcbuffer[], integer); asEWKT(tgeometry[], integer); asEWKT(tgeography[], integer); asEWKT(tgeompoint[], integer); asEWKT(tgeogpoint[], integer); asEWKT(geometry[], integer); asEWKT(geography[], integer); asEWKT(npoint[], integer); asEWKT(tnpoint[], integer); asEWKT(tpcpoint[]); asEWKT(tpcpatch[]); asEWKT(pose[], integer); asEWKT(tpose[], integer); asEWKT(posechain[], integer); asEWKT(tposechain[], integer); asEWKT(trgeometry[], integer) | asEWKT(cbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tcbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tgeography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tgeompoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tgeogpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(geometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(geography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(npoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tnpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tpcpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tpcpatch[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(pose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tpose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(posechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(tposechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asEWKT(trgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out) |
+| `Spatialarr_as_text` | asText(cbuffer[], integer); asText(tcbuffer[], integer); asText(tgeometry[], integer); asText(tgeography[], integer); asText(tgeompoint[], integer); asText(tgeogpoint[], integer); asText(geometry[], integer); asText(geography[], integer); asText(npoint[], integer); asText(tnpoint[], integer); asText(pose[], integer); asText(tpose[], integer); asText(posechain[], integer); asText(tposechain[], integer); asText(trgeometry[], integer) | asText(cbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tcbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeompoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeogpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(geometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(geography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(npoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tnpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(pose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(posechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tposechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(trgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out) |
+| `Temporalarr_as_text` | asText(tjsonb[]); asText(tpcpoint[]); asText(tpcpatch[]); asText(tbool[]); asText(tint[]); asText(tbigint[]); asText(tfloat[], integer); asText(ttext[]) | asText(tjsonb[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpcpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpcpatch[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tbool[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tbigint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tfloat[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(ttext[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out) |
+
+### Out of the bindings' scope (24 wrappers, 59 signatures)
+
+| wrapper | SQL signatures | MEOS function |
+|---|---|---|
+| `Create_trip` | createTrip(record[], timestamptz, boolean, text) | create_trip (geo/tpoint_datagen.h:44, LWLINE **) -> propose public TSequence *create_trip(const GSERIALIZED **lines, const double *maxspeeds, const int *categories, uint32_t count, TimestampTz t, bool disturb, int verbosity) |
+| `Geometry_transform_gk` | transformGK(geometry) | propose GSERIALIZED *geo_transform_gk(const GSERIALIZED *gs) |
+| `Multirange_to_spanset` | spanset(int4multirange); spanset(int8multirange); spanset(datemultirange); spanset(tstzmultirange) | spanset_make_free |
+| `Range_to_span` | span(int4range); span(int8range); span(daterange); span(tstzrange) |  |
+| `Set_gin_extract_query` | set_gin_extract_query(integer, internal, int2, internal, internal, internal, internal); set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal); set_gin_extract_query(date, internal, int2, internal, internal, internal, internal) |  |
+| `Set_gin_extract_value` | set_gin_extract_value(integer, internal); set_gin_extract_value(bigint, internal); set_gin_extract_value(date, internal) | set_values |
+| `Set_gin_triconsistent` | tnpoint_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal); set_gin_triconsistent(internal, int2, integer, integer, internal, internal, internal); set_gin_triconsistent(internal, int2, bigint, integer, internal, internal, internal); set_gin_triconsistent(internal, int2, date, integer, internal, internal, internal) |  |
+| `Span_to_range` | range(intspan); range(bigintspan); range(datespan); range(tstzspan) |  |
+| `Spanset_to_multirange` | multirange(intspanset); multirange(bigintspanset); multirange(datespanset); multirange(tstzspanset) |  |
+| `Tcbuffer_enforce_typmod` | tcbuffer(tcbuffer, integer) |  |
+| `Temporal_enforce_typmod` | th3index(th3index, integer); tjsonb(tjsonb, integer); tnpoint(tnpoint, integer); tquadbin(tquadbin, integer); ts2cell(ts2cell, integer); tbool(tbool, integer); tint(tint, integer); tbigint(tbigint, integer); tfloat(tfloat, integer); ttext(ttext, integer) |  |
+| `Tgeompoint_transform_gk` | transformGK(tgeompoint) | propose Temporal *tgeompoint_transform_gk(const Temporal *temp) |
+| `Tnpoint_gin_extract_query` | tnpoint_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal) |  |
+| `Tnpoint_gin_extract_value` | tnpoint_gin_extract_value(bigint, internal) |  |
+| `Tpc_enforce_typmod` | tpcpoint(tpcpoint, integer); tpcpatch(tpcpatch, integer) |  |
+| `Tspatial_enforce_typmod` | tgeometry(tgeometry, integer); tgeography(tgeography, integer); tgeompoint(tgeompoint, integer); tgeogpoint(tgeogpoint, integer); tpose(tpose, integer); tposechain(tposechain, integer); trgeometry(trgeometry, integer) |  |
+| `box_constructor` | box(point, point) |  |
+| `circle_constructor` | circle(point, float) |  |
+| `fill_oid_cache` | fill_oid_cache() |  |
+| `line_constructor` | line(float, float, float) |  |
+| `lseg_constructor` | lseg(point, point) |  |
+| `path_constructor` | path(point[]) |  |
+| `point_constructor` | point(float, float) |  |
+| `poly_constructor` | polygon(point[]) |  |

@@ -144,6 +144,9 @@ The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the func
 
 The aggregates in every engine, their names, the functions of their roles and the pull requests that finish them: [aggregates plan](AGGREGATES-PLAN.md).
 
+Every SQL signature of MobilityDB the MEOS catalog does not state, so that no binding reaches it, and
+the tag, the call or the public MEOS function each one needs: [The SQL functions MEOS answers](WRAPPERS-PLAN.md).
+
 What the generated Flink and Spark surfaces carry of the 168 set-returning functions, and the gaps
 behind it by repository: [Set-returning functions](10-SET-RETURNING.md).
 
