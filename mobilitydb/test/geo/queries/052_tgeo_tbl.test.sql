@@ -31,8 +31,8 @@
 -- Send/receive functions
 --------------------------------------------------------------------------------
 
-COPY tbl_tgeometry TO '/tmp/tbl_tgeometry' (FORMAT BINARY);
-COPY tbl_tgeography TO '/tmp/tbl_tgeography' (FORMAT BINARY);
+\copy tbl_tgeometry TO 'tbl_tgeometry' (FORMAT BINARY);
+\copy tbl_tgeography TO 'tbl_tgeography' (FORMAT BINARY);
 
 DROP TABLE IF EXISTS tbl_tgeometry_tmp;
 DROP TABLE IF EXISTS tbl_tgeography_tmp;
@@ -40,8 +40,8 @@ DROP TABLE IF EXISTS tbl_tgeography_tmp;
 CREATE TABLE tbl_tgeometry_tmp AS TABLE tbl_tgeometry WITH NO DATA;
 CREATE TABLE tbl_tgeography_tmp AS TABLE tbl_tgeography WITH NO DATA;
 
-COPY tbl_tgeometry_tmp FROM '/tmp/tbl_tgeometry' (FORMAT BINARY);
-COPY tbl_tgeography_tmp FROM '/tmp/tbl_tgeography' (FORMAT BINARY);
+\copy tbl_tgeometry_tmp FROM 'tbl_tgeometry' (FORMAT BINARY);
+\copy tbl_tgeography_tmp FROM 'tbl_tgeography' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_tgeometry_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 SELECT COUNT(*) FROM tbl_tgeography t1, tbl_tgeography_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;

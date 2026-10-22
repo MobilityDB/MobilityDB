@@ -33,10 +33,10 @@
 -- Send / receive
 -------------------------------------------------------------------------------
 
-COPY tbl_tquadbin TO '/tmp/tbl_tquadbin' (FORMAT BINARY);
+\copy tbl_tquadbin TO 'tbl_tquadbin' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tquadbin_tmp;
 CREATE TABLE tbl_tquadbin_tmp AS TABLE tbl_tquadbin WITH NO DATA;
-COPY tbl_tquadbin_tmp FROM '/tmp/tbl_tquadbin' (FORMAT BINARY);
+\copy tbl_tquadbin_tmp FROM 'tbl_tquadbin' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 DROP TABLE tbl_tquadbin_tmp;
 

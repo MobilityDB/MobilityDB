@@ -1,10 +1,10 @@
-COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY  tbl_tbool TO STDOUT (FORMAT BINARY);
 COPY 100
-COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
+COPY  tbl_tint TO STDOUT (FORMAT BINARY);
 COPY 100
-COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY  tbl_tfloat TO STDOUT (FORMAT BINARY);
 COPY 100
-COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY  tbl_ttext TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tbool_tmp;
 NOTICE:  table "tbl_tbool_tmp" does not exist, skipping
@@ -26,13 +26,13 @@ CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
 CREATE TABLE AS
 CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
+COPY  tbl_tbool_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
-COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
+COPY  tbl_tint_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
-COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
+COPY  tbl_tfloat_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
-COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+COPY  tbl_ttext_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 

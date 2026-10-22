@@ -1,11 +1,11 @@
-COPY tbl_th3index TO '/tmp/tbl_th3index' (FORMAT BINARY);
+COPY  tbl_th3index TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_th3index_tmp;
 NOTICE:  table "tbl_th3index_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_th3index_tmp AS TABLE tbl_th3index WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_th3index_tmp FROM '/tmp/tbl_th3index' (FORMAT BINARY);
+COPY  tbl_th3index_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_th3index t1, tbl_th3index_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 

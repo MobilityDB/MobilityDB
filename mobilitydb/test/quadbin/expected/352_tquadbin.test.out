@@ -380,14 +380,14 @@ INSERT INTO tbl_tquadbin_binio VALUES
   (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
   (3, tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
 INSERT 0 3
-COPY tbl_tquadbin_binio TO '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY  tbl_tquadbin_binio TO STDOUT (FORMAT BINARY);
 COPY 3
 DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
 NOTICE:  table "tbl_tquadbin_binio_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tquadbin_binio_tmp FROM '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+COPY  tbl_tquadbin_binio_tmp FROM STDIN (FORMAT BINARY);
 COPY 3
 SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
   WHERE t1.k = t2.k AND t1.temp <> t2.temp;
