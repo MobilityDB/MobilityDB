@@ -492,6 +492,47 @@ SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[tpcpatch(PC_Patch(ARRAY[PC_MakePoi
            1
 (1 row)
 
+SELECT atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 50), pcpoint(1, 2, 2, 60)),
+  timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT numInstants(minusTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 50),
+  pcpoint(1, 2, 2, 60)), timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10,
+  10, tstzspan '[2024-01-01, 2024-01-31]', 1)));
+ numinstants 
+-------------
+           1
+(1 row)
+
+SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 50), pcpoint(1, 2, 2, 60)),
+  timestamptz '2024-01-02')]), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1)));
+ numinstants 
+-------------
+           1
+(1 row)
+
+SELECT numInstants(atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 10),
+  pcpoint(1, 2, 2, 12)), timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10,
+  10, tstzspan '[2024-01-01, 2024-01-31]', 1)));
+ numinstants 
+-------------
+           1
+(1 row)
+
+SELECT atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 10), pcpoint(1, 2, 2, 12)),
+  timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1), false) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT timeSpan(beforeTimestamp(tpcpatchSeq(ARRAY[tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[5.0, 5.0, 5.0]::float[]), PC_MakePoint(1, ARRAY[6.0, 6.0, 6.0]::float[])]), '2024-01-02'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-03'::timestamptz)]),
   timestamptz '2024-01-02'));
                            timespan                           

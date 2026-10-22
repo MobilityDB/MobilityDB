@@ -3975,7 +3975,7 @@
 						<para><link linkend="tpcpatch_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restringe un tpcpatch a (al complemento de) un valor pcpatch o un conjunto de valores pcpatch</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restringe un tpcpatch a los instantes cuyo parche supera una prueba de superposición aproximada de PCBOUNDS frente al tpcbox, o eliminarlos</para>
+						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restringe un tpcpatch a los instantes cuya extensión del parche se superpone al tpcbox, o eliminarlos</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname>, <varname>minusTpcboxFine</varname></link>: Restringe un tpcpatch a los puntos de cada instante que contiene el tpcbox, o los elimina</para>

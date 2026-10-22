@@ -276,6 +276,27 @@ SELECT numInstants(minusTpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2]),
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2]),
   tpcboxT(tstzspan '[2024-01-01, 2024-01-01]', 1)));
 
+-- A box with Z tests the Z extent of the points of a patch: the points of
+-- the patch lie inside the box in X and Y and above it in Z, so the patch is
+-- dropped by at and kept by minus; a patch whose Z extent touches the top of
+-- the box is kept by the inclusive test and dropped by the strict one.
+SELECT atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 50), pcpoint(1, 2, 2, 60)),
+  timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1)) IS NULL;
+SELECT numInstants(minusTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 50),
+  pcpoint(1, 2, 2, 60)), timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10,
+  10, tstzspan '[2024-01-01, 2024-01-31]', 1)));
+SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[:inst1,
+  tpcpatch(pcpatch(pcpoint(1, 1, 1, 50), pcpoint(1, 2, 2, 60)),
+  timestamptz '2024-01-02')]), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1)));
+SELECT numInstants(atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 10),
+  pcpoint(1, 2, 2, 12)), timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10,
+  10, tstzspan '[2024-01-01, 2024-01-31]', 1)));
+SELECT atTpcbox(tpcpatch(pcpatch(pcpoint(1, 1, 1, 10), pcpoint(1, 2, 2, 12)),
+  timestamptz '2024-01-01'), tpcboxZT(0, 0, 0, 10, 10, 10,
+  tstzspan '[2024-01-01, 2024-01-31]', 1), false) IS NULL;
+
 -- Restriction to the instants before / after a timestamp. The strict flag
 -- is true by default and excludes the instant at the timestamp itself, which
 -- on a sequence shows up as the inclusivity of the resulting time span.

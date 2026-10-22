@@ -1600,9 +1600,9 @@ SELECT minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
 	<sect1 xml:id="tpcpatch">
 		<title>Temporal Point Cloud Patches</title>
 
-		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard, same subtypes, same accessors, same casts and operators, except that each instant carries an entire compressed batch of points instead of a single point. The bounding box is again a <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
+		<para>A <varname>tpcpatch</varname> is the lifting of <varname>pcpatch</varname>. It mirrors <varname>tpcpoint</varname> in every regard, same subtypes, same accessors, same casts and operators, except that each instant carries an entire compressed batch of points instead of a single point. The bounding box is again a <varname>tpcbox</varname>, whose X and Y extent per instant is the patch's embedded <varname>PCBOUNDS</varname> and whose Z extent, where the schema holds a Z dimension, is the one the points of the patch state.</para>
 
-		<para>Operations on a <varname>tpcpatch</varname> come at two granularities, because the points of a patch sit in a compressed payload that the bounding box layer cannot inspect. At <emphasis>patch level</emphasis> each instant's patch is kept or dropped as a whole, read from its 4-double <varname>PCBOUNDS</varname> header (xmin / xmax / ymin / ymax) and the instant's timestamp alone: this is the granularity of <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link>, of the bounding box operators and of the <varname>extent</varname> aggregate, it decompresses no payload, and it costs O(number of instants). <varname>PCBOUNDS</varname> being 2D, the Z dimension of a <varname>tpcbox</varname> argument is ignored there even when the schema has one.</para>
+		<para>Operations on a <varname>tpcpatch</varname> come at two granularities, because the points of a patch sit in a compressed payload that the bounding box layer cannot inspect. At <emphasis>patch level</emphasis> each instant's patch is kept or dropped as a whole, read from its extent and the instant's timestamp alone: this is the granularity of <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link>, of the bounding box operators and of the <varname>extent</varname> aggregate. The X and Y extent is the 4-double <varname>PCBOUNDS</varname> header (xmin / xmax / ymin / ymax), read without decompressing the payload; <varname>PCBOUNDS</varname> being 2D, the Z extent, which a <varname>tpcbox</varname> with Z tests, is the one the points of the patch state.</para>
 
 		<para>At <emphasis>point level</emphasis> every point of every instant is walked in C. <link linkend="tpcpatch_points"><varname>points</varname></link> emits one row per instant timestamp and point, while <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname> / <varname>minusTpcboxFine</varname></link>, <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname> / <varname>minusGeometry</varname></link> and <link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch,geometry)</varname></link> apply their predicate to the actual coordinates and rebuild each surviving instant from the points that passed, dropping the instants that keep none. Prune at patch level first, with <varname>atTpcbox</varname> or a GiST / SP-GiST index scan, and refine the survivors when point-level fidelity is needed.</para>
 
@@ -1981,12 +1981,12 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 				<listitem xml:id="tpcpatch_atTpcbox">
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
-					<para>Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them</para>
+					<para>Restrict a tpcpatch to the instants whose patch extent overlaps the tpcbox, or remove them</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
-					<para>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim, with no per-point decompression. Because pgPointCloud's <varname>PCBOUNDS</varname> is 2D, the Z dimension of the box is ignored at this granularity. Returns NULL when the tpcbox's pcid does not match.</para>
+					<para>Granularity is patch-level: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent of a patch is pgPointCloud's 2D <varname>PCBOUNDS</varname>; when the box has Z, the Z extent of the patch is the one its points state, and a patch of a schema without Z fails the box. Returns NULL when the tpcbox's pcid does not match.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -2153,7 +2153,7 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 
 		<sect2 xml:id="tpcpatch_bbox_ops">
 			<title>Bounding Box Operations</title>
-			<para>The same bbox operator surface as <xref linkend="tpcpoint_bbox_ops" /> applies to <varname>tpcpatch</varname>. The predicate evaluates against the value's <varname>tpcbox</varname>, computed in O(1) per instant from the patch's embedded <varname>PCBOUNDS</varname>.</para>
+			<para>The same bbox operator surface as <xref linkend="tpcpoint_bbox_ops" /> applies to <varname>tpcpatch</varname>. The predicate evaluates against the value's <varname>tpcbox</varname>, whose X and Y extent per instant is the patch's embedded <varname>PCBOUNDS</varname> and whose Z extent is the one the points of the patch state.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_topo">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>
