@@ -401,7 +401,9 @@ stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
  * @param[in] s Span, may be `NULL`
- * @csqlfn #Stbox_constructor_x()
+ * @csqlfn #Stbox_constructor_x(), #Stbox_constructor_z(),
+ *   #Stbox_constructor_t(), #Stbox_constructor_xt(), #Stbox_constructor_zt(),
+ *   #Geodstbox_constructor_z(), #Geodstbox_constructor_zt()
  */
 STBox *
 stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
@@ -778,6 +780,7 @@ gbox_set_stbox(const GBOX *box, int32_t srid, STBox *result)
  * @ingroup meos_geo_box_conversion
  * @brief Convert a `GBOX` into a spatiotemporal box
  * @param[in] box GBOX
+ * @csqlfn #Box2d_to_stbox()
  */
 STBox *
 gbox_to_stbox(const GBOX *box)
