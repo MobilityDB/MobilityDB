@@ -493,7 +493,7 @@ Jsonb_exists_array(FunctionCallInfo fcinfo, bool any)
   ArrayType *keys = PG_GETARG_ARRAYTYPE_P(1);
   int keys_len;
   text **keys_elems = textarr_elems(keys, &keys_len);
-  bool result = pg_jsonb_exists_array(jb, keys_elems, keys_len, any);
+  bool result = jsonb_exists_array(jb, keys_elems, keys_len, any);
   pfree(keys_elems);
   PG_FREE_IF_COPY(jb, 0);
   PG_FREE_IF_COPY(keys, 1);
@@ -891,7 +891,7 @@ Jsonb_path_query_common(FunctionCallInfo fcinfo, bool tz)
     bool silent;
     jsonb_path_args(fcinfo, &vars, &silent);
     int count = 0;
-    Jsonb **values = pg_jsonb_path_query_all(jb, jp, vars, silent, tz,
+    Jsonb **values = jsonb_path_query_all(jb, jp, vars, silent, tz,
       &count);
     funcctx->user_fctx = jsonb_srf_state(funcctx, (void **) values, NULL,
       values ? count : 0);
