@@ -1248,6 +1248,11 @@ UPDATE test_topops
 SET kdtree_idx = ( SELECT COUNT(*) FROM tbl_ttext t1, tbl_ttext t2 WHERE t1.temp ~= t2.temp )
 WHERE op = '~=' AND leftarg = 'ttext' AND rightarg = 'ttext';
 
+DROP INDEX tbl_tbool_kdtree_idx;
+DROP INDEX tbl_tint_kdtree_idx;
+DROP INDEX tbl_tfloat_kdtree_idx;
+DROP INDEX tbl_ttext_kdtree_idx;
+
 -------------------------------------------------------------------------------
 
 SELECT * FROM test_topops
