@@ -1286,7 +1286,7 @@ distance_spanset_value(const SpanSet *ss, Datum value)
  * @param[in] ss Span set
  * @param[in] s Span
  * @errval #distance_sentinel()
- * @csqlfn #Distance_spanset_span()
+ * @csqlfn #Distance_spanset_span() #Distance_span_spanset()
  */
 Datum
 distance_spanset_span(const SpanSet *ss, const Span *s)
