@@ -57,11 +57,11 @@ aggregate support suffixes (`_in`, `_out`, `_recv`, `_send`, `_sel`, `_gist`, `_
 | stated by the catalog | | 8296 |
 | not stated | 301 | 469 |
 | of which PostgreSQL's type, index, planner and aggregate support | 112 | 176 |
-| of which out of the bindings' scope | 24 | 59 |
+| of which out of the bindings' scope | 38 | 81 |
 | of which the writers of an array, left open | 3 | 40 |
-| **of which this plan's** | **162** | **194** |
+| **of which this plan's** | **148** | **172** |
 
-The 194 signatures fall into three groups: 46 need a tag only, 80 need the wrapper to call the
+The 172 signatures fall into three groups: 46 need a tag only, 58 need the wrapper to call the
 public function, and 68 need a new public MEOS function. The appendix lists each one with its
 wrapper and the MEOS function it reaches.
 
@@ -82,7 +82,7 @@ wrapper and the MEOS function it reaches.
    with `ALWAYS`. The catalog then states every signature of those wrappers that the function
    accepts.
 
-## Out of the bindings' scope (24 wrappers, 59 signatures)
+## Out of the bindings' scope (38 wrappers, 81 signatures)
 
 - PostgreSQL's range and multirange conversions (`span(int4range)`, `range(intspan)`,
   `spanset(int4multirange)`, `multirange(intspanset)`), the GIN support of sets and network
@@ -90,6 +90,13 @@ wrapper and the MEOS function it reaches.
 - The constructors of the PostgreSQL geometric types (`point`, `line`, `lseg`, `box`, `circle`,
   `path`, `polygon`), `transformGK`, the compatibility link to SECONDO, and `createTrip`, the trip
   generator of the BerlinMOD benchmark. They stay in MobilityDB as they are.
+- The procedures of the `<->` operator over geography, `tDistanceOp`, `nearestApproachDistanceOp`
+  and `setDistanceOp` (14 wrappers, 22 signatures). A PostgreSQL operator takes a procedure of
+  two arguments, while `tDistance`, `nearestApproachDistance` and `setDistance` over geography
+  take a third, `spheroid boolean DEFAULT true`; `Tdistance_tgeo_geo_op` only calls
+  `Tdistance_tgeo_geo`, so `tDistanceOp(t, g)` answers `tDistance(t, g)`. Over geometry the
+  operator takes `tDistance` itself. A binding reaches the answer through `tDistance`, and the
+  `Op` forms would only repeat it.
 
 ## Covered elsewhere
 
@@ -125,7 +132,7 @@ signature, as `jsonbPathExistsTz` carries `tz = true` on `jsonb_path_exists`.
   `trgeometry(geometry, tpose)` and `trgeometrySeqSetGaps`.
 - **`geometry(trgeometry)`** (`trgeometry_geom`).
 
-## The wrapper calls the public function (58 wrappers, 80 signatures)
+## The wrapper calls the public function (44 wrappers, 58 signatures)
 
 The public function exists, but the wrapper reaches it through an internal function or builds
 the call itself. The wrapper calls the public function, which names it in its `@csqlfn`.
@@ -135,9 +142,6 @@ the call itself. The wrapper calls the public function, which names it in its `@
   symmetric public function (`edisjoint_tcbuffer_geo`, ...) through an internal `ea_*` function
   or call it without being named by it (16 wrappers). The 6 geometry-first wrappers over
   `trgeometry` belong to the rigid geometry relations, the last task of the campaign.
-- **The geography operator forms** `nearestApproachDistanceOp`, `tDistanceOp` and
-  `setDistanceOp` over `tgeography`, `tgeogpoint`, `geogset` and `stbox` (`nad_tgeo_geo`,
-  `tdistance_tgeo_geo`, `distance_set_geo`, ...).
 - **Box constructors**: `stboxT`, `stboxXT`, `stboxZ`, `stboxZT`, `geodstboxZ`, `geodstboxZT`
   (`stbox_make`), `tbox(numeric)` (`float_to_tbox`).
 - **`spanDistance(span, spanset)`** and **`nearestApproachDistance(tbox, tnumber)`**: the typed
@@ -248,13 +252,18 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 ## Consistency of the tags
 
-- **The jsonpath functions under `#if MEOS`.** `jsonb_path_exists`, `jsonb_path_match`,
-  `jsonb_path_query_all`, `jsonb_path_query_array`, `jsonb_path_query_first`
-  (`pgtypes/utils/jsonpath_exec.c`) and `jsonb_exists_array` (`pgtypes/utils/jsonb_op.c`) are
-  compiled only under `#if MEOS`. Their tags name `jsonbPathExistsTz` and its siblings and
-  `jsonbExistsAll`, so the catalog states them and the bindings reach them. In the PostgreSQL
-  build, however, those wrappers call `pg_jsonb_path_*` twins, which breaks rule 3. The gate goes,
-  and the wrappers call the public functions.
+- **The jsonpath functions under `#if MEOS`.** The tags of `jsonb_path_exists`,
+  `jsonb_path_match`, `jsonb_path_query_all`, `jsonb_path_query_array`, `jsonb_path_query_first`
+  (`pgtypes/utils/jsonpath_exec.c`) and `jsonb_exists_array` (`pgtypes/utils/jsonb_op.c`) name
+  `jsonbPathExistsTz` and its siblings and `jsonbExistsAll`, so the catalog states them and the
+  bindings reach them, while in the PostgreSQL build those wrappers call `pg_jsonb_path_*` twins.
+  `jsonb_exists_array` and `jsonb_path_query_all` leave the gate and their wrappers call them:
+  branch `meos/jsonpath-outside-meos-gate`. The other four keep the gate: PostgreSQL's `postgres`
+  executable exports `jsonb_path_exists`, `jsonb_path_match`, `jsonb_path_query_array` and
+  `jsonb_path_query_first` as its own built-in functions, the extension is linked without
+  `-Bsymbolic`, and with the gate removed `453_jsonb_funcs` ends the server at its first
+  `jsonbPathExists` call. Their wrappers reach the MEOS function only once the two names differ
+  or the extension binds its own symbols.
 - **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
   `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
   operator per signature closes it, for the bindings that register operators.
@@ -276,11 +285,15 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 ## The plan
 
-- MobilityDB: the `@csqlfn` tags of the 44 wrappers that already call a public function.
-- MobilityDB: the 58 wrappers that call the public function they reach through an internal
+- MobilityDB: the `@csqlfn` tags of the 44 wrappers that already call a public function. The JSON
+  family is branch `meos/json-wrappers-named`: 35 wrappers, the 28 JSON wrappers of the tag group
+  and the 7 extract-path wrappers of the call group, which reach their function through their
+  `_common` helper as their siblings do and need the tag only.
+- MobilityDB: the 44 wrappers that call the public function they reach through an internal
   one, each named in its tag.
-- MobilityDB: the jsonpath functions and `jsonb_exists_array` moved outside `#if MEOS`, with the
-  `Tz` and `ExistsAll` wrappers calling them.
+- MobilityDB: `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS`, their wrappers
+  calling them (branch `meos/jsonpath-outside-meos-gate`); the other four as Consistency of the
+  tags states.
 - MobilityDB: the Z extent of a patch against a box, and the operand order of `tjsonbContained`,
   each a defect on its own branch, before its family.
 - MobilityDB: one pull request per family of the functions to add, each adding the public
@@ -344,7 +357,7 @@ regression suite answers as before.
 | `Trgeometry_seqset_constructor_gaps` | trgeometrySeqSetGaps(trgeometry[], interval, float, text) | trgeometryseqset_make_gaps |
 | `Trgeometry_to_geom` | geometry(trgeometry) | trgeometry_geom |
 
-### The wrapper calls the public function: it reaches it through an internal one or composes it (58 wrappers, 80 signatures)
+### The wrapper calls the public function: it reaches it through an internal one or composes it (44 wrappers, 58 signatures)
 
 | wrapper | SQL signatures | MEOS function |
 |---|---|---|
@@ -359,9 +372,6 @@ regression suite answers as before.
 | `Atouches_cbuffer_tcbuffer` | aTouches(cbuffer, tcbuffer) | atouches_tcbuffer_cbuffer |
 | `Atouches_geo_tcbuffer` | aTouches(geometry, tcbuffer) | atouches_tcbuffer_geo |
 | `Atouches_geo_trgeometry` | aTouches(geometry, trgeometry) | atouches_trgeometry_geo |
-| `Distance_geo_geoset_op` | setDistanceOp(geography, geogset) | distance_set_geo |
-| `Distance_geoset_geo_op` | setDistanceOp(geogset, geography) | distance_set_geo |
-| `Distance_geoset_geoset_op` | setDistanceOp(geogset, geogset) | distance_geoset_geoset |
 | `Distance_span_spanset` | spanDistance(intspan, intspanset); spanDistance(bigintspan, bigintspanset); spanDistance(floatspan, floatspanset); spanDistance(datespan, datespanset); spanDistance(tstzspan, tstzspanset) | distance_intspanset_intspan, distance_bigintspanset_bigintspan, distance_floatspanset_floatspan |
 | `Edisjoint_cbuffer_tcbuffer` | eDisjoint(cbuffer, tcbuffer) | edisjoint_tcbuffer_cbuffer |
 | `Edisjoint_geo_tcbuffer` | eDisjoint(geometry, tcbuffer) | edisjoint_tcbuffer_geo |
@@ -379,15 +389,7 @@ regression suite answers as before.
 | `Jsonbset_extract_path_opr` | jsonbsetExtractPathOpr(jsonbset, text[]) | jsonbset_extract_path |
 | `Jsonbset_extract_path_text` | jsonbsetExtractPathText(jsonbset, text[], text) | jsonbset_extract_path |
 | `Jsonbset_extract_path_text_opr` | jsonbsetExtractPathTextOpr(jsonbset, text[]) | jsonbset_extract_path |
-| `NAD_geo_stbox_op` | nearestApproachDistanceOp(geography, stbox) | nad_stbox_geo |
-| `NAD_geo_tgeo_op` | nearestApproachDistanceOp(geography, tgeography); nearestApproachDistanceOp(geography, tgeogpoint) | nad_tgeo_geo |
-| `NAD_stbox_geo_op` | nearestApproachDistanceOp(stbox, geography) | nad_stbox_geo |
-| `NAD_stbox_stbox_op` | nearestApproachDistanceOp(stbox, stbox) | nad_stbox_stbox |
-| `NAD_stbox_tgeo_op` | nearestApproachDistanceOp(stbox, tgeography); nearestApproachDistanceOp(stbox, tgeogpoint) | nad_tgeo_stbox |
 | `NAD_tbox_tnumber` | nearestApproachDistance(tbox, tint); nearestApproachDistance(tbox, tbigint); nearestApproachDistance(tbox, tfloat) | nad_tint_tbox, nad_tbigint_tbox, nad_tfloat_tbox |
-| `NAD_tgeo_geo_op` | nearestApproachDistanceOp(tgeography, geography); nearestApproachDistanceOp(tgeogpoint, geography) | nad_tgeo_geo |
-| `NAD_tgeo_stbox_op` | nearestApproachDistanceOp(tgeography, stbox); nearestApproachDistanceOp(tgeogpoint, stbox) | nad_tgeo_stbox |
-| `NAD_tgeo_tgeo_op` | nearestApproachDistanceOp(tgeography, tgeography); nearestApproachDistanceOp(tgeogpoint, tgeogpoint) | nad_tgeo_tgeo |
 | `Numeric_to_tbox` | tbox(numeric) | float_to_tbox |
 | `Pose_point` | point(pose) | pose_to_point |
 | `Raster_dump_values_band` | dumpValues(raster, integer, boolean) | raster_dump_values |
@@ -397,9 +399,6 @@ regression suite answers as before.
 | `Stbox_constructor_xt` | stboxXT(float, float, float, float, timestamptz, integer); stboxXT(float, float, float, float, tstzspan, integer) | stbox_make |
 | `Stbox_constructor_z` | stboxZ(float, float, float, float, float, float, integer) | stbox_make |
 | `Stbox_constructor_zt` | stboxZT(float, float, float, float, float, float, timestamptz, integer); stboxZT(float, float, float, float, float, float, tstzspan, integer) | stbox_make |
-| `Tdistance_geo_tgeo_op` | tDistanceOp(geography, tgeography); tDistanceOp(geography(Point), tgeogpoint) | tdistance_tgeo_geo |
-| `Tdistance_tgeo_geo_op` | tDistanceOp(tgeography, geography); tDistanceOp(tgeogpoint, geography(Point)) | tdistance_tgeo_geo |
-| `Tdistance_tgeo_tgeo_op` | tDistanceOp(tgeography, tgeography); tDistanceOp(tgeogpoint, tgeogpoint) | tdistance_tgeo_tgeo |
 | `Tjson_extract_path_opr` | tjsonExtractPathOpr(ttext, text[]) | tjson_extract_path |
 | `Tjsonb_extract_path_opr` | tjsonbExtractPathOpr(tjsonb, text[]) | tjsonb_extract_path |
 | `Tjsonb_extract_path_text` | tjsonbExtractPathText(tjsonb, text[], text) | tjsonb_extract_path |
@@ -480,13 +479,24 @@ regression suite answers as before.
 | `Spatialarr_as_text` | asText(cbuffer[], integer); asText(tcbuffer[], integer); asText(tgeometry[], integer); asText(tgeography[], integer); asText(tgeompoint[], integer); asText(tgeogpoint[], integer); asText(geometry[], integer); asText(geography[], integer); asText(npoint[], integer); asText(tnpoint[], integer); asText(pose[], integer); asText(tpose[], integer); asText(posechain[], integer); asText(tposechain[], integer); asText(trgeometry[], integer) | asText(cbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tcbuffer[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeompoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tgeogpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(geometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(geography[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(npoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tnpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(pose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpose[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(posechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tposechain[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(trgeometry[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out) |
 | `Temporalarr_as_text` | asText(tjsonb[]); asText(tpcpoint[]); asText(tpcpatch[]); asText(tbool[]); asText(tint[]); asText(tbigint[]); asText(tfloat[], integer); asText(ttext[]) | asText(tjsonb[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpcpoint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tpcpatch[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tbool[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tbigint[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(tfloat[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out); asText(ttext[])->NONE(array writer; only internal temparr_out/spatialarr_wkt_out) |
 
-### Out of the bindings' scope (24 wrappers, 59 signatures)
+### Out of the bindings' scope (38 wrappers, 81 signatures)
 
 | wrapper | SQL signatures | MEOS function |
 |---|---|---|
 | `Create_trip` | createTrip(record[], timestamptz, boolean, text) | create_trip (geo/tpoint_datagen.h:44, LWLINE **) -> propose public TSequence *create_trip(const GSERIALIZED **lines, const double *maxspeeds, const int *categories, uint32_t count, TimestampTz t, bool disturb, int verbosity) |
+| `Distance_geo_geoset_op` | setDistanceOp(geography, geogset) | distance_set_geo |
+| `Distance_geoset_geo_op` | setDistanceOp(geogset, geography) | distance_set_geo |
+| `Distance_geoset_geoset_op` | setDistanceOp(geogset, geogset) | distance_geoset_geoset |
 | `Geometry_transform_gk` | transformGK(geometry) | propose GSERIALIZED *geo_transform_gk(const GSERIALIZED *gs) |
 | `Multirange_to_spanset` | spanset(int4multirange); spanset(int8multirange); spanset(datemultirange); spanset(tstzmultirange) | spanset_make_free |
+| `NAD_geo_stbox_op` | nearestApproachDistanceOp(geography, stbox) | nad_stbox_geo |
+| `NAD_geo_tgeo_op` | nearestApproachDistanceOp(geography, tgeography); nearestApproachDistanceOp(geography, tgeogpoint) | nad_tgeo_geo |
+| `NAD_stbox_geo_op` | nearestApproachDistanceOp(stbox, geography) | nad_stbox_geo |
+| `NAD_stbox_stbox_op` | nearestApproachDistanceOp(stbox, stbox) | nad_stbox_stbox |
+| `NAD_stbox_tgeo_op` | nearestApproachDistanceOp(stbox, tgeography); nearestApproachDistanceOp(stbox, tgeogpoint) | nad_tgeo_stbox |
+| `NAD_tgeo_geo_op` | nearestApproachDistanceOp(tgeography, geography); nearestApproachDistanceOp(tgeogpoint, geography) | nad_tgeo_geo |
+| `NAD_tgeo_stbox_op` | nearestApproachDistanceOp(tgeography, stbox); nearestApproachDistanceOp(tgeogpoint, stbox) | nad_tgeo_stbox |
+| `NAD_tgeo_tgeo_op` | nearestApproachDistanceOp(tgeography, tgeography); nearestApproachDistanceOp(tgeogpoint, tgeogpoint) | nad_tgeo_tgeo |
 | `Range_to_span` | span(int4range); span(int8range); span(daterange); span(tstzrange) |  |
 | `Set_gin_extract_query` | set_gin_extract_query(integer, internal, int2, internal, internal, internal, internal); set_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal); set_gin_extract_query(date, internal, int2, internal, internal, internal, internal) |  |
 | `Set_gin_extract_value` | set_gin_extract_value(integer, internal); set_gin_extract_value(bigint, internal); set_gin_extract_value(date, internal) | set_values |
@@ -494,6 +504,9 @@ regression suite answers as before.
 | `Span_to_range` | range(intspan); range(bigintspan); range(datespan); range(tstzspan) |  |
 | `Spanset_to_multirange` | multirange(intspanset); multirange(bigintspanset); multirange(datespanset); multirange(tstzspanset) |  |
 | `Tcbuffer_enforce_typmod` | tcbuffer(tcbuffer, integer) |  |
+| `Tdistance_geo_tgeo_op` | tDistanceOp(geography, tgeography); tDistanceOp(geography(Point), tgeogpoint) | tdistance_tgeo_geo |
+| `Tdistance_tgeo_geo_op` | tDistanceOp(tgeography, geography); tDistanceOp(tgeogpoint, geography(Point)) | tdistance_tgeo_geo |
+| `Tdistance_tgeo_tgeo_op` | tDistanceOp(tgeography, tgeography); tDistanceOp(tgeogpoint, tgeogpoint) | tdistance_tgeo_tgeo |
 | `Temporal_enforce_typmod` | th3index(th3index, integer); tjsonb(tjsonb, integer); tnpoint(tnpoint, integer); tquadbin(tquadbin, integer); ts2cell(ts2cell, integer); tbool(tbool, integer); tint(tint, integer); tbigint(tbigint, integer); tfloat(tfloat, integer); ttext(ttext, integer) |  |
 | `Tgeompoint_transform_gk` | transformGK(tgeompoint) | propose Temporal *tgeompoint_transform_gk(const Temporal *temp) |
 | `Tnpoint_gin_extract_query` | tnpoint_gin_extract_query(bigint, internal, int2, internal, internal, internal, internal) |  |
