@@ -332,9 +332,6 @@ elseif(TEST_OPER MATCHES "run_compare")
       RESULT_VARIABLE TEST_RESULT
       )
   endif()
-  # Remove the temporary files
-  file(REMOVE ${TEST_DIR}/test.out)
-  file(REMOVE ${TEST_DIR}/test.expected)
 
   if(TEST_RESULT)
     # Write the differences, where there are some to write
