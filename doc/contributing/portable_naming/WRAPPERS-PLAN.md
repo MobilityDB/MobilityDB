@@ -324,7 +324,16 @@ Left, each for the owner first:
   with the positional mapping `Edwithin_geo_trgeometry` carries on master.
 - `valueCount` and `valuePercent` over a raster: one search value against `raster_value_count`'s
   array of them, a shape the catalog does not state.
-- MEOS-API: the operator stated per signature (the three JSON functions behind both `->` and `->>`).
+- DECIDED BY THE OWNER 2026-10-23, following the shift/scale sibling (the internal flagged
+  kernel `tnumber_shift_scale_value` behind the public `tint_shift_value`, `tint_scale_value`,
+  `tint_shift_scale_value`): the seven public JSON functions carrying `bool astext`
+  (`jsonbset_object_field`, `jsonbset_array_element`, `jsonbset_extract_path`,
+  `tjson_object_field`, `tjsonb_object_field`, `tjsonb_array_element`, `tjsonb_extract_path`)
+  become one public function per operation, as PostgreSQL's `jsonb_object_field` and
+  `jsonb_object_field_text`, the `astext` kernel internal. Each public function then backs one
+  SQL name and one operator, so the catalog's operator per function is right and the `@sqlop`
+  baseline empties. The JSON branch keeps the `Tz` and `SetLax` tags and leaves the `Text`
+  ones to the split.
 
 ## Acceptance
 
