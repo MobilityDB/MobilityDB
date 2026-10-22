@@ -388,18 +388,20 @@ Distance_geo_geoset(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Distance_geo_geoset_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geo_geoset_op);
+PGDLLEXPORT Datum Distance_geo_geoset_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geo_geoset_opr);
 /**
  * @ingroup mobilitydb_geo_set_dist
  * @brief Return the distance between a geometry/geography and a geo set
- * @details Implementation of the operator, the 2-argument version of
- * #Distance_geo_geoset() on the spheroid
- * @sqlfn setDistanceOp()
+ * @details The procedure of the operator, which answers #Distance_geo_geoset()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn setDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Distance_geo_geoset_op(PG_FUNCTION_ARGS)
+Distance_geo_geoset_opr(PG_FUNCTION_ARGS)
 {
   return Distance_geo_geoset(fcinfo);
 }
@@ -429,18 +431,20 @@ Distance_geoset_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Distance_geoset_geo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geoset_geo_op);
+PGDLLEXPORT Datum Distance_geoset_geo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geo_opr);
 /**
  * @ingroup mobilitydb_geo_set_dist
  * @brief Return the distance between a geo set and a geometry/geography
- * @details Implementation of the operator, the 2-argument version of
- * #Distance_geoset_geo() on the spheroid
- * @sqlfn setDistanceOp()
+ * @details The procedure of the operator, which answers #Distance_geoset_geo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn setDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Distance_geoset_geo_op(PG_FUNCTION_ARGS)
+Distance_geoset_geo_opr(PG_FUNCTION_ARGS)
 {
   return Distance_geoset_geo(fcinfo);
 }
@@ -470,18 +474,20 @@ Distance_geoset_geoset(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum Distance_geoset_geoset_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Distance_geoset_geoset_op);
+PGDLLEXPORT Datum Distance_geoset_geoset_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Distance_geoset_geoset_opr);
 /**
  * @ingroup mobilitydb_geo_set_dist
  * @brief Return the distance between two geo sets
- * @details Implementation of the operator, the 2-argument version of
- * #Distance_geoset_geoset() on the spheroid
- * @sqlfn setDistanceOp()
+ * @details The procedure of the operator, which answers #Distance_geoset_geoset()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn setDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Distance_geoset_geoset_op(PG_FUNCTION_ARGS)
+Distance_geoset_geoset_opr(PG_FUNCTION_ARGS)
 {
   return Distance_geoset_geoset(fcinfo);
 }

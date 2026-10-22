@@ -791,6 +791,11 @@ its last edit:
   `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`. `posechainset` is
   deliberate and `setfamilies.yaml` says so in place — a pose chain has no
   distance function, so the set deploys none.
+  A family whose `setDistance` reads an earth model names its operator procedure in its
+  manifest entry, `procedure` with one C symbol per direction in `procsyms`: the geo set family
+  declares `setDistanceOpr` after each `setDistance` of its geometry and geography pairs, and its
+  three `<->` take it, as `tDistanceOpr` backs `<->` in the temporal geo distance files. Every
+  other family's `<->` takes `setDistance` itself.
 - `topop_families` and `posop_families`, both **7/13**: `tgeompoint`, `tgeogpoint`,
   `tgeometry`, `tgeography`, `tpcpoint`, `tpcpatch`.
   ⛔ THOSE SIX ARE THREE PAIRS, AND THE PAIR IS THE WHOLE REASON. A covered family
