@@ -90,6 +90,8 @@ wrapper and the MEOS function it reaches.
 - The constructors of the PostgreSQL geometric types (`point`, `line`, `lseg`, `box`, `circle`,
   `path`, `polygon`), `transformGK`, the compatibility link to SECONDO, and `createTrip`, the trip
   generator of the BerlinMOD benchmark. They stay in MobilityDB as they are.
+- `_trgeometry_geom_clip_polygon` and `_trgeometry_geom_clip_polygon_posed`, whose leading underscore
+  declares them internal, as the owner ruled for the underscore names.
 - The procedures of the operators over a function with an optional argument. DECIDED BY THE
   OWNER 2026-10-23: an operator over a function whose last arguments carry a default takes the
   function's two-argument procedure `<function>Opr`, which answers the function with its defaults,
@@ -200,8 +202,6 @@ Branch `meos/cbuffer-public` (`2e8df4dd3f`).
   `econtains_trgeometry_trgeometry` and its five siblings, after `edisjoint_trgeometry_trgeometry`
 - `valueAtTimestamp(trgeometry, timestamptz)`: `trgeometry_value_at_timestamptz`, after
   `tgeo_value_at_timestamptz`
-- `_trgeometry_geom_clip_polygon` and `_trgeometry_geom_clip_polygon_posed` reach only the
-  internal `trgeo_geom_clip_lwgeom` kernels
 
 The eight relations, and every other wrapper of a rigid geometry relation, are the last task of
 the campaign: their kernels answer over the union of the placements, and an assessment of whether
@@ -235,7 +235,7 @@ cover the number, time and geo sets only.
 ### Temporal numbers and pose chains (3)
 
 - `tDistance(tbigint, bigint)` and `tDistance(bigint, tbigint)`: `tdistance_tbigint_bigint`,
-  after `tdistance_tint_int`; waits for the owner's decision (see Open)
+  after `tdistance_tint_int`
 - `valueAtTimestamp(tposechain, timestamptz)`: `tposechain_value_at_timestamptz`, after
   `tpose_value_at_timestamptz`
 
@@ -282,11 +282,8 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
   exist for the relations whose kernels answer over the union of the placements?
 - **`difference(geometry, geometry)`** calls the polygon-only Clipper2 `clip_poly_poly`, while
   `geom_difference2d` overlays through GEOS: which one should the SQL function call?
-- **`tdistance_tbigint_bigint`**: add it, after `tdistance_tint_int`?
-- **The underscore functions** `_trgeometry_geom_clip_polygon` and
-  `_trgeometry_geom_clip_polygon_posed`: public MEOS functions, or internal ones that stay out of
-  the bindings?
-- **A step `tpcpoint` cut as linear** by `atTpcbox` through `tpcpoint_to_tgeompoint`.
+- **A defect, before the point cloud family:** `atTpcbox` cuts a step `tpcpoint` as linear through
+  `tpcpoint_to_tgeompoint`; the restriction keeps the interpolation of its argument.
 - Five SQL functions are commented out in `mobilitydb/sql` and have no C body: `h3index(bigint)`,
   `tjsonbPathQuery`, `tjsonbPathQueryTz`, `tdirection(tgeompoint)` and `quaternion(tpose)`. They
   are outside the census, which reads `CREATE FUNCTION` statements.
