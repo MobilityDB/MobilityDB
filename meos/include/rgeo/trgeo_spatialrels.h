@@ -46,10 +46,6 @@
 
 /*****************************************************************************/
 
-/* Generic */
-extern int spatialrel_trgeo_trav_geo(const Temporal *temp,
-  const GSERIALIZED *gs, Datum param, varfunc func, int numparam, bool invert);
-
 /* eContains / aContains */
 extern int ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
