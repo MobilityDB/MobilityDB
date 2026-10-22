@@ -182,25 +182,25 @@ CREATE FUNCTION asHexEWKB(pose, endian text DEFAULT '')
 CREATE FUNCTION pose(double precision, double precision, double precision,
     srid integer DEFAULT 0)
   RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor'
+  AS 'MODULE_PATHNAME', 'Pose_constructor_2d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pose(double precision, double precision, double precision,
   double precision, double precision, double precision, double precision,
     srid integer DEFAULT 0)
   RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor'
+  AS 'MODULE_PATHNAME', 'Pose_constructor_3d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pose(geometry, double precision)
   RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor_point'
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point2d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION pose(geometry, double precision, double precision, 
     double precision, double precision)
   RETURNS pose
-  AS 'MODULE_PATHNAME', 'Pose_constructor_point'
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point3d'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The OGC GeoPose Basic-YPR encoding of the same orientation: yaw, pitch

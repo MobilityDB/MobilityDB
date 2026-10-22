@@ -490,68 +490,75 @@ Pose_apply_geo(PG_FUNCTION_ARGS)
  * Constructor functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Pose_constructor(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_constructor);
+PGDLLEXPORT Datum Pose_constructor_2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_constructor_2d);
 /**
  * @ingroup mobilitydb_pose_base_constructor
- * @brief Construct a pose from a 2D/3D point and an orientation
+ * @brief Construct a 2D pose from a position and a rotation angle
  * @sqlfn pose()
  */
 Datum
-Pose_constructor(PG_FUNCTION_ARGS)
+Pose_constructor_2d(PG_FUNCTION_ARGS)
+{
+  double x = PG_GETARG_FLOAT8(0);
+  double y = PG_GETARG_FLOAT8(1);
+  double theta = PG_GETARG_FLOAT8(2);
+  int32_t srid = PG_GETARG_INT32(3);
+  PG_RETURN_POINTER(pose_make_2d(x, y, theta, false, srid));
+}
+
+PGDLLEXPORT Datum Pose_constructor_3d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_constructor_3d);
+/**
+ * @ingroup mobilitydb_pose_base_constructor
+ * @brief Construct a 3D pose from a position and an orientation quaternion
+ * @sqlfn pose()
+ */
+Datum
+Pose_constructor_3d(PG_FUNCTION_ARGS)
 {
   double x = PG_GETARG_FLOAT8(0);
   double y = PG_GETARG_FLOAT8(1);
   double z = PG_GETARG_FLOAT8(2);
-  double theta = z;
-  int32_t srid;
-
-  assert(PG_NARGS() == 4 || PG_NARGS() == 8);
-  Pose *result;
-  if (PG_NARGS() == 4)
-  {
-    srid = PG_GETARG_INT32(3);
-    result = pose_make_2d(x, y, theta, false, srid);
-  }
-  else /* PG_NARGS() == 8 */
-  {
-    double W = PG_GETARG_FLOAT8(3);
-    double X = PG_GETARG_FLOAT8(4);
-    double Y = PG_GETARG_FLOAT8(5);
-    double Z = PG_GETARG_FLOAT8(6);
-    srid = PG_GETARG_INT32(7);
-    result = pose_make_3d(x, y, z, W, X, Y, Z, false, srid);
-  }
-  PG_RETURN_POINTER(result);
+  double W = PG_GETARG_FLOAT8(3);
+  double X = PG_GETARG_FLOAT8(4);
+  double Y = PG_GETARG_FLOAT8(5);
+  double Z = PG_GETARG_FLOAT8(6);
+  int32_t srid = PG_GETARG_INT32(7);
+  PG_RETURN_POINTER(pose_make_3d(x, y, z, W, X, Y, Z, false, srid));
 }
 
-PGDLLEXPORT Datum Pose_constructor_point(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_constructor_point);
+PGDLLEXPORT Datum Pose_constructor_point2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_constructor_point2d);
 /**
  * @ingroup mobilitydb_pose_base_constructor
- * @brief Construct a pose from a 2D/3D point and an orientation
+ * @brief Construct a 2D pose from a 2D point and a rotation angle
  * @sqlfn pose()
  */
 Datum
-Pose_constructor_point(PG_FUNCTION_ARGS)
+Pose_constructor_point2d(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
-  assert(PG_NARGS() == 2 || PG_NARGS() == 5);
-  Pose *result;
-  if (PG_NARGS() == 2)
-  {
-    double theta = PG_GETARG_FLOAT8(1);
-    result = pose_make_point2d(gs, theta);
-  }
-  else /* PG_NARGS() == 5 */
-  {
-    double W = PG_GETARG_FLOAT8(1);
-    double X = PG_GETARG_FLOAT8(2);
-    double Y = PG_GETARG_FLOAT8(3);
-    double Z = PG_GETARG_FLOAT8(4);
-    result = pose_make_point3d(gs, W, X, Y, Z);
-  }
-  PG_RETURN_POINTER(result);
+  double theta = PG_GETARG_FLOAT8(1);
+  PG_RETURN_POINTER(pose_make_point2d(gs, theta));
+}
+
+PGDLLEXPORT Datum Pose_constructor_point3d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_constructor_point3d);
+/**
+ * @ingroup mobilitydb_pose_base_constructor
+ * @brief Construct a 3D pose from a 3D point and an orientation quaternion
+ * @sqlfn pose()
+ */
+Datum
+Pose_constructor_point3d(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  double W = PG_GETARG_FLOAT8(1);
+  double X = PG_GETARG_FLOAT8(2);
+  double Y = PG_GETARG_FLOAT8(3);
+  double Z = PG_GETARG_FLOAT8(4);
+  PG_RETURN_POINTER(pose_make_point3d(gs, W, X, Y, Z));
 }
 
 PGDLLEXPORT Datum Pose_constructor_point_ypr(PG_FUNCTION_ARGS);
