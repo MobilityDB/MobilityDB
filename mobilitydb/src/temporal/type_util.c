@@ -143,57 +143,6 @@ call_function1(PGFunction func, Datum arg1)
   return result;
 }
 
-#if 0 /* unused */
-/**
- * @brief Call PostgreSQL function with 2 arguments
- */
-Datum
-call_function2(PGFunction func, Datum arg1, Datum arg2)
-{
-  LOCAL_FCINFO(fcinfo, 2);
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_nargs = 2;
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 2, DEFAULT_COLLATION_OID, NULL,
-    NULL);
-  fcinfo->args[0].value = arg1;
-  fcinfo->args[0].isnull = false;
-  fcinfo->args[1].value = arg2;
-  fcinfo->args[1].isnull = false;
-  result = (*func) (fcinfo);
-  if (fcinfo->isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-#endif /* unused */
-
-/**
- * @brief Call PostgreSQL function with 3 arguments
- */
-Datum
-call_function3(PGFunction func, Datum arg1, Datum arg2, Datum arg3)
-{
-  LOCAL_FCINFO(fcinfo, 3);
-  FmgrInfo flinfo;
-  memset(&flinfo, 0, sizeof(flinfo));
-  flinfo.fn_mcxt = CurrentMemoryContext;
-  Datum result;
-  InitFunctionCallInfoData(*fcinfo, &flinfo, 3, DEFAULT_COLLATION_OID, NULL,
-    NULL);
-  fcinfo->args[0].value = arg1;
-  fcinfo->args[0].isnull = false;
-  fcinfo->args[1].value = arg2;
-  fcinfo->args[1].isnull = false;
-  fcinfo->args[2].value = arg3;
-  fcinfo->args[2].isnull = false;
-  result = (*func) (fcinfo);
-  if (fcinfo->isnull)
-    elog(ERROR, "function %p returned NULL", (void *) func);
-  return result;
-}
-
 /*****************************************************************************
  * Array functions
  *****************************************************************************/

@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <common/pg_prng.h>
+#include <utils/jsonb.h>
 /* Proj */
 #include <proj.h>
 /* GEOS */
@@ -49,9 +50,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
-
-// TODO REMOVE
-extern void json_destroy_tofree();
 
 /***************************************************************************
  * Functions for the PostgreSQL pseudo-random number generator
