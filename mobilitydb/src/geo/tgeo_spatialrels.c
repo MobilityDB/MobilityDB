@@ -143,7 +143,7 @@ EA_dwithin_geo_tspatial(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_INT32(result);
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /**
@@ -163,7 +163,7 @@ EA_dwithin_tspatial_geo(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(gs, 1);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_INT32(result);
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /* GENERATED-SPATIALRELS-BEGIN geo_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
