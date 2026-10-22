@@ -2931,15 +2931,16 @@ tpoint_geo_bearing_turnpt(Datum start, Datum end, Datum point,
 }
 
 /**
- * @brief Return 1 or 2 if two temporal point segments are at the minimum
- * bearing during the period defined by the output timestamps
- * @details The function returns 0 otherwise.
+ * @brief Return 1 if two temporal point segments are at the minimum bearing
+ * during a period, 0 otherwise
+ * @details The period is defined by the output timestamps.
  * @param[in] start1,end1 Values defining the first segment
  * @param[in] start2,end2 Values defining the second segment
  * @param[in] param Additional parameter
  * @param[in] lower,upper Timestamps defining the segments
  * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segments are not both constants and are both linear
+ * @post As there is a single turning point, `t2` is set to `t1`
  * @note This function is currently not available for two temporal geographic
  * points
  */
@@ -2954,48 +2955,28 @@ tpointsegm_bearing_turnpt(Datum start1, Datum end1, Datum start2,
   const POINT2D *ep1 = DATUM_POINT2D_P(end1);
   const POINT2D *sp2 = DATUM_POINT2D_P(start2);
   const POINT2D *ep2 = DATUM_POINT2D_P(end2);
-  /* It there is a North passage we call the function
-    tgeompoint_min_dist_at_timestamp */
-  bool ds = (sp1->x - sp2->x) > 0;
-  bool de = (ep1->x - ep2->x) > 0;
-  if (ds == de)
+  /* If there is not a North passage, that is, if the difference of the x
+   * coordinates of the two points does not change its sign */
+  long double dxs = (long double) sp2->x - (long double) sp1->x;
+  long double dxe = (long double) ep2->x - (long double) ep1->x;
+  if ((dxs > 0) == (dxe > 0))
     return 0;
-
-  /*
-   * Compute the instants t1 and t2 at which the linear functions of the two
-   * segments take the value 0: at1 + b = 0, ct2 + d = 0. There is a
-   * minimum/maximum exactly at the middle between t1 and t2.
-   * To reduce problems related to floating point arithmetic, t1 and t2
-   * are shifted, respectively, to 0 and 1 before the computation
-   * N.B. The code that follows is adapted from the function
-   * #tnumber_arithop_tp_at_timestamp1 in file tnumber_mathfuncs.c
-   */
-  if ((ep1->x - sp1->x) == 0.0 || (ep2->x - sp2->x) == 0.0)
-    return 0;
-
-  long double d1 = (-1 * sp1->x) / (ep1->x - sp1->x);
-  long double d2 = (-1 * sp2->x) / (ep2->x - sp2->x);
-  long double min = Min(d1, d2);
-  long double max = Max(d1, d2);
-  long double fraction = min + (max - min)/2;
-  long double duration = (long double) (upper - lower);
+  /* The difference is linear in time and the signs differ, so the
+   * denominator is not zero */
+  long double fraction = dxs / (dxs - dxe);
   if (fraction <= MEOS_EPSILON || fraction >= (1.0 - MEOS_EPSILON))
-    /* Minimum/maximum occurs out of the period */
     return 0;
 
+  long double duration = (long double) (upper - lower);
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
-  /* We need to verify that at timestamp t the first segment is to the
-   * North of the second */
   Datum v1 = tsegment_value_at_timestamptz(start1, end1, T_TGEOMPOINT,
     lower, upper, *t1);
   Datum v2 = tsegment_value_at_timestamptz(start2, end2, T_TGEOMPOINT,
-    lower, upper, *t2);
-  sp1 = DATUM_POINT2D_P(v1);
-  sp2 = DATUM_POINT2D_P(v2);
-  int result;
-  if (sp1->y > sp2->y) // TODO Use MEOS_EPSILON
-    result = 0;
-  result = 1;
+    lower, upper, *t1);
+  /* We add a turning point only if the second point is to the North of the
+   * first, where the bearing passes through 0 */
+  int result = MEOS_FP_GE(DATUM_POINT2D_P(v2)->y, DATUM_POINT2D_P(v1)->y) ?
+    1 : 0;
   pfree(DatumGetPointer(v1)); pfree(DatumGetPointer(v2));
   return result;
 }

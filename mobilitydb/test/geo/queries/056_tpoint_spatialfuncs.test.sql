@@ -767,6 +767,11 @@ SELECT round(degrees(bearing(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@
 SELECT round(degrees(bearing(tgeompoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', tgeompoint '{[Point(2 2 2)@2001-01-01, Point(1 1 1)@2001-01-02, Point(2 2 2)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}')), 6);
 
+-- Test for adding a turning point if the second point is to the North of the first
+SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2001-01-01, Point(4 0)@2001-01-03]', tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03]')), 6);
+SELECT round(degrees(bearing(tgeompoint '[Point(-1 0)@2001-01-01, Point(1 0)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-03]')), 6);
+SELECT round(degrees(bearing(tgeompoint '[Point(-1 1)@2001-01-01, Point(1 1)@2001-01-04]', tgeompoint '[Point(1 0)@2001-01-01, Point(-3 0)@2001-01-04]')), 6);
+
 SELECT round(degrees(bearing(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
 
 -- SELECT round(degrees(bearing(tgeogpoint 'Point(1.5 1.5)@2001-01-01', tgeogpoint 'Point(2.5 2.5)@2001-01-01')), 6);

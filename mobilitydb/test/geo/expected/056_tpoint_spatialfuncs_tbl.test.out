@@ -528,9 +528,9 @@ WHERE bearing(temp, g) IS NOT NULL;
 
 SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
 WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
-    max     
-------------
- 359.944855
+ max 
+-----
+ 360
 (1 row)
 
 SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point t1, tbl_tgeogpoint t2
@@ -563,9 +563,9 @@ WHERE bearing(temp, g) IS NOT NULL;
 
 SELECT MAX(maxValue(round(degrees(bearing(t1.temp, t2.temp)), 6))) FROM tbl_tgeompoint3D t1, tbl_tgeompoint3D t2
 WHERE bearing(t1.temp, t2.temp) IS NOT NULL;
-    max     
-------------
- 355.897777
+ max 
+-----
+ 360
 (1 row)
 
 SELECT MAX(maxValue(round(degrees(bearing(g, temp)), 6))) FROM tbl_geog_point3D t1, tbl_tgeogpoint3D t2
