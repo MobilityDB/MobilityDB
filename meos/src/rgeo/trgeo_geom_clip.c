@@ -52,9 +52,6 @@
  * Geographic input is approximated as Euclidean — same status as
  * tpoint_geom_clip.c. Fixing geographic correctly (great-circle
  * trajectories, spherical point-in-polygon) is a separate work item.
- *
- * See `doc/rfc/trgeo_geom_clip_design.md` (M1) and
- * `doc/rfc/trgeo_geom_clip_design_m2.md` (M2) for derivations.
  */
 
 #include "geo/geo_funcs.h"
@@ -401,25 +398,6 @@ trgeo_geom_clip_lwpoly(const POINT2D *a1, const POINT2D *b1,
     return -1;
   return trgeo_geom_clip_polygon(a1, b1, a2, b2, poly->rings[0],
     intervals_out);
-}
-
-int
-trgeo_geom_clip_box(const POINT2D *a1, const POINT2D *b1,
-  const POINT2D *a2, const POINT2D *b2,
-  double xmin, double ymin, double xmax, double ymax,
-  Span **intervals_out)
-{
-  POINTARRAY *pa = ptarray_construct_empty(0, 0, 5);
-  POINT4D pt;
-  pt.z = 0; pt.m = 0;
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  int n = trgeo_geom_clip_polygon(a1, b1, a2, b2, pa, intervals_out);
-  ptarray_free(pa);
-  return n;
 }
 
 /*****************************************************************************
@@ -777,27 +755,6 @@ trgeo_geom_clip_lwpoly_posed(const POINT2D *p_a_local,
     return -1;
   return trgeo_geom_clip_polygon_posed(p_a_local, p_b_local,
     pose1, pose2, poly->rings[0], intervals_out);
-}
-
-int
-trgeo_geom_clip_box_posed(const POINT2D *p_a_local,
-  const POINT2D *p_b_local,
-  const struct Pose *pose1, const struct Pose *pose2,
-  double xmin, double ymin, double xmax, double ymax,
-  Span **intervals_out)
-{
-  POINTARRAY *pa = ptarray_construct_empty(0, 0, 5);
-  POINT4D pt;
-  pt.z = 0; pt.m = 0;
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmax; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymax; ptarray_append_point(pa, &pt, LW_TRUE);
-  pt.x = xmin; pt.y = ymin; ptarray_append_point(pa, &pt, LW_TRUE);
-  int n = trgeo_geom_clip_polygon_posed(p_a_local, p_b_local,
-    pose1, pose2, pa, intervals_out);
-  ptarray_free(pa);
-  return n;
 }
 
 /*****************************************************************************

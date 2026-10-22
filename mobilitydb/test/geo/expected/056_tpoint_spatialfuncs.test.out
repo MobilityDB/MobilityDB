@@ -2878,6 +2878,24 @@ SELECT round(degrees(bearing(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)
  {[45@Mon Jan 01 00:00:00 2001 PST, 0@Mon Jan 01 12:00:00 2001 PST, 225@Tue Jan 02 00:00:00 2001 PST, 0@Tue Jan 02 12:00:00 2001 PST, 45@Wed Jan 03 00:00:00 2001 PST], [0@Thu Jan 04 00:00:00 2001 PST, 0@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT round(degrees(bearing(tgeompoint '[Point(0 0)@2001-01-01, Point(4 0)@2001-01-03]', tgeompoint '[Point(3 1)@2001-01-01, Point(1 1)@2001-01-03]')), 6);
+                                                       round                                                       
+-------------------------------------------------------------------------------------------------------------------
+ [71.565051@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 288.434949@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(degrees(bearing(tgeompoint '[Point(-1 0)@2001-01-01, Point(1 0)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-03]')), 6);
+                                                round                                                
+-----------------------------------------------------------------------------------------------------
+ [45@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 315@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(degrees(bearing(tgeompoint '[Point(-1 1)@2001-01-01, Point(1 1)@2001-01-04]', tgeompoint '[Point(1 0)@2001-01-01, Point(-3 0)@2001-01-04]')), 6);
+                                       round                                        
+------------------------------------------------------------------------------------
+ [116.565051@Mon Jan 01 00:00:00 2001 PST, 255.963757@Thu Jan 04 00:00:00 2001 PST]
+(1 row)
+
 SELECT round(degrees(bearing(tgeompoint 'Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeompoint 'Interp=Step;[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02]')), 6);
                                       round                                      
 ---------------------------------------------------------------------------------

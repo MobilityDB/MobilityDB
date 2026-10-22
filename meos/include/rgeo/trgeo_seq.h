@@ -65,11 +65,6 @@ extern TSequence *trgeoseq_make_free_exp(const GSERIALIZED *geom, TInstant **ins
 extern TSequence *trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants,
   int count, bool lower_inc, bool upper_inc, interpType interp, bool normalize);
 
-/* Transformation functions */
-
-extern TSequence *trgeoinst_as_tsequence(const TInstant *inst, interpType interp);
-extern TInstant *trgeoseq_as_tinstant(const TSequence *seq);
-
 /*****************************************************************************/
 
 #endif /* __TRGEO_SEQ_H__ */

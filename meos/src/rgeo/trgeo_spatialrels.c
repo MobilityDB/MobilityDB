@@ -59,43 +59,6 @@
  *****************************************************************************/
 
 /**
- * @brief Generic spatial relationship for the placements of a temporal
- * rigid geometry and a geometry
- * @param[in] temp Temporal rigid geometry
- * @param[in] gs Geometry
- * @param[in] param Parameter
- * @param[in] func Spatial relationship function to be called
- * @param[in] numparam Number of parameters of the functions
- * @param[in] invert True if the arguments should be inverted
- * @errval -1
- */
-int
-spatialrel_trgeo_trav_geo(const Temporal *temp, const GSERIALIZED *gs,
-  Datum param, varfunc func, int numparam, bool invert)
-{
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) )
-    return -1;
-
-  assert(numparam == 2 || numparam == 3);
-  Datum geo = PointerGetDatum(gs);
-  Datum places = PointerGetDatum(trgeo_placements(temp));
-  Datum result;
-  if (numparam == 2)
-  {
-    datum_func2 func2 = (datum_func2) func;
-    result = invert ? func2(geo, places) : func2(places, geo);
-  }
-  else /* numparam == 3 */
-  {
-    datum_func3 func3 = (datum_func3) func;
-    result = invert ? func3(geo, places, param) : func3(places, geo, param);
-  }
-  pfree(DatumGetPointer(places));
-  return result ? 1 : 0;
-}
-
-/**
  * @brief Return 1 if the poses of a temporal rigid geometry and a geometry
  * ever/always satisfy a spatial relationship, 0 if not, and -1 on error
  * @details The placements are the reference geometry at each of the poses the
