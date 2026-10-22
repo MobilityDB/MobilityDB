@@ -115,7 +115,7 @@ Functions</h2></td></tr>
 <div class="textblock"><p >Swept-edge-polygon clip primitive (M1 + M2) </p>
 <p >Computes time intervals during which a moving polygon edge intersects a static polygon. The swept envelope is a parallelogram (M1, pure translation) or a curved quadrilateral (M2, with rotation).</p>
 <p >Note: "trapezoid" in this codebase refers to the shape swept by a tcbuffer segment (trapezoid_make). The trgeo swept quadrilateral is a distinct geometric object.</p>
-<p >Sibling of <code><a class="el" href="tpoint__geom__clip_8c.html" title="Fast 2D/3D temporal point clipping against 2D geometries.">tpoint_geom_clip.c</a></code>, which handles the static-edge × polygon case. The two will share a unified <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> / point-in-polygon infrastructure once both wire into the build. </p>
+<p >Sibling of <code><a class="el" href="tpoint__geom__clip_8c.html" title="Fast 2D/3D temporal point clipping against 2D geometries.">tpoint_geom_clip.c</a></code>, which handles the static-edge × polygon case with its own <a class="el" href="structEdge.html" title="Structure keeping a geometry edge.">Edge</a> and point-in-polygon infrastructure. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
