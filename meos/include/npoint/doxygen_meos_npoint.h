@@ -75,6 +75,10 @@
  *   @defgroup meos_npoint_comp_temp Temporal comparison functions
  *   @ingroup meos_npoint_comp
  *   @brief Temporal comparison functions for temporal network points
+ *
+ * @defgroup meos_npoint_route Route functions
+ * @ingroup meos_npoint
+ * @brief Route functions for temporal network points
  */
 
 /*****************************************************************************/
