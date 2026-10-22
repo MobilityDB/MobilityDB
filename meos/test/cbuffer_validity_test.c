@@ -37,8 +37,8 @@
  * two spatial reference systems receives an error it can raise in its host
  * language rather than a crash or an answer.
  *
- * The program verifies that #acontains_geo_tcbuffer, #ecovers_geo_tcbuffer
- * and #acovers_geo_tcbuffer report a null geometry and a geometry whose SRID
+ * The program verifies that #econtains_geo_tcbuffer, #acontains_geo_tcbuffer,
+ * #ecovers_geo_tcbuffer and #acovers_geo_tcbuffer report a null geometry and a geometry whose SRID
  * differs from the one of the temporal circular buffer by returning -1 and
  * setting #meos_errno, as #econtains_tcbuffer_geo does, and that a valid call
  * still answers with no error left behind.
@@ -76,11 +76,11 @@ int main(void)
     -1);
   meos_errno_reset();
 
-  static const char *names[] = {"acontains_geo_tcbuffer",
-    "ecovers_geo_tcbuffer", "acovers_geo_tcbuffer"};
-  geo_tcbuffer_fn fns[] = {&acontains_geo_tcbuffer, &ecovers_geo_tcbuffer,
-    &acovers_geo_tcbuffer};
-  for (int i = 0; i < 3; i++)
+  static const char *names[] = {"econtains_geo_tcbuffer",
+    "acontains_geo_tcbuffer", "ecovers_geo_tcbuffer", "acovers_geo_tcbuffer"};
+  geo_tcbuffer_fn fns[] = {&econtains_geo_tcbuffer, &acontains_geo_tcbuffer,
+    &ecovers_geo_tcbuffer, &acovers_geo_tcbuffer};
+  for (int i = 0; i < 4; i++)
   {
     /* A null geometry is reported rather than read */
     int result = fns[i](NULL, temp);
@@ -112,6 +112,37 @@ int main(void)
     meos_errno());
   assert(result == -1);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+
+  /* A geometry containing the buffer at every instant ever and always
+   * contains it */
+  GSERIALIZED *big = geom_in("Polygon((-5 -5,-5 10,10 10,10 -5,-5 -5))", -1);
+  result = econtains_geo_tcbuffer(big, temp);
+  printf("econtains_geo_tcbuffer(big, temp): %d\n", result);
+  assert(result == 1);
+  assert(acontains_geo_tcbuffer(big, temp) == 1);
+  free(big);
+  meos_errno_reset();
+
+  /* Two buffers that touch at every instant always touch, two buffers that
+   * never meet never touch */
+  Temporal *tangent1 = tcbuffer_in("[Cbuffer(Point(0 0),1)@2001-01-01, "
+    "Cbuffer(Point(0 1),1)@2001-01-02]");
+  Temporal *tangent2 = tcbuffer_in("[Cbuffer(Point(2 0),1)@2001-01-01, "
+    "Cbuffer(Point(2 1),1)@2001-01-02]");
+  Temporal *apart = tcbuffer_in("[Cbuffer(Point(9 0),1)@2001-01-01, "
+    "Cbuffer(Point(9 1),1)@2001-01-02]");
+  int ever = etouches_tcbuffer_tcbuffer(tangent1, tangent2);
+  int always = atouches_tcbuffer_tcbuffer(tangent1, tangent2);
+  printf("etouches/atouches_tcbuffer_tcbuffer(tangent): %d %d\n", ever,
+    always);
+  assert(ever == 1 && always == 1);
+  ever = etouches_tcbuffer_tcbuffer(tangent1, apart);
+  always = atouches_tcbuffer_tcbuffer(tangent1, apart);
+  printf("etouches/atouches_tcbuffer_tcbuffer(apart): %d %d\n", ever,
+    always);
+  assert(ever == 0 && always == 0);
+  assert(meos_errno() == 0);
+  free(tangent1); free(tangent2); free(apart);
 
   free(temp); free(geo); free(other);
   meos_errno_reset();
