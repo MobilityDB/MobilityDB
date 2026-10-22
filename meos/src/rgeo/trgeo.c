@@ -331,6 +331,7 @@ trgeo_geom_p(const Temporal *temp)
  * @ingroup meos_rgeo_conversion
  * @brief Return a copy of the reference geometry of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_to_geom()
  */
 GSERIALIZED *
 trgeometry_geom(const Temporal *temp)
@@ -402,6 +403,7 @@ geo_tposeseqset_to_trgeo(const GSERIALIZED *gs, const TSequenceSet *ss)
  * pose
  * @param[in] gs Geometry
  * @param[in] temp Temporal pose
+ * @csqlfn #Trgeometry_constructor()
  */
 Temporal *
 geometry_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
