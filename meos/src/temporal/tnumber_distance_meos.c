@@ -147,7 +147,7 @@ nad_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
  * @errval INT_MAX
- * @csqlfn #NAD_tnumber_tbox()
+ * @csqlfn #NAD_tnumber_tbox(), #NAD_tbox_tnumber()
  */
 int
 nad_tint_tbox(const Temporal *temp, const TBox *box)
@@ -165,7 +165,7 @@ nad_tint_tbox(const Temporal *temp, const TBox *box)
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
  * @errval INT64_MAX
- * @csqlfn #NAD_tnumber_tbox()
+ * @csqlfn #NAD_tnumber_tbox(), #NAD_tbox_tnumber()
  */
 int64
 nad_tbigint_tbox(const Temporal *temp, const TBox *box)
@@ -183,7 +183,7 @@ nad_tbigint_tbox(const Temporal *temp, const TBox *box)
  * @param[in] temp Temporal value
  * @param[in] box Temporal box
  * @errval DBL_MAX
- * @csqlfn #NAD_tnumber_tbox()
+ * @csqlfn #NAD_tnumber_tbox(), #NAD_tbox_tnumber()
  */
 double
 nad_tfloat_tbox(const Temporal *temp, const TBox *box)
