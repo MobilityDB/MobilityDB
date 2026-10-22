@@ -268,6 +268,7 @@ Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
   char *version = mobilitydb_version();
   text *result = cstring_to_text(version);
+  pfree(version);
   PG_RETURN_TEXT_P(result);
 }
 
