@@ -35,6 +35,12 @@ find_package(Xz REQUIRED)
 set(MOBILITYDB_TEST_TMPDIR "${CMAKE_BINARY_DIR}/tmptest" CACHE PATH
   "Directory of the temporary PostgreSQL cluster of the tests")
 
+# The cluster is created in the C locale and, unless another encoding is given,
+# in UTF-8. A database in another encoding takes other paths for text values,
+# so a CI job runs the suite with SQL_ASCII as well.
+set(MOBILITYDB_TEST_ENCODING "UTF8" CACHE STRING
+  "Encoding of the temporary PostgreSQL cluster of the tests")
+
 configure_file(test.cmake test.cmake @ONLY)
 
 add_test(

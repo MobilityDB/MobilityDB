@@ -82,6 +82,10 @@ endif()
 set(TEST_DIR_LOG "${TEST_DIR}/log")
 set(TEST_DIR_OUT "${TEST_DIR}/out")
 
+# Encoding of the test cluster, which MOBILITYDB_TEST_ENCODING names at
+# configure time
+set(TEST_ENCODING "@MOBILITYDB_TEST_ENCODING@")
+
 message(STATUS "TEST_DIR: ${TEST_DIR}")
 message(STATUS "TEST_DIR_DB: ${TEST_DIR_DB}")
 message(STATUS "TEST_DIR_LOCK: ${TEST_DIR_LOCK}")
@@ -146,8 +150,12 @@ if(TEST_OPER MATCHES "test_setup")
   # Explanation of the parameters
   # -D <directory> Directory where the database cluster should be stored.
   #    If not given, the PGDATA environment variable is used.
+  # --no-locale The C locale, which the expected results are written in,
+  #    rather than the locale of the caller
+  # -E <encoding> The encoding MOBILITYDB_TEST_ENCODING names at configure
+  #    time, rather than the one the locale of the caller implies
   execute_process(
-    COMMAND ${INITDB} -D ${TEST_DIR_DB}
+    COMMAND ${INITDB} -D ${TEST_DIR_DB} --no-locale -E ${TEST_ENCODING}
     OUTPUT_FILE ${TEST_DIR_LOG}/initdb.log
     ERROR_FILE ${TEST_DIR_LOG}/initdb.log
     ERROR_VARIABLE TEST_ERROR
