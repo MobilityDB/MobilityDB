@@ -99,24 +99,6 @@ extern int trgeo_geom_clip_lwpoly(
   const LWPOLY *poly,
   Span **intervals_out);
 
-/**
- * @brief Convenience wrapper accepting an axis-aligned bounding box
- * (xmin, ymin, xmax, ymax). The box is treated as a 4-vertex
- * rectangular polygon. This is the natural primitive for
- * `tgeo_restrict_stbox` on moving polygon edges, replacing
- * Liang-Barsky line-vs-box clipping.
- *
- * @param[in] a1,b1,a2,b2 quad endpoints (pure translation)
- * @param[in] xmin,ymin,xmax,ymax box bounds
- * @param[out] intervals_out receives Span values (t in [0, 1])
- * @return number of intervals appended, or -1 on input error
- */
-extern int trgeo_geom_clip_box(
-  const POINT2D *a1, const POINT2D *b1,
-  const POINT2D *a2, const POINT2D *b2,
-  double xmin, double ymin, double xmax, double ymax,
-  Span **intervals_out);
-
 /*****************************************************************************
  * M2 — rotational case (2D only)
  *
@@ -156,13 +138,6 @@ extern int trgeo_geom_clip_lwpoly_posed(
   const POINT2D *p_a_local, const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const LWPOLY *poly, Span **intervals_out);
-
-/** @brief Box convenience wrapper around `trgeo_geom_clip_polygon_posed` */
-extern int trgeo_geom_clip_box_posed(
-  const POINT2D *p_a_local, const POINT2D *p_b_local,
-  const struct Pose *pose1, const struct Pose *pose2,
-  double xmin, double ymin, double xmax, double ymax,
-  Span **intervals_out);
 
 /*****************************************************************************
  * LWGEOM-level wrappers — full geometry-type parity
