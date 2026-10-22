@@ -308,7 +308,8 @@ come before its push.
 | `meos/pose-constructors-named` | `a6e918fc95` | one wrapper per pose constructor, each named in its tag | receipts owed |
 | `meos/tpcbox-pcpoint-constructors-named` | `ec66ca3a4d` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
 | `meos/trgeometry-constructors-named` | `6c84207870` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
-| `meos/span-box-distances-named` | `7ed46f3bfc` | `spanDistance(span, spanset)` calls `distance_spanset_span` | receipts owed |
+| `meos/span-box-distances-named` | `2e109f3c36` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, after the MEOS-API branch below | receipts owed |
+| MEOS-API `fix/callee-skips-c-keywords` | `a9b8dab19` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | tests 56 of 56; catalog over master unchanged |
 | `meos/raster-statistics-named` | `e0e43aaae6` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
 | `meos/npoint-public` | `de644f0142` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `cc17994f19` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public | receipts owed |
@@ -321,8 +322,6 @@ Left, each for the owner first:
   `EA_spatialrel_*`, so they wait for the generator to emit such wrappers, or for the tags alone
   with the positional mapping `Edwithin_geo_trgeometry` carries on master.
 - `tbox(numeric)` through `float_to_tbox` refuses `NaN`, where the wrapper answers a box today.
-- `nearestApproachDistance(tbox, tnumber)`: MEOS-API `_kernel_args` reads an `if (` as a call, so
-  the commuted order of the three typed functions is not derived.
 - `valueCount` and `valuePercent` over a raster: one search value against `raster_value_count`'s
   array of them, a shape the catalog does not state.
 - MEOS-API: the operator stated per signature (the three JSON functions behind both `->` and `->>`).
