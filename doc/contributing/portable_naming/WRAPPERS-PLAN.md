@@ -90,19 +90,21 @@ wrapper and the MEOS function it reaches.
 - The constructors of the PostgreSQL geometric types (`point`, `line`, `lseg`, `box`, `circle`,
   `path`, `polygon`), `transformGK`, the compatibility link to SECONDO, and `createTrip`, the trip
   generator of the BerlinMOD benchmark. They stay in MobilityDB as they are.
-- The procedures of the operators `<->` and `|=|` over the geo types (14 wrappers, 22 signatures
-  on master). DECIDED BY THE OWNER 2026-10-23, as PostGIS backs `<->` by
-  `geometry_distance_centroid` and `geography_distance_knn` beside `ST_Distance`: every one of
-  these operators, over geometry and geography alike, takes an operator procedure that answers
-  its user function with the default model of the earth, which the nearest-neighbour search of an
-  index also takes; the user functions (`tDistance`, `nearestApproachDistance`, `setDistance`,
-  with `spheroid boolean DEFAULT true` over geography) stay the one surface of the bindings. The
-  procedures are `tgeo_distance`, `tgeo_nad`, `stbox_nad` and `geoset_distance`, on the wrappers
-  `Tgeo_distance_*`, `Tgeo_nad_*`, `Stbox_nad_*` and `Geoset_distance_*`, which no MEOS function
-  names; `tDistanceOp`, `nearestApproachDistanceOp` and `setDistanceOp` go. Branch
-  `sql/geo-distance-operators-take-their-procedures`: the 43 operators take the procedures, the
-  catalog states the same 8710 signatures as over master, and the GiST indexes order by `|=|`
-  over geometry and geography.
+- The procedures of the operators over a function with an optional argument. DECIDED BY THE
+  OWNER 2026-10-23: an operator over a function whose last arguments carry a default takes the
+  function's two-argument procedure `<function>Opr`, which answers the function with its defaults,
+  as PostgreSQL backs `@?` by `jsonb_path_exists_opr` beside `jsonb_path_exists`; the function is
+  the one surface of the bindings, and a caller passes other values to the function. The geo
+  distances: `<->` and `|=|` over geometry and geography alike take `tDistanceOpr`,
+  `nearestApproachDistanceOpr` and `setDistanceOpr` (wrappers `Tdistance_tgeo_geo_opr`,
+  `NAD_tgeo_stbox_opr`, `Distance_geoset_geo_opr`, ...), in place of `tDistanceOp`,
+  `nearestApproachDistanceOp` and `setDistanceOp` over geography alone; branch
+  `sql/geo-distance-operators-take-their-procedures`, 43 operators, the catalog stating the same
+  8710 signatures and 1418 operators as over master, and the GiST indexes ordering by `|=|` over
+  both types. The JSON operators already take their `…Opr` procedures (19). No MEOS function
+  names an `_opr` wrapper, so no binding registers an `Opr` name: MobilityDuck registers each
+  operator on the two-argument form of its function, from the `@sqlop` of the function's wrapper,
+  which `check_sqlop_tags.py` reads as the operator the SQL binds to the wrapper's `_opr` twin.
 
 ## Covered elsewhere
 
