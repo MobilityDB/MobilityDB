@@ -293,20 +293,39 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 ## The plan
 
-- MobilityDB: the `@csqlfn` tags of the 44 wrappers that already call a public function. The JSON
-  family is branch `meos/json-wrappers-named`: 35 wrappers, the 28 JSON wrappers of the tag group
-  and the 7 extract-path wrappers of the call group, which reach their function through their
-  `_common` helper as their siblings do and need the tag only.
-- MobilityDB: the 44 wrappers that call the public function they reach through an internal
-  one, each named in its tag.
-- MobilityDB: `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS`, their wrappers
-  calling them (branch `meos/jsonpath-outside-meos-gate`); the other four as Consistency of the
-  tags states.
-- MobilityDB: the Z extent of a patch against a box, and the operand order of `tjsonbContained`,
-  each a defect on its own branch, before its family.
-- MobilityDB: one pull request per family of the functions to add, each adding the public
-  functions, the wrappers calling them, and a C test.
-- MEOS-API: the operator stated per signature.
+Each branch is one pull request, on MobilityDB master `1cbb831a57` unless stated; its receipts
+come before its push.
+
+| branch | commit | what it does | state |
+|---|---|---|---|
+| `fix/tjsonb-contained-operand-order` | `c9e613ba25` | `tjsonbContained` answers `<@`, not `@>` | strict-ci and cppcheck green; Windows owed |
+| `fix/tpcpatch-tpcbox-z` | `d5d136db07` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
+| `meos/cell-instants-answer-the-constructor` | `61dcce4a97` | the cell instant constructors carry their `@csqlfn` | receipts owed |
+| `sql/geo-distance-operators-take-their-procedures` | `a433fa6b88` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | receipts running |
+| `meos/json-wrappers-named` | `1d8f86bb7e` | the 16 text, `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper | receipts owed |
+| `meos/jsonpath-outside-meos-gate` | `42a3ab7356` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
+| `meos/box-constructors-named` | `f47cb80fae` | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags | receipts owed |
+| `meos/pose-constructors-named` | `a6e918fc95` | one wrapper per pose constructor, each named in its tag | receipts owed |
+| `meos/tpcbox-pcpoint-constructors-named` | `ec66ca3a4d` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
+| `meos/trgeometry-constructors-named` | `6c84207870` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
+| `meos/span-box-distances-named` | `7ed46f3bfc` | `spanDistance(span, spanset)` calls `distance_spanset_span` | receipts owed |
+| `meos/raster-statistics-named` | `e0e43aaae6` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
+| `meos/npoint-public` | `de644f0142` | the 20 route operations public (functions to add) | receipts owed |
+| `meos/cbuffer-public` | `cc17994f19` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public | receipts owed |
+| `meos/json-public` | `75269bc0b2` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
+
+Left, each for the owner first:
+
+- The geometry-first `tcbuffer` relations (16 wrappers): the catalog states a commuted order only
+  from a wrapper that reads its arguments and calls the public function itself, not through
+  `EA_spatialrel_*`, so they wait for the generator to emit such wrappers, or for the tags alone
+  with the positional mapping `Edwithin_geo_trgeometry` carries on master.
+- `tbox(numeric)` through `float_to_tbox` refuses `NaN`, where the wrapper answers a box today.
+- `nearestApproachDistance(tbox, tnumber)`: MEOS-API `_kernel_args` reads an `if (` as a call, so
+  the commuted order of the three typed functions is not derived.
+- `valueCount` and `valuePercent` over a raster: one search value against `raster_value_count`'s
+  array of them, a shape the catalog does not state.
+- MEOS-API: the operator stated per signature (the three JSON functions behind both `->` and `->>`).
 
 ## Acceptance
 
