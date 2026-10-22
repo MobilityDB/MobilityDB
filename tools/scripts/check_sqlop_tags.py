@@ -49,9 +49,13 @@ FUNCTION of that name and those types names the C symbol:
       RETURNS tjsonb
       AS 'MODULE_PATHNAME', 'Tjsonb_object_field_opr'
 
-so `->` is the operator of `Tjsonb_object_field_opr`, and not of
-`Tjsonb_object_field`, whose `tjsonbObjectField(tjsonb, text, text)` no
-operator calls.  The tag `@p ::` names a cast, bound when a CREATE CAST
+so `->` is the operator of `Tjsonb_object_field_opr`, the two-argument
+procedure of `Tjsonb_object_field`, whose `tjsonbObjectField(tjsonb, text,
+text)` takes an optional argument no operator can pass. An `_opr` wrapper is
+the procedure of the wrapper it is named after, as PostgreSQL backs @? by
+jsonb_path_exists_opr beside jsonb_path_exists, so the operator the SQL binds
+to `W_opr` is also the operator of `W`, and the tag on `W` is the path from
+the operator to the catalog.  The tag `@p ::` names a cast, bound when a CREATE CAST
 converts through a function of the wrapper.
 
 A tag belongs to the wrapper the catalog gives it: the first
@@ -247,7 +251,12 @@ def report(rebaseline=False):
         if not bindings:
             continue
         checked += 1
-        bound = {op for op, fn, args in ops if (fn, args) in bindings}
+        # An operator over a function with optional arguments takes the
+        # function's two-argument `_opr` twin as its procedure, as PostgreSQL
+        # backs @? by jsonb_path_exists_opr beside jsonb_path_exists: the
+        # operator the SQL binds to the twin is the wrapper's own.
+        procs = bindings | sigs.get(wrapper + '_opr', set())
+        bound = {op for op, fn, args in ops if (fn, args) in procs}
         if bindings & casts:
             bound.add('::')
         if not tagged or any(op not in bound for op in tagged):

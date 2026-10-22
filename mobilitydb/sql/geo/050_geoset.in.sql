@@ -965,68 +965,80 @@ CREATE FUNCTION setDistance(geometry, geomset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistanceOpr(geometry, geomset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geo_geoset_opr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geomset, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geoset_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistanceOpr(geomset, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geo_opr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geomset, geomset)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geoset_geoset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistanceOpr(geomset, geomset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION setDistance(geography, geogset, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setDistanceOp(geography, geogset)
+CREATE FUNCTION setDistanceOpr(geography, geogset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_geo_geoset_op'
+  AS 'MODULE_PATHNAME', 'Distance_geo_geoset_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geogset, geography, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geoset_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setDistanceOp(geogset, geography)
+CREATE FUNCTION setDistanceOpr(geogset, geography)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_geoset_geo_op'
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geo_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION setDistance(geogset, geogset, spheroid boolean DEFAULT true)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geoset_geoset'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION setDistanceOp(geogset, geogset)
+CREATE FUNCTION setDistanceOpr(geogset, geogset)
   RETURNS float
-  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset_op'
+  AS 'MODULE_PATHNAME', 'Distance_geoset_geoset_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geometry, RIGHTARG = geomset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geomset, RIGHTARG = geometry,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistance,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geomset, RIGHTARG = geomset,
   COMMUTATOR = <->
 );
 
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistanceOp,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geography, RIGHTARG = geogset,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistanceOp,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geogset, RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
-  PROCEDURE = setDistanceOp,
+  PROCEDURE = setDistanceOpr,
   LEFTARG = geogset, RIGHTARG = geogset,
   COMMUTATOR = <->
 );

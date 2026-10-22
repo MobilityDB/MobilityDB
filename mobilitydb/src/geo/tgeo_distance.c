@@ -77,19 +77,21 @@ Tdistance_geo_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tdistance_geo_tgeo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdistance_geo_tgeo_op);
+PGDLLEXPORT Datum Tdistance_geo_tgeo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_geo_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a geometry/geography and a
  * temporal geo
- * @details Implementation of the operator, the 2-argument version of
- * #Tdistance_geo_tgeo() on the spheroid
- * @sqlfn tDistanceOp()
+ * @details The procedure of the operator, which answers #Tdistance_geo_tgeo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn tDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Tdistance_geo_tgeo_op(PG_FUNCTION_ARGS)
+Tdistance_geo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return Tdistance_geo_tgeo(fcinfo);
 }
@@ -119,19 +121,21 @@ Tdistance_tgeo_geo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tdistance_tgeo_geo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdistance_tgeo_geo_op);
+PGDLLEXPORT Datum Tdistance_tgeo_geo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tgeo_geo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between a temporal geo and a
  * geometry/geography
- * @details Implementation of the operator, the 2-argument version of
- * #Tdistance_tgeo_geo() on the spheroid
- * @sqlfn tDistanceOp()
+ * @details The procedure of the operator, which answers #Tdistance_tgeo_geo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn tDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Tdistance_tgeo_geo_op(PG_FUNCTION_ARGS)
+Tdistance_tgeo_geo_opr(PG_FUNCTION_ARGS)
 {
   return Tdistance_tgeo_geo(fcinfo);
 }
@@ -160,18 +164,20 @@ Tdistance_tgeo_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tdistance_tgeo_tgeo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdistance_tgeo_tgeo_op);
+PGDLLEXPORT Datum Tdistance_tgeo_tgeo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdistance_tgeo_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the temporal distance between two temporal geos
- * @details Implementation of the operator, the 2-argument version of
- * #Tdistance_tgeo_tgeo() on the spheroid
- * @sqlfn tDistanceOp()
+ * @details The procedure of the operator, which answers #Tdistance_tgeo_tgeo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn tDistanceOpr()
  * @sqlop @p <->
  */
 Datum
-Tdistance_tgeo_tgeo_op(PG_FUNCTION_ARGS)
+Tdistance_tgeo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return Tdistance_tgeo_tgeo(fcinfo);
 }
@@ -282,19 +288,21 @@ NAD_geo_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_geo_tgeo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_geo_tgeo_op);
+PGDLLEXPORT Datum NAD_geo_tgeo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_geo_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a geometry and a
  * temporal geo
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_geo_tgeo() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_geo_tgeo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_geo_tgeo_op(PG_FUNCTION_ARGS)
+NAD_geo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_geo_tgeo(fcinfo);
 }
@@ -324,19 +332,21 @@ NAD_tgeo_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_tgeo_geo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_tgeo_geo_op);
+PGDLLEXPORT Datum NAD_tgeo_geo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tgeo_geo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a temporal geo and a
  * geometry
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_tgeo_geo() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_tgeo_geo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_tgeo_geo_op(PG_FUNCTION_ARGS)
+NAD_tgeo_geo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_geo(fcinfo);
 }
@@ -365,19 +375,21 @@ NAD_geo_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_geo_stbox_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_geo_stbox_op);
+PGDLLEXPORT Datum NAD_geo_stbox_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_geo_stbox_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a geometry and
  * a spatiotemporal box
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_geo_stbox() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_geo_stbox()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_geo_stbox_op(PG_FUNCTION_ARGS)
+NAD_geo_stbox_opr(PG_FUNCTION_ARGS)
 {
   return NAD_geo_stbox(fcinfo);
 }
@@ -406,19 +418,21 @@ NAD_stbox_geo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_stbox_geo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_stbox_geo_op);
+PGDLLEXPORT Datum NAD_stbox_geo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_geo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a geometry
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_stbox_geo() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_stbox_geo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_stbox_geo_op(PG_FUNCTION_ARGS)
+NAD_stbox_geo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_stbox_geo(fcinfo);
 }
@@ -444,18 +458,20 @@ NAD_stbox_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_stbox_stbox_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_stbox_stbox_op);
+PGDLLEXPORT Datum NAD_stbox_stbox_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_stbox_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal boxes
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_stbox_stbox() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_stbox_stbox()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_stbox_stbox_op(PG_FUNCTION_ARGS)
+NAD_stbox_stbox_opr(PG_FUNCTION_ARGS)
 {
   return NAD_stbox_stbox(fcinfo);
 }
@@ -484,19 +500,21 @@ NAD_stbox_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_stbox_tgeo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_stbox_tgeo_op);
+PGDLLEXPORT Datum NAD_stbox_tgeo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_stbox_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box
  * and a temporal geo
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_stbox_tgeo() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_stbox_tgeo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_stbox_tgeo_op(PG_FUNCTION_ARGS)
+NAD_stbox_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_stbox_tgeo(fcinfo);
 }
@@ -525,19 +543,21 @@ NAD_tgeo_stbox(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_tgeo_stbox_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_tgeo_stbox_op);
+PGDLLEXPORT Datum NAD_tgeo_stbox_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tgeo_stbox_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between a temporal geo and a
  * spatiotemporal box
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_tgeo_stbox() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_tgeo_stbox()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_tgeo_stbox_op(PG_FUNCTION_ARGS)
+NAD_tgeo_stbox_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_stbox(fcinfo);
 }
@@ -566,18 +586,20 @@ NAD_tgeo_tgeo(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(result);
 }
 
-PGDLLEXPORT Datum NAD_tgeo_tgeo_op(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo_op);
+PGDLLEXPORT Datum NAD_tgeo_tgeo_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between two temporal geos
- * @details Implementation of the operator, the 2-argument version of
- * #NAD_tgeo_tgeo() on the spheroid
- * @sqlfn nearestApproachDistanceOp()
+ * @details The procedure of the operator, which answers #NAD_tgeo_tgeo()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
  * @sqlop @p |=|
  */
 Datum
-NAD_tgeo_tgeo_op(PG_FUNCTION_ARGS)
+NAD_tgeo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_tgeo(fcinfo);
 }
