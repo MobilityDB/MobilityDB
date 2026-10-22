@@ -88,6 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_ga9e9ef901c07ef11f96ecbc4fc0b07bd4.html#ga9e9ef901c07ef11f96ecbc4fc0b07bd4">tgeo_space_boxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_gafc4af252e87ed95848ac4ee8f42270ad.html#gafc4af252e87ed95848ac4ee8f42270ad">tgeo_space_split</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__tile_gaac05383d0834c9702100027387ac1c40.html#gaac05383d0834c9702100027387ac1c40">tgeo_space_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_gaacb6ce29aa258cd2aec38c5cce9a1993.html#gaacb6ce29aa258cd2aec38c5cce9a1993">tgeo_time_boxes</a></td></tr>
         </table>
       </div>
    </td>
@@ -178,24 +179,24 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the fragments a temporal geo split according to a space and possibly a time grid. </p>
+<p>Return the fragments a temporal geo split according to a space and a time grid. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, <code>xsize</code> being positive; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, which must be positive </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bitmatrix</td><td>True when using a bitmatrix to speed up the computation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">space_bins</td><td>Array of space bins, parallel to the fragments, may be <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">time_bins</td><td>Array of time bins, parallel to the fragments, <code>NULL</code> when no duration is given, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">time_bins</td><td>Array of time bins, parallel to the fragments, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output arrays </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Array of fragments </dd></dl>
-<dl class="section note"><dt>Note</dt><dd>This function in MEOS corresponds to the MobilityDB function #Tgeo_space_time_split_common. Note that the test for the validity of the arguments is done in <a class="el" href="meos_2src_2geo_2tgeo__tile_8c_aa71e654d184e6a730f9b31641b3e07df.html#aa71e654d184e6a730f9b31641b3e07df" title="Set the state with a temporal point and a space and possibly time grid for splitting or obtaining a s...">tgeo_space_time_tile_init</a> @csqlfn <a class="el" href="group__mobilitydb__geo__tile_ga44be57d090cd0165f363a0538db3f69e.html#ga44be57d090cd0165f363a0538db3f69e" title="Return a temporal geo split with respect to a spatiotemporal grid @sqlfn spaceTimeSplit()">Tgeo_space_time_split()</a> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This function in MEOS corresponds to the MobilityDB function <a class="el" href="group__mobilitydb__geo__tile_ga44be57d090cd0165f363a0538db3f69e.html#ga44be57d090cd0165f363a0538db3f69e" title="Return a temporal geo split with respect to a spatiotemporal grid @sqlfn spaceTimeSplit()">Tgeo_space_time_split</a> @csqlfn <a class="el" href="group__mobilitydb__geo__tile_ga44be57d090cd0165f363a0538db3f69e.html#ga44be57d090cd0165f363a0538db3f69e" title="Return a temporal geo split with respect to a spatiotemporal grid @sqlfn spaceTimeSplit()">Tgeo_space_time_split()</a> </dd></dl>
 
 </div>
 </div>

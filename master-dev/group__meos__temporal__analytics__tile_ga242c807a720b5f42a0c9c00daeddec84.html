@@ -172,12 +172,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the temporal boxes of a temporal big integer split with respect to a value and possibly a time grid. </p>
+<p>Return the temporal boxes of a temporal big integer split with respect to a value and a time grid. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vsize</td><td>Value size of the tiles </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td><a class="el" href="structInterval.html">Interval</a> defining the size of the bins </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vsize</td><td>Value size of the tiles, which must be positive </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td><a class="el" href="structInterval.html">Interval</a> defining the size of the bins, which must be positive </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">vorigin</td><td>Value origin of the tiles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Time origin of the tiles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the grid contains the upper border of the extent </td></tr>

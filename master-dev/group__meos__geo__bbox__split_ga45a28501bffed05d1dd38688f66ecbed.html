@@ -161,17 +161,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the spatiotemporal boxes of a temporal point split with respect to a space and possibly a time grid. </p>
+<p>Return the spatiotemporal boxes of a temporal point split with respect to a space and a time grid. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, <code>xsize</code> being positive; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, which must be positive </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bitmatrix</td><td>True when using a bitmatrix to speed up the computation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array @csqlfn <a class="el" href="group__mobilitydb__geo__tile_ga97a02782709e31d70437cc060102d86d.html#ga97a02782709e31d70437cc060102d86d" title="Return the spatiotemporal boxes of a temporal geo split with respect to a spatiotemporal grid @sqlfn ...">Tgeo_space_time_boxes()</a>, <a class="el" href="group__mobilitydb__geo__tile_ga727f31d140db22b795cbcdfff3887093.html#ga727f31d140db22b795cbcdfff3887093" title="Return the spatiotemporal boxes of a temporal geo split with respect to time bins @sqlfn timeBoxes()">Tgeo_time_boxes()</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of elements in the output array @csqlfn <a class="el" href="group__mobilitydb__geo__tile_ga97a02782709e31d70437cc060102d86d.html#ga97a02782709e31d70437cc060102d86d" title="Return the spatiotemporal boxes of a temporal geo split with respect to a spatiotemporal grid @sqlfn ...">Tgeo_space_time_boxes()</a> </td></tr>
   </table>
   </dd>
 </dl>

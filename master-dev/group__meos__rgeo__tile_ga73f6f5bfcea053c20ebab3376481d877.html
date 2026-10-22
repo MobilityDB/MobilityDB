@@ -81,6 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__tile_ga2e267c2471beaaa7cfb600081d95250d.html#ga2e267c2471beaaa7cfb600081d95250d">trgeometry_space_boxes</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__rgeo__tile_ga73f6f5bfcea053c20ebab3376481d877.html#ga73f6f5bfcea053c20ebab3376481d877">trgeometry_space_time_boxes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__rgeo__tile_gad46f6d52bb17c1a1b7729380c87f44dd.html#gad46f6d52bb17c1a1b7729380c87f44dd">trgeometry_time_boxes</a></td></tr>
         </table>
       </div>
    </td>
@@ -163,8 +164,8 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> rigid geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, a <code>ysize</code> or <code>zsize</code> of 0 taking <code>xsize</code> as <a class="el" href="tgeo__tile_8h_aa71e654d184e6a730f9b31641b3e07df.html#aa71e654d184e6a730f9b31641b3e07df" title="Set the state with a temporal point and a space and possibly time grid for splitting or obtaining a s...">tgeo_space_time_tile_init</a> reads them </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the temporal dimension as an interval </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, <code>xsize</code> being positive, a <code>ysize</code> or <code>zsize</code> of 0 taking <code>xsize</code> as <a class="el" href="tgeo__tile_8h_aa71e654d184e6a730f9b31641b3e07df.html#aa71e654d184e6a730f9b31641b3e07df" title="Set the state with a temporal point and a space and possibly time grid for splitting or obtaining a s...">tgeo_space_time_tile_init</a> reads them </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the temporal dimension as an interval, which must be positive </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin of the spatial grid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin of the temporal grid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bitmatrix</td><td>True when using a bitmatrix to speed up the computation </td></tr>

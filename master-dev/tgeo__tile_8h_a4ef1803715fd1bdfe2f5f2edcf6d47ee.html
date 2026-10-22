@@ -82,7 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_a0df054ec0543db80a4df8c675b365831.html#a0df054ec0543db80a4df8c675b365831">bitmatrix_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_a45ed35a158331b8f57fd66c5a18fa835.html#a45ed35a158331b8f57fd66c5a18fa835">MAXDIMS</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_ac027da5da038b3487f5e6809e6604d8d.html#ac027da5da038b3487f5e6809e6604d8d">stbox_space_time_tile</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="tgeo__tile_8h_a5c8f029e7a32fe9986ec9a8b8f62df71.html#a5c8f029e7a32fe9986ec9a8b8f62df71">stbox_space_time_tile_init</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="tgeo__tile_8h_a4ef1803715fd1bdfe2f5f2edcf6d47ee.html#a4ef1803715fd1bdfe2f5f2edcf6d47ee">stbox_space_time_tile_init</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_a2caa33ad668ccdc01df1c5b6f6afcefa.html#a2caa33ad668ccdc01df1c5b6f6afcefa">stbox_tile_state_get</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_aecd61ebb50df1379a07f88b94dffe0d2.html#aecd61ebb50df1379a07f88b94dffe0d2">stbox_tile_state_make</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tgeo__tile_8h_a47fb42996d151f9b39e013fd0c396767.html#a47fb42996d151f9b39e013fd0c396767">stbox_tile_state_next</a></td></tr>
@@ -98,8 +98,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a5c8f029e7a32fe9986ec9a8b8f62df71" name="a5c8f029e7a32fe9986ec9a8b8f62df71"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c8f029e7a32fe9986ec9a8b8f62df71">&#9670;&#160;</a></span>stbox_space_time_tile_init()</h2>
+<a id="a4ef1803715fd1bdfe2f5f2edcf6d47ee" name="a4ef1803715fd1bdfe2f5f2edcf6d47ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4ef1803715fd1bdfe2f5f2edcf6d47ee">&#9670;&#160;</a></span>stbox_space_time_tile_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -155,6 +155,18 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>hasx</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>hast</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">int *&#160;</td>
           <td class="paramname"><em>ntiles</em>&#160;</td>
         </tr>
@@ -175,6 +187,8 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension, may be <code>NULL</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hasx</td><td>True when the grid lays the space dimension, which then takes a positive <code>xsize</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hast</td><td>True when the grid lays the time dimension, which then takes a duration </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ntiles</td><td>Number of tiles </td></tr>
   </table>
   </dd>

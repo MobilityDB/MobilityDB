@@ -88,6 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_ga9e9ef901c07ef11f96ecbc4fc0b07bd4.html#ga9e9ef901c07ef11f96ecbc4fc0b07bd4">tgeo_space_boxes</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_gafc4af252e87ed95848ac4ee8f42270ad.html#gafc4af252e87ed95848ac4ee8f42270ad">tgeo_space_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_gaac05383d0834c9702100027387ac1c40.html#gaac05383d0834c9702100027387ac1c40">tgeo_space_time_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__tile_gaacb6ce29aa258cd2aec38c5cce9a1993.html#gaacb6ce29aa258cd2aec38c5cce9a1993">tgeo_time_boxes</a></td></tr>
         </table>
       </div>
    </td>
@@ -164,8 +165,8 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bounds</td><td>Bounds </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension, <code>xsize</code> being positive; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a value with Z </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, which must be positive </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box. </td></tr>
