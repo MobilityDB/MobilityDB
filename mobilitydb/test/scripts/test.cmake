@@ -69,8 +69,8 @@ set(TEST_DIR_DB "${TEST_DIR}/db")
 # 107 bytes, which a test directory deep in the file system reaches, so the
 # socket lies in a short directory of its own under /tmp, as pg_regress does.
 # The directory is named after the test directory so that the clusters of two
-# build directories do not share it. On Windows /tmp is read at the root of the
-# drive holding the test directory, as for the files the tests exchange.
+# build directories do not share it. On Windows the directory lies under /tmp
+# at the root of the drive holding the test directory.
 string(MD5 _lock_hash "${TEST_DIR}")
 string(SUBSTRING "${_lock_hash}" 0 8 _lock_hash)
 if(CMAKE_HOST_WIN32)
@@ -81,6 +81,9 @@ else()
 endif()
 set(TEST_DIR_LOG "${TEST_DIR}/log")
 set(TEST_DIR_OUT "${TEST_DIR}/out")
+# Files the tests write and read back with \copy, which psql resolves in the
+# directory it runs in, so that two runs on one machine do not share them
+set(TEST_DIR_EXCHANGE "${TEST_DIR}/exchange")
 
 # Encoding of the test cluster, which MOBILITYDB_TEST_ENCODING names at
 # configure time
@@ -91,6 +94,7 @@ message(STATUS "TEST_DIR_DB: ${TEST_DIR_DB}")
 message(STATUS "TEST_DIR_LOCK: ${TEST_DIR_LOCK}")
 message(STATUS "TEST_DIR_LOG: ${TEST_DIR_LOG}")
 message(STATUS "TEST_DIR_OUT: ${TEST_DIR_OUT}")
+message(STATUS "TEST_DIR_EXCHANGE: ${TEST_DIR_EXCHANGE}")
 
 # Stop with the message of a step that failed and the log files of the program
 # it ran, since a program whose output goes to a file leaves TEST_ERROR empty
@@ -140,6 +144,7 @@ if(TEST_OPER MATCHES "test_setup")
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_LOCK}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_LOG}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_OUT}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_EXCHANGE}
     ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
@@ -148,14 +153,6 @@ if(TEST_OPER MATCHES "test_setup")
   else()
     message(STATUS "Test directories created: '${TEST_DIR}'")
   endif()
-  if(CMAKE_HOST_WIN32)
-    # The tests exchange tables with the server through files under /tmp,
-    # which a server on Windows reads as a directory at the root of the drive
-    # holding its cluster
-    string(SUBSTRING "${TEST_DIR_DB}" 0 2 _drive)
-    file(MAKE_DIRECTORY "${_drive}/tmp")
-  endif()
-
   #-------------------------
   # Create database cluster
   #-------------------------
@@ -303,6 +300,7 @@ elseif(TEST_OPER MATCHES "run_compare")
     INPUT_FILE ${TEST_FILE}
     OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
     ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+    WORKING_DIRECTORY ${TEST_DIR_EXCHANGE}
   )
 
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)

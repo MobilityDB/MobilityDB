@@ -1,11 +1,11 @@
-COPY tbl_quadbinset TO '/tmp/tbl_quadbinset' (FORMAT BINARY);
+COPY  tbl_quadbinset TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_quadbinset_tmp;
 NOTICE:  table "tbl_quadbinset_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_quadbinset_tmp AS TABLE tbl_quadbinset WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_quadbinset_tmp FROM '/tmp/tbl_quadbinset' (FORMAT BINARY);
+COPY  tbl_quadbinset_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_quadbinset t1, tbl_quadbinset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 

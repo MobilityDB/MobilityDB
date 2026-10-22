@@ -32,14 +32,14 @@ SELECT COUNT(*) FROM tbl_raquet WHERE tile::text::raquet <> tile;
      0
 (1 row)
 
-COPY tbl_raquet TO '/tmp/tbl_raquet' (FORMAT BINARY);
+COPY  tbl_raquet TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_raquet_tmp;
 NOTICE:  table "tbl_raquet_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_raquet_tmp AS TABLE tbl_raquet WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_raquet_tmp FROM '/tmp/tbl_raquet' (FORMAT BINARY);
+COPY  tbl_raquet_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_raquet t1, tbl_raquet_tmp t2
 WHERE t1.k = t2.k AND t1.tile <> t2.tile;

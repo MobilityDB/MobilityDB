@@ -1,11 +1,11 @@
-COPY tbl_tpcpoint TO '/tmp/tbl_tpcpoint' (FORMAT BINARY);
+COPY  tbl_tpcpoint TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tpcpoint_tmp;
 NOTICE:  table "tbl_tpcpoint_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tpcpoint_tmp AS TABLE tbl_tpcpoint WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tpcpoint_tmp FROM '/tmp/tbl_tpcpoint' (FORMAT BINARY);
+COPY  tbl_tpcpoint_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_tpcpoint t1, tbl_tpcpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 

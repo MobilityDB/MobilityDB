@@ -183,11 +183,11 @@ INSERT INTO tbl_tquadbin_binio VALUES
   (2, tquadbin '{480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02}'),
   (3, tquadbin '[480fffffffffffff@2001-01-01, 48427fffffffffff@2001-01-02]');
 
-COPY tbl_tquadbin_binio TO '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+\copy tbl_tquadbin_binio TO 'tbl_tquadbin_binio' (FORMAT BINARY);
 
 DROP TABLE IF EXISTS tbl_tquadbin_binio_tmp;
 CREATE TABLE tbl_tquadbin_binio_tmp AS TABLE tbl_tquadbin_binio WITH NO DATA;
-COPY tbl_tquadbin_binio_tmp FROM '/tmp/tbl_tquadbin_binio' (FORMAT BINARY);
+\copy tbl_tquadbin_binio_tmp FROM 'tbl_tquadbin_binio' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_tquadbin_binio t1, tbl_tquadbin_binio_tmp t2
   WHERE t1.k = t2.k AND t1.temp <> t2.temp;

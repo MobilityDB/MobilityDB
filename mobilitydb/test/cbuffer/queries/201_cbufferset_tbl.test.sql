@@ -34,10 +34,10 @@
 
 -- Send/receive functions
 
-COPY tbl_cbufferset TO '/tmp/tbl_cbufferset' (FORMAT BINARY);
+\copy tbl_cbufferset TO 'tbl_cbufferset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_cbufferset_tmp;
 CREATE TABLE tbl_cbufferset_tmp AS TABLE tbl_cbufferset WITH NO DATA;
-COPY tbl_cbufferset_tmp FROM '/tmp/tbl_cbufferset' (FORMAT BINARY);
+\copy tbl_cbufferset_tmp FROM 'tbl_cbufferset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
 DROP TABLE tbl_cbufferset_tmp;
 

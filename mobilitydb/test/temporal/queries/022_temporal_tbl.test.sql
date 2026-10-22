@@ -31,10 +31,10 @@
 -- Send/receive functions
 -------------------------------------------------------------------------------
 
-COPY tbl_tbool TO '/tmp/tbl_tbool' (FORMAT BINARY);
-COPY tbl_tint TO '/tmp/tbl_tint' (FORMAT BINARY);
-COPY tbl_tfloat TO '/tmp/tbl_tfloat' (FORMAT BINARY);
-COPY tbl_ttext TO '/tmp/tbl_ttext' (FORMAT BINARY);
+\copy tbl_tbool TO 'tbl_tbool' (FORMAT BINARY);
+\copy tbl_tint TO 'tbl_tint' (FORMAT BINARY);
+\copy tbl_tfloat TO 'tbl_tfloat' (FORMAT BINARY);
+\copy tbl_ttext TO 'tbl_ttext' (FORMAT BINARY);
 
 DROP TABLE IF EXISTS tbl_tbool_tmp;
 DROP TABLE IF EXISTS tbl_tint_tmp;
@@ -46,10 +46,10 @@ CREATE TABLE tbl_tint_tmp AS TABLE tbl_tint WITH NO DATA;
 CREATE TABLE tbl_tfloat_tmp AS TABLE tbl_tfloat WITH NO DATA;
 CREATE TABLE tbl_ttext_tmp AS TABLE tbl_ttext WITH NO DATA;
 
-COPY tbl_tbool_tmp FROM '/tmp/tbl_tbool' (FORMAT BINARY);
-COPY tbl_tint_tmp FROM '/tmp/tbl_tint' (FORMAT BINARY);
-COPY tbl_tfloat_tmp FROM '/tmp/tbl_tfloat' (FORMAT BINARY);
-COPY tbl_ttext_tmp FROM '/tmp/tbl_ttext' (FORMAT BINARY);
+\copy tbl_tbool_tmp FROM 'tbl_tbool' (FORMAT BINARY);
+\copy tbl_tint_tmp FROM 'tbl_tint' (FORMAT BINARY);
+\copy tbl_tfloat_tmp FROM 'tbl_tfloat' (FORMAT BINARY);
+\copy tbl_ttext_tmp FROM 'tbl_ttext' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_tbool t1, tbl_tbool_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 SELECT COUNT(*) FROM tbl_tint t1, tbl_tint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;

@@ -1,11 +1,11 @@
-COPY tbl_tpcbox TO '/tmp/tbl_tpcbox' (FORMAT BINARY);
+COPY  tbl_tpcbox TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tpcbox_tmp;
 NOTICE:  table "tbl_tpcbox_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tpcbox_tmp AS TABLE tbl_tpcbox WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tpcbox_tmp FROM '/tmp/tbl_tpcbox' (FORMAT BINARY);
+COPY  tbl_tpcbox_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
