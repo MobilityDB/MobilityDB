@@ -77,13 +77,11 @@ pg_jsonb_exists(const Jsonb *jb, const text *key)
  * @csqlfn #Jsonb_exists_any() #Jsonb_exists_all()
  * @note Derived from PostgreSQL function @p jsonb_exists_array()
  */
-#if MEOS
 bool
 jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len, bool any)
 {
   return pg_jsonb_exists_array(jb, keys_elems, keys_len, any);
 }
-#endif /* MEOS */
 bool
 pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len,
   bool any)
