@@ -90,13 +90,19 @@ wrapper and the MEOS function it reaches.
 - The constructors of the PostgreSQL geometric types (`point`, `line`, `lseg`, `box`, `circle`,
   `path`, `polygon`), `transformGK`, the compatibility link to SECONDO, and `createTrip`, the trip
   generator of the BerlinMOD benchmark. They stay in MobilityDB as they are.
-- The procedures of the `<->` operator over geography, `tDistanceOp`, `nearestApproachDistanceOp`
-  and `setDistanceOp` (14 wrappers, 22 signatures). A PostgreSQL operator takes a procedure of
-  two arguments, while `tDistance`, `nearestApproachDistance` and `setDistance` over geography
-  take a third, `spheroid boolean DEFAULT true`; `Tdistance_tgeo_geo_op` only calls
-  `Tdistance_tgeo_geo`, so `tDistanceOp(t, g)` answers `tDistance(t, g)`. Over geometry the
-  operator takes `tDistance` itself. A binding reaches the answer through `tDistance`, and the
-  `Op` forms would only repeat it.
+- The procedures of the operators `<->` and `|=|` over the geo types (14 wrappers, 22 signatures
+  on master). DECIDED BY THE OWNER 2026-10-23, as PostGIS backs `<->` by
+  `geometry_distance_centroid` and `geography_distance_knn` beside `ST_Distance`: every one of
+  these operators, over geometry and geography alike, takes an operator procedure that answers
+  its user function with the default model of the earth, which the nearest-neighbour search of an
+  index also takes; the user functions (`tDistance`, `nearestApproachDistance`, `setDistance`,
+  with `spheroid boolean DEFAULT true` over geography) stay the one surface of the bindings. The
+  procedures are `tgeo_distance`, `tgeo_nad`, `stbox_nad` and `geoset_distance`, on the wrappers
+  `Tgeo_distance_*`, `Tgeo_nad_*`, `Stbox_nad_*` and `Geoset_distance_*`, which no MEOS function
+  names; `tDistanceOp`, `nearestApproachDistanceOp` and `setDistanceOp` go. Branch
+  `sql/geo-distance-operators-take-their-procedures`: the 43 operators take the procedures, the
+  catalog states the same 8710 signatures as over master, and the GiST indexes order by `|=|`
+  over geometry and geography.
 
 ## Covered elsewhere
 
