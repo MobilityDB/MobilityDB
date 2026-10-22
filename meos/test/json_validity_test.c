@@ -48,6 +48,18 @@
  * a null string by answering NULL_INVALID and setting #meos_errno, and that a
  * valid call still answers with no error left behind.
  *
+ * It verifies the same of the field, element and path extractions, one public
+ * function per operation as PostgreSQL's jsonb_object_field and
+ * jsonb_object_field_text: #jsonbset_object_field,
+ * #jsonbset_object_field_text, #jsonbset_array_element,
+ * #jsonbset_array_element_text, #jsonbset_extract_path,
+ * #jsonbset_extract_path_text, #tjson_object_field, #tjsonb_object_field,
+ * #tjsonb_object_field_text, #tjsonb_array_element,
+ * #tjsonb_array_element_text, #tjsonb_extract_path and
+ * #tjsonb_extract_path_text, and that a valid call answers the value the
+ * PostgreSQL suite answers for the operator over the same input: the JSONB form
+ * keeps a string quoted, the text form unquotes it.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o json_validity_test json_validity_test.c -L/usr/local/lib -lmeos
@@ -58,6 +70,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_json.h>
 
@@ -83,6 +96,22 @@ expect_value(void *res, const char *call)
   assert(res != NULL);
   assert(meos_errno() == 0);
   free(res);
+}
+
+/**
+ * @brief Check that a call answered the expected text and left no error
+ * behind, then free the text
+ * @details The output comparison of timezone_switch_test.c's check(), with
+ * the errno contract of #expect_value
+ */
+static void
+expect_text(char *out, const char *want, const char *call)
+{
+  printf("%s: %s, errno %d\n", call, out ? out : "NULL", meos_errno());
+  assert(out != NULL);
+  assert(strcmp(out, want) == 0);
+  assert(meos_errno() == 0);
+  free(out);
 }
 
 /* Main program */
@@ -205,6 +234,163 @@ int main(void)
   assert(nh == NULL_RETURN);
   assert(meos_errno() == 0);
 
+  /* The field, element and path extractions, one public function per
+   * operation. Their inputs are those the PostgreSQL suite gives the -> and
+   * ->>, #> and #>> operators (454_tjsonb_jsonfuncs, 451_jsonbset_jsonfuncs),
+   * whose string values tell the two forms apart */
+  Temporal *tobj = tjsonb_in(
+    "\"{\\\"speed\\\": 10, \\\"units\\\": \\\"km/h\\\"}\"@2001-01-01");
+  Temporal *tobjtxt = ttext_in(
+    "\"{\\\"speed\\\": 10, \\\"units\\\": \\\"km/h\\\"}\"@2001-01-01");
+  Temporal *tarr = tjsonb_in(
+    "\"[\\\"Grand Place\\\", \\\"La Bourse\\\"]\"@2001-01-01");
+  Set *sobj = jsonbset_in(
+    "{\"{\\\"speed\\\": 10, \\\"units\\\": \\\"km/h\\\"}\"}");
+  Set *sarr = jsonbset_in("{\"[\\\"Grand Place\\\", \\\"La Bourse\\\"]\"}");
+  text *key = text_in("units");
+  text *path[1] = { key };
+  assert(tobj); assert(tobjtxt); assert(tarr); assert(sobj); assert(sarr);
+  assert(key);
+  meos_errno_reset();
+
+  /* A null argument is reported rather than dereferenced */
+  expect_error(jsonbset_object_field(NULL, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_object_field(NULL, units)");
+  expect_error(jsonbset_object_field(sobj, NULL, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_object_field(jsonbset, NULL)");
+  expect_error(jsonbset_object_field_text(NULL, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_object_field_text(NULL, units)");
+  expect_error(jsonbset_object_field_text(sobj, NULL, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_object_field_text(jsonbset, NULL)");
+  expect_error(jsonbset_array_element(NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_array_element(NULL, 1)");
+  expect_error(jsonbset_array_element_text(NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_array_element_text(NULL, 1)");
+  expect_error(jsonbset_extract_path(NULL, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_extract_path(NULL, {units})");
+  expect_error(jsonbset_extract_path(sobj, NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_extract_path(jsonbset, NULL)");
+  expect_error(jsonbset_extract_path_text(NULL, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_extract_path_text(NULL, {units})");
+  expect_error(jsonbset_extract_path_text(sobj, NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_extract_path_text(jsonbset, NULL)");
+  expect_error(tjson_object_field(NULL, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjson_object_field(NULL, units)");
+  expect_error(tjson_object_field(tobjtxt, NULL, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjson_object_field(ttext, NULL)");
+  expect_error(tjsonb_object_field(NULL, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_object_field(NULL, units)");
+  expect_error(tjsonb_object_field(tobj, NULL, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_object_field(tjsonb, NULL)");
+  expect_error(tjsonb_object_field_text(NULL, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_object_field_text(NULL, units)");
+  expect_error(tjsonb_object_field_text(tobj, NULL, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_object_field_text(tjsonb, NULL)");
+  expect_error(tjsonb_array_element(NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_array_element(NULL, 1)");
+  expect_error(tjsonb_array_element_text(NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_array_element_text(NULL, 1)");
+  expect_error(tjsonb_extract_path(NULL, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_extract_path(NULL, {units})");
+  expect_error(tjsonb_extract_path(tobj, NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_extract_path(tjsonb, NULL)");
+  expect_error(tjsonb_extract_path_text(NULL, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_extract_path_text(NULL, {units})");
+  expect_error(tjsonb_extract_path_text(tobj, NULL, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_extract_path_text(tjsonb, NULL)");
+
+  /* An argument of another type is reported as a type error */
+  expect_error(jsonbset_object_field(intset, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_object_field({1, 2}, units)");
+  expect_error(jsonbset_object_field_text(intset, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_object_field_text({1, 2}, units)");
+  expect_error(jsonbset_array_element(intset, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_array_element({1, 2}, 1)");
+  expect_error(jsonbset_array_element_text(intset, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_array_element_text({1, 2}, 1)");
+  expect_error(jsonbset_extract_path(intset, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_extract_path({1, 2}, {units})");
+  expect_error(jsonbset_extract_path_text(intset, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_extract_path_text({1, 2}, {units})");
+  expect_error(tjson_object_field(tint, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjson_object_field(1@2001-01-01, units)");
+  expect_error(tjsonb_object_field(tint, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_object_field(1@2001-01-01, units)");
+  expect_error(tjsonb_object_field_text(tint, key, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE,
+    "tjsonb_object_field_text(1@2001-01-01, units)");
+  expect_error(tjsonb_array_element(tint, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_array_element(1@2001-01-01, 1)");
+  expect_error(tjsonb_array_element_text(tint, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_array_element_text(1@2001-01-01, 1)");
+  expect_error(tjsonb_extract_path(tint, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE, "tjsonb_extract_path(1@2001-01-01, {units})");
+  expect_error(tjsonb_extract_path_text(tint, path, 1, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_TYPE,
+    "tjsonb_extract_path_text(1@2001-01-01, {units})");
+  /* A path of no element is reported as an invalid value */
+  expect_error(jsonbset_extract_path(sobj, path, 0, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_VALUE, "jsonbset_extract_path(jsonbset, {}, 0)");
+  expect_error(tjsonb_extract_path_text(tobj, path, 0, NULL_JSON_NULL),
+    MEOS_ERR_INVALID_ARG_VALUE, "tjsonb_extract_path_text(tjsonb, {}, 0)");
+
+  /* A valid call answers what the PostgreSQL suite answers: the JSONB form
+   * keeps the string quoted, the text form unquotes it */
+  Set *s; Temporal *t;
+  s = jsonbset_object_field(sobj, key, NULL_JSON_NULL);
+  expect_text(jsonbset_out(s), "{\"\\\"km/h\\\"\"}",
+    "jsonbset_object_field(jsonbset, units)");
+  free(s);
+  s = jsonbset_object_field_text(sobj, key, NULL_JSON_NULL);
+  expect_text(textset_out(s), "{\"km/h\"}",
+    "jsonbset_object_field_text(jsonbset, units)");
+  free(s);
+  s = jsonbset_array_element(sarr, 1, NULL_JSON_NULL);
+  expect_text(jsonbset_out(s), "{\"\\\"La Bourse\\\"\"}",
+    "jsonbset_array_element(jsonbset, 1)");
+  free(s);
+  s = jsonbset_array_element_text(sarr, 1, NULL_JSON_NULL);
+  expect_text(textset_out(s), "{\"La Bourse\"}",
+    "jsonbset_array_element_text(jsonbset, 1)");
+  free(s);
+  s = jsonbset_extract_path(sobj, path, 1, NULL_JSON_NULL);
+  expect_text(jsonbset_out(s), "{\"\\\"km/h\\\"\"}",
+    "jsonbset_extract_path(jsonbset, {units})");
+  free(s);
+  s = jsonbset_extract_path_text(sobj, path, 1, NULL_JSON_NULL);
+  expect_text(textset_out(s), "{\"km/h\"}",
+    "jsonbset_extract_path_text(jsonbset, {units})");
+  free(s);
+  t = tjson_object_field(tobjtxt, key, NULL_JSON_NULL);
+  expect_text(ttext_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+    "tjson_object_field(ttext, units)");
+  free(t);
+  t = tjsonb_object_field(tobj, key, NULL_JSON_NULL);
+  expect_text(tjsonb_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+    "tjsonb_object_field(tjsonb, units)");
+  free(t);
+  t = tjsonb_object_field_text(tobj, key, NULL_JSON_NULL);
+  expect_text(ttext_out(t), "\"km/h\"@2001-01-01 00:00:00+00",
+    "tjsonb_object_field_text(tjsonb, units)");
+  free(t);
+  t = tjsonb_array_element(tarr, 1, NULL_JSON_NULL);
+  expect_text(tjsonb_out(t), "\"\\\"La Bourse\\\"\"@2001-01-01 00:00:00+00",
+    "tjsonb_array_element(tjsonb, 1)");
+  free(t);
+  t = tjsonb_array_element_text(tarr, 1, NULL_JSON_NULL);
+  expect_text(ttext_out(t), "\"La Bourse\"@2001-01-01 00:00:00+00",
+    "tjsonb_array_element_text(tjsonb, 1)");
+  free(t);
+  t = tjsonb_extract_path(tobj, path, 1, NULL_JSON_NULL);
+  expect_text(tjsonb_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+    "tjsonb_extract_path(tjsonb, {units})");
+  free(t);
+  t = tjsonb_extract_path_text(tobj, path, 1, NULL_JSON_NULL);
+  expect_text(ttext_out(t), "\"km/h\"@2001-01-01 00:00:00+00",
+    "tjsonb_extract_path_text(tjsonb, {units})");
+  free(t);
+
+  free(tobj); free(tobjtxt); free(tarr); free(sobj); free(sarr); free(key);
   free(tjsonb); free(tjson); free(jsonbset); free(tjsonbb); free(tint);
   free(intset);
 

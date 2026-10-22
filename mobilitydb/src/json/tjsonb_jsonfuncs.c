@@ -251,8 +251,7 @@ Tjsonb_array_length(PG_FUNCTION_ARGS)
 
 /**
  * @brief Extract a field from a temporal JSON value
- * @sqlfn tjsonObjectField(), tjson_object_field_text()
- * @sqlop @p -> @p ->>
+ * @sqlfn tjsonObjectField()
  */
 Datum
 Tjson_object_field_common(FunctionCallInfo fcinfo, bool astext)
@@ -268,7 +267,8 @@ Tjson_object_field_common(FunctionCallInfo fcinfo, bool astext)
       PG_RETURN_NULL();
   }
   /* Compute the result */
-  Temporal *result = tjson_object_field(temp, key, astext, null_handle);
+  Temporal *result = tjson_object_field_common(temp, key, astext,
+    null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(key, 1);
@@ -310,7 +310,6 @@ Tjson_object_field_opr(PG_FUNCTION_ARGS)
 /**
  * @brief Extract a field from a temporal JSONB value
  * @sqlfn tjsonbObjectField(), tjsonbObjectFieldText()
- * @sqlop @p ->, @p ->>
  */
 Datum
 Tjsonb_object_field_common(FunctionCallInfo fcinfo, bool astext)
@@ -326,7 +325,8 @@ Tjsonb_object_field_common(FunctionCallInfo fcinfo, bool astext)
       PG_RETURN_NULL();
   }
   /* Compute the result */
-  Temporal *result = tjsonb_object_field(temp, key, astext, null_handle);
+  Temporal *result = tjsonb_object_field_common(temp, key, astext,
+    null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(key, 1);
@@ -667,7 +667,8 @@ Tjsonb_array_element_common(FunctionCallInfo fcinfo, bool astext)
       PG_RETURN_NULL();
   }
   /* Compute the result */
-  Temporal *result = tjsonb_array_element(temp, idx, astext, null_handle);
+  Temporal *result = tjsonb_array_element_common(temp, idx, astext,
+    null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
@@ -769,7 +770,8 @@ Tjson_extract_path_common(FunctionCallInfo fcinfo, bool isjsonb, bool astext)
   
   /* Compute the result */
   Temporal *result = isjsonb ?
-    tjsonb_extract_path(temp, (text **) path_elems, path_len, astext, null_handle) :
+    tjsonb_extract_path_common(temp, (text **) path_elems, path_len, astext,
+      null_handle) :
     tjson_extract_path(temp, (text **) path_elems, path_len, null_handle);
 
   /* Clean up and return */
