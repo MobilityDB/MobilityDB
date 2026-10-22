@@ -560,21 +560,20 @@ tjsonb_array_length(const Temporal *temp)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_json
- * @brief Extract a JSON object field with the given key
+ * @ingroup meos_internal_json_json
+ * @brief Extract a JSON object field with the given key as a JSON or a text
  * @param[in] temp Temporal JSON value
  * @param[in] key Key
  * @param[in] astext True when the output is a temporal text, otherwise is a
  * jsonb
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjson_object_field()
+ * @csqlfn #Tjson_object_field(), #Tjson_object_field_opr()
  */
 Temporal *
-tjson_object_field(const Temporal *temp, const text *key, bool astext,
+tjson_object_field_common(const Temporal *temp, const text *key, bool astext,
   nullHandleType null_handle)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  assert(temp); assert(key); assert(temp->temptype == T_TTEXT);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -591,21 +590,21 @@ tjson_object_field(const Temporal *temp, const text *key, bool astext,
 }
 
 /**
- * @ingroup meos_json_json
- * @brief Extract a JSONB object field with the given key
+ * @ingroup meos_internal_json_json
+ * @brief Extract a JSONB object field with the given key as a JSONB or a text
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
  * @param[in] astext True when the output is a temporal text, otherwise is a
  * temporal jsonb
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_object_field()
+ * @csqlfn #Tjsonb_object_field(), #Tjsonb_object_field_text(),
+ *   #Tjsonb_object_field_opr(), #Tjsonb_object_field_text_opr()
  */
 Temporal *
-tjsonb_object_field(const Temporal *temp, const text *key, bool astext,
+tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext,
   nullHandleType null_handle)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  assert(temp); assert(key); assert(temp->temptype == T_TJSONB);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -747,20 +746,21 @@ tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle)
 }
 
 /**
- * @ingroup meos_json_json
- * @brief Extract an array element from a temporal JSONB value
+ * @ingroup meos_internal_json_json
+ * @brief Extract an array element from a temporal JSONB value as a JSONB or a
+ * text
  * @param[in] temp Temporal JSONB value
  * @param[in] idx Index
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_array_element()
+ * @csqlfn #Tjsonb_array_element(), #Tjsonb_array_element_text(),
+ *   #Tjsonb_array_element_opr(), #Tjsonb_array_element_text_opr()
  */
 Temporal *
-tjsonb_array_element(const Temporal *temp, int idx, bool astext,
+tjsonb_array_element_common(const Temporal *temp, int idx, bool astext,
   nullHandleType null_handle)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL);
+  assert(temp); assert(temp->temptype == T_TJSONB);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1630,23 +1630,23 @@ tjson_extract_path(const Temporal *temp, text **path_elems, int path_len,
 }
 
 /**
- * @ingroup meos_json_json
- * @brief Extract a temporal JSONB value specified by a path
+ * @ingroup meos_internal_json_json
+ * @brief Extract a temporal JSONB value specified by a path as a JSONB or a
+ * text
  * @param[in] temp Temporal JSONB value
  * @param[in] path_elems Keys
  * @param[in] path_len Number of elements in the input array
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_extract_path()
+ * @csqlfn #Tjsonb_extract_path(), #Tjsonb_extract_path_text(),
+ *   #Tjsonb_extract_path_opr(), #Tjsonb_extract_path_text_opr()
  */
 Temporal *
-tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
-  bool astext, nullHandleType null_handle)
+tjsonb_extract_path_common(const Temporal *temp, text **path_elems,
+  int path_len, bool astext, nullHandleType null_handle)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
-  if (! ensure_positive(path_len))
-    return NULL;
+  assert(temp); assert(path_elems); assert(path_len > 0);
+  assert(temp->temptype == T_TJSONB);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

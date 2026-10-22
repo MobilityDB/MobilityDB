@@ -37,7 +37,9 @@ set(JSON_SOURCES
 
 if(MEOS)
   list(APPEND JSON_SOURCES
+  jsonbset_jsonfuncs_meos.c
   jsonbset_meos.c
+  tjsonb_jsonfuncs_meos.c
 )
 endif()
 

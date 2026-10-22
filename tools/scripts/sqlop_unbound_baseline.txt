@@ -3,6 +3,4 @@
 # by wrapper and tag so that an edit above a finding does not read as a new
 # one. The list only shrinks: a new finding fails the check. Regenerate
 # with --rebaseline after a fix.
-Jsonbset_object_field @p ->, @p ->>
-Tjson_object_field @p ->, @p ->>
-Tjsonb_object_field @p ->, @p ->>
+

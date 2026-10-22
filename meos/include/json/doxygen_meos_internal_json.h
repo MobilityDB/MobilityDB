@@ -132,6 +132,18 @@
 /*****************************************************************************/
 
 /**
+ * @defgroup meos_internal_json_json Internal JSON processing functions
+ * @ingroup meos_internal_json
+ * @brief Internal JSON processing functions for temporal JSON
+ *
+ * @defgroup meos_internal_json_set_json Internal JSON processing functions
+ * @ingroup meos_internal_json_set
+ * @brief Internal JSON processing functions for JSON sets
+ */
+
+/*****************************************************************************/
+
+/**
  * @defgroup meos_internal_json Functions for temporal JSON types
  * @ingroup meos_internal
  * @brief Functions for temporal JSON types
