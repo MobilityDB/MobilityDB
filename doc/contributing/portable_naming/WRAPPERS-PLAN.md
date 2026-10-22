@@ -260,18 +260,16 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 ## Consistency of the tags
 
-- **The jsonpath functions under `#if MEOS`.** The tags of `jsonb_path_exists`,
-  `jsonb_path_match`, `jsonb_path_query_all`, `jsonb_path_query_array`, `jsonb_path_query_first`
-  (`pgtypes/utils/jsonpath_exec.c`) and `jsonb_exists_array` (`pgtypes/utils/jsonb_op.c`) name
-  `jsonbPathExistsTz` and its siblings and `jsonbExistsAll`, so the catalog states them and the
-  bindings reach them, while in the PostgreSQL build those wrappers call `pg_jsonb_path_*` twins.
-  `jsonb_exists_array` and `jsonb_path_query_all` leave the gate and their wrappers call them:
-  branch `meos/jsonpath-outside-meos-gate`. The other four keep the gate: PostgreSQL's `postgres`
-  executable exports `jsonb_path_exists`, `jsonb_path_match`, `jsonb_path_query_array` and
-  `jsonb_path_query_first` as its own built-in functions, the extension is linked without
-  `-Bsymbolic`, and with the gate removed `453_jsonb_funcs` ends the server at its first
-  `jsonbPathExists` call. Their wrappers reach the MEOS function only once the two names differ
-  or the extension binds its own symbols.
+- **The jsonpath functions follow the twin convention of the vendored PostgreSQL code.**
+  `jsonb_path_exists`, `jsonb_path_match`, `jsonb_path_query_array` and `jsonb_path_query_first`
+  are names PostgreSQL's executable exports, so each is a twin pair, as `numeric_mul` is: the
+  clean name, compiled under `#if MEOS`, forwards to `pg_jsonb_path_*`, which both builds compile,
+  and the PostgreSQL wrappers call the `pg_` twin. The catalog binds the wrappers' literals
+  through the twin (MEOS-API #175), so it states `jsonbPathExists` with `tz = false` and
+  `jsonbPathExistsTz` with `tz = true`, and the bindings, built over libmeos, call the clean
+  names. `jsonb_exists_array` and `jsonb_path_query_all` collide with no PostgreSQL name, so they
+  are compiled unguarded in both builds and called by their wrappers, as `bool_in` and `text_in`
+  are: branch `meos/jsonpath-outside-meos-gate`.
 - **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
   `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
   operator per signature closes it, for the bindings that register operators.
