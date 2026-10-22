@@ -109,6 +109,13 @@ typedef struct
                                       and (ex,ey) */
   bool diameter;                 /**< The circle of an arc is the one on the
                                       diameter from (sx,sy) to (ex,ey) */
+  bool centred;                  /**< The arc is the whole circle of centre
+                                      (cx,cy) and radius @p radius, these
+                                      doubles exactly, which no input point
+                                      fixes: its ends are the point of the
+                                      circle furthest along -x, rounded once,
+                                      and it holds no (sx,sy), (mx,my) or
+                                      (ex,ey) (#edges_add_circle) */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -309,6 +316,8 @@ extern void edges_add_segment(MeosArray *edges, const POINT2D *a,
   const POINT2D *b);
 extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
   const POINT2D *m, const POINT2D *b);
+extern void edges_add_circle(MeosArray *edges, double cx, double cy,
+  double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
 
 /* How a meeting of two edges arises, the data that place it exactly */

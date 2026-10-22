@@ -266,11 +266,19 @@ ival_hull(Ival a, Ival b)
  * @details The circle is the one the arc's input points fix: through its
  * start, middle and end, or on the diameter from its start to its end. The
  * circumcentre is read from the middle point, so that every square is the
- * size of the arc, as #emit_arc_edge forms the centre it carries
+ * size of the arc, as #emit_arc_edge forms the centre it carries. A centred
+ * arc carries its circle as its centre and radius
  */
 static void
 arr_circle(const Edge *arc, Ival *cx, Ival *cy, Ival *r2)
 {
+  if (arc->centred)
+  {
+    *cx = ival(arc->cx);
+    *cy = ival(arc->cy);
+    *r2 = ival_mul(ival(arc->radius), ival(arc->radius));
+    return;
+  }
   if (arc->diameter)
   {
     *cx = ival_mul(ival_add(ival(arc->sx), ival(arc->ex)), ival(0.5));
@@ -302,7 +310,7 @@ arr_circle(const Edge *arc, Ival *cx, Ival *cy, Ival *r2)
 static bool
 arr_arc_ccw(const Edge *arc)
 {
-  if (arc->diameter)
+  if (arc->diameter || arc->centred)
     return arc->ccw;
   return cross_product_sign(arc->sx, arc->sy, arc->mx, arc->my, arc->sx,
     arc->sy, arc->ex, arc->ey) > 0;
@@ -316,12 +324,14 @@ arr_arc_ccw(const Edge *arc)
  * grows monotonically with the angle over [0, 4); u and v are the dot and the
  * cross product of the radius to the start with the radius to the point. A
  * point the arithmetic cannot place on either side of the start is read just
- * after it, since every point asked about stands within the arc
+ * after it, since every point asked about stands within the arc. A centred
+ * arc starts at the point of its circle furthest along -x, the radius (-r, 0)
  */
 static Ival
 arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
 {
-  Ival sx = ival_sub(ival(arc->sx), cx), sy = ival_sub(ival(arc->sy), cy);
+  Ival sx = arc->centred ? ival(- arc->radius) : ival_sub(ival(arc->sx), cx);
+  Ival sy = arc->centred ? ival(0.0) : ival_sub(ival(arc->sy), cy);
   Ival qx = ival_sub(px, cx), qy = ival_sub(py, cy);
   Ival u = ival_dot(sx, sy, qx, qy);
   Ival v = ival_cross(sx, sy, qx, qy);
@@ -647,12 +657,13 @@ arr_same(double x1, double y1, double x2, double y2)
 }
 
 /* Cut an edge at an input vertex lying within it, unless the vertex is one
- * of its ends */
+ * of its ends, which a centred arc does not have on its circle */
 static void
 arr_cut_vertex(Arr *a, uint32_t i, double x, double y)
 {
   const Edge *e = &a->e[i];
-  if (arr_same(x, y, e->x1, e->y1) || arr_same(x, y, e->x2, e->y2))
+  if (! e->centred &&
+      (arr_same(x, y, e->x1, e->y1) || arr_same(x, y, e->x2, e->y2)))
     return;
   Ival pos = arr_is_arc(e) ?
     arr_arc_position(e, a->ccx[i], a->ccy[i], ival(x), ival(y)) :
@@ -1029,11 +1040,14 @@ arr_meet_stretches(Arr *a, uint32_t i, uint32_t j)
 }
 
 /* The side of the line of its chord, from its start to its end, an arc
- * stands on: 1 to the left, -1 to the right */
+ * stands on: 1 to the left, -1 to the right, 0 for a centred arc, the whole
+ * circle, which has no chord */
 static inline int
 arr_arc_side(const Arr *a, uint32_t j)
 {
   const Edge *arc = &a->e[j];
+  if (arc->centred)
+    return 0;
   return arc->diameter ? (a->ccw[j] ? -1 : 1) :
     cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey, arc->sx, arc->sy,
       arc->mx, arc->my);
@@ -1050,11 +1064,12 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
    * whose two ends lie within it, meets none of its points: the disc is
    * convex. Decided in intervals, and asked exactly otherwise. A segment
    * sharing an end with the arc has that end on the circle, and goes to the
-   * exact meeting directly */
-  bool shared = arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
-    arr_same(s->x1, s->y1, arc->x2, arc->y2) ||
-    arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
-    arr_same(s->x2, s->y2, arc->x2, arc->y2);
+   * exact meeting directly. A centred arc has no end on its circle */
+  bool shared = ! arc->centred &&
+    (arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
+     arr_same(s->x1, s->y1, arc->x2, arc->y2) ||
+     arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
+     arr_same(s->x2, s->y2, arc->x2, arc->y2));
   if (! shared)
   {
     Ival ax = ival_sub(ival(s->x1), a->ccx[j]);
@@ -1161,10 +1176,11 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
         double y = s->y1 + m[k].t * (s->y2 - s->y1);
         /* The tangent of the arc crossed with the direction of the segment
          * has the sign of the root (see #arcsegm_meet_exact): the side the
-         * segment enters the circle from. A half circle on a diameter reads
-         * the quadratic the other way round when it turns
-         * counterclockwise */
-        int st = (arc->diameter && a->ccw[j]) ? - m[k].sigma : m[k].sigma;
+         * segment enters the circle from. A half circle on a diameter and a
+         * centred arc read the quadratic |P - C|^2 - r^2, the other way round
+         * when they turn counterclockwise */
+        int st = ((arc->diameter || arc->centred) && a->ccw[j]) ?
+          - m[k].sigma : m[k].sigma;
         uint32_t node = arr_node_new(a, x, y, false, -1);
         a->nodes[node].cross = arr_cross_new(a, node, i, j, - st);
         Ival px = ival_add(ax, ival_mul(t, rx)), py = ival_add(ay,
@@ -1203,11 +1219,14 @@ arr_arc_tangent(const Arr *a, uint32_t j, Ival px, Ival py, Ival *tx,
 
 /* Return 1 where a point of the circle of an arc lies within the arc, 0
  * where it lies beyond it, 2 where the intervals cannot tell: the side of the
- * chord from its start to its end, against the side the arc stands on */
+ * chord from its start to its end, against the side the arc stands on. Every
+ * point of its circle lies within a centred arc */
 static int
 arr_on_arc(const Arr *a, uint32_t j, Ival px, Ival py)
 {
   const Edge *arc = &a->e[j];
+  if (arc->centred)
+    return 1;
   Ival cx = ival_sub(ival(arc->ex), ival(arc->sx));
   Ival cy = ival_sub(ival(arc->ey), ival(arc->sy));
   int side = ival_sign(ival_cross(cx, cy, ival_sub(px, ival(arc->sx)),
@@ -1342,7 +1361,8 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
     const Edge *other = (k < 2) ? q : p;
     uint32_t oid = (k < 2) ? j : i;
     double x = ends[k][0], y = ends[k][1];
-    if (! point_on_arc_circle(other, x, y))
+    /* A centred arc has no end on its circle */
+    if (((k < 2) ? p : q)->centred || ! point_on_arc_circle(other, x, y))
       continue;
     bool on = arr_same(x, y, other->x1, other->y1) ||
       arr_same(x, y, other->x2, other->y2);
@@ -1366,9 +1386,10 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
   }
   /* Two arcs of one circle, decided exactly from their input points, meet
    * only at the ends they share, unless an end of either lies within the
-   * other and they run along each other */
+   * other and they run along each other, as a centred arc, its whole
+   * circle, runs along every other arc of it */
   if (arc_same_circle(p, q))
-    return inner ? ARR_OVERLAP : ARR_ANSWERED;
+    return (inner || p->centred || q->centred) ? ARR_OVERLAP : ARR_ANSWERED;
   /* The meetings of the two circles */
   Ival dx = ival_sub(a->ccx[j], a->ccx[i]), dy = ival_sub(a->ccy[j],
     a->ccy[i]);
@@ -1396,6 +1417,10 @@ arr_meet_arcs(Arr *a, uint32_t i, uint32_t j)
      * placed exactly (#arcarc_shared_point_signs) */
     if (nverts != 1)
       return arr_meet_arcs_exact(a, i, j);
+    /* An input vertex where a centred arc touches another circle: the
+     * signs below read the chords of both */
+    if (p->centred || q->centred)
+      return ARR_MEETING;
     double jx = verts[0][0], jy = verts[0][1];
     bool endp = arr_same(jx, jy, p->x1, p->y1) || arr_same(jx, jy, p->x2,
       p->y2);
@@ -2016,6 +2041,18 @@ typedef struct
   Ival x;
 } ArrExtreme;
 
+/* Return how the points of the circles of two centred arcs furthest along x
+ * compare, cx + r against cx + r, decided exactly: -1, 0 or 1 */
+static int
+arr_centred_right_cmp(const Edge *p, const Edge *q)
+{
+  const double t[4] = {p->cx, p->radius, - q->cx, - q->radius};
+  ExactSum sum;
+  exact_sum_set(&sum, t, 4);
+  PolyTerm term = {1.0, 1, {0}};
+  return polynomial_sign_exact(&sum, &term, 1);
+}
+
 /* Return 1 where the piece of an arc holds the point of its circle furthest
  * along x, 0 where it does not, 2 where the intervals cannot tell */
 static int
@@ -2123,6 +2160,15 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
   Ival dy = ival_sub(ival(py), a->ccy[j]);
   Ival h2 = ival_sub(a->cr2[j], ival_mul(dy, dy));
   int sh = ival_sign(h2);
+  /* For a centred arc the sign of r^2 - (py - cy)^2 is that of the side of
+   * its circle (cx, py) lies on, decided exactly: a ray touching the circle
+   * at its top or bottom crosses nothing */
+  if (sh == 2 && e->centred)
+  {
+    sh = - arc_circle_side(e, e->cx, py);
+    if (sh == 0)
+      return true;
+  }
   if (sh == -1)
     return true;
   if (sh != 1)
@@ -2137,8 +2183,15 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
     int onarc = arr_on_arc(a, j, qx, ival(py));
     if (onarc == 0)
       continue;
+    /* The start of a centred arc, (cx - r, cy) exactly, met by a ray along
+     * y = cy: a point of the circle like any other, which no edge but this
+     * one passes through, read on the piece leaving it */
+    bool start = e->centred && side < 0 && py == e->cy;
+    if (start && p->from != a->start[j])
+      continue;
     Ival pos = arr_arc_position(e, a->ccx[j], a->ccy[j], qx, ival(py));
-    if (onarc == 1 && (pos.hi < p->pfrom.lo || pos.lo > p->pto.hi))
+    if (! start && onarc == 1 &&
+        (pos.hi < p->pfrom.lo || pos.lo > p->pto.hi))
       continue;
     int right = ival_sign(ival_sub(qx, px));
     if (right == 2 || right == 0)
@@ -2147,7 +2200,7 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
       continue;
     if (onarc == 2)
       return false;
-    if (! (pos.lo > p->pfrom.hi && pos.hi < p->pto.lo))
+    if (! start && ! (pos.lo > p->pfrom.hi && pos.hi < p->pto.lo))
       return false;
     /* Upward on the right of a counterclockwise circle */
     bool up = (side > 0) == a->ccw[j];
@@ -2267,7 +2320,9 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
     *out = ex;
     return false;
   }
-  for (uint32_t c = 0; c < cn && ! unsure; c++)
+  Ival tie = {INFINITY, -INFINITY};
+  bool tied = false;
+  for (uint32_t c = 0; c < cn; c++)
   {
     uint32_t v = comp[c];
     for (uint32_t k = a->hoff[v]; k < a->hoff[v + 1]; k++)
@@ -2290,8 +2345,9 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
        * that point strictly within it, however close the intervals put
        * them */
       const Edge *ae = &a->e[p->edge];
-      const ArrNode *xn = &a->nodes[ex.node];
-      if (holds == 1 && ! ex.on_arc &&
+      const ArrNode *xn = (ex.node == UINT32_MAX) ? NULL :
+        &a->nodes[ex.node];
+      if (holds == 1 && ! ex.on_arc && xn && ! ae->centred &&
           (arr_same(xn->x, xn->y, ae->x1, ae->y1) ||
            arr_same(xn->x, xn->y, ae->x2, ae->y2)))
       {
@@ -2300,12 +2356,29 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
         ex.x = x;
         continue;
       }
+      if (holds == 1 && ex.on_arc && ae->centred &&
+          a->e[a->pieces[ex.piece].edge].centred &&
+          x.hi >= ex.x.lo && x.lo <= ex.x.hi)
+      {
+        /* Two centred arcs holding the points of their circles furthest
+         * along x, cx + r, compared exactly: either of two at one x has
+         * nothing to its right */
+        if (arr_centred_right_cmp(ae, &a->e[a->pieces[ex.piece].edge]) > 0)
+        {
+          ex.piece = a->halves[k].piece;
+          ex.x = x;
+        }
+        continue;
+      }
       if (holds == 2 || (x.hi >= ex.x.lo && x.lo <= ex.x.hi))
       {
         if (holds == 2 && x.hi < ex.x.lo)
           continue;
-        unsure = true;
-        break;
+        /* Not told from the point found so far, which a point further
+         * right than both still settles */
+        tie = tied ? ival_hull(tie, x) : x;
+        tied = true;
+        continue;
       }
       if (x.lo > ex.x.hi)
       {
@@ -2315,22 +2388,29 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
       }
     }
   }
+  /* A point not told from the rightmost one */
+  if (tied && tie.hi >= ex.x.lo)
+    unsure = true;
   *out = ex;
   return ! unsure;
 }
 
 static bool arr_piece_clear(const Arr *a, const ArrPiece *p, double lox,
   double hix, double loy, double hiy);
+static bool arr_point_clear(const Arr *a, double x, double y, Ival bx,
+  Ival by, const uint32_t *lpieces, const uint32_t *loff,
+  const double (*lbox)[4], uint32_t nl);
 
 /**
  * @brief Return a point of a component the ray of #arr_winding_at may start
  * from, false where none can be given
  * @details The rightmost node where it is a vertex, else any vertex of the
  * component. A component of stretches may have none, every end of its
- * stretches a crossing: a crossing is then read at its coordinates, rounded
- * once, which lie in the face of the pieces labelled before the crossing
- * lies in where none of them reaches the box holding both
- * (#arr_piece_clear), as #arr_ring_within reads a ring
+ * stretches a crossing, and neither may one of centred arcs, whose nodes are
+ * crossings and the starts of the arcs: such a node is then read at its
+ * coordinates, rounded once, which lie in the face of the pieces labelled
+ * before the node lies in where none of them reaches the box holding both
+ * (#arr_point_clear), as #arr_ring_within reads a ring
  * @param[in] a Arrangement
  * @param[in] comp,cn The nodes of the component
  * @param[in] node Its rightmost node
@@ -2343,7 +2423,9 @@ arr_component_ray_point(const Arr *a, const uint32_t *comp, uint32_t cn,
   uint32_t node, const uint32_t *lpieces, const uint32_t *loff,
   const double (*lbox)[4], uint32_t nl, double *px, double *py)
 {
-  uint32_t v = node;
+  /* A component of centred arcs alone holds no vertex, its rightmost point
+   * interior to an arc */
+  uint32_t v = (node == UINT32_MAX) ? comp[0] : node;
   for (uint32_t c = 0; c < cn && ! a->nodes[v].vertex; c++)
     if (a->nodes[comp[c]].vertex)
       v = comp[c];
@@ -2352,8 +2434,27 @@ arr_component_ray_point(const Arr *a, const uint32_t *comp, uint32_t cn,
   *py = nd->y;
   if (nd->vertex)
     return true;
-  double lox = fmin(nd->bx.lo, nd->x), hix = fmax(nd->bx.hi, nd->x);
-  double loy = fmin(nd->by.lo, nd->y), hiy = fmax(nd->by.hi, nd->y);
+  return arr_point_clear(a, nd->x, nd->y, nd->bx, nd->by, lpieces, loff,
+    lbox, nl);
+}
+
+/**
+ * @brief Return true where a point rounded once lies in the face of the
+ * components labelled before that the exact point lies in: no piece of
+ * theirs reaches the box holding both (#arr_piece_clear)
+ * @param[in] a Arrangement
+ * @param[in] x,y The point as rounded
+ * @param[in] bx,by Intervals holding the exact point
+ * @param[in] lpieces,loff,lbox,nl The pieces of the components labelled
+ * before, component by component, and the box of each
+ */
+static bool
+arr_point_clear(const Arr *a, double x, double y, Ival bx, Ival by,
+  const uint32_t *lpieces, const uint32_t *loff, const double (*lbox)[4],
+  uint32_t nl)
+{
+  double lox = fmin(bx.lo, x), hix = fmax(bx.hi, x);
+  double loy = fmin(by.lo, y), hiy = fmax(by.hi, y);
   for (uint32_t m = 0; m < nl; m++)
   {
     /* A component whose box keeps clear of the box is passed over whole */
@@ -2466,6 +2567,15 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
        * another lies strictly further right */
       if (xm->hi < xk->lo || (xk->lo == xk->hi && xm->lo == xm->hi))
         continue;
+      /* Rightmost points on centred arcs, compared exactly: one at least as
+       * far right as the other is not enclosed by it */
+      const ArrExtreme *ek = &cex[order[k].id], *em = &cex[order[m].id];
+      if (ek->on_arc && em->on_arc &&
+          a->e[a->pieces[ek->piece].edge].centred &&
+          a->e[a->pieces[em->piece].edge].centred &&
+          arr_centred_right_cmp(&a->e[a->pieces[ek->piece].edge],
+            &a->e[a->pieces[em->piece].edge]) >= 0)
+        continue;
       const double *bk = cbox[order[k].id], *bm = cbox[order[m].id];
       bool kinm = bk[0] >= bm[0] && bk[1] <= bm[1] && bk[2] >= bm[2] &&
         bk[3] <= bm[3];
@@ -2500,10 +2610,41 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
        * components labelled before is the one the whole component lies in,
        * as it meets none of them */
       double px, py;
-      if (! arr_component_ray_point(a, comp, cn, ex.node, cpieces, coff,
-            (const double (*)[4]) lbox, nlab, &px, &py) ||
-          ! arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
-            nlab, ival(px), py, &outside))
+      bool told = arr_component_ray_point(a, comp, cn, ex.node, cpieces,
+          coff, (const double (*)[4]) lbox, nlab, &px, &py) &&
+        arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox, nlab,
+          ival(px), py, &outside);
+      /* Any point of the component gives the same winding number, as it
+       * meets none of the components before: where the ray from the first
+       * is not told, as through a node of theirs, from each node in turn */
+      for (uint32_t c = 0; c < cn && ! told; c++)
+        told = arr_component_ray_point(a, &comp[c], 1, comp[c], cpieces,
+            coff, (const double (*)[4]) lbox, nlab, &px, &py) &&
+          arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox, nlab,
+            ival(px), py, &outside);
+      /* And from the top and the bottom of the circle of each centred arc
+       * leaving a node of it, (cx, cy + r) and (cx, cy - r) rounded once,
+       * on rays of their own heights */
+      for (uint32_t c = 0; c < cn && ! told; c++)
+        for (uint32_t h = a->hoff[comp[c]]; h < a->hoff[comp[c] + 1] &&
+             ! told; h++)
+        {
+          const Edge *ce = &a->e[a->pieces[a->halves[h].piece].edge];
+          if (! a->halves[h].out || ! ce->centred)
+            continue;
+          for (int sgn = -1; sgn <= 1 && ! told; sgn += 2)
+          {
+            Ival ty = sgn > 0 ? ival_add(ival(ce->cy), ival(ce->radius)) :
+              ival_sub(ival(ce->cy), ival(ce->radius));
+            px = ce->cx;
+            py = ce->cy + sgn * ce->radius;
+            told = arr_point_clear(a, px, py, ival(px), ty, cpieces, coff,
+                (const double (*)[4]) lbox, nlab) &&
+              arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
+                nlab, ival(px), py, &outside);
+          }
+        }
+      if (! told)
       {
         st = ARR_DEPTH;
         break;
@@ -2613,10 +2754,17 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
   out->mx = out->my = 0.0;
   if (! out->arc)
     return;
+  /* The whole circle of a centred arc no node cuts: from the point furthest
+   * along -x through the one opposite */
+  if (e->centred && p->from == p->to)
+  {
+    out->mx = e->cx + e->radius; out->my = e->cy;
+    return;
+  }
   /* The edge's own middle where the piece is the whole of an arc of three
    * points, else the point of its circle on the bisector of its ends, on the
    * side the piece sweeps, written once */
-  if (! e->diameter && p->from == a->start[p->edge] &&
+  if (! e->diameter && ! e->centred && p->from == a->start[p->edge] &&
       p->to == a->end[p->edge])
   {
     out->mx = e->mx; out->my = e->my;
@@ -2677,7 +2825,8 @@ arr_walk_to(const ArrPiece *p)
 /**
  * @brief Return a ring written from the pieces of a closed walk, or NULL
  * where it bounds nothing the coordinates can state
- * @details A piece whose ends are written at one point is left out, and two
+ * @details A piece whose ends are written at one point is left out, but the
+ * whole circle of a centred arc, and two
  * segments that retrace each other are taken back together
  * (#arr_pieces_retrace), across the closing piece as well
  */
@@ -2690,8 +2839,11 @@ arr_ring_write(const Arr *a, const uint32_t *pieces, uint32_t m)
     if (ring->count >= ring->capacity)
       edge_array_reserve(ring, 1);
     ArrangePiece *pe = &((ArrangePiece *) ring->elems)[ring->count];
-    arr_piece_write(a, &a->pieces[pieces[t]], pe);
-    if (pe->x1 == pe->x2 && pe->y1 == pe->y2)
+    const ArrPiece *p = &a->pieces[pieces[t]];
+    arr_piece_write(a, p, pe);
+    /* A whole circle starts and ends at its one node */
+    if (pe->x1 == pe->x2 && pe->y1 == pe->y2 && ! (pe->arc &&
+        p->from == p->to))
       continue;
     if (ring->count > 0 && arr_pieces_retrace(pe - 1, pe))
       ring->count--;
@@ -3596,11 +3748,20 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
   memset(&a, 0, sizeof(Arr));
   a.e = (const Edge *) edges->elems;
   a.n = n;
-  /* Every edge a segment of some length or an arc whose ends are its
-   * defining points, and every ring closed on itself */
+  /* Every edge a segment of some length, an arc whose ends are its
+   * defining points or a centred arc, its whole circle, and every ring
+   * closed on itself */
   for (uint32_t i = 0; i < n; i++)
   {
     const Edge *e = &a.e[i];
+    if (arr_is_arc(e) && e->centred)
+    {
+      /* A whole circle, closed on itself */
+      if (! (e->radius > 0.0) || ! isfinite(e->cx) || ! isfinite(e->cy) ||
+          ! isfinite(e->radius))
+        return ARR_NOT_CLOSED;
+      continue;
+    }
     if (arr_is_arc(e))
     {
       if (e->x1 != e->sx || e->y1 != e->sy || e->x2 != e->ex ||
@@ -3671,8 +3832,19 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
   a.end = palloc(sizeof(uint32_t) * n);
   for (uint32_t i = 0; i < n; i++)
   {
-    a.start[i] = arr_vertex(&a, a.e[i].x1, a.e[i].y1);
-    a.end[i] = arr_vertex(&a, a.e[i].x2, a.e[i].y2);
+    const Edge *e = &a.e[i];
+    if (arr_is_arc(e) && e->centred)
+    {
+      /* A whole circle starts and ends at its point furthest along -x, a
+       * node of its own and no input vertex: (cx - r, cy) exactly, written
+       * rounded once */
+      uint32_t v = arr_node_new(&a, e->x1, e->y1, false, -1);
+      a.nodes[v].bx = ival_sub(ival(e->cx), ival(e->radius));
+      a.start[i] = a.end[i] = v;
+      continue;
+    }
+    a.start[i] = arr_vertex(&a, e->x1, e->y1);
+    a.end[i] = arr_vertex(&a, e->x2, e->y2);
   }
   ArrangeStatus st = arr_finish(&a, pairs, npairs, rings, nrings, owner,
     NULL, NULL);

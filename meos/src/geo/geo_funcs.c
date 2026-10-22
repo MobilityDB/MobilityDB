@@ -396,6 +396,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       e.sx = pa->x; e.sy = pa->y; e.ex = pb->x; e.ey = pb->y;
       e.mx = e.my = 0.0;
       e.diameter = true;
+      e.centred = false;
       e.x1 = sx[i]; e.y1 = sy[i];
       e.x2 = ex[i]; e.y2 = ey[i];
       e.theta0 = t0[i]; e.theta1 = t1[i];
@@ -454,6 +455,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.sx = pa->x; e.sy = pa->y; e.mx = pb->x; e.my = pb->y;
   e.ex = pc->x; e.ey = pc->y;
   e.diameter = false;
+  e.centred = false;
   /* The ends are the points given: carried back from the middle point, an
    * end lands a rounding step from itself wherever its coordinates and the
    * middle's lie in different binades, and the next edge of the string, which
@@ -485,6 +487,42 @@ edges_add_arc(MeosArray *edges, const POINT2D *a, const POINT2D *m,
 {
   assert(edges); assert(a); assert(m); assert(b);
   emit_arc_edge(a, m, b, edges, EDGE_POLYSEG, EDGE_POLYARC, false);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the whole circle of a centre and a radius, the
+ * boundary of the disc they bound, turning counterclockwise where @p ccw is
+ * true
+ * @details The circle is the one the three doubles fix exactly, and every
+ * exact question about it reads them (#Edge, member centred): no three
+ * points on it are doubles in general, so it is not handed to
+ * #edges_add_arc. Its ends are the point of the circle furthest along -x,
+ * rounded once, which an arrangement reads as the start of its positions
+ * along the circle and never as a point on it (#arrange_wound_surfaces). An
+ * arrangement decides exactly, so the edge carries no tolerance
+ * @param[in,out] edges Edge array
+ * @param[in] cx,cy Centre
+ * @param[in] radius Radius, positive
+ * @param[in] ccw Whether the circle turns counterclockwise
+ */
+void
+edges_add_circle(MeosArray *edges, double cx, double cy, double radius,
+  bool ccw)
+{
+  assert(edges); assert(radius > 0.0);
+  Edge e;
+  memset(&e, 0, sizeof(Edge));
+  e.etype = EDGE_POLYARC;
+  e.cx = cx; e.cy = cy; e.radius = radius;
+  e.centred = true;
+  e.ccw = ccw;
+  e.x1 = e.x2 = cx - radius;
+  e.y1 = e.y2 = cy;
+  e.theta0 = e.theta1 = M_PI;
+  e.xmin = cx - radius; e.xmax = cx + radius;
+  e.ymin = cy - radius; e.ymax = cy + radius;
+  edge_array_add(edges, &e);
   return;
 }
 
@@ -4571,11 +4609,29 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
  * to its two ends then having a zero dot product (Thales), which is the sign
  * of a cross product (#cross_product_sign). Either way an input point is put
  * on the circle or off it exactly, at every scale, which the radial distance
- * from a constructed centre cannot do
+ * from a constructed centre cannot do. The circle of a centred arc is its
+ * centre and radius, and a point lies on it where |Q - C|^2 = r^2 exactly
  */
+/* The side of the circle of a centred arc a point lies on, decided
+ * exactly: the sign of |Q - C|^2 - r^2, a polynomial of degree two in exact
+ * sums of the doubles (#polynomial_sign_exact) */
+static int
+centred_circle_side(const Edge *e, double qx, double qy)
+{
+  double t[3][2] = {{qx, -e->cx}, {qy, -e->cy}, {e->radius, 0.0}};
+  ExactSum sums[3];
+  for (int k = 0; k < 3; k++)
+    exact_sum_set(&sums[k], t[k], 2);
+  PolyTerm terms[3] = {
+    {1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+  return polynomial_sign_exact(sums, terms, 3);
+}
+
 bool
 point_on_arc_circle(const Edge *e, double qx, double qy)
 {
+  if (e->centred)
+    return centred_circle_side(e, qx, qy) == 0;
   if ((qx == e->sx && qy == e->sy) || (qx == e->ex && qy == e->ey) ||
       (! e->diameter && qx == e->mx && qy == e->my))
     return true;
@@ -4595,11 +4651,14 @@ point_on_arc_circle(const Edge *e, double qx, double qy)
  * point to the two ends of the diameter, negative where the point sees the
  * diameter at an obtuse angle, which is inside (Thales). For an arc given by
  * three points it is the sign of #incircle_sign, positive inside the circle
- * of three points turning counterclockwise, read against the turn they make
+ * of three points turning counterclockwise, read against the turn they make.
+ * For a centred arc it is the sign of |Q - C|^2 - r^2
  */
 int
 arc_circle_side(const Edge *e, double qx, double qy)
 {
+  if (e->centred)
+    return centred_circle_side(e, qx, qy);
   if (e->diameter)
     return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
   int turn = cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy,
@@ -4614,11 +4673,35 @@ arc_circle_side(const Edge *e, double qx, double qy)
  * the circle of another exactly where its three points do
  * (#point_on_arc_circle). Two halves of full circles lie on one circle where
  * the ends of each diameter lie on the other. The portions of one arc carry
- * its input points unchanged, which answers them without arithmetic
+ * its input points unchanged, which answers them without arithmetic. Two
+ * centred arcs lie on one circle where they carry one centre and one radius,
+ * and an arc of input points lies on a centred one where its points do, the
+ * ends of a diameter where one of them does and their middle is the centre
  */
 bool
 arc_same_circle(const Edge *a, const Edge *b)
 {
+  if (a->centred && b->centred)
+    return a->cx == b->cx && a->cy == b->cy && a->radius == b->radius;
+  if (a->centred || b->centred)
+  {
+    /* The input points of the other fix its circle: three on the centred
+     * one, or the two ends of a diameter on it about its centre */
+    const Edge *c = a->centred ? a : b, *o = a->centred ? b : a;
+    if (! o->diameter)
+      return point_on_arc_circle(c, o->sx, o->sy) &&
+        point_on_arc_circle(c, o->mx, o->my) &&
+        point_on_arc_circle(c, o->ex, o->ey);
+    double t[2][3] = {{o->sx, o->ex, -2.0 * c->cx},
+      {o->sy, o->ey, -2.0 * c->cy}};
+    ExactSum sums[2];
+    for (int k = 0; k < 2; k++)
+      exact_sum_set(&sums[k], t[k], 3);
+    PolyTerm tx = {1.0, 1, {0}}, ty = {1.0, 1, {1}};
+    return point_on_arc_circle(c, o->sx, o->sy) &&
+      polynomial_sign_exact(sums, &tx, 1) == 0 &&
+      polynomial_sign_exact(sums, &ty, 1) == 0;
+  }
   if (a->diameter == b->diameter && a->sx == b->sx && a->sy == b->sy &&
       a->ex == b->ex && a->ey == b->ey &&
       (a->diameter || (a->mx == b->mx && a->my == b->my)))
@@ -4912,50 +4995,68 @@ arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
  * quadratic qa t^2 + qb t + qc, the side h1 t + h0 of the chord S -> E that
  * P(t) stands on, and for an arc of three points the side its middle stands
  * on. The vectors are taken from A, so every factor is a difference of input
- * coordinates.
+ * coordinates. A centred arc is its whole circle, so every root of its
+ * quadratic stands on it: h1 is zero and h0 has the arc's side.
  */
 #define ARCSEG_POLYNOMIALS(T, DIFF, ADD, SUB, MUL, SCALE, ZERO)               \
 {                                                                            \
   T rx = DIFF(bx, ax), ry = DIFF(by, ay);                                    \
-  T sx = DIFF(arc->sx, ax), sy = DIFF(arc->sy, ay);                          \
-  T ex = DIFF(arc->ex, ax), ey = DIFF(arc->ey, ay);                          \
   T rr = ADD(MUL(rx, rx), MUL(ry, ry));                                      \
-  T cx = SUB(ex, sx), cy = SUB(ey, sy);                                      \
-  /* The chord crossed with P(t) - S = t R - S */                            \
-  *h1 = SUB(MUL(cx, ry), MUL(cy, rx));                                       \
-  *h0 = SCALE(SUB(MUL(cx, sy), MUL(cy, sx)), -1.0);                          \
-  if (arc->diameter)                                                         \
+  if (arc->centred)                                                          \
   {                                                                          \
-    /* (P - S).(P - E) = t^2 rr - t R.(S + E) + S.E */                       \
-    T px = ADD(sx, ex), py = ADD(sy, ey);                                    \
+    /* |A + t R - C|^2 - r^2 = t^2 rr - 2 t R.(C - A) + |C - A|^2 - r^2,     \
+     * every point of the whole circle on the arc: no chord, h1 = 0 and the  \
+     * side h0 and the arc's side both positive */                           \
+    T kx = DIFF(arc->cx, ax), ky = DIFF(arc->cy, ay);                        \
+    T kr = DIFF(arc->radius, 0.0);                                           \
     *qa = rr;                                                                \
-    *qb = SCALE(ADD(MUL(rx, px), MUL(ry, py)), -1.0);                        \
-    *qc = ADD(MUL(sx, ex), MUL(sy, ey));                                     \
+    *qb = SCALE(ADD(MUL(rx, kx), MUL(ry, ky)), -2.0);                        \
+    *qc = SUB(ADD(MUL(kx, kx), MUL(ky, ky)), MUL(kr, kr));                   \
+    *h1 = ZERO;                                                              \
+    *h0 = rr;                                                                \
     *side = rr;                                                              \
   }                                                                          \
   else                                                                       \
   {                                                                          \
-    T mx = DIFF(arc->mx, ax), my = DIFF(arc->my, ay);                        \
-    T pts[3][2] = {{sx, sy}, {mx, my}, {ex, ey}};                            \
-    *qa = ZERO; *qb = ZERO; *qc = ZERO;                                      \
-    for (int k = 0; k < 3; k++)                                              \
+    T sx = DIFF(arc->sx, ax), sy = DIFF(arc->sy, ay);                        \
+    T ex = DIFF(arc->ex, ax), ey = DIFF(arc->ey, ay);                        \
+    T cx = SUB(ex, sx), cy = SUB(ey, sy);                                    \
+    /* The chord crossed with P(t) - S = t R - S */                          \
+    *h1 = SUB(MUL(cx, ry), MUL(cy, rx));                                     \
+    *h0 = SCALE(SUB(MUL(cx, sy), MUL(cy, sx)), -1.0);                        \
+    if (arc->diameter)                                                       \
     {                                                                        \
-      const T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];     \
-      T lift = ADD(MUL(x[0], x[0]), MUL(x[1], x[1]));                        \
-      T xr = ADD(MUL(x[0], rx), MUL(x[1], ry));                              \
-      T yz = SUB(MUL(y[0], z[1]), MUL(y[1], z[0]));                          \
-      T rd = SUB(MUL(rx, SUB(z[1], y[1])), MUL(ry, SUB(z[0], y[0])));        \
-      /* t^2: rr (Y x Z) + 2 (X.R) (R x (Z - Y)) */                          \
-      T ta = ADD(MUL(rr, yz), SCALE(MUL(xr, rd), 2.0));                      \
-      /* t: - |X|^2 (R x (Z - Y)) - 2 (X.R) (Y x Z) */                       \
-      T tb = SCALE(ADD(MUL(lift, rd), SCALE(MUL(xr, yz), 2.0)), -1.0);       \
-      /* 1: |X|^2 (Y x Z) */                                                 \
-      T tc = MUL(lift, yz);                                                  \
-      *qa = ADD(*qa, ta);                                                    \
-      *qb = ADD(*qb, tb);                                                    \
-      *qc = ADD(*qc, tc);                                                    \
+      /* (P - S).(P - E) = t^2 rr - t R.(S + E) + S.E */                     \
+      T px = ADD(sx, ex), py = ADD(sy, ey);                                  \
+      *qa = rr;                                                              \
+      *qb = SCALE(ADD(MUL(rx, px), MUL(ry, py)), -1.0);                      \
+      *qc = ADD(MUL(sx, ex), MUL(sy, ey));                                   \
+      *side = rr;                                                            \
     }                                                                        \
-    *side = SUB(MUL(cx, SUB(my, sy)), MUL(cy, SUB(mx, sx)));                 \
+    else                                                                     \
+    {                                                                        \
+      T mx = DIFF(arc->mx, ax), my = DIFF(arc->my, ay);                      \
+      T pts[3][2] = {{sx, sy}, {mx, my}, {ex, ey}};                          \
+      *qa = ZERO; *qb = ZERO; *qc = ZERO;                                    \
+      for (int k = 0; k < 3; k++)                                            \
+      {                                                                      \
+        const T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];   \
+        T lift = ADD(MUL(x[0], x[0]), MUL(x[1], x[1]));                      \
+        T xr = ADD(MUL(x[0], rx), MUL(x[1], ry));                            \
+        T yz = SUB(MUL(y[0], z[1]), MUL(y[1], z[0]));                        \
+        T rd = SUB(MUL(rx, SUB(z[1], y[1])), MUL(ry, SUB(z[0], y[0])));      \
+        /* t^2: rr (Y x Z) + 2 (X.R) (R x (Z - Y)) */                        \
+        T ta = ADD(MUL(rr, yz), SCALE(MUL(xr, rd), 2.0));                    \
+        /* t: - |X|^2 (R x (Z - Y)) - 2 (X.R) (Y x Z) */                     \
+        T tb = SCALE(ADD(MUL(lift, rd), SCALE(MUL(xr, yz), 2.0)), -1.0);     \
+        /* 1: |X|^2 (Y x Z) */                                               \
+        T tc = MUL(lift, yz);                                                \
+        *qa = ADD(*qa, ta);                                                  \
+        *qb = ADD(*qb, tb);                                                  \
+        *qc = ADD(*qc, tc);                                                  \
+      }                                                                      \
+      *side = SUB(MUL(cx, SUB(my, sy)), MUL(cy, SUB(mx, sx)));               \
+    }                                                                        \
   }                                                                          \
 }
 
@@ -5343,7 +5444,8 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
  * #ArcsegFilter): at the start or the end of the segment, at an end of the
  * arc, or interior to both, where only its position along the segment is
  * computed, rounded once. The arc is one #geom_extract_edges emits, whose
- * ends are its first and last defining points; any other is not answered
+ * ends are its first and last defining points, or a centred one, the whole
+ * circle (#edges_add_circle); any other is not answered
  * @param[in] ax,ay,bx,by Start and end of the segment, distinct
  * @param[in] arc Arc edge
  * @param[out] out The meetings, in increasing position along the segment
@@ -5354,11 +5456,13 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegMeet out[2])
 {
   assert(arc); assert(out);
-  if ((ax == bx && ay == by) || arc->x1 != arc->sx || arc->y1 != arc->sy ||
-      arc->x2 != arc->ex || arc->y2 != arc->ey)
+  if ((ax == bx && ay == by) || (! arc->centred && (arc->x1 != arc->sx ||
+      arc->y1 != arc->sy || arc->x2 != arc->ex || arc->y2 != arc->ey)))
     return -1;
-  /* A segment sharing an end with the arc: that end is one root exactly */
-  int nshared = arcseg_meet_shared(ax, ay, bx, by, arc, out);
+  /* A segment sharing an end with the arc: that end is one root exactly. A
+   * centred arc has no end on its circle */
+  int nshared = arc->centred ? -1 :
+    arcseg_meet_shared(ax, ay, bx, by, arc, out);
   if (nshared == -2)
     return -1;
   if (nshared >= 0)
@@ -5455,12 +5559,22 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
  * for an arc of three points M is its middle and, with A = S - M and
  * B = E - M, N = (|A|^2 By - |B|^2 Ay, |B|^2 Ax - |A|^2 Bx) and D = 2 A x B,
  * the circumcentre #emit_arc_edge forms from the same points; for a half
- * circle on a diameter M is its start, N = E - S and D = 2.
+ * circle on a diameter M is its start, N = E - S and D = 2; for a centred
+ * arc M is its centre, N = 0 and D = 1.
  */
 static void
 arcarc_centre_exact(ArcsegArena *arena, const Edge *e, ArcsegExact *mx,
   ArcsegExact *my, ArcsegExact *nx, ArcsegExact *ny, ArcsegExact *d)
 {
+  if (e->centred)
+  {
+    *mx = arcseg_x_diff(arena, e->cx, 0.0);
+    *my = arcseg_x_diff(arena, e->cy, 0.0);
+    *nx = arcseg_x_diff(arena, 0.0, 0.0);
+    *ny = arcseg_x_diff(arena, 0.0, 0.0);
+    *d = arcseg_x_diff(arena, 1.0, 0.0);
+    return;
+  }
   if (e->diameter)
   {
     *mx = arcseg_x_diff(arena, e->sx, 0.0);
@@ -5487,6 +5601,26 @@ arcarc_centre_exact(ArcsegArena *arena, const Edge *e, ArcsegExact *mx,
   *d = arcseg_x_scale(arena, arcseg_x_sub(arena, arcseg_x_mul(arena, ax, by),
     arcseg_x_mul(arena, ay, bx)), 2.0);
   return;
+}
+
+/* The square of the radius of the circle of an arc times D^2, exactly, with
+ * the centre M + N / D of #arcarc_centre_exact: |D (S - M) - N|^2 from its
+ * start S, or r^2 for a centred arc, whose D is 1 */
+static ArcsegExact
+arcarc_radius2_exact(ArcsegArena *arena, const Edge *e, ArcsegExact mx,
+  ArcsegExact my, ArcsegExact nx, ArcsegExact ny, ArcsegExact d)
+{
+  if (e->centred)
+  {
+    ArcsegExact r = arcseg_x_diff(arena, e->radius, 0.0);
+    return arcseg_x_mul(arena, r, r);
+  }
+  ArcsegExact sx = arcseg_x_sub(arena, arcseg_x_mul(arena, d,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, e->sx, 0.0), mx)), nx);
+  ArcsegExact sy = arcseg_x_sub(arena, arcseg_x_mul(arena, d,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, e->sy, 0.0), my)), ny);
+  return arcseg_x_add(arena, arcseg_x_mul(arena, sx, sx),
+    arcseg_x_mul(arena, sy, sy));
 }
 
 /**
@@ -5584,20 +5718,10 @@ arcarc_circles_exact(ArcsegArena *arena, const Edge *p, const Edge *q,
   ArcsegExact qq = arcseg_x_add(arena, arcseg_x_mul(arena, dx, dx),
     arcseg_x_mul(arena, dy, dy));
   /* The squared radii, times L^2 */
-  ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sx, 0.0), m1x)), n1x);
-  ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sy, 0.0), m1y)), n1y);
-  ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sx, 0.0), m2x)), n2x);
-  ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sy, 0.0), m2y)), n2y);
-  ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
-    arcseg_x_mul(arena, d2, d2));
-  ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
-    arcseg_x_mul(arena, d1, d1));
+  ArcsegExact r1 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, p, m1x,
+    m1y, n1x, n1y, d1), arcseg_x_mul(arena, d2, d2));
+  ArcsegExact r2 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, q, m2x,
+    m2y, n2x, n2y, d2), arcseg_x_mul(arena, d1, d1));
   ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
   c->m1x = m1x; c->m1y = m1y; c->n1x = n1x; c->n1y = n1y;
   c->d1 = d1; c->d2 = d2; c->l = l; c->dx = dx; c->dy = dy; c->qq = qq;
@@ -5676,7 +5800,8 @@ arcarc_crossing_terms(const Edge *p, const Edge *q,
  * c = E - S; for P that is the sign of U'' + sigma W'' sqrt(H) times the sign
  * of L, with U'' = 2 Q D2 (c x e') + (Q + R1' - R2') (c x d'),
  * e' = D1 (M1 - S) + N1, and W'' = c . d', which #arcseg_root_sign reads from
- * the signs of U'', W'' and U''^2 - W''^2 H. The tangents of the two circles
+ * the signs of U'', W'' and U''^2 - W''^2 H; every point of the circle of a
+ * centred arc lies within it. The tangents of the two circles
  * at P cross with the sign sigma times the senses the arcs turn
  * @param[in] p,q Arcs of two distinct circles
  * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
@@ -5701,6 +5826,12 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   for (int k = 0; k < 2; k++)
   {
     const Edge *e = arcs[k];
+    /* A centred arc is its whole circle */
+    if (e->centred)
+    {
+      within[0][k] = within[1][k] = 1;
+      continue;
+    }
     ArcsegExact cx = arcseg_x_diff(arena, e->ex, e->sx);
     ArcsegExact cy = arcseg_x_diff(arena, e->ey, e->sy);
     /* e' = D1 (M1 - S) + N1 */
@@ -6008,20 +6139,10 @@ meet_point_exact(ArcsegArena *arena, const MeetPoint *m, double ox,
           arcseg_x_mul(arena, k, dx));
         return;
       }
-      ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-        arcseg_x_sub(arena, meet_val(arena, m->p->sx), m1x)), n1x);
-      ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-        arcseg_x_sub(arena, meet_val(arena, m->p->sy), m1y)), n1y);
-      ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-        arcseg_x_sub(arena, meet_val(arena, m->q->sx), m2x)), n2x);
-      ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-        arcseg_x_sub(arena, meet_val(arena, m->q->sy), m2y)), n2y);
-      ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
-        arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
-        arcseg_x_mul(arena, d2, d2));
-      ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
-        arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
-        arcseg_x_mul(arena, d1, d1));
+      ArcsegExact r1 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, m->p,
+        m1x, m1y, n1x, n1y, d1), arcseg_x_mul(arena, d2, d2));
+      ArcsegExact r2 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, m->q,
+        m2x, m2y, n2x, n2y, d2), arcseg_x_mul(arena, d1, d1));
       ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
       r->h = arcseg_x_sub(arena,
         arcseg_x_scale(arena, arcseg_x_mul(arena, r1, qq), 4.0),
@@ -6089,13 +6210,29 @@ edge_scale(const Edge *e, double f1, double f2, double g1, double g2,
   bool exact = true;
   for (size_t i = 0; i < n; i++)
     exact = coord_scale(v[i], f1, f2, g1, g2) && exact;
+  /* A centred arc carries its circle as its centre and radius */
+  if (e->centred)
+  {
+    exact = coord_scale(&out->cx, f1, f2, g1, g2) && exact;
+    exact = coord_scale(&out->cy, f1, f2, g1, g2) && exact;
+    exact = coord_scale(&out->radius, f1, f2, g1, g2) && exact;
+  }
   return exact;
 }
 
-/* Widen a box by the points of an edge, as #edge_scale reads them */
+/* Widen a box by the points of an edge, as #edge_scale reads them: the box
+ * of its circle for a centred arc */
 static void
 edge_extent(const Edge *e, double box[4])
 {
+  if (e->centred)
+  {
+    box[0] = Min(box[0], e->cx - e->radius);
+    box[1] = Max(box[1], e->cx + e->radius);
+    box[2] = Min(box[2], e->cy - e->radius);
+    box[3] = Max(box[3], e->cy + e->radius);
+    return;
+  }
   double x[5] = {e->x1, e->x2, e->sx, e->mx, e->ex};
   double y[5] = {e->y1, e->y2, e->sy, e->my, e->ey};
   int n = (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC) ? 5 : 2;
@@ -6202,10 +6339,14 @@ meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
       arcseg_x_sub(arena, mx, meet_val(arena, ox)), d), nx);
     ArcsegExact cy = arcseg_x_add(arena, arcseg_x_mul(arena,
       arcseg_x_sub(arena, my, meet_val(arena, oy)), d), ny);
-    ArcsegExact ux = arcseg_x_sub(arena, arcseg_x_mul(arena,
-      arcseg_x_diff(arena, e->x1, ox), d), cx);
-    ArcsegExact uy = arcseg_x_sub(arena, arcseg_x_mul(arena,
-      arcseg_x_diff(arena, e->y1, oy), d), cy);
+    /* A centred arc starts at the point of its circle furthest along -x,
+     * the radius (-r, 0) */
+    ArcsegExact ux = e->centred ? meet_val(arena, - e->radius) :
+      arcseg_x_sub(arena, arcseg_x_mul(arena, arcseg_x_diff(arena, e->x1,
+        ox), d), cx);
+    ArcsegExact uy = e->centred ? meet_val(arena, 0.0) :
+      arcseg_x_sub(arena, arcseg_x_mul(arena, arcseg_x_diff(arena, e->y1,
+        oy), d), cy);
     const MeetExact *pts[2] = {&pa, &pb};
     ArcsegExact vx0[2], vy0[2], vx1[2], vy1[2];
     int cls[2], turn = ccw ? 1 : -1;
