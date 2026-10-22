@@ -58,7 +58,7 @@ aggregate support suffixes (`_in`, `_out`, `_recv`, `_send`, `_sel`, `_gist`, `_
 | not stated | 301 | 469 |
 | of which PostgreSQL's type, index, planner and aggregate support | 112 | 176 |
 | of which out of the bindings' scope | 24 | 59 |
-| of which the I/O plan's | 3 | 40 |
+| of which the writers of an array, left open | 3 | 40 |
 | **of which this plan's** | **162** | **194** |
 
 The 194 signatures fall into three groups: 46 need a tag only, 80 need the wrapper to call the
@@ -93,10 +93,10 @@ wrapper and the MEOS function it reaches.
 - **The text and binary input and output.** On master every reader and writer of a single value
   is stated, as the second wrapper of the type's `_in`, `_out` or `_as_wkb` function
   (`Quadbin_as_text` of `quadbin_out`, `Tpcbox_as_wkb` of `tpcbox_as_wkb`, `Set_from_text` of
-  `intset_in` and its siblings). The writers of an array remain, 3 wrappers and 40 signatures
-  (`asText(<temporal>[])`, `asText(<spatial>[])`, `asEWKT(<spatial>[])`), since
-  `temparr_out` and `spatialarr_wkt_out` are internal: the [I/O plan](IO-PLAN.md) states them
-  among its MEOS gaps.
+  `intset_in` and its siblings).
+- **The writers of an array**, 3 wrappers and 40 signatures (`asText(<temporal>[])`,
+  `asText(<spatial>[])`, `asEWKT(<spatial>[])`), whose `temparr_out` and `spatialarr_wkt_out`
+  are internal. DECIDED BY THE OWNER 2026-10-22: they stay open, outside this plan.
 - **The pcid and point counts of the temporal point clouds**: merged as MobilityDB #3137
   (`1cbb831a57`).
 - **The cell instant constructors** `th3index(h3index, timestamptz)`,
@@ -287,7 +287,7 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 ## Acceptance
 
 The census by signature over master reads 0 signatures that are not stated, apart from
-PostgreSQL's support, the out-of-scope functions and the I/O plan's array writers, and the
+PostgreSQL's support, the out-of-scope functions and the writers of an array, and the
 regression suite answers as before.
 
 ## Appendix: every SQL signature the catalog does not state
@@ -469,7 +469,7 @@ regression suite answers as before.
 | `Trgeometry_geom_clip_polygon_posed` | _trgeometry_geom_clip_polygon_posed(geometry, geometry, pose, pose, geometry) | trgeo_geom_clip_lwgeom_posed (internal) -> propose SpanSet *trgeometry_geom_clip_polygon_posed(const GSERIALIZED *pa, const GSERIALIZED *pb, const Pose *pose1, const Pose *pose2, const GSERIALIZED *poly) |
 | `Trgeometry_value_at_timestamptz` | valueAtTimestamp(trgeometry, timestamptz) | trgeo_value_at_timestamptz (rgeo/trgeo.h:82, Datum *) -> propose bool trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, GSERIALIZED **value) |
 
-### The I/O plan: the writers of an array (3 wrappers, 40 signatures)
+### The writers of an array, left open (3 wrappers, 40 signatures)
 
 | wrapper | SQL signatures | MEOS function |
 |---|---|---|
