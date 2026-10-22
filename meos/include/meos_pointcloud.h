@@ -520,6 +520,7 @@ extern SpanSet **tpcpoint_unnest(const Temporal *temp, Pcpoint ***values, int *c
 extern bool tpcpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pcpoint **value);
 extern Temporal *tpcpoint_at_value(const Temporal *temp, const Pcpoint *pt);
 extern Temporal *tpcpoint_minus_value(const Temporal *temp, const Pcpoint *pt);
+extern uint32_t tpcpoint_pcid(const Temporal *temp);
 
 extern TInstant *tpcpatchinst_make(const Pcpatch *pa, TimestampTz t);
 extern TSequence *tpcpatchseq_from_base_tstzset(const Pcpatch *pa, const Set *s);
@@ -535,6 +536,10 @@ extern SpanSet **tpcpatch_unnest(const Temporal *temp, Pcpatch ***values, int *c
 extern bool tpcpatch_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, Pcpatch **value);
 extern Temporal *tpcpatch_at_value(const Temporal *temp, const Pcpatch *pa);
 extern Temporal *tpcpatch_minus_value(const Temporal *temp, const Pcpatch *pa);
+extern uint32_t tpcpatch_pcid(const Temporal *temp);
+extern uint32_t tpcpatch_start_npoints(const Temporal *temp);
+extern uint32_t tpcpatch_end_npoints(const Temporal *temp);
+extern int64 tpcpatch_npoints(const Temporal *temp);
 
 /*****************************************************************************
  * Ever/always and temporal comparisons

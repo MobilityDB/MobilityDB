@@ -72,20 +72,15 @@ PG_FUNCTION_INFO_V1(Tpcpoint_pcid);
 /**
  * @ingroup mobilitydb_pointcloud_accessor
  * @brief Return the pgpointcloud schema id (pcid) of a tpcpoint
- * @details All instants of a tpcpoint must share the same pcid — the
- *   set_make_exp same-pcid check guarantees this at construction
- *   time. This function just reads the first instant's pcid.
  * @sqlfn pcid()
  */
 Datum
 Tpcpoint_pcid(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Datum first = temporal_start_value(temp);
-  const Pcpoint *pt = (const Pcpoint *) DatumGetPointer(first);
-  uint32_t pcid = pcpoint_get_pcid(pt);
+  uint32_t result = tpcpoint_pcid(temp);
   PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_INT32((int32) pcid);
+  PG_RETURN_INT32((int32) result);
 }
 
 /*****************************************************************************

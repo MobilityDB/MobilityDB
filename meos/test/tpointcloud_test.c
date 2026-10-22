@@ -49,6 +49,7 @@
  */
 
 #include <assert.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -296,6 +297,63 @@ int main(void)
   printf("tpcpatch_tdensity_transfn: %s\n", dens_out);
   assert(meos_errno() == 0);
   free(np); free(np_out); free(dens); free(dens_out);
+
+  /* The pcid of a temporal value is the pcid of its values, and the point
+   * counts of a temporal patch are those of its start and end values and
+   * their sum over every instant, here a sequence of a patch of 2 points
+   * then one of 3 */
+  assert(tpcpoint_pcid(tpcpoint) == 1);
+  assert(tpcpatch_pcid(tpcpatch) == 1);
+  assert(tpcpatch_start_npoints(tpcpatch) == 2);
+  assert(tpcpatch_end_npoints(tpcpatch) == 2);
+  assert(tpcpatch_npoints(tpcpatch) == 2);
+  assert(meos_errno() == 0);
+  pts[0] = p1 = pcpoint_make(2, v1, 3);
+  pts[1] = p2 = pcpoint_make(2, v2, 3);
+  pts[2] = p3 = pcpoint_make(2, v3, 3);
+  Pcpatch *pa2 = pcpatch_make(pts, 2);
+  Pcpatch *pa3 = pcpatch_make(pts, 3);
+  assert(pa2 != NULL && pa3 != NULL);
+  TInstant *pinsts[2] = {
+    tpcpatchinst_make(pa2, timestamptz_in("2024-01-01", -1)),
+    tpcpatchinst_make(pa3, timestamptz_in("2024-01-02", -1))
+  };
+  TSequence *pseq = tsequence_make(pinsts, 2, true, true, STEP, false);
+  assert(pseq != NULL);
+  uint32_t seq_pcid = tpcpatch_pcid((Temporal *) pseq);
+  uint32_t seq_start = tpcpatch_start_npoints((Temporal *) pseq);
+  uint32_t seq_end = tpcpatch_end_npoints((Temporal *) pseq);
+  int64 seq_total = tpcpatch_npoints((Temporal *) pseq);
+  printf("tpcpatch sequence: pcid %u, start %u, end %u, total %ld points\n",
+    seq_pcid, seq_start, seq_end, (long) seq_total);
+  assert(seq_pcid == 2 && seq_start == 2 && seq_end == 3 && seq_total == 5);
+  assert(meos_errno() == 0);
+
+  /* A value of the other temporal point cloud type is refused */
+  assert(tpcpoint_pcid(tpcpatch) == INT_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(tpcpatch_start_npoints(tpcpoint) == INT_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(tpcpatch_npoints(tpcpoint) == INT64_MAX);
+  assert(meos_errno() != 0);
+  meos_errno_reset();
+
+  /* The pcid and the point counts are read from the values themselves, so
+   * with no schema registered they are answered all the same */
+  meos_pc_schema_clear();
+  assert(meos_errno() == 0);
+  assert(tpcpoint_pcid(tpcpoint) == 1);
+  assert(tpcpatch_pcid((Temporal *) pseq) == 2);
+  assert(tpcpatch_start_npoints((Temporal *) pseq) == 2);
+  assert(tpcpatch_end_npoints((Temporal *) pseq) == 3);
+  assert(tpcpatch_npoints((Temporal *) pseq) == 5);
+  printf("errno reading the pcid and point counts with no schema "
+    "registered: %d\n", meos_errno());
+  assert(meos_errno() == 0);
+  free(pinsts[0]); free(pinsts[1]); free(pseq);
+  free(pa2); free(pa3); free(p1); free(p2); free(p3);
 
   free(tpcpoint); free(tpcpoint2); free(tpcpoint_out);
   free(tpcpatch); free(tpcpatch2); free(tpcpatch_out);
