@@ -2151,6 +2151,8 @@ TJSONB_CONFIG = dict(
     override_args={
         # ttext_to_tjsonb takes a ttext, not a tjsonb
         "ttext_to_tjsonb": {0: "ttext1"},
+        # textset_to_jsonbset takes a textset of JSON texts, not a jsonbset
+        "textset_to_jsonbset": {0: "textset1"},
         # The value of a temporal is read off an instant.
         "tjsonb_value": {0: "(Temporal *) tjsonb_inst1"},
         # jsonpath_in needs a jsonpath string, not the jsonb document string
@@ -2323,6 +2325,8 @@ TJSONB_CONFIG = dict(
   text *txtarr1[] = { txt1 };
   Numeric num1 = NULL;
   Set *jsonbset1 = jsonbset_in("{1, 2, 3}");
+  /* The text of the values of jsonbset1, for textset_to_jsonbset. */
+  Set *textset1 = textset_in("{\\"1\\", \\"2\\", \\"3\\"}");
   /* The time set the base-and-time sequence constructor takes. */
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   text *json_arr1 = text_in("[1, 2, 3]");
@@ -2454,6 +2458,7 @@ TJSONB_CONFIG = dict(
   free(jb_arr_b1);
   free(txt1);
   free(jsonbset1);
+  free(textset1);
   free(jsonbset_obj1);
   free(jb_a1);
   free(jb_b1);
