@@ -305,6 +305,7 @@ come before its push.
 | `meos/json-wrappers-named` | `1d8f86bb7e` | the 16 text, `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper | receipts owed |
 | `meos/jsonpath-outside-meos-gate` | `42a3ab7356` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
 | `meos/box-constructors-named` | `f47cb80fae` | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags | receipts owed |
+| (same branch, next commit) | | DECIDED BY THE OWNER 2026-10-23: `tbox(float)` and `tbox(numeric)` refuse NaN as `tfloat` and `floatspan` do: `Number_to_tbox` and `Numeric_to_tbox` call `float_to_tbox`, which raises "The value cannot be NaN", where master answers `TBOXFLOAT X([NaN, NaN])` | to implement |
 | `meos/pose-constructors-named` | `a6e918fc95` | one wrapper per pose constructor, each named in its tag | receipts owed |
 | `meos/tpcbox-pcpoint-constructors-named` | `ec66ca3a4d` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
 | `meos/trgeometry-constructors-named` | `6c84207870` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
@@ -321,7 +322,6 @@ Left, each for the owner first:
   from a wrapper that reads its arguments and calls the public function itself, not through
   `EA_spatialrel_*`, so they wait for the generator to emit such wrappers, or for the tags alone
   with the positional mapping `Edwithin_geo_trgeometry` carries on master.
-- `tbox(numeric)` through `float_to_tbox` refuses `NaN`, where the wrapper answers a box today.
 - `valueCount` and `valuePercent` over a raster: one search value against `raster_value_count`'s
   array of them, a shape the catalog does not state.
 - MEOS-API: the operator stated per signature (the three JSON functions behind both `->` and `->>`).
