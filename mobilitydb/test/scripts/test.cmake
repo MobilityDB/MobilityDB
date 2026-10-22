@@ -92,6 +92,19 @@ message(STATUS "TEST_DIR_LOCK: ${TEST_DIR_LOCK}")
 message(STATUS "TEST_DIR_LOG: ${TEST_DIR_LOG}")
 message(STATUS "TEST_DIR_OUT: ${TEST_DIR_OUT}")
 
+# Stop with the message of a step that failed and the log files of the program
+# it ran, since a program whose output goes to a file leaves TEST_ERROR empty
+function(fail_with_logs text result)
+  set(_text "${text}:\n${result}\n")
+  foreach(_log ${ARGN})
+    if(EXISTS ${_log})
+      file(READ ${_log} _content)
+      string(APPEND _text "\n${_log}:\n${_content}")
+    endif()
+  endforeach()
+  message(FATAL_ERROR "${_text}")
+endfunction()
+
 #-------------------------------------------------------------------------------
 # Test setup
 #-------------------------------------------------------------------------------
@@ -158,11 +171,11 @@ if(TEST_OPER MATCHES "test_setup")
     COMMAND ${INITDB} -D ${TEST_DIR_DB} --no-locale -E ${TEST_ENCODING}
     OUTPUT_FILE ${TEST_DIR_LOG}/initdb.log
     ERROR_FILE ${TEST_DIR_LOG}/initdb.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create database cluster with initdb:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to create database cluster with initdb"
+      "${TEST_RESULT}" ${TEST_DIR_LOG}/initdb.log)
   else()
     message(STATUS "Database cluster created with initdb")
   endif()
@@ -214,7 +227,6 @@ if(TEST_OPER MATCHES "test_setup")
         "$p = Start-Process -FilePath '${PG_CTL}' -ArgumentList '-w -D \"${TEST_DIR_DB}\" -l \"${TEST_DIR_LOG}/postgres.log\" -o \"-k ${TEST_DIR_LOCK}\" -o \"-c listen_addresses=\" start' -WindowStyle Hidden -PassThru; $p.WaitForExit(); exit $p.ExitCode"
       OUTPUT_FILE ${TEST_DIR_LOG}/pg_start.log
       ERROR_FILE ${TEST_DIR_LOG}/pg_start.log
-      ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   else()
@@ -222,12 +234,12 @@ if(TEST_OPER MATCHES "test_setup")
       COMMAND ${PG_CTL} -w -D ${TEST_DIR_DB} -l ${TEST_DIR_LOG}/postgres.log -o "-k ${TEST_DIR_LOCK}" -o "-c listen_addresses=" start
       OUTPUT_FILE ${TEST_DIR_LOG}/pg_start.log
       ERROR_FILE ${TEST_DIR_LOG}/pg_start.log
-      ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   endif()
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to start PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to start PostgreSQL server" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/pg_start.log ${TEST_DIR_LOG}/postgres.log)
   else()
     message(STATUS "PostgreSQL server started")
   endif()
@@ -261,11 +273,11 @@ if(TEST_OPER MATCHES "test_setup")
     COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "${_create_ext}"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_FILE ${TEST_DIR_LOG}/create_ext.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create MobilityDB extension:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to create MobilityDB extension" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/create_ext.log)
   else()
     message(STATUS "MobilityDB extension created")
   endif()
@@ -334,7 +346,7 @@ elseif(TEST_OPER MATCHES "run_compare")
       message(STATUS "===========\n\n")
       message(STATUS "${DIFFS}\n\n")
     endif()
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
+    message(FATAL_ERROR "Test ${TEST_NAME} failed")
   endif()
 
 #-------------------------------------------------------------------------------
@@ -351,29 +363,35 @@ elseif(TEST_OPER MATCHES "run_passfail")
     message(FATAL_ERROR "Argument TEST_FILE must be provided")
   endif(NOT TEST_FILE)
 
-  # Explanation of the parameters for psql (see above)
+  # Explanation of the parameters for psql (see above), except that the load
+  # stops at its first error: psql reads the file from its standard input,
+  # where an error does not change its exit status otherwise, and a table
+  # that fails to load is only seen in the differences of the tests reading it
   if(${TEST_FILE} MATCHES ".xz")
-    # Load the data into the test database
-    get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WLE)
+    # Load the data into the test database. The status of every command of
+    # the pipeline is read, since a file xz cannot read reaches psql empty.
     execute_process(
       COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
       OUTPUT_QUIET
       ERROR_VARIABLE TEST_ERROR
-      RESULT_VARIABLE TEST_RESULT
+      RESULTS_VARIABLE TEST_RESULTS
     )
+    if(NOT TEST_RESULTS STREQUAL "0;0")
+      message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULTS}\n${TEST_ERROR}")
+    endif()
   else()
     execute_process(
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
       INPUT_FILE ${TEST_FILE}
-      OUTPUT_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
-      ERROR_VARIABLE TEST_ERROR
+      OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+      ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
       RESULT_VARIABLE TEST_RESULT
     )
-  endif()
-  if(TEST_RESULT)
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
+    if(TEST_RESULT)
+      fail_with_logs("Test ${TEST_NAME} failed" "${TEST_RESULT}"
+        ${TEST_DIR_OUT}/${TEST_NAME}.out)
+    endif()
   endif()
 
 #-------------------------------------------------------------------------------
@@ -387,11 +405,11 @@ elseif(TEST_OPER MATCHES "teardown")
     COMMAND ${PG_CTL} -w -D ${TEST_DIR_DB} stop
     OUTPUT_FILE ${TEST_DIR_LOG}/pg_stop.log
     ERROR_FILE ${TEST_DIR_LOG}/pg_stop.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to stop PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to stop PostgreSQL server" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/pg_stop.log)
   endif()
   file(REMOVE_RECURSE ${TEST_DIR_LOCK})
 
