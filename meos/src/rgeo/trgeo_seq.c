@@ -342,45 +342,4 @@ trgeoseq_make_free(const GSERIALIZED *geom, TInstant **instants, int count,
     upper_inc, interp, normalize);
 }
 
-/*****************************************************************************
- * Transformation functions
- *****************************************************************************/
-
-/**
- * @ingroup meos_internal_rgeo_transf
- * @brief Return a temporal instant transformed into a temporal sequence
- * @param[in] inst Temporal instant
- * @param[in] interp Interpolation
- */
-TSequence *
-trgeoinst_as_tsequence(const TInstant *inst, interpType interp)
-{
-  assert(inst);
-  return trgeometryseq_make(trgeoinst_geom_p(inst), (TInstant **) &inst, 1, true,
-    true, interp, NORMALIZE_NO);
-}
-
-/**
- * @ingroup meos_internal_rgeo_transf
- * @brief Return a temporal sequence set transformed into a temporal sequence
- * @param[in] ss Temporal sequence set
- */
-TSequence *
-trgeoseqset_as_tsequence(const TSequenceSet *ss)
-{
-  assert(ss);
-  if (ss->totalcount != 1)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Cannot transform input value to a temporal instant");
-    return NULL;
-  }
-  return tsequence_copy(TSEQUENCESET_SEQ_N(ss, 0));
-}
-
-/*****************************************************************************
- * Accessor functions
- *****************************************************************************/
-
-
 /*****************************************************************************/
