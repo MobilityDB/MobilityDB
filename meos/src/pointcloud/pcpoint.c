@@ -352,7 +352,7 @@ pcpoint_as_hexwkb(const Pcpoint *pt)
  * @errval NULL
  * @note The schema is resolved through the MEOS cache, so a schema stated in
  *   SQL and one parsed from an XML document build a value alike.
- * @csqlfn #Pcpoint_make()
+ * @csqlfn #Pcpoint_make(), #Pcpoint_make_coords()
  */
 Pcpoint *
 pcpoint_make(uint32_t pcid, const double *values, int count)
