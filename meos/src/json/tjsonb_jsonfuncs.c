@@ -961,7 +961,7 @@ tjsonb_exists_all(const Temporal *temp, text **keys, int count)
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
- * @csqlfn #Tjsonb_set()
+ * @csqlfn #Tjsonb_set(), #Tjsonb_set_lax()
  */
 Temporal *
 tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
@@ -1722,7 +1722,7 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Tjsonb_path_exists()
+ * @csqlfn #Tjsonb_path_exists(), #Tjsonb_path_exists_tz()
  */
 Temporal *
 tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
@@ -1758,7 +1758,7 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Tjsonb_path_match()
+ * @csqlfn #Tjsonb_path_match(), #Tjsonb_path_match_tz()
  */
 Temporal *
 tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
@@ -1794,7 +1794,7 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Tjsonb_path_query_array()
+ * @csqlfn #Tjsonb_path_query_array(), #Tjsonb_path_query_array_tz()
  */
 Temporal *
 tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
@@ -1832,7 +1832,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Tjsonb_path_query_first()
+ * @csqlfn #Tjsonb_path_query_first(), #Tjsonb_path_query_first_tz()
  */
 Temporal *
 tjsonb_path_query_first(const Temporal *temp, const JsonPath *jp,

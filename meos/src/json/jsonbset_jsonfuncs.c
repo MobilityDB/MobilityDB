@@ -316,7 +316,7 @@ jsonbset_exists_array(const Set *set, text **keys, int count, bool any,
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
- * @csqlfn #Jsonbset_set()
+ * @csqlfn #Jsonbset_set(), #Jsonbset_set_lax()
  */
 Set *
 jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
@@ -612,7 +612,7 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
  * @param[out] count Number of values in the output array
- * @csqlfn #Jsonbset_path_exists()
+ * @csqlfn #Jsonbset_path_exists(), #Jsonbset_path_exists_tz()
  */
 bool *
 jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
@@ -649,7 +649,7 @@ jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
  * @param[out] count Number of values in the output array
- * @csqlfn #Jsonbset_path_match()
+ * @csqlfn #Jsonbset_path_match(), #Jsonbset_path_match_tz()
  */
 bool *
 jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
@@ -685,7 +685,7 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Jsonbset_path_query_array()
+ * @csqlfn #Jsonbset_path_query_array(), #Jsonbset_path_query_array_tz()
  */
 Set *
 jsonbset_path_query_array(const Set *set, const JsonPath *jp,
@@ -722,7 +722,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
  * numeric errors, when false, no errors are suppressed
  * @param[in] tz When true, support comparisons of date/time values that
  * require timezone-aware conversions, false otherwise
- * @csqlfn #Jsonbset_path_query_first()
+ * @csqlfn #Jsonbset_path_query_first(), #Jsonbset_path_query_first_tz()
  */
 Set *
 jsonbset_path_query_first(const Set *set, const JsonPath *jp,
