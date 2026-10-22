@@ -208,7 +208,7 @@ Contained_jsonb_tjsonb(PG_FUNCTION_ARGS)
 {
   Jsonb *jb = PG_GETARG_JSONB_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  Temporal *result = contains_tjsonb_jsonb(temp, jb, INVERT);
+  Temporal *result = contains_tjsonb_jsonb(temp, jb, INVERT_NO);
   PG_FREE_IF_COPY(jb, 0);
   PG_FREE_IF_COPY(temp, 1);
   PG_RETURN_TEMPORAL_P(result);
@@ -227,7 +227,7 @@ Contained_tjsonb_jsonb(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Jsonb *jb = PG_GETARG_JSONB_P(1);
-  Temporal *result = contains_tjsonb_jsonb(temp, jb, INVERT_NO);
+  Temporal *result = contains_tjsonb_jsonb(temp, jb, INVERT);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(jb, 1);
   PG_RETURN_TEMPORAL_P(result);
