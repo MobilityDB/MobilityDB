@@ -36,7 +36,9 @@
  * temporal (pose) part. This test exercises trgeometry_in() directly on a
  * well-formed value and checks that the result round-trips through
  * trgeometry_out(). It also exercises the restriction of a trgeometry to a
- * base value and to a set of base values, whose base values are poses.
+ * base value and to a set of base values, whose base values are poses, and
+ * the construction of a trgeometry with gaps, which leaves nothing allocated
+ * once its result is freed.
  *
  * The program can be built as follows
  * @code
@@ -45,6 +47,7 @@
  */
 
 #include <float.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -52,6 +55,46 @@
 #include <meos_geo.h>
 #include <meos_pose.h>
 #include <meos_rgeo.h>
+
+/*
+ * Counting allocator, the pointer-preserving one of allocator_test.c
+ * (#counting_malloc, #counting_realloc, #counting_free), so that the bytes a
+ * constructor leaves allocated once its result is freed are the tracked live
+ * bytes
+ */
+static size_t live_bytes = 0;
+
+static void *
+counting_malloc(size_t size)
+{
+  void *p = malloc(size);
+  if (p)
+    live_bytes += malloc_usable_size(p);
+  return p;
+}
+
+static void *
+counting_realloc(void *ptr, size_t size)
+{
+  size_t old = ptr ? malloc_usable_size(ptr) : 0;
+  void *p = realloc(ptr, size);
+  if (p)
+  {
+    live_bytes += malloc_usable_size(p);
+    live_bytes -= old;
+  }
+  return p;
+}
+
+static void
+counting_free(void *ptr)
+{
+  if (ptr)
+  {
+    live_bytes -= malloc_usable_size(ptr);
+    free(ptr);
+  }
+}
 
 /* Main program */
 int main(void)
@@ -489,6 +532,87 @@ int main(void)
     }
     free(i1); free(i2); free(i3);
     meos_errno_reset();
+  }
+
+  /* Constructing a temporal rigid geometry with gaps answers one sequence per
+   * stretch between two gaps, by time or by distance, and leaves nothing
+   * allocated once the result is freed. Instants out of time order answer
+   * NULL. The bytes left are counted on the gaps by time: under the counting
+   * allocator, the first call fills the caches a later call reuses, and the
+   * second call leaves the live bytes as it found them. A gap by distance
+   * measures the distance between the points of two poses, which liblwgeom
+   * allocates outside the allocator hook, so the hook cannot count it */
+  {
+    GSERIALIZED *gbody = geom_in("Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
+    Interval *gap = interval_in("2 days", -1);
+    const double xs[5] = {0, 1, 20, 21, 50};
+    const char *ts[5] = {"2001-01-01", "2001-01-02", "2001-01-05",
+      "2001-01-06", "2001-01-09"};
+    TInstant *ginsts[5];
+    for (int i = 0; i < 5; i++)
+    {
+      Pose *pose = pose_make_2d(xs[i], 0.0, 0.0, false, 0);
+      ginsts[i] = trgeometryinst_make(gbody, pose, timestamptz_in(ts[i], -1));
+      free(pose);
+    }
+    /* Each case: the gap interval, the gap distance, the sequences wanted */
+    const Interval *maxts[3] = {gap, NULL, gap};
+    const double maxdists[3] = {0.0, 5.0, 5.0};
+    const int wanted[3] = {3, 3, 3};
+    for (int c = 0; c < 3; c++)
+    {
+      bool counted = (maxdists[c] <= 0.0);
+      if (counted)
+      {
+        meos_initialize_allocator(counting_malloc, counting_realloc,
+          counting_free);
+        TSequenceSet *warm = trgeometryseqset_make_gaps(gbody, ginsts, 5,
+          LINEAR, maxts[c], maxdists[c]);
+        counting_free(warm);
+      }
+      size_t before = live_bytes;
+      TSequenceSet *ss = trgeometryseqset_make_gaps(gbody, ginsts, 5, LINEAR,
+        maxts[c], maxdists[c]);
+      int nseqs = ss ? temporal_num_sequences((Temporal *) ss) : -1;
+      if (counted)
+      {
+        counting_free(ss);
+        meos_initialize_allocator(NULL, NULL, NULL);
+      }
+      else
+        free(ss);
+      long left = (long) (live_bytes - before);
+      if (nseqs != wanted[c] || left != 0)
+      {
+        printf("FAILED: constructing a rigid geometry with gaps (case %d) "
+          "answers %d sequences and leaves %ld bytes, wanted %d and 0\n", c,
+          nseqs, left, wanted[c]);
+        result = 1;
+      }
+      else
+        printf("OK: constructing a rigid geometry with gaps (case %d) answers "
+          "%d sequences%s\n", c, nseqs,
+          counted ? " and leaves nothing allocated" : "");
+    }
+    /* Instants out of time order */
+    TInstant *swapped[3] = {ginsts[0], ginsts[2], ginsts[1]};
+    meos_errno_reset();
+    TSequenceSet *bad = trgeometryseqset_make_gaps(gbody, swapped, 3, LINEAR,
+      gap, 0.0);
+    if (bad)
+    {
+      printf("FAILED: constructing a rigid geometry with gaps from instants "
+        "out of time order answered a value\n");
+      result = 1;
+      free(bad);
+    }
+    else
+      printf("OK: instants out of time order construct no rigid geometry "
+        "with gaps\n");
+    meos_errno_reset();
+    for (int i = 0; i < 5; i++)
+      free(ginsts[i]);
+    free(gap); free(gbody);
   }
 
   /* Finalize MEOS */

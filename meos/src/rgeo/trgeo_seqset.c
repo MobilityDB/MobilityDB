@@ -284,8 +284,9 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
   const Interval *maxt, int *nsplits)
 {
   assert(interp != DISCRETE);
-  trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
-    interp);
+  if (! trgeoseq_make_valid(geom, instants, count, lower_inc, upper_inc,
+      interp))
+    return NULL;
   return ensure_valid_tinstarr_gaps(instants, count, MERGE_NO, maxdist, maxt,
     nsplits);
 }
@@ -325,13 +326,14 @@ trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
   }
 
   /* Ensure that the array of instants is valid and determine the splits */
-  int countsplits;
+  int countsplits = 0;
   int *splits = trgeoseqset_make_valid_gaps(geom, instants, count, true, true,
     interp, maxdist, maxt, &countsplits);
+  if (! splits)
+    return NULL;
   if (countsplits == 0)
   {
     /* There are no gaps */
-    pfree(splits);
     seq = trgeoseq_make1(geom, instants, count, true, true, interp, NORMALIZE);
     result = trgeometryseqset_make(geom, &seq, 1, NORMALIZE_NO);
     pfree(seq);
@@ -360,9 +362,10 @@ trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
     if (k > 0)
       sequences[newcount++] = trgeoseq_make1(geom, newinsts, k, true, true,
         interp, NORMALIZE);
-    result = trgeometryseqset_make(geom, sequences, newcount, NORMALIZE);
-    pfree(newinsts); pfree(sequences);
+    result = trgeoseqset_make_free(geom, sequences, newcount, NORMALIZE);
+    pfree(newinsts);
   }
+  pfree(splits);
   return result;
 }
 
