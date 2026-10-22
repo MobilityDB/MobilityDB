@@ -1124,6 +1124,7 @@ pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out)
  * @param[in] x,y Position
  * @param[in] theta Orientation
  * @param[in] srid SRID
+ * @csqlfn #Pose_constructor_2d()
  */
 Pose *
 pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
@@ -1153,6 +1154,7 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
  * @brief Construct a 2D pose value from a 2D point and a rotation angle
  * @param[in] gs 2D Point
  * @param[in] theta Orientation
+ * @csqlfn #Pose_constructor_point2d()
  */
 Pose *
 pose_make_point2d(const GSERIALIZED *gs, double theta)
@@ -1188,6 +1190,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
  * @param[in] x,y,z Position
  * @param[in] W,X,Y,Z Orientation
  * @param[in] srid SRID
+ * @csqlfn #Pose_constructor_3d()
  */
 Pose *
 pose_make_3d(double x, double y, double z, double W, double X, double Y,
@@ -1244,6 +1247,7 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
  * @brief Construct a 3D pose value from the arguments
  * @param[in] gs 3D Point
  * @param[in] W,X,Y,Z Orientation
+ * @csqlfn #Pose_constructor_point3d()
  */
 Pose *
 pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
@@ -1277,6 +1281,7 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
  * longer separable.
  * @param[in] gs 3D Point
  * @param[in] yaw,pitch,roll Angles in radians
+ * @csqlfn #Pose_constructor_point_ypr()
  */
 Pose *
 pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pitch,
@@ -1338,7 +1343,7 @@ pose_mem_size(const Pose *pose)
  * @ingroup meos_pose_base_conversion
  * @brief Convert a pose into a geometry point
  * @param[in] pose Pose
- * @csqlfn #Pose_to_point()
+ * @csqlfn #Pose_to_point(), #Pose_point()
  */
 GSERIALIZED *
 pose_to_point(const Pose *pose)
