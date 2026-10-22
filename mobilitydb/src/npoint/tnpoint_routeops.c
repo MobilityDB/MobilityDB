@@ -41,136 +41,10 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include <meos_npoint.h>
 #include "temporal/set.h"
 #include "temporal/temporal.h"
 #include "npoint/tnpoint.h"
-#include "npoint/tnpoint_routeops.h"
-
-/*****************************************************************************
- * Generic route functions
- *****************************************************************************/
-
-/**
- * @brief Generic route function for a geometry and a temporal network point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_bigint_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, int64, bool))
-{
-  int64 rid = PG_GETARG_INT64(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = func(temp, rid, INVERT);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for a temporal network point and a geometry
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_tnpoint_bigint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, int64, bool))
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  int64 rid = PG_GETARG_INT64(1);
-  bool result = func(temp, rid, INVERT_NO);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for an stbox and a temporal network point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_bigintset_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Set *, bool))
-{
-  Set *s = PG_GETARG_SET_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = func(temp, s, INVERT);
-  PG_FREE_IF_COPY(s, 0);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for a temporal network point and an stbox
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_tnpoint_bigintset(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Set *, bool))
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Set *s = PG_GETARG_SET_P(1);
-  bool result = func(temp, s, INVERT_NO);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(s, 1);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for a network point and a temporal network point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_npoint_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Npoint *, bool))
-{
-  Npoint *np = PG_GETARG_NPOINT_P(0);
-  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
-  bool result = func(temp, np, INVERT);
-  PG_FREE_IF_COPY(temp, 1);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for a temporal network point and a network point
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_tnpoint_npoint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Npoint *, bool))
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  Npoint *np =  PG_GETARG_NPOINT_P(1);
-  bool result = func(temp, np, INVERT_NO);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_BOOL(result);
-}
-
-/**
- * @brief Generic route function for two temporal network points
- *
- * @param[in] fcinfo Catalog information about the external function
- * @param[in] func Function
- */
-Datum
-Routeop_tnpoint_tnpoint(FunctionCallInfo fcinfo,
-  bool (*func)(const Temporal *, const Temporal *))
-{
-  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
-  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
-  bool result = func(temp1, temp2);
-  PG_FREE_IF_COPY(temp1, 0);
-  PG_FREE_IF_COPY(temp2, 1);
-  PG_RETURN_BOOL(result);
-}
 
 /*****************************************************************************
  * Overlaps
@@ -188,7 +62,12 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_bigintset_tnpoint);
 Datum
 Overlaps_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigintset_tnpoint(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  Set *s = PG_GETARG_SET_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = overlaps_rid_bigintset_tnpoint(s, temp);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -205,7 +84,12 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_bigintset);
 Datum
 Overlaps_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigintset(fcinfo, &overlaps_rid_tnpoint_bigintset);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = overlaps_rid_tnpoint_bigintset(temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -219,7 +103,12 @@ PG_FUNCTION_INFO_V1(Overlaps_rid_tnpoint_tnpoint);
 Datum
 Overlaps_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_tnpoint(fcinfo, &overlaps_rid_tnpoint_tnpoint);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = overlaps_rid_tnpoint_tnpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -238,7 +127,12 @@ PG_FUNCTION_INFO_V1(Contains_rid_bigintset_tnpoint);
 Datum
 Contains_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigintset_tnpoint(fcinfo, &contains_rid_tnpoint_bigintset);
+  Set *s = PG_GETARG_SET_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = contains_rid_bigintset_tnpoint(s, temp);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -255,7 +149,11 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigint);
 Datum
 Contains_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigint(fcinfo, &contains_rid_tnpoint_bigint);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int64 rid = PG_GETARG_INT64(1);
+  bool result = contains_rid_tnpoint_bigint(temp, rid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
@@ -270,7 +168,12 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_bigintset);
 Datum
 Contains_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigintset(fcinfo, &contains_rid_tnpoint_bigintset);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = contains_rid_tnpoint_bigintset(temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -285,7 +188,11 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_npoint);
 Datum
 Contains_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_npoint(fcinfo, &contains_rid_tnpoint_npoint);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
+  bool result = contains_rid_tnpoint_npoint(temp, np);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -300,7 +207,12 @@ PG_FUNCTION_INFO_V1(Contains_rid_tnpoint_tnpoint);
 Datum
 Contains_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_tnpoint(fcinfo, &contains_rid_tnpoint_tnpoint);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = contains_rid_tnpoint_tnpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -319,7 +231,11 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigint_tnpoint);
 Datum
 Contained_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigint_tnpoint(fcinfo, &contained_rid_tnpoint_bigint);
+  int64 rid = PG_GETARG_INT64(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = contained_rid_bigint_tnpoint(rid, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
@@ -334,7 +250,12 @@ PG_FUNCTION_INFO_V1(Contained_rid_bigintset_tnpoint);
 Datum
 Contained_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigintset_tnpoint(fcinfo, &contained_rid_tnpoint_bigintset);
+  Set *s = PG_GETARG_SET_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = contained_rid_bigintset_tnpoint(s, temp);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -349,7 +270,11 @@ PG_FUNCTION_INFO_V1(Contained_rid_npoint_tnpoint);
 Datum
 Contained_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_npoint_tnpoint(fcinfo, &contained_rid_npoint_tnpoint);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = contained_rid_npoint_tnpoint(np, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -366,7 +291,12 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_bigintset);
 Datum
 Contained_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigintset(fcinfo, &contained_rid_tnpoint_bigintset);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = contained_rid_tnpoint_bigintset(temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -381,7 +311,12 @@ PG_FUNCTION_INFO_V1(Contained_rid_tnpoint_tnpoint);
 Datum
 Contained_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_tnpoint(fcinfo, &contained_rid_tnpoint_tnpoint);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = contained_rid_tnpoint_tnpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************
@@ -400,7 +335,11 @@ PG_FUNCTION_INFO_V1(Same_rid_bigint_tnpoint);
 Datum
 Same_rid_bigint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigint_tnpoint(fcinfo, &same_rid_tnpoint_bigint);
+  int64 rid = PG_GETARG_INT64(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = same_rid_bigint_tnpoint(rid, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS);
@@ -415,7 +354,12 @@ PG_FUNCTION_INFO_V1(Same_rid_bigintset_tnpoint);
 Datum
 Same_rid_bigintset_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_bigintset_tnpoint(fcinfo, &same_rid_tnpoint_bigintset);
+  Set *s = PG_GETARG_SET_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = same_rid_bigintset_tnpoint(s, temp);
+  PG_FREE_IF_COPY(s, 0);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS);
@@ -430,7 +374,11 @@ PG_FUNCTION_INFO_V1(Same_rid_npoint_tnpoint);
 Datum
 Same_rid_npoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_npoint_tnpoint(fcinfo, &same_rid_tnpoint_npoint);
+  Npoint *np = PG_GETARG_NPOINT_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  bool result = same_rid_npoint_tnpoint(np, temp);
+  PG_FREE_IF_COPY(temp, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/
@@ -447,7 +395,11 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigint);
 Datum
 Same_rid_tnpoint_bigint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigint(fcinfo, &same_rid_tnpoint_bigint);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  int64 rid = PG_GETARG_INT64(1);
+  bool result = same_rid_tnpoint_bigint(temp, rid);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS);
@@ -462,7 +414,12 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_bigintset);
 Datum
 Same_rid_tnpoint_bigintset(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_bigintset(fcinfo, &same_rid_tnpoint_bigintset);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Set *s = PG_GETARG_SET_P(1);
+  bool result = same_rid_tnpoint_bigintset(temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(s, 1);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS);
@@ -477,7 +434,11 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_npoint);
 Datum
 Same_rid_tnpoint_npoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_npoint(fcinfo, &same_rid_tnpoint_npoint);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Npoint *np = PG_GETARG_NPOINT_P(1);
+  bool result = same_rid_tnpoint_npoint(temp, np);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS);
@@ -491,7 +452,12 @@ PG_FUNCTION_INFO_V1(Same_rid_tnpoint_tnpoint);
 Datum
 Same_rid_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
-  return Routeop_tnpoint_tnpoint(fcinfo, &same_rid_tnpoint_tnpoint);
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  bool result = same_rid_tnpoint_tnpoint(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  PG_RETURN_BOOL(result);
 }
 
 /*****************************************************************************/

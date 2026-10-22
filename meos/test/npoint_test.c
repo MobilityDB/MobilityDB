@@ -123,6 +123,11 @@ int main(void)
   Temporal *tnpoint1 = tnpoint_in(tnpoint1_in);
   char *tnpoint1_out = tnpoint_out(tnpoint1, 6);
 
+  char *bigintset1_in = "{1, 2}";
+  Set *bigintset1 = bigintset_in(bigintset1_in);
+  char *bigintset1_out = bigintset_out(bigintset1);
+  int route_errors = 0;
+
   char *tnpoint2_in = "[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.5)@2001-01-03]";
   Temporal *tnpoint2 = tnpoint_in(tnpoint2_in);
   char *tnpoint2_out = tnpoint_out(tnpoint2, 6);
@@ -898,6 +903,135 @@ int main(void)
   printf("tne_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tbool_result); free(char_result);
 
+  /* Route functions */
+  printf("****************************************************************\n");
+
+  /* bool overlaps_rid_bigintset_tnpoint(const Set *s, const Temporal *temp); */
+  bool_result = overlaps_rid_bigintset_tnpoint(bigintset1, tnpoint1);
+  printf("overlaps_rid_bigintset_tnpoint(%s, %s): %c\n", bigintset1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s); */
+  bool_result = overlaps_rid_tnpoint_bigintset(tnpoint1, bigintset1);
+  printf("overlaps_rid_tnpoint_bigintset(%s, %s): %c\n", tnpoint1_out, bigintset1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
+  bool_result = overlaps_rid_tnpoint_tnpoint(tnpoint1, tnpoint2);
+  printf("overlaps_rid_tnpoint_tnpoint(%s, %s): %c\n", tnpoint1_out, tnpoint2_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool contains_rid_bigintset_tnpoint(const Set *s, const Temporal *temp); */
+  bool_result = contains_rid_bigintset_tnpoint(bigintset1, tnpoint1);
+  printf("contains_rid_bigintset_tnpoint(%s, %s): %c\n", bigintset1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid); */
+  bool_result = contains_rid_tnpoint_bigint(tnpoint1, int64_in1);
+  printf("contains_rid_tnpoint_bigint(%s, %ld): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s); */
+  bool_result = contains_rid_tnpoint_bigintset(tnpoint1, bigintset1);
+  printf("contains_rid_tnpoint_bigintset(%s, %s): %c\n", tnpoint1_out, bigintset1_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
+  bool_result = contains_rid_tnpoint_npoint(tnpoint1, npoint1);
+  printf("contains_rid_tnpoint_npoint(%s, %s): %c\n", tnpoint1_out, npoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
+  bool_result = contains_rid_tnpoint_tnpoint(tnpoint1, tnpoint1);
+  printf("contains_rid_tnpoint_tnpoint(%s, %s): %c\n", tnpoint1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contained_rid_bigint_tnpoint(int64 rid, const Temporal *temp); */
+  bool_result = contained_rid_bigint_tnpoint(int64_in1, tnpoint1);
+  printf("contained_rid_bigint_tnpoint(%ld, %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contained_rid_bigintset_tnpoint(const Set *s, const Temporal *temp); */
+  bool_result = contained_rid_bigintset_tnpoint(bigintset1, tnpoint1);
+  printf("contained_rid_bigintset_tnpoint(%s, %s): %c\n", bigintset1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool contained_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp); */
+  bool_result = contained_rid_npoint_tnpoint(npoint1, tnpoint1);
+  printf("contained_rid_npoint_tnpoint(%s, %s): %c\n", npoint1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s); */
+  bool_result = contained_rid_tnpoint_bigintset(tnpoint1, bigintset1);
+  printf("contained_rid_tnpoint_bigintset(%s, %s): %c\n", tnpoint1_out, bigintset1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
+  bool_result = contained_rid_tnpoint_tnpoint(tnpoint1, tnpoint2);
+  printf("contained_rid_tnpoint_tnpoint(%s, %s): %c\n", tnpoint1_out, tnpoint2_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool same_rid_bigint_tnpoint(int64 rid, const Temporal *temp); */
+  bool_result = same_rid_bigint_tnpoint(int64_in1, tnpoint1);
+  printf("same_rid_bigint_tnpoint(%ld, %s): %c\n", int64_in1, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool same_rid_bigintset_tnpoint(const Set *s, const Temporal *temp); */
+  bool_result = same_rid_bigintset_tnpoint(bigintset1, tnpoint1);
+  printf("same_rid_bigintset_tnpoint(%s, %s): %c\n", bigintset1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool same_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp); */
+  bool_result = same_rid_npoint_tnpoint(npoint1, tnpoint1);
+  printf("same_rid_npoint_tnpoint(%s, %s): %c\n", npoint1_out, tnpoint1_out, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool same_rid_tnpoint_bigint(const Temporal *temp, int64 rid); */
+  bool_result = same_rid_tnpoint_bigint(tnpoint1, int64_in1);
+  printf("same_rid_tnpoint_bigint(%s, %ld): %c\n", tnpoint1_out, int64_in1, bool_result ? 't' : 'f');
+  if (bool_result != true)
+    route_errors++;
+
+  /* bool same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s); */
+  bool_result = same_rid_tnpoint_bigintset(tnpoint1, bigintset1);
+  printf("same_rid_tnpoint_bigintset(%s, %s): %c\n", tnpoint1_out, bigintset1_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
+  bool_result = same_rid_tnpoint_npoint(tnpoint1, npoint2);
+  printf("same_rid_tnpoint_npoint(%s, %s): %c\n", tnpoint1_out, npoint2_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  /* bool same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
+  bool_result = same_rid_tnpoint_tnpoint(tnpoint1, tnpoint2);
+  printf("same_rid_tnpoint_tnpoint(%s, %s): %c\n", tnpoint1_out, tnpoint2_out, bool_result ? 't' : 'f');
+  if (bool_result != false)
+    route_errors++;
+
+  if (route_errors > 0)
+  {
+    printf("%d route function(s) returned an unexpected answer\n", route_errors);
+    return 1;
+  }
+
   printf("****************************************************************\n");
 
   /* Clean up */
@@ -919,6 +1053,7 @@ int main(void)
   free(stbox1); free(stbox1_out);
   free(tnpoint1); free(tnpoint1_out);
   free(tnpoint2); free(tnpoint2_out);
+  free(bigintset1); free(bigintset1_out);
   
   /* Finalize MEOS */
   meos_finalize();
