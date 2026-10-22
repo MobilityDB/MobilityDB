@@ -1237,7 +1237,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * dimension, and timestamps
  * @param[in] xcoords Array of x coordinates
  * @param[in] ycoords Array of y coordinates
- * @param[in] zcoords Array of z coordinates
+ * @param[in] zcoords Array of z coordinates, may be `NULL`
  * @param[in] times Array of z timestamps
  * @param[in] count Number of elements in the arrays
  * @param[in] srid SRID of the spatial coordinates
