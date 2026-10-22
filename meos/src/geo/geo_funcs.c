@@ -4948,7 +4948,9 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     double hi = fabs(a.e[a.n - 1]) * fabs(b.e[b.n - 1]);
     if (hi > 0x1p+1000)
       arena->unsafe = true;
-    if (lo != 0.0 && lo < 0x1p-968)
+    /* A product of two components that are not zero may itself round to
+     * zero, which is underflow and not a zero component */
+    if (a.e[0] != 0.0 && b.e[0] != 0.0 && lo < 0x1p-968)
       under = (double) a.n * (double) b.n * 0x1p-1072;
   }
   int cap = 2 * a.n * b.n;
@@ -4959,9 +4961,12 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
   r.err = 0.0;
+  /* The bound is computed in doubles, which below the normal range round
+   * to the nearest multiple of 2^-1074 and so may round it to zero: each of
+   * its three products and two sums loses at most half of that */
   if (a.err > 0.0 || b.err > 0.0)
     r.err = (arcseg_x_mag(a) * b.err + arcseg_x_mag(b) * a.err +
-      a.err * b.err) * (1.0 + 0x1p-50);
+      a.err * b.err) * (1.0 + 0x1p-50) + 0x1p-1071;
   r.err += under;
   return r;
 }
