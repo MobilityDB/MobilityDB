@@ -70,10 +70,12 @@ int main(void)
   TimestampTz *time_bins = NULL;
   Temporal **result;
   int count;
-  if (spacesplit)
-    result = tgeo_space_time_split(tpoint, 2.0, 2.0, 2.0,
-      timesplit ? interv : NULL, sorigin, torigin, bitmatrix, border_inc,
-      &space_bins, &time_bins, &count);
+  if (spacesplit && timesplit)
+    result = tgeo_space_time_split(tpoint, 2.0, 2.0, 2.0, interv, sorigin,
+      torigin, bitmatrix, border_inc, &space_bins, &time_bins, &count);
+  else if (spacesplit)
+    result = tgeo_space_split(tpoint, 2.0, 2.0, 2.0, sorigin, bitmatrix,
+      border_inc, &space_bins, &count);
   else
     result = temporal_time_split(tpoint, interv, torigin, true, &time_bins,
       &count);

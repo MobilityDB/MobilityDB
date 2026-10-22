@@ -108,8 +108,8 @@ Trgeo_time_boxes(PG_FUNCTION_ARGS)
   bool bitmatrix = PG_GETARG_BOOL(3);
   bool border_inc = PG_GETARG_BOOL(4);
   int count;
-  STBox *boxes = trgeometry_space_time_boxes(temp, 0.0, 0.0, 0.0, duration,
-    NULL, torigin, bitmatrix, border_inc, &count);
+  STBox *boxes = trgeometry_time_boxes(temp, duration, torigin, bitmatrix,
+    border_inc, &count);
   PG_FREE_IF_COPY(temp, 0);
   return Trgeo_boxes_array(boxes, count);
 }

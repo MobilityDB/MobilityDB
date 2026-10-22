@@ -90,11 +90,39 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
 /**
  * @ingroup meos_rgeo_tile
  * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
+ * with respect to a time grid
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] duration Size of the temporal dimension as an interval, which
+ * must be positive
+ * @param[in] torigin Origin of the temporal grid
+ * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
+ * @param[in] border_inc True when the box contains the upper border
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Trgeo_time_boxes()
+ */
+STBox *
+trgeometry_time_boxes(const Temporal *temp, const Interval *duration,
+  TimestampTz torigin, bool bitmatrix, bool border_inc, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  return tspatial_space_time_boxes(temp, 0.0, 0.0, 0.0, duration, NULL,
+    torigin, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
+}
+
+/**
+ * @ingroup meos_rgeo_tile
+ * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
  * with respect to a spatiotemporal grid
  * @param[in] temp Temporal rigid geometry
- * @param[in] xsize,ysize,zsize Size of the corresponding dimension, a
- * `ysize` or `zsize` of 0 taking `xsize` as #tgeo_space_time_tile_init reads them
- * @param[in] duration Size of the temporal dimension as an interval
+ * @param[in] xsize,ysize,zsize Size of the corresponding dimension, `xsize`
+ * being positive, a `ysize` or `zsize` of 0 taking `xsize` as
+ * #tgeo_space_time_tile_init reads them
+ * @param[in] duration Size of the temporal dimension as an interval, which
+ * must be positive
  * @param[in] sorigin Origin of the spatial grid
  * @param[in] torigin Origin of the temporal grid
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
@@ -111,7 +139,9 @@ trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize,
   VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
   /* Ensure the validity of the arguments */
-  VALIDATE_TRGEOMETRY(temp, NULL);
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
+    return NULL;
 
   return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
     sorigin, torigin, bitmatrix, border_inc, &trgeo_restrict_stbox, count);

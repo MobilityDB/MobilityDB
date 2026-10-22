@@ -666,7 +666,8 @@ TRGEO_CONFIG = dict(
         "trgeometry_body_point_trajectory": {1: "geom_point1"},
         # A space-tiling origin must be a point geometry (same rejection).
         "trgeometry_space_boxes":           {4: "geom_point1"},
-        "trgeometry_space_time_boxes":      {5: "geom_point1"},
+        "trgeometry_space_time_boxes":      {4: "interv_grid1", 5: "geom_point1"},
+        "trgeometry_time_boxes":            {1: "interv_grid1"},
         # Casting to an instant needs an instant-subtype temporal; the default
         # trgeo_seq1 is a two-instant sequence.
         "trgeometry_as_tinstant":           {0: "(Temporal *) trgeo_inst1"},
@@ -721,6 +722,8 @@ TRGEO_CONFIG = dict(
   Set *tstzset1 = tstzset_in("{2001-01-02, 2001-01-03}");
   SpanSet *tstzspanset1 = tstzspanset_in("{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}");
   Interval *interv1 = NULL;
+  /* A grid laying the time dimension takes a positive duration */
+  Interval *interv_grid1 = interval_in("12 hours", -1);
   GSERIALIZED *geom1 = geom_in("Polygon((0 0,1 0,1 1,0 1,0 0))", -1);
   /* A point geometry for the body-point and space-tiling surfaces, which
    * accept only points. */
@@ -789,6 +792,7 @@ TRGEO_CONFIG = dict(
   free(pose1);
   free(geom1);
   free(geom_point1);
+  free(interv_grid1);
   free(tstzspanset1);
   free(tstzset1);
   free(tstzspan1);""",

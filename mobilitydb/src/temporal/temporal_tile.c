@@ -525,10 +525,40 @@ PG_FUNCTION_INFO_V1(Tnumber_value_time_boxes);
  * a value and time grid
  * @sqlfn valueTimeBoxes()
  */
-inline Datum
+Datum
 Tnumber_value_time_boxes(PG_FUNCTION_ARGS)
 {
-  return Tnumber_value_time_boxes_common(fcinfo, true, true);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *duration = PG_GETARG_INTERVAL_P(2);
+  TimestampTz torigin = PG_GETARG_TIMESTAMPTZ(4);
+  bool border_inc = PG_GETARG_BOOL(5);
+  /* Get the boxes */
+  int count;
+  TBox *boxes;
+  switch (temp->temptype)
+  {
+    case T_TINT:
+      boxes = tint_value_time_boxes(temp, PG_GETARG_INT32(1), duration,
+        PG_GETARG_INT32(3), torigin, border_inc, &count);
+      break;
+    case T_TBIGINT:
+      boxes = tbigint_value_time_boxes(temp, PG_GETARG_INT64(1), duration,
+        PG_GETARG_INT64(3), torigin, border_inc, &count);
+      break;
+    case T_TFLOAT:
+      boxes = tfloat_value_time_boxes(temp, PG_GETARG_FLOAT8(1), duration,
+        PG_GETARG_FLOAT8(3), torigin, border_inc, &count);
+      break;
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown temporal number type: %s", meostype_name(temp->temptype));
+      PG_RETURN_NULL();
+  }
+  ArrayType *result = tboxarr_to_array(boxes, count);
+  /* Clean up and return */
+  pfree(boxes);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_ARRAYTYPE_P(result);
 }
 
 /*****************************************************************************
@@ -628,8 +658,8 @@ Tnumber_value_time_split_common(FunctionCallInfo fcinfo, bool valuesplit,
 
     /* Initialize state and verify parameter validity */
     int ntiles;
-    TboxGridState *state = tnumber_value_time_tile_init(temp, vsize, duration,
-      vorigin, torigin, border_inc, &ntiles);
+    TboxGridState *state = tnumber_value_time_split_init(temp, vsize,
+      duration, vorigin, torigin, border_inc, &ntiles);
 
     /* Create function state */
     funcctx->user_fctx = state;

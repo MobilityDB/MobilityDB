@@ -49,6 +49,10 @@
  * function `timeTiles(tbox, ...)`, gives for a box of any number type the
  * time tiles of the function of its value type.
  *
+ * The functions tiling and boxing by value and time together take both
+ * sizes, so a value size of 0 and a missing duration are refused by them, as
+ * `tbox_get_value_time_tile` refuses them.
+ *
  * The program also tests the functions answering the SQL function `bins`. The
  * bins of a span are the bins that intersect the span, and the bins of a span
  * set are those bins restricted to the span set. A size that is not positive
@@ -494,6 +498,60 @@ int main(void)
   for (int i = 0; split_frags && i < count1; i++)
     free(split_frags[i]);
   free(split_frags); free(split_fbins); free(split_tbins);
+
+  /* The functions tiling and boxing by value and time together take both
+   * sizes, so a value size of 0 and a missing duration are refused */
+  check_refused("tintbox_value_time_tiles, size 0",
+    tintbox_value_time_tiles(intbox, 0, day, 0, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tintbox_value_time_tiles, no duration",
+    tintbox_value_time_tiles(intbox, 2, NULL, 0, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tbigintbox_value_time_tiles, size 0",
+    tbigintbox_value_time_tiles(bigintbox, 0, day, 0, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigintbox_value_time_tiles, no duration",
+    tbigintbox_value_time_tiles(bigintbox, 2, NULL, 0, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tfloatbox_value_time_tiles, size 0",
+    tfloatbox_value_time_tiles(floatbox, 0.0, day, 0.0, sep1, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloatbox_value_time_tiles, no duration",
+    tfloatbox_value_time_tiles(floatbox, 2.0, NULL, 0.0, sep1, true,
+      &count1), MEOS_ERR_INVALID_ARG);
+  check_refused("tint_value_time_boxes, size 0",
+    tint_value_time_boxes(tint1, 0, day, 0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tint_value_time_boxes, no duration",
+    tint_value_time_boxes(tint1, 2, NULL, 0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tbigint_value_time_boxes, size 0",
+    tbigint_value_time_boxes(tbigint1, 0, day, 0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tbigint_value_time_boxes, no duration",
+    tbigint_value_time_boxes(tbigint1, 2, NULL, 0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  check_refused("tfloat_value_time_boxes, size 0",
+    tfloat_value_time_boxes(tfloat1, 0.0, day, 0.0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG_VALUE);
+  check_refused("tfloat_value_time_boxes, no duration",
+    tfloat_value_time_boxes(tfloat1, 2.0, NULL, 0.0, torig, true, &count1),
+    MEOS_ERR_INVALID_ARG);
+  /* Both sizes still answer, and each function of one dimension answers the
+   * grid of its dimension */
+  boxes = tintbox_value_time_tiles(intbox, 2, day, 0, sep1, true, &count1);
+  check("tintbox_value_time_tiles, size 2 and 1 day", boxes && count1 > 0);
+  free(boxes);
+  vboxes = tfloat_value_time_boxes(tfloat1, 2.0, day, 0.0, torig, true,
+    &count1);
+  check("tfloat_value_time_boxes, size 2 and 1 day", vboxes && count1 > 0);
+  free(vboxes);
+  boxes = tintbox_value_tiles(intbox, 2, 0, true, &count1);
+  check("tintbox_value_tiles, size 2", boxes && count1 > 0);
+  free(boxes);
+  boxes = tintbox_time_tiles(intbox, day, sep1, true, &count1);
+  check("tintbox_time_tiles, 1 day", boxes && count1 > 0);
+  free(boxes);
   free(tint1); free(tbigint1); free(tfloat1); free(tfloatinst);
   free(tstzspan1); free(datespan1); free(tstzspanset1); free(datespanset1);
 

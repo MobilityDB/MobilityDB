@@ -40,6 +40,9 @@ SELECT array_length(timeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(P
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, interval '1 day'), 1);
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, 2.0, interval '1 day'), 1);
 SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, 2.0, 2.0, interval '1 day'), 1);
+/* Errors */
+SELECT spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 0.0, interval '1 day');
+SELECT spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, interval '0 days');
 
 -------------------------------------------------------------------------------
 -- The tiles of a rigid geometry are the ones its BODY reaches, not the ones

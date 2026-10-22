@@ -463,5 +463,14 @@ FROM (SELECT tgeompoint 'SRID=3035;['
 SELECT spaceBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, -1.0, 2.0);
 SELECT count(*) FROM spaceTiles(stbox 'STBOX X((1,1),(10,3))', 'NaN'::float);
 SELECT count(*) FROM spaceSplit(tgeompoint '[Point(1 1 1)@2001-01-01, Point(9 9 9)@2001-01-05]', 2.0, 2.0, 'Infinity'::float);
+-- A space and time grid takes both sizes
+SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 0.0, interval '1 day');
+SELECT count(*) FROM spaceTimeTiles(stbox 'STBOX XT(((1,1),(10,3)),[2001-01-01, 2001-01-05])', 2.0, interval '0 days');
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 0.0, interval '2 days');
+SELECT spaceTimeBoxes(tgeompoint '[Point(1 1)@2001-01-01, Point(10 10)@2001-01-10]', 2.0, interval '0 days');
+SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 0.0, interval '1 day');
+SELECT count(*) FROM spaceTimeSplit(tgeompoint '[Point(1 1)@2001-01-01, Point(9 9)@2001-01-05]', 2.0, interval '0 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 0.0, interval '2 days');
+SELECT getSpaceTimeTile(geometry 'Point(3 3)', timestamptz '2001-01-15', 2.0, interval '0 days');
 
 -------------------------------------------------------------------------------

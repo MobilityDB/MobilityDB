@@ -65,9 +65,12 @@ int main(void)
   TimestampTz *time_bins = NULL;
   Temporal **result;
   int count;
-  if (valuesplit)
-    result = tfloat_value_time_split(tfloat, 2.0, timesplit ? interv : NULL,
-      vorigin, torigin, true, &value_bins, &time_bins, &count);
+  if (valuesplit && timesplit)
+    result = tfloat_value_time_split(tfloat, 2.0, interv, vorigin, torigin,
+      true, &value_bins, &time_bins, &count);
+  else if (valuesplit)
+    result = tfloat_value_split(tfloat, 2.0, vorigin, true, &value_bins,
+      &count);
   else
     result = temporal_time_split(tfloat, interv, torigin, true, &time_bins,
       &count);

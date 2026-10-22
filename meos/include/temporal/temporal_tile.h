@@ -86,6 +86,9 @@ extern Datum datum_bin(Datum value, Datum size, Datum offset,
 extern TboxGridState *tnumber_value_time_tile_init(const Temporal *temp,
   Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin,
   bool border_inc, int *ntiles);
+extern TboxGridState *tnumber_value_time_split_init(const Temporal *temp,
+  Datum vsize, const Interval *duration, Datum vorigin, TimestampTz torigin,
+  bool border_inc, int *ntiles);
 extern TboxGridState *tbox_value_time_tile_init(const TBox *box, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
   MeosType basetype, bool border_inc, int *ntiles);

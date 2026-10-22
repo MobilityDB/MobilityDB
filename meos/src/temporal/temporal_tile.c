@@ -1374,6 +1374,37 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
 }
 
 /**
+ * @brief Set the state with a temporal number and a value and possibly time
+ * grid for splitting it
+ * @details A split states the value bin of each fragment, so it lays a value
+ * grid, which the state of #tnumber_value_time_tile_init lays for a positive
+ * `vsize`, as #tgeo_space_time_split_init requires its spatial grid
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the value dimension, which must be positive
+ * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] vorigin Origin for the value dimension
+ * @param[in] torigin Origin for the time dimension
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] ntiles Number of tiles
+ */
+TboxGridState *
+tnumber_value_time_split_init(const Temporal *temp, Datum vsize,
+  const Interval *duration, Datum vorigin, TimestampTz torigin,
+  bool border_inc, int *ntiles)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(ntiles, NULL);
+  *ntiles = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNUMBER(temp, NULL);
+  if (! ensure_positive_datum(vsize, temptype_basetype(temp->temptype)))
+    return NULL;
+  return tnumber_value_time_tile_init(temp, vsize, duration, vorigin,
+    torigin, border_inc, ntiles);
+}
+
+/**
  * @brief Set the state with a temporal box and a value and possibly time
  * grid for obtaining a set of tiles
  * @details The value size and origin are read against the base type of the
@@ -1456,7 +1487,7 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
  * @param[out] count Number of elements in the output array
  * @note The check for parameter validity is done in function
  * #tnumber_value_time_tile_init to be shared for both MEOS and MobilityDB
- * @csqlfn #Tnumber_value_time_boxes()
+ * @csqlfn #Tnumber_value_boxes(), #Tnumber_time_boxes()
  */
 TBox *
 tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
@@ -1509,6 +1540,96 @@ tnumber_value_time_boxes(const Temporal *temp, Datum vsize,
   }
   *count = i;
   return result;
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value and a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
+ */
+TBox *
+tint_value_time_boxes(const Temporal *temp, int vsize,
+  const Interval *duration, int vorigin, TimestampTz torigin, bool border_inc,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Int32GetDatum(vsize), T_INT4) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tnumber_value_time_boxes(temp, Int32GetDatum(vsize), duration,
+    Int32GetDatum(vorigin), torigin, border_inc, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal big integer split with
+ * respect to a value and a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
+ */
+TBox *
+tbigint_value_time_boxes(const Temporal *temp, int64 vsize,
+  const Interval *duration, int64 vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Int64GetDatum(vsize), T_INT8) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tnumber_value_time_boxes(temp, Int64GetDatum(vsize), duration,
+    Int64GetDatum(vorigin), torigin, border_inc, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the temporal boxes of a temporal number split with respect to
+ * a value and a time grid
+ * @param[in] temp Temporal value
+ * @param[in] vsize Value size of the tiles, which must be positive
+ * @param[in] duration Interval defining the size of the bins, which must be
+ * positive
+ * @param[in] vorigin Value origin of the tiles
+ * @param[in] torigin Time origin of the tiles
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_time_boxes()
+ */
+TBox *
+tfloat_value_time_boxes(const Temporal *temp, double vsize,
+  const Interval *duration, double vorigin, TimestampTz torigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), duration,
+    Float8GetDatum(vorigin), torigin, border_inc, count);
 }
 
 /*****************************************************************************/

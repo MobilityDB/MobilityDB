@@ -40,6 +40,11 @@ SELECT array_length(spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[P
            12
 (1 row)
 
+/* Errors */
+SELECT spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 0.0, interval '1 day');
+ERROR:  The value must be strictly positive: 0.000000
+SELECT spaceTimeBoxes(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-05]', 2.0, interval '0 days');
+ERROR:  The interval must be positive: 00:00:00
 SELECT array_length(spaceBoxes(
   trgeometry 'Polygon((-2 -2,2 -2,2 2,-2 2,-2 -2));{Pose(Point(0 0),0)@2001-01-01}',
   2.0), 1);
