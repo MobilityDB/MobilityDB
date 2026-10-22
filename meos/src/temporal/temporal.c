@@ -821,11 +821,12 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_misc
  * @brief Return the version of the MEOS library
+ * @return A string the caller frees, as the one of #meos_full_version
  */
 char *
 meos_version(void)
 {
-  return MOBILITYDB_VERSION_STRING;
+  return pstrdup(MOBILITYDB_VERSION_STRING);
 }
 
 /**
