@@ -75,9 +75,12 @@ wrapper and the MEOS function it reaches.
    function per argument order, as with `contains_set_bigint(const Set *, int64)` and
    `contained_bigint_set(int64, const Set *)`. It lives in the `_meos.c` twin of the file that
    defines the kernel it calls.
-3. **The tag states what the wrapper calls.** A MEOS function names in its `@csqlfn` every wrapper
-   that calls it, and only those. The catalog then states every signature of those wrappers that
-   the function accepts.
+3. **The tag states what the wrapper reaches.** A MEOS function names in its `@csqlfn` every
+   wrapper that reaches it, and only those: directly, through the wrapper's `_common` helper, or,
+   for an ever or always relation, through the kernel the wrapper passes to `EA_spatialrel_*`, as
+   `acontains_geo_tcbuffer` names `Acontains_geo_tcbuffer`, which passes `ea_contains_geo_tcbuffer`
+   with `ALWAYS`. The catalog then states every signature of those wrappers that the function
+   accepts.
 
 ## Out of the bindings' scope (24 wrappers, 59 signatures)
 
