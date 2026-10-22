@@ -65,7 +65,20 @@ unset(ENV{PGPORT})
 # configure time
 set(TEST_DIR "@MOBILITYDB_TEST_TMPDIR@")
 set(TEST_DIR_DB "${TEST_DIR}/db")
-set(TEST_DIR_LOCK "${TEST_DIR}/lock")
+# PostgreSQL does not start when the path of its Unix-domain socket exceeds
+# 107 bytes, which a test directory deep in the file system reaches, so the
+# socket lies in a short directory of its own under /tmp, as pg_regress does.
+# The directory is named after the test directory so that the clusters of two
+# build directories do not share it. On Windows /tmp is read at the root of the
+# drive holding the test directory, as for the files the tests exchange.
+string(MD5 _lock_hash "${TEST_DIR}")
+string(SUBSTRING "${_lock_hash}" 0 8 _lock_hash)
+if(CMAKE_HOST_WIN32)
+  string(SUBSTRING "${TEST_DIR}" 0 2 _lock_drive)
+  set(TEST_DIR_LOCK "${_lock_drive}/tmp/mobilitydb-${_lock_hash}")
+else()
+  set(TEST_DIR_LOCK "/tmp/mobilitydb-${_lock_hash}")
+endif()
 set(TEST_DIR_LOG "${TEST_DIR}/log")
 set(TEST_DIR_OUT "${TEST_DIR}/out")
 
@@ -100,6 +113,9 @@ if(TEST_OPER MATCHES "test_setup")
       message(STATUS "Test directory removed: '${TEST_DIR}'")
     endif()
   endif()
+
+  # A run that stopped before its teardown leaves the socket directory behind
+  file(REMOVE_RECURSE ${TEST_DIR_LOCK})
 
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}
@@ -369,6 +385,7 @@ elseif(TEST_OPER MATCHES "teardown")
   if(TEST_RESULT)
     message(FATAL_ERROR "Failed to stop PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
   endif()
+  file(REMOVE_RECURSE ${TEST_DIR_LOCK})
 
 #-------------------------------------------------------------------------------
 else()

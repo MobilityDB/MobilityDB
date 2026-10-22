@@ -29,10 +29,9 @@ set(CTEST_PARALLEL_LEVEL 1)
 
 find_package(Xz REQUIRED)
 
-# The server of the test cluster listens on a Unix-domain socket in the lock
-# directory of the cluster, and PostgreSQL does not start when the path of the
-# socket exceeds 107 bytes, which a build directory deep in the file system
-# reaches. A shorter directory can then be given at configure time.
+# The temporary PostgreSQL cluster of the tests lies in tmptest under the build
+# directory, unless another directory is given at configure time. Its server
+# listens on a socket in a short directory under /tmp, see test.cmake.
 set(MOBILITYDB_TEST_TMPDIR "${CMAKE_BINARY_DIR}/tmptest" CACHE PATH
   "Directory of the temporary PostgreSQL cluster of the tests")
 
