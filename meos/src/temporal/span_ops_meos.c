@@ -1133,6 +1133,19 @@ intersection_span_int(const Span *s, int i)
 
 /**
  * @ingroup meos_setspan_set
+ * @brief Return the intersection of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_int_span(int i, const Span *s)
+{
+  return intersection_span_int(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a big integer
  * @param[in] s Span
  * @param[in] i Value
@@ -1144,6 +1157,19 @@ intersection_span_bigint(const Span *s, int64 i)
   /* Ensure the validity of the arguments */
   VALIDATE_BIGINTSPAN(s, NULL);
   return intersection_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_bigint_span(int64 i, const Span *s)
+{
+  return intersection_span_bigint(s, i);
 }
 
 /**
@@ -1163,6 +1189,19 @@ intersection_span_float(const Span *s, double d)
 
 /**
  * @ingroup meos_setspan_set
+ * @brief Return the intersection of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_float_span(double d, const Span *s)
+{
+  return intersection_span_float(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a date
  * @param[in] s Span
  * @param[in] d Value
@@ -1175,6 +1214,20 @@ intersection_span_date(const Span *s, DateADT d)
   VALIDATE_DATESPAN(s, NULL);
   return intersection_span_value(s, DateADTGetDatum(d));
 }
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_date_span(DateADT d, const Span *s)
+{
+  return intersection_span_date(s, d);
+}
+
 /**
  * @ingroup meos_setspan_set
  * @brief Return the intersection of a span and a timestamptz
@@ -1188,6 +1241,19 @@ intersection_span_timestamptz(const Span *s, TimestampTz t)
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
   return intersection_span_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_timestamptz_span(TimestampTz t, const Span *s)
+{
+  return intersection_span_timestamptz(s, t);
 }
 
 /*****************************************************************************

@@ -2604,12 +2604,44 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
     free(bset_result);
   free(char_result);
 
+  /* Span *intersection_bigint_span(int64 i, const Span *s); */
+  bspan_result = intersection_bigint_span(int64_in1, bspan1);
+  char_result = bspan_result ? bigintspan_out(bspan_result) : text_out(text_null);
+  printf("intersection_bigint_span(%ld, %s): %s\n", int64_in1, bspan1_out, char_result);
+  if (bspan_result)
+    free(bspan_result);
+  free(char_result);
+
+  /* SpanSet *intersection_bigint_spanset(int64 i, const SpanSet *ss); */
+  bspanset_result = intersection_bigint_spanset(int64_in1, bspanset1);
+  char_result = bspanset_result ? bigintspanset_out(bspanset_result) : text_out(text_null);
+  printf("intersection_bigint_spanset(%ld, %s): %s\n", int64_in1, bspanset1_out, char_result);
+  if (bspanset_result)
+    free(bspanset_result);
+  free(char_result);
+
   /* Set *intersection_date_set(DateADT d, const Set *s); */
   dset_result = intersection_date_set(date1, dset1);
   char_result = dset_result ? dateset_out(dset_result) : text_out(text_null);
   printf("intersection_date_set(%s, %s): %s\n", date1_out, dset1_out, char_result);
   if (dset_result)
     free(dset_result);
+  free(char_result);
+
+  /* Span *intersection_date_span(DateADT d, const Span *s); */
+  dspan_result = intersection_date_span(date1, dspan1);
+  char_result = dspan_result ? datespan_out(dspan_result) : text_out(text_null);
+  printf("intersection_date_span(%s, %s): %s\n", date1_out, dspan1_out, char_result);
+  if (dspan_result)
+    free(dspan_result);
+  free(char_result);
+
+  /* SpanSet *intersection_date_spanset(DateADT d, const SpanSet *ss); */
+  dspanset_result = intersection_date_spanset(date1, dspanset1);
+  char_result = dspanset_result ? datespanset_out(dspanset_result) : text_out(text_null);
+  printf("intersection_date_spanset(%s, %s): %s\n", date1_out, dspanset1_out, char_result);
+  if (dspanset_result)
+    free(dspanset_result);
   free(char_result);
 
   /* Set *intersection_float_set(double d, const Set *s); */
@@ -2620,12 +2652,44 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
     free(fset_result);
   free(char_result);
 
+  /* Span *intersection_float_span(double d, const Span *s); */
+  fspan_result = intersection_float_span(float8_in1, fspan1);
+  char_result = fspan_result ? floatspan_out(fspan_result, 6) : text_out(text_null);
+  printf("intersection_float_span(%lf, %s): %s\n", float8_in1, fspan1_out, char_result);
+  if (fspan_result)
+    free(fspan_result);
+  free(char_result);
+
+  /* SpanSet *intersection_float_spanset(double d, const SpanSet *ss); */
+  fspanset_result = intersection_float_spanset(float8_in1, fspanset1);
+  char_result = fspanset_result ? floatspanset_out(fspanset_result, 6) : text_out(text_null);
+  printf("intersection_float_spanset(%lf, %s): %s\n", float8_in1, fspanset1_out, char_result);
+  if (fspanset_result)
+    free(fspanset_result);
+  free(char_result);
+
   /* Set *intersection_int_set(int i, const Set *s); */
   iset_result = intersection_int_set(int32_in1, iset1);
   char_result = iset_result ? intset_out(iset_result) : text_out(text_null);
   printf("intersection_int_set(%d, %s): %s\n", int32_in1, iset1_out, char_result);
   if (iset_result)
     free(iset_result);
+  free(char_result);
+
+  /* Span *intersection_int_span(int i, const Span *s); */
+  ispan_result = intersection_int_span(int32_in1, ispan1);
+  char_result = ispan_result ? intspan_out(ispan_result) : text_out(text_null);
+  printf("intersection_int_span(%d, %s): %s\n", int32_in1, ispan1_out, char_result);
+  if (ispan_result)
+    free(ispan_result);
+  free(char_result);
+
+  /* SpanSet *intersection_int_spanset(int i, const SpanSet *ss); */
+  ispanset_result = intersection_int_spanset(int32_in1, ispanset1);
+  char_result = ispanset_result ? intspanset_out(ispanset_result) : text_out(text_null);
+  printf("intersection_int_spanset(%d, %s): %s\n", int32_in1, ispanset1_out, char_result);
+  if (ispanset_result)
+    free(ispanset_result);
   free(char_result);
 
   /* Set *intersection_set_bigint(const Set *s, int64 i); */
@@ -2810,6 +2874,22 @@ printf("tstzset_make({%s, %s}): %s\n", tstz1_out, tstz2_out, char_result);
   printf("set_out(%s, %s): %s\n", tstz1_out, tstzset1_out, char_result);
   if (tstzset_result)
     free(tstzset_result);
+  free(char_result);
+
+  /* Span *intersection_timestamptz_span(TimestampTz t, const Span *s); */
+  tstzspan_result = intersection_timestamptz_span(tstz1, tstzspan1);
+  char_result = tstzspan_result ? tstzspan_out(tstzspan_result) : text_out(text_null);
+  printf("intersection_timestamptz_span(%s, %s): %s\n", tstz1_out, tstzspan1_out, char_result);
+  if (tstzspan_result)
+    free(tstzspan_result);
+  free(char_result);
+
+  /* SpanSet *intersection_timestamptz_spanset(TimestampTz t, const SpanSet *ss); */
+  tstzspanset_result = intersection_timestamptz_spanset(tstz1, tstzspanset1);
+  char_result = tstzspanset_result ? tstzspanset_out(tstzspanset_result) : text_out(text_null);
+  printf("intersection_timestamptz_spanset(%s, %s): %s\n", tstz1_out, tstzspanset1_out, char_result);
+  if (tstzspanset_result)
+    free(tstzspanset_result);
   free(char_result);
 
   /* Set *minus_bigint_set(int64 i, const Set *s); */
