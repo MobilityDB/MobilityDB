@@ -160,8 +160,9 @@ int main(void)
 
   /* The four pairs a double square root answers wrongly, judged by CGAL's
    * exact kernel. Each is asked twice: about the square root of its own
-   * squared distance, which rounds below it, and about the `hypot` of the same
-   * coordinates, which rounds above */
+   * squared distance, which rounds below it, and about the double just above
+   * that one. C leaves the rounding of `hypot` open, and on the Ubuntu 26.04
+   * runners it answers no more than the square root */
   static const double wrong[4][2] = {
     { 965086.86429126514,  781057.10902300524},
     { 577660.34620705084,   18646.751073490232},
@@ -171,9 +172,7 @@ int main(void)
   {
     double x = wrong[i][0], y = wrong[i][1];
     double rounded_below = sqrt(x * x + y * y);
-    double rounded_above = hypot(x, y);
-    /* The two forms really do differ on these coordinates */
-    assert(rounded_above > rounded_below);
+    double rounded_above = nextafter(rounded_below, INFINITY);
     /* CGAL: not within the lower rounding, within the upper one */
     every_entry(0, 0, x, y, rounded_below, 0);
     every_entry(0, 0, x, y, rounded_above, 1);
