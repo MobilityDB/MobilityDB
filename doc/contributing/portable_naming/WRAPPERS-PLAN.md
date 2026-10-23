@@ -323,7 +323,7 @@ come before its push.
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `meos/raster-statistics-named` | `66850d54fb` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
-| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind and speed receipts; the CGAL oracle receipt is the tcbuffer lane's |
+| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind, speed and CGAL oracle receipts (cgal_tcbuffer, 3000 of 3000, controls exact and flip); pull request opening |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
 | `fix/ever-always-wrappers-return-boolean` | `af61153d6a` (on `5d3ddbd256`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | fork only, never built; rebase and receipts owed |
 
