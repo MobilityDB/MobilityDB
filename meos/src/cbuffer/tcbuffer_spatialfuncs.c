@@ -459,8 +459,13 @@ tcbufferseq_linear_traversed_area(const TSequence *seq, GSERIALIZED **result)
  * @brief Return the traversed area of the instants of a temporal circular
  * buffer as the region their circular buffers sweep, decided exactly
  * (#meos_disc_sweep_union), each sequence with linear interpolation sweeping
- * from each instant to the next; NULL where it is not answered
+ * from each instant to the next
+ * @details No other route answers it: the union of the pieces of the
+ * segments reads their arcs within tolerances, or as the chains of segments
+ * GEOS takes in their place, which is not the region swept. Where the exact
+ * arrangement leaves the region undecided, the error says so
  * @param[in] seqs,count Sequences of the temporal circular buffer
+ * @return The region, or @p NULL with an error where it is not decided
  */
 static GSERIALIZED *
 tcbufferseqs_sweep_union(const TSequence **seqs, int count)
@@ -489,7 +494,13 @@ tcbufferseqs_sweep_union(const TSequence **seqs, int count)
   LWGEOM *geom = meos_disc_sweep_union(centres, radii, link, total, srid);
   pfree(centres); pfree(radii); pfree(link);
   if (! geom)
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The traversed area of the temporal circular buffer as one geometry "
+      "is not decided: the exact union of the discs it sweeps leaves a "
+      "meeting or an order of its boundaries undecided");
     return NULL;
+  }
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
   return result;
@@ -513,15 +524,11 @@ tcbufferseq_traversed_area(const TSequence *seq, bool unary_union)
     return tcbufferinst_traversed_area(TSEQUENCE_INST_N(seq, 0));
 
   /* The single geometry is the region the circular buffers sweep, decided
-   * exactly where it is answered */
+   * exactly (#tcbufferseqs_sweep_union) */
   if (unary_union)
-  {
-    GSERIALIZED *swept = tcbufferseqs_sweep_union(&seq, 1);
-    if (swept)
-      return swept;
-  }
+    return tcbufferseqs_sweep_union(&seq, 1);
 
-  /* General case */
+  /* The geometries of the segments, collected */
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * seq->count);
   int count = (MEOS_FLAGS_GET_INTERP(seq->flags) == LINEAR) ?
     tcbufferseq_linear_traversed_area(seq, geoms) :
@@ -538,14 +545,7 @@ tcbufferseq_traversed_area(const TSequence *seq, bool unary_union)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  GSERIALIZED *res = geoarr_collect(geoms, newcount);
-  if (unary_union)
-  {
-    result = geom_unary_union(res, -1);
-    pfree(res);
-  }
-  else
-    result = res;
+  result = geoarr_collect(geoms, newcount);
   pfree(geoms);
   return result;
 }
@@ -611,19 +611,18 @@ tcbufferseqset_traversed_area(const TSequenceSet *ss, bool unary_union)
     return tcbufferseq_traversed_area(TSEQUENCESET_SEQ_N(ss, 0), unary_union);
 
   /* The single geometry is the region the circular buffers sweep, decided
-   * exactly where it is answered */
+   * exactly (#tcbufferseqs_sweep_union) */
   if (unary_union)
   {
     const TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
     for (int i = 0; i < ss->count; i++)
       seqs[i] = TSEQUENCESET_SEQ_N(ss, i);
-    GSERIALIZED *swept = tcbufferseqs_sweep_union(seqs, ss->count);
+    GSERIALIZED *result = tcbufferseqs_sweep_union(seqs, ss->count);
     pfree(seqs);
-    if (swept)
-      return swept;
+    return result;
   }
 
-  /* General case */
+  /* The geometries of the segments, collected */
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
   int count = (MEOS_FLAGS_GET_INTERP(ss->flags) == LINEAR) ?
     tcbufferseqset_linear_traversed_area(ss, geoms) :
@@ -640,14 +639,7 @@ tcbufferseqset_traversed_area(const TSequenceSet *ss, bool unary_union)
   /* Remove duplicate geometries constructed from the segments */
   geoarr_sort(geoms, count);
   int newcount = geoarr_remove_duplicates(geoms, count);
-  GSERIALIZED *res = geoarr_collect(geoms, newcount);
-  if (unary_union)
-  {
-    result = geom_unary_union(res, -1);
-    pfree(res);
-  }
-  else
-    result = res;
+  result = geoarr_collect(geoms, newcount);
   pfree(geoms);
   return result;
 }
