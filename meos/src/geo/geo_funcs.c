@@ -6932,9 +6932,9 @@ towerseg_ends(TowerCtx *ctx, const Edge *s, double ox, double oy,
  * @brief Set the point of a meeting in the arithmetic of @p ctx, taken from
  * an origin; return 1, 0 where the kind is not one the tower places, 2 where
  * it is not told
- * @details A vertex, a tangent point, the crossing of two segments between
- * tangent points or of two centred arcs, and the meeting of such a segment
- * with the circle of a centred arc
+ * @details A vertex, a tangent point, the crossing of two segments, between
+ * tangent points or of the input (#towerseg_ends), or of two centred arcs,
+ * and the meeting of such a segment with the circle of a centred arc
  */
 static int
 meet_tower_build(TowerCtx *ctx, const MeetPoint *m, double ox, double oy,
@@ -6948,6 +6948,7 @@ meet_tower_build(TowerCtx *ctx, const MeetPoint *m, double ox, double oy,
     case MEET_TANGENT:
       tower_point_tangent(ctx, m->tp, ox, oy, out);
       return 1;
+    case MEET_SEGSEG:
     case MEET_LINES:
     {
       TowerPoint p0, p1, q0, q1;
