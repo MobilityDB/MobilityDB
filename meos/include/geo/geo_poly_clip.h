@@ -29,11 +29,7 @@
 
 /**
  * @file
- * @brief Polygon Boolean clipping for the temporal-point spatial functions
- * @note Backed by Clipper2 v2.0.1 (vendored under @c clipper2/).
- * Replaces the prior Martinez-Rueda port; the legacy implementation
- * remains available on the @c origin/martinez-rebased branch for
- * reference.
+ * @brief The overlay operations of two areal geometries
  */
 
 #ifndef __GEO_POLY_CLIP_H__
@@ -45,7 +41,7 @@
 /*****************************************************************************/
 
 /**
- * @brief Boolean operation selector for #clip_poly_poly.
+ * @brief Boolean operation selector of the areal overlay
  *
  * Numeric values are part of the SQL ABI used by the intersection, geoUnion,
  * difference and symDifference SQL functions defined in
@@ -61,8 +57,6 @@ typedef enum
 
 /*****************************************************************************/
 
-extern GSERIALIZED *clip_poly_poly(const GSERIALIZED *subj,
-  const GSERIALIZED *clip, ClipOper operation);
 
 /*****************************************************************************/
 

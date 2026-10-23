@@ -397,9 +397,9 @@ CREATE FUNCTION minusElevation(tgeogpoint, floatspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Polygon clipping (Clipper2 backend)
+ * Polygon overlays
  *
- * The in-process polygon Boolean engine over the geometries carried by the
+ * The exact polygon overlays of MEOS over the geometries carried by the
  * temporal types whose values are 2D regions (trgeo, tcbuffer, tgeometry,
  * tgeography). Each function carries the name of the PostGIS function it
  * answers for without the ST_ prefix, so a query reaches this engine by

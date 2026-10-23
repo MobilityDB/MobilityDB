@@ -63,7 +63,7 @@ base=$(git merge-base HEAD upstream/master 2>/dev/null \
 
 files=$(git diff --name-only "$base"...HEAD 2>/dev/null \
   | grep -E '^(meos|mobilitydb)/.*\.(c|h)$' \
-  | grep -vE '/(postgres|postgis|pgtypes|clipper2|pointcloud-pg)/')
+  | grep -vE '/(postgres|postgis|pgtypes|pointcloud-pg)/')
 [ -z "$files" ] && exit 0
 
 fail=0
@@ -104,7 +104,6 @@ if command -v cppcheck >/dev/null 2>&1 && [ -f cppcheck-mobilitydb.cfg ]; then
       --suppress='*:*/postgres/*'      --suppress='*:postgres/*' \
       --suppress='*:*/postgis/*'       --suppress='*:postgis/*' \
       --suppress='*:*/pgtypes/*'       --suppress='*:pgtypes/*' \
-      --suppress='*:*/clipper2/*'      --suppress='*:clipper2/*' \
       --suppress='*:*/pointcloud-pg/*' --suppress='*:pointcloud-pg/*' \
       --suppress='missingIncludeSystem' --suppress='unmatchedSuppression' \
       --library=cppcheck-mobilitydb.cfg -j "$(nproc 2>/dev/null || echo 1)" \

@@ -21,8 +21,8 @@ MobilityDB implements, retrieved on 2026-08-14 from
 
 The schemas are those of OGC GeoPose 1.0 (OGC 21-056r11) and belong to the
 Open Geospatial Consortium, which licenses them for redistribution under the
-OGC Software Notice reproduced in `LICENSE` beside them, as `clipper2` and
-`h3-pg` carry the notice of what they vendor. That notice asks for the
+OGC Software Notice reproduced in `LICENSE` beside them, as `h3-pg`
+carries the notice of what they vendor. That notice asks for the
 copyright to be retained and for any modification to be declared, so the files
 are held here unmodified, byte for byte as retrieved, with these digests:
 
