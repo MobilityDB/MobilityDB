@@ -325,9 +325,9 @@ come before its push.
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
-| `fix/ever-always-wrappers-return-boolean` | `8480c9c2ba` (on `d2ccbae61a`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | strict-ci, Windows, cppcheck, valgrind and CGAL oracle (cgal_trgeo_edw through the SQL wrappers, both orders, 300 of 300) receipts; pushing |
+| `fix/ever-always-wrappers-return-boolean` | `8480c9c2ba` (on `d2ccbae61a`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | merged as MobilityDB #3145 (`5642bac141`) |
 | `geo/sql-overlays-answer-exactly` | `2092dc2092` (on `7dd9debf0c`) | the four SQL polygon overlays answer through `geom_intersection2d`, `geom_difference2d` and the new public `geom_union2d`, `geom_symdifference2d` | merged as MobilityDB #3142 (`939a9d1a86`) |
-| `geo/trajectory-clip-native` | `73a68412de` (on `7dd9debf0c`) | a trajectory clips against a polygon through the native `tpoint_linear_inter_geom`; `clipper2_traj_poly_periods` and its helpers go (Clipper2 removal, step 2) | strict-ci, Windows, cppcheck, valgrind and CGAL oracle (cgal_atgeom, 34685 of 34685, controls exact and flip) and speed (22 of 22 target cells at parity with GEOS) receipts; pushing |
+| `geo/trajectory-clip-native` | `73a68412de` (on `7dd9debf0c`) | a trajectory clips against a polygon through the native `tpoint_linear_inter_geom`; `clipper2_traj_poly_periods` and its helpers go (Clipper2 removal, step 2) | merged as MobilityDB #3144 (`0891e02755`) |
 
 Left, each for the owner first:
 
