@@ -131,8 +131,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Restrict a tpcpatch to the patches whose 2D PCBOUNDS overlap the box and whose timestamp falls in its period. </p>
-<p >Patch-level granularity: each surviving instant keeps its pcpatch payload verbatim. No per-point decompression. @sqlfn atTpcbox() </p>
+<p>Restrict a tpcpatch to the patches whose extent overlaps the box and whose timestamp falls in its period. </p>
+<p >Patch-level granularity: each surviving instant keeps its pcpatch payload verbatim. The X and Y extent is the PCBOUNDS header of the patch, and the Z extent, tested when the box has Z, the one its points state. @sqlfn atTpcbox() </p>
 
 </div>
 </div>
