@@ -7763,6 +7763,164 @@ buffer_union_segment_surfaces(const LWCOLLECTION *coll, int32_t srid)
   return result;
 }
 
+/* A disc of a sweep with its place in the sequence, ordered by its centre and
+ * radius and then by that place, which puts the first placement of each disc
+ * first among its repeats */
+typedef struct
+{
+  double x, y, r;
+  int idx;
+} SweepDisc;
+
+static int
+sweep_disc_cmp(const void *p, const void *q)
+{
+  const SweepDisc *a = p, *b = q;
+  if (a->x != b->x)
+    return (a->x < b->x) ? -1 : 1;
+  if (a->y != b->y)
+    return (a->y < b->y) ? -1 : 1;
+  if (a->r != b->r)
+    return (a->r < b->r) ? -1 : 1;
+  return (a->idx < b->idx) ? -1 : (a->idx > b->idx);
+}
+
+/* A pair of distinct discs, by their first placements, the smaller first */
+typedef struct
+{
+  int a, b;
+  int idx;
+} SweepPair;
+
+static int
+sweep_pair_cmp(const void *p, const void *q)
+{
+  const SweepPair *s = p, *t = q;
+  if (s->a != t->a)
+    return (s->a < t->a) ? -1 : 1;
+  if (s->b != t->b)
+    return (s->b < t->b) ? -1 : 1;
+  return (s->idx < t->idx) ? -1 : (s->idx > t->idx);
+}
+
+/**
+ * @brief Return the region a sequence of discs sweeps, as the union of the
+ * discs and of the convex hull of each linked pair, merged pairwise in exact
+ * arrangements of their boundaries
+ * @details The hull of two discs is both discs and the quadrilateral of the
+ * points where their common outer tangents touch them, which exists where
+ * neither disc lies within the other, |C2 - C1|^2 > (r1 - r2)^2, decided
+ * exactly; otherwise it is the larger disc. Each disc is a whole circle given
+ * by its centre and radius (#edges_add_circle) and each quadrilateral four
+ * segments between tangent points (#edges_add_tangent_segment), so every
+ * crossing, order and touching is decided in the towers of square roots
+ * their points lie in, and only the vertices written are rounded, each once.
+ * A disc placed again, and the hull of a pair met again in either order, as
+ * where a sweep retraces its path, is read once. The union is merged as
+ * #buffer_union_segment_surfaces merges surfaces bounded by segments
+ * (#arrange_union_surfaces), the surfaces in the order of the sequence
+ * @param[in] centres,radii The discs, in the order of the sequence
+ * @param[in] link For every disc but the last, whether the sweep moves from
+ * it to the next, or NULL where it never does
+ * @param[in] count Number of discs
+ * @param[in] srid Spatial reference identifier
+ * @return The union, or @p NULL where a radius is not positive or the
+ * arrangement leaves the region unanswered -- a caller that has another way
+ * to answer may take it
+ */
+LWGEOM *
+meos_disc_sweep_union(const POINT2D *centres, const double *radii,
+  const bool *link, int count, int32_t srid)
+{
+  assert(centres); assert(radii); assert(count > 0);
+  for (int i = 0; i < count; i++)
+    if (! (radii[i] > 0.0) || ! isfinite(radii[i]) ||
+        ! isfinite(centres[i].x) || ! isfinite(centres[i].y))
+      return NULL;
+  /* The first placement of every disc */
+  SweepDisc *sd = palloc(sizeof(SweepDisc) * count);
+  for (int i = 0; i < count; i++)
+    sd[i] = (SweepDisc) {centres[i].x, centres[i].y, radii[i], i};
+  qsort(sd, count, sizeof(SweepDisc), sweep_disc_cmp);
+  int *first = palloc(sizeof(int) * count);
+  for (int k = 0; k < count; k++)
+    first[sd[k].idx] = (k > 0 && sd[k].x == sd[k - 1].x &&
+      sd[k].y == sd[k - 1].y && sd[k].r == sd[k - 1].r) ?
+      first[sd[k - 1].idx] : sd[k].idx;
+  pfree(sd);
+  /* The first link of every pair of distinct discs, in either order */
+  SweepPair *sp = palloc(sizeof(SweepPair) * count);
+  int npairs = 0;
+  for (int i = 0; link && i + 1 < count; i++)
+  {
+    int a = first[i], b = first[i + 1];
+    if (link[i] && a != b)
+      sp[npairs++] = (SweepPair) {Min(a, b), Max(a, b), i};
+  }
+  qsort(sp, npairs, sizeof(SweepPair), sweep_pair_cmp);
+  bool *hull = palloc0(sizeof(bool) * count);
+  for (int k = 0; k < npairs; k++)
+    if (k == 0 || sp[k].a != sp[k - 1].a || sp[k].b != sp[k - 1].b)
+      hull[sp[k].idx] = true;
+  pfree(sp);
+
+  /* The surfaces, in the order of the sequence: a disc at its first
+   * placement, then the hull of the move from it */
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 4 * Max(count, 1));
+  uint32_t *soff = palloc(sizeof(uint32_t) * (2 * count + 1));
+  uint32_t nsurf = 0;
+  int ntp = 0;
+  soff[0] = 0;
+  for (int i = 0; i < count; i++)
+  {
+    if (first[i] == i)
+    {
+      edges_add_circle(edges, centres[i].x, centres[i].y, radii[i], true);
+      soff[++nsurf] = edges->count;
+    }
+    if (i + 1 == count || ! hull[i])
+      continue;
+    const POINT2D *c1 = &centres[i], *c2 = &centres[i + 1];
+    double r1 = radii[i], r2 = radii[i + 1];
+    /* |C2 - C1|^2 - (r1 - r2)^2, exactly: no quadrilateral where it is not
+     * positive, the hull the larger disc */
+    double t[3][2] = {{c2->x, -c1->x}, {c2->y, -c1->y}, {r1, -r2}};
+    ExactSum sums[3];
+    for (int k = 0; k < 3; k++)
+      exact_sum_set(&sums[k], t[k], 2);
+    PolyTerm terms[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}},
+      {-1.0, 2, {2, 2}}};
+    if (polynomial_sign_exact(sums, terms, 3) <= 0)
+      continue;
+    TangentPoint base = {c1->x, c1->y, r1, c2->x, c2->y, r2, 1, 0};
+    TangentPoint *t1a = &tps[ntp++], *t2a = &tps[ntp++],
+      *t2b = &tps[ntp++], *t1b = &tps[ntp++];
+    *t1a = base; t1a->side = 1; t1a->k = 0;
+    *t2a = base; t2a->side = 1; t2a->k = 1;
+    *t2b = base; t2b->side = -1; t2b->k = 1;
+    *t1b = base; t1b->side = -1; t1b->k = 0;
+    /* Counterclockwise: along the right tangent, across the second circle,
+     * back along the left tangent, across the first */
+    edges_add_tangent_segment(edges, t1b, t2b);
+    edges_add_tangent_segment(edges, t2b, t2a);
+    edges_add_tangent_segment(edges, t2a, t1a);
+    edges_add_tangent_segment(edges, t1a, t1b);
+    soff[++nsurf] = edges->count;
+  }
+  pfree(first); pfree(hull);
+  LWGEOM *result = NULL;
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  if (arrange_union_surfaces(edges, soff, nsurf, &rings, &nrings, &owner) ==
+      ARR_ANSWERED)
+    result = buffer_surfaces_from_rings(rings, nrings, owner, srid);
+  meos_array_destroy(edges);
+  pfree(soff); pfree(tps);
+  return result;
+}
+
 /**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair

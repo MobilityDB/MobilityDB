@@ -212,6 +212,8 @@ angle_normalize(double a)
 
 extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
 extern LWGEOM *meos_areal_union(const LWGEOM *geom);
+extern LWGEOM *meos_disc_sweep_union(const POINT2D *centres,
+  const double *radii, const bool *link, int count, int32_t srid);
 extern LWGEOM *meos_areal_intersection(const LWGEOM *geom1,
   const LWGEOM *geom2);
 extern LWGEOM *meos_areal_difference(const LWGEOM *geom1,
