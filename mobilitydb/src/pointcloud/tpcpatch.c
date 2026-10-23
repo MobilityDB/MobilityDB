@@ -156,19 +156,36 @@ Tpcpatch_npoints(PG_FUNCTION_ARGS)
 /*****************************************************************************
  * TPCBox-based restriction (patch-level / coarse)
  *
- * Each pcpatch instant is kept-or-dropped based on whether its 2D
- * PCBOUNDS overlaps the box's xy extent and its timestamp falls in
- * the box's period. No per-point decompression is performed, and the
- * patch payload is preserved verbatim. The Z dimension is ignored at
- * this granularity because pgpointcloud's PCBOUNDS is 2D-only.
+ * Each pcpatch instant is kept-or-dropped based on whether its extent
+ * overlaps the box's spatial extent and its timestamp falls in the box's
+ * period. The X and Y extent is the one the PCBOUNDS header of the patch
+ * states. When the box has Z, the Z extent is the one the points of the
+ * patch state, read by @c pcpatch_to_tpcbox, so a patch of a schema
+ * without Z fails a box with Z, as each of its points fails it in
+ * @c pcpoint_in_tpcbox. The patch payload is preserved verbatim.
  *
  * The @p border_inc flag toggles inclusive (touching counts) vs.
  * strict overlap; the default is inclusive.
  *****************************************************************************/
 
 /**
- * @brief Per-instant predicate: pcpatch's pcid + 2D @c PCBOUNDS + timestamp all
- * overlap the supplied @c TPCBox
+ * @brief Return true if two extents along one dimension overlap
+ * @param min1,max1 First extent
+ * @param min2,max2 Second extent
+ * @param border_inc Inclusive (@c true) or strict (@c false) overlap
+ */
+static bool
+extent_overlaps(double min1, double max1, double min2, double max2,
+  bool border_inc)
+{
+  if (border_inc)
+    return ! (min1 > max2 || max1 < min2);
+  return ! (min1 >= max2 || max1 <= min2);
+}
+
+/**
+ * @brief Per-instant predicate: pcpatch's pcid, spatial extent and timestamp
+ * all overlap the supplied @c TPCBox
  * @param pa          Source pcpatch.
  * @param t           Instant timestamp.
  * @param box         Filtering @c TPCBox.
@@ -187,19 +204,28 @@ pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
   if (! MEOS_FLAGS_GET_X(box->flags))
     return true;
   /* PCBOUNDS layout: {xmin, xmax, ymin, ymax} — see pc_api.h. */
-  double pxmin = pa->bounds[0], pxmax = pa->bounds[1];
-  double pymin = pa->bounds[2], pymax = pa->bounds[3];
-  if (border_inc)
-    return ! (pxmin > box->xmax || pxmax < box->xmin ||
-              pymin > box->ymax || pymax < box->ymin);
-  return ! (pxmin >= box->xmax || pxmax <= box->xmin ||
-            pymin >= box->ymax || pymax <= box->ymin);
+  if (! extent_overlaps(pa->bounds[0], pa->bounds[1], box->xmin, box->xmax,
+        border_inc) ||
+      ! extent_overlaps(pa->bounds[2], pa->bounds[3], box->ymin, box->ymax,
+        border_inc))
+    return false;
+  if (! MEOS_FLAGS_GET_Z(box->flags))
+    return true;
+  /* PCBOUNDS states no Z extent: the one of the points is the one the box
+   * of the patch carries */
+  TPCBox *pbox = pcpatch_to_tpcbox(pa, box->srid);
+  if (! pbox)
+    return false;
+  bool result = MEOS_FLAGS_GET_Z(pbox->flags) &&
+    extent_overlaps(pbox->zmin, pbox->zmax, box->zmin, box->zmax, border_inc);
+  pfree(pbox);
+  return result;
 }
 
 /**
  * @brief Patch-level @c at / @c minus restriction by @c TPCBox
  * @details Walks every instant of @p temp, collects the timestamps whose patch
- * passes the @c PCBOUNDS-overlap + timestamp-in-period predicate, then defers
+ * passes the extent-overlap + timestamp-in-period predicate, then defers
  * to @c temporal_restrict_tstzset for the actual restriction. Granularity is
  * patch-level — surviving instants keep their pcpatch payload verbatim.
  *
@@ -613,10 +639,12 @@ PGDLLEXPORT Datum Tpcpatch_at_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcpatch_at_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Restrict a tpcpatch to the patches whose 2D PCBOUNDS overlap the box
+ * @brief Restrict a tpcpatch to the patches whose extent overlaps the box
  * and whose timestamp falls in its period
  * @details Patch-level granularity: each surviving instant keeps its
- *   pcpatch payload verbatim. No per-point decompression.
+ *   pcpatch payload verbatim. The X and Y extent is the PCBOUNDS header of
+ *   the patch, and the Z extent, tested when the box has Z, the one its
+ *   points state.
  * @sqlfn atTpcbox()
  */
 Datum
@@ -636,7 +664,7 @@ PG_FUNCTION_INFO_V1(Tpcpatch_minus_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
  * @brief Remove from a tpcpatch the instants whose patch passes the
- * PCBOUNDS-overlap + timestamp-in-period predicate
+ * extent-overlap + timestamp-in-period predicate
  * @sqlfn minusTpcbox()
  */
 Datum

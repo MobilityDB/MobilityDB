@@ -1600,9 +1600,9 @@ SELECT minDistSimplify(tpcpointSeq(ARRAY[tpcpoint(pcpoint(1, 1, 1, 1),
 	<sect1 xml:id="tpcpatch">
 		<title>Parches de nube de puntos temporales</title>
 
-		<para>Un <varname>tpcpatch</varname> es la elevación temporal de <varname>pcpatch</varname>. Es el espejo de <varname>tpcpoint</varname> en todos los aspectos, mismos subtipos, mismas funciones de acceso, mismas conversiones y operadores, excepto que cada instante contiene un lote comprimido completo de puntos en lugar de un único punto. La caja delimitadora es de nuevo un <varname>tpcbox</varname>, calculada en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
+		<para>Un <varname>tpcpatch</varname> es la elevación temporal de <varname>pcpatch</varname>. Es el espejo de <varname>tpcpoint</varname> en todos los aspectos, mismos subtipos, mismas funciones de acceso, mismas conversiones y operadores, excepto que cada instante contiene un lote comprimido completo de puntos en lugar de un único punto. La caja delimitadora es de nuevo un <varname>tpcbox</varname>, cuya extensión en X y en Y por instante es el <varname>PCBOUNDS</varname> embebido en el parche y cuya extensión en Z, cuando el esquema tiene una dimensión Z, es la que indican los puntos del parche.</para>
 
-		<para>Las operaciones sobre un <varname>tpcpatch</varname> se realizan a dos granularidades, porque los puntos de un parche residen en una carga comprimida que la capa de caja delimitadora no puede inspeccionar. A <emphasis>nivel de parche</emphasis> el parche de cada instante se conserva o se descarta como un todo, leyendo únicamente su cabecera <varname>PCBOUNDS</varname> de cuatro valores double (xmin / xmax / ymin / ymax) y la marca de tiempo del instante: esta es la granularidad de <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link>, de los operadores de caja delimitadora y del agregado <varname>extent</varname>, no descomprime ninguna carga y cuesta O(número de instantes). Como <varname>PCBOUNDS</varname> es 2D, la dimensión Z de un argumento <varname>tpcbox</varname> se ignora a esa granularidad, incluso cuando el esquema tiene una.</para>
+		<para>Las operaciones sobre un <varname>tpcpatch</varname> se realizan a dos granularidades, porque los puntos de un parche residen en una carga comprimida que la capa de caja delimitadora no puede inspeccionar. A <emphasis>nivel de parche</emphasis> el parche de cada instante se conserva o se descarta como un todo, leyendo únicamente su extensión y la marca de tiempo del instante: esta es la granularidad de <link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname> / <varname>minusTpcbox</varname></link>, de los operadores de caja delimitadora y del agregado <varname>extent</varname>. La extensión en X y en Y es la cabecera <varname>PCBOUNDS</varname> de cuatro valores double (xmin / xmax / ymin / ymax), leída sin descomprimir la carga; como <varname>PCBOUNDS</varname> es 2D, la extensión en Z, que prueba un <varname>tpcbox</varname> con Z, es la que indican los puntos del parche.</para>
 
 		<para>A <emphasis>nivel de punto</emphasis> se recorre en C cada punto de cada instante. <link linkend="tpcpatch_points"><varname>points</varname></link> emite una fila por cada marca de tiempo de instante y punto, mientras que <link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname> / <varname>minusTpcboxFine</varname></link>, <link linkend="tpcpatch_atGeometry"><varname>atGeometry</varname> / <varname>minusGeometry</varname></link> y <link linkend="tpcpatch_eIntersects"><varname>eIntersects(tpcpatch,geometry)</varname></link> aplican su predicado a las coordenadas reales y reconstruyen cada instante superviviente con los puntos que lo superaron, descartando los instantes que no conservan ninguno. Pode primero a nivel de parche, con <varname>atTpcbox</varname> o un escaneo de índice GiST / SP-GiST, y refine los supervivientes cuando se necesite fidelidad a nivel de punto.</para>
 
@@ -1981,12 +1981,12 @@ SELECT numInstants(minusValue(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 
 				<listitem xml:id="tpcpatch_atTpcbox">
 					<indexterm significance="normal"><primary><varname>atTpcbox</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>minusTpcbox</varname></primary></indexterm>
-					<para>Restringe un tpcpatch a los instantes cuyo parche supera una prueba de superposición aproximada de PCBOUNDS frente al tpcbox, o eliminarlos</para>
+					<para>Restringe un tpcpatch a los instantes cuya extensión del parche se superpone al tpcbox, o eliminarlos</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 atTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 minusTpcbox(tpcpatch,tpcbox,border_inc boolean=true) → tpcpatch
 </programlisting>
-					<para>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente, sin descompresión por punto. Como el <varname>PCBOUNDS</varname> de pgPointCloud es 2D, la dimensión Z de la caja se ignora a esta granularidad. Devuelve NULL cuando el pcid del tpcbox no coincide.</para>
+					<para>La granularidad es a nivel de parche: cada instante superviviente conserva su payload pcpatch textualmente. La extensión en X y en Y de un parche es el <varname>PCBOUNDS</varname> 2D de pgPointCloud; cuando la caja tiene Z, la extensión en Z del parche es la que indican sus puntos, y un parche de un esquema sin Z no supera la caja. Devuelve NULL cuando el pcid del tpcbox no coincide.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT numInstants(atTpcbox(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -2153,7 +2153,7 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 
 		<sect2 xml:id="tpcpatch_bbox_ops">
 			<title>Operaciones de caja delimitadora</title>
-			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, calculado en O(1) por instante a partir del <varname>PCBOUNDS</varname> embebido en el parche.</para>
+			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, cuya extensión en X y en Y por instante es el <varname>PCBOUNDS</varname> embebido en el parche y cuya extensión en Z es la que indican los puntos del parche.</para>
 			<itemizedlist>
 				<listitem xml:id="tpcpatch_topo">
 					<indexterm significance="normal"><primary><varname>&amp;&amp;</varname></primary></indexterm>

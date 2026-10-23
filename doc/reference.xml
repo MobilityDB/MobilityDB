@@ -3984,7 +3984,7 @@
 						<para><link linkend="tpcpatch_atValue"><varname>atValue</varname>, <varname>minusValue</varname>, <varname>atValues</varname>, <varname>minusValues</varname></link>: Restrict a tpcpatch to (the complement of) a pcpatch value or a set of pcpatch values</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to the instants whose patch passes a coarse PCBOUNDS overlap test against the tpcbox, or remove them</para>
+						<para><link linkend="tpcpatch_atTpcbox"><varname>atTpcbox</varname>, <varname>minusTpcbox</varname></link>: Restrict a tpcpatch to the instants whose patch extent overlaps the tpcbox, or remove them</para>
 					</listitem>
 					<listitem>
 						<para><link linkend="tpcpatch_atTpcboxFine"><varname>atTpcboxFine</varname>, <varname>minusTpcboxFine</varname></link>: Restrict a tpcpatch to the points of each instant that the tpcbox holds, or remove them</para>
