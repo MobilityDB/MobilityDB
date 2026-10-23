@@ -3454,8 +3454,26 @@ arr_component_ray_point(const Arr *a, const uint32_t *comp, uint32_t cn,
   *py = nd->y;
   if (nd->vertex)
     return true;
-  return arr_point_clear(a, nd->x, nd->y, nd->bx, nd->by, lpieces, loff,
-    lbox, nl);
+  if (arr_point_clear(a, nd->x, nd->y, nd->bx, nd->by, lpieces, loff, lbox,
+      nl))
+    return true;
+  /* A node no double holds, whose box a piece before reaches: the box
+   * narrowed exactly (#meet_point_bounds) may keep clear of it, which is
+   * what tells a loop a few units in the last place across from the
+   * components around it */
+  if (! nd->tower)
+    return false;
+  MeetPoint at = arr_meet_point(&nd->meet);
+  at.p = nd->meet.p; at.q = nd->meet.q;
+  double x, y, box[4];
+  if (! meet_point_bounds(&at, &x, &y, box))
+    return false;
+  if (! arr_point_clear(a, x, y, ival_out(box[0], box[1]),
+      ival_out(box[2], box[3]), lpieces, loff, lbox, nl))
+    return false;
+  *px = x;
+  *py = y;
+  return true;
 }
 
 /**
@@ -4243,9 +4261,15 @@ arr_piece_clear(const Arr *a, const ArrPiece *p, double lox, double hix,
       side[2] == side[0] && side[3] == side[0])
     return true;
   /* The positions along a segment between tangent points are read off its
-   * rounded ends, which do not bound it */
+   * rounded ends, which do not bound it; the piece, a segment between two
+   * points the boxes of its end nodes hold, lies within the box of both */
   if (e->from)
-    return false;
+  {
+    const ArrNode *n0 = &a->nodes[p->from], *n1 = &a->nodes[p->to];
+    return fmin(n0->bx.lo, n1->bx.lo) > hix ||
+      fmax(n0->bx.hi, n1->bx.hi) < lox ||
+      fmin(n0->by.lo, n1->by.lo) > hiy || fmax(n0->by.hi, n1->by.hi) < loy;
+  }
   /* The positions, read only where the sides do not tell */
   Ival pos[4];
   for (int k = 0; k < 4; k++)
