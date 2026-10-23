@@ -134,7 +134,7 @@ signature, as `jsonbPathExistsTz` carries `tz = true` on `jsonb_path_exists`.
   (28 wrappers).
 - **`tjsonbContained`** over `(jsonb, tjsonb)`, `(tjsonb, jsonb)` and `(tjsonb, tjsonb)`: the
   wrappers call `contains_tjsonb_*`, which answers `@>` where `<@` is asked. Branch
-  `fix/tjsonb-contained-operand-order` (`6df5be849f`) corrects the call, and the tag follows the
+  `fix/tjsonb-contained-operand-order` (`0eff900764`) corrects the call, and the tag follows the
   corrected call.
 - **Constructors**: `stbox(box2d)` (`gbox_to_stbox`), `pcpoint(integer, double precision[])`
   (`pcpoint_make`), the three `pose` constructors (`pose_make_2d`, `pose_make_point2d`,
@@ -308,7 +308,7 @@ come before its push.
 
 | branch | commit | what it does | state |
 |---|---|---|---|
-| `fix/tjsonb-contained-operand-order` | `477264fed3` | `tjsonbContained` answers `<@`, not `@>` | receipts owed |
+| `fix/tjsonb-contained-operand-order` | `0eff900764` (on `5642bac141`) | `tjsonbContained` answers `<@`, not `@>` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
 | `meos/cell-instants-answer-the-constructor` | `782381cd17` | the cell instant constructors carry their `@csqlfn` | receipts owed |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
