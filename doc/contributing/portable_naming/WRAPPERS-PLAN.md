@@ -191,7 +191,7 @@ argument order each, after `contains_set_bigint`, `contained_bigint_set`, `conta
 
 ### Circular buffer (2)
 
-Branch `meos/cbuffer-public` (`2e8df4dd3f`).
+Branch `meos/cbuffer-public` (`5618bae815`).
 
 - `eContains(geometry, tcbuffer)`: `econtains_geo_tcbuffer`, after `acontains_geo_tcbuffer`
 - `aTouches(tcbuffer, tcbuffer)`: `atouches_tcbuffer_tcbuffer` is declared in `meos_cbuffer.h`
@@ -311,7 +311,7 @@ come before its push.
 | `fix/tjsonb-contained-operand-order` | `477264fed3` | `tjsonbContained` answers `<@`, not `@>` | receipts owed |
 | `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
 | `meos/cell-instants-answer-the-constructor` | `782381cd17` | the cell instant constructors carry their `@csqlfn` | receipts owed |
-| `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | strict-ci, Windows, cppcheck and valgrind receipts; pushed, pull request opening |
+| `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
 | `meos/jsonpath-outside-meos-gate` | `624b5a999c` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
@@ -323,7 +323,7 @@ come before its push.
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `meos/raster-statistics-named` | `66850d54fb` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
-| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind, speed and CGAL oracle receipts (cgal_tcbuffer, 3000 of 3000, controls exact and flip); pull request opening |
+| `meos/cbuffer-public` | `5618bae815` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind, speed and CGAL oracle receipts (cgal_tcbuffer, 3000 of 3000, controls exact and flip), smoke; fork CI green on `2f61dc6bf7`, the same patch; pull request opening |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
 | `fix/ever-always-wrappers-return-boolean` | `af61153d6a` (on `5d3ddbd256`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | fork only, never built; rebase and receipts owed |
 
