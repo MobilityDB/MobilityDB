@@ -144,6 +144,7 @@ th3index_cell_set_stbox(H3Index cell, STBox *box)
   H3Index north, south;
   h3index_pole_cells(getResolution(cell), &north, &south);
   double xmin, ymin, xmax, ymax;
+  /* cppcheck-suppress uninitvar */
   dggs_lonlat_boundary_set_box(lons, lats, bnd.numVerts, north == cell,
     south == cell, &xmin, &ymin, &xmax, &ymax);
   box->xmin = xmin;
