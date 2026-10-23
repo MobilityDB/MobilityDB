@@ -456,6 +456,46 @@ tcbufferseq_linear_traversed_area(const TSequence *seq, GSERIALIZED **result)
 }
 
 /**
+ * @brief Return the traversed area of the instants of a temporal circular
+ * buffer as the region their circular buffers sweep, decided exactly
+ * (#meos_disc_sweep_union), each sequence with linear interpolation sweeping
+ * from each instant to the next; NULL where it is not answered
+ * @param[in] seqs,count Sequences of the temporal circular buffer
+ */
+static GSERIALIZED *
+tcbufferseqs_sweep_union(const TSequence **seqs, int count)
+{
+  int total = 0;
+  for (int i = 0; i < count; i++)
+    total += seqs[i]->count;
+  POINT2D *centres = palloc(sizeof(POINT2D) * total);
+  double *radii = palloc(sizeof(double) * total);
+  bool *link = palloc0(sizeof(bool) * total);
+  int32_t srid = SRID_UNKNOWN;
+  int k = 0;
+  for (int i = 0; i < count; i++)
+  {
+    bool linear = MEOS_FLAGS_GET_INTERP(seqs[i]->flags) == LINEAR;
+    for (int j = 0; j < seqs[i]->count; j++)
+    {
+      const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(
+        TSEQUENCE_INST_N(seqs[i], j)));
+      centres[k] = *cbuffer_point2d_p(cb);
+      radii[k] = cb->radius;
+      srid = cbuffer_srid(cb);
+      link[k++] = linear && j + 1 < seqs[i]->count;
+    }
+  }
+  LWGEOM *geom = meos_disc_sweep_union(centres, radii, link, total, srid);
+  pfree(centres); pfree(radii); pfree(link);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geo_serialize(geom);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
  * @ingroup meos_internal_cbuffer_spatial_accessor
  * @brief Return the traversed area of a temporal circular buffer sequence
  * @param[in] seq Temporal circular buffer
@@ -471,6 +511,15 @@ tcbufferseq_traversed_area(const TSequence *seq, bool unary_union)
   /* Instantaneous sequence */
   if (seq->count == 1)
     return tcbufferinst_traversed_area(TSEQUENCE_INST_N(seq, 0));
+
+  /* The single geometry is the region the circular buffers sweep, decided
+   * exactly where it is answered */
+  if (unary_union)
+  {
+    GSERIALIZED *swept = tcbufferseqs_sweep_union(&seq, 1);
+    if (swept)
+      return swept;
+  }
 
   /* General case */
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * seq->count);
@@ -560,6 +609,19 @@ tcbufferseqset_traversed_area(const TSequenceSet *ss, bool unary_union)
   /* Singleton sequence set */
   if (ss->count == 1)
     return tcbufferseq_traversed_area(TSEQUENCESET_SEQ_N(ss, 0), unary_union);
+
+  /* The single geometry is the region the circular buffers sweep, decided
+   * exactly where it is answered */
+  if (unary_union)
+  {
+    const TSequence **seqs = palloc(sizeof(TSequence *) * ss->count);
+    for (int i = 0; i < ss->count; i++)
+      seqs[i] = TSEQUENCESET_SEQ_N(ss, i);
+    GSERIALIZED *swept = tcbufferseqs_sweep_union(seqs, ss->count);
+    pfree(seqs);
+    if (swept)
+      return swept;
+  }
 
   /* General case */
   GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * ss->totalcount);
