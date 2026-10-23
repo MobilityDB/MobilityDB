@@ -5123,10 +5123,13 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
     return NULL;
   const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
   bool *arc = palloc(sizeof(bool) * n);
+  /* An arc whose ends are one point is the whole circle through its middle,
+   * the circular string of a full turn */
   for (uint32_t i = 0; i < n; i++)
-    arc[i] = e[i].arc &&
+    arc[i] = e[i].arc && ((e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2) ?
+      (e[i].mx != e[i].x1 || e[i].my != e[i].y1) :
       cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
-        e[i].y1, e[i].mx, e[i].my) != 0;
+        e[i].y1, e[i].mx, e[i].my) != 0);
   /* The members, counted first: every arc is one, and every run of
    * segments between two arcs */
   uint32_t nmembers = 0;
