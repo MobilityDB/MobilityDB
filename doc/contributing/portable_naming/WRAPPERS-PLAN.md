@@ -297,28 +297,28 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 ## The plan
 
-Each branch is one pull request, on MobilityDB master `1cbb831a57` unless stated; its receipts
+Each branch is one pull request, on MobilityDB master `ce124289e6` unless stated; its receipts
 come before its push.
 
 | branch | commit | what it does | state |
 |---|---|---|---|
-| `fix/tjsonb-contained-operand-order` | `c9e613ba25` | `tjsonbContained` answers `<@`, not `@>` | strict-ci and cppcheck green; Windows owed |
-| `fix/tpcpatch-tpcbox-z` | `d5d136db07` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
-| `meos/cell-instants-answer-the-constructor` | `61dcce4a97` | the cell instant constructors carry their `@csqlfn` | receipts owed |
-| `sql/geo-distance-operators-take-their-procedures` | `a433fa6b88` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | receipts running |
-| `meos/json-wrappers-named` | `1d8f86bb7e` | the 16 text, `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper | receipts owed |
-| `meos/jsonpath-outside-meos-gate` | `42a3ab7356` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
-| `meos/box-constructors-named` | `f47cb80fae` | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags | receipts owed |
-| (same branch, next commit) | | DECIDED BY THE OWNER 2026-10-23: `tbox(float)` and `tbox(numeric)` refuse NaN as `tfloat` and `floatspan` do: `Number_to_tbox` and `Numeric_to_tbox` call `float_to_tbox`, which raises "The value cannot be NaN", where master answers `TBOXFLOAT X([NaN, NaN])` | to implement |
-| `meos/pose-constructors-named` | `a6e918fc95` | one wrapper per pose constructor, each named in its tag | receipts owed |
-| `meos/tpcbox-pcpoint-constructors-named` | `ec66ca3a4d` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
-| `meos/trgeometry-constructors-named` | `6c84207870` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
-| `meos/span-box-distances-named` | `2e109f3c36` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
+| `fix/tjsonb-contained-operand-order` | `477264fed3` | `tjsonbContained` answers `<@`, not `@>` | receipts owed |
+| `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
+| `meos/cell-instants-answer-the-constructor` | `782381cd17` | the cell instant constructors carry their `@csqlfn` | receipts owed |
+| `sql/geo-distance-operators-take-their-procedures` | `51b010cbc1` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | receipts running |
+| `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
+| `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
+| `meos/jsonpath-outside-meos-gate` | `624b5a999c` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
+| `meos/box-constructors-named` | `1febafb2e1` | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | receipts running |
+| `meos/pose-constructors-named` | `2cf35f33b6` | one wrapper per pose constructor, each named in its tag | receipts owed |
+| `meos/tpcbox-pcpoint-constructors-named` | `d0c3d8f0d7` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
+| `meos/trgeometry-constructors-named` | `0e2ce4ae06` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
+| `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
-| `meos/raster-statistics-named` | `e0e43aaae6` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
-| `meos/npoint-public` | `de644f0142` | the 20 route operations public (functions to add) | receipts owed |
-| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | receipts running |
-| `meos/json-public` | `75269bc0b2` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
+| `meos/raster-statistics-named` | `66850d54fb` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
+| `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
+| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind and speed receipts; the CGAL oracle receipt is the tcbuffer lane's |
+| `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
 
 Left, each for the owner first:
 
