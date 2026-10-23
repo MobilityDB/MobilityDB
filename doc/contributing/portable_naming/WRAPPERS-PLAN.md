@@ -121,7 +121,7 @@ wrapper and the MEOS function it reaches.
   (`1cbb831a57`).
 - **The cell instant constructors** `th3index(h3index, timestamptz)`,
   `tquadbin(quadbin, timestamptz)`, `ts2cell(s2cell, timestamptz)`: branch
-  `meos/cell-instants-answer-the-constructor` (`0eb70440a8`).
+  `meos/cell-instants-answer-the-constructor` (`7f4cbd1f53`).
 
 ## The tag only (44 wrappers, 46 signatures)
 
@@ -310,7 +310,7 @@ come before its push.
 |---|---|---|---|
 | `fix/tjsonb-contained-operand-order` | `0eff900764` (on `5642bac141`) | `tjsonbContained` answers `<@`, not `@>` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
-| `meos/cell-instants-answer-the-constructor` | `782381cd17` | the cell instant constructors carry their `@csqlfn` | receipts owed |
+| `meos/cell-instants-answer-the-constructor` | `7f4cbd1f53` (on `5642bac141`) | the cell instant constructors carry their `@csqlfn` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
