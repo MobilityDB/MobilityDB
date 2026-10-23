@@ -1019,15 +1019,57 @@ arr_vertex_at_origin(const Edge *e, double x, double y)
   return s == e->cx && err == 0.0;
 }
 
+/* The doubles a meeting is where they hold it exactly: a vertex, or the
+ * point where a tangent touches a circle of radius zero, its centre */
+static inline bool
+arr_meet_exact_xy(const ArrMeet *m, double *x, double *y)
+{
+  if (m->kind == MEET_VERTEX)
+  {
+    *x = m->x; *y = m->y;
+    return true;
+  }
+  if (m->kind == MEET_TANGENT && m->tp &&
+      (m->tp->k ? m->tp->r2 : m->tp->r1) == 0.0)
+  {
+    *x = m->tp->k ? m->tp->c2x : m->tp->c1x;
+    *y = m->tp->k ? m->tp->c2y : m->tp->c1y;
+    return true;
+  }
+  return false;
+}
+
 static ArrWhere
 arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
 {
-  /* A vertex where a whole circle starts and ends is the end of the
+  /* The point where a whole circle starts and ends is the end of the
    * stretch starting or ending there, never a point within it, which the
    * order along the circle (#arr_line_order) would make of it, putting its
-   * start before and its end after every point */
-  if (m->kind == MEET_VERTEX && a->e[i].centred &&
-      arr_vertex_at_origin(&a->e[i], m->x, m->y))
+   * start before and its end after every point. A meeting doubles hold is
+   * there where they are the start; any other, as the tangent point of a
+   * line x = cx - r, where #meets_same_point tells it is, asked only of a
+   * meeting whose position may be the start, the start being held by
+   * doubles where the difference cx - r is exact */
+  const Edge *e = &a->e[i];
+  double mx, my;
+  int at = 0;
+  if (e->centred && m->kind != MEET_ORIGIN)
+  {
+    if (arr_meet_exact_xy(m, &mx, &my))
+      at = arr_vertex_at_origin(e, mx, my);
+    else if ((t.lo <= 0.0 || t.hi >= 4.0) &&
+        arr_vertex_at_origin(e, e->x1, e->y1))
+    {
+      MeetPoint mp = arr_meet_point(m);
+      MeetPoint op = {0};
+      op.kind = MEET_VERTEX;
+      op.x = e->x1; op.y = e->y1;
+      at = meets_same_point(&mp, &op);
+      if (at == 2)
+        return ARR_UNTOLD;
+    }
+  }
+  if (at)
   {
     if (a->mfrom[i].kind == MEET_ORIGIN && a->mfrom[i].sigma == 0)
       return ARR_AT_FROM;
@@ -2351,16 +2393,31 @@ arr_meet_curved(Arr *a, uint32_t i, uint32_t j)
       arr_cut(a, j, node, tj, am);
       continue;
     }
-    if (wi == ARR_WITHIN)
+    if (wi == ARR_WITHIN || wj == ARR_WITHIN)
     {
-      arr_cut(a, i, arr_stretch_end_node(a, j, wj), ti,
-        *arr_stretch_end_meet(a, j, wj));
-      continue;
-    }
-    if (wj == ARR_WITHIN)
-    {
-      arr_cut(a, j, arr_stretch_end_node(a, i, wi), tj,
-        *arr_stretch_end_meet(a, i, wi));
+      /* An edge meeting the end of the other stretch within its own is cut
+       * at that end; where a whole circle starts, which only the circle
+       * reads (#arr_stretches_write), at the node of the meeting itself,
+       * made one node with that start */
+      uint32_t c = (wi == ARR_WITHIN) ? i : j, o = (c == i) ? j : i;
+      ArrWhere wo = (c == i) ? wj : wi;
+      uint32_t node = arr_stretch_end_node(a, o, wo);
+      ArrMeet am = *arr_stretch_end_meet(a, o, wo);
+      if (am.kind == MEET_ORIGIN)
+      {
+        uint32_t end = node;
+        if (m[k].kind == MEET_VERTEX)
+          node = arr_vertex(a, m[k].x, m[k].y);
+        else if (m[k].kind == MEET_TANGENT)
+          node = arr_tangent_node(a, m[k].tp);
+        else
+          node = arr_tower_node_at(a, &m[k], x, y, box);
+        if (node == UINT32_MAX)
+          return ARR_MEETING;
+        am = (m[k].kind == MEET_VERTEX) ? m[k] : a->nodes[node].meet;
+        arr_same_add(a, node, end);
+      }
+      arr_cut(a, c, node, (c == i) ? ti : tj, am);
       continue;
     }
     uint32_t ni = arr_stretch_end_node(a, i, wi);
@@ -2565,7 +2622,11 @@ arr_node_merge(Arr *a, uint32_t v, uint32_t w)
   w = arr_node_rep(a, w);
   if (v == w)
     return;
-  if (a->nodes[w].vertex && ! a->nodes[v].vertex)
+  /* Where a whole circle starts stands for the node only where nothing
+   * else does: the end of a stretch of another edge is never that, which
+   * only the circle reads (#arr_stretches_write) */
+  if ((a->nodes[w].vertex && ! a->nodes[v].vertex) ||
+      (! a->nodes[v].vertex && a->nodes[v].origin && ! a->nodes[w].origin))
   {
     uint32_t t = v; v = w; w = t;
   }
@@ -2645,11 +2706,14 @@ arr_pieces(Arr *a)
     Ival pfrom = a->tfrom ? a->tfrom[i] : ival(0.0);
     Ival pend = a->tto ? a->tto[i] :
       ival(arr_is_arc(&a->e[i]) ? INFINITY : 1.0);
-    const ArrCut *prev = NULL;
+    /* A cut at the node a piece starts at, that of the previous cut or the
+     * start of the edge made one node with a meeting there (#arr_node_merge),
+     * cuts nothing; nor does a last cut at the node of the end */
+    uint32_t first = a->npieces;
     for (uint32_t k = 0; k < ncut; k++)
     {
       const ArrCut *cut = &cuts[k];
-      if (prev && cut->node == prev->node)
+      if (cut->node == from)
         continue;
       ArrPiece *p = &a->pieces[a->npieces++];
       p->edge = i; p->from = from; p->to = cut->node;
@@ -2658,7 +2722,11 @@ arr_pieces(Arr *a)
       p->result = p->flip = p->used = false;
       from = cut->node;
       pfrom = cut->pos;
-      prev = cut;
+    }
+    if (a->npieces > first && from == end)
+    {
+      a->pieces[a->npieces - 1].pto = pend;
+      continue;
     }
     ArrPiece *p = &a->pieces[a->npieces++];
     p->edge = i; p->from = from; p->to = end;
@@ -5168,6 +5236,120 @@ arr_same_tangents(Arr *a)
   return st;
 }
 
+/* A node of an end of a stretch at a point doubles hold exactly */
+typedef struct
+{
+  double x, y;
+  uint32_t node;
+} ArrExactEnd;
+
+static int
+arr_exact_end_cmp(const void *p, const void *q)
+{
+  const ArrExactEnd *a = p, *b = q;
+  if (a->x != b->x)
+    return (a->x < b->x) ? -1 : 1;
+  if (a->y != b->y)
+    return (a->y < b->y) ? -1 : 1;
+  return (a->node < b->node) ? -1 : (a->node > b->node);
+}
+
+/**
+ * @brief Make one node of the nodes of the ends of stretches at one point
+ * doubles hold exactly: where a whole circle starts, an input vertex, or a
+ * tangent point of a circle of radius zero, its centre
+ * @details A stretch of a whole circle keeps where it starts as such
+ * (#arr_stretches_write) whatever else meets there, so the node of that end
+ * is not the node of the other ends at its point (#arr_end_node), unlike
+ * two tangent points of one value (#arr_same_tangents)
+ * @return #ARR_MEETING where it is not told
+ */
+static ArrangeStatus
+arr_same_exact_ends(Arr *a)
+{
+  ArrExactEnd *xe = palloc(sizeof(ArrExactEnd) * Max(a->nnodes, 1u));
+  uint32_t n = 0;
+  for (uint32_t v = 0; v < a->nnodes; v++)
+  {
+    const ArrNode *nd = &a->nodes[v];
+    double x, y;
+    /* Where a whole circle starts is (cx - r, cy) rounded once, a point the
+     * doubles hold only where the difference is exact */
+    if (nd->vertex ||
+        (nd->origin && arr_vertex_at_origin(nd->origin, nd->x, nd->y)))
+    {
+      x = nd->x; y = nd->y;
+    }
+    else if (nd->origin || ! nd->tower ||
+        ! arr_meet_exact_xy(&nd->meet, &x, &y))
+      continue;
+    xe[n].x = x; xe[n].y = y; xe[n++].node = v;
+  }
+  qsort(xe, n, sizeof(ArrExactEnd), arr_exact_end_cmp);
+  for (uint32_t k = 1; k < n; k++)
+    if (xe[k].x == xe[k - 1].x && xe[k].y == xe[k - 1].y)
+      arr_same_add(a, xe[k - 1].node, xe[k].node);
+  pfree(xe);
+
+  /* A meeting no double holds, as the tangent point of a line x = cx - r,
+   * is where a whole circle starts where #meets_same_point tells it is,
+   * asked of the nodes whose boxes hold the start, in the order of the
+   * left of their boxes (#arr_same_tangents) */
+  ArrangeStatus st = ARR_ANSWERED;
+  ArrTangentBox *tb = palloc(sizeof(ArrTangentBox) * Max(a->nnodes, 1u));
+  uint32_t nt = 0;
+  double wmax = 0.0;
+  for (uint32_t v = 0; v < a->nnodes; v++)
+  {
+    const ArrNode *nd = &a->nodes[v];
+    double x, y;
+    if (! nd->tower || arr_meet_exact_xy(&nd->meet, &x, &y))
+      continue;
+    tb[nt].lo = nd->bx.lo;
+    tb[nt++].node = v;
+    wmax = Max(wmax, nd->bx.hi - nd->bx.lo);
+  }
+  qsort(tb, nt, sizeof(ArrTangentBox), arr_tangent_box_cmp);
+  for (uint32_t v = 0; v < a->nnodes && nt > 0 && st == ARR_ANSWERED; v++)
+  {
+    const ArrNode *o = &a->nodes[v];
+    if (! o->origin || ! arr_vertex_at_origin(o->origin, o->x, o->y))
+      continue;
+    MeetPoint op = {0};
+    op.kind = MEET_VERTEX;
+    op.x = o->x; op.y = o->y;
+    /* The first box whose left may hold the start, the bound rounded down
+     * so that it admits every box holding it */
+    double from = nextafter(o->x - wmax, -INFINITY);
+    uint32_t lo = 0, hi = nt;
+    while (lo < hi)
+    {
+      uint32_t mid = lo + (hi - lo) / 2;
+      if (tb[mid].lo < from)
+        lo = mid + 1;
+      else
+        hi = mid;
+    }
+    for (uint32_t k = lo; k < nt && tb[k].lo <= o->x; k++)
+    {
+      const ArrNode *w = &a->nodes[tb[k].node];
+      if (w->bx.hi < o->x || w->by.lo > o->y || w->by.hi < o->y)
+        continue;
+      MeetPoint mw = arr_meet_point(&w->meet);
+      int same = meets_same_point(&mw, &op);
+      if (same == 2)
+      {
+        st = ARR_MEETING;
+        break;
+      }
+      if (same == 1)
+        arr_same_add(a, v, tb[k].node);
+    }
+  }
+  pfree(tb);
+  return st;
+}
+
 /*
  * The arrangement of the curves and the rings bounding the region they wind
  * around: as #arrange_wound_boundary answers them where @p owner is NULL,
@@ -5902,6 +6084,21 @@ arr_stretches_write(Arr *a, int sgn, uint32_t outer, ArrStretch **out,
     s->rev = (a->erev[p->edge] != p->flip);
     uint32_t nf = p->flip ? a->pieces[last].to : p->from;
     uint32_t nt = p->flip ? p->from : a->pieces[last].to;
+    /* A stretch of a whole circle from where it starts, or to where it
+     * ends, keeps that end as such (#arr_line_order reads it before and
+     * after every point of the circle), the node of the edge before the
+     * nodes at one point were made one (#arr_node_merge): the node standing
+     * for them may be another meeting there, and a circle read from it to
+     * itself runs nowhere */
+    if (se->centred && ! p->flip)
+    {
+      if ((k == 0 || a->pieces[k - 1].edge != p->edge) &&
+          a->nodes[a->start[p->edge]].origin)
+        nf = a->start[p->edge];
+      if ((last + 1 == a->npieces || a->pieces[last + 1].edge != p->edge) &&
+          a->nodes[a->end[p->edge]].origin)
+        nt = a->end[p->edge];
+    }
     s->from = arr_node_end(a, nf, false);
     s->to = arr_node_end(a, nt, true);
     s->fbox[0] = a->nodes[nf].bx; s->fbox[1] = a->nodes[nf].by;
@@ -6051,6 +6248,8 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
   /* Two tangent points of one value are one node (#arr_arrange) */
   if (status == ARR_ANSWERED && tangent)
     status = arr_same_tangents(&a);
+  if (status == ARR_ANSWERED)
+    status = arr_same_exact_ends(&a);
   if (status != ARR_ANSWERED)
   {
     pfree(a.start); pfree(a.end); pfree(a.vtab); pfree(a.xtab);
