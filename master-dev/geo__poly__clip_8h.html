@@ -75,13 +75,12 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle"><div class="title">geo_poly_clip.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
-<p>Polygon Boolean clipping for the temporal-point spatial functions.  
+<p>The overlay operations of two areal geometries.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;liblwgeom.h&gt;</code><br />
@@ -95,18 +94,11 @@ Enumerations</h2></td></tr>
 , <a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4a0302559d334c31f04b0e167be530c462">CL_DIFFERENCE</a> = 2
 , <a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4aaccb06d90f929475347249cc2ae85948">CL_XOR</a> = 3
  }</td></tr>
-<tr class="memdesc:aa1cea595734242f263560fceda6f6da4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean operation selector for <a class="el" href="geo__poly__clip_8h_a9f588501d8ce3faf2f92592d11fbc6c0.html#a9f588501d8ce3faf2f92592d11fbc6c0" title="Clip the two polygons using the given Boolean operation.">clip_poly_poly</a>.  <a href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">More...</a><br /></td></tr>
+<tr class="memdesc:aa1cea595734242f263560fceda6f6da4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Boolean operation selector of the areal overlay.  <a href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">More...</a><br /></td></tr>
 <tr class="separator:aa1cea595734242f263560fceda6f6da4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
-Functions</h2></td></tr>
-<tr class="memitem:a9f588501d8ce3faf2f92592d11fbc6c0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="geo__poly__clip_8h_a9f588501d8ce3faf2f92592d11fbc6c0.html#a9f588501d8ce3faf2f92592d11fbc6c0">clip_poly_poly</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *subj, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *clip, <a class="el" href="geo__poly__clip_8h_aa1cea595734242f263560fceda6f6da4.html#aa1cea595734242f263560fceda6f6da4">ClipOper</a> operation)</td></tr>
-<tr class="memdesc:a9f588501d8ce3faf2f92592d11fbc6c0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clip the two polygons using the given Boolean operation.  <a href="geo__poly__clip_8h_a9f588501d8ce3faf2f92592d11fbc6c0.html#a9f588501d8ce3faf2f92592d11fbc6c0">More...</a><br /></td></tr>
-<tr class="separator:a9f588501d8ce3faf2f92592d11fbc6c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Polygon Boolean clipping for the temporal-point spatial functions. </p>
-<dl class="section note"><dt>Note</dt><dd>Backed by Clipper2 v2.0.1 (vendored under <code>clipper2/</code>). Replaces the prior Martinez-Rueda port; the legacy implementation remains available on the <code>origin/martinez-rebased</code> branch for reference. </dd></dl>
+<div class="textblock"><p >The overlay operations of two areal geometries. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
