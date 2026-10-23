@@ -217,10 +217,18 @@ the campaign: their kernels answer over the union of the placements, and an asse
 an exact algorithm with the correct semantics exists comes first. No such wrapper is published or
 rerouted before it.
 
-### Geometry (2)
+### Geometry (4)
 
-- `symDifference(geometry, geometry)`: `geom_symdifference2d`, after `geom_difference2d`
-- `difference(geometry, geometry)`: waits for the owner's decision (see Open)
+Branch `geo/sql-overlays-answer-exactly`. DECIDED BY THE OWNER 2026-10-23 ("add public"): the four
+SQL polygon overlays answer through the exact native overlay of MEOS, each by a public function of
+two operands that names its wrapper in `@csqlfn`.
+
+- `intersection(geometry, geometry)`: `geom_intersection2d`
+- `difference(geometry, geometry)`: `geom_difference2d`
+- `geoUnion(geometry, geometry)`: `geom_union2d`, new, after `geom_difference2d`, the dissolve of
+  `geom_array_union` over the two operands
+- `symDifference(geometry, geometry)`: `geom_symdifference2d`, new, after `geom_difference2d`, that
+  dissolve over the two differences
 
 ### JSON sets (2)
 
@@ -287,8 +295,6 @@ Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it b
 
 - **Rigid geometry relations**, the last task: does an exact algorithm with the correct semantics
   exist for the relations whose kernels answer over the union of the placements?
-- **`difference(geometry, geometry)`** calls the polygon-only Clipper2 `clip_poly_poly`, while
-  `geom_difference2d` overlays through GEOS: which one should the SQL function call?
 - **A defect, before the point cloud family:** `atTpcbox` cuts a step `tpcpoint` as linear through
   `tpcpoint_to_tgeompoint`; the restriction keeps the interpolation of its argument.
 - Five SQL functions are commented out in `mobilitydb/sql` and have no C body: `h3index(bigint)`,
