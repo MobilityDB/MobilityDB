@@ -79,32 +79,6 @@ extern "C" {
 extern GSERIALIZED *clipper2_clip_poly_poly(const GSERIALIZED *subj,
   const GSERIALIZED *clip, int op);
 
-/**
- * @brief Compute the time spans during which a temporal-point trajectory
- * is inside a polygon, via Clipper2's open-path clipping.
- *
- * For a temporal sequence with linear interpolation, treats the sequence as
- * an open polyline in the (x,y) plane and clips it against the polygon
- * (or multipolygon, with holes) using Clipper2's @c AddOpenSubject /
- * @c Execute(ClipType::Intersection, ..., open_solution) path. The output
- * open paths are mapped back to time spans on the original sequence by
- * locating each output vertex on its source segment and interpolating
- * the timestamp.
- *
- * Replaces the broken parity-sweep `tpointseq_linear_at_poly` previously
- * shipped on the (unmerged) `tgeo-fast-clip-rebased` branch.
- *
- * @param[in] seq        Temporal point sequence (linear interpolation,
- *                       `count >= 2`)
- * @param[in] gs         Polygon or multipolygon to clip against (2D)
- * @param[out] out_count Number of returned spans (0 if the trajectory
- *                       never enters the polygon)
- * @return Newly-palloc'd array of @c Span (length @p *out_count), or
- *         @c NULL when the result is empty. Caller owns the array.
- */
-extern Span *clipper2_traj_poly_periods(const TSequence *seq,
-  const GSERIALIZED *gs, int *out_count);
-
 #ifdef __cplusplus
 }
 #endif

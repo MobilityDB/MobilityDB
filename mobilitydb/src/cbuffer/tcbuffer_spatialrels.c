@@ -76,7 +76,7 @@ EA_spatialrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 1);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_INT32(result);
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /**
@@ -93,7 +93,7 @@ EA_spatialrel_tcbuffer_cbuffer(FunctionCallInfo fcinfo,
   PG_FREE_IF_COPY(temp, 0);
   if (result < 0)
     PG_RETURN_NULL();
-  PG_RETURN_INT32(result);
+  PG_RETURN_BOOL(result ? true : false);
 }
 
 /* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_contains_covers — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
