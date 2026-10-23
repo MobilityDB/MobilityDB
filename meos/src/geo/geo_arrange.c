@@ -5586,10 +5586,12 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
     const Edge *p = &a->e[i], *q = &a->e[j];
     /* Stretches of circles running along each other are not answered
      * (#arr_meet_curved), nor a segment between tangent points along a
-     * segment of the input */
-    if (arr_is_arc(p) || arr_is_arc(q) || (p->from != NULL) != (q->from != NULL))
+     * segment of the input bounding a surface; along linework it is */
+    if (arr_is_arc(p) || arr_is_arc(q) ||
+        ((p->from != NULL) != (q->from != NULL) && arr_weight(a, i) != 0 &&
+         arr_weight(a, j) != 0))
       continue;
-    if (p->from)
+    if (p->from || q->from)
     {
       /* Two segments between tangent points are on one line, sharing more
        * than an end, where #towerseg_meet tells it, the ends of either not
@@ -5779,11 +5781,11 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
        * segment between tangent points runs in the sense of its edge
        * (#arr_stretches_write), so it is that of a member running the way
        * the winding number rises, which carries the rise as it is */
-      bool tower = ! line && (a->e[r].from != NULL);
       uint32_t k = 0;
       while (k < m && ! (lo[k] <= d && hi[k] > d &&
-          (! line || arr_weight(a, mem[k]) == 0) &&
-          (! tower || fwd[k] == (weight > 0))))
+          (line ? arr_weight(a, mem[k]) == 0 :
+            (arr_weight(a, mem[k]) != 0 && (! a->e[mem[k]].from ||
+              fwd[k] == (weight > 0))))))
         k++;
       if (k == m)
       {
@@ -5791,6 +5793,7 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
         break;
       }
       uint32_t x = mem[k];
+      bool tower = (a->e[x].from != NULL);
       se.e[c] = a->e[x];
       se.sup[c] = a->sup[x];
       se.erev[c] = a->erev[x];
