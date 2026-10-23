@@ -1034,7 +1034,18 @@ traversedArea(tcbuffer,unary_union boolean=false) → geometry
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
 -- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', true));
+/* CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 0.5,3.5 1,3 1.5),(3 1.5,1 1.5),
+   CIRCULARSTRING(1 1.5,0.646446609406726 1.353553390593274,0.5 1),
+   CIRCULARSTRING(0.5 1,0.646446609406726 0.646446609406726,1 0.5),(1 0.5,3 0.5))) */
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
+  Cbuffer(Point(3 1), 0)@2001-01-02, Cbuffer(Point(4 1), 0.5)@2001-01-03]', true));
+/* GEOMETRYCOLLECTION(CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3.75 0.566987298107781,
+   4.5 1,3.75 1.433012701892219),(3.75 1.433012701892219,3 1,3.75 0.566987298107781))),
+   LINESTRING(1 1,3 1)) */
 </programlisting>
+				<para>The argument is false unless it is given, and the function then answers the pieces the buffer sweeps, each a disc or the region a disc sweeps between two consecutive instants, gathered into one geometry. With <varname>unary_union = true</varname> they are dissolved into the region they cover, computed exactly: every meeting of the circles and of the segments joining them is decided on the input coordinates, no arc is replaced by segments, and only the vertices of the result are rounded, each once. The result keeps its arcs, as a <varname>CURVEPOLYGON</varname> or a <varname>MULTISURFACE</varname>. Where the buffer keeps a zero radius, the line or the point it draws that no disc covers is returned beside the surfaces in a <varname>GEOMETRYCOLLECTION</varname>. Where the computation cannot decide a meeting or an order of the boundaries, the function raises an error rather than answer an approximation.</para>
 			</listitem>
 
 			<listitem xml:id="tcbuffer_centroid">
