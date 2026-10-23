@@ -3029,10 +3029,42 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
    * its circle (cx, py) lies on, decided exactly: a ray touching the circle
    * at its top or bottom crosses nothing */
   if (sh == 2 && e->centred)
-  {
     sh = - arc_circle_side(e, e->cx, py);
-    if (sh == 0)
+  if (sh == 0 && e->centred)
+  {
+    /* The ray touches the circle at its top or bottom, (cx, py). The
+     * half-open rule reads the ray as passing just above a point on it, as
+     * for the ends of a segment: above the top it misses the circle, and
+     * just above the bottom it crosses the circle on either side of it, so
+     * a piece holding the bottom within it is crossed twice, up and down,
+     * which leaves the count even and the winding number as it is, while a
+     * piece starting at the bottom is crossed once, rising from it, and one
+     * ending there once, falling into it */
+    if (py > e->cy)
       return true;
+    /* The bottom stands a quarter of a turn from the start of a
+     * counterclockwise circle and three quarters from that of a clockwise
+     * one (#arr_stretch_box): an end whose position keeps clear of it is
+     * not there */
+    double bottom = a->ccw[p->edge] ? 1.0 : 3.0;
+    if ((p->pfrom.hi < bottom || p->pfrom.lo > bottom) &&
+        (p->pto.hi < bottom || p->pto.lo > bottom))
+      return true;
+    int sf = arr_node_side(a, p->from, py), st = arr_node_side(a, p->to, py);
+    if (sf == 2 || st == 2)
+      return false;
+    if ((sf != 0) == (st != 0))
+      return true;
+    if (px.lo != px.hi)
+      return false;
+    if (e->cx == px.lo)
+      return false;
+    if (e->cx < px.lo)
+      return true;
+    bool up = (sf == 0);
+    *w += up ? arr_weight(a, p->edge) : -arr_weight(a, p->edge);
+    (*c)++;
+    return true;
   }
   if (sh == -1)
     return true;
