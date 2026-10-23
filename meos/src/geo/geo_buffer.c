@@ -9232,8 +9232,12 @@ buffer_ring_box(const MeosArray *pieces, GBOX *box)
   }
   for (uint32_t i = 0; i < n; i++)
   {
-    if (! e[i].arc || cross_product_sign(e[i].x1, e[i].y1, e[i].x2,
-          e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0)
+    /* An arc whose three points are collinear is straight, but for one
+     * whose ends are one point: it is its whole circle, on the diameter to
+     * its middle, whose box #lw_arc_calculate_gbox_cartesian_2d reads */
+    bool whole = e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2;
+    if (! e[i].arc || (! whole && cross_product_sign(e[i].x1, e[i].y1,
+          e[i].x2, e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0))
       continue;
     double ax = e[i].x1 - e[i].mx, ay = e[i].y1 - e[i].my;
     double bx = e[i].x2 - e[i].mx, by = e[i].y2 - e[i].my;
