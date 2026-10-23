@@ -530,6 +530,10 @@ typedef struct
                                boundaries, the first edge of the second, 0
                                otherwise: the stretches of one boundary meet
                                at their ends alone (#arr_meet_curved) */
+  uint8_t *half;          /**< Where stretches of the two boundaries running
+                               along each other are merged, the boundary each
+                               edge is a stretch of, 2 for a stretch of both;
+                               NULL where @p split tells it */
 } Arr;
 
 /* The edge a meeting or a crossing refers to: the input segment of a
@@ -662,6 +666,17 @@ static inline int32_t
 arr_weight(const Arr *a, uint32_t edge)
 {
   return a->w ? a->w[edge] : 1;
+}
+
+/* Whether two edges are stretches of one of the two boundaries an
+ * arrangement of stretches merges, which meet at their ends alone: an
+ * accessor of its per-edge data, as #arr_weight */
+static inline bool
+arr_same_half(const Arr *a, uint32_t i, uint32_t j)
+{
+  if (a->half)
+    return a->half[i] < 2 && a->half[i] == a->half[j];
+  return a->split && (i < a->split) == (j < a->split);
 }
 
 /* The position of a point lying exactly on a segment, as an interval of its
@@ -2200,8 +2215,7 @@ arr_meet_curved(Arr *a, uint32_t i, uint32_t j)
   /* Two stretches of one boundary, which the arrangement that wrote it left
    * apart but at their ends, whose nodes are one where the ends are one
    * meeting (#arr_end_node) */
-  if (a->sup[i] == a->sup[j] ||
-      (a->split && (i < a->split) == (j < a->split)))
+  if (a->sup[i] == a->sup[j] || arr_same_half(a, i, j))
     return ARR_ANSWERED;
   const Edge *p = &a->e[i], *q = &a->e[j];
   if (! (p->centred || p->from) || ! (q->centred || q->from))
@@ -2213,6 +2227,14 @@ arr_meet_curved(Arr *a, uint32_t i, uint32_t j)
   ArrMeet m[2];
   int sign[2], n;
   ArrangeStatus st = arr_support_meets(a, i, j, m, sign, &n);
+  /* Two segments between tangent points on one line: the stretches sharing
+   * a stretch of it were merged before (#arr_merge_stretches), so these
+   * meet at an end at most, as #arr_meet_stretches tells it of segments */
+  if (st == ARR_OVERLAP && p->from && q->from)
+  {
+    int sh = arr_stretches_share(a, i, j);
+    return (sh == 0) ? ARR_ANSWERED : (sh == 1 ? ARR_OVERLAP : ARR_ORDER);
+  }
   if (st != ARR_ANSWERED)
     return st;
   for (int k = 0; k < n; k++)
@@ -5122,6 +5144,7 @@ typedef struct
   Ival *tfrom, *tto;
   ArrMeet *mfrom, *mto;
   int32_t *w;
+  uint8_t *half;
 } ArrStretchEdges;
 
 static void
@@ -5138,6 +5161,7 @@ arr_stretch_edges_alloc(ArrStretchEdges *se, uint32_t n)
   se->mfrom = palloc(sizeof(ArrMeet) * n);
   se->mto = palloc(sizeof(ArrMeet) * n);
   se->w = palloc(sizeof(int32_t) * n);
+  se->half = palloc(sizeof(uint8_t) * n);
   return;
 }
 
@@ -5149,6 +5173,8 @@ arr_stretch_edges_free(Arr *a, Edge *e)
   pfree(a->tfrom); pfree(a->tto); pfree(a->mfrom); pfree(a->mto);
   if (a->w)
     pfree(a->w);
+  if (a->half)
+    pfree(a->half);
   return;
 }
 
@@ -5179,14 +5205,35 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
   {
     uint32_t i = pairs[k].i, j = pairs[k].j;
     const Edge *p = &a->e[i], *q = &a->e[j];
-    /* Stretches of circles and of segments between tangent points running
-     * along each other are not answered (#arr_meet_curved) */
-    if (arr_is_arc(p) || arr_is_arc(q) || p->from || q->from)
+    /* Stretches of circles running along each other are not answered
+     * (#arr_meet_curved), nor a segment between tangent points along a
+     * segment of the input */
+    if (arr_is_arc(p) || arr_is_arc(q) || (p->from != NULL) != (q->from != NULL))
       continue;
-    Ival par = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
-      q->y2);
-    if (par.lo > 0.0 || par.hi < 0.0 || ! arr_one_line(p, q))
-      continue;
+    if (p->from)
+    {
+      /* Two segments between tangent points are on one line, sharing more
+       * than an end, where #towerseg_meet tells it, the ends of either not
+       * kept off the line of the other by the intervals holding them; two
+       * stretches of one boundary never run along each other */
+      if (a->sup[i] == a->sup[j] || arr_same_half(a, i, j))
+        continue;
+      const ArrNode *pa = &a->nodes[a->start[i]], *pb = &a->nodes[a->end[i]];
+      int s1 = arr_orient_ival(pa, pb, &a->nodes[a->start[j]]);
+      int s2 = arr_orient_ival(pa, pb, &a->nodes[a->end[j]]);
+      if ((s1 != 0 && s1 != 2) || (s2 != 0 && s2 != 2))
+        continue;
+      TowerMeet tm[2];
+      if (towerseg_meet(p, q, tm) != -1)
+        continue;
+    }
+    else
+    {
+      Ival par = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
+        q->x2, q->y2);
+      if (par.lo > 0.0 || par.hi < 0.0 || ! arr_one_line(p, q))
+        continue;
+    }
     int sh = arr_stretches_share(a, i, j);
     if (sh == 2)
     {
@@ -5251,6 +5298,8 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
       se.start[c] = a->start[i]; se.end[c] = a->end[i];
       se.tfrom[c] = a->tfrom[i]; se.tto[c] = a->tto[i];
       se.mfrom[c] = a->mfrom[i]; se.mto[c] = a->mto[i];
+      se.half[c] = a->half ? a->half[i] :
+        (a->split ? (uint8_t) (i >= a->split) : 2);
       se.w[c++] = arr_weight(a, i);
       continue;
     }
@@ -5335,9 +5384,14 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
       weight += rise[d];
       if (weight == 0)
         continue;
-      /* The segment of a member covering it, walked along the line */
+      /* The segment of a member covering it, walked along the line; a
+       * segment between tangent points runs in the sense of its edge
+       * (#arr_stretches_write), so it is that of a member running the way
+       * the winding number rises, which carries the rise as it is */
+      bool tower = (a->e[r].from != NULL);
       uint32_t k = 0;
-      while (k < m && ! (lo[k] <= d && hi[k] > d))
+      while (k < m && ! (lo[k] <= d && hi[k] > d &&
+          (! tower || fwd[k] == (weight > 0))))
         k++;
       if (k == m)
       {
@@ -5348,21 +5402,29 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
       se.e[c] = a->e[x];
       se.sup[c] = a->sup[x];
       se.erev[c] = a->erev[x];
+      const ArrLinePoint *p0 = &pts[rep[d]], *p1 = &pts[rep[d + 1]];
       if (! fwd[k])
       {
-        Edge *ex = &se.e[c];
-        double t;
-        t = ex->x1; ex->x1 = ex->x2; ex->x2 = t;
-        t = ex->y1; ex->y1 = ex->y2; ex->y2 = t;
-        se.erev[c] = ! se.erev[c];
+        if (tower)
+        {
+          const ArrLinePoint *t = p0; p0 = p1; p1 = t;
+        }
+        else
+        {
+          Edge *ex = &se.e[c];
+          double t;
+          t = ex->x1; ex->x1 = ex->x2; ex->x2 = t;
+          t = ex->y1; ex->y1 = ex->y2; ex->y2 = t;
+          se.erev[c] = ! se.erev[c];
+        }
       }
-      const ArrLinePoint *p0 = &pts[rep[d]], *p1 = &pts[rep[d + 1]];
       const ArrNode *n0 = &a->nodes[p0->node], *n1 = &a->nodes[p1->node];
       se.start[c] = p0->node; se.end[c] = p1->node;
       se.tfrom[c] = arr_node_position(&se.e[c], n0);
       se.tto[c] = arr_node_position(&se.e[c], n1);
       se.mfrom[c] = p0->m; se.mto[c] = p1->m;
-      se.w[c++] = weight;
+      se.half[c] = 2;
+      se.w[c++] = (tower && ! fwd[k]) ? - weight : weight;
     }
     mg->scount[r] = c - mg->sfirst[r];
   }
@@ -5378,6 +5440,7 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
   a->tfrom = se.tfrom; a->tto = se.tto;
   a->mfrom = se.mfrom; a->mto = se.mto;
   a->w = se.w;
+  a->half = se.half;
   if (st != ARR_ANSWERED)
   {
     pfree(mg->root); pfree(mg->newof); pfree(mg->sfirst); pfree(mg->scount);
