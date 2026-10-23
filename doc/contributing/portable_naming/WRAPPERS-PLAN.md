@@ -325,6 +325,7 @@ come before its push.
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind and speed receipts; the CGAL oracle receipt is the tcbuffer lane's |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
+| `fix/ever-always-wrappers-return-boolean` | `af61153d6a` (on `5d3ddbd256`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | fork only, never built; rebase and receipts owed |
 
 Left, each for the owner first:
 
