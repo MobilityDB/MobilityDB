@@ -26,27 +26,32 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Completeness lint for the temporal spatial-relationship (geo x tgeo) grid.
+"""Completeness lint for the temporal spatial-relationship grids.
 
-Every spatial relation must expose the COMPLETE grid
+Every spatial relation of a temporal family must expose the COMPLETE grid
 
-    {e, a, t} x {tgeo_geo, geo_tgeo}
+    {e, a, t} x {<directions of the family>}
 
 as REAL, doxygen-tagged public MEOS-C symbols, so that every binding code
 generator (PyMEOS / JMEOS / MEOS.NET / MobilityDuck / ...) can derive the
-geo-first overloads uniformly, with no relation, direction or binding
-special-cased.
+static-first overloads uniformly, with no relation, direction or binding
+special-cased.  The families and their directions are
 
-For commutative relations (disjoint, intersects, touches, dwithin) the
-`geo_tgeo` direction is a thin argument-swap wrapper over the same relation's
-`tgeo_geo` public function; for asymmetric relations (contains, covers) the
-`geo_tgeo` direction is an independent kernel.  Either way, both directions
-must exist as public symbols carrying an `@ingroup` and a `@csqlfn` doxygen
+    tgeo      {tgeo_geo, geo_tgeo}
+    tcbuffer  {tcbuffer_geo, geo_tcbuffer, tcbuffer_cbuffer, cbuffer_tcbuffer}
+
+For commutative relations (disjoint, intersects, touches, dwithin) a
+static-first direction is a thin argument-swap wrapper over the same
+relation's temporal-first public function; for asymmetric relations
+(contains, covers) it is an independent kernel.  Either way, every direction
+must exist as a public symbol carrying an `@ingroup` and a `@csqlfn` doxygen
 tag.
 
-The public symbols live in two geo source files:
-  * ever/always (e, a) -> meos/src/geo/tgeo_spatialrels.c
-  * temporal    (t)    -> meos/src/geo/tspatial_tempspatialrels.c
+The public symbols live in two source files per family:
+  * tgeo      ever/always (e, a) -> meos/src/geo/tgeo_spatialrels.c
+              temporal    (t)    -> meos/src/geo/tspatial_tempspatialrels.c
+  * tcbuffer  ever/always (e, a) -> meos/src/cbuffer/tcbuffer_spatialrels.c
+              temporal    (t)    -> meos/src/cbuffer/tcbuffer_tempspatialrels.c
 
 Usage:
   check_spatialrel_orthogonality.py            check every cell (CI guard)
@@ -61,10 +66,18 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# The source files that hold the public spatiotemporal-relationship symbols.
-SOURCES = [
-    'meos/src/geo/tgeo_spatialrels.c',          # ever/always (e, a)
-    'meos/src/geo/tspatial_tempspatialrels.c',  # temporal (t)
+# (family, the source files that hold its public spatiotemporal-relationship
+# symbols, the directions of its grid)
+FAMILIES = [
+    ('tgeo',
+     ['meos/src/geo/tgeo_spatialrels.c',            # ever/always (e, a)
+      'meos/src/geo/tspatial_tempspatialrels.c'],   # temporal (t)
+     ['tgeo_geo', 'geo_tgeo']),
+    ('tcbuffer',
+     ['meos/src/cbuffer/tcbuffer_spatialrels.c',      # ever/always (e, a)
+      'meos/src/cbuffer/tcbuffer_tempspatialrels.c'],  # temporal (t)
+     ['tcbuffer_geo', 'geo_tcbuffer', 'tcbuffer_cbuffer',
+      'cbuffer_tcbuffer']),
 ]
 
 # (relation, commutative).  The `commutative` flag is the ONLY per-relation
@@ -80,7 +93,6 @@ RELATIONS = [
 ]
 
 QUANTIFIERS = ['e', 'a', 't']
-DIRECTIONS = ['tgeo_geo', 'geo_tgeo']
 
 
 def read_lines(path):
@@ -133,38 +145,40 @@ def find_symbol(files, symbol):
 def main():
     """Check every grid cell; print gaps and exit non-zero if any."""
     table = len(sys.argv) > 1 and sys.argv[1] == '--table'
-    files = {}
-    for rel in SOURCES:
-        path = os.path.join(ROOT, rel)
-        if not os.path.exists(path):
-            print(f'ERROR: missing source file {rel}', file=sys.stderr)
-            sys.exit(2)
-        files[rel] = read_lines(path)
-
     missing, untagged = [], []
-    for rel, commutative in RELATIONS:
-        for q in QUANTIFIERS:
-            for direction in DIRECTIONS:
-                symbol = f'{q}{rel}_{direction}'
-                found = find_symbol(files, symbol)
-                if found is None:
-                    status = 'MISSING'
-                    missing.append(symbol)
-                elif not (found[0] and found[1]):
-                    lacks = []
-                    if not found[0]:
-                        lacks.append('@ingroup')
-                    if not found[1]:
-                        lacks.append('@csqlfn')
-                    status = 'UNTAGGED (' + ', '.join(lacks) + ')'
-                    untagged.append(symbol)
-                else:
-                    status = 'ok'
-                if table or status != 'ok':
-                    flag = 'commutative' if commutative else 'asymmetric'
-                    print(f'  {symbol:28s} [{flag:11s}] {status}')
+    total = 0
+    for _family, sources, directions in FAMILIES:
+        files = {}
+        for rel in sources:
+            path = os.path.join(ROOT, rel)
+            if not os.path.exists(path):
+                print(f'ERROR: missing source file {rel}', file=sys.stderr)
+                sys.exit(2)
+            files[rel] = read_lines(path)
 
-    total = len(RELATIONS) * len(QUANTIFIERS) * len(DIRECTIONS)
+        for rel, commutative in RELATIONS:
+            for q in QUANTIFIERS:
+                for direction in directions:
+                    symbol = f'{q}{rel}_{direction}'
+                    found = find_symbol(files, symbol)
+                    if found is None:
+                        status = 'MISSING'
+                        missing.append(symbol)
+                    elif not (found[0] and found[1]):
+                        lacks = []
+                        if not found[0]:
+                            lacks.append('@ingroup')
+                        if not found[1]:
+                            lacks.append('@csqlfn')
+                        status = 'UNTAGGED (' + ', '.join(lacks) + ')'
+                        untagged.append(symbol)
+                    else:
+                        status = 'ok'
+                    if table or status != 'ok':
+                        flag = 'commutative' if commutative else 'asymmetric'
+                        print(f'  {symbol:28s} [{flag:11s}] {status}')
+        total += len(RELATIONS) * len(QUANTIFIERS) * len(directions)
+
     if missing or untagged:
         print(f'\nFAIL: {len(missing)} missing, {len(untagged)} untagged '
               f'of {total} cells')

@@ -1287,6 +1287,34 @@ adisjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer are ever
+ * disjoint, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Edisjoint_geo_tcbuffer()
+ */
+int
+edisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return edisjoint_tcbuffer_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer are always
+ * disjoint, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Adisjoint_geo_tcbuffer()
+ */
+int
+adisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return adisjoint_tcbuffer_geo(temp, gs);
+}
+
+/**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer and a circular buffer are ever
  * disjoint, 0 if not, and -1 on error
@@ -1362,6 +1390,34 @@ int
 adisjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return ea_disjoint_tcbuffer_cbuffer(temp, cb, ALWAYS);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer are ever
+ * disjoint, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Edisjoint_cbuffer_tcbuffer()
+ */
+int
+edisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return edisjoint_tcbuffer_cbuffer(temp, cb);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer are
+ * always disjoint, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Adisjoint_cbuffer_tcbuffer()
+ */
+int
+adisjoint_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return adisjoint_tcbuffer_cbuffer(temp, cb);
 }
 
 /*****************************************************************************/
@@ -1519,6 +1575,34 @@ aintersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   return ea_intersects_tcbuffer_geo(temp, gs, ALWAYS);
 }
 
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer ever intersect,
+ * 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Eintersects_geo_tcbuffer()
+ */
+int
+eintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return eintersects_tcbuffer_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer always
+ * intersect, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Aintersects_geo_tcbuffer()
+ */
+int
+aintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return aintersects_tcbuffer_geo(temp, gs);
+}
+
 /*****************************************************************************/
 
 /**
@@ -1599,6 +1683,34 @@ int
 aintersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return ea_intersects_tcbuffer_cbuffer(temp, cb, ALWAYS);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer ever
+ * intersect, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Eintersects_cbuffer_tcbuffer()
+ */
+int
+eintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return eintersects_tcbuffer_cbuffer(temp, cb);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer always
+ * intersect, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Aintersects_cbuffer_tcbuffer()
+ */
+int
+aintersects_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return aintersects_tcbuffer_cbuffer(temp, cb);
 }
 
 /*****************************************************************************/
@@ -1768,6 +1880,34 @@ atouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   return ea_touches_tcbuffer_geo(temp, gs, ALWAYS);
 }
 
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer ever touch, 0 if
+ * not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Etouches_geo_tcbuffer()
+ */
+int
+etouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return etouches_tcbuffer_geo(temp, gs);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer always touch, 0
+ * if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Atouches_geo_tcbuffer()
+ */
+int
+atouches_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return atouches_tcbuffer_geo(temp, gs);
+}
+
 /*****************************************************************************/
 
 /**
@@ -1843,6 +1983,34 @@ int
 atouches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   return ea_touches_tcbuffer_cbuffer(temp, cb, ALWAYS); 
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer ever
+ * touch, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Etouches_cbuffer_tcbuffer()
+ */
+int
+etouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return etouches_tcbuffer_cbuffer(temp, cb);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer always
+ * touch, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @csqlfn #Atouches_cbuffer_tcbuffer()
+ */
+int
+atouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
+{
+  return atouches_tcbuffer_cbuffer(temp, cb);
 }
 
 /*****************************************************************************/
@@ -1995,6 +2163,36 @@ adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
   return ea_dwithin_tcbuffer_geo(temp, gs, dist, ALWAYS, INVERT_NO);
 }
 
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer are ever within
+ * the given distance, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_geo_tcbuffer()
+ */
+int
+edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
+{
+  return edwithin_tcbuffer_geo(temp, gs, dist);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a geometry and a temporal circular buffer are always
+ * within the given distance, 0 if not, and -1 on error
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal circular buffer
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_geo_tcbuffer()
+ */
+int
+adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
+{
+  return adwithin_tcbuffer_geo(temp, gs, dist);
+}
+
 /*****************************************************************************/
 
 /**
@@ -2050,6 +2248,36 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, dist, ALWAYS);
   pfree(ctemp);
   return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer are ever
+ * within the given distance, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @param[in] dist Distance
+ * @csqlfn #Edwithin_cbuffer_tcbuffer()
+ */
+int
+edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
+{
+  return edwithin_tcbuffer_cbuffer(temp, cb, dist);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_ever
+ * @brief Return 1 if a circular buffer and a temporal circular buffer are
+ * always within the given distance, 0 if not, and -1 on error
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @param[in] dist Distance
+ * @csqlfn #Adwithin_cbuffer_tcbuffer()
+ */
+int
+adwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
+{
+  return adwithin_tcbuffer_cbuffer(temp, cb, dist);
 }
 
 /*****************************************************************************/
