@@ -121,7 +121,7 @@ wrapper and the MEOS function it reaches.
   (`1cbb831a57`).
 - **The cell instant constructors** `th3index(h3index, timestamptz)`,
   `tquadbin(quadbin, timestamptz)`, `ts2cell(s2cell, timestamptz)`: branch
-  `meos/cell-instants-answer-the-constructor` (`00c6f1ab07`).
+  MobilityDB #3149, merged as `ebc0e1debb`.
 
 ## The tag only (44 wrappers, 46 signatures)
 
@@ -273,7 +273,7 @@ cover the number, time and geo sets only.
 
 `atTpcbox` keeps a patch whole when its bounds overlap the box; `atTpcboxFine` keeps only the
 points inside the box. The patch-level test reads the patch bounds in x and y only, so a box with
-Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`8977561ac2`) fixes it before the move.
+Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`6497012ac3`) fixes it before the move.
 
 ## Consistency of the tags
 
@@ -309,8 +309,8 @@ come before its push.
 | branch | commit | what it does | state |
 |---|---|---|---|
 | `fix/tjsonb-contained-operand-order` | `2245983d0e` | `tjsonbContained` answers `<@`, not `@>` | merged as MobilityDB #3146 (`89ec3ab98d`) |
-| `fix/tpcpatch-tpcbox-z` | `8977561ac2` (on `89ec3ab98d`) | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
-| `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` (on `d6c4c41655`) | the cell instant constructors carry their `@csqlfn` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `fix/tpcpatch-tpcbox-z` | `6497012ac3` (on `ebc0e1debb`) | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` | the cell instant constructors carry their `@csqlfn` | merged as MobilityDB #3149 (`ebc0e1debb`) |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
@@ -497,7 +497,7 @@ regression suite answers as before.
 | `Tdistance_tnumber_number` | tDistance(tbigint, bigint) | tdistance_tbigint_bigint (after tdistance_tint_int) |
 | `Temporal_value_at_timestamptz` | valueAtTimestamp(tposechain, timestamptz) | tposechain_value_at_timestamptz (after tpose_value_at_timestamptz) |
 | `Textset_as_jsonbset` | jsonbset(textset) | jsonbfunc_jsonbset(s, datum_text_to_jsonb) -> propose Set *textset_to_jsonbset(const Set *s) |
-| `Tinstant_constructor` | th3index(h3index, timestamptz); tquadbin(quadbin, timestamptz); ts2cell(s2cell, timestamptz) | the cell instant constructors, branch meos/cell-instants-answer-the-constructor |
+| `Tinstant_constructor` | th3index(h3index, timestamptz); tquadbin(quadbin, timestamptz); ts2cell(s2cell, timestamptz) | the cell instant constructors, MobilityDB #3149 (merged) |
 | `Tpcpatch_at_geometry` | atGeometry(tpcpatch, geometry) | propose Temporal *tpcpatch_at_geom(const Temporal *temp, const GSERIALIZED *gs) |
 | `Tpcpatch_at_tpcbox` | atTpcbox(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_at_tpcbox(const Temporal *temp, const TPCBox *box, bool border_inc) |
 | `Tpcpatch_at_tpcbox_fine` | atTpcboxFine(tpcpatch, tpcbox, boolean) | propose Temporal *tpcpatch_at_tpcbox_fine(const Temporal *temp, const TPCBox *box, bool border_inc) |
