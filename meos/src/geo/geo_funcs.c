@@ -5991,6 +5991,15 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
           bool left = arc1 ? (ccw1 == out1) : (ccw2 == out2);
           result = (left == arc1) ? 1 : -1;
         }
+        else if (e1->centred && e2->centred && e1->radius != e2->radius)
+        {
+          /* Two whole circles touching at the point: the one bending
+           * further left, the larger of the curvatures 1/r signed by the
+           * side each bends to, comes after (#edges_turn_cmp_meet) */
+          bool left1 = (ccw1 == out1), left2 = (ccw2 == out2);
+          result = (left1 != left2) ? (left1 ? 1 : -1) :
+            (((e1->radius < e2->radius) == left1) ? 1 : -1);
+        }
       }
     }
   }
@@ -7768,6 +7777,20 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
        * counterclockwise or arrives at it clockwise (#edges_turn_cmp_exact) */
       bool left = arc1 ? (o->ccw1 == o->out1) : (o->ccw2 == o->out2);
       return (left == arc1) ? 1 : -1;
+    }
+    /* Both arcs, or neither */
+    if (arc1)
+    {
+      /* Two circles touching at the point: the one bending further left,
+       * the larger of the curvatures 1/r signed by the side each bends
+       * to, comes after, as an arc after a segment above */
+      bool left1 = (o->ccw1 == o->out1), left2 = (o->ccw2 == o->out2);
+      if (left1 != left2)
+        return left1 ? 1 : -1;
+      double r1 = o->e1->radius, r2 = o->e2->radius;
+      if (r1 == r2)
+        return 2;
+      return ((r1 < r2) == left1) ? 1 : -1;
     }
   }
   return 2;
