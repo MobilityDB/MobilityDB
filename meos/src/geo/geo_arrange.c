@@ -3255,6 +3255,44 @@ arr_node_circle_right(const Arr *a, uint32_t v, const Edge *e)
   return meet_point_y_side(&at, e->cy) == 0;
 }
 
+/* The sign of the x of node v less that of the point of the circle of the
+ * centred arc e furthest along x, cx + r: -1, 0 or 1, 2 where it is not
+ * told; @p same tells whether the node is that point. A node no double
+ * holds is read in its tower (#meet_point_x_side, #meet_point_y_side), a
+ * vertex against the sum read with its rounding error (two-sum), as
+ * #arr_node_circle_right reads the height */
+static int
+arr_node_right_x(const Arr *a, uint32_t v, const Edge *e, bool *same)
+{
+  const ArrNode *nd = &a->nodes[v];
+  *same = false;
+  if (nd->vertex)
+  {
+    double s = e->cx + e->radius;
+    double bv = s - e->cx;
+    double err = (e->cx - (s - bv)) + (e->radius - bv);
+    int c = (nd->x > s) ? 1 : (nd->x < s) ? -1 :
+      ((err > 0.0) ? -1 : (err < 0.0) ? 1 : 0);
+    *same = (c == 0 && nd->y == e->cy);
+    return c;
+  }
+  if (! nd->tower)
+    return 2;
+  MeetPoint at = arr_meet_point(&nd->meet);
+  at.p = nd->meet.p; at.q = nd->meet.q;
+  int c = meet_point_x_side(&at, e->cx, e->radius);
+  if (c == 2)
+    return 2;
+  if (c == 0)
+  {
+    int y = meet_point_y_side(&at, e->cy);
+    if (y == 2)
+      return 2;
+    *same = (y == 0);
+  }
+  return c;
+}
+
 /* Where node v of the circle of centred arc j stands against the point of
  * that circle furthest along x, (cx + r, cy), walked in the sense of the arc
  * from its start, the point furthest along -x: -1 before it, 1 after it, 0
@@ -3698,6 +3736,29 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         if (c >= 0)
           continue;
       }
+      /* The point of a centred arc furthest along x against a node, compared
+       * exactly (#arr_node_right_x): the one further right is labelled
+       * first, and at one x two points apart enclose neither */
+      bool karc = ek->on_arc && a->e[a->pieces[ek->piece].edge].centred;
+      bool marc = em->on_arc && a->e[a->pieces[em->piece].edge].centred;
+      if (karc != marc && ! (karc ? em->on_arc : ek->on_arc))
+      {
+        const ArrExtreme *earc = karc ? ek : em, *enode = karc ? em : ek;
+        bool same;
+        int s = arr_node_right_x(a, enode->node,
+          &a->e[a->pieces[earc->piece].edge], &same);
+        /* The sign of the x of the component at m less that of the one
+         * at k */
+        int d = (s == 2) ? 2 : (karc ? s : - s);
+        if (d < 0 || (d == 0 && ! same))
+          continue;
+        if (d > 0)
+        {
+          ArrSweep t = order[k]; order[k] = order[m]; order[m] = t;
+          m = k;
+          continue;
+        }
+      }
       const double *bk = cbox[order[k].id], *bm = cbox[order[m].id];
       bool kinm = bk[0] >= bm[0] && bk[1] <= bm[1] && bk[2] >= bm[2] &&
         bk[3] <= bm[3];
@@ -3768,6 +3829,41 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
             px = ce->cx;
             py = ce->cy + sgn * ce->radius;
             told = arr_point_clear(a, px, py, ival(px), ty, cpieces, coff,
+                (const double (*)[4]) lbox, nlab) &&
+              arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
+                nlab, ival(px), py, &outside);
+          }
+        }
+      /* And from the points of those circles half way between, an eighth
+       * of a turn either side of their top and bottom, which a circle
+       * touching two lines at its top and bottom keeps clear of them:
+       * (cx +- r sqrt(1/2), cy +- r sqrt(1/2)), held by intervals and
+       * rounded once, t quarters of a turn from the start of the circle,
+       * at the angle pi + t pi / 2 counterclockwise, pi - t pi / 2
+       * clockwise */
+      for (uint32_t c = 0; c < cn && ! told; c++)
+        for (uint32_t h = a->hoff[comp[c]]; h < a->hoff[comp[c] + 1] &&
+             ! told; h++)
+        {
+          const ArrPiece *cp = &a->pieces[a->halves[h].piece];
+          const Edge *ce = &a->e[cp->edge];
+          if (! a->halves[h].out || ! ce->centred)
+            continue;
+          Ival hr = ival_mul(ival(ce->radius), ival_sqrt(ival(0.5)));
+          for (int q = 0; q < 4 && ! told; q++)
+          {
+            double at = q + 0.5;
+            if (a->sup && ! (cp->pfrom.hi < at && at < cp->pto.lo))
+              continue;
+            /* The signs of the cosine and the sine at that angle */
+            static const int ccwx[4] = {-1, 1, 1, -1};
+            static const int ccwy[4] = {-1, -1, 1, 1};
+            int sx = ccwx[q], sy = ce->ccw ? ccwy[q] : - ccwy[q];
+            Ival tx = ival_add(ival(ce->cx), sx > 0 ? hr : ival_neg(hr));
+            Ival ty = ival_add(ival(ce->cy), sy > 0 ? hr : ival_neg(hr));
+            px = 0.5 * (tx.lo + tx.hi);
+            py = 0.5 * (ty.lo + ty.hi);
+            told = arr_point_clear(a, px, py, tx, ty, cpieces, coff,
                 (const double (*)[4]) lbox, nlab) &&
               arr_winding_at(a, cpieces, coff, (const double (*)[4]) lbox,
                 nlab, ival(px), py, &outside);
