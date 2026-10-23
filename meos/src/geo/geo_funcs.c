@@ -7054,6 +7054,26 @@ typedef struct
   TowerMeet *out;
 } TowersegMeetArg;
 
+/* The meeting an end of a segment is: the point where its tangent touches
+ * a circle for a segment between tangent points, the vertex its double
+ * holds for a segment of the input */
+static inline void
+towerseg_end_meet(MeetPoint *m, const Edge *e, int end)
+{
+  if (e->from)
+  {
+    m->kind = MEET_TANGENT;
+    m->tp = end ? e->to : e->from;
+  }
+  else
+  {
+    m->kind = MEET_VERTEX;
+    m->x = end ? e->x2 : e->x1;
+    m->y = end ? e->y2 : e->y1;
+  }
+  return;
+}
+
 /* Two segments between tangent points */
 static int
 towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
@@ -7101,8 +7121,7 @@ towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
       if (at < 0)
         continue;
       memset(&out[n], 0, sizeof(TowerMeet));
-      out[n].m.kind = MEET_TANGENT;
-      out[n].m.tp = j ? q->to : q->from;
+      towerseg_end_meet(&out[n].m, q, j);
       out[n].end_p = at;
       out[n].end_q = j;
       n++;
@@ -7130,16 +7149,15 @@ towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
     if (seen)
       continue;
     memset(&out[n], 0, sizeof(TowerMeet));
-    out[n].m.kind = MEET_TANGENT;
     if (j < 2)
     {
-      out[n].m.tp = j ? q->to : q->from;
+      towerseg_end_meet(&out[n].m, q, j);
       out[n].end_q = j;
       out[n].end_p = at;
     }
     else
     {
-      out[n].m.tp = (j - 2) ? p->to : p->from;
+      towerseg_end_meet(&out[n].m, p, j - 2);
       out[n].end_p = j - 2;
       out[n].end_q = at;
     }
@@ -7178,10 +7196,7 @@ towerseg_meet_circle(TowerCtx *ctx, const Edge *p, const Edge *q,
     out[n].end_q = -1;
     out[n].end_p = at;
     if (at >= 0)
-    {
-      out[n].m.kind = MEET_TANGENT;
-      out[n].m.tp = at ? p->to : p->from;
-    }
+      towerseg_end_meet(&out[n].m, p, at);
     else
     {
       out[n].m.kind = MEET_LINECIRCLE;
