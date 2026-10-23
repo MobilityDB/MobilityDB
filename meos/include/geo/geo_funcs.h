@@ -356,9 +356,14 @@ typedef enum
   MEET_TANGENT,         /**< The point tp where a tangent touches a circle */
   MEET_LINES,           /**< Segments p and q between tangent points
                              crossing */
-  MEET_LINECIRCLE       /**< Segment p between tangent points meeting the
+  MEET_LINECIRCLE,      /**< Segment p between tangent points meeting the
                              circle of the centred arc q at the root sigma
                              along it (#towerseg_meet) */
+  MEET_ORIGIN           /**< The point of the circle of the centred arc p
+                             furthest along -x, where the circle starts
+                             (sigma 0) or ends (sigma 1): read by the
+                             arrangement alone, before or after every other
+                             point of the circle */
 } MeetKind;
 
 typedef struct
@@ -395,6 +400,8 @@ extern int meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b);
 extern int towerseg_side(const Edge *s, double px, double py);
 extern int meet_point_y_side(const MeetPoint *m, double py);
+extern int meet_point_x_side(const MeetPoint *m, double ox, double d);
+extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
 extern bool meet_point_bounds(const MeetPoint *m, double *x, double *y,
   double box[4]);
 extern int meets_same_point(const MeetPoint *a, const MeetPoint *b);

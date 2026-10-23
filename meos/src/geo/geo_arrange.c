@@ -412,6 +412,8 @@ typedef struct
                           square roots: every question about it reads
                           @p meet (#towerseg_meet) */
   ArrMeet meet;      /**< For such a node, the meeting it is */
+  const Edge *origin; /**< The whole circle starting and ending at it, the
+                          point of the circle furthest along -x, or NULL */
 } ArrNode;
 
 /* A cut of an edge at a node interior to it, with its position along the
@@ -446,27 +448,27 @@ typedef struct
   bool result, flip, used;
 } ArrPiece;
 
-/* An end of a stretch: an input vertex, exact, or the crossing of the lines
- * of two input segments, which places it exactly, its coordinates rounded
- * once where it was found */
+/* A stretch of the boundary of a region: the part of an input edge between
+ * two ends, walked from the one to the other with the region on its left.
+ * The edge is a segment, whose line holds the stretch, a whole circle
+ * (#edges_add_circle) or a segment between tangent points
+ * (#edges_add_tangent_segment). Each end is the meeting that places it
+ * exactly: an input vertex, the crossing of two input segments, a tangent
+ * point, a crossing of the circles and segments between tangent points, or
+ * where a circle starts and ends (#MEET_ORIGIN), its coordinates rounded once
+ * where it was found. The boundary of the union of surfaces is carried from
+ * one arrangement to the next as its stretches (#arrange_union_surfaces), so
+ * that every node of every arrangement is one of these meetings of input
+ * edges, decided as exactly as those of the first */
 typedef struct
 {
-  double x, y;
-  const Edge *p, *q;   /**< The two segments, NULL for a vertex */
-} ArrEnd;
-
-/* A stretch of the boundary of a region: the part of the line of an input
- * segment between two ends, walked from the one to the other with the region
- * on its left. The boundary of the union of surfaces is carried from one
- * arrangement to the next as its stretches (#arrange_union_surfaces), so that
- * every node of every arrangement is an input vertex or the crossing of two
- * input segments, decided as exactly as those of the first */
-typedef struct
-{
-  const Edge *s;       /**< The input segment it lies on */
+  const Edge *s;       /**< The input edge it lies on */
   bool rev;            /**< Walked from the end of the segment towards its
                             start */
-  ArrEnd from, to;
+  ArrMeet from, to;
+  Ival fbox[2], tbox[2]; /**< The intervals holding each end, as the
+                            arrangement that wrote it placed it, empty where
+                            none did */
 } ArrStretch;
 
 /* A piece seen from a node: leaving it along the piece's direction, or
@@ -524,6 +526,10 @@ typedef struct
   const TangentPoint **tptab;
   uint32_t *tpnode;
   uint32_t tpmask;
+  uint32_t split;         /**< Where the edges are the stretches of two
+                               boundaries, the first edge of the second, 0
+                               otherwise: the stretches of one boundary meet
+                               at their ends alone (#arr_meet_curved) */
 } Arr;
 
 /* The edge a meeting or a crossing refers to: the input segment of a
@@ -562,6 +568,7 @@ arr_node_new(Arr *a, double x, double y, bool vertex, int32_t cross)
   nd->tower = false;
   nd->xp = nd->xq = NULL;
   nd->xsign = 0;
+  nd->origin = NULL;
   nd->bx = ival(x); nd->by = ival(y);
   return a->nnodes++;
 }
@@ -614,6 +621,8 @@ arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos, ArrMeet meet)
   return;
 }
 
+static inline bool arr_is_arc(const Edge *e);
+
 static int32_t
 arr_cross_new(Arr *a, uint32_t node, uint32_t ea, uint32_t eb, int sign)
 {
@@ -629,13 +638,17 @@ arr_cross_new(Arr *a, uint32_t node, uint32_t ea, uint32_t eb, int sign)
   nd->xp = arr_edge_ref(a, ea);
   nd->xq = arr_edge_ref(a, eb);
   /* The edge of a stretch may run against its segment, which the sign of
-   * the crossing read off the segments follows */
-  nd->xsign = a->sup ? cross_product_sign(nd->xp->x1, nd->xp->y1,
+   * the crossing read off the segments follows; a stretch of a circle or of
+   * a segment between tangent points runs along its edge */
+  bool lines = a->sup && ! arr_is_arc(nd->xp) && ! arr_is_arc(nd->xq) &&
+    ! nd->xp->from && ! nd->xq->from;
+  nd->xsign = lines ? cross_product_sign(nd->xp->x1, nd->xp->y1,
     nd->xp->x2, nd->xp->y2, nd->xq->x1, nd->xq->y1, nd->xq->x2, nd->xq->y2) :
     sign;
   return (int32_t) a->ncross++;
 }
 
+/* Whether an edge is an arc, the kind test #arr_weight sits beside */
 static inline bool
 arr_is_arc(const Edge *e)
 {
@@ -688,6 +701,9 @@ arr_cut_vertex(Arr *a, uint32_t i, double x, double y)
 /* A node placed in a tower of square roots: rounded once, its intervals
  * the box holding it exactly (#meet_point_bounds); UINT32_MAX where it
  * cannot be placed */
+static uint32_t arr_tower_node_at(Arr *a, const ArrMeet *m, double x,
+  double y, const double box[4]);
+
 static uint32_t
 arr_tower_node(Arr *a, const ArrMeet *m)
 {
@@ -696,6 +712,15 @@ arr_tower_node(Arr *a, const ArrMeet *m)
   double x, y, box[4];
   if (! meet_point_bounds(&mp, &x, &y, box))
     return UINT32_MAX;
+  return arr_tower_node_at(a, m, x, y, box);
+}
+
+/* The node of #arr_tower_node, its point already placed by
+ * #meet_point_bounds */
+static uint32_t
+arr_tower_node_at(Arr *a, const ArrMeet *m, double x, double y,
+  const double box[4])
+{
   uint32_t node = arr_node_new(a, x, y, false, -1);
   ArrNode *nd = &a->nodes[node];
   nd->bx = ival_out(box[0], box[1]);
@@ -706,11 +731,36 @@ arr_tower_node(Arr *a, const ArrMeet *m)
   return node;
 }
 
+/* The node of a meeting no double holds, placed by the intervals @p box
+ * holding it where an arrangement before placed it, its coordinates then
+ * those it wrote, or else anew (#arr_tower_node) */
+static uint32_t
+arr_end_tower_node(Arr *a, const ArrMeet *m, const Ival *box)
+{
+  if (! box || box[0].lo > box[0].hi)
+    return arr_tower_node(a, m);
+  double b[4] = {box[0].lo, box[0].hi, box[1].lo, box[1].hi};
+  return arr_tower_node_at(a, m, m->x, m->y, b);
+}
+
 /* The node of a point where a tangent touches a circle, one per point,
  * found by the point that defines it; UINT32_MAX where it cannot be
  * placed. Two points of one value are made one node (#arr_arrange) */
 static uint32_t
+arr_tangent_node_at(Arr *a, const TangentPoint *tp, const ArrMeet *end,
+  const Ival *box);
+
+static uint32_t
 arr_tangent_node(Arr *a, const TangentPoint *tp)
+{
+  return arr_tangent_node_at(a, tp, NULL, NULL);
+}
+
+/* The node of #arr_tangent_node, placed where the intervals @p box are
+ * given at the coordinates of @p end, as an arrangement before placed it */
+static uint32_t
+arr_tangent_node_at(Arr *a, const TangentPoint *tp, const ArrMeet *end,
+  const Ival *box)
 {
   uintptr_t key = (uintptr_t) tp;
   uint64_t hk = (uint64_t) key * UINT64CONST(0x9E3779B97F4A7C15);
@@ -721,8 +771,9 @@ arr_tangent_node(Arr *a, const TangentPoint *tp)
       return a->tpnode[h];
     h = (h + 1) & a->tpmask;
   }
-  ArrMeet m = {MEET_TANGENT, NULL, NULL, 0, 0.0, 0.0, tp};
-  uint32_t node = arr_tower_node(a, &m);
+  ArrMeet m = {MEET_TANGENT, NULL, NULL, 0, end ? end->x : 0.0,
+    end ? end->y : 0.0, tp};
+  uint32_t node = arr_end_tower_node(a, &m, end ? box : NULL);
   if (node != UINT32_MAX)
   {
     a->tptab[h] = tp;
@@ -859,6 +910,36 @@ arr_same_add(Arr *a, uint32_t v, uint32_t w)
   return;
 }
 
+/* Whether two meetings of input edges are one point by what defines them:
+ * one description, the crossing sigma of circles p and q being the crossing
+ * -sigma of q and p, as #arcarc_meet_exact places them on either side of
+ * the line of the centres. Points of other descriptions are left to the
+ * arithmetic (#meets_order_exact) */
+static bool
+arr_meets_same(const ArrMeet *m1, const ArrMeet *m2)
+{
+  if (m1->kind != m2->kind)
+    return false;
+  switch (m1->kind)
+  {
+    case MEET_TANGENT:
+      return m1->tp == m2->tp;
+    case MEET_LINES:
+    case MEET_SEGSEG:
+      return (m1->p == m2->p && m1->q == m2->q) ||
+        (m1->p == m2->q && m1->q == m2->p);
+    case MEET_ARCARC:
+      if (! m1->p->centred || ! m1->q->centred)
+        return false;
+      return (m1->p == m2->p && m1->q == m2->q && m1->sigma == m2->sigma) ||
+        (m1->p == m2->q && m1->q == m2->p && m1->sigma == - m2->sigma);
+    case MEET_LINECIRCLE:
+      return m1->p == m2->p && m1->q == m2->q && m1->sigma == m2->sigma;
+    default:
+      return false;
+  }
+}
+
 /* Return how two points of the line of an edge are ordered along it, by
  * their positions and, where the intervals overlap, by #meets_order_exact:
  * -1, 1, 0 for one point, 2 where it cannot be told */
@@ -866,12 +947,25 @@ static int
 arr_line_order(const Arr *a, uint32_t i, Ival t1, const ArrMeet *m1, Ival t2,
   const ArrMeet *m2)
 {
+  /* Where a circle starts, before every other point of it, and where it
+   * ends, after every other: no other edge meets it there, as no edge
+   * meets the start of a whole circle (#arr_arrange) */
+  if (m1->kind == MEET_ORIGIN || m2->kind == MEET_ORIGIN)
+  {
+    if (m1->kind == m2->kind && m1->sigma == m2->sigma)
+      return 0;
+    if (m1->kind == MEET_ORIGIN)
+      return m1->sigma ? 1 : -1;
+    return m2->sigma ? -1 : 1;
+  }
+  if (arr_meets_same(m1, m2))
+    return 0;
   if (t1.hi < t2.lo)
     return -1;
   if (t2.hi < t1.lo)
     return 1;
   MeetPoint p1 = arr_meet_point(m1), p2 = arr_meet_point(m2);
-  return meets_order_exact(&a->e[i], false, &p1, &p2);
+  return meets_order_exact(&a->e[i], a->ccw && a->ccw[i], &p1, &p2);
 }
 
 /* Where a point of the line of a stretch lies against it */
@@ -1641,6 +1735,556 @@ arr_meet_tower(Arr *a, uint32_t i, uint32_t j)
   return ARR_ANSWERED;
 }
 
+/* The input edge a meeting found between edges i and j of an arrangement of
+ * stretches refers to: the edge of the stretch, which outlives the
+ * arrangement, for either of the two */
+static inline const Edge *
+arr_meet_ref(const Arr *a, const Edge *e, uint32_t i, uint32_t j)
+{
+  return (e == &a->e[i]) ? a->sup[i] : ((e == &a->e[j]) ? a->sup[j] : e);
+}
+
+/* Whether a tangent point lies on the circle of a centred arc as the point
+ * where its tangent touches that circle, the circle it was built on */
+static inline bool
+arr_tangent_on(const TangentPoint *tp, const Edge *c)
+{
+  return tp->k ? (tp->c2x == c->cx && tp->c2y == c->cy && tp->r2 == c->radius) :
+    (tp->c1x == c->cx && tp->c1y == c->cy && tp->r1 == c->radius);
+}
+
+/**
+ * @brief Return the meetings of segment s between tangent points with edge
+ * o where the tangent points that build them tell them without arithmetic,
+ * false where they do not
+ * @details As #towerseg_meet answers them: a segment ending at a point where
+ * its tangent touches the circle of @p o meets that circle there alone, a
+ * touching, and a chord of the circle at both ends; two segments sharing an
+ * end, not along one line, meet there alone
+ */
+static bool
+arr_support_meets_known(const Arr *a, uint32_t s, uint32_t o, ArrMeet m[2],
+  int sign[2], int *n)
+{
+  const Edge *p = &a->e[s], *q = &a->e[o];
+  const TangentPoint *ends[2] = {p->from, p->to};
+  *n = 0;
+  if (q->centred)
+  {
+    const bool on[2] = {arr_tangent_on(ends[0], q),
+      arr_tangent_on(ends[1], q)};
+    if (! on[0] && ! on[1])
+      return false;
+    for (int k = 0; k < 2; k++)
+      if (on[k])
+      {
+        m[*n] = (ArrMeet) {MEET_TANGENT, NULL, NULL, 0, 0.0, 0.0, ends[k]};
+        sign[(*n)++] = 0;
+      }
+    return true;
+  }
+  /* The segments of one hull are told apart by their ends: a tangent and
+   * a chord meet at one end, two tangents of a hull at none */
+  for (int k = 0; k < 2; k++)
+    if (ends[k] == q->from || ends[k] == q->to)
+    {
+      if (ends[1 - k] == q->from || ends[1 - k] == q->to)
+        return false;
+      m[0] = (ArrMeet) {MEET_TANGENT, NULL, NULL, 0, 0.0, 0.0, ends[k]};
+      sign[0] = 0;
+      *n = 1;
+      return true;
+    }
+  return false;
+}
+
+/**
+ * @brief Return the meetings of the whole circles and segments between
+ * tangent points two stretches lie on, decided exactly, with the sign of the
+ * cross product of the directions of the two at each, 0 for a touching
+ * @details As #arr_meet_tower and #arr_meet_arcs_exact find them for the
+ * edges themselves; the meetings refer to the input edges
+ * @return #ARR_OVERLAP where the two run along each other, #ARR_MEETING
+ * where a meeting is not told or the circles touch
+ */
+static ArrangeStatus
+arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
+  int sign[2], int *n)
+{
+  const Edge *p = &a->e[i], *q = &a->e[j];
+  *n = 0;
+  if (p->centred && q->centred)
+  {
+    if (arc_same_circle(p, q))
+      return ARR_OVERLAP;
+    /* Circles the intervals keep apart, or one within the other */
+    Ival dx = ival_sub(a->ccx[j], a->ccx[i]);
+    Ival dy = ival_sub(a->ccy[j], a->ccy[i]);
+    Ival d2 = ival_dot(dx, dy, dx, dy);
+    Ival rs = ival_add(ival(p->radius), ival(q->radius));
+    Ival rd = ival_sub(ival(p->radius), ival(q->radius));
+    if (ival_sign(ival_sub(d2, ival_mul(rs, rs))) == 1 ||
+        ival_sign(ival_sub(ival_mul(rd, rd), d2)) == 1)
+      return ARR_ANSWERED;
+    int meet, within[2][2];
+    arcarc_meet_exact(p, q, &meet, within);
+    if (meet < 0)
+      return ARR_ANSWERED;
+    if (meet == 0)
+      return ARR_MEETING;
+    int c12 = (a->ccw[i] ? 1 : -1) * (a->ccw[j] ? 1 : -1);
+    for (int r = 0; r < 2; r++)
+    {
+      int sigma = (r == 0) ? -1 : 1;
+      m[r] = (ArrMeet) {MEET_ARCARC, a->sup[i], a->sup[j], sigma, 0.0, 0.0,
+        NULL};
+      sign[r] = sigma * c12;
+    }
+    *n = 2;
+    return ARR_ANSWERED;
+  }
+  /* The segment between tangent points first */
+  bool swap = ! p->from;
+  uint32_t s = swap ? j : i, o = swap ? i : j;
+  if (arr_support_meets_known(a, s, o, m, sign, n))
+    return ARR_ANSWERED;
+  TowerMeet tm[2];
+  int c = towerseg_meet(&a->e[s], &a->e[o], tm);
+  if (c == -1)
+    return ARR_OVERLAP;
+  if (c < 0)
+    return ARR_MEETING;
+  for (int k = 0; k < c; k++)
+  {
+    m[k] = (ArrMeet) {tm[k].m.kind, arr_meet_ref(a, tm[k].m.p, i, j),
+      arr_meet_ref(a, tm[k].m.q, i, j), tm[k].m.sigma, 0.0, 0.0, tm[k].m.tp};
+    sign[k] = swap ? - tm[k].sign : tm[k].sign;
+  }
+  *n = c;
+  return ARR_ANSWERED;
+}
+
+static inline Ival arr_box_position(const Arr *a, uint32_t i, Ival bx,
+  Ival by);
+
+/* The sign of the cross product (B - A) x (P - A) of points the intervals
+ * hold, 2 where they cannot tell */
+static inline int
+arr_orient_ival(const ArrNode *na, const ArrNode *nb, const ArrNode *np)
+{
+  return ival_sign(ival_cross(ival_sub(nb->bx, na->bx),
+    ival_sub(nb->by, na->by), ival_sub(np->bx, na->bx),
+    ival_sub(np->by, na->by)));
+}
+
+/* Whether the circle of the stretch of a circle c misses the stretch of a
+ * segment s, the intervals holding its ends showing it within the disc or
+ * clear of it */
+static bool
+arr_segment_misses_circle(const Arr *a, uint32_t s, uint32_t c)
+{
+  const ArrNode *na = &a->nodes[a->start[s]], *nb = &a->nodes[a->end[s]];
+  Ival cx = a->ccx[c], cy = a->ccy[c], r2 = a->cr2[c];
+  Ival ax = ival_sub(na->bx, cx), ay = ival_sub(na->by, cy);
+  Ival bx = ival_sub(nb->bx, cx), by = ival_sub(nb->by, cy);
+  int sa = ival_sign(ival_sub(ival_dot(ax, ay, ax, ay), r2));
+  int sb = ival_sign(ival_sub(ival_dot(bx, by, bx, by), r2));
+  /* Both ends within the disc: the segment lies within it */
+  if (sa == -1 && sb == -1)
+    return true;
+  if (sa != 1 || sb != 1)
+    return false;
+  /* Both ends outside: clear of the disc where its line is, or where the
+   * point of the segment nearest the centre is an end */
+  Ival ux = ival_sub(bx, ax), uy = ival_sub(by, ay);
+  Ival cr = ival_cross(ux, uy, ival_neg(ax), ival_neg(ay));
+  if (ival_sign(ival_sub(ival_mul(cr, cr),
+      ival_mul(r2, ival_dot(ux, uy, ux, uy)))) == 1)
+    return true;
+  return ival_sign(ival_dot(ival_neg(ax), ival_neg(ay), ux, uy)) == -1 ||
+    ival_sign(ival_dot(ival_neg(bx), ival_neg(by), ux, uy)) == 1;
+}
+
+/* Whether every point where the line of the stretch of a segment s meets
+ * the circle of the stretch of a circle c lies, as the intervals place it,
+ * off the one stretch or the other: the roots of |A + t (B - A) - C|^2 = r^2
+ * for the ends A and B of s, off s outside [0, 1], off c outside the
+ * positions of its ends (#arr_crossing_off) */
+static bool
+arr_segment_circle_off(const Arr *a, uint32_t s, uint32_t c)
+{
+  const ArrNode *na = &a->nodes[a->start[s]], *nb = &a->nodes[a->end[s]];
+  Ival ux = ival_sub(na->bx, a->ccx[c]), uy = ival_sub(na->by, a->ccy[c]);
+  Ival vx = ival_sub(nb->bx, na->bx), vy = ival_sub(nb->by, na->by);
+  Ival qa = ival_dot(vx, vy, vx, vy);
+  Ival qb = ival_dot(vx, vy, ux, uy);
+  Ival qc = ival_sub(ival_dot(ux, uy, ux, uy), a->cr2[c]);
+  /* t = (-qb +- sqrt(qb^2 - qa qc)) / qa */
+  Ival disc = ival_sub(ival_mul(qb, qb), ival_mul(qa, qc));
+  if (ival_sign(qa) != 1 || ival_sign(disc) != 1)
+    return false;
+  Ival sq = ival_sqrt(disc);
+  for (int r = -1; r <= 1; r += 2)
+  {
+    Ival t = ival_div(ival_add(ival_neg(qb), r < 0 ? ival_neg(sq) : sq), qa);
+    if (! isfinite(t.lo) || ! isfinite(t.hi))
+      return false;
+    if (t.hi < 0.0 || t.lo > 1.0)
+      continue;
+    Ival px = ival_add(na->bx, ival_mul(t, vx));
+    Ival py = ival_add(na->by, ival_mul(t, vy));
+    Ival pc = arr_box_position(a, c, px, py);
+    if (pc.hi < a->tfrom[c].lo || pc.lo > a->tto[c].hi)
+      continue;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return whether two stretches on whole circles or segments between
+ * tangent points cannot meet, as the intervals holding the ends of their
+ * stretches show it, before the exact meetings of their edges are sought
+ * (#arr_support_meets)
+ * @details A meeting outside a stretch is passed over (#arr_meet_curved),
+ * so the stretches decide: two segments each wholly on one side of the line
+ * of the other, a segment within the disc of a circle or clear of it. Two
+ * circles are kept apart by #arr_support_meets itself
+ */
+static bool
+arr_stretches_apart(const Arr *a, uint32_t i, uint32_t j)
+{
+  const Edge *p = &a->e[i], *q = &a->e[j];
+  if (p->from && q->from)
+  {
+    const ArrNode *pa = &a->nodes[a->start[i]], *pb = &a->nodes[a->end[i]];
+    const ArrNode *qa = &a->nodes[a->start[j]], *qb = &a->nodes[a->end[j]];
+    int s1 = arr_orient_ival(pa, pb, qa), s2 = arr_orient_ival(pa, pb, qb);
+    if (s1 != 2 && s1 != 0 && s1 == s2)
+      return true;
+    s1 = arr_orient_ival(qa, qb, pa);
+    s2 = arr_orient_ival(qa, qb, pb);
+    return s1 != 2 && s1 != 0 && s1 == s2;
+  }
+  if (p->from && q->centred)
+    return arr_segment_misses_circle(a, i, j) ||
+      arr_segment_circle_off(a, i, j);
+  if (q->from && p->centred)
+    return arr_segment_misses_circle(a, j, i) ||
+      arr_segment_circle_off(a, j, i);
+  return false;
+}
+
+/* The position along edge i of a point the intervals hold */
+static inline Ival
+arr_box_position(const Arr *a, uint32_t i, Ival bx, Ival by)
+{
+  const Edge *e = &a->e[i];
+  return arr_is_arc(e) ? arr_arc_position(e, a->ccx[i], a->ccy[i], bx, by) :
+    arr_segment_position(e, bx, by);
+}
+
+/* Whether the intervals place the crossing sigma of the circles of
+ * stretches i and j, P = B + sigma f rot(d) as #arr_meet_arcs_exact reads it,
+ * strictly before the start or after the end of either stretch */
+static bool
+arr_crossing_off(const Arr *a, uint32_t i, uint32_t j, int sigma)
+{
+  Ival dx = ival_sub(a->ccx[j], a->ccx[i]), dy = ival_sub(a->ccy[j],
+    a->ccy[i]);
+  Ival d2 = ival_dot(dx, dy, dx, dy);
+  if (ival_sign(d2) != 1)
+    return false;
+  Ival u = ival_div(ival_add(d2, ival_sub(a->cr2[i], a->cr2[j])),
+    ival_mul(ival(2.0), d2));
+  Ival h2 = ival_sub(a->cr2[i], ival_mul(ival_mul(u, u), d2));
+  if (ival_sign(h2) != 1)
+    return false;
+  Ival f = ival_sqrt(ival_div(h2, d2));
+  Ival px = ival_add(ival_add(a->ccx[i], ival_mul(u, dx)),
+    ival_mul(ival(-sigma), ival_mul(f, dy)));
+  Ival py = ival_add(ival_add(a->ccy[i], ival_mul(u, dy)),
+    ival_mul(ival(sigma), ival_mul(f, dx)));
+  if (! isfinite(px.lo) || ! isfinite(px.hi) || ! isfinite(py.lo) ||
+      ! isfinite(py.hi))
+    return false;
+  const uint32_t e[2] = {i, j};
+  for (int k = 0; k < 2; k++)
+  {
+    Ival t = arr_box_position(a, e[k], px, py);
+    if (t.hi < a->tfrom[e[k]].lo || t.lo > a->tto[e[k]].hi)
+      return true;
+  }
+  return false;
+}
+
+/* Where the intervals place a point against a stretch: strictly off it (0),
+ * strictly within it (1), or neither (2), its position @p t along the edge
+ * against those of the ends */
+static inline int
+arr_ival_where(const Arr *a, uint32_t i, Ival t)
+{
+  if (t.hi < a->tfrom[i].lo || t.lo > a->tto[i].hi)
+    return 0;
+  if (t.lo > a->tfrom[i].hi && t.hi < a->tto[i].lo)
+    return 1;
+  return 2;
+}
+
+/* Node stretches i and j at a meeting strictly within both, placed by the
+ * intervals @p px, @p py holding it, its coordinates their middles until the
+ * rings are written (#arr_nodes_narrow) */
+static ArrangeStatus
+arr_ival_crossing(Arr *a, uint32_t i, uint32_t j, ArrMeet m, Ival px,
+  Ival py, int sign)
+{
+  double box[4] = {px.lo, px.hi, py.lo, py.hi};
+  uint32_t node = arr_tower_node_at(a, &m, 0.5 * (px.lo + px.hi),
+    0.5 * (py.lo + py.hi), box);
+  a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
+  ArrMeet am = a->nodes[node].meet;
+  arr_cut(a, i, node, arr_box_position(a, i, px, py), am);
+  arr_cut(a, j, node, arr_box_position(a, j, px, py), am);
+  return ARR_ANSWERED;
+}
+
+/**
+ * @brief Node two stretches on whole circles or segments between tangent
+ * points where the intervals tell every meeting of their edges strictly off
+ * either stretch or strictly within both, as #arr_meet_stretches tells the
+ * crossing of two segments; false where they do not, which leaves the
+ * meetings to the arithmetic of their towers (#arr_meet_curved)
+ * @details Each point within both is the meeting that defines it, the
+ * crossing of the two segments, the root sigma of a segment on a circle
+ * (#towerseg_meet) or the crossing sigma of two circles
+ * (#arcarc_meet_exact), placed by the intervals that told it
+ */
+static bool
+arr_meet_ival(Arr *a, uint32_t i, uint32_t j)
+{
+  const Edge *p = &a->e[i], *q = &a->e[j];
+  if (p->from && q->from)
+  {
+    const ArrNode *na = &a->nodes[a->start[i]], *nb = &a->nodes[a->end[i]];
+    const ArrNode *nc = &a->nodes[a->start[j]], *nd = &a->nodes[a->end[j]];
+    Ival rx = ival_sub(nb->bx, na->bx), ry = ival_sub(nb->by, na->by);
+    Ival sx = ival_sub(nd->bx, nc->bx), sy = ival_sub(nd->by, nc->by);
+    Ival cx = ival_sub(nc->bx, na->bx), cy = ival_sub(nc->by, na->by);
+    Ival den = ival_cross(rx, ry, sx, sy);
+    int sd = ival_sign(den);
+    if (sd != 1 && sd != -1)
+      return false;
+    Ival t = ival_div(ival_cross(cx, cy, sx, sy), den);
+    Ival u = ival_div(ival_cross(cx, cy, rx, ry), den);
+    if (! isfinite(t.lo) || ! isfinite(t.hi) || ! isfinite(u.lo) ||
+        ! isfinite(u.hi))
+      return false;
+    if (t.hi < 0.0 || t.lo > 1.0 || u.hi < 0.0 || u.lo > 1.0)
+      return true;
+    if (! (t.lo > 0.0 && t.hi < 1.0 && u.lo > 0.0 && u.hi < 1.0))
+      return false;
+    ArrMeet m = {MEET_LINES, a->sup[i], a->sup[j], 0, 0.0, 0.0, NULL};
+    arr_ival_crossing(a, i, j, m, ival_add(na->bx, ival_mul(t, rx)),
+      ival_add(na->by, ival_mul(t, ry)), sd);
+    return true;
+  }
+  if (p->centred && q->centred)
+  {
+    Ival dx = ival_sub(a->ccx[j], a->ccx[i]);
+    Ival dy = ival_sub(a->ccy[j], a->ccy[i]);
+    Ival d2 = ival_dot(dx, dy, dx, dy);
+    if (ival_sign(d2) != 1)
+      return false;
+    Ival u = ival_div(ival_add(d2, ival_sub(a->cr2[i], a->cr2[j])),
+      ival_mul(ival(2.0), d2));
+    Ival h2 = ival_sub(a->cr2[i], ival_mul(ival_mul(u, u), d2));
+    int sh = ival_sign(h2);
+    if (sh == -1)
+      return true;
+    if (sh != 1)
+      return false;
+    Ival f = ival_sqrt(ival_div(h2, d2));
+    Ival bx = ival_add(a->ccx[i], ival_mul(u, dx));
+    Ival by = ival_add(a->ccy[i], ival_mul(u, dy));
+    int c12 = (a->ccw[i] ? 1 : -1) * (a->ccw[j] ? 1 : -1);
+    Ival px[2], py[2];
+    int w[2];
+    for (int r = 0; r < 2; r++)
+    {
+      int sigma = r ? 1 : -1;
+      px[r] = ival_add(bx, ival_mul(ival(-sigma), ival_mul(f, dy)));
+      py[r] = ival_add(by, ival_mul(ival(sigma), ival_mul(f, dx)));
+      if (! isfinite(px[r].lo) || ! isfinite(px[r].hi) ||
+          ! isfinite(py[r].lo) || ! isfinite(py[r].hi))
+        return false;
+      int wi = arr_ival_where(a, i, arr_box_position(a, i, px[r], py[r]));
+      int wj = arr_ival_where(a, j, arr_box_position(a, j, px[r], py[r]));
+      w[r] = (wi == 0 || wj == 0) ? 0 : ((wi == 1 && wj == 1) ? 1 : 2);
+      if (w[r] == 2)
+        return false;
+    }
+    for (int r = 0; r < 2; r++)
+      if (w[r] == 1)
+      {
+        int sigma = r ? 1 : -1;
+        ArrMeet m = {MEET_ARCARC, a->sup[i], a->sup[j], sigma, 0.0, 0.0,
+          NULL};
+        arr_ival_crossing(a, i, j, m, px[r], py[r], sigma * c12);
+      }
+    return true;
+  }
+  /* A segment s between tangent points and a circle c */
+  uint32_t s = p->from ? i : j, c = p->from ? j : i;
+  const ArrNode *na = &a->nodes[a->start[s]], *nb = &a->nodes[a->end[s]];
+  Ival ux = ival_sub(na->bx, a->ccx[c]), uy = ival_sub(na->by, a->ccy[c]);
+  Ival vx = ival_sub(nb->bx, na->bx), vy = ival_sub(nb->by, na->by);
+  Ival qa = ival_dot(vx, vy, vx, vy);
+  Ival qb = ival_dot(vx, vy, ux, uy);
+  Ival qc = ival_sub(ival_dot(ux, uy, ux, uy), a->cr2[c]);
+  Ival disc = ival_sub(ival_mul(qb, qb), ival_mul(qa, qc));
+  if (ival_sign(qa) != 1)
+    return false;
+  int sdisc = ival_sign(disc);
+  if (sdisc == -1)
+    return true;
+  if (sdisc != 1)
+    return false;
+  Ival sq = ival_sqrt(disc);
+  Ival px[2], py[2];
+  int w[2];
+  for (int r = 0; r < 2; r++)
+  {
+    /* The root sigma = 1 the farther along the segment, which the stretch
+     * walks in its sense */
+    Ival t = ival_div(ival_add(ival_neg(qb), r ? sq : ival_neg(sq)), qa);
+    if (! isfinite(t.lo) || ! isfinite(t.hi))
+      return false;
+    px[r] = ival_add(na->bx, ival_mul(t, vx));
+    py[r] = ival_add(na->by, ival_mul(t, vy));
+    int ws = (t.hi < 0.0 || t.lo > 1.0) ? 0 :
+      ((t.lo > 0.0 && t.hi < 1.0) ? 1 : 2);
+    int wc = arr_ival_where(a, c, arr_box_position(a, c, px[r], py[r]));
+    w[r] = (ws == 0 || wc == 0) ? 0 : ((ws == 1 && wc == 1) ? 1 : 2);
+    if (w[r] == 2)
+      return false;
+  }
+  for (int r = 0; r < 2; r++)
+    if (w[r] == 1)
+    {
+      int sigma = r ? 1 : -1;
+      ArrMeet m = {MEET_LINECIRCLE, a->sup[s], a->sup[c], sigma, 0.0, 0.0,
+        NULL};
+      /* The segment leaves the disc at its farther root (#towerseg_meet) */
+      int sign = sigma * (a->ccw[c] ? 1 : -1);
+      arr_ival_crossing(a, i, j, m, px[r], py[r], (s == i) ? sign : - sign);
+    }
+  return true;
+}
+
+/**
+ * @brief Node two stretches lying on whole circles or on segments between
+ * tangent points where they meet
+ * @details As #arr_meet_stretches nodes two stretches of segments: each
+ * meeting of the two edges (#arr_support_meets) is placed against the ends
+ * of either stretch exactly (#arr_stretch_where). A point strictly within
+ * both is a node of both, the crossing of the two; within one and at an end
+ * of the other, it is the node of that end, which cuts the first; at an end
+ * of both, the two ends are one node. Two stretches of one edge, which the
+ * arrangement that wrote them left apart, meet at their ends only, whose
+ * nodes are one where they are one meeting (#arr_end_node). A stretch of a
+ * segment meeting such a stretch is not answered
+ */
+static ArrangeStatus
+arr_meet_curved(Arr *a, uint32_t i, uint32_t j)
+{
+  /* Two stretches of one boundary, which the arrangement that wrote it left
+   * apart but at their ends, whose nodes are one where the ends are one
+   * meeting (#arr_end_node) */
+  if (a->sup[i] == a->sup[j] ||
+      (a->split && (i < a->split) == (j < a->split)))
+    return ARR_ANSWERED;
+  const Edge *p = &a->e[i], *q = &a->e[j];
+  if (! (p->centred || p->from) || ! (q->centred || q->from))
+    return ARR_MEETING;
+  /* Stretches the intervals keep apart, as #arr_meet_stretches passes over
+   * segments that do not cross, or whose meetings they tell */
+  if (arr_stretches_apart(a, i, j) || arr_meet_ival(a, i, j))
+    return ARR_ANSWERED;
+  ArrMeet m[2];
+  int sign[2], n;
+  ArrangeStatus st = arr_support_meets(a, i, j, m, sign, &n);
+  if (st != ARR_ANSWERED)
+    return st;
+  for (int k = 0; k < n; k++)
+  {
+    /* A crossing of two circles the intervals place off either stretch,
+     * as #arr_meet_arcs_exact places it, is passed over before it is
+     * placed exactly */
+    if (m[k].kind == MEET_ARCARC && arr_crossing_off(a, i, j, m[k].sigma))
+      continue;
+    /* A tangent point is placed once, its node (#arr_tangent_node) */
+    double x, y, box[4];
+    if (m[k].kind == MEET_TANGENT)
+    {
+      uint32_t tn = arr_tangent_node(a, m[k].tp);
+      if (tn == UINT32_MAX)
+        return ARR_MEETING;
+      const ArrNode *nd = &a->nodes[tn];
+      x = nd->x; y = nd->y;
+      box[0] = nd->bx.lo; box[1] = nd->bx.hi;
+      box[2] = nd->by.lo; box[3] = nd->by.hi;
+    }
+    else
+    {
+      MeetPoint mp = arr_meet_point(&m[k]);
+      if (! meet_point_bounds(&mp, &x, &y, box))
+        return ARR_MEETING;
+    }
+    Ival bx = ival_out(box[0], box[1]), by = ival_out(box[2], box[3]);
+    Ival ti = arr_box_position(a, i, bx, by);
+    Ival tj = arr_box_position(a, j, bx, by);
+    ArrWhere wi = arr_stretch_where(a, i, ti, &m[k]);
+    ArrWhere wj = arr_stretch_where(a, j, tj, &m[k]);
+    if (wi == ARR_UNTOLD || wj == ARR_UNTOLD)
+      return ARR_ORDER;
+    if (wi == ARR_OFF || wj == ARR_OFF)
+      continue;
+    if (wi == ARR_WITHIN && wj == ARR_WITHIN)
+    {
+      /* Two edges touching within both stretches meet without crossing */
+      if (sign[k] == 0)
+        return ARR_MEETING;
+      uint32_t node = (m[k].kind == MEET_TANGENT) ?
+        arr_tangent_node(a, m[k].tp) : arr_tower_node_at(a, &m[k], x, y, box);
+      if (node == UINT32_MAX)
+        return ARR_MEETING;
+      if (m[k].kind != MEET_TANGENT)
+        a->nodes[node].cross = arr_cross_new(a, node, i, j, sign[k]);
+      ArrMeet am = a->nodes[node].meet;
+      arr_cut(a, i, node, ti, am);
+      arr_cut(a, j, node, tj, am);
+      continue;
+    }
+    if (wi == ARR_WITHIN)
+    {
+      arr_cut(a, i, arr_stretch_end_node(a, j, wj), ti,
+        *arr_stretch_end_meet(a, j, wj));
+      continue;
+    }
+    if (wj == ARR_WITHIN)
+    {
+      arr_cut(a, j, arr_stretch_end_node(a, i, wi), tj,
+        *arr_stretch_end_meet(a, i, wi));
+      continue;
+    }
+    uint32_t ni = arr_stretch_end_node(a, i, wi);
+    uint32_t nj = arr_stretch_end_node(a, j, wj);
+    if (ni != nj)
+      arr_same_add(a, ni, nj);
+  }
+  return ARR_ANSWERED;
+}
+
 /* The box of an edge, widened for an arc by the rounding of the box its
  * extremes are read from: a box that only admits candidates */
 static void
@@ -1754,8 +2398,10 @@ arr_node_all(Arr *a, const ArrPair *pairs, uint32_t npairs)
   {
     uint32_t i = pairs[k].i, j = pairs[k].j;
     bool ai = arr_is_arc(&a->e[i]), aj = arr_is_arc(&a->e[j]);
-    if (a->sup)
+    if (a->sup && ! ai && ! aj && ! a->e[i].from && ! a->e[j].from)
       st = arr_meet_stretches(a, i, j);
+    else if (a->sup)
+      st = arr_meet_curved(a, i, j);
     else if (a->e[i].from || a->e[j].from)
       st = arr_meet_tower(a, i, j);
     else if (! ai && ! aj)
@@ -2362,7 +3008,7 @@ arr_piece_ray(const Arr *a, const ArrPiece *p, Ival px, double py, int *w,
      * y = cy: a point of the circle like any other, which no edge but this
      * one passes through, read on the piece leaving it */
     bool start = e->centred && side < 0 && py == e->cy;
-    if (start && p->from != a->start[j])
+    if (start && a->nodes[p->from].origin != arr_edge_ref(a, j))
       continue;
     Ival pos = arr_arc_position(e, a->ccx[j], a->ccy[j], qx, ival(py));
     if (! start && onarc == 1 &&
@@ -2437,11 +3083,20 @@ arr_node_meet(const Arr *a, uint32_t v)
 static int
 arr_node_x_cmp(const Arr *a, uint32_t v, uint32_t w)
 {
-  const ArrNode *nv = &a->nodes[v];
-  if (! nv->vertex && (! nv->xp || arr_is_arc(nv->xp)))
+  const ArrNode *nv = &a->nodes[v], *nw = &a->nodes[w];
+  /* Points no double holds, read in their towers */
+  if ((nv->tower || nw->tower) && (nv->tower || nv->vertex) &&
+      (nw->tower || nw->vertex))
+  {
+    ArrMeet mv = arr_node_meet(a, v), mw = arr_node_meet(a, w);
+    MeetPoint pv = arr_meet_point(&mv), pw = arr_meet_point(&mw);
+    pv.p = mv.p; pv.q = mv.q;
+    pw.p = mw.p; pw.q = mw.q;
+    return meets_x_cmp(&pv, &pw);
+  }
+  if (! nv->vertex && (nv->tower || ! nv->xp || arr_is_arc(nv->xp)))
     return 2;
-  const ArrNode *nw = &a->nodes[w];
-  if (! nw->vertex && (! nw->xp || arr_is_arc(nw->xp)))
+  if (! nw->vertex && (nw->tower || ! nw->xp || arr_is_arc(nw->xp)))
     return 2;
   Edge h;
   memset(&h, 0, sizeof(Edge));
@@ -2462,6 +3117,25 @@ arr_node_x_cmp(const Arr *a, uint32_t v, uint32_t w)
  * @param[in] comp,cn The nodes of the component
  * @param[out] out Its rightmost point
  */
+/* Whether node v, an end of a piece of the centred arc e, is the point of
+ * its circle furthest along x: on the circle at the height of its centre,
+ * right of it, the side of the line y = cy decided exactly as
+ * #arr_node_side decides it */
+static bool
+arr_node_circle_right(const Arr *a, uint32_t v, const Edge *e)
+{
+  const ArrNode *nd = &a->nodes[v];
+  if (nd->origin || ! (nd->bx.lo > e->cx))
+    return false;
+  if (nd->vertex)
+    return nd->y == e->cy;
+  if (! nd->tower)
+    return false;
+  MeetPoint at = arr_meet_point(&nd->meet);
+  at.p = nd->meet.p; at.q = nd->meet.q;
+  return meet_point_y_side(&at, e->cy) == 0;
+}
+
 static bool
 arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
   ArrExtreme *out)
@@ -2472,8 +3146,9 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
   {
     const ArrNode *nd = &a->nodes[comp[c]];
     /* Stretches end at crossings as well, which are told apart from the
-     * others by their intervals and exactly where those overlap */
-    if (! nd->vertex && ! a->sup)
+     * others by their intervals and exactly where those overlap; the start
+     * of a circle is its point furthest along -x, never the rightmost */
+    if ((! nd->vertex && ! a->sup) || nd->origin)
       continue;
     if (ex.node == UINT32_MAX || nd->bx.lo > ex.x.hi)
     {
@@ -2548,9 +3223,36 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
         }
         continue;
       }
+      if (holds == 1 && ! ex.on_arc && ae->centred && xn && xn->tower &&
+          x.hi >= ex.x.lo && x.lo <= ex.x.hi)
+      {
+        /* The point of the circle furthest along x, cx + r, against a node
+         * no double holds, compared exactly: the node keeps it where it
+         * lies at least as far right */
+        MeetPoint at = arr_meet_point(&xn->meet);
+        at.p = xn->meet.p; at.q = xn->meet.q;
+        int side = meet_point_x_side(&at, ae->cx, ae->radius);
+        if (side != 2)
+        {
+          if (side < 0)
+          {
+            ex.on_arc = true;
+            ex.piece = a->halves[k].piece;
+            ex.x = x;
+          }
+          continue;
+        }
+      }
       if (holds == 2 || (x.hi >= ex.x.lo && x.lo <= ex.x.hi))
       {
         if (holds == 2 && x.hi < ex.x.lo)
+          continue;
+        /* A centred arc ending at the point of its circle furthest along x
+         * holds no point right of that node, which the nodes compete with
+         * where they are stretches' ends; elsewhere a node no double holds
+         * does not compete, so the arc stays */
+        if (a->sup && ae->centred && (arr_node_circle_right(a, p->from, ae) ||
+            arr_node_circle_right(a, p->to, ae)))
           continue;
         /* Not told from the point found so far, which a point further
          * right than both still settles */
@@ -2807,11 +3509,18 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         for (uint32_t h = a->hoff[comp[c]]; h < a->hoff[comp[c] + 1] &&
              ! told; h++)
         {
-          const Edge *ce = &a->e[a->pieces[a->halves[h].piece].edge];
+          const ArrPiece *cp = &a->pieces[a->halves[h].piece];
+          const Edge *ce = &a->e[cp->edge];
           if (! a->halves[h].out || ! ce->centred)
             continue;
           for (int sgn = -1; sgn <= 1 && ! told; sgn += 2)
           {
+            /* On a stretch of the circle, a point the piece holds: the
+             * bottom and the top a quarter and three quarters of a turn
+             * from its start (#arr_stretch_box) */
+            double at = ((sgn > 0) == ce->ccw) ? 3.0 : 1.0;
+            if (a->sup && ! (cp->pfrom.hi < at && at < cp->pto.lo))
+              continue;
             Ival ty = sgn > 0 ? ival_add(ival(ce->cy), ival(ce->radius)) :
               ival_sub(ival(ce->cy), ival(ce->radius));
             px = ce->cx;
@@ -3839,6 +4548,36 @@ arr_mapped_pairs(const double (*box)[4], const ArrPair *pairs,
 static ArrangeStatus arr_stretches_write(Arr *a, int sgn, uint32_t outer,
   ArrStretch **out, uint32_t *nout);
 
+/* Write every node no double holds that the intervals placed, wider than a
+ * few units in the last place (#arr_meet_ival), at its coordinates rounded
+ * from the exact point (#meet_point_bounds), so that only the vertices
+ * written are rounded and each once; one the bounds do not place keeps the
+ * middle of its intervals */
+static void
+arr_nodes_narrow(Arr *a)
+{
+  for (uint32_t v = 0; v < a->nnodes; v++)
+  {
+    ArrNode *nd = &a->nodes[v];
+    if (! nd->tower)
+      continue;
+    double tx = 8.0 * DBL_EPSILON * fabs(nd->x) + DBL_MIN;
+    double ty = 8.0 * DBL_EPSILON * fabs(nd->y) + DBL_MIN;
+    if (nd->bx.hi - nd->bx.lo <= 2.0 * tx && nd->by.hi - nd->by.lo <= 2.0 * ty)
+      continue;
+    MeetPoint mp = arr_meet_point(&nd->meet);
+    mp.p = nd->meet.p; mp.q = nd->meet.q;
+    double x, y, box[4];
+    if (! meet_point_bounds(&mp, &x, &y, box))
+      continue;
+    nd->x = nd->meet.x = x;
+    nd->y = nd->meet.y = y;
+    nd->bx = ival_out(box[0], box[1]);
+    nd->by = ival_out(box[2], box[3]);
+  }
+  return;
+}
+
 /**
  * @brief Node, cut and label the edges of an arrangement set up by its
  * caller, and answer the region they wind around
@@ -3915,8 +4654,11 @@ arr_finish(Arr *a, ArrPair *pairs, uint32_t npairs, MeosArray ***rings,
     if (sout)
       st = arr_stretches_write(a, sgn, outer, sout, nsout);
     else
+    {
+      arr_nodes_narrow(a);
       st = arr_rings(a, sgn, outer, rings, nrings, owner ? &rp : NULL,
         owner ? &roff : NULL);
+    }
     if (st == ARR_ANSWERED && owner)
     {
       *owner = palloc(sizeof(int32_t) * Max(*nrings, 1u));
@@ -4167,6 +4909,7 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
        * rounded once */
       uint32_t v = arr_node_new(&a, e->x1, e->y1, false, -1);
       a.nodes[v].bx = ival_sub(ival(e->cx), ival(e->radius));
+      a.nodes[v].origin = e;
       a.start[i] = a.end[i] = v;
       continue;
     }
@@ -4203,11 +4946,18 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
  * The union of surfaces, merged pairwise as the stretches of their boundaries
  *****************************************************************************/
 
-/* The edge of a stretch: its input segment, walked in its sense */
+/* The edge of a stretch: its input segment, walked in its sense, or its
+ * whole circle or segment between tangent points, which a stretch walks in
+ * the sense of the edge, the edge #arr_arrange reads unchanged */
 static void
 arr_stretch_edge(const ArrStretch *st, Edge *e)
 {
   const Edge *s = st->s;
+  if (s->centred || s->from)
+  {
+    *e = *s;
+    return;
+  }
   memset(e, 0, sizeof(Edge));
   e->etype = EDGE_POLYSEG;
   e->x1 = st->rev ? s->x2 : s->x1; e->y1 = st->rev ? s->y2 : s->y1;
@@ -4217,7 +4967,10 @@ arr_stretch_edge(const ArrStretch *st, Edge *e)
   return;
 }
 
-/* The box of a stretch: that of its ends, the intervals holding a crossing */
+/* The box of a stretch: that of its ends, the intervals holding a crossing,
+ * and for a stretch of a circle the points of the circle furthest along each
+ * axis it passes, a quarter turn apart from its start at the positions 1, 2
+ * and 3 (#arr_arc_position) */
 static void
 arr_stretch_box(Arr *a, uint32_t i)
 {
@@ -4226,6 +4979,23 @@ arr_stretch_box(Arr *a, uint32_t i)
   a->box[i][1] = fmax(f->bx.hi, t->bx.hi);
   a->box[i][2] = fmin(f->by.lo, t->by.lo);
   a->box[i][3] = fmax(f->by.hi, t->by.hi);
+  const Edge *e = &a->e[i];
+  if (! e->centred)
+    return;
+  Ival r = ival(e->radius);
+  /* Counterclockwise from (-r, 0): the bottom, the right, the top */
+  const int ax[3] = {1, 0, 1}, sg[3] = {-1, 1, 1};
+  for (int k = 0; k < 3; k++)
+  {
+    if (a->tfrom[i].lo > k + 1 || a->tto[i].hi < k + 1)
+      continue;
+    int s = (ax[k] == 1 && ! e->ccw) ? - sg[k] : sg[k];
+    Ival c = ax[k] ? ival(e->cy) : ival(e->cx);
+    Ival v = (s > 0) ? ival_add(c, r) : ival_sub(c, r);
+    int lo = ax[k] ? 2 : 0;
+    a->box[i][lo] = fmin(a->box[i][lo], v.lo);
+    a->box[i][lo + 1] = fmax(a->box[i][lo + 1], v.hi);
+  }
   return;
 }
 
@@ -4241,56 +5011,93 @@ arr_hash_pair(const Edge *p, const Edge *q)
   return (uint32_t) h;
 }
 
-/* The node of an end of a stretch: the one node of a vertex's coordinates
- * (#arr_vertex), or the one node of the crossing of two segments, whatever
- * their order */
-static uint32_t
-arr_end_node(Arr *a, const ArrEnd *end)
+/* Whether node v of an arrangement of stretches is the end a meeting
+ * describes, as #arr_end_node finds it */
+static bool
+arr_node_is_end(const Arr *a, uint32_t v, const ArrMeet *end, const Edge *p,
+  const Edge *q)
 {
-  if (! end->p)
+  const ArrNode *nd = &a->nodes[v];
+  if (end->kind == MEET_ORIGIN)
+    return nd->origin == p;
+  if (end->kind == MEET_SEGSEG)
+    return ! nd->tower && ! nd->origin && nd->xp == p && nd->xq == q;
+  return nd->tower && nd->meet.kind == end->kind && nd->meet.p == p &&
+    nd->meet.q == q && nd->meet.sigma == end->sigma;
+}
+
+/* The node of an end of a stretch: the one node of a vertex's coordinates
+ * (#arr_vertex), of a tangent point (#arr_tangent_node), of the start of a
+ * circle, or of the crossing of two input edges, whatever the order of two
+ * segments, a point no double holds placed by the intervals @p box where
+ * the arrangement that wrote the stretch gave them; UINT32_MAX where the
+ * point cannot be placed */
+static uint32_t
+arr_end_node(Arr *a, const ArrMeet *end, const Ival *box)
+{
+  if (end->kind == MEET_VERTEX)
     return arr_vertex(a, end->x, end->y);
+  if (end->kind == MEET_TANGENT)
+    return arr_tangent_node_at(a, end->tp, end, box);
   const Edge *p = end->p, *q = end->q;
-  if ((uintptr_t) p > (uintptr_t) q)
+  if (end->kind == MEET_SEGSEG && (uintptr_t) p > (uintptr_t) q)
   {
     const Edge *t = p; p = q; q = t;
   }
   uint32_t h = arr_hash_pair(p, q) & a->xmask;
   while (a->xtab[h] >= 0)
   {
-    const ArrNode *nd = &a->nodes[a->xtab[h]];
-    if (nd->xp == p && nd->xq == q)
+    if (arr_node_is_end(a, (uint32_t) a->xtab[h], end, p, q))
       return (uint32_t) a->xtab[h];
     h = (h + 1) & a->xmask;
   }
-  uint32_t id = arr_node_new(a, end->x, end->y, false, -1);
-  ArrNode *nd = &a->nodes[id];
-  nd->xp = p;
-  nd->xq = q;
-  nd->xsign = cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
-    q->x2, q->y2);
-  Ival tp, tq;
-  arr_cross_ivals(p, q, &tp, &tq, &nd->bx, &nd->by);
+  uint32_t id;
+  if (end->kind == MEET_ORIGIN)
+  {
+    /* (cx - r, cy) exactly, rounded once, as #arr_arrange places it */
+    id = arr_node_new(a, p->x1, p->y1, false, -1);
+    a->nodes[id].bx = ival_sub(ival(p->cx), ival(p->radius));
+    a->nodes[id].origin = p;
+  }
+  else if (end->kind == MEET_SEGSEG)
+  {
+    id = arr_node_new(a, end->x, end->y, false, -1);
+    ArrNode *nd = &a->nodes[id];
+    nd->xp = p;
+    nd->xq = q;
+    nd->xsign = cross_product_sign(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1,
+      q->x2, q->y2);
+    Ival tp, tq;
+    arr_cross_ivals(p, q, &tp, &tq, &nd->bx, &nd->by);
+  }
+  else
+  {
+    id = arr_end_tower_node(a, end, box);
+    if (id == UINT32_MAX)
+      return id;
+  }
   a->xtab[h] = (int32_t) id;
   return id;
 }
 
-/* The meeting an end of a stretch is */
+/* The end a node is, as a stretch carries it: where a circle starts and
+ * ends, the one or the other as the end @p last of the stretch says */
 static ArrMeet
-arr_end_meet(const ArrEnd *end)
-{
-  ArrMeet m = {end->p ? MEET_SEGSEG : MEET_VERTEX, end->p, end->q, 0, end->x,
-    end->y, NULL};
-  return m;
-}
-
-/* The end a node is, as a stretch carries it */
-static ArrEnd
-arr_node_end(const Arr *a, uint32_t v)
+arr_node_end(const Arr *a, uint32_t v, bool last)
 {
   const ArrNode *nd = &a->nodes[v];
-  ArrEnd end = {nd->x, nd->y, nd->vertex ? NULL : nd->xp,
-    nd->vertex ? NULL : nd->xq};
-  return end;
+  if (nd->origin)
+  {
+    ArrMeet m = {MEET_ORIGIN, nd->origin, NULL, last ? 1 : 0, nd->x, nd->y,
+      NULL};
+    return m;
+  }
+  if (nd->tower)
+    return nd->meet;
+  ArrMeet m = {nd->vertex ? MEET_VERTEX : MEET_SEGSEG,
+    nd->vertex ? NULL : nd->xp, nd->vertex ? NULL : nd->xq, 0, nd->x, nd->y,
+    NULL};
+  return m;
 }
 
 /* A point of the line of a class of stretches running along each other: an
@@ -4372,6 +5179,10 @@ arr_merge_stretches(Arr *a, const ArrPair *pairs, uint32_t npairs,
   {
     uint32_t i = pairs[k].i, j = pairs[k].j;
     const Edge *p = &a->e[i], *q = &a->e[j];
+    /* Stretches of circles and of segments between tangent points running
+     * along each other are not answered (#arr_meet_curved) */
+    if (arr_is_arc(p) || arr_is_arc(q) || p->from || q->from)
+      continue;
     Ival par = arr_cross_ival(p->x1, p->y1, p->x2, p->y2, q->x1, q->y1, q->x2,
       q->y2);
     if (par.lo > 0.0 || par.hi < 0.0 || ! arr_one_line(p, q))
@@ -4614,16 +5425,61 @@ arr_stretches_write(Arr *a, int sgn, uint32_t outer, ArrStretch **out,
         break;
       last++;
     }
+    /* A stretch of a circle or of a segment between tangent points is
+     * walked in the sense of its edge, the region on the left of every
+     * surface bounded by them; one walked against it is not answered */
+    const Edge *se = a->sup[p->edge];
+    if (p->flip && (se->centred || se->from))
+    {
+      pfree(res);
+      return ARR_OVERLAP;
+    }
     ArrStretch *s = &res[c++];
-    s->s = a->sup[p->edge];
+    s->s = se;
     s->rev = (a->erev[p->edge] != p->flip);
-    s->from = arr_node_end(a, p->flip ? a->pieces[last].to : p->from);
-    s->to = arr_node_end(a, p->flip ? p->from : a->pieces[last].to);
+    uint32_t nf = p->flip ? a->pieces[last].to : p->from;
+    uint32_t nt = p->flip ? p->from : a->pieces[last].to;
+    s->from = arr_node_end(a, nf, false);
+    s->to = arr_node_end(a, nt, true);
+    s->fbox[0] = a->nodes[nf].bx; s->fbox[1] = a->nodes[nf].by;
+    s->tbox[0] = a->nodes[nt].bx; s->tbox[1] = a->nodes[nt].by;
     k = last + 1;
   }
   *out = res;
   *nout = c;
   return ARR_ANSWERED;
+}
+
+/* The circles of the arcs of an arrangement of stretches and the senses they
+ * turn, as #arr_arrange reads them; a segment turns neither way */
+static void
+arr_stretch_circles(Arr *a)
+{
+  uint32_t n = Max(a->n, 1u);
+  a->ccx = palloc(sizeof(Ival) * n); a->ccy = palloc(sizeof(Ival) * n);
+  a->cr2 = palloc(sizeof(Ival) * n); a->ccw = palloc0(sizeof(bool) * n);
+  for (uint32_t i = 0; i < a->n; i++)
+    if (arr_is_arc(&a->e[i]))
+    {
+      arr_circle(&a->e[i], &a->ccx[i], &a->ccy[i], &a->cr2[i]);
+      a->ccw[i] = arr_arc_ccw(&a->e[i]);
+    }
+  return;
+}
+
+/* The position of an end of stretch i along its edge: 0 where a circle
+ * starts and after every other point where it ends, else read off the node,
+ * as #arr_node_position reads it along a segment and #arr_tower_position
+ * along a circle or a segment between tangent points */
+static Ival
+arr_end_position(const Arr *a, uint32_t i, uint32_t node, const ArrMeet *m)
+{
+  if (m->kind == MEET_ORIGIN)
+    return ival(m->sigma ? INFINITY : 0.0);
+  const Edge *e = &a->e[i];
+  if (e->centred || e->from)
+    return arr_tower_position(a, i, node);
+  return arr_node_position(e, &a->nodes[node]);
 }
 
 /**
@@ -4632,11 +5488,17 @@ arr_stretches_write(Arr *a, int sgn, uint32_t outer, ArrStretch **out,
  * stretches of its boundary
  */
 static ArrangeStatus
-arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
-  uint32_t *nrings, int32_t **owner, ArrStretch **sout, uint32_t *nsout)
+arr_arrange_stretches(const ArrStretch *st, uint32_t n, uint32_t split,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner, ArrStretch **sout,
+  uint32_t *nsout)
 {
   if (n == 0)
     return ARR_NOT_CLOSED;
+  /* A stretch of a circle or of a segment between tangent points runs in
+   * the sense of its edge (#arr_stretches_write) */
+  for (uint32_t i = 0; i < n; i++)
+    if (st[i].rev && (st[i].s->centred || st[i].s->from))
+      return ARR_OVERLAP;
   Arr a;
   memset(&a, 0, sizeof(Arr));
   Edge *ecopy = palloc(sizeof(Edge) * n);
@@ -4650,7 +5512,11 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
   }
   a.e = ecopy;
   a.n = n;
-  /* The nodes of the ends, vertices and crossings each found once */
+  a.split = split;
+  /* The circles of the stretches of circles, read by the positions of
+   * their ends */
+  arr_stretch_circles(&a);
+  /* The nodes of the ends, each found once */
   a.capnodes = 2 * n + 16;
   a.nodes = palloc(sizeof(ArrNode) * a.capnodes);
   a.vmask = 1;
@@ -4660,28 +5526,49 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
   a.xtab = palloc(sizeof(int32_t) * a.vmask);
   for (uint32_t h = 0; h < a.vmask; h++)
     a.vtab[h] = a.xtab[h] = -1;
+  a.tptab = palloc0(sizeof(TangentPoint *) * a.vmask);
+  a.tpnode = palloc(sizeof(uint32_t) * a.vmask);
   a.vmask -= 1;
-  a.xmask = a.vmask;
+  a.xmask = a.tpmask = a.vmask;
   a.start = palloc(sizeof(uint32_t) * n);
   a.end = palloc(sizeof(uint32_t) * n);
   a.mfrom = palloc(sizeof(ArrMeet) * n);
   a.mto = palloc(sizeof(ArrMeet) * n);
   a.tfrom = palloc(sizeof(Ival) * n);
   a.tto = palloc(sizeof(Ival) * n);
-  for (uint32_t i = 0; i < n; i++)
-  {
-    a.start[i] = arr_end_node(&a, &st[i].from);
-    a.end[i] = arr_end_node(&a, &st[i].to);
-    a.mfrom[i] = arr_end_meet(&st[i].from);
-    a.mto[i] = arr_end_meet(&st[i].to);
-  }
   a.box = palloc(sizeof(double[4]) * n);
-  for (uint32_t i = 0; i < n; i++)
+  ArrangeStatus status = ARR_ANSWERED;
+  bool tangent = false;
+  for (uint32_t i = 0; i < n && status == ARR_ANSWERED; i++)
   {
-    const ArrNode *nf = &a.nodes[a.start[i]], *nt = &a.nodes[a.end[i]];
-    a.tfrom[i] = arr_node_position(&ecopy[i], nf);
-    a.tto[i] = arr_node_position(&ecopy[i], nt);
+    a.start[i] = arr_end_node(&a, &st[i].from, st[i].fbox);
+    a.end[i] = arr_end_node(&a, &st[i].to, st[i].tbox);
+    if (a.start[i] == UINT32_MAX || a.end[i] == UINT32_MAX)
+    {
+      status = ARR_MEETING;
+      break;
+    }
+    a.mfrom[i] = st[i].from;
+    a.mto[i] = st[i].to;
+    tangent |= st[i].from.kind == MEET_TANGENT ||
+      st[i].to.kind == MEET_TANGENT;
+    a.tfrom[i] = arr_end_position(&a, i, a.start[i], &a.mfrom[i]);
+    a.tto[i] = arr_end_position(&a, i, a.end[i], &a.mto[i]);
     arr_stretch_box(&a, i);
+  }
+  /* Two tangent points of one value are one node (#arr_arrange) */
+  if (status == ARR_ANSWERED && tangent)
+    status = arr_same_tangents(&a);
+  if (status != ARR_ANSWERED)
+  {
+    pfree(a.start); pfree(a.end); pfree(a.vtab); pfree(a.xtab);
+    pfree(a.tptab); pfree(a.tpnode);
+    pfree(a.nodes); pfree(a.box);
+    pfree(a.ccx); pfree(a.ccy); pfree(a.cr2); pfree(a.ccw);
+    if (a.same)
+      pfree(a.same);
+    arr_stretch_edges_free(&a, ecopy);
+    return status;
   }
   uint32_t npairs;
   ArrPair *pairs = arr_box_pairs((const double (*)[4]) a.box, n, &npairs);
@@ -4689,10 +5576,13 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
    * read once with the rise of the winding number they give across it */
   bool done;
   ArrMerge mg;
-  ArrangeStatus status = arr_merge_stretches(&a, pairs, npairs, &ecopy, &done,
-    &mg);
+  status = arr_merge_stretches(&a, pairs, npairs, &ecopy, &done, &mg);
   if (status == ARR_ANSWERED && done)
   {
+    /* The merged stretches are numbered anew */
+    a.split = 0;
+    pfree(a.ccx); pfree(a.ccy); pfree(a.cr2); pfree(a.ccw);
+    arr_stretch_circles(&a);
     pfree(a.box);
     a.box = palloc(sizeof(double[4]) * Max(a.n, 1u));
     for (uint32_t i = 0; i < a.n; i++)
@@ -4711,15 +5601,14 @@ arr_arrange_stretches(const ArrStretch *st, uint32_t n, MeosArray ***rings,
   {
     pfree(pairs);
     pfree(a.start); pfree(a.end); pfree(a.vtab); pfree(a.xtab);
+    pfree(a.tptab); pfree(a.tpnode);
     pfree(a.nodes); pfree(a.box);
+    pfree(a.ccx); pfree(a.ccy); pfree(a.cr2); pfree(a.ccw);
     if (a.same)
       pfree(a.same);
     arr_stretch_edges_free(&a, ecopy);
     return status;
   }
-  /* No arcs */
-  a.ccx = palloc(sizeof(Ival) * a.n); a.ccy = palloc(sizeof(Ival) * a.n);
-  a.cr2 = palloc(sizeof(Ival) * a.n); a.ccw = palloc0(sizeof(bool) * a.n);
   status = arr_finish(&a, pairs, npairs, rings, nrings, owner, sout, nsout);
   arr_stretch_edges_free(&a, ecopy);
   return status;
@@ -4775,8 +5664,28 @@ arrange_union_surfaces(const MeosArray *edges, const uint32_t *soff,
       ArrStretch *sk = &part[m][i];
       sk->s = s;
       sk->rev = false;
-      sk->from = (ArrEnd) {s->x1, s->y1, NULL, NULL};
-      sk->to = (ArrEnd) {s->x2, s->y2, NULL, NULL};
+      /* No arrangement placed its ends yet */
+      sk->fbox[0] = sk->fbox[1] = sk->tbox[0] = sk->tbox[1] =
+        (Ival) {INFINITY, -INFINITY};
+      if (s->centred)
+      {
+        /* A whole circle, from where it starts to where it ends */
+        sk->from = (ArrMeet) {MEET_ORIGIN, s, NULL, 0, s->x1, s->y1, NULL};
+        sk->to = (ArrMeet) {MEET_ORIGIN, s, NULL, 1, s->x2, s->y2, NULL};
+      }
+      else if (s->from)
+      {
+        sk->from = (ArrMeet) {MEET_TANGENT, NULL, NULL, 0, s->x1, s->y1,
+          s->from};
+        sk->to = (ArrMeet) {MEET_TANGENT, NULL, NULL, 0, s->x2, s->y2,
+          s->to};
+      }
+      else
+      {
+        sk->from = (ArrMeet) {MEET_VERTEX, NULL, NULL, 0, s->x1, s->y1,
+          NULL};
+        sk->to = (ArrMeet) {MEET_VERTEX, NULL, NULL, 0, s->x2, s->y2, NULL};
+      }
     }
     count[m++] = ne;
   }
@@ -4808,7 +5717,8 @@ arrange_union_surfaces(const MeosArray *edges, const uint32_t *soff,
       pfree(part[g]); pfree(part[g + 1]);
       ArrStretch *out = NULL;
       uint32_t nout = 0;
-      st = arr_arrange_stretches(both, nboth, NULL, NULL, NULL, &out, &nout);
+      st = arr_arrange_stretches(both, nboth, count[g], NULL, NULL, NULL,
+        &out, &nout);
       pfree(both);
       part[k] = out;
       count[k++] = (st == ARR_ANSWERED) ? nout : 0;
@@ -4823,7 +5733,8 @@ arrange_union_surfaces(const MeosArray *edges, const uint32_t *soff,
     ArrStretch *all = palloc(sizeof(ArrStretch) * Max(total, 1u));
     for (uint32_t g = 0, at = 0; g < m; at += count[g], g++)
       memcpy(all + at, part[g], sizeof(ArrStretch) * count[g]);
-    st = arr_arrange_stretches(all, total, rings, nrings, owner, NULL, NULL);
+    st = arr_arrange_stretches(all, total, (m == 2) ? count[0] : 0, rings,
+      nrings, owner, NULL, NULL);
     pfree(all);
   }
   for (uint32_t g = 0; g < m; g++)
