@@ -311,7 +311,7 @@ come before its push.
 | `fix/tjsonb-contained-operand-order` | `477264fed3` | `tjsonbContained` answers `<@`, not `@>` | receipts owed |
 | `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
 | `meos/cell-instants-answer-the-constructor` | `782381cd17` | the cell instant constructors carry their `@csqlfn` | receipts owed |
-| `sql/geo-distance-operators-take-their-procedures` | `51b010cbc1` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | receipts running |
+| `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | strict-ci, Windows, cppcheck and valgrind receipts; pushed, pull request opening |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
 | `meos/jsonpath-outside-meos-gate` | `624b5a999c` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
