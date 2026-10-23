@@ -7175,16 +7175,14 @@ towerseg_meet_circle(TowerCtx *ctx, const Edge *p, const Edge *q,
     }
     else
     {
-      /* A touching within the segment crosses nothing and is not told */
-      if (disc == 0)
-        return -2;
       out[n].m.kind = MEET_LINECIRCLE;
       out[n].m.p = p; out[n].m.q = q;
       out[n].m.sigma = r ? 1 : -1;
       /* The segment leaves the disc at its farther root: its direction
        * crossed with the tangent of a counterclockwise circle has the sign
-       * of the root */
-      out[n].sign = (r ? 1 : -1) * (q->ccw ? 1 : -1);
+       * of the root; a touching, the one root of the line, crosses nothing,
+       * its sign 0 */
+      out[n].sign = (disc == 0) ? 0 : (r ? 1 : -1) * (q->ccw ? 1 : -1);
     }
     n++;
   }
@@ -7212,9 +7210,10 @@ towerseg_meet_pred(TowerCtx *ctx, const void *arg)
  * circle one root above
  * @param[in] p A segment between tangent points (#edges_add_tangent_segment)
  * @param[in] q Another such segment, or a centred arc (#edges_add_circle)
- * @param[out] out The meetings, in their order along @p p
+ * @param[out] out The meetings, in their order along @p p, a touching of the
+ * circle interior to the segment of sign 0
  * @return Their number, -1 where the two segments run along each other, -2
- * where a meeting is not told, as a touching interior to the segment
+ * where a meeting is not told
  */
 int
 towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2])
