@@ -379,6 +379,7 @@ h3_cell_planes(H3Index cell)
     lons[i] = bnd.verts[i].lng;
     lats[i] = bnd.verts[i].lat;
   }
+  /* cppcheck-suppress uninitvar */
   dggs_cell_edge_planes(lons, lats, bnd.numVerts, h3_last_planes.normals,
     h3_last_planes.origins);
   h3_last_planes.count = bnd.numVerts;

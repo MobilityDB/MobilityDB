@@ -1074,7 +1074,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
     seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
     /* Keep the first point */
     const TInstant *inst = TSEQUENCE_INST_N(seq1, 0);
-    const TInstant *m = meas ? TSEQUENCE_INST_N(seq2, 0) : NULL;
+    const TInstant *m = seq2 ? TSEQUENCE_INST_N(seq2, 0) : NULL;
     LWGEOM *value1 = tpointinst_to_geomeas_iter(inst, m);
     /* npoints is the current number of points so far, k is the number of
      * additional points from the current sequence */
@@ -1211,7 +1211,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
     seq2 = (meas) ? TSEQUENCESET_SEQ_N(meas, i) : NULL;
     /* Keep the first point */
     const TInstant *inst = TSEQUENCE_INST_N(seq1, 0);
-    const TInstant *m = meas ? TSEQUENCE_INST_N(seq2, 0) : NULL;
+    const TInstant *m = seq2 ? TSEQUENCE_INST_N(seq2, 0) : NULL;
     /* npoints is the current number of points so far, k is the number of
      * additional points from the current sequence */
     points[npoints] = tpointinst_to_geomeas_iter(inst, m);
