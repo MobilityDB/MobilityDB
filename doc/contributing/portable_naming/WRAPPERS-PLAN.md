@@ -315,7 +315,7 @@ come before its push.
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
 | `meos/jsonpath-outside-meos-gate` | `624b5a999c` | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | receipts owed |
-| `meos/box-constructors-named` | `1febafb2e1` | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | receipts running |
+| `meos/box-constructors-named` | `96a7073c88` (on `7dd9debf0c`) | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `meos/pose-constructors-named` | `2cf35f33b6` | one wrapper per pose constructor, each named in its tag | receipts owed |
 | `meos/tpcbox-pcpoint-constructors-named` | `d0c3d8f0d7` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
 | `meos/trgeometry-constructors-named` | `0e2ce4ae06` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
@@ -323,9 +323,11 @@ come before its push.
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `meos/raster-statistics-named` | `66850d54fb` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
-| `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | strict-ci, Windows, cppcheck, valgrind, speed and CGAL oracle receipts (cgal_tcbuffer, 3000 of 3000, controls exact and flip), smoke; fork CI green on `2f61dc6bf7`, the same patch; pull request opening |
+| `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
-| `fix/ever-always-wrappers-return-boolean` | `af61153d6a` (on `5d3ddbd256`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | fork only, never built; rebase and receipts owed |
+| `fix/ever-always-wrappers-return-boolean` | `e7a100a4a6` (on `7dd9debf0c`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | Windows and cppcheck receipts; strict-ci owed |
+| `geo/sql-overlays-answer-exactly` | `2ad0999f88` (on `7dd9debf0c`) | the four SQL polygon overlays answer through `geom_intersection2d`, `geom_difference2d` and the new public `geom_union2d`, `geom_symdifference2d` | strict-ci, Windows, cppcheck, valgrind, smoke, speed (6 of 6 union cells at parity with GEOS) and CGAL oracle (8 witnesses, 16 controls) receipts; pushing |
+| `geo/trajectory-clip-native` | `14ad3f4f56` (on `7dd9debf0c`) | a trajectory clips against a polygon through the native `tpoint_linear_inter_geom`; `clipper2_traj_poly_periods` and its helpers go (Clipper2 removal, step 2) | strict-ci, Windows, cppcheck and valgrind receipts; push after the overlay |
 
 Left, each for the owner first:
 
