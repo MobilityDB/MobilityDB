@@ -3212,6 +3212,54 @@ arr_node_circle_right(const Arr *a, uint32_t v, const Edge *e)
   return meet_point_y_side(&at, e->cy) == 0;
 }
 
+/* Where node v of the circle of centred arc j stands against the point of
+ * that circle furthest along x, (cx + r, cy), walked in the sense of the arc
+ * from its start, the point furthest along -x: -1 before it, 1 after it, 0
+ * at it, 2 where it is not told. Counterclockwise the walk runs below the
+ * line y = cy before it and above after it, clockwise the other way, so the
+ * side of that line decides, exactly as #arr_node_side decides it; the
+ * start of the arc stands before every point and after it as its end */
+static int
+arr_node_right_order(const Arr *a, uint32_t j, uint32_t v, bool start)
+{
+  const ArrNode *nd = &a->nodes[v];
+  const Edge *e = &a->e[j];
+  if (nd->origin && nd->origin == arr_edge_ref(a, j))
+    return start ? -1 : 1;
+  int s;
+  if (nd->vertex)
+    s = (nd->y > e->cy) - (nd->y < e->cy);
+  else if (nd->tower)
+  {
+    MeetPoint at = arr_meet_point(&nd->meet);
+    at.p = nd->meet.p; at.q = nd->meet.q;
+    s = meet_point_y_side(&at, e->cy);
+    if (s == 2)
+      return 2;
+  }
+  else
+    return 2;
+  /* On the line, a point of the circle other than its start is the point
+   * furthest along x */
+  if (s == 0)
+    return (nd->bx.lo > e->cx) ? 0 : 2;
+  return a->ccw[j] ? (s < 0 ? -1 : 1) : (s > 0 ? -1 : 1);
+}
+
+/* Whether the piece of a centred arc holds the point of its circle furthest
+ * along x strictly within it, decided exactly by the order of its ends
+ * against that point (#arr_node_right_order): 1, 0, or 2 where it is not
+ * told */
+static int
+arr_piece_holds_right_exact(const Arr *a, const ArrPiece *p)
+{
+  int f = arr_node_right_order(a, p->edge, p->from, true);
+  int t = arr_node_right_order(a, p->edge, p->to, false);
+  if (f == 2 || t == 2)
+    return 2;
+  return (f < 0 && t > 0) ? 1 : 0;
+}
+
 static bool
 arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
   ArrExtreme *out)
@@ -3267,6 +3315,16 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
         continue;
       Ival x;
       int holds = arr_piece_holds_right(a, p, &x);
+      /* Where the intervals cannot tell, as at an end within a few units in
+       * the last place of that point, the order of the ends tells; only
+       * among stretches, whose ends compete with the arcs, as a piece ending
+       * at that point leaves it to the node there */
+      if (holds == 2 && a->sup && a->e[p->edge].centred)
+      {
+        int h = arr_piece_holds_right_exact(a, p);
+        if (h != 2)
+          holds = h;
+      }
       if (holds == 0)
         continue;
       /* A vertex on the circle of the arc, an end of its edge, stands left
