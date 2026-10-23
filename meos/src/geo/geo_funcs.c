@@ -19708,11 +19708,30 @@ static bool
 arc_geometry(const POINT4D *p1, const POINT4D *p2, const POINT4D *p3,
   double *cx, double *cy, double *radius, double *sweep)
 {
+  /* Ends at one point: the whole circle through the middle, whose diameter
+   * joins the two, as PostGIS reads such an arc; a full turn has no sense
+   * of its own, and a hole is told by its place in the surface */
+  if (p1->x == p3->x && p1->y == p3->y)
+  {
+    *cx = 0.5 * (p1->x + p2->x);
+    *cy = 0.5 * (p1->y + p2->y);
+    *radius = 0.5 * hypot(p2->x - p1->x, p2->y - p1->y);
+    *sweep = 2 * M_PI;
+    return *radius > 0.0;
+  }
+  /* The arc turns counterclockwise where the three points turn left, and
+   * three points on one line, both decided exactly, are a straight segment */
+  int turn = cross_product_sign(p1->x, p1->y, p2->x, p2->y, p1->x, p1->y,
+    p3->x, p3->y);
+  if (turn == 0)
+    return false;
   double ox = p2->x, oy = p2->y;
   double ax = p1->x - ox, ay = p1->y - oy;
   double bx = p3->x - ox, by = p3->y - oy;
   double d = 2 * (ax * (0 - by) + 0 * (by - ay) + bx * (ay - 0));
-  if (fabs(d) < MEOS_GEOM_TOLERANCE)
+  /* Points so nearly on one line that the doubles place no centre draw a
+   * circle wider than they can state, its segment no area they can either */
+  if (d == 0.0)
     return false;
 
   double asq = ax * ax + ay * ay, bsq = bx * bx + by * by;
@@ -19721,18 +19740,19 @@ arc_geometry(const POINT4D *p1, const POINT4D *p2, const POINT4D *p3,
   *cx = ux + ox;
   *cy = uy + oy;
   *radius = hypot(ux, uy);
-  if (*radius < MEOS_GEOM_TOLERANCE)
+  if (! isfinite(*radius) || *radius == 0.0)
     return false;
 
-  double t1 = atan2(p1->y - *cy, p1->x - *cx);
-  double t2 = atan2(p2->y - *cy, p2->x - *cx);
-  double t3 = atan2(p3->y - *cy, p3->x - *cx);
-  /* The arc runs from p1 to p3 the way round that passes through p2 */
-  bool ccw = angle_normalize(t2 - t1) < angle_normalize(t3 - t1) ||
-    angle_normalize(t3 - t1) < MEOS_EPSILON;
-  *sweep = ccw ? angle_normalize(t3 - t1) : -angle_normalize(t1 - t3);
-  if (fabs(*sweep) < MEOS_EPSILON)
-    *sweep = ccw ? 2 * M_PI : -2 * M_PI;
+  /* The angle from the radius to p1 to the one to p3, read off their cross
+   * and dot products, which keeps an arc of next to no sweep as small as it
+   * is, then taken the way round the arc turns */
+  double rx1 = p1->x - *cx, ry1 = p1->y - *cy;
+  double rx3 = p3->x - *cx, ry3 = p3->y - *cy;
+  double phi = atan2(rx1 * ry3 - ry1 * rx3, rx1 * rx3 + ry1 * ry3);
+  if (turn > 0)
+    *sweep = (phi > 0.0) ? phi : phi + 2 * M_PI;
+  else
+    *sweep = (phi < 0.0) ? phi : phi - 2 * M_PI;
   return true;
 }
 
@@ -19881,9 +19901,14 @@ centroid_add_ring(CentroidAcc *acc, const POINTARRAY *pa, bool arcs,
     double cx, cy, radius, sweep;
     if (! arc_geometry(&p1, &p2, &p3, &cx, &cy, &radius, &sweep))
       continue;
+    /* theta - sin(theta), which cancels for a small sweep, from its series
+     * there; every arc adds its segment, however small */
     double theta = fabs(sweep);
-    double denom = theta - sin(theta);
-    if (fabs(denom) < MEOS_EPSILON)
+    double t2 = theta * theta;
+    double denom = (theta < 1e-2) ?
+      theta * t2 * (1.0 / 6 - t2 * (1.0 / 120 - t2 / 5040)) :
+      theta - sin(theta);
+    if (denom == 0.0)
       continue;
     double area = radius * radius * denom / 2;
     double half = theta / 2;
