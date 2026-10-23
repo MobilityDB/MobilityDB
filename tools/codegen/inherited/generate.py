@@ -2752,37 +2752,52 @@ def _dist_dirs(fam: dict):
 
 def _dist_spheroid(fam: dict):
     """Per pair, whether its functions read the earth model from a trailing
-    `spheroid boolean DEFAULT true`, as `area(stbox, spheroid)` does, with the
-    operator backed by the 2-argument `setDistanceOp` on the spheroid"""
+    `spheroid boolean DEFAULT true`, as `area(stbox, spheroid)` does"""
     return fam.get("spheroid") or [False] * len(fam["pairs"])
+
+
+def _dist_procs(fam: dict):
+    """The procedure of the family's `<->` with its C symbol per direction, or
+    None when the operator takes `setDistance` itself. A family whose
+    `setDistance` reads an earth model names the procedure in `procedure`, as
+    PostGIS backs `<->` by `geography_distance_knn` beside `ST_Distance`: the
+    operator then answers with the default model, which the nearest-neighbour
+    search of an index also takes, for every pair of the family alike"""
+    proc = fam.get("procedure")
+    if not proc:
+        return None
+    return proc, fam["procsyms"]
 
 
 def _dist_fns(fam: dict) -> str:
     """The three setDistance CREATE FUNCTIONs for every (value, set) pair: a
-    pair's functions packed, consecutive pairs separated by one blank line. A
-    pair with an earth model follows each function with its operator twin."""
+    pair's functions packed, consecutive pairs separated by one blank line. In a
+    family with an operator procedure each function is followed by the
+    procedure of its direction."""
     tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
+    procs = _dist_procs(fam)
     groups = []
     for (v, s), ret, sph in zip(fam["pairs"], fam["rets"], _dist_spheroid(fam)):
         rets = ret if isinstance(ret, list) else [ret] * 3
         fns = []
-        for (l, r, sym), rd in zip(_dist_dirs(fam), rets):
+        for i, ((l, r, sym), rd) in enumerate(zip(_dist_dirs(fam), rets)):
             args = f"{l.format(v=v, s=s)}, {r.format(v=v, s=s)}"
             extra = ", spheroid boolean DEFAULT true" if sph else ""
             fns.append(tmpl.replace("{SIG}", f"setDistance({args}{extra})")
                            .replace("{RET}", rd).replace("{SYM}", sym))
-            if sph:
-                fns.append(tmpl.replace("{SIG}", f"setDistanceOp({args})")
-                               .replace("{RET}", rd).replace("{SYM}", f"{sym}_op"))
+            if procs:
+                fns.append(tmpl.replace("{SIG}", f"{procs[0]}({args})")
+                               .replace("{RET}", rd).replace("{SYM}", procs[1][i]))
         groups.append("\n".join(fns))
     return "\n\n".join(groups) + "\n"
 
 
 def _dist_ops(fam: dict) -> str:
     """The three `<->` operators for every pair, grouped like the functions."""
+    procs = _dist_procs(fam)
+    proc = procs[0] if procs else "setDistance"
     groups = []
-    for (v, s), sph in zip(fam["pairs"], _dist_spheroid(fam)):
-        proc = "setDistanceOp" if sph else "setDistance"
+    for v, s in fam["pairs"]:
         groups.append("\n".join(
             f"CREATE OPERATOR <-> (\n"
             f"  PROCEDURE = {proc},\n"
