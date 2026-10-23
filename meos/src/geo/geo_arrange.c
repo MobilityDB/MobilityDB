@@ -2048,14 +2048,28 @@ arr_ival_where(const Arr *a, uint32_t i, Ival t)
 
 /* Node stretches i and j at a meeting strictly within both, placed by the
  * intervals @p px, @p py holding it, its coordinates their middles until the
- * rings are written (#arr_nodes_narrow) */
+ * rings are written (#arr_nodes_narrow). Intervals that hold it loosely, as
+ * at the crossing of two nearly parallel segments, are narrowed exactly
+ * first (#meet_point_bounds): the box is carried to the arrangements after
+ * this one, whose filters and rays read it (#arr_point_clear) */
 static ArrangeStatus
 arr_ival_crossing(Arr *a, uint32_t i, uint32_t j, ArrMeet m, Ival px,
   Ival py, int sign)
 {
   double box[4] = {px.lo, px.hi, py.lo, py.hi};
-  uint32_t node = arr_tower_node_at(a, &m, 0.5 * (px.lo + px.hi),
-    0.5 * (py.lo + py.hi), box);
+  double x = 0.5 * (px.lo + px.hi), y = 0.5 * (py.lo + py.hi);
+  if (box[1] - box[0] > 0x1p-40 * fabs(x) ||
+      box[3] - box[2] > 0x1p-40 * fabs(y))
+  {
+    MeetPoint mp = arr_meet_point(&m);
+    double nx, ny, nb[4];
+    if (meet_point_bounds(&mp, &nx, &ny, nb))
+    {
+      x = nx; y = ny;
+      memcpy(box, nb, sizeof(box));
+    }
+  }
+  uint32_t node = arr_tower_node_at(a, &m, x, y, box);
   a->nodes[node].cross = arr_cross_new(a, node, i, j, sign);
   ArrMeet am = a->nodes[node].meet;
   arr_cut(a, i, node, arr_box_position(a, i, px, py), am);
