@@ -2815,7 +2815,7 @@ tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
- * @csqlfn #Tdwithin_tcbuffer_cbuffer() #Tdwithin_cbuffer_tcbuffer()
+ * @csqlfn #Tdwithin_tcbuffer_cbuffer()
  */
 Temporal *
 tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
@@ -2834,6 +2834,21 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
   lfinfo.param[0] = Float8GetDatum(dist);
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb), &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
+}
+
+/**
+ * @ingroup meos_cbuffer_rel_temp
+ * @brief Return a temporal Boolean that states whether a circular buffer and
+ * a temporal circular buffer are within a distance
+ * @param[in] cb Circular buffer
+ * @param[in] temp Temporal circular buffer
+ * @param[in] dist Distance
+ * @csqlfn #Tdwithin_cbuffer_tcbuffer()
+ */
+Temporal *
+tdwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
+{
+  return tdwithin_tcbuffer_cbuffer(temp, cb, dist);
 }
 
 /*****************************************************************************/
