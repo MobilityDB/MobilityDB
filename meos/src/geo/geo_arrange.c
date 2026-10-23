@@ -1726,6 +1726,9 @@ arr_meet_tower(Arr *a, uint32_t i, uint32_t j)
     return ARR_MEETING;
   for (int k = 0; k < n; k++)
   {
+    /* A touching interior to the segment is not answered here */
+    if (m[k].m.kind == MEET_LINECIRCLE && m[k].sign == 0)
+      return ARR_MEETING;
     ArrMeet am = {m[k].m.kind, m[k].m.p, m[k].m.q, m[k].m.sigma, 0.0, 0.0,
       m[k].m.tp};
     uint32_t node;
@@ -1820,7 +1823,7 @@ arr_support_meets_known(const Arr *a, uint32_t s, uint32_t o, ArrMeet m[2],
  * @details As #arr_meet_tower and #arr_meet_arcs_exact find them for the
  * edges themselves; the meetings refer to the input edges
  * @return #ARR_OVERLAP where the two run along each other, #ARR_MEETING
- * where a meeting is not told or the circles touch
+ * where a meeting is not told
  */
 static ArrangeStatus
 arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
@@ -1841,12 +1844,13 @@ arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
     if (ival_sign(ival_sub(d2, ival_mul(rs, rs))) == 1 ||
         ival_sign(ival_sub(ival_mul(rd, rd), d2)) == 1)
       return ARR_ANSWERED;
+    /* Two circles touching cross nothing: on either side of each, the
+     * winding number the other gives is the same all along it, so the
+     * touching is no node of the arrangement, as two circles apart */
     int meet, within[2][2];
     arcarc_meet_exact(p, q, &meet, within);
-    if (meet < 0)
+    if (meet <= 0)
       return ARR_ANSWERED;
-    if (meet == 0)
-      return ARR_MEETING;
     int c12 = (a->ccw[i] ? 1 : -1) * (a->ccw[j] ? 1 : -1);
     for (int r = 0; r < 2; r++)
     {
@@ -2253,6 +2257,10 @@ arr_meet_curved(Arr *a, uint32_t i, uint32_t j)
     return st;
   for (int k = 0; k < n; k++)
   {
+    /* A segment touching a circle within it crosses nothing, as two
+     * circles touching (#arr_support_meets): no node */
+    if (m[k].kind == MEET_LINECIRCLE && sign[k] == 0)
+      continue;
     /* A crossing of two circles the intervals place off either stretch,
      * as #arr_meet_arcs_exact places it, is passed over before it is
      * placed exactly */
@@ -3251,8 +3259,14 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
       {
         /* Two centred arcs holding the points of their circles furthest
          * along x, cx + r, compared exactly: either of two at one x has
-         * nothing to its right */
-        if (arr_centred_right_cmp(ae, &a->e[a->pieces[ex.piece].edge]) > 0)
+         * nothing to its right, but at one point, the centres at one y,
+         * the two circles touch, which no node records
+         * (#arr_support_meets), and the larger lies outside the smaller,
+         * so that its piece is the one the outside faces */
+        const Edge *xe = &a->e[a->pieces[ex.piece].edge];
+        int order = arr_centred_right_cmp(ae, xe);
+        if (order > 0 ||
+            (order == 0 && ae->cy == xe->cy && ae->radius > xe->radius))
         {
           ex.piece = a->halves[k].piece;
           ex.x = x;
@@ -3479,19 +3493,41 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
     for (uint32_t m = k + 1; m < ncomp && st == ARR_ANSWERED; m++)
     {
       const Ival *xk = &cex[order[k].id].x, *xm = &cex[order[m].id].x;
-      /* Rightmost points told apart, or equal: a component enclosing
-       * another lies strictly further right */
-      if (xm->hi < xk->lo || (xk->lo == xk->hi && xm->lo == xm->hi))
-        continue;
-      /* Rightmost points on centred arcs, compared exactly: one at least as
-       * far right as the other is not enclosed by it */
       const ArrExtreme *ek = &cex[order[k].id], *em = &cex[order[m].id];
-      if (ek->on_arc && em->on_arc &&
-          a->e[a->pieces[ek->piece].edge].centred &&
-          a->e[a->pieces[em->piece].edge].centred &&
-          arr_centred_right_cmp(&a->e[a->pieces[ek->piece].edge],
-            &a->e[a->pieces[em->piece].edge]) >= 0)
+      bool arcs = ek->on_arc && em->on_arc &&
+        a->e[a->pieces[ek->piece].edge].centred &&
+        a->e[a->pieces[em->piece].edge].centred;
+      /* Rightmost points told apart, or equal vertices: a component
+       * enclosing another lies strictly further right */
+      if (xm->hi < xk->lo ||
+          (! arcs && xk->lo == xk->hi && xm->lo == xm->hi))
         continue;
+      /* Rightmost points on centred arcs, compared exactly: one further
+       * right than the other is not enclosed by it. At one x they are one
+       * point where the centres are at one y, and there the two circles
+       * touch, which no node records (#arr_support_meets): the larger holds
+       * the smaller, so neither encloses the component of the larger, which
+       * is labelled first */
+      if (arcs)
+      {
+        const Edge *pk = &a->e[a->pieces[ek->piece].edge];
+        const Edge *pm = &a->e[a->pieces[em->piece].edge];
+        int c = arr_centred_right_cmp(pk, pm);
+        if (c == 0 && pk->cy == pm->cy)
+        {
+          if (pk->radius == pm->radius)
+            st = ARR_DEPTH;
+          else if (pk->radius < pm->radius)
+          {
+            ArrSweep t = order[k]; order[k] = order[m]; order[m] = t;
+            /* The component now at k is compared with all after it anew */
+            m = k;
+          }
+          continue;
+        }
+        if (c >= 0)
+          continue;
+      }
       const double *bk = cbox[order[k].id], *bm = cbox[order[m].id];
       bool kinm = bk[0] >= bm[0] && bk[1] <= bm[1] && bk[2] >= bm[2] &&
         bk[3] <= bm[3];
