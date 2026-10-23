@@ -1336,14 +1336,12 @@ Tgeo_minus_elevation(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Polygon clipping (Clipper2 backend)
+ * Polygon overlays
  *
- * INTERNAL — these functions expose the in-process polygon Boolean engine
- * used by the temporal types whose values are 2D regions. They exist so the
- * engine can be unit-tested and benchmarked from SQL; end users should keep
- * using PostGIS ST_Intersection / ST_Union / ST_Difference / ST_SymDifference,
- * which are more robust on degenerate inputs and handle curves / geography /
- * 3D.
+ * The overlays of two planar (multi)polygons, answered by the native areal
+ * overlay of MEOS: #geom_intersection2d, #geom_difference2d, #geom_union2d and
+ * #geom_symdifference2d compute the vertices they build from the doubles the
+ * operands hold, without rounding them onto a grid.
  *****************************************************************************/
 
 static char
@@ -1361,13 +1359,20 @@ clip_ext(FunctionCallInfo fcinfo, ClipOper operation)
   gserialized_error_if_srid_mismatch(subj, clip, __func__);
   if (! is_poly(subj) || ! is_poly(clip))
     elog(ERROR, "The function only accepts (multi)polygons");
-  /* The Clipper2 backend is planar 2D — reject geography and Z so callers
-   * don't get silent miscomputation. */
+  /* The overlays are planar and 2D */
   if (! ensure_not_geodetic_geo(subj) || ! ensure_not_geodetic_geo(clip) ||
       ! ensure_has_not_Z_geo(subj)    || ! ensure_has_not_Z_geo(clip))
     PG_RETURN_NULL();
 
-  GSERIALIZED *result = clip_poly_poly(subj, clip, operation);
+  GSERIALIZED *result;
+  if (operation == CL_INTERSECTION)
+    result = geom_intersection2d(subj, clip);
+  else if (operation == CL_DIFFERENCE)
+    result = geom_difference2d(subj, clip);
+  else if (operation == CL_UNION)
+    result = geom_union2d(subj, clip);
+  else /* operation == CL_XOR */
+    result = geom_symdifference2d(subj, clip);
   PG_FREE_IF_COPY(subj, 0);
   PG_FREE_IF_COPY(clip, 1);
   if (! result)

@@ -4019,6 +4019,7 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @ingroup meos_geo_base_spatial
  * @brief Return the intersection of two geometries
  * @param[in] gs1,gs2 Geometries
+ * @csqlfn #Geom_intersection()
  * @note PostGIS function: @p ST_Intersection(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
  *
@@ -4166,6 +4167,7 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_spatial
  * @brief Return the difference of two geometries
  * @param[in] gs1,gs2 Geometries
+ * @csqlfn #Geom_difference()
  * @note PostGIS function: @p ST_Difference(PG_FUNCTION_ARGS). With respect
  * to the original function we do not use the @p prec argument.
  */
@@ -4182,6 +4184,53 @@ geom_difference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return geo_overlay_lifted(gs1, gs2, geom_difference2d_route);
 
   return geom_difference2d_route(gs1, gs2);
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the union of two geometries
+ * @param[in] gs1,gs2 Geometries
+ * @csqlfn #Geom_union()
+ * @note PostGIS function: @p ST_Union(geometry, geometry). It is the union
+ * of the array of the two geometries, #geom_array_union, whose dissolve
+ * answers surfaces from the doubles the operands hold
+ */
+GSERIALIZED *
+geom_union2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return NULL;
+
+  GSERIALIZED *pair[2] = {(GSERIALIZED *) gs1, (GSERIALIZED *) gs2};
+  return geom_array_union(pair, 2);
+}
+
+/**
+ * @ingroup meos_geo_base_spatial
+ * @brief Return the symmetric difference of two geometries
+ * @param[in] gs1,gs2 Geometries
+ * @csqlfn #Geom_sym_difference()
+ * @note PostGIS function: @p ST_SymDifference(geometry, geometry). The region
+ * exactly one of them covers is the union of the two differences,
+ * #geom_difference2d in either order, as #geom_union2d reads them
+ */
+GSERIALIZED *
+geom_symdifference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return NULL;
+
+  GSERIALIZED *diffs[2] = {geom_difference2d(gs1, gs2),
+    geom_difference2d(gs2, gs1)};
+  GSERIALIZED *result = (diffs[0] && diffs[1]) ?
+    geom_array_union(diffs, 2) : NULL;
+  if (diffs[0])
+    pfree(diffs[0]);
+  if (diffs[1])
+    pfree(diffs[1]);
+  return result;
 }
 
 /**
