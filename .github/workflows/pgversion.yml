@@ -236,7 +236,7 @@ jobs:
         run: |
           cd build
           # Excluding MEOS-specific and other miscellaneous files
-          lcov --capture --directory . --include "*/meos/*" --include "*/mobilitydb/*" --exclude "*/pgtypes/*" --exclude "*/postgis/*" --exclude "*/clipper2/*" --exclude "*/geo_constructors.c" --exclude "*/tpoint_datagen.c" --output-file=lcov.info
+          lcov --capture --directory . --include "*/meos/*" --include "*/mobilitydb/*" --exclude "*/pgtypes/*" --exclude "*/postgis/*" --exclude "*/geo_constructors.c" --exclude "*/tpoint_datagen.c" --output-file=lcov.info
 
       # The coverage report is uploaded to the external coveralls.io service.
       # A transient server error there (a 5xx / timeout) is retried with backoff
