@@ -54,7 +54,7 @@ Scope
 -----
 The roots below hold the first-party headers, and pgtypes, which holds the
 vendored PostgreSQL headers and the pg_*.h headers declaring the base-type
-functions. The vendored trees (postgis, clipper2, h3-pg, pointcloud-pg) are
+functions. The vendored trees (postgis, h3-pg, pointcloud-pg) are
 top-level siblings of these roots, so naming what is scanned leaves them out
 without an exclusion list.
 """

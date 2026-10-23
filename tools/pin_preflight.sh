@@ -140,7 +140,7 @@ run "cppcheck $(cppcheck --version 2>/dev/null) tiered (matches CI 2.13.0)" bash
 import sys, xml.etree.ElementTree as ET
 CRIT={"CastIntegerToAddressAtReturn","incorrectLogicOperator","nullPointer","nullPointerRedundantCheck","uninitvar","duplicateExpression","resourceLeak","returnDanglingLifetime"}
 HIGH={"CastIntegerToAddressAtReturn","incorrectLogicOperator","uninitvar","resourceLeak","returnDanglingLifetime"}
-VEND=("postgres/","postgis/","pgtypes/","h3-pg/","clipper2/"); MB=("pgtypes/utils/","pgtypes/catalog/","pgtypes/access/")
+VEND=("postgres/","postgis/","pgtypes/","h3-pg/"); MB=("pgtypes/utils/","pgtypes/catalog/","pgtypes/access/")
 GEN=("lwin_wkt_lex.c","lwin_wkt_lex.l","lwin_wkt_parse.c","lwin_wkt_parse.y")
 block=[]
 for e in ET.parse("/tmp/pf_cppcheck.xml").getroot().iter("error"):

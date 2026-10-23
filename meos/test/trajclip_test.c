@@ -29,7 +29,7 @@
 
 /*****************************************************************************
  *
- * Verification harness for the Clipper2-backed trajectory-vs-polygon clip.
+ * Verification harness for the trajectory-vs-polygon clip.
  * Each case below corresponds to a known correctness pitfall in the
  * earlier parity-sweep implementation (triangle: dropped diagonal edges
  * via an inverted horizontal-edge filter; diamond: monotonic parity
@@ -113,12 +113,9 @@ main(void)
     "POLYGON((0 0,10 0,10 10,0 10,0 0),(3 3,7 3,7 7,3 7,3 3))",
     "{[POINT(0 5)@2026-01-01 00:00:00+00, POINT(3 5)@2026-01-01 00:36:00+00], [POINT(7 5)@2026-01-01 01:24:00+00, POINT(10 5)@2026-01-01 02:00:00+00]}");
 
-  /* Quantisation regression: trajectory starts inside, exits on a slanted
-   * segment whose CLIP_SCALE-quantised exit vertex is a few units off the
-   * source segment's exact line. The original exact-collinearity test in
-   * map_clipper_vertex_to_t fell through to the defensive fallback
-   * (returning the sequence start), collapsing the inside-span and
-   * dropping the entire result. Coordinates derive from
+  /* Exit on a slanted segment: the trajectory starts inside and leaves
+   * through an edge it crosses at a constructed point, and the clip keeps
+   * the whole inside span. Coordinates derive from
    * tnpoint_to_tgeompoint(Npoint(1, 0.2/0.4/0.5)) on the npoint test
    * fixture (route 1 in tbl_ways) — the failure that lit up
    * 056_tpoint_spatialfuncs_tbl, 087_tnpoint_spatialfuncs and

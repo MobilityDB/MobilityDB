@@ -178,8 +178,6 @@ endif()
 # MEOS
 set(MEOS_OBJECTS "$<TARGET_OBJECTS:temporal>")
 set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo>")
-set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clip_clipper2>")
-set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:clipper2>")
 if(CBUFFER)
   message(STATUS "Including circular buffers")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:cbuffer>")
@@ -332,6 +330,12 @@ if(GEOS)
   target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
 endif()
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
+# MEOS calls the C math library (sqrt, atan2, hypot, ...), which a C link does
+# not add by itself, so it is named here rather than left to a dependency that
+# happens to load it. MSVC carries the math functions in its C runtime.
+if(NOT MSVC)
+  target_link_libraries(${MEOS_LIB_NAME} m)
+endif()
 
 #--------------------------------
 # Belongs to MEOS
@@ -575,9 +579,7 @@ if(MEOS)
     if(POINTCLOUD)
       list(APPEND _meos_pc_libs -lxml2 -lz)
     endif()
-    # The clipper2 polygon engine is C++, so a C consumer linking the archive
-    # needs the C++ runtime that a shared libmeos would have pulled in itself.
-    list(APPEND _meos_pc_libs -lstdc++ -lm)
+    list(APPEND _meos_pc_libs -lm)
     string(REPLACE ";" " " MEOS_PC_LIBS_PRIVATE "${_meos_pc_libs}")
   endif()
 

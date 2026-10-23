@@ -52,7 +52,7 @@ are not tags:
 Scope
 -----
 The roots below are those of check_doxygen_briefs.py: the first-party
-sources, whose vendored siblings (postgis, pgtypes, clipper2, h3-pg,
+sources, whose vendored siblings (postgis, pgtypes, h3-pg,
 pointcloud-pg) sit beside them rather than beneath them.
 """
 

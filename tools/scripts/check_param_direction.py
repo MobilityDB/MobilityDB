@@ -70,7 +70,7 @@ which the repository already uses; only a bare `[in]` is a finding.
 Scope
 -----
 The roots below hold the first-party sources. The vendored trees
-(postgis, pgtypes, clipper2, h3-pg, pointcloud-pg) are top-level
+(postgis, pgtypes, h3-pg, pointcloud-pg) are top-level
 siblings of these roots rather than subdirectories, so naming what is
 scanned leaves them out without an exclusion list.
 """
