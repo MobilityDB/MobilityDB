@@ -21,7 +21,7 @@ jobs:
     steps:
       # checkout branch
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # The job builds the manual from doc/ and runs the local apt-resilient action, which is
           # read from the checkout: both paths belong in the sparse set.
@@ -69,7 +69,7 @@ jobs:
 
       # store the documentation files
       - name: Upload output directory
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: doc-files
           path: |
@@ -99,13 +99,13 @@ jobs:
 
     steps:
       # checkout the gh-pages branch
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: gh-pages
 
       # download the doc files, most of which are generated above
       - name: Download output directory
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: doc-files
           path: docs-temp
@@ -118,7 +118,7 @@ jobs:
 
       # add, commit and push to gh-pages
       - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v11
         with:
           message: 'Update docs'
           default_author: github_actions

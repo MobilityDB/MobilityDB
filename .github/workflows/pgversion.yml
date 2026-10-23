@@ -56,7 +56,7 @@ jobs:
               coverage: 1
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Remove existing PostgreSQL installations [prefer apt.postgresql.org ]
         run: |
