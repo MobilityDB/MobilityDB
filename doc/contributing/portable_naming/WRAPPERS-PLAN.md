@@ -273,7 +273,7 @@ cover the number, time and geo sets only.
 
 `atTpcbox` keeps a patch whole when its bounds overlap the box; `atTpcboxFine` keeps only the
 points inside the box. The patch-level test reads the patch bounds in x and y only, so a box with
-Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`6497012ac3`) fixes it before the move.
+Z does not filter by Z; MobilityDB #3150 (merged as `71e333da59`) fixes it before the move.
 
 ## Consistency of the tags
 
@@ -309,12 +309,12 @@ come before its push.
 | branch | commit | what it does | state |
 |---|---|---|---|
 | `fix/tjsonb-contained-operand-order` | `2245983d0e` | `tjsonbContained` answers `<@`, not `@>` | merged as MobilityDB #3146 (`89ec3ab98d`) |
-| `fix/tpcpatch-tpcbox-z` | `6497012ac3` (on `ebc0e1debb`) | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `fix/tpcpatch-tpcbox-z` | `6497012ac3` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | merged as MobilityDB #3150 (`71e333da59`) |
 | `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` | the cell instant constructors carry their `@csqlfn` | merged as MobilityDB #3149 (`ebc0e1debb`) |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
 | `meos/json-wrappers-named` | `abf8c2f992` | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | receipts owed |
-| `meos/jsonpath-outside-meos-gate` | `4e448b874d` (on `89ec3ab98d`) | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `meos/jsonpath-outside-meos-gate` | `6bbd242b73` (on `71e333da59`) | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `meos/box-constructors-named` | `caefcc5117` (on `7dd9debf0c`) | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | merged as MobilityDB #3143 (`d2ccbae61a`) |
 | `meos/pose-constructors-named` | `2cf35f33b6` | one wrapper per pose constructor, each named in its tag | receipts owed |
 | `meos/tpcbox-pcpoint-constructors-named` | `d0c3d8f0d7` | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | receipts owed |
