@@ -100,6 +100,9 @@ SELECT tbox(tstzspan '[2001-01-01,2001-01-02]');
 SELECT tbox(bigintspan '[1,2]', timestamptz '2001-01-01');
 SELECT tbox(bigintspan '[1,2]', tstzspan '[2001-01-01,2001-01-02]');
 SELECT tbox(bigintspan '[1,2]');
+/* Errors */
+SELECT tbox(float 'NaN', timestamptz '2001-01-01');
+SELECT tbox(float 'NaN', tstzspan '[2001-01-01,2001-01-02]');
 
 -------------------------------------------------------------------------------
 -- Conversions
@@ -126,6 +129,8 @@ SELECT bigintspanset '{[1,2]}'::tbox;
 SELECT floatspanset '{[1,2]}'::tbox;
 SELECT tstzspanset '{[2001-01-01,2001-01-02]}'::tbox;
 /* Errors */
+SELECT float 'NaN'::tbox;
+SELECT numeric 'NaN'::tbox;
 SELECT tbox 'TBOX T((2001-01-01,2001-01-02))'::floatspan;
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
 
