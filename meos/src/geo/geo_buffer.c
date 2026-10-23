@@ -7827,9 +7827,10 @@ sweep_pair_cmp(const void *p, const void *q)
  * it to the next, or NULL where it never does
  * @param[in] count Number of discs
  * @param[in] srid Spatial reference identifier
- * @return The union, or @p NULL where a radius is not positive or the
- * arrangement leaves the region unanswered -- a caller that has another way
- * to answer may take it
+ * @return The union, or @p NULL where a radius is negative or not finite,
+ * where a centre swept along no area or placed alone leaves linework or a
+ * point outside the surfaces, or where the arrangement leaves the region
+ * unanswered -- a caller that has another way to answer may take it
  */
 LWGEOM *
 meos_disc_sweep_union(const POINT2D *centres, const double *radii,
@@ -7837,7 +7838,7 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
 {
   assert(centres); assert(radii); assert(count > 0);
   for (int i = 0; i < count; i++)
-    if (! (radii[i] > 0.0) || ! isfinite(radii[i]) ||
+    if (! (radii[i] >= 0.0) || ! isfinite(radii[i]) ||
         ! isfinite(centres[i].x) || ! isfinite(centres[i].y))
       return NULL;
   /* The first placement of every disc */
@@ -7875,9 +7876,13 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
   uint32_t nsurf = 0;
   int ntp = 0;
   soff[0] = 0;
+  /* A disc of radius zero is its centre: it bounds no surface, and is
+   * covered where the hull of a move from or to it holds it */
+  bool *covered = palloc0(sizeof(bool) * count);
+  bool bare = false;
   for (int i = 0; i < count; i++)
   {
-    if (first[i] == i)
+    if (first[i] == i && radii[i] > 0.0)
     {
       edges_add_circle(edges, centres[i].x, centres[i].y, radii[i], true);
       soff[++nsurf] = edges->count;
@@ -7886,6 +7891,12 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
       continue;
     const POINT2D *c1 = &centres[i], *c2 = &centres[i + 1];
     double r1 = radii[i], r2 = radii[i + 1];
+    /* A move between two centres sweeps no area */
+    if (r1 == 0.0 && r2 == 0.0)
+    {
+      bare = true;
+      continue;
+    }
     /* |C2 - C1|^2 - (r1 - r2)^2, exactly: no quadrilateral where it is not
      * positive, the hull the larger disc */
     double t[3][2] = {{c2->x, -c1->x}, {c2->y, -c1->y}, {r1, -r2}};
@@ -7894,6 +7905,8 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
       exact_sum_set(&sums[k], t[k], 2);
     PolyTerm terms[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}},
       {-1.0, 2, {2, 2}}};
+    covered[first[i]] = covered[first[i]] || r1 == 0.0;
+    covered[first[i + 1]] = covered[first[i + 1]] || r2 == 0.0;
     if (polynomial_sign_exact(sums, terms, 3) <= 0)
       continue;
     TangentPoint base = {c1->x, c1->y, r1, c2->x, c2->y, r2, 1, 0};
@@ -7904,14 +7917,29 @@ meos_disc_sweep_union(const POINT2D *centres, const double *radii,
     *t2b = base; t2b->side = -1; t2b->k = 1;
     *t1b = base; t1b->side = -1; t1b->k = 0;
     /* Counterclockwise: along the right tangent, across the second circle,
-     * back along the left tangent, across the first */
+     * back along the left tangent, across the first; where a radius is
+     * zero both tangents touch its circle at its centre, the hull is the
+     * triangle of that point and the other circle's tangent points, and the
+     * chord across it is no segment */
     edges_add_tangent_segment(edges, t1b, t2b);
-    edges_add_tangent_segment(edges, t2b, t2a);
+    if (r2 > 0.0)
+      edges_add_tangent_segment(edges, t2b, t2a);
     edges_add_tangent_segment(edges, t2a, t1a);
-    edges_add_tangent_segment(edges, t1a, t1b);
+    if (r1 > 0.0)
+      edges_add_tangent_segment(edges, t1a, t1b);
     soff[++nsurf] = edges->count;
   }
-  pfree(first); pfree(hull);
+  /* A centre swept along no area, or placed alone, is linework or a point
+   * the union of surfaces does not state */
+  for (int i = 0; i < count && ! bare; i++)
+    bare = first[i] == i && radii[i] == 0.0 && ! covered[i];
+  pfree(first); pfree(hull); pfree(covered);
+  if (bare || nsurf == 0)
+  {
+    meos_array_destroy(edges);
+    pfree(soff); pfree(tps);
+    return NULL;
+  }
   LWGEOM *result = NULL;
   MeosArray **rings;
   uint32_t nrings;
