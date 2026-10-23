@@ -3605,10 +3605,10 @@ int main(void)
     meos_errno_reset();
   }
 
-  /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs is
-   * overlaid by the Clipper2 arm; the same region spelled TRIANGLE reaches
-   * the native one. Neither carries an arc, so the two answer the same
-   * polygon and the areas are exact */
+  /* ONE REGION, TWO SPELLINGS, AND THEY MUST AGREE. A pair of POLYGONs and
+   * the same region spelled TRIANGLE reach the native overlay. Neither
+   * carries an arc, so the two answer the same polygon and the areas are
+   * exact */
   const char *sp_tri = "TRIANGLE((0 0,4 0,2 4,0 0))";
   const char *sp_pol = "POLYGON((0 0,4 0,2 4,0 0))";
   const char *sp_cl  = "POLYGON((1 1,5 1,5 5,1 5,1 1))";

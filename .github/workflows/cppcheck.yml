@@ -118,8 +118,6 @@ jobs:
             --suppress='*:postgis/*' \
             --suppress='*:*/pgtypes/*' \
             --suppress='*:pgtypes/*' \
-            --suppress='*:*/clipper2/*' \
-            --suppress='*:clipper2/*' \
             --suppress='*:*/pointcloud-pg/*' \
             --suppress='*:pointcloud-pg/*' \
             --suppress='missingIncludeSystem' \

@@ -63,7 +63,7 @@ NAMES = ("CMakeLists.txt",)
 # Vendored trees carry the notices of their upstream. A file there is
 # MobilityDB's when it declares so by carrying this banner: its banner is
 # refreshed, and no file there ever receives one
-VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "clipper2/", "pointcloud-pg/")
+VENDORED = ("pgtypes/", "postgis/", "h3-pg/", "pointcloud-pg/")
 # The files of the first-party trees that state another project's licence
 OTHER_PROJECTS = os.path.join(os.path.dirname(os.path.abspath(__file__)),
   "..", "scripts", "license_other_projects.txt")

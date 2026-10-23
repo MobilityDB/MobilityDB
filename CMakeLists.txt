@@ -134,8 +134,8 @@ if(MEOS)
   if(NOT BUILD_SHARED_LIBS)
     # The static libmeos exists to be linked into someone else's shared module,
     # so every object it carries must be position-independent. The individual
-    # object libraries set this only case by case (liblwgeom, ryu, clipper2,
-    # geo), which is enough for a shared build that links them directly but not
+    # object libraries set this only case by case (liblwgeom, ryu, geo),
+    #, which is enough for a shared build that links them directly but not
     # for an archive that is relocated into a downstream .so/.dylib.
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   endif()
@@ -312,14 +312,9 @@ string(REGEX MATCH "MOBILITYDB_MICRO_VERSION=[0-9]+(beta?[0-9]+)" _ ${ver})
 set(PROJECT_VERSION_DEV ${CMAKE_MATCH_1})
 
 # Set the project name and project version
-# C++ enabled (in addition to C) so we can vendor Clipper2 as the polygon
-# Boolean engine. Required: C++17 (Clipper2 v2.x).
 project(MobilityDB
   VERSION ${MOBILITYDB_MAJOR_VERSION}.${MOBILITYDB_MINOR_VERSION}.${MOBILITYDB_MICRO_VERSION}
-  LANGUAGES C CXX)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+  LANGUAGES C)
 message(STATUS "Building MobilityDB version ${PROJECT_VERSION}")
 # Enable testing, must follow project() call above
 include(CTest)
@@ -457,10 +452,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
     message(STATUS "Generating code coverage")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
-    # The .so is linked with the g++ driver (CXX shared module), which does
-    # not auto-pull libgcov from compile flags — pass --coverage at link time.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+    # The link does not pull libgcov from the compile flags, so --coverage goes
+    # to the linker as well.
     set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} --coverage")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} --coverage")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
@@ -493,8 +486,6 @@ if(CASSERT)
   foreach(config "" _DEBUG _RELEASE _RELWITHDEBINFO _MINSIZEREL)
     string(REPLACE "-DNDEBUG" "" CMAKE_C_FLAGS${config}
       "${CMAKE_C_FLAGS${config}}")
-    string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS${config}
-      "${CMAKE_CXX_FLAGS${config}}")
   endforeach()
 endif()
 
