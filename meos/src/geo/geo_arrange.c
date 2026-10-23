@@ -3203,9 +3203,13 @@ static int
 arr_node_x_cmp(const Arr *a, uint32_t v, uint32_t w)
 {
   const ArrNode *nv = &a->nodes[v], *nw = &a->nodes[w];
-  /* Points no double holds, read in their towers */
-  if ((nv->tower || nw->tower) && (nv->tower || nv->vertex) &&
-      (nw->tower || nw->vertex))
+  /* Points no double holds, read in their towers, as a vertex and the
+   * crossing of two segments of the input are (#meet_tower_build) */
+  bool tv = nv->tower || nv->vertex ||
+    (nv->xp && ! arr_is_arc(nv->xp) && ! arr_is_arc(nv->xq));
+  bool tw = nw->tower || nw->vertex ||
+    (nw->xp && ! arr_is_arc(nw->xp) && ! arr_is_arc(nw->xq));
+  if ((nv->tower || nw->tower) && tv && tw)
   {
     ArrMeet mv = arr_node_meet(a, v), mw = arr_node_meet(a, w);
     MeetPoint pv = arr_meet_point(&mv), pw = arr_meet_point(&mw);
