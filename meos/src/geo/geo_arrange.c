@@ -1842,6 +1842,17 @@ arr_meet_ref(const Arr *a, const Edge *e, uint32_t i, uint32_t j)
   return (e == &a->e[i]) ? a->sup[i] : ((e == &a->e[j]) ? a->sup[j] : e);
 }
 
+/* The root of the meeting of the edge of stretch s with a circle, sigma = 1
+ * the farther along the edge, as a meeting referring to its input segment
+ * reads it, along that segment (#arr_meet_ref, #towerseg_meet): the edge of a
+ * stretch walking its segment backwards runs from its end (#arr_stretch_edge),
+ * so the root farther along the edge is the nearer along the segment */
+static inline int
+arr_support_sigma(const Arr *a, uint32_t s, int sigma)
+{
+  return (a->erev && a->erev[s]) ? - sigma : sigma;
+}
+
 /* Whether a tangent point lies on the circle of a centred arc as the point
  * where its tangent touches that circle, the circle it was built on */
 static inline bool
@@ -1955,9 +1966,12 @@ arr_support_meets(const Arr *a, uint32_t i, uint32_t j, ArrMeet m[2],
     return ARR_MEETING;
   for (int k = 0; k < c; k++)
   {
-    /* A vertex, the end of a segment of the input, is its coordinates */
+    /* A vertex, the end of a segment of the input, is its coordinates; the
+     * root of a meeting with a circle is read along the input segment */
+    int sigma = (tm[k].m.kind == MEET_LINECIRCLE) ?
+      arr_support_sigma(a, s, tm[k].m.sigma) : tm[k].m.sigma;
     m[k] = (ArrMeet) {tm[k].m.kind, arr_meet_ref(a, tm[k].m.p, i, j),
-      arr_meet_ref(a, tm[k].m.q, i, j), tm[k].m.sigma, tm[k].m.x,
+      arr_meet_ref(a, tm[k].m.q, i, j), sigma, tm[k].m.x,
       tm[k].m.y, tm[k].m.tp};
     sign[k] = swap ? - tm[k].sign : tm[k].sign;
   }
@@ -2287,8 +2301,8 @@ arr_meet_ival(Arr *a, uint32_t i, uint32_t j)
     if (w[r] == 1)
     {
       int sigma = r ? 1 : -1;
-      ArrMeet m = {MEET_LINECIRCLE, a->sup[s], a->sup[c], sigma, 0.0, 0.0,
-        NULL};
+      ArrMeet m = {MEET_LINECIRCLE, a->sup[s], a->sup[c],
+        arr_support_sigma(a, s, sigma), 0.0, 0.0, NULL};
       /* The segment leaves the disc at its farther root (#towerseg_meet) */
       int sign = sigma * (a->ccw[c] ? 1 : -1);
       arr_ival_crossing(a, i, j, m, px[r], py[r], (s == i) ? sign : - sign);
