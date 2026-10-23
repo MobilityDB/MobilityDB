@@ -325,7 +325,7 @@ come before its push.
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
-| `fix/ever-always-wrappers-return-boolean` | `e7a100a4a6` (on `7dd9debf0c`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | Windows and cppcheck receipts; strict-ci owed |
+| `fix/ever-always-wrappers-return-boolean` | `e7a100a4a6` (on `7dd9debf0c`) | four ever/always helpers return `PG_RETURN_BOOL` under `RETURNS boolean`, where they returned `int32`; no answer changes | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `geo/sql-overlays-answer-exactly` | `2092dc2092` (on `7dd9debf0c`) | the four SQL polygon overlays answer through `geom_intersection2d`, `geom_difference2d` and the new public `geom_union2d`, `geom_symdifference2d` | strict-ci, Windows, cppcheck, valgrind, smoke, speed (6 of 6 union cells at parity with GEOS) and CGAL oracle (8 witnesses, 16 controls) receipts; pushing |
 | `geo/trajectory-clip-native` | `14ad3f4f56` (on `7dd9debf0c`) | a trajectory clips against a polygon through the native `tpoint_linear_inter_geom`; `clipper2_traj_poly_periods` and its helpers go (Clipper2 removal, step 2) | strict-ci, Windows, cppcheck and valgrind receipts; push after the overlay |
 
