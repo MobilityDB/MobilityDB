@@ -150,7 +150,11 @@ the call itself. The wrapper calls the public function, which names it in its `@
 - **Geometry first, over `tcbuffer`**: `eDisjoint`, `aDisjoint`, `eIntersects`, `aIntersects`,
   `eTouches`, `aTouches`, `eDwithin`, `aDwithin` with a geometry or a `cbuffer` first reach the
   symmetric public function (`edisjoint_tcbuffer_geo`, ...) through an internal `ea_*` function
-  or call it without being named by it (16 wrappers). The 6 geometry-first wrappers over
+  or call it without being named by it (16 wrappers). Each gains the public function of its own
+  argument order (Circular buffer, below); a wrapper reaching its kernel through
+  `EA_spatialrel_*` still states its order, since the catalog at master `ce124289e6` gives
+  `edisjoint_geo_tgeo` `[geometry, tgeometry]` and `acontains_geo_tcbuffer`
+  `[geometry, tcbuffer]` from their `@csqlfn` alone. The 6 geometry-first wrappers over
   `trgeometry` belong to the rigid geometry relations, the last task of the campaign.
 - **Box constructors**: `stboxT`, `stboxXT`, `stboxZ`, `stboxZT`, `geodstboxZ`, `geodstboxZT`
   (`stbox_make`), `tbox(numeric)` (`float_to_tbox`).
@@ -193,6 +197,11 @@ Branch `meos/cbuffer-public` (`2e8df4dd3f`).
 - `aTouches(tcbuffer, tcbuffer)`: `atouches_tcbuffer_tcbuffer` is declared in `meos_cbuffer.h`
   under `@ingroup meos_internal_geo_rel_ever` and moves to the public group of its sibling
   `etouches_tcbuffer_tcbuffer`
+- The 16 static-first ever and always relationships (`edisjoint_geo_tcbuffer` ...
+  `adwithin_cbuffer_tcbuffer`) and `tdwithin_cbuffer_tcbuffer`: each answers its temporal-first
+  twin with the arguments swapped, as `edisjoint_geo_tgeo` answers `edisjoint_tgeo_geo`, the
+  orthogonality rule of the spatial relationships; `check_spatialrel_orthogonality.py` reads the
+  tcbuffer grid beside the tgeo one (108 cells)
 
 ### Rigid geometry (11)
 
@@ -308,15 +317,11 @@ come before its push.
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `meos/raster-statistics-named` | `e0e43aaae6` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
 | `meos/npoint-public` | `de644f0142` | the 20 route operations public (functions to add) | receipts owed |
-| `meos/cbuffer-public` | `cc17994f19` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public | receipts owed |
+| `meos/cbuffer-public` | `2f61dc6bf7` | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | receipts running |
 | `meos/json-public` | `75269bc0b2` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
 
 Left, each for the owner first:
 
-- The geometry-first `tcbuffer` relations (16 wrappers): the catalog states a commuted order only
-  from a wrapper that reads its arguments and calls the public function itself, not through
-  `EA_spatialrel_*`, so they wait for the generator to emit such wrappers, or for the tags alone
-  with the positional mapping `Edwithin_geo_trgeometry` carries on master.
 - `valueCount` and `valuePercent` over a raster: one search value against `raster_value_count`'s
   array of them, a shape the catalog does not state.
 - DECIDED BY THE OWNER 2026-10-23, following the shift/scale sibling (the internal flagged
