@@ -53,7 +53,6 @@
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
-#include "geo/clip_clipper2.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -2397,23 +2396,13 @@ tpointseq_linear_at_geom(const TSequence *seq, const GSERIALIZED *gs)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return NULL;
 
-  /* Fast path for (multi)polygon clip: route through Clipper2's open-path
-   * intersection. Returns the inside-polygon time spans directly, which we
-   * feed back through tcontseq_restrict_tstzspanset to inherit Z and other
-   * dimensions from the original sequence (matching the GEOS path
-   * structurally). Falls through to the GEOS path on Clipper2 failure. */
+  /* A (multi)polygon is clipped natively, as #tgeo_restrict_geom clips every
+   * geometry the clip engine covers */
   uint32_t gs_type = gserialized_get_type(gs);
-  if (gs_type == POLYGONTYPE || gs_type == MULTIPOLYGONTYPE)
-  {
-    int nperiods = 0;
-    Span *periods = clipper2_traj_poly_periods(seq, gs, &nperiods);
-    if (nperiods == 0)
-      return NULL;
-    SpanSet *ss = spanset_make_free(periods, nperiods, NORMALIZE, ORDER);
-    TSequenceSet *result = tcontseq_restrict_tstzspanset(seq, ss, REST_AT);
-    pfree(ss);
-    return result;
-  }
+  if (seq->temptype == T_TGEOMPOINT && ! MEOS_FLAGS_GET_GEODETIC(seq->flags) &&
+      (gs_type == POLYGONTYPE || gs_type == MULTIPOLYGONTYPE))
+    return (TSequenceSet *) tpoint_linear_inter_geom((Temporal *) seq, gs,
+      true);
 
   /* Convert the point to 2D before computing the restriction to geometry */
   bool hasz = MEOS_FLAGS_GET_Z(seq->flags);
