@@ -134,7 +134,7 @@ signature, as `jsonbPathExistsTz` carries `tz = true` on `jsonb_path_exists`.
   (28 wrappers).
 - **`tjsonbContained`** over `(jsonb, tjsonb)`, `(tjsonb, jsonb)` and `(tjsonb, tjsonb)`: the
   wrappers call `contains_tjsonb_*`, which answers `@>` where `<@` is asked. Branch
-  `fix/tjsonb-contained-operand-order` (`2245983d0e`) corrects the call, and the tag follows the
+  MobilityDB #3146 (merged as `89ec3ab98d`) corrects the call, and the tag follows the
   corrected call.
 - **Constructors**: `stbox(box2d)` (`gbox_to_stbox`), `pcpoint(integer, double precision[])`
   (`pcpoint_make`), the three `pose` constructors (`pose_make_2d`, `pose_make_point2d`,
@@ -273,7 +273,7 @@ cover the number, time and geo sets only.
 
 `atTpcbox` keeps a patch whole when its bounds overlap the box; `atTpcboxFine` keeps only the
 points inside the box. The patch-level test reads the patch bounds in x and y only, so a box with
-Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`343ea51253`) fixes it before the move.
+Z does not filter by Z; branch `fix/tpcpatch-tpcbox-z` (`8977561ac2`) fixes it before the move.
 
 ## Consistency of the tags
 
@@ -308,8 +308,8 @@ come before its push.
 
 | branch | commit | what it does | state |
 |---|---|---|---|
-| `fix/tjsonb-contained-operand-order` | `2245983d0e` (on `d6c4c41655`) | `tjsonbContained` answers `<@`, not `@>` | strict-ci, Windows, cppcheck and valgrind receipts; open as MobilityDB #3146 |
-| `fix/tpcpatch-tpcbox-z` | `85b71de75f` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | receipts owed |
+| `fix/tjsonb-contained-operand-order` | `2245983d0e` | `tjsonbContained` answers `<@`, not `@>` | merged as MobilityDB #3146 (`89ec3ab98d`) |
+| `fix/tpcpatch-tpcbox-z` | `8977561ac2` (on `89ec3ab98d`) | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` (on `d6c4c41655`) | the cell instant constructors carry their `@csqlfn` | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `fa4505ed8e` | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 11 -> 8, and 0 once the geo branch's checker credits an `Opr` binding to its wrapper | receipts owed |
