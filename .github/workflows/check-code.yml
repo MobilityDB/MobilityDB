@@ -105,7 +105,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Check spatial-relationship (geo x tgeo) grid completeness
+      - name: Check spatial-relationship (tgeo and tcbuffer) grid completeness
         run: python3 tools/scripts/check_spatialrel_orthogonality.py
 
   btree_gist_operator_check:
