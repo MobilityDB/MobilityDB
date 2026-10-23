@@ -255,10 +255,16 @@ PG_FUNCTION_INFO_V1(Number_timestamptz_to_tbox);
 Datum
 Number_timestamptz_to_tbox(PG_FUNCTION_ARGS)
 {
-  Datum value = PG_GETARG_DATUM(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(number_timestamptz_to_tbox(value, basetype, t));
+  TBox *result;
+  if (basetype == T_INT4)
+    result = int_timestamptz_to_tbox(PG_GETARG_INT32(0), t);
+  else if (basetype == T_INT8)
+    result = bigint_timestamptz_to_tbox(PG_GETARG_INT64(0), t);
+  else /* basetype == T_FLOAT8 */
+    result = float_timestamptz_to_tbox(PG_GETARG_FLOAT8(0), t);
+  PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Number_tstzspan_to_tbox(PG_FUNCTION_ARGS);
@@ -271,10 +277,16 @@ PG_FUNCTION_INFO_V1(Number_tstzspan_to_tbox);
 Datum
 Number_tstzspan_to_tbox(PG_FUNCTION_ARGS)
 {
-  Datum value = PG_GETARG_DATUM(0);
   Span *s = PG_GETARG_SPAN_P(1);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(number_tstzspan_to_tbox(value, basetype, s));
+  TBox *result;
+  if (basetype == T_INT4)
+    result = int_tstzspan_to_tbox(PG_GETARG_INT32(0), s);
+  else if (basetype == T_INT8)
+    result = bigint_tstzspan_to_tbox(PG_GETARG_INT64(0), s);
+  else /* basetype == T_FLOAT8 */
+    result = float_tstzspan_to_tbox(PG_GETARG_FLOAT8(0), s);
+  PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Numspan_timestamptz_to_tbox(PG_FUNCTION_ARGS);
@@ -322,9 +334,15 @@ PG_FUNCTION_INFO_V1(Number_to_tbox);
 Datum
 Number_to_tbox(PG_FUNCTION_ARGS)
 {
-  Datum value = PG_GETARG_DATUM(0);
   MeosType basetype = oid_meostype(get_fn_expr_argtype(fcinfo->flinfo, 0));
-  PG_RETURN_TBOX_P(number_tbox(value, basetype));
+  TBox *result;
+  if (basetype == T_INT4)
+    result = int_to_tbox(PG_GETARG_INT32(0));
+  else if (basetype == T_INT8)
+    result = bigint_to_tbox(PG_GETARG_INT64(0));
+  else /* basetype == T_FLOAT8 */
+    result = float_to_tbox(PG_GETARG_FLOAT8(0));
+  PG_RETURN_TBOX_P(result);
 }
 
 PGDLLEXPORT Datum Numeric_to_tbox(PG_FUNCTION_ARGS);
@@ -339,7 +357,7 @@ Numeric_to_tbox(PG_FUNCTION_ARGS)
 {
   Datum num = PG_GETARG_DATUM(0);
   Datum d = call_function1(numeric_float8, num);
-  PG_RETURN_TBOX_P(number_tbox(d, T_FLOAT8));
+  PG_RETURN_TBOX_P(float_to_tbox(DatumGetFloat8(d)));
 }
 
 PGDLLEXPORT Datum Timestamptz_to_tbox(PG_FUNCTION_ARGS);
