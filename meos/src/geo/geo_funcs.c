@@ -6091,6 +6091,8 @@ typedef struct
 {
   ArcsegArena arena;
   bool wide;
+  bool filter;         /**< Doubles carrying a bound on their error, a sign
+                            the bound cannot tell marking the arena unsafe */
   WideDyadic **blocks;
   int nblocks;
   int capblocks;
@@ -6102,6 +6104,7 @@ typedef union
 {
   ArcsegExact x;
   WideDyadic *w;
+  ArcsegFilter f;
 } TowerX;
 
 /* A number of a tower, its coefficients by the products of the roots */
@@ -6116,6 +6119,10 @@ typedef struct
 {
   int depth;
   TowerNum h[TOWER_MAXDEPTH];
+  const TangentPoint *key[TOWER_MAXDEPTH]; /**< For a root of the tangent of
+                            two circles, a point of it, which tells the root
+                            of another tangent of the same two circles without
+                            arithmetic; NULL for any other root */
 } Tower;
 
 static void
@@ -6125,6 +6132,7 @@ tower_ctx_init(TowerCtx *ctx, bool wide)
   ctx->arena.unsafe = false;
   ctx->arena.blocks = NULL;
   ctx->wide = wide;
+  ctx->filter = false;
   ctx->blocks = NULL;
   ctx->nblocks = ctx->capblocks = 0;
   ctx->used = TOWER_WIDE_BLOCK;
@@ -6176,6 +6184,14 @@ static TowerX
 tx_diff(TowerCtx *ctx, double a, double b)
 {
   TowerX r;
+  if (ctx->filter)
+  {
+    /* The rounding error of the difference, exactly (two-sum) */
+    double v = a - b, bv = v - a;
+    r.f.v = v;
+    r.f.e = fabs((a - (v - bv)) + (- b - bv));
+    return r;
+  }
   if (! ctx->wide)
   {
     r.x = arcseg_x_diff(&ctx->arena, a, b);
@@ -6199,6 +6215,11 @@ static TowerX
 tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 {
   TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_add(a.f, b.f);
+    return r;
+  }
   if (! ctx->wide)
   {
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
@@ -6214,6 +6235,11 @@ static TowerX
 tx_scale(TowerCtx *ctx, TowerX a, double k)
 {
   TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_scale(a.f, k);
+    return r;
+  }
   if (! ctx->wide)
   {
     r.x = arcseg_x_scale(&ctx->arena, a.x, k);
@@ -6241,6 +6267,11 @@ static TowerX
 tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 {
   TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_mul(a.f, b.f);
+    return r;
+  }
   if (! ctx->wide)
   {
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
@@ -6255,6 +6286,8 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 static bool
 tx_zero(const TowerCtx *ctx, TowerX a)
 {
+  if (ctx->filter)
+    return a.f.v == 0.0 && a.f.e == 0.0;
   if (ctx->wide)
     return a.w->sign == 0;
   for (int i = 0; i < a.x.n; i++)
@@ -6268,6 +6301,20 @@ tx_zero(const TowerCtx *ctx, TowerX a)
 static int
 tx_sign(TowerCtx *ctx, TowerX a)
 {
+  if (ctx->filter)
+  {
+    /* An exact zero, as the coefficients a root does not reach, or a sign
+     * the bound tells; any other leaves the question to the expansions */
+    if (a.f.v == 0.0 && a.f.e == 0.0)
+      return 0;
+    int s = arcseg_f_sign(a.f);
+    if (s == 2)
+    {
+      ctx->arena.unsafe = true;
+      return 0;
+    }
+    return s;
+  }
   if (ctx->wide)
     return a.w->sign;
   return arcseg_x_sign_checked(&ctx->arena, a.x);
@@ -6278,6 +6325,8 @@ static ArcsegFilter
 tx_filter(const TowerCtx *ctx, TowerX a)
 {
   ArcsegFilter r;
+  if (ctx->filter)
+    return a.f;
   if (ctx->wide)
   {
     int e;
@@ -6489,6 +6538,19 @@ tower_same_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k)
   return true;
 }
 
+/* Whether two tangent points belong to tangents of one pair of circles, in
+ * either order, whose roots sqrt(E), E = |C2 - C1|^2 - (r1 - r2)^2, are
+ * then one, as their doubles say without arithmetic (#tower_point_tangent) */
+static bool
+tangent_same_pair(const TangentPoint *a, const TangentPoint *b)
+{
+  if (a->c1x == b->c1x && a->c1y == b->c1y && a->r1 == b->r1 &&
+      a->c2x == b->c2x && a->c2y == b->c2y && a->r2 == b->r2)
+    return true;
+  return a->c1x == b->c2x && a->c1y == b->c2y && a->r1 == b->r2 &&
+    a->c2x == b->c1x && a->c2y == b->c1y && a->r2 == b->r1;
+}
+
 /* Merge the roots of tower @p t2 into @p t, a root of @p t2 whose number is
  * one of @p t, once read there, being that root: map[i] is where root i of
  * @p t2 stands in @p t. False where @p t would hold more than
@@ -6504,6 +6566,9 @@ tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
     int j = 0;
     for (; j < t->depth; j++)
     {
+      /* The roots of two tangents of one pair of circles */
+      if (t->key[j] && t2->key[i] && tangent_same_pair(t->key[j], t2->key[i]))
+        break;
       TowerX hj[TOWER_SIZE];
       tower_map(ctx, t->h[j].c, j, ident, t->depth, hj);
       if (tower_same_k(ctx, h, hj, t->depth))
@@ -6514,6 +6579,7 @@ tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
       if (t->depth == TOWER_MAXDEPTH)
         return false;
       memcpy(t->h[j].c, h, sizeof(TowerX) * (1 << j));
+      t->key[j] = t2->key[i];
       t->depth++;
     }
     map[i] = j;
@@ -6566,6 +6632,7 @@ tower_point_tangent(TowerCtx *ctx, const TangentPoint *tp, double ox,
   TowerX rkdr = tx_mul(ctx, rk, dr);
   TowerX srk = tx_scale(ctx, rk, (double) tp->side);
   out->t.depth = 1;
+  out->t.key[0] = tp;
   out->t.h[0].c[0] = tx_sub(ctx, d2, tx_mul(ctx, dr, dr));
   /* Ck d^2 + rk (r1 - r2) d + side rk sqrt(E) rot(d), over d^2 */
   out->x.c[0] = tx_add(ctx, tx_mul(ctx,
@@ -6603,6 +6670,7 @@ tower_point_circles(TowerCtx *ctx, double c1x, double c1y, double r1,
     return sh;
   TowerX w = tx_scale(ctx, dd, 2.0);
   out->t.depth = 1;
+  out->t.key[0] = NULL;
   out->t.h[0].c[0] = h;
   out->x.c[0] = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, c1x, ox), w),
     tx_mul(ctx, g, dx));
@@ -6734,6 +6802,7 @@ tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
     return disc;
   out->t = t;
   memcpy(out->t.h[k].c, d, sizeof(TowerX) * (1 << k));
+  out->t.key[k] = NULL;
   out->t.depth = k + 1;
   int half = 1 << k;
   double s = (double) (sigma * sw1);
@@ -6812,9 +6881,17 @@ static int
 tower_pred_run(TowerPred fn, const void *arg)
 {
   TowerCtx ctx;
+  /* In doubles carrying a bound on their error first */
   tower_ctx_init(&ctx, false);
+  ctx.filter = true;
   int r = fn(&ctx, arg);
   bool again = (r == 2) || ctx.arena.unsafe;
+  tower_ctx_free(&ctx);
+  if (! again)
+    return r;
+  tower_ctx_init(&ctx, false);
+  r = fn(&ctx, arg);
+  again = (r == 2) || ctx.arena.unsafe;
   tower_ctx_free(&ctx);
   if (! again)
     return r;
@@ -7291,6 +7368,89 @@ meet_point_y_side(const MeetPoint *m, double py)
   return tower_pred_run(meet_point_y_side_pred, &arg);
 }
 
+typedef struct
+{
+  const MeetPoint *m;
+  double ox, d;
+} TowerXSideArg;
+
+static int
+meet_point_x_side_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerXSideArg *o = arg;
+  TowerPoint p;
+  if (meet_tower_build(ctx, o->m, o->ox, 0.0, &p) != 1)
+    return 2;
+  /* (X - d w) w, X taken from ox */
+  int k = p.t.depth;
+  TowerX u[TOWER_SIZE];
+  tower_mulx_k(ctx, p.w.c, tx_diff(ctx, o->d, 0.0), k, u);
+  tower_sub_k(ctx, p.x.c, u, k, u);
+  int s = tower_sign_k(ctx, &p.t, u, k) * tower_sign_k(ctx, &p.t, p.w.c, k);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return the side of the vertical line x = @p ox + @p d the point of
+ * a meeting lies on, decided exactly: 1 right of it, -1 left, 0 on it, 2
+ * where it is not told
+ * @details As #meet_point_y_side reads a horizontal line; the line of the
+ * points of circles of centre @p ox and radius @p d furthest along x
+ */
+int
+meet_point_x_side(const MeetPoint *m, double ox, double d)
+{
+  assert(m);
+  TowerXSideArg arg = {m, ox, d};
+  return tower_pred_run(meet_point_x_side_pred, &arg);
+}
+
+typedef struct
+{
+  const MeetPoint *a, *b;
+} TowerXArg;
+
+static int
+meets_x_cmp_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerXArg *o = arg;
+  TowerPoint pa, pb;
+  double ox = o->a->x, oy = o->a->y;
+  if (meet_tower_build(ctx, o->a, ox, oy, &pa) != 1 ||
+      meet_tower_build(ctx, o->b, ox, oy, &pb) != 1)
+    return 2;
+  /* Xa wb - Xb wa, read in the tower of both, as #meets_order_tower reads
+   * the cross product of two radii */
+  const TowerPoint *pts[2] = {&pa, &pb};
+  TowerX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  TowerX u[TOWER_SIZE], w[TOWER_SIZE];
+  tower_mul_k(ctx, &t, v[0][0], v[1][2], k, u);
+  tower_mul_k(ctx, &t, v[1][0], v[0][2], k, w);
+  tower_sub_k(ctx, u, w, k, u);
+  int s = tower_sign_k(ctx, &t, u, k) * tower_sign_k(ctx, &t, v[0][2], k) *
+    tower_sign_k(ctx, &t, v[1][2], k);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the x coordinates of the points of two meetings
+ * compare, decided exactly: -1 where the first is smaller, 1 where it is
+ * larger, 0 where they are equal, 2 where it is not told
+ * @details The points lie in towers of square roots (#meet_point_y_side
+ * reads one against a line)
+ */
+int
+meets_x_cmp(const MeetPoint *a, const MeetPoint *b)
+{
+  assert(a); assert(b);
+  TowerXArg arg = {a, b};
+  return tower_pred_run(meets_x_cmp_pred, &arg);
+}
+
 /* A quotient of two filtered values, and a bound on its error, the divisor
  * kept away from zero by its bound; false where it is not */
 static bool
@@ -7331,13 +7491,13 @@ tower_key_double(uint64_t key)
   return d;
 }
 
-/* Narrow [lo, hi], two doubles holding num / den of a tower, to two
- * consecutive doubles, or to one where the quotient is a double: bisected in
- * the order of the doubles, each step decided exactly by the sign of
- * num - m den. False where a sign is not told */
+/* Narrow [lo, hi], two doubles holding org + num / den of a tower, to two
+ * consecutive doubles, or to one where it is a double: bisected in the order
+ * of the doubles, each step decided exactly by the sign of
+ * num - (m - org) den. False where a sign is not told */
 static bool
 tower_bisect(TowerCtx *ctx, const Tower *t, const TowerX *num,
-  const TowerX *den, int k, double *lo, double *hi)
+  const TowerX *den, int k, double org, double *lo, double *hi)
 {
   int sd = tower_sign_k(ctx, t, den, k);
   if (sd == 0 || tower_ctx_unsafe(ctx))
@@ -7348,7 +7508,7 @@ tower_bisect(TowerCtx *ctx, const Tower *t, const TowerX *num,
   {
     uint64_t kmid = klo + (khi - klo) / 2;
     double m = tower_key_double(kmid);
-    tower_mulx_k(ctx, den, tx_val(ctx, m), k, md);
+    tower_mulx_k(ctx, den, tx_diff(ctx, m, org), k, md);
     tower_sub_k(ctx, num, md, k, md);
     int s = tower_sign_k(ctx, t, md, k) * sd;
     if (tower_ctx_unsafe(ctx))
@@ -7368,12 +7528,41 @@ tower_bisect(TowerCtx *ctx, const Tower *t, const TowerX *num,
   return true;
 }
 
+/* A double near the point of a meeting, which the point is read from so
+ * that the bound on the error of its offset is small beside its coordinates:
+ * the centre of a circle it lies on, or the start of a segment */
+static void
+meet_point_origin(const MeetPoint *m, double *ox, double *oy)
+{
+  switch (m->kind)
+  {
+    case MEET_TANGENT:
+      *ox = m->tp->k ? m->tp->c2x : m->tp->c1x;
+      *oy = m->tp->k ? m->tp->c2y : m->tp->c1y;
+      return;
+    case MEET_LINES:
+    case MEET_LINECIRCLE:
+      *ox = m->p->x1; *oy = m->p->y1;
+      return;
+    case MEET_ARCARC:
+      *ox = m->p->cx; *oy = m->p->cy;
+      return;
+    default:
+      *ox = m->x; *oy = m->y;
+      return;
+  }
+}
+
 static int
 meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
 {
   const TowerBoundsArg *o = arg;
   TowerPoint p;
-  if (meet_tower_build(ctx, o->m, 0.0, 0.0, &p) != 1 ||
+  double org[2];
+  meet_point_origin(o->m, &org[0], &org[1]);
+  if (! isfinite(org[0]) || ! isfinite(org[1]))
+    org[0] = org[1] = 0.0;
+  if (meet_tower_build(ctx, o->m, org[0], org[1], &p) != 1 ||
       tower_ctx_unsafe(ctx))
     return 2;
   int k = p.t.depth;
@@ -7385,23 +7574,32 @@ meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
     ArcsegFilter f = tower_filter_k(ctx, &p.t, num[j], k);
     double v, e;
     bool told = tower_f_div(f, fw, &v, &e);
-    /* A quotient the filter holds to a few units in its last place is
+    /* The coordinate is the origin plus the offset, the sum rounded once,
+     * which adds half a unit in its last place to the bound */
+    double c = 0.0, ce = 0.0;
+    if (told)
+    {
+      c = org[j] + v;
+      ce = e + DBL_EPSILON * fabs(c) + DBL_MIN;
+      told = isfinite(c) && isfinite(ce);
+    }
+    /* A coordinate the filter holds to a few units in its last place is
      * written as it reads; any other is narrowed exactly, from the box of
      * the filter or from the whole range of the doubles where the filter
      * bounds nothing, as at the crossing of two nearly parallel segments */
-    if (! told || e > 8.0 * DBL_EPSILON * fabs(v) + DBL_MIN)
+    if (! told || ce > 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN)
     {
-      double lo = told ? v - e : - DBL_MAX, hi = told ? v + e : DBL_MAX;
-      if (! tower_bisect(ctx, &p.t, num[j], p.w.c, k, &lo, &hi))
+      double lo = told ? c - ce : - DBL_MAX, hi = told ? c + ce : DBL_MAX;
+      if (! tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo, &hi))
         return 2;
-      v = lo;
+      c = lo;
       o->box[2 * j] = lo; o->box[2 * j + 1] = hi;
     }
     else
     {
-      o->box[2 * j] = v - e; o->box[2 * j + 1] = v + e;
+      o->box[2 * j] = c - ce; o->box[2 * j + 1] = c + ce;
     }
-    *val[j] = v;
+    *val[j] = c;
   }
   return 1;
 }
