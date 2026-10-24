@@ -463,6 +463,7 @@ PG_FUNCTION_INFO_V1(Raster_width);
  * @brief Return the width in pixels of a raster
  * @param[in] rast Raster
  * @sqlfn width()
+ * @altsqlfn rasterWidth()
  */
 Datum
 Raster_width(PG_FUNCTION_ARGS)
@@ -480,6 +481,7 @@ PG_FUNCTION_INFO_V1(Raster_height);
  * @brief Return the height in pixels of a raster
  * @param[in] rast Raster
  * @sqlfn height()
+ * @altsqlfn rasterHeight()
  */
 Datum
 Raster_height(PG_FUNCTION_ARGS)
@@ -623,6 +625,7 @@ PG_FUNCTION_INFO_V1(Raster_band_pixel_type);
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
  * @sqlfn bandPixelType()
+ * @altsqlfn rasterBandPixelType()
  */
 Datum
 Raster_band_pixel_type(PG_FUNCTION_ARGS)
@@ -644,6 +647,7 @@ PG_FUNCTION_INFO_V1(Raster_band_has_nodata_value);
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
  * @sqlfn bandHasNoDataValue()
+ * @altsqlfn rasterBandHasNoDataValue()
  */
 Datum
 Raster_band_has_nodata_value(PG_FUNCTION_ARGS)
@@ -664,6 +668,7 @@ PG_FUNCTION_INFO_V1(Raster_band_nodata_value);
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
  * @sqlfn bandNoDataValue()
+ * @altsqlfn rasterBandNoDataValue()
  */
 Datum
 Raster_band_nodata_value(PG_FUNCTION_ARGS)
@@ -748,6 +753,7 @@ PG_FUNCTION_INFO_V1(Raster_as_hexwkb);
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a raster
  * @sqlfn asHexWKB()
+ * @altsqlfn rasterAsHexWKB()
  */
 Datum
 Raster_as_hexwkb(PG_FUNCTION_ARGS)
@@ -1520,6 +1526,7 @@ PG_FUNCTION_INFO_V1(Raquet_as_hexwkb);
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a Raquet tile
  * @sqlfn asHexWKB()
+ * @altsqlfn raquetAsHexWKB()
  */
 Datum
 Raquet_as_hexwkb(PG_FUNCTION_ARGS)
@@ -1700,6 +1707,7 @@ PG_FUNCTION_INFO_V1(Raquet_width);
  * @ingroup mobilitydb_raster
  * @brief Return the width in pixels of a Raquet tile
  * @sqlfn width()
+ * @altsqlfn raquetWidth()
  */
 Datum
 Raquet_width(PG_FUNCTION_ARGS)
@@ -1716,6 +1724,7 @@ PG_FUNCTION_INFO_V1(Raquet_height);
  * @ingroup mobilitydb_raster
  * @brief Return the height in pixels of a Raquet tile
  * @sqlfn height()
+ * @altsqlfn raquetHeight()
  */
 Datum
 Raquet_height(PG_FUNCTION_ARGS)
@@ -1732,6 +1741,7 @@ PG_FUNCTION_INFO_V1(Raquet_band_pixel_type);
  * @ingroup mobilitydb_raster
  * @brief Return the name of the pixel data type of the band of a Raquet tile
  * @sqlfn bandPixelType()
+ * @altsqlfn raquetBandPixelType()
  */
 Datum
 Raquet_band_pixel_type(PG_FUNCTION_ARGS)
@@ -1750,6 +1760,7 @@ PG_FUNCTION_INFO_V1(Raquet_band_has_nodata_value);
  * @ingroup mobilitydb_raster
  * @brief Return whether the band of a Raquet tile states a nodata value
  * @sqlfn bandHasNoDataValue()
+ * @altsqlfn raquetBandHasNoDataValue()
  */
 Datum
 Raquet_band_has_nodata_value(PG_FUNCTION_ARGS)
@@ -1767,6 +1778,7 @@ PG_FUNCTION_INFO_V1(Raquet_band_nodata_value);
  * @brief Return the nodata value of the band of a Raquet tile, or NULL when
  * the band states none
  * @sqlfn bandNoDataValue()
+ * @altsqlfn raquetBandNoDataValue()
  */
 Datum
 Raquet_band_nodata_value(PG_FUNCTION_ARGS)
@@ -1982,6 +1994,7 @@ PG_FUNCTION_INFO_V1(Raquet_to_stbox);
  * @ingroup mobilitydb_raster
  * @brief Convert a Raquet tile into a spatiotemporal box
  * @sqlfn stbox()
+ * @altsqlfn raquetStbox()
  */
 Datum
 Raquet_to_stbox(PG_FUNCTION_ARGS)
@@ -3107,6 +3120,7 @@ PG_FUNCTION_INFO_V1(Raster_to_stbox);
  * @ingroup mobilitydb_raster
  * @brief Convert a raster into a spatiotemporal box
  * @sqlfn stbox()
+ * @altsqlfn rasterStbox()
  */
 Datum
 Raster_to_stbox(PG_FUNCTION_ARGS)
