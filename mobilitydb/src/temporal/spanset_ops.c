@@ -1024,10 +1024,9 @@ Datum
 Distance_span_spanset(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
-  Datum ss = PG_GETARG_DATUM(1);
-  Span sp1;
-  spanset_span_slice(ss, &sp1);
-  Datum result = distance_span_span(&sp1, s);
+  SpanSet *ss = PG_GETARG_SPANSET_P(1);
+  Datum result = distance_spanset_span(ss, s);
+  PG_FREE_IF_COPY(ss, 1);
   PG_RETURN_DATUM(result);
 }
 

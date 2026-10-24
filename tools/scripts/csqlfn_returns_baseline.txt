@@ -13,6 +13,7 @@
 # CREATE FUNCTION declares, and a binding reads it from there.
 NAD_number_tnumber
 NAD_tbox_tbox
+NAD_tbox_tnumber
 NAD_tnumber_number
 NAD_tnumber_tbox
 NAD_tnumber_tnumber
