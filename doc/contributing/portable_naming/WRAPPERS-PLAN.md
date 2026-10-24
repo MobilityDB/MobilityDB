@@ -287,6 +287,21 @@ Z does not filter by Z; MobilityDB #3150 (merged as `71e333da59`) fixes it befor
   names. `jsonb_exists_array` and `jsonb_path_query_all` collide with no PostgreSQL name, so they
   are compiled unguarded in both builds and called by their wrappers, as `bool_in` and `text_in`
   are: branch `meos/jsonpath-outside-meos-gate`.
+- **One list per function, every wrapper that computes it.** DECIDED BY THE OWNER 2026-10-24
+  ("according to North Star no exceptions"): a public MEOS function names in one `@csqlfn` list
+  every PostgreSQL wrapper whose result is its computation, and a new overload appends its wrapper
+  to that list. On master `f5017dbabf`, 382 of the 3538 tagged functions name two to seven
+  wrappers, each in one comma-separated list (23 wrapped onto a continuation line), and no
+  function splits its wrappers over two `@csqlfn` lines. The classes follow master: `_opr`
+  wrappers are named (json names 26), `recv` wrappers are named (13), a cast is named on the
+  function it calls, and GiST, SP-GiST and GIN support functions are named nowhere (0). The
+  merged-lines gate keeps a merged line that a line of the same hunk extends.
+- **The containment of the JSON types.** DECIDED BY THE OWNER 2026-10-24: `contained_jsonb_tjsonb`,
+  `contained_tjsonb_jsonb` and `contained_tjsonb_tjsonb` become public MEOS functions, each
+  validating its arguments, and `Contained_jsonb_tjsonb`, `Contained_tjsonb_jsonb` and
+  `Contained_tjsonb_tjsonb` call them, as the 49 `Contained_*` wrappers of the other families
+  call a `contained_*` function of their own; on master the JSON ones call `contains_*` with the
+  operands swapped.
 - **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
   `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
   operator per signature closes it, for the bindings that register operators.
@@ -312,16 +327,18 @@ come before its push.
 | `fix/tpcpatch-tpcbox-z` | `6497012ac3` | the patch-level `atTpcbox`/`minusTpcbox` read the Z of the box | merged as MobilityDB #3150 (`71e333da59`) |
 | `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` | the cell instant constructors carry their `@csqlfn` | merged as MobilityDB #3149 (`ebc0e1debb`) |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
-| `meos/json-functions-one-per-operation` | `0cbb00dd52` (on `71e333da59`) | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 3 on master -> 0 | open as MobilityDB #3153, CI green |
-| `meos/json-wrappers-named` | `7ac86990c7` (on `71e333da59`) | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | open as MobilityDB #3156, CI green |
-| `meos/jsonpath-outside-meos-gate` | `6bbd242b73` (on `71e333da59`) | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | strict-ci, Windows, cppcheck and valgrind receipts; open as MobilityDB #3151, CI green |
+| `meos/json-functions-one-per-operation` | `0cbb00dd52` (on `71e333da59`) | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 3 on master -> 0 | merged as MobilityDB #3153 |
+| `meos/json-wrappers-named` | `7ac86990c7` (on `71e333da59`) | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | merged as MobilityDB #3156 |
+| `meos/jsonpath-outside-meos-gate` | `6bbd242b73` (on `71e333da59`) | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | merged as MobilityDB #3151 |
 | `meos/box-constructors-named` | `caefcc5117` (on `7dd9debf0c`) | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | merged as MobilityDB #3143 (`d2ccbae61a`) |
-| `meos/pose-constructors-named` | `891e7009ca` (on `71e333da59`) | one wrapper per pose constructor, each named in its tag | open as MobilityDB #3152, CI green |
-| `meos/tpcbox-pcpoint-constructors-named` | `dc87716b1f` (on `71e333da59`) | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | open as MobilityDB #3154, CI green |
+| `meos/pose-constructors-named` | `891e7009ca` (on `71e333da59`) | one wrapper per pose constructor, each named in its tag | merged as MobilityDB #3152 |
+| `meos/tpcbox-pcpoint-constructors-named` | `dc87716b1f` (on `71e333da59`) | the five `tpcbox` constructors and `pcpoint(integer, float[])` named | merged as MobilityDB #3154 |
 | `meos/trgeometry-constructors-named` | `0e2ce4ae06` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
 | `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
-| `meos/raster-statistics-named` | `bab143560a` (on `71e333da59`) | `dumpValues(raster, integer, boolean)` named in its tag | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `tools/csqlfn-follows-every-helper` | | `check_csqlfn.py` follows a wrapper into any static helper of its file, not only `*_common`, so the census reads the MEOS function of every wrapper (697 of 2822 unresolved on master `f5017dbabf`) | next |
+| `meos/every-wrapper-named` | | every wrapper the North Star rule names, appended to its function's list: the five JSON path `_opr` wrappers, `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band` (the commit of `meos/raster-statistics-named`, `9dba13fb1b`), and the gaps the full census adds | after the resolver |
+| `meos/json-contained-public` | | the public `contained_jsonb_tjsonb`, `contained_tjsonb_jsonb`, `contained_tjsonb_tjsonb`, called by their `Contained_*` wrappers | after the tags |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
