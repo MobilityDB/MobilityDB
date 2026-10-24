@@ -292,10 +292,12 @@ Z does not filter by Z; MobilityDB #3150 (merged as `71e333da59`) fixes it befor
   every PostgreSQL wrapper whose result is its computation, and a new overload appends its wrapper
   to that list. On master `f5017dbabf`, 382 of the 3538 tagged functions name two to seven
   wrappers, each in one comma-separated list (23 wrapped onto a continuation line), and no
-  function splits its wrappers over two `@csqlfn` lines. The classes follow master: `_opr`
-  wrappers are named (json names 26), `recv` wrappers are named (13), a cast is named on the
-  function it calls, and GiST, SP-GiST and GIN support functions are named nowhere (0). The
-  merged-lines gate keeps a merged line that a line of the same hunk extends.
+  function splits its wrappers over two `@csqlfn` lines. A `recv` wrapper is named (13 on
+  master), a cast is named on the function it calls, GiST, SP-GiST and GIN support functions are
+  named nowhere (0), and an `_opr` wrapper is named nowhere, by the ruling of 2026-10-23 under
+  "Out of the bindings' scope"; the 26 `_opr` wrappers the JSON tags name on master (MobilityDB
+  #3153, `8655303ab6`) deviate from that ruling. The merged-lines gate keeps a merged line that
+  a line of the same hunk extends.
 - **The containment of the JSON types.** DECIDED BY THE OWNER 2026-10-24: `contained_jsonb_tjsonb`,
   `contained_tjsonb_jsonb` and `contained_tjsonb_tjsonb` become public MEOS functions, each
   validating its arguments, and `Contained_jsonb_tjsonb`, `Contained_tjsonb_jsonb` and
@@ -337,7 +339,7 @@ come before its push.
 | `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `tools/csqlfn-follows-every-helper` | | `check_csqlfn.py` follows a wrapper into any static helper of its file, not only `*_common`, so the census reads the MEOS function of every wrapper (697 of 2822 unresolved on master `f5017dbabf`) | next |
-| `meos/every-wrapper-named` | | every wrapper the North Star rule names, appended to its function's list: the five JSON path `_opr` wrappers, `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band` (the commit of `meos/raster-statistics-named`, `9dba13fb1b`), and the gaps the full census adds | after the resolver |
+| `meos/every-wrapper-named` | | every wrapper the North Star rule names, appended to its function's list: `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band` (the commit of `meos/raster-statistics-named`, `9dba13fb1b`), and the gaps the full census adds | after the resolver |
 | `meos/json-contained-public` | | the public `contained_jsonb_tjsonb`, `contained_tjsonb_jsonb`, `contained_tjsonb_tjsonb`, called by their `Contained_*` wrappers | after the tags |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
