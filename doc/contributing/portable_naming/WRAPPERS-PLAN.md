@@ -313,7 +313,7 @@ come before its push.
 | `meos/cell-instants-answer-the-constructor` | `00c6f1ab07` | the cell instant constructors carry their `@csqlfn` | merged as MobilityDB #3149 (`ebc0e1debb`) |
 | `sql/geo-distance-operators-take-their-procedures` | `95b8a58073` | the geo `<->` and `\|=\|` take their `Opr` procedures (Out of the bindings' scope) | merged as MobilityDB #3140 (`68c835ced7`) |
 | `meos/json-functions-one-per-operation` | `0cbb00dd52` (on `71e333da59`) | the seven `astext` JSON functions split one public function per operation, after the shift/scale sibling; the shared helpers carry no `@sqlop`, the `@sqlop` baseline 3 on master -> 0 | open as MobilityDB #3153, CI green |
-| `meos/json-wrappers-named` | `7ac86990c7` (on `71e333da59`) | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
+| `meos/json-wrappers-named` | `7ac86990c7` (on `71e333da59`) | the 10 `_tz` and lax JSON wrappers named in their tags, no `_opr` wrapper; the text forms are the split's | open as MobilityDB #3156, CI green |
 | `meos/jsonpath-outside-meos-gate` | `6bbd242b73` (on `71e333da59`) | `jsonb_exists_array` and `jsonb_path_query_all` outside `#if MEOS` | strict-ci, Windows, cppcheck and valgrind receipts; open as MobilityDB #3151, CI green |
 | `meos/box-constructors-named` | `caefcc5117` (on `7dd9debf0c`) | the six `stbox`/`geodstbox` constructors and `stbox(box2d)` named in their tags; next commit, DECIDED BY THE OWNER 2026-10-23: `tbox(integer\|bigint\|float\|numeric)` and `tbox(<number>, timestamptz\|tstzspan)` call the typed public function of their base type, as `Value_bin` does, so a float or numeric NaN raises "The value cannot be NaN" | merged as MobilityDB #3143 (`d2ccbae61a`) |
 | `meos/pose-constructors-named` | `891e7009ca` (on `71e333da59`) | one wrapper per pose constructor, each named in its tag | open as MobilityDB #3152, CI green |
@@ -321,7 +321,7 @@ come before its push.
 | `meos/trgeometry-constructors-named` | `0e2ce4ae06` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
 | `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
-| `meos/raster-statistics-named` | `66850d54fb` | `dumpValues(raster, integer, boolean)` named in its tag | receipts owed |
+| `meos/raster-statistics-named` | `bab143560a` (on `71e333da59`) | `dumpValues(raster, integer, boolean)` named in its tag | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
