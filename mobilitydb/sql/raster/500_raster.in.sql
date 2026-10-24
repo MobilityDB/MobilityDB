@@ -1213,7 +1213,7 @@ CREATE FUNCTION rasterUnionTransition(internal, raster, integer)
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION rasterUnionTransition(internal, raster, text)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Raster_union_transfn'
+  AS 'MODULE_PATHNAME', 'Raster_union_uniontype_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION rasterUnionTransition(internal, raster, integer, text)
   RETURNS internal
@@ -1305,7 +1305,7 @@ CREATE AGGREGATE rasterUnion(raster, integer, text) (
 CREATE FUNCTION summaryStatsAggTransition(internal, raster, integer,
     boolean)
   RETURNS internal
-  AS 'MODULE_PATHNAME', 'Raster_summary_stats_transfn'
+  AS 'MODULE_PATHNAME', 'Raster_summary_stats_band_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE FUNCTION summaryStatsAggTransition(internal, raster, boolean)
   RETURNS internal
