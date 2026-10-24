@@ -1,0 +1,152 @@
+<!--
+  MobilityDB — Portable Naming: Exact distance
+  Copyright(c) MobilityDB Contributors
+
+  This documentation is licensed under a Creative Commons Attribution-Share
+  Alike 3.0 License: https://creativecommons.org/licenses/by-sa/3.0/
+-->
+
+# Exact distance
+
+[Back to the index](00-INDEX.md)
+
+Every double is an exact rational, so a distance between geometries given by their doubles is an
+exact quantity, the square root of a rational wherever the nearest points are input vertices or the
+feet of perpendiculars on input segments. The answer a double can give is the double nearest it, a
+tie going to the double whose last bit is even, and a predicate on a distance (`dwithin`) is the
+exact sign of the squared distance less the square of the bound. This document states, for every
+distance MEOS computes, whether it answers that double or that sign, measured, and the pull
+requests that make it do so. The rule owner is `doc/contributing/distance_design_notes.md`.
+
+## The oracle
+
+A distance is judged by CGAL's exact rational type (`Gmpq`) on the doubles the engine holds, never
+by another rounded formula and never by a band. A double `a` is the nearest root of an exact
+squared distance `S` exactly when `S` lies between the squares of the midpoints from `a` to its two
+neighbours, and a midpoint of two doubles and its square are rationals, so the judge takes no
+root. For a radius `r`, the comparison is with the squares of `r` plus the midpoints. A point the
+engine constructs (the end of a shortest line) is compared with the exact point within a distance
+sized to that construction, 8 * DBL_EPSILON times the largest coordinate and the radius. Every
+judge first accepts independent correct answers (MPFR, Python `fractions` with 2000-digit
+`decimal`) on every row and refuses the same answers moved one unit in the last place. The judges
+and corpora are kept outside the tree; the in-tree witness of each pull request carries constants
+the judge accepts.
+
+## What is measured
+
+Measured on MobilityDB master `bc5713429c` and on master `4d55aaf18d`, which holds #2992.
+
+| Distance | Input | Answer | The exact answer |
+|---|---|---|---|
+| a point pair through the generic any-geometry entry (`geo_distance_fn`) | `(0, 0)`, `(1e39, 0)` | `3.4028234663852886e+38`, the `FLT_MAX` seed of the walk | `1e39` |
+| the same | `(0, 0)`, `(1e200, 1e200)` and `(1e-200, 1e-200)` | the seed, and `0` | `1.414213562373095e+200`, `1.414213562373095e-200` |
+| a point pair by `hypot` of the rounded differences | 4061 resting pairs (real AIS, near-coincident, random, 3-4-5) | not the nearest double on 50, one unit in the last place off | the nearest double on all |
+| a circular buffer at rest against a point, the distance less the radius | 3500 pairs, clear, overlapping, touching exactly and one unit in the last place of the radius either way | not the nearest double on 722, by up to more than ten units in the last place | the nearest double on all |
+| `edwithin` of two resting points (`point_within_distance_sign`) | `(1e155, 0)` and the next double, asked within the double below their separation | `1` | `0`: the exact fallback squares the coordinates, which overflows |
+| a point against a segment (`dist_segm_edge_mindist`, a constructed projection) | `(0, 0)` against the segment at `y = 1e-9` | `1.0000000000000001e-09` | `1e-09`; the nearest double on 731 of 1090 segment rows |
+
+## What answers a distance
+
+| Function | Answer | Exact |
+|---|---|---|
+| `point_distance_exact` (`datum_pt_distance2d`, `datum_pt_distance3d`) | the double nearest the distance of two points, 2D and 3D | yes, #2992 |
+| `point_distance_offset_exact` (`dist_rest_point`) | the double nearest the distance less a radius | yes, #2992 |
+| `tdistance_tgeo_tgeo`, `tdistance_tgeo_geo` at their instants, the synchronous `nad`/`nai`/`shortestline` of two temporal points | the point entries | yes at the instants, #2992 |
+| the turning points and the minimum between two instants of a moving pair (`tpointsegm_distance_turnpt`, `nad_tcont_tcont_sync`) | a constructed instant and the distance there | not judged |
+| `point_within_distance_sign` and its exact fallback (`edwithin`, `tdwithin` of points) | the sign of the squared distance less the square of the bound | where no product of the coordinates overflows or underflows; at every scale with ED2 |
+| `point_segment_distance_offset_exact` (`dist_rest_segment`) | the double nearest the distance of a point to a segment less a radius, 2D | yes with ED4, where the scaled values are within a factor 2^240 of the largest difference; for every finite input with ED7 |
+| the swept-disc engine against a segment or an arc (`dist_segm_edge_mindist`, `dist_segm_arc_mindist`, `dist_minfun`) | a constructed foot and a rounded quadratic | no for a moving circular buffer; a centre at rest reads `dist_rest_segment` with ED4, a moving point `dist_moving_segment` with ED3 |
+| `dist_moving_segment` (`dist_segm_edge_mindist`, `dist_segm_edge_dt` for a radius of 0) | 0 where the path meets the edge, by exact orientations, otherwise the least of four distances of a point to a segment | yes with ED3: over a census of 6060 rows (60 AIS trips, and 1500 trips each against lines, multipoints and parallel segments whose candidates differ by 0 to 3 units in the last place), 4560 of 4560 judged rows are the nearest double; the rounded quadratic misses 896, up to 3364474 units in the last place off, and answers 2^-19 for a path that crosses the line |
+| the prunes of the swept-disc engine (`dist_seg_seg_dist2`, `box2d_distance_sqr` against `dist_unit_thr2`) | a rounded lower bound compared with the square of the running minimum | they move no answer once the edge distances are exact: with ED3 the engine answers the same on all 6060 census rows with and without them. With the rounded quadratic, 96 answers move when they are removed, every one against parallel edges, and the pruned answer is the nearest double on 92 of them, the unpruned one on none |
+| `geo_distance_fn` for every other pair of geometries (liblwgeom) | liblwgeom's walk | no |
+| the geodetic distances (`datum_geog_distance`) | the spheroid by iteration | the exact answer needs its own definition |
+
+## What the exact kernels cost
+
+Measured on the circular buffer benchmark: 100 AIS trips of 1 January 2025 kept twice, as a
+temporal point and as a temporal circular buffer on the same instants, against 100 protected areas
+(10000 pairs) and against each other (9628 pairs). Each figure is the time of the query on one
+build divided by its time on master `d9f6a105a0`, which precedes ED1, the builds interleaved round
+by round on the same database; the result counts are the same on every build.
+
+| Query | ED1 to ED8 merged (`6685673243`) | with the first PR of ED6 |
+|---|---|---|
+| `ST_Centroid(geom) <-> tcbuffer` | 3.04 | 1.33 |
+| `geom \|=\| tcbuffer` | 2.40 | 1.21 |
+| `tCovers(geom, tcbuffer)` | 1.90 | 1.17 |
+| `tContains(geom, tcbuffer)` | 1.85 | 1.11 |
+| `eIntersects(geom, tcbuffer)` | 1.83 | 1.10 |
+| `tTouches(geom, tcbuffer)` | 1.82 | 1.17 |
+| `tDwithin(cbuffer, tcbuffer, 100)` | 2.05 | 1.13 |
+| `atGeometry(tcbuffer, geom)` | 1.37 | 1.05 |
+| the same queries on the temporal point | 0.93 to 1.02 | 0.97 |
+
+The cost of the first column lies in `point_distance_offset_exact` and its segment twin, which
+take 13% to 57% of these queries: on master neither carries a first test in doubles, so every
+call runs the exact search, two or three times. What the first PR leaves is the exact answer
+itself where the double does not clear its bound, and `float_collinear`, the exact redundant-instant test of
+`e2f64b1f1c`, which already reads a filtered sign, and `tcbuffersegm_length_roots` of `ef49a6bddb`,
+at 9.8% of `tDwithin(cbuffer, tcbuffer, 100)`.
+
+Between two moving points, `t1 |=| t2` over the 9628 pairs takes 45.0 s on `d9f6a105a0`, 229.9 s
+on `6685673243`, where ED5 (`bdc4e41234`) walks every interval in exact arithmetic with nothing
+skipped, and 32.5 s with the second PR of ED6, one build after another; interleaved round by
+round, `6685673243` costs 5.0 and 3.4 times `d9f6a105a0` and the second PR of ED6 0.89 and 0.58,
+its answers the same as ED5's on all 10000 pairs. No other
+operator between two moving points is slower: `nearestApproachInstant`, `shortestLine` and `<->`
+cost the same, and `eDwithin`, `aDwithin` and `tDwithin` the same or less.
+
+## The plan
+
+Each pull request is built on the one its last column names, and adds to the code and the
+witness of the ones it is built on without removing or rewriting any of their lines, so a
+reviewer reads each one alone.
+
+| PR | Topic | What it changes | Branch, state |
+|---|---|---|---|
+| ED1 | The distance of a point pair is the nearest double | `point_distance_exact` and `point_distance_offset_exact` in `geo_funcs.c`; the point entries; the five point-pair sites of `tgeo_distance.c`; `dist_rest_point`, `dist_unit_thr2` and the shortest-line collapse of the swept-disc engine; the witness `meos/test/distance_point_test.c` | MobilityDB #2992, merged as `0cedc36e81` and `4d55aaf18d` |
+| ED2 | `dwithin` of a point pair over the whole domain | the exact fallback of `point_within_distance_sign` reads the scaled differences of `point_distance_square_expansion` with the bound as the one term, so coordinates near 1e155 decide as ordinary ones; the `dwithin` comments that call the sign a closed form | MobilityDB #3001, merged as `729342047d` |
+| ED4 | A point or a circular buffer at rest against a segment | `point_segment_distance_offset_exact`: the foot of the perpendicular is a rational parameter on the input segment, the squared distance to it a rational, so the distance is the nearest double by the same midpoint comparison; `dist_segm_edge_mindist`, `dist_segm_edge_dt` and the shortest line read it | MobilityDB #3002, merged as `2a1d52a7ee` |
+| ED3 | A moving point against a segment | `dist_moving_segment`: the path of a moving point over one segment of its sequence and a straight edge meet or not by exact orientations (`linesegm_intersect`), and two segments that do not meet are nearest at an end of one of them, so the distance is the least of four ED4 distances; `dist_segm_edge_mindist` and `dist_segm_edge_dt` read it for a radius of 0. The prunes of the walk stay as they are: the census answers the same with and without them | MobilityDB #3003, merged as `44cddaaccb` |
+| ED5 | Two moving points between their instants | time is read as continuous, never on the microsecond grid: between two consecutive instants of either operand both points move linearly, so the second seen from the first moves along a segment, and the nearest approach over that interval is the distance of the origin to that segment, a rational of the coordinates and the integer timestamps, answered as its nearest double; the ever and always `dwithin` of the pair read the same exact sign over continuous time; the instant returned is dated by the truncating convention the tree shares; a CGAL judge by exact rational relative motion over the merged instants, with accept and refuse controls | MobilityDB #3023, merged as `bdc4e41234` |
+| ED7 | Every finite double | MobilityDB #3007, merged as `3ef78a0ad8` from another machine, decides the point kernels exactly on their scaled values, in a two's complement integer of 66 limbs (`square_products_wide`) where an expansion cannot; where the scaling by 2^k itself rounds a difference, its error or the radius below 2^-1074 the kernels still answer the even double of a tie, which the CGAL judges refuse on every such row and on no other. ED7 adds, without rewriting a line of #3007: `point_distance_scale_exact`, read before the scaling, and where it fails every sign read on the input coordinates by #3007's own `point_distance_offset_side_sign` (`point_distance_offset_inputs`); for the segment, whose sign is of degree four, the cross product, the squared length and the squared midpoint each as #3007's integer and their products compared exactly (`wide_product`, `point_segment_side_sign_inputs`), reached where the scaling rounds or leaves a product of four outside the doubles; both input-coordinate paths start their search from a candidate read on the half differences scaled by the power of two that brings the largest into [1/2, 1), so it ends at every scale (a fixed 2^-600 left differences below 2^64 one double per step from the answer); CGAL agrees with 17 witnesses and their 34 accept and refuse controls, among them ties at every scale from 2^-50 to 2^960 | MobilityDB #3004, merged as `a0480a7d38` |
+| ED8 | Two static geometries, a moving circular buffer of constant radius, and segments in 3D | the ED3 kernel answers the distance of two segments, so `geo_distance_fn` for two geometries of segments and the swept-disc engine for a buffer whose radius does not change read it, the buffer less its radius where it stands clear; the ED4 kernel in 3D, whose cross product has three components | three PRs in this order; the first, two static geometries of segments, MobilityDB #3029, merged as `c2525bbc10`; the second, a moving circular buffer of constant radius, MobilityDB #3034, merged as `1f41894b35`; the third, segments in 3D, `fix/distance-in-3d-is-the-nearest-double`, in progress |
+| ED10 | A moving circular buffer whose radius changes | the swept-disc engine reads a disc whose radius changes by a quadratic in rounded doubles (`dist_minfun`) behind two absolute bands that decide answers: an edge whose squared length is at most 1e-24 is read as its first end, and the parameters where the foot leaves the edge are sought only where the dot product of the path and the edge exceeds 1e-18. The distance less a radius that changes linearly in time is exact on the input doubles, so it is answered exactly as ED8's constant radius is | after ED8 |
+| ED9 | The points and instants the engine constructs | the end of a shortest line is a rational point, each coordinate rounded to its nearest double from the exact quotient, so the judge's band becomes the nearest double; the instant at which a `dwithin` begins or ends is a root of a quadratic with rational coefficients, decided by exact signs as ED4 decides a distance, then converted by MEOS's dating convention | after ED5 |
+| ED11 | The union of surfaces bounded by circular arcs, which the dissolved traversed area of a temporal circular buffer reads | the overlay of `meos_areal_union` (`geo_buffer.c`) decides where two boundaries meet and which pieces bound the union by bands: two arcs lie on one circle where their computed centres and radii agree within 1e-12 (`buffer_collect_arc_arc_intersections`, `buffer_arcs_same_circle`), a node lies on an arc within the rounding of a coordinate (`buffer_piece_contains_point`), two ends are one point within 1e-12 (`buffer_piece_points_equal`) or within `buffer_node_tolerance` (the chaining walk), and a piece is located by its constructed midpoint (`buffer_classify_piece`). Consecutive pieces of a traversed area carry one circle, each computing it from its own three points, and a straight side tangent to it, so each band reads either side: on master `ebf26ad0da` 115 of 150 dwelling trips (30 seeds, 3 to 20 instants) and the trip of the Vol. 2 chapter 3 case study reach the GEOS fall-through, which replaces every arc by a chain of segments. A circle through three doubles has a rational centre and squared radius, and the meeting of a line or a circle with a circle lies in Q(√D) with D rational, so every question of the overlay is the sign of an expression of the input doubles: one circle (`arc_same_circle`, by identity where the traversed area builds each instant's circle once and every piece shares it), one meeting, the order of two meetings along an arc, the side of a curve a piece lies on. Each is decided as ED8 decides a distance, in doubles with error bounds, then double-double, then `WideDyadic`, and only the vertices of the answer are rounded, each to its nearest double. The judge is CGAL's exact circular-arc traits (`Arr_circle_segment_traits_2`) on the same doubles, by which the chapter 3 trip covers 182.778 km² | MobilityDB #3157, merged as `5023335034`: `traversedArea(tcbuffer, true)` answers by the exact sweep alone, every disc and hull merged pairwise as stretches of whole circles, segments between tangent points and segments of the input, a decline raising an error, no arc ever replaced by segments. CGAL agrees with all 383804 queries of its head (closed-form membership of the swept discs in exact rationals: SF1 noise trips, dwell trips, the chapter 3 trip, positive and zero-radius fuzz) and refuses every row its refuse controls move; the chapter 3 trip answers 182777724.033 m2. Callgrind, native over GEOS alone on the linearized pieces: chapter 3 trip 0.713, dwell 0.190, SF1 0.807; every relate and linear-union cell at parity; strict-ci, cppcheck and every meos/test program clean. LEFT: the buffer cells `natural_1` and `natural_500` read 1.104 and 1.298 of GEOS at its head, against 0.888 and 0.880 after the exact buffer arrangement and 1.21 and 1.48 on master after ED13's two PRs, the only engine changes between those readings. Branch `perf/buffer-parity`, head `a71b69f6b0` on master `5023335034`, reads 0.947 and 0.990, with `natural_50` 0.725 and `joints` 0.566: at the head some buffer rings fall back to the older piece overlay, because the arrangement leaves the side of a node near the rightmost point of an arc, and the side of a node from a ray, to intervals that cannot tell them; it decides both exactly, after which no buffer of the corpus falls back, and it asks the merge of segments running along each other only of the curves whose arrangement does not answer without it. CGAL agrees with all 25 witnesses of the buffer and overlay manifest on its head, and strict-ci, cppcheck and both Windows builds are clean |
+| ED13 | The union of surfaces bounded by segments, which the dissolved traversed area of a temporal rigid geometry reads | the same overlay merges crossings within `buffer_node_tolerance` (about 73 µm at projected coordinates) and cuts an edge only at a node within the rounding of its coordinates, so two crossings of one edge with two edges meeting at a shallow angle become one node lying off one of them, that edge is not cut, and the rings do not close: the consecutive hulls of a vessel turning at a berth meet it every few placements, and the 46 s and the declines of `traversedArea(trgeometry, true)` come from it. `meos_areal_union` reads straight surfaces off `arrange_wound_surfaces` alone, which reads segments running along each other as weighted stretches, one node where three edges cross at one point, a ray through a vertex by the half-open rule with the side of a crossing decided by `polynomial_sign_exact`, the components from the rightmost one, and a ring touching itself at a node as the loops it is made of; a union it leaves unanswered goes to the caller. The judge is CGAL's exact polygon operations (`Polygon_set_2` over `Epeck`) on the same doubles | MobilityDB #3097, merged as `8a73d5e04b`, CGAL agreeing with all 13375 unions of its head (hulls of 11 AIS vessels, three draws of grids, holes, large coordinates and turning pentagons) and refusing every row its refuse control moves; strict-ci, cppcheck, the Windows build and every meos/test program under valgrind clean; ED11 builds its arcs on it |
+| ED14 | The union of surfaces bounded by segments, merged pairwise | one arrangement of all the rings nodes every pair of edges whose boxes meet, and the hulls of a vessel overlap many deep: the 62760 edges of the day of MMSI 211364330 give 2.35 million such pairs and 713 thousand crossings, nearly all inside the union, and ED13's union costs 1.90 times GEOS there. `arrange_union_surfaces` merges the surfaces pairwise, each union carried to the next arrangement as the stretches of its boundary (`ArrStretch`): a stretch is the part of an input segment between two ends, each an input vertex or the crossing of two input segments, so every node of every merge is placed by the input doubles alone, every question keeps its degree and is decided as exactly, and only the last merge rounds what it writes. The judge is ED13's | MobilityDB #3099, `perf/areal-union-speed` at `d45742fd7c` on master `8a73d5e04b`, CGAL agreeing with all 13375 unions of its head and refusing every row its refuse control moves, all 26603 hull windows of the 11 vessels answered; 0.43 times GEOS on the day and 0.40 on the hour, in instructions |
+| ED6 | The cost | the exact kernels of ED1, ED4, ED5 and ED8 are reached on every call, so the cost they add is measured on the circular buffer benchmark (see [What the exact kernels cost](#what-the-exact-kernels-cost)) and removed without moving an answer, in three PRs. The first puts a first test in doubles in front of `point_distance_offset_exact`, `point_segment_distance_offset_exact` and `cbuffer_gap_sign`, as `point_distance_exact` has one: an error bound computed from the operands, an answer only where the double clears it, and every tie, out-of-range or non-finite case sent to the unchanged exact path; CGAL agrees with all 245963 answers of its head over 14 corpora, among them 2226 of 5916 rows where `max(0, hypot(dx, dy) - r)` in doubles, the formula the kernel replaces, is not the nearest double, and 625 of 8000 where `dx * dx + dy * dy - ((r1 + r2) + d)^2 <= 0` in doubles does not decide `dwithin` of two discs as the exact sign does. The second skips, in the ED5 walk of two moving points, the intervals whose nearest approach the existing `dwithin` filter proves above the least distance an approximate walk in doubles finds, widened by 2^-20, or above the exact least distance found so far; a skipped interval cannot lower the minimum, and the whole walk is read again if the exact answer comes out above that bound, so the approximation never decides one. The third skips, in `tcbuffer_disc_signed_boundary` and the nearest-approach search, an edge whose proven lower bound exceeds the running minimum. The full benchmark reads the cost of the merged kernels; it never decides an answer | the first, MobilityDB #3062, merged as `c4b8bb5d11`, `b59efcc196` and `60f5c4080b`, CGAL agreeing (14 witnesses); the second, MobilityDB #3063, merged as `c187304b53`, CGAL agreeing with all 1032 answers of its head over continuous time, 332 of them rows the skip must not break (two intervals within 2^-20 of the bound in both orders and at seven scales, exact and one-ulp ties, 96 estimate misses where the whole walk is read again, scales the filter declines), and refusing exactly the 147 rows of a one-ulp move; the third, `perf/tcbuffer-edge-prune` at `5aaa442512` on the same master, every one of its 15000 bounds sound under CGAL, opens no PR: with the first PR it costs 5% to 9% more backend CPU time on `tCovers`, `tTouches` and `tContains` (three rounds, `perf stat -e task-clock`), the edges within the reach of a disc rarely clearing the running minimum. The SF1 run of master `5023335034` against `d9f6a105a0` (stage det1) reads 15 queries of sections A and B at 1.08 to 1.23, which callgrind attributes to the exact kernels: `tCovers(geom, Noise)` 57.89 billion instructions against det1's 47.36, of which `point_distance_offset_exact` and `point_segment_distance_offset_exact` take 11.56 billion, 25.5 million calls each settled by the first test; `ST_Centroid(geom) <-> Noise` 80.69 billion against 67.34, of which 12.6 billion allocate, validate, copy and free the 29 million instants of the temporal distance one by one. Two PRs remove that cost, both merged: MobilityDB #3164, merged as `f73501a855`, ranks the edges by bounds in doubles (`dist_rest_bounds`) and reads the exact distance only of those that may give the minimum, 0.774 of master on `tCovers` and below det1, CGAL agreeing with every answer of its head over the ten rest corpora and the contact band of `cgal_tcb_georel` (552 discs, 12 left out where the box test answers first); MobilityDB #3162, merged as `ab11712eb0`, builds the temporal distance in one block through `tsequence_make_exp1`, 0.824 of master on the point query and below det1, CGAL agreeing with every temporal distance of its head over the six rest-buffer corpora. `perf/centroid-measures-on-demand` at `9d118a1656` on master `f73501a855`, the native `centroid(geometry)` the point query can read in place of PostGIS's `ST_Centroid`, decides by exact orientations which pieces of a geometry hold an area, a length or neither, where two bands of `MEOS_EPSILON` decided it, and measures the lower dimensions only where no piece holds an area: CGAL agreeing with every answer of its head over 75 rows in six classes (slivers of height down to 1e-9, collinear rings, holes, lines and points, random lines, natural areas), 0.387 of `GEOSGetCentroid` over the natural areas |
+| ED12 | The ever and always relationships read the exact answer | three walks answer otherwise than the distance they rest on, each found on the AIS benchmark and judged in rationals of the input doubles (`judge_dwithin.py`: each segment a quadratic in its parameter). `ea_intersects_tcbuffer_tcbuffer` reads no turning point inside a segment, so two discs apart at both instants of a segment and meeting in between read as apart: it reads `tcbuffersegm_dwithin_turnpt` at a zero distance, as `ea_dwithin_tcbuffer_tcbuffer` does; on the 9628 benchmark pairs it disagreed with a distance of 0 on 2. `eafunc_tdiscseq_tdiscseq` advances neither value at a common instant, so every ever and always relationship of two discrete values reads their first common instant only: it moves both on, as `tfunc_tdiscseq_tdiscseq` does; on the tcbuffer fixtures it disagreed with the projection of the temporal relationship on 101, 300 and 58 pairs. `ea_dwithin_tgeo_geo` compares the nearest approach distance with the bound, which decides every bound but the distance itself: a temporal point against a point reads the two-temporal exact sign of ED5 through a constant temporal point; at 2497 ties of 100 AIS trips against 25 points master answers 1220 wrongly, the change none of the 7491 cases around them. A temporal circular buffer against a point at such a tie needs the kernel of ED10 | the first, MobilityDB #3068, merged as `b9fc05ac94`; the second, MobilityDB #3070, merged as `4f2d4faf19`; the third, MobilityDB #3071, merged as `193b28abb6`, which reads the walk of the second for a discrete value |
+
+The geodetic distances are not in the plan: an exact answer on the spheroid needs a definition
+first, which the [geodetic boxes](GEODETIC-BOXES.md) share.
+
+## What other libraries reach, and what it leaves
+
+The exact answer is reached the way the exact geometry libraries reach it: a floating-point filter
+that decides most rows, and an exact stage for the rest.
+
+| Library | What it answers exactly | What it gives this plan |
+|---|---|---|
+| CGAL, exact kernel with lazy evaluation | predicates and constructions on rationals, after an interval filter | the oracle, and the shape of every kernel; its exact stage, a rational of any size, has no domain, which ED7 reaches with integers |
+| Shewchuk's adaptive predicates, Geogram's predicate construction kit | signs of polynomials of the coordinates by expansions of doubles | the arithmetic of ED1 to ED4; an expansion fails only where a product underflows, the limit ED7 removes |
+| Indirect predicates (Attene) | predicates on a point given by its construction, such as a foot or an intersection, without rounding it | the design for ED3, ED5 and ED8: distances to a constructed point are compared on its construction |
+| CORE, LEDA's `real` | the sign of an expression with square roots, by separation bounds | needed only to compare or round a sum of distances, such as a length; no single distance needs it |
+| S2 Geometry | the sign of a comparison of distances on the sphere, in double, then long double, then an exact float | the shape of an exact `dwithin` sign on the sphere, should the geodetic boxes define one |
+| GeographicLib (Karney) | the spheroid geodesic to about 15 nanometres, not correctly rounded | the practical bound for a distance on the spheroid |
+| MPFR, CORE-MATH | correctly rounded transcendental functions, by raising the precision until the rounding is decided | the only route to a correctly rounded geodetic distance, and the controls of the judges |
+
+GEOS, JTS and Boost.Geometry compute distances in floating point, and none of them answers the
+nearest double.
+
+What this leaves outside the exact answer:
+
+- a distance on the spheroid, whose value is transcendental in the coordinates: GeographicLib's
+  accuracy is what the plan states for it, not the nearest double;
+- the instant MEOS returns: a timestamp is a whole number of microseconds, and a crossing is dated
+  by truncation, a convention of the tree that ED9 keeps;
+- a sum of distances, such as the length of a trajectory, which rounds once per term.
+
+Every other limit of ED1 to ED5 is a property of the kernels, not of the question: the scaled
+domains (ED7), the segment pairs and 3D (ED8), and the constructed points and instants (ED9).
