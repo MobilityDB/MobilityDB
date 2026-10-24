@@ -4407,7 +4407,7 @@ rasterunionstate_free(RasterUnionState *state)
  * @param[in] uniontype Pixel operation: `LAST`, `FIRST`, `MIN`, `MAX`,
  * `COUNT`, `SUM`, `MEAN` or `RANGE`, regardless of case, or NULL for `LAST`
  * @errval NULL
- * @csqlfn #Raster_union_transfn()
+ * @csqlfn #Raster_union_transfn(), #Raster_union_uniontype_transfn()
  * @csqlaggfn #rasterUnionTransition()
  */
 RasterUnionState *
@@ -4830,7 +4830,8 @@ rasterunionstate_deserialize(const uint8_t *bytes, size_t size)
  * @param[in] exclude_nodata True to leave the pixels the band states as nodata
  * out of the statistics, false to count them as the values they hold
  * @errval NULL
- * @csqlfn #Raster_summary_stats_transfn()
+ * @csqlfn #Raster_summary_stats_transfn(),
+ *   #Raster_summary_stats_band_transfn()
  * @csqlaggfn #summaryStatsAggTransition()
  */
 RasterStatsState *
