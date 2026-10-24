@@ -2533,27 +2533,33 @@ arr_box_pairs(const double (*box)[4], uint32_t n, uint32_t *npairs)
     sw[i].id = i;
   }
   arr_sweep_sort(sw, n);
+  /* The boxes in the order of the sweep, which its inner loop reads one
+   * after the other */
+  double (*sb)[4] = palloc(sizeof(double[4]) * Max(n, 1u));
+  for (uint32_t k = 0; k < n; k++)
+    memcpy(sb[k], box[sw[k].id], sizeof(double[4]));
   uint32_t cap = Max(2 * n, 16u), count = 0;
   ArrPair *pairs = palloc(sizeof(ArrPair) * cap);
   for (uint32_t k = 0; k < n; k++)
   {
-    uint32_t i = sw[k].id;
+    const double *bi = sb[k];
     for (uint32_t l = k + 1; l < n; l++)
     {
-      uint32_t j = sw[l].id;
-      if (box[j][0] > box[i][1])
+      const double *bj = sb[l];
+      if (bj[0] > bi[1])
         break;
-      if (box[j][2] > box[i][3] || box[i][2] > box[j][3])
+      if (bj[2] > bi[3] || bi[2] > bj[3])
         continue;
       if (count == cap)
       {
         cap *= 2;
         pairs = repalloc(pairs, sizeof(ArrPair) * cap);
       }
-      pairs[count].i = i;
-      pairs[count++].j = j;
+      pairs[count].i = sw[k].id;
+      pairs[count++].j = sw[l].id;
     }
   }
+  pfree(sb);
   pfree(sw);
   *npairs = count;
   return pairs;
