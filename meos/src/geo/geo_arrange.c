@@ -3109,6 +3109,12 @@ arr_node_side(const Arr *a, uint32_t v, double py)
   const ArrNode *nd = &a->nodes[v];
   if (nd->vertex)
     return (nd->y > py) - (nd->y < py);
+  /* Clear of the line by the intervals holding it: a crossing with an arc,
+   * whose height no polynomial below decides, as much as any other */
+  if (nd->by.lo > py)
+    return 1;
+  if (nd->by.hi < py)
+    return -1;
   if (nd->tower)
   {
     MeetPoint at = arr_meet_point(&nd->meet);
