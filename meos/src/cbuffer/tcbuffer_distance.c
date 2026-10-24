@@ -338,6 +338,52 @@ tcbufferdist_cand_cmp(const void *a, const void *b)
 }
 
 /**
+ * @brief Return the temporal float sequence of the distances @p vals at the
+ * timestamps @p ts
+ * @details The instants are written in one block rather than allocated one by
+ * one: the first as #tinstant_make makes it, every other a copy of it whose
+ * value and timestamp #tinstant_set rewrites, as the walks of
+ * tspatial_tempspatialrels.c rewrite the instants they keep. The caller makes
+ * the timestamps strictly increasing, so the sequence is built by
+ * #tsequence_make_exp1, the constructor that reads no validity it already
+ * holds, and normalized as #tsequence_make normalizes it; a NaN distance is
+ * refused as #tinstant_make refuses it.
+ */
+static TSequence *
+tcbufferdist_seq_make(const double *vals, const TimestampTz *ts, int n,
+  bool lower_inc, bool upper_inc, interpType interp)
+{
+  assert(n > 0);
+  TInstant *first = tinstant_make(Float8GetDatum(vals[0]), T_TFLOAT, ts[0]);
+  if (! first)
+    return NULL;
+  size_t size = VARSIZE(first);
+  char *block = palloc(size * n);
+  TInstant **instants = palloc(sizeof(TInstant *) * n);
+  for (int i = 0; i < n; i++)
+  {
+    TInstant *inst = (TInstant *) (block + size * i);
+    memcpy(inst, first, size);
+    if (i > 0)
+    {
+      if (! ensure_not_nan(vals[i]))
+      {
+        pfree(first); pfree(block); pfree(instants);
+        return NULL;
+      }
+      tinstant_set(inst, Float8GetDatum(vals[i]), ts[i]);
+    }
+    instants[i] = inst;
+  }
+  pfree(first);
+  TSequence *result = tsequence_make_exp1(instants, n, n, lower_inc,
+    upper_inc, interp, NORMALIZE, NULL);
+  pfree(instants);
+  pfree(block);
+  return result;
+}
+
+/**
  * @brief Return the temporal distance of one temporal circular buffer
  * sequence to a geometry given as its edge decomposition
  */
@@ -351,17 +397,20 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
      * a stationary disc, no interior turning point. The result keeps the
      * input's own interpolation (discrete stays discrete, step stays step) */
     interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
-    TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+    double *vals = palloc(sizeof(double) * seq->count);
+    TimestampTz *ts = palloc(sizeof(TimestampTz) * seq->count);
     for (int i = 0; i < seq->count; i++)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       const Cbuffer *c = DatumGetCbufferP(tinstant_value_p(inst));
       const POINT2D *p = cbuffer_point2d_p(c);
-      double d = tcbuffer_geom_dist(p->x, p->y, c->radius, g);
-      instants[i] = tinstant_make(Float8GetDatum(d), T_TFLOAT, inst->t);
+      vals[i] = tcbuffer_geom_dist(p->x, p->y, c->radius, g);
+      ts[i] = inst->t;
     }
-    return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-      seq->period.upper_inc, interp, NORMALIZE);
+    TSequence *result = tcbufferdist_seq_make(vals, ts, seq->count,
+      seq->period.lower_inc, seq->period.upper_inc, interp);
+    pfree(vals); pfree(ts);
+    return result;
   }
 
   /* Linear interpolation, at least two instants. Per edge the candidate solver
@@ -379,16 +428,16 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
    * geo_funcs.c do. */
   int cap = g->n * 16 + 4;
   int maxinsts = seq->count + 64;
-  TInstant **instants = palloc(sizeof(TInstant *) * maxinsts);
+  double *vals = palloc(sizeof(double) * maxinsts);
+  TimestampTz *ts = palloc(sizeof(TimestampTz) * maxinsts);
   int ninsts = 0;
   double *cand = palloc(sizeof(double) * cap);
 
   const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
   const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(inst1));
   const POINT2D *p1 = cbuffer_point2d_p(c1);
-  instants[ninsts++] = tinstant_make(
-    Float8GetDatum(tcbuffer_geom_dist(p1->x, p1->y, c1->radius, g)), T_TFLOAT,
-    inst1->t);
+  vals[ninsts] = tcbuffer_geom_dist(p1->x, p1->y, c1->radius, g);
+  ts[ninsts++] = inst1->t;
   for (int i = 1; i < seq->count; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
@@ -413,7 +462,8 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
     if (ninsts + nc + 1 > maxinsts)
     {
       maxinsts = Max(ninsts + nc + 1, 2 * maxinsts);
-      instants = repalloc(instants, sizeof(TInstant *) * maxinsts);
+      vals = repalloc(vals, sizeof(double) * maxinsts);
+      ts = repalloc(ts, sizeof(TimestampTz) * maxinsts);
     }
 
     const double duration = (double) (inst2->t - inst1->t);
@@ -432,20 +482,21 @@ tcbufferseq_distance_geom(const TSequence *seq, const DistGeom *g)
       double cx = p1->x + frac * (p2->x - p1->x);
       double cy = p1->y + frac * (p2->y - p1->y);
       double r = c1->radius + frac * (c2->radius - c1->radius);
-      instants[ninsts++] = tinstant_make(
-        Float8GetDatum(tcbuffer_geom_dist(cx, cy, r, g)), T_TFLOAT, t);
+      vals[ninsts] = tcbuffer_geom_dist(cx, cy, r, g);
+      ts[ninsts++] = t;
       prevt = t;
     }
-    instants[ninsts++] = tinstant_make(
-      Float8GetDatum(tcbuffer_geom_dist(p2->x, p2->y, c2->radius, g)),
-      T_TFLOAT, inst2->t);
+    vals[ninsts] = tcbuffer_geom_dist(p2->x, p2->y, c2->radius, g);
+    ts[ninsts++] = inst2->t;
 
     inst1 = inst2; c1 = c2; p1 = p2;
   }
   pfree(cand);
 
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, LINEAR, NORMALIZE);
+  TSequence *result = tcbufferdist_seq_make(vals, ts, ninsts,
+    seq->period.lower_inc, seq->period.upper_inc, LINEAR);
+  pfree(vals); pfree(ts);
+  return result;
 }
 
 /**
