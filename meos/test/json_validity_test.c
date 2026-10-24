@@ -40,7 +40,8 @@
  *
  * The program verifies that #tjsonb_to_ttext, #ttext_to_tjsonb,
  * #tjsonb_pretty, #tjsonb_strip_nulls, #tjson_strip_nulls, #jsonbset_pretty,
- * #jsonbset_strip_nulls, #jsonbset_to_alphanumset, #tjsonb_to_tbool,
+ * #jsonbset_strip_nulls, #jsonbset_to_alphanumset, #jsonbset_to_textset,
+ * #textset_to_jsonbset, #tjsonb_to_tbool,
  * #tjsonb_to_tint, #tjsonb_to_tfloat and #tjsonb_to_ttext_key report a null
  * argument and an argument of another type by returning NULL and setting
  * #meos_errno, that #jsonbset_to_alphanumset reports a result base type that
@@ -148,6 +149,10 @@ int main(void)
     "jsonbset_pretty(NULL)");
   expect_error(jsonbset_strip_nulls(NULL, true), MEOS_ERR_INVALID_ARG,
     "jsonbset_strip_nulls(NULL, true)");
+  expect_error(jsonbset_to_textset(NULL), MEOS_ERR_INVALID_ARG,
+    "jsonbset_to_textset(NULL)");
+  expect_error(textset_to_jsonbset(NULL), MEOS_ERR_INVALID_ARG,
+    "textset_to_jsonbset(NULL)");
   expect_error(jsonbset_to_alphanumset(NULL, "a", T_INT4, NULL_RETURN),
     MEOS_ERR_INVALID_ARG, "jsonbset_to_alphanumset(NULL, a, int4)");
   expect_error(jsonbset_to_alphanumset(jsonbset, NULL, T_INT4, NULL_RETURN),
@@ -193,6 +198,10 @@ int main(void)
     "jsonbset_pretty({1, 2})");
   expect_error(jsonbset_strip_nulls(intset, true), MEOS_ERR_INVALID_ARG_TYPE,
     "jsonbset_strip_nulls({1, 2}, true)");
+  expect_error(jsonbset_to_textset(intset), MEOS_ERR_INVALID_ARG_TYPE,
+    "jsonbset_to_textset({1, 2})");
+  expect_error(textset_to_jsonbset(intset), MEOS_ERR_INVALID_ARG_TYPE,
+    "textset_to_jsonbset({1, 2})");
   expect_error(jsonbset_to_alphanumset(intset, "a", T_INT4, NULL_RETURN),
     MEOS_ERR_INVALID_ARG_TYPE, "jsonbset_to_alphanumset({1, 2}, a, int4)");
   expect_error(tjsonb_to_tbool(tint, "c", NULL_RETURN),
@@ -228,6 +237,20 @@ int main(void)
     "tjsonb_to_tfloat(tjsonb, a)");
   expect_value(tjsonb_to_ttext_key(tjsonb, "a", NULL_RETURN),
     "tjsonb_to_ttext_key(tjsonb, a)");
+  /* A JSONB set converted into text and back is the set it was */
+  Set *textset = jsonbset_to_textset(jsonbset);
+  char *textset_str = textset_out(textset);
+  printf("jsonbset_to_textset(jsonbset): %s, errno %d\n", textset_str,
+    meos_errno());
+  assert(textset != NULL);
+  assert(meos_errno() == 0);
+  Set *back = textset_to_jsonbset(textset);
+  printf("textset_to_jsonbset(textset): %s, errno %d\n",
+    back ? "a value" : "NULL", meos_errno());
+  assert(back != NULL);
+  assert(set_eq(back, jsonbset));
+  assert(meos_errno() == 0);
+  free(textset); free(textset_str); free(back);
   nh = null_handle_type_from_string("return_null");
   printf("null_handle_type_from_string(return_null): %d, errno %d\n", (int) nh,
     meos_errno());

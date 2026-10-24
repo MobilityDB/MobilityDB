@@ -226,6 +226,8 @@ extern Set *jsonbset_make(const Jsonb **values, int count);
 /* Conversion functions */
 
 extern Set *jsonb_to_set(const Jsonb *jb);
+extern Set *jsonbset_to_textset(const Set *s);
+extern Set *textset_to_jsonbset(const Set *s);
 
 /* Accessor functions */
 

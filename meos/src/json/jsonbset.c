@@ -100,6 +100,34 @@ jsonb_to_set(const Jsonb *jb)
   return set_make_exp(&v, 1, 1, T_JSONB, ORDER_NO);
 }
 
+/**
+ * @ingroup meos_json_set_conversion
+ * @brief Convert a JSONB set into a text set
+ * @param[in] s Set
+ * @csqlfn #Jsonbset_as_textset()
+ */
+Set *
+jsonbset_to_textset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(s, NULL);
+  return jsonbfunc_jsonbset(s, &datum_jsonb_to_text, T_JSONBSET, T_TEXT);
+}
+
+/**
+ * @ingroup meos_json_set_conversion
+ * @brief Convert a text set into a JSONB set
+ * @param[in] s Set
+ * @csqlfn #Textset_as_jsonbset()
+ */
+Set *
+textset_to_jsonbset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TEXTSET(s, NULL);
+  return jsonbfunc_jsonbset(s, &datum_text_to_jsonb, T_TEXTSET, T_JSONB);
+}
+
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/
@@ -222,7 +250,9 @@ jsonbfunc_jsonbset(const Set *s, datum_func1 func, MeosType settype UNUSED,
   Datum *values = palloc(sizeof(Datum) * s->count);
   for (int i = 0; i < s->count; i++)
     values[i] = func(SET_VAL_N(s, i));
-  return set_make_free(values, s->count, restype, ORDER_NO);
+  Set *result = set_make_exp(values, s->count, s->count, restype, ORDER_NO);
+  pfree_array((void **) values, s->count);
+  return result;
 }
 
 /*****************************************************************************
