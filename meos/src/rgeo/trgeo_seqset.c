@@ -235,6 +235,7 @@ trgeoseqset_make_exp(const GSERIALIZED *geom, TSequence **sequences,
  * @param[in] normalize True if the resulting value should be normalized.
  * In particular, normalize is false when synchronizing two
  * temporal sequence sets before applying an operation to them.
+ * @csqlfn #Trgeometry_seqset_constructor()
  */
 TSequenceSet *
 trgeometryseqset_make(const GSERIALIZED *geom, TSequence **sequences, int count,
@@ -303,6 +304,7 @@ trgeoseqset_make_valid_gaps(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
  * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @csqlfn #Trgeometry_seqset_constructor_gaps()
  */
 TSequenceSet *
 trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
