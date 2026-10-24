@@ -4330,6 +4330,34 @@ point_segment_distance_offset_exact(const double *p, const double *a,
 }
 
 /**
+ * @brief Return the sign of the distance of a point to a segment less a
+ * radius, computed exactly for any finite doubles
+ * @details The sign #point_segment_distance_offset_exact rounds its answer
+ * from, with no rounding: the nearest point of the segment is an end where
+ * #point_segment_dot_sign_inputs says so, and the sign is then that of the
+ * squared distance of the two points less the squared radius
+ * (#point_distance_offset_side_sign); otherwise it is that of
+ * `(w x u)^2 - r^2 (u . u)` (#point_segment_side_sign_inputs). Each is a sum
+ * of products of the input doubles decided exactly, so the answer is 0
+ * exactly where the disc of the radius is tangent to the segment
+ * @param[in] p,a,b The point and the two ends of the segment, two coordinates
+ * each
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1
+ */
+int
+point_segment_offset_sign(const double *p, const double *a, const double *b,
+  double r)
+{
+  assert(r >= 0.0);
+  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
+    return point_distance_offset_side_sign(p, a, 2, r, 0.0, 0.0);
+  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
+    return point_distance_offset_side_sign(p, b, 2, r, 0.0, 0.0);
+  return point_segment_side_sign_inputs(p, a, b, r, 0.0, 0.0);
+}
+
+/**
  * @brief Return the double nearest the distance of two segments, 2D
  * @details Two segments meet or not by exact orientations
  * (#linesegm_intersect), and where they meet the distance is 0. Two segments
