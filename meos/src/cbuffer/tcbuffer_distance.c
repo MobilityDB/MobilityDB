@@ -1683,49 +1683,53 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 /**
  * @brief Return true if the geometry contains (@p strict) or covers
  * (not @p strict) a stationary circular buffer
- * @details A geometry contains a disk when the disk lies in the open interior,
- * and covers it when the disk lies in the closed region (tangency to the
- * boundary allowed). For a disk of centre @p c and radius @p r this is exactly
- *   c is strictly inside a polygon of the geometry  AND  sg(c, r) > 0 (contains)
- *   resp.  sg(c, r) >= 0   (covers),
+ * @details A geometry covers a disk when the disk lies in its closed region,
+ * and contains it, as OGC defines it, when it covers the disk and the
+ * interior of the disk meets its interior. The interior of a disk of a
+ * strictly positive radius is the open disk, which lies in the interior of
+ * any closed region holding the disk, so the covering settles the
+ * containment, tangency to the boundary included, as #cbuffer_contains reads
+ * two disks; the interior of a disk of a zero radius is its centre, contained
+ * where it lies strictly inside. For a disk of centre @p c and radius @p r:
+ *   c is strictly inside a polygon of the geometry  AND  sg(c, r) >= 0
+ *   (covers, and contains for r > 0), resp. sg(c, r) > 0 (contains, r = 0),
  * where @p sg is the signed nearest boundary distance min_edge[dist(c, edge)-r]:
  * strictly positive means the whole disk clears the boundary, zero means it is
  * tangent to it, negative means it crosses to the exterior. The point-in-polygon
  * guard makes the relation false for a disk in a hole, outside the geometry, or
  * against a geometry with no polygonal (2D) component, which cannot contain a
- * positive-radius disk. This is the moving-disk analogue of the temporal point
- * containment rule generalized to a positive radius.
+ * positive-radius disk.
  */
 bool
 tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
 {
   if (*(const int *) ctxv == TCBUF_CTX_DISC)
   {
-    /* Exact disc-in-disc test: a disk (C, rc) is contained in a disk (P, R)
-     * iff dist(P, C) + rc <= R (covers) / < R (contains). The moving disk is
-     * @p cb; the static disk and the containment direction come from the
+    /* Two disks: the static relationships, decided exactly. The moving disk
+     * is @p cb; the static disk and the containment direction come from the
      * context */
     const TcbufferDiscCtx *d = (const TcbufferDiscCtx *) ctxv;
     const Cbuffer *outer = d->container_is_temporal ? cb : &d->cb;
     const Cbuffer *inner = d->container_is_temporal ? &d->cb : cb;
-    double gap = hypot(inner->x - outer->x, inner->y - outer->y) +
-      inner->radius - outer->radius;
-    return strict ? (gap < - TCBUFFER_TOUCH_EPS) : (gap <= TCBUFFER_TOUCH_EPS);
+    return (strict ? cbuffer_contains(outer, inner) :
+      cbuffer_covers(outer, inner)) == 1;
   }
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
+  /* Clearance of the boundary is asked only of a disk of a zero radius */
+  bool clear = strict && cb->radius == 0.0;
   /* Clear of the boundary or tangent to it, exactly
    * (#tcbuffer_disc_boundary_sign); a boundary with an arc within reach keeps
    * the signed distance against the contact band */
   int sign = tcbuffer_disc_boundary_sign(p->x, p->y, cb->radius, &ctx->g,
     &inside);
   if (sign != 2)
-    return inside && (strict ? sign > 0 : sign >= 0);
+    return inside && (clear ? sign > 0 : sign >= 0);
   double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
     &inside);
   return inside &&
-    (strict ? sg > TCBUFFER_TOUCH_EPS : sg >= - TCBUFFER_TOUCH_EPS);
+    (clear ? sg > TCBUFFER_TOUCH_EPS : sg >= - TCBUFFER_TOUCH_EPS);
 }
 
 /**
