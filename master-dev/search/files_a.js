@@ -6,5 +6,6 @@ var searchData=
   ['jsonb_5fjsonfuncs_2ec_3',['jsonb_jsonfuncs.c',['../jsonb__jsonfuncs_8c.html',1,'']]],
   ['jsonbset_2ec_4',['jsonbset.c',['../meos_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)']]],
   ['jsonbset_5fjsonfuncs_2ec_5',['jsonbset_jsonfuncs.c',['../meos_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)']]],
-  ['jsonbset_5fmeos_2ec_6',['jsonbset_meos.c',['../jsonbset__meos_8c.html',1,'']]]
+  ['jsonbset_5fjsonfuncs_5fmeos_2ec_6',['jsonbset_jsonfuncs_meos.c',['../jsonbset__jsonfuncs__meos_8c.html',1,'']]],
+  ['jsonbset_5fmeos_2ec_7',['jsonbset_meos.c',['../jsonbset__meos_8c.html',1,'']]]
 ];

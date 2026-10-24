@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: expect_text</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2json_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="json__validity__test_8c.html">json_validity_test.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,56 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2json_2CMakeLists_8txt_a647a7688012074ff599d65cd9c04f473.html#a647a7688012074ff599d65cd9c04f473">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="json__validity__test_8c_afad69aeb151833bbc2039eaeeae1e0a0.html#afad69aeb151833bbc2039eaeeae1e0a0">expect_error</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="json__validity__test_8c_a3ce860ff712f7509b8089b17df415a9a.html#a3ce860ff712f7509b8089b17df415a9a">expect_text</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="json__validity__test_8c_ae2d6db592181c2d390544d76d8251e0d.html#ae2d6db592181c2d390544d76d8251e0d">expect_value</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="json__validity__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a647a7688012074ff599d65cd9c04f473" name="a647a7688012074ff599d65cd9c04f473"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a647a7688012074ff599d65cd9c04f473">&#9670;&#160;</a></span>set()</h2>
+<a id="a3ce860ff712f7509b8089b17df415a9a" name="a3ce860ff712f7509b8089b17df415a9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ce860ff712f7509b8089b17df415a9a">&#9670;&#160;</a></span>expect_text()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname">static void expect_text </td>
           <td>(</td>
-          <td class="paramtype">JSON_SOURCES jsonbset.c jsonbset_jsonfuncs.c tjsonb.c tjsonb_jsonfuncs.c tjsonb_compops.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>want</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>call</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Check that a call answered the expected text and left no error behind, then free the text. </p>
+<p >The output comparison of <a class="el" href="timezone__switch__test_8c.html" title="A program that tests reading a timezone abbreviation in one timezone after another.">timezone_switch_test.c</a>'s <a class="el" href="arc__distance__test_8c_a19c88eefff3d3c7d5029efa815d837c0.html#a19c88eefff3d3c7d5029efa815d837c0">check()</a>, with the errno contract of <a class="el" href="json__validity__test_8c_ae2d6db592181c2d390544d76d8251e0d.html#ae2d6db592181c2d390544d76d8251e0d" title="Check that a call answered a value and left no error behind.">expect_value</a> </p>
 
 </div>
 </div>

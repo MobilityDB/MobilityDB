@@ -15,9 +15,10 @@ var searchData=
   ['internal_20functions_20for_20static_20json_12',['Internal functions for static JSON',['../group__meos__internal__json__base.html',1,'']]],
   ['internal_20helpers_13',['Internal helpers',['../group__meos__h3__internal.html',1,'']]],
   ['internal_20input_20and_20output_20functions_14',['Internal input and output functions',['../group__meos__internal__json__base__inout.html',1,'(Global Namespace)'],['../group__meos__internal__json__inout.html',1,'(Global Namespace)'],['../group__meos__internal__json__set__inout.html',1,'(Global Namespace)']]],
-  ['internal_20restrinction_20functions_15',['Internal restrinction functions',['../group__meos__internal__json__restrict.html',1,'']]],
-  ['internal_20set_20operations_16',['Internal set operations',['../group__meos__internal__json__set__setops.html',1,'']]],
-  ['internal_20spatial_20reference_20system_20functions_17',['Internal spatial reference system functions',['../group__meos__internal__json__base__srid.html',1,'']]],
-  ['internal_20temporal_20_20comparison_20functions_18',['Internal temporal  comparison functions',['../group__meos__internal__json__comp__temp.html',1,'']]],
-  ['internal_20transformation_20functions_19',['Internal transformation functions',['../group__meos__internal__json__base__transf.html',1,'(Global Namespace)'],['../group__meos__internal__json__transf.html',1,'(Global Namespace)']]]
+  ['internal_20json_20processing_20functions_15',['Internal JSON processing functions',['../group__meos__internal__json__json.html',1,'(Global Namespace)'],['../group__meos__internal__json__set__json.html',1,'(Global Namespace)']]],
+  ['internal_20restrinction_20functions_16',['Internal restrinction functions',['../group__meos__internal__json__restrict.html',1,'']]],
+  ['internal_20set_20operations_17',['Internal set operations',['../group__meos__internal__json__set__setops.html',1,'']]],
+  ['internal_20spatial_20reference_20system_20functions_18',['Internal spatial reference system functions',['../group__meos__internal__json__base__srid.html',1,'']]],
+  ['internal_20temporal_20_20comparison_20functions_19',['Internal temporal  comparison functions',['../group__meos__internal__json__comp__temp.html',1,'']]],
+  ['internal_20transformation_20functions_20',['Internal transformation functions',['../group__meos__internal__json__base__transf.html',1,'(Global Namespace)'],['../group__meos__internal__json__transf.html',1,'(Global Namespace)']]]
 ];
