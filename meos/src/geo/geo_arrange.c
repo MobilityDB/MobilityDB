@@ -5458,11 +5458,13 @@ arr_same_exact_ends(Arr *a)
 /*
  * The arrangement of the curves and the rings bounding the region they wind
  * around: as #arrange_wound_boundary answers them where @p owner is NULL,
- * as #arrange_wound_surfaces answers them otherwise
+ * as #arrange_wound_surfaces answers them otherwise, the segments running
+ * along each other read as the stretches they share where @p merge is true
+ * (#arr_merge_overlaps)
  */
 static ArrangeStatus
-arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
-  int32_t **owner)
+arr_arrange_merge(const MeosArray *edges, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner, bool merge)
 {
   assert(edges); assert(rings); assert(nrings);
   *rings = NULL;
@@ -5517,7 +5519,7 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
    * once with the rise of the winding number they give across it */
   MeosArray *merged = NULL;
   ArrMerge mg;
-  if (arr_merge_overlaps(edges, pairs, npairs, &merged, &a.w, &mg))
+  if (merge && arr_merge_overlaps(edges, pairs, npairs, &merged, &a.w, &mg))
   {
     pfree(a.box);
     a.box = NULL;
@@ -5631,6 +5633,25 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     meos_array_destroy(merged);
     pfree(a.w);
   }
+  return st;
+}
+
+/*
+ * The arrangement of the curves (#arr_arrange_merge), the segments running
+ * along each other merged only where it is not answered without: most
+ * curves have no two such segments, which leaves them the scan of every
+ * pair of boxes the merge asks first, and a pair of them is met as
+ * #ARR_OVERLAP (#arr_meet_segments). Any question left unanswered is asked
+ * again of the merged curves, as where the arrangement stops at another
+ * question before it meets the pair
+ */
+static ArrangeStatus
+arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
+  int32_t **owner)
+{
+  ArrangeStatus st = arr_arrange_merge(edges, rings, nrings, owner, false);
+  if (st != ARR_ANSWERED)
+    st = arr_arrange_merge(edges, rings, nrings, owner, true);
   return st;
 }
 
