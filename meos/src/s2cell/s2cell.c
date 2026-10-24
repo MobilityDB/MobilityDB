@@ -1249,7 +1249,7 @@ s2cell_in(const char *str)
  * @brief Return an S2 cell from a 64-bit integer, raising an error when the
  * integer encodes no cell
  * @param[in] i Integer
- * @csqlfn #Bigint_to_s2cell()
+ * @csqlfn #Bigint_to_s2cell(), #S2cell_recv()
  */
 S2CellId
 bigint_to_s2cell(int64 i)

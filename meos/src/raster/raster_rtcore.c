@@ -1824,7 +1824,7 @@ raster_pixel_as_points(const Raster *rast, int band, bool exclude_nodata,
  * @return An array of values the caller frees, or NULL where the raster has
  * no pixel, in which case @p count is 0 and no error is stated
  * @errval NULL
- * @csqlfn #Raster_dump_values()
+ * @csqlfn #Raster_dump_values(), #Raster_dump_values_band()
  */
 double *
 raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
