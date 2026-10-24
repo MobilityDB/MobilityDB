@@ -19816,13 +19816,16 @@ centroid_add_arc(CentroidAcc *acc, const POINT4D *p1, const POINT4D *p2,
 
 /**
  * @brief Add every piece of a point array read as a curve
- * @param[in,out] acc Accumulator of lengths
+ * @param[in,out] acc Accumulator of lengths, NULL where the lengths are not
+ * read (#meos_centroid)
  * @param[in] pa Point array
  * @param[in] arcs True when consecutive triples of points draw circular arcs
  */
 static void
 centroid_add_ptarray_line(CentroidAcc *acc, const POINTARRAY *pa, bool arcs)
 {
+  if (! acc)
+    return;
   if (arcs)
   {
     for (uint32_t i = 0; i + 2 < pa->npoints; i += 2)
@@ -19851,11 +19854,14 @@ centroid_add_ptarray_line(CentroidAcc *acc, const POINTARRAY *pa, bool arcs)
 }
 
 /**
- * @brief Add every point of a point array, each weighing one
+ * @brief Add every point of a point array, each weighing one, unless the
+ * accumulator is NULL, where the points are not read (#meos_centroid)
  */
 static void
 centroid_add_ptarray_points(CentroidAcc *acc, const POINTARRAY *pa)
 {
+  if (! acc)
+    return;
   for (uint32_t i = 0; i < pa->npoints; i++)
   {
     POINT4D p;
@@ -19884,6 +19890,26 @@ centroid_add_ring(CentroidAcc *acc, const POINTARRAY *pa, bool arcs,
   if (pa->npoints < 2)
     return;
   POINT4D p0 = *origin;
+
+  /* A straight ring in two dimensions reads its points in place
+   * (#getPoint2d_cp) rather than copying four ordinates of each, the same
+   * products summed in the same order */
+  if (! arcs && ! FLAGS_GET_Z(pa->flags) && ! FLAGS_GET_M(pa->flags))
+  {
+    const POINT2D *pp = getPoint2d_cp(pa, 0);
+    for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+    {
+      const POINT2D *pn = getPoint2d_cp(pa, i + 1);
+      double cross = (pp->x - p0.x) * (pn->y - p0.y) -
+        (pn->x - p0.x) * (pp->y - p0.y);
+      double w = cross / 2;
+      acc->weight += w;
+      acc->x += w * ((p0.x + pp->x + pn->x) / 3);
+      acc->y += w * ((p0.y + pp->y + pn->y) / 3);
+      pp = pn;
+    }
+    return;
+  }
 
   /* The chord polygon, in which each arc stands as the segment joining its ends.
    * The fan runs from an origin the CALLER owns, so a ring assembled from
@@ -20003,12 +20029,14 @@ centroid_add_curve_ring(CentroidAcc *acc, const LWGEOM *geom,
 /**
  * @brief Add every piece of a ring read as a curve, the ring being a line, a
  * circular string, or a compound curve assembled from both
+ * @details Both accumulators NULL read nothing, as a NULL one reads nothing in
+ * #centroid_add_ptarray_line and #centroid_add_ptarray_points
  */
 static void
 centroid_add_curve_line(CentroidAcc *lineal, CentroidAcc *punctual,
   const LWGEOM *geom)
 {
-  if (! geom || lwgeom_is_empty(geom))
+  if ((! lineal && ! punctual) || ! geom || lwgeom_is_empty(geom))
     return;
   if (geom->type == LINETYPE)
   {
@@ -20145,6 +20173,103 @@ centroid_add_geo(const LWGEOM *geom, CentroidAcc *areal, CentroidAcc *lineal,
 }
 
 /**
+ * @brief Return true when a curve ring encloses an area, decided exactly
+ * @details A ring of segments encloses an area exactly where its shoelace sum
+ * is not zero (#ring_encloses_no_area). A ring carrying a circular arc whose
+ * three points do not lie on one line (#cross_product_sign) encloses the
+ * circular segment standing on its chord; a ring whose every arc is straight
+ * is read through its vertices, joined in order across the members of a
+ * compound curve as one ring, never member by member
+ */
+static bool
+centroid_ring_holds_area(const LWGEOM *ring)
+{
+  if (! ring || lwgeom_is_empty(ring))
+    return false;
+  if (ring->type == LINETYPE)
+    return ! ring_encloses_no_area(((const LWLINE *) ring)->points);
+  const LWGEOM *one[1] = {ring};
+  const LWGEOM **members = one;
+  uint32_t n = 1;
+  if (ring->type == COMPOUNDTYPE)
+  {
+    members = (const LWGEOM **) ((const LWCOMPOUND *) ring)->geoms;
+    n = ((const LWCOMPOUND *) ring)->ngeoms;
+  }
+  POINTARRAY *pa = ptarray_construct_empty(FLAGS_GET_Z(ring->flags),
+    FLAGS_GET_M(ring->flags), 8);
+  bool arc = false;
+  for (uint32_t i = 0; i < n && ! arc; i++)
+  {
+    const POINTARRAY *mp = (members[i]->type == CIRCSTRINGTYPE) ?
+      ((const LWCIRCSTRING *) members[i])->points :
+      ((const LWLINE *) members[i])->points;
+    if (members[i]->type == CIRCSTRINGTYPE)
+      for (uint32_t j = 0; j + 2 < mp->npoints && ! arc; j += 2)
+      {
+        const POINT2D *p1 = getPoint2d_cp(mp, j);
+        const POINT2D *p2 = getPoint2d_cp(mp, j + 1);
+        const POINT2D *p3 = getPoint2d_cp(mp, j + 2);
+        arc = cross_product_sign(p1->x, p1->y, p3->x, p3->y, p1->x, p1->y,
+          p2->x, p2->y) != 0;
+      }
+    for (uint32_t j = 0; j < mp->npoints; j++)
+    {
+      POINT4D p;
+      getPoint4d_p(mp, j, &p);
+      ptarray_append_point(pa, &p, LW_TRUE);
+    }
+  }
+  bool result = arc || ! ring_encloses_no_area(pa);
+  ptarray_free(pa);
+  return result;
+}
+
+/**
+ * @brief Return true when a geometry holds an area, decided exactly
+ * @details Some ring of a polygon, a triangle or a curve polygon encloses an
+ * area (#ring_encloses_no_area, #centroid_ring_holds_area); the members of a
+ * collection are asked in turn
+ */
+static bool
+centroid_holds_area(const LWGEOM *geom)
+{
+  if (! geom || lwgeom_is_empty(geom))
+    return false;
+  switch (geom->type)
+  {
+    case TRIANGLETYPE:
+      return ! ring_encloses_no_area(((const LWTRIANGLE *) geom)->points);
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        if (! ring_encloses_no_area(poly->rings[i]))
+          return true;
+      return false;
+    }
+    case CURVEPOLYTYPE:
+    {
+      const LWCURVEPOLY *cp = (const LWCURVEPOLY *) geom;
+      for (uint32_t i = 0; i < cp->nrings; i++)
+        if (centroid_ring_holds_area(cp->rings[i]))
+          return true;
+      return false;
+    }
+    default:
+      break;
+  }
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < coll->ngeoms; i++)
+      if (centroid_holds_area(coll->geoms[i]))
+        return true;
+  }
+  return false;
+}
+
+/**
  * @brief Return the centroid of a geometry
  * @details The centroid is the mean of the highest-dimensional pieces the
  * geometry holds, weighted by their measure, and it is taken in every
@@ -20162,19 +20287,24 @@ meos_centroid(const LWGEOM *geom)
   if (lwgeom_is_empty(geom))
     return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, hasz, hasm));
 
+  /* Which pieces weigh is decided exactly: the areas where the geometry holds
+   * one (#centroid_holds_area), and only otherwise the lengths and then the
+   * points, which are read only then. Every ring is folded in weighing
+   * positively, so a surface that holds any area holds a positive total of
+   * it; a total of exactly zero, a ring whose lobes cancel, falls through */
   CentroidAcc areal = {0}, lineal = {0}, punctual = {0};
-  centroid_add_geo(geom, &areal, &lineal, &punctual);
-
   POINT4D mean = {0, 0, 0, 0};
-  /* Every ring is folded in weighing positively, so a surface that holds any
-   * area holds a positive total of it */
-  if (areal.weight > MEOS_EPSILON)
-    centroid_mean(&areal, &mean);
-  else if (lineal.weight > MEOS_EPSILON)
-    centroid_mean(&lineal, &mean);
-  else if (! centroid_mean(&punctual, &mean))
+  if (centroid_holds_area(geom))
+  {
+    centroid_add_geo(geom, &areal, NULL, NULL);
+    if (centroid_mean(&areal, &mean))
+      return lwpoint_as_lwgeom(lwpoint_make(srid, hasz, hasm, &mean));
+  }
+  CentroidAcc scratch = {0};
+  centroid_add_geo(geom, &scratch, &lineal, &punctual);
+  /* A total length is zero exactly where every piece has its two ends equal */
+  if (! centroid_mean(&lineal, &mean) && ! centroid_mean(&punctual, &mean))
     return lwpoint_as_lwgeom(lwpoint_construct_empty(srid, hasz, hasm));
-
   return lwpoint_as_lwgeom(lwpoint_make(srid, hasz, hasm, &mean));
 }
 
