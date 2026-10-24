@@ -41,7 +41,7 @@ jobs:
     name: Cppcheck (with project include paths)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: ./.github/actions/apt-resilient
 
@@ -293,14 +293,14 @@ jobs:
         # Runs even if the previous step failed, so reviewers can see
         # the inline annotations on the PR alongside the build failure.
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: cppcheck.sarif
           category: cppcheck
 
       - name: Attach SARIF as workflow artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cppcheck-sarif
           path: cppcheck.sarif

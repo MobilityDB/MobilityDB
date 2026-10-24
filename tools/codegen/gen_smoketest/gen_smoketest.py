@@ -2175,12 +2175,18 @@ TJSONB_CONFIG = dict(
         "tjsonb_array_length":    {0: "tjsonb_arr1"},
         "tjsonb_delete_index":    {0: "tjsonb_arr1"},
         "tjsonb_array_element":   {0: "tjsonb_arr1"},
+        "tjsonb_array_element_text": {0: "tjsonb_arr1"},
+        "tjsonb_array_element_common": {0: "tjsonb_arr1"},
         "tjson_array_element":    {0: "ttext_arr1"},
         "jsonbset_array_length":  {0: "jsonbset_arr1"},
         "jsonbset_delete_index":  {0: "jsonbset_arr1"},
         "jsonbset_array_element": {0: "jsonbset_arr1"},
+        "jsonbset_array_element_text": {0: "jsonbset_arr1"},
+        "jsonbset_array_element_common": {0: "jsonbset_arr1"},
         # These reach for a key, so their set holds the objects that have one.
         "jsonbset_object_field":  {0: "jsonbset_obj1"},
+        "jsonbset_object_field_text": {0: "jsonbset_obj1"},
+        "jsonbset_object_field_common": {0: "jsonbset_obj1"},
         # jsonbset_delete removes a KEY, so its set holds objects, not the
         # scalars of jsonbset1 ("cannot delete from scalar").
         "jsonbset_delete":        {0: "jsonbset_obj1"},
@@ -2223,6 +2229,7 @@ TJSONB_CONFIG = dict(
         # arrays rather than the bare strings of ttext1.
         "tjson_array_length": {0: "ttext_arr1"},
         "tjson_object_field": {0: "ttext1"},
+        "tjson_object_field_common": {0: "ttext1"},
         "tjson_extract_path": {0: "ttext1", 1: "path1", 2: "2"},
         # Input-array double-pointers, paired with a trailing count arg.
         "json_make":          {0: "keys_vals1", 1: "2"},
@@ -2251,6 +2258,10 @@ TJSONB_CONFIG = dict(
                                     3: "jb1", 5: "null_handle_text1"},
         "jsonbset_delete_path":   {0: "jsonbset_obj1", 1: "path1", 2: "2"},
         "jsonbset_extract_path":  {0: "jsonbset_obj1", 1: "path1", 2: "2"},
+        "jsonbset_extract_path_text": {0: "jsonbset_obj1", 1: "path1",
+                                       2: "2"},
+        "jsonbset_extract_path_common": {0: "jsonbset_obj1", 1: "path1",
+                                         2: "2"},
         "jsonbset_insert":        {0: "jsonbset_obj1", 1: "keys_new1", 2: "1",
                                     3: "jb1"},
         "tjsonb_delete_array":    {1: "keys1", 2: "1"},
@@ -2259,6 +2270,8 @@ TJSONB_CONFIG = dict(
         "tjsonb_exists_any":      {1: "keys1", 2: "1"},
         "tjsonb_exists_array":    {1: "keys1", 2: "1"},
         "tjsonb_extract_path":    {1: "path1", 2: "2"},
+        "tjsonb_extract_path_text": {1: "path1", 2: "2"},
+        "tjsonb_extract_path_common": {1: "path1", 2: "2"},
         "tjsonb_insert":          {1: "keys_new1", 2: "1", 3: "jb1"},
         "tjsonb_set":             {1: "keys1", 2: "1", 3: "jb1",
                                     5: "null_handle_text1"},

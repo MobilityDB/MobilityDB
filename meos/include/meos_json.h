@@ -238,8 +238,10 @@ extern Jsonb **jsonbset_values(const Set *s, int *count);
 
 extern Set *concat_jsonbset_jsonb(const Set *s, const Jsonb *jb, bool invert);
 extern Set *jsonbset_array_length(const Set *set);
-extern Set *jsonbset_object_field(const Set *set, const text *key, bool astext, nullHandleType null_handle);
-extern Set *jsonbset_array_element(const Set *set, int idx, bool astext, nullHandleType null_handle);
+extern Set *jsonbset_object_field(const Set *set, const text *key, nullHandleType null_handle);
+extern Set *jsonbset_object_field_text(const Set *set, const text *key, nullHandleType null_handle);
+extern Set *jsonbset_array_element(const Set *set, int idx, nullHandleType null_handle);
+extern Set *jsonbset_array_element_text(const Set *set, int idx, nullHandleType null_handle);
 extern Set *jsonbset_delete_index(const Set *set, int idx);
 extern Set *jsonbset_delete(const Set *set, const text *key);
 extern Set *jsonbset_delete_array(const Set *set, text **keys, int count);
@@ -254,12 +256,18 @@ extern Set *jsonbset_to_textset_key(const Set *set, const char *key, nullHandleT
 extern Set *jsonbset_strip_nulls(const Set *set, bool strip_in_arrays);
 extern Set *jsonbset_pretty(const Set *set);
 extern Set *jsonbset_delete_path(const Set *set, text **path_elems, int path_len);
-extern Set *jsonbset_extract_path(const Set *set, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
+extern Set *jsonbset_extract_path(const Set *set, text **path_elems, int path_len, nullHandleType null_handle);
+extern Set *jsonbset_extract_path_text(const Set *set, text **path_elems, int path_len, nullHandleType null_handle);
 extern Set *jsonbset_insert(const Set *set, text **path_elems, int path_len, const Jsonb *newjb, bool after);
 extern bool *jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
 extern bool *jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
 extern Set *jsonbset_path_query_array(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Set *jsonbset_path_query_first(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+
+// Internal
+extern Set *jsonbset_array_element_common(const Set *set, int idx, bool astext, nullHandleType null_handle);
+extern Set *jsonbset_extract_path_common(const Set *set, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
+extern Set *jsonbset_object_field_common(const Set *set, const text *key, bool astext, nullHandleType null_handle);
 
 /* Set operations */
 
@@ -341,10 +349,11 @@ extern nullHandleType null_handle_type_from_string(const char *str);
 extern Temporal *tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle);
 extern Temporal *tjson_array_length(const Temporal *temp);
 extern Temporal *tjson_extract_path(const Temporal *temp, text **path_elems, int path_len, nullHandleType null_handle);
-extern Temporal *tjson_object_field(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
+extern Temporal *tjson_object_field(const Temporal *temp, const text *key, nullHandleType null_handle);
 extern Temporal *tjson_strip_nulls(const Temporal *temp, bool strip_in_arrays);
 
-extern Temporal *tjsonb_array_element(const Temporal *temp, int idx, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_array_element(const Temporal *temp, int idx, nullHandleType null_handle);
+extern Temporal *tjsonb_array_element_text(const Temporal *temp, int idx, nullHandleType null_handle);
 extern Temporal *tjsonb_array_length(const Temporal *temp);
 extern Temporal *tjsonb_delete(const Temporal *temp, const text *key);
 extern Temporal *tjsonb_delete_array(const Temporal *temp, text **keys, int count);
@@ -354,9 +363,11 @@ extern Temporal *tjsonb_exists(const Temporal *temp, const text *key);
 extern Temporal *tjsonb_exists_all(const Temporal *temp, text **keys, int count);
 extern Temporal *tjsonb_exists_any(const Temporal *temp, text **keys, int count);
 extern Temporal *tjsonb_exists_array(const Temporal *temp, text **keys, int count, bool any);
-extern Temporal *tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len, nullHandleType null_handle);
+extern Temporal *tjsonb_extract_path_text(const Temporal *temp, text **path_elems, int path_len, nullHandleType null_handle);
 extern Temporal *tjsonb_insert(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool after);
-extern Temporal *tjsonb_object_field(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_object_field(const Temporal *temp, const text *key, nullHandleType null_handle);
+extern Temporal *tjsonb_object_field_text(const Temporal *temp, const text *key, nullHandleType null_handle);
 extern Temporal *tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Temporal *tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Temporal *tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
@@ -373,6 +384,12 @@ extern Temporal *tjsonb_to_tgeometry(const Temporal *temp, const char *key, null
 extern Temporal *tjsonb_to_tgeompoint(const Temporal *temp, const char *key, interpType interp, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tint(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_ttext_key(const Temporal *temp, const char *key, nullHandleType null_handle);
+
+// Internal
+extern Temporal *tjson_object_field_common(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_array_element_common(const Temporal *temp, int idx, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_extract_path_common(const Temporal *temp, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
 
 /*****************************************************************************
  * Restriction functions

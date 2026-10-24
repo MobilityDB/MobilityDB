@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Portable-operator coverage (every operator classified; 0 unclassified)
         run: python3 tools/codegen/portable_aliases/generate.py --check
 
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject int64_t / uint64_t in MobilityDB public headers
         run: ./tools/scripts/check_int64_in_headers.sh
       - name: Define every type name once, and a PostgreSQL type alike beside PostgreSQL
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject an empty or repeated @brief
         run: python3 tools/scripts/check_doxygen_briefs.py
 
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject an @ingroup naming no @defgroup
         run: python3 tools/scripts/check_doxygen_groups.py
 
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject a public function no installed header declares
         run: python3 tools/scripts/check_public_declared.py
 
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject an @param[in] the function writes through
         run: python3 tools/scripts/check_param_direction.py
 
@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - uses: ./.github/actions/apt-resilient
 
       - name: Install Requirements
@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check @csqlfn derivation links
         run: python3 tools/scripts/check_csqlfn.py --gaps
       - name: Check every wrapper a @csqlfn tag backs is named
@@ -104,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check spatial-relationship (tgeo and tcbuffer) grid completeness
         run: python3 tools/scripts/check_spatialrel_orthogonality.py
 
@@ -112,7 +112,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject <-> operators that btree_gist owns
         run: python3 tools/scripts/check_btree_gist_operators.py
 
@@ -120,7 +120,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Report a bounding-box operator no index of its type answers
         run: python3 tools/scripts/check_opclass_members.py
 
@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that MEOS-only code is selected by file, not by #if MEOS
         run: python3 tools/scripts/check_meos_only_files.py
 
@@ -136,7 +136,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that every error sentinel is the maximum of the return type
         run: python3 tools/scripts/check_error_sentinels.py
 
@@ -144,7 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject a test or manual value dated on the PostgreSQL epoch year
         run: python3 tools/scripts/check_fixture_dates.py
 
@@ -152,7 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that no new call reaches GEOS through the vendored library
         run: python3 tools/scripts/check_liblwgeom_geos.py
 
@@ -160,7 +160,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that a dispatch on a type rejects a type it does not handle
         run: python3 tools/scripts/check_dispatch_default.py
 
@@ -168,7 +168,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Reject types MEOS parses that MobilityDB does not declare
         run: python3 tools/scripts/check_binding_io_ownership.py
 
@@ -176,7 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that the templatetypes table documents the type catalog
         run: python3 tools/scripts/check_templatetypes_doc.py
 
@@ -184,7 +184,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Validate the GeoPose documents against the OGC schemas
         run: python3 tools/scripts/check_geopose_conformance.py
 
@@ -192,7 +192,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that every @sqlfn tag names a surface the extension builds
         run: python3 tools/scripts/check_sqlfn_names.py
       - name: Check that every @sqlop tag names an operator the SQL binds to its wrapper
@@ -203,6 +203,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Check that no declaration is silently PARALLEL UNSAFE
         run: python3 tools/scripts/check_parallel_safety.py

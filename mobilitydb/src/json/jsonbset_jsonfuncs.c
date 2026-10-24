@@ -83,7 +83,6 @@ Jsonbset_array_length(PG_FUNCTION_ARGS)
 /**
  * @brief Extract a field from a JSONB set value
  * @sqlfn jsonbsetObjectField(), jsonbsetObjectFieldText()
- * @sqlop @p ->, @p ->>
  */
 Datum
 Jsonbset_object_field_common(FunctionCallInfo fcinfo, bool astext)
@@ -99,7 +98,8 @@ Jsonbset_object_field_common(FunctionCallInfo fcinfo, bool astext)
       PG_RETURN_NULL();
   }
   /* Compute the result */
-  Set *result = jsonbset_object_field(set, key, astext, null_handle);
+  Set *result = jsonbset_object_field_common(set, key, astext,
+    null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(key, 1);
@@ -466,7 +466,8 @@ Jsonbset_array_element_common(FunctionCallInfo fcinfo, bool astext)
       PG_RETURN_NULL();
   }
   /* Compute the result */
-  Set *result = jsonbset_array_element(set, idx, astext, null_handle);
+  Set *result = jsonbset_array_element_common(set, idx, astext,
+    null_handle);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   if (! result)
@@ -569,7 +570,8 @@ Jsonbset_extract_path_common(FunctionCallInfo fcinfo, bool isjsonb UNUSED,
   
   /* Compute the result */
   Set *result = // isjsonb ?
-    jsonbset_extract_path(set, (text **) path_elems, path_len, astext, null_handle); // :
+    jsonbset_extract_path_common(set, (text **) path_elems, path_len, astext,
+      null_handle); // :
     // ttextset_extract_path(set, (text **) path_elems, path_len, null_handle);
 
   /* Clean up and return */
