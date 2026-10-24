@@ -677,6 +677,7 @@ concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] jb JSONB
  * @param[in] invert True if the arguments must be inverted
  * @csqlfn #Contains_tjsonb_jsonb() #Contains_jsonb_tjsonb()
+ *   #Contained_jsonb_tjsonb() #Contained_tjsonb_jsonb()
  */
 Temporal *
 contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
@@ -699,7 +700,7 @@ contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert)
  * @ingroup meos_json_json
  * @brief Return the temporal contains of two temporal JSONB
  * @param[in] temp1,temp2 Temporal JSONBs
- * @csqlfn #Contains_tjsonb_tjsonb()
+ * @csqlfn #Contains_tjsonb_tjsonb() #Contained_tjsonb_tjsonb()
  */
 Temporal *
 contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)

@@ -512,7 +512,7 @@ float_set_tbox(double d, TBox *box)
  * @ingroup meos_box_conversion
  * @brief Convert a float into a temporal box
  * @param[in] d Value
- * @csqlfn #Number_to_tbox()
+ * @csqlfn #Number_to_tbox(), #Numeric_to_tbox()
  */
 TBox *
 float_to_tbox(double d)

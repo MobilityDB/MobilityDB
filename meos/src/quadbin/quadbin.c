@@ -141,7 +141,7 @@ quadbin_out(Quadbin cell)
  * @brief Return a QUADBIN index from a 64-bit integer, raising an error when
  * the integer encodes no well-formed index
  * @param[in] i Integer
- * @csqlfn #Bigint_to_quadbin()
+ * @csqlfn #Bigint_to_quadbin(), #Quadbin_recv()
  */
 Quadbin
 bigint_to_quadbin(int64 i)
