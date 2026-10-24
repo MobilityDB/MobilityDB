@@ -107,6 +107,14 @@ wrapper and the MEOS function it reaches.
   names an `_opr` wrapper, so no binding registers an `Opr` name: MobilityDuck registers each
   operator on the two-argument form of its function, from the `@sqlop` of the function's wrapper,
   which `check_sqlop_tags.py` reads as the operator the SQL binds to the wrapper's `_opr` twin.
+  The rule rests on three facts, each re-run from the tree: PostgreSQL 18 backs `@?` by the
+  two-argument `jsonb_path_exists_opr` beside the four-argument `jsonb_path_exists`
+  (`share/postgres.bki`), and PostGIS 3.6.4 backs `<->` by `geography_distance_knn(geography,
+  geography)` beside `ST_Distance(geography, geography, use_spheroid boolean DEFAULT true)`
+  (`postgis--3.6.4.sql`); on master `f5017dbabf` all 62 signatures of the 22 `…Opr` names are
+  their base function called with its defaults; and all 33 `_opr` wrappers compute what their
+  base wrapper computes. `check_csqlfn.py --targets`, a CI job, refuses an `@csqlfn` naming an
+  `…Opr` procedure and an `…Opr` signature that is not its base call.
 
 ## Covered elsewhere
 
@@ -338,7 +346,7 @@ come before its push.
 | `meos/trgeometry-constructors-named` | `0e2ce4ae06` | `trgeometry(geometry, tpose)`, `geometry(trgeometry)` and the sequence constructors named | receipts owed |
 | `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
-| `tools/csqlfn-follows-every-helper` | | `check_csqlfn.py` follows a wrapper into any static helper of its file, not only `*_common`, so the census reads the MEOS function of every wrapper (697 of 2822 unresolved on master `f5017dbabf`) | next |
+| `meos/json-opr-wrappers-untagged` | | the 26 `@csqlfn` names of JSON `_opr` wrappers leave the tags, rewrites `8655303ab6` (DECIDED BY THE OWNER 2026-10-24); every operator the catalog states is unchanged and the `…Opr` names leave it; `check_csqlfn.py --targets` refuses an `…Opr` tag and an `…Opr` signature that is not its base call | receipts next |
 | `meos/every-wrapper-named` | | every wrapper the North Star rule names, appended to its function's list: `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band` (the commit of `meos/raster-statistics-named`, `9dba13fb1b`), and the gaps the full census adds | after the resolver |
 | `meos/json-contained-public` | | the public `contained_jsonb_tjsonb`, `contained_tjsonb_jsonb`, `contained_tjsonb_tjsonb`, called by their `Contained_*` wrappers | after the tags |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
