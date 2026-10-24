@@ -165,6 +165,12 @@ extern void dist_geom_free(DistGeom *g);
 extern bool dist_geom_decompose(const GSERIALIZED *gs, DistGeom *g);
 extern void dist_arc_power_coefs(double cx1, double cy1, double dcx,
   double dcy, const Edge *e, double *b, double *c);
+/** @brief Number of edges a search keeps to read exactly after ranking them
+ * by #dist_rest_bounds; an edge beyond it is read exactly at once */
+#define DIST_REST_NCAND 32
+
+extern bool dist_rest_bounds(double cx, double cy, double r1, double r2,
+  const Edge *e, double *lo, double *hi);
 extern double dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e);
 extern double dist_segm_arc_mindist(double cx1, double cy1, double cx2, double cy2,
