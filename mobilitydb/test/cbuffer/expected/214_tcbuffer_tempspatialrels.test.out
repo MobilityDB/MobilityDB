@@ -65,21 +65,21 @@ SELECT tContains(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0
 (1 row)
 
 SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
-                                             tcontains                                              
-----------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:00:00 2001 PST], (f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5))', tcbuffer '[Cbuffer(Point(8 0),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-03]');
-                                                              tcontains                                                               
---------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 21:00:00 2001 PST], (t@Mon Jan 01 21:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+                                             tcontains                                              
+----------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 21:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tContains(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
                                                                               tcontains                                                                               
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 12:00:00 2001 PST], (t@Tue Jan 02 12:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, t@Tue Jan 02 12:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tCovers(geometry 'Polygon((-5 -5,-5 5,5 5,5 -5,-5 -5),(-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
@@ -95,15 +95,15 @@ SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0
 (1 row)
 
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
-                                             tcontains                                              
-----------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:00:00 2001 PST], (f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tContains(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer 'Cbuffer(Point(4.5 0),0.5)@2001-01-01');
            tcontains            
 --------------------------------
- f@Mon Jan 01 00:00:00 2001 PST
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
@@ -113,9 +113,9 @@ SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5
 (1 row)
 
 SELECT tContains(geometry 'MultiSurface(CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0)))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
-                                             tcontains                                              
-----------------------------------------------------------------------------------------------------
- {[t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 03:00:00 2001 PST], (f@Tue Jan 02 03:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 /* Errors */

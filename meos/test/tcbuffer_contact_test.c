@@ -33,17 +33,22 @@
  * the closed form
  *
  * @details A disc of centre c and radius r against a polygon with straight
- * edges, D the distance of c to the boundary: the polygon contains the disc
- * where c lies inside and D > r, covers it where c lies inside and D >= r, and
- * the disc touches the polygon where c lies outside and D = r, all decided
+ * edges, D the distance of c to the boundary: the polygon covers the disc
+ * where c lies inside and D >= r, contains it as OGC defines it where it
+ * covers it and r > 0, or where c lies inside and D > r for r = 0, and the
+ * disc touches the polygon where c lies outside and D = r, all decided
  * exactly on the doubles. Every input below is a dyadic rational, so each
  * expected answer follows by hand:
  * - a disc tangent to the square from outside touches it, and one stopping
  *   2^-40 short of it or crossing it by 2^-40 does not, however small the
  *   gap or the overlap;
- * - a disc tangent to the square from inside is covered and not contained;
+ * - a disc tangent to the square from inside is contained and covered, its
+ *   open interior lying inside the square;
  * - a disc clear inside by 2^-40 is contained and covered, and one out of
- *   it by 2^-40 is neither.
+ *   it by 2^-40 is neither;
+ * - a disc of radius 0 on a side is covered and not contained;
+ * - a disc tangent from inside to a static disc is contained and covered,
+ *   as #cbuffer_contains answers for the two discs at rest.
  *
  * To compile and run:
  * @code
@@ -108,13 +113,25 @@ main(void)
 
   /* Tangent from inside, at y = 300 with radius 300 */
   relate(500.0, 300.0, 300.0, &c, &v, &t);
-  assert(! c && v && ! t);
+  assert(c && v && ! t);
   /* Clear inside by 2^-40 */
   relate(500.0, 300.0, 300.0 - 0x1p-40, &c, &v, &t);
   assert(c && v && ! t);
   /* Out of the square by 2^-40 */
   relate(500.0, 300.0, 300.0 + 0x1p-40, &c, &v, &t);
   assert(! c && ! v && ! t);
+  /* Radius 0 on the side y = 0: covered, not contained */
+  relate(500.0, 0.0, 0.0, &c, &v, &t);
+  assert(! c && v);
+
+  /* Disc (2 0) of radius 3 in the static disc (0 0) of radius 5, tangent
+   * from inside at (5 0) */
+  Cbuffer *outer = cbuffer_in("Cbuffer(Point(0 0),5)");
+  Temporal *inner = tcbuffer_in("Cbuffer(Point(2 0),3)@2001-01-01");
+  assert(outer != NULL && inner != NULL);
+  assert(at_instant(tcontains_cbuffer_tcbuffer(outer, inner)));
+  assert(at_instant(tcovers_cbuffer_tcbuffer(outer, inner)));
+  free(outer); free(inner);
 
   printf("tcbuffer_contact_test: every contact answered as its closed form\n");
   meos_finalize();
