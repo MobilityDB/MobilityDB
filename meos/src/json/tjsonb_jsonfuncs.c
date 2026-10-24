@@ -567,7 +567,7 @@ tjsonb_array_length(const Temporal *temp)
  * @param[in] astext True when the output is a temporal text, otherwise is a
  * jsonb
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjson_object_field(), #Tjson_object_field_opr()
+ * @csqlfn #Tjson_object_field()
  */
 Temporal *
 tjson_object_field_common(const Temporal *temp, const text *key, bool astext,
@@ -597,8 +597,7 @@ tjson_object_field_common(const Temporal *temp, const text *key, bool astext,
  * @param[in] astext True when the output is a temporal text, otherwise is a
  * temporal jsonb
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_object_field(), #Tjsonb_object_field_text(),
- *   #Tjsonb_object_field_opr(), #Tjsonb_object_field_text_opr()
+ * @csqlfn #Tjsonb_object_field(), #Tjsonb_object_field_text()
  */
 Temporal *
 tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext,
@@ -753,8 +752,7 @@ tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle)
  * @param[in] idx Index
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_array_element(), #Tjsonb_array_element_text(),
- *   #Tjsonb_array_element_opr(), #Tjsonb_array_element_text_opr()
+ * @csqlfn #Tjsonb_array_element(), #Tjsonb_array_element_text()
  */
 Temporal *
 tjsonb_array_element_common(const Temporal *temp, int idx, bool astext,
@@ -1638,8 +1636,7 @@ tjson_extract_path(const Temporal *temp, text **path_elems, int path_len,
  * @param[in] path_len Number of elements in the input array
  * @param[in] astext True when the output is a temporal text
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_extract_path(), #Tjsonb_extract_path_text(),
- *   #Tjsonb_extract_path_opr(), #Tjsonb_extract_path_text_opr()
+ * @csqlfn #Tjsonb_extract_path(), #Tjsonb_extract_path_text()
  */
 Temporal *
 tjsonb_extract_path_common(const Temporal *temp, text **path_elems,

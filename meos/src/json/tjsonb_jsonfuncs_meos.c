@@ -52,7 +52,7 @@
  * @param[in] temp Temporal JSON value
  * @param[in] key Key
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjson_object_field(), #Tjson_object_field_opr()
+ * @csqlfn #Tjson_object_field()
  */
 Temporal *
 tjson_object_field(const Temporal *temp, const text *key,
@@ -70,7 +70,7 @@ tjson_object_field(const Temporal *temp, const text *key,
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_object_field(), #Tjsonb_object_field_opr()
+ * @csqlfn #Tjsonb_object_field()
  */
 Temporal *
 tjsonb_object_field(const Temporal *temp, const text *key,
@@ -88,7 +88,7 @@ tjsonb_object_field(const Temporal *temp, const text *key,
  * @param[in] temp Temporal JSONB value
  * @param[in] key Key
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_object_field_text(), #Tjsonb_object_field_text_opr()
+ * @csqlfn #Tjsonb_object_field_text()
  */
 Temporal *
 tjsonb_object_field_text(const Temporal *temp, const text *key,
@@ -107,7 +107,7 @@ tjsonb_object_field_text(const Temporal *temp, const text *key,
  * @param[in] temp Temporal JSONB value
  * @param[in] idx Index
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_array_element(), #Tjsonb_array_element_opr()
+ * @csqlfn #Tjsonb_array_element()
  */
 Temporal *
 tjsonb_array_element(const Temporal *temp, int idx,
@@ -125,7 +125,7 @@ tjsonb_array_element(const Temporal *temp, int idx,
  * @param[in] temp Temporal JSONB value
  * @param[in] idx Index
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_array_element_text(), #Tjsonb_array_element_text_opr()
+ * @csqlfn #Tjsonb_array_element_text()
  */
 Temporal *
 tjsonb_array_element_text(const Temporal *temp, int idx,
@@ -145,7 +145,7 @@ tjsonb_array_element_text(const Temporal *temp, int idx,
  * @param[in] path_elems Keys
  * @param[in] path_len Number of elements in the input array
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_extract_path(), #Tjsonb_extract_path_opr()
+ * @csqlfn #Tjsonb_extract_path()
  */
 Temporal *
 tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
@@ -167,7 +167,7 @@ tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
  * @param[in] path_elems Keys
  * @param[in] path_len Number of elements in the input array
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Tjsonb_extract_path_text(), #Tjsonb_extract_path_text_opr()
+ * @csqlfn #Tjsonb_extract_path_text()
  */
 Temporal *
 tjsonb_extract_path_text(const Temporal *temp, text **path_elems,
