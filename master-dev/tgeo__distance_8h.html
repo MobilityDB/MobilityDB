@@ -76,6 +76,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -113,6 +114,12 @@ Data Structures</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A pair drawn from two arrays of spatial temporal values, with the distance between the boxes of its values.  <a href="structTspatialarrPair.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:aa027917cdf70d47f448fca27872227bc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_aa027917cdf70d47f448fca27872227bc.html#aa027917cdf70d47f448fca27872227bc">DIST_REST_NCAND</a>&#160;&#160;&#160;32</td></tr>
+<tr class="memdesc:aa027917cdf70d47f448fca27872227bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of edges a search keeps to read exactly after ranking them by <a class="el" href="tgeo__distance_8h_a17aeafa6ab177fecf1e3f22d9d471d61.html#a17aeafa6ab177fecf1e3f22d9d471d61" title="Bound in doubles what dist_segm_edge_mindist answers for a centre at rest against a straight edge,...">dist_rest_bounds</a>; an edge beyond it is read exactly at once.  <a href="tgeo__distance_8h_aa027917cdf70d47f448fca27872227bc.html#aa027917cdf70d47f448fca27872227bc">More...</a><br /></td></tr>
+<tr class="separator:aa027917cdf70d47f448fca27872227bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:ac8a5f971320be0e18de53b61d31d9f98"><td class="memItemLeft" align="right" valign="top">typedef bool(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_ac8a5f971320be0e18de53b61d31d9f98.html#ac8a5f971320be0e18de53b61d31d9f98">mergewalk_func</a>) (const <a class="el" href="structTSequence.html">TSequence</a> *seq1, int k1, const <a class="el" href="structTSequence.html">TSequence</a> *seq2, int k2, TimestampTz lower, TimestampTz upper, void *state)</td></tr>
@@ -142,6 +149,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ad77c174005c65ff0e543c31118dc966e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_ad77c174005c65ff0e543c31118dc966e.html#ad77c174005c65ff0e543c31118dc966e">dist_geom_point_inside</a> (double x, double y, const <a class="el" href="structDistGeom.html">DistGeom</a> *g)</td></tr>
 <tr class="memdesc:ad77c174005c65ff0e543c31118dc966e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ray-casting interior test.  <a href="tgeo__distance_8h_ad77c174005c65ff0e543c31118dc966e.html#ad77c174005c65ff0e543c31118dc966e">More...</a><br /></td></tr>
 <tr class="separator:ad77c174005c65ff0e543c31118dc966e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17aeafa6ab177fecf1e3f22d9d471d61"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_a17aeafa6ab177fecf1e3f22d9d471d61.html#a17aeafa6ab177fecf1e3f22d9d471d61">dist_rest_bounds</a> (double cx, double cy, double r1, double r2, const <a class="el" href="structEdge.html">Edge</a> *e, double *lo, double *hi)</td></tr>
+<tr class="memdesc:a17aeafa6ab177fecf1e3f22d9d471d61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bound in doubles what <a class="el" href="meos_2src_2geo_2tgeo__distance_8c_a7c90ef11c3e54dff9a2d92f8cb218573.html#a7c90ef11c3e54dff9a2d92f8cb218573" title="Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the centre moves from (cx1,...">dist_segm_edge_mindist</a> answers for a centre at rest against a straight edge, so that a search ranks the edges without the exact distance of each.  <a href="tgeo__distance_8h_a17aeafa6ab177fecf1e3f22d9d471d61.html#a17aeafa6ab177fecf1e3f22d9d471d61">More...</a><br /></td></tr>
+<tr class="separator:a17aeafa6ab177fecf1e3f22d9d471d61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af618dd374490defc14ea5b4cad7eae2a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tgeo__distance_8h_af618dd374490defc14ea5b4cad7eae2a.html#af618dd374490defc14ea5b4cad7eae2a">dist_segm_arc_mindist</a> (double cx1, double cy1, double cx2, double cy2, double r1, double r2, const <a class="el" href="structEdge.html">Edge</a> *e)</td></tr>
 <tr class="memdesc:af618dd374490defc14ea5b4cad7eae2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the minimum distance between a moving disc and a circular-arc edge.  <a href="tgeo__distance_8h_af618dd374490defc14ea5b4cad7eae2a.html#af618dd374490defc14ea5b4cad7eae2a">More...</a><br /></td></tr>
 <tr class="separator:af618dd374490defc14ea5b4cad7eae2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
