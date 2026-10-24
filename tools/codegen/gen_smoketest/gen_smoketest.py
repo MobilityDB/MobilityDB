@@ -1420,9 +1420,11 @@ TNPOINT_CONFIG = dict(
         "tnpoint_from_mfjson":  {0: "tnpoint_mfjson1"},
         "npointset_make":               {0: "npointarr1", 1: "2"},
     },
-    # A Set * that must be a tstzset (the default is an npointset).
+    # A Set * that must be a tstzset (the default is an npointset), and the
+    # route identifiers the *_rid_* operators read as a bigintset.
     name_arg_map={
         r"tstzset": {"Set *": "tstzset1"},
+        r"_rid_.*bigintset": {"Set *": "bigintset1"},
     },
     # route_geom(rid) returns a borrowed pointer into the MEOS ways cache,
     # NOT a fresh allocation — freeing it corrupts the cache (use-after-free
@@ -1450,6 +1452,8 @@ TNPOINT_CONFIG = dict(
   Npoint *npoint_out_param = NULL;
   Nsegment *nsegment1 = nsegment_in("NSegment(1, 0.0, 1.0)");
   Set *npointset1 = npointset_in("{\\"NPoint(1, 0.5)\\"}");
+  /* The routes of npoint1 and of a second route, for the route operators. */
+  Set *bigintset1 = bigintset_in("{1, 2}");
   STBox *stbox1 = stbox_in("STBOX X((0, 0), (10, 10))");
   Datum npoint1_datum = (Datum) npoint1;
   size_t size_out = 0;
@@ -1509,6 +1513,7 @@ TNPOINT_CONFIG = dict(
   free(stbox_ways1);
   free(tstzset1);
   free(npointset1);
+  free(bigintset1);
   free(nsegment1);
   free(npoint1);
   free(npoint2);

@@ -349,6 +349,31 @@ extern int ever_ne_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 extern Temporal *teq_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 extern Temporal *tne_tnpoint_npoint(const Temporal *temp, const Npoint *np);
 
+/*****************************************************************************
+ * Route functions
+ *****************************************************************************/
+
+extern bool contained_rid_bigint_tnpoint(int64 rid, const Temporal *temp);
+extern bool contained_rid_bigintset_tnpoint(const Set *s, const Temporal *temp);
+extern bool contained_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp);
+extern bool contained_rid_tnpoint_bigintset(const Temporal *temp, const Set *s);
+extern bool contained_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool contains_rid_bigintset_tnpoint(const Set *s, const Temporal *temp);
+extern bool contains_rid_tnpoint_bigint(const Temporal *temp, int64 rid);
+extern bool contains_rid_tnpoint_bigintset(const Temporal *temp, const Set *s);
+extern bool contains_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern bool contains_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool overlaps_rid_bigintset_tnpoint(const Set *s, const Temporal *temp);
+extern bool overlaps_rid_tnpoint_bigintset(const Temporal *temp, const Set *s);
+extern bool overlaps_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+extern bool same_rid_bigint_tnpoint(int64 rid, const Temporal *temp);
+extern bool same_rid_bigintset_tnpoint(const Set *s, const Temporal *temp);
+extern bool same_rid_npoint_tnpoint(const Npoint *np, const Temporal *temp);
+extern bool same_rid_tnpoint_bigint(const Temporal *temp, int64 rid);
+extern bool same_rid_tnpoint_bigintset(const Temporal *temp, const Set *s);
+extern bool same_rid_tnpoint_npoint(const Temporal *temp, const Npoint *np);
+extern bool same_rid_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2);
+
 /*****************************************************************************/
 
 #endif

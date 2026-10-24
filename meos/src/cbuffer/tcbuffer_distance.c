@@ -1534,17 +1534,64 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
   stbox_set(true, false, false, 0, cx - reach, cx + reach, cy - reach,
     cy + reach, 0, 0, NULL, &query);
   int nc = rtree_search_intl(g->rtree, INDEX_OVERLAPS, &query, dist_pip_results);
+  /* The straight edges are ranked by the bounds of #dist_rest_bounds: the
+   * minimum lies between the least lower and the least upper bound, and every
+   * caller compares it with the contact band alone, so where those bounds keep
+   * both ends of the band outside, any value between them decides as the exact
+   * minimum does. Only otherwise is the exact distance read, of the edges whose
+   * lower bound reaches below the least upper bound, among which the minimum
+   * lies. An edge beyond the room kept for them is read exactly at once */
+  int cand[DIST_REST_NCAND];
+  double candlo[DIST_REST_NCAND];
+  int ncand = 0;
+  double lobest = DBL_MAX, hibest = DBL_MAX;
   for (int j = 0; j < nc; j++)
   {
-    const Edge *ed =
-      &g->segs[INDEX_RESULT_ID_N(dist_pip_results, j)];
+    int id = INDEX_RESULT_ID_N(dist_pip_results, j);
+    const Edge *ed = &g->segs[id];
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cx, cy,
         cx, cy) > reach2)
       continue;
+    double lo, hi;
+    if (! (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) &&
+        dist_rest_bounds(cx, cy, r, r, ed, &lo, &hi))
+    {
+      if (lo > hibest || lo >= best)
+        continue;
+      if (ncand < DIST_REST_NCAND)
+      {
+        cand[ncand] = id;
+        candlo[ncand++] = lo;
+        lobest = fmin(lobest, lo);
+        hibest = fmin(hibest, hi);
+        continue;
+      }
+    }
     double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
       dist_segm_arc_mindist(cx, cy, cx, cy, r, r, ed) :
       dist_segm_edge_mindist(cx, cy, cx, cy, r, r, ed);
     if (m < best) best = m;
+  }
+  if (ncand > 0)
+  {
+    /* The bounds of the least straight edge, against the least exact one */
+    double lo = fmin(lobest, best), hi = fmin(hibest, best);
+    bool decided = (lo > TCBUFFER_TOUCH_EPS) ||
+      (hi < - TCBUFFER_TOUCH_EPS) ||
+      (lo > - TCBUFFER_TOUCH_EPS && hi < TCBUFFER_TOUCH_EPS);
+    if (decided)
+      best = hi;
+    else
+    {
+      for (int i = 0; i < ncand; i++)
+      {
+        if (candlo[i] > hibest || candlo[i] >= best)
+          continue;
+        double m = dist_segm_edge_mindist(cx, cy, cx, cy, r, r,
+          &g->segs[cand[i]]);
+        if (m < best) best = m;
+      }
+    }
   }
   return best;
 }
