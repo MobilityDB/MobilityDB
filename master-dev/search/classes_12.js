@@ -42,5 +42,8 @@ var searchData=
   ['struct_5fmeosprojsrscache_39',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
   ['struct_5fprojsrscacheitem_40',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
   ['struct_5fwayscache_41',['struct_WaysCache',['../structstruct__WaysCache.html',1,'']]],
-  ['struct_5fwayscacheentry_42',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]]
+  ['struct_5fwayscacheentry_42',['struct_WaysCacheEntry',['../structstruct__WaysCacheEntry.html',1,'']]],
+  ['sweepdisc_43',['SweepDisc',['../structSweepDisc.html',1,'']]],
+  ['sweepend_44',['SweepEnd',['../structSweepEnd.html',1,'']]],
+  ['sweeppair_45',['SweepPair',['../structSweepPair.html',1,'']]]
 ];
