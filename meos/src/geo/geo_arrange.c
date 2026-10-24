@@ -1325,11 +1325,26 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
    * convex. Decided in intervals, and asked exactly otherwise. A segment
    * sharing an end with the arc has that end on the circle, and goes to the
    * exact meeting directly. A centred arc has no end on its circle */
-  bool shared = ! arc->centred &&
-    (arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
-     arr_same(s->x1, s->y1, arc->x2, arc->y2) ||
-     arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
-     arr_same(s->x2, s->y2, arc->x2, arc->y2));
+  bool s1 = ! arc->centred && (arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
+    arr_same(s->x1, s->y1, arc->x2, arc->y2));
+  bool s2 = ! arc->centred && (arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
+    arr_same(s->x2, s->y2, arc->x2, arc->y2));
+  bool shared = s1 || s2;
+  if (shared && s1 != s2)
+  {
+    /* The arc is the part of its circle on one side of the line of its
+     * chord, its ends on that line (#arr_arc_side). A segment sharing one
+     * end with it has that end on the line and every other point strictly
+     * on the side of its other end: where that end lies strictly on the
+     * other side, the segment meets the arc at the shared end alone, which
+     * both already end at, decided exactly. Offset segments leave the round
+     * joins of a buffer this way, along their tangents */
+    int want = arr_arc_side(a, j);
+    double qx = s1 ? s->x2 : s->x1, qy = s1 ? s->y2 : s->y1;
+    if (want != 0 && cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey,
+          arc->sx, arc->sy, qx, qy) == - want)
+      return ARR_ANSWERED;
+  }
   if (! shared)
   {
     Ival ax = ival_sub(ival(s->x1), a->ccx[j]);
@@ -2518,27 +2533,33 @@ arr_box_pairs(const double (*box)[4], uint32_t n, uint32_t *npairs)
     sw[i].id = i;
   }
   arr_sweep_sort(sw, n);
+  /* The boxes in the order of the sweep, which its inner loop reads one
+   * after the other */
+  double (*sb)[4] = palloc(sizeof(double[4]) * Max(n, 1u));
+  for (uint32_t k = 0; k < n; k++)
+    memcpy(sb[k], box[sw[k].id], sizeof(double[4]));
   uint32_t cap = Max(2 * n, 16u), count = 0;
   ArrPair *pairs = palloc(sizeof(ArrPair) * cap);
   for (uint32_t k = 0; k < n; k++)
   {
-    uint32_t i = sw[k].id;
+    const double *bi = sb[k];
     for (uint32_t l = k + 1; l < n; l++)
     {
-      uint32_t j = sw[l].id;
-      if (box[j][0] > box[i][1])
+      const double *bj = sb[l];
+      if (bj[0] > bi[1])
         break;
-      if (box[j][2] > box[i][3] || box[i][2] > box[j][3])
+      if (bj[2] > bi[3] || bi[2] > bj[3])
         continue;
       if (count == cap)
       {
         cap *= 2;
         pairs = repalloc(pairs, sizeof(ArrPair) * cap);
       }
-      pairs[count].i = i;
-      pairs[count++].j = j;
+      pairs[count].i = sw[k].id;
+      pairs[count++].j = sw[l].id;
     }
   }
+  pfree(sb);
   pfree(sw);
   *npairs = count;
   return pairs;
@@ -3033,6 +3054,44 @@ arr_centred_right_cmp(const Edge *p, const Edge *q)
   return polynomial_sign_exact(&sum, &term, 1);
 }
 
+/* Return the side of the centre C of the circle of an arc a height y lies
+ * on, sign(C.y - y), decided exactly: the centre given for a centred arc,
+ * the middle of the diameter for a half of a full circle, and for an arc of
+ * three points S, M, E the circumcentre C = S + U with
+ * U.y = (a.x |b|^2 - b.x |a|^2) / D, a = M - S, b = E - S,
+ * D = 2 (a.x b.y - a.y b.x), so that C.y - y = N / D with
+ * N = (S.y - y) D + a.x |b|^2 - b.x |a|^2, a polynomial in the differences
+ * of the input doubles (#polynomial_sign_exact, as #arc_same_circle reads
+ * them); 2 where three collinear points fix no circle */
+static int
+arr_arc_centre_y_side(const Edge *e, double y)
+{
+  if (e->centred)
+    return (e->cy > y) - (e->cy < y);
+  if (e->diameter)
+  {
+    const double t[3] = {e->sy, e->ey, -2.0 * y};
+    ExactSum sum;
+    exact_sum_set(&sum, t, 3);
+    PolyTerm term = {1.0, 1, {0}};
+    return polynomial_sign_exact(&sum, &term, 1);
+  }
+  const double t[5][2] = {{e->mx, - e->sx}, {e->my, - e->sy},
+    {e->ex, - e->sx}, {e->ey, - e->sy}, {e->sy, - y}};
+  ExactSum sums[5];
+  for (int k = 0; k < 5; k++)
+    exact_sum_set(&sums[k], t[k], 2);
+  /* ax 0, ay 1, bx 2, by 3, S.y - y 4 */
+  const PolyTerm dterms[2] = {{2.0, 2, {0, 3}}, {-2.0, 2, {1, 2}}};
+  const PolyTerm nterms[6] = {{2.0, 3, {4, 0, 3}}, {-2.0, 3, {4, 1, 2}},
+    {1.0, 3, {0, 2, 2}}, {1.0, 3, {0, 3, 3}}, {-1.0, 3, {2, 0, 0}},
+    {-1.0, 3, {2, 1, 1}}};
+  int sd = polynomial_sign_exact(sums, dterms, 2);
+  if (sd == 0)
+    return 2;
+  return polynomial_sign_exact(sums, nterms, 6) * sd;
+}
+
 /* Return 1 where the piece of an arc holds the point of its circle furthest
  * along x, 0 where it does not, 2 where the intervals cannot tell */
 static int
@@ -3071,6 +3130,12 @@ arr_node_side(const Arr *a, uint32_t v, double py)
   const ArrNode *nd = &a->nodes[v];
   if (nd->vertex)
     return (nd->y > py) - (nd->y < py);
+  /* Clear of the line by the intervals holding it: a crossing with an arc,
+   * whose height no polynomial below decides, as much as any other */
+  if (nd->by.lo > py)
+    return 1;
+  if (nd->by.hi < py)
+    return -1;
   if (nd->tower)
   {
     MeetPoint at = arr_meet_point(&nd->meet);
@@ -3486,6 +3551,32 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
        * the last place of that point, the order of the ends tells; only
        * among stretches, whose ends compete with the arcs, as a piece ending
        * at that point leaves it to the node there */
+      /* An arc ending at a vertex the point of its circle furthest along x,
+       * R, lies within the intervals of: an arc leaves its start A toward
+       * +x, and so passes R, exactly where A lies below the centre when it
+       * turns counterclockwise, above it when it turns clockwise, and
+       * reaches its end B from +x exactly where B lies above the centre
+       * counterclockwise, below it clockwise (#arr_arc_centre_y_side); at
+       * the height of the centre the vertex is R itself, which the vertex
+       * already stands for. As the round joins of a buffer start and end
+       * where straight sides tangent to them leave them */
+      if (holds == 2 && ! a->e[p->edge].centred)
+      {
+        const ArrNode *na = &a->nodes[p->from], *nb = &a->nodes[p->to];
+        bool neara = na->vertex && na->x >= x.lo && na->x <= x.hi;
+        bool nearb = nb->vertex && nb->x >= x.lo && nb->x <= x.hi;
+        if (neara != nearb)
+        {
+          int side = arr_arc_centre_y_side(&a->e[p->edge],
+            neara ? na->y : nb->y);
+          if (side != 2)
+          {
+            bool ccw = a->ccw[p->edge];
+            holds = (side == 0) ? 0 : (neara ?
+              (ccw ? side > 0 : side < 0) : (ccw ? side < 0 : side > 0));
+          }
+        }
+      }
       if (holds == 2 && a->sup && a->e[p->edge].centred)
       {
         int h = arr_piece_holds_right_exact(a, p);
@@ -5367,11 +5458,13 @@ arr_same_exact_ends(Arr *a)
 /*
  * The arrangement of the curves and the rings bounding the region they wind
  * around: as #arrange_wound_boundary answers them where @p owner is NULL,
- * as #arrange_wound_surfaces answers them otherwise
+ * as #arrange_wound_surfaces answers them otherwise, the segments running
+ * along each other read as the stretches they share where @p merge is true
+ * (#arr_merge_overlaps)
  */
 static ArrangeStatus
-arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
-  int32_t **owner)
+arr_arrange_merge(const MeosArray *edges, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner, bool merge)
 {
   assert(edges); assert(rings); assert(nrings);
   *rings = NULL;
@@ -5426,7 +5519,7 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
    * once with the rise of the winding number they give across it */
   MeosArray *merged = NULL;
   ArrMerge mg;
-  if (arr_merge_overlaps(edges, pairs, npairs, &merged, &a.w, &mg))
+  if (merge && arr_merge_overlaps(edges, pairs, npairs, &merged, &a.w, &mg))
   {
     pfree(a.box);
     a.box = NULL;
@@ -5540,6 +5633,25 @@ arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
     meos_array_destroy(merged);
     pfree(a.w);
   }
+  return st;
+}
+
+/*
+ * The arrangement of the curves (#arr_arrange_merge), the segments running
+ * along each other merged only where it is not answered without: most
+ * curves have no two such segments, which leaves them the scan of every
+ * pair of boxes the merge asks first, and a pair of them is met as
+ * #ARR_OVERLAP (#arr_meet_segments). Any question left unanswered is asked
+ * again of the merged curves, as where the arrangement stops at another
+ * question before it meets the pair
+ */
+static ArrangeStatus
+arr_arrange(const MeosArray *edges, MeosArray ***rings, uint32_t *nrings,
+  int32_t **owner)
+{
+  ArrangeStatus st = arr_arrange_merge(edges, rings, nrings, owner, false);
+  if (st != ARR_ANSWERED)
+    st = arr_arrange_merge(edges, rings, nrings, owner, true);
   return st;
 }
 
