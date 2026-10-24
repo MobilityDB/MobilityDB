@@ -306,12 +306,17 @@ Z does not filter by Z; MobilityDB #3150 (merged as `71e333da59`) fixes it befor
   "Out of the bindings' scope"; the 26 `_opr` wrappers the JSON tags name on master (MobilityDB
   #3153, `8655303ab6`) deviate from that ruling. The merged-lines gate keeps a merged line that
   a line of the same hunk extends.
-- **The containment of the JSON types.** DECIDED BY THE OWNER 2026-10-24: `contained_jsonb_tjsonb`,
-  `contained_tjsonb_jsonb` and `contained_tjsonb_tjsonb` become public MEOS functions, each
-  validating its arguments, and `Contained_jsonb_tjsonb`, `Contained_tjsonb_jsonb` and
-  `Contained_tjsonb_tjsonb` call them, as the 49 `Contained_*` wrappers of the other families
-  call a `contained_*` function of their own; on master the JSON ones call `contains_*` with the
-  operands swapped.
+- **The containment of the JSON types.** DECIDED BY THE OWNER 2026-10-24: `tjsonbContained(a, b)`
+  answers `tjsonbContains(b, a)`, its wrappers calling `contains_tjsonb_jsonb` and
+  `contains_tjsonb_tjsonb` with the operands swapped, so `Contained_jsonb_tjsonb`,
+  `Contained_tjsonb_jsonb` and `Contained_tjsonb_tjsonb` join the `@csqlfn` lists of those two
+  functions and MEOS gains no `contained_*` function, a commuted copy the no-redundant-signature
+  rule excludes. The catalog regenerated with those tags states the three signatures with the
+  argument order and the flag each wrapper passes (`tjsonbContained(jsonb, tjsonb)`:
+  `sqlArgParams [jb, temp]`, `invert = INVERT_NO`; `tjsonbContained(tjsonb, tjsonb)`:
+  `[temp2, temp1]`). The same day's decision to add three public `contained_*` functions is
+  withdrawn: it rested on the 49 `contained_*` functions of the other families, and the
+  measurement shows the JSON wrappers reach every binding through the tags alone.
 - **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
   `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
   operator per signature closes it, for the bindings that register operators.
@@ -347,8 +352,7 @@ come before its push.
 | `meos/span-box-distances-named` | `876983cfb9` | `spanDistance(span, spanset)` calls `distance_spanset_span`; `nearestApproachDistance(tbox, tnumber)` named in the tags of `nad_tint_tbox` and its siblings, which MEOS-API #201 lets the catalog state | receipts owed |
 | MEOS-API `fix/callee-skips-c-keywords` | `94303dd0c` | `_CALLEE` reads no C keyword as a call, so `_kernel_args` derives the order of a commuted wrapper past an `if` | merged as MEOS-API #201 (`849ff1d7e0`) |
 | `meos/json-opr-wrappers-untagged` | `eb7a7b86a0` (on `f5017dbabf`) | the 26 `@csqlfn` names of JSON `_opr` wrappers leave the tags, rewrites `8655303ab6` (DECIDED BY THE OWNER 2026-10-24); every operator the catalog states is unchanged and the `…Opr` names leave it; `check_csqlfn.py --targets` refuses an `…Opr` tag and an `…Opr` signature that is not its base call | strict-ci, Windows, cppcheck and valgrind receipts; pushing |
-| `meos/every-wrapper-named` | | every wrapper the North Star rule names, appended to its function's list: `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band` (the commit of `meos/raster-statistics-named`, `9dba13fb1b`), and the gaps the full census adds | after the resolver |
-| `meos/json-contained-public` | | the public `contained_jsonb_tjsonb`, `contained_tjsonb_jsonb`, `contained_tjsonb_tjsonb`, called by their `Contained_*` wrappers | after the tags |
+| `meos/every-wrapper-named` | | the wrappers a tagged function computes, appended to its `@csqlfn` list: `Quadbin_recv`, `S2cell_recv`, `Numeric_to_tbox`, `Raster_dump_values_band`, and the three `Contained_*` of the JSON types on `contains_tjsonb_jsonb` and `contains_tjsonb_tjsonb`; the census of signatures the catalog does not state measures it | receipts next |
 | `meos/npoint-public` | `ce04469321` | the 20 route operations public (functions to add) | receipts owed |
 | `meos/cbuffer-public` | `bbbed77632` (on `68c835ced7`) | `econtains_geo_tcbuffer`, `atouches_tcbuffer_tcbuffer` public; the 17 static-first relationships of a temporal circular buffer and the tcbuffer grid of the orthogonality gate | merged as MobilityDB #3141 (`7dd9debf0c`) |
 | `meos/json-public` | `42cdfdfda6` | `jsonbset_to_textset`, `textset_to_jsonbset` | receipts owed |
