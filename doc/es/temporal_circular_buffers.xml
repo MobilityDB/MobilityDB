@@ -1033,7 +1033,18 @@ traversedArea(tcbuffer,unary_union boolean=false) → geometry
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
 -- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', true));
+/* CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 0.5,3.5 1,3 1.5),(3 1.5,1 1.5),
+   CIRCULARSTRING(1 1.5,0.646446609406726 1.353553390593274,0.5 1),
+   CIRCULARSTRING(0.5 1,0.646446609406726 0.646446609406726,1 0.5),(1 0.5,3 0.5))) */
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
+  Cbuffer(Point(3 1), 0)@2001-01-02, Cbuffer(Point(4 1), 0.5)@2001-01-03]', true));
+/* GEOMETRYCOLLECTION(CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3.75 0.566987298107781,
+   4.5 1,3.75 1.433012701892219),(3.75 1.433012701892219,3 1,3.75 0.566987298107781))),
+   LINESTRING(1 1,3 1)) */
 </programlisting>
+				<para>El argumento es falso salvo que se indique, y la función responde entonces las piezas que barre el búfer, cada una un disco o la región que un disco barre entre dos instantes consecutivos, reunidas en una geometría. Con <varname>unary_union = true</varname> se disuelven en la región que cubren, calculada de forma exacta: cada encuentro de los círculos y de los segmentos que los unen se decide sobre las coordenadas de entrada, ningún arco se reemplaza por segmentos y solo se redondean los vértices del resultado, cada uno una vez. El resultado conserva sus arcos, como <varname>CURVEPOLYGON</varname> o <varname>MULTISURFACE</varname>. Donde el búfer mantiene un radio nulo, la línea o el punto que traza y que ningún disco cubre se devuelve junto a las superficies en una <varname>GEOMETRYCOLLECTION</varname>. Donde el cálculo no puede decidir un encuentro o un orden de los bordes, la función genera un error en lugar de responder una aproximación.</para>
 			</listitem>
 			<listitem xml:id="tcbuffer_centroid">
 				<indexterm significance="normal"><primary><varname>centroid</varname></primary></indexterm>

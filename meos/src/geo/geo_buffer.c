@@ -5123,10 +5123,13 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
     return NULL;
   const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
   bool *arc = palloc(sizeof(bool) * n);
+  /* An arc whose ends are one point is the whole circle through its middle,
+   * the circular string of a full turn */
   for (uint32_t i = 0; i < n; i++)
-    arc[i] = e[i].arc &&
+    arc[i] = e[i].arc && ((e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2) ?
+      (e[i].mx != e[i].x1 || e[i].my != e[i].y1) :
       cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
-        e[i].y1, e[i].mx, e[i].my) != 0;
+        e[i].y1, e[i].mx, e[i].my) != 0);
   /* The members, counted first: every arc is one, and every run of
    * segments between two arcs */
   uint32_t nmembers = 0;
@@ -7763,6 +7766,360 @@ buffer_union_segment_surfaces(const LWCOLLECTION *coll, int32_t srid)
   return result;
 }
 
+/* A disc of a sweep with its place in the sequence, ordered by its centre and
+ * radius and then by that place, which puts the first placement of each disc
+ * first among its repeats */
+typedef struct
+{
+  double x, y, r;
+  int idx;
+} SweepDisc;
+
+static int
+sweep_disc_cmp(const void *p, const void *q)
+{
+  const SweepDisc *a = p, *b = q;
+  if (a->x != b->x)
+    return (a->x < b->x) ? -1 : 1;
+  if (a->y != b->y)
+    return (a->y < b->y) ? -1 : 1;
+  if (a->r != b->r)
+    return (a->r < b->r) ? -1 : 1;
+  return (a->idx < b->idx) ? -1 : (a->idx > b->idx);
+}
+
+/* A pair of distinct discs, by their first placements, the smaller first */
+typedef struct
+{
+  int a, b;
+  int idx;
+} SweepPair;
+
+static int
+sweep_pair_cmp(const void *p, const void *q)
+{
+  const SweepPair *s = p, *t = q;
+  if (s->a != t->a)
+    return (s->a < t->a) ? -1 : 1;
+  if (s->b != t->b)
+    return (s->b < t->b) ? -1 : 1;
+  return (s->idx < t->idx) ? -1 : (s->idx > t->idx);
+}
+
+/* The start of a piece of linework, ordered by its coordinates as
+ * #sweep_pair_cmp orders the pairs */
+typedef struct
+{
+  double x, y;
+  uint32_t idx;
+} SweepEnd;
+
+static int
+sweep_end_cmp(const void *p, const void *q)
+{
+  const SweepEnd *s = p, *t = q;
+  if (s->x != t->x)
+    return (s->x < t->x) ? -1 : 1;
+  if (s->y != t->y)
+    return (s->y < t->y) ? -1 : 1;
+  return (s->idx < t->idx) ? -1 : (s->idx > t->idx);
+}
+
+/**
+ * @brief Return the lines the pieces of linework draw, as #buffer_ring_write
+ * writes the pieces of a ring: each chain of pieces, one starting where
+ * another ends, one line, as a line or a multiline; @p NULL where there is
+ * none
+ * @details Any such chaining covers the same points, so a piece is chained
+ * on to the first unused piece starting where it ends
+ */
+static LWGEOM *
+buffer_sweep_lines(const MeosArray *lout, int32_t srid)
+{
+  uint32_t n = lout ? lout->count : 0;
+  if (n == 0)
+    return NULL;
+  const ArrangePiece *e = (const ArrangePiece *) lout->elems;
+  SweepEnd *starts = palloc(sizeof(SweepEnd) * n);
+  for (uint32_t i = 0; i < n; i++)
+    starts[i] = (SweepEnd) {e[i].x1, e[i].y1, i};
+  qsort(starts, n, sizeof(SweepEnd), sweep_end_cmp);
+  bool *used = palloc0(sizeof(bool) * n);
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * n);
+  POINT4D *chain = palloc(sizeof(POINT4D) * (n + 1));
+  uint32_t ngeoms = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    if (used[i])
+      continue;
+    uint32_t np = 0;
+    chain[np++] = (POINT4D) {e[i].x1, e[i].y1, 0.0, 0.0};
+    chain[np++] = (POINT4D) {e[i].x2, e[i].y2, 0.0, 0.0};
+    used[i] = true;
+    for (;;)
+    {
+      /* The first unused piece starting where the chain ends */
+      SweepEnd key = {chain[np - 1].x, chain[np - 1].y, 0};
+      uint32_t lo = 0, hi = n;
+      while (lo < hi)
+      {
+        uint32_t mid = (lo + hi) / 2;
+        if (sweep_end_cmp(&starts[mid], &key) < 0)
+          lo = mid + 1;
+        else
+          hi = mid;
+      }
+      uint32_t j = UINT32_MAX;
+      for (uint32_t k = lo; k < n && starts[k].x == key.x &&
+          starts[k].y == key.y && j == UINT32_MAX; k++)
+        if (! used[starts[k].idx])
+          j = starts[k].idx;
+      if (j == UINT32_MAX)
+        break;
+      used[j] = true;
+      chain[np++] = (POINT4D) {e[j].x2, e[j].y2, 0.0, 0.0};
+    }
+    POINTARRAY *pa = ptarray_construct_empty(LW_FALSE, LW_FALSE, np);
+    for (uint32_t k = 0; k < np; k++)
+      ptarray_append_point(pa, &chain[k], LW_TRUE);
+    geoms[ngeoms++] = lwline_as_lwgeom(lwline_construct(srid, NULL, pa));
+  }
+  pfree(starts); pfree(used); pfree(chain);
+  if (ngeoms == 1)
+  {
+    LWGEOM *line = geoms[0];
+    pfree(geoms);
+    return line;
+  }
+  return lwcollection_as_lwgeom(lwcollection_construct(MULTILINETYPE, srid,
+    NULL, ngeoms, geoms));
+}
+
+/**
+ * @brief Return the set of points a sweep covers from its surfaces, as
+ * #buffer_surfaces_from_rings answers them, its linework and its points: the
+ * one kind there is, else the collection of them; @p NULL where there is
+ * nothing
+ * @param[in] region The surfaces, owned by the answer, or @p NULL
+ * @param[in] lout The pieces of linework no surface covers, or @p NULL
+ * @param[in] pts,pkeep,npts The points, and whether each is kept
+ * @param[in] srid Spatial reference identifier
+ */
+static LWGEOM *
+buffer_sweep_assemble(LWGEOM *region, const MeosArray *lout,
+  const POINT2D *pts, const bool *pkeep, uint32_t npts, int32_t srid)
+{
+  LWGEOM *parts[3];
+  uint32_t nparts = 0;
+  if (region)
+    parts[nparts++] = region;
+  LWGEOM *lines = buffer_sweep_lines(lout, srid);
+  if (lines)
+    parts[nparts++] = lines;
+  uint32_t nkept = 0;
+  for (uint32_t k = 0; k < npts; k++)
+    nkept += pkeep[k];
+  if (nkept > 0)
+  {
+    LWGEOM **pg = palloc(sizeof(LWGEOM *) * nkept);
+    uint32_t m = 0;
+    for (uint32_t k = 0; k < npts; k++)
+      if (pkeep[k])
+        pg[m++] = lwpoint_as_lwgeom(lwpoint_make2d(srid, pts[k].x,
+          pts[k].y));
+    if (nkept == 1)
+    {
+      parts[nparts++] = pg[0];
+      pfree(pg);
+    }
+    else
+      parts[nparts++] = lwcollection_as_lwgeom(lwcollection_construct(
+        MULTIPOINTTYPE, srid, NULL, nkept, pg));
+  }
+  if (nparts == 0)
+    return NULL;
+  if (nparts == 1)
+    return parts[0];
+  LWGEOM **geoms = palloc(sizeof(LWGEOM *) * nparts);
+  memcpy(geoms, parts, sizeof(LWGEOM *) * nparts);
+  return lwcollection_as_lwgeom(lwcollection_construct(COLLECTIONTYPE, srid,
+    NULL, nparts, geoms));
+}
+
+/**
+ * @brief Return the region a sequence of discs sweeps, as the union of the
+ * discs and of the convex hull of each linked pair, merged pairwise in exact
+ * arrangements of their boundaries
+ * @details The hull of two discs is both discs and the quadrilateral of the
+ * points where their common outer tangents touch them, which exists where
+ * neither disc lies within the other, |C2 - C1|^2 > (r1 - r2)^2, decided
+ * exactly; otherwise it is the larger disc. Each disc is a whole circle given
+ * by its centre and radius (#edges_add_circle) and each quadrilateral four
+ * segments between tangent points (#edges_add_tangent_segment), so every
+ * crossing, order and touching is decided in the towers of square roots
+ * their points lie in, and only the vertices written are rounded, each once.
+ * A disc placed again, and the hull of a pair met again in either order, as
+ * where a sweep retraces its path, is read once. The union is merged as
+ * #buffer_union_segment_surfaces merges surfaces bounded by segments
+ * (#arrange_union_surfaces), the surfaces in the order of the sequence
+ * @param[in] centres,radii The discs, in the order of the sequence
+ * @param[in] link For every disc but the last, whether the sweep moves from
+ * it to the next, or NULL where it never does
+ * @param[in] count Number of discs
+ * @param[in] srid Spatial reference identifier
+ * @return The set of points swept: the surfaces, the linework of the moves
+ * between two centres and the centres placed alone that no surface covers,
+ * the one kind there is or the collection of them (#buffer_sweep_assemble);
+ * @p NULL where a radius is negative or not finite, or where the
+ * arrangement leaves the region unanswered -- a caller that has another way
+ * to answer may take it
+ */
+LWGEOM *
+meos_disc_sweep_union(const POINT2D *centres, const double *radii,
+  const bool *link, int count, int32_t srid)
+{
+  assert(centres); assert(radii); assert(count > 0);
+  for (int i = 0; i < count; i++)
+    if (! (radii[i] >= 0.0) || ! isfinite(radii[i]) ||
+        ! isfinite(centres[i].x) || ! isfinite(centres[i].y))
+      return NULL;
+  /* The first placement of every disc */
+  SweepDisc *sd = palloc(sizeof(SweepDisc) * count);
+  for (int i = 0; i < count; i++)
+    sd[i] = (SweepDisc) {centres[i].x, centres[i].y, radii[i], i};
+  qsort(sd, count, sizeof(SweepDisc), sweep_disc_cmp);
+  int *first = palloc(sizeof(int) * count);
+  for (int k = 0; k < count; k++)
+    first[sd[k].idx] = (k > 0 && sd[k].x == sd[k - 1].x &&
+      sd[k].y == sd[k - 1].y && sd[k].r == sd[k - 1].r) ?
+      first[sd[k - 1].idx] : sd[k].idx;
+  pfree(sd);
+  /* The first link of every pair of distinct discs, in either order */
+  SweepPair *sp = palloc(sizeof(SweepPair) * count);
+  int npairs = 0;
+  for (int i = 0; link && i + 1 < count; i++)
+  {
+    int a = first[i], b = first[i + 1];
+    if (link[i] && a != b)
+      sp[npairs++] = (SweepPair) {Min(a, b), Max(a, b), i};
+  }
+  qsort(sp, npairs, sizeof(SweepPair), sweep_pair_cmp);
+  bool *hull = palloc0(sizeof(bool) * count);
+  for (int k = 0; k < npairs; k++)
+    if (k == 0 || sp[k].a != sp[k - 1].a || sp[k].b != sp[k - 1].b)
+      hull[sp[k].idx] = true;
+  pfree(sp);
+
+  /* The surfaces, in the order of the sequence: a disc at its first
+   * placement, then the hull of the move from it */
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 4 * Max(count, 1));
+  uint32_t *soff = palloc(sizeof(uint32_t) * (2 * count + 1));
+  uint32_t nsurf = 0;
+  int ntp = 0;
+  soff[0] = 0;
+  /* A disc of radius zero is its centre: it bounds no surface, and is
+   * covered where the hull of a move from or to it holds it, or the segment
+   * a move between two centres sweeps */
+  bool *covered = palloc0(sizeof(bool) * count);
+  MeosArray *lines = meos_array_create(sizeof(Edge));
+  for (int i = 0; i < count; i++)
+  {
+    if (first[i] == i && radii[i] > 0.0)
+    {
+      edges_add_circle(edges, centres[i].x, centres[i].y, radii[i], true);
+      soff[++nsurf] = edges->count;
+    }
+    if (i + 1 == count || ! hull[i])
+      continue;
+    const POINT2D *c1 = &centres[i], *c2 = &centres[i + 1];
+    double r1 = radii[i], r2 = radii[i + 1];
+    /* A move between two centres sweeps the segment joining them */
+    if (r1 == 0.0 && r2 == 0.0)
+    {
+      edges_add_segment(lines, c1, c2);
+      covered[first[i]] = covered[first[i + 1]] = true;
+      continue;
+    }
+    /* |C2 - C1|^2 - (r1 - r2)^2, exactly: no quadrilateral where it is not
+     * positive, the hull the larger disc */
+    double t[3][2] = {{c2->x, -c1->x}, {c2->y, -c1->y}, {r1, -r2}};
+    ExactSum sums[3];
+    for (int k = 0; k < 3; k++)
+      exact_sum_set(&sums[k], t[k], 2);
+    PolyTerm terms[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}},
+      {-1.0, 2, {2, 2}}};
+    covered[first[i]] = covered[first[i]] || r1 == 0.0;
+    covered[first[i + 1]] = covered[first[i + 1]] || r2 == 0.0;
+    if (polynomial_sign_exact(sums, terms, 3) <= 0)
+      continue;
+    TangentPoint base = {c1->x, c1->y, r1, c2->x, c2->y, r2, 1, 0};
+    TangentPoint *t1a = &tps[ntp++], *t2a = &tps[ntp++],
+      *t2b = &tps[ntp++], *t1b = &tps[ntp++];
+    *t1a = base; t1a->side = 1; t1a->k = 0;
+    *t2a = base; t2a->side = 1; t2a->k = 1;
+    *t2b = base; t2b->side = -1; t2b->k = 1;
+    *t1b = base; t1b->side = -1; t1b->k = 0;
+    /* Counterclockwise: along the right tangent, across the second circle,
+     * back along the left tangent, across the first; where a radius is
+     * zero both tangents touch its circle at its centre, the hull is the
+     * triangle of that point and the other circle's tangent points, and the
+     * chord across it is no segment */
+    edges_add_tangent_segment(edges, t1b, t2b);
+    if (r2 > 0.0)
+      edges_add_tangent_segment(edges, t2b, t2a);
+    edges_add_tangent_segment(edges, t2a, t1a);
+    if (r1 > 0.0)
+      edges_add_tangent_segment(edges, t1a, t1b);
+    soff[++nsurf] = edges->count;
+  }
+  /* A centre no move sweeps along is a point */
+  POINT2D *pts = palloc(sizeof(POINT2D) * count);
+  uint32_t npts = 0;
+  for (int i = 0; i < count; i++)
+    if (first[i] == i && radii[i] == 0.0 && ! covered[i])
+      pts[npts++] = centres[i];
+  pfree(first); pfree(hull); pfree(covered);
+  bool *pkeep = palloc(sizeof(bool) * Max(npts, 1u));
+  for (uint32_t k = 0; k < npts; k++)
+    pkeep[k] = true;
+  /* The surfaces, the pieces of the linework no surface covers, and the
+   * points off both, the region a sweep covers as a set of points */
+  LWGEOM *region = NULL;
+  MeosArray *lout = NULL;
+  bool ok = true;
+  if (nsurf > 0 || lines->count > 0)
+  {
+    MeosArray **rings;
+    uint32_t nrings;
+    int32_t *owner;
+    ok = arrange_union_surfaces_lines(edges, soff, nsurf,
+      (const Edge *) lines->elems, lines->count, pts, npts, &rings, &nrings,
+      &owner, lines->count ? &lout : NULL, pkeep) == ARR_ANSWERED;
+    if (ok && nrings > 0)
+    {
+      region = buffer_surfaces_from_rings(rings, nrings, owner, srid);
+      ok = (region != NULL);
+    }
+    else if (ok)
+    {
+      arrange_rings_free(rings, nrings);
+      if (owner)
+        pfree(owner);
+    }
+  }
+  LWGEOM *result = ok ?
+    buffer_sweep_assemble(region, lout, pts, pkeep, npts, srid) : NULL;
+  if (! ok && region)
+    lwgeom_free(region);
+  if (lout)
+    meos_array_destroy(lout);
+  meos_array_destroy(edges);
+  meos_array_destroy(lines);
+  pfree(soff); pfree(tps); pfree(pts); pfree(pkeep);
+  return result;
+}
+
 /**
  * @brief Return the union of the areal components of a geometry
  * @details The components are dissolved into the surfaces they cover: a pair
@@ -8875,8 +9232,12 @@ buffer_ring_box(const MeosArray *pieces, GBOX *box)
   }
   for (uint32_t i = 0; i < n; i++)
   {
-    if (! e[i].arc || cross_product_sign(e[i].x1, e[i].y1, e[i].x2,
-          e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0)
+    /* An arc whose three points are collinear is straight, but for one
+     * whose ends are one point: it is its whole circle, on the diameter to
+     * its middle, whose box #lw_arc_calculate_gbox_cartesian_2d reads */
+    bool whole = e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2;
+    if (! e[i].arc || (! whole && cross_product_sign(e[i].x1, e[i].y1,
+          e[i].x2, e[i].y2, e[i].x1, e[i].y1, e[i].mx, e[i].my) == 0))
       continue;
     double ax = e[i].x1 - e[i].mx, ay = e[i].y1 - e[i].my;
     double bx = e[i].x2 - e[i].mx, by = e[i].y2 - e[i].my;

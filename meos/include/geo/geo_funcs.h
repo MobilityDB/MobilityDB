@@ -91,6 +91,21 @@ typedef enum
 
 
 /**
+ * @brief A point where a common tangent of two circles touches one of them,
+ * which no double holds in general: what defines it, exactly
+ */
+typedef struct
+{
+  double c1x, c1y, r1;           /**< The first circle */
+  double c2x, c2y, r2;           /**< The second circle */
+  int side;                      /**< 1 for the tangent on the left of the
+                                      first centre to the second, -1 for the
+                                      one on its right */
+  int k;                         /**< 0 for the point on the first circle, 1
+                                      for the one on the second */
+} TangentPoint;
+
+/**
  * @brief Structure keeping a geometry edge
  */
 typedef struct
@@ -109,6 +124,19 @@ typedef struct
                                       and (ex,ey) */
   bool diameter;                 /**< The circle of an arc is the one on the
                                       diameter from (sx,sy) to (ex,ey) */
+  bool centred;                  /**< The arc is the whole circle of centre
+                                      (cx,cy) and radius @p radius, these
+                                      doubles exactly, which no input point
+                                      fixes: its ends are the point of the
+                                      circle furthest along -x, rounded once,
+                                      and it holds no (sx,sy), (mx,my) or
+                                      (ex,ey) (#edges_add_circle) */
+  const TangentPoint *from, *to; /**< For a segment whose ends are points
+                                      where tangents touch circles, which no
+                                      double holds, those points, (x1,y1) and
+                                      (x2,y2) holding them rounded once; NULL
+                                      for an edge whose ends are its doubles
+                                      (#edges_add_tangent_segment) */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -184,6 +212,8 @@ angle_normalize(double a)
 
 extern LWGEOM *meos_oriented_envelope(const LWGEOM *geom);
 extern LWGEOM *meos_areal_union(const LWGEOM *geom);
+extern LWGEOM *meos_disc_sweep_union(const POINT2D *centres,
+  const double *radii, const bool *link, int count, int32_t srid);
 extern LWGEOM *meos_areal_intersection(const LWGEOM *geom1,
   const LWGEOM *geom2);
 extern LWGEOM *meos_areal_difference(const LWGEOM *geom1,
@@ -309,6 +339,8 @@ extern void edges_add_segment(MeosArray *edges, const POINT2D *a,
   const POINT2D *b);
 extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
   const POINT2D *m, const POINT2D *b);
+extern void edges_add_circle(MeosArray *edges, double cx, double cy,
+  double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
 
 /* How a meeting of two edges arises, the data that place it exactly */
@@ -320,9 +352,20 @@ typedef enum
                              #arcsegm_meet_exact */
   MEET_ARCARC,          /**< Arcs p and q crossing at the meeting sigma of
                              #arcarc_meet_exact */
-  MEET_ARCARC_REFLECT   /**< Arcs p and q through the vertex (x, y),
+  MEET_ARCARC_REFLECT,  /**< Arcs p and q through the vertex (x, y),
                              crossing at its reflection across the line of
                              their centres */
+  MEET_TANGENT,         /**< The point tp where a tangent touches a circle */
+  MEET_LINES,           /**< Segments p and q between tangent points
+                             crossing */
+  MEET_LINECIRCLE,      /**< Segment p between tangent points meeting the
+                             circle of the centred arc q at the root sigma
+                             along it (#towerseg_meet) */
+  MEET_ORIGIN           /**< The point of the circle of the centred arc p
+                             furthest along -x, where the circle starts
+                             (sigma 0) or ends (sigma 1): read by the
+                             arrangement alone, before or after every other
+                             point of the circle */
 } MeetKind;
 
 typedef struct
@@ -331,10 +374,41 @@ typedef struct
   const Edge *p, *q;
   int sigma;
   double x, y;
+  const TangentPoint *tp;
 } MeetPoint;
 
 extern int meets_order_exact(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b);
+
+/* One meeting of a segment between tangent points and another such segment
+ * or a whole circle, exactly (#towerseg_meet) */
+typedef struct
+{
+  MeetPoint m;          /**< The point */
+  int end_p;            /**< 0 or 1 where it is the start or the end of the
+                             segment, -1 interior to it */
+  int end_q;            /**< Likewise for a second segment, -1 for a circle
+                             or interior to the segment */
+  int sign;             /**< For a crossing interior to both, the sign of
+                             the cross product of their directions there,
+                             an arc's direction being its tangent in the
+                             sense it turns; 0 for a touching */
+} TowerMeet;
+
+extern void edges_add_tangent_segment(MeosArray *edges,
+  const TangentPoint *from, const TangentPoint *to);
+extern int towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2]);
+extern int meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b);
+extern int towerseg_side(const Edge *s, double px, double py);
+extern int meet_point_y_side(const MeetPoint *m, double py);
+extern int meet_point_x_side(const MeetPoint *m, double ox, double d);
+extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
+extern bool meet_point_bounds(const MeetPoint *m, double *x, double *y,
+  double box[4]);
+extern int meets_same_point(const MeetPoint *a, const MeetPoint *b);
+extern int edges_turn_cmp_meet(const Edge *e1, bool ccw1, bool out1,
+  const Edge *e2, bool ccw2, bool out2, const MeetPoint *at);
 
 /* The edges of one geometry, kept so that several relationships asked about it
  * read them once. A relationship extracts the edges of both its operands, and

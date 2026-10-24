@@ -114,6 +114,8 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     const POINT2D *a = getPoint2d_cp(pa, i);
     const POINT2D *b = getPoint2d_cp(pa, i + 1);
     Edge e;
+    e.centred = false;
+    e.from = e.to = NULL;
     e.x1 = a->x; e.y1 = a->y;
     e.x2 = b->x; e.y2 = b->y;
     e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -163,6 +165,8 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
     return;
   const POINT2D *p = getPoint2d_cp(pt->point, 0);
   Edge e;
+  e.centred = false;
+  e.from = e.to = NULL;
   e.x1 = e.x2 = e.xmin = e.xmax = p->x;
   e.y1 = e.y2 = e.ymin = e.ymax = p->y;
   e.dx = e.dy = e.length = 0;
@@ -390,6 +394,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     for (int i = 0; i < 2; i++)
     {
       Edge e;
+      e.centred = false;
+      e.from = e.to = NULL;
       e.cx = mx; e.cy = my; e.radius = radius;
       /* Both halves lie on the circle on the diameter between the two input
        * points, which an exact question about it reads */
@@ -426,6 +432,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     for (int i = 0; i < 2; i++)
     {
       Edge e;
+      e.centred = false;
+      e.from = e.to = NULL;
       e.x1 = px[i]; e.y1 = py[i];
       e.x2 = px[i + 1]; e.y2 = py[i + 1];
       e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -443,6 +451,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   double b2 = bx * bx + by * by;
   double c2 = cx * cx + cy * cy;
   Edge e;
+  e.centred = false;
+  e.from = e.to = NULL;
   /* Circumcenter of the three points */
   e.cx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   e.cy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
@@ -485,6 +495,42 @@ edges_add_arc(MeosArray *edges, const POINT2D *a, const POINT2D *m,
 {
   assert(edges); assert(a); assert(m); assert(b);
   emit_arc_edge(a, m, b, edges, EDGE_POLYSEG, EDGE_POLYARC, false);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the whole circle of a centre and a radius, the
+ * boundary of the disc they bound, turning counterclockwise where @p ccw is
+ * true
+ * @details The circle is the one the three doubles fix exactly, and every
+ * exact question about it reads them (#Edge, member centred): no three
+ * points on it are doubles in general, so it is not handed to
+ * #edges_add_arc. Its ends are the point of the circle furthest along -x,
+ * rounded once, which an arrangement reads as the start of its positions
+ * along the circle and never as a point on it (#arrange_wound_surfaces). An
+ * arrangement decides exactly, so the edge carries no tolerance
+ * @param[in,out] edges Edge array
+ * @param[in] cx,cy Centre
+ * @param[in] radius Radius, positive
+ * @param[in] ccw Whether the circle turns counterclockwise
+ */
+void
+edges_add_circle(MeosArray *edges, double cx, double cy, double radius,
+  bool ccw)
+{
+  assert(edges); assert(radius > 0.0);
+  Edge e;
+  memset(&e, 0, sizeof(Edge));
+  e.etype = EDGE_POLYARC;
+  e.cx = cx; e.cy = cy; e.radius = radius;
+  e.centred = true;
+  e.ccw = ccw;
+  e.x1 = e.x2 = cx - radius;
+  e.y1 = e.y2 = cy;
+  e.theta0 = e.theta1 = M_PI;
+  e.xmin = cx - radius; e.xmax = cx + radius;
+  e.ymin = cy - radius; e.ymax = cy + radius;
+  edge_array_add(edges, &e);
   return;
 }
 
@@ -4571,11 +4617,29 @@ incircle_sign(double ax, double ay, double bx, double by, double cx,
  * to its two ends then having a zero dot product (Thales), which is the sign
  * of a cross product (#cross_product_sign). Either way an input point is put
  * on the circle or off it exactly, at every scale, which the radial distance
- * from a constructed centre cannot do
+ * from a constructed centre cannot do. The circle of a centred arc is its
+ * centre and radius, and a point lies on it where |Q - C|^2 = r^2 exactly
  */
+/* The side of the circle of a centred arc a point lies on, decided
+ * exactly: the sign of |Q - C|^2 - r^2, a polynomial of degree two in exact
+ * sums of the doubles (#polynomial_sign_exact) */
+static int
+centred_circle_side(const Edge *e, double qx, double qy)
+{
+  double t[3][2] = {{qx, -e->cx}, {qy, -e->cy}, {e->radius, 0.0}};
+  ExactSum sums[3];
+  for (int k = 0; k < 3; k++)
+    exact_sum_set(&sums[k], t[k], 2);
+  PolyTerm terms[3] = {
+    {1.0, 2, {0, 0}}, {1.0, 2, {1, 1}}, {-1.0, 2, {2, 2}}};
+  return polynomial_sign_exact(sums, terms, 3);
+}
+
 bool
 point_on_arc_circle(const Edge *e, double qx, double qy)
 {
+  if (e->centred)
+    return centred_circle_side(e, qx, qy) == 0;
   if ((qx == e->sx && qy == e->sy) || (qx == e->ex && qy == e->ey) ||
       (! e->diameter && qx == e->mx && qy == e->my))
     return true;
@@ -4595,11 +4659,14 @@ point_on_arc_circle(const Edge *e, double qx, double qy)
  * point to the two ends of the diameter, negative where the point sees the
  * diameter at an obtuse angle, which is inside (Thales). For an arc given by
  * three points it is the sign of #incircle_sign, positive inside the circle
- * of three points turning counterclockwise, read against the turn they make
+ * of three points turning counterclockwise, read against the turn they make.
+ * For a centred arc it is the sign of |Q - C|^2 - r^2
  */
 int
 arc_circle_side(const Edge *e, double qx, double qy)
 {
+  if (e->centred)
+    return centred_circle_side(e, qx, qy);
   if (e->diameter)
     return cross_product_sign(e->sx, e->sy, qx, qy, qy, e->ex, e->ey, qx);
   int turn = cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy,
@@ -4614,11 +4681,35 @@ arc_circle_side(const Edge *e, double qx, double qy)
  * the circle of another exactly where its three points do
  * (#point_on_arc_circle). Two halves of full circles lie on one circle where
  * the ends of each diameter lie on the other. The portions of one arc carry
- * its input points unchanged, which answers them without arithmetic
+ * its input points unchanged, which answers them without arithmetic. Two
+ * centred arcs lie on one circle where they carry one centre and one radius,
+ * and an arc of input points lies on a centred one where its points do, the
+ * ends of a diameter where one of them does and their middle is the centre
  */
 bool
 arc_same_circle(const Edge *a, const Edge *b)
 {
+  if (a->centred && b->centred)
+    return a->cx == b->cx && a->cy == b->cy && a->radius == b->radius;
+  if (a->centred || b->centred)
+  {
+    /* The input points of the other fix its circle: three on the centred
+     * one, or the two ends of a diameter on it about its centre */
+    const Edge *c = a->centred ? a : b, *o = a->centred ? b : a;
+    if (! o->diameter)
+      return point_on_arc_circle(c, o->sx, o->sy) &&
+        point_on_arc_circle(c, o->mx, o->my) &&
+        point_on_arc_circle(c, o->ex, o->ey);
+    double t[2][3] = {{o->sx, o->ex, -2.0 * c->cx},
+      {o->sy, o->ey, -2.0 * c->cy}};
+    ExactSum sums[2];
+    for (int k = 0; k < 2; k++)
+      exact_sum_set(&sums[k], t[k], 3);
+    PolyTerm tx = {1.0, 1, {0}}, ty = {1.0, 1, {1}};
+    return point_on_arc_circle(c, o->sx, o->sy) &&
+      polynomial_sign_exact(sums, &tx, 1) == 0 &&
+      polynomial_sign_exact(sums, &ty, 1) == 0;
+  }
   if (a->diameter == b->diameter && a->sx == b->sx && a->sy == b->sy &&
       a->ex == b->ex && a->ey == b->ey &&
       (a->diameter || (a->mx == b->mx && a->my == b->my)))
@@ -4865,7 +4956,9 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
     double hi = fabs(a.e[a.n - 1]) * fabs(b.e[b.n - 1]);
     if (hi > 0x1p+1000)
       arena->unsafe = true;
-    if (lo != 0.0 && lo < 0x1p-968)
+    /* A product of two components that are not zero may itself round to
+     * zero, which is underflow and not a zero component */
+    if (a.e[0] != 0.0 && b.e[0] != 0.0 && lo < 0x1p-968)
       under = (double) a.n * (double) b.n * 0x1p-1072;
   }
   int cap = 2 * a.n * b.n;
@@ -4876,9 +4969,12 @@ arcseg_x_mul(ArcsegArena *arena, ArcsegExact a, ArcsegExact b)
   int hlen = expansion_product(a.n, a.e, b.n, b.e, h, r.e, part);
   r.n = compress_expansion(hlen, h, r.e);
   r.err = 0.0;
+  /* The bound is computed in doubles, which below the normal range round
+   * to the nearest multiple of 2^-1074 and so may round it to zero: each of
+   * its three products and two sums loses at most half of that */
   if (a.err > 0.0 || b.err > 0.0)
     r.err = (arcseg_x_mag(a) * b.err + arcseg_x_mag(b) * a.err +
-      a.err * b.err) * (1.0 + 0x1p-50);
+      a.err * b.err) * (1.0 + 0x1p-50) + 0x1p-1071;
   r.err += under;
   return r;
 }
@@ -4912,50 +5008,68 @@ arcseg_x_sign_checked(ArcsegArena *arena, ArcsegExact a)
  * quadratic qa t^2 + qb t + qc, the side h1 t + h0 of the chord S -> E that
  * P(t) stands on, and for an arc of three points the side its middle stands
  * on. The vectors are taken from A, so every factor is a difference of input
- * coordinates.
+ * coordinates. A centred arc is its whole circle, so every root of its
+ * quadratic stands on it: h1 is zero and h0 has the arc's side.
  */
 #define ARCSEG_POLYNOMIALS(T, DIFF, ADD, SUB, MUL, SCALE, ZERO)               \
 {                                                                            \
   T rx = DIFF(bx, ax), ry = DIFF(by, ay);                                    \
-  T sx = DIFF(arc->sx, ax), sy = DIFF(arc->sy, ay);                          \
-  T ex = DIFF(arc->ex, ax), ey = DIFF(arc->ey, ay);                          \
   T rr = ADD(MUL(rx, rx), MUL(ry, ry));                                      \
-  T cx = SUB(ex, sx), cy = SUB(ey, sy);                                      \
-  /* The chord crossed with P(t) - S = t R - S */                            \
-  *h1 = SUB(MUL(cx, ry), MUL(cy, rx));                                       \
-  *h0 = SCALE(SUB(MUL(cx, sy), MUL(cy, sx)), -1.0);                          \
-  if (arc->diameter)                                                         \
+  if (arc->centred)                                                          \
   {                                                                          \
-    /* (P - S).(P - E) = t^2 rr - t R.(S + E) + S.E */                       \
-    T px = ADD(sx, ex), py = ADD(sy, ey);                                    \
+    /* |A + t R - C|^2 - r^2 = t^2 rr - 2 t R.(C - A) + |C - A|^2 - r^2,     \
+     * every point of the whole circle on the arc: no chord, h1 = 0 and the  \
+     * side h0 and the arc's side both positive */                           \
+    T kx = DIFF(arc->cx, ax), ky = DIFF(arc->cy, ay);                        \
+    T kr = DIFF(arc->radius, 0.0);                                           \
     *qa = rr;                                                                \
-    *qb = SCALE(ADD(MUL(rx, px), MUL(ry, py)), -1.0);                        \
-    *qc = ADD(MUL(sx, ex), MUL(sy, ey));                                     \
+    *qb = SCALE(ADD(MUL(rx, kx), MUL(ry, ky)), -2.0);                        \
+    *qc = SUB(ADD(MUL(kx, kx), MUL(ky, ky)), MUL(kr, kr));                   \
+    *h1 = ZERO;                                                              \
+    *h0 = rr;                                                                \
     *side = rr;                                                              \
   }                                                                          \
   else                                                                       \
   {                                                                          \
-    T mx = DIFF(arc->mx, ax), my = DIFF(arc->my, ay);                        \
-    T pts[3][2] = {{sx, sy}, {mx, my}, {ex, ey}};                            \
-    *qa = ZERO; *qb = ZERO; *qc = ZERO;                                      \
-    for (int k = 0; k < 3; k++)                                              \
+    T sx = DIFF(arc->sx, ax), sy = DIFF(arc->sy, ay);                        \
+    T ex = DIFF(arc->ex, ax), ey = DIFF(arc->ey, ay);                        \
+    T cx = SUB(ex, sx), cy = SUB(ey, sy);                                    \
+    /* The chord crossed with P(t) - S = t R - S */                          \
+    *h1 = SUB(MUL(cx, ry), MUL(cy, rx));                                     \
+    *h0 = SCALE(SUB(MUL(cx, sy), MUL(cy, sx)), -1.0);                        \
+    if (arc->diameter)                                                       \
     {                                                                        \
-      const T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];     \
-      T lift = ADD(MUL(x[0], x[0]), MUL(x[1], x[1]));                        \
-      T xr = ADD(MUL(x[0], rx), MUL(x[1], ry));                              \
-      T yz = SUB(MUL(y[0], z[1]), MUL(y[1], z[0]));                          \
-      T rd = SUB(MUL(rx, SUB(z[1], y[1])), MUL(ry, SUB(z[0], y[0])));        \
-      /* t^2: rr (Y x Z) + 2 (X.R) (R x (Z - Y)) */                          \
-      T ta = ADD(MUL(rr, yz), SCALE(MUL(xr, rd), 2.0));                      \
-      /* t: - |X|^2 (R x (Z - Y)) - 2 (X.R) (Y x Z) */                       \
-      T tb = SCALE(ADD(MUL(lift, rd), SCALE(MUL(xr, yz), 2.0)), -1.0);       \
-      /* 1: |X|^2 (Y x Z) */                                                 \
-      T tc = MUL(lift, yz);                                                  \
-      *qa = ADD(*qa, ta);                                                    \
-      *qb = ADD(*qb, tb);                                                    \
-      *qc = ADD(*qc, tc);                                                    \
+      /* (P - S).(P - E) = t^2 rr - t R.(S + E) + S.E */                     \
+      T px = ADD(sx, ex), py = ADD(sy, ey);                                  \
+      *qa = rr;                                                              \
+      *qb = SCALE(ADD(MUL(rx, px), MUL(ry, py)), -1.0);                      \
+      *qc = ADD(MUL(sx, ex), MUL(sy, ey));                                   \
+      *side = rr;                                                            \
     }                                                                        \
-    *side = SUB(MUL(cx, SUB(my, sy)), MUL(cy, SUB(mx, sx)));                 \
+    else                                                                     \
+    {                                                                        \
+      T mx = DIFF(arc->mx, ax), my = DIFF(arc->my, ay);                      \
+      T pts[3][2] = {{sx, sy}, {mx, my}, {ex, ey}};                          \
+      *qa = ZERO; *qb = ZERO; *qc = ZERO;                                    \
+      for (int k = 0; k < 3; k++)                                            \
+      {                                                                      \
+        const T *x = pts[k], *y = pts[(k + 1) % 3], *z = pts[(k + 2) % 3];   \
+        T lift = ADD(MUL(x[0], x[0]), MUL(x[1], x[1]));                      \
+        T xr = ADD(MUL(x[0], rx), MUL(x[1], ry));                            \
+        T yz = SUB(MUL(y[0], z[1]), MUL(y[1], z[0]));                        \
+        T rd = SUB(MUL(rx, SUB(z[1], y[1])), MUL(ry, SUB(z[0], y[0])));      \
+        /* t^2: rr (Y x Z) + 2 (X.R) (R x (Z - Y)) */                        \
+        T ta = ADD(MUL(rr, yz), SCALE(MUL(xr, rd), 2.0));                    \
+        /* t: - |X|^2 (R x (Z - Y)) - 2 (X.R) (Y x Z) */                     \
+        T tb = SCALE(ADD(MUL(lift, rd), SCALE(MUL(xr, yz), 2.0)), -1.0);     \
+        /* 1: |X|^2 (Y x Z) */                                               \
+        T tc = MUL(lift, yz);                                                \
+        *qa = ADD(*qa, ta);                                                  \
+        *qb = ADD(*qb, tb);                                                  \
+        *qc = ADD(*qc, tc);                                                  \
+      }                                                                      \
+      *side = SUB(MUL(cx, SUB(my, sy)), MUL(cy, SUB(mx, sx)));               \
+    }                                                                        \
   }                                                                          \
 }
 
@@ -5343,7 +5457,8 @@ arcseg_meet_shared(double ax, double ay, double bx, double by,
  * #ArcsegFilter): at the start or the end of the segment, at an end of the
  * arc, or interior to both, where only its position along the segment is
  * computed, rounded once. The arc is one #geom_extract_edges emits, whose
- * ends are its first and last defining points; any other is not answered
+ * ends are its first and last defining points, or a centred one, the whole
+ * circle (#edges_add_circle); any other is not answered
  * @param[in] ax,ay,bx,by Start and end of the segment, distinct
  * @param[in] arc Arc edge
  * @param[out] out The meetings, in increasing position along the segment
@@ -5354,11 +5469,13 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegMeet out[2])
 {
   assert(arc); assert(out);
-  if ((ax == bx && ay == by) || arc->x1 != arc->sx || arc->y1 != arc->sy ||
-      arc->x2 != arc->ex || arc->y2 != arc->ey)
+  if ((ax == bx && ay == by) || (! arc->centred && (arc->x1 != arc->sx ||
+      arc->y1 != arc->sy || arc->x2 != arc->ex || arc->y2 != arc->ey)))
     return -1;
-  /* A segment sharing an end with the arc: that end is one root exactly */
-  int nshared = arcseg_meet_shared(ax, ay, bx, by, arc, out);
+  /* A segment sharing an end with the arc: that end is one root exactly. A
+   * centred arc has no end on its circle */
+  int nshared = arc->centred ? -1 :
+    arcseg_meet_shared(ax, ay, bx, by, arc, out);
   if (nshared == -2)
     return -1;
   if (nshared >= 0)
@@ -5455,12 +5572,22 @@ arcsegm_meet_exact(double ax, double ay, double bx, double by,
  * for an arc of three points M is its middle and, with A = S - M and
  * B = E - M, N = (|A|^2 By - |B|^2 Ay, |B|^2 Ax - |A|^2 Bx) and D = 2 A x B,
  * the circumcentre #emit_arc_edge forms from the same points; for a half
- * circle on a diameter M is its start, N = E - S and D = 2.
+ * circle on a diameter M is its start, N = E - S and D = 2; for a centred
+ * arc M is its centre, N = 0 and D = 1.
  */
 static void
 arcarc_centre_exact(ArcsegArena *arena, const Edge *e, ArcsegExact *mx,
   ArcsegExact *my, ArcsegExact *nx, ArcsegExact *ny, ArcsegExact *d)
 {
+  if (e->centred)
+  {
+    *mx = arcseg_x_diff(arena, e->cx, 0.0);
+    *my = arcseg_x_diff(arena, e->cy, 0.0);
+    *nx = arcseg_x_diff(arena, 0.0, 0.0);
+    *ny = arcseg_x_diff(arena, 0.0, 0.0);
+    *d = arcseg_x_diff(arena, 1.0, 0.0);
+    return;
+  }
   if (e->diameter)
   {
     *mx = arcseg_x_diff(arena, e->sx, 0.0);
@@ -5487,6 +5614,26 @@ arcarc_centre_exact(ArcsegArena *arena, const Edge *e, ArcsegExact *mx,
   *d = arcseg_x_scale(arena, arcseg_x_sub(arena, arcseg_x_mul(arena, ax, by),
     arcseg_x_mul(arena, ay, bx)), 2.0);
   return;
+}
+
+/* The square of the radius of the circle of an arc times D^2, exactly, with
+ * the centre M + N / D of #arcarc_centre_exact: |D (S - M) - N|^2 from its
+ * start S, or r^2 for a centred arc, whose D is 1 */
+static ArcsegExact
+arcarc_radius2_exact(ArcsegArena *arena, const Edge *e, ArcsegExact mx,
+  ArcsegExact my, ArcsegExact nx, ArcsegExact ny, ArcsegExact d)
+{
+  if (e->centred)
+  {
+    ArcsegExact r = arcseg_x_diff(arena, e->radius, 0.0);
+    return arcseg_x_mul(arena, r, r);
+  }
+  ArcsegExact sx = arcseg_x_sub(arena, arcseg_x_mul(arena, d,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, e->sx, 0.0), mx)), nx);
+  ArcsegExact sy = arcseg_x_sub(arena, arcseg_x_mul(arena, d,
+    arcseg_x_sub(arena, arcseg_x_diff(arena, e->sy, 0.0), my)), ny);
+  return arcseg_x_add(arena, arcseg_x_mul(arena, sx, sx),
+    arcseg_x_mul(arena, sy, sy));
 }
 
 /**
@@ -5584,20 +5731,10 @@ arcarc_circles_exact(ArcsegArena *arena, const Edge *p, const Edge *q,
   ArcsegExact qq = arcseg_x_add(arena, arcseg_x_mul(arena, dx, dx),
     arcseg_x_mul(arena, dy, dy));
   /* The squared radii, times L^2 */
-  ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sx, 0.0), m1x)), n1x);
-  ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, p->sy, 0.0), m1y)), n1y);
-  ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sx, 0.0), m2x)), n2x);
-  ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-    arcseg_x_sub(arena, arcseg_x_diff(arena, q->sy, 0.0), m2y)), n2y);
-  ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
-    arcseg_x_mul(arena, d2, d2));
-  ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
-    arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
-    arcseg_x_mul(arena, d1, d1));
+  ArcsegExact r1 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, p, m1x,
+    m1y, n1x, n1y, d1), arcseg_x_mul(arena, d2, d2));
+  ArcsegExact r2 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, q, m2x,
+    m2y, n2x, n2y, d2), arcseg_x_mul(arena, d1, d1));
   ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
   c->m1x = m1x; c->m1y = m1y; c->n1x = n1x; c->n1y = n1y;
   c->d1 = d1; c->d2 = d2; c->l = l; c->dx = dx; c->dy = dy; c->qq = qq;
@@ -5676,7 +5813,8 @@ arcarc_crossing_terms(const Edge *p, const Edge *q,
  * c = E - S; for P that is the sign of U'' + sigma W'' sqrt(H) times the sign
  * of L, with U'' = 2 Q D2 (c x e') + (Q + R1' - R2') (c x d'),
  * e' = D1 (M1 - S) + N1, and W'' = c . d', which #arcseg_root_sign reads from
- * the signs of U'', W'' and U''^2 - W''^2 H. The tangents of the two circles
+ * the signs of U'', W'' and U''^2 - W''^2 H; every point of the circle of a
+ * centred arc lies within it. The tangents of the two circles
  * at P cross with the sign sigma times the senses the arcs turn
  * @param[in] p,q Arcs of two distinct circles
  * @param[out] meet The sign of H; for each sigma = -1, 1 in turn, whether P
@@ -5701,6 +5839,12 @@ arcarc_meet_exact(const Edge *p, const Edge *q, int *meet, int within[2][2])
   for (int k = 0; k < 2; k++)
   {
     const Edge *e = arcs[k];
+    /* A centred arc is its whole circle */
+    if (e->centred)
+    {
+      within[0][k] = within[1][k] = 1;
+      continue;
+    }
     ArcsegExact cx = arcseg_x_diff(arena, e->ex, e->sx);
     ArcsegExact cy = arcseg_x_diff(arena, e->ey, e->sy);
     /* e' = D1 (M1 - S) + N1 */
@@ -5847,6 +5991,15 @@ edges_turn_cmp_exact(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
           bool left = arc1 ? (ccw1 == out1) : (ccw2 == out2);
           result = (left == arc1) ? 1 : -1;
         }
+        else if (e1->centred && e2->centred && e1->radius != e2->radius)
+        {
+          /* Two whole circles touching at the point: the one bending
+           * further left, the larger of the curvatures 1/r signed by the
+           * side each bends to, comes after (#edges_turn_cmp_meet) */
+          bool left1 = (ccw1 == out1), left2 = (ccw2 == out2);
+          result = (left1 != left2) ? (left1 ? 1 : -1) :
+            (((e1->radius < e2->radius) == left1) ? 1 : -1);
+        }
       }
     }
   }
@@ -5907,6 +6060,1820 @@ static inline ArcsegExact
 meet_val(ArcsegArena *arena, double v)
 {
   return arcseg_x_diff(arena, v, 0.0);
+}
+
+/*****************************************************************************
+ * Numbers of a tower of square roots, their signs decided exactly
+ *****************************************************************************/
+
+/*
+ * Where a segment tangent to two circles meets a circle or another such
+ * segment, the coordinates lie in a tower of square roots Q(sqrt h_1)
+ * (sqrt h_2) ..., each h_i a number of the tower below it and not negative.
+ * A number of a tower of k roots is a + b sqrt(h_k), a and b numbers of the
+ * k - 1 roots below, held as the 2^k exact coefficients of the products of
+ * the roots: c[m] multiplies the product of sqrt(h_i) over the bits i of m,
+ * so that a is the first half of the coefficients and b the second. Its sign
+ * is that of a or of b sqrt(h_k) where they agree, and otherwise that of the
+ * larger, which the sign of a^2 - b^2 h_k, a number of the tower below,
+ * tells: the recursion #meet_root_sign and #meet_two_roots_sign take one and
+ * two steps of. The roots of two towers are independent symbols, so two
+ * numbers are compared in the tower of the roots of both, a root of one whose
+ * number is one of the other, decided exactly, being read once
+ * (#tower_merge).
+ *
+ * Each sign is read first in doubles carrying a bound on their error
+ * (#ArcsegFilter), then exactly as expansions, and where a product of
+ * expansions leaves the range where they are exact -- their components span
+ * the exponents of doubles, which the squarings of the recursion outgrow --
+ * as #WideDyadic, the points of the question built again from what defines
+ * them (#TowerCtx).
+ */
+#define TOWER_MAXDEPTH 4
+#define TOWER_SIZE (1 << TOWER_MAXDEPTH)
+#define TOWER_WIDE_BLOCK 32
+
+/* The arithmetic the numbers of a tower are computed in: expansions in
+ * @p arena, or #WideDyadic where @p wide is set, taken from blocks of
+ * #TOWER_WIDE_BLOCK */
+typedef struct
+{
+  ArcsegArena arena;
+  bool wide;
+  bool filter;         /**< Doubles carrying a bound on their error, a sign
+                            the bound cannot tell marking the arena unsafe */
+  WideDyadic **blocks;
+  int nblocks;
+  int capblocks;
+  int used;            /**< Taken from the last block */
+} TowerCtx;
+
+/* An exact value of the arithmetic of a #TowerCtx */
+typedef union
+{
+  ArcsegExact x;
+  WideDyadic *w;
+  ArcsegFilter f;
+} TowerX;
+
+/* A number of a tower, its coefficients by the products of the roots */
+typedef struct
+{
+  TowerX c[TOWER_SIZE];
+} TowerNum;
+
+/* A tower: the numbers whose square roots it adds, h[i] a number of the i
+ * roots below it */
+typedef struct
+{
+  int depth;
+  TowerNum h[TOWER_MAXDEPTH];
+  const TangentPoint *key[TOWER_MAXDEPTH]; /**< For a root of the tangent of
+                            two circles, a point of it, which tells the root
+                            of another tangent of the same two circles without
+                            arithmetic; NULL for any other root */
+} Tower;
+
+static void
+tower_ctx_init(TowerCtx *ctx, bool wide)
+{
+  ctx->arena.used = ctx->arena.n = ctx->arena.cap = 0;
+  ctx->arena.unsafe = false;
+  ctx->arena.blocks = NULL;
+  ctx->wide = wide;
+  ctx->filter = false;
+  ctx->blocks = NULL;
+  ctx->nblocks = ctx->capblocks = 0;
+  ctx->used = TOWER_WIDE_BLOCK;
+  return;
+}
+
+static void
+tower_ctx_free(TowerCtx *ctx)
+{
+  arcseg_arena_free(&ctx->arena);
+  for (int i = 0; i < ctx->nblocks; i++)
+    pfree(ctx->blocks[i]);
+  if (ctx->blocks)
+    pfree(ctx->blocks);
+  ctx->blocks = NULL;
+  ctx->nblocks = ctx->capblocks = 0;
+  ctx->used = TOWER_WIDE_BLOCK;
+  return;
+}
+
+/* Whether the answers of the arithmetic of the expansions may not be exact */
+static inline bool
+tower_ctx_unsafe(const TowerCtx *ctx)
+{
+  return ! ctx->wide && ctx->arena.unsafe;
+}
+
+static WideDyadic *
+tower_wide_alloc(TowerCtx *ctx)
+{
+  if (ctx->used == TOWER_WIDE_BLOCK)
+  {
+    if (ctx->nblocks == ctx->capblocks)
+    {
+      ctx->capblocks = ctx->capblocks ? 2 * ctx->capblocks : 16;
+      ctx->blocks = ctx->blocks ?
+        repalloc(ctx->blocks, sizeof(WideDyadic *) * ctx->capblocks) :
+        palloc(sizeof(WideDyadic *) * ctx->capblocks);
+    }
+    ctx->blocks[ctx->nblocks++] =
+      palloc(sizeof(WideDyadic) * TOWER_WIDE_BLOCK);
+    ctx->used = 0;
+  }
+  return &ctx->blocks[ctx->nblocks - 1][ctx->used++];
+}
+
+/* The difference of two doubles, exactly */
+static TowerX
+tx_diff(TowerCtx *ctx, double a, double b)
+{
+  TowerX r;
+  if (ctx->filter)
+  {
+    /* The rounding error of the difference, exactly (two-sum) */
+    double v = a - b, bv = v - a;
+    r.f.v = v;
+    r.f.e = fabs((a - (v - bv)) + (- b - bv));
+    return r;
+  }
+  if (! ctx->wide)
+  {
+    r.x = arcseg_x_diff(&ctx->arena, a, b);
+    return r;
+  }
+  WideDyadic da, db;
+  wide_dyadic_set_double(&da, a);
+  wide_dyadic_set_double(&db, - b);
+  r.w = tower_wide_alloc(ctx);
+  wide_dyadic_add(&da, &db, r.w);
+  return r;
+}
+
+static inline TowerX
+tx_val(TowerCtx *ctx, double v)
+{
+  return tx_diff(ctx, v, 0.0);
+}
+
+static TowerX
+tx_add(TowerCtx *ctx, TowerX a, TowerX b)
+{
+  TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_add(a.f, b.f);
+    return r;
+  }
+  if (! ctx->wide)
+  {
+    r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
+    return r;
+  }
+  r.w = tower_wide_alloc(ctx);
+  wide_dyadic_add(a.w, b.w, r.w);
+  return r;
+}
+
+/* Multiplied by a power of two, possibly negative, exactly */
+static TowerX
+tx_scale(TowerCtx *ctx, TowerX a, double k)
+{
+  TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_scale(a.f, k);
+    return r;
+  }
+  if (! ctx->wide)
+  {
+    r.x = arcseg_x_scale(&ctx->arena, a.x, k);
+    return r;
+  }
+  int e;
+  frexp(k, &e);
+  r.w = tower_wide_alloc(ctx);
+  *r.w = *a.w;
+  if (r.w->sign != 0)
+  {
+    r.w->exp += e - 1;
+    r.w->sign *= (k < 0.0) ? -1 : 1;
+  }
+  return r;
+}
+
+static TowerX
+tx_sub(TowerCtx *ctx, TowerX a, TowerX b)
+{
+  return tx_add(ctx, a, tx_scale(ctx, b, -1.0));
+}
+
+static TowerX
+tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
+{
+  TowerX r;
+  if (ctx->filter)
+  {
+    r.f = arcseg_f_mul(a.f, b.f);
+    return r;
+  }
+  if (! ctx->wide)
+  {
+    r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
+    return r;
+  }
+  r.w = tower_wide_alloc(ctx);
+  wide_dyadic_mul(a.w, b.w, r.w);
+  return r;
+}
+
+/* Whether a value is zero, read off its representation */
+static bool
+tx_zero(const TowerCtx *ctx, TowerX a)
+{
+  if (ctx->filter)
+    return a.f.v == 0.0 && a.f.e == 0.0;
+  if (ctx->wide)
+    return a.w->sign == 0;
+  for (int i = 0; i < a.x.n; i++)
+    if (a.x.e[i] != 0.0)
+      return false;
+  return a.x.err == 0.0;
+}
+
+/* The sign of a value, the arena recording where an expansion may not
+ * carry it (#arcseg_x_sign_checked) */
+static int
+tx_sign(TowerCtx *ctx, TowerX a)
+{
+  if (ctx->filter)
+  {
+    /* An exact zero, as the coefficients a root does not reach, or a sign
+     * the bound tells; any other leaves the question to the expansions */
+    if (a.f.v == 0.0 && a.f.e == 0.0)
+      return 0;
+    int s = arcseg_f_sign(a.f);
+    if (s == 2)
+    {
+      ctx->arena.unsafe = true;
+      return 0;
+    }
+    return s;
+  }
+  if (ctx->wide)
+    return a.w->sign;
+  return arcseg_x_sign_checked(&ctx->arena, a.x);
+}
+
+/* A value as a double and a bound on its error */
+static ArcsegFilter
+tx_filter(const TowerCtx *ctx, TowerX a)
+{
+  ArcsegFilter r;
+  if (ctx->filter)
+    return a.f;
+  if (ctx->wide)
+  {
+    int e;
+    double m = wide_dyadic_frexp(a.w, &e);
+    r.v = ldexp(m, e) * (double) a.w->sign;
+    /* The two limbs read hold the value to 2^-60 of it, and ldexp rounds
+     * once */
+    r.e = fabs(r.v) * 0x1p-50;
+    return r;
+  }
+  double s = 0.0, mag = 0.0;
+  for (int i = 0; i < a.x.n; i++)
+  {
+    s += a.x.e[i];
+    mag += fabs(a.x.e[i]);
+  }
+  r.v = s;
+  r.e = (double) a.x.n * DBL_EPSILON * mag + a.x.err;
+  return r;
+}
+
+/* Whether a number of k roots is zero in every coefficient */
+static bool
+tower_zero_k(const TowerCtx *ctx, const TowerX *x, int k)
+{
+  for (int m = 0; m < (1 << k); m++)
+    if (! tx_zero(ctx, x[m]))
+      return false;
+  return true;
+}
+
+/* A number of k roots that is the value v */
+static void
+tower_set(TowerCtx *ctx, TowerX v, int k, TowerX *out)
+{
+  out[0] = v;
+  for (int m = 1; m < (1 << k); m++)
+    out[m] = tx_val(ctx, 0.0);
+  return;
+}
+
+static void
+tower_add_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k,
+  TowerX *out)
+{
+  for (int m = 0; m < (1 << k); m++)
+    out[m] = tx_add(ctx, x[m], y[m]);
+  return;
+}
+
+static void
+tower_sub_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k,
+  TowerX *out)
+{
+  for (int m = 0; m < (1 << k); m++)
+    out[m] = tx_sub(ctx, x[m], y[m]);
+  return;
+}
+
+/* Multiplied by a power of two, possibly negative */
+static void
+tower_scale_k(TowerCtx *ctx, const TowerX *x, double s, int k, TowerX *out)
+{
+  for (int m = 0; m < (1 << k); m++)
+    out[m] = tx_scale(ctx, x[m], s);
+  return;
+}
+
+/* Multiplied by a value */
+static void
+tower_mulx_k(TowerCtx *ctx, const TowerX *x, TowerX v, int k, TowerX *out)
+{
+  for (int m = 0; m < (1 << k); m++)
+    out[m] = tx_mul(ctx, x[m], v);
+  return;
+}
+
+/* The product of two numbers of k roots of a tower:
+ * (a1 + b1 r)(a2 + b2 r) = (a1 a2 + b1 b2 h) + (a1 b2 + b1 a2) r */
+static void
+tower_mul_k(TowerCtx *ctx, const Tower *t, const TowerX *x, const TowerX *y,
+  int k, TowerX *out)
+{
+  if (k == 0)
+  {
+    out[0] = tx_mul(ctx, x[0], y[0]);
+    return;
+  }
+  int half = 1 << (k - 1);
+  bool xb = ! tower_zero_k(ctx, x + half, k - 1);
+  bool yb = ! tower_zero_k(ctx, y + half, k - 1);
+  TowerX p[TOWER_SIZE / 2], q[TOWER_SIZE / 2], r1[TOWER_SIZE / 2],
+    r2[TOWER_SIZE / 2];
+  tower_mul_k(ctx, t, x, y, k - 1, p);
+  if (xb && yb)
+  {
+    TowerX bb[TOWER_SIZE / 2];
+    tower_mul_k(ctx, t, x + half, y + half, k - 1, bb);
+    tower_mul_k(ctx, t, bb, t->h[k - 1].c, k - 1, q);
+    tower_add_k(ctx, p, q, k - 1, p);
+  }
+  if (yb)
+    tower_mul_k(ctx, t, x, y + half, k - 1, r1);
+  if (xb)
+    tower_mul_k(ctx, t, x + half, y, k - 1, r2);
+  if (xb && yb)
+    tower_add_k(ctx, r1, r2, k - 1, r1);
+  else if (xb)
+    memcpy(r1, r2, sizeof(TowerX) * half);
+  else if (! yb)
+    tower_set(ctx, tx_val(ctx, 0.0), k - 1, r1);
+  memcpy(out, p, sizeof(TowerX) * half);
+  memcpy(out + half, r1, sizeof(TowerX) * half);
+  return;
+}
+
+/* The square root of a filtered value not negative: within the error
+ * bound e of v, sqrt moves by at most e / (sqrt(v) + sqrt(v - e)), and by at
+ * most sqrt(v + e) where v - e may be negative */
+static ArcsegFilter
+tower_f_sqrt(ArcsegFilter h)
+{
+  ArcsegFilter r;
+  double s = sqrt(fmax(h.v, 0.0));
+  double lo = h.v - h.e;
+  r.v = s;
+  r.e = (lo > 0.0) ? h.e / (s + sqrt(lo)) : sqrt(fmax(h.v + h.e, 0.0));
+  r.e = r.e * (1.0 + 4.0 * DBL_EPSILON) + 2.0 * DBL_EPSILON * s;
+  return r;
+}
+
+/* A number of k roots of a tower as a double and a bound on its error */
+static ArcsegFilter
+tower_filter_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+{
+  if (k == 0)
+    return tx_filter(ctx, x[0]);
+  int half = 1 << (k - 1);
+  ArcsegFilter a = tower_filter_k(ctx, t, x, k - 1);
+  if (tower_zero_k(ctx, x + half, k - 1))
+    return a;
+  ArcsegFilter b = tower_filter_k(ctx, t, x + half, k - 1);
+  ArcsegFilter h = tower_filter_k(ctx, t, t->h[k - 1].c, k - 1);
+  return arcseg_f_add(a, arcseg_f_mul(b, tower_f_sqrt(h)));
+}
+
+/* The sign of a number of k roots: of its filter where the bound tells it,
+ * and otherwise of a + b sqrt(h) from the signs of a, b, h and
+ * a^2 - b^2 h, each a number of the roots below */
+static int
+tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+{
+  if (k == 0)
+    return tx_sign(ctx, x[0]);
+  int s = arcseg_f_sign(tower_filter_k(ctx, t, x, k));
+  if (s != 2)
+    return s;
+  int half = 1 << (k - 1);
+  int sa = tower_sign_k(ctx, t, x, k - 1);
+  if (tower_zero_k(ctx, x + half, k - 1))
+    return sa;
+  int sb = tower_sign_k(ctx, t, x + half, k - 1);
+  int sh = tower_sign_k(ctx, t, t->h[k - 1].c, k - 1);
+  /* A root of a negative number is no real number */
+  if (sh < 0)
+    ctx->arena.unsafe = true;
+  if (sb == 0 || sh <= 0)
+    return sa;
+  if (sa == 0 || sa == sb)
+    return sb;
+  TowerX aa[TOWER_SIZE / 2], bb[TOWER_SIZE / 2];
+  tower_mul_k(ctx, t, x, x, k - 1, aa);
+  tower_mul_k(ctx, t, x + half, x + half, k - 1, bb);
+  tower_mul_k(ctx, t, bb, t->h[k - 1].c, k - 1, bb);
+  tower_sub_k(ctx, aa, bb, k - 1, aa);
+  return sa * tower_sign_k(ctx, t, aa, k - 1);
+}
+
+/* A number of k roots of one tower read in another, its root i the root
+ * map[i] there: its coefficient m moves to the product of the roots map[i]
+ * over the bits i of m */
+static void
+tower_map(TowerCtx *ctx, const TowerX *x, int k, const int *map, int depth,
+  TowerX *out)
+{
+  TowerX tmp[TOWER_SIZE];
+  for (int m = 0; m < (1 << depth); m++)
+    tmp[m] = tx_val(ctx, 0.0);
+  for (int m = 0; m < (1 << k); m++)
+  {
+    int mm = 0;
+    for (int i = 0; i < k; i++)
+      if (m & (1 << i))
+        mm |= 1 << map[i];
+    tmp[mm] = x[m];
+  }
+  memcpy(out, tmp, sizeof(TowerX) * (1 << depth));
+  return;
+}
+
+/* Whether two numbers of k roots carry equal coefficients, decided
+ * exactly: then they are one number */
+static bool
+tower_same_k(TowerCtx *ctx, const TowerX *x, const TowerX *y, int k)
+{
+  for (int m = 0; m < (1 << k); m++)
+    if (tx_sign(ctx, tx_sub(ctx, x[m], y[m])) != 0)
+      return false;
+  return true;
+}
+
+/* Whether two tangent points belong to tangents of one pair of circles, in
+ * either order, whose roots sqrt(E), E = |C2 - C1|^2 - (r1 - r2)^2, are
+ * then one, as their doubles say without arithmetic (#tower_point_tangent) */
+static bool
+tangent_same_pair(const TangentPoint *a, const TangentPoint *b)
+{
+  if (a->c1x == b->c1x && a->c1y == b->c1y && a->r1 == b->r1 &&
+      a->c2x == b->c2x && a->c2y == b->c2y && a->r2 == b->r2)
+    return true;
+  return a->c1x == b->c2x && a->c1y == b->c2y && a->r1 == b->r2 &&
+    a->c2x == b->c1x && a->c2y == b->c1y && a->r2 == b->r1;
+}
+
+/* Merge the roots of tower @p t2 into @p t, a root of @p t2 whose number is
+ * one of @p t, once read there, being that root: map[i] is where root i of
+ * @p t2 stands in @p t. False where @p t would hold more than
+ * #TOWER_MAXDEPTH roots */
+static bool
+tower_merge(TowerCtx *ctx, Tower *t, const Tower *t2, int *map)
+{
+  static const int ident[TOWER_MAXDEPTH] = {0, 1, 2, 3};
+  for (int i = 0; i < t2->depth; i++)
+  {
+    TowerX h[TOWER_SIZE];
+    tower_map(ctx, t2->h[i].c, i, map, t->depth, h);
+    int j = 0;
+    for (; j < t->depth; j++)
+    {
+      /* The roots of two tangents of one pair of circles */
+      if (t->key[j] && t2->key[i] && tangent_same_pair(t->key[j], t2->key[i]))
+        break;
+      TowerX hj[TOWER_SIZE];
+      tower_map(ctx, t->h[j].c, j, ident, t->depth, hj);
+      if (tower_same_k(ctx, h, hj, t->depth))
+        break;
+    }
+    if (j == t->depth)
+    {
+      if (t->depth == TOWER_MAXDEPTH)
+        return false;
+      memcpy(t->h[j].c, h, sizeof(TowerX) * (1 << j));
+      t->key[j] = t2->key[i];
+      t->depth++;
+    }
+    map[i] = j;
+  }
+  return true;
+}
+
+/*****************************************************************************
+ * Points of a tower of square roots
+ *****************************************************************************/
+
+/* A point (x / w, y / w) of a tower, taken from an origin, w not zero */
+typedef struct
+{
+  Tower t;
+  TowerNum x, y, w;
+} TowerPoint;
+
+/* A point given by doubles */
+static void
+tower_point_xy(TowerCtx *ctx, double px, double py, double ox, double oy,
+  TowerPoint *out)
+{
+  out->t.depth = 0;
+  out->x.c[0] = tx_diff(ctx, px, ox);
+  out->y.c[0] = tx_diff(ctx, py, oy);
+  out->w.c[0] = tx_val(ctx, 1.0);
+  return;
+}
+
+/**
+ * @brief Set a point where the common tangent of two circles touches one of
+ * them, exactly
+ * @details For circles (C1, r1) and (C2, r2) with d = C2 - C1 and
+ * E = |d|^2 - (r1 - r2)^2 > 0, the tangent on the side @p side of C1 -> C2,
+ * 1 its left, touches circle k at Ck + rk u with the unit normal
+ * u = ((r1 - r2) d + side sqrt(E) rot(d)) / |d|^2, rot(x, y) = (-y, x):
+ * the points #trapezoid_make constructs by angles, Ta for side 1. The tower
+ * has the one root sqrt(E)
+ */
+static void
+tower_point_tangent(TowerCtx *ctx, const TangentPoint *tp, double ox,
+  double oy, TowerPoint *out)
+{
+  TowerX dx = tx_diff(ctx, tp->c2x, tp->c1x);
+  TowerX dy = tx_diff(ctx, tp->c2y, tp->c1y);
+  TowerX dr = tx_diff(ctx, tp->r1, tp->r2);
+  TowerX d2 = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+  TowerX rk = tx_val(ctx, tp->k ? tp->r2 : tp->r1);
+  TowerX rkdr = tx_mul(ctx, rk, dr);
+  TowerX srk = tx_scale(ctx, rk, (double) tp->side);
+  out->t.depth = 1;
+  out->t.key[0] = tp;
+  out->t.h[0].c[0] = tx_sub(ctx, d2, tx_mul(ctx, dr, dr));
+  /* Ck d^2 + rk (r1 - r2) d + side rk sqrt(E) rot(d), over d^2 */
+  out->x.c[0] = tx_add(ctx, tx_mul(ctx,
+    tx_diff(ctx, tp->k ? tp->c2x : tp->c1x, ox), d2), tx_mul(ctx, rkdr, dx));
+  out->x.c[1] = tx_scale(ctx, tx_mul(ctx, srk, dy), -1.0);
+  out->y.c[0] = tx_add(ctx, tx_mul(ctx,
+    tx_diff(ctx, tp->k ? tp->c2y : tp->c1y, oy), d2), tx_mul(ctx, rkdr, dy));
+  out->y.c[1] = tx_mul(ctx, srk, dx);
+  tower_set(ctx, d2, 1, out->w.c);
+  return;
+}
+
+/**
+ * @brief Set a point where two circles cross, the meeting sigma, and return
+ * the sign of the number under its root: none where it is negative, a
+ * touching where it is zero
+ * @details With d = C2 - C1, D = |d|^2 and g = D + r1^2 - r2^2 the
+ * meetings are C1 + (g d + sigma sqrt(4 r1^2 D - g^2) rot(d)) / (2 D), the
+ * points #arcarc_meet_exact places for two centred arcs
+ */
+static int
+tower_point_circles(TowerCtx *ctx, double c1x, double c1y, double r1,
+  double c2x, double c2y, double r2, int sigma, double ox, double oy,
+  TowerPoint *out)
+{
+  TowerX dx = tx_diff(ctx, c2x, c1x), dy = tx_diff(ctx, c2y, c1y);
+  TowerX dd = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+  TowerX a = tx_val(ctx, r1), b = tx_val(ctx, r2);
+  TowerX g = tx_sub(ctx, tx_add(ctx, dd, tx_mul(ctx, a, a)),
+    tx_mul(ctx, b, b));
+  TowerX h = tx_sub(ctx, tx_scale(ctx, tx_mul(ctx, tx_mul(ctx, a, a), dd),
+    4.0), tx_mul(ctx, g, g));
+  int sh = tx_sign(ctx, h);
+  if (sh < 0)
+    return sh;
+  TowerX w = tx_scale(ctx, dd, 2.0);
+  out->t.depth = 1;
+  out->t.key[0] = NULL;
+  out->t.h[0].c[0] = h;
+  out->x.c[0] = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, c1x, ox), w),
+    tx_mul(ctx, g, dx));
+  out->x.c[1] = tx_scale(ctx, dy, (double) - sigma);
+  out->y.c[0] = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, c1y, oy), w),
+    tx_mul(ctx, g, dy));
+  out->y.c[1] = tx_scale(ctx, dx, (double) sigma);
+  tower_set(ctx, w, 1, out->w.c);
+  return sh;
+}
+
+/* The coordinates of several points read in one tower, the tower of all
+ * their roots: xyw[i][0..2] the x, y and w of point i. False where it would
+ * hold more than #TOWER_MAXDEPTH roots */
+static bool
+tower_points_read(TowerCtx *ctx, const TowerPoint *const *pts, int n,
+  Tower *t, TowerX (*xyw)[3][TOWER_SIZE])
+{
+  int map[8][TOWER_MAXDEPTH];
+  assert(n <= 8);
+  t->depth = 0;
+  for (int i = 0; i < n; i++)
+    if (! tower_merge(ctx, t, &pts[i]->t, map[i]))
+      return false;
+  for (int i = 0; i < n; i++)
+  {
+    int k = pts[i]->t.depth;
+    tower_map(ctx, pts[i]->x.c, k, map[i], t->depth, xyw[i][0]);
+    tower_map(ctx, pts[i]->y.c, k, map[i], t->depth, xyw[i][1]);
+    tower_map(ctx, pts[i]->w.c, k, map[i], t->depth, xyw[i][2]);
+  }
+  return true;
+}
+
+/* The point where the line through P0 and P1 crosses the line through Q0 and
+ * Q1: the cross product of the two lines in homogeneous coordinates. False
+ * where its tower would hold too many roots */
+static bool
+tower_point_lines(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
+  const TowerPoint *q0, const TowerPoint *q1, TowerPoint *out)
+{
+  const TowerPoint *pts[4] = {p0, p1, q0, q1};
+  TowerX c[4][3][TOWER_SIZE];
+  if (! tower_points_read(ctx, pts, 4, &out->t, c))
+    return false;
+  const Tower *t = &out->t;
+  int k = t->depth;
+  TowerX l[2][3][TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+  for (int j = 0; j < 2; j++)
+    for (int r = 0; r < 3; r++)
+    {
+      /* (a x b)[r] = a[r + 1] b[r + 2] - a[r + 2] b[r + 1] */
+      int r1 = (r + 1) % 3, r2 = (r + 2) % 3;
+      tower_mul_k(ctx, t, c[2 * j][r1], c[2 * j + 1][r2], k, u);
+      tower_mul_k(ctx, t, c[2 * j][r2], c[2 * j + 1][r1], k, v);
+      tower_sub_k(ctx, u, v, k, l[j][r]);
+    }
+  TowerX *o[3] = {out->x.c, out->y.c, out->w.c};
+  for (int r = 0; r < 3; r++)
+  {
+    int r1 = (r + 1) % 3, r2 = (r + 2) % 3;
+    tower_mul_k(ctx, t, l[0][r1], l[1][r2], k, u);
+    tower_mul_k(ctx, t, l[0][r2], l[1][r1], k, v);
+    tower_sub_k(ctx, u, v, k, o[r]);
+  }
+  return true;
+}
+
+/**
+ * @brief Set a point where the line through P0 and P1 meets a circle, the
+ * root sigma along the line, and return the sign of the number under its
+ * root: none where it is negative, a touching where it is zero, 2 where the
+ * point is not built
+ * @details With U = P0 - C w0 and V = P1 w0 - P0 w1 the line is
+ * P0 / w0 + t V / (w0 w1), and it meets the circle at
+ * t = (-(V.U) + sigma sw1 sqrt(D)) w1 / (V.V), sw1 the sign of w1 and
+ * D = (V.U)^2 - (V.V) (U.U - r^2 w0^2): the point
+ * (P0 (V.V) + (-(V.U) + sigma sw1 sqrt(D)) V) / (w0 (V.V)), in the tower of
+ * the line with sqrt(D) above it. Sigma 1 is the farther along P0 -> P1
+ */
+static int
+tower_point_line_circle(TowerCtx *ctx, const TowerPoint *p0,
+  const TowerPoint *p1, double cx, double cy, double r, int sigma, double ox,
+  double oy, TowerPoint *out)
+{
+  const TowerPoint *pts[2] = {p0, p1};
+  TowerX c[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, c) || t.depth == TOWER_MAXDEPTH)
+    return 2;
+  int k = t.depth;
+  TowerX ux[TOWER_SIZE], uy[TOWER_SIZE], vx[TOWER_SIZE], vy[TOWER_SIZE],
+    a[TOWER_SIZE], b[TOWER_SIZE];
+  /* U = P0 - C w0 */
+  tower_mulx_k(ctx, c[0][2], tx_diff(ctx, cx, ox), k, a);
+  tower_sub_k(ctx, c[0][0], a, k, ux);
+  tower_mulx_k(ctx, c[0][2], tx_diff(ctx, cy, oy), k, a);
+  tower_sub_k(ctx, c[0][1], a, k, uy);
+  /* V = P1 w0 - P0 w1 */
+  tower_mul_k(ctx, &t, c[1][0], c[0][2], k, a);
+  tower_mul_k(ctx, &t, c[0][0], c[1][2], k, b);
+  tower_sub_k(ctx, a, b, k, vx);
+  tower_mul_k(ctx, &t, c[1][1], c[0][2], k, a);
+  tower_mul_k(ctx, &t, c[0][1], c[1][2], k, b);
+  tower_sub_k(ctx, a, b, k, vy);
+  TowerX vv[TOWER_SIZE], vu[TOWER_SIZE], uu[TOWER_SIZE], d[TOWER_SIZE];
+  tower_mul_k(ctx, &t, vx, vx, k, a);
+  tower_mul_k(ctx, &t, vy, vy, k, b);
+  tower_add_k(ctx, a, b, k, vv);
+  tower_mul_k(ctx, &t, vx, ux, k, a);
+  tower_mul_k(ctx, &t, vy, uy, k, b);
+  tower_add_k(ctx, a, b, k, vu);
+  tower_mul_k(ctx, &t, ux, ux, k, a);
+  tower_mul_k(ctx, &t, uy, uy, k, b);
+  tower_add_k(ctx, a, b, k, uu);
+  /* U.U - r^2 w0^2 */
+  TowerX rr = tx_val(ctx, r);
+  tower_mul_k(ctx, &t, c[0][2], c[0][2], k, a);
+  tower_mulx_k(ctx, a, tx_mul(ctx, rr, rr), k, a);
+  tower_sub_k(ctx, uu, a, k, uu);
+  tower_mul_k(ctx, &t, vu, vu, k, a);
+  tower_mul_k(ctx, &t, vv, uu, k, b);
+  tower_sub_k(ctx, a, b, k, d);
+  int disc = tower_sign_k(ctx, &t, d, k);
+  int sw1 = tower_sign_k(ctx, &t, c[1][2], k);
+  if (tower_ctx_unsafe(ctx) || sw1 == 0)
+    return 2;
+  if (disc < 0)
+    return disc;
+  out->t = t;
+  memcpy(out->t.h[k].c, d, sizeof(TowerX) * (1 << k));
+  out->t.key[k] = NULL;
+  out->t.depth = k + 1;
+  int half = 1 << k;
+  double s = (double) (sigma * sw1);
+  /* x = x0 (V.V) - (V.U) Vx + s Vx sqrt(D) */
+  TowerX *o[2] = {out->x.c, out->y.c};
+  TowerX *vc[2] = {vx, vy};
+  for (int j = 0; j < 2; j++)
+  {
+    tower_mul_k(ctx, &t, c[0][j], vv, k, a);
+    tower_mul_k(ctx, &t, vu, vc[j], k, b);
+    tower_sub_k(ctx, a, b, k, o[j]);
+    tower_scale_k(ctx, vc[j], s, k, o[j] + half);
+  }
+  tower_mul_k(ctx, &t, c[0][2], vv, k, out->w.c);
+  tower_set(ctx, tx_val(ctx, 0.0), k, out->w.c + half);
+  return disc;
+}
+
+/* The sign of the orientation of three points, 1 where they turn
+ * counterclockwise: the determinant of their homogeneous coordinates times
+ * the signs of their w; 2 where it is not told */
+static int
+tower_orient(TowerCtx *ctx, const TowerPoint *p, const TowerPoint *q,
+  const TowerPoint *r)
+{
+  const TowerPoint *pts[3] = {p, q, r};
+  TowerX c[3][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 3, &t, c))
+    return 2;
+  int k = t.depth;
+  TowerX det[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE], m[TOWER_SIZE];
+  tower_set(ctx, tx_val(ctx, 0.0), k, det);
+  for (int i = 0; i < 3; i++)
+  {
+    /* p . (q x r) */
+    int i1 = (i + 1) % 3, i2 = (i + 2) % 3;
+    tower_mul_k(ctx, &t, c[1][i1], c[2][i2], k, u);
+    tower_mul_k(ctx, &t, c[1][i2], c[2][i1], k, v);
+    tower_sub_k(ctx, u, v, k, m);
+    tower_mul_k(ctx, &t, c[0][i], m, k, m);
+    tower_add_k(ctx, det, m, k, det);
+  }
+  int s = tower_sign_k(ctx, &t, det, k);
+  for (int i = 0; i < 3 && s != 0; i++)
+    s *= tower_sign_k(ctx, &t, c[i][2], k);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/*****************************************************************************
+ * Segments between tangent points, and the meetings they make
+ *****************************************************************************/
+
+/* A tangent point in doubles, from the formula #tower_point_tangent places
+ * it by exactly */
+static void
+tangent_point_round(const TangentPoint *tp, double *x, double *y)
+{
+  double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
+  double d2 = dx * dx + dy * dy, dr = tp->r1 - tp->r2;
+  double se = tp->side * sqrt(fmax(d2 - dr * dr, 0.0));
+  double ux = (dr * dx - se * dy) / d2, uy = (dr * dy + se * dx) / d2;
+  double rk = tp->k ? tp->r2 : tp->r1;
+  *x = (tp->k ? tp->c2x : tp->c1x) + rk * ux;
+  *y = (tp->k ? tp->c2y : tp->c1y) + rk * uy;
+  return;
+}
+
+/* A question about meetings, answered in the arithmetic of @p ctx: its
+ * answer, or 2 where it is not told there */
+typedef int (*TowerPred)(TowerCtx *ctx, const void *arg);
+
+/* The answer of a question in expansions, and in #WideDyadic where those
+ * leave their exact range, the question building its points again */
+static int
+tower_pred_run(TowerPred fn, const void *arg)
+{
+  TowerCtx ctx;
+  /* In doubles carrying a bound on their error first */
+  tower_ctx_init(&ctx, false);
+  ctx.filter = true;
+  int r = fn(&ctx, arg);
+  bool again = (r == 2) || ctx.arena.unsafe;
+  tower_ctx_free(&ctx);
+  if (! again)
+    return r;
+  tower_ctx_init(&ctx, false);
+  r = fn(&ctx, arg);
+  again = (r == 2) || ctx.arena.unsafe;
+  tower_ctx_free(&ctx);
+  if (! again)
+    return r;
+  tower_ctx_init(&ctx, true);
+  r = fn(&ctx, arg);
+  tower_ctx_free(&ctx);
+  return r;
+}
+
+/* The two ends of a segment between tangent points */
+static void
+towerseg_ends(TowerCtx *ctx, const Edge *s, double ox, double oy,
+  TowerPoint *p0, TowerPoint *p1)
+{
+  if (s->from)
+  {
+    tower_point_tangent(ctx, s->from, ox, oy, p0);
+    tower_point_tangent(ctx, s->to, ox, oy, p1);
+  }
+  else
+  {
+    tower_point_xy(ctx, s->x1, s->y1, ox, oy, p0);
+    tower_point_xy(ctx, s->x2, s->y2, ox, oy, p1);
+  }
+  return;
+}
+
+/**
+ * @brief Set the point of a meeting in the arithmetic of @p ctx, taken from
+ * an origin; return 1, 0 where the kind is not one the tower places, 2 where
+ * it is not told
+ * @details A vertex, a tangent point, the crossing of two segments, between
+ * tangent points or of the input (#towerseg_ends), or of two centred arcs,
+ * and the meeting of such a segment with the circle of a centred arc
+ */
+static int
+meet_tower_build(TowerCtx *ctx, const MeetPoint *m, double ox, double oy,
+  TowerPoint *out)
+{
+  switch (m->kind)
+  {
+    case MEET_VERTEX:
+      tower_point_xy(ctx, m->x, m->y, ox, oy, out);
+      return 1;
+    case MEET_TANGENT:
+      tower_point_tangent(ctx, m->tp, ox, oy, out);
+      return 1;
+    case MEET_SEGSEG:
+    case MEET_LINES:
+    {
+      TowerPoint p0, p1, q0, q1;
+      towerseg_ends(ctx, m->p, ox, oy, &p0, &p1);
+      towerseg_ends(ctx, m->q, ox, oy, &q0, &q1);
+      return tower_point_lines(ctx, &p0, &p1, &q0, &q1, out) ? 1 : 2;
+    }
+    case MEET_LINECIRCLE:
+    {
+      TowerPoint p0, p1;
+      towerseg_ends(ctx, m->p, ox, oy, &p0, &p1);
+      int disc = tower_point_line_circle(ctx, &p0, &p1, m->q->cx, m->q->cy,
+        m->q->radius, m->sigma, ox, oy, out);
+      return (disc == 2) ? 2 : ((disc < 0) ? 0 : 1);
+    }
+    case MEET_ARCARC:
+      if (! m->p->centred || ! m->q->centred)
+        return 0;
+      return tower_point_circles(ctx, m->p->cx, m->p->cy, m->p->radius,
+        m->q->cx, m->q->cy, m->q->radius, m->sigma, ox, oy, out) < 0 ? 0 : 1;
+    default:
+      return 0;
+  }
+}
+
+/* The sign of (B - A) . (D - C), the points of one tower question */
+static int
+tower_dot(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b,
+  const TowerPoint *c, const TowerPoint *d)
+{
+  const TowerPoint *pts[4] = {a, b, c, d};
+  TowerX v[4][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 4, &t, v))
+    return 2;
+  int k = t.depth;
+  TowerX s[TOWER_SIZE], u[TOWER_SIZE], w[TOWER_SIZE], z[TOWER_SIZE];
+  tower_set(ctx, tx_val(ctx, 0.0), k, s);
+  for (int j = 0; j < 2; j++)
+  {
+    /* (B wA - A wB) and (D wC - C wD), the vectors times wA wB and wC wD */
+    tower_mul_k(ctx, &t, v[1][j], v[0][2], k, u);
+    tower_mul_k(ctx, &t, v[0][j], v[1][2], k, w);
+    tower_sub_k(ctx, u, w, k, u);
+    tower_mul_k(ctx, &t, v[3][j], v[2][2], k, z);
+    tower_mul_k(ctx, &t, v[2][j], v[3][2], k, w);
+    tower_sub_k(ctx, z, w, k, z);
+    tower_mul_k(ctx, &t, u, z, k, u);
+    tower_add_k(ctx, s, u, k, s);
+  }
+  int sign = tower_sign_k(ctx, &t, s, k);
+  for (int i = 0; i < 4 && sign != 0; i++)
+    sign *= tower_sign_k(ctx, &t, v[i][2], k);
+  return tower_ctx_unsafe(ctx) ? 2 : sign;
+}
+
+/* Whether two points of tower questions are one point: 1, 0, or 2 where it
+ * is not told */
+static int
+tower_same_point(TowerCtx *ctx, const TowerPoint *a, const TowerPoint *b)
+{
+  const TowerPoint *pts[2] = {a, b};
+  TowerX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  TowerX u[TOWER_SIZE], w[TOWER_SIZE];
+  for (int j = 0; j < 2; j++)
+  {
+    tower_mul_k(ctx, &t, v[0][j], v[1][2], k, u);
+    tower_mul_k(ctx, &t, v[1][j], v[0][2], k, w);
+    tower_sub_k(ctx, u, w, k, u);
+    int s = tower_sign_k(ctx, &t, u, k);
+    if (tower_ctx_unsafe(ctx))
+      return 2;
+    if (s != 0)
+      return 0;
+  }
+  return 1;
+}
+
+/* Where a point of the line of a segment stands along it: 0 at its start,
+ * 1 at its end, -1 strictly between them, -2 beyond them, 2 where it is not
+ * told */
+static int
+tower_on_segment(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
+  const TowerPoint *x)
+{
+  int s0 = tower_dot(ctx, p0, x, p0, p1);
+  int s1 = tower_dot(ctx, p1, x, p1, p0);
+  if (s0 == 2 || s1 == 2)
+    return 2;
+  if (s0 == 0)
+    return 0;
+  if (s1 == 0)
+    return 1;
+  return (s0 > 0 && s1 > 0) ? -1 : -2;
+}
+
+typedef struct
+{
+  const Edge *p, *q;
+  TowerMeet *out;
+} TowersegMeetArg;
+
+/* The meeting an end of a segment is: the point where its tangent touches
+ * a circle for a segment between tangent points, the vertex its double
+ * holds for a segment of the input */
+static inline void
+towerseg_end_meet(MeetPoint *m, const Edge *e, int end)
+{
+  if (e->from)
+  {
+    m->kind = MEET_TANGENT;
+    m->tp = end ? e->to : e->from;
+  }
+  else
+  {
+    m->kind = MEET_VERTEX;
+    m->x = end ? e->x2 : e->x1;
+    m->y = end ? e->y2 : e->y1;
+  }
+  return;
+}
+
+/* Two segments between tangent points */
+static int
+towerseg_meet_segs(TowerCtx *ctx, const Edge *p, const Edge *q,
+  TowerMeet *out)
+{
+  double ox = p->x1, oy = p->y1;
+  TowerPoint pe[2], qe[2];
+  towerseg_ends(ctx, p, ox, oy, &pe[0], &pe[1]);
+  towerseg_ends(ctx, q, ox, oy, &qe[0], &qe[1]);
+  const int o[4] = {tower_orient(ctx, &pe[0], &pe[1], &qe[0]),
+    tower_orient(ctx, &pe[0], &pe[1], &qe[1]),
+    tower_orient(ctx, &qe[0], &qe[1], &pe[0]),
+    tower_orient(ctx, &qe[0], &qe[1], &pe[1])};
+  for (int i = 0; i < 4; i++)
+    if (o[i] == 2)
+      return -2;
+  if (o[0] * o[1] < 0 && o[2] * o[3] < 0)
+  {
+    /* A crossing interior to both: (P1 - P0) x (Q1 - Q0) is the orientation
+     * of P0, P1, Q1 less that of P0, P1, Q0, of the sign of the former */
+    memset(&out[0], 0, sizeof(TowerMeet));
+    out[0].m.kind = MEET_LINES;
+    out[0].m.p = p; out[0].m.q = q;
+    out[0].end_p = out[0].end_q = -1;
+    out[0].sign = o[1];
+    return 1;
+  }
+  if (o[0] == 0 && o[1] == 0)
+  {
+    /* On one line: they run along each other unless at most an end of each
+     * meets */
+    int a = tower_on_segment(ctx, &pe[0], &pe[1], &qe[0]);
+    int b = tower_on_segment(ctx, &pe[0], &pe[1], &qe[1]);
+    int c = tower_on_segment(ctx, &qe[0], &qe[1], &pe[0]);
+    int d = tower_on_segment(ctx, &qe[0], &qe[1], &pe[1]);
+    if (a == 2 || b == 2 || c == 2 || d == 2)
+      return -2;
+    if (a == -1 || b == -1 || c == -1 || d == -1 ||
+        (a >= 0 && b >= 0))
+      return -1;
+    int n = 0;
+    for (int j = 0; j < 2; j++)
+    {
+      int at = j ? b : a;
+      if (at < 0)
+        continue;
+      memset(&out[n], 0, sizeof(TowerMeet));
+      towerseg_end_meet(&out[n].m, q, j);
+      out[n].end_p = at;
+      out[n].end_q = j;
+      n++;
+    }
+    return n;
+  }
+  /* An end of one on the other */
+  int n = 0;
+  for (int j = 0; j < 4 && n < 2; j++)
+  {
+    if (o[j] != 0)
+      continue;
+    const TowerPoint *x = (j < 2) ? &qe[j] : &pe[j - 2];
+    int at = (j < 2) ? tower_on_segment(ctx, &pe[0], &pe[1], x) :
+      tower_on_segment(ctx, &qe[0], &qe[1], x);
+    if (at == 2)
+      return -2;
+    if (at == -2)
+      continue;
+    /* An end of each at one point is found from both */
+    bool seen = false;
+    for (int i = 0; i < n; i++)
+      seen = seen || ((j < 2) ? out[i].end_q == j :
+        out[i].end_p == j - 2);
+    if (seen)
+      continue;
+    memset(&out[n], 0, sizeof(TowerMeet));
+    if (j < 2)
+    {
+      towerseg_end_meet(&out[n].m, q, j);
+      out[n].end_q = j;
+      out[n].end_p = at;
+    }
+    else
+    {
+      towerseg_end_meet(&out[n].m, p, j - 2);
+      out[n].end_p = j - 2;
+      out[n].end_q = at;
+    }
+    n++;
+  }
+  return n;
+}
+
+/* A segment between tangent points and the circle of a centred arc */
+static int
+towerseg_meet_circle(TowerCtx *ctx, const Edge *p, const Edge *q,
+  TowerMeet *out)
+{
+  double ox = p->x1, oy = p->y1;
+  TowerPoint pe[2], y[2];
+  towerseg_ends(ctx, p, ox, oy, &pe[0], &pe[1]);
+  int disc = 0;
+  for (int r = 0; r < 2; r++)
+  {
+    disc = tower_point_line_circle(ctx, &pe[0], &pe[1], q->cx, q->cy,
+      q->radius, r ? 1 : -1, ox, oy, &y[r]);
+    if (disc == 2)
+      return -2;
+    if (disc < 0)
+      return 0;
+  }
+  int n = 0;
+  for (int r = 0; r < (disc == 0 ? 1 : 2); r++)
+  {
+    int at = tower_on_segment(ctx, &pe[0], &pe[1], &y[r]);
+    if (at == 2)
+      return -2;
+    if (at == -2)
+      continue;
+    memset(&out[n], 0, sizeof(TowerMeet));
+    out[n].end_q = -1;
+    out[n].end_p = at;
+    if (at >= 0)
+      towerseg_end_meet(&out[n].m, p, at);
+    else
+    {
+      out[n].m.kind = MEET_LINECIRCLE;
+      out[n].m.p = p; out[n].m.q = q;
+      out[n].m.sigma = r ? 1 : -1;
+      /* The segment leaves the disc at its farther root: its direction
+       * crossed with the tangent of a counterclockwise circle has the sign
+       * of the root; a touching, the one root of the line, crosses nothing,
+       * its sign 0 */
+      out[n].sign = (disc == 0) ? 0 : (r ? 1 : -1) * (q->ccw ? 1 : -1);
+    }
+    n++;
+  }
+  return n;
+}
+
+static int
+towerseg_meet_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowersegMeetArg *a = arg;
+  int n = a->q->centred ? towerseg_meet_circle(ctx, a->p, a->q, a->out) :
+    towerseg_meet_segs(ctx, a->p, a->q, a->out);
+  /* A count is 0, 1 or 2, so -2, not told, reads as 2 for the tiers */
+  return (n == -2) ? 2 : ((n == 2) ? 3 : n);
+}
+
+/**
+ * @brief Return how a segment between tangent points meets another segment
+ * or the circle of a centred arc, decided exactly
+ * @details Each meeting is an end of either segment, a crossing of the two
+ * segments interior to both, or a meeting of the segment with the circle,
+ * the root sigma along the segment, interior to it. The points lie in towers
+ * of square roots (#TowerPoint): the two ends of a segment in that of the
+ * root of their tangent, the crossings in that of both, the meetings with a
+ * circle one root above
+ * @param[in] p A segment between tangent points (#edges_add_tangent_segment)
+ * @param[in] q Another such segment, or a centred arc (#edges_add_circle)
+ * @param[out] out The meetings, in their order along @p p, a touching of the
+ * circle interior to the segment of sign 0
+ * @return Their number, -1 where the two segments run along each other, -2
+ * where a meeting is not told
+ */
+int
+towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2])
+{
+  assert(p); assert(q); assert(out);
+  TowersegMeetArg arg = {p, q, out};
+  int r = tower_pred_run(towerseg_meet_pred, &arg);
+  return (r == 2) ? -2 : ((r == 3) ? 2 : r);
+}
+
+typedef struct
+{
+  const Edge *e;
+  bool ccw;
+  const MeetPoint *a, *b;
+} TowerOrderArg;
+
+static int
+meets_order_tower_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerOrderArg *o = arg;
+  const Edge *e = o->e;
+  double ox = e->x1, oy = e->y1;
+  TowerPoint pa, pb;
+  int ra = meet_tower_build(ctx, o->a, ox, oy, &pa);
+  int rb = meet_tower_build(ctx, o->b, ox, oy, &pb);
+  if (ra != 1 || rb != 1)
+    return 2;
+  if (! e->centred)
+  {
+    TowerPoint e0, e1;
+    towerseg_ends(ctx, e, ox, oy, &e0, &e1);
+    int s = tower_dot(ctx, &pa, &pb, &e0, &e1);
+    return (s == 2) ? 2 : -s;
+  }
+  /* Around the circle from the point furthest along -x: the half turn of
+   * each, the side of the radius (-1, 0) its radius stands on, then the cross
+   * product of the two radii, in the sense the circle turns */
+  const TowerPoint *pts[2] = {&pa, &pb};
+  TowerX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth, turn = o->ccw ? 1 : -1, cls[2];
+  TowerX rx[2][TOWER_SIZE], ry[2][TOWER_SIZE], u[TOWER_SIZE];
+  for (int i = 0; i < 2; i++)
+  {
+    /* The radius times w: P - C w */
+    tower_mulx_k(ctx, v[i][2], tx_diff(ctx, e->cx, ox), k, u);
+    tower_sub_k(ctx, v[i][0], u, k, rx[i]);
+    tower_mulx_k(ctx, v[i][2], tx_diff(ctx, e->cy, oy), k, u);
+    tower_sub_k(ctx, v[i][1], u, k, ry[i]);
+    int sw = tower_sign_k(ctx, &t, v[i][2], k);
+    /* (-1, 0) x V = -Vy */
+    int side = - tower_sign_k(ctx, &t, ry[i], k) * sw * turn;
+    if (side == 0)
+      cls[i] = (tower_sign_k(ctx, &t, rx[i], k) * sw < 0) ? 0 : 1;
+    else
+      cls[i] = (side > 0) ? 0 : 1;
+  }
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  if (cls[0] != cls[1])
+    return (cls[0] < cls[1]) ? -1 : 1;
+  TowerX a[TOWER_SIZE], b[TOWER_SIZE];
+  tower_mul_k(ctx, &t, rx[0], ry[1], k, a);
+  tower_mul_k(ctx, &t, ry[0], rx[1], k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k) * tower_sign_k(ctx, &t, v[0][2], k) *
+    tower_sign_k(ctx, &t, v[1][2], k) * turn;
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  return (s > 0) ? -1 : ((s < 0) ? 1 : 0);
+}
+
+/**
+ * @brief Return the order of two meetings along a segment between tangent
+ * points or around a centred arc, decided exactly
+ * @details Along a segment by the projection of their difference on its
+ * direction; around a centred arc from the point of its circle furthest
+ * along -x, by the half turn each lies in and then by the cross product of
+ * their radii, as #meets_order_exact orders meetings along an arc
+ * @return -1 where @p a comes first, 1 where @p b does, 0 where they are one
+ * point, 2 where it is not told
+ */
+int
+meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
+  const MeetPoint *b)
+{
+  assert(e); assert(a); assert(b);
+  TowerOrderArg arg = {e, ccw, a, b};
+  return tower_pred_run(meets_order_tower_pred, &arg);
+}
+
+typedef struct
+{
+  const Edge *s;
+  double px, py;
+} TowerSideArg;
+
+static int
+towerseg_side_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerSideArg *o = arg;
+  TowerPoint e0, e1, p;
+  towerseg_ends(ctx, o->s, o->px, o->py, &e0, &e1);
+  tower_point_xy(ctx, o->px, o->py, o->px, o->py, &p);
+  return tower_orient(ctx, &e0, &e1, &p);
+}
+
+/**
+ * @brief Return the side of a segment between tangent points a point stands
+ * on, decided exactly: 1 to its left, -1 to its right, 0 on its line
+ */
+int
+towerseg_side(const Edge *s, double px, double py)
+{
+  assert(s);
+  TowerSideArg arg = {s, px, py};
+  return tower_pred_run(towerseg_side_pred, &arg);
+}
+
+typedef struct
+{
+  const MeetPoint *m;
+  double py;
+} TowerYArg;
+
+static int
+meet_point_y_side_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerYArg *o = arg;
+  TowerPoint p;
+  if (meet_tower_build(ctx, o->m, 0.0, o->py, &p) != 1)
+    return 2;
+  int s = tower_sign_k(ctx, &p.t, p.y.c, p.t.depth) *
+    tower_sign_k(ctx, &p.t, p.w.c, p.t.depth);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return the side of the horizontal line y = @p py the point of a
+ * meeting lies on, decided exactly: 1 above, -1 below, 0 on it, 2 where it is
+ * not told
+ */
+int
+meet_point_y_side(const MeetPoint *m, double py)
+{
+  assert(m);
+  TowerYArg arg = {m, py};
+  return tower_pred_run(meet_point_y_side_pred, &arg);
+}
+
+typedef struct
+{
+  const MeetPoint *m;
+  double ox, d;
+} TowerXSideArg;
+
+static int
+meet_point_x_side_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerXSideArg *o = arg;
+  TowerPoint p;
+  if (meet_tower_build(ctx, o->m, o->ox, 0.0, &p) != 1)
+    return 2;
+  /* (X - d w) w, X taken from ox */
+  int k = p.t.depth;
+  TowerX u[TOWER_SIZE];
+  tower_mulx_k(ctx, p.w.c, tx_diff(ctx, o->d, 0.0), k, u);
+  tower_sub_k(ctx, p.x.c, u, k, u);
+  int s = tower_sign_k(ctx, &p.t, u, k) * tower_sign_k(ctx, &p.t, p.w.c, k);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return the side of the vertical line x = @p ox + @p d the point of
+ * a meeting lies on, decided exactly: 1 right of it, -1 left, 0 on it, 2
+ * where it is not told
+ * @details As #meet_point_y_side reads a horizontal line; the line of the
+ * points of circles of centre @p ox and radius @p d furthest along x
+ */
+int
+meet_point_x_side(const MeetPoint *m, double ox, double d)
+{
+  assert(m);
+  TowerXSideArg arg = {m, ox, d};
+  return tower_pred_run(meet_point_x_side_pred, &arg);
+}
+
+typedef struct
+{
+  const MeetPoint *a, *b;
+} TowerXArg;
+
+static int
+meets_x_cmp_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerXArg *o = arg;
+  TowerPoint pa, pb;
+  double ox = o->a->x, oy = o->a->y;
+  if (meet_tower_build(ctx, o->a, ox, oy, &pa) != 1 ||
+      meet_tower_build(ctx, o->b, ox, oy, &pb) != 1)
+    return 2;
+  /* Xa wb - Xb wa, read in the tower of both, as #meets_order_tower reads
+   * the cross product of two radii */
+  const TowerPoint *pts[2] = {&pa, &pb};
+  TowerX v[2][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, 2, &t, v))
+    return 2;
+  int k = t.depth;
+  TowerX u[TOWER_SIZE], w[TOWER_SIZE];
+  tower_mul_k(ctx, &t, v[0][0], v[1][2], k, u);
+  tower_mul_k(ctx, &t, v[1][0], v[0][2], k, w);
+  tower_sub_k(ctx, u, w, k, u);
+  int s = tower_sign_k(ctx, &t, u, k) * tower_sign_k(ctx, &t, v[0][2], k) *
+    tower_sign_k(ctx, &t, v[1][2], k);
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return how the x coordinates of the points of two meetings
+ * compare, decided exactly: -1 where the first is smaller, 1 where it is
+ * larger, 0 where they are equal, 2 where it is not told
+ * @details The points lie in towers of square roots (#meet_point_y_side
+ * reads one against a line)
+ */
+int
+meets_x_cmp(const MeetPoint *a, const MeetPoint *b)
+{
+  assert(a); assert(b);
+  TowerXArg arg = {a, b};
+  return tower_pred_run(meets_x_cmp_pred, &arg);
+}
+
+/* A quotient of two filtered values, and a bound on its error, the divisor
+ * kept away from zero by its bound; false where it is not */
+static bool
+tower_f_div(ArcsegFilter a, ArcsegFilter b, double *v, double *e)
+{
+  double m = fabs(b.v) - b.e;
+  if (! (m > 0.0) || ! isfinite(a.v) || ! isfinite(b.v))
+    return false;
+  *v = a.v / b.v;
+  *e = ((a.e + fabs(*v) * b.e) / m) * (1.0 + 4.0 * DBL_EPSILON) +
+    2.0 * DBL_EPSILON * fabs(*v) + DBL_MIN;
+  return isfinite(*v) && isfinite(*e);
+}
+
+typedef struct
+{
+  const MeetPoint *m;
+  double *x, *y, *box;
+} TowerBoundsArg;
+
+/* A double as an unsigned integer whose order is that of the doubles */
+static inline uint64_t
+tower_double_key(double d)
+{
+  uint64_t u;
+  memcpy(&u, &d, sizeof(u));
+  return (u & UINT64CONST(0x8000000000000000)) ? ~u :
+    (u | UINT64CONST(0x8000000000000000));
+}
+
+static inline double
+tower_key_double(uint64_t key)
+{
+  uint64_t u = (key & UINT64CONST(0x8000000000000000)) ?
+    (key & ~UINT64CONST(0x8000000000000000)) : ~key;
+  double d;
+  memcpy(&d, &u, sizeof(d));
+  return d;
+}
+
+/* Narrow [lo, hi], two doubles holding org + num / den of a tower, to two
+ * consecutive doubles, or to one where it is a double: bisected in the order
+ * of the doubles, each step decided exactly by the sign of
+ * num - (m - org) den. False where a sign is not told */
+static bool
+tower_bisect(TowerCtx *ctx, const Tower *t, const TowerX *num,
+  const TowerX *den, int k, double org, double *lo, double *hi)
+{
+  int sd = tower_sign_k(ctx, t, den, k);
+  if (sd == 0 || tower_ctx_unsafe(ctx))
+    return false;
+  uint64_t klo = tower_double_key(*lo), khi = tower_double_key(*hi);
+  TowerX md[TOWER_SIZE];
+  while (khi - klo > 1)
+  {
+    uint64_t kmid = klo + (khi - klo) / 2;
+    double m = tower_key_double(kmid);
+    tower_mulx_k(ctx, den, tx_diff(ctx, m, org), k, md);
+    tower_sub_k(ctx, num, md, k, md);
+    int s = tower_sign_k(ctx, t, md, k) * sd;
+    if (tower_ctx_unsafe(ctx))
+      return false;
+    if (s == 0)
+    {
+      klo = khi = kmid;
+      break;
+    }
+    if (s > 0)
+      klo = kmid;
+    else
+      khi = kmid;
+  }
+  *lo = tower_key_double(klo);
+  *hi = tower_key_double(khi);
+  return true;
+}
+
+/* A double near the point of a meeting, which the point is read from so
+ * that the bound on the error of its offset is small beside its coordinates:
+ * the centre of a circle it lies on, or the start of a segment */
+static void
+meet_point_origin(const MeetPoint *m, double *ox, double *oy)
+{
+  switch (m->kind)
+  {
+    case MEET_TANGENT:
+      *ox = m->tp->k ? m->tp->c2x : m->tp->c1x;
+      *oy = m->tp->k ? m->tp->c2y : m->tp->c1y;
+      return;
+    case MEET_LINES:
+    case MEET_LINECIRCLE:
+      *ox = m->p->x1; *oy = m->p->y1;
+      return;
+    case MEET_ARCARC:
+      *ox = m->p->cx; *oy = m->p->cy;
+      return;
+    default:
+      *ox = m->x; *oy = m->y;
+      return;
+  }
+}
+
+static int
+meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerBoundsArg *o = arg;
+  TowerPoint p;
+  double org[2];
+  meet_point_origin(o->m, &org[0], &org[1]);
+  if (! isfinite(org[0]) || ! isfinite(org[1]))
+    org[0] = org[1] = 0.0;
+  if (meet_tower_build(ctx, o->m, org[0], org[1], &p) != 1 ||
+      tower_ctx_unsafe(ctx))
+    return 2;
+  int k = p.t.depth;
+  ArcsegFilter fw = tower_filter_k(ctx, &p.t, p.w.c, k);
+  const TowerX *num[2] = {p.x.c, p.y.c};
+  double *val[2] = {o->x, o->y};
+  for (int j = 0; j < 2; j++)
+  {
+    ArcsegFilter f = tower_filter_k(ctx, &p.t, num[j], k);
+    double v, e;
+    bool told = tower_f_div(f, fw, &v, &e);
+    /* The coordinate is the origin plus the offset, the sum rounded once,
+     * which adds half a unit in its last place to the bound */
+    double c = 0.0, ce = 0.0;
+    if (told)
+    {
+      c = org[j] + v;
+      ce = e + DBL_EPSILON * fabs(c) + DBL_MIN;
+      told = isfinite(c) && isfinite(ce);
+    }
+    /* A coordinate the filter holds to a few units in its last place is
+     * written as it reads; any other is narrowed exactly, from the box of
+     * the filter or from the whole range of the doubles where the filter
+     * bounds nothing, as at the crossing of two nearly parallel segments */
+    if (! told || ce > 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN)
+    {
+      double lo = told ? c - ce : - DBL_MAX, hi = told ? c + ce : DBL_MAX;
+      if (! tower_bisect(ctx, &p.t, num[j], p.w.c, k, org[j], &lo, &hi))
+        return 2;
+      c = lo;
+      o->box[2 * j] = lo; o->box[2 * j + 1] = hi;
+    }
+    else
+    {
+      o->box[2 * j] = c - ce; o->box[2 * j + 1] = c + ce;
+    }
+    *val[j] = c;
+  }
+  return 1;
+}
+
+/**
+ * @brief Set the point of a meeting rounded once and a box holding it
+ * exactly; false where it cannot be placed
+ */
+bool
+meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  assert(m); assert(x); assert(y); assert(box);
+  TowerBoundsArg arg = {m, x, y, box};
+  return tower_pred_run(meet_point_bounds_pred, &arg) == 1;
+}
+
+typedef struct
+{
+  const MeetPoint *a, *b;
+} TowerSameArg;
+
+static int
+meets_same_point_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerSameArg *o = arg;
+  TowerPoint pa, pb;
+  if (meet_tower_build(ctx, o->a, 0.0, 0.0, &pa) != 1 ||
+      meet_tower_build(ctx, o->b, 0.0, 0.0, &pb) != 1)
+    return 2;
+  return tower_same_point(ctx, &pa, &pb);
+}
+
+/**
+ * @brief Return whether two meetings are one point, decided exactly: 1 or
+ * 0, 2 where it is not told
+ */
+int
+meets_same_point(const MeetPoint *a, const MeetPoint *b)
+{
+  assert(a); assert(b);
+  TowerSameArg arg = {a, b};
+  return tower_pred_run(meets_same_point_pred, &arg);
+}
+
+/* The direction a centred arc leaves a point of it in, as a vector of the
+ * tower of the point times a positive factor: its radius turned a quarter in
+ * the sense it turns, or the positive x axis for no edge; negated where the
+ * arc arrives at the point. A segment's own is read off its ends
+ * (#edges_turn_cmp_meet) */
+static void
+tower_edge_direction(TowerCtx *ctx, const Edge *e, bool ccw, bool out,
+  const Tower *t, const TowerX (*pc)[TOWER_SIZE], double ox, double oy,
+  TowerX *dx, TowerX *dy)
+{
+  int k = t->depth;
+  TowerX u[TOWER_SIZE];
+  if (! e)
+  {
+    tower_set(ctx, tx_val(ctx, 1.0), k, dx);
+    tower_set(ctx, tx_val(ctx, 0.0), k, dy);
+    return;
+  }
+  {
+    /* (P - C w) times the sign of w */
+    TowerX vx[TOWER_SIZE], vy[TOWER_SIZE];
+    tower_mulx_k(ctx, pc[2], tx_diff(ctx, e->cx, ox), k, u);
+    tower_sub_k(ctx, pc[0], u, k, vx);
+    tower_mulx_k(ctx, pc[2], tx_diff(ctx, e->cy, oy), k, u);
+    tower_sub_k(ctx, pc[1], u, k, vy);
+    double sw = (double) tower_sign_k(ctx, t, pc[2], k);
+    /* Counterclockwise the radius (x, y) turns to (-y, x) */
+    tower_scale_k(ctx, vy, ccw ? - sw : sw, k, dx);
+    tower_scale_k(ctx, vx, ccw ? sw : - sw, k, dy);
+  }
+  if (! out)
+  {
+    tower_scale_k(ctx, dx, -1.0, k, dx);
+    tower_scale_k(ctx, dy, -1.0, k, dy);
+  }
+  return;
+}
+
+typedef struct
+{
+  const Edge *e1, *e2;
+  bool ccw1, out1, ccw2, out2;
+  const MeetPoint *at;
+} TowerTurnArg;
+
+static int
+edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
+{
+  const TowerTurnArg *o = arg;
+  double ox = o->e1 ? o->e1->x1 : (o->e2 ? o->e2->x1 : 0.0);
+  double oy = o->e1 ? o->e1->y1 : (o->e2 ? o->e2->y1 : 0.0);
+  TowerPoint p, s0[2], s1[2];
+  if (meet_tower_build(ctx, o->at, ox, oy, &p) != 1)
+    return 2;
+  /* The point and the ends of the segments, in one tower */
+  const Edge *es[2] = {o->e1, o->e2};
+  const TowerPoint *pts[5];
+  int npts = 0, segat[2] = {-1, -1};
+  pts[npts++] = &p;
+  for (int i = 0; i < 2; i++)
+    if (es[i] && ! es[i]->centred)
+    {
+      towerseg_ends(ctx, es[i], ox, oy, &s0[i], &s1[i]);
+      segat[i] = npts;
+      pts[npts++] = &s0[i];
+      pts[npts++] = &s1[i];
+    }
+  TowerX v[5][3][TOWER_SIZE];
+  Tower t;
+  if (! tower_points_read(ctx, pts, npts, &t, v))
+    return 2;
+  int k = t.depth;
+  TowerX dx[2][TOWER_SIZE], dy[2][TOWER_SIZE];
+  bool ccw[2] = {o->ccw1, o->ccw2}, out[2] = {o->out1, o->out2};
+  for (int i = 0; i < 2; i++)
+  {
+    if (segat[i] >= 0)
+    {
+      /* (E1 w0 - E0 w1) times the sign of w0 w1 */
+      TowerX a[TOWER_SIZE], b[TOWER_SIZE];
+      const TowerX (*e0)[TOWER_SIZE] = v[segat[i]];
+      const TowerX (*e1)[TOWER_SIZE] = v[segat[i] + 1];
+      double sw = (double) (tower_sign_k(ctx, &t, e0[2], k) *
+        tower_sign_k(ctx, &t, e1[2], k));
+      for (int j = 0; j < 2; j++)
+      {
+        tower_mul_k(ctx, &t, e1[j], e0[2], k, a);
+        tower_mul_k(ctx, &t, e0[j], e1[2], k, b);
+        tower_sub_k(ctx, a, b, k, a);
+        tower_scale_k(ctx, a, out[i] ? sw : - sw, k, j ? dy[i] : dx[i]);
+      }
+    }
+    else
+      tower_edge_direction(ctx, es[i], ccw[i], out[i], &t,
+        (const TowerX (*)[TOWER_SIZE]) v[0], ox, oy, dx[i], dy[i]);
+  }
+  int sx[2], sy[2], h[2];
+  for (int i = 0; i < 2; i++)
+  {
+    sx[i] = tower_sign_k(ctx, &t, dx[i], k);
+    sy[i] = tower_sign_k(ctx, &t, dy[i], k);
+    h[i] = edge_direction_half_plane(sx[i], sy[i]);
+  }
+  if (tower_ctx_unsafe(ctx) || h[0] == 2 || h[1] == 2)
+    return 2;
+  if (h[0] != h[1])
+    return h[0] < h[1] ? -1 : 1;
+  TowerX a[TOWER_SIZE], b[TOWER_SIZE];
+  tower_mul_k(ctx, &t, dx[0], dy[1], k, a);
+  tower_mul_k(ctx, &t, dy[0], dx[1], k, b);
+  tower_sub_k(ctx, a, b, k, a);
+  int s = tower_sign_k(ctx, &t, a, k);
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  if (s != 0)
+    return s > 0 ? -1 : 1;
+  if (o->e1 && o->e2)
+  {
+    bool arc1 = o->e1->centred, arc2 = o->e2->centred;
+    if (arc1 != arc2)
+    {
+      /* The arc bends left of the direction where it leaves the point
+       * counterclockwise or arrives at it clockwise (#edges_turn_cmp_exact) */
+      bool left = arc1 ? (o->ccw1 == o->out1) : (o->ccw2 == o->out2);
+      return (left == arc1) ? 1 : -1;
+    }
+    /* Both arcs, or neither */
+    if (arc1)
+    {
+      /* Two circles touching at the point: the one bending further left,
+       * the larger of the curvatures 1/r signed by the side each bends
+       * to, comes after, as an arc after a segment above */
+      bool left1 = (o->ccw1 == o->out1), left2 = (o->ccw2 == o->out2);
+      if (left1 != left2)
+        return left1 ? 1 : -1;
+      double r1 = o->e1->radius, r2 = o->e2->radius;
+      if (r1 == r2)
+        return 2;
+      return ((r1 < r2) == left1) ? 1 : -1;
+    }
+  }
+  return 2;
+}
+
+/**
+ * @brief Return how two edges leaving a meeting are ordered
+ * counterclockwise from the positive x axis, decided exactly: the
+ * #edges_turn_cmp_exact of a point no double holds
+ * @param[in] e1,e2 Segments between tangent points or centred arcs holding
+ * the point; NULL for the positive x axis
+ * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
+ * @param[in] out1,out2 Whether each edge leaves the point
+ * @param[in] at The point
+ * @return -1 where the first comes before the second, 1 where after, 2
+ * where they leave alike or it is not told
+ */
+int
+edges_turn_cmp_meet(const Edge *e1, bool ccw1, bool out1, const Edge *e2,
+  bool ccw2, bool out2, const MeetPoint *at)
+{
+  assert(at);
+  TowerTurnArg arg = {e1, e2, ccw1, out1, ccw2, out2, at};
+  return tower_pred_run(edges_turn_cmp_meet_pred, &arg);
+}
+
+/**
+ * @brief Add to an edge array the segment between two points where tangents
+ * touch circles, which no double holds (#TangentPoint): the edge of the
+ * convex hull of two discs along their common tangent, or the chord between
+ * the points where the two tangents touch one circle
+ * @details Its ends are those points rounded once, and its box holds the
+ * exact segment, so that a box filter only admits candidates; every exact
+ * question about it reads the points (#towerseg_meet)
+ * @param[in,out] edges Edge array
+ * @param[in] from,to The ends, of one root sqrt(E) (#tower_point_tangent);
+ * they outlive the edge array
+ */
+void
+edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
+  const TangentPoint *to)
+{
+  assert(edges); assert(from); assert(to);
+  Edge e;
+  memset(&e, 0, sizeof(Edge));
+  e.etype = EDGE_POLYSEG;
+  e.from = from; e.to = to;
+  double box0[4], box1[4];
+  MeetPoint m0, m1;
+  memset(&m0, 0, sizeof(MeetPoint));
+  memset(&m1, 0, sizeof(MeetPoint));
+  m0.kind = m1.kind = MEET_TANGENT;
+  m0.tp = from; m1.tp = to;
+  if (! meet_point_bounds(&m0, &e.x1, &e.y1, box0) ||
+      ! meet_point_bounds(&m1, &e.x2, &e.y2, box1))
+  {
+    tangent_point_round(from, &e.x1, &e.y1);
+    tangent_point_round(to, &e.x2, &e.y2);
+    box0[0] = box0[1] = e.x1; box0[2] = box0[3] = e.y1;
+    box1[0] = box1[1] = e.x2; box1[2] = box1[3] = e.y2;
+  }
+  e.xmin = Min(box0[0], box1[0]); e.xmax = Max(box0[1], box1[1]);
+  e.ymin = Min(box0[2], box1[2]); e.ymax = Max(box0[3], box1[3]);
+  e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
+  e.length = e.dx * e.dx + e.dy * e.dy;
+  edge_array_add(edges, &e);
+  return;
 }
 
 /* The point of a meeting, exactly: a vertex; two segments crossing at
@@ -6008,20 +7975,10 @@ meet_point_exact(ArcsegArena *arena, const MeetPoint *m, double ox,
           arcseg_x_mul(arena, k, dx));
         return;
       }
-      ArcsegExact s1x = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-        arcseg_x_sub(arena, meet_val(arena, m->p->sx), m1x)), n1x);
-      ArcsegExact s1y = arcseg_x_sub(arena, arcseg_x_mul(arena, d1,
-        arcseg_x_sub(arena, meet_val(arena, m->p->sy), m1y)), n1y);
-      ArcsegExact s2x = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-        arcseg_x_sub(arena, meet_val(arena, m->q->sx), m2x)), n2x);
-      ArcsegExact s2y = arcseg_x_sub(arena, arcseg_x_mul(arena, d2,
-        arcseg_x_sub(arena, meet_val(arena, m->q->sy), m2y)), n2y);
-      ArcsegExact r1 = arcseg_x_mul(arena, arcseg_x_add(arena,
-        arcseg_x_mul(arena, s1x, s1x), arcseg_x_mul(arena, s1y, s1y)),
-        arcseg_x_mul(arena, d2, d2));
-      ArcsegExact r2 = arcseg_x_mul(arena, arcseg_x_add(arena,
-        arcseg_x_mul(arena, s2x, s2x), arcseg_x_mul(arena, s2y, s2y)),
-        arcseg_x_mul(arena, d1, d1));
+      ArcsegExact r1 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, m->p,
+        m1x, m1y, n1x, n1y, d1), arcseg_x_mul(arena, d2, d2));
+      ArcsegExact r2 = arcseg_x_mul(arena, arcarc_radius2_exact(arena, m->q,
+        m2x, m2y, n2x, n2y, d2), arcseg_x_mul(arena, d1, d1));
       ArcsegExact g = arcseg_x_sub(arena, arcseg_x_add(arena, qq, r1), r2);
       r->h = arcseg_x_sub(arena,
         arcseg_x_scale(arena, arcseg_x_mul(arena, r1, qq), 4.0),
@@ -6089,13 +8046,29 @@ edge_scale(const Edge *e, double f1, double f2, double g1, double g2,
   bool exact = true;
   for (size_t i = 0; i < n; i++)
     exact = coord_scale(v[i], f1, f2, g1, g2) && exact;
+  /* A centred arc carries its circle as its centre and radius */
+  if (e->centred)
+  {
+    exact = coord_scale(&out->cx, f1, f2, g1, g2) && exact;
+    exact = coord_scale(&out->cy, f1, f2, g1, g2) && exact;
+    exact = coord_scale(&out->radius, f1, f2, g1, g2) && exact;
+  }
   return exact;
 }
 
-/* Widen a box by the points of an edge, as #edge_scale reads them */
+/* Widen a box by the points of an edge, as #edge_scale reads them: the box
+ * of its circle for a centred arc */
 static void
 edge_extent(const Edge *e, double box[4])
 {
+  if (e->centred)
+  {
+    box[0] = Min(box[0], e->cx - e->radius);
+    box[1] = Max(box[1], e->cx + e->radius);
+    box[2] = Min(box[2], e->cy - e->radius);
+    box[3] = Max(box[3], e->cy + e->radius);
+    return;
+  }
   double x[5] = {e->x1, e->x2, e->sx, e->mx, e->ex};
   double y[5] = {e->y1, e->y2, e->sy, e->my, e->ey};
   int n = (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC) ? 5 : 2;
@@ -6114,6 +8087,10 @@ int
 meets_order_exact(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b)
 {
+  /* Meetings no double holds, and the segments between them, are ordered
+   * in their towers of square roots (#meets_order_tower) */
+  if (e->from || a->kind >= MEET_TANGENT || b->kind >= MEET_TANGENT)
+    return meets_order_tower(e, ccw, a, b);
   /* The terms are products of many differences of coordinates, exact while
    * none leaves the range of doubles: the edges are read scaled by the power
    * of two that brings their extent into [1, 2), which changes no sign */
@@ -6202,10 +8179,14 @@ meets_order_scaled(const Edge *e, bool ccw, const MeetPoint *a,
       arcseg_x_sub(arena, mx, meet_val(arena, ox)), d), nx);
     ArcsegExact cy = arcseg_x_add(arena, arcseg_x_mul(arena,
       arcseg_x_sub(arena, my, meet_val(arena, oy)), d), ny);
-    ArcsegExact ux = arcseg_x_sub(arena, arcseg_x_mul(arena,
-      arcseg_x_diff(arena, e->x1, ox), d), cx);
-    ArcsegExact uy = arcseg_x_sub(arena, arcseg_x_mul(arena,
-      arcseg_x_diff(arena, e->y1, oy), d), cy);
+    /* A centred arc starts at the point of its circle furthest along -x,
+     * the radius (-r, 0) */
+    ArcsegExact ux = e->centred ? meet_val(arena, - e->radius) :
+      arcseg_x_sub(arena, arcseg_x_mul(arena, arcseg_x_diff(arena, e->x1,
+        ox), d), cx);
+    ArcsegExact uy = e->centred ? meet_val(arena, 0.0) :
+      arcseg_x_sub(arena, arcseg_x_mul(arena, arcseg_x_diff(arena, e->y1,
+        oy), d), cy);
     const MeetExact *pts[2] = {&pa, &pb};
     ArcsegExact vx0[2], vy0[2], vx1[2], vy1[2];
     int cls[2], turn = ccw ? 1 : -1;
@@ -17743,11 +19724,30 @@ static bool
 arc_geometry(const POINT4D *p1, const POINT4D *p2, const POINT4D *p3,
   double *cx, double *cy, double *radius, double *sweep)
 {
+  /* Ends at one point: the whole circle through the middle, whose diameter
+   * joins the two, as PostGIS reads such an arc; a full turn has no sense
+   * of its own, and a hole is told by its place in the surface */
+  if (p1->x == p3->x && p1->y == p3->y)
+  {
+    *cx = 0.5 * (p1->x + p2->x);
+    *cy = 0.5 * (p1->y + p2->y);
+    *radius = 0.5 * hypot(p2->x - p1->x, p2->y - p1->y);
+    *sweep = 2 * M_PI;
+    return *radius > 0.0;
+  }
+  /* The arc turns counterclockwise where the three points turn left, and
+   * three points on one line, both decided exactly, are a straight segment */
+  int turn = cross_product_sign(p1->x, p1->y, p2->x, p2->y, p1->x, p1->y,
+    p3->x, p3->y);
+  if (turn == 0)
+    return false;
   double ox = p2->x, oy = p2->y;
   double ax = p1->x - ox, ay = p1->y - oy;
   double bx = p3->x - ox, by = p3->y - oy;
   double d = 2 * (ax * (0 - by) + 0 * (by - ay) + bx * (ay - 0));
-  if (fabs(d) < MEOS_GEOM_TOLERANCE)
+  /* Points so nearly on one line that the doubles place no centre draw a
+   * circle wider than they can state, its segment no area they can either */
+  if (d == 0.0)
     return false;
 
   double asq = ax * ax + ay * ay, bsq = bx * bx + by * by;
@@ -17756,18 +19756,19 @@ arc_geometry(const POINT4D *p1, const POINT4D *p2, const POINT4D *p3,
   *cx = ux + ox;
   *cy = uy + oy;
   *radius = hypot(ux, uy);
-  if (*radius < MEOS_GEOM_TOLERANCE)
+  if (! isfinite(*radius) || *radius == 0.0)
     return false;
 
-  double t1 = atan2(p1->y - *cy, p1->x - *cx);
-  double t2 = atan2(p2->y - *cy, p2->x - *cx);
-  double t3 = atan2(p3->y - *cy, p3->x - *cx);
-  /* The arc runs from p1 to p3 the way round that passes through p2 */
-  bool ccw = angle_normalize(t2 - t1) < angle_normalize(t3 - t1) ||
-    angle_normalize(t3 - t1) < MEOS_EPSILON;
-  *sweep = ccw ? angle_normalize(t3 - t1) : -angle_normalize(t1 - t3);
-  if (fabs(*sweep) < MEOS_EPSILON)
-    *sweep = ccw ? 2 * M_PI : -2 * M_PI;
+  /* The angle from the radius to p1 to the one to p3, read off their cross
+   * and dot products, which keeps an arc of next to no sweep as small as it
+   * is, then taken the way round the arc turns */
+  double rx1 = p1->x - *cx, ry1 = p1->y - *cy;
+  double rx3 = p3->x - *cx, ry3 = p3->y - *cy;
+  double phi = atan2(rx1 * ry3 - ry1 * rx3, rx1 * rx3 + ry1 * ry3);
+  if (turn > 0)
+    *sweep = (phi > 0.0) ? phi : phi + 2 * M_PI;
+  else
+    *sweep = (phi < 0.0) ? phi : phi - 2 * M_PI;
   return true;
 }
 
@@ -17916,9 +19917,14 @@ centroid_add_ring(CentroidAcc *acc, const POINTARRAY *pa, bool arcs,
     double cx, cy, radius, sweep;
     if (! arc_geometry(&p1, &p2, &p3, &cx, &cy, &radius, &sweep))
       continue;
+    /* theta - sin(theta), which cancels for a small sweep, from its series
+     * there; every arc adds its segment, however small */
     double theta = fabs(sweep);
-    double denom = theta - sin(theta);
-    if (fabs(denom) < MEOS_EPSILON)
+    double t2 = theta * theta;
+    double denom = (theta < 1e-2) ?
+      theta * t2 * (1.0 / 6 - t2 * (1.0 / 120 - t2 / 5040)) :
+      theta - sin(theta);
+    if (denom == 0.0)
       continue;
     double area = radius * radius * denom / 2;
     double half = theta / 2;
