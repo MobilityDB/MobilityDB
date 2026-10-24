@@ -82,7 +82,7 @@ jobs:
 
       - name: Install Requirements
         run: |
-          sudo apt install -y licensecheck
+          sudo apt-get install -y licensecheck
       - name: Run License Check
         run: ./tools/scripts/test_license.sh
 

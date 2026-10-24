@@ -8,6 +8,8 @@ description: >
   never reads are removed so that an outage in one of them is not an outage in
   the build. The settings land in an apt configuration file, so every apt call
   the job makes afterwards reads them, including the ones inside other actions.
+  A mirror that keeps sending, only slowly, never trips a transfer timeout, so
+  every apt-get pass that downloads is also bounded in time and retried.
 
 runs:
   using: composite
@@ -24,6 +26,50 @@ runs:
         Acquire::https::Timeout "30";
         Acquire::ftp::Timeout "30";
         CONF
+
+    - name: Bound and retry every apt-get pass that downloads
+      shell: bash
+      run: |
+        # The transfer timeout above fires only when a mirror sends nothing, and a
+        # mirror that trickles keeps it from firing: a 50 MB package arriving at
+        # tens of kilobytes a second holds a job for a quarter of an hour without
+        # one failed transfer. So each apt-get pass
+        # that downloads (update, install, the upgrades, build-dep) runs under a
+        # time limit and is retried, and apt resumes the partial downloads. Between
+        # attempts dpkg finishes any unpacking the limit interrupted. Every other
+        # apt-get command reaches apt-get untouched. The wrapper sits in
+        # /usr/local/sbin, first in sudo's secure_path and in the runner's PATH,
+        # so every later apt-get call goes through it, those of other actions too.
+        sudo tee /usr/local/sbin/apt-get > /dev/null <<'WRAP'
+        #!/bin/bash
+        real=/usr/bin/apt-get
+        bounded=no
+        for arg in "$@"; do
+          case "$arg" in
+            update|install|upgrade|dist-upgrade|full-upgrade|build-dep)
+              bounded=yes; break ;;
+          esac
+        done
+        [ "$bounded" = no ] && exec "$real" "$@"
+        limit=${APT_ATTEMPT_SECONDS:-420}
+        tries=${APT_ATTEMPTS:-3}
+        rc=0
+        for n in $(seq 1 "$tries"); do
+          timeout --kill-after=30 "$limit" "$real" "$@" && exit 0
+          rc=$?
+          echo "apt-get $*: attempt $n of $tries ended with status $rc" >&2
+          if [ "$n" -lt "$tries" ]; then
+            dpkg --configure -a || true
+            sleep 10
+          fi
+        done
+        exit "$rc"
+        WRAP
+        sudo chmod 755 /usr/local/sbin/apt-get
+        # A wrapper that sudo does not reach bounds nothing: state which apt-get
+        # each caller resolves to, and refuse a job where sudo misses it.
+        echo "apt-get: $(command -v apt-get) (sudo: $(sudo sh -c 'command -v apt-get'))"
+        [ "$(sudo sh -c 'command -v apt-get')" = /usr/local/sbin/apt-get ]
 
     - name: Drop the package sources the build does not read
       shell: bash
