@@ -3033,6 +3033,44 @@ arr_centred_right_cmp(const Edge *p, const Edge *q)
   return polynomial_sign_exact(&sum, &term, 1);
 }
 
+/* Return the side of the centre C of the circle of an arc a height y lies
+ * on, sign(C.y - y), decided exactly: the centre given for a centred arc,
+ * the middle of the diameter for a half of a full circle, and for an arc of
+ * three points S, M, E the circumcentre C = S + U with
+ * U.y = (a.x |b|^2 - b.x |a|^2) / D, a = M - S, b = E - S,
+ * D = 2 (a.x b.y - a.y b.x), so that C.y - y = N / D with
+ * N = (S.y - y) D + a.x |b|^2 - b.x |a|^2, a polynomial in the differences
+ * of the input doubles (#polynomial_sign_exact, as #arc_same_circle reads
+ * them); 2 where three collinear points fix no circle */
+static int
+arr_arc_centre_y_side(const Edge *e, double y)
+{
+  if (e->centred)
+    return (e->cy > y) - (e->cy < y);
+  if (e->diameter)
+  {
+    const double t[3] = {e->sy, e->ey, -2.0 * y};
+    ExactSum sum;
+    exact_sum_set(&sum, t, 3);
+    PolyTerm term = {1.0, 1, {0}};
+    return polynomial_sign_exact(&sum, &term, 1);
+  }
+  const double t[5][2] = {{e->mx, - e->sx}, {e->my, - e->sy},
+    {e->ex, - e->sx}, {e->ey, - e->sy}, {e->sy, - y}};
+  ExactSum sums[5];
+  for (int k = 0; k < 5; k++)
+    exact_sum_set(&sums[k], t[k], 2);
+  /* ax 0, ay 1, bx 2, by 3, S.y - y 4 */
+  const PolyTerm dterms[2] = {{2.0, 2, {0, 3}}, {-2.0, 2, {1, 2}}};
+  const PolyTerm nterms[6] = {{2.0, 3, {4, 0, 3}}, {-2.0, 3, {4, 1, 2}},
+    {1.0, 3, {0, 2, 2}}, {1.0, 3, {0, 3, 3}}, {-1.0, 3, {2, 0, 0}},
+    {-1.0, 3, {2, 1, 1}}};
+  int sd = polynomial_sign_exact(sums, dterms, 2);
+  if (sd == 0)
+    return 2;
+  return polynomial_sign_exact(sums, nterms, 6) * sd;
+}
+
 /* Return 1 where the piece of an arc holds the point of its circle furthest
  * along x, 0 where it does not, 2 where the intervals cannot tell */
 static int
@@ -3486,6 +3524,32 @@ arr_component_extreme(const Arr *a, const uint32_t *comp, uint32_t cn,
        * the last place of that point, the order of the ends tells; only
        * among stretches, whose ends compete with the arcs, as a piece ending
        * at that point leaves it to the node there */
+      /* An arc ending at a vertex the point of its circle furthest along x,
+       * R, lies within the intervals of: an arc leaves its start A toward
+       * +x, and so passes R, exactly where A lies below the centre when it
+       * turns counterclockwise, above it when it turns clockwise, and
+       * reaches its end B from +x exactly where B lies above the centre
+       * counterclockwise, below it clockwise (#arr_arc_centre_y_side); at
+       * the height of the centre the vertex is R itself, which the vertex
+       * already stands for. As the round joins of a buffer start and end
+       * where straight sides tangent to them leave them */
+      if (holds == 2 && ! a->e[p->edge].centred)
+      {
+        const ArrNode *na = &a->nodes[p->from], *nb = &a->nodes[p->to];
+        bool neara = na->vertex && na->x >= x.lo && na->x <= x.hi;
+        bool nearb = nb->vertex && nb->x >= x.lo && nb->x <= x.hi;
+        if (neara != nearb)
+        {
+          int side = arr_arc_centre_y_side(&a->e[p->edge],
+            neara ? na->y : nb->y);
+          if (side != 2)
+          {
+            bool ccw = a->ccw[p->edge];
+            holds = (side == 0) ? 0 : (neara ?
+              (ccw ? side > 0 : side < 0) : (ccw ? side < 0 : side > 0));
+          }
+        }
+      }
       if (holds == 2 && a->sup && a->e[p->edge].centred)
       {
         int h = arr_piece_holds_right_exact(a, p);
