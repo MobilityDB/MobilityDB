@@ -31,13 +31,23 @@ traversedArea(tcbuffer,unary_union boolean=false) → geometry
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
 -- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
-</pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id9736"></a><p>Return the temporal geometric point given by the centers of a temporal circular buffer</p><pre class="programlisting">
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', true));
+/* CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 0.5,3.5 1,3 1.5),(3 1.5,1 1.5),
+   CIRCULARSTRING(1 1.5,0.646446609406726 1.353553390593274,0.5 1),
+   CIRCULARSTRING(0.5 1,0.646446609406726 0.646446609406726,1 0.5),(1 0.5,3 0.5))) */
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
+  Cbuffer(Point(3 1), 0)@2001-01-02, Cbuffer(Point(4 1), 0.5)@2001-01-03]', true));
+/* GEOMETRYCOLLECTION(CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3.75 0.566987298107781,
+   4.5 1,3.75 1.433012701892219),(3.75 1.433012701892219,3 1,3.75 0.566987298107781))),
+   LINESTRING(1 1,3 1)) */
+</pre><p>The argument is false unless it is given, and the function then answers the pieces the buffer sweeps, each a disc or the region a disc sweeps between two consecutive instants, gathered into one geometry. With <code class="varname">unary_union = true</code> they are dissolved into the region they cover, computed exactly: every meeting of the circles and of the segments joining them is decided on the input coordinates, no arc is replaced by segments, and only the vertices of the result are rounded, each once. The result keeps its arcs, as a <code class="varname">CURVEPOLYGON</code> or a <code class="varname">MULTISURFACE</code>. Where the buffer keeps a zero radius, the line or the point it draws that no disc covers is returned beside the surfaces in a <code class="varname">GEOMETRYCOLLECTION</code>. Where the computation cannot decide a meeting or an order of the boundaries, the function raises an error rather than answer an approximation.</p></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id9741"></a><p>Return the temporal geometric point given by the centers of a temporal circular buffer</p><pre class="programlisting">
 centroid(tcbuffer) → tgeompoint
 </pre><pre class="programlisting">
 SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
 -- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
-</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id9743"></a><p>Return the convex hull of the area traversed by the temporal circular buffer</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id9748"></a><p>Return the convex hull of the area traversed by the temporal circular buffer</p><pre class="programlisting">
 convexHull(tcbuffer) → geometry
 </pre><p>The convex hull is computed on the exact traversed area, arcs included: an arc reaches past the points that define it, so it contributes to the hull the piece of its circle that no other feature of the area reaches past. The result is therefore a curved <code class="varname">CURVEPOLYGON</code> bounded by a <code class="varname">COMPOUNDCURVE</code> of circular arcs and straight segments, as exact as the region returned by <code class="varname">traversedArea</code>. The hull is linear only when the buffer keeps a zero radius, since the traversed area then carries no arc.</p><pre class="programlisting">
 SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,

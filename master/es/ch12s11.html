@@ -31,13 +31,23 @@ traversedArea(tcbuffer,unary_union boolean=false) → geometry
 SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]'));
 -- CURVEPOLYGON(CIRCULARSTRING(0.5 1,1.5 1,0.5 1))
-</pre></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id9160"></a><p>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</p><pre class="programlisting">
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
+  Cbuffer(Point(3 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', true));
+/* CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3 0.5,3.5 1,3 1.5),(3 1.5,1 1.5),
+   CIRCULARSTRING(1 1.5,0.646446609406726 1.353553390593274,0.5 1),
+   CIRCULARSTRING(0.5 1,0.646446609406726 0.646446609406726,1 0.5),(1 0.5,3 0.5))) */
+SELECT ST_AsText(traversedArea(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
+  Cbuffer(Point(3 1), 0)@2001-01-02, Cbuffer(Point(4 1), 0.5)@2001-01-03]', true));
+/* GEOMETRYCOLLECTION(CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(3.75 0.566987298107781,
+   4.5 1,3.75 1.433012701892219),(3.75 1.433012701892219,3 1,3.75 0.566987298107781))),
+   LINESTRING(1 1,3 1)) */
+</pre><p>El argumento es falso salvo que se indique, y la función responde entonces las piezas que barre el búfer, cada una un disco o la región que un disco barre entre dos instantes consecutivos, reunidas en una geometría. Con <code class="varname">unary_union = true</code> se disuelven en la región que cubren, calculada de forma exacta: cada encuentro de los círculos y de los segmentos que los unen se decide sobre las coordenadas de entrada, ningún arco se reemplaza por segmentos y solo se redondean los vértices del resultado, cada uno una vez. El resultado conserva sus arcos, como <code class="varname">CURVEPOLYGON</code> o <code class="varname">MULTISURFACE</code>. Donde el búfer mantiene un radio nulo, la línea o el punto que traza y que ningún disco cubre se devuelve junto a las superficies en una <code class="varname">GEOMETRYCOLLECTION</code>. Donde el cálculo no puede decidir un encuentro o un orden de los bordes, la función genera un error en lugar de responder una aproximación.</p></li><li class="listitem"><a name="tcbuffer_centroid"></a><a class="indexterm" name="id9165"></a><p>Devuelve el punto geométrico temporal dado por los centros de un búfer circular temporal</p><pre class="programlisting">
 centroid(tcbuffer) → tgeompoint
 </pre><pre class="programlisting">
 SELECT asText(centroid(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]'));
 -- [POINT(1 1)@2001-01-01, POINT(3 3)@2001-01-03]
-</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id9167"></a><p>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tcbuffer_convexHull"></a><a class="indexterm" name="id9172"></a><p>Devuelve la envolvente convexa del área atravesada por el búfer circular temporal</p><pre class="programlisting">
 convexHull(tcbuffer) → geometry
 </pre><p>La envolvente convexa se calcula sobre el área atravesada exacta, arcos incluidos: un arco alcanza más allá de los puntos que lo definen, por lo que aporta a la envolvente el trozo de su círculo que ninguna otra característica del área alcanza. Por lo tanto, el resultado es un <code class="varname">CURVEPOLYGON</code> curvo delimitado por un <code class="varname">COMPOUNDCURVE</code> de arcos circulares y segmentos rectos, tan exacto como la región que devuelve <code class="varname">traversedArea</code>. La envolvente es lineal solo cuando el búfer mantiene un radio cero, ya que el área atravesada no lleva entonces ningún arco.</p><pre class="programlisting">
 SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
