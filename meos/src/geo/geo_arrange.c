@@ -1325,11 +1325,26 @@ arr_meet_segment_arc(Arr *a, uint32_t i, uint32_t j)
    * convex. Decided in intervals, and asked exactly otherwise. A segment
    * sharing an end with the arc has that end on the circle, and goes to the
    * exact meeting directly. A centred arc has no end on its circle */
-  bool shared = ! arc->centred &&
-    (arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
-     arr_same(s->x1, s->y1, arc->x2, arc->y2) ||
-     arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
-     arr_same(s->x2, s->y2, arc->x2, arc->y2));
+  bool s1 = ! arc->centred && (arr_same(s->x1, s->y1, arc->x1, arc->y1) ||
+    arr_same(s->x1, s->y1, arc->x2, arc->y2));
+  bool s2 = ! arc->centred && (arr_same(s->x2, s->y2, arc->x1, arc->y1) ||
+    arr_same(s->x2, s->y2, arc->x2, arc->y2));
+  bool shared = s1 || s2;
+  if (shared && s1 != s2)
+  {
+    /* The arc is the part of its circle on one side of the line of its
+     * chord, its ends on that line (#arr_arc_side). A segment sharing one
+     * end with it has that end on the line and every other point strictly
+     * on the side of its other end: where that end lies strictly on the
+     * other side, the segment meets the arc at the shared end alone, which
+     * both already end at, decided exactly. Offset segments leave the round
+     * joins of a buffer this way, along their tangents */
+    int want = arr_arc_side(a, j);
+    double qx = s1 ? s->x2 : s->x1, qy = s1 ? s->y2 : s->y1;
+    if (want != 0 && cross_product_sign(arc->sx, arc->sy, arc->ex, arc->ey,
+          arc->sx, arc->sy, qx, qy) == - want)
+      return ARR_ANSWERED;
+  }
   if (! shared)
   {
     Ival ax = ival_sub(ival(s->x1), a->ccx[j]);
