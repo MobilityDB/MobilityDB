@@ -89,8 +89,7 @@ jsonbset_array_length(const Set *set)
  * @param[in] astext True when the output is a text set, otherwise is a
  * jsonb set
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Jsonbset_object_field(), #Jsonbset_object_field_text(),
- *   #Jsonbset_object_field_opr(), #Jsonbset_object_field_text_opr()
+ * @csqlfn #Jsonbset_object_field(), #Jsonbset_object_field_text()
  */
 Set *
 jsonbset_object_field_common(const Set *set, const text *key, bool astext,
@@ -147,8 +146,7 @@ concat_jsonbset_jsonb(const Set *set, const Jsonb *jb, bool invert)
  * @param[in] idx Index
  * @param[in] astext True when the output is a text set
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Jsonbset_array_element(), #Jsonbset_array_element_text(),
- *   #Jsonbset_array_element_opr(), #Jsonbset_array_element_text_opr()
+ * @csqlfn #Jsonbset_array_element(), #Jsonbset_array_element_text()
  */
 Set *
 jsonbset_array_element_common(const Set *set, int idx, bool astext,
@@ -528,8 +526,7 @@ jsonbset_delete_path(const Set *set, text **path_elems, int path_len)
  * @param[in] path_len Number of elements in the input array
  * @param[in] astext True when the output is a text set
  * @param[in] null_handle States the null value treatment
- * @csqlfn #Jsonbset_extract_path(), #Jsonbset_extract_path_text(),
- *   #Jsonbset_extract_path_opr(), #Jsonbset_extract_path_text_opr()
+ * @csqlfn #Jsonbset_extract_path(), #Jsonbset_extract_path_text()
  */
 Set *
 jsonbset_extract_path_common(const Set *set, text **path_elems, int path_len,

@@ -552,6 +552,78 @@ def csqlfn_tags():
     return rows
 
 
+def csqlfn_lists():
+    """List of (target, meos_fn, file, line) for every @csqlfn reference, the
+    continuation lines of a wrapped list included, as #csqlfn_tags reads the
+    first line of each."""
+    rows = []
+    for path in sorted(glob.glob(f'{ROOT}/meos/src/**/*.c', recursive=True)):
+        rel = os.path.relpath(path, ROOT)
+        lines = read_text(path).split('\n')
+        for i, ln in enumerate(lines):
+            if '@csqlfn' not in ln:
+                continue
+            fn = ''
+            for k in range(i + 1, min(i + 16, len(lines))):
+                mm = re.match(r'^([a-z][A-Za-z0-9_]+)\s*\(', lines[k])
+                if mm:
+                    fn = mm.group(1)
+                    break
+            j = i
+            while j < len(lines):
+                if j > i and (re.search(r'@\w', lines[j]) or '*/' in lines[j]):
+                    break
+                for target in CSQLFN_REF.findall(lines[j]):
+                    rows.append((target, fn, rel, j + 1))
+                j += 1
+    return rows
+
+
+SQL_FN = re.compile(r'CREATE\s+FUNCTION\s+(\w+)\s*\((.*?)\)\s*RETURNS', re.S | re.I)
+
+
+def sql_signatures():
+    """Map each SQL function name to the argument lists of its declarations."""
+    sigs = {}
+    for path in glob.glob(f'{ROOT}/mobilitydb/sql/**/*.in.sql', recursive=True):
+        for mt in SQL_FN.finditer(read_text(path)):
+            args = [a.strip() for a in mt.group(2).split(',') if a.strip()]
+            sigs.setdefault(mt.group(1), []).append(args)
+    return sigs
+
+
+def opr_procedures():
+    """Return (tagged, not_base): the operator procedures (`…Opr`) a tag names,
+    and the `…Opr` signatures that are not a call of their base function.
+
+    An operator over a function whose trailing arguments default takes the
+    function's two-argument `<function>Opr` procedure, which CREATE OPERATOR
+    needs, as PostgreSQL backs @? by jsonb_path_exists_opr beside the
+    four-argument jsonb_path_exists. Every such procedure is its base function
+    called with its defaults, so it stays in the SQL and reaches no binding: no
+    @csqlfn names its wrapper. A procedure that is not its base call is new
+    capability, which a binding needs, and so a decision of its own."""
+    names = check_sqlfn_names.sql_names()
+    opr = {sym for sym, sql in names.items()
+           if sql and all(n.endswith('Opr') for n in sql)}
+    tagged = [r for r in csqlfn_lists() if r[0] in opr]
+    sigs = sql_signatures()
+
+    def argtype(arg):
+        return re.sub(r'\s+DEFAULT\b.*', '', arg, flags=re.I).split()[-1].lower()
+
+    not_base = []
+    for name in sorted(n for n in sigs if n.endswith('Opr')):
+        for args in sigs[name]:
+            kinds = [argtype(a) for a in args]
+            if not any([argtype(a) for a in base[:len(kinds)]] == kinds and
+                       all(re.search(r'\bDEFAULT\b', a, re.I)
+                           for a in base[len(kinds):])
+                       for base in sigs.get(name[:-3], [])):
+                not_base.append((name, kinds))
+    return tagged, not_base
+
+
 def targets():
     """Return (missing, unreachable): @csqlfn tags naming no reachable wrapper."""
     defined = pg_defined()
@@ -608,7 +680,16 @@ def main():
         for target, fn, rel, line, wrapper in unreachable:
             print(f'  {rel}:{line}: {fn or "?"} -> #{target}()  defined in '
                   f'{wrapper}')
-        sys.exit(1 if missing or fresh else 0)
+        opr_tagged, not_base = opr_procedures()
+        print(f'\n@csqlfn tags naming an operator procedure (…Opr): '
+              f'{len(opr_tagged)}')
+        for target, fn, rel, line in opr_tagged:
+            print(f'  {rel}:{line}: {fn or "?"} -> #{target}()')
+        print(f'\n…Opr signatures that are not their base function called with '
+              f'its defaults: {len(not_base)}')
+        for name, kinds in not_base:
+            print(f'  {name}({", ".join(kinds)})')
+        sys.exit(1 if missing or fresh or opr_tagged or not_base else 0)
     elif mode == '--overtagged':
         rows, excess = overtagged()
         print(f'wrappers carrying more @csqlfn tags than SQL declarations: '
