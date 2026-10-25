@@ -701,6 +701,15 @@ datum_sortkey_size(MeosType type)
     case T_INT4:
     case T_DATE:
       return sizeof(int32);
+#if H3
+    case T_H3INDEX:
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
     case T_FLOAT8:
     case T_TIMESTAMPTZ:
@@ -708,6 +717,39 @@ datum_sortkey_size(MeosType type)
     default:
       return 0;
   }
+}
+
+/**
+ * @brief Return true if the values of a base type have a sort key
+ * @param[in] type Base type
+ */
+bool
+datum_sortkey_type(MeosType type)
+{
+  return datum_sortkey_size(type) > 0 || type == T_TEXT;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a value
+ * @details The key of a text is its bytes, a zero byte written as a zero byte
+ * followed by 0xFF, then two zero bytes ending it
+ * @param[in] d Value
+ * @param[in] type Base type, one #datum_sortkey_type accepts
+ */
+size_t
+datum_sortkey_len(Datum d, MeosType type)
+{
+  assert(datum_sortkey_type(type));
+  if (type != T_TEXT)
+    return datum_sortkey_size(type);
+  const text *txt = DatumGetTextP(d);
+  const char *str = VARDATA_ANY(txt);
+  size_t len = VARSIZE_ANY_EXHDR(txt);
+  size_t result = len + 2;
+  for (size_t i = 0; i < len; i++)
+    if (str[i] == '\0')
+      result++;
+  return result;
 }
 
 /**
@@ -725,22 +767,26 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
 }
 
 /**
- * @brief Write the sort key of a value of a fixed-size ordered base type
+ * @brief Write the sort key of a value of an ordered base type
  * @details The key is written most significant byte first, whatever the byte
  * order of the machine, so that comparing two keys byte by byte as unsigned
  * values orders them as #datum_cmp orders the values. A signed integer has its
  * sign bit flipped. A double canonicalizes the values #pg_float8_cmp holds
  * equal, -0.0 to 0.0 and every NaN to one NaN, then flips its sign bit when it
  * is positive and every bit when it is negative, which places NaN above
- * infinity as #pg_float8_cmp does.
+ * infinity as #pg_float8_cmp does. A text, which #text_cmp orders by its bytes
+ * and a prefix first, writes its bytes, a zero byte as a zero byte followed by
+ * 0xFF, and ends with two zero bytes, which sort below every byte that
+ * continues a longer text, so that the key of a value followed by other keys
+ * still orders as the value does.
  * @param[in] d Value
- * @param[in] type Base type, one #datum_sortkey_size accepts
- * @param[out] out Buffer of #datum_sortkey_size bytes
+ * @param[in] type Base type, one #datum_sortkey_type accepts
+ * @param[out] out Buffer of #datum_sortkey_len bytes
  */
 void
 datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
 {
-  assert(datum_sortkey_size(type) > 0); assert(out);
+  assert(datum_sortkey_type(type)); assert(out);
   const uint32 sign32 = UINT32_C(0x80000000);
   const uint64 sign64 = UINT64CONST(0x8000000000000000);
   switch (type)
@@ -757,6 +803,15 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       sortkey_put_uint64(v ^ sign32, 4, out);
       return;
     }
+#if H3
+    case T_H3INDEX:
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
     {
       uint64 v = DatumGetInt64(d);
@@ -788,6 +843,21 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
         memcpy(&bits, &v, sizeof(bits));
       bits = (bits & sign64) ? ~bits : bits ^ sign64;
       sortkey_put_uint64(bits, 8, out);
+      return;
+    }
+    case T_TEXT:
+    {
+      const text *txt = DatumGetTextP(d);
+      const char *str = VARDATA_ANY(txt);
+      size_t len = VARSIZE_ANY_EXHDR(txt);
+      for (size_t i = 0; i < len; i++)
+      {
+        *out++ = (uint8_t) str[i];
+        if (str[i] == '\0')
+          *out++ = 0xFF;
+      }
+      *out++ = 0;
+      *out = 0;
       return;
     }
     default: /* Error! */

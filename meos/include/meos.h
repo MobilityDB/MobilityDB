@@ -796,6 +796,7 @@ extern bool set_gt(const Set *s1, const Set *s2);
 extern bool set_le(const Set *s1, const Set *s2);
 extern bool set_lt(const Set *s1, const Set *s2);
 extern bool set_ne(const Set *s1, const Set *s2);
+extern uint8_t *set_sortkey(const Set *s, size_t *size);
 extern int span_cmp(const Span *s1, const Span *s2);
 extern bool span_eq(const Span *s1, const Span *s2);
 extern bool span_ge(const Span *s1, const Span *s2);
