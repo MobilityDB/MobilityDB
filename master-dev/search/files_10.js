@@ -27,5 +27,6 @@ var searchData=
   ['postgis_5ffuncs_2eh_24',['postgis_funcs.h',['../postgis__funcs_8h.html',1,'']]],
   ['postgres_5fext_5fdefs_2ein_2eh_25',['postgres_ext_defs.in.h',['../postgres__ext__defs_8in_8h.html',1,'']]],
   ['postgres_5fint_5fdefs_2eh_26',['postgres_int_defs.h',['../postgres__int__defs_8h.html',1,'']]],
-  ['projection_5fgk_2ec_27',['projection_gk.c',['../projection__gk_8c.html',1,'']]]
+  ['printf_5fhexfloat_5ftest_2ec_27',['printf_hexfloat_test.c',['../printf__hexfloat__test_8c.html',1,'']]],
+  ['projection_5fgk_2ec_28',['projection_gk.c',['../projection__gk_8c.html',1,'']]]
 ];
