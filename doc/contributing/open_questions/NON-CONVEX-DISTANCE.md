@@ -307,10 +307,17 @@ itself updated to match.
 | exact convex cover of the moving body (section 5.1) | Sect. 4.6.2: decompose once, on the reference geometry, into convex parts | **follows the chapter**; overlapping parts, which the chapter allows, are a later optimization |
 | exact lower envelope (section 6) | Sect. 4.6.2: "the partial results are merged by keeping, at each instant, the pair of parts that are closest"; Sect. 4.6.3: keep all the minima and maxima | **follows the chapter**, at the true instants of the corners; master's fold at interpolation crossings is the divergence it removes |
 | static polygon read by its boundary plus a containment test (section 5.2) | Sect. 4.6.2 decomposes the polygons of both objects | **a deviation**, licensed by the four parts: the judge of steps 2–3 (correctness), the protected areas of the tcbuffer benchmark against a convex partition (performance), a section *Non-convex and holed geometries* in `trgeometry_design_notes.md`, and Sect. 4.6.2 stating that a static polygon is read by the segments of its rings with one containment test per stretch clear of them |
-| the error of the polygon C in Sect. 4.7 | "which MobilityDB does not provide yet: replacing B by C [...] raises an error" | the sentence is replaced by the answer for C, in the step that makes it answer |
-
 If the measurements of section 7 show a convex partition of the static polygon as fast as its
 boundary, the deviation is dropped and the chapter's decomposition is used on both sides.
+
+**The book states no implementation status.** A printed sentence saying what MobilityDB does not
+provide yet is false the day the feature lands and stays false in print. Every edit of the chapter
+this note implies states the algorithm, never whether master implements it. The current text of
+Sect. 4.7 breaks that rule: it says that the concave hull C "requires the convex decomposition
+described in Sect. 4.6.2, which MobilityDB does not provide yet: replacing B by C in the query above
+raises an error". The first half is timeless and stays. The clause from "which MobilityDB does not
+provide yet" to the end is removed from the book, independently of this campaign and of its
+schedule. The status of the feature belongs to this note.
 
 ## 9. Relation to the other notes
 
@@ -332,7 +339,8 @@ boundary, the deviation is dropped and the chapter's decomposition is used on bo
 ## 10. Plan
 
 **Schedule.** This work starts only after the work of
-[Exact distance](../portable_naming/EXACT-DISTANCE.md) is finished. It changes `dist_seq` and the
+[Exact distance](../portable_naming/EXACT-DISTANCE.md) is finished, the measurement of step 1
+included: exact distance has priority, in particular for the circular buffer benchmark. It changes `dist_seq` and the
 parts in `trgeo_distance.c`, which the third pull request of [N-TURNING-POINTS](N-TURNING-POINTS.md)
 also rewrites. Whichever lands second carries the other's change.
 
@@ -347,10 +355,10 @@ high-precision arithmetic for the corners.
    moves only where master cuts or misses a corner, each shown against its high-precision value.
 3. **Static polygons, any shape, holes included** (section 5.2): boundary segments, containment by
    `point_in_rings_exact` with its certified margin, R-tree pruning for large polygons. The book's
-   polygon C answers, and its error sentence in Sect. 4.7 is replaced by the answer.
+   polygon C is part of its witness.
 4. **The moving body, any shape, holes included** (section 5.1): the exact convex cover, computed
-   once per value; temporal points and two moving bodies (section 5.3). Book Sect. 4.6.2 then
-   describes what MobilityDB does.
+   once per value; temporal points and two moving bodies (section 5.3). The code then implements
+   the algorithm Sect. 4.6.2 describes.
 5. **Overlapping covers and pruning measured on the benchmarks** (section 7), if the measurements ask
    for them.
 
