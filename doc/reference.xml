@@ -3485,6 +3485,9 @@
 					<para><link linkend="raster_summaryStatsAgg"><varname>summaryStatsAgg</varname></link>: Return the statistics of the pixels of a band over the rasters of a column</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_summarystatsCount"><varname>summarystatsCount</varname>, <varname>summarystatsSum</varname>, <varname>summarystatsMean</varname>, <varname>summarystatsStddev</varname>, <varname>summarystatsMin</varname>, <varname>summarystatsMax</varname></link>: Return the number of pixels, the sum, the mean, the standard deviation, the minimum or the maximum of the statistics of a raster band</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;</para>
 				</listitem>
 				<listitem>

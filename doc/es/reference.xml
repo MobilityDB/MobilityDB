@@ -3476,6 +3476,9 @@
 					<para><link linkend="raster_summaryStatsAgg"><varname>summaryStatsAgg</varname></link>: Devuelve las estadísticas de los píxeles de una banda sobre los rásteres de una columna</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_summarystatsCount"><varname>summarystatsCount</varname>, <varname>summarystatsSum</varname>, <varname>summarystatsMean</varname>, <varname>summarystatsStddev</varname>, <varname>summarystatsMin</varname>, <varname>summarystatsMax</varname></link>: Devuelve el número de píxeles, la suma, la media, la desviación estándar, el mínimo o el máximo de las estadísticas de una banda de ráster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raster_dumpAsPolygons"><varname>dumpAsPolygons</varname></link>: Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;</para>
 				</listitem>
 				<listitem>
