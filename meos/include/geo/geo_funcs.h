@@ -248,6 +248,10 @@ extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, double r);
 extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, double r);
+extern int segment_distance_square(const double *a, const double *b,
+  const double *c, const double *d);
+extern int linesegm_param_cmp(const double *a, const double *b,
+  const double *p, const double *q);
 extern double segment_distance_exact(const double *a, const double *b,
   const double *c, const double *d);
 extern double point_motion_nad_exact(const double *p0, const double *p1,
