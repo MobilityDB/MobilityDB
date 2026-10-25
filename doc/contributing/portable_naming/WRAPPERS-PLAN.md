@@ -173,6 +173,15 @@ the call itself. The wrapper calls the public function, which names it in its `@
 - **Others**: `point(pose)` (`pose_to_point`), `trgeometrySeq` and `trgeometrySeqSet`
   (`trgeometryseq_make`, `trgeometryseqset_make`), and `dumpValues`, `valueCount`,
   `valuePercent` over `raster` (`raster_dump_values`, `raster_value_count`).
+- **The rigid geometry sequence constructors** `trgeometrySeq`, `trgeometrySeqSet` and
+  `trgeometrySeqSetGaps` call `Tsequence_constructor`, `Tsequenceset_constructor` and
+  `Tsequenceset_constructor_gaps`, as every other temporal type does: `tsequence_make`,
+  `tsequenceset_make` and `tsequenceset_make_gaps` take the reference geometry from their
+  first instant or sequence, so the catalog gives the three `trgeometry[]` signatures to the
+  generic functions every binding generates, where `trgeometryseq_make` and its siblings take
+  a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`
+  (`df1e281857` on master `d51b32e664`), 150_trgeo unchanged and the error on instants with
+  different reference geometries added.
 
 ## The MEOS functions to add (60 wrappers, 68 signatures)
 
