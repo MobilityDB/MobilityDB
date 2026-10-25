@@ -3485,6 +3485,295 @@ wide_dyadic_nearest_root(const WideDyadic *n, const WideDyadic *d)
   return result;
 }
 
+/*****************************************************************************
+ * The nearest double of a value read exactly
+ *****************************************************************************/
+
+/* The sign of the value a search reads less @p mid */
+typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+
+/* True where the value, negated where @p neg is true, lies beyond the
+ * midpoint from the double of bit pattern @p bits to the next one, a tie
+ * being beyond where the last bit of that double is odd, so a tie goes to
+ * the even double, as #wide_dyadic_root_beyond reads it */
+static bool
+nearest_bits_beyond(uint64_t bits, bool neg, NearestSide side,
+  const void *arg)
+{
+  double lo, up;
+  uint64_t b2 = bits + 1;
+  memcpy(&lo, &bits, sizeof(lo));
+  memcpy(&up, &b2, sizeof(up));
+  WideDyadic wl, wu, mid;
+  wide_dyadic_set_double(&wl, lo);
+  wide_dyadic_set_double(&wu, up);
+  wide_dyadic_add(&wl, &wu, &mid);
+  if (mid.sign != 0)
+    mid.exp -= 1;
+  /* -v beyond mid is v below -mid */
+  if (neg)
+    mid.sign = - mid.sign;
+  int s = side(&mid, arg);
+  if (neg)
+    s = - s;
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Return the double nearest a value that @p side reads exactly, a tie
+ * going to the even double
+ * @details The sign of the value is read exactly at 0; a negative value is
+ * the negation of the double nearest its magnitude. That double is the
+ * smallest bit pattern whose upper midpoint the magnitude does not pass: a
+ * gallop from the candidate @p c brackets it, then halving the bracket finds
+ * it, as #wide_dyadic_nearest_root finds a root
+ * @pre The value lies strictly between -DBL_MAX and DBL_MAX
+ */
+static double
+nearest_double_exact(double c, NearestSide side, const void *arg)
+{
+  WideDyadic zero;
+  zero.sign = 0; zero.len = 0; zero.exp = 0;
+  int s0 = side(&zero, arg);
+  if (s0 == 0)
+    return 0.0;
+  bool neg = s0 < 0;
+  c = fabs(c);
+  if (! isfinite(c))
+    c = DBL_MAX;
+  const uint64_t max_bits = 0x7FEFFFFFFFFFFFFFULL;
+  uint64_t bits, lo, hi, step = 1;
+  memcpy(&bits, &c, sizeof(bits));
+  if (nearest_bits_beyond(bits, neg, side, arg))
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = bits;
+    while (true)
+    {
+      hi = (lo < max_bits - step) ? lo + step : max_bits;
+      if (hi == max_bits || ! nearest_bits_beyond(hi, neg, side, arg))
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    hi = bits;
+    while (true)
+    {
+      lo = (hi > step) ? hi - step : 0;
+      if (lo == 0 || nearest_bits_beyond(lo, neg, side, arg))
+        break;
+      hi = lo;
+      step *= 2;
+    }
+    /* The magnitude lies below the upper midpoint of 0 */
+    if (lo == 0 && ! nearest_bits_beyond(0, neg, side, arg))
+      hi = 0;
+  }
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    if (nearest_bits_beyond(mid, neg, side, arg))
+      lo = mid;
+    else
+      hi = mid;
+  }
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return neg ? - result : result;
+}
+
+/* A quotient `n / d`, d > 0 */
+typedef struct
+{
+  const WideDyadic *n, *d;
+} NearestQuotient;
+
+/* The sign of `n / d - mid`, that of `n - mid d` */
+static int
+nearest_quotient_side(const WideDyadic *mid, const void *arg)
+{
+  const NearestQuotient *q = (const NearestQuotient *) arg;
+  WideDyadic md, diff;
+  wide_dyadic_mul(mid, q->d, &md);
+  md.sign = - md.sign;
+  wide_dyadic_add(q->n, &md, &diff);
+  return diff.sign;
+}
+
+/* A value `c + b / sqrt(s)`, s > 0 */
+typedef struct
+{
+  const WideDyadic *c, *b, *s;
+} NearestOffsetRoot;
+
+/* The sign of `c + b / sqrt(s) - mid`, that of `b - a sqrt(s)` with
+ * `a = mid - c`, read on squares where both sides have one sign */
+static int
+nearest_offset_root_side(const WideDyadic *mid, const void *arg)
+{
+  const NearestOffsetRoot *v = (const NearestOffsetRoot *) arg;
+  WideDyadic nc = *v->c, a, a2, a2s, b2, diff;
+  nc.sign = - nc.sign;
+  wide_dyadic_add(mid, &nc, &a);
+  int sa = a.sign, sb = v->b->sign;
+  if (sa <= 0 && sb >= 0)
+    return (sa == 0 && sb == 0) ? 0 : 1;
+  if (sa >= 0 && sb <= 0)
+    return -1;
+  /* Both of one sign: compare b^2 with a^2 s */
+  wide_dyadic_mul(&a, &a, &a2);
+  wide_dyadic_mul(&a2, v->s, &a2s);
+  wide_dyadic_mul(v->b, v->b, &b2);
+  a2s.sign = - a2s.sign;
+  wide_dyadic_add(&b2, &a2s, &diff);
+  return (sb > 0) ? diff.sign : - diff.sign;
+}
+
+/* The double nearest `n / d`, d > 0 */
+static double
+wide_dyadic_nearest_quotient(const WideDyadic *n, const WideDyadic *d)
+{
+  int en, ed;
+  double mn = wide_dyadic_frexp(n, &en), md = wide_dyadic_frexp(d, &ed);
+  double c = ldexp(mn / md, en - ed);
+  NearestQuotient q = {n, d};
+  return nearest_double_exact(c, &nearest_quotient_side, &q);
+}
+
+/* The double nearest `c + b / sqrt(s)`, s > 0 */
+static double
+wide_dyadic_nearest_offset_root(double c, const WideDyadic *b,
+  const WideDyadic *s)
+{
+  int eb, es;
+  double mb = wide_dyadic_frexp(b, &eb), ms = wide_dyadic_frexp(s, &es);
+  if (es % 2 != 0)
+  {
+    ms *= 2.0;
+    es -= 1;
+  }
+  double guess = c + b->sign * ldexp(mb / sqrt(ms), eb - es / 2);
+  WideDyadic wc;
+  wide_dyadic_set_double(&wc, c);
+  NearestOffsetRoot v = {&wc, b, s};
+  return nearest_double_exact(guess, &nearest_offset_root_side, &v);
+}
+
+/* The span in bits, from the lowest bit of the smallest to the highest bit of
+ * the largest, of the non-zero doubles of @p v */
+static int
+doubles_bit_span(const double *v, int n)
+{
+  int hi = INT_MIN, lo = INT_MAX;
+  for (int i = 0; i < n; i++)
+  {
+    if (v[i] == 0.0)
+      continue;
+    int e;
+    (void) frexp(v[i], &e);
+    if (e > hi)
+      hi = e;
+    if (e - DBL_MANT_DIG < lo)
+      lo = e - DBL_MANT_DIG;
+  }
+  return (hi == INT_MIN) ? 0 : hi - lo;
+}
+
+/**
+ * @brief Set the shortest line from a point or a disc at rest to a segment,
+ * each end the double nearest its exact value
+ * @details The nearest point Q of the segment ab to the centre c is
+ * `a + t (b - a)`, `t = N / D` with `N = (c - a).(b - a)` and
+ * `D = |b - a|^2` clamped to [0, 1], so each coordinate of Q is the rational
+ * `(a D + (b - a) N) / D`, rounded once to its nearest double. The line
+ * starts at the centre for a point (@p r = 0), at Q for a disc meeting the
+ * segment (`|Q - c| <= r`), and otherwise at the point of the circle towards
+ * Q, `c + r (Q - c) / |Q - c|`, whose coordinate `c + r dn / sqrt(S)`, with
+ * `dn` the numerator of `Q - c` over D and `S = |dn|^2`, is decided by exact
+ * signs of squares; no root is taken in doubles. The test on an end has
+ * degree three in the input doubles, so it is exact for every finite input;
+ * the one on the point of the circle has degree eight, so where the input
+ * spans more bits than #WideDyadic holds at that degree, the start keeps the
+ * construction in doubles of @p sx and @p sy
+ * @param[in] c Centre
+ * @param[in] r Radius, 0 for a point
+ * @param[in] a,b Ends of the segment
+ * @param[in,out] sx,sy Start of the line, read where it is kept
+ * @param[out] ex,ey End of the line
+ */
+void
+point_segment_shortestline_exact(const double *c, double r, const double *a,
+  const double *b, double *sx, double *sy, double *ex, double *ey)
+{
+  WideDyadic wcx, wcy, wax, way, wbx, wby, ux, uy, wx, wy, t1, t2, n, d;
+  wide_dyadic_set_double(&wcx, c[0]); wide_dyadic_set_double(&wcy, c[1]);
+  wide_dyadic_set_double(&wax, a[0]); wide_dyadic_set_double(&way, a[1]);
+  wide_dyadic_set_double(&wbx, b[0]); wide_dyadic_set_double(&wby, b[1]);
+  /* u = b - a, w = c - a, N = w.u, D = u.u, all exact */
+  WideDyadic nax = wax, nay = way;
+  nax.sign = - nax.sign; nay.sign = - nay.sign;
+  wide_dyadic_add(&wbx, &nax, &ux); wide_dyadic_add(&wby, &nay, &uy);
+  wide_dyadic_add(&wcx, &nax, &wx); wide_dyadic_add(&wcy, &nay, &wy);
+  wide_dyadic_mul(&wx, &ux, &t1); wide_dyadic_mul(&wy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &n);
+  wide_dyadic_mul(&ux, &ux, &t1); wide_dyadic_mul(&uy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &d);
+  /* Q = (qxn, qyn) / den */
+  WideDyadic qxn, qyn, den;
+  if (d.sign == 0 || n.sign <= 0)
+  {
+    qxn = wax; qyn = way;
+    wide_dyadic_set_double(&den, 1.0);
+  }
+  else if (wide_dyadic_cmp(&n, &d) >= 0)
+  {
+    qxn = wbx; qyn = wby;
+    wide_dyadic_set_double(&den, 1.0);
+  }
+  else
+  {
+    wide_dyadic_mul(&wax, &d, &t1); wide_dyadic_mul(&ux, &n, &t2);
+    wide_dyadic_add(&t1, &t2, &qxn);
+    wide_dyadic_mul(&way, &d, &t1); wide_dyadic_mul(&uy, &n, &t2);
+    wide_dyadic_add(&t1, &t2, &qyn);
+    den = d;
+  }
+  *ex = wide_dyadic_nearest_quotient(&qxn, &den);
+  *ey = wide_dyadic_nearest_quotient(&qyn, &den);
+  if (r == 0.0)
+  {
+    *sx = c[0]; *sy = c[1];
+    return;
+  }
+  const double in[7] = {c[0], c[1], r, a[0], a[1], b[0], b[1]};
+  if (8 * (doubles_bit_span(in, 7) + 2) > 64 * (WIDE_DYADIC_LIMBS - 8))
+    return;
+  /* dn = Q den - c den, S = |dn|^2, compared with (r den)^2 */
+  WideDyadic dxn, dyn, s, wr, rd, rd2, bx, by;
+  WideDyadic ncx = wcx, ncy = wcy;
+  ncx.sign = - ncx.sign; ncy.sign = - ncy.sign;
+  wide_dyadic_mul(&ncx, &den, &t1); wide_dyadic_add(&qxn, &t1, &dxn);
+  wide_dyadic_mul(&ncy, &den, &t1); wide_dyadic_add(&qyn, &t1, &dyn);
+  wide_dyadic_mul(&dxn, &dxn, &t1); wide_dyadic_mul(&dyn, &dyn, &t2);
+  wide_dyadic_add(&t1, &t2, &s);
+  wide_dyadic_set_double(&wr, r);
+  wide_dyadic_mul(&wr, &den, &rd); wide_dyadic_mul(&rd, &rd, &rd2);
+  if (wide_dyadic_cmp(&s, &rd2) <= 0)
+  {
+    /* The disc meets the segment: the line collapses to Q */
+    *sx = *ex; *sy = *ey;
+    return;
+  }
+  wide_dyadic_mul(&wr, &dxn, &bx); wide_dyadic_mul(&wr, &dyn, &by);
+  *sx = wide_dyadic_nearest_offset_root(c[0], &bx, &s);
+  *sy = wide_dyadic_nearest_offset_root(c[1], &by, &s);
+  return;
+}
+
 /**
  * @brief Return the nearest approach of two points moving linearly over the
  * interval [ta, tb], the double nearest its exact value

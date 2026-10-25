@@ -110,6 +110,11 @@ typedef struct
   double d;
   double px, py, qx, qy;
   bool set;
+  bool rest;       /**< The witness is a unit at rest against an edge whose
+                        ends are its own doubles, whose line
+                        #dist_shortline_exact constructs exactly */
+  double cx, cy, r;              /**< Centre and radius of that unit */
+  double ax, ay, bx, by;         /**< Ends of that edge */
 } DistShortLine;
 
 /**
@@ -181,6 +186,11 @@ extern void dist_segm_nad(double cx1, double cy1, double r1, double cx2, double 
   double r2, const DistGeom *g, double *best);
 extern void dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
   double cy2, double r2, const DistGeom *g, DistShortLine *w);
+extern void dist_shortline_exact(DistShortLine *w);
+extern GSERIALIZED *dist_shortline_serialize(int32_t srid, double px,
+  double py, double qx, double qy);
+extern GSERIALIZED *dist_shortline_rest(const double *c, double r,
+  const GSERIALIZED *gs);
 extern void dist_segm_nai(double cx1, double cy1, double r1, TimestampTz t1, double cx2,
   double cy2, double r2, TimestampTz t2, const DistGeom *g, DistNai *w);
 extern RTree * dist_geom_build_rtree(const Edge *segs, int n);

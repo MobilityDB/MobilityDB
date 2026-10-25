@@ -85,6 +85,8 @@ extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
 extern double geom_distance2d_disc(const double *c, double r,
   const GSERIALIZED *gs);
+extern double geom_distance2d_disc_witness(const double *c, double r,
+  const GSERIALIZED *gs, double *seg, bool *inside);
 extern bool meos_point_in_polygon(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2, spatialRel rel);
 
