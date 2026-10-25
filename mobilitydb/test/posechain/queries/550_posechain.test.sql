@@ -140,6 +140,9 @@ SELECT asEWKT(round(transform(posechain 'SRID=4326;PoseChain(GeodPose(Point(0 0 
 
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))' = posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
+-- A planar and a geodetic chain of one SRID differ, the planar one first
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' = posechain 'PoseChain(GeodPose(Point(0 0), 0))';
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(GeodPose(Point(0 0), 0))';
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' <> posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
 SELECT cmp(posechain 'PoseChain(Pose(Point(0 0), 0))', posechain 'PoseChain(Pose(Point(1 0), 0))');
 
