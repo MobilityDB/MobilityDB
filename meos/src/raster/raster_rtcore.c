@@ -1962,6 +1962,114 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
 }
 
 /**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the number of pixels of raster band statistics
+ * @details The accessors of the statistics read the fields of the one value
+ * #raster_summary_stats answers, as a query reads them in every engine, by a
+ * function rather than by the name of a field
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @errval INT64_MAX
+ * @csqlfn #Summarystats_count()
+ */
+int64
+bandstats_count(const BandStats *stats)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, INT64_MAX);
+  return (int64) stats->count;
+}
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the sum of raster band statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] result Sum
+ * @return False where the statistics count no pixel, which state no value
+ * @csqlfn #Summarystats_sum()
+ */
+bool
+bandstats_sum(const BandStats *stats, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, false); VALIDATE_NOT_NULL(result, false);
+  if (stats->count == 0)
+    return false;
+  *result = stats->sum;
+  return true;
+}
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the mean of raster band statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] result Mean
+ * @return False where the statistics count no pixel, which state no value
+ * @csqlfn #Summarystats_mean()
+ */
+bool
+bandstats_mean(const BandStats *stats, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, false); VALIDATE_NOT_NULL(result, false);
+  if (stats->count == 0)
+    return false;
+  *result = stats->mean;
+  return true;
+}
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the standard deviation of band statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] result Standard deviation
+ * @return False where the statistics count no pixel, which state no value
+ * @csqlfn #Summarystats_stddev()
+ */
+bool
+bandstats_stddev(const BandStats *stats, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, false); VALIDATE_NOT_NULL(result, false);
+  if (stats->count == 0)
+    return false;
+  *result = stats->stddev;
+  return true;
+}
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the minimum of raster band statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] result Minimum
+ * @return False where the statistics count no pixel, which state no value
+ * @csqlfn #Summarystats_min()
+ */
+bool
+bandstats_min(const BandStats *stats, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, false); VALIDATE_NOT_NULL(result, false);
+  if (stats->count == 0)
+    return false;
+  *result = stats->min;
+  return true;
+}
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return in the last argument the maximum of raster band statistics
+ * @param[in] stats Statistics, as #raster_summary_stats answers them
+ * @param[out] result Maximum
+ * @return False where the statistics count no pixel, which state no value
+ * @csqlfn #Summarystats_max()
+ */
+bool
+bandstats_max(const BandStats *stats, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(stats, false); VALIDATE_NOT_NULL(result, false);
+  if (stats->count == 0)
+    return false;
+  *result = stats->max;
+  return true;
+}
+
+/**
  * @brief Remove every space from a string, in place
  * @details The grammar below is stated without regard to spacing, so the
  * expression is closed up before it is read rather than each reader skipping
