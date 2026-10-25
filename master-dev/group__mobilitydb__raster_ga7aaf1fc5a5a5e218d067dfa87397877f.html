@@ -155,6 +155,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gaf262df0aa45c52d2807d0a5b93e40c77.html#gaf262df0aa45c52d2807d0a5b93e40c77">Raster_slope_extent</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga5c6a7cc8b30bc6b4bb3c51bbf1ae7ec8.html#ga5c6a7cc8b30bc6b4bb3c51bbf1ae7ec8">Raster_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga93334761417159b33f36aee5c10a0b34.html#ga93334761417159b33f36aee5c10a0b34">Raster_summary_stats</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga34906dac6f705352edaa52cedf7b703a.html#ga34906dac6f705352edaa52cedf7b703a">Raster_summary_stats_band_transfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga290b06dd5b07d1aedbfb44dd4bac27bc.html#ga290b06dd5b07d1aedbfb44dd4bac27bc">Raster_summary_stats_combinefn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gacf7a854d55e76790bf4922e617fcd993.html#gacf7a854d55e76790bf4922e617fcd993">Raster_summary_stats_finalfn</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__raster_ga7aaf1fc5a5a5e218d067dfa87397877f.html#ga7aaf1fc5a5a5e218d067dfa87397877f">Raster_summary_stats_transfn</a></td></tr>
@@ -172,6 +173,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gadeb00d7592fe4ba7aded4eaf80651950.html#gadeb00d7592fe4ba7aded4eaf80651950">Raster_union_combinefn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga5028407d80b7a44780661a977dcbc726.html#ga5028407d80b7a44780661a977dcbc726">Raster_union_finalfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga8b9ea733fc56ed8e23b735f3232fd0ba.html#ga8b9ea733fc56ed8e23b735f3232fd0ba">Raster_union_transfn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_ga02b512c9fc572b62d8d27c9bdd35f755.html#ga02b512c9fc572b62d8d27c9bdd35f755">Raster_union_uniontype_transfn</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gab2dc1f6ebd2702c948b1f4e40120cf66.html#gab2dc1f6ebd2702c948b1f4e40120cf66">Raster_upper_left_x</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gaf2064473f38f7a721eb9f8c22acd1c05.html#gaf2064473f38f7a721eb9f8c22acd1c05">Raster_upper_left_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__raster_gad0c70f99b636a9ede4a0918e33b9e808.html#gad0c70f99b636a9ede4a0918e33b9e808">Raster_value</a></td></tr>
@@ -210,8 +212,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Transition function of the aggregate summarizing the pixels of rasters. </p>
-<p >The forms take the band and whether nodata is excluded, or the exclusion alone, and are told apart by their number of arguments, 4 or 3. A band left out is 1, and a NULL argument keeps its default, as PostGIS's <code>RASTER_summaryStats_transfn</code> reads them. The state lives in the aggregate context, as <a class="el" href="group__mobilitydb__raster_gad70b3a386c29339cf0fc6f322041cb38.html#gad70b3a386c29339cf0fc6f322041cb38" title="Transition function of the aggregate testing whether rasters lie on the same grid.">Raster_same_alignment_transfn</a> keeps its own @sqlfn summaryStatsAggTransition() @sqlaggfn summaryStatsAgg() </p>
+<p>Transition function of the aggregate summarizing the pixels of the first band of rasters. </p>
+<p >The form taking whether nodata is excluded alone, over band 1, as <a class="el" href="group__mobilitydb__raster_ga40219d791bcf2c36aeb7959ecb03aad2.html#ga40219d791bcf2c36aeb7959ecb03aad2" title="Return the values of the bands of a raster, one array per band.">Raster_dump_values</a> reads band 1 where <a class="el" href="group__mobilitydb__raster_ga99653307c016008ae165b26bc73df692.html#ga99653307c016008ae165b26bc73df692" title="Return the values of a band of a raster as an array.">Raster_dump_values_band</a> takes the band; the form taking the band is <a class="el" href="group__mobilitydb__raster_ga34906dac6f705352edaa52cedf7b703a.html#ga34906dac6f705352edaa52cedf7b703a" title="Transition function of the aggregate summarizing the pixels of a band of rasters.">Raster_summary_stats_band_transfn</a>. A NULL exclusion is true, as PostGIS's <code>RASTER_summaryStats_transfn</code> reads it. The state lives in the aggregate context, as <a class="el" href="group__mobilitydb__raster_gad70b3a386c29339cf0fc6f322041cb38.html#gad70b3a386c29339cf0fc6f322041cb38" title="Transition function of the aggregate testing whether rasters lie on the same grid.">Raster_same_alignment_transfn</a> keeps its own @sqlfn summaryStatsAggTransition() @sqlaggfn summaryStatsAgg() </p>
 
 </div>
 </div>
