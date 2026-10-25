@@ -700,6 +700,8 @@ nextch2:
 					strvalue = va_arg(args, char *);
 				fmtptr((const void *) strvalue, target);
 				break;
+			case 'a':		/* MEOS */
+			case 'A':		/* MEOS */
 			case 'e':
 			case 'E':
 			case 'f':
@@ -933,6 +935,8 @@ nextch1:
 				else
 					return false;	/* non-dollar conversion spec */
 				break;
+			case 'a':		/* MEOS */
+			case 'A':		/* MEOS */
 			case 'e':
 			case 'E':
 			case 'f':
@@ -1273,11 +1277,21 @@ fmtfloat(double value, char type, int forcesign, int leftjust,
 
 	if (zeropadlen > 0)
 	{
-		/* If 'e' or 'E' format, inject zeroes before the exponent */
-		char	   *epos = strrchr(convert, 'e');
+		/*
+		 * If 'e' or 'E' format, inject zeroes before the exponent.  In 'a' or
+		 * 'A' format the exponent is introduced by 'p' or 'P', and an 'e' or
+		 * 'E' is a hexadecimal digit.  MEOS
+		 */
+		char	   *epos;
 
-		if (!epos)
-			epos = strrchr(convert, 'E');
+		if (type == 'a' || type == 'A')
+			epos = strrchr(convert, type == 'a' ? 'p' : 'P');
+		else
+		{
+			epos = strrchr(convert, 'e');
+			if (!epos)
+				epos = strrchr(convert, 'E');
+		}
 		if (epos)
 		{
 			/* pad before exponent */
