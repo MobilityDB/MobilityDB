@@ -3049,6 +3049,15 @@
 					<para><link linkend="raquet"><varname>raquet</varname></link>: Construct a Raquet raster tile from its pixel bytes, dimensions, QUADBIN cell and pixel type</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_raster"><varname>raster</varname></link>: Construct a raster of one band from the bytes of its pixels and its georeferencing</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_makeEmptyRaster"><varname>makeEmptyRaster</varname></link>: Construct a raster with no band</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Add a band to a raster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decode a raster file into a Raquet raster tile via GDAL</para>
 				</listitem>
 			</itemizedlist>
@@ -3116,7 +3125,7 @@
 					<para><link linkend="raster_bandNoDataValue"><varname>bandNoDataValue</varname></link>: Return the nodata value of a raster band or of a Raquet tile</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a Raquet tile</para>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Return the pixel bytes of a raster band or of a Raquet tile</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3145,6 +3154,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_delete"><varname>deleteTime</varname></link>: Delete a time value from a temporal cell</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_setValues"><varname>setValues</varname></link>: Set the values of a block of pixels of a raster band</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

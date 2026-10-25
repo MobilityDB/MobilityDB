@@ -340,7 +340,7 @@ SELECT raquetFromHexWKB(asHexWKB(raquet('\x01020304'::bytea, 2, 2,
 		</itemizedlist>	</sect1>
 	<sect1 xml:id="tcell_constructors">
 		<title>Constructores</title>
-		<para>Una tesela <varname>raquet</varname> se construye a partir de bytes de píxel ya disponibles o decodificando un archivo ráster, y lleva su georreferenciación QUADBIN en el propio valor.</para>
+		<para>Una tesela <varname>raquet</varname> se construye a partir de bytes de píxel ya disponibles o decodificando un archivo ráster, y lleva su georreferenciación QUADBIN en el propio valor. Un <varname>raster</varname> de PostGIS se construye del mismo modo a partir de los bytes de los píxeles de una banda y de su georreferenciación, o como una cuadrícula sin banda a la que se añaden bandas y cuyos píxeles se fijan después.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tcell_const">
@@ -411,6 +411,56 @@ FROM elevation_raquet r,
 WHERE r.block &lt;&gt; 0;
 -- A 2 x 2 UINT8 tile with no nodata
 SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8');
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_raster">
+				<indexterm significance="normal"><primary><varname>raster</varname></primary></indexterm>
+				<para>Construye un ráster de una banda a partir de los bytes de sus píxeles y de su georreferenciación</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+raster(pixels bytea,width integer,height integer,upperleftx float,upperlefty float,
+  scalex float,scaley float,skewx float,skewy float,srid integer,pixeltype text,
+  nodataval float=NULL) → raster
+</programlisting>
+				<para>El gemelo del constructor <link linkend="raquet"><varname>raquet</varname></link> para un <varname>raster</varname> de PostGIS, en el que la georreferenciación de un ráster ocupa el lugar de la celda QUADBIN de una tesela. Los <varname>pixels</varname> son los que devuelve <link linkend="raquet_pixels"><varname>pixels</varname></link>: fila a fila, cada uno en los bytes de su tipo, en little-endian cuando ocupa más de un byte, y un byte para los tipos <varname>1BB</varname>, <varname>2BUI</varname> y <varname>4BUI</varname>, que acotan un píxel a menos de un byte. El <varname>pixeltype</varname> se nombra como lo nombra PostGIS, <varname>8BUI</varname>, <varname>16BSI</varname>, <varname>32BF</varname>, etc., o como lo devuelve <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link>, donde el nombre <varname>uint8</varname> designa <varname>8BUI</varname>. Una banda ráster no tiene flotante de 16 bits ni entero de 64 bits, por lo que se rechazan <varname>float16</varname>, <varname>int64</varname> y <varname>uint64</varname>, así como unos bytes de otro número que el que ocupan los píxeles y un byte que supera la cota de un tipo que acota un píxel a menos de un byte. El <varname>nodataval</varname> es opcional; cuando se omite, la banda no indica valor nodata. Un ráster de una banda es el ráster construido a partir de sus propios píxeles y su georreferenciación, <varname>raster(pixels(r), width(r), height(r), upperLeftX(r), upperLeftY(r), scaleX(r), scaleY(r), skewX(r), skewY(r), SRID(r), bandPixelType(r), bandNoDataValue(r))</varname>, y conserva exactamente cada valor que contiene; las demás bandas se añaden con <link linkend="raster_addBand"><varname>addBand</varname></link>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT dumpValues(raster('\x0100feff2c010080'::bytea, 2, 2, 0, 2, 1, -1, 0, 0,
+  3857, '16BSI'), 1);
+-- {{1,-2},{300,-32768}}
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_makeEmptyRaster">
+				<indexterm significance="normal"><primary><varname>makeEmptyRaster</varname></primary></indexterm>
+				<para>Construye un ráster sin banda</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+makeEmptyRaster(width integer,height integer,upperleftx float,upperlefty float,
+  scalex float,scaley float,skewx float,skewy float,srid integer=0) → raster
+</programlisting>
+				<para>El ráster que devuelve <varname>ST_MakeEmptyRaster</varname> de PostGIS: una cuadrícula de <varname>width</varname> × <varname>height</varname> píxeles, cada dimensión de 0 a 65535, georreferenciada por su esquina superior izquierda, su escala y su sesgo en el sistema de referencia espacial <varname>srid</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT width(r), height(r), numBands(r), scaleX(r)
+FROM (SELECT makeEmptyRaster(3, 2, 10, 20, 2, -1, 0, 0, 3857) AS r) t;
+-- 3 | 2 | 0 | 2
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_addBand">
+				<indexterm significance="normal"><primary><varname>addBand</varname></primary></indexterm>
+				<para>Añade una banda a un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+addBand(rast raster,index integer,pixeltype text,initialvalue float=0,
+  nodataval float=NULL) → raster
+addBand(torast raster,fromrast raster,fromband integer=1,
+  torastindex integer=NULL) → raster
+</programlisting>
+				<para>El ráster que devuelve <varname>ST_AddBand</varname> de PostGIS. La primera forma añade una banda de tipo <varname>pixeltype</varname>, nombrado como lo lee <link linkend="raster_raster"><varname>raster</varname></link>, en la que cada píxel contiene <varname>initialvalue</varname>, y que indica el valor nodata <varname>nodataval</varname> o ninguno cuando se omite. La segunda forma añade una copia de la banda <varname>fromband</varname> de <varname>fromrast</varname>, un ráster del mismo ancho y alto. La banda toma el número <varname>index</varname> o <varname>torastindex</varname>, de 1 a uno más que el número de bandas del ráster, y se añade tras la última banda cuando el número es <varname>NULL</varname>, escrito <varname>NULL::integer</varname> en la primera forma para que no se lea como un ráster de la segunda. Se rechazan un número fuera de ese rango, una banda que <varname>fromrast</varname> no tiene y un ráster de otro tamaño, allí donde PostGIS añade la banda en otro lugar o devuelve el ráster sin cambios.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT numBands(r), bandPixelType(r, 1), bandNoDataValue(r, 2)
+FROM (SELECT addBand(addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
+  NULL::integer, '8BUI', 1), 1, '32BF', 0, -9999) AS r) t;
+-- 2 | float32 | NULL
+SELECT numBands(addBand(r, r))
+FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
+  NULL::integer, '8BUI', 1) AS r) t;
+-- 2
 </programlisting>
 			</listitem>
 			<listitem xml:id="raquetRead">
@@ -795,14 +845,18 @@ SELECT bandNoDataValue(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffff
 			</listitem>
 			<listitem xml:id="raquet_pixels">
 				<indexterm significance="normal"><primary><varname>pixels</varname></primary></indexterm>
-				<para>Devuelve los bytes de píxeles de un mosaico Raquet</para>
+				<para>Devuelve los bytes de píxeles de una banda de un ráster o de una tesela Raquet</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pixels(rast raster,nband integer=1) → bytea
 pixels(raquet) → bytea
 </programlisting>
-				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, un mosaico se reconstruye a través de sus propios accesores.</para>
+				<para>Los bytes están en orden de fila mayor y empaquetados, <varname>width</varname> × <varname>height</varname> píxeles del tamaño de <link linkend="raster_bandPixelType"><varname>bandPixelType</varname></link> cada uno, en little-endian cuando un píxel ocupa más de un byte, que es la disposición que aceptan los constructores. Por lo tanto, una tesela y una banda de un ráster se reconstruyen a través de sus propios accesores, y cada valor que contiene la banda se conserva exactamente, allí donde <link linkend="raster_dumpValues"><varname>dumpValues</varname></link> devuelve sus valores como números de doble precisión. Una banda de un tipo que acota un píxel a menos de un byte ocupa un byte por píxel.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pixels(raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff', 'uint8'));
 -- \x01020304
+SELECT pixels(raster('\x0100feff2c010080'::bytea, 2, 2, 0, 2, 1, -1, 0, 0,
+  3857, '16BSI'));
+-- \x0100feff2c010080
 </programlisting>
 			</listitem>
 		</itemizedlist>	</sect1>
@@ -958,6 +1012,20 @@ SELECT deleteTime(tquadbin '[48a6227affffffff@2001-01-01,
 SELECT deleteTime(ts2cell '[47c3c@2001-01-01,
   47c3c@2001-01-04]', tstzspan '[2001-01-02, 2001-01-03]');
 -- [47c3c@2001-01-01, 47c3c@2001-01-04]
+</programlisting>
+			</listitem>
+			<listitem xml:id="raster_setValues">
+				<indexterm significance="normal"><primary><varname>setValues</varname></primary></indexterm>
+				<para>Fija los valores de un bloque de píxeles de una banda de un ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+setValues(rast raster,nband integer,x integer,y integer,newvalueset float[],
+  noset boolean[]=NULL,keepnodata boolean=false) → raster
+</programlisting>
+				<para>El ráster que devuelve <varname>ST_SetValues</varname> de PostGIS: la banda <varname>nband</varname> toma los valores de <varname>newvalueset</varname>, un arreglo de una fila o de filas de igual longitud, sobre el bloque de píxeles cuyo píxel superior izquierdo está en la columna <varname>x</varname> y la fila <varname>y</varname>, ambas a partir de 1. Un valor <varname>NULL</varname> fija el píxel al valor nodata de la banda, o al menor valor de su tipo cuando la banda no indica ninguno. Un píxel cuya marca en <varname>noset</varname> es verdadera queda como está, leyéndose las marcas sobre el bloque que comparten con los valores, y lo mismo un píxel que contiene el valor nodata cuando <varname>keepnodata</varname> es verdadero. Los píxeles del bloque que quedan fuera del ráster se omiten, y un valor que excede el tipo de píxel se lee en él como lo lee PostGIS. Se rechazan una banda que el ráster no tiene, un píxel <varname>x</varname>, <varname>y</varname> fuera de él y un arreglo de más de dos dimensiones.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT dumpValues(setValues(addBand(makeEmptyRaster(3, 2, 0, 2, 1, -1, 0, 0,
+  3857), NULL::integer, '16BSI', 0, -1), 1, 2, 1, ARRAY[[1, 2], [NULL, 4]]), 1);
+-- {{0,1,2},{0,NULL,4}}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -2530,6 +2598,10 @@ WHERE block IN (SELECT unnest(getValues(tquadbin(traj, 8)))::bigint);
 					<row>
 						<entry><varname>ST_BandPixelType</varname>, <varname>ST_BandNoDataValue</varname></entry>
 						<entry><varname>bandPixelType</varname>, <varname>bandNoDataValue</varname></entry>
+					</row>
+					<row>
+						<entry><varname>ST_MakeEmptyRaster</varname>, <varname>ST_AddBand</varname>, <varname>ST_SetValues</varname></entry>
+						<entry><varname>makeEmptyRaster</varname>, <varname>addBand</varname>, <varname>setValues</varname></entry>
 					</row>
 					<row>
 						<entry><varname>ST_AsBinary</varname>, <varname>ST_AsHexWKB</varname></entry>

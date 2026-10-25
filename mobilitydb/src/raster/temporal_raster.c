@@ -770,6 +770,281 @@ Raster_as_hexwkb(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * A raster built from its pixels and its georeferencing
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Raster_band_pixels(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_band_pixels);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the bytes of the pixels of a raster band
+ * @details The twin of #Raquet_pixels for a band of a raster
+ * @param[in] rast Raster
+ * @param[in] nband Number of the band, starting at 1
+ * @sqlfn pixels()
+ * @altsqlfn rasterPixels()
+ */
+Datum
+Raster_band_pixels(PG_FUNCTION_ARGS)
+{
+  Datum rast_datum = PG_GETARG_DATUM(0);
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
+  int band = PG_GETARG_INT32(1);
+  size_t size;
+  uint8_t *pixels = raster_band_pixels(rast, band, &size);
+  if (! pixels)
+    PG_RETURN_NULL();
+  bytea *result = bstring2bytea(pixels, size);
+  pfree(pixels);
+  PG_RETURN_BYTEA_P(result);
+}
+
+PGDLLEXPORT Datum Raster_make(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_make);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster of one band from the bytes of its pixels and its
+ * georeferencing
+ * @details The twin of #Raquet_constructor, the georeferencing of a raster
+ * standing for the cell of a tile
+ * @param[in] pixels Bytes of the pixels, row by row
+ * @param[in] width Width in pixels
+ * @param[in] height Height in pixels
+ * @param[in] upperleftx X coordinate of the upper left corner
+ * @param[in] upperlefty Y coordinate of the upper left corner
+ * @param[in] scalex Width of a pixel
+ * @param[in] scaley Height of a pixel
+ * @param[in] skewx X component of the skew
+ * @param[in] skewy Y component of the skew
+ * @param[in] srid Spatial reference system identifier
+ * @param[in] pixeltype Name of the pixel type
+ * @param[in] nodataval Nodata value, absent where the band states none
+ * @note Not STRICT: a nodata value left out states that the band carries none
+ * @sqlfn raster()
+ */
+Datum
+Raster_make(PG_FUNCTION_ARGS)
+{
+  for (int i = 0; i < 11; i++)
+    if (PG_ARGISNULL(i))
+      PG_RETURN_NULL();
+  bytea *pixels = PG_GETARG_BYTEA_PP(0);
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_PP(10));
+  bool has_nodata = ! PG_ARGISNULL(11);
+  double nodataval = has_nodata ? PG_GETARG_FLOAT8(11) : 0.0;
+  Raster *result = raster_make(PG_GETARG_INT32(1), PG_GETARG_INT32(2),
+    PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4), PG_GETARG_FLOAT8(5),
+    PG_GETARG_FLOAT8(6), PG_GETARG_FLOAT8(7), PG_GETARG_FLOAT8(8),
+    PG_GETARG_INT32(9), pixeltype, nodataval, has_nodata,
+    (const uint8_t *) VARDATA_ANY(pixels),
+    (size_t) VARSIZE_ANY_EXHDR(pixels));
+  pfree(pixeltype);
+  PG_FREE_IF_COPY(pixels, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_make_empty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_make_empty);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with no band
+ * @details The grid #Raster_make gives a band
+ * @param[in] width Width in pixels
+ * @param[in] height Height in pixels
+ * @param[in] upperleftx X coordinate of the upper left corner
+ * @param[in] upperlefty Y coordinate of the upper left corner
+ * @param[in] scalex Width of a pixel
+ * @param[in] scaley Height of a pixel
+ * @param[in] skewx X component of the skew
+ * @param[in] skewy Y component of the skew
+ * @param[in] srid Spatial reference system identifier
+ * @sqlfn makeEmptyRaster()
+ */
+Datum
+Raster_make_empty(PG_FUNCTION_ARGS)
+{
+  Raster *result = raster_make_empty(PG_GETARG_INT32(0), PG_GETARG_INT32(1),
+    PG_GETARG_FLOAT8(2), PG_GETARG_FLOAT8(3), PG_GETARG_FLOAT8(4),
+    PG_GETARG_FLOAT8(5), PG_GETARG_FLOAT8(6), PG_GETARG_FLOAT8(7),
+    PG_GETARG_INT32(8));
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_add_band(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_add_band);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with a band added, each of its pixels holding a value
+ * @details The nodata value is read as #Raster_reclass reads it
+ * @param[in] rast Raster
+ * @param[in] index Number the band takes, starting at 1, absent to add it
+ * after the last band
+ * @param[in] pixeltype Name of the pixel type
+ * @param[in] initialvalue Value of every pixel
+ * @param[in] nodataval Nodata value, absent where the band states none
+ * @note Not STRICT: a number left out adds the band after the last one, and a
+ * nodata value left out states that the band carries none
+ * @sqlfn addBand()
+ */
+Datum
+Raster_add_band(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(2) || PG_ARGISNULL(3))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int index = PG_ARGISNULL(1) ? 0 : PG_GETARG_INT32(1);
+  /* A band takes a number from 1, while 0 states the end to the kernel */
+  if (! PG_ARGISNULL(1) && index < 1)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The number of a band starts at 1, not %d", index)));
+  char *pixeltype = text_to_cstring(PG_GETARG_TEXT_PP(2));
+  double initialvalue = PG_GETARG_FLOAT8(3);
+  bool has_nodata = ! PG_ARGISNULL(4);
+  double nodataval = has_nodata ? PG_GETARG_FLOAT8(4) : 0.0;
+  Raster *result = raster_add_band(rast, index, pixeltype, initialvalue,
+    nodataval, has_nodata);
+  pfree(pixeltype);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+PGDLLEXPORT Datum Raster_add_band_raster(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_add_band_raster);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with a copy of the band of another raster added
+ * @details The two rasters are read as #Raster_transform_raster reads them,
+ * and the number the band takes as #Raster_add_band reads it
+ * @param[in] torast Raster the band is added to
+ * @param[in] fromrast Raster the band is copied from
+ * @param[in] fromband Number of the band copied, starting at 1
+ * @param[in] torastindex Number the band takes, starting at 1, absent to add
+ * it after the last band
+ * @note Not STRICT: a number left out adds the band after the last one
+ * @sqlfn addBand()
+ */
+Datum
+Raster_add_band_raster(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2))
+    PG_RETURN_NULL();
+  Raster *torast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  Raster *fromrast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+  int fromband = PG_GETARG_INT32(2);
+  int toindex = PG_ARGISNULL(3) ? 0 : PG_GETARG_INT32(3);
+  /* A band takes a number from 1, while 0 states the end to the kernel */
+  if (! PG_ARGISNULL(3) && toindex < 1)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("The number of a band starts at 1, not %d", toindex)));
+  Raster *result = raster_add_band_raster(torast, fromrast, fromband,
+    toindex);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/**
+ * @brief Return the elements of an array of one or two dimensions, its number
+ * of rows and columns, and the elements that are NULL
+ * @details An array of one dimension is a single row, as PostGIS reads it.
+ * Unlike #datumarr_extract, which answers the elements alone, the shape and
+ * the NULL elements are answered, which the block of pixels needs
+ */
+static Datum *
+raster_block_extract(ArrayType *array, int *rows, int *cols, bool **nulls,
+  int *count)
+{
+  int ndims = ARR_NDIM(array);
+  if (ndims < 1 || ndims > 2)
+    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+      errmsg("An array of values of a block of pixels has one or two "
+        "dimensions, not %d", ndims)));
+  int *dims = ARR_DIMS(array);
+  *rows = (ndims == 2) ? dims[0] : 1;
+  *cols = (ndims == 2) ? dims[1] : dims[0];
+  Oid elemtype = ARR_ELEMTYPE(array);
+  int16 typlen;
+  bool typbyval;
+  char typalign;
+  get_typlenbyvalalign(elemtype, &typlen, &typbyval, &typalign);
+  Datum *result;
+  deconstruct_array(array, elemtype, typlen, typbyval, typalign, &result,
+    nulls, count);
+  return result;
+}
+
+PGDLLEXPORT Datum Raster_set_values(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_set_values);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster whose band takes the values of an array over a block
+ * of pixels
+ * @details The arrays are read as #Raster_clip_bands reads its arrays, with
+ * the shape of the block
+ * @param[in] rast Raster
+ * @param[in] nband Number of the band, starting at 1
+ * @param[in] x Column of the upper left pixel of the block, starting at 1
+ * @param[in] y Row of the upper left pixel of the block, starting at 1
+ * @param[in] newvalueset Values of the block, a NULL one setting the pixel to
+ * nodata
+ * @param[in] noset True for a value not to set, absent where every value is
+ * set; read over the block it shares with the values
+ * @param[in] keepnodata True to leave the pixels holding the nodata value
+ * @note Not STRICT: the flags left out set every value, and a NULL
+ * @p keepnodata takes its default
+ * @sqlfn setValues()
+ */
+Datum
+Raster_set_values(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(2) ||
+      PG_ARGISNULL(3) || PG_ARGISNULL(4))
+    PG_RETURN_NULL();
+  Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
+  int band = PG_GETARG_INT32(1);
+  int x = PG_GETARG_INT32(2);
+  int y = PG_GETARG_INT32(3);
+  int rows, cols, count;
+  bool *nulls;
+  Datum *elems = raster_block_extract(PG_GETARG_ARRAYTYPE_P(4), &rows, &cols,
+    &nulls, &count);
+  double *values = palloc(sizeof(double) * (size_t) (count > 0 ? count : 1));
+  for (int i = 0; i < count; i++)
+    values[i] = nulls[i] ? 0.0 : DatumGetFloat8(elems[i]);
+  pfree(elems);
+  /* The flags are read over the block they share with the values, a value
+   * beyond the flags being set, as PostGIS reads them */
+  bool *noset = NULL;
+  if (! PG_ARGISNULL(5))
+  {
+    int nrows, ncols, ncount;
+    bool *nnulls;
+    Datum *nelems = raster_block_extract(PG_GETARG_ARRAYTYPE_P(5), &nrows,
+      &ncols, &nnulls, &ncount);
+    noset = palloc0(sizeof(bool) * (size_t) (count > 0 ? count : 1));
+    for (int j = 0; j < rows && j < nrows; j++)
+      for (int i = 0; i < cols && i < ncols; i++)
+        noset[j * cols + i] = ! nnulls[j * ncols + i] &&
+          DatumGetBool(nelems[j * ncols + i]);
+    pfree(nelems); pfree(nnulls);
+  }
+  bool keepnodata = PG_ARGISNULL(6) ? false : PG_GETARG_BOOL(6);
+  Raster *result = raster_set_values(rast, band, x, y, cols, rows, values,
+    nulls, noset, count, keepnodata);
+  pfree(values); pfree(nulls);
+  if (noset)
+    pfree(noset);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
  * raster_reclass
  *****************************************************************************/
 
@@ -1934,6 +2209,7 @@ PG_FUNCTION_INFO_V1(Raquet_pixels);
  * @ingroup mobilitydb_raster
  * @brief Return the pixel bytes of a Raquet tile
  * @sqlfn pixels()
+ * @altsqlfn raquetPixels()
  */
 Datum
 Raquet_pixels(PG_FUNCTION_ARGS)

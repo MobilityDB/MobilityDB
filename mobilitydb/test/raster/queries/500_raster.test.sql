@@ -2742,4 +2742,162 @@ SELECT summaryStatsAgg(r, 0, true) FROM tbl_union_tiles;
 
 DROP TABLE tbl_union_tiles;
 
+-------------------------------------------------------------------------------
+-- A raster built from its pixels and its georeferencing
+-------------------------------------------------------------------------------
+
+-- makeEmptyRaster, addBand and setValues answer the raster PostGIS answers,
+-- byte for byte.
+SELECT asHexWKB(makeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.1, 0.2, 3857))
+  = asHexWKB(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.1, 0.2, 3857));
+SELECT asHexWKB(makeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0))
+  = asHexWKB(ST_MakeEmptyRaster(3, 2, 10.0, 20.0, 2.0, -2.0, 0.0, 0.0, 0));
+WITH r AS (SELECT ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0,
+  3857) AS r)
+SELECT asHexWKB(addBand(r, NULL::integer, '16BSI', 7, -1))
+    = asHexWKB(ST_AddBand(r, '16BSI'::text, 7, -1)),
+  asHexWKB(addBand(r, NULL::integer, '32BF'))
+    = asHexWKB(ST_AddBand(r, '32BF'::text)),
+  asHexWKB(addBand(addBand(r, NULL::integer, '8BUI', 1), 1, '64BF', 2.5))
+    = asHexWKB(ST_AddBand(ST_AddBand(r, '8BUI'::text, 1), 1, '64BF', 2.5))
+FROM r;
+WITH r AS (SELECT ST_AddBand(ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0,
+  1.0, -1.0, 0.0, 0.0, 3857), '8BUI'::text, 1), '16BUI'::text, 2) AS r)
+SELECT asHexWKB(addBand(r, r)) = asHexWKB(ST_AddBand(r, r)),
+  asHexWKB(addBand(r, r, 2, 1)) = asHexWKB(ST_AddBand(r, r, 2, 1)),
+  numBands(addBand(r, r, 2, 3))
+FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '16BSI'::text, 5, -1) AS r)
+SELECT
+  asHexWKB(setValues(r, 1, 2, 1, ARRAY[[1, 2], [NULL, 4]]))
+    = asHexWKB(ST_SetValues(r, 1, 2, 1, ARRAY[[1, 2], [NULL, 4]]::float8[])),
+  asHexWKB(setValues(r, 1, 1, 3, ARRAY[7, 8, 9]))
+    = asHexWKB(ST_SetValues(r, 1, 1, 3, ARRAY[7, 8, 9]::float8[])),
+  asHexWKB(setValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]],
+      ARRAY[[false, true], [true, false]]))
+    = asHexWKB(ST_SetValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]]::float8[],
+      ARRAY[[false, true], [true, false]])),
+  asHexWKB(setValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]], ARRAY[[true]]))
+    = asHexWKB(ST_SetValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]]::float8[],
+      ARRAY[[true]]))
+FROM r;
+-- The pixels holding the nodata value keep it, and a band stating no nodata
+-- value takes the least value of its type for a NULL.
+WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
+  1.0, -1.0, 0.0, 0.0, 3857), '16BSI'::text, 5, -1), 1, 1, 1,
+  ARRAY[-1]::float8[]) AS r)
+SELECT
+  asHexWKB(setValues(r, 1, 1, 1, ARRAY[8, 9], NULL, true))
+    = asHexWKB(ST_SetValues(r, 1, 1, 1, ARRAY[8, 9]::float8[],
+      NULL::boolean[], true)),
+  (dumpValues(setValues(r, 1, 1, 1, ARRAY[8, 9], NULL, true), 1)),
+  (dumpValues(setValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0, 1.0,
+    -1.0, 0.0, 0.0, 3857), '8BSI'::text, 5), 1, 1, 1, ARRAY[NULL, 3]), 1))
+FROM r;
+-- A block reaching beyond the raster sets the pixels it shares with it.
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT dumpValues(setValues(r, 1, 2, 2, ARRAY[[1, 2], [3, 4]]), 1) FROM r;
+
+-- The pixels of a band, row by row, each in the bytes of its type,
+-- little-endian beyond one byte.
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '16BSI'::text, 0) AS r)
+SELECT pixels(setValues(r, 1, 1, 1, ARRAY[[1, -2], [300, -32768]])),
+  pixels(setValues(addBand(r, NULL::integer, '32BF'), 2, 1, 1,
+    ARRAY[[1.5, -2], [0.25, 1e10]]), 2),
+  pixels(setValues(addBand(r, NULL::integer, '64BF'), 2, 1, 1,
+    ARRAY[[0.1, -0.0::float8], [1e300, 3]]), 2),
+  pixels(addBand(r, NULL::integer, '4BUI', 9), 2)
+FROM r;
+
+-- A raster built from the pixels and the georeferencing of another is that
+-- raster, for every pixel type, with or without a nodata value.
+WITH r AS (
+  SELECT t, ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 2, 10.5, -4.0, 0.5,
+    -0.25, 0.01, 0.02, 3857), t, 1, nd), 1, 1, 1,
+    ARRAY[[0, 1, 0], [1, 1, 0]]::float8[]) AS r
+  FROM (VALUES ('1BB', NULL), ('2BUI', 3), ('4BUI', NULL), ('8BSI', -128),
+    ('8BUI', 255), ('16BSI', NULL), ('16BUI', 0), ('32BSI', -1),
+    ('32BUI', NULL), ('32BF', -9999), ('64BF', NULL)) AS v(t, nd))
+SELECT t, asHexWKB(raster(pixels(r), width(r), height(r), upperLeftX(r),
+  upperLeftY(r), scaleX(r), scaleY(r), skewX(r), skewY(r), SRID(r), t,
+  bandNoDataValue(r))) = asHexWKB(r)
+FROM r ORDER BY t;
+-- The pixel type is read under the name bandPixelType answers as well.
+WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
+  1.0, -1.0, 0.0, 0.0, 3857), '32BUI'::text, 0), 1, 1, 1,
+  ARRAY[4294967295, 7]::float8[]) AS r)
+SELECT bandPixelType(r), asHexWKB(raster(pixels(r), 2, 1, 0.0, 1.0, 1.0, -1.0,
+  0.0, 0.0, 3857, bandPixelType(r))) = asHexWKB(r)
+FROM r;
+SELECT bandHasNoDataValue(raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0,
+  0.0, 0.0, 0, '8BUI')), bandNoDataValue(raster('\x0102'::bytea, 2, 1, 0.0,
+  1.0, 1.0, -1.0, 0.0, 0.0, 0, '8BUI', 2));
+-- A band whose every pixel holds the nodata value is stated as such, as
+-- PostGIS states it.
+SELECT asHexWKB(raster('\x0505'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  3857, '8BUI', 5)) = asHexWKB(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
+  1.0, -1.0, 0.0, 0.0, 3857), '8BUI'::text, 5, 5));
+SELECT raster(NULL, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857, '8BUI') IS NULL,
+  addBand(NULL::raster, 1, '8BUI') IS NULL;
+
+-- What no raster states is refused.
+SELECT raster('\x010203'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  '8BUI');
+SELECT raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  '1BB');
+SELECT raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  '8BX');
+SELECT raster('\x0102030405060708'::bytea, 1, 1, 0.0, 1.0, 1.0, -1.0, 0.0,
+  0.0, 3857, 'int64');
+SELECT raster(''::bytea, 0, 0, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857, '8BUI');
+SELECT makeEmptyRaster(-1, 2, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0);
+SELECT makeEmptyRaster(70000, 2, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0);
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT addBand(r, 0, '8BUI') FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT addBand(r, 3, '8BUI') FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT addBand(r, ST_AddBand(ST_MakeEmptyRaster(3, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0)) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT addBand(r, r, 2) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT addBand(r, r, 1, 0) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT setValues(r, 1, 3, 1, ARRAY[1]) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT setValues(r, 2, 1, 1, ARRAY[1]) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT setValues(r, 1, 1, 1, ARRAY[[[1]]]) FROM r;
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '8BUI'::text, 0) AS r)
+SELECT pixels(r, 2) FROM r;
+
+-- The examples the manual states
+SELECT dumpValues(raster('\x0100feff2c010080'::bytea, 2, 2, 0, 2, 1, -1, 0, 0,
+  3857, '16BSI'), 1);
+SELECT pixels(raster('\x0100feff2c010080'::bytea, 2, 2, 0, 2, 1, -1, 0, 0,
+  3857, '16BSI'));
+SELECT width(r), height(r), numBands(r), scaleX(r)
+FROM (SELECT makeEmptyRaster(3, 2, 10, 20, 2, -1, 0, 0, 3857) AS r) t;
+SELECT numBands(r), bandPixelType(r, 1), bandNoDataValue(r, 2)
+FROM (SELECT addBand(addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
+  NULL::integer, '8BUI', 1), 1, '32BF', 0, -9999) AS r) t;
+SELECT numBands(addBand(r, r))
+FROM (SELECT addBand(makeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 3857),
+  NULL::integer, '8BUI', 1) AS r) t;
+SELECT dumpValues(setValues(addBand(makeEmptyRaster(3, 2, 0, 2, 1, -1, 0, 0,
+  3857), NULL::integer, '16BSI', 0, -1), 1, 2, 1, ARRAY[[1, 2], [NULL, 4]]), 1);
+
 /*****************************************************************************/
