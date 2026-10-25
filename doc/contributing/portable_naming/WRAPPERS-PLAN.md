@@ -181,7 +181,11 @@ the call itself. The wrapper calls the public function, which names it in its `@
   generic functions every binding generates, where `trgeometryseq_make` and its siblings take
   a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`
   (`df1e281857` on master `d51b32e664`), 150_trgeo unchanged and the error on instants with
-  different reference geometries added.
+  different reference geometries added. It rewrites `e2e88cd1fd` (MobilityDB #3166): the
+  `@csqlfn` tags naming `Trgeometry_seq_constructor`, `Trgeometry_seqset_constructor` and
+  `Trgeometry_seqset_constructor_gaps` on `trgeometryseq_make`, `trgeometryseqset_make` and
+  `trgeometryseqset_make_gaps` go with those wrappers, by the owner's ruling of 2026-10-25 that the
+  rigid geometry sequence constructors are no different from those of every other type.
 
 ## The MEOS functions to add (60 wrappers, 68 signatures)
 
