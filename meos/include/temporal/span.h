@@ -113,6 +113,7 @@ extern uint8_t *span_sortkey_body(const Span *s, uint8_t *out);
 extern int span_bound_qsort_cmp(const void *s1, const void *s2);
 extern int span_lower_cmp(const Span *s1, const Span *s2);
 extern int span_upper_cmp(const Span *s1, const Span *s2);
+extern bool ensure_span_bound_has_next(Datum value, MeosType basetype);
 extern Datum span_decr_bound(Datum upper, MeosType basetype);
 extern Datum span_incr_bound(Datum upper, MeosType basetype);
 extern Span *spanarr_normalize(Span *spans, int count, bool sort,

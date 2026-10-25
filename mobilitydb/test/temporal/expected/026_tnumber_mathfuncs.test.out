@@ -142,6 +142,23 @@ SELECT tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-0
  {[2@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST], [6@Thu Jan 04 00:00:00 2001 PST, 6@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tint '[2147483645@2001-01-01, 1@2001-01-02]' + 1;
+                                 ?column?                                  
+---------------------------------------------------------------------------
+ [2147483646@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+/* Errors */
+-- A sum reaching the maximum of the base type has no representation in a
+-- temporal integer
+SELECT tint '2147483646@2001-01-01' + 1;
+ERROR:  integer out of range
+SELECT tint '[2147483646@2001-01-01, 1@2001-01-02]' + 1;
+ERROR:  integer out of range
+SELECT tint '{[1@2001-01-01], [2147483646@2001-01-02]}' + 1;
+ERROR:  integer out of range
+SELECT 2147483647 - tint '[0@2001-01-01, 1@2001-01-02]';
+ERROR:  integer out of range
 SELECT 1 + tbigint '1@2001-01-01';
             ?column?            
 --------------------------------
@@ -2358,10 +2375,10 @@ SELECT abs(tbigint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
  {2@Mon Jan 01 00:00:00 2001 PST, 5@Tue Jan 02 00:00:00 2001 PST, 7@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
-SELECT abs(tbigint '-9223372036854775807@2001-01-01');
+SELECT abs(tbigint '-9223372036854775806@2001-01-01');
                        abs                        
 --------------------------------------------------
- 9223372036854775807@Mon Jan 01 00:00:00 2001 PST
+ 9223372036854775806@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT pg_typeof(abs(tint '{-2@2001-01-01, 5@2001-01-02}'));
@@ -2377,7 +2394,12 @@ SELECT pg_typeof(abs(tbigint '{-2@2001-01-01, 5@2001-01-02}'));
 (1 row)
 
 /* Errors */
--- The most negative value of each integer type has no positive counterpart
+-- The absolute value of the negated maximum is the maximum, which a temporal
+-- integer cannot hold
+SELECT abs(tint '-2147483647@2001-01-01');
+ERROR:  integer out of range
+SELECT abs(tbigint '-9223372036854775807@2001-01-01');
+ERROR:  bigint out of range
 SELECT abs(tint '-2147483648@2001-01-01');
 ERROR:  Integer out of range
 SELECT abs(tbigint '-9223372036854775808@2001-01-01');
