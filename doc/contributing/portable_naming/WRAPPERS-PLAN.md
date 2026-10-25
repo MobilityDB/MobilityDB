@@ -179,7 +179,7 @@ the call itself. The wrapper calls the public function, which names it in its `@
   `tsequenceset_make` and `tsequenceset_make_gaps` take the reference geometry from their
   first instant or sequence, so the catalog gives the three `trgeometry[]` signatures to the
   generic functions every binding generates, where `trgeometryseq_make` and its siblings take
-  a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`, which rewrites `e2e88cd1fd`
+  a geometry no SQL argument fills. MobilityDB #3173, branch `meos/trgeometry-seq-generic-constructor`, which rewrites `e2e88cd1fd`
   (`80ddf4b569` on master `9df18a5847`), 150_trgeo unchanged and the error on instants with
   different reference geometries added; the CGAL oracle agrees with eDwithin over 300 AIS trip
   pairs rebuilt through `tsequence_make`. Instants carrying no reference geometry, as
