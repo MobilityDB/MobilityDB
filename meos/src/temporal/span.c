@@ -1879,4 +1879,78 @@ span_hash_extended(const Span *s, uint64 seed)
   return result;
 }
 
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @brief Return the number of bytes the bounds of a span take in a sort key
+ * @param[in] basetype Base type of the span
+ */
+size_t
+span_sortkey_body_size(MeosType basetype)
+{
+  return 2 * (datum_sortkey_size(basetype) + 1);
+}
+
+/**
+ * @brief Write the bounds of a span into a sort key in the order #span_cmp
+ * compares them: the lower bound, whether it is exclusive, the upper bound,
+ * whether it is inclusive, so that an inclusive lower bound precedes an
+ * exclusive one and an inclusive upper bound follows an exclusive one
+ * @param[in] s Span
+ * @param[out] out Buffer of #span_sortkey_body_size bytes
+ * @return The first byte after the bounds
+ */
+uint8_t *
+span_sortkey_body(const Span *s, uint8_t *out)
+{
+  size_t n = datum_sortkey_size(s->basetype);
+  datum_sortkey_put(s->lower, s->basetype, out);
+  out += n;
+  *out++ = s->lower_inc ? 0 : 1;
+  datum_sortkey_put(s->upper, s->basetype, out);
+  out += n;
+  *out++ = s->upper_inc ? 1 : 0;
+  return out;
+}
+
+/**
+ * @ingroup meos_internal_setspan_comp
+ * @brief Return the sort key of a span
+ * @details The key is the span type followed by the bounds, each written most
+ * significant byte first, so that comparing two keys byte by byte as unsigned
+ * values orders the spans as #span_cmp does and two spans have the same key
+ * when #span_eq holds
+ * @param[in] s Span
+ * @param[out] size Number of bytes of the key
+ * @see #span_sortkey
+ */
+uint8_t *
+span_sortkey_intl(const Span *s, size_t *size)
+{
+  assert(s); assert(size); assert(datum_sortkey_size(s->basetype) > 0);
+  *size = 1 + span_sortkey_body_size(s->basetype);
+  uint8_t *result = palloc(*size);
+  result[0] = s->spantype;
+  span_sortkey_body(s, result + 1);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_comp
+ * @brief Return the sort key of a span, the bytes whose unsigned byte order
+ * is the order of #span_cmp and whose byte equality is #span_eq
+ * @param[in] s Span
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+span_sortkey(const Span *s, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return span_sortkey_intl(s, size);
+}
+
 /******************************************************************************/
