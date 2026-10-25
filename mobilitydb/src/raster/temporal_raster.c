@@ -2636,10 +2636,14 @@ PG_FUNCTION_INFO_V1(Raster_union_transfn);
 /**
  * @ingroup mobilitydb_raster
  * @brief Transition function of the aggregate uniting rasters
- * @details The third argument is the band or the pixel operation, as
- * PostGIS's `RASTER_union_transfn` reads it; a NULL band unites every band
- * and a NULL pixel operation is `LAST`. The state lives in the aggregate
- * context, as #Raster_same_alignment_transfn keeps its own
+ * @details The forms take the band and the pixel operation, the band alone,
+ * or neither, and are told apart by their number of arguments, 4, 3 or 2, as
+ * #Temporal_app_tinst_transfn tells apart those of appendInstant; the form
+ * taking the pixel operation alone is #Raster_union_uniontype_transfn. A band
+ * left out or NULL is 0, which unites every band, and a pixel operation left
+ * out or NULL is `LAST`, as PostGIS's `RASTER_union_transfn` reads them. The
+ * state lives in the aggregate context, as #Raster_same_alignment_transfn
+ * keeps its own
  * @sqlfn rasterUnionTransition()
  * @sqlaggfn rasterUnion()
  */
@@ -2653,22 +2657,57 @@ Raster_union_transfn(PG_FUNCTION_ARGS)
     (RasterUnionState *) PG_GETARG_POINTER(0);
   int band = 0;
   char *uniontype = NULL;
-  int nargs = PG_NARGS();
-  if (nargs > 2 && ! PG_ARGISNULL(2))
+  if (PG_NARGS() > 2)
   {
-    if (get_fn_expr_argtype(fcinfo->flinfo, 2) == TEXTOID)
-      uniontype = text_to_cstring(PG_GETARG_TEXT_P(2));
-    else
+    if (! PG_ARGISNULL(2))
       band = PG_GETARG_INT32(2);
+    if (PG_NARGS() > 3 && ! PG_ARGISNULL(3))
+      uniontype = text_to_cstring(PG_GETARG_TEXT_P(3));
   }
-  if (nargs > 3 && ! PG_ARGISNULL(3))
-    uniontype = text_to_cstring(PG_GETARG_TEXT_P(3));
   /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
     Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
     MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
     state = raster_union_transfn(state, rast, band, uniontype);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (uniontype)
+    pfree(uniontype);
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Raster_union_uniontype_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_union_uniontype_transfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Transition function of the aggregate uniting rasters over every band
+ * by a pixel operation
+ * @details The form of #Raster_union_transfn taking the pixel operation
+ * alone, which unites every band, as #Concat_jsonbset_jsonb is the form of
+ * #Concat_jsonb_jsonbset taking its arguments the other way round. A NULL
+ * pixel operation is `LAST`
+ * @sqlfn rasterUnionTransition()
+ * @sqlaggfn rasterUnion()
+ */
+Datum
+Raster_union_uniontype_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_union_uniontype_transfn called in non-aggregate context");
+  RasterUnionState *state = PG_ARGISNULL(0) ? NULL :
+    (RasterUnionState *) PG_GETARG_POINTER(0);
+  char *uniontype = PG_ARGISNULL(2) ? NULL :
+    text_to_cstring(PG_GETARG_TEXT_P(2));
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = raster_union_transfn(state, rast, 0, uniontype);
     MemoryContextSwitchTo(oldctx);
   }
   if (uniontype)
@@ -2782,13 +2821,14 @@ PGDLLEXPORT Datum Raster_summary_stats_transfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Raster_summary_stats_transfn);
 /**
  * @ingroup mobilitydb_raster
- * @brief Transition function of the aggregate summarizing the pixels of
- * rasters
- * @details The forms take the band and whether nodata is excluded, or the
- * exclusion alone, and are told apart by their number of arguments, 4 or 3. A
- * band left out is 1, and a NULL argument keeps its default, as PostGIS's
- * `RASTER_summaryStats_transfn` reads them. The state lives in the aggregate
- * context, as #Raster_same_alignment_transfn keeps its own
+ * @brief Transition function of the aggregate summarizing the pixels of the
+ * first band of rasters
+ * @details The form taking whether nodata is excluded alone, over band 1, as
+ * #Raster_dump_values reads band 1 where #Raster_dump_values_band takes the
+ * band; the form taking the band is #Raster_summary_stats_band_transfn. A
+ * NULL exclusion is true, as PostGIS's `RASTER_summaryStats_transfn` reads
+ * it. The state lives in the aggregate context, as
+ * #Raster_same_alignment_transfn keeps its own
  * @sqlfn summaryStatsAggTransition()
  * @sqlaggfn summaryStatsAgg()
  */
@@ -2800,13 +2840,42 @@ Raster_summary_stats_transfn(PG_FUNCTION_ARGS)
     elog(ERROR, "Raster_summary_stats_transfn called in non-aggregate context");
   RasterStatsState *state = PG_ARGISNULL(0) ? NULL :
     (RasterStatsState *) PG_GETARG_POINTER(0);
-  int band = 1;
-  bool exclude_nodata = true;
-  int excl = PG_NARGS() - 1;
-  if (excl == 3 && ! PG_ARGISNULL(2))
-    band = PG_GETARG_INT32(2);
-  if (! PG_ARGISNULL(excl))
-    exclude_nodata = PG_GETARG_BOOL(excl);
+  bool exclude_nodata = PG_ARGISNULL(2) ? true : PG_GETARG_BOOL(2);
+  /* Skip NULLs */
+  if (! PG_ARGISNULL(1))
+  {
+    Raster *rast = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
+    MemoryContext oldctx = MemoryContextSwitchTo(aggContext);
+    state = raster_summary_stats_transfn(state, rast, 1, exclude_nodata);
+    MemoryContextSwitchTo(oldctx);
+  }
+  if (! state)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Raster_summary_stats_band_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Raster_summary_stats_band_transfn);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Transition function of the aggregate summarizing the pixels of a
+ * band of rasters
+ * @details The form of #Raster_summary_stats_transfn taking the band. A NULL
+ * band is 1 and a NULL exclusion is true, as PostGIS's
+ * `RASTER_summaryStats_transfn` reads them
+ * @sqlfn summaryStatsAggTransition()
+ * @sqlaggfn summaryStatsAgg()
+ */
+Datum
+Raster_summary_stats_band_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext aggContext;
+  if (! AggCheckCallContext(fcinfo, &aggContext))
+    elog(ERROR, "Raster_summary_stats_band_transfn called in non-aggregate context");
+  RasterStatsState *state = PG_ARGISNULL(0) ? NULL :
+    (RasterStatsState *) PG_GETARG_POINTER(0);
+  int band = PG_ARGISNULL(2) ? 1 : PG_GETARG_INT32(2);
+  bool exclude_nodata = PG_ARGISNULL(3) ? true : PG_GETARG_BOOL(3);
   /* Skip NULLs */
   if (! PG_ARGISNULL(1))
   {
