@@ -191,7 +191,7 @@ GEOSUnaryUnion(const GEOSGeometry *geom)
   GSERIALIZED *gs = geo_serialize(lwgeom);
   if (! gs)
     return NULL;
-  GSERIALIZED *gsresult = geom_unary_union(gs, -1);
+  GSERIALIZED *gsresult = geom_unary_union(gs);
   pfree(gs);
   if (! gsresult)
     return NULL;

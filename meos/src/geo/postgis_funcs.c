@@ -5373,11 +5373,11 @@ geo_arealess_parts_as_lines(const LWGEOM *geom)
  * @ingroup meos_geo_base_spatial
  * @brief Return the unary union of a geometry
  * @param[in] gs Geometry
- * @param[in] prec Precision
- * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS). With respect
+ * to the original function we do not use the @p prec argument.
  */
 GSERIALIZED *
-geom_unary_union(const GSERIALIZED *gs, double prec)
+geom_unary_union(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
@@ -5403,16 +5403,16 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   /* The dissolve of a geometry whose components are surfaces is read from
    * their boundaries, which keeps a circular arc on its own circle where a
    * linearization would put the chain of segments approximating it in its
-   * place. A precision model is not something it answers for, and neither is a
-   * geometry carrying a component that is not a surface */
-  LWGEOM *lwresult = (prec < 0) ? meos_areal_union(plane) : NULL;
+   * place. A geometry carrying a component that is not a surface is not what
+   * it answers */
+  LWGEOM *lwresult = meos_areal_union(plane);
   /* A geometry whose components are linework and points is dissolved the same
    * way, each point of the answer walked once */
-  if (! lwresult && prec < 0)
+  if (! lwresult)
     lwresult = meos_linear_union(plane);
   /* A collection whose components fall on both sides of the areal boundary is
    * the union of its components, which the array union answers */
-  if (! lwresult && prec < 0)
+  if (! lwresult)
   {
     int nparts;
     GSERIALIZED **parts = geo_collection_components(gsplane, &nparts);
@@ -5436,7 +5436,7 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   if (! lwresult)
   {
 #if GEOS
-    lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
+    lwresult = lwgeom_unaryunion_prec(lwgeom, -1);
     /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
      * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose
      * lwerror the MEOS handler reports and RETURNS from -- so the answer is
@@ -5457,9 +5457,9 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
 #else /* ! GEOS */
     lwgeom_free(lwgeom);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The unary union asked for on a precision grid, and the one of a "
-      "geometry none of the native routes reads, are answered by the GEOS "
-      "library, which this build excludes: configure with -DGEOS=ON");
+      "The unary union of a geometry none of the native routes reads is "
+      "answered by the GEOS library, which this build excludes: configure "
+      "with -DGEOS=ON");
     return NULL;
 #endif /* GEOS */
   }
