@@ -73,33 +73,34 @@ a formula.
 
 ## 1.3 How a build without GEOS works
 
-The top-level `CMakeLists.txt` carries the option:
+Every build is a build without GEOS: MobilityDB #3185, merged as `1a7a1a0e11`, deletes the
+`GEOS` build option, `cmake/FindGEOS.cmake` and the GEOS context with `geos_get_context()`, and a
+configure line passing `-DGEOS` is ignored.
 
-```
-option(GEOS "Set ON|OFF (default=ON) to answer with the GEOS library the geometry
-operations no native implementation covers. ..." ON)
-```
-
-With `-DGEOS=OFF`:
-
-- **No GEOS header is needed.** The build puts `meos/include/geos-none/geos_c.h` on the include
+- **No GEOS header is read.** The build puts `meos/include/geos-none/geos_c.h` on the include
   path in place of GEOS's own header. That stand-in declares only the few GEOS types and entry
   points MobilityDB still names, so the vendored PostGIS sources compile unmodified, and any
   other GEOS call left behind fails to compile with its name in the error, rather than linking
   quietly and failing at run time.
 - **The liblwgeom files that call GEOS are left out**, and the few of their functions the rest of
-  liblwgeom still names are defined in `meos/src/geo/geo_lwgeom_none.c`. (MEOS's own calls to
-  GEOS, such as `lwgeom_difference_prec`, sit inside `#if GEOS` blocks and are compiled out, so
-  they need no definition there.) Its file comment states
+  liblwgeom still names are defined in `meos/src/geo/geo_lwgeom_none.c`. Its file comment states
   which of them MEOS actually reaches: only `lwgeom_centroid`, which k-means clustering calls,
   and which is answered there by the native `meos_centroid`. The others (`lwgeom_make_valid`,
   `lwgeom_intersection_prec`, `lwgeom_unaryunion`, `lwgeom_split`, `lwgeom_offsetcurve`) are
   reached only from liblwgeom functions MEOS never calls; they exist so the library links, and
-  they raise the error "the operation is answered by the GEOS library, which this build excludes".
+  they raise the error saying the operation needs GEOS. In the extension, the archive of the
+  vendored geometry library links the MEOS archive in turn, so the linker reads the MEOS archive
+  again after it and those calls resolve in a build with no family.
 - **The raster core's GEOS calls are answered natively** by `meos/src/geo/geo_geos_none.c`: a
   GEOS geometry *is* a liblwgeom geometry there, so conversion is a copy, and the union the
-  polygonization asks for is MEOS's own.
-- **`meos_full_version()` reports `GEOS none`.**
+  polygonization asks for is MEOS's own. Those definitions carry the names of the GEOS C API
+  (`GEOSUnaryUnion`, `GEOSisValid`, `initGEOS`, ...), which PostGIS calls in the same backend, and
+  PostgreSQL loads every extension library with global symbol resolution. The file is therefore
+  an object library of its own whose symbols are hidden from the dynamic table of the shared
+  library: exported, they answer the GEOS calls of a PostGIS loaded after MobilityDB, and a
+  session calling `ST_IsValid` and `ST_UnaryUnion` aborts the backend; hidden, it answers.
+- **`meos_full_version()` and `mobilitydb_full_version()` name no GEOS version**, only those of
+  PostgreSQL, PostGIS, PROJ and JSON-C.
 
 One caveat is outside MobilityDB's control: when the raster family is built (`-DRASTER=ON`),
 MobilityDB links GDAL, and a system GDAL may itself link GEOS. The GEOS-free `libmeos.so` measured
@@ -146,7 +147,8 @@ An operation leaves GEOS only when its native answer meets two obligations, both
 
 The campaign is finished when every operation meets both, and then one more step is taken, which
 the committers decided on 2026-09-22: **GEOS leaves the shipped library entirely.** The `#if GEOS`
-fall-backs, the `GEOS` build option and the GEOS context are deleted. The stand-in header and the
+fall-backs, the `GEOS` build option and the GEOS context are deleted, by MobilityDB #3179 and
+#3185, merged as `9bb3bb7a2b` and `1a7a1a0e11`. The stand-in header and the
 two files that answer GEOS's entry points stay, compiled in every build, because the vendored
 PostGIS code, its raster core included, calls those entry points. There is then one
 implementation, so an answer that differs from PostGIS is a failing test, never

@@ -64,7 +64,8 @@ as fast.
   With the raster family built, GEOS is still loaded into the process by the system's GDAL, which
   links it; MEOS calls none of it ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.2). The job "Build
   without GEOS" of `meos.yml` (MobilityDB #2977) builds it and fails where an input reaches a
-  fall-back.
+  fall-back. Since MobilityDB #3185, merged as `1a7a1a0e11`, every build is this one, and the
+  MEOS build job of `meos.yml` checks that the library neither calls nor exports a GEOS function.
 - **3179 of its 3308 public functions have no path to GEOS at all**: nothing they call, at any
   depth, reaches GEOS ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.4). Among them are every
   operation on plain geometries except the intersection, the difference and the two unions: the
@@ -104,12 +105,14 @@ Each item is measured on master `52b0c9e4d5`; the note named gives the evidence.
 4. **The fall-backs are deleted.** MobilityDB #3179, merged as `9bb3bb7a2b`, takes the unary
    union without a precision grid (decision 3 of the [implementation plan](IMPLEMENTATION-PLAN.md))
    and deletes the four fall-backs ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9).
-5. **Then GEOS leaves the shipped library.** The build option and the GEOS context are deleted
-   (step 14 of the plan), and GEOS stays only as a test reference. The committers decided this on
-   2026-09-22, and on 2026-10-25 that the option and `geos_get_context()` go with no release of
-   deprecation and that `mobilitydb_full_version()` stops naming GEOS (decision 5 of the plan). The
-   files standing in for GEOS's entry points stay: the vendored PostGIS code calls those entry
-   points, and the files answer them natively.
+5. **GEOS leaves the shipped library.** MobilityDB #3185, merged as `1a7a1a0e11`, deletes the
+   build option, `cmake/FindGEOS.cmake`, the GEOS context with `geos_get_context()` and the GEOS
+   version in `mobilitydb_full_version()`, with no release of deprecation (step 14 of the plan,
+   decision 5), and GEOS stays only as a test reference. The committers decided this on
+   2026-09-22 and 2026-10-25. The files standing in for GEOS's entry points stay, compiled in
+   every build: the vendored PostGIS code calls those entry points, and the files answer them
+   natively, under names hidden from the library's dynamic table so that PostGIS, loaded in the
+   same backend, keeps its own GEOS ([note 1](01-OBJECTIVE.md) §1.3).
 
 ## What the first measurement found, and how it closed
 

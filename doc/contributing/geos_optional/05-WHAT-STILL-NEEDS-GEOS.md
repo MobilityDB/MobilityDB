@@ -51,8 +51,9 @@ change that broke the build without GEOS, or that sent a new input to GEOS, went
 `-DGEOS=OFF`, checks that `libmeos.so` calls no GEOS function, and runs the sweep of §5.5 and the
 gateway probe of §5.6, each failing where an input reaches a fall-back. It passes on master
 `52b0c9e4d5`. MobilityDB #3179, merged as `9bb3bb7a2b`, deletes the fall-backs, and the sweep
-and the gateway probe go with them, having nothing left to detect; the job keeps its build and
-its check that `libmeos.so` calls no GEOS function.
+and the gateway probe go with them, having nothing left to detect. MobilityDB #3185, merged as
+`1a7a1a0e11`, deletes the `GEOS` build option, so every build is the build without GEOS, and the
+MEOS build job of `meos.yml` checks that `libmeos.so` neither calls nor exports a GEOS function.
 
 ## 5.3 Where GEOS is called
 
@@ -378,8 +379,15 @@ probe (appendix A).
    their native routes reads; `POSTGIS2GEOS` and `GEOS2POSTGIS` go with them. An untried input of
    the 129 functions is therefore refused rather than answered by GEOS. On its head, built without
    GEOS, CGAL's exact kernel agrees with every answer on 20 witnesses, 40 controls passing, and the
-   four union cells read 0.249 to 0.381 of GEOS in instructions. The removal of the GEOS option
-   itself is step 14 of the [implementation plan](IMPLEMENTATION-PLAN.md).
+   four union cells read 0.249 to 0.381 of GEOS in instructions.
+6. **The build option is deleted.** MobilityDB #3185, merged as `1a7a1a0e11`, deletes the `GEOS`
+   build option, `cmake/FindGEOS.cmake` and the GEOS context with `geos_get_context()` (step 14 of
+   the [implementation plan](IMPLEMENTATION-PLAN.md)), so no build answers through GEOS. The
+   stand-ins of §5.3 are compiled in every build, and the names of the GEOS C API that
+   `geo_geos_none.c` defines are hidden from the dynamic table, so a PostGIS loaded in the same
+   backend keeps its own GEOS ([note 1](01-OBJECTIVE.md) §1.3). On its head CGAL's exact kernel
+   agrees with every answer on 20 witnesses, 40 controls passing, and the four union cells read
+   0.249 to 0.380 of GEOS in instructions.
 
 A temporal geography whose values are not all positions is refused in every build, GEOS included
 (§5.7): the native union of a geodetic array answers positions alone, and every path to the four
