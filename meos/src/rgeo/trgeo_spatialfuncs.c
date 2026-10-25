@@ -1221,7 +1221,7 @@ trgeo_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
       pfree(geoms[i]);
     if (unary_union)
     {
-      result = geom_unary_union(coll, -1);
+      result = geom_unary_union(coll);
       pfree(coll);
     }
     else

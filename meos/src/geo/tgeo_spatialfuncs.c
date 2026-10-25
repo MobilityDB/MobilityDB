@@ -2082,7 +2082,7 @@ geo_values_collect(const Temporal *temp, bool unary_union)
   pfree(values); pfree(gsarr);
   if (! unary_union)
     return res;
-  GSERIALIZED *result = geom_unary_union(res, -1);
+  GSERIALIZED *result = geom_unary_union(res);
   pfree(res); 
   return result;
 }

@@ -433,7 +433,7 @@ extern GSERIALIZED *geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED 
 extern GSERIALIZED *geom_shortestline2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *geom_symdifference2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs, double prec);
+extern GSERIALIZED *geom_unary_union(const GSERIALIZED *gs);
 extern GSERIALIZED *geom_union2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern GSERIALIZED *line_interpolate_point(const GSERIALIZED *gs, double distance_fraction, bool repeat);
 extern double line_locate_point(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
