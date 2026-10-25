@@ -45,7 +45,9 @@ three. The fix has one hard constraint and needs one decision:
   dates it at the same instant in all of them. Any fix must keep that, so it can only be done
   through **one shared primitive**, never walk by walk.
 - **Decision (section 7):** which microsecond dates a crossing that falls between two
-  microseconds.
+  microseconds. The recommendation is **the nearest microsecond, decided exactly, with a tie going
+  to the even microsecond**: for instants, the rule that [Exact distance](../portable_naming/EXACT-DISTANCE.md)
+  applies to values.
 
 The exact locator on its own costs 2.5–2.7× master's, about 15 ns per crossing. The whole
 comparison still executes fewer instructions than master: −2.4% when half the segments cross,
@@ -176,6 +178,12 @@ tfloatsegm_crossing(double start, double end, double value, TimestampTz lower,
     m--;
   while (m < d && dir * - cross_product_sign(0.0, start, dd, end, 0.0, start,
       (double) m + 0.5, value) < 0)
+    m++;
+  /* A crossing exactly at m + 1/2 is a tie, which goes to the even
+   * timestamp: the parity is that of lower + m, not of m, so that the
+   * crossing gets the same instant whatever instant its segment starts at */
+  if (((lower + m) & 1) && m < d && cross_product_sign(0.0, start, dd, end,
+      0.0, start, (double) m + 0.5, value) == 0)
     m++;
   if (m <= 0 || m >= d)
     return false;                       /* on a bound */
@@ -321,12 +329,65 @@ continuous time and which existing outputs move.
 |---|---|---|
 | truncation (master's `(TimestampTz)(d * f)`) | < 1 µs, always early | `t` from just after 11:59:59.999999: the expected output moves |
 | first microsecond at or after | < 1 µs, always late | 12:00, unchanged; a crossing just after a bound moves by 1 µs |
-| **nearest microsecond (proposed)** | **≤ 0.5 µs** | 12:00, unchanged on both sides |
+| **nearest microsecond (recommended)** | **≤ 0.5 µs** | 12:00, unchanged on both sides |
 
-Truncation is the dating used across the tree. Changing it was proposed once before (PR #2798)
-and closed because of its reach. The proposal here is that the convention become **the nearest
-microsecond, decided exactly**, adopted by the shared primitive and therefore everywhere at
-once.
+**The recommendation: the nearest microsecond, decided exactly, a tie going to the even
+microsecond.** The reasons:
+
+- **It is the rule of exact distance, applied to instants.** [Exact distance](../portable_naming/EXACT-DISTANCE.md)
+  answers a distance with the double nearest the exact quantity, a tie going to the double whose
+  last bit is even. A `TimestampTz` is a count of microseconds, so the instant of an exact crossing
+  is answered the same way: the microsecond nearest to it, a tie (the exact crossing at
+  `m + 1/2`, where the exact sign is 0) going to the even one. Truncation is rounding toward
+  zero, which no distance in MEOS accepts.
+- **The error is smaller and has no direction.** The nearest microsecond is at most 0.5 µs from
+  the crossing, on either side. Truncation is up to 1 µs away and always early, and that bias
+  shows in aggregates. In `028_tbool_boolops_tbl` (section 8), 18 of the 100 fixture rows of
+  `MAX(duration(whenTrue(temp #> 5)))` move by one microsecond.
+- **Master truncates a rounded product, not the crossing.** `lower + (TimestampTz)(duration * f)`
+  rounds `f` and then the product before it truncates. An exact crossing that falls **on** a whole
+  microsecond is often dated one microsecond early: 0.7 of a day is computed as
+  60479999999.99999 µs and stated as 16:47:59.999999. An exact corner of a cell walk falls in two
+  different microseconds, so a walk holds the tile beside the corner for 1 µs and `spaceSplit`
+  drops the corner instant. Computing truncation exactly would fix these too, but at the same cost
+  the nearest microsecond is strictly better.
+- **It decides no value.** Every quantity is computed exactly over continuous time. With B fixed,
+  every microsecond of the result is right whichever neighbour dates the crossing. The rule only
+  sets how far the stated instant lies from the true one.
+
+**Neither `rint` nor a cast is this rule.** `rint(duration * f)` errs near a half microsecond, as
+the cast errs near a whole one, since both read a rounded product. `tfloatsegm_crossing`
+(section 5) confirms the window `(m - 1/2, m + 1/2]` with exact signs, and settles a tie exactly.
+
+**Ties.** A tie is a crossing exactly at `m + 1/2` µs from the start of its segment, for example
+a value rising from 0 to 1 over 3 µs, crossing 0.5 at 1.5 µs. It is detected **exactly**: `m + 0.5`
+and the segment duration are exact doubles (below 2^52 µs, about 142 years), so the sign of the
+segment's function at `m + 0.5`, decided by `cross_product_sign` with its exact fallback, is 0
+exactly when the crossing is a tie, and never by rounding. The limit is the one
+`cross_product_sign` documents: exact where no product of coordinate differences overflows or
+underflows. The tie goes to the **even timestamp**:
+- the parity is taken on the timestamp `lower + m`, never on the offset `m`. A crossing appears in
+  segments that start at different instants (a synchronized segment starts where the other operand
+  has an instant), and every form must date it at the same instant (section 4);
+- it is unbiased, like ties-to-even on doubles, which [Exact distance](../portable_naming/EXACT-DISTANCE.md)
+  uses. Ties to the earlier or the later microsecond would be biased one way;
+- it does not depend on the direction of the segment (rising or falling), nor on which operand is
+  first;
+- an even timestamp that is a bound of the segment means the crossing belongs to the bound, as for
+  any crossing whose nearest microsecond is a bound.
+
+The families whose sign is a polynomial of degree 2 (`tDwithin`, circular buffers, turning points)
+detect a tie the same way, by the exact sign of the polynomial at `m + 0.5`.
+
+**How it is adopted: never as a sweep.** A convention the tree shares is never rewritten site by
+site, nor changed on its own without a fix that needs it. The nearest microsecond enters only
+through the shared primitive of steps 2–4 (section 9). It switches every form of a crossing at
+once, in the pull requests whose removal of the bands moves expected outputs anyway. Each moved
+output is classified (dating only, or a correction) and moves by at most one microsecond.
+
+**Outside those steps**, every site that dates a crossing, a new one included, keeps master's
+truncation, computed exactly where the code is exact. One crossing carries the same instant in all
+its forms (section 4), so no site switches on its own.
 
 ## 8. Blast radius
 
@@ -363,8 +424,8 @@ adopted.
 
 1. **Whether a crossing exists** inside a segment is decided by an exact sign on the doubles,
    never by a band on the fraction.
-2. **The instant that dates it** is one microsecond fixed by exact signs (proposed: the
-   nearest). If that microsecond is a bound, the crossing belongs to the bound.
+2. **The instant that dates it** is the nearest microsecond, fixed by exact signs, a tie going
+   to the even microsecond. If that microsecond is a bound, the crossing belongs to the bound.
 3. **The result at that instant** is taken from the exact side of the segment there, never from
    a value interpolated at that instant.
 
@@ -383,6 +444,12 @@ diffs classified:
    turning points, through the same primitive with the exact polynomial sign.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
 
-Steps 2–4 carry the dating rule chosen in section 7. If the committers keep truncation, the
-steps still apply with truncation computed exactly. The #2852 expected output then moves by
-one microsecond, to a result that is equally correct at every microsecond.
+Steps 2–4 carry the dating rule of section 7. If the committers keep truncation instead, the
+steps still apply with truncation computed exactly. The #2852 expected output then moves by one
+microsecond, to a result that is equally correct at every microsecond.
+
+**Schedule.** Steps 2–4 start only after the work of [Exact distance](../portable_naming/EXACT-DISTANCE.md)
+is finished. They share their readers in `lifting.c` with
+[Any number of turning points in the lifting](N-TURNING-POINTS.md). The order is: that note's
+first pull request (one turning-point callback per arity, with the same results), then steps 2–4
+here on the merged readers, then that note's intervals of any number and its rigid geometries.
