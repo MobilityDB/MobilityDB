@@ -275,10 +275,13 @@ int main(void)
     "Cbuffer(Point(0.8 0.5),0.1)@2001-01-02]", apart, 0);
   /* The shared diagonal is inside the TIN and is none of its boundary: a
    * buffer centred on it is contained, covered and touches nothing, while one
-   * tangent to a side of the square from outside touches it */
+   * tangent to a side of the square from outside touches it. Tangency is
+   * read exactly on the doubles, so the tangent buffer is placed by binary
+   * fractions: 1.1 - 1 is not the double 0.1 */
   check_contains(0.5, 0.5, 0.1, apart, 1);
   check_touches(0.5, 0.5, 0.1, apart, 0);
-  check_touches(1.1, 0.5, 0.1, apart, 1);
+  check_touches(1.125, 0.5, 0.125, apart, 1);
+  check_touches(1.1, 0.5, 0.1, apart, 0);
 
   if (failures == 0)
     printf("Overlap distance test: all tests passed\n");
