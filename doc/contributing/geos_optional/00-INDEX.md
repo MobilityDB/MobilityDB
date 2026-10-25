@@ -102,10 +102,14 @@ Each item is measured on master `52b0c9e4d5`; the note named gives the evidence.
    ([note 4](04-OPERATIONS.md) §4.11).
 3. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
 4. **The unary union on a precision grid** is the one input still reaching a fall-back
-   ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9); what becomes of its parameter is decision 3 of the
-   [implementation plan](IMPLEMENTATION-PLAN.md).
-5. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the stubs are
-   deleted, and GEOS stays only as a test reference. The committers decided this on 2026-09-22.
+   ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9). The committers decided on 2026-10-25 to drop the
+   parameter (decision 3 of the [implementation plan](IMPLEMENTATION-PLAN.md)).
+5. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the GEOS
+   context are deleted, and GEOS stays only as a test reference. The committers decided this on
+   2026-09-22, and on 2026-10-25 that the option and `geos_get_context()` go with no release of
+   deprecation and that `mobilitydb_full_version()` stops naming GEOS (decision 5 of the plan). The
+   files standing in for GEOS's entry points stay: the vendored PostGIS code calls those entry
+   points, and the files answer them natively.
 
 ## What the first measurement found, and how it closed
 

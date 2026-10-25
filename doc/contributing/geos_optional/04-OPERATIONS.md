@@ -160,8 +160,8 @@ GEOS for a temporal geometry with a multi-part or collection value
 **Left.** At master `d9b9c11985`, the collections above, which reach no fall-back on master
 `52b0c9e4d5` (note 5 §5.5). A union on a *precision grid* (`prec ≥ 0`) calls GEOS, on master as
 before: every MEOS caller passes −1 and no SQL function calls `geom_unary_union`, so no user
-reaches it, and what becomes of the parameter is decision 3 of the
-[implementation plan](IMPLEMENTATION-PLAN.md).
+reaches it. The committers decided on 2026-10-25 to drop the parameter (decision 3 of the
+[implementation plan](IMPLEMENTATION-PLAN.md)).
 
 ## 4.5 Union of an array of geometries — finished
 

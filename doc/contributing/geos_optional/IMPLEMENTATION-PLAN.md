@@ -74,8 +74,8 @@ the frame (note 6 §6.6).
 
 | # | Step | What clears it |
 |---|---|---|
-| 13 | The four fall-backs of `postgis_funcs.c` are deleted with the conversion helpers they use, and their error messages with them | The job of step 6 reads 0 on every count; `check_liblwgeom_geos.py` carries no geometry entry point |
-| 14 | The `GEOS` build option, the stand-in header `geos-none/geos_c.h`, the stubs `geo_lwgeom_none.c` and `geo_geos_none.c`, the GEOS context in `meos.c` and the GEOS version string are deleted; GEOS stays linked into the test probes only | `ldd` on `libmeos.so` shows no GEOS library loaded, which with the raster family on needs a GDAL built without GEOS (note 5 §5.2); the SQL regression tests answer as expected; the probes keep a GEOS build, called directly, as the speed reference and as the witness for straight edges, and never a witness for an arc |
+| 13 | The `prec` parameter of `geom_unary_union` is dropped (decision 3), in a pull request of its own; then the four fall-backs of `postgis_funcs.c` are deleted with the conversion helpers they use, and their error messages with them | The job of step 6 reads 0 on every count; `check_liblwgeom_geos.py` carries no geometry entry point |
+| 14 | The `GEOS` build option and `cmake/FindGEOS.cmake`, the GEOS context in `meos.c` with `geos_get_context()`, and the GEOS version in `mobilitydb_full_version()` are deleted (decision 5); the workflows and the Dockerfile stop installing GEOS for the build. `geos-none/geos_c.h`, `geo_lwgeom_none.c` and `geo_geos_none.c` stay and are compiled in every build: the vendored geometry library (`lwgeom_wrapx.c`, through `lwgeom_geos.h`) and the raster core call GEOS entry points, `GEOSUnaryUnion` and `GEOSisValid` among them, which these files answer natively. GEOS stays linked into the test probes only | `ldd` on `libmeos.so` shows no GEOS library loaded, which with the raster family on needs a GDAL built without GEOS (note 5 §5.2); the SQL regression tests answer as expected; the probes keep a GEOS build, called directly, as the speed reference and as the witness for straight edges, and never a witness for an arc |
 
 ## Part IV — the user-facing chapter
 
@@ -93,9 +93,17 @@ the frame (note 6 §6.6).
    correct. Step 9 is designed around this rule.
 3. **The `prec` parameter of `geom_unary_union`.** No caller passes a grid and no SQL function
    calls the function. Dropping the parameter is an API change; keeping it means refusing a
-   non-negative value once GEOS is gone (step 13).
+   non-negative value once GEOS is gone (step 13). **Decided on 2026-10-25: it is dropped**, and
+   `geom_unary_union(gs)` stays, since `trajectory(temp, true)`, `traversedArea(..., true)` and the
+   raster core's union in a build without GEOS dissolve through it. What goes is the union snapped
+   to a grid GEOS computes, which MEOS does not offer: rounding an answer afterwards can make it
+   invalid, which the snapped union cannot.
 4. **The licence of the protected-area polygons** must be confirmed before any of them is
    committed as test data.
+5. **What a build and a user see once GEOS is gone.** Decided on 2026-10-25: the `GEOS` build
+   option and `geos_get_context()` are deleted with no release of deprecation, and
+   `mobilitydb_full_version()` no longer names a GEOS version; the pull request of step 14 and the
+   release notes say so.
 
 ## Open items, stated rather than buried
 

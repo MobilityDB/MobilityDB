@@ -146,8 +146,10 @@ An operation leaves GEOS only when its native answer meets two obligations, both
 
 The campaign is finished when every operation meets both, and then one more step is taken, which
 the committers decided on 2026-09-22: **GEOS leaves the shipped library entirely.** The `#if GEOS`
-fall-backs, the `GEOS` build option, the stand-in header and the two stub files are deleted.
-There is then one implementation, so an answer that differs from PostGIS is a failing test, never
+fall-backs, the `GEOS` build option and the GEOS context are deleted. The stand-in header and the
+two files that answer GEOS's entry points stay, compiled in every build, because the vendored
+PostGIS code, its raster core included, calls those entry points. There is then one
+implementation, so an answer that differs from PostGIS is a failing test, never
 a run-time branch. GEOS stays in the test tools only: as the speed reference, and as one of the
 correctness references for straight-edged shapes (note 2 §2.1 says exactly where).
 
