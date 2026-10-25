@@ -126,12 +126,20 @@ WITH temp(temp, box) AS (
 SELECT temp = merge(atStbox(temp, box), minusStbox(temp, box))
 FROM temp;
 
-SELECT npointSame(npoint(1, 0.5), npoint(1, 0.50000001));
-SELECT npointSame(npoint 'Npoint(1, 1)', npoint 'Npoint(2, 1)');
-SELECT npoint(1, 0.5) ~= npoint(1, 0.50000001);
-SELECT npoint 'Npoint(1, 1)' ~= npoint 'Npoint(2, 1)';
--- TODO
--- SELECT equals(npoint(1, 0.7744007411523213), npoint(2, 0.6952992297355585));
+-- Two network points on different routes denote one location where the
+-- routes cross: the comparison operators tell the two network points apart,
+-- and their geometries answer whether they are one location
+WITH inter(geom) AS (
+  SELECT ST_Intersection(t1.the_geom, t2.the_geom)
+  FROM ways t1, ways t2 WHERE t1.gid = 1 AND t2.gid = 2 ),
+fractions(f1, f2) AS (
+  SELECT ST_LineLocatePoint(t1.the_geom, i.geom),
+    ST_LineLocatePoint(t2.the_geom, i.geom)
+  FROM ways t1, ways t2, inter i WHERE t1.gid = 1 AND t2.gid = 2 )
+SELECT npoint(1, f1) = npoint(2, f2),
+  npoint(1, f1)::geometry = npoint(2, f2)::geometry,
+  ST_DWithin(npoint(1, f1)::geometry, npoint(2, f2)::geometry, 1e-9)
+FROM fractions;
 
 SELECT round(length(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03]'), 6);
 SELECT round(length(tnpoint '{[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-01-02, Npoint(1, 0.5)@2001-01-03], [Npoint(2, 0.6)@2001-01-04, Npoint(2, 0.6)@2001-01-05]}'), 6);

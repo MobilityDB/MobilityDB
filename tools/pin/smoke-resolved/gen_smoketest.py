@@ -619,7 +619,6 @@ TNPOINT_CONFIG = dict(
         "re:^nai_tnpoint":                     "needs ways cache",
         "re:^shortestline_tnpoint":            "needs ways cache",
         "re:^tnpoint_(trajectory|points|routes|stops)$":  "needs ways cache",
-        "re:^npoint_same$":                    "needs ways cache",
         "re:_npoint_set$":                     "needs ways cache",
         "re:_set_npoint$":                     "needs ways cache",
         "re:^npointset_":                      "needs ways cache",

@@ -67,7 +67,6 @@ extern GSERIALIZED *geoarr_collect(GSERIALIZED **gsarr, int count);
 extern void datum_point4d(Datum value, POINT4D *p);
 extern bool datum_point_eq(Datum point1, Datum point2);
 extern bool datum_point_eq_intl(Datum point1, Datum point2);
-extern bool datum_point_same(Datum point1, Datum point2);
 extern Datum datum2_point_eq(Datum point1, Datum point2);
 extern Datum datum2_point_ne(Datum point1, Datum point2);
 extern Datum datum2_geom_centroid(Datum geo);

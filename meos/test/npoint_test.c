@@ -400,10 +400,6 @@ int main(void)
   bool_result = npoint_ne(npoint1, npoint2);
   printf("npoint_ne(%s, %s): %c\n", npoint1_out, npoint2_out, bool_result ? 't' : 'n');
 
-  /* bool npoint_same(const Npoint *np1, const Npoint *np2); */
-  bool_result = npoint_same(npoint1, npoint2);
-  printf("npoint_same(%s, %s): %c\n", npoint1_out, npoint2_out, bool_result ? 't' : 'n');
-
   /* int nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2); */
   int32_result = nsegment_cmp(nsegment1, nsegment2);
   printf("nsegment_cmp(%s, %s): %d\n", nsegment1_out, nsegment2_out, int32_result);
