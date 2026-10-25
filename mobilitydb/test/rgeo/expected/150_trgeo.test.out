@@ -514,6 +514,16 @@ SELECT asText(trgeometrySeqSet(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pos
  POLYGON((1 1,2 2,3 1,1 1));{[Pose(POINT(1 1),0)@Sun Jan 01 00:00:00 2012 PST, Pose(POINT(1 1),1)@Wed Feb 01 00:00:00 2012 PST], [Pose(POINT(2 2),0)@Thu Mar 01 00:00:00 2012 PST, Pose(POINT(2 2),1)@Sun Apr 01 00:00:00 2012 PDT]}
 (1 row)
 
+SELECT numSequences(trgeometrySeqSetGaps(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(2 2),1)@2012-02-01', 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(3 3),1)@2012-06-01'], interval '1 month'));
+ numsequences 
+--------------
+            3
+(1 row)
+
+SELECT asText(trgeometrySeq(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((0 0,1 0,0 1,0 0));Pose(Point(2 2),1)@2012-02-01']));
+ERROR:  Operation on different reference geometries
+SELECT asText(trgeometrySeqSetGaps(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((0 0,1 0,0 1,0 0));Pose(Point(2 2),1)@2012-02-01'], interval '1 month'));
+ERROR:  Operation on different reference geometries
 SELECT asText(trgeometryInst(trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01'));
                                     astext                                    
 ------------------------------------------------------------------------------

@@ -154,6 +154,12 @@ SELECT asText(trgeometrySeq(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Po
 
 SELECT asText(trgeometrySeqSet(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1),0)@2012-01-01, Pose(Point(1 1),1)@2012-02-01]', 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(2 2),0)@2012-03-01, Pose(Point(2 2),1)@2012-04-01]']));
 
+SELECT numSequences(trgeometrySeqSetGaps(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(2 2),1)@2012-02-01', 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(3 3),1)@2012-06-01'], interval '1 month'));
+
+-- the instants of a sequence state one reference geometry
+SELECT asText(trgeometrySeq(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((0 0,1 0,0 1,0 0));Pose(Point(2 2),1)@2012-02-01']));
+SELECT asText(trgeometrySeqSetGaps(ARRAY[trgeometry 'Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1),0)@2012-01-01', 'Polygon((0 0,1 0,0 1,0 0));Pose(Point(2 2),1)@2012-02-01'], interval '1 month'));
+
 -------------------------------------------------------------------------------
 -- Transformation functions
 -------------------------------------------------------------------------------

@@ -82,6 +82,8 @@
 #endif
 #if RGEO
   #include "rgeo/trgeo.h"
+  #include "rgeo/trgeo_inst.h"
+  #include "rgeo/trgeo_seq.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -1200,6 +1202,13 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
   VALIDATE_NOT_NULL(instants, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+#if RGEO
+  /* A rigid geometry sequence keeps once the reference geometry its instants
+   * carry, which every instant must state alike */
+  if (instants[0]->temptype == T_TRGEOMETRY)
+    return trgeoseq_make_exp(trgeoinst_geom_p(instants[0]), instants, count,
+      count, lower_inc, upper_inc, interp, normalize);
+#endif /* RGEO */
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
 }
