@@ -130,7 +130,7 @@ ctest -R '021_tbox'
 			</p><pre class="programlisting">
 ctest -R '022_*'
 </pre><p>
-				The tests run on a temporary PostgreSQL cluster in the directory <code class="varname">tmptest</code> of the build directory, whose server listens on a Unix-domain socket in that directory. Since PostgreSQL does not start when the path of the socket exceeds 107 bytes, a build directory deep in the file system needs a shorter directory for the cluster, which the variable <code class="varname">MOBILITYDB_TEST_TMPDIR</code> gives at configure time
+				The tests run on a temporary PostgreSQL cluster in the directory <code class="varname">tmptest</code> of the build directory, whose server listens on a Unix-domain socket in a short directory under <code class="varname">/tmp</code>, since PostgreSQL does not start when the path of the socket exceeds 107 bytes. Another directory for the cluster can be given at configure time with the variable <code class="varname">MOBILITYDB_TEST_TMPDIR</code>. The cluster is created in the C locale and in UTF-8, unless the variable <code class="varname">MOBILITYDB_TEST_ENCODING</code> names another encoding, such as <code class="varname">SQL_ASCII</code>
 			</p><pre class="programlisting">
 cmake -DMOBILITYDB_TEST_TMPDIR=/tmp/mobilitydb-test ..
 </pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="documentation"></a>Documentation</h3></div></div></div><p>
