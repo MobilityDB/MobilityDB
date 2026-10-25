@@ -242,4 +242,8 @@
  *   @defgroup meos_internal_pointcloud_box_pos Position predicates
  *   @ingroup meos_internal_pointcloud
  *   @brief Position predicates for pgpointcloud boxes
+ *
+ *   @defgroup meos_internal_pointcloud_box_comp Comparison functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Comparison functions for pgpointcloud boxes
  */

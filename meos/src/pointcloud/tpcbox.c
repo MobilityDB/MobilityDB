@@ -68,6 +68,7 @@
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
+#include "geo/stbox.h"
 #include "geo/tspatial_parser.h"
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/pgsql_compat.h"
@@ -1406,6 +1407,53 @@ bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
 bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) >= 0;
+}
+
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_pointcloud_box_comp
+ * @brief Return the sort key of a point cloud box
+ * @details The key is the schema id, written as an integer, followed by the
+ * sort key of the spatiotemporal box the point cloud box extends, as
+ * #stbox_sortkey_intl writes it, so that comparing two keys byte by byte as
+ * unsigned values orders the boxes as #tpcbox_cmp does and two boxes have the
+ * same key when #tpcbox_eq holds
+ * @param[in] box Point cloud box
+ * @param[out] size Number of bytes of the key
+ * @see #tpcbox_sortkey
+ */
+uint8_t *
+tpcbox_sortkey_intl(const TPCBox *box, size_t *size)
+{
+  assert(box); assert(size);
+  /* The schema id is unsigned, so it is written as a big integer, which
+   * holds every value it takes */
+  size_t n = datum_sortkey_size(T_INT8);
+  *size = n + stbox_sortkey_size((const STBox *) box);
+  uint8_t *result = palloc(*size);
+  datum_sortkey_put(Int64GetDatum(box->pcid), T_INT8, result);
+  stbox_sortkey_put((const STBox *) box, result + n);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_comp
+ * @brief Return the sort key of a point cloud box
+ * @details The key is the bytes whose unsigned byte order is the order of
+ * #tpcbox_cmp and whose byte equality is #tpcbox_eq
+ * @param[in] box Point cloud box
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+tpcbox_sortkey(const TPCBox *box, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return tpcbox_sortkey_intl(box, size);
 }
 
 /*****************************************************************************
