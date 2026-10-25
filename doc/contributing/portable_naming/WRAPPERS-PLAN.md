@@ -179,9 +179,9 @@ the call itself. The wrapper calls the public function, which names it in its `@
   `tsequenceset_make` and `tsequenceset_make_gaps` take the reference geometry from their
   first instant or sequence, so the catalog gives the three `trgeometry[]` signatures to the
   generic functions every binding generates, where `trgeometryseq_make` and its siblings take
-  a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`
+  a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`, which rewrites `e2e88cd1fd`
   (`df1e281857` on master `d51b32e664`), 150_trgeo unchanged and the error on instants with
-  different reference geometries added. It rewrites `e2e88cd1fd` (MobilityDB #3166): the
+  different reference geometries added. Of `e2e88cd1fd` (MobilityDB #3166) the
   `@csqlfn` tags naming `Trgeometry_seq_constructor`, `Trgeometry_seqset_constructor` and
   `Trgeometry_seqset_constructor_gaps` on `trgeometryseq_make`, `trgeometryseqset_make` and
   `trgeometryseqset_make_gaps` go with those wrappers, by the owner's ruling of 2026-10-25 that the
