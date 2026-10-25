@@ -3040,6 +3040,15 @@
 					<para><link linkend="raquet"><varname>raquet</varname></link>: Construye una tesela ráster Raquet a partir de sus bytes de píxeles, dimensiones, celda QUADBIN y tipo de píxel</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="raster_raster"><varname>raster</varname></link>: Construye un ráster de una banda a partir de los bytes de sus píxeles y de su georreferenciación</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_makeEmptyRaster"><varname>makeEmptyRaster</varname></link>: Construye un ráster sin banda</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_addBand"><varname>addBand</varname></link>: Añade una banda a un ráster</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="raquetRead"><varname>raquetRead</varname></link>: Decodifica un archivo ráster en una tesela ráster Raquet mediante GDAL</para>
 				</listitem>
 			</itemizedlist>
@@ -3107,7 +3116,7 @@
 					<para><link linkend="raster_bandNoDataValue"><varname>bandNoDataValue</varname></link>: Devuelve el valor nodata de una banda de un ráster o de una tesela Raquet</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de un mosaico Raquet</para>
+					<para><link linkend="raquet_pixels"><varname>pixels</varname></link>: Devuelve los bytes de píxeles de una banda de un ráster o de una tesela Raquet</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3136,6 +3145,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_delete"><varname>deleteTime</varname></link>: Eliminar un valor de tiempo de una celda temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="raster_setValues"><varname>setValues</varname></link>: Fija los valores de un bloque de píxeles de una banda de un ráster</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

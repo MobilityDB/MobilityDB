@@ -2138,6 +2138,95 @@ int main(void)
   free(st_a); free(st_b); free(st_nodata);
   free(un_tiles[0]); free(un_tiles[1]); free(un_tiles[2]);
 
+  /* A raster is built from its pixels and its georeferencing: the pixels of
+   * each band of the raster PostGIS wrote, read as bytes and given back with
+   * its grid, build that very raster, and so do its bands built by value */
+  meos_errno_reset();
+  Raster *pb = raster_from_hexwkb(raster_pixels);
+  size_t pb_size1, pb_size2;
+  uint8_t *pb_band1 = raster_band_pixels(pb, 1, &pb_size1);
+  uint8_t *pb_band2 = raster_band_pixels(pb, 2, &pb_size2);
+  assert(pb_band1 != NULL && pb_size1 == 24);
+  assert(pb_band2 != NULL && pb_size2 == 6);
+  /* Little-endian beyond one byte: 1.5 is 0x3FC00000 as a 32-bit float */
+  assert(pb_band1[0] == 0x00 && pb_band1[1] == 0x00 && pb_band1[2] == 0xc0 &&
+    pb_band1[3] == 0x3f && pb_band2[0] == 7 && pb_band2[5] == 7);
+  double pb_nodata;
+  assert(raster_band_nodata_value(pb, 1, &pb_nodata));
+  char *pb_type = raster_band_pixel_type(pb, 1);
+  Raster *pb_one = raster_make(raster_width(pb), raster_height(pb),
+    raster_upper_left_x(pb), raster_upper_left_y(pb), raster_scale_x(pb),
+    raster_scale_y(pb), raster_skew_x(pb), raster_skew_y(pb), raster_srid(pb),
+    pb_type, pb_nodata, true, pb_band1, pb_size1);
+  free(pb_type);
+  assert(pb_one != NULL && raster_num_bands(pb_one) == 1);
+  Raster *pb_two = raster_add_band_raster(pb_one, pb, 2, 0);
+  size_t pb_hex_size;
+  char *pb_expected = raster_as_hexwkb(pb, WKB_NDR, &pb_hex_size);
+  char *pb_hex = raster_as_hexwkb(pb_two, WKB_NDR, &pb_hex_size);
+  printf("raster_make(raster_band_pixels(pixels)): %s\n", pb_hex);
+  assert(strcmp(pb_hex, pb_expected) == 0);
+  free(pb_hex);
+
+  Raster *pb_empty = raster_make_empty(3, 2, 10.0, 20.0, 2.0, -1.0, 0.0, 0.0,
+    3857);
+  assert(pb_empty != NULL && raster_num_bands(pb_empty) == 0);
+  Raster *pb_b1 = raster_add_band(pb_empty, 0, "float32", 0.0, -9999.0, true);
+  double pb_values[6] = {1.5, 0.0, 3.0, 4.0, 5.0, 6.0};
+  bool pb_isnodata[6] = {false, true, false, false, false, false};
+  Raster *pb_set = raster_set_values(pb_b1, 1, 1, 1, 3, 2, pb_values,
+    pb_isnodata, NULL, 6, false);
+  Raster *pb_built = raster_add_band(pb_set, 0, "8BUI", 7.0, 0.0, false);
+  pb_hex = raster_as_hexwkb(pb_built, WKB_NDR, &pb_hex_size);
+  printf("raster_add_band(raster_set_values(...)): %s\n", pb_hex);
+  assert(strcmp(pb_hex, pb_expected) == 0);
+  assert(meos_errno() == 0);
+  free(pb_hex); free(pb_expected);
+
+  /* A band put first, a value left as it is and the nodata pixels kept */
+  Raster *pb_first = raster_add_band(pb_built, 1, "16BSI", -3.0, 0.0, false);
+  assert(raster_num_bands(pb_first) == 3);
+  pb_type = raster_band_pixel_type(pb_first, 1);
+  assert(strcmp(pb_type, "int16") == 0);
+  free(pb_type);
+  bool pb_noset[2] = {true, false};
+  double pb_two_values[2] = {8.0, 9.0};
+  Raster *pb_kept = raster_set_values(pb_built, 1, 1, 1, 2, 1, pb_two_values,
+    NULL, pb_noset, 2, true);
+  bool *pb_dumpnodata = NULL;
+  int pb_count;
+  double *pb_dump = raster_dump_values(pb_kept, 1, true, &pb_dumpnodata,
+    &pb_count);
+  assert(pb_count == 6 && pb_dump[0] == 1.5 && pb_dumpnodata[1]);
+  free(pb_dump); free(pb_dumpnodata);
+  assert(meos_errno() == 0);
+
+  /* Bytes of another size, a pixel beyond its type, a pixel type no raster
+   * band has, a band out of place, a block of another size and a band the
+   * raster lacks are refused */
+  meos_errno_reset();
+  assert(raster_make(3, 2, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0, "32BF", 0.0,
+    false, pb_band1, pb_size1 - 1) == NULL);
+  assert(raster_make(6, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0, "1BB", 0.0,
+    false, pb_band2, pb_size2) == NULL);
+  assert(raster_make(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0, "int64", 0.0,
+    false, pb_band1, 8) == NULL);
+  assert(raster_make_empty(-1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0) == NULL);
+  assert(raster_add_band(pb_one, 3, "8BUI", 0.0, 0.0, false) == NULL);
+  Raster *pb_square = raster_make_empty(2, 2, 10.0, 20.0, 2.0, -1.0, 0.0,
+    0.0, 3857);
+  assert(raster_add_band_raster(pb_square, pb, 1, 0) == NULL);
+  assert(raster_set_values(pb_built, 1, 1, 1, 3, 2, pb_values, NULL, NULL, 5,
+    false) == NULL);
+  assert(raster_set_values(pb_built, 1, 4, 1, 1, 1, pb_values, NULL, NULL, 1,
+    false) == NULL);
+  assert(raster_band_pixels(pb, 3, &pb_size1) == NULL && pb_size1 == 0);
+  assert(raster_band_pixels(NULL, 1, &pb_size1) == NULL);
+  assert(meos_errno() != 0);
+  free(pb); free(pb_band1); free(pb_band2); free(pb_one); free(pb_two);
+  free(pb_empty); free(pb_b1); free(pb_set); free(pb_built); free(pb_first);
+  free(pb_kept); free(pb_square);
+
   free(vspan); free(traj_3857); free(traj_values); free(rast_values);
 
   meos_finalize();

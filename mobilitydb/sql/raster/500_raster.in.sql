@@ -585,6 +585,83 @@ CREATE FUNCTION asHexWKB(raster, endian text DEFAULT '')
 
 -- GENERATED-REPRESENTATIONS-END raster_base
 
+/******************************************************************************
+ * A raster built from its pixels and its georeferencing
+ ******************************************************************************/
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the bytes of the pixels of a raster band, row by row,
+ * little-endian beyond one byte
+ * @param[in] rast Raster
+ * @param[in] nband Number of the band, starting at 1
+ */
+CREATE FUNCTION pixels(rast raster, nband integer DEFAULT 1)
+  RETURNS bytea
+  AS 'MODULE_PATHNAME', 'Raster_band_pixels'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster of one band from the bytes of its pixels and its
+ * georeferencing
+ * @note Not STRICT: a nodata value left out states that the band carries none
+ */
+CREATE FUNCTION raster(pixels bytea, width integer, height integer,
+    upperleftx float, upperlefty float, scalex float, scaley float,
+    skewx float, skewy float, srid integer, pixeltype text,
+    nodataval float DEFAULT NULL)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_make'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with no band
+ */
+CREATE FUNCTION makeEmptyRaster(width integer, height integer,
+    upperleftx float, upperlefty float, scalex float, scaley float,
+    skewx float, skewy float, srid integer DEFAULT 0)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_make_empty'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with a band added, each of its pixels holding a value
+ * @note Not STRICT: a number left out adds the band after the last one, and a
+ * nodata value left out states that the band carries none
+ */
+CREATE FUNCTION addBand(rast raster, index integer, pixeltype text,
+    initialvalue float DEFAULT 0, nodataval float DEFAULT NULL)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_add_band'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster with a copy of the band of another raster added
+ * @note Not STRICT: a number left out adds the band after the last one
+ */
+CREATE FUNCTION addBand(torast raster, fromrast raster,
+    fromband integer DEFAULT 1, torastindex integer DEFAULT NULL)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_add_band_raster'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return a raster whose band takes the values of an array over a block
+ * of pixels
+ * @note Not STRICT: the flags left out set every value
+ */
+CREATE FUNCTION setValues(rast raster, nband integer, x integer, y integer,
+    newvalueset float[], noset boolean[] DEFAULT NULL,
+    keepnodata boolean DEFAULT FALSE)
+  RETURNS raster
+  AS 'MODULE_PATHNAME', 'Raster_set_values'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 /**
  * @ingroup mobilitydb_raster
  * @brief Return a raster whose band states the classes an expression maps its

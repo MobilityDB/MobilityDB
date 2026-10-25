@@ -1873,6 +1873,514 @@ raster_dump_values(const Raster *rast, int band, bool exclude_nodata,
   return result;
 }
 
+/*****************************************************************************
+ * A raster built from its pixels and its georeferencing
+ *
+ * The functions of PostGIS that build a raster and read and write the values
+ * of its pixels, and the bytes of the pixels of a band, which keep every value
+ * exactly where an array of doubles does not
+ *****************************************************************************/
+
+/**
+ * @brief Return the pixel type of rt_core a name states
+ * @details The name is either the one PostGIS gives a pixel type, such as
+ * `8BUI`, or the one #raster_band_pixel_type answers, such as `uint8`, so the
+ * type a raster states carries into the constructors as it stands
+ * @param[in] name Name of the pixel type
+ * @return The pixel type, or `PT_END` with an error stated
+ */
+static rt_pixtype
+raster_pixtype(const char *name)
+{
+  rt_pixtype result = rt_pixtype_index_from_name(name);
+  if (result != PT_END)
+    return result;
+  for (int i = 0; i <= (int) MEOS_PT_FLOAT16; i++)
+  {
+    const char *rqname = raquet_pixtype_name((MeosPixType) i);
+    if (! rqname || pg_strcasecmp(name, rqname) != 0)
+      continue;
+    switch ((MeosPixType) i)
+    {
+      case MEOS_PT_UINT8:   return PT_8BUI;
+      case MEOS_PT_INT8:    return PT_8BSI;
+      case MEOS_PT_UINT16:  return PT_16BUI;
+      case MEOS_PT_INT16:   return PT_16BSI;
+      case MEOS_PT_UINT32:  return PT_32BUI;
+      case MEOS_PT_INT32:   return PT_32BSI;
+      case MEOS_PT_FLOAT32: return PT_32BF;
+      case MEOS_PT_FLOAT64: return PT_64BF;
+      default:
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "A raster band has no pixel type %s", name);
+        return PT_END;
+    }
+  }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Unknown pixel type: %s",
+    name);
+  return PT_END;
+}
+
+/**
+ * @brief Reverse in place the bytes of each pixel of a band on a big-endian
+ * machine, which turns the order of the machine into the little-endian order
+ * of the pixels a raster exchanges, and back
+ * @param[in,out] data Pixels of the band
+ * @param[in] count Number of pixels
+ * @param[in] size Number of bytes of a pixel
+ */
+static void
+raster_pixels_swap(uint8_t *data, size_t count, int size)
+{
+  if (! MEOS_IS_BIG_ENDIAN || size < 2)
+    return;
+  for (size_t i = 0; i < count; i++)
+    raster_wkb_flip(data + i * (size_t) size, (size_t) size);
+}
+
+/**
+ * @brief Return true when the dimensions of a raster are within the bounds
+ * rt_core states, raising an error otherwise
+ * @param[in] width Width in pixels
+ * @param[in] height Height in pixels
+ * @param[in] min Least value of each dimension
+ */
+static bool
+ensure_valid_raster_dims(int width, int height, int min)
+{
+  if (width < min || height < min || width > UINT16_MAX ||
+      height > UINT16_MAX)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The width and height of a raster must be between %d and %d: %d x %d",
+      min, UINT16_MAX, width, height);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return a raster with no band, its grid stated by its dimensions and
+ * its georeferencing
+ * @return The rt_core raster, which the caller releases, or NULL with an error
+ * stated
+ */
+static rt_raster
+raster_georef_new(int width, int height, double upperleftx, double upperlefty,
+  double scalex, double scaley, double skewx, double skewy, int32_t srid)
+{
+  rt_raster result = rt_raster_new((uint32_t) width, (uint32_t) height);
+  if (! result)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Could not create raster");
+    return NULL;
+  }
+  rt_raster_set_offsets(result, upperleftx, upperlefty);
+  rt_raster_set_scale(result, scalex, scaley);
+  rt_raster_set_skews(result, skewx, skewy);
+  rt_raster_set_srid(result, srid);
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a raster with no band, as PostGIS's `ST_MakeEmptyRaster`
+ * @param[in] width Width in pixels
+ * @param[in] height Height in pixels
+ * @param[in] upperleftx X coordinate of the upper left corner
+ * @param[in] upperlefty Y coordinate of the upper left corner
+ * @param[in] scalex Width of a pixel
+ * @param[in] scaley Height of a pixel, negative where the rows go south
+ * @param[in] skewx X component of the skew
+ * @param[in] skewy Y component of the skew
+ * @param[in] srid Spatial reference system identifier
+ * @errval NULL
+ * @csqlfn #Raster_make_empty()
+ */
+Raster *
+raster_make_empty(int width, int height, double upperleftx,
+  double upperlefty, double scalex, double scaley, double skewx, double skewy,
+  int32_t srid)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_raster_dims(width, height, 0))
+    return NULL;
+  rt_raster raster = raster_georef_new(width, height, upperleftx, upperlefty,
+    scalex, scaley, skewx, skewy, srid);
+  if (! raster)
+    return NULL;
+  return raster_serialize_destroy(raster);
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a raster of one band from the bytes of its pixels and its
+ * georeferencing
+ * @details The pixels are the ones #raster_band_pixels answers: row by row,
+ * each in the bytes of its type, little-endian beyond one byte, and one byte
+ * for the types bounding a pixel to less than a byte. A raster of more bands
+ * adds them with #raster_add_band_raster. The band states its nodata value
+ * as rt_core reads it into the pixel type, and states the band as all
+ * nodata where every pixel holds that value
+ * @param[in] width Width in pixels
+ * @param[in] height Height in pixels
+ * @param[in] upperleftx X coordinate of the upper left corner
+ * @param[in] upperlefty Y coordinate of the upper left corner
+ * @param[in] scalex Width of a pixel
+ * @param[in] scaley Height of a pixel, negative where the rows go south
+ * @param[in] skewx X component of the skew
+ * @param[in] skewy Y component of the skew
+ * @param[in] srid Spatial reference system identifier
+ * @param[in] pixeltype Name of the pixel type, as PostGIS names it or as
+ * #raster_band_pixel_type answers it
+ * @param[in] nodataval Nodata value, read only where @p has_nodata is true
+ * @param[in] has_nodata True where the band states a nodata value
+ * @param[in] pixels Pixels of the band
+ * @param[in] size Number of bytes of @p pixels
+ * @errval NULL
+ * @csqlfn #Raster_make()
+ */
+Raster *
+raster_make(int width, int height, double upperleftx, double upperlefty,
+  double scalex, double scaley, double skewx, double skewy, int32_t srid,
+  const char *pixeltype, double nodataval, bool has_nodata,
+  const uint8_t *pixels, size_t size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pixeltype, NULL); VALIDATE_NOT_NULL(pixels, NULL);
+  if (! ensure_valid_raster_dims(width, height, 1))
+    return NULL;
+  rt_pixtype pixtype = raster_pixtype(pixeltype);
+  if (pixtype == PT_END)
+    return NULL;
+  int pixsize = rt_pixtype_size(pixtype);
+  size_t count = (size_t) width * (size_t) height;
+  size_t expected = count * (size_t) pixsize;
+  if (size != expected)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A %d x %d raster band of type %s has %zu bytes, not %zu", width,
+      height, rt_pixtype_name(pixtype), expected, size);
+    return NULL;
+  }
+  /* A type bounding a pixel to less than a byte takes a byte a pixel, so a
+   * byte beyond the bound is no value of the type */
+  if (pixtype == PT_1BB || pixtype == PT_2BUI || pixtype == PT_4BUI)
+  {
+    uint8_t max = (pixtype == PT_1BB) ? 1 : (pixtype == PT_2BUI) ? 3 : 15;
+    for (size_t i = 0; i < count; i++)
+    {
+      if (pixels[i] > max)
+      {
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "The pixel %zu of a band of type %s holds %u, beyond %u", i + 1,
+          rt_pixtype_name(pixtype), pixels[i], max);
+        return NULL;
+      }
+    }
+  }
+
+  rt_raster raster = raster_georef_new(width, height, upperleftx, upperlefty,
+    scalex, scaley, skewx, skewy, srid);
+  if (! raster)
+    return NULL;
+  /* The band owns its data, which rt_core releases with the band */
+  uint8_t *data = rtalloc(expected);
+  memcpy(data, pixels, expected);
+  raster_pixels_swap(data, count, pixsize);
+  rt_band band = rt_band_new_inline((uint16_t) width, (uint16_t) height,
+    pixtype, has_nodata ? 1 : 0, nodataval, data);
+  if (! band)
+  {
+    rtdealloc(data);
+    rt_raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not create the band of the raster");
+    return NULL;
+  }
+  rt_band_set_ownsdata_flag(band, 1);
+  if (rt_raster_add_band(raster, band, 0) < 0)
+  {
+    rt_band_destroy(band);
+    rt_raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not add the band to the raster");
+    return NULL;
+  }
+  if (has_nodata)
+    rt_band_check_is_nodata(band);
+  return raster_serialize_destroy(raster);
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a raster with a band added, each of its pixels holding a value,
+ * as PostGIS's `ST_AddBand`
+ * @param[in] rast Raster
+ * @param[in] index Number the band takes, starting at 1, or 0 to add it after
+ * the last band
+ * @param[in] pixeltype Name of the pixel type, as PostGIS names it or as
+ * #raster_band_pixel_type answers it
+ * @param[in] initialvalue Value of every pixel
+ * @param[in] nodataval Nodata value, read only where @p has_nodata is true
+ * @param[in] has_nodata True where the band states a nodata value
+ * @errval NULL
+ * @csqlfn #Raster_add_band()
+ */
+Raster *
+raster_add_band(const Raster *rast, int index, const char *pixeltype,
+  double initialvalue, double nodataval, bool has_nodata)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
+  rt_pixtype pixtype = raster_pixtype(pixeltype);
+  if (pixtype == PT_END)
+    return NULL;
+  rt_raster raster = rt_raster_deserialize((void *) rast, 0);
+  if (! raster)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(raster);
+  if (index < 0 || index > numbands + 1)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A band added to the raster takes a number from 1 to %d, not %d",
+      numbands + 1, index);
+    return NULL;
+  }
+  int pos = (index == 0) ? numbands : index - 1;
+  if (rt_raster_generate_new_band(raster, pixtype, initialvalue,
+      has_nodata ? 1 : 0, nodataval, pos) < 0)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not add a band to the raster");
+    return NULL;
+  }
+  return raster_serialize_destroy(raster);
+}
+
+/**
+ * @ingroup meos_raster_base_constructor
+ * @brief Return a raster with a copy of the band of another raster added, as
+ * PostGIS's `ST_AddBand`
+ * @param[in] torast Raster the band is added to
+ * @param[in] fromrast Raster the band is copied from, of the same width and
+ * height
+ * @param[in] fromband Number of the band copied, starting at 1
+ * @param[in] toindex Number the band takes, starting at 1, or 0 to add it
+ * after the last band
+ * @errval NULL
+ * @csqlfn #Raster_add_band_raster()
+ */
+Raster *
+raster_add_band_raster(const Raster *torast, const Raster *fromrast,
+  int fromband, int toindex)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(torast, NULL); VALIDATE_NOT_NULL(fromrast, NULL);
+  rt_raster from;
+  if (! raster_read_band(fromrast, fromband, &from))
+    return NULL;
+  rt_raster to = rt_raster_deserialize((void *) torast, 0);
+  if (! to)
+  {
+    raster_destroy(from);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not deserialize raster");
+    return NULL;
+  }
+  int numbands = (int) rt_raster_get_num_bands(to);
+  int width = (int) rt_raster_get_width(to);
+  int height = (int) rt_raster_get_height(to);
+  int fromwidth = (int) rt_raster_get_width(from);
+  int fromheight = (int) rt_raster_get_height(from);
+  if (width != fromwidth || height != fromheight)
+  {
+    raster_destroy(from); raster_destroy(to);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A band of a %d x %d raster cannot be added to a %d x %d raster",
+      fromwidth, fromheight, width, height);
+    return NULL;
+  }
+  if (toindex < 0 || toindex > numbands + 1)
+  {
+    raster_destroy(from); raster_destroy(to);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A band added to the raster takes a number from 1 to %d, not %d",
+      numbands + 1, toindex);
+    return NULL;
+  }
+  int pos = (toindex == 0) ? numbands : toindex - 1;
+  int added = rt_raster_copy_band(to, from, fromband - 1, pos);
+  raster_destroy(from);
+  if (added < 0)
+  {
+    raster_destroy(to);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not add the band to the raster");
+    return NULL;
+  }
+  return raster_serialize_destroy(to);
+}
+
+/**
+ * @ingroup meos_raster_base_accessor
+ * @brief Return the bytes of the pixels of a raster band
+ * @details The pixels row by row, each in the bytes of its type, little-endian
+ * beyond one byte, and one byte for the types bounding a pixel to less than a
+ * byte: every value exactly, which #raster_make reads back
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[out] size_out Number of bytes answered
+ * @return The bytes the caller frees, or NULL where the raster has no pixel,
+ * in which case @p size_out is 0 and no error is stated
+ * @errval NULL
+ * @csqlfn #Raster_band_pixels()
+ */
+uint8_t *
+raster_band_pixels(const Raster *rast, int band, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(size_out, NULL);
+  *size_out = 0;
+  rt_raster raster;
+  rt_band rtband = raster_read_band(rast, band, &raster);
+  if (! rtband)
+    return NULL;
+  size_t count = (size_t) rt_raster_get_width(raster) *
+    (size_t) rt_raster_get_height(raster);
+  if (! count)
+  {
+    raster_destroy(raster);
+    return NULL;
+  }
+  int pixsize = rt_pixtype_size(rt_band_get_pixtype(rtband));
+  const uint8_t *data = rt_band_get_data(rtband);
+  if (pixsize < 1 || ! data)
+  {
+    raster_destroy(raster);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Could not read the pixels of band %d", band);
+    return NULL;
+  }
+  size_t size = count * (size_t) pixsize;
+  uint8_t *result = palloc(size);
+  memcpy(result, data, size);
+  raster_destroy(raster);
+  raster_pixels_swap(result, count, pixsize);
+  *size_out = size;
+  return result;
+}
+
+/**
+ * @ingroup meos_raster_base_transf
+ * @brief Return a raster whose band takes the values of an array over a block
+ * of pixels, as PostGIS's `ST_SetValues`
+ * @details The values are the block row by row, its upper left pixel at
+ * (@p x, @p y). A value stated as nodata sets the pixel to the nodata value
+ * of the band, or to the least value of its type where the band states none;
+ * a value stated as not to set leaves the pixel as it is, as does
+ * @p keepnodata for a pixel holding the nodata value of the band. A pixel of
+ * the block beyond the raster is left out, and a value beyond the pixel type
+ * is read into it as rt_core reads it
+ * @param[in] rast Raster
+ * @param[in] band Number of the band, starting at 1
+ * @param[in] x Column of the upper left pixel of the block, starting at 1
+ * @param[in] y Row of the upper left pixel of the block, starting at 1
+ * @param[in] width Number of columns of the block
+ * @param[in] height Number of rows of the block
+ * @param[in] values Values of the block
+ * @param[in] nodata True for a value stated as nodata, NULL where none is
+ * @param[in] noset True for a value not to set, NULL where every value is set
+ * @param[in] count Number of values, the width times the height of the block
+ * @param[in] keepnodata True to leave the pixels holding the nodata value
+ * @errval NULL
+ * @csqlfn #Raster_set_values()
+ */
+Raster *
+raster_set_values(const Raster *rast, int band, int x, int y, int width,
+  int height, const double *values, const bool *nodata, const bool *noset,
+  int count, bool keepnodata)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (width < 1 || height < 1 || (int64) width * height != count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A block of %d x %d pixels takes as many values, not %d", width, height,
+      count);
+    return NULL;
+  }
+  /* rt_core writes the pixels where the band lies, which in a raster read in
+   * full is the serialized form itself, so it is a copy that is written */
+  Raster *copy = raster_copy(rast);
+  rt_raster raster;
+  rt_band rtband = raster_read_band(copy, band, &raster);
+  if (! rtband)
+  {
+    pfree(copy);
+    return NULL;
+  }
+  int rwidth = (int) rt_raster_get_width(raster);
+  int rheight = (int) rt_raster_get_height(raster);
+  if (x < 1 || x > rwidth || y < 1 || y > rheight)
+  {
+    raster_destroy(raster); pfree(copy);
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The pixel (%d, %d) is not in a %d x %d raster", x, y, rwidth, rheight);
+    return NULL;
+  }
+  bool hasnodata = (rt_band_get_hasnodata_flag(rtband) != 0);
+  double nodataval;
+  if (hasnodata)
+    rt_band_get_nodata(rtband, &nodataval);
+  else
+    nodataval = rt_band_get_min_value(rtband);
+
+  for (int j = 0; j < height; j++)
+  {
+    int py = y - 1 + j;
+    for (int i = 0; i < width; i++)
+    {
+      int k = j * width + i;
+      int px = x - 1 + i;
+      if ((noset && noset[k]) || px >= rwidth || py >= rheight)
+        continue;
+      if (hasnodata && keepnodata)
+      {
+        double value;
+        int isnodata = 0;
+        if (rt_band_get_pixel(rtband, px, py, &value, &isnodata) != ES_NONE)
+        {
+          raster_destroy(raster); pfree(copy);
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            "Could not read the pixel (%d, %d) of band %d", px + 1, py + 1,
+            band);
+          return NULL;
+        }
+        if (isnodata)
+          continue;
+      }
+      double value = (nodata && nodata[k]) ? nodataval : values[k];
+      if (rt_band_set_pixel(rtband, px, py, value, NULL) != ES_NONE)
+      {
+        raster_destroy(raster); pfree(copy);
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          "Could not set the pixel (%d, %d) of band %d", px + 1, py + 1, band);
+        return NULL;
+      }
+    }
+  }
+  Raster *result = raster_serialize_destroy(raster);
+  pfree(copy);
+  return result;
+}
+
 /**
  * @ingroup meos_raster_base_accessor
  * @brief Return what the pixels of a raster band amount to
