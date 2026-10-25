@@ -464,14 +464,14 @@ INSERT INTO tbl_th3index_binio VALUES
   (2, th3index '{8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02}'),
   (3, th3index '[8a2a100d645ffff@2001-01-01, 8a2a100d6457fff@2001-01-02]');
 INSERT 0 3
-COPY tbl_th3index_binio TO '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY  tbl_th3index_binio TO STDOUT (FORMAT BINARY);
 COPY 3
 DROP TABLE IF EXISTS tbl_th3index_binio_tmp;
 NOTICE:  table "tbl_th3index_binio_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_th3index_binio_tmp AS TABLE tbl_th3index_binio WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_th3index_binio_tmp FROM '/tmp/tbl_th3index_binio' (FORMAT BINARY);
+COPY  tbl_th3index_binio_tmp FROM STDIN (FORMAT BINARY);
 COPY 3
 SELECT COUNT(*) FROM tbl_th3index_binio t1, tbl_th3index_binio_tmp t2
   WHERE t1.k = t2.k AND t1.temp <> t2.temp;

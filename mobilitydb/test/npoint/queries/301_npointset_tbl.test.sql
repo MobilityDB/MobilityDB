@@ -34,10 +34,10 @@
 
 -- Send/receive functions
 
-COPY tbl_npointset TO '/tmp/tbl_npointset' (FORMAT BINARY);
+\copy tbl_npointset TO 'tbl_npointset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_npointset_tmp;
 CREATE TABLE tbl_npointset_tmp AS TABLE tbl_npointset WITH NO DATA;
-COPY tbl_npointset_tmp FROM '/tmp/tbl_npointset' (FORMAT BINARY);
+\copy tbl_npointset_tmp FROM 'tbl_npointset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_npointset t1, tbl_npointset_tmp t2 WHERE t1.k = t2.k AND t1.n <> t2.n;
 DROP TABLE tbl_npointset_tmp;
 

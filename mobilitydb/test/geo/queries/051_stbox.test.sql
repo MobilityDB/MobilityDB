@@ -72,10 +72,10 @@ SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
 
 -- Send/receive functions
 
-COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
+\copy tbl_stbox3d TO 'tbl_stbox3d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_stbox3d_tmp;
 CREATE TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
-COPY tbl_stbox3d_tmp FROM '/tmp/tbl_stbox3d' (FORMAT BINARY);
+\copy tbl_stbox3d_tmp FROM 'tbl_stbox3d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_stbox3d_tmp;
 

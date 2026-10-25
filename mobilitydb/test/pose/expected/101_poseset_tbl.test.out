@@ -1,11 +1,11 @@
-COPY tbl_poseset2d TO '/tmp/tbl_poseset2d' (FORMAT BINARY);
+COPY  tbl_poseset2d TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_poseset2d_tmp;
 NOTICE:  table "tbl_poseset2d_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_poseset2d_tmp AS TABLE tbl_poseset2d WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_poseset2d_tmp FROM '/tmp/tbl_poseset2d' (FORMAT BINARY);
+COPY  tbl_poseset2d_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 

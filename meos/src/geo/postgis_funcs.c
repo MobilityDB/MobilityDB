@@ -3019,49 +3019,6 @@ meos_point_in_polygon(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   return result;
 }
 
-#if GEOS
-/**
- * @brief Tranform a PostGIS geometry to a GEOS one
- */
-GEOSGeometry *
-POSTGIS2GEOS(const GSERIALIZED *gs)
-{
-  assert(gs);
-  GEOSGeometry *result;
-  LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  if (! lwgeom)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "POSTGIS2GEOS: unable to deserialize input");
-    return NULL;
-  }
-  result = LWGEOM2GEOS(lwgeom, 0);
-  lwgeom_free(lwgeom);
-  return result;
-}
-
-/**
- * @brief Tranform a GEOS geometry to a PostGIS one
- */
-GSERIALIZED *
-GEOS2POSTGIS(GEOSGeom geom, char want3d)
-{
-  LWGEOM *lwgeom = GEOS2LWGEOM(geom, want3d);
-  if (! lwgeom)
-  {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-      "GEOS2LWGEOM returned NULL");
-    return NULL;
-  }
-
-  if (lwgeom_needs_bbox(lwgeom))
-    lwgeom_add_bbox(lwgeom);
-  GSERIALIZED *result = geo_serialize(lwgeom);
-  lwgeom_free(lwgeom);
-  return result;
-}
-#endif /* GEOS */
-
 /**
  * @brief Return the type that keeps a pair of geometries from the native engine
  * @details The native engine answers every type #geom_meos_coverage() answers 1
@@ -4026,9 +3983,8 @@ geo_overlay_lifted(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * Surfaces are answered by the native areal overlay, which computes the
  * vertices it builds from the doubles the operands hold, without rounding them
  * onto a grid; two polygons sharing a region and touching along a stretch
- * outside it are answered with both. Other type combinations the native
- * routes do not answer fall through to PostGIS's GEOS-backed
- * @c lwgeom_intersection_prec.
+ * outside it are answered with both. A type combination the native routes do
+ * not answer is refused.
  */
 GSERIALIZED *
 geom_intersection2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -4137,30 +4093,10 @@ geom_intersection2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       return collresult;
   }
 
-#if GEOS
-  /* Other types fall through to GEOS */
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  LWGEOM *lwresult = lwgeom_intersection_prec(geom1, geom2, -1);
-  /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
-   * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose lwerror
-   * the MEOS handler reports and RETURNS from -- so the answer is absent
-   * rather than empty and serializing it would read a null pointer */
-  if (! lwresult)
-  {
-    lwgeom_free(geom1); lwgeom_free(geom2);
-    return NULL;
-  }
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
-  return result;
-#else /* ! GEOS */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "The intersection of two geometries that are not both planar and "
-    "polygonal is answered by the GEOS library, which this build excludes: "
-    "configure with -DGEOS=ON");
+    "The intersection of two geometries none of the native routes reads is "
+    "not supported");
   return NULL;
-#endif /* GEOS */
 }
 
 /**
@@ -4317,30 +4253,10 @@ geom_difference2d_route(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       return collresult;
   }
 
-#if GEOS
-  /* Other types fall through to GEOS */
-  LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
-  LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  LWGEOM *lwresult = lwgeom_difference_prec(geom1, geom2, -1);
-  /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
-   * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose lwerror
-   * the MEOS handler reports and RETURNS from -- so the answer is absent
-   * rather than empty and serializing it would read a null pointer */
-  if (! lwresult)
-  {
-    lwgeom_free(geom1); lwgeom_free(geom2);
-    return NULL;
-  }
-  GSERIALIZED *result = geo_serialize(lwresult);
-  lwgeom_free(geom1); lwgeom_free(geom2); lwgeom_free(lwresult);
-  return result;
-#else /* ! GEOS */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "The difference of two geometries that are not both planar and polygonal "
-    "is answered by the GEOS library, which this build excludes: configure "
-    "with -DGEOS=ON");
+    "The difference of two geometries none of the native routes reads is not "
+    "supported");
   return NULL;
-#endif /* GEOS */
 }
 
 /**
@@ -4925,14 +4841,9 @@ union_collection_members(GSERIALIZED **gsarr, int count, int *nflat)
 /**
  * @brief Return the union of an array of geometries whose members share their
  * dimensions
- * @details The function will iteratively call @p GEOSUnion on the
- * GEOS-converted versions of them and return PGIS-converted version back.
- * Changing the combination order *might* speed up performance.
  * @param[in] gsarr Array of geometries
  * @param[in] count Number of elements in the array
  * @note PostGIS function: @p pgis_union_geometry_array(PG_FUNCTION_ARGS)
- * MEOS modified the PostGIS function since does not cope with geographies
- * by setting the geodetic flag for geographies.
  */
 static GSERIALIZED *
 geom_array_union_shared(GSERIALIZED **gsarr, int count)
@@ -4952,8 +4863,7 @@ geom_array_union_shared(GSERIALIZED **gsarr, int count)
   }
 
   /* An array holding nothing but empties has an empty union, which is read
-   * from the array alone. It is answered here so that a build carrying no
-   * GEOS answers it too */
+   * from the array alone */
   int nonempty = 0;
   uint8_t largest_empty = 0;
   for (int i = 0; i < count; i++)
@@ -5011,129 +4921,10 @@ geom_array_union_shared(GSERIALIZED **gsarr, int count)
       return native;
   }
 
-#if GEOS
-  bool is3d = false, gotsrid = false;
-  int curgeom = 0;
-  uint8_t empty_type = 0;
-  int32_t srid = SRID_UNKNOWN;
-  GSERIALIZED *result = NULL;
-  GEOSGeometry *g = NULL;
-  GEOSGeometry *g_union = NULL;
-
-  GEOSContextHandle_t ctx = geos_get_context();
-
-  /* Collect the non-empty inputs and stuff them into a GEOS collection */
-  GEOSGeometry **geoms = palloc(sizeof(GEOSGeometry *) * count);
-
-  /*
-  ** We need to convert the array of GSERIALIZED into a GEOS collection.
-  ** First make an array of GEOS geometries.
-  */
-  for (int i = 0; i < count; i++)
-  {
-    if (! gotsrid)
-    {
-      /* Initialize SRID/dimensions info */
-      srid = gserialized_get_srid(gsarr[i]);
-      is3d = (bool) gserialized_has_z(gsarr[i]);
-      gotsrid = true;
-    }
-
-    /* Don't include empties in the union */
-    if (gserialized_is_empty(gsarr[i]))
-    {
-      uint8_t gser_type = (uint8_t) gserialized_get_type(gsarr[i]);
-      if (gser_type > empty_type)
-        empty_type = gser_type;
-    }
-    else
-    {
-      g = POSTGIS2GEOS(gsarr[i]);
-
-      /* Uh oh! Exception thrown at construction... */
-      if (! g)
-      {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-          "One of the geometries in the set could not be converted to GEOS");
-        return NULL;
-      }
-
-      geoms[curgeom++] = g;
-    }
-  }
-
-  /*
-  ** Take our GEOS geometries and turn them into a GEOS collection,
-  ** then pass that into cascaded union.
-  */
-  if (curgeom > 0)
-  {
-    g = GEOSGeom_createCollection_r(ctx, GEOS_GEOMETRYCOLLECTION, geoms, curgeom);
-    if (! g)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
-        "Could not create GEOS COLLECTION from geometry array");
-      return NULL;
-    }
-
-    g_union = GEOSUnaryUnion_r(ctx, g);
-    GEOSGeom_destroy_r(ctx, g);
-    if (! g_union)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR, "GEOSUnaryUnion");
-      return NULL;
-    }
-
-    GEOSSetSRID_r(ctx, g_union, srid);
-    result = GEOS2POSTGIS(g_union, is3d);
-    /* MEOS: GEOS DOES NOT SET THE GEODETIC FLAG. The flag cannot be set on the
-     * serialized value, since #GEOS2POSTGIS has already added a planar
-     * bounding box, which occupies 2 * ndims floats while a geodetic one
-     * occupies 6 floats. The value is thus deserialized, flagged as geodetic
-     * after dropping the planar box, and serialized again */
-    if (FLAGS_GET_GEODETIC(gsarr[0]->gflags))
-    {
-      LWGEOM *lwgeom = lwgeom_from_gserialized(result);
-      lwgeom_drop_bbox(lwgeom);
-      lwgeom_set_geodetic(lwgeom, true);
-      /* The deserialized value reads its coordinates OUT OF @p result, so the
-       * geodetic serialization below walks that buffer. It is released once
-       * the new value is built, never before */
-      GSERIALIZED *planar = result;
-      result = geo_serialize(lwgeom);
-      lwgeom_free(lwgeom);
-      pfree(planar);
-    }
-    GEOSGeom_destroy_r(ctx, g_union);
-  }
-  /* No real geometries in our array, any empties? */
-  else
-  {
-    /* If it was only empties, we'll return the largest type number */
-    if (empty_type > 0)
-    {
-      LWGEOM *geom = lwgeom_construct_empty(empty_type, srid, is3d, 0);
-      GSERIALIZED *result = geo_serialize(geom);
-      lwgeom_free(geom);
-      return result;
-    }
-    /* Nothing but NULL, returns NULL */
-    else
-      return NULL;
-  }
-
-  pfree(geoms);
-  if (! result)
-    /* Union returned a NULL geometry */
-    return NULL;
-  return result;
-#else /* ! GEOS */
   meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-    "The union of a geodetic array, and of one whose linework coincides over a "
-    "curve, is answered by the GEOS library, which this build excludes: "
-    "configure with -DGEOS=ON");
+    "The union of an array of geometries none of the native routes reads is "
+    "not supported");
   return NULL;
-#endif /* GEOS */
 }
 
 /**
@@ -5373,11 +5164,11 @@ geo_arealess_parts_as_lines(const LWGEOM *geom)
  * @ingroup meos_geo_base_spatial
  * @brief Return the unary union of a geometry
  * @param[in] gs Geometry
- * @param[in] prec Precision
- * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS)
+ * @note PostGIS function: @p ST_UnaryUnion(PG_FUNCTION_ARGS). With respect
+ * to the original function we do not use the @p prec argument.
  */
 GSERIALIZED *
-geom_unary_union(const GSERIALIZED *gs, double prec)
+geom_unary_union(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
@@ -5403,16 +5194,16 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   /* The dissolve of a geometry whose components are surfaces is read from
    * their boundaries, which keeps a circular arc on its own circle where a
    * linearization would put the chain of segments approximating it in its
-   * place. A precision model is not something it answers for, and neither is a
-   * geometry carrying a component that is not a surface */
-  LWGEOM *lwresult = (prec < 0) ? meos_areal_union(plane) : NULL;
+   * place. A geometry carrying a component that is not a surface is not what
+   * it answers */
+  LWGEOM *lwresult = meos_areal_union(plane);
   /* A geometry whose components are linework and points is dissolved the same
    * way, each point of the answer walked once */
-  if (! lwresult && prec < 0)
+  if (! lwresult)
     lwresult = meos_linear_union(plane);
   /* A collection whose components fall on both sides of the areal boundary is
    * the union of its components, which the array union answers */
-  if (! lwresult && prec < 0)
+  if (! lwresult)
   {
     int nparts;
     GSERIALIZED **parts = geo_collection_components(gsplane, &nparts);
@@ -5435,33 +5226,11 @@ geom_unary_union(const GSERIALIZED *gs, double prec)
   }
   if (! lwresult)
   {
-#if GEOS
-    lwresult = lwgeom_unaryunion_prec(lwgeom, prec);
-    /* MEOS: the overlay answers NULL for a geometry it cannot read -- a
-     * polyhedral surface reaches the default arm of #LWGEOM2GEOS, whose
-     * lwerror the MEOS handler reports and RETURNS from -- so the answer is
-     * absent rather than empty and every step below would read a null pointer */
-    if (! lwresult)
-    {
-      lwgeom_free(lwgeom);
-      return NULL;
-    }
-    /* MEOS: PostGIS function #lwgeom_unaryunion_prec only propagates the SRID
-     * and the Z flag. The GEODETIC flag must be set BEFORE serialization,
-     * since the bounding box of a geodetic value is computed on the unit
-     * sphere and occupies 6 floats, while the one of a planar value occupies
-     * 2 * ndims floats. The answer read from the boundaries needs none of
-     * this: it is built with the flags it carries, and a geodetic geometry
-     * does not reach here */
-    lwgeom_set_geodetic(lwresult, FLAGS_GET_GEODETIC(lwgeom->flags));
-#else /* ! GEOS */
     lwgeom_free(lwgeom);
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The unary union asked for on a precision grid, and the one of a "
-      "geometry none of the native routes reads, are answered by the GEOS "
-      "library, which this build excludes: configure with -DGEOS=ON");
+      "The unary union of a geometry none of the native routes reads is not "
+      "supported");
     return NULL;
-#endif /* GEOS */
   }
   /* The dissolve is computed on the plane, and the ordinates the components
    * carry are read back onto it: two of them crossing at one elevation give

@@ -33,10 +33,10 @@
 -- Send / receive round-trip
 -------------------------------------------------------------------------------
 
-COPY tbl_tpcbox TO '/tmp/tbl_tpcbox' (FORMAT BINARY);
+\copy tbl_tpcbox TO 'tbl_tpcbox' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tpcbox_tmp;
 CREATE TABLE tbl_tpcbox_tmp AS TABLE tbl_tpcbox WITH NO DATA;
-COPY tbl_tpcbox_tmp FROM '/tmp/tbl_tpcbox' (FORMAT BINARY);
+\copy tbl_tpcbox_tmp FROM 'tbl_tpcbox' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tpcbox t1, tbl_tpcbox_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_tpcbox_tmp;
 

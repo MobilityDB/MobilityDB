@@ -31,10 +31,10 @@
 -- Send/receive functions
 -------------------------------------------------------------------------------
 
-COPY tbl_cbuffer TO '/tmp/tbl_cbuffer' (FORMAT BINARY);
+\copy tbl_cbuffer TO 'tbl_cbuffer' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_cbuffer_tmp;
 CREATE TABLE tbl_cbuffer_tmp AS TABLE tbl_cbuffer WITH NO DATA;
-COPY tbl_cbuffer_tmp FROM '/tmp/tbl_cbuffer' (FORMAT BINARY);
+\copy tbl_cbuffer_tmp FROM 'tbl_cbuffer' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cb <> t2.cb;
 DROP TABLE tbl_cbuffer_tmp;
 
