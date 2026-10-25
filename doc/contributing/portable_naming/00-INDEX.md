@@ -162,9 +162,9 @@ Every distance MEOS computes, measured against the double nearest the exact dist
 that judges it, and the pull requests that make each one answer that double:
 [Exact distance](EXACT-DISTANCE.md).
 
-MEOS's raster in DuckDB with its whole algebra, how it is told apart from DuckDB's raster extension,
+MEOS's raster in every engine with its whole algebra, how it is told apart from the host's raster,
 the conversions between the two, and the pull requests that deliver them in MEOS, MobilityDB and
-the bindings: [The raster in DuckDB](RASTER-IN-DUCKDB.md).
+the bindings: [The raster in every engine and its host bridges](RASTER-HOST-BRIDGES.md).
 
 The user side of families 1–7 and rules 8–9, as Docbook XML for the manual: the manual chapters this pull request changes.
 
