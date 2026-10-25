@@ -1661,6 +1661,7 @@ extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
+extern uint8_t *temporal_sortkey(const Temporal *temp, size_t *size);
 
 /*****************************************************************************/
 

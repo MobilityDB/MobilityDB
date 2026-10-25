@@ -522,6 +522,10 @@ const Temporal *temp2, SyncMode mode, Temporal **inter1, Temporal **inter2);
 
 extern datum_func2 round_fn(MeosType basetype);
 
+/* Comparison functions */
+
+extern bool temporal_sortkey_type(MeosType temptype);
+
 /* Restriction functions */
 
 extern bool temporal_bbox_restrict_value(const Temporal *temp, Datum value);
