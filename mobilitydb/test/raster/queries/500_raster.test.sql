@@ -2832,6 +2832,14 @@ WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
 SELECT bandPixelType(r), asHexWKB(raster(pixels(r), 2, 1, 0.0, 1.0, 1.0, -1.0,
   0.0, 0.0, 3857, bandPixelType(r))) = asHexWKB(r)
 FROM r;
+-- A band bounding a pixel to less than a byte is named uint8, so it is rebuilt
+-- as 8BUI with the same bytes.
+WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(3, 1, 0.0, 1.0,
+  1.0, -1.0, 0.0, 0.0, 3857), '4BUI'::text, 0), 1, 1, 1,
+  ARRAY[1, 15, 7]::float8[]) AS r)
+SELECT bandPixelType(r), ST_BandPixelType(s), pixels(s) = pixels(r)
+FROM r, LATERAL (SELECT raster(pixels(r), 3, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
+  3857, bandPixelType(r)) AS s) t;
 SELECT bandHasNoDataValue(raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0,
   0.0, 0.0, 0, '8BUI')), bandNoDataValue(raster('\x0102'::bytea, 2, 1, 0.0,
   1.0, 1.0, -1.0, 0.0, 0.0, 0, '8BUI', 2));
