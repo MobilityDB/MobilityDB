@@ -2956,7 +2956,10 @@ stbox_eq(const STBox *box1, const STBox *box2)
       box1->xmin != box2->xmin || box1->ymin != box2->ymin ||
       box1->zmin != box2->zmin || box1->xmax != box2->xmax ||
       box1->ymax != box2->ymax || box1->zmax != box2->zmax ||
-      box1->srid != box2->srid || ! span_eq(&box1->period, &box2->period))
+      box1->srid != box2->srid ||
+      /* A box without a time dimension holds no period to compare */
+      (MEOS_FLAGS_GET_T(box1->flags) &&
+        ! span_eq(&box1->period, &box2->period)))
     return false;
   /* The two boxes are equal */
   return true;
