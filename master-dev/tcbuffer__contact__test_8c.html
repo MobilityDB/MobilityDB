@@ -107,10 +107,12 @@ Variables</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >The contact of a circular buffer at rest with a polygon, judged by the closed form. </p>
-<p >A disc of centre c and radius r against a polygon with straight edges, D the distance of c to the boundary: the polygon contains the disc where c lies inside and D &gt; r, covers it where c lies inside and D &gt;= r, and the disc touches the polygon where c lies outside and D = r, all decided exactly on the doubles. Every input below is a dyadic rational, so each expected answer follows by hand:</p><ul>
+<p >A disc of centre c and radius r against a polygon with straight edges, D the distance of c to the boundary: the polygon covers the disc where c lies inside and D &gt;= r, contains it as OGC defines it where it covers it and r &gt; 0, or where c lies inside and D &gt; r for r = 0, and the disc touches the polygon where c lies outside and D = r, all decided exactly on the doubles. Every input below is a dyadic rational, so each expected answer follows by hand:</p><ul>
 <li>a disc tangent to the square from outside touches it, and one stopping 2^-40 short of it or crossing it by 2^-40 does not, however small the gap or the overlap;</li>
-<li>a disc tangent to the square from inside is covered and not contained;</li>
-<li>a disc clear inside by 2^-40 is contained and covered, and one out of it by 2^-40 is neither.</li>
+<li>a disc tangent to the square from inside is contained and covered, its open interior lying inside the square;</li>
+<li>a disc clear inside by 2^-40 is contained and covered, and one out of it by 2^-40 is neither;</li>
+<li>a disc of radius 0 on a side is covered and not contained;</li>
+<li>a disc tangent from inside to a static disc is contained and covered, as <a class="el" href="group__meos__internal__cbuffer__base__rel_ga66a0c3d6435f8215b5051e77fe2054b9.html#ga66a0c3d6435f8215b5051e77fe2054b9" title="Return true if the first circular buffer contains the second one.">cbuffer_contains</a> answers for the two discs at rest.</li>
 </ul>
 <p >To compile and run: </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o tcbuffer_contact_test \</div>
 <div class="line">  tcbuffer_contact_test.c -<a class="code hl_variable" href="trgeo__distance_8txt_a912268ab84e9ca487721bed51b5372aa.html#a912268ab84e9ca487721bed51b5372aa">L</a>/usr/local/lib -lmeos -lm</div>
