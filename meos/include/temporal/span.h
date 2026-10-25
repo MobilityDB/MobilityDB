@@ -108,6 +108,8 @@ ensure_valid_span_span(const Span *s1, const Span *s2)
 extern void span_deserialize(const Span *s, SpanBound *lower,
   SpanBound *upper);
 extern int span_bound_cmp(const SpanBound *b1, const SpanBound *b2);
+extern size_t span_sortkey_body_size(MeosType basetype);
+extern uint8_t *span_sortkey_body(const Span *s, uint8_t *out);
 extern int span_bound_qsort_cmp(const void *s1, const void *s2);
 extern int span_lower_cmp(const Span *s1, const Span *s2);
 extern int span_upper_cmp(const Span *s1, const Span *s2);
