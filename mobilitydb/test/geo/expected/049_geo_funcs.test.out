@@ -216,6 +216,33 @@ SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1,
  CURVEPOLYGON(COMPOUNDCURVE((1 1,9 1,9 9,1 9,1 1)))
 (1 row)
 
+SELECT h, round(ST_Area(buffer(ST_MakePolygon(
+    ST_MakeLine(ARRAY[ST_Point(6400000, 6400000), ST_Point(6400010, 6400000),
+      ST_Point(6400010, 6400010), ST_Point(6400000, 6400010), ST_Point(6400000, 6400000)]),
+    ARRAY[ST_MakeLine(ARRAY[ST_Point(6400005 - h, 6400005 - h), ST_Point(6400005 - h, 6400005 + h),
+      ST_Point(6400005 + h, 6400005 + h), ST_Point(6400005 + h, 6400005 - h),
+      ST_Point(6400005 - h, 6400005 - h)])]), 0.001))::numeric, 6)
+FROM unnest(ARRAY[0.0005, 0.001, 0.002]) AS h;
+   h    |   round    
+--------+------------
+ 0.0005 | 100.040003
+  0.001 | 100.040003
+  0.002 | 100.039999
+(3 rows)
+
+SELECT round(area(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1))::numeric, 6);
+   round    
+------------
+ 143.141593
+(1 row)
+
+SELECT round(area(buffer(geometry
+  'Polygon((0 0,10 0,10 10,0 10,0 0),(4 4,4 6,6 6,6 4,4 4))', 1))::numeric, 6);
+   round    
+------------
+ 143.141593
+(1 row)
+
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
                                                                                                   st_astext                                                                                                   
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
