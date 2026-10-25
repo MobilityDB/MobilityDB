@@ -105,7 +105,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga3625560eff370095b7c7cd1494ed52d6.html#ga3625560eff370095b7c7cd1494ed52d6">geom_shortestline2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga34d5b963ed0f9c339ecd4d8398bdd2e1.html#ga34d5b963ed0f9c339ecd4d8398bdd2e1">geom_shortestline3d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gad120a185ea580937eaf6af8f1cac3f9b.html#gad120a185ea580937eaf6af8f1cac3f9b">geom_symdifference2d</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__spatial_ga3e227f98f45314e22860b20b114a33d2.html#ga3e227f98f45314e22860b20b114a33d2">geom_unary_union</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__base__spatial_ga329fd600ff3ca48ce8f147a0388a20cb.html#ga329fd600ff3ca48ce8f147a0388a20cb">geom_unary_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga21dfe410ec990647f4deb880f2d46eb0.html#ga21dfe410ec990647f4deb880f2d46eb0">geom_union2d</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_ga5a85427fdf2021b563f66e972704f7ad.html#ga5a85427fdf2021b563f66e972704f7ad">line_interpolate_point</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__base__spatial_gaee7f2a7a0216b5f05d61e65f48d9695e.html#gaee7f2a7a0216b5f05d61e65f48d9695e">line_locate_point</a></td></tr>
@@ -114,8 +114,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga3e227f98f45314e22860b20b114a33d2" name="ga3e227f98f45314e22860b20b114a33d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga3e227f98f45314e22860b20b114a33d2">&#9670;&#160;</a></span>geom_unary_union()</h2>
+<a id="ga329fd600ff3ca48ce8f147a0388a20cb" name="ga329fd600ff3ca48ce8f147a0388a20cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga329fd600ff3ca48ce8f147a0388a20cb">&#9670;&#160;</a></span>geom_unary_union()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -124,18 +124,8 @@ $(function() {
           <td class="memname"><a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> * geom_unary_union </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>gs</em></td><td>)</td>
           <td></td>
-          <td class="paramtype">double&#160;</td>
-          <td class="paramname"><em>prec</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -144,11 +134,10 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">prec</td><td>Precision </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_UnaryUnion(PG_FUNCTION_ARGS)</code> </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>PostGIS function: <code>ST_UnaryUnion(PG_FUNCTION_ARGS)</code>. With respect to the original function we do not use the <code>prec</code> argument. </dd></dl>
 
 </div>
 </div>
