@@ -1551,7 +1551,7 @@ cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
   VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
   return cb1->srid == cb2->srid &&
     float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
@@ -1568,7 +1568,7 @@ cbuffer_eq_intl(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   assert(cb1); assert(cb2); assert(cb1->srid == cb2->srid);
   return float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
