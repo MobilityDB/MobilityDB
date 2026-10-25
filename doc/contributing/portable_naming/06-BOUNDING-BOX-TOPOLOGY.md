@@ -38,12 +38,11 @@ compares:
 - a box names itself;
 - a temporal value gives the type of its bounding box, whatever the argument order: `tbox` for a
   temporal number, `stbox` for a spatiotemporal value, `tpcbox` for a temporal point cloud, `span`
-  for a temporal Boolean, text or JSONB value;
-- a base type names itself (`same(cbuffer, cbuffer)` is `cbufferSame`).
+  for a temporal Boolean, text or JSONB value.
 
 Applied to each signature by the prefix the position family gives the same operand pair, and by
 the rule's text where no position function takes that pair (the unordered sets such as
-`geomset`, which have no position; the temporal point clouds; `same` over a base type)
+`geomset`, which have no position; the temporal point clouds)
 (`f6/derive.py`, `f6-map.tsv`).
 
 ## Final names
@@ -56,11 +55,12 @@ the rule's text where no position function takes that pair (the unordered sets s
 | `set` | 18 | 36 | 36 | | |
 | `spanset` | 10 | 15 | 15 | | 20 |
 | `tpcbox` | 11 | 11 | 11 | 11 | 11 |
-| `cbuffer`, `npoint`, `pose`, `posechain` | | | | 1 each | |
-| **Total** | **141** | **169** | **169** | **107** | **143** |
+| **Total** | **141** | **169** | **169** | **103** | **143** |
 
-729 signatures, 31 names: `stboxOverlaps`, `tboxContains`, `spanAdjacent`, `setContained`,
-`tpcboxSame`, `cbufferSame` and their siblings.
+725 signatures, 27 names: `stboxOverlaps`, `tboxContains`, `spanAdjacent`, `setContained`,
+`tpcboxSame` and their siblings. `~=` over the base types `cbuffer`, `npoint`, `pose` and
+`posechain`, which compared two values within a tolerance, is removed (owner, 2026-10-25), so
+`same` is a bounding-box predicate only.
 
 ## Checks
 
@@ -83,7 +83,7 @@ Flink. None of the 31 is a MobilityDB SQL name at `b98cda8d63`.
 every binding, PostgreSQL, DuckDB, Spark, Flink and the others, established in three parts before
 the renaming lands:
 
-1. **The same MEOS function.** Each of the 729 topological and 1104 position signatures resolves,
+1. **The same MEOS function.** Each of the 725 topological and 1104 position signatures resolves,
    in every engine, to the MEOS function its PostgreSQL wrapper calls: a static comparison of the
    catalog with each engine's registrations.
 2. **One source for the index predicate.** The MEOS-API catalog states, for each topological and
