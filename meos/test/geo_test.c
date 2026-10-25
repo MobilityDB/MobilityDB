@@ -1184,8 +1184,8 @@ int main(void)
    * the answer it already gives, without the overlay library being asked.
    * The assertion holds on the previous code too, since the library answers
    * the same empty geometry -- what it guards is that the answer stays that
-   * one once nothing is asked. A library built without GEOS is where the two
-   * separate: the previous route declines there, this one answers */
+   * one once nothing is asked. Without GEOS the two separate: the previous
+   * route declines, this one answers */
   const char *mtsub[] = { "POLYGON EMPTY", "MULTIPOLYGON EMPTY" };
   const char *mtclip[] = { "LINESTRING(0 0,5 5)", "POINT(1 1)" };
   for (int i = 0; i < 2; i++)

@@ -69,6 +69,13 @@ endif()
 set(POSTGIS_OBJECTS ${POSTGIS_OBJECTS} "$<TARGET_OBJECTS:ryu>")
 
 add_library(postgis STATIC ${POSTGIS_OBJECTS})
+# The geometry library calls entry points that meos/src/geo/geo_lwgeom_none.c
+# answers (lwgeom_centroid from lwkmeans.c, ...). Where MEOS is the archive
+# linked into the extension, the two archives depend on each other, and CMake
+# reads the MEOS archive again after this one. /* MEOS */
+if(NOT MEOS)
+  target_link_libraries(postgis meos)
+endif()
 
 target_include_directories(postgis PUBLIC "${CMAKE_SOURCE_DIR}/postgis/liblwgeom")
 target_include_directories(postgis PUBLIC "${CMAKE_SOURCE_DIR}/postgis")

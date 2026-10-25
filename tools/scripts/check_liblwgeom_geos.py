@@ -68,8 +68,8 @@ def geos_entry_points():
 def definition_lines(text):
     """The lines of a MEOS source that DEFINE one of the entry points.
 
-    A build carrying no GEOS leaves the vendored GEOS files out and supplies
-    what the files that remain still call of them, so a MEOS source may define
+    The build leaves the vendored GEOS files out and supplies what the files
+    that remain call of them, so a MEOS source may define
     an entry point rather than call it. Defining one is the opposite of
     reaching GEOS through it, and it reads the same to a scan of the text. The
     definition line is skipped and every other line of the file is still read,
@@ -152,9 +152,9 @@ def main():
         for line in new:
             relative, symbol = line.split("\t")
             print(f"  {relative}: {symbol}")
-        print("\nEach one is a place a native answer has to reach before a "
-              "build without GEOS can leave the library out. Answer it "
-              "natively, or record it with --rebaseline.")
+        print("\nEach one is an operation that refuses, the build leaving "
+              "the library out. Answer it natively, or record it with "
+              "--rebaseline.")
         return 1
 
     # A baselined call that no longer occurs is what the campaign is for, so it

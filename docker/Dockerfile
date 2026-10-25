@@ -11,7 +11,6 @@ RUN apt-get update \
         cmake \
         libproj-dev \
         libjson-c-dev \
-        libgeos-dev \
         postgresql-server-dev-${PG_MAJOR} \
         libh3-dev \
         libh3-1 \
@@ -49,7 +48,6 @@ RUN apt-get update \
         libh3-1 \
         libproj-dev \
         libjson-c-dev \
-        libgeos-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy MobilityDB installed files from builder

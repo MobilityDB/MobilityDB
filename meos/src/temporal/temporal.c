@@ -37,7 +37,6 @@
 /* C */
 #include <assert.h>
 #include <float.h>
-#include <geos_c.h>
 #include <limits.h>
 #include <math.h>
 /* PostgreSQL */
@@ -838,19 +837,13 @@ meos_full_version(void)
 {
   PJ_INFO pji = proj_info();
   const char *proj_vers = pji.version;
-  /* A build carrying no GEOS reports none */
-#if GEOS
-  const char *geos_vers = GEOSversion();
-#else
-  const char *geos_vers = "none";
-#endif
   const char *json_c_vers = json_c_version();
 
   char *result = palloc(MOBDB_VERSION_STR_MAXLEN);
   size_t len = snprintf(result, MOBDB_VERSION_STR_MAXLEN,
-    "%s, %s, %s, GEOS %s, PROJ %s, JSON-C %s",
+    "%s, %s, %s, PROJ %s, JSON-C %s",
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
-    POSTGIS_VERSION_STRING, geos_vers, proj_vers, json_c_vers);
+    POSTGIS_VERSION_STRING, proj_vers, json_c_vers);
   result[len] = '\0';
   return result;
 }

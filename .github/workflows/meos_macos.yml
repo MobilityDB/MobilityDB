@@ -43,7 +43,7 @@ jobs:
 
       - name: Install dependencies (Homebrew)
         run: |
-          brew install json-c geos proj cmake ninja h3 gdal libxml2 zlib
+          brew install json-c proj cmake ninja h3 gdal libxml2 zlib
 
       - name: Configure (MEOS=ON, no PostgreSQL extension)
         run: |

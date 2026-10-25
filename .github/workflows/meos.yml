@@ -43,7 +43,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgeos-dev \
             libproj-dev \
             libjson-c-dev \
             libgdal-dev \
@@ -63,6 +62,18 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on ..
           make -j $(nproc)
           sudo make install
+
+      # GEOS stays installed because GDAL depends on it, so the libraries the
+      # loader maps say nothing: what the library must not do is CALL it, nor
+      # export a definition under a name of the GEOS C API, which a program
+      # also loading GEOS would bind its own GEOS calls to.
+      - name: Check that the library calls and exports no GEOS function
+        run: |
+          n=$(nm -D --undefined-only /usr/local/lib/libmeos.so | grep -c ' GEOS' || true)
+          echo "$n GEOS function(s) called by libmeos"
+          e=$(nm -D --defined-only /usr/local/lib/libmeos.so | grep -cE ' (GEOS|initGEOS|finishGEOS)' || true)
+          echo "$e GEOS function(s) exported by libmeos"
+          test "$n" -eq 0 && test "$e" -eq 0
 
       - name: Compile and run 01_hello_world.c
         run: |
@@ -147,7 +158,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgeos-dev \
             libproj-dev \
             libjson-c-dev
 
@@ -195,7 +205,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgeos-dev \
             libproj-dev \
             libjson-c-dev \
             libgdal-dev \
@@ -266,41 +275,3 @@ jobs:
             exit 1
           fi
           ./loader ./module.so
-
-  geos-free:
-    name: Build without GEOS
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-
-      - uses: ./.github/actions/apt-resilient
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libgeos-dev \
-            libproj-dev \
-            libjson-c-dev \
-            libgdal-dev \
-            libh3-dev \
-            libxml2-dev \
-            zlib1g-dev
-
-      # Install into a local prefix rather than /usr/local, so the programs
-      # below cannot resolve against another libmeos.
-      - name: Build MEOS with GEOS compiled out
-        run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Debug -DMEOS=on -DALL=on \
-            -DGEOS=OFF -DCMAKE_INSTALL_PREFIX="$PWD/prefix"
-          cmake --build build -j $(nproc)
-          cmake --install build
-
-      # GEOS stays installed because GDAL depends on it, so the libraries the
-      # loader maps say nothing: what the build must not do is CALL it.
-      - name: Check that the library calls no GEOS function
-        run: |
-          n=$(nm -D --undefined-only prefix/lib/libmeos.so | grep -c ' GEOS' || true)
-          echo "$n GEOS function(s) called by libmeos"
-          test "$n" -eq 0

@@ -60,7 +60,7 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server-devel postgis \
-            geos-devel proj-devel json-c-devel \
+            proj-devel json-c-devel \
             gdal-devel h3-devel \
             autoconf automake libtool libxml2-devel zlib-devel which \
             redhat-rpm-config
@@ -108,7 +108,7 @@ jobs:
         run: |
           dnf -y install gcc gcc-c++ cmake make git tar xz diffutils \
             postgresql-server postgresql-server-devel postgis \
-            geos-devel proj-devel json-c-devel gdal-devel h3-devel \
+            proj-devel json-c-devel gdal-devel h3-devel \
             autoconf automake libtool libxml2-devel zlib-devel which \
             redhat-rpm-config
           locale

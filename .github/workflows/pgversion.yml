@@ -87,7 +87,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgeos++-dev \
             libproj-dev \
             libgdal-dev \
             libjson-c-dev \
@@ -173,6 +172,27 @@ jobs:
           sudo service postgresql start
           sudo -u postgres createdb -p ${PGPORT}  ___mobdb___test___
           sudo -u postgres psql -p ${PGPORT}  -d ___mobdb___test___ -c "CREATE EXTENSION mobilitydb CASCADE; SELECT postgis_full_version(); SELECT mobilitydbFullVersion();"
+
+      - name: Test coexistence with the GEOS of PostGIS
+        # The extension answers the GEOS entry points the vendored raster core
+        # calls with definitions of its own, under the names of the GEOS C API
+        # that PostGIS and PostGIS raster call. Those names must not leave the
+        # extension's library: in a session whose first statement loads the
+        # extension alone, PostGIS loaded afterwards would bind its GEOS calls
+        # to them and the backend would abort. Each psql below is such a
+        # session, as the cluster preloads no library.
+        run: |
+          sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___test___ \
+            -c "CREATE EXTENSION IF NOT EXISTS postgis_raster;"
+          sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___test___ \
+            -c "SELECT asText(tgeompoint 'Point(1 1)@2000-01-01');" \
+            -c "SELECT ST_IsValid('POLYGON((0 0,1 0,1 1,0 1,0 0))'::geometry),
+                  ST_AsText(ST_UnaryUnion('MULTIPOLYGON(((0 0,1 0,1 1,0 1,0 0)),((1 0,2 0,2 1,1 1,1 0)))'::geometry));"
+          sudo -u postgres psql -p ${PGPORT} -v ON_ERROR_STOP=1 -d ___mobdb___test___ \
+            -c "SELECT asText(tgeompoint 'Point(1 1)@2000-01-01');" \
+            -c "SELECT ST_Intersects(
+                  ST_AddBand(ST_MakeEmptyRaster(2, 2, 0, 2, 1, -1, 0, 0, 0), '8BUI'::text, 1, 0), 1,
+                  ST_AddBand(ST_MakeEmptyRaster(2, 2, 1, 3, 1, -1, 0, 0, 0), '8BUI'::text, 1, 0), 1);"
 
       - name: Test coexistence with btree_gist
         # btree_gist defines <-> distance operators on base types (integer,

@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief The GEOS entry points the vendored PostGIS raster calls, answered
- * from the native engines for a build carrying no GEOS
+ * from the native engines
  * @details The raster core is the one part of the vendored PostGIS that calls
  * GEOS directly rather than through the geometry library, so leaving out the
  * geometry library's GEOS files does not free it. The relationships it asks
@@ -43,10 +43,6 @@
  * #geom_unary_union() reads from the boundaries, and the conversion between
  * the two geometry models is a copy: a @p GEOSGeometry is an @p LWGEOM here,
  * so nothing is serialized and no round trip is paid.
- *
- * These definitions are compiled only where the build carries no GEOS. A build
- * carrying it links the real library and never reaches this file, so the two
- * answer the same thing by construction rather than by agreement.
  *
  * The raster core also asks whether the union it computed is valid, and
  * repairs it through @p lwgeom_make_valid() when it is not. The dissolve

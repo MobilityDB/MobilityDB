@@ -61,7 +61,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             cppcheck \
-            libgeos-dev \
             libproj-dev \
             libgdal-dev \
             libjson-c-dev \
