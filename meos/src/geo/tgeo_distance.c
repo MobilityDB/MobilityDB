@@ -1715,6 +1715,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
       w->d = 0.0; w->px = ix; w->py = iy; w->qx = ix; w->qy = iy;
       w->set = true;
+      w->rest = false;
       return;
     }
   }
@@ -1780,10 +1781,99 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         }
         w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
         w->set = true;
+        /* A unit at rest against an edge whose ends are its own doubles:
+         * #dist_shortline_exact constructs its line once the search ends */
+        w->rest = cx1 == cx2 && cy1 == cy2 && r1 == r2 &&
+          (e->etype == EDGE_POINT || e->etype == EDGE_LINESEG ||
+           e->etype == EDGE_POLYSEG) && ! e->from && ! e->to;
+        if (w->rest)
+        {
+          w->cx = cx1; w->cy = cy1; w->r = r1;
+          w->ax = e->x1; w->ay = e->y1; w->bx = e->x2; w->by = e->y2;
+        }
         thr2 = dist_unit_thr2(m, rmax);
       }
     }
   }
+}
+
+/**
+ * @brief Construct the line of a witness at rest exactly
+ * @details The search of #dist_segm_shortestline finds the witness in
+ * doubles; where it is a unit at rest against an edge whose ends are its own
+ * doubles, each end of its line is set to the double nearest its exact value
+ * (#point_segment_shortestline_exact), once per search, and a line whose
+ * unit meets the geometry (a distance of at most 0, which the exact kernel
+ * decides) collapses to its end
+ */
+void
+dist_shortline_exact(DistShortLine *w)
+{
+  if (! w->set || ! w->rest)
+    return;
+  const double c[2] = {w->cx, w->cy}, a[2] = {w->ax, w->ay},
+    b[2] = {w->bx, w->by};
+  double sx = w->px, sy = w->py;
+  point_segment_shortestline_exact(c, w->r, a, b, &sx, &sy, &w->qx, &w->qy);
+  if (w->d <= 0.0)
+  {
+    sx = w->qx; sy = w->qy;
+  }
+  w->px = sx; w->py = sy;
+  return;
+}
+
+/**
+ * @brief Return the line from (px py) to (qx qy) in the SRID @p srid
+ */
+GSERIALIZED *
+dist_shortline_serialize(int32_t srid, double px, double py, double qx,
+  double qy)
+{
+  POINTARRAY *pa = ptarray_construct(0, 0, 2);
+  POINT4D p4;
+  p4.z = 0.0; p4.m = 0.0;
+  p4.x = px; p4.y = py;
+  ptarray_set_point4d(pa, 0, &p4);
+  p4.x = qx; p4.y = qy;
+  ptarray_set_point4d(pa, 1, &p4);
+  LWLINE *ln = lwline_construct(srid, NULL, pa);
+  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
+  lwline_free(ln);
+  return line;
+}
+
+/**
+ * @brief Return the shortest line from a point (@p r = 0) or a disc at rest
+ * to a geometry of straight edges, not empty, or NULL for a geometry of
+ * another type
+ * @details A unit at rest asks one question of the geometry, so it reads the
+ * coordinates in place (#geom_distance2d_disc_witness) instead of paying for
+ * the edges and the bucket hierarchy of #dist_geom_build, which a moving
+ * value reads over its many units. The segment that answers the distance
+ * gives the line, each end the double nearest its exact value
+ * (#point_segment_shortestline_exact); a centre inside a polygon gives the
+ * line of no length at the centre, and a disc meeting the geometry the line
+ * of no length at its nearest point, as #dist_segm_shortestline gives them
+ */
+GSERIALIZED *
+dist_shortline_rest(const double *c, double r, const GSERIALIZED *gs)
+{
+  double seg[4];
+  bool inside;
+  double d = geom_distance2d_disc_witness(c, r, gs, seg, &inside);
+  if (d < 0.0)
+    return NULL;
+  int32_t srid = gserialized_get_srid(gs);
+  if (inside)
+    return dist_shortline_serialize(srid, c[0], c[1], c[0], c[1]);
+  double sx = c[0], sy = c[1], ex, ey;
+  point_segment_shortestline_exact(c, r, seg, seg + 2, &sx, &sy, &ex, &ey);
+  if (d <= 0.0)
+  {
+    sx = ex; sy = ey;
+  }
+  return dist_shortline_serialize(srid, sx, sy, ex, ey);
 }
 
 /**
@@ -3079,6 +3169,43 @@ tpointseq_shortestline(const TSequence *seq, const DistGeom *g,
 }
 
 /**
+ * @brief Return true where every instant of a planar temporal point holds
+ * the same point, set in @p c
+ * @details The tree has no test of a constant temporal value; this one walks
+ * the instants as #tpointseq_shortestline walks them, and stops at the first
+ * that differs
+ */
+static bool
+tpoint_at_rest(const Temporal *temp, double *c)
+{
+  if (temp->subtype == TINSTANT)
+  {
+    const POINT2D *p = tgeoinst_point2d((const TInstant *) temp);
+    c[0] = p->x; c[1] = p->y;
+    return true;
+  }
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int nseq = ss ? ss->count : 1;
+  for (int i = 0; i < nseq; i++)
+  {
+    const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, i) :
+      (const TSequence *) temp;
+    for (int j = 0; j < seq->count; j++)
+    {
+      const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, j));
+      if (i == 0 && j == 0)
+      {
+        c[0] = p->x; c[1] = p->y;
+      }
+      else if (p->x != c[0] || p->y != c[1])
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
  * @brief Shortest line between a planar temporal point and a
  * geometry; returns NULL when the geometry does not decompose
  */
@@ -3088,11 +3215,20 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
 
+  /* A point at rest reads the geometry in place */
+  double c[2] = {0.0, 0.0};
+  if (tpoint_at_rest(temp, c))
+  {
+    GSERIALIZED *line = dist_shortline_rest(c, 0.0, gs);
+    if (line)
+      return line;
+  }
+
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return NULL;
   DistShortLine w;
-  w.d = DBL_MAX; w.set = false;
+  w.d = DBL_MAX; w.set = false; w.rest = false;
   w.px = w.py = w.qx = w.qy = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3108,6 +3244,7 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
       tpointseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
+  dist_shortline_exact(&w);
   dist_geom_free(&g);
   if (! w.set)
     return NULL;

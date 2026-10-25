@@ -244,6 +244,9 @@ extern double point_distance_exact(const double *p, const double *q,
   int ndims);
 extern double point_distance_offset_exact(const double *p, const double *q,
   int ndims, double r);
+extern void point_segment_shortestline_exact(const double *c, double r,
+  const double *a, const double *b, double *sx, double *sy, double *ex,
+  double *ey);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, double r);
 extern int point_segment_offset_sign(const double *p, const double *a,
