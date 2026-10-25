@@ -57,6 +57,14 @@ SELECT tint '1@2001-01-01' + tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}' + tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
 SELECT tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]' + tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
 SELECT tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}' + tint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@2001-01-04, 3@2001-01-05]}';
+SELECT tint '[2147483645@2001-01-01, 1@2001-01-02]' + 1;
+/* Errors */
+-- A sum reaching the maximum of the base type has no representation in a
+-- temporal integer
+SELECT tint '2147483646@2001-01-01' + 1;
+SELECT tint '[2147483646@2001-01-01, 1@2001-01-02]' + 1;
+SELECT tint '{[1@2001-01-01], [2147483646@2001-01-02]}' + 1;
+SELECT 2147483647 - tint '[0@2001-01-01, 1@2001-01-02]';
 
 -------------------------------------------------------------------------------
 
@@ -561,11 +569,15 @@ SELECT abs(tfloat '[-1@2001-01-01,1@2001-01-02]');
 -- because the value is read through the base type the temporal type declares
 SELECT abs(tint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
 SELECT abs(tbigint '{-2@2001-01-01, 5@2001-01-02, -7@2001-01-03}');
-SELECT abs(tbigint '-9223372036854775807@2001-01-01');
+SELECT abs(tbigint '-9223372036854775806@2001-01-01');
 -- The result takes the temporal type of the argument
 SELECT pg_typeof(abs(tint '{-2@2001-01-01, 5@2001-01-02}'));
 SELECT pg_typeof(abs(tbigint '{-2@2001-01-01, 5@2001-01-02}'));
 /* Errors */
+-- The absolute value of the negated maximum is the maximum, which a temporal
+-- integer cannot hold
+SELECT abs(tint '-2147483647@2001-01-01');
+SELECT abs(tbigint '-9223372036854775807@2001-01-01');
 -- The most negative value of each integer type has no positive counterpart
 SELECT abs(tint '-2147483648@2001-01-01');
 SELECT abs(tbigint '-9223372036854775808@2001-01-01');

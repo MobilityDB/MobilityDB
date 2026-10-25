@@ -234,6 +234,10 @@ SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip FROM Trips T1,
 			</listitem>
 
 			<listitem>
+				<para>A value of a <varname>tint</varname> or a <varname>tbigint</varname> must be less than the largest value of its base type, since the value span of the bounding box, whose upper bound is the next value, has no representation for it, as for an <varname>intspan</varname> or a <varname>bigintspan</varname>.</para>
+			</listitem>
+
+			<listitem>
 				<para>A sequence value must be composed of at least one instant value.</para>
 			</listitem>
 
@@ -265,6 +269,8 @@ SELECT T1.CarId, T2.CarId, T1.Trip &lt;-&gt; T2.Trip FROM Trips T1,
 SELECT tbool '1.5@2001-01-01 08:00:00';
 -- Base type value is not a point
 SELECT tgeompoint 'Linestring(0 0,1 1)@2001-01-01 08:05:00';
+-- Value at the largest value of the base type
+SELECT tint '2147483647@2001-01-01 08:00:00';
 -- Incorrect timestamp
 SELECT tint '2@2001-02-31 08:00:00';
 -- Empty sequence

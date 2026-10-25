@@ -45,8 +45,8 @@ SELECT tint '1@2012-01-01 08:00:00';
 SELECT tint '2@2012-01-01 08:00:00';
 SELECT tbigint '1@2012-01-01 08:00:00';
 SELECT tbigint '2@2012-01-01 08:00:00';
-SELECT tint '2147483647@2012-01-01 08:00:00';
-SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
+SELECT tint '2147483646@2012-01-01 08:00:00';
+SELECT tbigint '9223372036854775806@2012-01-01 08:00:00';
 SELECT tfloat '1@2012-01-01 08:00:00';
 SELECT tfloat '2@2012-01-01 08:00:00';
 SELECT ttext 'AAA@2012-01-01 08:00:00';
@@ -58,6 +58,12 @@ SELECT tbigint 'TRUE@2012-01-01 08:00:00';
 SELECT tfloat 'ABC@2012-01-01 08:00:00';
 SELECT tfloat '25';
 SELECT tfloat '2@2012-01-01 08:00:00,';
+-- A temporal integer holds no value at the maximum of its base type
+SELECT tint '2147483647@2012-01-01 08:00:00';
+SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
+SELECT tint '{1@2001-01-01, 2147483647@2001-01-02}';
+SELECT tint '[1@2001-01-01, 2147483647@2001-01-02]';
+SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
 
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence
@@ -1825,6 +1831,14 @@ SELECT shiftScaleValue(tfloat '{1@2001-01-01}', 1, 2);
 SELECT shiftValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 1);
 SELECT scaleValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 2);
 SELECT shiftScaleValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 1, 2);
+SELECT shiftValue(tint '2147483645@2001-01-01', 1);
+SELECT shiftValue(tint '[1@2001-01-01, 2147483645@2001-01-02]', 1);
+/* Errors */
+-- A shift reaching the maximum of the base type has no representation
+SELECT shiftValue(tint '2147483646@2001-01-01', 1);
+SELECT shiftValue(tint '[1@2001-01-01, 2147483646@2001-01-02]', 1);
+SELECT shiftValue(tint '{[1@2001-01-01], [2147483646@2001-01-02]}', 1);
+SELECT shiftValue(tbigint '9223372036854775806@2001-01-01', 1);
 
 SELECT shiftTime(tbool 't@2001-01-01', '5 min');
 SELECT shiftTime(tbool '{t@2001-01-01, f@2001-01-02, t@2001-01-03}', '5 min');

@@ -1201,8 +1201,9 @@ tbigint_to_tint(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
 
-  /* Return NULL if there is overflow */
-  if (ever_gt_temporal_base(temp, INT_MAX) ||
+  /* Return NULL if there is overflow, a temporal integer holding no value
+   * at the maximum of its type */
+  if (ever_ge_temporal_base(temp, INT_MAX) ||
       ever_lt_temporal_base(temp, INT_MIN))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,

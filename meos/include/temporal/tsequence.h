@@ -133,7 +133,7 @@ extern bool tsequence_make_valid(TInstant **instants, int count,
 
 /* Transformation functions */
 
-extern void tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin,
+extern bool tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin,
   Datum delta, bool hasdelta, double scale);
 extern void tsequence_shift_scale_time_iter(TSequence *seq, TimestampTz delta,
   double scale);
