@@ -3018,6 +3018,37 @@ SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_summarystatsCount">
+				<indexterm significance="normal"><primary><varname>summarystatsCount</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMean</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsStddev</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMax</varname></primary></indexterm>
+				<para>Devuelve el número de píxeles, la suma, la media, la desviación estándar, el mínimo o el máximo de las estadísticas de una banda de ráster</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+summarystatsCount(summarystats) → bigint
+summarystatsSum(summarystats) → float
+summarystatsMean(summarystats) → float
+summarystatsStddev(summarystats) → float
+summarystatsMin(summarystats) → float
+summarystatsMax(summarystats) → float
+</programlisting>
+				<para>Cada función lee un campo del registro <varname>summarystats</varname> que devuelven <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> y <link linkend="raster_summaryStatsAgg"><varname>summaryStatsAgg</varname></link>, la forma en que todo motor lo lee (<xref linkend="portable_sql"/>), junto a la lectura de un campo por su nombre, <literal>(summaryStats(r)).mean</literal>, que PostgreSQL conserva. Sobre unas estadísticas que no cuentan ningún píxel el recuento es 0 y las demás funciones devuelven <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT summarystatsCount(summaryStats(r)), summarystatsMean(summaryStats(r)),
+  summarystatsStddev(summaryStats(r)) FROM rast;
+-- 9 | 50 | 25.81988897471611
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_dumpAsPolygons">
 				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
 				<para>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor &SRF;

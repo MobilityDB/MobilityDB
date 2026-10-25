@@ -1817,6 +1817,43 @@ WITH rast AS (
 )
 SELECT summaryStats(r, 2) FROM rast;
 
+-- The accessors read the fields of the record, each answering the field it
+-- names; over a band whose every pixel is nodata the count is 0 and the other
+-- accessors answer NULL, as the record states no statistic.
+WITH rast AS (
+  SELECT ST_SetValues(
+    ST_AddBand(
+      ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+      '32BF'::text, 0.0::float8, -9999::float8),
+    1, 1, 1, ARRAY[ARRAY[10,20,30], ARRAY[40,-9999,60], ARRAY[70,80,90]]::float8[][]
+  ) AS r
+)
+SELECT summarystatsCount(s), summarystatsSum(s), summarystatsMean(s),
+  round(summarystatsStddev(s)::numeric, 6) AS stddev, summarystatsMin(s),
+  summarystatsMax(s),
+  summarystatsCount(s) = (s).count AND summarystatsSum(s) = (s).sum AND
+    summarystatsMean(s) = (s).mean AND summarystatsStddev(s) = (s).stddev AND
+    summarystatsMin(s) = (s).min AND summarystatsMax(s) = (s).max AS as_fields
+FROM (SELECT summaryStats(r) AS s FROM rast) t;
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, -9999::float8, -9999::float8) AS r
+)
+SELECT summarystatsCount(s), summarystatsSum(s), summarystatsMean(s),
+  summarystatsStddev(s), summarystatsMin(s), summarystatsMax(s)
+FROM (SELECT summaryStats(r) AS s FROM rast) t;
+-- The accessors read the record of the aggregate as they read that of a band.
+WITH tiles AS (
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 1.0::float8, -9999.0::float8) AS r
+  UNION ALL
+  SELECT ST_AddBand(ST_MakeEmptyRaster(2, 2, 1.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857),
+    '32BF'::text, 3.0::float8, -9999.0::float8) )
+SELECT summarystatsCount(s), summarystatsSum(s), summarystatsMean(s),
+  summarystatsStddev(s), summarystatsMin(s), summarystatsMax(s)
+FROM (SELECT summaryStatsAgg(r, 1, true) AS s FROM tiles) t;
+
 -------------------------------------------------------------------------------
 -- dumpAsPolygons
 -------------------------------------------------------------------------------

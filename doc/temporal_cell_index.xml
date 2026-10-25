@@ -3019,6 +3019,37 @@ SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="raster_summarystatsCount">
+				<indexterm significance="normal"><primary><varname>summarystatsCount</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsSum</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMean</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsStddev</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMin</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>summarystatsMax</varname></primary></indexterm>
+				<para>Return the number of pixels, the sum, the mean, the standard deviation, the minimum or the maximum of the statistics of a raster band</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+summarystatsCount(summarystats) → bigint
+summarystatsSum(summarystats) → float
+summarystatsMean(summarystats) → float
+summarystatsStddev(summarystats) → float
+summarystatsMin(summarystats) → float
+summarystatsMax(summarystats) → float
+</programlisting>
+				<para>Each function reads one field of the <varname>summarystats</varname> record that <link linkend="raster_summaryStats"><varname>summaryStats</varname></link> and <link linkend="raster_summaryStatsAgg"><varname>summaryStatsAgg</varname></link> return, the form in which every engine reads it (<xref linkend="portable_sql"/>), beside the reading of a field by its name, <literal>(summaryStats(r)).mean</literal>, that PostgreSQL keeps. Over statistics that count no pixel the count is 0 and the other functions return <varname>NULL</varname>.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
+WITH rast AS (
+  SELECT ST_SetValues(ST_AddBand( ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0,
+    4326), '32BF'::text, 0.0::float8, -9999::float8), 1, 1, 1,
+    ARRAY[[10.0::float4, 20.0::float4, 30.0::float4],
+    [40.0::float4, 50.0::float4, 60.0::float4],
+    [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
+SELECT summarystatsCount(summaryStats(r)), summarystatsMean(summaryStats(r)),
+  summarystatsStddev(summaryStats(r)) FROM rast;
+-- 9 | 50 | 25.81988897471611
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="raster_dumpAsPolygons">
 				<indexterm significance="normal"><primary><varname>dumpAsPolygons</varname></primary></indexterm>
 				<para>Return the polygons of a raster band, one for each group of pixels sharing a value &SRF;
