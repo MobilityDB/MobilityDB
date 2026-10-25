@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>The GEOS entry points the vendored PostGIS raster calls, answered from the native engines for a build carrying no GEOS.  
+<p>The GEOS entry points the vendored PostGIS raster calls, answered from the native engines.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdarg.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
@@ -122,10 +122,9 @@ Functions</h2></td></tr>
 <tr class="separator:aefda4bcaa7ca8b330d45b68be651ba56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The GEOS entry points the vendored PostGIS raster calls, answered from the native engines for a build carrying no GEOS. </p>
+<div class="textblock"><p >The GEOS entry points the vendored PostGIS raster calls, answered from the native engines. </p>
 <p >The raster core is the one part of the vendored PostGIS that calls GEOS directly rather than through the geometry library, so leaving out the geometry library's GEOS files does not free it. The relationships it asks are answered where it asks them, by the native engine those sources name themselves. What is left here is the union the polygonizing path computes over a set of polygons, and the conversion between the two geometry models that union is stated over.</p>
 <p >What answers them is what MEOS already carries: a union is the dissolve <a class="el" href="group__meos__geo__base__spatial_ga329fd600ff3ca48ce8f147a0388a20cb.html#ga329fd600ff3ca48ce8f147a0388a20cb" title="Return the unary union of a geometry.">geom_unary_union()</a> reads from the boundaries, and the conversion between the two geometry models is a copy: a <code>GEOSGeometry</code> is an <code><a class="el" href="structLWGEOM.html">LWGEOM</a></code> here, so nothing is serialized and no round trip is paid.</p>
-<p >These definitions are compiled only where the build carries no GEOS. A build carrying it links the real library and never reaches this file, so the two answer the same thing by construction rather than by agreement.</p>
 <p >The raster core also asks whether the union it computed is valid, and repairs it through <code><a class="el" href="geo__lwgeom__none_8c_aedfd0d790985eef670a799663e3dc053.html#aedfd0d790985eef670a799663e3dc053">lwgeom_make_valid()</a></code> when it is not. The dissolve answered here bounds its surfaces by construction, so validity is reported for it and the repair is never reached. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

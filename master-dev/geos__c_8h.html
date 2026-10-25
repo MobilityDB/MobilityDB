@@ -82,7 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>The declarations of the GEOS C API a build carrying no GEOS still reads.  
+<p>The declarations of the GEOS C API the build reads.  
 <a href="#details">More...</a></p>
 
 <p><a href="geos__c_8h_source.html">Go to the source code of this file.</a></p>
@@ -171,10 +171,10 @@ Functions</h2></td></tr>
 <tr class="separator:a40c8f12b7f49e3389467d7507e1539fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The declarations of the GEOS C API a build carrying no GEOS still reads. </p>
-<p >A geometry of GEOS names the types of the entry points that convert between the two geometry models, and the vendored PostGIS reads them from <code><a class="el" href="geos__c_8h.html" title="The declarations of the GEOS C API a build carrying no GEOS still reads.">geos_c.h</a></code> whether or not the library is there. A build carrying no GEOS has no such file to read, so this one stands in its place: it is put on the include path only where the GEOS option is off, and the vendored sources stay exactly as they came.</p>
+<div class="textblock"><p >The declarations of the GEOS C API the build reads. </p>
+<p >A geometry of GEOS names the types of the entry points that convert between the two geometry models, and the vendored PostGIS reads them from <code><a class="el" href="geos__c_8h.html" title="The declarations of the GEOS C API the build reads.">geos_c.h</a></code>. MEOS does not link the library, so this file stands in its place: it is put first on the include path of every build, so a build needs no GEOS headers installed, and the vendored sources stay exactly as they came.</p>
 <p >What stands in is the types and the constants alone. Every entry point of the library itself is left out on purpose, so a call to one that the conditional compilation failed to leave out is a compilation error naming the function rather than a link that quietly resolves against a GEOS the build was told not to carry.</p>
-<p >The geometry MEOS answers with in such a build is the <code><a class="el" href="structLWGEOM.html">LWGEOM</a></code> one, the two models being the same there; <code><a class="el" href="geo__geos__none_8c.html" title="The GEOS entry points the vendored PostGIS raster calls, answered from the native engines for a build...">meos/src/geo/geo_geos_none.c</a></code> defines the entry points the vendored raster core calls in those terms. </p>
+<p >The geometry MEOS answers with is the <code><a class="el" href="structLWGEOM.html">LWGEOM</a></code> one, the two models being the same there; <code><a class="el" href="geo__geos__none_8c.html" title="The GEOS entry points the vendored PostGIS raster calls, answered from the native engines.">meos/src/geo/geo_geos_none.c</a></code> defines the entry points the vendored raster core calls in those terms. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
