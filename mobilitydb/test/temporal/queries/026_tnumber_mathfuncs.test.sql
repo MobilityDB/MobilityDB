@@ -573,3 +573,20 @@ SELECT abs(tint '{-2147483648@2001-01-01, 5@2001-01-02}');
 
 -------------------------------------------------------------------------------
 
+-- An arithmetic result inside the range of the base type is answered
+SELECT tint '2147483645@2001-01-01' + 1;
+SELECT tbigint '9223372036854775805@2001-01-01' + 1;
+SELECT tfloat '1e300@2001-01-01' * 2;
+/* Errors */
+-- A result outside the range of the base type is refused, as for the base
+-- type, in an instant and in a sequence
+SELECT tint '2147483646@2001-01-01' + 2;
+SELECT tint '[2147483645@2001-01-01, 2147483646@2001-01-02]' + 2;
+SELECT tint '-2147483648@2001-01-01' - 1;
+SELECT tint '2147483646@2001-01-01' * 2;
+SELECT tint '-2147483648@2001-01-01' / -1;
+SELECT tbigint '9223372036854775806@2001-01-01' + 2;
+SELECT tbigint '9223372036854775806@2001-01-01' * 2;
+SELECT tfloat '1e300@2001-01-01' * 1e300;
+
+-------------------------------------------------------------------------------

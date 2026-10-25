@@ -74,6 +74,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <common/int.h>
 #include <pg_int.h>
 /* Function defined in formatting.c */
 extern bool scanner_isspace(char ch);
@@ -421,7 +422,8 @@ datum_add(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+      return Int32GetDatum(add_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -432,15 +434,32 @@ datum_add(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
+      return Int64GetDatum(add_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+      return Float8GetDatum(float8_pl(DatumGetFloat8(l), DatumGetFloat8(r)));
     case T_DATE:
       /* For dates we ALWAYS add integers */
-      return DateADTGetDatum(DatumGetDateADT(l) + DatumGetInt32(r));
+      return DateADTGetDatum(add_date_int(DatumGetDateADT(l),
+        DatumGetInt32(r)));
     case T_TIMESTAMPTZ:
-      /* For timestamps we ALWAYS add big integers */
-      return TimestampTzGetDatum(DatumGetTimestampTz(l) + DatumGetInt64(r));
+    {
+      /* For timestamps we ALWAYS add big integers, the offset in
+       * microseconds; an infinite timestamp stays infinite and a result
+       * outside the range of timestamps is refused, as PostgreSQL adds an
+       * interval to a timestamp */
+      TimestampTz t = DatumGetTimestampTz(l), result;
+      if (TIMESTAMP_NOT_FINITE(t))
+        return l;
+      if (unlikely(pg_add_s64_overflow(t, DatumGetInt64(r), &result)) ||
+          ! IS_VALID_TIMESTAMP(result))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return TimestampTzGetDatum(DT_NOEND);
+      }
+      return TimestampTzGetDatum(result);
+    }
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown add function for type: %s", meostype_name(type));
@@ -457,7 +476,8 @@ datum_sub(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+      return Int32GetDatum(minus_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -468,12 +488,14 @@ datum_sub(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
+      return Int64GetDatum(minus_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+      return Float8GetDatum(float8_mi(DatumGetFloat8(l), DatumGetFloat8(r)));
     case T_DATE:
       /* For dates we ALWAYS substract integers */
-      return DateADTGetDatum(DatumGetDateADT(l) - DatumGetInt32(r));
+      return DateADTGetDatum(minus_date_int(DatumGetDateADT(l),
+        DatumGetInt32(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown subtract function for type: %s", meostype_name(type));
@@ -490,7 +512,8 @@ datum_mul(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+      return Int32GetDatum(mul_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -501,9 +524,11 @@ datum_mul(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
+      return Int64GetDatum(mul_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+      return Float8GetDatum(float8_mul(DatumGetFloat8(l),
+        DatumGetFloat8(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown multiplication function for type: %s", meostype_name(type));
@@ -520,7 +545,8 @@ datum_div(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+      return Int32GetDatum(div_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -531,9 +557,11 @@ datum_div(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
+      return Int64GetDatum(div_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+      return Float8GetDatum(float8_div(DatumGetFloat8(l),
+        DatumGetFloat8(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown division function for type: %s", meostype_name(type));

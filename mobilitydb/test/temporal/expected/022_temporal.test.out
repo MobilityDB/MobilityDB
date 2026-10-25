@@ -1784,11 +1784,25 @@ SELECT tint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-01-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST], [2@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tint(tfloat '{2147483646.5@2001-01-01, -2147483648.5@2001-01-02}');
+                                        tint                                         
+-------------------------------------------------------------------------------------
+ {2147483646@Mon Jan 01 00:00:00 2001 PST, -2147483648@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
 /* Errors */
 SELECT tint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
 SELECT tint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal integer
+SELECT tint(tfloat '2147483648@2001-01-01');
+ERROR:  integer out of range
+SELECT tint(tfloat '{1@2001-01-01, -2147483649@2001-01-02}');
+ERROR:  integer out of range
+SELECT tint(tfloat 'Interp=Step;[1@2001-01-01, 3e9@2001-01-02]');
+ERROR:  integer out of range
+SELECT tint(tfloat 'Infinity@2001-01-01');
+ERROR:  integer out of range
 SELECT tbigint(tfloat '1.5@2001-01-01');
             tbigint             
 --------------------------------
@@ -1813,11 +1827,23 @@ SELECT tbigint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST], [2@Wed Jan 03 00:00:00 2001 PST, 2@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tbigint(tfloat '{9.2233720368547748e18@2001-01-01, -9223372036854775808@2001-01-02}');
+                                                tbigint                                                
+-------------------------------------------------------------------------------------------------------
+ {9223372036854774784@Mon Jan 01 00:00:00 2001 PST, -9223372036854775808@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
 /* Errors */
 SELECT tbigint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal big integer
 SELECT tbigint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
 ERROR:  Cannot cast temporal float with linear interpolation to temporal big integer
+SELECT tbigint(tfloat '9223372036854775808@2001-01-01');
+ERROR:  bigint out of range
+SELECT tbigint(tfloat '{1@2001-01-01, -1e19@2001-01-02}');
+ERROR:  bigint out of range
+SELECT tbigint(tfloat '-Infinity@2001-01-01');
+ERROR:  bigint out of range
 SELECT tboolInst(tbool 't@2001-01-01');
            tboolinst            
 --------------------------------
