@@ -180,7 +180,7 @@ the call itself. The wrapper calls the public function, which names it in its `@
   first instant or sequence, so the catalog gives the three `trgeometry[]` signatures to the
   generic functions every binding generates, where `trgeometryseq_make` and its siblings take
   a geometry no SQL argument fills. Branch `meos/trgeometry-seq-generic-constructor`, which rewrites `e2e88cd1fd`
-  (`c2494d5085` on master `9df18a5847`), 150_trgeo unchanged and the error on instants with
+  (`6a837a41b4` on master `9df18a5847`), 150_trgeo unchanged and the error on instants with
   different reference geometries added; the CGAL oracle agrees with eDwithin over 300 AIS trip
   pairs rebuilt through `tsequence_make`. Instants carrying no reference geometry, as
   `temporal_instants` answers, are refused; `trgeometry_instants` and `trgeometry_sequences`
