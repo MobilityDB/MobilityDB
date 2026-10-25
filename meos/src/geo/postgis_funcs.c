@@ -1873,6 +1873,160 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
 }
 
 /**
+ * @brief Return the double nearest the distance of a geometry of straight
+ * edges to the disc of centre @p c and radius @p r, 2D, or -1 for a geometry
+ * of another type
+ * @details The disc of #geom_distance2d_exact: the distance of the centre to
+ * the geometry less the radius, 0 where the disc meets the geometry. Each
+ * segment, a point being a segment of no length, answers the double nearest
+ * its distance less the radius (#point_segment_distance_offset_exact), and
+ * rounding is monotone, so the least of these doubles is the answer. The
+ * coordinates are read in place in one pass. The search starts from the
+ * first segment and passes over a segment whose two ends lie beyond one side
+ * of the window of the centre plus or minus the radius plus the least found,
+ * widened past the rounding of its bounds, or whose squared distance in
+ * doubles, within a few units in the last place of the largest coordinate of
+ * the exact one where the coordinates are within a factor 2^400 of 1 (read
+ * from the box of the geometry), lies farther than that by 2^-40 of that
+ * coordinate. The disc meets a polygon whose interior holds its centre,
+ * decided exactly by the even-odd crossings of its rings, counted in the same
+ * pass as #geom_distance_ring_contains counts them
+ * @param[in] c Centre, two coordinates
+ * @param[in] r Radius, not negative
+ * @param[in] gs Geometry, not empty
+ */
+double
+geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
+{
+  if (! geom_distance_straight_type(gserialized_get_type(gs)))
+    return -1.0;
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  const LWGEOM *const *parts;
+  uint32_t nparts;
+  if (lwgeom_is_collection(geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+    parts = (const LWGEOM *const *) coll->geoms;
+    nparts = coll->ngeoms;
+  }
+  else
+  {
+    parts = (const LWGEOM *const *) &geom;
+    nparts = 1;
+  }
+  const POINT2D centre = {c[0], c[1]};
+
+  /* The largest magnitude of a coordinate, which sizes the margin of the
+   * double evaluation, read from the box of the geometry, whose bounds are
+   * rounded outward; comparisons leave it as it is on a NaN, where the exact
+   * kernel answers */
+  double big = fmax(fabs(c[0]), fabs(c[1]));
+  GBOX box;
+  if (gserialized_get_gbox_p(gs, &box) == LW_SUCCESS)
+  {
+    const double m[4] = {fabs(box.xmin), fabs(box.xmax), fabs(box.ymin),
+      fabs(box.ymax)};
+    for (int j = 0; j < 4; j++)
+      if (m[j] > big)
+        big = m[j];
+  }
+  else
+    big = INFINITY;
+  /* The first segment seeds the search: the filter in doubles passes only a
+   * segment whose distance may lie below the least found, so the exact
+   * distances read after it are those that may lower it */
+  const POINTARRAY *spa = NULL;
+  for (uint32_t i = 0; i < nparts && ! spa; i++)
+  {
+    POINTARRAY *const *arr;
+    uint32_t n = geom_distance_arrays(parts[i], &arr);
+    for (uint32_t k = 0; k < n && ! spa; k++)
+      if (arr[k]->npoints > 0)
+        spa = arr[k];
+  }
+  if (! spa)
+  {
+    lwgeom_free(geom);
+    return DBL_MAX;
+  }
+  bool filter = big >= 0x1p-400 && big <= 0x1p400;
+  double margin = 0x1p-40 * big;
+  const POINT2D *a, *b;
+  geom_distance_seg(spa, 0, &a, &b);
+  double best = point_segment_distance_offset_exact(c, (const double *) a,
+    (const double *) b, r);
+
+  /* The square the double evaluation is compared with, moved up past its
+   * rounding */
+  double reach = best + r;
+  double thr2 = filter ? (reach + margin) * (reach + margin) *
+    (1.0 + 0x1p-48) : INFINITY;
+  /* The window of the centre plus or minus the reach, widened past the
+   * rounding of its bounds: a segment whose two ends lie beyond one of its
+   * sides lies farther than the reach, and a NaN makes each comparison false
+   * and passes over no segment */
+  double w = reach + 4.0 * DBL_EPSILON * (fabs(c[0]) + fabs(c[1]) + reach) +
+    DBL_MIN;
+  double xl = c[0] - w, xr = c[0] + w, yl = c[1] - w, yr = c[1] + w;
+  for (uint32_t i = 0; i < nparts && best > 0.0; i++)
+  {
+    POINTARRAY *const *arr;
+    uint32_t n = geom_distance_arrays(parts[i], &arr);
+    /* The centre lies inside a polygon where it lies inside its shell and in
+     * none of its holes, each ring read by the even-odd crossings of the
+     * rightward ray from the centre as #geom_distance_ring_contains reads it,
+     * counted on every segment before the segment is passed over */
+    bool poly = parts[i]->type == POLYGONTYPE;
+    bool inpoly = false;
+    for (uint32_t k = 0; k < n && best > 0.0; k++)
+    {
+      uint32_t m = geom_distance_nsegs(arr[k]);
+      /* The coordinates read in place, the stride of the array once */
+      const double *pts = (const double *) arr[k]->serialized_pointlist;
+      size_t st = (size_t) FLAGS_NDIMS(arr[k]->flags);
+      bool inring = false;
+      for (uint32_t l = 0; l < m && best > 0.0; l++)
+      {
+        a = (const POINT2D *) (pts + l * st);
+        b = (arr[k]->npoints == 1) ? a : (const POINT2D *) (pts + (l + 1) * st);
+        if (poly && ((a->y > c[1]) != (b->y > c[1])))
+        {
+          int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y,
+            c[0], c[1]);
+          if ((b->y > a->y) ? side > 0 : side < 0)
+            inring = ! inring;
+        }
+        if ((a->x > xr && b->x > xr) || (a->x < xl && b->x < xl) ||
+            (a->y > yr && b->y > yr) || (a->y < yl && b->y < yl))
+          continue;
+        if (filter && geom_distance_pt_seg_sqr(&centre, a, b) > thr2)
+          continue;
+        double v = point_segment_distance_offset_exact(c, (const double *) a,
+          (const double *) b, r);
+        if (v < best)
+        {
+          best = v;
+          reach = best + r;
+          if (filter)
+            thr2 = (reach + margin) * (reach + margin) * (1.0 + 0x1p-48);
+          w = reach + 4.0 * DBL_EPSILON * (fabs(c[0]) + fabs(c[1]) + reach) +
+            DBL_MIN;
+          xl = c[0] - w; xr = c[0] + w; yl = c[1] - w; yr = c[1] + w;
+        }
+      }
+      /* Inside the shell and outside every hole */
+      if (poly)
+        inpoly = (k == 0) ? inring : (inpoly && ! inring);
+    }
+    /* The disc meets a polygon holding its centre */
+    if (poly && inpoly && best > 0.0)
+      best = 0.0;
+  }
+  lwgeom_free(geom);
+  return best;
+}
+
+/**
  * @ingroup meos_geo_base_dist
  * @brief Return the distance between two geometries
  * @param[in] gs1,gs2 Geometries

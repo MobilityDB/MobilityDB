@@ -83,6 +83,8 @@ extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
 
 extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
+extern double geom_distance2d_disc(const double *c, double r,
+  const GSERIALIZED *gs);
 extern bool meos_point_in_polygon(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2, spatialRel rel);
 

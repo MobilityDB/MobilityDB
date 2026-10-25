@@ -60,6 +60,7 @@
 #include "geo/meos_transform.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo.h"
+#include "geo/tgeo_distance.h"
 #include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
@@ -1103,6 +1104,13 @@ datum_cbuffer_distance(Datum cb1, Datum cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a geometry
+ * @details The double nearest the distance of the geometry to the disc, the
+ * disc read as its centre and radius. A geometry of straight edges is read in
+ * place by #geom_distance2d_disc; a geometry carrying an arc is read on its
+ * edges by the exact kernels the nearest approach distance of a temporal
+ * circular buffer at rest reads (#dist_segm_nad, as #nad_tcbuffer_geo answers
+ * an instant). A geometry with no edge decomposition is measured against the
+ * geometry of the disc.
  * @errval DBL_MAX
  * @csqlfn #Distance_cbuffer_geo() #Distance_geo_cbuffer()
  */
@@ -1113,6 +1121,19 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
   if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
+  const POINT2D *c = cbuffer_point2d_p(cb);
+  double d = geom_distance2d_disc((const double *) c, cb->radius, gs);
+  if (d >= 0.0)
+    return d;
+  DistGeom g;
+  if (dist_geom_build(gs, &g))
+  {
+    const POINT2D *p = cbuffer_point2d_p(cb);
+    double best = DBL_MAX;
+    dist_segm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &g, &best);
+    dist_geom_free(&g);
+    return best < 0.0 ? 0.0 : best;
+  }
   GSERIALIZED *geo = cbuffer_to_geom(cb);
   double result = geom_distance2d(geo, gs);
   pfree(geo);
