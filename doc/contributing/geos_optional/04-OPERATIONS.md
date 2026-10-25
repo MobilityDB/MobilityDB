@@ -91,10 +91,11 @@ nor does any of fifteen geometric special cases, among them polygons sharing an 
 and discs tangent at one point. The elevations of the Z answers are judged by `cgal_zlift`
 (#2821).
 
-**Not finished: collections.** When one operand is a `GEOMETRYCOLLECTION`, the operation is
-taken part by part, and some combinations still reach the GEOS fall-back: of 6750 calls pairing a
-collection of two types with each of the 15 types, in both orders, 409 intersections and 953
-differences do. Two examples: the intersection of
+**Collections, closed by MobilityDB #2970 and #2975.** When one operand is a
+`GEOMETRYCOLLECTION`, the operation is taken part by part. At master `d9b9c11985` some
+combinations reach the GEOS fall-back: of 6750 calls pairing a collection of two types with each
+of the 15 types, in both orders, 409 intersections and 953 differences do; with #2970 and #2975
+none does (plan step 5), and since #3179 no fall-back exists. Two examples: the intersection of
 `MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))` with
 `GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))`, and the difference of
 `GEOMETRYCOLLECTION(LINESTRING(0 2,4 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))` and
@@ -147,9 +148,9 @@ CGAL judges each answer by the measure of its point set: 3097 of 3097 (#2818). O
 every answer covers the point set PostGIS 3.6.4's `ST_UnaryUnion` answers, with its area and
 length, with one documented exception: a line crossing a polygon stays whole beside it (#2818).
 
-**Not finished: a collection holding a multi-part member.** The union of a
-`GEOMETRYCOLLECTION` is taken as the array union of its parts (§4.5), so it reaches GEOS exactly
-when a part is a `MULTIPOLYGON`, a `MULTISURFACE`, a `TIN` or a `POLYHEDRALSURFACE`: for 104 of
+**A collection holding a multi-part member, closed by MobilityDB #2966.** The union of a
+`GEOMETRYCOLLECTION` is taken as the array union of its parts (§4.5), so at master `d9b9c11985`
+it reaches GEOS exactly when a part is a `MULTIPOLYGON`, a `MULTISURFACE`, a `TIN` or a `POLYHEDRALSURFACE`: for 104 of
 the 225 collections of two types, and for none of the other 121. Even
 `GEOMETRYCOLLECTION(POINT(9 9),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))` reaches it. The traversed
 area of a temporal geometry is such a union of its values, which is why `traversedArea` reaches
@@ -177,8 +178,8 @@ of lines that share a stretch and then fork is answered (#2825).
 seeds (#2825); the Z sets with no decline over three seeds of 3000 (#2822). Those sets hold
 points, lines and single polygons.
 
-**Not finished: multi-part members.** Measured in a build without GEOS
-([`tools/geos_fallback_sweep.c`](tools/geos_fallback_sweep.c),
+**Multi-part members, closed by MobilityDB #2966.** Measured in a build without GEOS at master
+`d9b9c11985` ([`tools/geos_fallback_sweep.c`](tools/geos_fallback_sweep.c),
 [`tools/arrunion_min.c`](tools/arrunion_min.c)): the union of two geometries reaches GEOS exactly
 when one of them is a `MULTIPOLYGON`, a `MULTISURFACE`, a `TIN` or a `POLYHEDRALSURFACE` — 104 of
 the 225 ordered pairs of types, in every Z mode, and none of the other 121. A `POLYGON` beside a
@@ -271,8 +272,9 @@ single-sided variant is refused (§4.11). [Note 6](06-BUFFER.md) is about all of
 
 `geo_lwgeom_none.c` also stubs `lwgeom_make_valid`, `lwgeom_split` and `lwgeom_offsetcurve`. No
 MEOS function and no SQL function reaches them, so nothing is missing for a user today. The
-committers fixed what they must answer if they are ever exposed, with reference answers read on
-PostGIS 3.6.4 and recorded with that decision (2026-09-22); they are not re-run for these notes:
+committers fixed what they must answer if they are ever exposed, with reference answers that
+PostGIS 3.6.3 on GEOS 3.12.1 gives
+([`tools/results/stub_references.txt`](tools/results/stub_references.txt)):
 
 - **make_valid** answers what PostGIS's default `ST_MakeValid` answers, the `linework` method.
   `POLYGON((0 0,1 1,2 2,0 0))` → `MULTILINESTRING((0 0,1 1),(1 1,2 2))`;
@@ -284,11 +286,18 @@ PostGIS 3.6.4 and recorded with that decision (2026-09-22); they are not re-run 
 
 **Today**, `geom_buffer` with `side=left` or `side=right` raises "Single-sided buffer is not
 supported", in every build. **The behaviour to build**, as the committers specified it, copies
-PostGIS answer for answer, parameters included. The reference answers below are those of PostGIS
-3.6.4, recorded with that decision (2026-09-22); they are not re-run for these notes:
+PostGIS answer for answer, parameters included. PostGIS 3.6.3 on GEOS 3.12.1 and GEOS 3.14.1
+called directly give the same answers
+([`tools/results/single_sided_buffer.txt`](tools/results/single_sided_buffer.txt)):
 
 - `ST_Buffer('LINESTRING(0 0,10 0)', 1, 'side=left')` is `POLYGON((10 0,0 0,0 1,10 1,10 0))`, and
   so is every `endcap` value: PostGIS cuts a single-sided end flat whatever `endcap` says.
 - `side=right` gives `POLYGON((0 0,10 0,10 -1,0 -1,0 0))`; `side=left` with distance −1 gives
   the right strip.
-- On a polygon, `side=left` is the band outside, `side=right` the band inside.
+- On a polygon the answer is no band. For the square `POLYGON((0 0,10 0,10 10,0 10,0 0))` at
+  distance 1, `side=left` is the square itself and `side=right` the square eroded by the
+  distance, `POLYGON((1 1,1 9,9 9,9 1,1 1))`; the closed line along the same boundary gives the
+  eroded square on its left and the square on its right. Whether MEOS copies these answers,
+  which carry no band, is the committers' to confirm before step 12 is built.
+- An arc has no reference here: GEOS answers about chords in its place, so a single-sided
+  buffer of a curve is judged by its closed form, never by PostGIS.

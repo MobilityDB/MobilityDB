@@ -1,0 +1,22 @@
+The single-sided buffer, note 4 section 4.11.
+
+PostGIS, ST_Buffer(g, d, 'side=...'), on a PostgreSQL 18 cluster:
+POSTGIS="3.6.3 3d12666"
+GEOS="3.12.1-CAPI-1.18.1"
+line left|POLYGON((10 0,0 0,0 1,10 1,10 0))
+line left flat|POLYGON((10 0,0 0,0 1,10 1,10 0))
+line left square|POLYGON((10 0,0 0,0 1,10 1,10 0))
+line right|POLYGON((0 0,10 0,10 -1,0 -1,0 0))
+line left -1|POLYGON((0 0,10 0,10 -1,0 -1,0 0))
+square left|POLYGON((0 0,0 10,10 10,10 0,0 0))
+square right|POLYGON((1 1,1 9,9 9,9 1,1 1))
+closed line left|POLYGON((1 1,1 9,9 9,9 1,1 1))
+closed line right|POLYGON((10 0,0 0,0 10,10 10,10 0))
+
+GEOS 3.14.1 called directly, geosop bufferSingleSided d (side=right is the distance negated):
+line left|POLYGON ((10 0, 0 0, 0 1, 10 1, 10 0))
+line right|POLYGON ((0 0, 10 0, 10 -1, 0 -1, 0 0))
+square left|POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0))
+square right|POLYGON ((1 1, 1 9, 9 9, 9 1, 1 1))
+closed line left|POLYGON ((1 1, 1 9, 9 9, 9 1, 1 1))
+closed line right|POLYGON ((10 0, 0 0, 0 10, 10 10, 10 0))

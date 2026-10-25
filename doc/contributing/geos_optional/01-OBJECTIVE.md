@@ -16,18 +16,21 @@ GEOS is a C++ library of planar geometry algorithms: it decides whether two shap
 computes their intersection, the union of many shapes, the region within a distance of a shape
 (the *buffer*), and so on. PostGIS answers most of its geometry functions with it.
 
-MobilityDB reaches GEOS by three paths:
+MobilityDB has three paths to GEOS, and since MobilityDB #3179 and #3185, merged as
+`9bb3bb7a2b` and `1a7a1a0e11`, each ends in MobilityDB's own code:
 
 1. **Through the PostGIS geometry library.** MobilityDB carries a copy of PostGIS's C geometry
    library, *liblwgeom*, in `postgis/liblwgeom/`. Some functions of that library answer by
    calling GEOS underneath. The script `tools/scripts/check_liblwgeom_geos.py` knows which: it
    reads the library and finds **81** such *entry points* — public functions of liblwgeom that a
-   caller can call and that end up in GEOS.
-2. **Directly.** `meos/src/geo/postgis_funcs.c` converts geometries to GEOS's own format and
-   calls the GEOS C interface in a few places, and `meos/src/temporal/meos.c` creates and
-   destroys the per-thread GEOS context.
+   caller can call and that end up in GEOS. The files holding them are left out of the build,
+   and `meos/src/geo/geo_lwgeom_none.c` answers what the rest of the library calls of them.
+2. **Directly.** MEOS converts no geometry to GEOS's format and holds no GEOS context:
+   `meos/src/geo/postgis_funcs.c` answers through the native routes alone, and
+   `meos/src/temporal/meos.c` creates no per-thread GEOS context.
 3. **Through the raster code.** The copy of PostGIS's raster core under `postgis/rt_core/`
-   calls GEOS directly when it turns a raster into polygons.
+   calls GEOS entry points when it turns a raster into polygons, and
+   `meos/src/geo/geo_geos_none.c` answers them natively (§1.3).
 
 ## 1.2 Why it has to become optional
 
@@ -111,16 +114,16 @@ loads no GEOS at all therefore needs `RASTER=OFF`, or a GDAL built without GEOS.
 
 ## 1.4 How much is left, and how that is counted
 
-`python3 tools/scripts/check_liblwgeom_geos.py` prints the count. At the master named above it
-reads **4 baselined of 81 entry points**, where *baselined* means "still called, and known". The four are listed in
-`tools/scripts/liblwgeom_geos_baseline.txt`:
+`python3 tools/scripts/check_liblwgeom_geos.py` prints the count. On master `1a7a1a0e11` it
+reads **1 baselined of 81 entry points**, where *baselined* means "still called, and known",
+listed in `tools/scripts/liblwgeom_geos_baseline.txt`:
 
 | Entry point still called | Called from |
 |---|---|
-| `lwgeom_intersection_prec` | `meos/src/geo/postgis_funcs.c` |
-| `lwgeom_difference_prec` | `meos/src/geo/postgis_funcs.c` |
-| `lwgeom_unaryunion_prec` | `meos/src/geo/postgis_funcs.c` |
 | `rt_raster_gdal_polygonize` | `meos/src/raster/raster_rtcore.c` |
+
+At master `52b0c9e4d5` it read 4: `lwgeom_intersection_prec`, `lwgeom_difference_prec` and
+`lwgeom_unaryunion_prec`, called from `meos/src/geo/postgis_funcs.c`, beside the raster entry.
 
 The script is also a guard in continuous integration: the list may only shrink, and a new call
 to any of the 81 entry points fails the check. The count is read from the script, never from a
@@ -130,11 +133,11 @@ The checker counts *places in the code* that call GEOS. It does not say which ME
 to those places, nor which inputs get there; [note 5](05-WHAT-STILL-NEEDS-GEOS.md) answers both,
 by reading the code and by running it in a build without GEOS.
 
-The first three are three of the four *fall-backs* of [note 5](05-WHAT-STILL-NEEDS-GEOS.md): code
-that runs only when no native code answered. The fourth fall-back, in the union of an array of
-geometries, calls GEOS's own C interface rather than liblwgeom, so this checker does not count
-it. The last row, the raster entry, is not a fall-back: in a build without GEOS it is answered
-natively, by the file named above.
+The three entries of `postgis_funcs.c` are three of the four *fall-backs* of
+[note 5](05-WHAT-STILL-NEEDS-GEOS.md): code that runs only when no native code answered. The
+fourth fall-back, in the union of an array of geometries, calls GEOS's own C interface rather
+than liblwgeom, so this checker does not count it. MobilityDB #3179 deletes all four (note 5
+§5.9). The raster entry is not a fall-back: it is answered natively, by the file named above.
 
 ## 1.5 What "finished" means
 

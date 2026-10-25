@@ -1,0 +1,8 @@
+The reference answers of note 4 section 4.10, for the entry points
+geo_lwgeom_none.c refuses, on a PostgreSQL 18 cluster:
+POSTGIS="3.6.3 3d12666"
+GEOS="3.12.1-CAPI-1.18.1"
+make_valid bowtie line|MULTILINESTRING((0 0,1 1),(1 1,2 2))
+make_valid bowtie|MULTIPOLYGON(((0 2,1 1,0 0,0 2)),((2 0,1 1,2 2,2 0)))
+offset +1|LINESTRING(0 1,10 1)
+offset -1|LINESTRING(0 -1,10 -1)

@@ -315,6 +315,11 @@ ships with §6.7 too.
 hole, buffered by 0.001: the buffer answers correctly when the hole's half-width is below or
 above 0.001, and declines when it is exactly 0.001, where the shrunken hole is a single point.
 The surviving-hole areas on either side are exact, so the defect is that one degenerate case.
+Written in decimal at 6 400 000 the case is not the knife edge: the doubles nearest
+6400004.999 and 6400005.001 stand 1.64e-10 further from the centre than the double nearest
+0.001, so the exact buffer keeps a hole that narrow. The knife edge in doubles is the lattice
+square of the ledger: `POLYGON((0 0,10 0,10 10,0 10,0 0),(4 4,4 6,6 6,6 4,4 4))` buffered by 1,
+which master `1a7a1a0e11` declines, as it declines the 8 × 8 square with the hole from 3 to 5.
 
 **The area function approximates arcs.** `lwgeom_area` measures an arc by its chords, so across
 power-of-two scales a buffered disc carrying one identical geometry reads 826 437.81 (scaled back)
@@ -355,13 +360,19 @@ answers of the natural buffer corpus and all 38940 of the curved buffer corpus o
 
 1. **The two families of the ledger that still depend on position**, on master `52b0c9e4d5`: the
    open line whose end nearly meets its start, and the square with a hole (§6.5), with the square
-   at 6 400 000 buffered by 1, which declines (§6.1). The repair of §6.4–§6.8 (the frame, the side
+   at 6 400 000 buffered by 1, which declines (§6.1). On master `1a7a1a0e11` it still declines.
+   The arrangement of a square's offset curve finds no answer: two arcs of its round joins reach
+   the same greatest x exactly, which the search for the point furthest along x
+   (`arr_component_extreme`) does not decide for an arc whose circle it reads off three points.
+   The square at the origin answers only through the older route the polygon buffer falls back
+   to. The repair of §6.4–§6.8 (the frame, the side
    traversal, its prerequisite element type and the ring area about a point of the ring, as one
    change) was measured on the older piece overlay before MobilityDB #3040; whether it is still
    what these inputs need is measured on master first, by the ledger, before it is proposed. The
    finishing line is unchanged: the move and scale arms of the ledger at 0, no more declines than
    master on the ledger and on the real polygons, and CGAL agreeing on every query.
-2. The hole shrinking to exactly a point (§6.8), not re-measured on master.
+2. The hole shrinking to exactly a point (§6.8), which master `1a7a1a0e11` declines on the
+   lattice square of the ledger.
 3. The single-sided buffer, as the committers specified it (note 4 §4.11).
 
 Speed parity on the natural areas, item 3 of this list at master `d9b9c11985`, is reached
