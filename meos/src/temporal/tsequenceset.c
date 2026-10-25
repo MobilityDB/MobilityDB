@@ -62,6 +62,12 @@
   #include "npoint/tnpoint_spatialfuncs.h"
   #include "npoint/tnpoint_distance.h"
 #endif
+#if RGEO
+  #include <meos_rgeo.h>
+  #include "rgeo/trgeo_inst.h"
+  #include "rgeo/trgeo_seq.h"
+  #include "rgeo/trgeo_seqset.h"
+#endif
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
@@ -442,6 +448,13 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
   VALIDATE_NOT_NULL(sequences, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+#if RGEO
+  /* A rigid geometry sequence set keeps once the reference geometry its
+   * sequences carry, which every sequence must state alike */
+  if (sequences[0]->temptype == T_TRGEOMETRY)
+    return trgeoseqset_make_exp(trgeoseq_geom_p(sequences[0]), sequences,
+      count, count, normalize);
+#endif /* RGEO */
   return tsequenceset_make_exp(sequences, count, count, normalize);
 }
 
@@ -581,6 +594,12 @@ tsequenceset_make_gaps(TInstant **instants, int count, interpType interp,
   VALIDATE_NOT_NULL(instants, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+#if RGEO
+  /* A rigid geometry splits keeping the reference geometry of its instants */
+  if (instants[0]->temptype == T_TRGEOMETRY)
+    return trgeometryseqset_make_gaps(trgeoinst_geom_p(instants[0]), instants,
+      count, interp, maxt, maxdist);
+#endif /* RGEO */
 
   TSequence *seq;
   TSequenceSet *result;

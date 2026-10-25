@@ -454,9 +454,6 @@ constructor_families:
   gaps_maxdist: true
   syms:
     instant: Trgeometry_inst_constructor
-    seq: Trgeometry_seq_constructor
-    seqset: Trgeometry_seqset_constructor
-    seqsetgaps: Trgeometry_seqset_constructor_gaps
   pairs:
   - base: geometry
     temp: trgeometry
