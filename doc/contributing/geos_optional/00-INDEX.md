@@ -74,8 +74,8 @@ as fast.
 - **The other 129 have a path, and every input tried answers.** Run in the build without GEOS on
   the inputs that are hardest for them, 333 of 337 calls answer, none reaches GEOS, and 4 are a
   refusal by design or a result with no value (§5.6); at master `d9b9c11985`, 322 answered and 11
-  reached GEOS. The only input of the sweep that still reaches a fall-back is the unary union on a
-  precision grid, which no caller asks for (§5.9).
+  reached GEOS. No fall-back remains: MobilityDB #3179, merged as `9bb3bb7a2b`, deletes the four,
+  so an input no native route reads is refused, the same in every build (§5.9).
 - **No operation reaches Clipper2, which is gone.** The SQL polygon overlays and the trajectory
   clip answer through the exact native overlay (MobilityDB #3142, #3144), and MobilityDB #3148
   removes the library; MobilityDB builds as C alone ([note 4](04-OPERATIONS.md) §4.3).
@@ -101,11 +101,11 @@ Each item is measured on master `52b0c9e4d5`; the note named gives the evidence.
    `side=right`); the committers decided it must answer exactly as PostGIS does
    ([note 4](04-OPERATIONS.md) §4.11).
 3. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
-4. **The unary union on a precision grid** is the one input still reaching a fall-back
-   ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9). The committers decided on 2026-10-25 to drop the
-   parameter (decision 3 of the [implementation plan](IMPLEMENTATION-PLAN.md)).
-5. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the GEOS
-   context are deleted, and GEOS stays only as a test reference. The committers decided this on
+4. **The fall-backs are deleted.** MobilityDB #3179, merged as `9bb3bb7a2b`, takes the unary
+   union without a precision grid (decision 3 of the [implementation plan](IMPLEMENTATION-PLAN.md))
+   and deletes the four fall-backs ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9).
+5. **Then GEOS leaves the shipped library.** The build option and the GEOS context are deleted
+   (step 14 of the plan), and GEOS stays only as a test reference. The committers decided this on
    2026-09-22, and on 2026-10-25 that the option and `geos_get_context()` go with no release of
    deprecation and that `mobilitydb_full_version()` stops naming GEOS (decision 5 of the plan). The
    files standing in for GEOS's entry points stay: the vendored PostGIS code calls those entry

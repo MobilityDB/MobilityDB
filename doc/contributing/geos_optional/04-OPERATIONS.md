@@ -127,12 +127,11 @@ adapter and `geo_poly_clip.c` go, and MobilityDB builds as C alone, `libmeos.so`
 runtime ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.2).
 
 **Left.** At master `d9b9c11985`, the collections above, which reach no fall-back on master
-`52b0c9e4d5` (note 5 §5.5). The function comment of `geom_intersection2d` still ends by saying
-that the combinations the native routes do not answer fall through to PostGIS's GEOS-backed
-`lwgeom_intersection_prec`; the sweep finds none on master, and the sentence goes with that
-fall-back (implementation plan, step 13).
+`52b0c9e4d5` (note 5 §5.5). MobilityDB #3179, merged as `9bb3bb7a2b`, deletes the fall-back to
+PostGIS's GEOS-backed `lwgeom_intersection_prec`: a combination no native route answers is
+refused, the same in every build.
 
-## 4.4 Union of one geometry — finished but for a precision grid
+## 4.4 Union of one geometry — finished
 
 **What it does.** `geom_unary_union` dissolves one geometry into the set of points it covers:
 overlapping polygons merge, a line walking a stretch twice covers it once. Trajectories are built
@@ -158,10 +157,11 @@ GEOS for a temporal geometry with a multi-part or collection value
 ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.6).
 
 **Left.** At master `d9b9c11985`, the collections above, which reach no fall-back on master
-`52b0c9e4d5` (note 5 §5.5). A union on a *precision grid* (`prec ≥ 0`) calls GEOS, on master as
-before: every MEOS caller passes −1 and no SQL function calls `geom_unary_union`, so no user
-reaches it. The committers decided on 2026-10-25 to drop the parameter (decision 3 of the
-[implementation plan](IMPLEMENTATION-PLAN.md)).
+`52b0c9e4d5` (note 5 §5.5). `geom_unary_union(gs)` takes no precision grid: MobilityDB #3179,
+merged as `9bb3bb7a2b`, drops the parameter (decision 3 of the
+[implementation plan](IMPLEMENTATION-PLAN.md)), and a geometry none of its native routes reads is
+refused, the same in every build. What goes is GEOS's union snapped to a grid; rounding an answer
+afterwards, as `geo_round` does, can make it invalid, which the snapped union cannot.
 
 ## 4.5 Union of an array of geometries — finished
 

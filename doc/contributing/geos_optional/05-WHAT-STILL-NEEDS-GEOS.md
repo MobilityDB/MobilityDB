@@ -50,7 +50,9 @@ change that broke the build without GEOS, or that sent a new input to GEOS, went
 #2977, merged as `4c4457d2ec`, adds the job "Build without GEOS" to `meos.yml`: it builds MEOS with
 `-DGEOS=OFF`, checks that `libmeos.so` calls no GEOS function, and runs the sweep of §5.5 and the
 gateway probe of §5.6, each failing where an input reaches a fall-back. It passes on master
-`52b0c9e4d5`.
+`52b0c9e4d5`. MobilityDB #3179, merged as `9bb3bb7a2b`, deletes the fall-backs, and the sweep
+and the gateway probe go with them, having nothing left to detect; the job keeps its build and
+its check that `libmeos.so` calls no GEOS function.
 
 ## 5.3 Where GEOS is called
 
@@ -70,7 +72,9 @@ In a build without GEOS, two kinds of code stand in GEOS's place:
   `lwgeom_clip_to_ordinate_range` that MEOS can call, the 3D distance in `measures3d.c`, passes
   an offset of 0. So no stub that raises is ever reached.
 
-What needs GEOS is therefore exactly what reaches one of the four fall-backs.
+At master `52b0c9e4d5`, what needs GEOS is therefore exactly what reaches one of the four
+fall-backs. At master `9bb3bb7a2b` the four are deleted (MobilityDB #3179): each operation ends
+in a refusal, the same in every build, where none of its native routes reads the input.
 
 ## 5.4 Which functions have a path: 129 of 3308
 
@@ -364,11 +368,18 @@ functions that reached GEOS. **One input still reaches a fall-back: the unary un
 precision grid**, `geom_unary_union` called with a grid size of 0 or more, which the sweep keeps as
 its positive control. No caller in MEOS passes one, and no SQL function calls `geom_unary_union`.
 
-What the runs cannot show is an input nobody has tried: 129 public functions keep a path in their
-code to one of the four fall-backs, and 108 of them are run by no probe (appendix A). Deleting the
-fall-backs turns any such input from a GEOS answer into a refusal, in every build. That deletion,
-and the removal of the GEOS option itself, is Part III of the
-[implementation plan](IMPLEMENTATION-PLAN.md).
+What the runs cannot show is an input nobody has tried: at master `52b0c9e4d5`, 129 public
+functions keep a path in their code to one of the four fall-backs, and 108 of them are run by no
+probe (appendix A).
+
+5. **The fall-backs are deleted.** MobilityDB #3179, merged as `9bb3bb7a2b`, takes
+   `geom_unary_union(gs)` without a precision grid and ends the intersection, the difference, the
+   array union and the unary union in a refusal, the same in every build, for an input none of
+   their native routes reads; `POSTGIS2GEOS` and `GEOS2POSTGIS` go with them. An untried input of
+   the 129 functions is therefore refused rather than answered by GEOS. On its head, built without
+   GEOS, CGAL's exact kernel agrees with every answer on 20 witnesses, 40 controls passing, and the
+   four union cells read 0.249 to 0.381 of GEOS in instructions. The removal of the GEOS option
+   itself is step 14 of the [implementation plan](IMPLEMENTATION-PLAN.md).
 
 A temporal geography whose values are not all positions is refused in every build, GEOS included
 (§5.7): the native union of a geodetic array answers positions alone, and every path to the four

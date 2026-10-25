@@ -74,7 +74,7 @@ the frame (note 6 §6.6).
 
 | # | Step | What clears it |
 |---|---|---|
-| 13 | The `prec` parameter of `geom_unary_union` is dropped (decision 3), in a pull request of its own; then the four fall-backs of `postgis_funcs.c` are deleted with the conversion helpers they use, and their error messages with them | The job of step 6 reads 0 on every count; `check_liblwgeom_geos.py` carries no geometry entry point |
+| 13 | The `prec` parameter of `geom_unary_union` is dropped (decision 3), and the four fall-backs of `postgis_funcs.c` are deleted with the conversion helpers they use, in one pull request: the union on a precision grid is the sweep's one positive control, so the sweep and the gateway probe leave the job of step 6 with it | **Merged** as MobilityDB #3179 (`9bb3bb7a2b`). Its first commit takes `geom_unary_union(gs)` and retires the sweep, the gateway probe and their step; its second ends the intersection, the difference, the array union and the unary union in a refusal, the same in every build, for an input none of their native routes reads, and deletes `POSTGIS2GEOS` and `GEOS2POSTGIS`. The job of step 6 keeps its build without GEOS and its check that `libmeos.so` calls no GEOS function; `check_liblwgeom_geos.py` carries no geometry entry point, its baseline holding the raster core's `rt_raster_gdal_polygonize` alone. CGAL's exact kernel agrees with every answer of its head on 20 witnesses, 40 controls passing; the four union cells read 0.249 to 0.381 of GEOS in instructions |
 | 14 | The `GEOS` build option and `cmake/FindGEOS.cmake`, the GEOS context in `meos.c` with `geos_get_context()`, and the GEOS version in `mobilitydb_full_version()` are deleted (decision 5); the workflows and the Dockerfile stop installing GEOS for the build. `geos-none/geos_c.h`, `geo_lwgeom_none.c` and `geo_geos_none.c` stay and are compiled in every build: the vendored geometry library (`lwgeom_wrapx.c`, through `lwgeom_geos.h`) and the raster core call GEOS entry points, `GEOSUnaryUnion` and `GEOSisValid` among them, which these files answer natively. GEOS stays linked into the test probes only | `ldd` on `libmeos.so` shows no GEOS library loaded, which with the raster family on needs a GDAL built without GEOS (note 5 §5.2); the SQL regression tests answer as expected; the probes keep a GEOS build, called directly, as the speed reference and as the witness for straight edges, and never a witness for an arc |
 
 ## Part IV — the user-facing chapter
@@ -97,7 +97,7 @@ the frame (note 6 §6.6).
    `geom_unary_union(gs)` stays, since `trajectory(temp, true)`, `traversedArea(..., true)` and the
    raster core's union in a build without GEOS dissolve through it. What goes is the union snapped
    to a grid GEOS computes, which MEOS does not offer: rounding an answer afterwards can make it
-   invalid, which the snapped union cannot.
+   invalid, which the snapped union cannot. MobilityDB #3179 (step 13) drops it.
 4. **The licence of the protected-area polygons** must be confirmed before any of them is
    committed as test data.
 5. **What a build and a user see once GEOS is gone.** Decided on 2026-10-25: the `GEOS` build
@@ -109,8 +109,8 @@ the frame (note 6 §6.6).
 
 - **108 of the 129 functions with a path to GEOS are not run individually** (appendix A, master
   `52b0c9e4d5`). Each shares a gateway with functions that are; step 6's job is where running all
-  of them belongs. Step 13 turns any input of theirs that would reach a fall-back into a
-  refusal.
+  of them belongs. Since step 13 an input of theirs that no native route reads is refused, in
+  every build.
 - **Four CGAL disagreements of 32 668 on the buffer ledger**, recorded by the campaign's run of
   2026-09-30, are not attributed (note 6 §6.5):
   they may be the judge rather than the engine, and are resolved before either is called wrong.
