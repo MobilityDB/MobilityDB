@@ -122,7 +122,7 @@ RD1's functions answer on the MEOS side.
 | RD8 | JMEOS | the four left out by the generator: `dumpAsPolygons` and `valueCount` (rows of a set whose columns are a geometry and a struct), `dumpValues` and `pixelAsPoints` (`arity:jmeos`); then the consumer tests | not started |
 | RD9 | MobilityDB or MEOS-API | `reclass` (`arity:sql`): pair its SQL arguments with the C parameters in the catalog | not started |
 | RD10 | MobilitySpark | the bridge to Sedona's raster, its names prefixed `RS_`: a Sedona raster from a MEOS raster and back over the georeference accessors and the band values (`RS_MakeEmptyRaster`, `RS_MakeRaster`, RD1's functions); a test of the round trip | after RD1 |
-| RD7 | MobilityDB | the manual: the raster chapter's section on the two rasters (`doc/temporal_cell_index.xml`, branch `doc/raster-in-duckdb`, commit `f0769e547c`, local), with the tables of the raster chapter fitted to the page; Spanish with it | drafted |
+| RD7 | MobilityDB | the manual: the raster chapter's section on the two rasters (`doc/temporal_cell_index.xml`, branch `estebanzimanyi:doc/raster-in-duckdb`, commit `a0b592dfe4`, no PR yet), decisions 2-4 with `rasterMetadata` and the round trip, the tables of the raster chapter fitted to the page; Spanish before its PR | drafted |
 
 ## Feasibility
 
