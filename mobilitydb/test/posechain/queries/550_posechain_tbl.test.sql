@@ -33,10 +33,10 @@
 -- Send and receive: a binary round trip changes no value
 -------------------------------------------------------------------------------
 
-COPY tbl_posechain TO '/tmp/tbl_posechain' (FORMAT BINARY);
+\copy tbl_posechain TO 'tbl_posechain' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_posechain_tmp;
 CREATE TABLE tbl_posechain_tmp AS TABLE tbl_posechain WITH NO DATA;
-COPY tbl_posechain_tmp FROM '/tmp/tbl_posechain' (FORMAT BINARY);
+\copy tbl_posechain_tmp FROM 'tbl_posechain' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_posechain t1, tbl_posechain_tmp t2 WHERE t1.k = t2.k AND t1.pc <> t2.pc;
 DROP TABLE tbl_posechain_tmp;
 

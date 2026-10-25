@@ -34,10 +34,10 @@
 
 -- Send/receive functions
 
-COPY tbl_poseset2d TO '/tmp/tbl_poseset2d' (FORMAT BINARY);
+\copy tbl_poseset2d TO 'tbl_poseset2d' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_poseset2d_tmp;
 CREATE TABLE tbl_poseset2d_tmp AS TABLE tbl_poseset2d WITH NO DATA;
-COPY tbl_poseset2d_tmp FROM '/tmp/tbl_poseset2d' (FORMAT BINARY);
+\copy tbl_poseset2d_tmp FROM 'tbl_poseset2d' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_poseset2d t1, tbl_poseset2d_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
 DROP TABLE tbl_poseset2d_tmp;
 

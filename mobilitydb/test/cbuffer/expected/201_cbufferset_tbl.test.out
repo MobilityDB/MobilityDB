@@ -1,11 +1,11 @@
-COPY tbl_cbufferset TO '/tmp/tbl_cbufferset' (FORMAT BINARY);
+COPY  tbl_cbufferset TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_cbufferset_tmp;
 NOTICE:  table "tbl_cbufferset_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_cbufferset_tmp AS TABLE tbl_cbufferset WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_cbufferset_tmp FROM '/tmp/tbl_cbufferset' (FORMAT BINARY);
+COPY  tbl_cbufferset_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_cbufferset t1, tbl_cbufferset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
  count 

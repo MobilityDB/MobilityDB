@@ -23,12 +23,16 @@ DROP INDEX IF EXISTS tbl_ttext_quadtree_idx;
 NOTICE:  index "tbl_ttext_quadtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tbool_kdtree_idx;
+NOTICE:  index "tbl_tbool_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tint_kdtree_idx;
+NOTICE:  index "tbl_tint_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tfloat_kdtree_idx;
+NOTICE:  index "tbl_tfloat_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_ttext_kdtree_idx;
+NOTICE:  index "tbl_ttext_kdtree_idx" does not exist, skipping
 DROP INDEX
 DROP TABLE IF EXISTS test_posops;
 NOTICE:  table "test_posops" does not exist, skipping

@@ -33,10 +33,10 @@
 -- Send / receive
 -------------------------------------------------------------------------------
 
-COPY tbl_h3index TO '/tmp/tbl_h3index' (FORMAT BINARY);
+\copy tbl_h3index TO 'tbl_h3index' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_h3index_tmp;
 CREATE TABLE tbl_h3index_tmp AS TABLE tbl_h3index WITH NO DATA;
-COPY tbl_h3index_tmp FROM '/tmp/tbl_h3index' (FORMAT BINARY);
+\copy tbl_h3index_tmp FROM 'tbl_h3index' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_h3index t1, tbl_h3index_tmp t2 WHERE t1.k = t2.k AND t1.h3 <> t2.h3;
 DROP TABLE tbl_h3index_tmp;
 

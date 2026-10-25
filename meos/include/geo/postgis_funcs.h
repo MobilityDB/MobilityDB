@@ -37,12 +37,7 @@
 #define __POSTGIS_FUNCS_H__
 
 /* MEOS: Prefix these vendored PostGIS symbols so they cannot be interposed by a
- * PostGIS loaded through shared_preload_libraries. Without the prefix the
- * preloaded PostGIS interposes these definitions and routes the geometry to
- * GEOS conversion through PostGIS's non-reentrant global GEOS context rather
- * than the per-thread context. */
-#define POSTGIS2GEOS MEOS_POSTGIS2GEOS
-#define GEOS2POSTGIS MEOS_GEOS2POSTGIS
+ * PostGIS loaded through shared_preload_libraries */
 #define cart_to_lwpoint meos_cart_to_lwpoint
 #define lonlat_to_cart meos_lonlat_to_cart
 #define geography_centroid_from_mline meos_geography_centroid_from_mline
@@ -85,13 +80,6 @@ extern LWGEOM *box2d_to_lwgeom(GBOX *box, int32_t srid);
 /* Functions adapted from lwgeom_box3d.c */
 
 extern LWGEOM *box3d_to_lwgeom(BOX3D *box);
-
-/* Functions adapted from lwgeom_geos.c */
-
-#if GEOS
-extern GEOSGeometry *POSTGIS2GEOS(const GSERIALIZED *pglwgeom);
-extern GSERIALIZED *GEOS2POSTGIS(GEOSGeom geom, char want3d);
-#endif /* GEOS */
 
 extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);

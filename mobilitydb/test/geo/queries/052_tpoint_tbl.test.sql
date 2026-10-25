@@ -31,8 +31,8 @@
 -- Send/receive functions
 --------------------------------------------------------------------------------
 
-COPY tbl_tgeompoint TO '/tmp/tbl_tgeompoint' (FORMAT BINARY);
-COPY tbl_tgeogpoint TO '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+\copy tbl_tgeompoint TO 'tbl_tgeompoint' (FORMAT BINARY);
+\copy tbl_tgeogpoint TO 'tbl_tgeogpoint' (FORMAT BINARY);
 
 DROP TABLE IF EXISTS tbl_tgeompoint_tmp;
 DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
@@ -40,8 +40,8 @@ DROP TABLE IF EXISTS tbl_tgeogpoint_tmp;
 CREATE TABLE tbl_tgeompoint_tmp AS TABLE tbl_tgeompoint WITH NO DATA;
 CREATE TABLE tbl_tgeogpoint_tmp AS TABLE tbl_tgeogpoint WITH NO DATA;
 
-COPY tbl_tgeompoint_tmp FROM '/tmp/tbl_tgeompoint' (FORMAT BINARY);
-COPY tbl_tgeogpoint_tmp FROM '/tmp/tbl_tgeogpoint' (FORMAT BINARY);
+\copy tbl_tgeompoint_tmp FROM 'tbl_tgeompoint' (FORMAT BINARY);
+\copy tbl_tgeogpoint_tmp FROM 'tbl_tgeogpoint' (FORMAT BINARY);
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;

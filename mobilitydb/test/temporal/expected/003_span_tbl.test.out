@@ -1,11 +1,11 @@
-COPY tbl_intspan TO '/tmp/tbl_intspan' (FORMAT BINARY);
+COPY  tbl_intspan TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_intspan_tmp;
 NOTICE:  table "tbl_intspan_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_intspan_tmp AS TABLE tbl_intspan WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_intspan_tmp FROM '/tmp/tbl_intspan' (FORMAT BINARY);
+COPY  tbl_intspan_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
  count 
@@ -15,14 +15,14 @@ SELECT COUNT(*) FROM tbl_intspan t1, tbl_intspan_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_intspan_tmp;
 DROP TABLE
-COPY tbl_bigintspan TO '/tmp/tbl_bigintspan' (FORMAT BINARY);
+COPY  tbl_bigintspan TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_bigintspan_tmp;
 NOTICE:  table "tbl_bigintspan_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_bigintspan_tmp AS TABLE tbl_bigintspan WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_bigintspan_tmp FROM '/tmp/tbl_bigintspan' (FORMAT BINARY);
+COPY  tbl_bigintspan_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
@@ -32,14 +32,14 @@ SELECT COUNT(*) FROM tbl_bigintspan t1, tbl_bigintspan_tmp t2 WHERE t1.k = t2.k 
 
 DROP TABLE tbl_bigintspan_tmp;
 DROP TABLE
-COPY tbl_floatspan TO '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY  tbl_floatspan TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_floatspan_tmp;
 NOTICE:  table "tbl_floatspan_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_floatspan_tmp AS TABLE tbl_floatspan WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_floatspan_tmp FROM '/tmp/tbl_floatspan' (FORMAT BINARY);
+COPY  tbl_floatspan_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
  count 
@@ -49,14 +49,14 @@ SELECT COUNT(*) FROM tbl_floatspan t1, tbl_floatspan_tmp t2 WHERE t1.k = t2.k AN
 
 DROP TABLE tbl_floatspan_tmp;
 DROP TABLE
-COPY tbl_datespan TO '/tmp/tbl_datespan' (FORMAT BINARY);
+COPY  tbl_datespan TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_datespan_tmp;
 NOTICE:  table "tbl_datespan_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_datespan_tmp AS TABLE tbl_datespan WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_datespan_tmp FROM '/tmp/tbl_datespan' (FORMAT BINARY);
+COPY  tbl_datespan_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
  count 
@@ -66,14 +66,14 @@ SELECT COUNT(*) FROM tbl_datespan t1, tbl_datespan_tmp t2 WHERE t1.k = t2.k AND 
 
 DROP TABLE tbl_datespan_tmp;
 DROP TABLE
-COPY tbl_tstzspan TO '/tmp/tbl_tstzspan' (FORMAT BINARY);
+COPY  tbl_tstzspan TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_tstzspan_tmp;
 NOTICE:  table "tbl_tstzspan_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tstzspan_tmp AS TABLE tbl_tstzspan WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tstzspan_tmp FROM '/tmp/tbl_tstzspan' (FORMAT BINARY);
+COPY  tbl_tstzspan_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_tstzspan t1, tbl_tstzspan_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
  count 

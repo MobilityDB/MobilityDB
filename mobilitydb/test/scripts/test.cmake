@@ -65,15 +65,49 @@ unset(ENV{PGPORT})
 # configure time
 set(TEST_DIR "@MOBILITYDB_TEST_TMPDIR@")
 set(TEST_DIR_DB "${TEST_DIR}/db")
-set(TEST_DIR_LOCK "${TEST_DIR}/lock")
+# PostgreSQL does not start when the path of its Unix-domain socket exceeds
+# 107 bytes, which a test directory deep in the file system reaches, so the
+# socket lies in a short directory of its own under /tmp, as pg_regress does.
+# The directory is named after the test directory so that the clusters of two
+# build directories do not share it. On Windows the directory lies under /tmp
+# at the root of the drive holding the test directory.
+string(MD5 _lock_hash "${TEST_DIR}")
+string(SUBSTRING "${_lock_hash}" 0 8 _lock_hash)
+if(CMAKE_HOST_WIN32)
+  string(SUBSTRING "${TEST_DIR}" 0 2 _lock_drive)
+  set(TEST_DIR_LOCK "${_lock_drive}/tmp/mobilitydb-${_lock_hash}")
+else()
+  set(TEST_DIR_LOCK "/tmp/mobilitydb-${_lock_hash}")
+endif()
 set(TEST_DIR_LOG "${TEST_DIR}/log")
 set(TEST_DIR_OUT "${TEST_DIR}/out")
+# Files the tests write and read back with \copy, which psql resolves in the
+# directory it runs in, so that two runs on one machine do not share them
+set(TEST_DIR_EXCHANGE "${TEST_DIR}/exchange")
+
+# Encoding of the test cluster, which MOBILITYDB_TEST_ENCODING names at
+# configure time
+set(TEST_ENCODING "@MOBILITYDB_TEST_ENCODING@")
 
 message(STATUS "TEST_DIR: ${TEST_DIR}")
 message(STATUS "TEST_DIR_DB: ${TEST_DIR_DB}")
 message(STATUS "TEST_DIR_LOCK: ${TEST_DIR_LOCK}")
 message(STATUS "TEST_DIR_LOG: ${TEST_DIR_LOG}")
 message(STATUS "TEST_DIR_OUT: ${TEST_DIR_OUT}")
+message(STATUS "TEST_DIR_EXCHANGE: ${TEST_DIR_EXCHANGE}")
+
+# Stop with the message of a step that failed and the log files of the program
+# it ran, since a program whose output goes to a file leaves TEST_ERROR empty
+function(fail_with_logs text result)
+  set(_text "${text}:\n${result}\n")
+  foreach(_log ${ARGN})
+    if(EXISTS ${_log})
+      file(READ ${_log} _content)
+      string(APPEND _text "\n${_log}:\n${_content}")
+    endif()
+  endforeach()
+  message(FATAL_ERROR "${_text}")
+endfunction()
 
 #-------------------------------------------------------------------------------
 # Test setup
@@ -101,12 +135,16 @@ if(TEST_OPER MATCHES "test_setup")
     endif()
   endif()
 
+  # A run that stopped before its teardown leaves the socket directory behind
+  file(REMOVE_RECURSE ${TEST_DIR_LOCK})
+
   execute_process(
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_DB}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_LOCK}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_LOG}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_OUT}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_DIR_EXCHANGE}
     ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
@@ -115,14 +153,6 @@ if(TEST_OPER MATCHES "test_setup")
   else()
     message(STATUS "Test directories created: '${TEST_DIR}'")
   endif()
-  if(CMAKE_HOST_WIN32)
-    # The tests exchange tables with the server through files under /tmp,
-    # which a server on Windows reads as a directory at the root of the drive
-    # holding its cluster
-    string(SUBSTRING "${TEST_DIR_DB}" 0 2 _drive)
-    file(MAKE_DIRECTORY "${_drive}/tmp")
-  endif()
-
   #-------------------------
   # Create database cluster
   #-------------------------
@@ -130,15 +160,19 @@ if(TEST_OPER MATCHES "test_setup")
   # Explanation of the parameters
   # -D <directory> Directory where the database cluster should be stored.
   #    If not given, the PGDATA environment variable is used.
+  # --no-locale The C locale, which the expected results are written in,
+  #    rather than the locale of the caller
+  # -E <encoding> The encoding MOBILITYDB_TEST_ENCODING names at configure
+  #    time, rather than the one the locale of the caller implies
   execute_process(
-    COMMAND ${INITDB} -D ${TEST_DIR_DB}
+    COMMAND ${INITDB} -D ${TEST_DIR_DB} --no-locale -E ${TEST_ENCODING}
     OUTPUT_FILE ${TEST_DIR_LOG}/initdb.log
     ERROR_FILE ${TEST_DIR_LOG}/initdb.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create database cluster with initdb:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to create database cluster with initdb"
+      "${TEST_RESULT}" ${TEST_DIR_LOG}/initdb.log)
   else()
     message(STATUS "Database cluster created with initdb")
   endif()
@@ -190,7 +224,6 @@ if(TEST_OPER MATCHES "test_setup")
         "$p = Start-Process -FilePath '${PG_CTL}' -ArgumentList '-w -D \"${TEST_DIR_DB}\" -l \"${TEST_DIR_LOG}/postgres.log\" -o \"-k ${TEST_DIR_LOCK}\" -o \"-c listen_addresses=\" start' -WindowStyle Hidden -PassThru; $p.WaitForExit(); exit $p.ExitCode"
       OUTPUT_FILE ${TEST_DIR_LOG}/pg_start.log
       ERROR_FILE ${TEST_DIR_LOG}/pg_start.log
-      ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   else()
@@ -198,12 +231,12 @@ if(TEST_OPER MATCHES "test_setup")
       COMMAND ${PG_CTL} -w -D ${TEST_DIR_DB} -l ${TEST_DIR_LOG}/postgres.log -o "-k ${TEST_DIR_LOCK}" -o "-c listen_addresses=" start
       OUTPUT_FILE ${TEST_DIR_LOG}/pg_start.log
       ERROR_FILE ${TEST_DIR_LOG}/pg_start.log
-      ERROR_VARIABLE TEST_ERROR
       RESULT_VARIABLE TEST_RESULT
     )
   endif()
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to start PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to start PostgreSQL server" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/pg_start.log ${TEST_DIR_LOG}/postgres.log)
   else()
     message(STATUS "PostgreSQL server started")
   endif()
@@ -237,11 +270,11 @@ if(TEST_OPER MATCHES "test_setup")
     COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres -c "${_create_ext}"
     OUTPUT_FILE ${TEST_DIR_LOG}/create_ext.log
     ERROR_FILE ${TEST_DIR_LOG}/create_ext.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to create MobilityDB extension:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to create MobilityDB extension" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/create_ext.log)
   else()
     message(STATUS "MobilityDB extension created")
   endif()
@@ -267,6 +300,7 @@ elseif(TEST_OPER MATCHES "run_compare")
     INPUT_FILE ${TEST_FILE}
     OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
     ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+    WORKING_DIRECTORY ${TEST_DIR_EXCHANGE}
   )
 
   get_filename_component(TEST_FILE_DIR ${TEST_FILE} DIRECTORY)
@@ -298,9 +332,6 @@ elseif(TEST_OPER MATCHES "run_compare")
       RESULT_VARIABLE TEST_RESULT
       )
   endif()
-  # Remove the temporary files
-  file(REMOVE ${TEST_DIR}/test.out)
-  file(REMOVE ${TEST_DIR}/test.expected)
 
   if(TEST_RESULT)
     # Write the differences, where there are some to write
@@ -310,7 +341,7 @@ elseif(TEST_OPER MATCHES "run_compare")
       message(STATUS "===========\n\n")
       message(STATUS "${DIFFS}\n\n")
     endif()
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
+    message(FATAL_ERROR "Test ${TEST_NAME} failed")
   endif()
 
 #-------------------------------------------------------------------------------
@@ -327,29 +358,35 @@ elseif(TEST_OPER MATCHES "run_passfail")
     message(FATAL_ERROR "Argument TEST_FILE must be provided")
   endif(NOT TEST_FILE)
 
-  # Explanation of the parameters for psql (see above)
+  # Explanation of the parameters for psql (see above), except that the load
+  # stops at its first error: psql reads the file from its standard input,
+  # where an error does not change its exit status otherwise, and a table
+  # that fails to load is only seen in the differences of the tests reading it
   if(${TEST_FILE} MATCHES ".xz")
-    # Load the data into the test database
-    get_filename_component(TEST_FILE_NAME ${TEST_FILE} NAME_WLE)
+    # Load the data into the test database. The status of every command of
+    # the pipeline is read, since a file xz cannot read reaches psql empty.
     execute_process(
       COMMAND ${XZCAT_EXECUTABLE} ${TEST_FILE}
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
       OUTPUT_QUIET
       ERROR_VARIABLE TEST_ERROR
-      RESULT_VARIABLE TEST_RESULT
+      RESULTS_VARIABLE TEST_RESULTS
     )
+    if(NOT TEST_RESULTS STREQUAL "0;0")
+      message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULTS}\n${TEST_ERROR}")
+    endif()
   else()
     execute_process(
-      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=0 -d postgres
+      COMMAND ${PSQL} -X -h ${TEST_DIR_LOCK} -e --set ON_ERROR_STOP=1 -d postgres
       INPUT_FILE ${TEST_FILE}
-      OUTPUT_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
-      ERROR_FILE ${TEST_DIR_OUT}/${TESTNAME}.out
-      ERROR_VARIABLE TEST_ERROR
+      OUTPUT_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
+      ERROR_FILE ${TEST_DIR_OUT}/${TEST_NAME}.out
       RESULT_VARIABLE TEST_RESULT
     )
-  endif()
-  if(TEST_RESULT)
-    message(FATAL_ERROR "Test ${TEST_NAME} failed:\n${TEST_RESULT}\n${TEST_ERROR}")
+    if(TEST_RESULT)
+      fail_with_logs("Test ${TEST_NAME} failed" "${TEST_RESULT}"
+        ${TEST_DIR_OUT}/${TEST_NAME}.out)
+    endif()
   endif()
 
 #-------------------------------------------------------------------------------
@@ -363,12 +400,13 @@ elseif(TEST_OPER MATCHES "teardown")
     COMMAND ${PG_CTL} -w -D ${TEST_DIR_DB} stop
     OUTPUT_FILE ${TEST_DIR_LOG}/pg_stop.log
     ERROR_FILE ${TEST_DIR_LOG}/pg_stop.log
-    ERROR_VARIABLE TEST_ERROR
     RESULT_VARIABLE TEST_RESULT
   )
   if(TEST_RESULT)
-    message(FATAL_ERROR "Failed to stop PostgreSQL server:\n${TEST_RESULT}\n${TEST_ERROR}")
+    fail_with_logs("Failed to stop PostgreSQL server" "${TEST_RESULT}"
+      ${TEST_DIR_LOG}/pg_stop.log)
   endif()
+  file(REMOVE_RECURSE ${TEST_DIR_LOCK})
 
 #-------------------------------------------------------------------------------
 else()

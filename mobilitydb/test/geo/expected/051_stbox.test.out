@@ -161,14 +161,14 @@ SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01-08])xxxx';
 ERROR:  Could not parse stbox value: Extraneous characters at the end
 LINE 1: SELECT stbox 'STBOX ZT(((5,6,7),(1,2,3)),[2001-01-04,2001-01...
                      ^
-COPY tbl_stbox3d TO '/tmp/tbl_stbox3d' (FORMAT BINARY);
+COPY  tbl_stbox3d TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_stbox3d_tmp;
 NOTICE:  table "tbl_stbox3d_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_stbox3d_tmp AS TABLE tbl_stbox3d WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_stbox3d_tmp FROM '/tmp/tbl_stbox3d' (FORMAT BINARY);
+COPY  tbl_stbox3d_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_stbox3d t1, tbl_stbox3d_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
  count 
