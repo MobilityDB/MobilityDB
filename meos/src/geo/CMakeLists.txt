@@ -25,23 +25,14 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-# The entry points of the geometry library's GEOS files that the rest of that
-# library still calls, which a build leaving those files out has to answer, and
-# the GEOS entry points the vendored raster core calls directly
-if(NOT GEOS)
-  set(GEO_LWGEOM_NONE geo_lwgeom_none.c)
-  if(RASTER)
-    set(GEO_GEOS_NONE geo_geos_none.c)
-  endif()
-endif()
-
+# geo_lwgeom_none.c answers the entry points of the geometry library's GEOS
+# files that the rest of that library calls, the build leaving those files out
 set(GEO_SOURCES
-  ${GEO_LWGEOM_NONE}
-  ${GEO_GEOS_NONE}
   geo_arrange.c
   geo_buffer.c
   geo_cluster.c
   geo_funcs.c
+  geo_lwgeom_none.c
   geo_round.c
   postgis_funcs.c
   stbox.c
@@ -78,3 +69,16 @@ endif()
 
 add_library(geo OBJECT ${GEO_SOURCES})
 
+# The GEOS entry points the vendored raster core calls directly are answered by
+# geo_geos_none.c, an object library of its own so that its symbols are hidden
+# from the dynamic table of the shared library, as pointcloud_libpc_stringbuffer
+# is. They carry the names of the GEOS C API (GEOSUnaryUnion, GEOSisValid,
+# initGEOS, ...), which PostGIS imports in the same backend, so an exported
+# definition would be open to the ELF interposition that
+# postgis/liblwgeom/CMakeLists.txt describes: PostGIS loaded after MobilityDB
+# would bind its GEOS calls to these definitions.
+if(RASTER)
+  add_library(geo_geos_none OBJECT geo_geos_none.c)
+  set_target_properties(geo_geos_none PROPERTIES
+    C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE ON)
+endif()

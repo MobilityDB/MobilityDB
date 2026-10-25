@@ -30,10 +30,10 @@
 /**
  * @file
  * @brief The entry points of the geometry library's GEOS files that the rest
- * of that library still calls, for a build carrying no GEOS
+ * of that library calls
  * @details The files of the vendored PostGIS geometry library that reach GEOS
- * are left out of a build carrying none, and four of the files that remain
- * still call into them: @p lwkmeans.c seeds its clusters from a centroid,
+ * are left out of the build, and four of the files that remain call into
+ * them: @p lwkmeans.c seeds its clusters from a centroid,
  * @p lwgeom.c reduces a geometry to a grid through an intersection,
  * @p lwlinearreferencing.c offsets a curve, and @p lwgeom_wrapx.c splits a
  * geometry on a blade and dissolves what it gets back. Each of those calls
@@ -47,8 +47,8 @@
  *
  * ONE of them is answered rather than refused. @p lwgeom_centroid() IS reached
  * from MEOS: #geo_cluster_kmeans() calls @p lwgeom_cluster_kmeans(), which
- * takes the centroid of every input that is not a point, so a build carrying
- * no GEOS could not cluster a polygon. #meos_centroid() answers it natively,
+ * takes the centroid of every input that is not a point, so without it MEOS
+ * could not cluster a polygon. #meos_centroid() answers it natively,
  * so the clustering works wherever the library does. The rest are reached only
  * from entry points MEOS never calls, and the definitions exist so that the
  * set of entry points the left-out files carry is answered as a whole.
@@ -63,8 +63,8 @@
 
 /**
  * @brief The message the geometry library's GEOS files leave for their callers
- * @details A caller reads it after an answer of NULL, so a build carrying no
- * GEOS has to define it even though nothing here ever writes it. Its size is
+ * @details A caller reads it after an answer of NULL, so it is defined here
+ * even though nothing here ever writes it. Its size is
  * the one @p lwgeom_geos.c gives it, which that file states privately rather
  * than in a header
  */
@@ -77,8 +77,8 @@
 static LWGEOM *
 lwgeom_needs_geos(const char *name)
 {
-  lwerror("%s: the operation is answered by the GEOS library, which this build "
-    "excludes: configure with -DGEOS=ON", name);
+  lwerror("%s: the operation is answered by the GEOS library, which MEOS "
+    "does not link", name);
   return NULL;
 }
 

@@ -178,11 +178,6 @@ CMAKE_DEPENDENT_OPTION(RASTER "Set ON|OFF (default=OFF) to include PostGIS raste
 # which a build-wide -DS2=0|1 rewrites into a numeric constant.
 option(S2CELL "Set ON|OFF (default=OFF) to include the temporal Google S2 index type (ts2cell)" OFF)
 
-# Option for answering with the GEOS library the geometry operations no native
-# implementation covers. It is a dependency of the geometry operations rather
-# than an optional family, so ALL does not enumerate it.
-option(GEOS "Set ON|OFF (default=ON) to answer with the GEOS library the geometry operations no native implementation covers. With it OFF such an operation reports that it is not supported, which is what a build for a system carrying no GEOS needs." ON)
-
 # SIBLING-FROM doc/CMakeLists.txt (LANG_ALL): enable every optional family when
 # ALL is set. A new family must be added to this list, the same maintenance model
 # as adding a language to the documentation build's PROJECT_SUPPORTED_LANGUAGES.
@@ -520,47 +515,14 @@ int main() {
 # Other dependencies
 #--------------------------------
 
-# GEOS geometry library
-if(GEOS)
-  message(STATUS "Including the GEOS library")
-  add_definitions(-DGEOS=1)
-  # Prefer GEOS's own CMake CONFIG package (shipped by upstream GEOS, and by
-  # vcpkg) when available: it exposes the GEOS::geos_c imported target with
-  # correct per-platform library handling. The bundled FindGEOS module resolves
-  # libgeos_c by absolute path, which ninja cannot satisfy under vcpkg manifest
-  # mode on macOS (the .dylib is reported as a missing, unbuildable input).
-  # Fall back to the module for system installs that ship no CMake config.
-  find_package(GEOS CONFIG QUIET)
-  if(GEOS_FOUND AND TARGET GEOS::geos_c)
-    set(GEOS_LIBRARY GEOS::geos_c)
-    get_target_property(GEOS_INCLUDE_DIR GEOS::geos_c INTERFACE_INCLUDE_DIRECTORIES)
-    if(NOT GEOS_INCLUDE_DIR)
-      set(GEOS_INCLUDE_DIR "")
-    endif()
-    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\1" GEOS_VERSION_MAJOR "${GEOS_VERSION}")
-    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\2" GEOS_VERSION_MINOR "${GEOS_VERSION}")
-    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*" "\\3" GEOS_VERSION_MICRO "${GEOS_VERSION}")
-    message(STATUS "Found GEOS ${GEOS_VERSION} via CONFIG (GEOS::geos_c)")
-  else()
-    find_package(GEOS MODULE REQUIRED)
-  endif()
-  include_directories(SYSTEM ${GEOS_INCLUDE_DIR})
-  math(EXPR POSTGIS_GEOS_VERSION "${GEOS_VERSION_MAJOR} * 10000 + ${GEOS_VERSION_MINOR} * 100 + ${GEOS_VERSION_MICRO}")
-else()
-  message(STATUS "Excluding the GEOS library")
-  add_definitions(-DGEOS=0)
-  set(GEOS_LIBRARY "")
-  # The vendored PostGIS reads the version to decide which GEOS entry points it
-  # may call, and answers none of them without the library
-  set(POSTGIS_GEOS_VERSION 0)
-  # The vendored PostGIS reads geos_c.h for the types of the entry points that
-  # convert between the two geometry models whether or not the library is
-  # there. This directory stands in for it, holding those types and nothing
-  # else, so no vendored source is edited and a build needs no GEOS headers
-  # installed
-  include_directories(BEFORE SYSTEM ${CMAKE_SOURCE_DIR}/meos/include/geos-none)
-endif()
-message(STATUS "POSTGIS_GEOS_VERSION: ${POSTGIS_GEOS_VERSION}")
+# The vendored PostGIS reads the GEOS version to decide which GEOS entry points
+# it may call, and at 0 calls none of those a version gates
+set(POSTGIS_GEOS_VERSION 0)
+# The vendored PostGIS reads geos_c.h for the types of the entry points that
+# convert between the two geometry models. This directory stands in for it,
+# holding those types and nothing else, so no vendored source is edited and a
+# build needs no GEOS headers installed
+include_directories(BEFORE SYSTEM ${CMAKE_SOURCE_DIR}/meos/include/geos-none)
 
 # Proj reprojection library
 # The version is required as a plain check rather than as an argument to

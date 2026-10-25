@@ -41,7 +41,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgeos-dev \
             libproj-dev \
             libjson-c-dev \
             libgdal-dev \

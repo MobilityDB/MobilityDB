@@ -5,7 +5,7 @@ name: Build MEOS on Windows (MSYS2/UCRT64)
 #
 # What this job verifies:
 #   * cmake -DMEOS=ON resolves all dependencies under MSYS2 mingw-w64
-#     (json-c, geos, proj).
+#     (json-c, proj).
 #   * The standalone libmeos.dll links cleanly.
 #   * Two smoke tests build and run: meos/test/temporal_test, and
 #     meos/test/tzdata_test, which reads its zones from the time zone
@@ -58,7 +58,6 @@ jobs:
         mingw-w64-ucrt-x86_64-cmake
         mingw-w64-ucrt-x86_64-ninja
         mingw-w64-ucrt-x86_64-json-c
-        mingw-w64-ucrt-x86_64-geos
         mingw-w64-ucrt-x86_64-proj
         mingw-w64-ucrt-x86_64-gdal
         mingw-w64-ucrt-x86_64-libxml2
