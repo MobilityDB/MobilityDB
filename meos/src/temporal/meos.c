@@ -641,7 +641,10 @@ meos_lwerror_handler(const char *fmt, va_list ap)
 
 /**
  * @brief Report a liblwgeom notice through the MEOS error channel
- * @details A notice is advisory, so this handler returns as liblwgeom expects.
+ * @details A notice is advisory and accompanies an answer, so this handler
+ * reports it at level @p NOTICE with no error code, as the backend's #pg_notice
+ * (mobilitydb/src/geo/tgeo.c) and PostGIS's own report it, and returns as
+ * liblwgeom expects. The error number is left as it is.
  */
 static void
 meos_lwnotice_handler(const char *fmt, va_list ap)
@@ -649,7 +652,7 @@ meos_lwnotice_handler(const char *fmt, va_list ap)
   char msg[MEOS_LW_MSG_MAXLEN + 1];
   vsnprintf(msg, sizeof(msg), fmt, ap);
   msg[MEOS_LW_MSG_MAXLEN] = '\0';
-  meos_error(WARNING, MEOS_ERR_INVALID_ARG_VALUE, "%s", msg);
+  meos_error(NOTICE, MEOS_SUCCESS, "%s", msg);
 }
 
 /*****************************************************************************/

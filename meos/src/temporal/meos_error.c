@@ -30,9 +30,50 @@
 /**
  * @file
  * @brief Error handling of the MEOS library
- * @details MEOS error handling inspired by GEOS and Proj
- * https://github.com/libgeos/geos/blob/main/capi/geos_c.h.in
- * https://github.com/OSGeo/PROJ/blob/master/src/4D_api.cpp
+ * @details A message reaches its reader through two channels, which differ in
+ * what the caller has to do next.
+ * - The error handler receives every message when it is raised, with its
+ *   level, its code and its text: #meos_error() calls the handler installed
+ *   by #meos_initialize_error_handler(), which prints it, logs it or hands it
+ *   to the host. The levels are those of #errorLevel.
+ * - The error number, read by #meos_errno(), records that an error happened:
+ *   the function that raised it returned its sentinel, and every frame above
+ *   it passed that failure up, freeing what it had built. It keeps the code of
+ *   the last error raised until #meos_errno_reset() clears it.
+ *
+ * Only a message of level @p MEOS_ERROR reaches the second channel. A warning,
+ * a notice or an information accompanies an answer, as liblwgeom's notices and
+ * the defaults the MF-JSON reader takes do, so it goes to the handler and
+ * leaves the error number as it is. This is how PostgreSQL reports them: an
+ * error ends the statement, while a warning is sent to the client and the log
+ * and the statement goes on. In the extension, #meos_error() hands every
+ * message to ereport() at its own level.
+ *
+ * liblwgeom reports through the same two channels, its errors and its notices
+ * being routed to #meos_error() by the two handlers #meos_initialize() installs
+ * (meos/src/temporal/meos.c). MEOS calls no GEOS function, so it installs no
+ * GEOS handler: the GEOS names the vendored raster core calls are answered in
+ * meos/src/geo/geo_geos_none.c, which ignores the handlers given to initGEOS()
+ * and routes an error to liblwgeom's.
+ *
+ * A host that wants both channels installs its own handler, records the code
+ * of an error with #meos_errno_set() and logs the other levels:
+ * @code
+ * static void
+ * host_handler(int errlevel, int errcode, const char *errmsg)
+ * {
+ *   if (errlevel == MEOS_ERROR)
+ *   {
+ *     meos_errno_set(errcode);
+ *     host_remember_error(errmsg);
+ *   }
+ *   else
+ *     host_log_warning(errcode, errmsg);
+ * }
+ * @endcode
+ * After each call it reads #meos_errno(): a set error number means the answer
+ * is a sentinel, and the host raises its own exception with the message it
+ * remembered and resets the error number.
  */
 
 /* C */
@@ -153,30 +194,41 @@ int meos_errno_reset(void)
  */
 static void (*MEOS_ERROR_HANDLER)(int, int, const char *) = NULL;
 
+/* The levels a handler receives are PostgreSQL's, which #errorLevel publishes
+ * under its own names */
+StaticAssertDecl(MEOS_INFO == INFO && MEOS_NOTICE == NOTICE &&
+  MEOS_WARNING == WARNING && MEOS_ERROR == ERROR,
+  "errorLevel must state the values of the PostgreSQL message levels");
+
 #if MEOS
 /**
- * @brief Default error handler function that prints the error message to
- * stderr, sets the errcode, and exits if error level is equal to `ERROR`
+ * @brief Default error handler function that prints the message to stderr
+ * and, for an error, records its code and exits
+ * @details A message of a lower level than @p ERROR accompanies an answer, so
+ * it is printed and leaves the error number as it is
  */
 void
 default_error_handler(int errlevel, int errcode, const char *errmsg)
 {
   fprintf(stderr, "%s\n", errmsg);
-  meos_errno_set(errcode);
   if (errlevel == ERROR)
+  {
+    meos_errno_set(errcode);
     exit(EXIT_FAILURE);
+  }
   return;
 }
 
 /**
- * @brief Error handler function that sets the errcode and the error message
+ * @brief Error handler function that prints the message through perror and,
+ * for an error, records its code
  */
 void
-error_handler_errno(int errlevel pg_attribute_unused(), int errcode,
-  const char *errmsg)
+error_handler_errno(int errlevel, int errcode, const char *errmsg)
 {
   perror(errmsg);
-  meos_errno_set(errcode);
+  if (errlevel == ERROR)
+    meos_errno_set(errcode);
   return;
 }
 
@@ -200,13 +252,17 @@ meos_initialize_error_handler(error_handler_fn err_handler)
  * @brief No-exit error handler reporting via meos_errno() only
  * @details Never calls exit(); safe to invoke from a foreign thread in a
  * JVM (JNR-FFI on Spark / JMEOS) where exit() would tear the host process
- * down. Errors are reported through meos_errno() only.
+ * down. Errors are reported through meos_errno() only, recorded at level
+ * @p ERROR as #default_error_handler records them, and a message of a lower
+ * level, which accompanies an answer, is dropped: a host that wants it
+ * installs its own handler, as the file comment shows.
  */
 static void
-noexit_error_handler(int errlevel __attribute__((__unused__)), int errcode,
+noexit_error_handler(int errlevel, int errcode,
   const char *errmsg __attribute__((__unused__)))
 {
-  meos_errno_set(errcode);
+  if (errlevel == ERROR)
+    meos_errno_set(errcode);
   return;
 }
 
