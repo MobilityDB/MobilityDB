@@ -486,7 +486,11 @@ extern void sptree_nn_cursor_close(SPNNCursor *cursor);
  * Initialization of the MEOS library
  *****************************************************************************/
 
-/* Definition of error handler function */
+/* Definition of error handler function, which receives every message with its
+ * level (errorLevel), its code (errorCode) and its text. A handler records the
+ * code of a message of level MEOS_ERROR with meos_errno_set, which tells the
+ * caller that the answer is a sentinel, and reports the lower levels, which
+ * accompany an answer, without touching the error number */
 typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);

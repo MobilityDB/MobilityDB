@@ -36,7 +36,10 @@
  * rather than terminate it. The program verifies that a failing call sets
  * #meos_errno, that #meos_errno_reset clears it and returns its previous
  * value, and that #meos_errno_restore puts back a stored value, which is the
- * sequence documented for monitoring a section of code for new errors.
+ * sequence documented for monitoring a section of code for new errors. It
+ * also verifies that a notice or a warning, which accompanies an answer,
+ * leaves the error number clear, and that a handler receives each message
+ * with the level #errorLevel names.
  *
  * The program can be build as follows
  * @code
@@ -53,6 +56,20 @@
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_pose.h>
+
+/* Level of the last message the recording handler received */
+static int errtest_level;
+
+/* Record the level of each message, and the code of an error as a host does */
+static void
+errtest_record_handler(int errlevel, int errcode, const char *errmsg)
+{
+  (void) errmsg;
+  errtest_level = errlevel;
+  if (errlevel == MEOS_ERROR)
+    meos_errno_set(errcode);
+  return;
+}
 
 /* Main program */
 int main(void)
@@ -438,6 +455,56 @@ int main(void)
 
   free(mixf); free(mixi); free(mixg); free(mixf2); free(mixg2);
   meos_errno_reset();
+
+  /* A notice or a warning accompanies an answer, so it leaves the error
+   * number clear, while an error sets it. liblwgeom notices that a shortest
+   * line between a 2D and a 3D geometry regards the missing Z as any value,
+   * the MF-JSON reader warns that it takes a non-boolean bound flag as true,
+   * and geo_from_text warns that it read an SRID from EWKT */
+  GSERIALIZED *pt2d = geom_in("POINT(0 0)", -1);
+  GSERIALIZED *pt3d = geom_in("POINT Z(1 1 1)", -1);
+  meos_errno_reset();
+  GSERIALIZED *line = geom_shortestline3d(pt2d, pt3d);
+  int line_errno = meos_errno();
+  printf("geom_shortestline3d(2D, 3D), a notice: %s, errno %d\n",
+    line ? "answered" : "NULL", line_errno);
+  assert(line != NULL && line_errno == 0);
+  meos_errno_reset();
+  Temporal *mfjson = tint_from_mfjson("{\"type\":\"MovingInteger\","
+    "\"values\":[1,2],\"datetimes\":[\"2001-01-01T00:00:00+00\","
+    "\"2001-01-02T00:00:00+00\"],\"lower_inc\":\"yes\",\"upper_inc\":true,"
+    "\"interpolation\":\"Step\"}");
+  int mfjson_errno = meos_errno();
+  printf("tint_from_mfjson(lower_inc \"yes\"), a warning: %s, errno %d\n",
+    mfjson ? "answered" : "NULL", mfjson_errno);
+  assert(mfjson != NULL && mfjson_errno == 0);
+  meos_errno_reset();
+  GSERIALIZED *ewkt = geo_from_text("SRID=4326;POINT(1 1)", 3857);
+  int ewkt_errno = meos_errno();
+  printf("geo_from_text(EWKT, 3857), a warning: %s, SRID %d, errno %d\n",
+    ewkt ? "answered" : "NULL", ewkt ? geo_srid(ewkt) : 0, ewkt_errno);
+  assert(ewkt != NULL && geo_srid(ewkt) == 3857 && ewkt_errno == 0);
+
+  /* A handler receives each message with its level, which the public
+   * errorLevel names, so that a host records the code of an error and logs
+   * the other levels */
+  meos_initialize_error_handler(&errtest_record_handler);
+  GSERIALIZED *line2 = geom_shortestline3d(pt2d, pt3d);
+  printf("handler level of the liblwgeom notice: %d\n", errtest_level);
+  assert(errtest_level == MEOS_NOTICE);
+  Temporal *mfjson2 = tint_from_mfjson("{\"type\":\"MovingInteger\","
+    "\"values\":[1,2],\"datetimes\":[\"2001-01-01T00:00:00+00\","
+    "\"2001-01-02T00:00:00+00\"],\"lower_inc\":true,\"upper_inc\":1,"
+    "\"interpolation\":\"Step\"}");
+  printf("handler level of the MF-JSON warning: %d\n", errtest_level);
+  assert(errtest_level == MEOS_WARNING);
+  Temporal *refused = tint_in("abc@2001-01-01");
+  printf("handler level of the refused input: %d\n", errtest_level);
+  assert(refused == NULL && errtest_level == MEOS_ERROR);
+  meos_initialize_noexit_error_handler();
+  meos_errno_reset();
+  free(pt2d); free(pt3d); free(line); free(line2); free(mfjson);
+  free(mfjson2); free(ewkt);
 
   free(tpt1); free(tpt2);
 
