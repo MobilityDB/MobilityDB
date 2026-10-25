@@ -1,11 +1,11 @@
-COPY tbl_cbuffer TO '/tmp/tbl_cbuffer' (FORMAT BINARY);
+COPY  tbl_cbuffer TO STDOUT (FORMAT BINARY);
 COPY 100
 DROP TABLE IF EXISTS tbl_cbuffer_tmp;
 NOTICE:  table "tbl_cbuffer_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_cbuffer_tmp AS TABLE tbl_cbuffer WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_cbuffer_tmp FROM '/tmp/tbl_cbuffer' (FORMAT BINARY);
+COPY  tbl_cbuffer_tmp FROM STDIN (FORMAT BINARY);
 COPY 100
 SELECT COUNT(*) FROM tbl_cbuffer t1, tbl_cbuffer_tmp t2 WHERE t1.k = t2.k AND t1.cb <> t2.cb;
  count 

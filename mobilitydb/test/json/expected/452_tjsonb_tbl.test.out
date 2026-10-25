@@ -1,11 +1,11 @@
-COPY tbl_tjsonb TO '/tmp/tbl_tjsonb' (FORMAT BINARY);
+COPY  tbl_tjsonb TO STDOUT (FORMAT BINARY);
 COPY 0
 DROP TABLE IF EXISTS tbl_tjsonb_tmp;
 NOTICE:  table "tbl_tjsonb_tmp" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tjsonb_tmp AS TABLE tbl_tjsonb WITH NO DATA;
 CREATE TABLE AS
-COPY tbl_tjsonb_tmp FROM '/tmp/tbl_tjsonb' (FORMAT BINARY);
+COPY  tbl_tjsonb_tmp FROM STDIN (FORMAT BINARY);
 COPY 0
 SELECT COUNT(*) FROM tbl_tjsonb t1, tbl_tjsonb_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
  count 

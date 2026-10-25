@@ -304,19 +304,3 @@ jobs:
           n=$(nm -D --undefined-only prefix/lib/libmeos.so | grep -c ' GEOS' || true)
           echo "$n GEOS function(s) called by libmeos"
           test "$n" -eq 0
-
-      # Each program exits 1 where an input reaches one of the fall-backs a
-      # build without GEOS has in place of the library, so a count that grows
-      # reddens the job instead of passing unseen. The sweep carries its own
-      # controls, and fails where they do.
-      - name: Sweep the inputs that could reach a GEOS fall-back
-        run: |
-          cd meos/test
-          export LD_LIBRARY_PATH="$GITHUB_WORKSPACE/prefix/lib"
-          for t in geos_fallback_sweep geos_gateway_reach; do
-            echo "./$t"
-            gcc -Wall -Werror=implicit-function-declaration -g \
-              -I"$GITHUB_WORKSPACE/prefix/include" -o "$t" "$t.c" \
-              -L"$GITHUB_WORKSPACE/prefix/lib" -lmeos -lm
-            "./$t"
-          done

@@ -34,45 +34,45 @@
 
 -- Send/receive functions
 
-COPY tbl_intset TO '/tmp/tbl_intset' (FORMAT BINARY);
+\copy tbl_intset TO 'tbl_intset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_intset_tmp;
 CREATE TABLE tbl_intset_tmp AS TABLE tbl_intset WITH NO DATA;
-COPY tbl_intset_tmp FROM '/tmp/tbl_intset' (FORMAT BINARY);
+\copy tbl_intset_tmp FROM 'tbl_intset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_intset t1, tbl_intset_tmp t2 WHERE t1.k = t2.k AND t1.i <> t2.i;
 DROP TABLE tbl_intset_tmp;
 
-COPY tbl_bigintset TO '/tmp/tbl_bigintset' (FORMAT BINARY);
+\copy tbl_bigintset TO 'tbl_bigintset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_bigintset_tmp;
 CREATE TABLE tbl_bigintset_tmp AS TABLE tbl_bigintset WITH NO DATA;
-COPY tbl_bigintset_tmp FROM '/tmp/tbl_bigintset' (FORMAT BINARY);
+\copy tbl_bigintset_tmp FROM 'tbl_bigintset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_bigintset t1, tbl_bigintset_tmp t2 WHERE t1.k = t2.k AND t1.b <> t2.b;
 DROP TABLE tbl_bigintset_tmp;
 
-COPY tbl_floatset TO '/tmp/tbl_floatset' (FORMAT BINARY);
+\copy tbl_floatset TO 'tbl_floatset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_floatset_tmp;
 CREATE TABLE tbl_floatset_tmp AS TABLE tbl_floatset WITH NO DATA;
-COPY tbl_floatset_tmp FROM '/tmp/tbl_floatset' (FORMAT BINARY);
+\copy tbl_floatset_tmp FROM 'tbl_floatset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_floatset t1, tbl_floatset_tmp t2 WHERE t1.k = t2.k AND t1.f <> t2.f;
 DROP TABLE tbl_floatset_tmp;
 
-COPY tbl_textset TO '/tmp/tbl_textset' (FORMAT BINARY);
+\copy tbl_textset TO 'tbl_textset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_textset_tmp;
 CREATE TABLE tbl_textset_tmp AS TABLE tbl_textset WITH NO DATA;
-COPY tbl_textset_tmp FROM '/tmp/tbl_textset' (FORMAT BINARY);
+\copy tbl_textset_tmp FROM 'tbl_textset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_textset t1, tbl_textset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_textset_tmp;
 
-COPY tbl_dateset TO '/tmp/tbl_dateset' (FORMAT BINARY);
+\copy tbl_dateset TO 'tbl_dateset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_dateset_tmp;
 CREATE TABLE tbl_dateset_tmp AS TABLE tbl_dateset WITH NO DATA;
-COPY tbl_dateset_tmp FROM '/tmp/tbl_dateset' (FORMAT BINARY);
+\copy tbl_dateset_tmp FROM 'tbl_dateset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_dateset t1, tbl_dateset_tmp t2 WHERE t1.k = t2.k AND t1.d <> t2.d;
 DROP TABLE tbl_dateset_tmp;
 
-COPY tbl_tstzset TO '/tmp/tbl_tstzset' (FORMAT BINARY);
+\copy tbl_tstzset TO 'tbl_tstzset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tstzset_tmp;
 CREATE TABLE tbl_tstzset_tmp AS TABLE tbl_tstzset WITH NO DATA;
-COPY tbl_tstzset_tmp FROM '/tmp/tbl_tstzset' (FORMAT BINARY);
+\copy tbl_tstzset_tmp FROM 'tbl_tstzset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tstzset t1, tbl_tstzset_tmp t2 WHERE t1.k = t2.k AND t1.t <> t2.t;
 DROP TABLE tbl_tstzset_tmp;
 

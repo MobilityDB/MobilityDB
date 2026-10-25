@@ -34,10 +34,10 @@
 
 -- Send/receive functions
 
-COPY tbl_jsonbset TO '/tmp/tbl_jsonbset' (FORMAT BINARY);
+\copy tbl_jsonbset TO 'tbl_jsonbset' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_jsonbset_tmp;
 CREATE TABLE tbl_jsonbset_tmp AS TABLE tbl_jsonbset WITH NO DATA;
-COPY tbl_jsonbset_tmp FROM '/tmp/tbl_jsonbset' (FORMAT BINARY);
+\copy tbl_jsonbset_tmp FROM 'tbl_jsonbset' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_jsonbset t1, tbl_jsonbset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
 DROP TABLE tbl_jsonbset_tmp;
 

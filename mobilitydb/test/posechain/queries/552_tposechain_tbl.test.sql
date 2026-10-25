@@ -33,10 +33,10 @@
 -- Send and receive
 -------------------------------------------------------------------------------
 
-COPY tbl_tposechain TO '/tmp/tbl_tposechain' (FORMAT BINARY);
+\copy tbl_tposechain TO 'tbl_tposechain' (FORMAT BINARY);
 DROP TABLE IF EXISTS tbl_tposechain_tmp;
 CREATE TABLE tbl_tposechain_tmp AS TABLE tbl_tposechain WITH NO DATA;
-COPY tbl_tposechain_tmp FROM '/tmp/tbl_tposechain' (FORMAT BINARY);
+\copy tbl_tposechain_tmp FROM 'tbl_tposechain' (FORMAT BINARY);
 SELECT COUNT(*) FROM tbl_tposechain t1, tbl_tposechain_tmp t2 WHERE t1.k = t2.k AND t1.temp <> t2.temp;
 DROP TABLE tbl_tposechain_tmp;
 

@@ -746,7 +746,7 @@ tpointseq_linear_trajectory(const TSequence *seq, bool unary_union)
   pfree(points);
   if (! unary_union)
     return res;
-  GSERIALIZED *result = geom_unary_union(res, -1);
+  GSERIALIZED *result = geom_unary_union(res);
   pfree(res);
   return result;
 }
@@ -796,7 +796,7 @@ tpointseqset_linear_trajectory(const TSequenceSet *ss, bool unary_union)
   pfree(points); pfree_array((void **) lines, nlines);
   if (! unary_union)
     return coll;
-  GSERIALIZED *result = geom_unary_union(coll, -1);
+  GSERIALIZED *result = geom_unary_union(coll);
   pfree(coll);
   return result;
 }

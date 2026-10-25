@@ -160,7 +160,7 @@ jobs:
         run: |
           su builder -c "cmake -S '$GITHUB_WORKSPACE' -B '$GITHUB_WORKSPACE/build' \
             -DCMAKE_BUILD_TYPE=Release \
-            -DALL=ON"
+            -DALL=ON -DMOBILITYDB_TEST_ENCODING=SQL_ASCII"
 
       - name: Build
         run: su builder -c "make -C '$GITHUB_WORKSPACE/build' -j$(nproc)"
