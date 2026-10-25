@@ -351,6 +351,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8a812e98d7ec97219703357ea4d74e84.html#a8a812e98d7ec97219703357ea4d74e84">point_distance_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a2c6e96f79f62344c6616be627bf2e4f9.html#a2c6e96f79f62344c6616be627bf2e4f9">point_distance_midpoint_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a8d8c3aa4ce5b224fd1015963f4c2e3da.html#a8d8c3aa4ce5b224fd1015963f4c2e3da">point_distance_nearest</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a5e553aac173deffa2dd285e341e31ba2.html#a5e553aac173deffa2dd285e341e31ba2">point_distance_offset_dd</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aec1db803901eeec489462f2ee1c6e7e4.html#aec1db803901eeec489462f2ee1c6e7e4">point_distance_offset_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_a560e89f3effd2a20951de36403607aeb.html#a560e89f3effd2a20951de36403607aeb">point_distance_offset_filter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2geo__funcs_8c_aff464c64f0cc75dac50169b9537d6f8a.html#aff464c64f0cc75dac50169b9537d6f8a">point_distance_offset_filter_sign</a></td></tr>
@@ -700,7 +701,7 @@ $(function() {
 <div class="line">    memcpy(&amp;nn, &amp;b2, <span class="keyword">sizeof</span>(nn)); \</div>
 <div class="line">    (res) = <a class="code hl_function" href="meos_2src_2geo_2geo__funcs_8c_ac7aa470bd285a34e45d63bee33d615e5.html#ac7aa470bd285a34e45d63bee33d615e5">point_segment_beyond_inputs</a>(p, a, b, r, cc, nn, (b1 &amp; 1) != 0); \</div>
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_ac7aa470bd285a34e45d63bee33d615e5_html_ac7aa470bd285a34e45d63bee33d615e5"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_ac7aa470bd285a34e45d63bee33d615e5.html#ac7aa470bd285a34e45d63bee33d615e5">point_segment_beyond_inputs</a></div><div class="ttdeci">static bool point_segment_beyond_inputs(const double *p, const double *a, const double *b, double r, double c, double n, bool odd)</div><div class="ttdoc">Return true where the distance of a point to the interior of a segment, less a radius,...</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:3770</div></div>
+<div class="ttc" id="ameos_2src_2geo_2geo__funcs_8c_ac7aa470bd285a34e45d63bee33d615e5_html_ac7aa470bd285a34e45d63bee33d615e5"><div class="ttname"><a href="meos_2src_2geo_2geo__funcs_8c_ac7aa470bd285a34e45d63bee33d615e5.html#ac7aa470bd285a34e45d63bee33d615e5">point_segment_beyond_inputs</a></div><div class="ttdeci">static bool point_segment_beyond_inputs(const double *p, const double *a, const double *b, double r, double c, double n, bool odd)</div><div class="ttdoc">Return true where the distance of a point to the interior of a segment, less a radius,...</div><div class="ttdef"><b>Definition:</b> geo_funcs.c:3845</div></div>
 </div><!-- fragment -->
 </div>
 </div>
