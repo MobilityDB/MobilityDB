@@ -234,6 +234,18 @@ extern char *raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_
 /* Constructor functions for PostGIS rasters */
 
 extern Raster *raster_copy(const Raster *rast);
+extern Raster *raster_make(int width, int height, double upperleftx,
+  double upperlefty, double scalex, double scaley, double skewx, double skewy,
+  int32_t srid, const char *pixeltype, double nodataval, bool has_nodata,
+  const uint8_t *pixels, size_t size);
+extern Raster *raster_make_empty(int width, int height, double upperleftx,
+  double upperlefty, double scalex, double scaley, double skewx, double skewy,
+  int32_t srid);
+extern Raster *raster_add_band(const Raster *rast, int index,
+  const char *pixeltype, double initialvalue, double nodataval,
+  bool has_nodata);
+extern Raster *raster_add_band_raster(const Raster *torast,
+  const Raster *fromrast, int fromband, int toindex);
 
 /* Accessor functions for PostGIS rasters */
 
@@ -252,6 +264,8 @@ extern char *raster_band_pixel_type(const Raster *rast, int band);
 extern bool raster_band_has_nodata_value(const Raster *rast, int band);
 extern bool raster_band_nodata_value(const Raster *rast, int band,
   double *result);
+extern uint8_t *raster_band_pixels(const Raster *rast, int band,
+  size_t *size_out);
 extern int64 bandstats_count(const BandStats *stats);
 extern bool bandstats_sum(const BandStats *stats, double *result);
 extern bool bandstats_mean(const BandStats *stats, double *result);
@@ -284,6 +298,9 @@ extern BandStats *raster_summary_stats(const Raster *rast, int band,
 extern ValueCount *raster_value_count(const Raster *rast, int band,
   bool exclude_nodata, const double *searchvalues, int nsearch, double roundto,
   int *count);
+extern Raster *raster_set_values(const Raster *rast, int band, int x, int y,
+  int width, int height, const double *values, const bool *nodata,
+  const bool *noset, int count, bool keepnodata);
 extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
   const char *pixeltype, bool has_nodata, double nodataval);
 extern Raster *raster_slope(const Raster *rast, int band,
