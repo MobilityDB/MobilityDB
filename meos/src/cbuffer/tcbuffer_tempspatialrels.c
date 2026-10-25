@@ -1879,10 +1879,12 @@ ttouches_tcbufferseqset_geo_native(const TSequenceSet *ss, const void *ctx)
 /*****************************************************************************
  * Temporal contains and covers
  *
- * A geometry contains (@p strict) or covers a moving disk on the sub-periods
- * where the disk centre lies in a polygon of the geometry and the disk clears
- * its boundary: strictly (contains, signed clearance sg > 0) or up to tangency
- * (covers, sg >= 0). The value changes only where sg crosses 0, the same
+ * A geometry covers a moving disk on the sub-periods where the disk centre
+ * lies in a polygon of the geometry and the disk does not cross its boundary
+ * (signed clearance sg >= 0), and contains it, as OGC defines it, on the same
+ * sub-periods, except that a disk of a zero radius must clear the boundary
+ * (sg > 0) (#tcbuffer_disc_contains_ctx). The value changes only where sg
+ * crosses 0, the same
  * segment roots the touch predicate uses; between consecutive roots the disk
  * stays clear of the boundary so the relation is constant and decided by the
  * interior test at a sample point. A geometry with no polygonal component
