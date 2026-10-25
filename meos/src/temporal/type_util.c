@@ -685,6 +685,119 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
 }
 
 /*****************************************************************************
+ * Sort keys of datums
+ *****************************************************************************/
+
+/**
+ * @brief Return the number of bytes of the sort key of a value of a fixed-size
+ * ordered base type, 0 for another type
+ * @param[in] type Base type
+ */
+size_t
+datum_sortkey_size(MeosType type)
+{
+  switch (type)
+  {
+    case T_INT4:
+    case T_DATE:
+      return sizeof(int32);
+    case T_INT8:
+    case T_FLOAT8:
+    case T_TIMESTAMPTZ:
+      return sizeof(int64);
+    default:
+      return 0;
+  }
+}
+
+/**
+ * @brief Write the low `nbytes` bytes of an unsigned integer most significant
+ * first
+ */
+static void
+sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
+{
+  for (int i = nbytes - 1; i >= 0; i--)
+  {
+    out[i] = v & 0xFF;
+    v >>= 8;
+  }
+}
+
+/**
+ * @brief Write the sort key of a value of a fixed-size ordered base type
+ * @details The key is written most significant byte first, whatever the byte
+ * order of the machine, so that comparing two keys byte by byte as unsigned
+ * values orders them as #datum_cmp orders the values. A signed integer has its
+ * sign bit flipped. A double canonicalizes the values #pg_float8_cmp holds
+ * equal, -0.0 to 0.0 and every NaN to one NaN, then flips its sign bit when it
+ * is positive and every bit when it is negative, which places NaN above
+ * infinity as #pg_float8_cmp does.
+ * @param[in] d Value
+ * @param[in] type Base type, one #datum_sortkey_size accepts
+ * @param[out] out Buffer of #datum_sortkey_size bytes
+ */
+void
+datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
+{
+  assert(datum_sortkey_size(type) > 0); assert(out);
+  const uint32 sign32 = UINT32_C(0x80000000);
+  const uint64 sign64 = UINT64CONST(0x8000000000000000);
+  switch (type)
+  {
+    case T_INT4:
+    {
+      uint32 v = DatumGetInt32(d);
+      sortkey_put_uint64(v ^ sign32, 4, out);
+      return;
+    }
+    case T_DATE:
+    {
+      uint32 v = DatumGetDateADT(d);
+      sortkey_put_uint64(v ^ sign32, 4, out);
+      return;
+    }
+    case T_INT8:
+    {
+      uint64 v = DatumGetInt64(d);
+      sortkey_put_uint64(v ^ sign64, 8, out);
+      return;
+    }
+    case T_TIMESTAMPTZ:
+    {
+      uint64 v = DatumGetTimestampTz(d);
+      sortkey_put_uint64(v ^ sign64, 8, out);
+      return;
+    }
+    case T_FLOAT8:
+    {
+      double v = DatumGetFloat8(d);
+      uint64 bits;
+      if (isnan(v))
+        bits = UINT64CONST(0x7FF8000000000000);
+      else if (v == 0.0)
+      {
+        /* Normalize -0.0 to +0.0. They are the same number, and comparisons
+         * treat them as equal, but a double stores them differently, so
+         * without this step the two zeros would get different keys and a
+         * GROUP BY or DISTINCT would treat them as two different values */
+        const double zero = 0.0;
+        memcpy(&bits, &zero, sizeof(bits));
+      }
+      else
+        memcpy(&bits, &v, sizeof(bits));
+      bits = (bits & sign64) ? ~bits : bits ^ sign64;
+      sortkey_put_uint64(bits, 8, out);
+      return;
+    }
+    default: /* Error! */
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown sort key function for type: %s", meostype_name(type));
+      return;
+  }
+}
+
+/*****************************************************************************
  * Miscellaneous functions
  *****************************************************************************/
 

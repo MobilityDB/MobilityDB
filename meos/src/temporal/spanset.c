@@ -1608,4 +1608,49 @@ spanset_hash_extended(const SpanSet *ss, uint64 seed)
   return result;
 }
 
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_comp
+ * @brief Return the sort key of a span set
+ * @details The key is the span type followed by the bounds of each span, as
+ * #span_sortkey_intl writes them, so that comparing two keys byte by byte as
+ * unsigned values orders the span sets as #spanset_cmp does: span by span,
+ * and the span set whose spans are a prefix of the other's first
+ * @param[in] ss Span set
+ * @param[out] size Number of bytes of the key
+ * @see #spanset_sortkey
+ */
+uint8_t *
+spanset_sortkey_intl(const SpanSet *ss, size_t *size)
+{
+  assert(ss); assert(size); assert(datum_sortkey_size(ss->basetype) > 0);
+  size_t body = span_sortkey_body_size(ss->basetype);
+  *size = 1 + body * ss->count;
+  uint8_t *result = palloc(*size);
+  result[0] = ss->spantype;
+  uint8_t *out = result + 1;
+  for (int i = 0; i < ss->count; i++)
+    out = span_sortkey_body(SPANSET_SP_N(ss, i), out);
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_comp
+ * @brief Return the sort key of a span set, the bytes whose unsigned byte
+ * order is the order of #spanset_cmp and whose byte equality is #spanset_eq
+ * @param[in] ss Span set
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+spanset_sortkey(const SpanSet *ss, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return spanset_sortkey_intl(ss, size);
+}
+
 /*****************************************************************************/

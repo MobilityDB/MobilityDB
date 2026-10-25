@@ -161,6 +161,10 @@
  * @defgroup meos_internal_setspan_agg Aggregate functions
  * @ingroup meos_internal_setspan
  * @brief Aggregate functions for set and span types
+ *
+ * @defgroup meos_internal_setspan_comp Comparison functions
+ * @ingroup meos_internal_setspan
+ * @brief Comparison functions for set and span types
  */
 
 /*****************************************************************************/
