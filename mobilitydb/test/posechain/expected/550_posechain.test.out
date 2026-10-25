@@ -214,6 +214,18 @@ SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(Pose(Po
  t
 (1 row)
 
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' = posechain 'PoseChain(GeodPose(Point(0 0), 0))';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' < posechain 'PoseChain(GeodPose(Point(0 0), 0))';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT posechain 'PoseChain(Pose(Point(0 0), 0))' <> posechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(1 0), 0))';
  ?column? 
 ----------

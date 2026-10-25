@@ -167,6 +167,9 @@ SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(2 2),0.5)';
+-- A planar and a geodetic pose of one SRID differ, the planar one first
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' = pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' < pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
 
 SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.7)';

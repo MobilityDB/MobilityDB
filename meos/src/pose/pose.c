@@ -2719,6 +2719,8 @@ pose_eq(const Pose *pose1, const Pose *pose2)
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
+      MEOS_FLAGS_GET_GEODETIC(pose1->flags) !=
+        MEOS_FLAGS_GET_GEODETIC(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))
     return false;
   bool result = (
@@ -2762,12 +2764,16 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose1, INT_MAX); VALIDATE_NOT_NULL(pose2, INT_MAX);
 
-  /* Compare first the dimension, then the SRID,
-     then the position, then the orientation */
+  /* Compare first the dimension, then whether the poses are geodetic, then
+     the SRID, then the position, then the orientation */
   bool hasz1 = MEOS_FLAGS_GET_Z(pose1->flags),
        hasz2 = MEOS_FLAGS_GET_Z(pose2->flags);
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
+  bool geodetic1 = MEOS_FLAGS_GET_GEODETIC(pose1->flags),
+       geodetic2 = MEOS_FLAGS_GET_GEODETIC(pose2->flags);
+  if (geodetic1 != geodetic2)
+    return (geodetic1 ? 1 : -1);
 
   int32_t srid1 = pose_srid(pose1),
         srid2 = pose_srid(pose2);

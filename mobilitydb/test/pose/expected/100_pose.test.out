@@ -293,6 +293,18 @@ SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(2 2),0.5)';
  f
 (1 row)
 
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' = pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' < pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.5)';
  ?column? 
 ----------

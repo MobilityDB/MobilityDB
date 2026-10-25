@@ -1197,13 +1197,17 @@ posechain_cmp(const PoseChain *pc1, const PoseChain *pc2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pc1, INT_MAX); VALIDATE_NOT_NULL(pc2, INT_MAX);
 
-  /* Compare first the dimension, then the SRID, then the links in order,
-     and last the number of links, so that a chain precedes every chain
-     that extends it */
+  /* Compare first the dimension, then whether the chains are geodetic, then
+     the SRID, then the links in order, and last the number of links, so that
+     a chain precedes every chain that extends it */
   bool hasz1 = MEOS_FLAGS_GET_Z(pc1->flags),
        hasz2 = MEOS_FLAGS_GET_Z(pc2->flags);
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
+  bool geodetic1 = MEOS_FLAGS_GET_GEODETIC(pc1->flags),
+       geodetic2 = MEOS_FLAGS_GET_GEODETIC(pc2->flags);
+  if (geodetic1 != geodetic2)
+    return (geodetic1 ? 1 : -1);
 
   int32_t srid1 = posechain_srid(pc1), srid2 = posechain_srid(pc2);
   if (srid1 < srid2)
