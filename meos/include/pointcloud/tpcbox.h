@@ -89,6 +89,10 @@ extern bool tpcbox_overafter(const TPCBox *box1, const TPCBox *box2);
 
 extern TPCBox *tpcbox_parse(const char **str);
 
+/* Comparison functions */
+
+extern uint8_t *tpcbox_sortkey_intl(const TPCBox *box, size_t *size);
+
 /*****************************************************************************/
 
 #endif /* __TPCBOX_H__ */

@@ -1392,6 +1392,7 @@ extern bool tbox_gt(const TBox *box1, const TBox *box2);
 extern bool tbox_le(const TBox *box1, const TBox *box2);
 extern bool tbox_lt(const TBox *box1, const TBox *box2);
 extern bool tbox_ne(const TBox *box1, const TBox *box2);
+extern uint8_t *tbox_sortkey(const TBox *box, size_t *size);
 
 /*===========================================================================*
  * Functions for temporal types

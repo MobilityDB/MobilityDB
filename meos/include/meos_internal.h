@@ -1098,6 +1098,10 @@ extern bool tbox_overafter(const TBox *box1, const TBox *box2);
 
 extern bool inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result);
 
+/* Comparison functions for box types */
+
+extern uint8_t *tbox_sortkey_intl(const TBox *box, size_t *size);
+
 /*****************************************************************************
  * Functions for temporal types
  *****************************************************************************/

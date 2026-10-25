@@ -56,6 +56,8 @@
 /* Validity of a pair of spatiotemporal boxes */
 
 extern bool ensure_valid_stbox_stbox(const STBox *box1, const STBox *box2);
+extern size_t stbox_sortkey_size(const STBox *box);
+extern uint8_t *stbox_sortkey_put(const STBox *box, uint8_t *out);
 
 /*****************************************************************************/
 

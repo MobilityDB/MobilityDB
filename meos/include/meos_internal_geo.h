@@ -179,6 +179,10 @@ extern bool stbox_overafter(const STBox *box1, const STBox *box2);
 extern bool inter_stbox_stbox(const STBox *box1, const STBox *box2, STBox *result);
 extern GSERIALIZED *stbox_geo(const STBox *box);
 
+/* Comparison functions for box types */
+
+extern uint8_t *stbox_sortkey_intl(const STBox *box, size_t *size);
+
 /*****************************************************************************
  * Functions for temporal types
  *****************************************************************************/
