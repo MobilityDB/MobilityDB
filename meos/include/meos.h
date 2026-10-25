@@ -812,6 +812,7 @@ extern bool span_gt(const Span *s1, const Span *s2);
 extern bool span_le(const Span *s1, const Span *s2);
 extern bool span_lt(const Span *s1, const Span *s2);
 extern bool span_ne(const Span *s1, const Span *s2);
+extern uint8_t *span_sortkey(const Span *s, size_t *size);
 extern int spanset_cmp(const SpanSet *ss1, const SpanSet *ss2);
 extern bool spanset_eq(const SpanSet *ss1, const SpanSet *ss2);
 extern bool spanset_ge(const SpanSet *ss1, const SpanSet *ss2);
@@ -819,6 +820,7 @@ extern bool spanset_gt(const SpanSet *ss1, const SpanSet *ss2);
 extern bool spanset_le(const SpanSet *ss1, const SpanSet *ss2);
 extern bool spanset_lt(const SpanSet *ss1, const SpanSet *ss2);
 extern bool spanset_ne(const SpanSet *ss1, const SpanSet *ss2);
+extern uint8_t *spanset_sortkey(const SpanSet *ss, size_t *size);
 
 /*****************************************************************************
  * Bounding box functions for set and span types

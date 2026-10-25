@@ -846,6 +846,11 @@ extern void span_set(Datum lower, Datum upper, bool lower_inc, bool upper_inc, M
 extern SpanSet *spanset_make_exp(Span *spans, int count, int maxcount, bool normalize, bool order);
 extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool order);
 
+/* Comparison functions for set and span types */
+
+extern uint8_t *span_sortkey_intl(const Span *s, size_t *size);
+extern uint8_t *spanset_sortkey_intl(const SpanSet *ss, size_t *size);
+
 /*****************************************************************************/
 
 /* Conversion functions for set and span types */
