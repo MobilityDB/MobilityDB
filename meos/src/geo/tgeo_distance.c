@@ -455,11 +455,13 @@ dist_rest_bounds(double cx, double cy, double r1, double r2, const Edge *e,
  * instant of their first common point. Two segments that do not meet are
  * nearest at an end of one of them, so the distance is the least of the
  * distances of the two ends of the path to the edge and of the two ends of the
- * edge to the path, each the double nearest the exact one
- * (#point_segment_distance_offset_exact), and rounding is monotone, so the
- * least of them is the double nearest the least distance. The instant is the
+ * edge to the path: which ones reach it, by their squares
+ * (#segment_distance_square), and the distance rounded once to the double
+ * nearest it (#point_segment_distance_offset_exact). The instant is the
  * earliest at which the least is reached: an end of the path, or the
- * parameter of the foot of an edge end on it
+ * parameter of the foot of an edge end on it. Where the squares are not
+ * compared, each of the four is rounded, and rounding is monotone, so the
+ * least of them is the double nearest the least distance
  */
 static double
 dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
@@ -475,28 +477,50 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
   }
   const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
   const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  const double *pt[4][3] = {{c1, a, b}, {c2, a, b}, {a, c1, c2}, {b, c1, c2}};
   double dcx = cx2 - cx1, dcy = cy2 - cy1, l2 = dcx * dcx + dcy * dcy;
   double cand[4], t[4];
-  cand[0] = point_segment_distance_offset_exact(c1, a, b, 0.0);
   t[0] = 0.0;
-  cand[1] = point_segment_distance_offset_exact(c2, a, b, 0.0);
   t[1] = 1.0;
-  cand[2] = point_segment_distance_offset_exact(a, c1, c2, 0.0);
   t[2] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) : 0.0;
-  cand[3] = point_segment_distance_offset_exact(b, c1, c2, 0.0);
   t[3] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) : 0.0;
-  double best = cand[0], bt = t[0];
+  int mask = segment_distance_square(c1, c2, a, b);
+  if (mask > 0)
+  {
+    /* The earliest of the distances that reach the least, rounded once. The
+     * instant of each is the position along the path of c1, c2, a and b, so
+     * two compare exactly (#linesegm_param_cmp) rather than by their rounded
+     * quotients; a path of no length has the instants 0 and 1 of its ends */
+    const double *at[4] = {c1, c2, a, b};
+    int w = -1;
+    for (int i = 0; i < 4; i++)
+    {
+      if (! (mask & (1 << i)))
+        continue;
+      if (w < 0 || (l2 > 0.0 ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
+          t[i] < t[w]))
+        w = i;
+    }
+    if (argt)
+      *argt = t[w];
+    return point_segment_distance_offset_exact(pt[w][0], pt[w][1], pt[w][2],
+      0.0);
+  }
+  for (int i = 0; i < 4; i++)
+    cand[i] = point_segment_distance_offset_exact(pt[i][0], pt[i][1],
+      pt[i][2], 0.0);
+  const double *at[4] = {c1, c2, a, b};
+  int w = 0;
   for (int i = 1; i < 4; i++)
   {
-    if (cand[i] < best || (cand[i] == best && t[i] < bt))
-    {
-      best = cand[i];
-      bt = t[i];
-    }
+    if (cand[i] < cand[w] || (cand[i] == cand[w] &&
+        (l2 > 0.0 ? linesegm_param_cmp(c1, c2, at[i], at[w]) < 0 :
+          t[i] < t[w])))
+      w = i;
   }
   if (argt)
-    *argt = bt;
-  return best;
+    *argt = t[w];
+  return cand[w];
 }
 
 /**
@@ -507,12 +531,15 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
  * where their distance exceeds the radius. They meet or not by exact
  * orientations (#linesegm_intersect); two that do not meet are nearest at an
  * end of one of them, so the distance less the radius is the least of the
- * four distances of an end to the other segment less the radius, each the
- * double nearest the exact one (#point_segment_distance_offset_exact), and
- * rounding is monotone, so the least of them is the double nearest the least.
- * Where the disc reaches the edge, the value is the distance of the two
- * segments as #dist_moving_segment answers it less the radius, not positive,
- * which the callers read to rank overlaps
+ * four distances of an end to the other segment less the radius. The radius
+ * is the same for the four, so the least is that of the least distance, found
+ * by their squares (#segment_distance_square), and it is rounded once to the
+ * double nearest it (#point_segment_distance_offset_exact); where the squares
+ * are not compared, each of the four is rounded, and rounding is monotone, so
+ * the least of them is the double nearest the least. Where the disc reaches
+ * the edge, the value is the distance of the two segments as
+ * #dist_moving_segment answers it less the radius, not positive, which the
+ * callers read to rank overlaps
  */
 static double
 dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
@@ -524,6 +551,20 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
   {
     const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
     const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+    int mask = segment_distance_square(c1, c2, a, b);
+    if (mask > 0)
+    {
+      const double *pt[4][3] = {{c1, a, b}, {c2, a, b}, {a, c1, c2},
+        {b, c1, c2}};
+      int w = 0;
+      while (! (mask & (1 << w)))
+        w++;
+      double clear = point_segment_distance_offset_exact(pt[w][0], pt[w][1],
+        pt[w][2], r);
+      if (clear > 0.0)
+        return clear;
+      return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL) - r;
+    }
     double clear = fmin(
       fmin(point_segment_distance_offset_exact(c1, a, b, r),
         point_segment_distance_offset_exact(c2, a, b, r)),
