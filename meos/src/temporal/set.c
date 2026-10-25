@@ -1305,4 +1305,62 @@ set_hash_extended(const Set *s, uint64 seed)
   return result;
 }
 
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_comp
+ * @brief Return the sort key of a set
+ * @details The key is the set type followed by the key of each value, as
+ * #datum_sortkey_put writes it, so that comparing two keys byte by byte as
+ * unsigned values orders the sets as #set_cmp does: value by value, and the
+ * set whose values are a prefix of the other's first
+ * @param[in] s Set
+ * @param[out] size Number of bytes of the key
+ * @see #set_sortkey
+ */
+uint8_t *
+set_sortkey_intl(const Set *s, size_t *size)
+{
+  assert(s); assert(size); assert(datum_sortkey_type(s->basetype));
+  *size = 1;
+  for (int i = 0; i < s->count; i++)
+    *size += datum_sortkey_len(SET_VAL_N(s, i), s->basetype);
+  uint8_t *result = palloc(*size);
+  result[0] = s->settype;
+  uint8_t *out = result + 1;
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = SET_VAL_N(s, i);
+    datum_sortkey_put(value, s->basetype, out);
+    out += datum_sortkey_len(value, s->basetype);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_comp
+ * @brief Return the sort key of a set, the bytes whose unsigned byte order is
+ * the order of #set_cmp and whose byte equality is #set_eq
+ * @details The sets of integers, big integers, floats, dates, timestamps,
+ * texts and cells have a sort key
+ * @param[in] s Set
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+set_sortkey(const Set *s, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size, NULL);
+  if (! datum_sortkey_type(s->basetype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "No sort key for a set of type %s", meostype_name(s->settype));
+    return NULL;
+  }
+  return set_sortkey_intl(s, size);
+}
+
 /*****************************************************************************/

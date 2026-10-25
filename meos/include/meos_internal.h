@@ -848,6 +848,7 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Comparison functions for set and span types */
 
+extern uint8_t *set_sortkey_intl(const Set *s, size_t *size);
 extern uint8_t *span_sortkey_intl(const Span *s, size_t *size);
 extern uint8_t *spanset_sortkey_intl(const SpanSet *ss, size_t *size);
 
