@@ -29,14 +29,13 @@
 
 /**
  * @file
- * @brief The declarations of the GEOS C API a build carrying no GEOS still
- * reads
+ * @brief The declarations of the GEOS C API the build reads
  * @details A geometry of GEOS names the types of the entry points that convert
  * between the two geometry models, and the vendored PostGIS reads them from
- * @p geos_c.h whether or not the library is there. A build carrying no GEOS
- * has no such file to read, so this one stands in its place: it is put on the
- * include path only where the GEOS option is off, and the vendored sources
- * stay exactly as they came.
+ * @p geos_c.h. MEOS does not link the library, so this file stands in its
+ * place: it is put first on the include path of every build, so a build needs
+ * no GEOS headers installed, and the vendored sources stay exactly as they
+ * came.
  *
  * What stands in is the types and the constants alone. Every entry point of
  * the library itself is left out on purpose, so a call to one that the
@@ -44,7 +43,7 @@
  * the function rather than a link that quietly resolves against a GEOS the
  * build was told not to carry.
  *
- * The geometry MEOS answers with in such a build is the @p LWGEOM one, the
+ * The geometry MEOS answers with is the @p LWGEOM one, the
  * two models being the same there; @p meos/src/geo/geo_geos_none.c defines
  * the entry points the vendored raster core calls in those terms.
  */
@@ -108,7 +107,7 @@ enum GEOSBufJoinStyles
 };
 
 /*****************************************************************************
- * The entry points a build carrying no GEOS answers itself
+ * The entry points MEOS answers itself
  * @details These are the ones the vendored raster core calls, defined in
  * @p meos/src/geo/geo_geos_none.c from the native engines. They carry the
  * signatures of the GEOS library so the vendored sources call them exactly as

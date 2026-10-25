@@ -42,11 +42,9 @@
 #include <utils/jsonb.h>
 /* Proj */
 #include <proj.h>
-/* GEOS */
-#include <geos_c.h>
 /* PostGIS */
+#include <liblwgeom.h>
 #include <lwgeom_log.h>
-#include <lwgeom_geos.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -186,8 +184,7 @@ proj_finalize(void)
 /**
  * @brief Return the per-thread PROJ context
  * @note Named with the @p meos_ prefix
- * because PROJ owns the @p proj_ one, where it publishes 26 @p proj_get_* entry points; the
- * sibling @p geos_get_context needs no such qualification, GEOS using @p GEOS instead.
+ * because PROJ owns the @p proj_ one, where it publishes 26 @p proj_get_* entry points
  */
 PJ_CONTEXT *
 meos_proj_get_context(void)
@@ -196,63 +193,6 @@ meos_proj_get_context(void)
     proj_initialize();
   return MEOS_PJ_CONTEXT;
 }
-
-/***************************************************************************
- * Functions for the GEOS library
- ***************************************************************************/
-
-#if GEOS
-
-/* Per-thread GEOS context.  Each thread owns its own handle so concurrent
- * callers do not share GEOS state.  MEOS spatial helpers retrieve the
- * handle via geos_get_context() and use the reentrant GEOSXxx_r API. */
-
-static MEOS_TLS GEOSContextHandle_t MEOS_GEOS_CONTEXT = NULL;
-
-/**
- * @brief Initialize the GEOS library
- */
-static void
-geos_initialize(void)
-{
-  if (! MEOS_GEOS_CONTEXT)
-  {
-    MEOS_GEOS_CONTEXT = GEOS_init_r();
-    GEOSContext_setNoticeHandler_r(MEOS_GEOS_CONTEXT, lwnotice);
-    GEOSContext_setErrorHandler_r(MEOS_GEOS_CONTEXT, lwgeom_geos_error);
-  }
-  return;
-}
-
-#if MEOS
-/**
- * @brief Finalize the GEOS library
- */
-static void
-geos_finalize(void)
-{
-  if (MEOS_GEOS_CONTEXT)
-  {
-    GEOS_finish_r(MEOS_GEOS_CONTEXT);
-    MEOS_GEOS_CONTEXT = NULL;
-  }
-  lwgeom_geos_finalize();
-  return;
-}
-#endif /* MEOS */
-
-/**
- * @brief Return the per-thread GEOS context handle
- */
-GEOSContextHandle_t
-geos_get_context(void)
-{
-  if (! MEOS_GEOS_CONTEXT)
-    geos_initialize();
-  return MEOS_GEOS_CONTEXT;
-}
-
-#endif /* GEOS */
 
 /*****************************************************************************/
 #if MEOS
@@ -733,10 +673,6 @@ meos_initialize(void)
   meos_initialize_collation();
   /* Initialize PROJ */
   proj_initialize();
-  /* Initialize GEOS */
-#if GEOS
-  geos_initialize();
-#endif
   /* Initialize the PostgreSQL pseudo-random number generators */
   prng_initialize();
 #if POINTCLOUD
@@ -772,10 +708,6 @@ meos_finalize(void)
 #endif
   /* Finalize PROJ */
   proj_finalize();
-  /* Finalize GEOS */
-#if GEOS
-  geos_finalize();
-#endif
   /* Finalize the PostgreSQL pseudo-random number generators */
   prng_finalize();
   return;

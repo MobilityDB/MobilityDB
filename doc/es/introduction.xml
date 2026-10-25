@@ -228,7 +228,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>PostGIS versión 3 o superior. PostGIS está disponible en <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 			</itemizedlist>
 			<para>
-				Nótese que PostGIS tiene sus propias dependencias, como Proj, GEOS, LibXML2 o JSON-C y estas bibliotecas también se utilizan en MobilityDB. Consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> para obtener una matriz de compatibilidad de PostGIS con PostgreSQL, GEOS y Proj.
+				Nótese que PostGIS tiene sus propias dependencias, como Proj, GEOS, LibXML2 o JSON-C. MobilityDB también utiliza Proj y JSON-C, mientras que calcula por sí mismo las operaciones geométricas y no utiliza GEOS. Consulte <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> para obtener una matriz de compatibilidad de PostGIS con PostgreSQL, GEOS y Proj.
 			</para>
 
 			<para>
@@ -271,7 +271,7 @@ sudo apt-get install cmake gcc
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
-  geos-devel proj-devel json-c-devel
+  proj-devel json-c-devel
 </programlisting>
 			<para>
 				Las familias opcionales que habilita <varname>-DALL=ON</varname> requieren dos paquetes adicionales, <varname>gdal-devel</varname> para los operadores de rásteres y <varname>h3-devel</varname> para el tipo de índice H3.

@@ -41,8 +41,6 @@
 #include <json-c/json.h>
 /* PROJ */
 #include <proj.h>
-/* GEOS */
-#include <geos_c.h>
 /* PostgreSQL */
 /* MEOS */
 #include <meos.h>
@@ -103,12 +101,6 @@
  *****************************************************************************/
 
 extern PJ_CONTEXT *meos_proj_get_context(void);
-
-/*****************************************************************************
- * Internal function accessing the GEOS library
- *****************************************************************************/
-
-extern GEOSContextHandle_t geos_get_context(void);
 
 /*****************************************************************************
  * Round functions

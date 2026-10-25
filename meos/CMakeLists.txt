@@ -210,6 +210,7 @@ if(RASTER)
   message(STATUS "Including raster chip sampling objects")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:raster>")
   set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:librtcore>")
+  set(MEOS_OBJECTS ${MEOS_OBJECTS} "$<TARGET_OBJECTS:geo_geos_none>")
 endif()
 if(RGEO)
   message(STATUS "Including rigid geometries")
@@ -274,9 +275,6 @@ target_include_directories(meos PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 #--------------------------------
 
 target_link_libraries(${MEOS_LIB_NAME} ${JSON-C_LIBRARIES})
-if(GEOS)
-  target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
-endif()
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 if(H3)
   target_link_libraries(${MEOS_LIB_NAME} ${H3_LIBRARY})
@@ -317,18 +315,14 @@ if(POINTCLOUD)
   endif()
 endif()
 
-# postgis (libpostgis.a) references the GEOS C-API reentrant (GEOS*_r), PROJ
-# (proj_*) and GeographicLib geodesic (geod_*) symbols. With GNU ld these
-# dependency import/static libraries must appear AFTER their consumer on the
-# link line, otherwise their archive members are never pulled in and the link
-# fails with undefined references (seen on Windows/MSYS2 UCRT64, where
-# libgeos_c.dll.a / libproj.dll.a are import libraries treated like archives).
-# Re-list GEOS and PROJ after postgis so they resolve postgis's symbols. The
-# repetition is harmless on platforms where order does not matter (e.g. Linux
-# shared objects).
-if(GEOS)
-  target_link_libraries(${MEOS_LIB_NAME} ${GEOS_LIBRARY})
-endif()
+# postgis (libpostgis.a) references the PROJ (proj_*) and GeographicLib
+# geodesic (geod_*) symbols. With GNU ld these dependency import/static
+# libraries must appear AFTER their consumer on the link line, otherwise their
+# archive members are never pulled in and the link fails with undefined
+# references (seen on Windows/MSYS2 UCRT64, where libproj.dll.a is an import
+# library treated like an archive). Re-list PROJ after postgis so it resolves
+# postgis's symbols. The repetition is harmless on platforms where order does
+# not matter (e.g. Linux shared objects).
 target_link_libraries(${MEOS_LIB_NAME} ${PROJ_LIBRARIES})
 # MEOS calls the C math library (sqrt, atan2, hypot, ...), which a C link does
 # not add by itself, so it is named here rather than left to a dependency that
@@ -435,14 +429,6 @@ if(MEOS)
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/include/meos_internal_geo.h"
     DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-  if(NOT GEOS)
-    # The internal geometry header names the GEOS context handle, so a program
-    # reading the installed headers reads geos_c.h as this build did. It is the
-    # stand-in that is installed, so such a program needs no GEOS either
-    install(
-      FILES "${CMAKE_SOURCE_DIR}/meos/include/geos-none/geos_c.h"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-  endif()
   install(
     FILES "${CMAKE_SOURCE_DIR}/meos/src/geo/spatial_ref_sys.csv"
     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}")
@@ -564,12 +550,12 @@ if(MEOS)
   # reach the consumer's link line. Publish them as Libs.private, which is what
   # `pkg-config --static --libs meos` appends. These are spelled as link flags
   # rather than reused from the find_package results, because those results are
-  # CMake imported target names (GEOS::geos_c) or absolute paths into the build
-  # machine's /usr/lib — neither belongs in an installed .pc file. The enabled
+  # CMake imported target names or absolute paths into the build machine's
+  # /usr/lib — neither belongs in an installed .pc file. The enabled
   # families decide which entries apply, mirroring target_link_libraries above.
   set(MEOS_PC_LIBS_PRIVATE "")
   if(NOT BUILD_SHARED_LIBS)
-    set(_meos_pc_libs -lgeos_c -lproj -ljson-c)
+    set(_meos_pc_libs -lproj -ljson-c)
     if(H3)
       list(APPEND _meos_pc_libs -lh3)
     endif()

@@ -229,7 +229,7 @@ CREATE EXTENSION mobilitydb CASCADE;
 				<listitem><para>PostGIS version 3 or higher. PostGIS is available from <ulink url="https://postgis.net/">https://postgis.net/</ulink>.</para></listitem>
 			</itemizedlist>
 			<para>
-				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C, and these libraries are also used in MobilityDB. Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
+				Notice that PostGIS has its own dependencies such as Proj, GEOS, LibXML2, or JSON-C. MobilityDB also uses Proj and JSON-C, while it computes the geometry operations itself and does not use GEOS. Refer to <ulink url="http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS">http://trac.osgeo.org/postgis/wiki/UsersWikiPostgreSQLPostGIS</ulink> for a support matrix of PostGIS with PostgreSQL, GEOS, and Proj.
 			</para>
 
 			<para>
@@ -272,7 +272,7 @@ sudo apt-get install cmake gcc
 			</para>
 			<programlisting language="bash" xml:space="preserve" format="linespecific">
 sudo dnf install gcc gcc-c++ cmake make postgresql-server-devel postgis \
-  geos-devel proj-devel json-c-devel
+  proj-devel json-c-devel
 </programlisting>
 			<para>
 				The optional families enabled by <varname>-DALL=ON</varname> need two further packages, <varname>gdal-devel</varname> for the raster operators and <varname>h3-devel</varname> for the H3 index type.
