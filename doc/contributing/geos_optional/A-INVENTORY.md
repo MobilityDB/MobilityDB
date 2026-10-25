@@ -8,7 +8,7 @@
 
 # Appendix A. The MEOS functions with a path to GEOS
 
-**Measured at** MobilityDB master `d9b9c11985`.
+**Measured at** MobilityDB master `52b0c9e4d5`.
 
 This appendix lists every public MEOS function whose code can reach GEOS, and says for each one
 what a run in a build without GEOS shows. [Note 5](05-WHAT-STILL-NEEDS-GEOS.md) explains how the
@@ -33,62 +33,55 @@ list is obtained and what it means; this page is the list itself.
   - **reaches GEOS**: some input makes it raise the error of a fall-back ("… is answered by the
     GEOS library, which this build excludes"); note 5 gives the inputs;
   - **answered every tested input**: it answered every input of the probe, which includes the
-    inputs that make other functions reach GEOS;
+    inputs that made functions reach GEOS at master `d9b9c11985`;
   - **not run**: no probe calls it directly. Its gateway column says which tested functions share
     its path.
 
 The list is the output of [`tools/geos_reach.py`](tools/geos_reach.py), in
 [`tools/results/geos_reach.txt`](tools/results/geos_reach.txt), which also gives each function's
-file, its shortest chain of calls and its gateways. It lists **134 of the 3051 public functions** of `meos/src` (both counts in
+file, its shortest chain of calls and its gateways. It lists **129 of the 3308 public functions** of `meos/src` (both counts in
 [`tools/results/geos_reach_counts.txt`](tools/results/geos_reach_counts.txt));
-the other 2917 have no path to GEOS at all.
+the other 3179 have no path to GEOS at all.
 
 ## The table
 
 | Function | Group | Fall-backs on its path | Gateways | In a build without GEOS |
 |---|---|---|---|---|
-| `tcbuffer_convex_hull` | meos_cbuffer_accessor | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `nad_tcbuffer_geo` | meos_cbuffer_dist | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `nad_tcbuffer_stbox` | meos_cbuffer_dist | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `shortestline_tcbuffer_geo` | meos_cbuffer_dist | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `adisjoint_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `adwithin_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `aintersects_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `atouches_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
-| `edisjoint_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `edwithin_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | not run |
-| `eintersects_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | answered every tested input (gateway_reach) |
-| `etouches_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
+| `atouches_geo_tcbuffer` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
+| `atouches_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
+| `etouches_geo_tcbuffer` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
+| `etouches_tcbuffer_geo` | meos_cbuffer_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
 | `tcontains_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union | `geom_array_union` | answered every tested input (gateway_reach) |
 | `tcontains_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
 | `tcontains_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union | `geom_array_union` | not run |
 | `tcovers_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union | `geom_array_union` | not run |
 | `tcovers_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
 | `tcovers_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union | `geom_array_union` | not run |
-| `tdisjoint_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tdisjoint_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tdisjoint_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tdisjoint_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tdwithin_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tdwithin_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
-| `tintersects_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tintersects_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tintersects_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tintersects_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
+| `tdisjoint_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tdisjoint_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tdisjoint_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tdisjoint_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tdwithin_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tdwithin_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
+| `tintersects_cbuffer_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tintersects_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tintersects_tcbuffer_cbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tintersects_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
 | `ttouches_geo_tcbuffer` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
 | `ttouches_tcbuffer_geo` | meos_cbuffer_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
-| `tcbuffer_at_geom` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
-| `tcbuffer_at_stbox` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tcbuffer_minus_geom` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tcbuffer_minus_stbox` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tcbufferseq_traversed_area`, `tpointseq_linear_trajectory` | not run |
-| `tcbuffer_traversed_area` | meos_cbuffer_spatial_accessor | array union, unary union | `tcbufferseq_traversed_area`, `tcbufferseqset_traversed_area` | answered every tested input (gateway_reach) |
+| `tcbuffer_at_geom` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
+| `tcbuffer_at_stbox` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tcbuffer_minus_geom` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
+| `tcbuffer_minus_stbox` | meos_cbuffer_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
 | `tgeo_convex_hull` | meos_geo_accessor | array union, unary union | `geo_values_collect`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | answered every tested input (gateway_reach) |
-| `tgeo_traversed_area` | meos_geo_accessor | array union, unary union | `geo_values_collect` | **reaches GEOS** (temporal_reach, gateway_reach) |
-| `geom_array_union` | meos_geo_base_spatial | array union | `geom_array_union` | **reaches GEOS** (arrunion_min, sweep) |
-| `geom_difference2d` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | **reaches GEOS** (coll_detail, sweep) |
-| `geom_intersection2d` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | **reaches GEOS** (coll_multi, coll_detail, sweep) |
+| `tgeo_traversed_area` | meos_geo_accessor | array union, unary union | `geo_values_collect` | answered every tested input (temporal_reach, gateway_reach) |
+| `geom_array_union` | meos_geo_base_spatial | array union | `geom_array_union` | answered every tested input (arrunion_min, sweep) |
+| `geom_difference2d` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | answered every tested input (coll_detail, sweep) |
+| `geom_intersection2d` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | answered every tested input (coll_multi, coll_detail, sweep) |
 | `geom_intersection2d_coll` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
-| `geom_unary_union` | meos_geo_base_spatial | array union, unary union | `(itself)` | **reaches GEOS** (coll_multi, sweep) |
+| `geom_symdifference2d` | meos_geo_base_spatial | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
+| `geom_unary_union` | meos_geo_base_spatial | array union, unary union | `(itself)` | **reaches GEOS** on a precision grid alone, the positive control of the sweep; answered every other tested input (coll_multi, sweep) |
+| `geom_union2d` | meos_geo_base_spatial | array union | `geom_array_union` | not run |
 | `tgeo_space_time_boxes` | meos_geo_bbox_split | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
 | `acontains_geo_tgeo` | meos_geo_rel_ever | array union, unary union | `geo_values_collect`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
 | `acontains_tgeo_geo` | meos_geo_rel_ever | array union, unary union | `geo_values_collect`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |
@@ -126,7 +119,7 @@ the other 2917 have no path to GEOS at all.
 | `tintersects_tgeo_geo` | meos_geo_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
 | `ttouches_geo_tgeo` | meos_geo_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
 | `ttouches_tgeo_geo` | meos_geo_rel_temp | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | not run |
-| `tgeo_at_geom` | meos_geo_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | **reaches GEOS** (gateway_reach) |
+| `tgeo_at_geom` | meos_geo_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input (gateway_reach) |
 | `tgeo_at_stbox` | meos_geo_restrict | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | answered every tested input (gateway_reach) |
 | `tgeo_minus_geom` | meos_geo_restrict | array union, difference, intersection, unary union | `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory` | answered every tested input but two, where it returns no value without an error (gateway_reach) |
 | `tgeo_minus_stbox` | meos_geo_restrict | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
@@ -135,6 +128,7 @@ the other 2917 have no path to GEOS at all.
 | `tgeo_space_boxes` | meos_geo_tile | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
 | `tgeo_space_split` | meos_geo_tile | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
 | `tgeo_space_time_split` | meos_geo_tile | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
+| `tgeo_time_boxes` | meos_geo_tile | array union, difference, intersection | `geom_array_union`, `geom_difference2d`, `geom_intersection2d` | not run |
 | `tnpoint_trajectory` | meos_npoint_accessor | array union | `geom_array_union` | not run |
 | `nad_tnpoint_geo` | meos_npoint_dist | array union | `geom_array_union` | not run |
 | `nad_tnpoint_npoint` | meos_npoint_dist | array union | `geom_array_union` | not run |
@@ -158,7 +152,7 @@ the other 2917 have no path to GEOS at all.
 | `raster_tile_value_array` | meos_raster | array union | `geom_array_union` | not run |
 | `trgeometry_convex_hull` | meos_rgeo_accessor | array union, unary union | `trgeo_geoms_merge` | answered every tested input (trgeo_reach) |
 | `trgeometry_length` | meos_rgeo_accessor | array union, unary union | `tpointseq_linear_trajectory` | not run |
-| `trgeometry_traversed_area` | meos_rgeo_accessor | array union, unary union | `trgeo_geoms_merge` | **reaches GEOS** (trgeo_reach) |
+| `trgeometry_traversed_area` | meos_rgeo_accessor | array union, unary union | `trgeo_geoms_merge` | answered every tested input (trgeo_reach) |
 | `trgeometry_append_tsequence` | meos_rgeo_modif | array union | `geom_array_union` | not run |
 | `trgeometry_merge` | meos_rgeo_modif | array union | `geom_array_union` | not run |
 | `trgeometry_merge_array` | meos_rgeo_modif | array union | `geom_array_union` | not run |
@@ -174,9 +168,10 @@ the other 2917 have no path to GEOS at all.
 | `edisjoint_trgeometry_geo` | meos_rgeo_rel_ever | array union, unary union | `trgeo_geoms_merge` | not run |
 | `eintersects_trgeometry_geo` | meos_rgeo_rel_ever | array union, unary union | `trgeo_geoms_merge` | not run |
 | `etouches_trgeometry_geo` | meos_rgeo_rel_ever | array union, unary union | `trgeo_geoms_merge` | not run |
+| `temporal_app_tseq_transfn` | meos_temporal_agg | array union | `geom_array_union` | not run |
 | `temporal_append_tsequence` | meos_temporal_modif | array union | `geom_array_union` | not run |
 | `temporal_insert` | meos_temporal_modif | array union | `geom_array_union` | not run |
-| `temporal_merge` | meos_temporal_modif | array union | `geom_array_union` | **reaches GEOS**, and reports the refusal as an error (tmerge_min, merge_sweep) |
+| `temporal_merge` | meos_temporal_modif | array union | `geom_array_union` | answered every tested pair of temporal geometries; of temporal geographies it answers positions and refuses the rest, as every build does (tmerge_min, merge_sweep) |
 | `temporal_merge_array` | meos_temporal_modif | array union | `geom_array_union` | not run |
 | `temporal_update` | meos_temporal_modif | array union | `geom_array_union` | not run |
 | `atouches_tpoint_geo` | meos_temporal_spatial_rel_ever | array union, difference, intersection, unary union | `geo_values_collect`, `geom_array_union`, `geom_difference2d`, `geom_intersection2d`, `tpointseq_linear_trajectory`, `tpointseqset_linear_trajectory` | not run |

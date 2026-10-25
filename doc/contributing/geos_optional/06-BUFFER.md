@@ -8,17 +8,28 @@
 
 # 6. The buffer
 
-**Measured at** MobilityDB master `d9b9c11985`.
+**Measured at** MobilityDB master `d9b9c11985`, and the square of §6.1 and the ledger census of
+§6.5 again at master `52b0c9e4d5`.
 
 The *buffer* of a geometry at a distance *r* is the region of all points no farther than *r*
 from it: a disc around a point, a sausage around a line, a polygon grown outwards with rounded
 corners. `geom_buffer` in `meos/src/geo/geo_buffer.c` computes it natively in every build.
 
 The buffer has no path to GEOS ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.4), so what is open
-here is not GEOS but the buffer's own answer and speed. Two things are open: its answer depends on
-where the shape lies (§6.1–§6.6), and it is between about 2.8 and 4.4 times slower than GEOS on
-large real polygons (§6.9). Most of this note concerns the repair of the first, and why it
-cannot be merged on its own.
+here is not GEOS but the buffer's own answer and speed. At master `d9b9c11985` two things were open:
+its answer depended on where the shape lies (§6.1–§6.6), and it was between about 2.8 and 4.4 times
+slower than GEOS on large real polygons (§6.9). Most of this note concerns a repair of the first
+measured then, and why it could not be merged on its own.
+
+**What has changed since.** MobilityDB #3040, merged as `8867a28596`, builds the buffer of a
+polygon with round joins from an exact arrangement of its offset curves, every question of which
+is the sign of an expression of the input doubles, decided exactly; a ring the arrangement does
+not answer goes to the older piece overlay this note describes. MobilityDB #3159, merged as
+`3c25b6966f`, decides the two questions that still sent rings of the natural areas there, so no
+buffer of that corpus takes the older overlay. On master `52b0c9e4d5` the square of §6.1 has the
+area of its formula at every position but one, where it declines, and the ledger of §6.5 reads
+114 declines of 1840 where it read 196, with every group of four of its six families in agreement
+(§6.10). The buffer of the natural areas costs less than GEOS (§6.9).
 
 **Where each figure comes from.** The figures of §6.1 are measured on master for these notes, by
 [`tools/square_buffer.c`](tools/square_buffer.c), and the table of §6.4 by the same program run
@@ -49,8 +60,10 @@ distance, its area is s² + 4sr + πr² = **0.000483141592654**.
 | at 1 000 000 | 0.000483140335918 |
 | at 6 400 000 | **0.000323999972105** |
 
-The first two rows are within 1.3e-9 of the formula; that small difference is not attributed
-here, and §6.8 explains why an area is weak evidence for a buffer. The
+The first two rows are within 1.3e-9 of the formula. That difference is the area function's: it
+measured an arc by 32 chords per quarter circle, so a disc of radius 1 read 3.1403311569547525
+(MobilityDB #3050), and 3.22199265358979 − 3.22073115695475 = π − 3.1403311569547525 to the digits
+printed. §6.8 explains why an area is weak evidence for a buffer. The
 third is **33 % too small** — smaller even than the 0.0004 square it must contain.
 
 With a larger distance, the same square at 6 400 000 is not answered at all: the buffer
@@ -63,8 +76,25 @@ With a larger distance, the same square at 6 400 000 is not answered at all: the
 | 1000 | 3 140 411 | declines |
 
 These figures are the output of [`tools/square_buffer.c`](tools/square_buffer.c) on master
-([`tools/results/square_buffer.txt`](tools/results/square_buffer.txt)), run with an error
-handler that returns so that every case prints.
+`d9b9c11985` ([`tools/results/square_buffer.d9b9c11985.txt`](tools/results/square_buffer.d9b9c11985.txt)),
+run with an error handler that returns so that every case prints.
+
+On master `52b0c9e4d5` the same program reads
+([`tools/results/square_buffer.txt`](tools/results/square_buffer.txt)), against the formula
+s² + 4sr + πr²:
+
+| Distance | Formula | at the origin | at 1 000 000 | at 6 400 000 |
+|---|---|---|---|---|
+| 0.001 | 0.000483141592654 | 0.00048314159265359 | 0.000483141597367491 | 0.000483141585212637 |
+| 1 | 3.22199265358979 | 3.22199265358979 | 3.22199265362157 | **declines** |
+| 1000 | 3 141 672.65398979 | 3 141 672.65398979 | 3 141 672.65398996 | 3 141 672.6539881 |
+
+At the origin every area is the formula's to the last digit printed, the disc's arcs now measured
+on the arcs themselves (MobilityDB #3050, merged as `7cc7a5415b`) where `lwgeom_area` measured
+their chords. At 1 000 000 and 6 400 000 the areas differ from the formula by at most 4.7e-12 and
+7.4e-12 of a unit of area at a distance of 0.001, the rounding of vertices that far from the
+origin. One case declines: the square at 6 400 000 buffered by 1, which answered nowhere at that
+position on master `d9b9c11985` either and is not traced here.
 
 ## 6.2 What ought to be true
 
@@ -154,7 +184,31 @@ declines **5** and the frame **12**.
 So the frame removes every case where the engine returns a *differently shaped* answer, and it
 costs seven real polygons that answered before. The closed-form arm does not improve. Of its 120 and 124 disagreeing
 groups, 44 on each side are areas off the formula by more than 1 % (the rest are declines);
-both arms count 44, and their cause is not yet found.
+both arms count 44, and their cause is not found on those two builds.
+
+**The same ledger on master `52b0c9e4d5`**, built without GEOS
+([`tools/results/buffer_ledger_census.txt`](tools/results/buffer_ledger_census.txt)):
+
+| Arm (groups that disagree) | parent | with the frame | master `52b0c9e4d5` |
+|---|---|---|---|
+| move, of 460 groups | 64 | 40 | 75 |
+| scale, of 368 groups | 113 | 32 | 84 |
+| — of which differ in *shape*, not merely in declining | 46 | 0 | 49 |
+| closed form, of 880 | 120 | 124 | 93 |
+| declined queries, of 1840 | 196 | 160 | **114** |
+
+Four of the six families, the circle, the ellipse, the segment and the square, agree in every move
+and scale group, their areas within 6.03e-13 of each other. Every disagreement of the move and
+scale arms is in the other two: the open line whose end nearly meets its start (53 of 200 move
+groups, 68 of 160 scale groups) and the square with a hole (22 of 100, 16 of 80). Whether the frame
+of §6.4 removes those is not measured on master.
+
+**The 44 off the formula are the probe's area, not the buffer.** On master the 44 sit at the two
+smallest scales alone, 2^−24 and 2^−27, in the circle, segment and square families. The ledger's
+probe measures an answer with `lwgeom_area`, which measures an arc by its chords (§6.8). Reading
+the same answers with `geom_area`, which measures an arc on the arc (MobilityDB #3050), the
+closed-form arm reads 0 areas off the formula, its 49 remaining groups all declines of the square
+with a hole, while every status, ring count and normalized answer is the same on all 1840 rows.
 
 CGAL, deciding for points placed well inside or well outside the buffer whether they belong to
 it, reads 4 disagreements of 32 668 queries on the parent and 0 of 33 600 with the frame. The
@@ -287,16 +341,28 @@ comparing every pair (#2803, #2813), skipping a bounds check the loop already gu
 sort, and reading each ring's edges once instead of twice.
 
 No speed claim is made for the frame: with it, the ledger compares 187 polygons against 180, and
-a valid comparison needs both sides to answer the same rows (note 2, §2.6). The first step of the
-remaining speed work is a fresh profile of master's buffer on the natural areas, after the
-correctness change, because that change alters which rows are timed.
+a valid comparison needs both sides to answer the same rows (note 2, §2.6).
+
+**The exact arrangement reaches parity.** MobilityDB #3040 states, at its last commit, the native
+buffer of the natural areas at 0.989 of GEOS called directly at distance 1, 0.684 at 50 and 0.899
+at 500, and the small shapes at 0.499, in callgrind instructions. MobilityDB #3159 states 1.104 at
+distance 1 and 1.298 at 500 on its base, where rings of a few of those areas went to the older
+piece overlay, and 0.947 and 0.990 with it, where no buffer of that corpus declines and no ring
+takes the older overlay. CGAL agrees with all 1313
+answers of the natural buffer corpus and all 38940 of the curved buffer corpus on its head.
 
 ## 6.10 What is left, in one list
 
-1. The frame (§6.4) together with the side traversal (§6.7), its prerequisite element type, and
-   the ring area about a point of the ring (§6.8), as one change. Its finishing line: the move and
-   scale arms of the ledger at 0, no more declines than the parent on the ledger and on the real
-   polygons, and CGAL agreeing on every query.
-2. The hole shrinking to exactly a point (§6.8).
-3. Speed parity on the natural areas (§6.9).
-4. The single-sided buffer, as the committers specified it (note 4 §4.11).
+1. **The two families of the ledger that still depend on position**, on master `52b0c9e4d5`: the
+   open line whose end nearly meets its start, and the square with a hole (§6.5), with the square
+   at 6 400 000 buffered by 1, which declines (§6.1). The repair of §6.4–§6.8 (the frame, the side
+   traversal, its prerequisite element type and the ring area about a point of the ring, as one
+   change) was measured on the older piece overlay before MobilityDB #3040; whether it is still
+   what these inputs need is measured on master first, by the ledger, before it is proposed. The
+   finishing line is unchanged: the move and scale arms of the ledger at 0, no more declines than
+   master on the ledger and on the real polygons, and CGAL agreeing on every query.
+2. The hole shrinking to exactly a point (§6.8), not re-measured on master.
+3. The single-sided buffer, as the committers specified it (note 4 §4.11).
+
+Speed parity on the natural areas, item 3 of this list at master `d9b9c11985`, is reached
+(§6.9).

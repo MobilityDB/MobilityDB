@@ -9,3 +9,45 @@ BUFFER LEDGER CENSUS   1840 queries, 1680 answered, 160 declined
 T    ALL           460      40       40       0       0
 S    ALL           368      32       32       0       0
 C    ALL           880     124       80       0      44
+# master 52b0c9e4d5, built without GEOS:
+BUFFER LEDGER CENSUS   1840 queries, 1726 answered, 114 declined
+T    circle         40       0        0       0       0    6.03e-13
+T    ell            40       0        0       0       0    2.41e-13
+T    nearline      200      53       36      16      20       0.979
+T    seg            40       0        0       0       0    1.74e-13
+T    sq             40       0        0       0       0    1.41e-13
+T    sqhole        100      22       19       2       3     0.00195
+T    ALL           460      75       55      18      23
+S    circle         32       0        0       0       0           0
+S    ell            32       0        0       0       0           0
+S    nearline      160      68       37       8      40           1
+S    seg            32       0        0       0       0           0
+S    sq             32       0        0       0       0           0
+S    sqhole         80      16       16       6       9           1
+S    ALL           368      84       53      14      49
+C    circle        160      20        0       0      20       0.363
+C    seg           160      12        0       0      12       0.222
+C    sq            160      12        0       0      12      0.0856
+C    sqhole        400      49       49       0       0     0.00329
+C    ALL           880      93       49       0      44
+# master 52b0c9e4d5, the same answers with each area read by geom_area (MEOS, arcs measured on the arcs) in place of lwgeom_area:
+BUFFER LEDGER CENSUS   1840 queries, 1726 answered, 114 declined
+T    circle         40       0        0       0       0           0
+T    ell            40       0        0       0       0    2.39e-13
+T    nearline      200      53       36      16      20       0.979
+T    seg            40       0        0       0       0           0
+T    sq             40       0        0       0       0     1.6e-13
+T    sqhole        100      22       19       2       3     0.00195
+T    ALL           460      75       55      18      23
+S    circle         32       0        0       0       0           0
+S    ell            32       0        0       0       0           0
+S    nearline      160      68       37       8      40           1
+S    seg            32       0        0       0       0           0
+S    sq             32       0        0       0       0           0
+S    sqhole         80      16       16       6       9           1
+S    ALL           368      84       53      14      49
+C    circle        160       0        0       0       0           0
+C    seg           160       0        0       0       0    2.22e-16
+C    sq            160       0        0       0       0     1.6e-13
+C    sqhole        400      49       49       0       0     0.00195
+C    ALL           880      49       49       0       0

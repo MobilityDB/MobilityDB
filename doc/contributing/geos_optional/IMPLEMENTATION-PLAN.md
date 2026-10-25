@@ -8,7 +8,8 @@
 
 # Implementation plan
 
-**Measured at** MobilityDB master `d9b9c11985`.
+**Measured at** MobilityDB master `d9b9c11985`; the state of each step is read again at master
+`52b0c9e4d5`.
 
 This plan turns the remaining work of the [index](00-INDEX.md) into pull requests, in order. Each
 step names what it must prove. The notes it cites explain the terms; "the sweep" and "the gateway
@@ -49,15 +50,20 @@ are what keeps GEOS in the shipped library.
 Step 3 is expected to close part of step 5, since the overlay hands collections to the array
 union; step 5 re-runs the sweep after it and takes what remains.
 
+**Part I is finished.** On master `52b0c9e4d5` the sweep reads 0 in every count but its positive
+control, the unary union on a precision grid; the gateway probe reads 333 of 337 calls answered and
+0 reaching a fall-back; and the probes of the public functions that reached GEOS answer every
+input ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9).
+
 ## Part II — the buffer
 
 | # | Step | What clears it |
 |---|---|---|
 | 7 | The buffer ledger (generator, probe, scorer) and a reduced exact-reference corpus enter the repository, with a test that runs them, if decision 1 is adopted | It reproduces the census of note 6 §6.5 on master, and its fault-injection control turns it red (note 7 §7.1) |
-| 8 | The code the buffer and the overlay share for cutting boundary pieces where they cross and chaining them moves from `geo_buffer.c` to a file of its own, `geo_topology.c` (written, as the first four commits of the branch carrying the repair, note 6 §6.5) | Changes no answer: the ledger, the containment corpus and the real polygons read the same on its head as on its base, and CGAL agrees on every answer |
-| 9 | **One change**: the chaining receives the element type it reads; the rings are assembled by a traversal that spends a side, not a piece; the ring area is taken about a point of the ring; the buffer is built in a frame chosen from the geometry and the distance (note 6 §6.4–§6.8) | The move and scale arms of the ledger (note 6 §6.5) read 0; declines no higher than the base on the ledger and on the 192 real polygons; CGAL agrees on every query of the ledger, the containment corpus and the curved-buffer corpora |
+| 8 | The code the buffer and the overlay share for cutting boundary pieces where they cross and chaining them moves from `geo_buffer.c` to a file of its own, `geo_topology.c` (written, as the first four commits of the branch carrying the repair, note 6 §6.5) | Changes no answer: the ledger, the containment corpus and the real polygons read the same on its head as on its base, and CGAL agrees on every answer. The branch is on master `a362004728`, before MobilityDB #3040 builds the buffer of a polygon with round joins from an exact arrangement; it is rebuilt on master before it is proposed |
+| 9 | **One change**: the chaining receives the element type it reads; the rings are assembled by a traversal that spends a side, not a piece; the ring area is taken about a point of the ring; the buffer is built in a frame chosen from the geometry and the distance (note 6 §6.4–§6.8) | The move and scale arms of the ledger (note 6 §6.5) read 0; declines no higher than the base on the ledger and on the 192 real polygons; CGAL agrees on every query of the ledger, the containment corpus and the curved-buffer corpora. On master `52b0c9e4d5` the two arms disagree only for the open line nearly closing and the square with a hole (75 and 84 groups), and the ledger declines 114 of 1840; the step is measured again on master, for those two families, before its design is kept (note 6 §6.10) |
 | 10 | The buffer answers a hole that shrinks to exactly a point | The 10 × 10 square at 6 400 000 answers at hole half-width 0.001, with the exact area on either side |
-| 11 | The buffer reaches speed parity on the natural areas | Every buffer cell at or below 1 against GEOS called directly; the first commit is a fresh profile of master after step 9 |
+| 11 | The buffer reaches speed parity on the natural areas | Every buffer cell at or below 1 against GEOS called directly. **Reached** by MobilityDB #3040 (`8867a28596`), which states 0.989, 0.684 and 0.899 at distances 1, 50 and 500 and 0.499 on the small shapes, and MobilityDB #3159 (`3c25b6966f`), which states 0.947 and 0.990 at distances 1 and 500 once no ring of the natural areas takes the older piece overlay (note 6 §6.9) |
 | 12 | The single-sided buffer | The PostGIS 3.6.4 reference answers of note 4 §4.11, parameters included |
 
 Step 9 is the one design change of the plan, and its four parts cannot be split: the frame alone
@@ -93,14 +99,19 @@ the frame (note 6 §6.6).
 
 ## Open items, stated rather than buried
 
-- **111 of the 134 functions with a path to GEOS are not run individually** (appendix A). Each
-  shares a gateway with functions that are; step 6's job is where running all of them belongs.
+- **108 of the 129 functions with a path to GEOS are not run individually** (appendix A, master
+  `52b0c9e4d5`). Each shares a gateway with functions that are; step 6's job is where running all
+  of them belongs. Step 13 turns any input of theirs that would reach a fall-back into a
+  refusal.
 - **Four CGAL disagreements of 32 668 on the buffer ledger**, recorded by the campaign's run of
   2026-09-30, are not attributed (note 6 §6.5):
   they may be the judge rather than the engine, and are resolved before either is called wrong.
-- **44 closed-form deviations of the buffer ledger** sit on both arms of step 9 and are not
-  attributed.
-- **No exact-reference run is recorded for convex hull, oriented envelope, centroid and the
-  simplicity test** (note 4 §4.6).
+- **44 closed-form deviations of the buffer ledger** sit on both arms of step 9. On master
+  `52b0c9e4d5` they sit at the scales 2^−24 and 2^−27 alone and are the probe's area function:
+  measured by `geom_area` in place of `lwgeom_area`, the closed-form arm reads 0 areas off the
+  formula (note 6 §6.5).
+- **No exact-reference run is recorded for convex hull, oriented envelope and the simplicity
+  test** (note 4 §4.6). The centroid has one: MobilityDB #3171, merged as `d51b32e664`, states CGAL
+  agreeing with every answer of its head over 75 rows in six classes.
 - **The offset curve and make_valid are exposed by no function.** Their behaviour is decided
   (note 4 §4.10), and no step builds them until a function exposes them.

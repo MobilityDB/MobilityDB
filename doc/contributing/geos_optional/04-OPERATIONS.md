@@ -8,7 +8,8 @@
 
 # 4. The operations, one by one
 
-**Measured at** MobilityDB master `d9b9c11985`.
+**Measured at** MobilityDB master `d9b9c11985`; what each operation answers on master
+`52b0c9e4d5` is stated where it differs.
 
 This note takes each geometry operation the campaign covers and answers four questions: what it
 does for a user, how a build without GEOS answers it, what evidence says the answer is right and
@@ -70,7 +71,7 @@ the polygon's edges, as PostGIS's `pip_short_circuit` does. It is outside every 
 
 **Left.** Nothing.
 
-## 4.3 Intersection and difference — finished for two geometries, not for collections
+## 4.3 Intersection and difference — finished
 
 **What it does.** `geom_intersection2d` and `geom_difference2d`: the part two geometries share,
 and the part of the first not in the second. Temporal restriction (`atGeometry`,
@@ -109,18 +110,29 @@ valid quadrilateral pairs, 2000 of 2000 collections and 1500 of 1500 random pair
 intersection and the difference alike, and CGAL's circle-segment operations agree with the 7847
 overlays of discs less triangles they judge. In instructions it reads 0.757 of GEOS for the
 intersection of quadrilaterals and 0.870 for their difference, 0.922 and 0.997 on the
-multipolygons of `areal_pairs.txt`. **Clipper2**, the polygon-clipping library MobilityDB vendors
-in `clipper2/`, computes on integers at a resolution of 1e-7 of a unit (`CLIP_SCALE`):
-`geom_intersection2d_route` and `geom_difference2d_route` do not call it, and it remains the
-vehicle of the trajectory clip against a polygon (`clipper2_traj_poly_periods`). A geometry built
-by Clipper2 and one built by the exact kernels are at different resolutions, so one is not
-clipped against the other.
+multipolygons of `areal_pairs.txt`. **Clipper2**, the polygon-clipping library MobilityDB vendored
+in `clipper2/`, computed on integers at a resolution of 1e-7 of a unit (`CLIP_SCALE`), so a
+geometry it built and one built by the exact kernels were at different resolutions. After #2998 it
+served the SQL polygon overlays and the trajectory clip against a polygon alone. MobilityDB #3142,
+merged as `939a9d1a86`, answers the SQL `intersection`, `geoUnion`, `difference` and
+`symDifference` of two planar polygons or multipolygons through the native areal overlay, adding
+`geom_union2d` and `geom_symdifference2d` beside `geom_intersection2d` and `geom_difference2d`;
+GEOS 3.14.1 called directly finds each of the 19 answers of `078_tpoint_clipping` that moved
+equal to the native one, and the four read 0.922, 0.996 and, for the two dissolves, 0.270 to 0.380
+of GEOS in instructions. MobilityDB #3144, merged as `0891e02755`, clips a trajectory against a
+polygon with the native edge clip (`tpoint_linear_inter_geom`), where Clipper2 dated a crossing on
+its grid; CGAL, interpolating the point in exact rationals, agrees with all 34685 queries of 2000
+sequences. MobilityDB #3148, merged as `778e6a420e`, then removes Clipper2: its sources, its
+adapter and `geo_poly_clip.c` go, and MobilityDB builds as C alone, `libmeos.so` naming no C++
+runtime ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.2).
 
-**Left.** The collections above. And the function comment of `geom_intersection2d` describes
-the route as falling through to PostGIS's GEOS-backed entry point for other combinations, which
-does not describe the native route cascade above.
+**Left.** At master `d9b9c11985`, the collections above, which reach no fall-back on master
+`52b0c9e4d5` (note 5 §5.5). The function comment of `geom_intersection2d` still ends by saying
+that the combinations the native routes do not answer fall through to PostGIS's GEOS-backed
+`lwgeom_intersection_prec`; the sweep finds none on master, and the sentence goes with that
+fall-back (implementation plan, step 13).
 
-## 4.4 Union of one geometry — finished but for collections holding a multi-part member
+## 4.4 Union of one geometry — finished but for a precision grid
 
 **What it does.** `geom_unary_union` dissolves one geometry into the set of points it covers:
 overlapping polygons merge, a line walking a stretch twice covers it once. Trajectories are built
@@ -145,10 +157,13 @@ area of a temporal geometry is such a union of its values, which is why `travers
 GEOS for a temporal geometry with a multi-part or collection value
 ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.6).
 
-**Left.** The collections above. A union on a *precision grid* (`prec ≥ 0`) also calls GEOS;
-every MEOS caller passes −1 and no SQL function calls `geom_unary_union`, so no user reaches it.
+**Left.** At master `d9b9c11985`, the collections above, which reach no fall-back on master
+`52b0c9e4d5` (note 5 §5.5). A union on a *precision grid* (`prec ≥ 0`) calls GEOS, on master as
+before: every MEOS caller passes −1 and no SQL function calls `geom_unary_union`, so no user
+reaches it, and what becomes of the parameter is decision 3 of the
+[implementation plan](IMPLEMENTATION-PLAN.md).
 
-## 4.5 Union of an array of geometries — not finished for multi-part members
+## 4.5 Union of an array of geometries — finished
 
 **What it does.** `geom_array_union`: the union of many geometries, the aggregate behind merging
 trajectories and zones.
@@ -176,8 +191,8 @@ the refusal as an error (MobilityDB #2946, [note 5](05-WHAT-STILL-NEEDS-GEOS.md)
 **Speed, stated in #2804.** The union of 41 real trajectories takes 102.8 billion instructions on
 the base of that pull request and 3.97 billion on its head: **0.271 of GEOS**.
 
-**Left.** The multi-part members above. A geodetic array (longitude/latitude on the sphere) is
-answered for points only;
+**Left.** At master `d9b9c11985`, the multi-part members above, answered on master `52b0c9e4d5`
+(note 5 §5.5). A geodetic array (longitude/latitude on the sphere) is answered for points only;
 anything else is refused. The committers ruled that a geodetic overlay is future work, since
 nothing in MobilityDB needs it and PostGIS itself has no `ST_Union` on geography. One shortcut
 stays by design: an array of one member is returned as it is, so a single line that doubles
@@ -226,7 +241,7 @@ curves no comparison exists ([note 2](02-JUDGING-AN-ANSWER.md), §2.6).
 
 **Left.** Nothing: distance never depended on GEOS.
 
-## 4.9 Buffer — the operation still open
+## 4.9 Buffer — at parity with GEOS, still dependent on position for two shapes
 
 **What it does.** `geom_buffer`: the region within a given distance of a geometry, with rounded,
 mitred or bevelled joins and end caps.
@@ -243,9 +258,14 @@ further, as their messages state, against an unchanged GEOS count: `4416773c99` 
 `167648b2a3` by 3.03 % and `0315c48101` by 1.87 %, from 2 015 234 423 to 1 848 451 442
 instructions. The same arithmetic puts that cell near 3.7.
 
-**Left.** Its answer depends on where the shape lies, a defect in how it joins its boundary into
-rings, the speed gap, and the refused single-sided variant (§4.11). [Note 6](06-BUFFER.md) is
-about all of it.
+**On master `52b0c9e4d5`.** A polygon buffered with round joins is read from an exact
+arrangement of its offset curves (MobilityDB #3040, merged as `8867a28596`), and MobilityDB
+#3159, merged as `3c25b6966f`, states the natural areas at 0.947 of GEOS called directly at
+distance 1 and 0.990 at 500, CGAL agreeing with all 1313 queries of the containment corpus and all
+38940 of the curved-buffer corpus.
+
+**Left.** For two shapes of the ledger, its answer still depends on where the shape lies, and the
+single-sided variant is refused (§4.11). [Note 6](06-BUFFER.md) is about all of it.
 
 ## 4.10 Operations no MobilityDB function exposes
 

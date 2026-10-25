@@ -56,8 +56,8 @@ valued with a multipolygon. A sweep states what it nests, and nests every contai
 recurses into.
 
 **Separate a path from an input.** That a function *has* a path to GEOS is read from the code;
-that an input *takes* it is read from a run. Neither stands in for the other: 134 public functions
-have a path, and most inputs to them answer; the claim "no input reaches the fall-back" holds only
+that an input *takes* it is read from a run. Neither stands in for the other: 129 public functions
+have a path on master `52b0c9e4d5`, and every tested input to them answers; the claim "no input reaches the fall-back" holds only
 over inputs a run includes, and a run that omits the inputs that reach it proves nothing.
 
 **Judge every answer of the branch, not only the ones that changed.** A census judged only where
@@ -131,9 +131,10 @@ their intersection only as a boundary they share; if in the *same* direction, th
 there. The rule needs no constructed point and no tolerance beyond deciding that the edges are
 collinear.
 
-**Two engines at two resolutions cannot be combined.** Clipper2 works at 1e-7 of a unit and the
+**Two engines at two resolutions cannot be combined.** Clipper2 worked at 1e-7 of a unit and the
 exact kernels to about 5.6e-9; a shape built by one is not clipped against a shape built by the
-other.
+other. MobilityDB #3148 removes Clipper2 once the exact overlay answers every call it served
+(note 4 §4.3).
 
 **The minimum rotated rectangle is not one rectangle** (note 4 §4.6), so any measure read from it
 needs a stated tie-break.

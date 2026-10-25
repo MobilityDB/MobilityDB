@@ -14,11 +14,14 @@ be done. They are written for a committer who has never heard of the campaign, a
 one public place what the campaign learned, including the approaches that failed. Each note reads
 on its own from top to bottom, and every term is explained where it first appears.
 
-**Measured at** MobilityDB master `d9b9c11985`, on 2026-10-04. Every statement about what the code
-does is the output of a program in [`tools/`](tools/), kept in [`tools/results/`](tools/results/)
-so that it can be checked and re-run; every figure about speed or correctness is attributed to the
-pull request or commit whose message states it. The reachability inventory and the merge census are
-re-read at master `0bf0dab28c`, which adds MobilityDB #2946 to `d9b9c11985`.
+**Measured at** MobilityDB master `d9b9c11985`, on 2026-10-04, and again at master `52b0c9e4d5`,
+on 2026-10-25: what reaches GEOS ([note 5](05-WHAT-STILL-NEEDS-GEOS.md), appendix A) and the
+buffer's dependence on position ([note 6](06-BUFFER.md) §6.1, §6.5) are re-run there, and each
+note says which master a figure is read on. Every statement about what the code does is the output
+of a program in [`tools/`](tools/), kept in [`tools/results/`](tools/results/) so that it can be
+checked and re-run; a result read on an earlier master keeps that master's hash in its file name,
+as `gateway_reach.d9b9c11985.txt` beside `gateway_reach.txt`. Every figure about speed or
+correctness is attributed to the pull request or commit whose message states it.
 
 ## Words used throughout
 
@@ -55,30 +58,59 @@ as fast.
 
 ## Summary: what is done
 
-- **A MEOS without GEOS builds.** Configured with `-DGEOS=OFF`, MEOS compiles with 0 warnings
-  ([`tools/results/build_nogeos.txt`](tools/results/build_nogeos.txt)) and references no GEOS
-  symbol. With the raster family built, GEOS is still loaded into the
-  process by the system's GDAL, which links it; MEOS calls none of it
-  ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.2).
-- **2917 of its 3051 public functions have no path to GEOS at all**: nothing they call, at any
+- **A MEOS without GEOS builds, and a CI job keeps it so.** Configured with `-DGEOS=OFF`, MEOS
+  compiles with 0 warnings ([`tools/results/build_nogeos.txt`](tools/results/build_nogeos.txt))
+  and references no GEOS symbol, nor, since MobilityDB #3148 removes Clipper2, the C++ runtime.
+  With the raster family built, GEOS is still loaded into the process by the system's GDAL, which
+  links it; MEOS calls none of it ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.2). The job "Build
+  without GEOS" of `meos.yml` (MobilityDB #2977) builds it and fails where an input reaches a
+  fall-back.
+- **3179 of its 3308 public functions have no path to GEOS at all**: nothing they call, at any
   depth, reaches GEOS ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.4). Among them are every
   operation on plain geometries except the intersection, the difference and the two unions: the
   spatial relationships (intersects, contains, touches, covers, the relationship matrix), the
   buffer, the convex hull, the oriented envelope, the centroid, the simplicity test, the four
   clusterings, distance and equality.
-- **The other 134 have a path, and most of what they are asked answers.** Run in the build
-  without GEOS on the inputs that are hardest for them, 322 of 337 calls answer, 11 reach GEOS —
-  all of them on temporal geometries — and 4 are a refusal by design or a result with no value
-  (§5.6).
+- **The other 129 have a path, and every input tried answers.** Run in the build without GEOS on
+  the inputs that are hardest for them, 333 of 337 calls answer, none reaches GEOS, and 4 are a
+  refusal by design or a result with no value (§5.6); at master `d9b9c11985`, 322 answered and 11
+  reached GEOS. The only input of the sweep that still reaches a fall-back is the unary union on a
+  precision grid, which no caller asks for (§5.9).
+- **No operation reaches Clipper2, which is gone.** The SQL polygon overlays and the trajectory
+  clip answer through the exact native overlay (MobilityDB #3142, #3144), and MobilityDB #3148
+  removes the library; MobilityDB builds as C alone ([note 4](04-OPERATIONS.md) §4.3).
 - **The answers are judged by an exact reference**, CGAL or a closed form, never by GEOS for a
   curved shape and never by an earlier MobilityDB ([note 2](02-JUDGING-AN-ANSWER.md)). Where a
   shape carries a circular arc, MEOS keeps the arc exact, where GEOS polygonizes it.
-- **The spatial relationships and the unions run faster than GEOS** on the campaign's data sets.
-  That is a speed measure only; their correctness is judged by CGAL ([note 4](04-OPERATIONS.md)).
+- **The spatial relationships, the overlays, the unions and the buffer run at parity with GEOS
+  or faster** on the campaign's data sets, the buffer since MobilityDB #3040 and #3159 build it
+  from an exact arrangement ([note 6](06-BUFFER.md) §6.9). That is a speed measure only; their
+  correctness is judged by CGAL ([note 4](04-OPERATIONS.md)).
 
 ## Summary: what remains
 
-Each item is measured; the note named gives the evidence.
+Each item is measured on master `52b0c9e4d5`; the note named gives the evidence.
+
+1. **The buffer depends on position for two shapes.** On the ledger of
+   [note 6](06-BUFFER.md) §6.5, four of six families answer alike at every position and scale; the
+   open line whose end nearly meets its start and the square with a hole do not, and the ledger
+   declines 114 of 1840 queries. The square of §6.1 has its exact area everywhere but at
+   6 400 000 buffered by 1, where it declines. The repair measured at master `d9b9c11985` is
+   measured again on master before it is proposed.
+2. **The single-sided buffer is refused.** PostGIS offers it (`ST_Buffer` with `side=left` or
+   `side=right`); the committers decided it must answer exactly as PostGIS does
+   ([note 4](04-OPERATIONS.md) §4.11).
+3. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
+4. **The unary union on a precision grid** is the one input still reaching a fall-back
+   ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9); what becomes of its parameter is decision 3 of the
+   [implementation plan](IMPLEMENTATION-PLAN.md).
+5. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the stubs are
+   deleted, and GEOS stays only as a test reference. The committers decided this on 2026-09-22.
+
+## What the first measurement found, and how it closed
+
+At master `d9b9c11985` the list read as follows; each item names the pull requests that closed
+it.
 
 1. **Multi-part shapes and collections still reach GEOS** ([note 5](05-WHAT-STILL-NEEDS-GEOS.md)
    §5.5–§5.6). The union of an array of geometries, and the union of a collection, reach GEOS
@@ -116,14 +148,14 @@ Each item is measured; the note named gives the evidence.
    slower than GEOS on large real polygons. A repair for the first problem is written
    and measured, not yet proposed as a pull request; it uncovers an older defect in the last stage
    of the buffer, where the boundary pieces are joined into closed rings, and the two are
-   repaired in one change.
-5. **The single-sided buffer is refused.** PostGIS offers it (`ST_Buffer` with `side=left` or
-   `side=right`); the committers decided it must answer exactly as PostGIS does
-   ([note 4](04-OPERATIONS.md) §4.11).
-6. **The test data sets live outside the repository** ([note 3](03-TEST-DATA.md)).
-7. **Then GEOS leaves the shipped library.** The fall-backs, the build option and the stubs are
-   deleted, and GEOS stays only as a test reference. The committers decided this on 2026-09-22;
-   items 1 and 2 are what stands between that decision and its execution.
+   repaired in one change. MobilityDB #3040, merged as `8867a28596`, builds the buffer of a polygon
+   with round joins from an exact arrangement of its offset curves, and MobilityDB #3159, merged as
+   `3c25b6966f`, brings the natural areas to 0.947 and 0.990 of GEOS at distances 1 and 500; on
+   master `52b0c9e4d5` the square has its exact area at 6 400 000 buffered by 0.001, and what
+   still depends on position is item 1 of the list above.
+
+Items 5 to 7 of that list, the single-sided buffer, the test data and the removal of GEOS, are
+items 2, 3 and 5 of the list above.
 
 The [implementation plan](IMPLEMENTATION-PLAN.md) turns these items into an ordered list of pull
 requests.
@@ -140,7 +172,7 @@ requests.
 | [6 — The buffer](06-BUFFER.md) | The answer that depends on position: the symptom, its cause, the repair, and why it cannot ship alone |
 | [7 — Lessons, and approaches ruled out](07-LESSONS.md) | The rules the campaign paid to learn, and the dead ends nobody should try again |
 | [Implementation plan](IMPLEMENTATION-PLAN.md) | The remaining work as pull requests, what each must prove, and the decisions owed |
-| [Appendix A — The functions with a path to GEOS](A-INVENTORY.md) | All 134, each with its path and what a run without GEOS shows |
+| [Appendix A — The functions with a path to GEOS](A-INVENTORY.md) | All 129, each with its path and what a run without GEOS shows |
 | [`tools/`](tools/) | The programs every measurement of these notes comes from, and their output |
 
 ## Status of these notes

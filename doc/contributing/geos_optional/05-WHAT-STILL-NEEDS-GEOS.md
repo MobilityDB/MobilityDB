@@ -8,8 +8,10 @@
 
 # 5. What still needs GEOS
 
-**Measured at** MobilityDB master `d9b9c11985`. Every result below is the output of a program in
-[`tools/`](tools/), kept in [`tools/results/`](tools/results/), and can be re-run.
+**Measured at** MobilityDB master `52b0c9e4d5`, where every count of §5.5 and §5.6 reads 0; the
+counts the campaign started from are those of master `d9b9c11985`, and each table gives both. Every
+result below is the output of a program in [`tools/`](tools/), kept in
+[`tools/results/`](tools/results/), and can be re-run.
 
 ## 5.1 The question, and the two halves of its answer
 
@@ -28,8 +30,11 @@ does not work without GEOS. This note gives both halves, then what they mean.
 
 ## 5.2 The build without GEOS
 
-MEOS configured with `-DMEOS=ON -DALL=ON -DGEOS=OFF` at the master above compiles with 0
-warnings ([`tools/results/build_nogeos.txt`](tools/results/build_nogeos.txt)). Its `libmeos.so` lists no GEOS library among the libraries it needs, and
+MEOS configured with `-DMEOS=ON -DALL=ON -DGEOS=OFF` at the master above compiles from a clean
+build directory with 0 warnings
+([`tools/results/build_nogeos.txt`](tools/results/build_nogeos.txt)). Its `libmeos.so` lists no
+GEOS library among the libraries it needs, nor, since MobilityDB #3148 removes Clipper2, the C++
+runtime, and
 `nm -D --undefined-only` finds 0 undefined GEOS symbols in it
 ([`tools/results/libmeos_nogeos_links.txt`](tools/results/libmeos_nogeos_links.txt)). Every run
 below uses that library.
@@ -40,9 +45,12 @@ which links GDAL, and the system GDAL 3.8.4 (`libgdal.so.34`) itself links `libg
 compiled out and raise their own error, which is what the runs below detect — but a process free
 of GEOS needs the raster family off, or a GDAL built without GEOS.
 
-**No continuous-integration workflow builds MobilityDB with `-DGEOS=OFF`**: no file under
-`.github/` contains the option. A change that breaks the build without GEOS, or that sends a new
-input to GEOS, is therefore not detected today.
+At master `d9b9c11985` no continuous-integration workflow built MobilityDB with `-DGEOS=OFF`, so a
+change that broke the build without GEOS, or that sent a new input to GEOS, went unseen. MobilityDB
+#2977, merged as `4c4457d2ec`, adds the job "Build without GEOS" to `meos.yml`: it builds MEOS with
+`-DGEOS=OFF`, checks that `libmeos.so` calls no GEOS function, and runs the sweep of §5.5 and the
+gateway probe of §5.6, each failing where an input reaches a fall-back. It passes on master
+`52b0c9e4d5`.
 
 ## 5.3 Where GEOS is called
 
@@ -64,41 +72,46 @@ In a build without GEOS, two kinds of code stand in GEOS's place:
 
 What needs GEOS is therefore exactly what reaches one of the four fall-backs.
 
-## 5.4 Which functions have a path: 134 of 3051
+## 5.4 Which functions have a path: 129 of 3308
 
 [`tools/geos_reach.py`](tools/geos_reach.py) reads every function defined in `meos/src`, records
 which functions each one refers to (a call, or a function passed as a pointer), and walks back
 from the four fall-backs to every public function that can reach one. A function is *public* when
 its documentation carries an `@ingroup` outside the internal groups.
 
-Of the **3051** public functions of `meos/src`, **134** have a path. The other 2917 have none:
-nothing they call, at any depth, leads to a fall-back. The 134 are listed one by one in
-[appendix A](A-INVENTORY.md), each with its chain.
+Of the **3308** public functions of `meos/src`, **129** have a path. The other 3179 have none:
+nothing they call, at any depth, leads to a fall-back. The 129 are listed one by one in
+[appendix A](A-INVENTORY.md), each with its chain. At master `0bf0dab28c` the count was 134 of 3051
+([`tools/results/geos_reach.0bf0dab28c.txt`](tools/results/geos_reach.0bf0dab28c.txt)).
+Eleven functions of moving discs have lost their path since: MobilityDB #3157, merged as
+`5023335034`, answers the area a moving disc sweeps by an exact sweep of its own, which calls none
+of the four, so the two gateways of that area are gone. Six are new to the list: the overlays
+`geom_union2d` and `geom_symdifference2d`, which MobilityDB #3142 adds over the array union and
+the difference, and `atouches_geo_tcbuffer`, `etouches_geo_tcbuffer`, `temporal_app_tseq_transfn`
+and `tgeo_time_boxes`.
 
-Their paths meet the fall-backs through nine *gateways*: the functions that call a
-fall-back-holding function directly. A public function usually has several: 97 of the 134 can pass
-through three gateways or more, and only 37 through exactly one. The table counts, for each
+Their paths meet the fall-backs through seven *gateways*: the functions that call a
+fall-back-holding function directly. A public function usually has several: 90 of the 129 can pass
+through three gateways or more, and 39 through exactly one. The table counts, for each
 gateway, the public functions able to pass through it, so the counts overlap
 ([`tools/results/geos_reach.txt`](tools/results/geos_reach.txt), last column):
 
 | Gateway | What it does | Public functions able to pass through it |
 |---|---|---|
-| `geom_array_union` | the union of an array of geometries, which merges instants at the same timestamp and builds a network point's trajectory | 91 |
-| `tpointseq_linear_trajectory` | the trajectory of a temporal point sequence | 74 |
-| `geom_intersection2d` | the intersection of two geometries, used by restriction to a geometry or a box and by the temporal relationships | 55 |
-| `geom_difference2d` | the difference of two geometries, used by the same restrictions | 55 |
-| `geo_values_collect` | the union of the values of a temporal geometry, its traversed area | 38 |
-| `tpointseqset_linear_trajectory` | the trajectory of a temporal point sequence set | 37 |
-| `tcbufferseq_traversed_area` | the area a moving disc sweeps over one sequence | 27 |
+| `geom_array_union` | the union of an array of geometries, which merges instants at the same timestamp and builds a network point's trajectory | 97 |
+| `tpointseq_linear_trajectory` | the trajectory of a temporal point sequence | 76 |
+| `geom_intersection2d` | the intersection of two geometries, used by restriction to a geometry or a box and by the temporal relationships | 59 |
+| `geom_difference2d` | the difference of two geometries, used by the same restrictions | 59 |
+| `geo_values_collect` | the union of the values of a temporal geometry, its traversed area | 40 |
+| `tpointseqset_linear_trajectory` | the trajectory of a temporal point sequence set | 39 |
 | `trgeo_geoms_merge` | the union of the placements of a rigid geometry | 14 |
-| `tcbufferseqset_traversed_area` | the area a moving disc sweeps over a sequence set | 13 |
 
 A gateway reaches GEOS on certain inputs only, so the runtime half is measured gateway by
 gateway; functions sharing a gateway may still differ, since each hands it its own arguments
 (§5.6 shows one such pair). The unary union itself is a fall-back-holding function and is listed
 as its own entry.
 
-Every one of the 134 can reach the array-union fall-back, because the overlay and the unary union
+Every one of the 129 can reach the array-union fall-back, because the overlay and the unary union
 both hand a collection to the array union, part by part.
 
 ## 5.5 Which inputs take the path: the sweep
@@ -112,19 +125,28 @@ pass: a unary union on a precision grid, which can only be answered by GEOS, is 
 geodetic array of lines is refused by the native code before any fall-back ("The union of a
 geodetic array is answered for positions only").
 
-The table counts the calls that reach a fall-back. A *Z mode* says which operands carry a third
-coordinate: neither, both, only the first, only the second.
+The table counts the calls that reach a fall-back, at master `d9b9c11985`
+([`tools/results/geos_fallback_sweep.d9b9c11985.txt`](tools/results/geos_fallback_sweep.d9b9c11985.txt))
+and at master `52b0c9e4d5`
+([`tools/results/geos_fallback_sweep.txt`](tools/results/geos_fallback_sweep.txt)). A
+*Z mode* says which operands carry a third coordinate: neither, both, only the first, only the
+second.
 
-| Operation, inputs | Reach a fall-back |
-|---|---|
-| intersection of two geometries, every ordered pair of types, each Z mode | 0 of 225 |
-| difference of two geometries, every ordered pair of types, each Z mode | 0 of 225 |
-| unary union of one geometry of each type, flat and with Z | 0 of 30 |
-| **array union of two geometries, every ordered pair of types, each Z mode** | **104 of 225** |
-| **unary union of a collection of two geometries, every ordered pair of types** | **104 of 225** |
-| **intersection of such a collection with a geometry of each type, both orders** | **409 of 6750** |
-| **difference of such a collection and a geometry of each type, both orders** | **953 of 6750** |
-| fifteen geometric special cases: coinciding arcs, a fork, a line doubling back, polygons sharing an edge or a corner, discs tangent at one point, and others; each under all four operations | 0 |
+| Operation, inputs | Reach a fall-back, `d9b9c11985` | `52b0c9e4d5` |
+|---|---|---|
+| intersection of two geometries, every ordered pair of types, each Z mode | 0 of 225 | 0 of 225 |
+| difference of two geometries, every ordered pair of types, each Z mode | 0 of 225 | 0 of 225 |
+| unary union of one geometry of each type, flat and with Z | 0 of 30 | 0 of 30 |
+| **array union of two geometries, every ordered pair of types, each Z mode** | **104 of 225** | 0 of 225 |
+| **unary union of a collection of two geometries, every ordered pair of types** | **104 of 225** | 0 of 225 |
+| **intersection of such a collection with a geometry of each type, both orders** | **409 of 6750** | 0 of 6750 |
+| **difference of such a collection and a geometry of each type, both orders** | **953 of 6750** | 0 of 6750 |
+| fifteen geometric special cases: coinciding arcs, a fork, a line doubling back, polygons sharing an edge or a corner, discs tangent at one point, and others; each under all four operations | 0 | 0 |
+
+No input of the sweep is refused otherwise at master `52b0c9e4d5`, and its two controls pass:
+the unary union on a precision grid still reaches its fall-back, which is the one input left that
+does (§5.9). The rest of this section and §5.6 describe master `d9b9c11985`, and §5.9 lists the
+pull requests that bring each count to 0.
 
 **The array union, and the unary union of a collection, follow one exact rule.** They reach the
 fall-back if and only if one member is a `MULTIPOLYGON`, a `MULTISURFACE`, a `TIN` or a
@@ -134,16 +156,20 @@ answered. A single geometry of those types is answered by the unary union; it is
 of an array or a collection that it is not.
 
 The smallest examples ([`tools/arrunion_min.c`](tools/arrunion_min.c),
-[`tools/coll_multi.c`](tools/coll_multi.c), [`tools/coll_detail.c`](tools/coll_detail.c)):
+[`tools/coll_multi.c`](tools/coll_multi.c), [`tools/coll_detail.c`](tools/coll_detail.c)), their
+output at master `d9b9c11985` in the files of the same name ending `.d9b9c11985.txt`, each of
+which answers at master `52b0c9e4d5`
+([`tools/results/arrunion_min.txt`](tools/results/arrunion_min.txt),
+[`coll_multi.txt`](tools/results/coll_multi.txt), [`coll_detail.txt`](tools/results/coll_detail.txt)):
 
-| Call | Without GEOS |
-|---|---|
-| array union of `POLYGON((0 0,1 0,1 1,0 1,0 0))` and `MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)))` | reaches the fall-back |
-| array union of `POINT(9 9)` and that `MULTIPOLYGON` | reaches the fall-back |
-| array union of two disjoint `POLYGON`s | answers their `MULTIPOLYGON` |
-| unary union of `GEOMETRYCOLLECTION(POINT(9 9),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))` | reaches the fall-back |
-| intersection of `MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))` with `GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))` | reaches the fall-back |
-| difference of `GEOMETRYCOLLECTION(LINESTRING(0 2,4 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))` and `TRIANGLE((0 0,4 0,2 4,0 0))` | reaches the fall-back |
+| Call | Without GEOS, `d9b9c11985` | `52b0c9e4d5` |
+|---|---|---|
+| array union of `POLYGON((0 0,1 0,1 1,0 1,0 0))` and `MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)))` | reaches the fall-back | `MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5)),((0 0,1 0,1 1,0 1,0 0)))` |
+| array union of `POINT(9 9)` and that `MULTIPOLYGON` | reaches the fall-back | `GEOMETRYCOLLECTION(POINT(9 9),POLYGON((5 5,6 5,6 6,5 6,5 5)))` |
+| array union of two disjoint `POLYGON`s | answers their `MULTIPOLYGON` | the same `MULTIPOLYGON`, its polygons in the other order |
+| unary union of `GEOMETRYCOLLECTION(POINT(9 9),MULTIPOLYGON(((5 5,6 5,6 6,5 6,5 5))))` | reaches the fall-back | `GEOMETRYCOLLECTION(POINT(9 9),POLYGON((5 5,6 5,6 6,5 6,5 5)))` |
+| intersection of `MULTIPOLYGON(((0 0,2 0,2 2,0 2,0 0)),((3 3,4 3,4 4,3 4,3 3)))` with `GEOMETRYCOLLECTION(POINT(2 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))` | reaches the fall-back | answers |
+| difference of `GEOMETRYCOLLECTION(LINESTRING(0 2,4 2),POLYGON((0 0,4 0,4 4,0 4,0 0)))` and `TRIANGLE((0 0,4 0,2 4,0 0))` | reaches the fall-back | answers |
 
 The error these calls raise does not name their cause. The array union's says "The union of a
 geodetic array, and of one whose linework coincides over a curve, is answered by the GEOS
@@ -156,16 +182,22 @@ among its causes, and none is asked for.
 inputs above: temporal points (one sequence, one sequence set), temporal geometries whose value is
 a `MULTIPOLYGON`, a `MULTISURFACE`, a `TIN`, a `POLYHEDRALSURFACE` or a collection, and moving
 discs; each against seven geometry arguments, from a plain `POLYGON` to
-`GEOMETRYCOLLECTION(POINT, MULTIPOLYGON)`. Of its **337 calls, 322 answer, 11 reach a fall-back,
-and 4 give another outcome**, which the output names: `tgeo_traversed_area` refuses a temporal
+`GEOMETRYCOLLECTION(POINT, MULTIPOLYGON)`. At master `d9b9c11985`, of its **337 calls, 322 answer,
+11 reach a fall-back, and 4 give another outcome**
+([`tools/results/gateway_reach.d9b9c11985.txt`](tools/results/gateway_reach.d9b9c11985.txt)); at master `52b0c9e4d5` 333 answer, 0 reach a
+fall-back and the same 4 give another outcome
+([`tools/results/gateway_reach.txt`](tools/results/gateway_reach.txt)). The output names the four: `tgeo_traversed_area` refuses a temporal
 point by its own type check ("The temporal value must be a temporal geometry or geography"), and
 `tgeo_minus_geom` returns no value, without an error, for the two temporal points (a sequence and
 a sequence set) against the polyhedral surface whose face is the square from (0 0) to (4 4); both
 lie within that square. With the
 targeted probes [`tools/temporal_reach.c`](tools/temporal_reach.c),
 [`tools/trgeo_reach.c`](tools/trgeo_reach.c), [`tools/tcbuffer_reach.c`](tools/tcbuffer_reach.c)
-and [`tools/tmerge_min.c`](tools/tmerge_min.c), the public functions that do not work without GEOS
-on ordinary input are these:
+and [`tools/tmerge_min.c`](tools/tmerge_min.c), the public functions that did not work without
+GEOS on ordinary input at master `d9b9c11985` are these; at master `52b0c9e4d5` each answers every
+input listed ([`tools/results/temporal_reach.txt`](tools/results/temporal_reach.txt),
+[`trgeo_reach.txt`](tools/results/trgeo_reach.txt),
+[`tmerge_min.txt`](tools/results/tmerge_min.txt)):
 
 | Public function (SQL) | Input that reaches GEOS |
 |---|---|
@@ -216,7 +248,8 @@ positions only").
 ordered pair of the 15 types, as temporal geometries and as temporal geographies, each case in a
 process of its own so that a crash is counted rather than ending the run. In the build without
 GEOS, at master `d9b9c11985` ([`tools/results/merge_sweep.master.txt`](tools/results/merge_sweep.master.txt))
-and with #2946 ([`tools/results/merge_sweep.with_fix.txt`](tools/results/merge_sweep.with_fix.txt)):
+with #2946 ([`tools/results/merge_sweep.with_fix.txt`](tools/results/merge_sweep.with_fix.txt))
+and at master `52b0c9e4d5` ([`tools/results/merge_sweep.txt`](tools/results/merge_sweep.txt)):
 
 | | Answered | Refused with an error | Crash |
 |---|---|---|---|
@@ -224,9 +257,14 @@ and with #2946 ([`tools/results/merge_sweep.with_fix.txt`](tools/results/merge_s
 | temporal geography, 225 pairs, `d9b9c11985` | 4 | 0 | 221 |
 | temporal geometry, 225 pairs, with #2946 | 121 | 104 | 0 |
 | temporal geography, 225 pairs, with #2946 | 4 | 221 | 0 |
+| temporal geometry, 225 pairs, `52b0c9e4d5` | 225 | 0 | 0 |
+| temporal geography, 225 pairs, `52b0c9e4d5` | 4 | 221 | 0 |
 
-The 104 refused geometry pairs are the pairs of §5.5 holding a multi-part member; the 4 answered
-geography pairs are the four made only of points and multipoints. The regression test of #2946,
+The 104 refused geometry pairs are the pairs of §5.5 holding a multi-part member, and at master
+`52b0c9e4d5` all 225 answer; the 4 answered geography pairs are the four made only of points and
+multipoints, and the other 221 are refused with "The union of a geodetic array is answered for
+positions only" in every build, since `geog_array_union` refuses them before any route, the GEOS
+one included. The regression test of #2946,
 `meos/test/merge_validity_test.c`, merges two temporal geographies holding lines at one timestamp,
 a case refused in every build, and checks the error and the absence of a value; the same test
 checks that two geography points and two geometry polygons still merge.
@@ -299,9 +337,10 @@ every answer.
 
 ## 5.9 What this means
 
-The four fall-backs cannot be deleted yet. Three of them are reached by ordinary data: a temporal
-geometry valued with a multipolygon, a building footprint stored as a `MULTIPOLYGON`, a 3D model
-stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves, in order:
+At master `d9b9c11985` the four fall-backs could not be deleted: three of them were reached by
+ordinary data, a temporal geometry valued with a multipolygon, a building footprint stored as a
+`MULTIPOLYGON`, a 3D model stored as a `POLYHEDRALSURFACE`, or a collection. The pull requests that
+closed it, in order:
 
 1. **The array union answers multi-part members.** A `MULTIPOLYGON`, `MULTISURFACE`, `TIN` or
    `POLYHEDRALSURFACE` member is what every reaching input has in common, in the array union and
@@ -317,8 +356,22 @@ stored as a `POLYHEDRALSURFACE`, or a collection, is enough. The work it leaves,
    three surfaces whose order leaves a constructed vertex near another member's edge (merged as
    MobilityDB #2961).
 4. **A workflow builds without GEOS and runs the sweep**, so that the counts of §5.5 cannot grow
-   unseen. MobilityDB #2977, merged as `4c4457d2ec`, adds it as the job `geos-free` of `meos.yml`.
+   unseen. MobilityDB #2977, merged as `4c4457d2ec`, adds it as the job "Build without GEOS" of
+   `meos.yml`.
 
-Only then does the fourth fall-back — the unary union on a precision grid, which no MEOS caller
-asks for and no SQL function exposes — and with it the other three, become dead code that can be
-deleted.
+At master `52b0c9e4d5` every count of §5.5 and §5.6 reads 0, and so do the probes of the public
+functions that reached GEOS. **One input still reaches a fall-back: the unary union on a
+precision grid**, `geom_unary_union` called with a grid size of 0 or more, which the sweep keeps as
+its positive control. No caller in MEOS passes one, and no SQL function calls `geom_unary_union`.
+
+What the runs cannot show is an input nobody has tried: 129 public functions keep a path in their
+code to one of the four fall-backs, and 108 of them are run by no probe (appendix A). Deleting the
+fall-backs turns any such input from a GEOS answer into a refusal, in every build. That deletion,
+and the removal of the GEOS option itself, is Part III of the
+[implementation plan](IMPLEMENTATION-PLAN.md).
+
+A temporal geography whose values are not all positions is refused in every build, GEOS included
+(§5.7): the native union of a geodetic array answers positions alone, and every path to the four
+fall-backs enters through `geom_intersection2d`, `geom_difference2d`, `geom_array_union` or
+`geom_unary_union`, each of which refuses a geodetic operand first. So it does not stand between
+MEOS and a build without GEOS.

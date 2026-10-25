@@ -5,5 +5,5 @@
 # lines containing 'warning:' in the build log
 0
 # last lines of the build log
-[100%] Built target trgeo_distwalk_rand_unit
+[100%] Built target trgeo_distwalk_unit
 exit=0
