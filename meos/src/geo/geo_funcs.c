@@ -2376,6 +2376,75 @@ point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
 }
 
 /**
+ * @brief Answer the distance between two points less a radius from its value
+ * in two doubles where its rounding is certain
+ * @details The squared distance `S` arrives as `s + lo`, within `delta` of it,
+ * as #point_distance_offset_filter forms it. With `t` the rounded square root
+ * of `s + lo`, `sqrt(S) = t + (S - t^2) / (2 t) - q` where
+ * `0 <= q <= (S - t^2)^2 / (8 t^3)`: `S - t^2` is read as `(s - x) + (lo - y)`,
+ * `t^2` split by #two_square into `x + y`, its first difference exact by
+ * Sterbenz as `x` lies within a factor of two of `s`; `t - r` is split by
+ * #two_sum into `h + l`, exactly, and the correction added to `l`. The value
+ * `v = h + l` then lies within `E` of `sqrt(S) - r`, `E` the sum of the error
+ * of `S` carried through the division, the rounding of the two additions and
+ * of the division, and `q`, each bounded by the magnitudes it reads and the
+ * whole doubled. The answer is 0 where `v + E < 0`, and the double `c` nearest
+ * `v` where `v` lies farther than `E` from both midpoints between `c` and its
+ * neighbours, read on the exact remainder `v - c` of a second #two_sum
+ * @param[in] s,lo,delta The squared distance, the double of its small terms
+ * and the bound of their error
+ * @param[in] r Radius, positive
+ * @param[out] result The answer where the function returns true
+ * @return False where the value lies within its bound of a midpoint, which
+ * every tie does, and the caller's filter and exact search answer
+ */
+static inline bool
+point_distance_offset_dd(double s, double lo, double delta, double r,
+  double *result)
+{
+  double t = sqrt(s + lo);
+  double x, y;
+  two_square(t, &x, &y);
+  if (! (s >= 0.5 * x && s <= 2.0 * x))
+    return false;
+  double u = lo - y, w = (s - x) + u;
+  /* Error of w as S - t^2: the error of S and the two roundings */
+  double dw = delta + DBL_EPSILON * (fabs(u) + fabs(w));
+  double corr = w / (2.0 * t);
+  double h, l;
+  two_sum(t, - r, &h, &l);
+  double l1 = l + corr;
+  double big = fabs(w) + dw;
+  double err = 2.0 * (dw / (2.0 * t) + DBL_EPSILON * fabs(corr) +
+    DBL_EPSILON * fabs(l1) + big * big / (8.0 * t * t * t)) + 4.0 * DBL_MIN;
+  double c, rem;
+  two_sum(h, l1, &c, &rem);
+  if (c + rem + err < 0.0)
+  {
+    *result = 0.0;
+    return true;
+  }
+  if (! (c >= 0x1p-900) || ! isfinite(c))
+    return false;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+  uint64_t ubits = bits + 1, dbits = bits - 1;
+  double cu, cd;
+  memcpy(&cu, &ubits, sizeof(cu));
+  memcpy(&cd, &dbits, sizeof(cd));
+  if (! isfinite(cu))
+    return false;
+  /* Each half gap is a power of two, exact for a candidate of at least
+   * 2^-900 */
+  if (rem + err < 0.5 * (cu - c) && rem - err > - 0.5 * (c - cd))
+  {
+    *result = c;
+    return true;
+  }
+  return false;
+}
+
+/**
  * @brief Answer the distance between two points less a radius on doubles
  * where a filter settles it, returning false where it does not
  * @details The first test of #point_distance_offset_exact, the twin of the
@@ -2419,6 +2488,12 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
     lo += (t + y) + (de + ee);
     lomag += fabs(t) + fabs(y) + fabs(de) + ee;
   }
+  /* The value in two doubles settles every pair it leaves clear of a
+   * midpoint; the summing of lo, at most 15 operations on terms below
+   * lomag, bounds the error of S as #point_distance_offset_filter_sign
+   * reads it */
+  if (point_distance_offset_dd(s, lo, 32.0 * DBL_EPSILON * lomag, r, result))
+    return true;
   /* The side of S - r^2 */
   int side = point_distance_offset_filter_sign(s, lo, lomag, r, 0.0, 0.0);
   if (side == 0)
