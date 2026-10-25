@@ -3856,12 +3856,31 @@ point_segment_beyond_inputs(const double *p, const double *a, const double *b,
  * @details A sum of products of two input doubles (#square_products_sign):
  * with `s = a` it is the sign of `w . u`, with `s = b` that of
  * `w . u - u . u`, which decide whether the nearest point of the segment is an
- * end
+ * end. As #ring_area_sign, the product taken in floating point, on the rounded
+ * differences, answers wherever it stands clear of the bound its rounding
+ * reaches: each difference is within a half unit in its last place, and the
+ * products and their sum add as many of the running magnitude, which twice
+ * DBL_EPSILON of it bounds generously, and DBL_MIN covers an underflow. A
+ * difference rounds to 0 only where it is 0, so a product of one is exactly 0.
+ * Within the bound, the sign is that of the exact sum
  */
 static int
 point_segment_dot_sign_inputs(const double *p, const double *s,
   const double *a, const double *b)
 {
+  double wx = p[0] - s[0], wy = p[1] - s[1];
+  double vx = b[0] - a[0], vy = b[1] - a[1];
+  if ((wx == 0.0 || vx == 0.0) && (wy == 0.0 || vy == 0.0))
+    return 0;
+  double l = wx * vx, r = wy * vy, dot = l + r;
+  double bound = 4.0 * DBL_EPSILON * (fabs(l) + fabs(r)) + DBL_MIN;
+  if (isfinite(bound))
+  {
+    if (dot > bound)
+      return 1;
+    if (dot < - bound)
+      return -1;
+  }
   double left[8], right[8], factor[8];
   int n = 0;
   for (int i = 0; i < 2; i++)
@@ -3872,6 +3891,45 @@ point_segment_dot_sign_inputs(const double *p, const double *s,
     left[n] = s[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
   return square_products_sign(left, right, factor, n);
+}
+
+/**
+ * @brief Return the side of the position of a point along a segment, as
+ * #linesegm_param reads it: -1 where it reads 0, 1 where it reads 1, 0 inside
+ */
+static int
+linesegm_param_side(const double *a, const double *b, const double *p)
+{
+  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
+    return -1;
+  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
+    return 1;
+  return 0;
+}
+
+/**
+ * @brief Return the sign of the difference of the positions of two points
+ * along the segment AB, the positions #linesegm_param reads, compared exactly
+ * @details A position is the projection of the point on the segment over its
+ * squared length, clamped to [0, 1]. It reads 0 exactly where
+ * `(p - a) . (b - a) <= 0` and 1 where `(p - b) . (b - a) >= 0`, and two
+ * positions inside compare as `(p - q) . (b - a)` does, since they share the
+ * positive squared length; each is the sign of a sum of products of two input
+ * doubles (#point_segment_dot_sign_inputs), exact for any finite doubles, so
+ * no rounded quotient decides the order
+ * @param[in] a,b The two ends of the segment, distinct
+ * @param[in] p,q The two points
+ * @return -1, 0 or 1 as the position of `p` is before, at or after that of
+ * `q`
+ */
+int
+linesegm_param_cmp(const double *a, const double *b, const double *p,
+  const double *q)
+{
+  int sp = linesegm_param_side(a, b, p), sq = linesegm_param_side(a, b, q);
+  if (sp != 0 || sq != 0)
+    return (sp > sq) ? 1 : ((sp < sq) ? -1 : 0);
+  return point_segment_dot_sign_inputs(p, q, a, b);
 }
 
 /**
@@ -4433,15 +4491,310 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
 }
 
 /**
+ * @brief The square of the distance of a point to a segment as a quotient of
+ * polynomials in exact sums, `num / den` (#segment_distance_square)
+ */
+typedef struct
+{
+  PolyTerm num[3];       /**< Terms of the numerator */
+  int nnum;              /**< Number of terms of the numerator */
+  PolyTerm den[2];       /**< Terms of the denominator */
+  int nden;              /**< Number of terms of the denominator */
+} SegmentSquare;
+
+/**
+ * @brief Return the sign of `x / y - u / v` for two squares of
+ * #segment_distance_square, the sign of `x v - u y` since both denominators
+ * are positive
+ */
+static int
+segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
+  const SegmentSquare *s2)
+{
+  PolyTerm terms[12];
+  int n = 0;
+  for (int side = 0; side < 2; side++)
+  {
+    const SegmentSquare *x = side ? s2 : s1, *y = side ? s1 : s2;
+    for (int i = 0; i < x->nnum; i++)
+      for (int j = 0; j < y->nden; j++)
+      {
+        PolyTerm *t = &terms[n++];
+        t->coef = (side ? -1.0 : 1.0) * x->num[i].coef * y->den[j].coef;
+        t->deg = x->num[i].deg + y->den[j].deg;
+        memcpy(t->sum, x->num[i].sum, sizeof(int) * x->num[i].deg);
+        memcpy(t->sum + x->num[i].deg, y->den[j].sum,
+          sizeof(int) * y->den[j].deg);
+      }
+  }
+  return polynomial_sign_exact(sums, terms, n);
+}
+
+/**
+ * @brief Return the least of the exact squares of the distances `want`
+ * selects, as the mask of those that reach it, 2D (#segment_distance_square)
+ * @details With `w` the end less the start of the other segment, `u` that
+ * segment and `z` the end less the end of the other segment, the square is
+ * `w . w` at the start, `z . z` at the end and `(w x u)^2 / (u . u)` at the
+ * foot of the perpendicular; every square is a quotient of polynomials of
+ * degree at most 4 in the coordinate differences, and two compare by the sign
+ * of a polynomial of degree at most 6 (#polynomial_sign_exact). The
+ * differences and the errors of their rounding are scaled by the power of two
+ * that brings the largest into [1, 2), which changes no sign, as
+ * #point_segment_distance_offset_exact scales them; a product of six scaled
+ * values is exact where each has its lowest bit at or above 2^-179, and below
+ * 2^6, so none overflows
+ * @param[in] pt The point, the start and the end of the other segment, of
+ * each of the four distances
+ * @param[in] near Where the nearest point of each lies: 0 the start, 1 the
+ * end, 2 the foot
+ * @param[in] want The mask of the distances to compare
+ * @return The mask of those that reach the least, or -1 where a difference is
+ * not finite, or where the scaling leaves a product of six outside the doubles
+ */
+static int
+segment_square_least(const double *pt[4][3], const int *near, int want)
+{
+  /* The differences w = p - s, u = e - s and z = p - e of each, and the
+   * errors of their rounding */
+  double dv[4][3][2], ev[4][3][2], maxd = 0.0;
+  for (int i = 0; i < 4; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
+    double m[3];
+    if (point_distance_diffs(s, p, 2, dv[i][0], ev[i][0], &m[0]) ||
+        point_distance_diffs(s, e, 2, dv[i][1], ev[i][1], &m[1]) ||
+        point_distance_diffs(e, p, 2, dv[i][2], ev[i][2], &m[2]))
+      return -1;
+    for (int j = 0; j < 3; j++)
+      if (m[j] > maxd)
+        maxd = m[j];
+  }
+  if (maxd == 0.0)
+    return -1;
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  /* The exact sums, sum (3 i + j) * 2 + c for coordinate c of difference j of
+   * distance i */
+  ExactSum sums[24];
+  for (int i = 0; i < 4; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    for (int j = 0; j < 3; j++)
+      for (int cc = 0; cc < 2; cc++)
+      {
+        double v = dv[i][j][cc], e = ev[i][j][cc];
+        if ((v != 0.0 && double_lowest_bit(v) + k < -179) ||
+            (e != 0.0 && double_lowest_bit(e) + k < -179))
+          return -1;
+        const double t[2] = {v * f1 * f2, e * f1 * f2};
+        exact_sum_set(&sums[(3 * i + j) * 2 + cc], t, 2);
+      }
+  }
+  /* The square of each distance */
+  SegmentSquare sq[4];
+  for (int i = 0; i < 4; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    int w0 = (3 * i) * 2, w1 = w0 + 1, u0 = w0 + 2, u1 = w0 + 3;
+    int z0 = w0 + 4, z1 = w0 + 5;
+    SegmentSquare *s = &sq[i];
+    if (near[i] < 2)
+    {
+      /* The start, w . w, or the end, z . z */
+      int x0 = near[i] ? z0 : w0, x1 = near[i] ? z1 : w1;
+      s->num[0] = (PolyTerm) {1.0, 2, {x0, x0}};
+      s->num[1] = (PolyTerm) {1.0, 2, {x1, x1}};
+      s->nnum = 2;
+      s->den[0] = (PolyTerm) {1.0, 0, {0}};
+      s->nden = 1;
+    }
+    else
+    {
+      /* The foot: (w0 u1 - w1 u0)^2 / (u . u) */
+      s->num[0] = (PolyTerm) {1.0, 4, {w0, w0, u1, u1}};
+      s->num[1] = (PolyTerm) {-2.0, 4, {w0, w1, u0, u1}};
+      s->num[2] = (PolyTerm) {1.0, 4, {w1, w1, u0, u0}};
+      s->nnum = 3;
+      s->den[0] = (PolyTerm) {1.0, 2, {u0, u0}};
+      s->den[1] = (PolyTerm) {1.0, 2, {u1, u1}};
+      s->nden = 2;
+    }
+  }
+  int best = -1, mask = 0;
+  for (int i = 0; i < 4; i++)
+  {
+    if (! (want & (1 << i)))
+      continue;
+    int cmp = (best < 0) ? -1 : segment_square_cmp(sums, &sq[i], &sq[best]);
+    if (cmp < 0)
+    {
+      best = i;
+      mask = 1 << i;
+    }
+    else if (cmp == 0)
+      mask |= 1 << i;
+  }
+  return mask;
+}
+
+/**
+ * @brief Return true where two pairs of points are the same pair, in either
+ * order, 2D
+ */
+static inline bool
+point_pair_eq(const double *p1, const double *q1, const double *p2,
+  const double *q2)
+{
+#define PT_EQ(x, y) ((x)[0] == (y)[0] && (x)[1] == (y)[1])
+  bool result = (PT_EQ(p1, p2) && PT_EQ(q1, q2)) ||
+    (PT_EQ(p1, q2) && PT_EQ(q1, p2));
+#undef PT_EQ
+  return result;
+}
+
+/**
+ * @brief Return which of the four distances of an end of one segment to the
+ * other reach the least of them, decided on their squares exactly, 2D
+ * @details The four distances are those of #segment_distance_exact: the two
+ * ends of the first segment to the second, then the two ends of the second to
+ * the first. Their order is that of their squares, so the least is found as
+ * liblwgeom finds it, comparing the squares (`distance2d_sqr_pt_seg`), and only
+ * that one needs its distance rounded. Each distance is first bounded in
+ * doubles, at the clamped parameter of its foot, as #dist_rest_bounds bounds
+ * it, which filters the distances: one whose lower bound exceeds the least
+ * upper bound is not the least. Where more than one is left, where the nearest
+ * point of each lies is decided by exact signs (#point_segment_dot_sign_inputs):
+ * the start, the end, or the foot of the perpendicular. Two whose nearest
+ * points are the same pair of input points, an end of each segment, are the
+ * same distance; the others are compared on their exact squares
+ * (#segment_square_least)
+ * @param[in] a,b The two ends of the first segment, two coordinates each
+ * @param[in] c,d The two ends of the second segment, two coordinates each
+ * @return The mask of the distances that reach the least, bit `i` for the
+ * `i`-th of the four; -1 where a coordinate is not finite, or where the exact
+ * squares cannot be compared in the doubles, which leaves the four to be
+ * rounded and compared by the caller
+ */
+int
+segment_distance_square(const double *a, const double *b, const double *c,
+  const double *d)
+{
+  /* Each distance: the end, the start and the end of the other segment */
+  const double *pt[4][3] = {{a, c, d}, {b, c, d}, {c, a, b}, {d, a, b}};
+  if (! isfinite(a[0]) || ! isfinite(a[1]) || ! isfinite(b[0]) ||
+      ! isfinite(b[1]) || ! isfinite(c[0]) || ! isfinite(c[1]) ||
+      ! isfinite(d[0]) || ! isfinite(d[1]))
+    return -1;
+  /* The bounds of each distance, with `e` the unit roundoff: the computed
+   * distance at the clamped rounded parameter is within
+   * `8e (|w|_1 + |u|_1) + 3e D` of the distance `D` (#dist_rest_bounds), and
+   * the bounds stand `32 DBL_EPSILON` times those magnitudes on either side,
+   * where every product and every square of a bound is a normal double;
+   * their squares bound the squares */
+  double lo[4], hi[4], least = INFINITY;
+  int side[4];
+  for (int i = 0; i < 4; i++)
+  {
+    const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
+    side[i] = 0;
+    double wx = p[0] - s[0], wy = p[1] - s[1];
+    double ux = e[0] - s[0], uy = e[1] - s[1];
+    double w1 = fabs(wx) + fabs(wy), u1 = fabs(ux) + fabs(uy);
+    double m = w1 + u1;
+    lo[i] = 0.0;
+    hi[i] = INFINITY;
+    if (! (m <= 0x1p480) || (m > 0.0 && m < 0x1p-400))
+      continue;
+    double qx = wx, qy = wy;
+    if (u1 > 0.0)
+    {
+      double t = (wx * ux + wy * uy) / (ux * ux + uy * uy);
+      side[i] = (t >= 1.0) ? 1 : 0;
+      t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+      qx = wx - t * ux;
+      qy = wy - t * uy;
+    }
+    double dist = sqrt(qx * qx + qy * qy);
+    double delta = 32.0 * DBL_EPSILON * (m + dist);
+    double l = dist - delta, h = dist + delta;
+    lo[i] = (l > 0.0) ? l * l : 0.0;
+    hi[i] = h * h;
+    if (hi[i] < least)
+      least = hi[i];
+  }
+  int left = 0;
+  for (int i = 0; i < 4; i++)
+    if (! (lo[i] > least))
+      left |= 1 << i;
+  if (! (left & (left - 1)))
+    return left;
+  /* Where the nearest point of each distance left lies, the end the rounded
+   * parameter reaches asked first, and those left, each standing for those
+   * equal to it as the same pair of input points */
+  int near[4], group[4], want = 0;
+  for (int i = 0; i < 4; i++)
+  {
+    group[i] = 0;
+    if (! (left & (1 << i)))
+      continue;
+    const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
+    if (side[i] == 1 && point_segment_dot_sign_inputs(p, e, e, s) <= 0)
+      near[i] = 1;
+    else if (point_segment_dot_sign_inputs(p, s, s, e) <= 0)
+      near[i] = 0;
+    else if (side[i] != 1 && point_segment_dot_sign_inputs(p, e, e, s) <= 0)
+      near[i] = 1;
+    else
+      near[i] = 2;
+    group[i] = 1 << i;
+    for (int j = 0; j < i; j++)
+    {
+      if (! (want & (1 << j)) || near[i] == 2 || near[j] == 2)
+        continue;
+      const double *qi = (near[i] == 1) ? pt[i][2] : pt[i][1];
+      const double *qj = (near[j] == 1) ? pt[j][2] : pt[j][1];
+      if (point_pair_eq(pt[i][0], qi, pt[j][0], qj))
+      {
+        group[j] |= 1 << i;
+        group[i] = 0;
+        break;
+      }
+    }
+    if (group[i])
+      want |= 1 << i;
+  }
+  int least_mask = want;
+  if (want & (want - 1))
+  {
+    least_mask = segment_square_least(pt, near, want);
+    if (least_mask < 0)
+      return -1;
+  }
+  int mask = 0;
+  for (int i = 0; i < 4; i++)
+    if (least_mask & (1 << i))
+      mask |= group[i];
+  return mask;
+}
+
+/**
  * @brief Return the double nearest the distance of two segments, 2D
  * @details Two segments meet or not by exact orientations
  * (#linesegm_intersect), and where they meet the distance is 0. Two segments
  * that do not meet are nearest at an end of one of them, so the distance is
- * the least of the distances of the two ends of each to the other, each the
- * double nearest the exact one (#point_segment_distance_offset_exact), and
- * rounding is monotone, so the least of them is the double nearest the least
- * distance. A segment of no length is a point: it meets nothing in
- * #linesegm_intersect, and its distance to the other is one of the four
+ * the least of the distances of the two ends of each to the other: which one,
+ * by their squares (#segment_distance_square), and that one rounded once to
+ * the double nearest it (#point_segment_distance_offset_exact). Where the
+ * squares are not compared, each of the four is rounded, and rounding is
+ * monotone, so the least of them is the double nearest the least distance. A
+ * segment of no length is a point: it meets nothing in #linesegm_intersect,
+ * and its distance to the other is one of the four
  * @param[in] a,b The two ends of the first segment, two coordinates each
  * @param[in] c,d The two ends of the second segment, two coordinates each
  */
@@ -4453,6 +4806,16 @@ segment_distance_exact(const double *a, const double *b, const double *c,
     d[0], d[1]);
   if (meet.type != INTERSECT_NONE)
     return 0.0;
+  int mask = segment_distance_square(a, b, c, d);
+  if (mask > 0)
+  {
+    const double *pt[4][3] = {{a, c, d}, {b, c, d}, {c, a, b}, {d, a, b}};
+    int i = 0;
+    while (! (mask & (1 << i)))
+      i++;
+    return point_segment_distance_offset_exact(pt[i][0], pt[i][1], pt[i][2],
+      0.0);
+  }
   double cand[4];
   cand[0] = point_segment_distance_offset_exact(a, c, d, 0.0);
   cand[1] = point_segment_distance_offset_exact(b, c, d, 0.0);
