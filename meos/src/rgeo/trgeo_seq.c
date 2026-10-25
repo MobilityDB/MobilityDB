@@ -278,7 +278,6 @@ trgeoseq_make_exp(const GSERIALIZED *geom, TInstant **instants,
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
  * @param[in] normalize True if the resulting value should be normalized
- * @csqlfn #Trgeometry_seq_constructor()
  */
 TSequence *
 trgeometryseq_make(const GSERIALIZED *geom, TInstant **instants, int count,

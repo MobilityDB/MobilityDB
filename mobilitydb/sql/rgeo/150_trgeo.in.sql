@@ -186,19 +186,19 @@ CREATE FUNCTION trgeometry(geometry, pose, timestamptz)
 CREATE FUNCTION trgeometrySeq(trgeometry[], text DEFAULT 'linear',
     lower_inc boolean DEFAULT true, upper_inc boolean DEFAULT true)
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_seq_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequence_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION trgeometrySeqSet(trgeometry[])
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_seqset_constructor'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 -- The function is not strict
 CREATE FUNCTION trgeometrySeqSetGaps(trgeometry[], maxt interval DEFAULT NULL,
     maxdist float DEFAULT NULL, text DEFAULT 'linear')
   RETURNS trgeometry
-  AS 'MODULE_PATHNAME', 'Trgeometry_seqset_constructor_gaps'
+  AS 'MODULE_PATHNAME', 'Tsequenceset_constructor_gaps'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
 /*****************************************************************************/
