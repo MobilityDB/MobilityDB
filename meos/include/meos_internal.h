@@ -1383,6 +1383,7 @@ extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const 
 /* Traditional comparison functions for temporal types */
 
 extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
+extern uint8_t *temporal_sortkey_intl(const Temporal *temp, size_t *size);
 extern bool tinstant_eq(const TInstant *inst1, const TInstant *inst2);
 extern int tsequence_cmp(const TSequence *seq1, const TSequence *seq2);
 extern bool tsequence_eq(const TSequence *seq1, const TSequence *seq2);

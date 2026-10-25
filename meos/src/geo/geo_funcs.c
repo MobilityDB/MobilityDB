@@ -55,6 +55,7 @@
 #include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/meos_transform.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Extract edges from a geometry that can be of type point, line, polygon or
@@ -12371,6 +12372,51 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return 0;
   }
 }
+
+/**
+ * @brief Return the number of bytes of the sort key of a point
+ * @param[in] gs Point
+ */
+size_t
+geopoint_sortkey_size(const GSERIALIZED *gs)
+{
+  return (FLAGS_GET_Z(gs->gflags) ? 3 : 2) * datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a point
+ * @details The key is the coordinates in the order #geopoint_cmp compares
+ * them, each written as a double
+ * @param[in] gs Point
+ * @param[out] out Buffer of #geopoint_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
+{
+  double coords[3];
+  int ncoords;
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
+    coords[0] = point->x; coords[1] = point->y; coords[2] = point->z;
+    ncoords = 3;
+  }
+  else
+  {
+    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
+    coords[0] = point->x; coords[1] = point->y;
+    ncoords = 2;
+  }
+  size_t n = datum_sortkey_size(T_FLOAT8);
+  for (int i = 0; i < ncoords; i++)
+  {
+    datum_sortkey_put(Float8GetDatum(coords[i]), T_FLOAT8, out);
+    out += n;
+  }
+  return out;
+}
+
 /**
  * @brief Return true if the points are equal
  * @note This function is called in the iterations over sequences where we
