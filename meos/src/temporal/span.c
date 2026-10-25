@@ -1694,8 +1694,12 @@ span_eq(const Span *s1, const Span *s2)
   if (! ensure_valid_span_span(s1, s2))
     return false;
 
-  if (s1->lower != s2->lower || s1->upper != s2->upper ||
-    s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc)
+  /* The bounds are compared as values of the base type, as #set_eq compares
+   * the values of a set, so that the zeros of both signs, equal as doubles,
+   * make equal spans as #span_cmp holds them */
+  if (s1->lower_inc != s2->lower_inc || s1->upper_inc != s2->upper_inc ||
+      datum_ne(s1->lower, s2->lower, s1->basetype) ||
+      datum_ne(s1->upper, s2->upper, s1->basetype))
     return false;
   return true;
 }

@@ -2227,8 +2227,12 @@ tbox_eq(const TBox *box1, const TBox *box2)
       MEOS_FLAGS_GET_T(box1->flags) != MEOS_FLAGS_GET_T(box2->flags) ||
       box1->span.spantype != box2->span.spantype)
     return false;
-  if (! span_eq(&box1->span, &box2->span) ||
-      ! span_eq(&box1->period, &box2->period))
+  /* A dimension the boxes do not carry holds no span to compare, as in
+   * #tbox_same */
+  if ((MEOS_FLAGS_GET_X(box1->flags) &&
+        ! span_eq(&box1->span, &box2->span)) ||
+      (MEOS_FLAGS_GET_T(box1->flags) &&
+        ! span_eq(&box1->period, &box2->period)))
     return false;
   /* The two boxes are equal */
   return true;
