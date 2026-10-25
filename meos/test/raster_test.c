@@ -1093,6 +1093,25 @@ int main(void)
    * and the bound below separates the two conventions rather than merely
    * bracketing a number */
   assert(st->stddev > 24.96 && st->stddev < 24.98);
+  /* The accessors answer the fields they name */
+  double field;
+  assert(bandstats_count(st) == 8);
+  assert(bandstats_sum(st, &field) && field == st->sum);
+  assert(bandstats_mean(st, &field) && field == st->mean);
+  assert(bandstats_stddev(st, &field) && field == st->stddev);
+  assert(bandstats_min(st, &field) && field == st->min);
+  assert(bandstats_max(st, &field) && field == st->max);
+  /* Statistics counting no pixel state no value, and a null argument is
+   * rejected rather than dereferenced */
+  BandStats none = {0, 0.0, 0.0, 0.0, 0.0, 0.0};
+  assert(bandstats_count(&none) == 0);
+  assert(! bandstats_sum(&none, &field) && ! bandstats_mean(&none, &field) &&
+    ! bandstats_stddev(&none, &field) && ! bandstats_min(&none, &field) &&
+    ! bandstats_max(&none, &field));
+  meos_errno_reset();
+  assert(bandstats_count(NULL) == INT64_MAX);
+  assert(! bandstats_mean(NULL, &field) && ! bandstats_mean(st, NULL));
+  assert(meos_errno() != 0);
   free(st);
 
   /* Counting the nodata pixel counts the value it holds, -9999, so the count

@@ -724,6 +724,66 @@ CREATE FUNCTION summaryStats(rast raster, nband integer DEFAULT 1,
 
 /**
  * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsCount(stats summarystats)
+  RETURNS bigint
+  AS 'MODULE_PATHNAME', 'Summarystats_count'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the sum of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsSum(stats summarystats)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Summarystats_sum'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the mean of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsMean(stats summarystats)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Summarystats_mean'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the standard deviation of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsStddev(stats summarystats)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Summarystats_stddev'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the minimum of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsMin(stats summarystats)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Summarystats_min'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the maximum of raster band statistics
+ * @param[in] stats Statistics, as summaryStats answers them
+ */
+CREATE FUNCTION summarystatsMax(stats summarystats)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Summarystats_max'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/**
+ * @ingroup mobilitydb_raster
  * @brief Return the polygons of a raster band, one for each group of pixels
  * carrying the same value
  * @param[in] rast Raster

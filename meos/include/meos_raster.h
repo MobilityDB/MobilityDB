@@ -252,6 +252,12 @@ extern char *raster_band_pixel_type(const Raster *rast, int band);
 extern bool raster_band_has_nodata_value(const Raster *rast, int band);
 extern bool raster_band_nodata_value(const Raster *rast, int band,
   double *result);
+extern int64 bandstats_count(const BandStats *stats);
+extern bool bandstats_sum(const BandStats *stats, double *result);
+extern bool bandstats_mean(const BandStats *stats, double *result);
+extern bool bandstats_stddev(const BandStats *stats, double *result);
+extern bool bandstats_min(const BandStats *stats, double *result);
+extern bool bandstats_max(const BandStats *stats, double *result);
 
 /* Processing functions for PostGIS rasters */
 

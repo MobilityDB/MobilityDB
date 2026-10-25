@@ -44,6 +44,7 @@
 #include <access/htup_details.h>
 #include <catalog/pg_type.h>
 #include <commands/extension.h>
+#include <executor/executor.h>  /* GetAttributeByNum */
 #include <utils/array.h>
 #include <utils/guc.h>
 #include <utils/lsyscache.h>
@@ -1092,6 +1093,141 @@ Raster_summary_stats(PG_FUNCTION_ARGS)
   bool exclude_nodata = PG_GETARG_BOOL(2);
   BandStats *stats = raster_summary_stats(rast, band, exclude_nodata);
   PG_RETURN_DATUM(bandstats_record(fcinfo, stats));
+}
+
+/**
+ * @brief Read the statistics a summarystats record holds
+ * @details The inverse of #bandstats_record, reading each field at its place
+ * in the record, count, sum, mean, stddev, min and max, as #Create_trip reads
+ * the fields of its records. A record counting no pixel states no statistic,
+ * so its other fields read as 0 and the accessors answer NULL for them
+ */
+static void
+record_bandstats(HeapTupleHeader td, BandStats *stats)
+{
+  double *fields[] = {&stats->sum, &stats->mean, &stats->stddev, &stats->min,
+    &stats->max};
+  bool isnull;
+  Datum d = GetAttributeByNum(td, 1, &isnull);
+  stats->count = isnull ? 0 : (uint32_t) DatumGetInt64(d);
+  for (int i = 0; i < 5; i++)
+  {
+    d = GetAttributeByNum(td, (AttrNumber) (i + 2), &isnull);
+    *fields[i] = (isnull || stats->count == 0) ? 0.0 : DatumGetFloat8(d);
+  }
+}
+
+PGDLLEXPORT Datum Summarystats_count(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_count);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the number of pixels of raster band statistics
+ * @details The accessors of a summarystats record read its fields by a
+ * function, the form every engine reads them in, beside the reading of a field
+ * by its name PostgreSQL keeps, as for PostGIS's ST_SummaryStats
+ * @sqlfn summarystatsCount()
+ */
+Datum
+Summarystats_count(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  PG_RETURN_INT64(bandstats_count(&stats));
+}
+
+PGDLLEXPORT Datum Summarystats_sum(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_sum);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the sum of raster band statistics
+ * @details NULL where the statistics count no pixel
+ * @sqlfn summarystatsSum()
+ */
+Datum
+Summarystats_sum(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  double result;
+  if (! bandstats_sum(&stats, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Summarystats_mean(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_mean);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the mean of raster band statistics
+ * @details NULL where the statistics count no pixel
+ * @sqlfn summarystatsMean()
+ */
+Datum
+Summarystats_mean(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  double result;
+  if (! bandstats_mean(&stats, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Summarystats_stddev(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_stddev);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the standard deviation of raster band statistics
+ * @details NULL where the statistics count no pixel
+ * @sqlfn summarystatsStddev()
+ */
+Datum
+Summarystats_stddev(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  double result;
+  if (! bandstats_stddev(&stats, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Summarystats_min(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_min);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the minimum of raster band statistics
+ * @details NULL where the statistics count no pixel
+ * @sqlfn summarystatsMin()
+ */
+Datum
+Summarystats_min(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  double result;
+  if (! bandstats_min(&stats, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum Summarystats_max(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Summarystats_max);
+/**
+ * @ingroup mobilitydb_raster
+ * @brief Return the maximum of raster band statistics
+ * @details NULL where the statistics count no pixel
+ * @sqlfn summarystatsMax()
+ */
+Datum
+Summarystats_max(PG_FUNCTION_ARGS)
+{
+  BandStats stats;
+  record_bandstats(PG_GETARG_HEAPTUPLEHEADER(0), &stats);
+  double result;
+  if (! bandstats_max(&stats, &result))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
 }
 
 /*****************************************************************************
