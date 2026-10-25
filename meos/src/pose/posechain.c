@@ -1185,44 +1185,6 @@ posechain_ne(const PoseChain *pc1, const PoseChain *pc2)
 
 /**
  * @ingroup meos_posechain_base_comp
- * @brief Return true if the first pose chain is equal to the second one up to
- * the tolerance of the comparison of floating-point values
- * @param[in] pc1,pc2 Pose chains
- * @csqlfn #Posechain_same()
- */
-bool
-posechain_same(const PoseChain *pc1, const PoseChain *pc2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc1, false); VALIDATE_NOT_NULL(pc2, false);
-
-  if (pc1->count != pc2->count ||
-      MEOS_FLAGS_GET_Z(pc1->flags) != MEOS_FLAGS_GET_Z(pc2->flags) ||
-      MEOS_FLAGS_GET_GEODETIC(pc1->flags) !=
-        MEOS_FLAGS_GET_GEODETIC(pc2->flags) ||
-      posechain_srid(pc1) != posechain_srid(pc2))
-    return false;
-  int nvalues = POSECHAIN_LINK_SIZE(pc1) * pc1->count;
-  for (int i = 0; i < nvalues; i++)
-    if (! MEOS_FP_EQ(pc1->data[i], pc2->data[i]))
-      return false;
-  return true;
-}
-
-/**
- * @ingroup meos_posechain_base_comp
- * @brief Return true if the first pose chain is not equal to the second one
- * up to the tolerance of the comparison of floating-point values
- * @param[in] pc1,pc2 Pose chains
- */
-bool
-posechain_nsame(const PoseChain *pc1, const PoseChain *pc2)
-{
-  return ! posechain_same(pc1, pc2);
-}
-
-/**
- * @ingroup meos_posechain_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is less
  * than, equal to, or greater than the second one
  * @param[in] pc1,pc2 Pose chains

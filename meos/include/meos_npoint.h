@@ -193,7 +193,6 @@ extern bool npoint_gt(const Npoint *np1, const Npoint *np2);
 extern bool npoint_le(const Npoint *np1, const Npoint *np2);
 extern bool npoint_lt(const Npoint *np1, const Npoint *np2);
 extern bool npoint_ne(const Npoint *np1, const Npoint *np2);
-extern bool npoint_same(const Npoint *np1, const Npoint *np2);
 extern int nsegment_cmp(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_eq(const Nsegment *ns1, const Nsegment *ns2);
 extern bool nsegment_ge(const Nsegment *ns1, const Nsegment *ns2);

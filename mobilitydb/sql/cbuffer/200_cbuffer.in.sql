@@ -258,22 +258,6 @@ CREATE FUNCTION cbufferDwithin(cbuffer, cbuffer, float)
   AS 'MODULE_PATHNAME', 'Cbuffer_dwithin'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Same
- *****************************************************************************/
-
-CREATE FUNCTION cbufferSame(cbuffer, cbuffer)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Cbuffer_same'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = cbufferSame,
-  LEFTARG = cbuffer, RIGHTARG = cbuffer,
-  COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 /******************************************************************************
  * Comparisons
  ******************************************************************************/

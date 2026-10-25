@@ -153,22 +153,6 @@ datum_point_eq_intl(Datum point1, Datum point2)
 }
 
 /**
- * @brief Return true if the points are equal taking into account floating 
- * point imprecision
- */
-bool
-datum_point_same(Datum point1, Datum point2)
-{
-  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-      FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
-      FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-    return false;
-  return geopoint_same(gs1, gs2);
-}
-
-/**
  * @brief Return true if the points are equal
  */
 Datum

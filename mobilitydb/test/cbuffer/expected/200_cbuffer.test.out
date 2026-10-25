@@ -284,54 +284,6 @@ SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5
  Cbuffer(POINT(5 0),5)
 (1 row)
 
-SELECT cbuffer 'Cbuffer(Point(1.000001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT cbuffer 'Cbuffer(Point(1 1.000001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT cbuffer 'Cbuffer(Point(1 1),0.5000001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- t
-(1 row)
-
-SELECT cbuffer 'Cbuffer(Point(1.00001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT cbuffer 'Cbuffer(Point(1 1.00001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
- ?column? 
-----------
- f
-(1 row)
-
-SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
- cbuffersame 
--------------
- t
-(1 row)
-
-SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
- cbuffersame 
--------------
- f
-(1 row)
-
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.5)';
  ?column? 
 ----------
