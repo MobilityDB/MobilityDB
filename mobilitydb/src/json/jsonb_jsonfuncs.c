@@ -672,6 +672,7 @@ PG_FUNCTION_INFO_V1(Jsonb_set);
  * @brief Return a JSONB value whose item at a path is a value, the item being
  * added when it is missing and the last argument is true
  * @sqlfn jsonbSet()
+ * @altsqlfn pgJsonbSet()
  */
 Datum
 Jsonb_set(PG_FUNCTION_ARGS)
@@ -699,6 +700,7 @@ PG_FUNCTION_INFO_V1(Jsonb_set_lax);
  * @details The value of a JSONB value, as #Jsonbset_set_lax is the one of a
  * JSONB set
  * @sqlfn jsonbSetLax()
+ * @altsqlfn pgJsonbSetLax()
  */
 Datum
 Jsonb_set_lax(PG_FUNCTION_ARGS)
