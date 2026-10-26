@@ -5160,10 +5160,11 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
     double ax = out->x1 - e->cx, ay = out->y1 - e->cy;
     double bx = out->x2 - e->cx, by = out->y2 - e->cy;
     double sx = ax + bx, sy = ay + by;
-    double len = hypot(sx, sy);
+    double s2 = sx * sx + sy * sy;
     double dx, dy;
-    if (len > 0.0)
+    if (s2 > 0.0)
     {
+      double len = sqrt(s2);
       /* Within half a turn the middle lies on the side of the sum */
       double z = ax * by - ay * bx;
       double k = ((ccw && z > 0.0) || (! ccw && z < 0.0)) ? 1.0 : -1.0;
@@ -5172,7 +5173,7 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
     else
     {
       /* A half circle: a quarter turn on from the start */
-      double alen = hypot(ax, ay);
+      double alen = sqrt(ax * ax + ay * ay);
       dx = (ccw ? - ay : ay) / alen;
       dy = (ccw ? ax : - ax) / alen;
     }
@@ -5188,9 +5189,10 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
    * the radii to its ends; the positions of the piece's ends along the arc
    * tell which, its rounded ends where they do not */
   double cx = out->x2 - out->x1, cy = out->y2 - out->y1;
-  double clen = hypot(cx, cy);
+  double c2 = cx * cx + cy * cy;
+  double clen = sqrt(c2);
   double dx, dy;
-  if (clen >= 0.25 * e->radius)
+  if (16.0 * c2 >= e->radius * e->radius)
   {
     dx = (ccw ? cy : - cy) / clen;
     dy = (ccw ? - cx : cx) / clen;
@@ -5200,7 +5202,7 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
     double ax = out->x1 - e->cx, ay = out->y1 - e->cy;
     double bx = out->x2 - e->cx, by = out->y2 - e->cy;
     double sx = ax + bx, sy = ay + by;
-    double len = hypot(sx, sy);
+    double len = sqrt(sx * sx + sy * sy);
     Ival sweep = ival_sub(isinf(p->pto.hi) ? ival(4.0) : p->pto, p->pfrom);
     int whole = (sweep.lo > 2.0) ? 1 : ((sweep.hi < 2.0) ? -1 : 0);
     if (whole == 0)
@@ -5216,11 +5218,10 @@ arr_piece_write(const Arr *a, const ArrPiece *p, ArrangePiece *out)
   /* An arc whose middle the rounding of its written points puts on their
    * chord is written as the chord: three such points fix no circle, and the
    * region moves by less than their rounding */
-  double sag = (clen > 0.0) ?
-    fabs(cx * (out->my - out->y1) - cy * (out->mx - out->x1)) / clen : 0.0;
+  double sag = fabs(cx * (out->my - out->y1) - cy * (out->mx - out->x1));
   double unit = DBL_EPSILON * (fabs(out->x1) + fabs(out->y1) +
     fabs(out->x2) + fabs(out->y2));
-  if (clen > 0.0 && sag <= 8.0 * unit)
+  if (c2 > 0.0 && sag <= 8.0 * unit * clen)
   {
     out->arc = false;
     out->mx = out->my = 0.0;
