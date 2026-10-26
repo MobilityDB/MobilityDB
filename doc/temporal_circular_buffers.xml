@@ -402,16 +402,16 @@ SELECT asEWKT(tcbuffer(Sequence,5676) 'SRID=5676;
   [Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-03]');
 -- SRID=5676;[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(1 1),0.5)@2001-01-03]
 SELECT tcbuffer(Sequence) 'Cbuffer(Point(1 1), 0.2)@2001-01-01';
--- ERROR: Temporal type (Instant) does not match column type (Sequence)
+-- ERROR: Temporal subtype (Instant) does not match column type (Sequence)
 SELECT tcbuffer(5676) 'Cbuffer(Point(1 1), 0.2)@2001-01-01';
 -- ERROR:  Temporal circular buffer SRID (0) does not match column SRID (5676)
 </programlisting>
 
 		<para>Temporal circular buffer values of sequence or sequence set subtype are converted into a normal form so that equivalent values have identical representations. For this, consecutive instant values are merged when possible. Three consecutive instant values can be merged into two if the linear functions defining the evolution of values are the same. Examples of transformation into a normal form are as follows.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01,
-  Cbuffer(Point(2 2), 0.4)@2001-01-02, Cbuffer(Point(3 3), 0.6)@2001-01-03)');
--- [Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(3 3),0.6)@2001-01-03)
+SELECT asText(tcbuffer '[Cbuffer(Point(1 1), 0.25)@2001-01-01,
+  Cbuffer(Point(2 2), 0.5)@2001-01-02, Cbuffer(Point(3 3), 0.75)@2001-01-03)');
+-- [Cbuffer(POINT(1 1),0.25)@2001-01-01, Cbuffer(POINT(3 3),0.75)@2001-01-03)
 SELECT asText(tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01,
   Cbuffer(Point(2 2), 0.3)@2001-01-02, Cbuffer(Point(2 2), 0.5)@2001-01-03),
   [Cbuffer(Point(2 2), 0.5)@2001-01-03, Cbuffer(Point(2 2), 0.7)@2001-01-04)}');
@@ -457,7 +457,7 @@ SELECT asEWKT(tcbuffer 'SRID=4326;
 -- SRID=4326;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
   'Cbuffer(SRID=5676;Point(1 1),2)']);
--- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
+-- {"SRID=5676;Cbuffer(POINT(0 0),1)","SRID=5676;Cbuffer(POINT(1 1),2)"}
 </programlisting>
 			</listitem>
 
@@ -563,7 +563,7 @@ SELECT asEWKT(tcbufferFromBinary(
 -- Cbuffer(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tcbufferFromEWKB(
   '\x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Cbuffer(POINT(1 1),2)@2001-01-01
+-- SRID=7844;Cbuffer(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tcbufferFromHexEWKB(
   '013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
 -- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01
@@ -637,8 +637,8 @@ tcbufferSeqSetGaps(tcbufferInst[],maxt interval=NULL,maxdist float=NULL,
 SELECT asText(tcbufferSeqSet(ARRAY[tcbuffer '[Cbuffer(Point(1 1),0.2)@2001-01-01,
   Cbuffer(Point(2 2),0.4)@2001-01-02]',
   '[Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.8)@2001-01-04]']));
-/* {[Cbuffer(Point(1 1),0.2)@2001-01-01, Cbuffer(Point(2 2),0.4)@2001-01-02],
-   [Cbuffer(Point(2 2),0.6)@2001-01-03, Cbuffer(Point(2 2),0.6)@2001-01-04]} */
+/* {[Cbuffer(POINT(1 1),0.2)@2001-01-01, Cbuffer(POINT(2 2),0.4)@2001-01-02],
+   [Cbuffer(POINT(2 2),0.6)@2001-01-03, Cbuffer(POINT(2 2),0.8)@2001-01-04]} */
 SELECT asText(tcbufferSeqSetGaps(ARRAY[tcbuffer 'Cbuffer(Point(1 1),0.1)@2001-01-01',
   'Cbuffer(Point(1 1),0.3)@2001-01-03', 'Cbuffer(Point(1 1),0.5)@2001-01-05'], '1 day'));
 /* {[Cbuffer(POINT(1 1),0.1)@2001-01-01], [Cbuffer(POINT(1 1),0.3)@2001-01-03], 
@@ -656,7 +656,7 @@ tcbuffer(tgeompoint,tfloat) → tcbuffer
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[1@2001-01-01, 2@2001-01-02)'));
--- [Cbuffer(POINT(1 1),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
+-- [Cbuffer(POINT(1 1),1)@2001-01-01, Cbuffer(POINT(2 2),2)@2001-01-02)
 SELECT asText(tcbuffer(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
   tfloat '[2@2001-01-03, 3@2001-01-04)'));
 -- NULL
@@ -709,7 +709,7 @@ getValues(tcbuffer) → cbufferset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02)}'));
--- {"Cbuffer(POINT(1 1),0.3)","Cbuffer(POINT(1 1),0.5)"}
+-- {"Cbuffer(POINT(1 1),0.3)", "Cbuffer(POINT(1 1),0.5)"}
 SELECT asEWKT(getValues(tcbuffer 'SRID=5676;
   {[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
 -- SRID=5676;{"Cbuffer(POINT(1 1),0.3)"}
@@ -727,7 +727,7 @@ radius(tcbuffer) → floatset
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(points(tcbuffer 'SRID=5676;
   {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
--- SRID=5676;{POINT(1 1), POINT(3 3)}
+-- SRID=5676;{"POINT(1 1)", "POINT(3 3)"}
 SELECT radius(tcbuffer 'SRID=5676;
   {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}');
 -- {0.3, 0.5}
@@ -879,7 +879,7 @@ appendSequence(tcbuffer,tcbufferSeq) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01',
-  'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
+  tcbuffer 'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02]
 SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]',
   '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));
@@ -954,8 +954,7 @@ SELECT asText(atGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 -- {[Cbuffer(POINT(2 2),0.3)@2001-01-01, Cbuffer(POINT(2 2),0.7)@2001-01-03]}
 SELECT asText(minusGeometry(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-03]', 'Polygon((0 0,0 2,2 2,2 0,0 0))'));
-/* {(Cbuffer(Point(2 2),0.342593)@2001-01-01 05:06:40.364673,
-   Cbuffer(Point(2 2),0.7)@2001-01-03]} */
+-- NULL
 </programlisting>
 			</listitem>
 
@@ -970,7 +969,8 @@ minusStbox(tcbuffer,stbox,borderInc boolean=true) → tcbuffer
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
   Cbuffer(Point(3 3), 0.5)@2001-01-03]', stbox 'STBOX X((0,0),(2,2))'));
--- {[Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(2 2),0.5)@2001-01-02)}
+/* {[Cbuffer(POINT(1 1),0.5)@2001-01-01,
+   Cbuffer(POINT(2.353553390590278 2.353553390590278),0.5)@2001-01-02 08:29:07.012947]} */
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1096,12 +1096,12 @@ SELECT ST_AsText(convexHull(tcbuffer '[Cbuffer(Point(1 1), 0)@2001-01-01,
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
-  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; cbuffer 'Cbuffer(Point(1 1), 0.5)';
+  Cbuffer(Point(1 1), 0.5)@2001-01-02]' &amp;&amp; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- true
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02]' @&gt; stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)');
 -- true
-SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)'::geometry &lt;@
+SELECT stbox(cbuffer 'Cbuffer(Point(1 1), 0.5)') &lt;@
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02]';
 -- true
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
@@ -1165,10 +1165,10 @@ SELECT expandSpace(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| geometry 'Linestring(50 50,55 55)';
--- 67.58225099390856
+-- 67.18225099390857
 SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]' |=| cbuffer 'Cbuffer(Point(1 1), 0.5)';
--- 0.6142135623730951
+-- 0.2142135623730952
 </programlisting>
 			</listitem>
 
@@ -1179,12 +1179,12 @@ SELECT tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
 nearestApproachInstant({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → tcbuffer
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)');
--- Cbuffer(POINT(2 2),0.349928)@2001-01-01 02:59:44.402905
-SELECT nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
-  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)');
--- Cbuffer(POINT(2 2),0.592181)@2001-01-01 17:31:51.080405
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
+-- Cbuffer(POINT(2 2),0.7)@2001-01-02
+SELECT asText(nearestApproachInstant(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
+  Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
+-- Cbuffer(POINT(2 2),0.7)@2001-01-02
 </programlisting>
 			</listitem>
 
@@ -1198,10 +1198,10 @@ shortestLine({geo,cbuffer,tcbuffer},{geo,cbuffer,tcbuffer}) → geometry
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', geometry 'Linestring(50 50,55 55)'));
--- LINESTRING(50 50,2.212132034355964 2.212132034355964)
+-- LINESTRING(2.494974746830583 2.494974746830583,50 50)
 SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(2 2), 0.3)@2001-01-01,
   Cbuffer(Point(2 2), 0.7)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1), 0.5)'));
--- LINESTRING(1.353553390593274 1.353553390593274,1.787867965644036 1.787867965644036)
+-- LINESTRING(1.505025253169417 1.505025253169417,1.353553390593274 1.353553390593274)
 </programlisting>
 			</listitem>
 
@@ -1218,7 +1218,7 @@ SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
 -- [0@2001-01-01, 0@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt; geometry 'Point(50 50)';
--- [68.99646455628167@2001-01-01, 68.79646455628166@2001-01-03]
+-- [68.99646455628165@2001-01-01, 68.79646455628166@2001-01-03]
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-03]' &lt;-&gt;
   tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-04]';
@@ -1279,7 +1279,7 @@ aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
--- false
+-- true
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(2 2), 0.0)',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- true
@@ -1315,12 +1315,11 @@ tTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → tbool
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDisjoint(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
--- {[t@2001-01-01, t@2001-01-03)}
+-- {[f@2001-01-01, f@2001-01-03)}
 SELECT tDwithin(tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, 
   Cbuffer(Point(1 1), 0.5)@2001-01-03)', tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01, 
   Cbuffer(Point(1 1), 0.3)@2001-01-03)', 1);
-/* {[t@2001-01-01, t@2001-01-01 22:35:55.379053],
-   (f@2001-01-01 22:35:55.379053, t@2001-01-02 01:24:04.620946, t@2001-01-03)} */
+-- {[t@2001-01-01, t@2001-01-03)}
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1519,7 +1518,7 @@ douglasPeuckerSimplify(tcbuffer,maxdist float,syncdist boolean=true) → tcbuffe
 SELECT asText(douglasPeuckerSimplify(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01,
   Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(3 1),0.5)@2001-01-03,
   Cbuffer(Point(4 4),0.5)@2001-01-04]', 2.0));
--- {Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(4 4),0.5)@2001-01-04}
+-- [Cbuffer(POINT(1 1),0.5)@2001-01-01, Cbuffer(POINT(4 4),0.5)@2001-01-04]
 </programlisting>
 			</listitem>
 		</itemizedlist>
