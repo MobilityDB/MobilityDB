@@ -184,7 +184,8 @@ test_floatspan(MeosArray *ids)
   Span *query = floatspan_in("[0, 100]");
   verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
-  verify_search("contains", rtree, INDEX_CONTAINS, query,
+  /* A box contains itself, so the stored box below has one entry at least */
+  verify_search("contains", rtree, INDEX_CONTAINS, &boxes[NUM_BBOX / 2],
     (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
   verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
@@ -222,7 +223,8 @@ test_tstzspan(MeosArray *ids)
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00]");
   verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(Span), ids, overlaps_span_wrapper);
-  verify_search("contains", rtree, INDEX_CONTAINS, query,
+  /* A box contains itself, so the stored box below has one entry at least */
+  verify_search("contains", rtree, INDEX_CONTAINS, &boxes[NUM_BBOX / 2],
     (char *) boxes, sizeof(Span), ids, contains_span_wrapper);
   verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(Span), ids, contained_span_wrapper);
@@ -262,7 +264,8 @@ test_tbox(MeosArray *ids)
     "TBOX XT([0,100],[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
   verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(TBox), ids, overlaps_tbox_wrapper);
-  verify_search("contains", rtree, INDEX_CONTAINS, query,
+  /* A box contains itself, so the stored box below has one entry at least */
+  verify_search("contains", rtree, INDEX_CONTAINS, &boxes[NUM_BBOX / 2],
     (char *) boxes, sizeof(TBox), ids, contains_tbox_wrapper);
   verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(TBox), ids, contained_tbox_wrapper);
@@ -292,7 +295,7 @@ test_stbox(MeosArray *ids)
     snprintf(str, sizeof(str),
       "SRID=25832;STBOX XT(((%d %d),(%d %d)),"
       "[2020-01-01 %02d:%02d:00+00, 2020-01-01 %02d:%02d:00+00])",
-      xmin, xmax, ymin, ymax, tmin_h, tmin_m, tmax_h, tmax_m);
+      xmin, ymin, xmax, ymax, tmin_h, tmin_m, tmax_h, tmax_m);
     STBox *b = stbox_in(str);
     boxes[i] = *b;
     rtree_insert(rtree, &boxes[i], i);
@@ -305,7 +308,8 @@ test_stbox(MeosArray *ids)
     "[2020-01-01 00:00:00+00, 2020-01-01 01:40:00+00])");
   verify_search("overlaps", rtree, INDEX_OVERLAPS, query,
     (char *) boxes, sizeof(STBox), ids, overlaps_stbox_wrapper);
-  verify_search("contains", rtree, INDEX_CONTAINS, query,
+  /* A box contains itself, so the stored box below has one entry at least */
+  verify_search("contains", rtree, INDEX_CONTAINS, &boxes[NUM_BBOX / 2],
     (char *) boxes, sizeof(STBox), ids, contains_stbox_wrapper);
   verify_search("contained by", rtree, INDEX_CONTAINED_BY, query,
     (char *) boxes, sizeof(STBox), ids, contained_stbox_wrapper);
