@@ -2229,8 +2229,8 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
  * box. When @p id_out or @p dist_out is not @p NULL it receives the id and its
  * distance.
  * @param[in] cursor The cursor previously opened with #sptree_nn_cursor_open
- * @param[out] id_out Receives the id of the next neighbour, or @p NULL
- * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
+ * @param[out] id_out Receives the id of the next neighbour @nullable
+ * @param[out] dist_out Receives the distance of the next neighbour @nullable
  * @return @p true if a neighbour was produced, @p false once exhausted or on
  * error
  */
@@ -2291,7 +2291,7 @@ sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
 /**
  * @ingroup meos_temporal_box_index
  * @brief Close a nearest-neighbour cursor and free its resources
- * @param[in] cursor The cursor to close; @p NULL is ignored
+ * @param[in] cursor The cursor to close; @p NULL is ignored @nullable
  */
 void
 sptree_nn_cursor_close(SPNNCursor *cursor)

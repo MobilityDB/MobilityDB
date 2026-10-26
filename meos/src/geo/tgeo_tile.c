@@ -413,12 +413,12 @@ tile_dim_count(double lower, double upper, double binmin, double binmax,
 /**
  * @brief Create the initial state that persists across multiple calls of the
  * function
- * @param[in] temp Temporal point to split, may be `NULL`
+ * @param[in] temp Temporal point to split @nullable
  * @param[in] box Bounds for generating the multidimensional grid
  * @param[in] xsize,ysize,zsize Tile sizes for the spatial dimensions in the
  * units of the SRID, may be 0 for a time only grid
- * @param[in] duration Tile size for the temporal dimension as an interval, may
- * be `NULL` for a space only grid
+ * @param[in] duration Tile size for the temporal dimension as an interval,
+ * `NULL` for a space only grid @nullable
  * @param[in] sorigin Spatial origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -729,7 +729,7 @@ ensure_valid_grid_size(double size, const char *name)
  * dimension, so a `duration` must then be given. A `ysize` or `zsize` of 0 is
  * a size the caller leaves out, which #grid_sizes_resolve reads as `xsize`
  * @param[in] xsize,ysize,zsize Size of the spatial dimensions
- * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] duration Size of the time dimension @nullable
  */
 static bool
 ensure_valid_grid_sizes(double xsize, double ysize, double zsize,
@@ -792,7 +792,7 @@ ensure_valid_grid_origin(const GSERIALIZED *sorigin, int32_t srid, bool hasz)
  * #ensure_valid_tspatial_geo is that of a value and a geometry
  * @param[in] temp Temporal value
  * @param[in] xsize,ysize,zsize Size of the spatial dimensions
- * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] duration Size of the time dimension @nullable
  * @param[in] sorigin Origin of the spatial dimensions, read when `xsize` is
  * not 0
  */
@@ -824,9 +824,9 @@ ensure_valid_tspatial_grid(const Temporal *temp, double xsize, double ysize,
  * #ensure_valid_stbox_geo is that of a box and a geometry
  * @param[in] box Spatiotemporal box
  * @param[in] xsize,ysize,zsize Size of the spatial dimensions
- * @param[in] duration Size of the time dimension, may be `NULL`
- * @param[in] sorigin Origin of the spatial dimensions, may be `NULL` for the
- * point at the origin of the coordinates
+ * @param[in] duration Size of the time dimension @nullable
+ * @param[in] sorigin Origin of the spatial dimensions, `NULL` for the
+ * point at the origin of the coordinates @nullable
  */
 static bool
 ensure_valid_stbox_grid(const STBox *box, double xsize, double ysize,
@@ -854,7 +854,7 @@ ensure_valid_stbox_grid(const STBox *box, double xsize, double ysize,
  * #ensure_valid_stbox_geo is that of a box and a geometry
  * @param[in] point Point, read when `xsize` is not 0
  * @param[in] xsize,ysize,zsize Size of the spatial dimensions
- * @param[in] duration Size of the time dimension, may be `NULL`
+ * @param[in] duration Size of the time dimension @nullable
  * @param[in] sorigin Origin of the spatial dimensions, read when `xsize` is
  * not 0
  */
@@ -909,8 +909,7 @@ grid_sizes_resolve(double xsize, double *ysize, double *zsize, bool hasz)
  * @details An origin without Z places the Z of the grid at 0, and a missing
  * origin is the point at the origin of the coordinates. The grid reads the Z
  * of the origin only over a value with Z, as #stbox_tile_state_make reads it
- * @param[in] sorigin Origin validated by #ensure_valid_grid_origin, may be
- * `NULL`
+ * @param[in] sorigin Origin validated by #ensure_valid_grid_origin @nullable
  * @param[out] pt Point
  */
 static void
@@ -945,8 +944,8 @@ grid_origin_point(const GSERIALIZED *sorigin, POINT3DZ *pt)
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
  * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a box with Z
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
- * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
+ * @param[in] sorigin Origin for the space dimension @nullable
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] hasx True when the grid lays the space dimension, which then
@@ -986,7 +985,7 @@ stbox_space_time_tile_init(const STBox *bounds, double xsize, double ysize,
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
  * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -1105,7 +1104,7 @@ stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
  * @ingroup meos_geo_tile
  * @brief Return the spatiotemporal grid of a spatiotemporal box
  * @param[in] bounds Bounds
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
@@ -1124,12 +1123,12 @@ stbox_time_tiles(const STBox *bounds, const Interval *duration,
 
 /**
  * @brief Return a tile in the multidimensional grid of a spatiotemporal box
- * @param[in] point Point, may be `NULL`
+ * @param[in] point Point @nullable
  * @param[in] t Timestamp
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
  * @param[in] duration Size of the time dimension as an interval
- * @param[in] sorigin Origin for the space dimension, may be `NULL`
- * @param[in] torigin Origin for the time dimension, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension @nullable
+ * @param[in] torigin Origin for the time dimension @nullable
  * @param[in] hasx True when spliting by space
  * @param[in] hast True when spliting by time
  */
@@ -1285,8 +1284,8 @@ stbox_get_time_tile(TimestampTz t, const Interval *duration,
  * then answer where the point goes instead of where the value is
  * @param[in] temp Temporal value
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
- * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
+ * @param[in] sorigin Origin for the space dimension @nullable
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border
@@ -1360,7 +1359,7 @@ tspatial_space_time_boxes(const Temporal *temp, double xsize, double ysize,
  * read only for a value with Z
  * @param[in] duration Size of the time dimension as an interval, which must
  * be positive
- * @param[in] sorigin Origin for the space dimension, may be `NULL`
+ * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
@@ -1761,7 +1760,7 @@ tgeo_space_time_tile_init(const Temporal *temp, double xsize, double ysize,
  * positive `xsize`
  * @param[in] temp Temporal point
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
@@ -1790,16 +1789,15 @@ tgeo_space_time_split_init(const Temporal *temp, double xsize, double ysize,
  * @param[in] temp Temporal geo
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
  * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a value with Z
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] sorigin Origin for the space dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_bins Array of space bins, parallel to the fragments, may be
- * `NULL`
+ * @param[out] space_bins Array of space bins, parallel to the fragments @nullable
  * @param[out] time_bins Array of time bins, parallel to the fragments, `NULL`
- * when no duration is given, may be `NULL`
+ * when no duration is given @nullable
  * @param[out] count Number of elements in the output arrays
  * @return Array of fragments
  * @note The test for the validity of the arguments is done in
@@ -1897,10 +1895,8 @@ tgeo_space_time_split_intl(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_bins Array of space bins, parallel to the fragments, may be
- * `NULL`
- * @param[out] time_bins Array of time bins, parallel to the fragments, may be
- * `NULL`
+ * @param[out] space_bins Array of space bins, parallel to the fragments @nullable
+ * @param[out] time_bins Array of time bins, parallel to the fragments @nullable
  * @param[out] count Number of elements in the output arrays
  * @return Array of fragments
  * @note This function in MEOS corresponds to the MobilityDB function
@@ -1935,8 +1931,7 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border, otherwise
  * the upper border is assumed as outside of the box.
- * @param[out] space_bins Array of space bins, parallel to the fragments, may be
- * `NULL`
+ * @param[out] space_bins Array of space bins, parallel to the fragments @nullable
  * @param[out] count Number of elements in the output arrays
  * @return Array of fragments
  * @csqlfn #Tgeo_space_split()

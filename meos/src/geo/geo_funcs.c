@@ -7594,7 +7594,7 @@ edge_direction_half_plane(int sx, int sy)
  * that it comes after a segment counterclockwise. The ordering mirrors that
  * of the intervals the arrangement reads first (#arcarc_meet_exact computes
  * on the same centres)
- * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis
+ * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point rather than
  * arrives at it
@@ -9475,7 +9475,7 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
  * counterclockwise from the positive x axis, decided exactly: the
  * #edges_turn_cmp_exact of a point no double holds
  * @param[in] e1,e2 Segments between tangent points or centred arcs holding
- * the point; NULL for the positive x axis
+ * the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point
  * @param[in] at The point
@@ -10617,8 +10617,8 @@ hull_arc_holds(const HullFeature *f, double phi)
  * their own
  * @param[in] feats,nfeats Features supporting the hull
  * @param[in] phi Direction
- * @param[out] px,py Point reaching that far, ignored when null
- * @param[out] which Feature reaching that far, ignored when null
+ * @param[out] px,py Point reaching that far, ignored when null @nullable
+ * @param[out] which Feature reaching that far, ignored when null @nullable
  */
 static double
 hull_support(const HullFeature *feats, int nfeats, double phi, double *px,
@@ -15411,7 +15411,7 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
  * at the first stretch of the line inside the area
  * @param[in] line_geom,area_geom Geometries
  * @param[in] ops Operands of the relationship, NULL where there is none
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix
  */
 static void
@@ -18285,7 +18285,7 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  * dimension of the boundary of a linear geometry reads the parity of all its
  * endpoints, which a query answered by the interiors does not pay
  * @param[in] g1,g2 Geometries
- * @param[in] q Query, NULL for the whole matrix
+ * @param[in] q Query, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix, initialized by the caller
  */
 static void
@@ -18375,7 +18375,7 @@ relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
  * @param[in] g1,g2 Geometries
  * @param[in] ops Operands of the relationship the matrix answers a step of,
  * NULL where the matrix is asked for on its own
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in] meet True where the caller has found that the geometries share a
  * point, which settles that neither is empty and that their extents are not
  * apart

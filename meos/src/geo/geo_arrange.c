@@ -512,7 +512,7 @@ typedef struct
   double (*box)[4];       /**< The box of every edge (#arr_box) */
   /* Where the edges are stretches (#ArrStretch), each the line of its input
    * segment, walked in its sense, between the nodes of its two ends */
-  const Edge **sup;       /**< The input segment of each edge, or NULL */
+  const Edge **sup;       /**< The input segment of each edge @nullable */
   bool *erev;             /**< Whether the edge runs against it */
   Ival *tfrom, *tto;      /**< The positions of its ends along it */
   ArrMeet *mfrom, *mto;   /**< The meetings its ends are */

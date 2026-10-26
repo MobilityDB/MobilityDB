@@ -505,6 +505,8 @@ meos_default_timezone(void)  /* MEOS: probe the OS default zone once, process-wi
 /**
  * @ingroup meos_setup
  * @brief Initialize timezone cache
+ * @param[in] tz_str Name of the time zone, `NULL` or empty for the local one, or
+ * GMT when there is none @nullable
  */
 void
 meos_initialize_timezone(const char *tz_str)

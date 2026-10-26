@@ -90,7 +90,7 @@ struct SPTree
                              spatiotemporal box tree, read from the axes of
                              its boxes */
   SPTreeKind kind;      /**< Quad-tree or k-d tree */
-  SPNode *root;         /**< Root node, or @p NULL when empty */
+  SPNode *root;         /**< Root node, or @p NULL when empty @nullable */
   int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when
                                           fixed at creation */
   void (*project)(const void *in, void *out);  /**< Project an incoming box

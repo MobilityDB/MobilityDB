@@ -1037,7 +1037,7 @@ geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
 /**
  * @ingroup meos_rgeo_modif
  * @brief Return two temporal rigid geometries merged into one
- * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[in] temp1,temp2 Temporal rigid geometries @nullable
  * @details A temporal rigid geometry is a temporal pose carrying a reference
  * geometry, and a merge rebuilds the temporal value from the poses of both.
  * The rebuilt value carries no reference geometry of its own, so the body the
@@ -1309,7 +1309,7 @@ trgeometry_as_tinstant(const Temporal *temp)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal sequence
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation string, may be NULL
+ * @param[in] interp_str Interpolation string @nullable
  * @csqlfn #Trgeometry_as_tsequence()
  */
 TSequence *
@@ -1340,7 +1340,7 @@ trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal sequence set
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation string, may be @p NULL
+ * @param[in] interp_str Interpolation string @nullable
  * @csqlfn #Trgeometry_as_tsequenceset()
  */
 TSequenceSet *
@@ -1789,7 +1789,7 @@ trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return A NEW temporal value is always returned, the temporal value passed

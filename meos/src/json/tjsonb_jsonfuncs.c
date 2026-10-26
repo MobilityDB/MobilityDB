@@ -953,7 +953,8 @@ tjsonb_exists_all(const Temporal *temp, text **keys, int count)
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
- * @param[in] newjb New value
+ * @param[in] newjb New value, `NULL` in the lax mode treated as @p null_handle
+ * states @nullable
  * @param[in] create When true, if the last path step is an array index that
  * is out of range, the new value is added at the beginning of the array if
  * the index is negative, or at the end of the array if it is positive
@@ -1714,7 +1715,7 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
  * temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1750,7 +1751,7 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1786,7 +1787,7 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1824,7 +1825,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
  * @details If there are no items, return NULL.
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed

@@ -1885,8 +1885,8 @@ typedef struct
   double best;         /**< Least distance found, INFINITY before the first */
   double thr2;         /**< Square the double evaluation is compared with */
   double xl, xr, yl, yr; /**< Window of the centre plus or minus the reach */
-  double *seg;         /**< Ends of the segment answering it, or NULL */
-  bool *inside;        /**< Whether a polygon holds the centre, or NULL */
+  double *seg;         /**< Ends of the segment answering it @nullable */
+  bool *inside;        /**< Whether a polygon holds the centre @nullable */
 } DiscWalk;
 
 /* Read exactly a segment the window keeps, a point being a segment of no
@@ -2071,8 +2071,8 @@ geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
  * @param[in] c Centre, two coordinates
  * @param[in] r Radius, not negative
  * @param[in] gs Geometry, not empty
- * @param[out] seg Ends of the segment, or NULL
- * @param[out] inside Whether a polygon holds the centre, or NULL
+ * @param[out] seg Ends of the segment @nullable
+ * @param[out] inside Whether a polygon holds the centre @nullable
  */
 double
 geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
@@ -7046,7 +7046,7 @@ geog_from_hexewkb(const char *hexwkb)
  * @param[in] gs Geometry/geography
  * @param[in] endian Endian encoding: an empty string (machine endianness),
  * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
- * reads it
+ * reads it @nullable
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
  * @csqlfn #Geo_as_hexewkb()
  */
@@ -7108,7 +7108,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @details The byte order is read as #geo_as_hexewkb reads it: `NDR` or `XDR`
  * in any case, and the order of the machine for `NULL` or an empty string
  * @param[in] gs Geometry/geography
- * @param[in] endian Byte order, may be `NULL`
+ * @param[in] endian Byte order @nullable
  * @param[out] size Size of result
  * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
@@ -7187,7 +7187,7 @@ geo_from_geojson(const char *geojson)
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
  * @param[in] srs Name of the coordinate reference system, which the output
- * states in place of the one of the SRID, may be `NULL`
+ * states in place of the one of the SRID @nullable
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  * @sqlfn asGeoJSON()

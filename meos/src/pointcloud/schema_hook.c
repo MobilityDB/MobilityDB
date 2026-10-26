@@ -657,7 +657,7 @@ static bool schemas_xml_read = false;
 /**
  * @ingroup meos_pointcloud_schema_cache
  * @brief Set the file the point cloud schemas are read from
- * @param[in] path Location of the document
+ * @param[in] path Location of the document @nullable
  */
 void
 meos_set_pointcloud_schemas_xml(const char *path)

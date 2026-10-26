@@ -139,9 +139,9 @@ typedef struct
   int n;
   bool has_poly;
   double xmin, ymin, xmax, ymax; /**< Overall geometry bounding box */
-  const DistBucket *bks; /**< Morton bucket BVH (nad path), or NULL */
+  const DistBucket *bks; /**< Morton bucket BVH (nad path) @nullable */
   int nbk;
-  RTree *rtree; /**< Generic R-tree (relationship path), or NULL */
+  RTree *rtree; /**< Generic R-tree (relationship path) @nullable */
   MeosArray *edges; /**< Array of the extracted edges, which @p segs reads
                          until the buckets copy them in their own order, then
                          NULL */

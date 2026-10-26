@@ -1982,7 +1982,7 @@ tgeogpointinst_point2d(const TInstant *inst)
  * are within a distance, from the crossings of their geodetic distance
  * @param[in] temp1 Temporal geography point with linear interpolation, or
  * one of two synchronized temporal geography points
- * @param[in] temp2 The other synchronized temporal geography point, or NULL
+ * @param[in] temp2 The other synchronized temporal geography point @nullable
  * @param[in] gs Geography point when @p temp2 is NULL
  * @param[in] dist Distance
  * @param[in] spheroid True when measuring on the spheroid, false on the

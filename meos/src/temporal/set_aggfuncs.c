@@ -212,7 +212,7 @@ set_append_value(Set *set, Datum value)
 /**
  * @ingroup meos_internal_setspan_agg
  * @brief Transition function for set union aggregate of values
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] value Value
  * @param[in] basetype Type of the value
  * @return When the state variable has space for adding the new value, the 
@@ -253,8 +253,8 @@ value_union_transfn(Set *state, Datum value, MeosType basetype)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of sets
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Set to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] s Set to aggregate @nullable
  * @return When the state variable has space for adding the new set, the 
  * function returns the current state variable. Otherwise, a NEW state 
  * variable is returned and the input state is freed.
@@ -291,7 +291,7 @@ set_union_transfn(Set *state, Set *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Final function for set union aggregate
- * @param[in,out] state Current aggregate state
+ * @param[in,out] state Current aggregate state @nullable
  * @note The input state must be free by the calling function
  * @csqlfn #Set_union_finalfn()
  */
@@ -308,8 +308,8 @@ set_union_finalfn(Set *state)
 /**
  * @ingroup meos_setspan_agg
  * @brief Combine function for set union aggregate
- * @param[in,out] state1 Current aggregate state
- * @param[in] state2 Aggregate state to combine with the first one
+ * @param[in,out] state1 Current aggregate state @nullable
+ * @param[in] state2 Aggregate state to combine with the first one @nullable
  * @return The state holding the values of both, which is the first state when
  * it has space for the values of the second one and a NEW state otherwise, the
  * first state being freed; the second state is left to the caller

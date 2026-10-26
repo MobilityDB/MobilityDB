@@ -266,8 +266,8 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
  * @p p2 so that `len(p1,p) == len(p1,p2) * f` and @p p falls on the @p p1,p2
  * segment
  * @param[in] p1,p2 geography points we are interpolating between
- * @param[in] s Spheroid used for during the intepolation, may be @p NULL when
- * using sphere interpolation
+ * @param[in] s Spheroid used for during the intepolation, @p NULL when
+ * using sphere interpolation @nullable
  * @param[in] f Fraction
  * @param[out] p Result
  */
@@ -895,7 +895,7 @@ point_meas_to_lwpoint(Datum point, Datum meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point instant and optionally a temporal float (iterator function)
  * @param[in] inst Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static LWGEOM *
@@ -916,7 +916,7 @@ tpointinst_to_geomeas_iter(const TInstant *inst, const TInstant *meas)
  * @brief Return a geometry/geography with M measure from a temporal point
  * instant and optionally a temporal float
  * @param[in] inst Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -932,7 +932,7 @@ tpointinst_to_geomeas(const TInstant *inst, const TInstant *meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point discrete sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -971,7 +971,7 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  * @note The function does not add a point if is equal to the previous one.
  */
@@ -1044,7 +1044,7 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
  * @brief Return a geometry/geography with M measure from a temporal
  * point sequence set and optionally a temporal float
  * @param[in] ss Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -1119,7 +1119,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
  * @brief Return a geometry/geography with M measure from a temporal point
  * sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @return The result is a (Multi)Point when there are only instantaneous
  * sequences or a (Multi)linestring when each composing linestring corresponds
  * to a segment of a sequence of the temporal point
@@ -1183,7 +1183,7 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
  * instantaneous sequences or a (Multi)linestring when each composing
  * linestring corresponds to a segment of a sequence of the temporal point
  * @param[in] ss Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  */
 static GSERIALIZED *
 tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
@@ -1254,7 +1254,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * of the temporal point in Unix time, that is, the number of seconds since
  * '1970-01-01'
  * @param[in] tpoint Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @param[in] segmentize When true, in the general case the resulting geometry
  * will be a MultiLineString composed of one Linestring per segment of the
  * temporal sequence (set)

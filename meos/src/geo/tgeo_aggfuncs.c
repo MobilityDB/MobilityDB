@@ -205,8 +205,8 @@ tpoint_transform_tcentroid(const Temporal *temp, int *count)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * points
- * @param[in] state Current aggregate value, may be `NULL`
- * @param[in] temp Temporal point
+ * @param[in] state Current aggregate value @nullable
+ * @param[in] temp Temporal point @nullable
  * @csqlfn #Tpoint_tcentroid_transfn()
  * @csqlaggfn #tCentroidTransition()
  */
@@ -246,7 +246,7 @@ tpoint_tcentroid_transfn(SkipList *state, Temporal *temp)
  * @ingroup meos_geo_agg
  * @brief Combine function for temporal centroid aggregation of temporal
  * points
- * @param[in,out] state1, state2 Current aggregate states, may be `NULL`
+ * @param[in,out] state1, state2 Current aggregate states @nullable
  * @csqlfn #Tpoint_tcentroid_combinefn()
  */
 SkipList *
@@ -277,8 +277,8 @@ tpoint_tcentroid_combinefn(SkipList *state1, SkipList *state2)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal extent aggregation of spatiotemporal
  * values
- * @param[in] state Current aggregate value, may be `NULL`
- * @param[in] temp Spatiotemporal value, may be `NULL`
+ * @param[in] state Current aggregate value @nullable
+ * @param[in] temp Spatiotemporal value @nullable
  * @csqlfn #Tspatial_extent_transfn()
  * @csqlaggfn #extentTransition()
  */
@@ -317,8 +317,8 @@ tspatial_extent_transfn(STBox *state, const Temporal *temp)
  * @ingroup meos_geo_agg
  * @brief Transition function for temporal extent aggregate of spatiotemporal
  * boxes
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] box Spatiotemporal box to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] box Spatiotemporal box to aggregate @nullable
  * @note The function is also the combine function of the extent aggregates
  * of spatiotemporal boxes and spatiotemporal values, the box to aggregate
  * being the state of another partial aggregation
@@ -437,7 +437,7 @@ tpointseq_tcentroid_finalfn(TSequence **sequences, int count, int32_t srid)
 /**
  * @ingroup meos_geo_agg
  * @brief Final function for temporal centroid aggregation of temporal points
- * @param[in] state Current aggregate value, may be `NULL`
+ * @param[in] state Current aggregate value @nullable
  * @csqlfn #Tpoint_tcentroid_finalfn()
  */
 Temporal *

@@ -194,7 +194,7 @@ extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
 typedef struct
 {
   const char *name;           /**< Dimension name, unique within the schema */
-  const char *description;    /**< Dimension description, may be @p NULL */
+  const char *description;    /**< Dimension description @nullable */
   int32_t position;           /**< Position within the schema, from 1 */
   const char *interpretation; /**< Name of the numeric type stored */
   double scale;               /**< Factor a stored value is multiplied by */

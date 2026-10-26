@@ -1311,8 +1311,8 @@ span_bounds_shift_scale_value(Datum shift, Datum width, MeosType basetype,
 
 /**
  * @brief Shift and/or scale period bounds by two intervals
- * @param[in] shift Interval to shift the bounds, may be NULL
- * @param[in] duration Interval for the duration of the result, may be NULL
+ * @param[in] shift Interval to shift the bounds @nullable
+ * @param[in] duration Interval for the duration of the result @nullable
  * @param[in,out] lower,upper Bounds of the period
  */
 void
@@ -1535,8 +1535,8 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
- * @param[in] shift Interval to shift the bounds, may be NULL
- * @param[in] duration Duation of the result, may be NULL
+ * @param[in] shift Interval to shift the bounds @nullable
+ * @param[in] duration Duation of the result @nullable
  * @csqlfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *

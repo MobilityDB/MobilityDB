@@ -1044,8 +1044,8 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz set shifted and/or scaled by two intervals
  * @param[in] s Set
- * @param[in] shift Interval to shift the elements, may be NULL
- * @param[in] duration Duation of the result, may be NULL
+ * @param[in] shift Interval to shift the elements @nullable
+ * @param[in] duration Duation of the result @nullable
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *

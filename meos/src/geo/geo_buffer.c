@@ -1782,7 +1782,7 @@ typedef struct
   uint32_t index;       /**< The piece, as its place among the selected */
   BufferLocator *own;   /**< The geometry the piece bounds */
   bool inverted;        /**< The answer lies on the side it does not cover */
-  BufferOperandRings *rings; /**< The rings of that geometry, or NULL */
+  BufferOperandRings *rings; /**< The rings of that geometry @nullable */
   int32_t ring;         /**< The ring the piece is cut from, -1 where it is not
                              known */
 } BufferSideAsk;
@@ -3848,7 +3848,7 @@ buffer_piece_answer_left(const Edge *piece, BufferLocator *own, bool inverted)
  * not cover
  * @param[in,out] deferred Where non-NULL, the side is not read here but asked
  * there, for #buffer_frame_where_read() to read where the walk consults it
- * @param[in,out] rings The rings of the geometry the piece bounds, or NULL
+ * @param[in,out] rings The rings of the geometry the piece bounds @nullable
  * @param[in] ring The ring the piece is cut from, -1 where it is not known
  */
 static void
@@ -3928,8 +3928,7 @@ buffer_pieces_scale(const MeosArray *pieces)
  * @param[in] pieces Pieces of the boundary
  * @param[in] other Locator of the other geometry
  * @param[in] nodes Nodes the boundaries were cut at, as #POINT2D
- * @param[in,out] ix Node index of @p nodes, sized from the pieces as well, or
- * NULL
+ * @param[in,out] ix Node index of @p nodes, sized from the pieces as well @nullable
  * @param[out] locations Location of each piece
  */
 static void
@@ -7900,8 +7899,8 @@ buffer_sweep_lines(const MeosArray *lout, int32_t srid)
  * #buffer_surfaces_from_rings answers them, its linework and its points: the
  * one kind there is, else the collection of them; @p NULL where there is
  * nothing
- * @param[in] region The surfaces, owned by the answer, or @p NULL
- * @param[in] lout The pieces of linework no surface covers, or @p NULL
+ * @param[in] region The surfaces, owned by the answer @nullable
+ * @param[in] lout The pieces of linework no surface covers @nullable
  * @param[in] pts,pkeep,npts The points, and whether each is kept
  * @param[in] srid Spatial reference identifier
  */
@@ -7964,7 +7963,7 @@ buffer_sweep_assemble(LWGEOM *region, const MeosArray *lout,
  * (#arrange_union_surfaces), the surfaces in the order of the sequence
  * @param[in] centres,radii The discs, in the order of the sequence
  * @param[in] link For every disc but the last, whether the sweep moves from
- * it to the next, or NULL where it never does
+ * it to the next, or NULL where it never does @nullable
  * @param[in] count Number of discs
  * @param[in] srid Spatial reference identifier
  * @return The set of points swept: the surfaces, the linework of the moves

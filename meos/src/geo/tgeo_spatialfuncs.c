@@ -1519,7 +1519,7 @@ tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
- * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @param[in] sorigin Point geometry for the origin @nullable
  * @csqlfn #Tgeo_scale_geo()
  */
 Temporal *
@@ -1954,7 +1954,7 @@ geo_rotate_z(const GSERIALIZED *gs, double angle)
  * plane when the vertical factor moves it
  * @param[in] gs Geometry
  * @param[in] scale Point geometry stating the scale factors
- * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @param[in] sorigin Point geometry for the origin @nullable
  * @csqlfn #Geo_scale_geo()
  */
 GSERIALIZED *

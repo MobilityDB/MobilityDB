@@ -109,7 +109,7 @@ meos_array_create(int elem_size)
  * @details For varlength arrays, the caller is responsible for freeing the
  * stored pointers before calling this function. Use #meos_array_destroy_free
  * to have the array free the stored pointers automatically.
- * @param[in] array Array
+ * @param[in] array Array @nullable
  */
 void
 meos_array_destroy(MeosArray *array)
@@ -127,7 +127,7 @@ meos_array_destroy(MeosArray *array)
  * @details This is equivalent to calling #meos_array_reset_free followed by
  * #meos_array_destroy. For fixed-size arrays, this is identical to
  * #meos_array_destroy.
- * @param[in] array Array
+ * @param[in] array Array @nullable
  */
 void
 meos_array_destroy_free(MeosArray *array)

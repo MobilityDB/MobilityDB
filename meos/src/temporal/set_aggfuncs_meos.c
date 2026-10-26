@@ -69,7 +69,7 @@
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of integers
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] i Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -86,7 +86,7 @@ int_union_transfn(Set *state, int32 i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of big integers
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] i Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -103,7 +103,7 @@ bigint_union_transfn(Set *state, int64 i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of floats
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] d Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -120,7 +120,7 @@ float_union_transfn(Set *state, double d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of dates
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] d Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -137,7 +137,7 @@ date_union_transfn(Set *state, DateADT d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of timestamptz
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] t Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()
@@ -154,7 +154,7 @@ timestamptz_union_transfn(Set *state, TimestampTz t)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for set union aggregate of texts
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] txt Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

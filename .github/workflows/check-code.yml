@@ -140,6 +140,14 @@ jobs:
       - name: Check that every error sentinel is the maximum of the return type
         run: python3 tools/scripts/check_error_sentinels.py
 
+  nullable_params_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Check that every pointer argument states whether it accepts NULL
+        run: python3 tools/scripts/check_nullable_params.py
+
   fixture_dates_check:
     runs-on: ubuntu-latest
     steps:
