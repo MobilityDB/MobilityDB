@@ -397,13 +397,17 @@ aligns what still differs and renames no type (the owner, 2026-10-26: the cursor
 `RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)`, and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
-data and checks. The key of each type is the one PostgreSQL's GiST and SP-GiST operator classes
-store, both indexing the same 37 types on master `c1d030d810`: a set, span or span set its span,
-a temporal value its bounding box (`temporal_set_bbox`, which `insert_temporal` and the operator
-classes both read). MobilityDuck's `TRTREE` and `TSPTREE` index methods are these two trees, so
-the pass tests the same types and keys in both hosts: PostgreSQL's GiST and SP-GiST and
-MobilityDuck's `TRTREE` and `TSPTREE` each index every one of the 37 types and answer the same
-queries over them.
+data and checks. The key of a type is a catalog fact, `type_index_bboxtype` in `meos_catalog.c`: the bounding
+box a value carries (`type_bboxtype`), a span or a box itself, and the span of a number or time
+set and of a span set; `meostype_from_string` answers the type of a canonical name, the inverse of
+`meostype_name`, so a host reads both from MEOS. DECIDED BY THE OWNER 2026-10-26: every type with
+a key is indexed in both hosts, 46 types: the 37 PostgreSQL's GiST and SP-GiST operator classes
+index on master `c1d030d810` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
+`poseset`, `posechainset`, `cbufferset`, `h3indexset`, `quadbinset`, `s2cellset`), whose `stbox`
+the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
+`intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). MobilityDuck's
+`TRTREE` and `TSPTREE` are the two trees and take the 46 types from the catalog rather than from
+the 15 their modules list on main; the tests run each index over each type in both hosts.
 Of the other 43 files, 30 have a twin without the suffix
 (`span_meos.c` and `span.c`); 13 have none (`cbufferset_meos.c`, `geoset_meos.c`, `tspatial_posops_meos.c`, `tspatial_topops_meos.c`,
 `tspatial_transform_meos.c`, `npointset_meos.c`, `pcset_meos.c`, `tpc_posops_meos.c`,
