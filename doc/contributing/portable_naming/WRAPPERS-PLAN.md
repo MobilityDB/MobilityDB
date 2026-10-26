@@ -408,6 +408,22 @@ the catalog states and which gain a GiST and an SP-GiST class over it, cloned fr
 `intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 46 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
+A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
+both hosts recheck a candidate the index returns for one: PostgreSQL through the classes' recheck,
+MobilityDuck by keeping the matched filter above the index scan.
+
+**Future tasks, each its own pull request after the indexes:**
+
+- **The index join over every key.** MobilityDuck's `TRTREE` and `TSPTREE` index join serves a
+  probe of an `stbox`-keyed index from an `stbox` or one of the four temporal point and geometry
+  types, all answered exactly by their box. It gains every key and probe type the catalog states
+  (`type_index_bboxtype`), the join rechecking a lossy pair as the scan does.
+- **`bboxunion` removed.** The union of every box type sizes 25 buffers in MEOS and
+  `TEMPORAL_MAX_HEADER_SIZE`, the bytes read from TOAST for the header and box of a temporal value,
+  and holds `TPCBox` under `#if POINTCLOUD` alone, so that size depends on a family flag. Each
+  buffer takes the size of the box of its type (`bbox_get_size`), the header size the largest box
+  `bbox_get_size` answers whatever the families built, and the MFJSON writers a `const void *` box
+  with the box type they read.
 Of the other 43 files, 30 have a twin without the suffix
 (`span_meos.c` and `span.c`); 13 have none (`cbufferset_meos.c`, `geoset_meos.c`, `tspatial_posops_meos.c`, `tspatial_topops_meos.c`,
 `tspatial_transform_meos.c`, `npointset_meos.c`, `pcset_meos.c`, `tpc_posops_meos.c`,
