@@ -385,11 +385,25 @@ functions compiled in both builds. The route lookup of the network points (`rout
 `meos/src/npoint/ways.c`, PostgreSQL's lookup through SPI in the `ways` table, sits in `meos/src`
 under the `else()` of `if(MEOS)`, beside `ways_meos.c`, MEOS's lookup in the CSV file
 `meos_set_ways_csv` names. It moves to `mobilitydb/src/npoint`, and `ways_meos.c` stays MEOS's own;
-no `*_meos.c` file holds index code. Within MEOS the two index families answer the same API, and
-three points align the `SPTree` to the `RTree` and the reverse: the `RTree` creators are declared
-with `(void)`, the nearest-neighbour cursor of the `SPTree` (`SPNNCursor`) is named as the
-`RTree`'s (`RTreeNNCursor`), which is a public rename for the owner, and `meos/examples` holds an
-`SPTree` program beside `rtree_example.c` and `rtree_mest_example.c`.
+no `*_meos.c` file holds index code.
+
+**The two in-memory indexes are siblings** (DECIDED BY THE OWNER 2026-10-26, one pass without
+overdoing). The `RTree` and the `SPTree` (quad-tree or k-d tree, an `SPTreeKind`) answer the same
+API: a creator per key type (`intspan`, `bigintspan`, `floatspan`, `datespan`, `tstzspan`, `tbox`,
+`stbox`, `tpcbox`), `free`, `num_entries`, `mem_size`, `height`, `insert`, `load`, `search`,
+`join`, the temporal entry points `insert_temporal` and `search_temporal`, the multi-entry ones of
+MEST (`insert_temporal_split`, `search_temporal_dedup`) and a nearest-neighbour cursor. The pass
+aligns what still differs and renames no type (the owner, 2026-10-26: the cursors stay
+`RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)`, and
+`meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
+and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
+data and checks. The key of each type is the one PostgreSQL's GiST and SP-GiST operator classes
+store, both indexing the same 37 types on master `c1d030d810`: a set, span or span set its span,
+a temporal value its bounding box (`temporal_set_bbox`, which `insert_temporal` and the operator
+classes both read). MobilityDuck's `TRTREE` and `TSPTREE` index methods are these two trees, so
+the pass tests the same types and keys in both hosts: PostgreSQL's GiST and SP-GiST and
+MobilityDuck's `TRTREE` and `TSPTREE` each index every one of the 37 types and answer the same
+queries over them.
 Of the other 43 files, 30 have a twin without the suffix
 (`span_meos.c` and `span.c`); 13 have none (`cbufferset_meos.c`, `geoset_meos.c`, `tspatial_posops_meos.c`, `tspatial_topops_meos.c`,
 `tspatial_transform_meos.c`, `npointset_meos.c`, `pcset_meos.c`, `tpc_posops_meos.c`,
