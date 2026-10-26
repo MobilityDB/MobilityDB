@@ -396,9 +396,8 @@ Jsonb_each(PG_FUNCTION_ARGS)
     jsonb_srf_tupdesc(fcinfo, funcctx);
     Jsonb *jb = PG_GETARG_JSONB_P(0);
     int count;
-    /* The values fill an array sized by the number of fields */
-    Jsonb **values = palloc(sizeof(Jsonb *) * Max(JB_ROOT_COUNT(jb), 1));
-    text **keys = pg_jsonb_each(jb, values, &count);
+    Jsonb **values;
+    text **keys = pg_jsonb_each(jb, &values, &count);
     funcctx->user_fctx = jsonb_srf_state(funcctx, (void **) values,
       (void **) keys, count);
     MemoryContextSwitchTo(oldcontext);
@@ -424,9 +423,8 @@ Jsonb_each_text(PG_FUNCTION_ARGS)
     jsonb_srf_tupdesc(fcinfo, funcctx);
     Jsonb *jb = PG_GETARG_JSONB_P(0);
     int count;
-    /* The values fill an array sized by the number of fields */
-    text **values = palloc(sizeof(text *) * Max(JB_ROOT_COUNT(jb), 1));
-    text **keys = pg_jsonb_each_text(jb, values, &count);
+    text **values;
+    text **keys = pg_jsonb_each_text(jb, &values, &count);
     funcctx->user_fctx = jsonb_srf_state(funcctx, (void **) values,
       (void **) keys, count);
     MemoryContextSwitchTo(oldcontext);

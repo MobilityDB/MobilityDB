@@ -594,8 +594,9 @@ extern Jsonb *pg_jsonb_make_two_arg(text **keys, text **values, int count);
 extern text **pg_json_array_elements(const text *js, int *count);
 extern text **pg_json_array_elements_text(const text *js, int *count);
 extern int pg_json_array_length(const text *js);
-extern text **pg_json_each(const text *js, text **values, int *count);
-extern text **pg_json_each_text(const text *js, text **values, int *count);
+/* MEOS: the each functions allocate the array of values */
+extern text **pg_json_each(const text *js, text ***values, int *count);
+extern text **pg_json_each_text(const text *js, text ***values, int *count);
 extern text **pg_json_object_keys(const text *js, int *count);
 extern text *pg_json_typeof(const text *js);
 
@@ -605,8 +606,9 @@ extern int pg_jsonb_array_length(const Jsonb *jb);
 extern int pg_jsonb_cmp(const Jsonb *jb1, const Jsonb *jb2);
 extern bool pg_jsonb_contained(const Jsonb *jb1, const Jsonb *jb2);
 extern bool pg_jsonb_contains(const Jsonb *jb1, const Jsonb *jb2);
-extern text **pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count);
-extern text **pg_jsonb_each_text(const Jsonb *jb, text **values, int *count);
+/* MEOS: the each functions allocate the array of values */
+extern text **pg_jsonb_each(const Jsonb *jb, Jsonb ***values, int *count);
+extern text **pg_jsonb_each_text(const Jsonb *jb, text ***values, int *count);
 extern bool pg_jsonb_eq(const Jsonb *jb1, const Jsonb *jb2);
 extern bool pg_jsonb_exists(const Jsonb *jb, const text *key);
 extern bool pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len, bool any);
