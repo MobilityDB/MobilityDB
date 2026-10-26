@@ -216,6 +216,12 @@ extern int32_t meos_pc_schema_srid(uint32_t pcid);
 extern const char *meos_pc_schema_compression(uint32_t pcid);
 extern int32_t meos_pc_schema_ndims(uint32_t pcid);
 extern void meos_set_pointcloud_schemas_xml(const char *path);
+extern void meos_initialize_pointcloud(void);
+
+/* Indexes of TPCBox values */
+
+extern RTree *rtree_create_tpcbox();
+extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
 
 /* Comparison */
 
