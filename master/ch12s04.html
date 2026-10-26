@@ -12,7 +12,7 @@ SELECT asEWKT(tcbuffer 'SRID=4326;
 -- SRID=4326;[Cbuffer(POINT(0 0),1)@2001-01-01, Cbuffer(POINT(1 1),2)@2001-01-02)
 SELECT asEWKT(ARRAY[cbuffer 'Cbuffer(SRID=5676;Point(0 0),1)',
   'Cbuffer(SRID=5676;Point(1 1),2)']);
--- {"Cbuffer(SRID=5676;POINT(0 0),1)","Cbuffer(SRID=5676;POINT(1 1),2))"}
+-- {"SRID=5676;Cbuffer(POINT(0 0),1)","SRID=5676;Cbuffer(POINT(1 1),2)"}
 </pre></li><li class="listitem"><a name="tcbuffer_asMFJSON"></a><a class="indexterm" name="id9431"></a><p>Return the Moving Features JSON (MF-JSON) representation</p><pre class="programlisting">
 asMFJSON(tcbuffer) → text
 </pre><p>A circular buffer is always planar 2D. Each value is an object with a <code class="varname">point</code> member, an <code class="varname">[x, y]</code> coordinate array, and a numeric <code class="varname">radius</code> member, mirroring the <code class="varname">point</code> and <code class="varname">radius</code> accessors.</p><pre class="programlisting">
@@ -74,7 +74,7 @@ SELECT asEWKT(tcbufferFromBinary(
 -- Cbuffer(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tcbufferFromEWKB(
   '\x013b0041a41e0000000000000000f03f0000000000000040000000000000f03f009c57d3c11c0000'));
--- SRID=7844;Cbuffer(POINT(1 1),2)@2001-01-01
+-- SRID=7844;Cbuffer(POINT(1 2),1)@2001-01-01
 SELECT asEWKT(tcbufferFromHexEWKB(
   '013B0041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
 -- SRID=3812;Cbuffer(POINT(1 2),1)@2001-01-01

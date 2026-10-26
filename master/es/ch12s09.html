@@ -3,7 +3,7 @@ appendInstant(tcbuffer,tcbufferInst) → tcbuffer
 appendSequence(tcbuffer,tcbufferSeq) → tcbuffer
 </pre><pre class="programlisting">
 SELECT asText(appendInstant(tcbuffer 'Cbuffer(Point(1 1), 0.1)@2001-01-01',
-  'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
+  tcbuffer 'Cbuffer(Point(2 2), 0.2)@2001-01-02'));
 -- [Cbuffer(POINT(1 1),0.1)@2001-01-01, Cbuffer(POINT(2 2),0.2)@2001-01-02]
 SELECT asText(appendSequence(tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01]',
   '[Cbuffer(Point(2 2), 0.2)@2001-01-02]'));

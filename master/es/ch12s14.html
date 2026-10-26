@@ -14,7 +14,7 @@ aTouches({geometry,cbuffer,tcbuffer},{geometry,cbuffer,tcbuffer}) → boolean
 </pre><p>Las relaciones <span class="emphasis"><em>alguna vez</em></span> y <span class="emphasis"><em>siempre</em></span> determinan si la relación topológica o de distancia se satisface alguna vez o siempre (ver <a class="xref" href="ch05s04.html#ever_always_comparison" title="Comparaciones alguna vez y siempre">“Comparaciones alguna vez y siempre”</a>) y devuelven un <code class="varname">boolean</code></p><pre class="programlisting">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
--- false
+-- true
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(2 2), 0.0)',
   tcbuffer '[Cbuffer(Point(1 1), 0.1)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)');
 -- true

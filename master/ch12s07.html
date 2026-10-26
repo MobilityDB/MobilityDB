@@ -3,7 +3,7 @@ getValues(tcbuffer) → cbufferset
 </pre><pre class="programlisting">
 SELECT asText(getValues(tcbuffer '{[Cbuffer(Point(1 1), 0.3)@2001-01-01,
   Cbuffer(Point(1 1), 0.5)@2001-01-02)}'));
--- {"Cbuffer(POINT(1 1),0.3)","Cbuffer(POINT(1 1),0.5)"}
+-- {"Cbuffer(POINT(1 1),0.3)", "Cbuffer(POINT(1 1),0.5)"}
 SELECT asEWKT(getValues(tcbuffer 'SRID=5676;
   {[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-02)}'));
 -- SRID=5676;{"Cbuffer(POINT(1 1),0.3)"}
@@ -13,7 +13,7 @@ radius(tcbuffer) → floatset
 </pre><pre class="programlisting">
 SELECT asEWKT(points(tcbuffer 'SRID=5676;
   {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}'));
--- SRID=5676;{POINT(1 1), POINT(3 3)}
+-- SRID=5676;{"POINT(1 1)", "POINT(3 3)"}
 SELECT radius(tcbuffer 'SRID=5676;
   {Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02}');
 -- {0.3, 0.5}
