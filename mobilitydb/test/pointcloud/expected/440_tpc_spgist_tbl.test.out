@@ -158,3 +158,73 @@ ANALYZE tbl_tpcpoint_big_allthesame;
 ANALYZE
 DROP TABLE tbl_tpcpoint_big_allthesame;
 DROP TABLE
+CREATE INDEX tbl_tpcpoint_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
+CREATE INDEX
+CREATE INDEX tbl_tpcpatch_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
+CREATE INDEX
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) AS seq_inst FROM tbl_tpcpoint
+WHERE temp && tpcpoint(pcpoint(1, 3.09, 47.75, 20.5),
+  timestamptz '2001-09-10 22:14:00-07');
+ seq_inst 
+----------
+        0
+(1 row)
+
+SELECT COUNT(*) AS seq_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ seq_self 
+----------
+        1
+(1 row)
+
+SELECT COUNT(*) AS seq_self_patch FROM tbl_tpcpatch t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ seq_self_patch 
+----------------
+              1
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SET enable_bitmapscan = on;
+SET
+SELECT COUNT(*) AS idx_inst FROM tbl_tpcpoint
+WHERE temp && tpcpoint(pcpoint(1, 3.09, 47.75, 20.5),
+  timestamptz '2001-09-10 22:14:00-07');
+ idx_inst 
+----------
+        0
+(1 row)
+
+SELECT COUNT(*) AS idx_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ idx_self 
+----------
+        1
+(1 row)
+
+SELECT COUNT(*) AS idx_self_patch FROM tbl_tpcpatch t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+ idx_self_patch 
+----------------
+              1
+(1 row)
+
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+DROP INDEX tbl_tpcpoint_quadtree_idx;
+DROP INDEX
+DROP INDEX tbl_tpcpatch_quadtree_idx;
+DROP INDEX
