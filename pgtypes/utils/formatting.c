@@ -4235,6 +4235,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
       TimeTzADT *res = palloc(sizeof(TimeTzADT));
       if (tm2timetz(&tm, fsec, *tz, res) != 0)
       {
+        pfree(res);
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "timetz out of range");
         return false;
@@ -4388,7 +4389,7 @@ do_to_timestamp(text *date_txt, text *fmt, Oid collid, bool std,
       format = NULL;
     }
     if (! parsed)
-      return false;
+      goto fail;
   }
 
   /*
