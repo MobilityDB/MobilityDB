@@ -318,6 +318,14 @@ SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 
+/* Two moving circular buffers are equal where their centres and their radii
+ * are both equal: radii crossing about one centre, centres crossing with one
+ * radius, both crossing at one instant, and both crossing at two instants */
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-03)' ?= tcbuffer '[Cbuffer(Point(1 1), 0.4)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-03)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(3 3), 0.3)@2001-01-03)' ?= tcbuffer '[Cbuffer(Point(3 3), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(3 3), 0.4)@2001-01-03)' ?= tcbuffer '[Cbuffer(Point(3 3), 0.4)@2001-01-01, Cbuffer(Point(1 1), 0.2)@2001-01-03)';
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(3 3), 0.4)@2001-01-03)' ?= tcbuffer '[Cbuffer(Point(3 3), 0.5)@2001-01-01, Cbuffer(Point(1 1), 0.3)@2001-01-03)';
+
 SELECT asText(shiftTime(tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', '1 year'::interval));
 SELECT asText(shiftTime(tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}', '1 year'::interval));
 SELECT asText(shiftTime(tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]', '1 year'::interval));
