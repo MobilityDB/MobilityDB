@@ -2276,6 +2276,27 @@ adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
 /*****************************************************************************/
 
 /**
+ * @brief Set the coordinates of a point, its z coordinate 0 when it has none
+ * @param[in] value Point
+ * @param[in] hasz True when the coordinates read are three
+ * @param[out] coords Coordinates
+ */
+static void
+point_coords(Datum value, bool hasz, double coords[3])
+{
+  if (hasz)
+  {
+    const POINT3DZ *p = DATUM_POINT3DZ_P(value);
+    coords[0] = p->x; coords[1] = p->y; coords[2] = p->z;
+  }
+  else
+  {
+    const POINT2D *p = DATUM_POINT2D_P(value);
+    coords[0] = p->x; coords[1] = p->y; coords[2] = 0.0;
+  }
+}
+
+/**
  * @brief Return 1 or 2 if two temporal point segments are within a distance
  * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Base values defining the first segment
@@ -2305,21 +2326,10 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   if (! geodetic)
   {
     double a0[3], a1[3], b0[3], b1[3];
-    const Datum vals[4] = {start1, end1, start2, end2};
-    double *pts[4] = {a0, a1, b0, b1};
-    for (int i = 0; i < 4; i++)
-    {
-      if (hasz)
-      {
-        const POINT3DZ *p = DATUM_POINT3DZ_P(vals[i]);
-        pts[i][0] = p->x; pts[i][1] = p->y; pts[i][2] = p->z;
-      }
-      else
-      {
-        const POINT2D *p = DATUM_POINT2D_P(vals[i]);
-        pts[i][0] = p->x; pts[i][1] = p->y;
-      }
-    }
+    point_coords(start1, hasz, a0);
+    point_coords(end1, hasz, a1);
+    point_coords(start2, hasz, b0);
+    point_coords(end2, hasz, b1);
     int64 n1, n2;
     int result = point_motion_dwithin_period_exact(a0, a1, b0, b1,
       hasz ? 3 : 2, 0.0, 0.0, 0.0, 0.0, dist, upper - lower, &n1, &n2);
