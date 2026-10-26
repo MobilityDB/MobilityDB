@@ -90,6 +90,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos__h3_8h_source.html">meos_h3.h</a>&gt;</code><br />
 <code>#include &quot;temporal/temporal.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="tcellindex_8h_source.html">temporal/tcellindex.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="th3index__internal_8h_source.html">h3/th3index_internal.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="mobilitydb_2pg__include_2pg__temporal_2temporal_8h_source.html">pg_temporal/temporal.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -121,9 +122,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gafb0e0e571612222a5b514c43df1f773d"><td class="memItemLeft" align="right" valign="top">Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__mobilitydb__h3__latlng_gafb0e0e571612222a5b514c43df1f773d.html#gafb0e0e571612222a5b514c43df1f773d">Th3index_cell_to_tgeompoint</a> (PG_FUNCTION_ARGS)</td></tr>
 <tr class="memdesc:gafb0e0e571612222a5b514c43df1f773d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the planar centroid trajectory (SRID 4326) of a temporal H3 cell @sqlfn tgeompoint()  <a href="group__mobilitydb__h3__latlng_gafb0e0e571612222a5b514c43df1f773d.html#gafb0e0e571612222a5b514c43df1f773d">More...</a><br /></td></tr>
 <tr class="separator:gafb0e0e571612222a5b514c43df1f773d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae46b3ae0146c0be809c413cea887f355"><td class="memItemLeft" align="right" valign="top">static Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2h3_2th3index__latlng_8c_ae46b3ae0146c0be809c413cea887f355.html#ae46b3ae0146c0be809c413cea887f355">Tpoint_h3index_split_ext</a> (FunctionCallInfo fcinfo, <a class="el" href="structTemporal.html">Temporal</a> **(*split)(const <a class="el" href="structTemporal.html">Temporal</a> *, int32, bool, Datum **, int *))</td></tr>
-<tr class="memdesc:ae46b3ae0146c0be809c413cea887f355"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal point split by the H3 cells it crosses, and the cell of each.  <a href="mobilitydb_2src_2h3_2th3index__latlng_8c_ae46b3ae0146c0be809c413cea887f355.html#ae46b3ae0146c0be809c413cea887f355">More...</a><br /></td></tr>
-<tr class="separator:ae46b3ae0146c0be809c413cea887f355"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa713321b9f55bf8e5f2c441ebbe7536f"><td class="memItemLeft" align="right" valign="top">static Datum&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="mobilitydb_2src_2h3_2th3index__latlng_8c_aa713321b9f55bf8e5f2c441ebbe7536f.html#aa713321b9f55bf8e5f2c441ebbe7536f">Tpoint_h3index_split_ext</a> (FunctionCallInfo fcinfo)</td></tr>
+<tr class="memdesc:aa713321b9f55bf8e5f2c441ebbe7536f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the fragments of a temporal point split by the H3 cells it crosses, and the cell of each.  <a href="mobilitydb_2src_2h3_2th3index__latlng_8c_aa713321b9f55bf8e5f2c441ebbe7536f.html#aa713321b9f55bf8e5f2c441ebbe7536f">More...</a><br /></td></tr>
+<tr class="separator:aa713321b9f55bf8e5f2c441ebbe7536f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >PG V1 wrappers for th3index lat/lng conversions. </p>

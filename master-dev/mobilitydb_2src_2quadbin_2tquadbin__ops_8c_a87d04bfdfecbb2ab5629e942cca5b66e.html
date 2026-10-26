@@ -83,7 +83,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__conversion_gabcc5fa4f10ffce54ff2cc33c44ee2446.html#gabcc5fa4f10ffce54ff2cc33c44ee2446">Tgeogpoint_to_tquadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__conversion_ga891ba633dad1cec9f850ad5427e06434.html#ga891ba633dad1cec9f850ad5427e06434">Tgeompoint_quadbin_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__conversion_ga0f7227ec67dec696a7e6dec793ab2c4f.html#ga0f7227ec67dec696a7e6dec793ab2c4f">Tgeompoint_to_tquadbin</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2quadbin_2tquadbin__ops_8c_afedb14cfe629870959e1bd80be0b4819.html#afedb14cfe629870959e1bd80be0b4819">Tpoint_quadbin_split_ext</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2quadbin_2tquadbin__ops_8c_a87d04bfdfecbb2ab5629e942cca5b66e.html#a87d04bfdfecbb2ab5629e942cca5b66e">Tpoint_quadbin_split_ext</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__accessor_gafa03307337aed9a0c93c824245655f12.html#gafa03307337aed9a0c93c824245655f12">Tquadbin_cell_area</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__conversion_ga9ae0e1d5e6f3f8d678ebaafbeb372767.html#ga9ae0e1d5e6f3f8d678ebaafbeb372767">Tquadbin_cell_to_boundary</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__quadbin__hierarchy_ga4dae4b4940b880145956f0d1518cc1eb.html#ga4dae4b4940b880145956f0d1518cc1eb">Tquadbin_cell_to_parent</a></td></tr>
@@ -95,8 +95,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="afedb14cfe629870959e1bd80be0b4819" name="afedb14cfe629870959e1bd80be0b4819"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afedb14cfe629870959e1bd80be0b4819">&#9670;&#160;</a></span>Tpoint_quadbin_split_ext()</h2>
+<a id="a87d04bfdfecbb2ab5629e942cca5b66e" name="a87d04bfdfecbb2ab5629e942cca5b66e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a87d04bfdfecbb2ab5629e942cca5b66e">&#9670;&#160;</a></span>Tpoint_quadbin_split_ext()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -108,18 +108,8 @@ $(function() {
           <td class="memname">static Datum Tpoint_quadbin_split_ext </td>
           <td>(</td>
           <td class="paramtype">FunctionCallInfo&#160;</td>
-          <td class="paramname"><em>fcinfo</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramname"><em>fcinfo</em></td><td>)</td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structTemporal.html">Temporal</a> **(*)(const <a class="el" href="structTemporal.html">Temporal</a> *, int32, bool, Datum **, int *)&#160;</td>
-          <td class="paramname"><em>split</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -130,6 +120,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the fragments of a temporal point split by the quadbin cells it crosses, and the cell of each. </p>
+<p >The cells come as the datums the rows carry, from the internal function, as <a class="el" href="mobilitydb_2src_2temporal_2temporal__tile_8c_a6729e2b6380a08641e9917ad055c2f8b.html#a6729e2b6380a08641e9917ad055c2f8b" title="Return the fragments of a temporal number split according to value and time bins.">Tnumber_value_time_split_common</a> takes its bins </p>
 
 </div>
 </div>

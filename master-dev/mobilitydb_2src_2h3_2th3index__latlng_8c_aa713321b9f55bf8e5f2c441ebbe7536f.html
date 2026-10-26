@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: Tpoint_h3index_split_ext</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2quadbin_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_b060bd5020a833a37671e1e10417da21.html">mobilitydb</a></li><li class="navelem"><a class="el" href="dir_c9f6390d5d8264054b7997353d94a8b4.html">src</a></li><li class="navelem"><a class="el" href="dir_6b7962bae2d1872dd1fd64f892450ebe.html">h3</a></li><li class="navelem"><a class="el" href="mobilitydb_2src_2h3_2th3index__latlng_8c.html">th3index_latlng.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,44 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2quadbin_2CMakeLists_8txt_a2039d28fac3534e811b6acae3c6c818e.html#a2039d28fac3534e811b6acae3c6c818e">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_ga0555b55bc4686dcc007a3ae89e3e927a.html#ga0555b55bc4686dcc007a3ae89e3e927a">Tgeogpoint_h3index_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_ga79254d17b5df653ed471e960d56029f4.html#ga79254d17b5df653ed471e960d56029f4">Tgeogpoint_to_th3index</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_ga3c030742dadf528ae43dec4fa91c97c7.html#ga3c030742dadf528ae43dec4fa91c97c7">Tgeompoint_h3index_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_ga6a0536e30239201a9f2d0d034fb93cef.html#ga6a0536e30239201a9f2d0d034fb93cef">Tgeompoint_to_th3index</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_gaac960dc9e0bd7f73d06756f7931860ff.html#gaac960dc9e0bd7f73d06756f7931860ff">Th3index_cell_to_boundary</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_ga33fdfdf06db5689f374be361ca26ccdc.html#ga33fdfdf06db5689f374be361ca26ccdc">Th3index_cell_to_tgeogpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__h3__latlng_gafb0e0e571612222a5b514c43df1f773d.html#gafb0e0e571612222a5b514c43df1f773d">Th3index_cell_to_tgeompoint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="mobilitydb_2src_2h3_2th3index__latlng_8c_aa713321b9f55bf8e5f2c441ebbe7536f.html#aa713321b9f55bf8e5f2c441ebbe7536f">Tpoint_h3index_split_ext</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2039d28fac3534e811b6acae3c6c818e" name="a2039d28fac3534e811b6acae3c6c818e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2039d28fac3534e811b6acae3c6c818e">&#9670;&#160;</a></span>set()</h2>
+<a id="aa713321b9f55bf8e5f2c441ebbe7536f" name="aa713321b9f55bf8e5f2c441ebbe7536f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa713321b9f55bf8e5f2c441ebbe7536f">&#9670;&#160;</a></span>Tpoint_h3index_split_ext()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname">static Datum Tpoint_h3index_split_ext </td>
           <td>(</td>
-          <td class="paramtype">QUADBIN_SOURCES quadbin.c quadbin_geo.c quadbinset.c tquadbin_ops.c tquadbin.c tquadbin_boxops.c tquadbin_compops.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">FunctionCallInfo&#160;</td>
+          <td class="paramname"><em>fcinfo</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Return the fragments of a temporal point split by the H3 cells it crosses, and the cell of each. </p>
+<p >The cells come as the datums the rows carry, from the internal function, as <a class="el" href="mobilitydb_2src_2temporal_2temporal__tile_8c_a6729e2b6380a08641e9917ad055c2f8b.html#a6729e2b6380a08641e9917ad055c2f8b" title="Return the fragments of a temporal number split according to value and time bins.">Tnumber_value_time_split_common</a> takes its bins </p>
 
 </div>
 </div>

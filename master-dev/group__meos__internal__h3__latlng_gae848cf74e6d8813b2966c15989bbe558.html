@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: tpoint_h3index_split</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2s2cell_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__h3__latlng.html">Lat/Lng-conversion functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,66 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2s2cell_2CMakeLists_8txt_a91a840a62d3f5f046375f7a13e0519f9.html#a91a840a62d3f5f046375f7a13e0519f9">set</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__h3__latlng_gae848cf74e6d8813b2966c15989bbe558.html#gae848cf74e6d8813b2966c15989bbe558">tpoint_h3index_split</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a91a840a62d3f5f046375f7a13e0519f9" name="a91a840a62d3f5f046375f7a13e0519f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a91a840a62d3f5f046375f7a13e0519f9">&#9670;&#160;</a></span>set()</h2>
+<a id="gae848cf74e6d8813b2966c15989bbe558" name="gae848cf74e6d8813b2966c15989bbe558"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae848cf74e6d8813b2966c15989bbe558">&#9670;&#160;</a></span>tpoint_h3index_split()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** tpoint_h3index_split </td>
           <td>(</td>
-          <td class="paramtype">S2CELL_SOURCES s2cell.c s2cell_geo.c s2cellset.c ts2cell.c ts2cell_boxops.c ts2cell_compops.c ts2cell_ops.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
+          <td class="paramname"><em>temp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int32&#160;</td>
+          <td class="paramname"><em>resolution</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>border_inc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Datum **&#160;</td>
+          <td class="paramname"><em>cells</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return the fragments of a temporal point split by the H3 cells it crosses at a resolution, and the cell of each. </p>
+<p >The cover states which cell the trajectory holds and when, and the fragment of a cell is the trajectory over the periods the cover states for it, so a fragment and the cover answer the same periods for a cell </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">resolution</td><td>H3 resolution </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the grid contains the upper border of the extent </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">cells</td><td>Cell of each fragment </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of fragments </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

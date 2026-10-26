@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tgeompoint_h3index_split</title>
+<title>MobilityDB: tgeogpoint_h3index_split</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,9 +79,9 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_ga29ac088cc0fe1936f7ba5fad16df55b2.html#ga29ac088cc0fe1936f7ba5fad16df55b2">tgeogpoint_h3index_split</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__h3__latlng_gac62b47fb89926ee095c283c505ff34b5.html#gac62b47fb89926ee095c283c505ff34b5">tgeogpoint_h3index_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_ga03d2367e80b8e337861853dbb979d2f8.html#ga03d2367e80b8e337861853dbb979d2f8">tgeogpoint_to_th3index</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__h3__latlng_ga5f519fed3dfcebfd9e08ccabd5d46737.html#ga5f519fed3dfcebfd9e08ccabd5d46737">tgeompoint_h3index_split</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_gaf2c760cde12261b9e995c134ceb79086.html#gaf2c760cde12261b9e995c134ceb79086">tgeompoint_h3index_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_ga9561448e6f74f37e87cc3329394a87d8.html#ga9561448e6f74f37e87cc3329394a87d8">tgeompoint_to_th3index</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_ga3531c875ffb2b3b16a199355c7571783.html#ga3531c875ffb2b3b16a199355c7571783">th3index_to_tgeogpoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__h3__latlng_ga8504c65aa6ac598f6ee9fce44341dc07.html#ga8504c65aa6ac598f6ee9fce44341dc07">th3index_to_tgeompoint</a></td></tr>
@@ -89,14 +89,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga5f519fed3dfcebfd9e08ccabd5d46737" name="ga5f519fed3dfcebfd9e08ccabd5d46737"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga5f519fed3dfcebfd9e08ccabd5d46737">&#9670;&#160;</a></span>tgeompoint_h3index_split()</h2>
+<a id="gac62b47fb89926ee095c283c505ff34b5" name="gac62b47fb89926ee095c283c505ff34b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac62b47fb89926ee095c283c505ff34b5">&#9670;&#160;</a></span>tgeogpoint_h3index_split()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** tgeompoint_h3index_split </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> ** tgeogpoint_h3index_split </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -116,7 +116,7 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">Datum **&#160;</td>
+          <td class="paramtype">H3Index **&#160;</td>
           <td class="paramname"><em>cells</em>, </td>
         </tr>
         <tr>
@@ -133,14 +133,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the fragments of a temporal planar point split by the H3 cells it crosses at a resolution, and the cell of each. </p>
+<p>Return the fragments of a temporal geodetic point split by the H3 cells it crosses at a resolution, and the cell of each. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">resolution</td><td>H3 resolution </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the grid contains the upper border of the extent </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">cells</td><td>Cell of each fragment </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of fragments @csqlfn <a class="el" href="group__mobilitydb__h3__latlng_ga3c030742dadf528ae43dec4fa91c97c7.html#ga3c030742dadf528ae43dec4fa91c97c7" title="Return the fragments of a temporal planar point split by the H3 cells it crosses at the given resolut...">Tgeompoint_h3index_split()</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of fragments @csqlfn <a class="el" href="group__mobilitydb__h3__latlng_ga0555b55bc4686dcc007a3ae89e3e927a.html#ga0555b55bc4686dcc007a3ae89e3e927a" title="Return the fragments of a temporal geodetic point split by the H3 cells it crosses at the given resol...">Tgeogpoint_h3index_split()</a> </td></tr>
   </table>
   </dd>
 </dl>
