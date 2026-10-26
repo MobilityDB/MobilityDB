@@ -56,9 +56,7 @@
 #include <math.h>
 #include <meos.h>
 #include <meos_geo.h>
-#if POINTCLOUD
 #include <meos_pointcloud.h>
-#endif
 
 /* Number of boxes inserted into every index */
 #define NUM_BOXES 2048
@@ -421,7 +419,6 @@ test_stbox(SPTreeKind kind, const char *kindname)
   sptree_free(sptree);
 }
 
-#if POINTCLOUD
 /*****************************************************************************
  * Pointcloud spatiotemporal box (TPCBox)
  *
@@ -478,7 +475,6 @@ test_tpcbox(SPTreeKind kind, const char *kindname)
   free(boxes); free(query); free(ov); free(co); free(cb);
   sptree_free(sptree);
 }
-#endif /* POINTCLOUD */
 
 /*****************************************************************************
  * Multi-entry (MEST) indexing over temporal numbers
@@ -1238,10 +1234,8 @@ main(void)
   test_tbox_period(SPTREE_KDTREE, "k-d tree");
   test_stbox(SPTREE_QUADTREE, "quad-tree");
   test_stbox(SPTREE_KDTREE, "k-d tree");
-#if POINTCLOUD
   test_tpcbox(SPTREE_QUADTREE, "quad-tree");
   test_tpcbox(SPTREE_KDTREE, "k-d tree");
-#endif
   test_selective_intspan(SPTREE_QUADTREE, "quad-tree");
   test_selective_intspan(SPTREE_KDTREE, "k-d tree");
   test_selective_tbox(SPTREE_QUADTREE, "quad-tree");
