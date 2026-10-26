@@ -48,6 +48,7 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
@@ -559,20 +560,39 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return 1 or 2 if two temporal circular buffer segments intersect
- * during the period defined by the output timestamps, return 0 otherwise
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
+ * @brief Return 1 if two temporal circular buffer segments may be equal at
+ * the output timestamp, return 0 otherwise
+ * @details Two circular buffers are equal where their centres and their radii
+ * are both equal. A segment interpolates its centre and its radius linearly,
+ * so it moves the point (x, y, radius) along a segment of the space of three
+ * dimensions, and the two buffers may be equal only at the instant where
+ * these two points are nearest, as two temporal points with Z are
+ * (#tgeompointsegm_distance_turnpt)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] t1,t2 Timestamps defining the resulting period, equal
+ * @pre The segments are not both constants
  */
 int
 tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-    lower, upper, t1, t2);
+  const Cbuffer *cb1 = DatumGetCbufferP(start1);
+  const Cbuffer *cb2 = DatumGetCbufferP(end1);
+  const Cbuffer *cb3 = DatumGetCbufferP(start2);
+  const Cbuffer *cb4 = DatumGetCbufferP(end2);
+  POINT3DZ p1 = { cb1->x, cb1->y, cb1->radius };
+  POINT3DZ p2 = { cb2->x, cb2->y, cb2->radius };
+  POINT3DZ p3 = { cb3->x, cb3->y, cb3->radius };
+  POINT3DZ p4 = { cb4->x, cb4->y, cb4->radius };
+  double fraction;
+  if (! point3d_min_dist(&p1, &p2, &p3, &p4, &fraction))
+    return 0;
+  double duration = (double) (upper - lower);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  return 1;
 }
 
 /*****************************************************************************
