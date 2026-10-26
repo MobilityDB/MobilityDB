@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: geography_valid_type</title>
+<title>MobilityDB: ensure_valid_geography</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -82,12 +82,12 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_aeb1991df8d89169246c5ff752e88aef4.html#aeb1991df8d89169246c5ff752e88aef4">box2d_to_lwgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a239989d44283bbf6e735fed379751809.html#a239989d44283bbf6e735fed379751809">box3d_to_lwgeom</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a060cde55f0e4be95aaaf5d4a14e8e9e0.html#a060cde55f0e4be95aaaf5d4a14e8e9e0">cart_to_lwpoint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8h_ad6394944bd9300a308177a121ee0ba2a.html#ad6394944bd9300a308177a121ee0ba2a">ensure_valid_geography</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__geo__base__inout_ga0dcca45061793a751b37e56ba794f39c.html#ga0dcca45061793a751b37e56ba794f39c">geo_as_wkt</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a813350b37b325f8910939a176a60fd1b.html#a813350b37b325f8910939a176a60fd1b">geog_serialize</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a2a5891774179a8b9836b236462584d1f.html#a2a5891774179a8b9836b236462584d1f">geography_centroid_from_mline</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a947e8647d79baec70dd7a8a00ebeb95b.html#a947e8647d79baec70dd7a8a00ebeb95b">geography_centroid_from_mpoly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a5cd640aa20c1df87dc847ff20a751338.html#a5cd640aa20c1df87dc847ff20a751338">geography_centroid_from_wpoints</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="postgis__funcs_8h_ade46343e9d474cd0d6ab9b680526d2b6.html#ade46343e9d474cd0d6ab9b680526d2b6">geography_valid_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_ab4838dc83c3ec862df762c9669cd1791.html#ab4838dc83c3ec862df762c9669cd1791">geom_distance2d_disc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a6f9b71fbdd1ad29dd2049e40fa627f2a.html#a6f9b71fbdd1ad29dd2049e40fa627f2a">geom_distance2d_disc_witness</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="postgis__funcs_8h_a16db86f481e6411943882399278d29a6.html#a16db86f481e6411943882399278d29a6">geom_serialize</a></td></tr>
@@ -105,17 +105,24 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ade46343e9d474cd0d6ab9b680526d2b6" name="ade46343e9d474cd0d6ab9b680526d2b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade46343e9d474cd0d6ab9b680526d2b6">&#9670;&#160;</a></span>geography_valid_type</h2>
+<a id="ad6394944bd9300a308177a121ee0ba2a" name="ad6394944bd9300a308177a121ee0ba2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6394944bd9300a308177a121ee0ba2a">&#9670;&#160;</a></span>ensure_valid_geography()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define geography_valid_type&#160;&#160;&#160;meos_geography_valid_type</td>
+          <td class="memname">bool ensure_valid_geography </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structLWGEOM.html">LWGEOM</a> *&#160;</td>
+          <td class="paramname"><em>geom</em></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Ensure that a geometry and every geometry it collects have a type a geography supports. </p>
+<p >A collection is checked through its members, which are the types <a class="el" href="postgis__funcs_8c_a5aa7e045e921c72375965d137aaa82bb.html#a5aa7e045e921c72375965d137aaa82bb" title="Ensure that the geography type is valid.">geography_valid_type</a> accepts at any depth, as the geodetic flag that lwgeom_set_geodetic sets in each member requires. PostGIS reads only the type of the outer geometry and relies on lwgeom_set_geodetic raising for a member, an error that ends the statement; under an error handler that does not exit the check comes first, so that no geography is built over a curve. </p>
 
 </div>
 </div>
