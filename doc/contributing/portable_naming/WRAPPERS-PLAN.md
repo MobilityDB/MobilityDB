@@ -373,10 +373,24 @@ listed under `if(MEOS)` in the `CMakeLists.txt` of its family.
 | quadbin | 1 | 3 |
 | s2cell | 1 | 3 |
 
-The one pair that stays is `npoint/ways_meos.c` and `npoint/ways.c`, listed under `if(MEOS)` and
-`else()`: two implementations of the route lookup (`route_exists`, `route_geom`, `route_length`,
-`get_srid_ways`) over what each host holds, a CSV file `meos_set_ways_csv` names in MEOS and the
-`ways` table in PostgreSQL. Of the other 43 files, 30 have a twin without the suffix
+**What is shared and what is each platform's.** A facility of both platforms has a part they
+share and a part each of them holds, laid out the same way for every facility: the shared part in
+`meos/src`, compiled in both builds; PostgreSQL's part in `mobilitydb/src`; MEOS's part in
+`meos/src`, compiled for MEOS alone. The indexes are the reference: their consistency logic
+(`span_index.c`, `tbox_index.c`, `stbox_index.c`, `tpcbox_index.c`, the `*_spgist.c` files) is
+shared, PostgreSQL's GiST and SP-GiST support functions are in `mobilitydb/src`, and MEOS indexes its
+values in memory with the `RTree` and `SPTree` of `temporal_rtree.c` and `temporal_sptree.c`, public
+functions compiled in both builds. The route lookup of the network points (`route_exists`,
+`route_geom`, `route_length`, `get_srid_ways`) is the one facility laid out otherwise:
+`meos/src/npoint/ways.c`, PostgreSQL's lookup through SPI in the `ways` table, sits in `meos/src`
+under the `else()` of `if(MEOS)`, beside `ways_meos.c`, MEOS's lookup in the CSV file
+`meos_set_ways_csv` names. It moves to `mobilitydb/src/npoint`, and `ways_meos.c` stays MEOS's own;
+no `*_meos.c` file holds index code. Within MEOS the two index families answer the same API, and
+three points align the `SPTree` to the `RTree` and the reverse: the `RTree` creators are declared
+with `(void)`, the nearest-neighbour cursor of the `SPTree` (`SPNNCursor`) is named as the
+`RTree`'s (`RTreeNNCursor`), which is a public rename for the owner, and `meos/examples` holds an
+`SPTree` program beside `rtree_example.c` and `rtree_mest_example.c`.
+Of the other 43 files, 30 have a twin without the suffix
 (`span_meos.c` and `span.c`); 13 have none (`cbufferset_meos.c`, `geoset_meos.c`, `tspatial_posops_meos.c`, `tspatial_topops_meos.c`,
 `tspatial_transform_meos.c`, `npointset_meos.c`, `pcset_meos.c`, `tpc_posops_meos.c`,
 `tpc_topops_meos.c`, `posechainset_meos.c`, `poseset_meos.c`, `span_tile_meos.c`,
@@ -397,9 +411,10 @@ No SQL function changes name, signature or answer.
 `Stbox_constructor` helper, deciding the type of its argument from the signature), then the other
 files of `temporal`, then the families.
 
-**Acceptance.** No `CMakeLists.txt` of `meos/src` lists a source under `if(MEOS)` and no source is
-named `*_meos.c`, the ways pair apart, `nm` of the extension's library defines every public
-MEOS function, and the regression suite answers as before.
+**Acceptance.** A `CMakeLists.txt` of `meos/src` lists under `if(MEOS)` only MEOS's part of a
+facility (`ways_meos.c`), `meos/src` holds no PostgreSQL part, no other source is named
+`*_meos.c`, `nm` of the extension's library defines every public MEOS function, and the
+regression suite answers as before.
 
 ## Open
 
