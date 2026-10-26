@@ -189,6 +189,10 @@
  *   @defgroup meos_internal_h3_inout Input and output functions
  *   @ingroup meos_internal_h3
  *   @brief Input and output functions for temporal H3 cell indices
+ *
+ *   @defgroup meos_internal_h3_latlng Lat/Lng-conversion functions
+ *   @ingroup meos_internal_h3
+ *   @brief Lat/Lng-conversion functions for temporal H3 cell indices
  */
 
 /*****************************************************************************/

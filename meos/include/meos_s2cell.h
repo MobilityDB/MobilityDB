@@ -296,9 +296,9 @@ extern Temporal *ts2cell_to_tbigint(const Temporal *temp);
 extern Temporal *tgeogpoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc);
 extern Temporal *tgeompoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc);
 extern Temporal **tgeogpoint_s2cell_split(const Temporal *temp, int32 level,
-  bool border_inc, Datum **cells, int *count);
+  bool border_inc, S2CellId **cells, int *count);
 extern Temporal **tgeompoint_s2cell_split(const Temporal *temp, int32 level,
-  bool border_inc, Datum **cells, int *count);
+  bool border_inc, S2CellId **cells, int *count);
 
 /* Restriction functions */
 

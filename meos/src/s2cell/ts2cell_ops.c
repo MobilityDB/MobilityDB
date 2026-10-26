@@ -437,15 +437,20 @@ tgeompoint_to_ts2cell(const Temporal *temp, int32 level, bool border_inc)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_s2cell_conversion
  * @brief Return the fragments of a temporal point split by the S2 cells it
  * crosses at a level, and the cell of each
  * @details The cover states which cell the trajectory holds and when, and the
  * fragment of a cell is the trajectory over the periods the cover states for
  * it, so a fragment and the cover answer the same periods for a cell
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
  */
-static Temporal **
+Temporal **
 tpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
   Datum **cells, int *count)
 {
@@ -483,52 +488,6 @@ tpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
   }
   *count = nfrags;
   return result;
-}
-
-/**
- * @ingroup meos_s2cell_conversion
- * @brief Return the fragments of a temporal planar point split by the S2
- * cells it crosses at a level, and the cell of each
- * @param[in] temp Temporal point
- * @param[in] level S2 level
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] cells Cell of each fragment
- * @param[out] count Number of fragments
- * @csqlfn #Tgeompoint_s2cell_split()
- */
-Temporal **
-tgeompoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
-  Datum **cells,
-  int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_s2cell_split(temp, level, border_inc, cells, count);
-}
-
-/**
- * @ingroup meos_s2cell_conversion
- * @brief Return the fragments of a temporal geodetic point split by the S2
- * cells it crosses at a level, and the cell of each
- * @param[in] temp Temporal point
- * @param[in] level S2 level
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent
- * @param[out] cells Cell of each fragment
- * @param[out] count Number of fragments
- * @csqlfn #Tgeogpoint_s2cell_split()
- */
-Temporal **
-tgeogpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
-  Datum **cells,
-  int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_s2cell_split(temp, level, border_inc, cells, count);
 }
 
 /*****************************************************************************/

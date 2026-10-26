@@ -41,6 +41,7 @@
 #include <meos_h3.h>
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
+#include "h3/th3index_internal.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -106,10 +107,11 @@ typedef struct
 /**
  * @brief Return the fragments of a temporal point split by the H3 cells it
  * crosses, and the cell of each
+ * @details The cells come as the datums the rows carry, from the internal
+ * function, as #Tnumber_value_time_split_common takes its bins
  */
 static Datum
-Tpoint_h3index_split_ext(FunctionCallInfo fcinfo,
-  Temporal **(*split)(const Temporal *, int32, bool, Datum **, int *))
+Tpoint_h3index_split_ext(FunctionCallInfo fcinfo)
 {
   FuncCallContext *funcctx;
 
@@ -127,8 +129,8 @@ Tpoint_h3index_split_ext(FunctionCallInfo fcinfo,
     bool border_inc = PG_GETARG_BOOL(2);
     /* Create function state */
     H3indexSplitState *state = palloc0(sizeof(H3indexSplitState));
-    state->frags = split(temp, resolution, border_inc, &state->cells,
-      &state->count);
+    state->frags = tpoint_h3index_split(temp, resolution, border_inc,
+      &state->cells, &state->count);
     state->done = (state->count == 0);
     funcctx->user_fctx = state;
     /* Build a tuple description for the function output */
@@ -181,7 +183,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_h3index_split);
 Datum
 Tgeompoint_h3index_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_h3index_split_ext(fcinfo, &tgeompoint_h3index_split);
+  return Tpoint_h3index_split_ext(fcinfo);
 }
 
 PGDLLEXPORT Datum Tgeogpoint_h3index_split(PG_FUNCTION_ARGS);
@@ -195,7 +197,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_h3index_split);
 Datum
 Tgeogpoint_h3index_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_h3index_split_ext(fcinfo, &tgeogpoint_h3index_split);
+  return Tpoint_h3index_split_ext(fcinfo);
 }
 
 /*****************************************************************************
