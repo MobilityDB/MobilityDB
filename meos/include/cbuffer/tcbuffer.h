@@ -72,6 +72,9 @@ extern int tcbuffersegm_contains_turnpt(Datum start1, Datum end1, Datum start2,
 extern int tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);
+extern bool tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2,
+  Datum end2, Datum dist, TimestampTz lower, TimestampTz upper,
+  TimestampTz t);
 extern int tcbuffersegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
   Datum end2, Datum dist UNUSED, TimestampTz lower, TimestampTz upper,
   TimestampTz *t1, TimestampTz *t2);

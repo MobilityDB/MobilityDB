@@ -235,6 +235,12 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0
 -- A moving disc touching a stationary one at a single instant
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
 SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
+-- A moving disc meeting a stationary one from 08:15:22.3199847 to
+-- 15:44:37.6800153: apart at the whole microsecond before it meets and after it
+-- leaves, meeting at the ones within
+SELECT valueAtTimestamp(tIntersects(tcbuffer '[Cbuffer(Point(343.4469752357655 644.134764860065),0.5)@2001-01-01 00:00:00+00, Cbuffer(Point(348.1833027851398 644.134764860065),0.5)@2001-01-02 00:00:00+00]', tcbuffer '[Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-01 00:00:00+00, Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-02 00:00:00+00]'), t)
+FROM unnest(ARRAY[timestamptz '2001-01-01 08:15:22.319984+00', '2001-01-01 08:15:22.319985+00',
+  '2001-01-01 15:44:37.680015+00', '2001-01-01 15:44:37.680016+00']) AS t;
 
 /* Errors */
 SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');
