@@ -3663,26 +3663,6 @@ wide_dyadic_nearest_offset_root(double c, const WideDyadic *b,
   return nearest_double_exact(guess, &nearest_offset_root_side, &v);
 }
 
-/* The span in bits, from the lowest bit of the smallest to the highest bit of
- * the largest, of the non-zero doubles of @p v */
-static int
-doubles_bit_span(const double *v, int n)
-{
-  int hi = INT_MIN, lo = INT_MAX;
-  for (int i = 0; i < n; i++)
-  {
-    if (v[i] == 0.0)
-      continue;
-    int e;
-    (void) frexp(v[i], &e);
-    if (e > hi)
-      hi = e;
-    if (e - DBL_MANT_DIG < lo)
-      lo = e - DBL_MANT_DIG;
-  }
-  return (hi == INT_MIN) ? 0 : hi - lo;
-}
-
 /**
  * @brief Set the shortest line from a point or a disc at rest to a segment,
  * each end the double nearest its exact value
@@ -3692,17 +3672,17 @@ doubles_bit_span(const double *v, int n)
  * `(a D + (b - a) N) / D`, rounded once to its nearest double. The line
  * starts at the centre for a point (@p r = 0), at Q for a disc meeting the
  * segment (`|Q - c| <= r`), and otherwise at the point of the circle towards
- * Q, `c + r (Q - c) / |Q - c|`, whose coordinate `c + r dn / sqrt(S)`, with
- * `dn` the numerator of `Q - c` over D and `S = |dn|^2`, is decided by exact
- * signs of squares; no root is taken in doubles. The test on an end has
- * degree three in the input doubles, so it is exact for every finite input;
- * the one on the point of the circle has degree eight, so where the input
- * spans more bits than #WideDyadic holds at that degree, the start keeps the
- * construction in doubles of @p sx and @p sy
+ * Q, `c + r (Q - c) / |Q - c|`. At an end `Q - c` is `a - c` or `b - c`; at
+ * the foot it is `X (-uy, ux) / D`, with `X = w x u`, perpendicular to the
+ * segment, so the point of the circle is `c + r sign(X) (-uy, ux) / |u|`.
+ * Either way each coordinate is `c + b / sqrt(s)`, with `b` and `s` of degree
+ * two in the input doubles, decided by exact signs of squares; no root is
+ * taken in doubles. Every test has degree at most four, which #WideDyadic
+ * holds for every finite input
  * @param[in] c Centre
  * @param[in] r Radius, 0 for a point
  * @param[in] a,b Ends of the segment
- * @param[in,out] sx,sy Start of the line, read where it is kept
+ * @param[out] sx,sy Start of the line
  * @param[out] ex,ey End of the line
  */
 void
@@ -3724,6 +3704,7 @@ point_segment_shortestline_exact(const double *c, double r, const double *a,
   wide_dyadic_add(&t1, &t2, &d);
   /* Q = (qxn, qyn) / den */
   WideDyadic qxn, qyn, den;
+  bool foot = false;
   if (d.sign == 0 || n.sign <= 0)
   {
     qxn = wax; qyn = way;
@@ -3741,6 +3722,7 @@ point_segment_shortestline_exact(const double *c, double r, const double *a,
     wide_dyadic_mul(&way, &d, &t1); wide_dyadic_mul(&uy, &n, &t2);
     wide_dyadic_add(&t1, &t2, &qyn);
     den = d;
+    foot = true;
   }
   *ex = wide_dyadic_nearest_quotient(&qxn, &den);
   *ey = wide_dyadic_nearest_quotient(&qyn, &den);
@@ -3749,26 +3731,41 @@ point_segment_shortestline_exact(const double *c, double r, const double *a,
     *sx = c[0]; *sy = c[1];
     return;
   }
-  const double in[7] = {c[0], c[1], r, a[0], a[1], b[0], b[1]};
-  if (8 * (doubles_bit_span(in, 7) + 2) > 64 * (WIDE_DYADIC_LIMBS - 8))
-    return;
-  /* dn = Q den - c den, S = |dn|^2, compared with (r den)^2 */
-  WideDyadic dxn, dyn, s, wr, rd, rd2, bx, by;
-  WideDyadic ncx = wcx, ncy = wcy;
-  ncx.sign = - ncx.sign; ncy.sign = - ncy.sign;
-  wide_dyadic_mul(&ncx, &den, &t1); wide_dyadic_add(&qxn, &t1, &dxn);
-  wide_dyadic_mul(&ncy, &den, &t1); wide_dyadic_add(&qyn, &t1, &dyn);
-  wide_dyadic_mul(&dxn, &dxn, &t1); wide_dyadic_mul(&dyn, &dyn, &t2);
-  wide_dyadic_add(&t1, &t2, &s);
+  /* The direction from c to Q, (dx, dy) / sqrt(s), and the square it is
+   * compared with: at the foot (-uy, ux) X / D, |Q - c|^2 = X^2 / D, against
+   * r^2 as X^2 against r^2 D; at an end Q - c, against r^2 */
+  WideDyadic dx, dy, s, lhs, rhs, wr, bx, by;
   wide_dyadic_set_double(&wr, r);
-  wide_dyadic_mul(&wr, &den, &rd); wide_dyadic_mul(&rd, &rd, &rd2);
-  if (wide_dyadic_cmp(&s, &rd2) <= 0)
+  wide_dyadic_mul(&wr, &wr, &t1);
+  if (foot)
+  {
+    WideDyadic x, t3;
+    wide_dyadic_mul(&wx, &uy, &t2); wide_dyadic_mul(&wy, &ux, &t3);
+    t3.sign = - t3.sign;
+    wide_dyadic_add(&t2, &t3, &x);
+    dx = uy; dx.sign = - dx.sign * x.sign;
+    dy = ux; dy.sign = dy.sign * x.sign;
+    s = d;
+    wide_dyadic_mul(&x, &x, &lhs);
+    wide_dyadic_mul(&t1, &d, &rhs);
+  }
+  else
+  {
+    WideDyadic ncx = wcx, ncy = wcy;
+    ncx.sign = - ncx.sign; ncy.sign = - ncy.sign;
+    wide_dyadic_add(&qxn, &ncx, &dx); wide_dyadic_add(&qyn, &ncy, &dy);
+    wide_dyadic_mul(&dx, &dx, &t2); wide_dyadic_mul(&dy, &dy, &lhs);
+    wide_dyadic_add(&t2, &lhs, &s);
+    lhs = s;
+    rhs = t1;
+  }
+  if (wide_dyadic_cmp(&lhs, &rhs) <= 0)
   {
     /* The disc meets the segment: the line collapses to Q */
     *sx = *ex; *sy = *ey;
     return;
   }
-  wide_dyadic_mul(&wr, &dxn, &bx); wide_dyadic_mul(&wr, &dyn, &by);
+  wide_dyadic_mul(&wr, &dx, &bx); wide_dyadic_mul(&wr, &dy, &by);
   *sx = wide_dyadic_nearest_offset_root(c[0], &bx, &s);
   *sy = wide_dyadic_nearest_offset_root(c[1], &by, &s);
   return;
