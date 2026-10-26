@@ -397,10 +397,14 @@ aligns what still differs and renames no type (the owner, 2026-10-26: the cursor
 `RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)`, and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
-data and checks. The key of a type is a catalog fact, `type_index_bboxtype` in `meos_catalog.c`: the bounding
-box a value carries (`type_bboxtype`), a span or a box itself, and the span of a number or time
-set and of a span set; `meostype_from_string` answers the type of a canonical name, the inverse of
-`meostype_name`, so a host reads both from MEOS. DECIDED BY THE OWNER 2026-10-26: every type with
+data and checks. The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
+of `meos_catalog.c` answers for every type, the owner's decision of 2026-10-26: a box type, a span
+or a temporal, spatiotemporal or point cloud box, is its own; every other type is bounded by its
+box, the span its bounds state for a number or time set and for a span set, and the box a spatial
+set or a temporal value stores. A number or time set stores no box (`set_bbox_size`).
+`meostype_from_string` answers the type of a canonical name, the inverse of `meostype_name`, so a
+host reads both from MEOS; branch `meos/index-bboxtype-catalog` (`f9547774ee` on master
+`c1d030d810`). DECIDED BY THE OWNER 2026-10-26: every type with
 a key is indexed in both hosts, 46 types: the 37 PostgreSQL's GiST and SP-GiST operator classes
 index on master `c1d030d810` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
 `poseset`, `posechainset`, `cbufferset`, `h3indexset`, `quadbinset`, `s2cellset`), whose `stbox`
@@ -417,10 +421,13 @@ MobilityDuck by keeping the matched filter above the index scan.
 - **The index join over every key.** MobilityDuck's `TRTREE` and `TSPTREE` index join serves a
   probe of an `stbox`-keyed index from an `stbox` or one of the four temporal point and geometry
   types, all answered exactly by their box. The same join serves every key, one clone per key the
-  catalog states (`type_index_bboxtype`): an `stbox` for every spatial type, a set of them
+  catalog states (`type_bboxtype`): an `stbox` for every spatial type, a set of them
   included, a `tbox` for the temporal numbers, and the span kinds for time values, number and
   time sets, spans and span sets, each probe keyed as its rows are and a lossy pair rechecked as
   the scan rechecks it.
+- **MEST in MobilityDuck.** Its `TRTREE` and `TSPTREE` take a `maxboxes` option, the number of
+  fragments a temporal value is split into, inserting with `*_insert_temporal_split` and searching
+  with `*_search_temporal_dedup`, as both trees of MEOS do.
 - **`bboxunion` removed.** The union of every box type sizes 25 buffers in MEOS and
   `TEMPORAL_MAX_HEADER_SIZE`, the bytes read from TOAST for the header and box of a temporal value,
   and holds `TPCBox` under `#if POINTCLOUD` alone, so that size depends on a family flag. Each
