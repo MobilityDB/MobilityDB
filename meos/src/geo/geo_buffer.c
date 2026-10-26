@@ -9255,8 +9255,9 @@ buffer_ring_box(const MeosArray *pieces, GBOX *box)
     double cross = fabs(l - r);
     if (cross > 1e-6 * (fabs(l) + fabs(r)))
     {
-      double radius = hypot(ax, ay) * hypot(bx, by) *
-        hypot(bx - ax, by - ay) / (2.0 * cross);
+      double cx2 = bx - ax, cy2 = by - ay;
+      double radius = sqrt((ax * ax + ay * ay) * (bx * bx + by * by) *
+        (cx2 * cx2 + cy2 * cy2)) / (2.0 * cross);
       double reach = 2.5 * radius + 1e-9 * (fabs(e[i].x1) + fabs(e[i].x2) +
         fabs(e[i].y1) + fabs(e[i].y2));
       double cx = 0.5 * (e[i].x1 + e[i].x2), cy = 0.5 * (e[i].y1 + e[i].y2);
