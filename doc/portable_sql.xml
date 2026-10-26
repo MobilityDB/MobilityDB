@@ -592,4 +592,135 @@ WHERE stboxOverlaps(trip, stboxFromText('SRID=3857;STBOX X((0,0),(1000,1000))'))
 		</sect2>
 
 	</sect1>
+
+	<sect1 xml:id="portable_sql_host_rasters">
+		<title>The Rasters of the Engines</title>
+
+		<para>A <varname>raster</varname> of MobilityDB is the same type, with the same functions, in every engine (<xref linkend="tcell_raster_specific"/>). Two engines also have a raster of their own: DuckDB through its raster extension, and Apache Spark through Apache Sedona; Apache Flink has none. Each host names everything it adds with a prefix, <varname>RT_</varname> in DuckDB and <varname>RS_</varname> in Sedona, and MobilityDB names nothing with either, so the name of a function tells whose raster it works on: <varname>RT_Read</varname> and <varname>RS_FromGeoTiff</varname> are the host's, <varname>summaryStats</varname> and <varname>rasterValue</varname> MobilityDB's. A query computes with MobilityDB's raster and converts a value at the boundary only where it needs the host: to read a raster file with the host's reader, or to hand a raster to one of the host's functions. The conversion keeps every pixel value and the georeferencing, so a raster converted to the host's raster and back is the raster it was.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="4*"/>
+				<colspec colnum="3" colname="col3" colwidth="4*"/>
+				<thead>
+					<row>
+						<entry>What the query does</entry>
+						<entry>DuckDB with its raster extension</entry>
+						<entry>Spark with Apache Sedona</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Make the host's raster available</entry><entry>LOAD raster</entry><entry>SedonaContext.create(spark), beside the registration of MobilitySpark</entry></row>
+					<row><entry>Read a raster file</entry><entry>RT_Read(file), then raster(databand_1, tile_x, tile_y, metadata) for each tile</entry><entry>RS_FromGeoTiff(content), then the conversion of <xref linkend="portable_sql_host_rasters_sedona"/></entry></row>
+					<row><entry>Give a raster to the host's functions</entry><entry>CAST(rast AS RT_DATACUBE) for its pixels, rasterMetadata(rast) for its georeferencing</entry><entry>RS_AddBandFromArray over RS_MakeEmptyRaster, from its accessors</entry></row>
+					<row><entry>Give the statistics of a band to the host</entry><entry>CAST(stats AS RT_STATS), and back CAST(stats AS summarystats)</entry><entry>none</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<para>The two hosts hold different pixel types. Each pixel type of MobilityDB converts to the type of each host on its row, and a raster of a type a host has none for has no raster in that host.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+			<?dblatex table-width="autowidth.column: 1 2 3"?>
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Pixel type of the raster</entry>
+						<entry>Datacube of DuckDB</entry>
+						<entry>Pixel type of Sedona</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>1BB, 2BUI, 4BUI</entry><entry>UINT8</entry><entry>none</entry></row>
+					<row><entry>8BUI</entry><entry>UINT8</entry><entry>B</entry></row>
+					<row><entry>8BSI</entry><entry>INT8</entry><entry>none</entry></row>
+					<row><entry>16BUI</entry><entry>UINT16</entry><entry>US</entry></row>
+					<row><entry>16BSI</entry><entry>INT16</entry><entry>S</entry></row>
+					<row><entry>32BUI</entry><entry>UINT32</entry><entry>none</entry></row>
+					<row><entry>32BSI</entry><entry>INT32</entry><entry>I</entry></row>
+					<row><entry>32BF</entry><entry>FLOAT</entry><entry>F</entry></row>
+					<row><entry>64BF</entry><entry>DOUBLE</entry><entry>D</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<sect2 xml:id="portable_sql_host_rasters_duckdb">
+			<title>DuckDB and Its Raster Extension</title>
+
+			<para>DuckDB's raster extension, a community extension, reads a raster file with <varname>RT_Read</varname> as a table with one row per tile: the pixels of each band in a <varname>databand_N</varname> column of type <varname>RT_DATACUBE</varname>, the georeferencing of the whole file in a <varname>metadata</varname> JSON column, and the position of the tile in <varname>tile_x</varname> and <varname>tile_y</varname>. It has no raster value of its own, only these columns. A MobilityDB raster is built from the four columns of a tile, and gives back a datacube and a metadata column, the two columns the extension's own functions read a tile from. The metadata <varname>rasterMetadata</varname> writes is that of a file holding the raster as its one tile, so the raster is built back from it at the tile (0, 0).</para>
+
+			<para>The type <varname>RT_DATACUBE</varname> exists only once the extension is loaded, so a query naming it runs after <literal>LOAD raster</literal>; before it, DuckDB answers that no type <varname>RT_DATACUBE</varname> exists. The conversions are explicit casts and functions: a raster is never converted to a datacube by itself when it is passed to an <varname>RT_</varname> function, since a datacube leaves the georeferencing behind.</para>
+
+			<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
+					<colspec colnum="1" colname="col1" colwidth="2*"/>
+					<colspec colnum="2" colname="col2" colwidth="2*"/>
+					<colspec colnum="3" colname="col3" colwidth="4*"/>
+					<thead>
+						<row>
+							<entry>From</entry>
+							<entry>To</entry>
+							<entry>SQL</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row><entry>a tile of RT_Read, or any datacube with its metadata</entry><entry>raster</entry><entry><indexterm significance="normal"><primary><varname>raster</varname></primary></indexterm>raster(databand_1, tile_x, tile_y, metadata)</entry></row>
+						<row><entry>raster</entry><entry>RT_DATACUBE</entry><entry>CAST(rast AS RT_DATACUBE)</entry></row>
+						<row><entry>raster</entry><entry>the metadata of a tile</entry><entry><indexterm significance="normal"><primary><varname>rasterMetadata</varname></primary></indexterm>rasterMetadata(rast)</entry></row>
+						<row><entry>summarystats</entry><entry>RT_STATS</entry><entry>CAST(stats AS RT_STATS)</entry></row>
+						<row><entry>RT_STATS</entry><entry>summarystats</entry><entry>CAST(stats AS summarystats)</entry></row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+
+			<para>A datacube holds one pixel type for all its bands, and each pixel type of MobilityDB becomes the datacube type that GDAL gives it, as a PostGIS raster written through GDAL does. The 1-, 2- and 4-bit types have no smaller type in a datacube: their values are kept exactly in 8 bits, and a raster built back from the datacube has the type <varname>8BUI</varname>.</para>
+
+			<para>A conversion either keeps every value or raises an error; it never answers an approximation. A datacube holds one pixel type and one nodata value, so a raster whose bands differ in either cannot be cast to <varname>RT_DATACUBE</varname>. A datacube of type <varname>UINT64</varname> or <varname>INT64</varname> has no pixel type of MobilityDB to become. A datacube or a metadata column that is not well formed, truncated, carrying an unknown type or format, or declaring more pixels than it holds, is refused rather than read. The coordinate reference system of the metadata is read as <literal>EPSG:</literal><replaceable>n</replaceable> and gives the SRID of the raster; a raster combined with a value of another SRID raises the error any mix of SRIDs raises. A raster cast to a datacube writes its pixels uncompressed; a datacube is read whichever compression the extension wrote it with, <varname>RAW</varname>, <varname>SNAPPY</varname>, <varname>GZIP</varname>, <varname>ZSTD</varname> or <varname>LZ4</varname>.</para>
+
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+LOAD raster;
+-- The tiles of 2 x 2 pixels of a 4 x 4 GeoTIFF of elevations, as MobilityDB rasters
+CREATE TABLE elevation AS
+SELECT tile_x, tile_y, raster(databand_1, tile_x, tile_y, metadata) AS rast
+FROM RT_Read('elevation.tif', blocksize_x := 2, blocksize_y := 2);
+-- MobilityDB's raster functions over them
+SELECT count(*), summarystatsMean(summaryStatsAgg(rast, true)) FROM elevation;
+-- 4 | 57.06666666666667
+-- A MobilityDB raster handed to a function of the extension
+SELECT tile_x, tile_y, RT_CubeStats(CAST(rast AS RT_DATACUBE), 0).mean
+FROM elevation ORDER BY tile_y, tile_x;
+-- 0 | 0 | 53.5
+-- 1 | 0 | 68.5
+-- 0 | 1 | 46.0
+-- 1 | 1 | 61.333333333333336
+-- A raster converted to the extension's columns and back is the raster it was
+SELECT bool_and(raster(CAST(rast AS RT_DATACUBE), 0, 0, rasterMetadata(rast)) = rast)
+FROM elevation;
+-- true
+</programlisting>
+		</sect2>
+
+		<sect2 xml:id="portable_sql_host_rasters_sedona">
+			<title>Spark and Apache Sedona</title>
+
+			<para>Apache Sedona registers its raster type and its <varname>RS_</varname> functions in a Spark session through <literal>SedonaContext.create(spark)</literal>, beside the functions of MobilitySpark; none of the names of either is a name of the other. A Sedona raster is a value, read from a file with <varname>RS_FromGeoTiff</varname> and written with <varname>RS_AsGeoTiff</varname>, and it converts to and from a MobilityDB raster through the functions both already have: the georeferencing passes through the accessors of each, and the values of a band as an array.</para>
+
+			<para>A Sedona raster is built from a MobilityDB raster <varname>r</varname> by <varname>RS_MakeEmptyRaster</varname> with the georeferencing of <varname>r</varname> and <varname>RS_AddBandFromArray</varname> with the values of a band, its pixel type and its nodata value. A MobilityDB raster is built from a Sedona raster <varname>s</varname> by <varname>raster(pixels, width, height, upperleftx, upperlefty, scalex, scaley, skewx, skewy, srid, pixeltype[, nodataval])</varname> over the <varname>RS_</varname> accessors of <varname>s</varname>, its pixels being the bytes of the values of <varname>RS_BandAsArray(s, 1)</varname> in their order; each value becomes its bytes as the pixel of a one-pixel band, <varname>rasterPixels(addBand(makeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0), 1, pixeltype, v), 1)</varname>. Both directions read one band; a raster of several bands converts band by band.</para>
+
+			<para>The six pixel types Sedona holds convert both ways, with or without a nodata value, without changing a value, and a raster converted to Sedona and back is the raster it was, byte for byte; the others have no Sedona raster.</para>
+
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A Sedona raster from the georeferencing and the band of a MobilityDB raster r
+SELECT RS_AddBandFromArray(
+    RS_MakeEmptyRaster(1, CASE rasterBandPixelType(r, 1) WHEN 'uint8' THEN 'B'
+        WHEN 'int16' THEN 'S' WHEN 'uint16' THEN 'US' WHEN 'int32' THEN 'I'
+        WHEN 'float32' THEN 'F' WHEN 'float64' THEN 'D' END,
+      rasterWidth(r), rasterHeight(r), upperLeftX(r), upperLeftY(r),
+      scaleX(r), scaleY(r), skewX(r), skewY(r), SRID(r)),
+    flatten(dumpValues(r, 1, false)), 1, rasterBandNoDataValue(r, 1)) AS s
+FROM t;
+</programlisting>
+		</sect2>
+	</sect1>
 </chapter>
