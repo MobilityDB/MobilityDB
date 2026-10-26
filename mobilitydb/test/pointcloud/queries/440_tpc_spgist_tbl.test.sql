@@ -153,3 +153,32 @@ ANALYZE tbl_tpcpoint_big_allthesame;
 DROP TABLE tbl_tpcpoint_big_allthesame;
 
 -------------------------------------------------------------------------------
+-- An instant as the query value, given as a constant, which the planner
+-- estimates, and through a subquery, which only the index reads
+
+CREATE INDEX tbl_tpcpoint_quadtree_idx ON tbl_tpcpoint USING spgist(temp);
+CREATE INDEX tbl_tpcpatch_quadtree_idx ON tbl_tpcpatch USING spgist(temp);
+
+SET enable_seqscan = on; SET enable_indexscan = off; SET enable_bitmapscan = off;
+SELECT COUNT(*) AS seq_inst FROM tbl_tpcpoint
+WHERE temp && tpcpoint(pcpoint(1, 3.09, 47.75, 20.5),
+  timestamptz '2001-09-10 22:14:00-07');
+SELECT COUNT(*) AS seq_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+SELECT COUNT(*) AS seq_self_patch FROM tbl_tpcpatch t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+
+SET enable_seqscan = off; SET enable_indexscan = on; SET enable_bitmapscan = on;
+SELECT COUNT(*) AS idx_inst FROM tbl_tpcpoint
+WHERE temp && tpcpoint(pcpoint(1, 3.09, 47.75, 20.5),
+  timestamptz '2001-09-10 22:14:00-07');
+SELECT COUNT(*) AS idx_self FROM tbl_tpcpoint t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+SELECT COUNT(*) AS idx_self_patch FROM tbl_tpcpatch t1
+WHERE t1.temp && (SELECT temp FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 1);
+RESET enable_seqscan; RESET enable_indexscan; RESET enable_bitmapscan;
+
+DROP INDEX tbl_tpcpoint_quadtree_idx;
+DROP INDEX tbl_tpcpatch_quadtree_idx;
+
+-------------------------------------------------------------------------------

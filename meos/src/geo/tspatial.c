@@ -80,6 +80,7 @@
 #if POINTCLOUD
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/pcpatch.h"
+  #include "pointcloud/tpc_boxops.h"
 #endif
 #if QUADBIN
   #include <meos_quadbin.h>
@@ -698,6 +699,16 @@ tspatial_set_stbox(const Temporal *temp, STBox *result)
       else if (temp->temptype == T_TRGEOMETRY)
         trgeoinst_set_stbox(trgeoinst_geom_p((TInstant *) temp),
           (TInstant *) temp, result);
+#endif
+#if POINTCLOUD
+      /* The box of a point cloud keeps the bounds of the spatiotemporal box
+       * and adds the schema identifier, which the spatiotemporal box drops */
+      else if (temp->temptype == T_TPCPOINT || temp->temptype == T_TPCPATCH)
+      {
+        TPCBox box;
+        tpointcloudinst_set_tpcbox((TInstant *) temp, &box);
+        tpcbox_set_stbox(&box, result);
+      }
 #endif
       else
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,

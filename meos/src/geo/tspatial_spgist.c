@@ -792,13 +792,6 @@ tspatial_spgist_get_stbox(Datum value, MeosType type, STBox *result)
   {
     tpcbox_set_stbox(DatumGetTpcboxP(value), result);
   }
-  else if (type == T_TPCPOINT || type == T_TPCPATCH)
-  {
-    const Temporal *temp = DatumGetTemporalP(value);
-    TPCBox tpcbox;
-    temporal_set_bbox(temp, &tpcbox);
-    tpcbox_set_stbox(&tpcbox, result);
-  }
 #endif
   else
   {
