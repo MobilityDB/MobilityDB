@@ -85,6 +85,21 @@ extern bool ensure_valid_pcpointset_pcpoint(const Set *s, const Pcpoint *pt);
 extern Pcpoint *pcpoint_parse(const char **str, bool end);
 extern size_t pcpoint_meaningful_size(const Pcpoint *pt);
 extern double *pcpoint_dims(const Pcpoint *pt, int *count);
+extern PCSCHEMA *pcpoint_schema(const Pcpoint *pt);
+
+/*****************************************************************************
+ * Accessors and conversion reading a point in a given schema
+ *****************************************************************************/
+
+extern bool pcpoint_schema_get_x(const Pcpoint *pt, PCSCHEMA *schema,
+  double *out);
+extern bool pcpoint_schema_get_y(const Pcpoint *pt, PCSCHEMA *schema,
+  double *out);
+extern bool pcpoint_schema_get_z(const Pcpoint *pt, PCSCHEMA *schema,
+  double *out);
+extern bool pcpoint_schema_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
+  const char *name, double *out);
+extern TPCBox *pcpoint_schema_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
 
 /*****************************************************************************/
 

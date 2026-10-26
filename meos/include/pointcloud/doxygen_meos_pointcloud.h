@@ -231,6 +231,19 @@
  *   @ingroup meos_internal_pointcloud
  *   @brief Input and output functions for temporal pgpointcloud types
  *
+ *   @defgroup meos_internal_pointcloud_base_accessor Accessor functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Accessor functions for pgpointcloud points read in a given schema
+ *
+ *   @defgroup meos_internal_pointcloud_box_constructor Constructor functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Constructor functions for pgpointcloud boxes given their SRID
+ *
+ *   @defgroup meos_internal_pointcloud_box_conversion Conversion functions
+ *   @ingroup meos_internal_pointcloud
+ *   @brief Conversion functions for pgpointcloud boxes given their schema or
+ *     SRID
+ *
  *   @defgroup meos_internal_pointcloud_box_setops Set functions
  *   @ingroup meos_internal_pointcloud
  *   @brief Set functions for pgpointcloud boxes

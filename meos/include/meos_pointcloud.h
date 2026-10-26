@@ -163,20 +163,21 @@ extern uint32 pcpoint_hash(const Pcpoint *pt);
 extern uint64 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed);
 extern int pcpoint_mem_size(const Pcpoint *pt);
 
-/* Schema-aware coordinate accessors.  All write the result through @p out
- * and return @p true on success; @p false (without erroring) when the
- * requested dimension is absent from the schema or could not be read. */
+/* Coordinate accessors, reading the point in the schema its pcid names.
+ * All write the result through @p out and return @p true on success;
+ * @p false when the requested dimension is absent from the schema or could
+ * not be read. A pcid naming no registered schema is an error. */
 
-extern bool pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
-  const char *name, double *out);
+extern bool pcpoint_get_x(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_y(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_z(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_dim(const Pcpoint *pt, const char *name, double *out);
 
-/* Schema-aware conversion to TPCBox (degenerate single-point bbox).
- * Returns @p NULL if the schema lacks the required X/Y dimensions. */
+/* Conversion to TPCBox (degenerate single-point bbox), in the schema the
+ * pcid of the point names. Returns @p NULL if the schema lacks the required
+ * X/Y dimensions. */
 
-extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
+extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt);
 
 /* Schema cache — process-global lookup table of parsed PCSCHEMA values
  * keyed by pcid.  In a PG backend the cache is populated lazily via the
@@ -371,13 +372,13 @@ extern char *tpcbox_out(const TPCBox *box, int maxdd);
 /* Constructor */
 
 extern TPCBox *tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
-  int32_t srid, uint32_t pcid, double xmin, double xmax, double ymin,
-  double ymax, double zmin, double zmax, const Span *period);
+  uint32_t pcid, double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax, const Span *period);
 extern TPCBox *tpcbox_copy(const TPCBox *box);
 
 /* Conversion */
 
-extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid);
+extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa);
 
 /* Accessors */
 

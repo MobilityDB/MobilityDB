@@ -41,8 +41,6 @@
 #include <fmgr.h>
 #include <libpq/pqformat.h>
 #include <utils/timestamp.h>
-/* pgpointcloud */
-#include "pc_api.h"
 /* MEOS */
 #include <meos.h>
 #include <meos_pointcloud.h>
@@ -54,7 +52,6 @@
 #include "pointcloud/pcpoint.h"
 #include "pointcloud/pcpatch.h"
 /* MobilityDB */
-#include "pg_pointcloud/schema_cache.h"
 #include "pg_temporal/temporal.h"
 
 /*****************************************************************************
@@ -275,34 +272,11 @@ Tpcbox_as_hexewkb(PG_FUNCTION_ARGS)
  * Constructors
  *****************************************************************************/
 
-/**
- * @brief Return the SRID stated by the schema a pcid names, 0 when it names none
- * @details The schema is what holds the SRID, so a box reads it from there
- *   rather than being told: pgpointcloud registers one SRID per pcid and
- *   derives every value's SRID from it. A pcid of 0 is pgpointcloud's
- *   "unknown" value and names no schema to read
- * @note A pcid naming no registered schema is an error rather than a box with
- *   an assumed SRID, which is how PC_MakePoint answers the same input.
- *   @p mobilitydb_pc_schema states a miss by returning NULL, so the test is
- *   what keeps a hand-written pcid from reaching a null dereference
- */
-static int32_t
-tpcbox_srid_of_pcid(int32 pcid)
-{
-  if (pcid == 0)
-    return 0;
-  PCSCHEMA *schema = mobilitydb_pc_schema((uint32_t) pcid);
-  if (schema == NULL)
-    ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-      errmsg("No pointcloud schema is registered for pcid %d", pcid)));
-  return (int32_t) schema->srid;
-}
-
 PGDLLEXPORT Datum Tpcbox_constructor_2d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_2d);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief 2D constructor — tpcbox(xmin, ymin, xmax, ymax, pcid, srid)
+ * @brief 2D constructor — tpcboxX(xmin, ymin, xmax, ymax, pcid)
  * @sqlfn tpcboxX()
  */
 Datum
@@ -313,16 +287,15 @@ Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
   double xmax = PG_GETARG_FLOAT8(2);
   double ymax = PG_GETARG_FLOAT8(3);
   int32 pcid = PG_GETARG_INT32(4);
-  int32_t srid = tpcbox_srid_of_pcid(pcid);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false, false,
-    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
+    (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
 }
 
 PGDLLEXPORT Datum Tpcbox_constructor_3d(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_3d);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief 3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid)
+ * @brief 3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid)
  * @sqlfn tpcboxZ()
  */
 Datum
@@ -335,9 +308,8 @@ Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(4);
   double zmax = PG_GETARG_FLOAT8(5);
   int32 pcid = PG_GETARG_INT32(6);
-  int32_t srid = tpcbox_srid_of_pcid(pcid);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false, false,
-    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
+    (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
 }
 
 PGDLLEXPORT Datum Tpcbox_constructor_t(PG_FUNCTION_ARGS);
@@ -353,14 +325,14 @@ Tpcbox_constructor_t(PG_FUNCTION_ARGS)
   Span *period = PG_GETARG_SPAN_P(0);
   int32 pcid = PG_GETARG_INT32(1);
   PG_RETURN_TPCBOX_P(tpcbox_make(false, false, true, false,
-    0, (uint32_t) pcid, 0, 0, 0, 0, 0, 0, period));
+    (uint32_t) pcid, 0, 0, 0, 0, 0, 0, period));
 }
 
 PGDLLEXPORT Datum Tpcbox_constructor_xt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_xt);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid, srid)
+ * @brief XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid)
  * @sqlfn tpcboxXT()
  */
 Datum
@@ -372,16 +344,15 @@ Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(3);
   Span *period = PG_GETARG_SPAN_P(4);
   int32 pcid = PG_GETARG_INT32(5);
-  int32_t srid = tpcbox_srid_of_pcid(pcid);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, false, true, false,
-    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
+    (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
 }
 
 PGDLLEXPORT Datum Tpcbox_constructor_zt(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_constructor_zt);
 /**
  * @ingroup mobilitydb_pointcloud_box_constructor
- * @brief XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid)
+ * @brief XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid)
  * @sqlfn tpcboxZT()
  */
 Datum
@@ -395,9 +366,8 @@ Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
   double zmax = PG_GETARG_FLOAT8(5);
   Span *period = PG_GETARG_SPAN_P(6);
   int32 pcid = PG_GETARG_INT32(7);
-  int32_t srid = tpcbox_srid_of_pcid(pcid);
   PG_RETURN_TPCBOX_P(tpcbox_make(true, true, true, false,
-    srid, (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, period));
+    (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, period));
 }
 
 /*****************************************************************************
@@ -416,7 +386,7 @@ Datum
 Pcpatch_to_tpcbox(PG_FUNCTION_ARGS)
 {
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  TPCBox *result = pcpatch_to_tpcbox(pa, tpcbox_srid_of_pcid((int32) pa->pcid));
+  TPCBox *result = pcpatch_to_tpcbox(pa);
   PG_FREE_IF_COPY(pa, 0);
   PG_RETURN_TPCBOX_P(result);
 }
@@ -436,7 +406,7 @@ Datum
 Pcpoint_to_tpcbox(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  TPCBox *result = pcpoint_to_tpcbox(pt, meos_pc_schema(pt->pcid));
+  TPCBox *result = pcpoint_to_tpcbox(pt);
   PG_FREE_IF_COPY(pt, 0);
   if (! result)
     PG_RETURN_NULL();

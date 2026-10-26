@@ -3047,7 +3047,7 @@ tpcbox_from_wkb_state(meos_wkb_parse_state *s)
     pfree(box);
     return NULL;
   }
-  TPCBox *result = tpcbox_make(MEOS_FLAGS_GET_X(box->flags),
+  TPCBox *result = tpcbox_srid_make(MEOS_FLAGS_GET_X(box->flags),
     MEOS_FLAGS_GET_Z(box->flags), MEOS_FLAGS_GET_T(box->flags),
     MEOS_FLAGS_GET_GEODETIC(box->flags), srid, pcid, box->xmin, box->xmax,
     box->ymin, box->ymax, box->zmin, box->zmax,
