@@ -73,8 +73,9 @@ wrapper and the MEOS function it reaches.
 2. **The function is named and shaped like its sibling** on master, the same operation over the
    neighbouring family. Where the internal kernel takes an `invert` flag, there is one public
    function per argument order, as with `contains_set_bigint(const Set *, int64)` and
-   `contained_bigint_set(int64, const Set *)`. It lives in the `_meos.c` twin of the file that
-   defines the kernel it calls.
+   `contained_bigint_set(int64, const Set *)`. It is compiled in every build, the PostgreSQL
+   extension's and MEOS's, in the file that defines the kernel it calls
+   ([The typed public functions build in every build](#the-typed-public-functions-build-in-every-build)).
 3. **The tag states what the wrapper reaches.** A MEOS function names in its `@csqlfn` every
    wrapper that reaches it, and only those: directly, through the wrapper's `_common` helper, or,
    for an ever or always relation, through the kernel the wrapper passes to `EA_spatialrel_*`, as
@@ -336,6 +337,69 @@ Z does not filter by Z; MobilityDB #3150 (merged as `71e333da59`) fixes it befor
 - **The operator of a second wrapper.** `sqlop` names the operator of the first wrapper only:
   `right_set_set` states `>>`, and the `#>>` of `setAfter` is stated nowhere. Stating the
   operator per signature closes it, for the bindings that register operators.
+
+## The typed public functions build in every build
+
+DECIDED BY THE OWNER 2026-10-26: a public MEOS function is compiled in every build, so the
+PostgreSQL extension and the bindings call the same functions and the catalog reads what a
+wrapper calls rather than inferring it. This replaces the rule of 2026-07-23 that kept the
+per-type functions of the `*_meos.c` files out of the extension build: those files hold typed
+public functions (`timestamptz_to_span`, `tint_in`, `contains_set_bigint`, ...), each a thin call
+of a generic kernel, and their family's `CMakeLists.txt` lists them under `if(MEOS)`. The
+coverage reason for that list is the one the `#if MEOS` gates of `meos/src` had, and a function a
+binding or a wrapper calls is never MEOS-only.
+
+**The rule.** Every public function is compiled in both builds. A wrapper whose SQL signature is
+type-specific calls the typed public function, as `tbox(integer)` calls `int_to_tbox` (decided
+2026-10-23): `Stbox_constructor` builds the period of `stboxT(timestamptz)` with
+`timestamptz_to_span(t)`, where it calls `span_make(t, t, true, true, T_TIMESTAMPTZ)`, and the
+catalog states the signature as the composition of `stbox_make` over that public cast. A wrapper
+serving the signatures of several types at once (`Value_to_span`, which reads the type of its
+argument) keeps calling the generic kernel. The generic kernels stay internal.
+
+**The inventory on master `c1d030d810`:** 44 `*_meos.c` files define 1305 functions, every file
+listed under `if(MEOS)` in the `CMakeLists.txt` of its family.
+
+| family | files | functions |
+|---|---|---|
+| temporal | 24 | 971 |
+| geo | 5 | 134 |
+| pointcloud | 3 | 99 |
+| pose | 2 | 34 |
+| npoint | 2 | 27 |
+| cbuffer | 1 | 16 |
+| json | 3 | 14 |
+| h3 | 2 | 4 |
+| quadbin | 1 | 3 |
+| s2cell | 1 | 3 |
+
+The one pair that stays is `npoint/ways_meos.c` and `npoint/ways.c`, listed under `if(MEOS)` and
+`else()`: two implementations of the route lookup (`route_exists`, `route_geom`, `route_length`,
+`get_srid_ways`) over what each host holds, a CSV file `meos_set_ways_csv` names in MEOS and the
+`ways` table in PostgreSQL. Of the other 43 files, 30 have a twin without the suffix
+(`span_meos.c` and `span.c`); 13 have none (`cbufferset_meos.c`, `geoset_meos.c`, `tspatial_posops_meos.c`, `tspatial_topops_meos.c`,
+`tspatial_transform_meos.c`, `npointset_meos.c`, `pcset_meos.c`, `tpc_posops_meos.c`,
+`tpc_topops_meos.c`, `posechainset_meos.c`, `poseset_meos.c`, `span_tile_meos.c`,
+`temporal_posops_meos.c`).
+
+**Each pull request is one family, or one file of `temporal`.** It moves the functions of each
+`*_meos.c` file into its twin, or renames the file without the suffix where it has none, and
+removes the file from the `if(MEOS)` list, so no file name states a build any more. Its strict-ci
+receipt builds both targets: a function calling something only MEOS provides fails the extension
+build, and is resolved at that dependency, never by a gate; a symbol the extension shares with
+PostgreSQL fails the extension's load, and is resolved as pgtypes resolves one, a `pg_` twin. The
+wrappers of the family whose SQL signature is type-specific call the typed function in the same
+pull request, and the catalog's census of the signatures it does not state measures the step.
+No SQL function changes name, signature or answer.
+
+**The order.** `temporal/span_meos.c` first, whose `timestamptz_to_span` gives J15d the period of
+`stboxT`, `stboxXT`, `stboxZT` and `geodstboxZT` (MEOS-API then reads the composition through the
+`Stbox_constructor` helper, deciding the type of its argument from the signature), then the other
+files of `temporal`, then the families.
+
+**Acceptance.** No `CMakeLists.txt` of `meos/src` lists a source under `if(MEOS)` and no source is
+named `*_meos.c`, the ways pair apart, `nm` of the extension's library defines every public
+MEOS function, and the regression suite answers as before.
 
 ## Open
 
