@@ -285,6 +285,13 @@ SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{Cbuffer(Point(1 1),0.
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', 2);
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}', 2);
 
+-- A buffer whose nearest approach to a point exceeds the bound by less than
+-- half a unit in the last place, so that the distance rounds onto the bound:
+-- never within at the bound, within at the next double
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317312);
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);

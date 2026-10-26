@@ -275,10 +275,11 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * which the distance equals @p dist (used to split the temporal distance), this
  * returns the sub-interval `[t1, t2]` of `[lower, upper]` during which the two
  * segments are within @p dist, so the temporal `tDwithin` boolean is true on a
- * continuous interval rather than only at the crossing instant. It is derived
- * from the crossings together with the within status at the two segment
- * endpoints, which is read by the predicate the instants themselves are read
- * with.
+ * continuous interval rather than only at the crossing instant. The interval
+ * is decided exactly over continuous time and its bounds dated by truncation
+ * (#point_motion_dwithin_period_exact), the discs being within where the
+ * distance of their centres is at most the sum of their radii and the
+ * distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] dist Distance
@@ -297,56 +298,24 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
   const Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
-  long double roots[2];
-  int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
-    sv1->radius + sv2->radius + d, ev1->radius + ev2->radius + d, roots);
-  /* Within status at the two segment endpoints */
-  bool win_lower = cbuffer_dwithin(sv1, sv2, d);
-  bool win_upper = cbuffer_dwithin(ev1, ev2, d);
-  long double fstart, fend;
-  if (nroots == 0)
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  const double a0[2] = {spt1->x, spt1->y}, a1[2] = {ept1->x, ept1->y};
+  const double b0[2] = {spt2->x, spt2->y}, b1[2] = {ept2->x, ept2->y};
+  int64 n1, n2;
+  int result = point_motion_dwithin_period_exact(a0, a1, b0, b1, 2,
+    sv1->radius, ev1->radius, sv2->radius, ev2->radius, d, upper - lower,
+    &n1, &n2);
+  if (result == 0)
   {
-    /* No crossing: within throughout the segment, or never */
-    if (! win_lower)
-    {
-      *t1 = *t2 = (TimestampTz) 0;
-      return 0;
-    }
-    fstart = 0.0; fend = 1.0;
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
   }
-  else if (nroots == 1)
-  {
-    /* One crossing: within on the side whose endpoint is within */
-    if (win_lower && ! win_upper)
-    {
-      fstart = 0.0; fend = roots[0];
-    }
-    else if (! win_lower && win_upper)
-    {
-      fstart = roots[0]; fend = 1.0;
-    }
-    else if (win_lower)
-    {
-      /* The gap between the discs, the distance of the centres less an affine
-       * length, is convex over the segment, so a segment within at both ends
-       * is within throughout: the crossing is a tangency at one of its ends */
-      fstart = 0.0; fend = 1.0;
-    }
-    else
-    {
-      /* Tangent touch from outside: within only at the crossing instant */
-      fstart = fend = roots[0];
-    }
-  }
-  else
-  {
-    /* Two crossings: within between them */
-    fstart = roots[0]; fend = roots[1];
-  }
-  double duration = (double) (upper - lower);
-  *t1 = lower + (TimestampTz) (fstart * duration);
-  *t2 = lower + (TimestampTz) (fend * duration);
-  return (*t1 == *t2) ? 1 : 2;
+  *t1 = lower + n1;
+  *t2 = lower + n2;
+  return result;
 }
 
 /**

@@ -100,6 +100,11 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(2 2),3)@2001-01-01, Cbuffer(Point(0 2),
 -- inside at its end is covered and contained throughout it
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
+-- A buffer whose nearest approach to a point exceeds the bound by less than
+-- half a unit in the last place: never within at the bound, within at the
+-- next double
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317312);
 -- Crossings inside a segment at projected coordinates: the first centre jumps
 -- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
 -- the answers are those of the centres at the radii read as a distance, which

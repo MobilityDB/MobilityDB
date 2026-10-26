@@ -578,11 +578,78 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
 
 /**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius changes from r1 to
+ * r2, the double nearest it, or 0 where the disc reaches the edge
+ * @details The twin of #dist_moving_offset for a radius that changes. Over the
+ * instants of the segment and the points of the edge the distance less the
+ * radius is convex, a norm of an affine map less an affine map. Where the
+ * path does not meet the edge (#linesegm_intersect) it is smooth, and where
+ * it is stationary inside, the centre lies over the edge and the distance to
+ * its line less the radius is affine in time with slope zero, so its least is
+ * also reached on the boundary of the domain: at the start or the end of the
+ * segment against the edge, each the double nearest the exact one
+ * (#point_segment_distance_offset_exact), or against an end of the edge, the
+ * disc moving against a point (#point_motion_point_offset_exact). Rounding is
+ * monotone, so the least of the four is the double nearest the least. A
+ * caller reading only a value below @p below passes it: an end of the edge
+ * the disc is certainly never within @p below of
+ * (#point_motion_dwithin_never) is not searched, and the value then answered
+ * is below @p below exactly where the least is, and the double nearest it
+ * there
+ */
+static double
+dist_moving_varying(double cx1, double cy1, double cx2, double cy2,
+  const Edge *e, double r1, double r2, double below)
+{
+  const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+  const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  bool point = (a[0] == b[0] && a[1] == b[1]);
+  if (! point)
+  {
+    IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1,
+      e->y1, e->x2, e->y2);
+    if (meet.type != INTERSECT_NONE)
+      return 0.0;
+  }
+  double result = point ? DBL_MAX : fmin(
+    point_segment_distance_offset_exact(c1, a, b, r1),
+    point_segment_distance_offset_exact(c2, a, b, r2));
+  const double *ends[2] = {a, b};
+  for (int i = 0; i < (point ? 1 : 2); i++)
+  {
+    double bound = fmin(result, below);
+    if (bound < DBL_MAX && point_motion_dwithin_never(c1, c2, ends[i], 2, r1,
+        r2, bound))
+      continue;
+    result = fmin(result, point_motion_point_offset_exact(c1, c2, ends[i], 2,
+      r1, r2));
+  }
+  return result;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, for
+ * a caller reading only a value below @p below (#dist_moving_varying)
+ */
+static double
+dist_segm_edge_mindist_below(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below);
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
 double
 dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e)
+{
+  return dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, e, DBL_MAX);
+}
+
+static double
+dist_segm_edge_mindist_below(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -602,6 +669,13 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A circular buffer of constant radius moving against the edge */
   if (r1 == r2)
     return dist_moving_offset(cx1, cy1, cx2, cy2, e, r1);
+  /* A circular buffer whose radius changes, clear of the edge */
+  double clear = dist_moving_varying(cx1, cy1, cx2, cy2, e, r1, r2, below);
+  if (clear > 0.0)
+    return clear;
+
+  /* The disc reaches the edge: the least below is not positive, which the
+   * callers read to rank overlaps */
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -609,7 +683,7 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
     double A = dcx * dcx + dcy * dcy;
     double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
     double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
-    return dist_minfun(A, B, C, r1, dr, 0.0, 1.0);
+    return fmin(dist_minfun(A, B, C, r1, dr, 0.0, 1.0), 0.0);
   }
 
   /* Projection parameter s(t) = (s0 + s1 t) / l2, split [0,1] at s=0, s=1 */
@@ -664,7 +738,7 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
     double m = dist_minfun(A, B, C, r1, dr, lo, hi);
     if (m < best) best = m;
   }
-  return best;
+  return fmin(best, 0.0);
 }
 
 /**
@@ -1662,7 +1736,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       }
       double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
         dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
-        dist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+        dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, ed, *best);
       if (m < *best)
       {
         *best = m;

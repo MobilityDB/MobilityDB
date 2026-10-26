@@ -2300,7 +2300,36 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
    * arguments are 3D */
   bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
   bool geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
-  datum_func3 func = hasz ? &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+  /* Planar points are discs of radius 0, whose period within the distance
+   * is decided exactly over continuous time and dated by truncation */
+  if (! geodetic)
+  {
+    double a0[3], a1[3], b0[3], b1[3];
+    const Datum vals[4] = {start1, end1, start2, end2};
+    double *pts[4] = {a0, a1, b0, b1};
+    for (int i = 0; i < 4; i++)
+    {
+      if (hasz)
+      {
+        const POINT3DZ *p = DATUM_POINT3DZ_P(vals[i]);
+        pts[i][0] = p->x; pts[i][1] = p->y; pts[i][2] = p->z;
+      }
+      else
+      {
+        const POINT2D *p = DATUM_POINT2D_P(vals[i]);
+        pts[i][0] = p->x; pts[i][1] = p->y;
+      }
+    }
+    int64 n1, n2;
+    int result = point_motion_dwithin_period_exact(a0, a1, b0, b1,
+      hasz ? 3 : 2, 0.0, 0.0, 0.0, 0.0, dist, upper - lower, &n1, &n2);
+    if (result > 0)
+    {
+      *t1 = lower + n1;
+      *t2 = lower + n2;
+    }
+    return result;
+  }
   long double a, b, c;
   if (hasz) /* 3D */
   {
@@ -2386,10 +2415,8 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
      * and always dwithin, takes the instants it answers as candidates and
      * evaluates the dwithin at each of them with the model it carries, so
      * the model here selects candidates and never decides a value */
-    Datum within = geodetic ?
-      datum_geog_dwithin(start1, start2, Float8GetDatum(dist),
-        BoolGetDatum(true)) :
-      func(start1, start2, Float8GetDatum(dist));
+    Datum within = datum_geog_dwithin(start1, start2, Float8GetDatum(dist),
+      BoolGetDatum(true));
     if (! DatumGetBool(within))
       return 0;
     *t1 = lower;

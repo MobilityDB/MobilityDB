@@ -269,6 +269,17 @@ extern double point_motion_nad_approx(const double *p0, const double *p1,
 extern bool point_motion_nad_exceeds(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb, double d);
+extern int point_motion_dwithin_period_exact(const double *a0,
+  const double *a1, const double *b0, const double *b1, int ndims,
+  double ra0, double ra1, double rb0, double rb1, double d, int64 D,
+  int64 *n1, int64 *n2);
+extern bool point_motion_dwithin_never(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d);
+extern double point_motion_point_offset_exact(const double *c1,
+  const double *c2, const double *p, int ndims, double r1, double r2);
+extern bool point_motion_dwithin_only_at_end(const double *a0,
+  const double *a1, const double *b0, const double *b1, int ndims,
+  double ra0, double ra1, double rb0, double rb1, double d, bool start);
 
 /* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
  * with the double nearest to it and a bound on the error of that double */
