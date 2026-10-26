@@ -358,7 +358,7 @@ Pcpoint_get_x(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
   double x;
-  bool ok = pcpoint_get_x(pt, meos_pc_schema(pt->pcid), &x);
+  bool ok = pcpoint_get_x(pt, &x);
   PG_FREE_IF_COPY(pt, 0);
   if (! ok)
     PG_RETURN_NULL();
@@ -377,7 +377,7 @@ Pcpoint_get_y(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
   double y;
-  bool ok = pcpoint_get_y(pt, meos_pc_schema(pt->pcid), &y);
+  bool ok = pcpoint_get_y(pt, &y);
   PG_FREE_IF_COPY(pt, 0);
   if (! ok)
     PG_RETURN_NULL();
@@ -396,7 +396,7 @@ Pcpoint_get_z(PG_FUNCTION_ARGS)
 {
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
   double z;
-  bool ok = pcpoint_get_z(pt, meos_pc_schema(pt->pcid), &z);
+  bool ok = pcpoint_get_z(pt, &z);
   PG_FREE_IF_COPY(pt, 0);
   if (! ok)
     PG_RETURN_NULL();
@@ -417,7 +417,7 @@ Pcpoint_get_dim(PG_FUNCTION_ARGS)
   text *name_txt = PG_GETARG_TEXT_P(1);
   char *name = text_to_cstring(name_txt);
   double v;
-  bool ok = pcpoint_get_dim(pt, meos_pc_schema(pt->pcid), name, &v);
+  bool ok = pcpoint_get_dim(pt, name, &v);
   pfree(name);
   PG_FREE_IF_COPY(pt, 0);
   PG_FREE_IF_COPY(name_txt, 1);

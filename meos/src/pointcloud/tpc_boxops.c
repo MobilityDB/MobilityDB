@@ -129,7 +129,7 @@ pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
       "No schema registered for pcid %u", pa->pcid);
     return;
   }
-  TPCBox *spatial = pcpatch_to_tpcbox(pa, (int32_t) schema->srid);
+  TPCBox *spatial = pcpatch_srid_to_tpcbox(pa, (int32_t) schema->srid);
   if (! spatial)
     return;
   Span period = box->period;

@@ -409,12 +409,12 @@ tpcpoint_coordinates_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   if (schema)
   {
     double x, y, z;
-    if (pcpoint_get_x(pt, schema, &x) && pcpoint_get_y(pt, schema, &y))
+    if (pcpoint_schema_get_x(pt, schema, &x) && pcpoint_schema_get_y(pt, schema, &y))
     {
       stringbuffer_append_double(sb, x, precision);
       stringbuffer_append_char(sb, ',');
       stringbuffer_append_double(sb, y, precision);
-      if (pcpoint_get_z(pt, schema, &z))
+      if (pcpoint_schema_get_z(pt, schema, &z))
       {
         stringbuffer_append_char(sb, ',');
         stringbuffer_append_double(sb, z, precision);

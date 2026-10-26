@@ -246,6 +246,47 @@ int main(void)
   assert(pa != NULL);
   assert(pcpatch_npoints(pa) == 3);
 
+  /* A point and a patch are read in the schema their pcid names, so the
+   * coordinates of a point and the SRID of a box are the ones that schema
+   * states */
+  double x, y, z, dim;
+  assert(pcpoint_get_x(p3, &x) && pcpoint_get_y(p3, &y) &&
+    pcpoint_get_z(p3, &z) && pcpoint_get_dim(p3, "Z", &dim));
+  printf("pcpoint_get_x/y/z/dim: %g %g %g %g\n", x, y, z, dim);
+  assert(x == 3 && y == 3 && z == 3 && dim == 3);
+  TPCBox *ptbox = pcpoint_to_tpcbox(p1);
+  TPCBox *pabox = pcpatch_to_tpcbox(pa);
+  assert(ptbox != NULL && pabox != NULL);
+  assert(tpcbox_srid(ptbox) == 4326 && tpcbox_srid(pabox) == 4326);
+  free(ptbox); free(pabox);
+
+  /* A box built from a pcid takes the SRID the schema of the pcid states;
+   * pcid 0 names no schema and states SRID 0, and a box with no spatial
+   * dimension states SRID 0 whatever its pcid */
+  Span *period = tstzspan_in("[2024-01-01, 2024-01-02]");
+  TPCBox *mkbox = tpcbox_make(true, false, false, false, 2, 1, 2, 1, 2, 0, 0,
+    NULL);
+  TPCBox *mkbox0 = tpcbox_make(true, false, false, false, 0, 1, 2, 1, 2, 0, 0,
+    NULL);
+  TPCBox *tbox7 = tpcbox_make(false, false, true, false, 7, 0, 0, 0, 0, 0, 0,
+    period);
+  assert(mkbox != NULL && mkbox0 != NULL && tbox7 != NULL);
+  printf("tpcbox_make SRIDs: pcid 2 %d, pcid 0 %d, time only %d\n",
+    tpcbox_srid(mkbox), tpcbox_srid(mkbox0), tpcbox_srid(tbox7));
+  assert(tpcbox_srid(mkbox) == 4326 && tpcbox_srid(mkbox0) == 0 &&
+    tpcbox_srid(tbox7) == 0);
+  assert(meos_errno() == 0);
+  free(mkbox); free(mkbox0); free(tbox7);
+
+  /* A box with a spatial dimension built from a pcid naming no registered
+   * schema is an error rather than a box with an assumed SRID */
+  TPCBox *unknown = tpcbox_make(true, false, false, false, 7, 1, 2, 1, 2, 0, 0,
+    NULL);
+  printf("errno building a box of a pcid with no schema: %d\n", meos_errno());
+  assert(unknown == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  free(period);
+
   /* The position is one-based, and a negative one counts from the end, which
    * is the indexing pgPointCloud defines for PC_PointN */
   Pcpoint *first = pcpatch_point_n(pa, 1);
