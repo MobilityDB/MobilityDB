@@ -30,5 +30,6 @@ var searchData=
   ['distwalk_27',['DistWalk',['../structDistWalk.html',1,'']]],
   ['double2_28',['double2',['../structdouble2.html',1,'']]],
   ['double3_29',['double3',['../structdouble3.html',1,'']]],
-  ['double4_30',['double4',['../structdouble4.html',1,'']]]
+  ['double4_30',['double4',['../structdouble4.html',1,'']]],
+  ['dwithingrid_31',['DWithinGrid',['../structDWithinGrid.html',1,'']]]
 ];
