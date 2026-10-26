@@ -319,6 +319,15 @@ SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(0 0
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]');
 
+/* Two discs meet where the distance of their centres is the sum of their radii:
+ * a disc passing a disc at exactly that distance midway through three
+ * microseconds touches it at 1.5 microseconds, one passing 2^-40 nearer meets
+ * it during a few microseconds of a day, and one passing 2^-40 farther never
+ * meets it */
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-1 1),0.5)@2001-01-01 00:00:00, Cbuffer(Point(1 1),0.5)@2001-01-01 00:00:00.000003]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01 00:00:00, Cbuffer(Point(0 0),0.5)@2001-01-01 00:00:00.000003]');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-10 0.9999999999990905),0.5)@2001-01-01, Cbuffer(Point(10 0.9999999999990905),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-02]');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-10 1.0000000000009095),0.5)@2001-01-01, Cbuffer(Point(10 1.0000000000009095),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-02]');
+
 -- No shared time (active periods fall in the other's gap) is NULL for every
 -- box-short-circuited predicate, not a spurious value.
 SELECT eDwithin(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02],[Cbuffer(Point(1 1),0.5)@2001-01-05, Cbuffer(Point(2 2),0.5)@2001-01-06]}', tcbuffer '[Cbuffer(Point(100 100),0.5)@2001-01-03, Cbuffer(Point(101 101),0.5)@2001-01-04]', 10);
