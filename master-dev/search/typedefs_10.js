@@ -11,5 +11,6 @@ var searchData=
   ['tpfunc_5fbase_8',['tpfunc_base',['../meos_2include_2temporal_2temporal_8h_a14e8d51921d33d20867929767d50f51d.html#a14e8d51921d33d20867929767d50f51d',1,'temporal.h']]],
   ['tpfunc_5fset_9',['tpfunc_set',['../meos_2include_2temporal_2temporal_8h_a2990d3ea6bfc0f45f5e477e6b950bf5f.html#a2990d3ea6bfc0f45f5e477e6b950bf5f',1,'temporal.h']]],
   ['tpfunc_5ftemp_10',['tpfunc_temp',['../meos_2include_2temporal_2temporal_8h_a73d8710f730e73a0865d3d6200b6910c.html#a73d8710f730e73a0865d3d6200b6910c',1,'temporal.h']]],
-  ['tpfunc_5funary_11',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_adf54be09a1497705df4940d4bab7ecd5.html#adf54be09a1497705df4940d4bab7ecd5',1,'temporal.h']]]
+  ['tpfunc_5ftemp_5fat_11',['tpfunc_temp_at',['../meos_2include_2temporal_2temporal_8h_a308287c2ac49cd615b83888addc6a395.html#a308287c2ac49cd615b83888addc6a395',1,'temporal.h']]],
+  ['tpfunc_5funary_12',['tpfunc_unary',['../meos_2include_2temporal_2temporal_8h_adf54be09a1497705df4940d4bab7ecd5.html#adf54be09a1497705df4940d4bab7ecd5',1,'temporal.h']]]
 ];

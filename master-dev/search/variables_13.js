@@ -1,8 +1,8 @@
 var searchData=
 [
   ['r_0',['r',['../structSweepDisc_a70e613c2fdac053994f1f877ab68b9f9.html#a70e613c2fdac053994f1f877ab68b9f9',1,'SweepDisc::r()'],['../structDistShortLine_aac71562e8b63f52dd470200593973938.html#aac71562e8b63f52dd470200593973938',1,'DistShortLine::r()'],['../structDiscWalk_a2e8958b56d2185e1e953c74d97e8ae17.html#a2e8958b56d2185e1e953c74d97e8ae17',1,'DiscWalk::r()'],['../structRelateSeg_a41faf389f3ee7d094c911c973cf2572b.html#a41faf389f3ee7d094c911c973cf2572b',1,'RelateSeg::r()']]],
-  ['r1_1',['R1',['../structPointMotionGap_a291337eade56debc14ae193b2313f5d1.html#a291337eade56debc14ae193b2313f5d1',1,'PointMotionGap']]],
-  ['r1_2',['r1',['../structTangentPoint_a30a8889c6f07dc9ce36bdb1069160243.html#a30a8889c6f07dc9ce36bdb1069160243',1,'TangentPoint']]],
+  ['r1_1',['r1',['../structTangentPoint_a30a8889c6f07dc9ce36bdb1069160243.html#a30a8889c6f07dc9ce36bdb1069160243',1,'TangentPoint']]],
+  ['r1_2',['R1',['../structPointMotionGap_a291337eade56debc14ae193b2313f5d1.html#a291337eade56debc14ae193b2313f5d1',1,'PointMotionGap']]],
   ['r2_3',['r2',['../structTangentPoint_a6f91156c0cdf954dcac78ec8a063b22c.html#a6f91156c0cdf954dcac78ec8a063b22c',1,'TangentPoint']]],
   ['ra_4',['ra',['../structDistWalk_a1dbaffdce84315fd51f05b8dc0e937d5.html#a1dbaffdce84315fd51f05b8dc0e937d5',1,'DistWalk']]],
   ['radius_5',['radius',['../structHullFeature_ab34078f58491442466d7561d63a77da3.html#ab34078f58491442466d7561d63a77da3',1,'HullFeature::radius()'],['../structDistArc_a0c26c5926b1e71bc9c046043dccab72a.html#a0c26c5926b1e71bc9c046043dccab72a',1,'DistArc::radius()'],['../structCircle_a5a0212ba705f57d762bd6b202e3d10ed.html#a5a0212ba705f57d762bd6b202e3d10ed',1,'Circle::radius()'],['../structSPHEROID_a2ec41241699a094e4f98928220c045c7.html#a2ec41241699a094e4f98928220c045c7',1,'SPHEROID::radius()'],['../structCbuffer_a121a38c66ff48003c153580ace3679be.html#a121a38c66ff48003c153580ace3679be',1,'Cbuffer::radius()'],['../structEdge_aa855ab4dcc07efe8b2ba807bcd8ed978.html#aa855ab4dcc07efe8b2ba807bcd8ed978',1,'Edge::radius()']]],

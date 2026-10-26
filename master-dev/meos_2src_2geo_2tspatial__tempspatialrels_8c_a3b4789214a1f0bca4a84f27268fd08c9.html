@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tdwithin_add_solutions_run</title>
+<title>MobilityDB: tdwithin_bounds_in</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -96,7 +96,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__rel__temp_ga3b5d59e9e471695197036b3d4998dc1e.html#ga3b5d59e9e471695197036b3d4998dc1e">tdisjoint_tgeo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__rel__temp_ga6b18a70af2cffe773e07c40d6e561844.html#ga6b18a70af2cffe773e07c40d6e561844">tdisjoint_tgeo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_ad363852b02ef8c3086ae00283c137a5e.html#ad363852b02ef8c3086ae00283c137a5e">tdwithin_add_solutions</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_aad002b13d406e95b5921c0bee474173a.html#aad002b13d406e95b5921c0bee474173a">tdwithin_add_solutions_run</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a5c81c92d72ea9c86d03434856a179b58.html#a5c81c92d72ea9c86d03434856a179b58">tdwithin_add_solutions_run</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a3b4789214a1f0bca4a84f27268fd08c9.html#a3b4789214a1f0bca4a84f27268fd08c9">tdwithin_bounds_in</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__rel__temp_ga160047a86c4933100fa8e4c766119c6a.html#ga160047a86c4933100fa8e4c766119c6a">tdwithin_geo_tgeo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_a71896d915eaac91c04807f51844efd74.html#a71896d915eaac91c04807f51844efd74">tdwithin_geogsegm_run</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2tspatial__tempspatialrels_8c_afd4d01c18074dd80f383abb677643026.html#afd4d01c18074dd80f383abb677643026">tdwithin_run_add</a></td></tr>
@@ -136,8 +137,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aad002b13d406e95b5921c0bee474173a" name="aad002b13d406e95b5921c0bee474173a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aad002b13d406e95b5921c0bee474173a">&#9670;&#160;</a></span>tdwithin_add_solutions_run()</h2>
+<a id="a3b4789214a1f0bca4a84f27268fd08c9" name="a3b4789214a1f0bca4a84f27268fd08c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b4789214a1f0bca4a84f27268fd08c9">&#9670;&#160;</a></span>tdwithin_bounds_in()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -146,10 +147,40 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void tdwithin_add_solutions_run </td>
+          <td class="memname">static void tdwithin_bounds_in </td>
           <td>(</td>
+          <td class="paramtype">const <a class="el" href="structLiftedFunctionInfo.html">LiftedFunctionInfo</a> *&#160;</td>
+          <td class="paramname"><em>lfinfo</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>solutions</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>start1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>end1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>start2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Datum&#160;</td>
+          <td class="paramname"><em>end2</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -166,24 +197,6 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>lower_inc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>upper_inc</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>upper_inc1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">TimestampTz&#160;</td>
           <td class="paramname"><em>t1</em>, </td>
         </tr>
@@ -196,8 +209,14 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structTDwithinRun.html">TDwithinRun</a> *&#160;</td>
-          <td class="paramname"><em>run</em>&#160;</td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>in1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool *&#160;</td>
+          <td class="paramname"><em>in2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -212,7 +231,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Add to a walk the result of the tdwithin function of a segment from the solutions of the quadratic equation found previously. </p>
+<p><a class="el" href="structSet.html" title="Structure to represent sets of values.">Set</a> the values at the bounds of the period a turning point function returns for a segment, true at a bound at an end of the segment. </p>
+<p >A bound strictly inside the segment takes the value the value function of the lift states for it (<a class="el" href="tcbuffer_8h_a5ef972f7397bfc0bd9555029147726a7.html#a5ef972f7397bfc0bd9555029147726a7" title="Return true if two temporal circular buffer segments are within a distance at an instant of the segme...">tcbuffersegm_tdwithin_at</a>); without one, every bound is within the distance </p>
 
 </div>
 </div>
