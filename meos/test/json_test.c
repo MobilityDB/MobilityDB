@@ -276,6 +276,14 @@ int main(void)
   printf("json_typeof(%s): %s\n", js1_out, char_result);
   free(text_result); free(char_result);
 
+  /* An object and an array holding more members than the parser first
+   * allocates room for are read and written back whole */
+  Jsonb *jbwide = jsonb_in(
+    "{\"a\":1, \"b\":2, \"c\":3, \"d\":4, \"e\":5, \"f\":[1,2,3,4,5,6]}");
+  char_result = jsonb_out(jbwide);
+  printf("jsonb_in of 6 pairs and 6 elements: %s\n", char_result);
+  free(jbwide); free(char_result);
+
   /* Jsonb **jsonb_array_elements(const Jsonb *jb, int *count); */
   Jsonb *jbarray = jsonb_in("[\"a\", \"b\", \"c\"]");
   Jsonb **jbarray_result = jsonb_array_elements(jbarray, &count);

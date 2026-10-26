@@ -446,6 +446,7 @@ extern Datum jsonb_build_array_worker(int nargs, const Datum *args,
 
 extern json_to_free *json_get_tofree(void);
 extern void json_add_tofree(void *value);
+extern void json_move_tofree(void *old, void *moved); /* MEOS */
 extern void json_reset_tofree(void);
 extern void json_destroy_tofree(void);
 
