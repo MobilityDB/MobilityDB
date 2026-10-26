@@ -74,9 +74,10 @@ set(H3_SRCS
 )
 
 # The h3index functions whose bare names the h3 PostgreSQL extension also
-# exports, built in MEOS alone over their meos_h3index_* twins.
+# exports, built in MEOS alone over their meos_h3index_* twins, and the typed
+# functions over the internal functions that carry the cells as datums.
 if(MEOS)
-  list(APPEND H3_SRCS h3index_meos.c)
+  list(APPEND H3_SRCS h3index_meos.c th3index_latlng_meos.c)
 endif()
 
 add_library(h3 OBJECT ${H3_SRCS})

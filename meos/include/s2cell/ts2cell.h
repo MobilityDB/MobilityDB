@@ -76,4 +76,13 @@ extern bool ensure_valid_ts2cell_s2cell(const Temporal *temp, S2CellId cell);
 extern bool ensure_valid_ts2cell_tgeogpoint(const Temporal *temp1,
   const Temporal *temp2);
 
+/*****************************************************************************
+ * Split of a temporal point by the cells it crosses (body in ts2cell_ops.c,
+ * typed by tgeompoint_s2cell_split and tgeogpoint_s2cell_split of
+ * ts2cell_ops_meos.c)
+ *****************************************************************************/
+
+extern Temporal **tpoint_s2cell_split(const Temporal *temp, int32 level,
+  bool border_inc, Datum **cells, int *count);
+
 #endif /* __TS2CELL_H__ */
