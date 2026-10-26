@@ -196,7 +196,7 @@ RelnameNspGetRelid(const char *relname, Oid nsp_oid)
  * @brief Return namespace Oid for the extension
  */
 static Oid
-mobilitydb_namespace_oid()
+mobilitydb_namespace_oid(void)
 {
   Oid nsp_oid = InvalidOid;
   Oid ext_oid = get_extension_oid("mobilitydb", true);
@@ -213,7 +213,7 @@ mobilitydb_namespace_oid()
 
 /* Cache type lookups in per-session location */
 static mobilitydb_constants *
-get_mobilitydb_constants()
+get_mobilitydb_constants(void)
 {
   /* Put constants cache in a child of the CacheContext */
   MemoryContext context = AllocSetContextCreate(CacheMemoryContext,
@@ -304,7 +304,7 @@ get_mobilitydb_constants()
  * @brief Initialize Oid cache
  */
 static inline void
-mobilitydb_initialize_cache()
+mobilitydb_initialize_cache(void)
 {
   /* Return if cache has been initialized */
   if (MOBILITYDB_CONSTANTS)
@@ -322,7 +322,7 @@ mobilitydb_initialize_cache()
  * backend is unaffected because it reads the fully populated table.
  */
 static inline void
-reset_mobilitydb_constants()
+reset_mobilitydb_constants(void)
 {
   if (MOBILITYDB_CONSTANTS)
   {
