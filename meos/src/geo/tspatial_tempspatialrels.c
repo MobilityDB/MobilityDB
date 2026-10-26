@@ -1208,21 +1208,69 @@ tdwithin_run_add(TDwithinRun *run, Datum value, TimestampTz lower,
 }
 
 /**
+ * @brief Set the values at the bounds of the period a turning point function
+ * returns for a segment, true at a bound at an end of the segment
+ * @details A bound strictly inside the segment takes the value the value
+ * function of the lift states for it (#tcbuffersegm_tdwithin_at); without one,
+ * every bound is within the distance
+ */
+static void
+tdwithin_bounds_in(const LiftedFunctionInfo *lfinfo, int solutions,
+  Datum start1, Datum end1, Datum start2, Datum end2, TimestampTz lower,
+  TimestampTz upper, TimestampTz t1, TimestampTz t2, bool *in1, bool *in2)
+{
+  *in1 = *in2 = true;
+  if (solutions == 0 || ! lfinfo->tpfn_temp_at)
+    return;
+  if (t1 > lower && t1 < upper)
+    *in1 = lfinfo->tpfn_temp_at(start1, end1, start2, end2,
+      lfinfo->param[0], lower, upper, t1);
+  if (t2 == t1)
+    *in2 = *in1;
+  else if (t2 > lower && t2 < upper)
+    *in2 = lfinfo->tpfn_temp_at(start1, end1, start2, end2,
+      lfinfo->param[0], lower, upper, t2);
+  return;
+}
+
+/**
  * @brief Add to a walk the result of the tdwithin function of a segment from
  * the solutions of the quadratic equation found previously
+ * @details @p in1 and @p in2 are the values at the bounds @p t1 and @p t2
+ * where these lie strictly inside the segment, as the value function of the
+ * turning point function states them (#tcbuffersegm_tdwithin_at); a bound at
+ * which the values are not within the distance is excluded from the run of
+ * true values and added to the neighbouring run of false ones, each run
+ * extended as #tdwithin_run_add extends it
  */
 static void
 tdwithin_add_solutions_run(int solutions, TimestampTz lower,
   TimestampTz upper, bool lower_inc, bool upper_inc, bool upper_inc1,
-  TimestampTz t1, TimestampTz t2, TDwithinRun *run)
+  TimestampTz t1, TimestampTz t2, bool in1, bool in2, TDwithinRun *run)
 {
   const Datum datum_true = BoolGetDatum(true);
   const Datum datum_false = BoolGetDatum(false);
   /* <  F  > */
   if (solutions == 0 ||
   (solutions == 1 && ((t1 == lower && ! lower_inc) ||
-    (t1 == upper && ! upper_inc))))
+    (t1 == upper && ! upper_inc))) ||
+  (t1 == t2 && ! in1))
     tdwithin_run_add(run, datum_false, lower, upper, lower_inc, upper_inc1);
+  /*
+   * A bound strictly inside the segment dated before the values come within
+   * the distance, or after they leave it, is an instant at which they are not
+   * within, and the run of true values excludes it:
+   *  (  F  ](  T  ](  F  )
+   */
+  else if (! in1 || ! in2)
+  {
+    if (t1 != lower)
+      tdwithin_run_add(run, datum_false, lower, t1, lower_inc, ! in1);
+    tdwithin_run_add(run, datum_true, t1, t2,
+      (t1 == lower) ? lower_inc : in1, (t2 == upper) ? upper_inc1 : in2);
+    if (t2 != upper)
+      tdwithin_run_add(run, datum_false, t2, upper, ! in2, upper_inc1);
+  }
   /*
    *  <  T  >               2 solutions, lower == t1, upper == t2
    *  [T](  F  )            1 solution, lower == t1 (t1 == t2)
@@ -1264,7 +1312,7 @@ tdwithin_add_solutions(int solutions, TimestampTz lower, TimestampTz upper,
   TDwithinRun run = { .result = result, .nseqs = 0, .instants = instants,
     .held = false };
   tdwithin_add_solutions_run(solutions, lower, upper, lower_inc, upper_inc,
-    upper_inc1, t1, t2, &run);
+    upper_inc1, t1, t2, true, true, &run);
   tdwithin_run_flush(&run);
   return run.nseqs;
 }
@@ -1338,8 +1386,11 @@ tdwithin_tlinearseq_tlinearseq_iter(const TSequence *seq1,
       int solutions = tpfn(sv1, sev1, sv2, sev2, lfinfo->param[0], lower,
         upper, &t1, &t2);
       bool upper_inc1 = linear1 && linear2 && upper_inc;
+      bool in1 = true, in2 = true;
+      tdwithin_bounds_in(lfinfo, solutions, sv1, sev1, sv2, sev2, lower, upper,
+        t1, t2, &in1, &in2);
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, &run);
+        upper_inc, upper_inc1, t1, t2, in1, in2, &run);
       /* Add extra final point if only one segment is linear */
       if (upper_inc && (! linear1 || ! linear2))
       {
@@ -1470,8 +1521,11 @@ tdwithin_tlinearseq_base_iter(const TSequence *seq, Datum point,
         lfinfo->param[0], lower,
         upper, &t1, &t2);
       bool upper_inc1 = linear && upper_inc;
+      bool in1 = true, in2 = true;
+      tdwithin_bounds_in(lfinfo, solutions, startvalue, endvalue, point, point,
+        lower, upper, t1, t2, &in1, &in2);
       tdwithin_add_solutions_run(solutions, lower, upper, lower_inc,
-        upper_inc, upper_inc1, t1, t2, &run);
+        upper_inc, upper_inc1, t1, t2, in1, in2, &run);
     }
     startvalue = endvalue;
     lower = upper;
@@ -2139,6 +2193,7 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   geo_dwithin_lfinfo_geo(temp->flags, gs->gflags, dist, spheroid, &lfinfo);
   if (tpoint_type(temp->temptype) && gserialized_get_type(gs) == POINTTYPE)
     lfinfo.func = pt_dwithin_fn_geo(temp->flags, gs->gflags);
+  lfinfo.tpfn_temp_at = &tpointsegm_tdwithin_at;
   /* Call the generic function passing the two functions as arguments */
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(gs), &lfinfo,
     &tpointsegm_tdwithin_turnpt);
@@ -2281,6 +2336,7 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
    * generic any-geometry entry */
   if (tpoint_type(sync1->temptype) && tpoint_type(sync2->temptype))
     lfinfo.func = pt_dwithin_fn(sync1->flags, sync2->flags);
+  lfinfo.tpfn_temp_at = &tpointsegm_tdwithin_at;
   Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tpointsegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);

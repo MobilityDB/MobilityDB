@@ -320,6 +320,39 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
+ * @brief Return true if two temporal circular buffer segments are within a
+ * distance at an instant of the segments, decided exactly
+ * @details The value of #tcbuffersegm_tdwithin_turnpt at a bound of the
+ * period it returns (#point_motion_dwithin_at_exact): a bound dated by
+ * truncation before an instant at which the buffers come within the distance
+ * is an instant at which they are not
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers defining the second segment
+ * @param[in] dist Distance
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[in] t Timestamp in [lower, upper]
+ */
+bool
+tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz t)
+{
+  assert(lower < upper); assert(lower <= t && t <= upper);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  const double a0[2] = {spt1->x, spt1->y}, a1[2] = {ept1->x, ept1->y};
+  const double b0[2] = {spt2->x, spt2->y}, b1[2] = {ept2->x, ept2->y};
+  return point_motion_dwithin_at_exact(a0, a1, b0, b1, 2, sv1->radius,
+    ev1->radius, sv2->radius, ev2->radius, DatumGetFloat8(dist),
+    upper - lower, t - lower);
+}
+
+/**
  * @brief Return 1 or 2 if a temporal circular buffer segment contains or
  * covers another one during a sub-period of the segment, 0 otherwise
  * @details The first segment contains the second one when @p strict is true

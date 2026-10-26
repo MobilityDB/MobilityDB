@@ -94,6 +94,11 @@ typedef struct
                                  the right-hand bytes through the wrong type. */
   tpfunc_base tpfn_base;      /**< Turning point function for temporal and base types*/
   tpfunc_temp tpfn_temp;      /**< Turning point function for two temporal types */
+  tpfunc_temp_at tpfn_temp_at; /**< Value of the predicate at a turning point
+                                 strictly inside a segment, when the turning
+                                 point function dates it at an instant at which
+                                 the predicate need not hold; NULL where it
+                                 holds at every turning point */
 } LiftedFunctionInfo;
 
 /*****************************************************************************/
