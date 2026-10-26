@@ -1961,8 +1961,7 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
  * @param[in] shift Interval for shift, may be `NULL`
  * @param[in] duration Interval for scale, may be `NULL`
  * @pre The duration is greater than 0 if is not NULL
- * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
- *   #Temporal_shift_scale_time()
+ * @csqlfn #Temporal_shift_scale_time()
  */
 Temporal *
 temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
