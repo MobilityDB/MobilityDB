@@ -265,10 +265,10 @@ static JsonParseErrorType alen_scalar(void *state, char *token,
 static JsonParseErrorType alen_array_element_start(void *state, bool isnull);
 
 /* common workers for json{b}_each* functions */
-static text **each_worker(const text *txt, text **values, int *count,
-  bool as_text);
-static text **each_worker_jsonb(const Jsonb *jb, void **values, int *count,
-  const char *funcname, bool as_text);
+static text **each_worker(const text *txt, text ***values, int *count,
+  bool as_text); /* MEOS: values allocated by the worker */
+static text **each_worker_jsonb(const Jsonb *jb, void ***values, int *count,
+  const char *funcname, bool as_text); /* MEOS: values allocated by the worker */
 
 /* semantic action functions for json_each */
 static JsonParseErrorType each_object_field_start(void *state, char *fname,
@@ -1786,19 +1786,25 @@ alen_array_element_start(void *state, bool isnull UNUSED)
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSON value
  * @param[in] js JSON value
- * @param[out] values Array of values
- * @param[out] count Number of elements in the output array
+ * @param[out] values Array of values, allocated by the function
+ * @param[out] count Number of elements in the output arrays
  * @note Derived from PostgreSQL function: @p json_each()
  */
 #if MEOS
 text **
-json_each(const text *js, text **values, int *count)
+json_each(const text *js, text ***values, int *count)
 {
-  return each_worker(js, values, count, true);
+  /* Ensure the validity of the arguments */
+  if (! js || ! values || ! count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  return each_worker(js, values, count, false);
 }
 #endif /* MEOS */
 text **
-pg_json_each(const text *js, text **values, int *count)
+pg_json_each(const text *js, text ***values, int *count)
 {
   return each_worker(js, values, count, false);
 }
@@ -1807,25 +1813,33 @@ pg_json_each(const text *js, text **values, int *count)
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSON value as text
  * @param[in] js JSON value
- * @param[out] values Array of values
- * @param[out] count Number of elements in the output array
+ * @param[out] values Array of values, allocated by the function
+ * @param[out] count Number of elements in the output arrays
  * @note Derived from PostgreSQL function: @p json_each_text()
  */
 #if MEOS
 text **
-json_each_text(const text *js, text **values, int *count)
+json_each_text(const text *js, text ***values, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! js || ! values || ! count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return each_worker(js, values, count, true);
 }
 #endif /* MEOS */
 text **
-pg_json_each_text(const text *js, text **values, int *count)
+pg_json_each_text(const text *js, text ***values, int *count)
 {
   return each_worker(js, values, count, true);
 }
 
+/* MEOS: the values are returned in an array the function allocates, as the
+ * keys are, since the caller cannot know how many fields the value holds */
 static text **
-each_worker(const text *js, text **values, int *count, bool as_text)
+each_worker(const text *js, text ***values, int *count, bool as_text)
 {
   JsonLexContext lex;
   EachState *state = palloc0(sizeof(EachState));
@@ -1851,10 +1865,9 @@ each_worker(const text *js, text **values, int *count, bool as_text)
   /* Construct the result */
   text **result = (text **) palloc(sizeof(text *) * state->result_count);
   memcpy(result, state->keys, sizeof(text *) * state->result_count);
-  // memcpy((char *) *values, (char *) state->values,
-    // sizeof(text *) * state->result_count);
-  for (int i = 0; i < state->result_count; i++)
-    values[i] = state->values[i];
+  /* MEOS: the values array is allocated here */
+  *values = (text **) palloc(sizeof(text *) * state->result_count);
+  memcpy(*values, state->values, sizeof(text *) * state->result_count);
 
   /* Clean up and return */
   *count = state->result_count;
@@ -2133,50 +2146,64 @@ elements_scalar(void *state, char *token, JsonTokenType tokentype UNUSED)
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSONB value
  * @param[in] jb JSONB value
- * @param[out] values Array of values
- * @param[out] count Number of elements in the output array
+ * @param[out] values Array of values, allocated by the function
+ * @param[out] count Number of elements in the output arrays
  * @csqlfn #Jsonb_each()
  * @note Derived from PostgreSQL function: @p jsonb_each()
  */
 #if MEOS
 text **
-jsonb_each(const Jsonb *jb, Jsonb **values, int *count)
+jsonb_each(const Jsonb *jb, Jsonb ***values, int *count)
 {
-  return each_worker_jsonb(jb, (void **) values, count, "jsonb_each", false);
+  /* Ensure the validity of the arguments */
+  if (! jb || ! values || ! count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  return each_worker_jsonb(jb, (void ***) values, count, "jsonb_each", false);
 }
 #endif /* MEOS */
 text **
-pg_jsonb_each(const Jsonb *jb, Jsonb **values, int *count)
+pg_jsonb_each(const Jsonb *jb, Jsonb ***values, int *count)
 {
-  return each_worker_jsonb(jb, (void **) values, count, "jsonb_each", false);
+  return each_worker_jsonb(jb, (void ***) values, count, "jsonb_each", false);
 }
 
 /**
  * @ingroup meos_json_base_accessor
  * @brief Return two arrays of keys and values of a JSONB value as text
  * @param[in] jb JSONB value
- * @param[out] values Array of values
- * @param[out] count Number of elements in the output array
+ * @param[out] values Array of values, allocated by the function
+ * @param[out] count Number of elements in the output arrays
  * @csqlfn #Jsonb_each_text()
  * @note Derived from PostgreSQL function: @p jsonb_each_text()
  */
 #if MEOS
 text **
-jsonb_each_text(const Jsonb *jb, text **values, int *count)
+jsonb_each_text(const Jsonb *jb, text ***values, int *count)
 {
-  return each_worker_jsonb(jb, (void **) values, count, "jsonb_each_text",
+  /* Ensure the validity of the arguments */
+  if (! jb || ! values || ! count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  return each_worker_jsonb(jb, (void ***) values, count, "jsonb_each_text",
     true);
 }
 #endif /* MEOS */
 text **
-pg_jsonb_each_text(const Jsonb *jb, text **values, int *count)
+pg_jsonb_each_text(const Jsonb *jb, text ***values, int *count)
 {
-  return each_worker_jsonb(jb, (void **) values, count, "jsonb_each_text",
+  return each_worker_jsonb(jb, (void ***) values, count, "jsonb_each_text",
     true);
 }
 
+/* MEOS: the values are returned in an array the function allocates, as the
+ * keys are, since the caller cannot know how many fields the value holds */
 static text **
-each_worker_jsonb(const Jsonb *jb, void **values, int *count,
+each_worker_jsonb(const Jsonb *jb, void ***values, int *count,
   const char *funcname, bool as_text)
 {
   if (!JB_ROOT_IS_OBJECT(jb))
@@ -2192,6 +2219,8 @@ each_worker_jsonb(const Jsonb *jb, void **values, int *count,
   JsonbIterator *it = JsonbIteratorInit((JsonbContainer *) &jb->root);
   int result_count = 0;
   text **result_keys = (text **) palloc(sizeof(text *) * JB_ROOT_COUNT(jb));
+  /* MEOS: the values array is allocated here */
+  void **result_values = palloc(sizeof(void *) * JB_ROOT_COUNT(jb));
   while ((r = JsonbIteratorNext(&it, &v, skipNested)) != WJB_DONE)
   {
     skipNested = true;
@@ -2210,20 +2239,21 @@ each_worker_jsonb(const Jsonb *jb, void **values, int *count,
         if (v.type == jbvNull)
         {
           /* a json null is an sql null in text mode */
-          values[result_count++] = NULL;
+          result_values[result_count++] = NULL;
         }
         else
-          values[result_count++] = (void *) JsonbValueAsText(&v);
+          result_values[result_count++] = (void *) JsonbValueAsText(&v);
       }
       else
       {
         /* Not in text mode, just return the Jsonb */
         Jsonb *val = JsonbValueToJsonb(&v);
-        values[result_count++] = (void *) val;
+        result_values[result_count++] = (void *) val;
       }
     }
   }
   *count = result_count;
+  *values = result_values;
   return result_keys;
 }
 
