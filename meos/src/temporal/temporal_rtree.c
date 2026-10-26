@@ -1516,7 +1516,7 @@ rtree_create(MeosType bboxtype)
  * @return RTree initialized
  */
 RTree *
-rtree_create_intspan()
+rtree_create_intspan(void)
 {
   return rtree_create(T_INTSPAN);
 }
@@ -1527,7 +1527,7 @@ rtree_create_intspan()
  * @return RTree initialized
  */
 RTree *
-rtree_create_bigintspan()
+rtree_create_bigintspan(void)
 {
   return rtree_create(T_BIGINTSPAN);
 }
@@ -1538,7 +1538,7 @@ rtree_create_bigintspan()
  * @return RTree initialized
  */
 RTree *
-rtree_create_floatspan()
+rtree_create_floatspan(void)
 {
   return rtree_create(T_FLOATSPAN);
 }
@@ -1549,7 +1549,7 @@ rtree_create_floatspan()
  * @return RTree initialized
  */
 RTree *
-rtree_create_datespan()
+rtree_create_datespan(void)
 {
   return rtree_create(T_DATESPAN);
 }
@@ -1560,7 +1560,7 @@ rtree_create_datespan()
  * @return RTree initialized
  */
 RTree *
-rtree_create_tstzspan()
+rtree_create_tstzspan(void)
 {
   return rtree_create(T_TSTZSPAN);
 }
@@ -1571,7 +1571,7 @@ rtree_create_tstzspan()
  * @return RTree initialized
  */
 RTree *
-rtree_create_tbox()
+rtree_create_tbox(void)
 {
   return rtree_create(T_TBOX);
 }
@@ -1582,7 +1582,7 @@ rtree_create_tbox()
  * @return RTree initialized
  */
 RTree *
-rtree_create_stbox()
+rtree_create_stbox(void)
 {
   return rtree_create(T_STBOX);
 }
@@ -1596,7 +1596,7 @@ rtree_create_stbox()
  * @return RTree initialized.
  */
 RTree *
-rtree_create_tpcbox()
+rtree_create_tpcbox(void)
 {
   return rtree_create(T_TPCBOX);
 }

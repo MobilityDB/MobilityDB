@@ -140,7 +140,7 @@ DestroyWaysCache(WaysCache *ways_cache)
  * @details If it does not exist, a new blank one is made and returned.
  */
 static WaysCache *
-GetWaysCache()
+GetWaysCache(void)
 {
   WaysCache *ways_cache = MEOS_WAYS_CACHE;
   if (! ways_cache)
@@ -387,7 +387,7 @@ route_length(int64 rid)
 }
 
 int32_t
-get_srid_ways()
+get_srid_ways(void)
 {
   ways_record rec;
   if (route_lookup(0, true, &rec) == LW_FAILURE)

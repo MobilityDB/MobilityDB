@@ -55,7 +55,7 @@ meos/src/temporal/meos_error.c	pg_error(int errlevel, const char *errmsg)	file-s
 meos/src/temporal/set.c	set_compact(const Set *s)	file-scope conditional
 meos/src/temporal/skiplist.c	#define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */	file-scope conditional
 meos/src/temporal/skiplist.c	datum_func2 func, bool crossings, SkipListType sktype)	file-scope conditional
-meos/src/temporal/skiplist.c	extern FunctionCallInfo fetch_fcinfo();	file-scope conditional
+meos/src/temporal/skiplist.c	extern FunctionCallInfo fetch_fcinfo(void);	file-scope conditional
 meos/src/temporal/skiplist.c	keyval_skiplist_common(SkipList *list, void **keys, void **values, int	file-scope conditional
 meos/src/temporal/skiplist.c	skiplist_elempos(const SkipList *list, void *key, void *value, int cur	file-scope conditional
 meos/src/temporal/skiplist.c	skiplist_keys_values(SkipList *list, void **values)	file-scope conditional

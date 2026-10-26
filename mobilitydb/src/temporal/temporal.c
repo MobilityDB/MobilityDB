@@ -101,7 +101,7 @@ static FunctionCallInfo MOBDB_PG_FCINFO;
  * @brief Fetch from the cache the fcinfo of the external function
  */
 FunctionCallInfo
-fetch_fcinfo()
+fetch_fcinfo(void)
 {
   assert(MOBDB_PG_FCINFO);
   return MOBDB_PG_FCINFO;

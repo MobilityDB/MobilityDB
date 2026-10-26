@@ -1477,7 +1477,7 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 
 /* Aggregate functions for temporal types */
 
-extern SkipList *temporal_skiplist_make();
+extern SkipList *temporal_skiplist_make(void);
 extern SkipList *skiplist_make(size_t key_size, size_t value_size,
   int (*comp_fn)(void *, void *), void *(*merge_fn)(void *, void *));
 extern int skiplist_search(SkipList *list, void *key, void *value);

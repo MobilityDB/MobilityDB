@@ -221,7 +221,7 @@ extern void meos_initialize_pointcloud(void);
 
 /* Indexes of TPCBox values */
 
-extern RTree *rtree_create_tpcbox();
+extern RTree *rtree_create_tpcbox(void);
 extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
 
 /* Comparison */
