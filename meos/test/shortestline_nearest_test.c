@@ -141,6 +141,15 @@ main(void)
   assert(v[0] == 0x1.d5194401022dcp+18 && v[1] == 0x1.3f50fbb1875dbp+22);
   assert(v[2] == 0x1.d5069d6586a2cp+18 && v[3] == 0x1.3f51e7c2609a2p+22);
 
+  /* A disc whose centre lies near 2^-968 and a segment near 2^999, inputs
+   * spanning more bits than the exact search of the start holds: the start is
+   * the point of its circle towards the nearest point all the same */
+  shortest_line(4.008336720017946e-292, 0.0, 5.231975621026696e+298,
+    "Linestring(4.0181572769485025e+300 5.357543035931337e+300,"
+    "4.060013081916716e+300 5.3261511822051764e+300)", v);
+  assert(v[0] == 0x1.8p+991 && v[1] == 0x1p+992);
+  assert(v[2] == 0x1.8p+998 && v[3] == 0x1p+999);
+
   printf("shortestline_nearest_test: every constructed end answered as its "
     "closed form\n");
   meos_finalize();
