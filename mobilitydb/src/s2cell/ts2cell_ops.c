@@ -53,6 +53,7 @@
 #include <meos_cellindex.h>
 #include <meos_s2cell.h>
 #include "temporal/temporal.h"
+#include "s2cell/ts2cell.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -237,10 +238,11 @@ typedef struct
 /**
  * @brief Return the fragments of a temporal point split by the S2 cells it
  * crosses, and the cell of each
+ * @details The cells come as the datums the rows carry, from the internal
+ * function, as #Tnumber_value_time_split_common takes its bins
  */
 static Datum
-Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo,
-  Temporal **(*split)(const Temporal *, int32, bool, Datum **, int *))
+Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo)
 {
   FuncCallContext *funcctx;
 
@@ -258,8 +260,8 @@ Tpoint_s2cell_split_ext(FunctionCallInfo fcinfo,
     bool border_inc = PG_GETARG_BOOL(2);
     /* Create function state */
     S2cellSplitState *state = palloc0(sizeof(S2cellSplitState));
-    state->frags = split(temp, level, border_inc, &state->cells,
-      &state->count);
+    state->frags = tpoint_s2cell_split(temp, level, border_inc,
+      &state->cells, &state->count);
     state->done = (state->count == 0);
     funcctx->user_fctx = state;
     /* Build a tuple description for the function output */
@@ -312,7 +314,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_s2cell_split);
 Datum
 Tgeompoint_s2cell_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_s2cell_split_ext(fcinfo, &tgeompoint_s2cell_split);
+  return Tpoint_s2cell_split_ext(fcinfo);
 }
 
 PGDLLEXPORT Datum Tgeogpoint_s2cell_split(PG_FUNCTION_ARGS);
@@ -326,7 +328,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_s2cell_split);
 Datum
 Tgeogpoint_s2cell_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_s2cell_split_ext(fcinfo, &tgeogpoint_s2cell_split);
+  return Tpoint_s2cell_split_ext(fcinfo);
 }
 
 /*****************************************************************************/

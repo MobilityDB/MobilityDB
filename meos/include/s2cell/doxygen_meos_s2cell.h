@@ -133,6 +133,10 @@
  *   @defgroup meos_internal_s2cell_inout Input and output functions
  *   @ingroup meos_internal_s2cell
  *   @brief Input and output functions for temporal S2 cell indices
+ *
+ *   @defgroup meos_internal_s2cell_conversion Conversion functions
+ *   @ingroup meos_internal_s2cell
+ *   @brief Conversion functions for temporal S2 cell indices
  */
 
 /*****************************************************************************/

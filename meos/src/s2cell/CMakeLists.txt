@@ -35,4 +35,10 @@ set(S2CELL_SOURCES
   ts2cell_ops.c
 )
 
+# The typed functions over the internal functions that carry the cells as
+# datums, built in MEOS alone.
+if(MEOS)
+  list(APPEND S2CELL_SOURCES ts2cell_ops_meos.c)
+endif()
+
 add_library(s2cell OBJECT ${S2CELL_SOURCES})

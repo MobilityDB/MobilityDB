@@ -666,13 +666,21 @@ tgeogpoint_to_tquadbin(const Temporal *temp, int32 resolution,
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_quadbin_conversion
  * @brief Return the fragments of a temporal point split by the quadbin cells
  * it crosses at a resolution, and the cell of each
  * @details The cover states which cell the trajectory holds and when, and the
  * fragment of a cell is the trajectory over the periods the cover states for
  * it, so a fragment and the cover answer the same periods for a cell
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
  */
-static Temporal **
+Temporal **
 tpoint_quadbin_split(const Temporal *temp, int32 resolution, bool border_inc,
   Datum **cells, int *count)
 {
@@ -710,52 +718,6 @@ tpoint_quadbin_split(const Temporal *temp, int32 resolution, bool border_inc,
   }
   *count = nfrags;
   return result;
-}
-
-/**
- * @ingroup meos_quadbin_conversion
- * @brief Return the fragments of a temporal planar point split by the quadbin
- * cells it crosses at a resolution, and the cell of each
- * @param[in] temp Temporal point
- * @param[in] resolution Quadbin resolution
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent of the trajectory, its easternmost longitude and its southernmost
- * latitude
- * @param[out] cells Cell of each fragment
- * @param[out] count Number of fragments
- * @csqlfn #Tgeompoint_quadbin_split()
- */
-Temporal **
-tgeompoint_quadbin_split(const Temporal *temp, int32 resolution,
-  bool border_inc, Datum **cells, int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_quadbin_split(temp, resolution, border_inc, cells, count);
-}
-
-/**
- * @ingroup meos_quadbin_conversion
- * @brief Return the fragments of a temporal geodetic point split by the
- * quadbin cells it crosses at a resolution, and the cell of each
- * @param[in] temp Temporal point
- * @param[in] resolution Quadbin resolution
- * @param[in] border_inc True when the grid contains the upper border of the
- * extent of the trajectory, its easternmost longitude and its southernmost
- * latitude
- * @param[out] cells Cell of each fragment
- * @param[out] count Number of fragments
- * @csqlfn #Tgeogpoint_quadbin_split()
- */
-Temporal **
-tgeogpoint_quadbin_split(const Temporal *temp, int32 resolution,
-  bool border_inc, Datum **cells, int *count)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
-  return tpoint_quadbin_split(temp, resolution, border_inc, cells, count);
 }
 
 /*****************************************************************************/

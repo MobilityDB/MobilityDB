@@ -133,6 +133,10 @@
  *   @defgroup meos_internal_quadbin_inout Input and output functions
  *   @ingroup meos_internal_quadbin
  *   @brief Input and output functions for temporal QUADBIN cell indices
+ *
+ *   @defgroup meos_internal_quadbin_conversion Conversion functions
+ *   @ingroup meos_internal_quadbin
+ *   @brief Conversion functions for temporal QUADBIN cell indices
  */
 
 /*****************************************************************************/

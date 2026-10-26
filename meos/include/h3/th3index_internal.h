@@ -178,4 +178,13 @@ extern Datum datum_h3_edge_length(Datum edge_d, Datum unit_d);
 extern Datum datum_h3_great_circle_distance(Datum a_d, Datum b_d,
   Datum unit_d);
 
+/*****************************************************************************
+ * Split of a temporal point by the cells it crosses (body in
+ * th3index_latlng.c, typed by tgeompoint_h3index_split and
+ * tgeogpoint_h3index_split of th3index_latlng_meos.c)
+ *****************************************************************************/
+
+extern Temporal **tpoint_h3index_split(const Temporal *temp, int32 resolution,
+  bool border_inc, Datum **cells, int *count);
+
 #endif /* __TH3INDEX_INTERNAL_H__ */
