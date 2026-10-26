@@ -62,3 +62,35 @@ SELECT ST_AsText(shortestLine(
  LINESTRING(5 1,5 3)
 (1 row)
 
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02}',
+  tgeompoint '{Point(10 0)@2001-01-01, Point(10 0)@2001-01-02}');
+                            tdistance                             
+------------------------------------------------------------------
+ {9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02}',
+  tgeompoint '[Point(10 0)@2001-01-01, Point(10 0)@2001-01-02]');
+                            tdistance                             
+------------------------------------------------------------------
+ {9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02]',
+  tgeompoint '{Point(10 0)@2001-01-01, Point(10 0)@2001-01-02}');
+                            tdistance                             
+------------------------------------------------------------------
+ {9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02],[Pose(Point(5 0),0)@2001-01-03, Pose(Point(6 0),0)@2001-01-04]}',
+  tgeompoint '{[Point(10 0)@2001-01-01, Point(10 0)@2001-01-04]}');
+                                                              tdistance                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST], [4@Wed Jan 03 00:00:00 2001 PST, 3@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
