@@ -1727,11 +1727,13 @@ int
 ea_intersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  /* Two discs may meet strictly between two instants at which they are apart,
-   * so the walk reads inside each segment where the gap between them reaches
-   * zero, which is the within-distance turning point at a zero distance */
-  return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2,
-    &datum_cbuffer_intersects, &tcbuffersegm_dwithin_turnpt, 0.0, ever, true);
+  /* Two disks intersect when the distance between them is zero, as
+   * #cbuffer_intersects states it, so they ever or always intersect where they
+   * are ever or always within the distance zero, decided over continuous time
+   * as #tintersects_tcbuffer_tcbuffer reads the temporal within distance zero:
+   * two disks may meet during less than a microsecond, at no instant at which
+   * a walk could evaluate them */
+  return ea_dwithin_tcbuffer_tcbuffer(temp1, temp2, 0.0, ever);
 }
 
 /**
