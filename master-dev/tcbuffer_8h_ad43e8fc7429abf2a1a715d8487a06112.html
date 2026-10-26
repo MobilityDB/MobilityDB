@@ -166,16 +166,17 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 or 2 if two temporal circular buffer segments intersect during the period defined by the output timestamps, return 0 otherwise. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if two temporal circular buffer segments may be equal at the output timestamp, return 0 otherwise. </p>
+<p >Two circular buffers are equal where their centres and their radii are both equal. A segment interpolates its centre and its radius linearly, so it moves the point (x, y, radius) along a segment of the space of three dimensions, and the two buffers may be equal only at the instant where these two points are nearest, as two temporal points with Z are (<a class="el" href="tgeo__distance_8h_aded5425298d46d52bacc4b7d5e83d937.html#aded5425298d46d52bacc4b7d5e83d937" title="Return 1 or 2 if two temporal geometry point segments are at a minimum distance during the output per...">tgeompointsegm_distance_turnpt</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the first segment </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> instants defining the second segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start1,end1</td><td>Values defining the first segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start2,end2</td><td>Values defining the second segment </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">lower,upper</td><td>Timestamps defining the segments </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, may be equal </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">t1,t2</td><td>Timestamps defining the resulting period, equal </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section pre"><dt>Precondition</dt><dd>The segments are not both constants </dd></dl>
 
 </div>
 </div>
