@@ -416,8 +416,11 @@ MobilityDuck by keeping the matched filter above the index scan.
 
 - **The index join over every key.** MobilityDuck's `TRTREE` and `TSPTREE` index join serves a
   probe of an `stbox`-keyed index from an `stbox` or one of the four temporal point and geometry
-  types, all answered exactly by their box. It gains every key and probe type the catalog states
-  (`type_index_bboxtype`), the join rechecking a lossy pair as the scan does.
+  types, all answered exactly by their box. The same join serves every key, one clone per key the
+  catalog states (`type_index_bboxtype`): an `stbox` for every spatial type, a set of them
+  included, a `tbox` for the temporal numbers, and the span kinds for time values, number and
+  time sets, spans and span sets, each probe keyed as its rows are and a lossy pair rechecked as
+  the scan rechecks it.
 - **`bboxunion` removed.** The union of every box type sizes 25 buffers in MEOS and
   `TEMPORAL_MAX_HEADER_SIZE`, the bytes read from TOAST for the header and box of a temporal value,
   and holds `TPCBox` under `#if POINTCLOUD` alone, so that size depends on a family flag. Each
