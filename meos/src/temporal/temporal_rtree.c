@@ -1440,8 +1440,11 @@ rtree_set_axes(RTree *rtree, const void *box)
 }
 
 /**
- * @brief Creates an RTree index
- * @param[in] bboxtype The MeosType of the elements to index.
+ * @ingroup meos_internal_box_index
+ * @brief Create an RTree index for a bounding box type
+ * @details A host creates the index of a column of any type with the key
+ * #type_bboxtype states for it
+ * @param[in] bboxtype Type of the bounding boxes to index
  * @return RTree initialized.
  */
 RTree *

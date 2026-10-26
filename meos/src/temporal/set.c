@@ -232,12 +232,15 @@ set_out(const Set *s, int maxdd)
 static size_t
 set_bbox_size(MeosType settype)
 {
-  /* The bounding box a set carries is the one its type prescribes. A set type
-   * that prescribes none — an alphanumeric set, and a point cloud set whose
-   * schema-dependent dimensions the MEOS layer cannot extract — answers zero,
-   * TPCBox being the separate type that carries point cloud spatial bounds. */
+  /* The bounding box a set stores is the one its type prescribes. A number or
+   * time set stores none, its span being the one its first and last values
+   * state, and a set type that prescribes no box — an alphanumeric set, and a
+   * point cloud set whose schema-dependent dimensions the MEOS layer cannot
+   * extract — stores none either, TPCBox being the separate type that carries
+   * point cloud spatial bounds. */
   MeosType bboxtype = type_bboxtype(settype);
-  return (bboxtype == T_UNKNOWN) ? 0 : bbox_get_size(bboxtype);
+  return (bboxtype == T_UNKNOWN || set_spantype(settype)) ? 0 :
+    bbox_get_size(bboxtype);
 }
 
 #if DEBUG_BUILD

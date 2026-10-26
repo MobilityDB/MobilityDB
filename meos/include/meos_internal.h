@@ -971,6 +971,8 @@ extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
 extern bool ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2);
 extern bool ensure_index_join_op(IndexSearchOp op);
 extern bool ensure_index_result(const MeosArray *result);
+extern RTree *rtree_create(MeosType bboxtype);
+extern SPTree *sptree_create(MeosType bboxtype, SPTreeKind kind);
 extern int rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query, MeosArray *result);
 extern int sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query, MeosArray *result);
 extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
