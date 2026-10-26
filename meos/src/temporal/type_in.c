@@ -2204,6 +2204,14 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   }
   /* Advance the state by the number of bytes read for the geometry */
   s->pos += (s1.pos - s1.wkb);
+  /* A geography holds the types #ensure_valid_geography accepts, as #geog_in
+   * reads them */
+  if (s->geodetic && ! ensure_valid_geography(geo))
+  {
+    s->error = true;
+    lwgeom_free(geo);
+    return NULL;
+  }
   /* A geography is geodetic and in WGS84 (EPSG:4326) by definition, so default
    * its SRID to 4326 when the Well-Known Binary carries none */
   if (s->geodetic && geo->srid == SRID_UNKNOWN)

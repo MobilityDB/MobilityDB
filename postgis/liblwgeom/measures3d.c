@@ -175,11 +175,11 @@ lw_dist3d_distanceline(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int m
 			if (!lw_dist3d_recursive(vertical_line, lw2, &thedl))
 			{
 				/* should never get here. all cases ought to be error handled earlier */
-				lwfree(vertical_line);
+				lwgeom_free(vertical_line); // MEOS
 				lwerror("Some unspecified error.");
-				result = (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0);
+				return (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0); // MEOS
 			}
-			lwfree(vertical_line);
+			lwgeom_free(vertical_line); // MEOS
 		}
 		if (!lwgeom_has_z(lw2))
 		{
@@ -190,11 +190,11 @@ lw_dist3d_distanceline(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int m
 			if (!lw_dist3d_recursive(lw1, vertical_line, &thedl))
 			{
 				/* should never get here. all cases ought to be error handled earlier */
-				lwfree(vertical_line);
+				lwgeom_free(vertical_line); // MEOS
 				lwerror("Some unspecified error.");
 				return (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0);
 			}
-			lwfree(vertical_line);
+			lwgeom_free(vertical_line); // MEOS
 		}
 	}
 	else
@@ -282,11 +282,11 @@ lw_dist3d_distancepoint(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int 
 			if (!lw_dist3d_recursive(vertical_line, lw2, &thedl))
 			{
 				/* should never get here. all cases ought to be error handled earlier */
-				lwfree(vertical_line);
+				lwgeom_free(vertical_line); // MEOS
 				lwerror("Some unspecified error.");
 				return (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0);
 			}
-			lwfree(vertical_line);
+			lwgeom_free(vertical_line); // MEOS
 		}
 
 		if (!lwgeom_has_z(lw2))
@@ -298,11 +298,11 @@ lw_dist3d_distancepoint(const LWGEOM *lw1, const LWGEOM *lw2, int32_t srid, int 
 			if (!lw_dist3d_recursive(lw1, vertical_line, &thedl))
 			{
 				/* should never get here. all cases ought to be error handled earlier */
-				lwfree(vertical_line);
+				lwgeom_free(vertical_line); // MEOS
 				lwerror("Some unspecified error.");
-				result = (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0);
+				return (LWGEOM *)lwcollection_construct_empty(COLLECTIONTYPE, srid, 0, 0); // MEOS
 			}
-			lwfree(vertical_line);
+			lwgeom_free(vertical_line); // MEOS
 		}
 	}
 	else
