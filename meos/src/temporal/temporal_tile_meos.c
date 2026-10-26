@@ -64,7 +64,7 @@
  * @param[in] box Input box to split
  * @param[in] vsize Value size of the tiles
  * @param[in] duration Interval defining the size of the tiles on the time
- * dimension, may be `NULL`
+ * dimension @nullable
  * @param[in] vorigin Value origin of the tiles
  * @param[in] torigin Time origin of the tiles
  * @param[in] border_inc True when the grid contains the upper border of the
@@ -106,7 +106,7 @@ tbox_value_time_tiles(const TBox *box, Datum vsize, const Interval *duration,
  * @param[in] box Temporal box
  * @param[in] vsize Value size of the tiles, 0 when the value dimension is not
  * used for tiling
- * @param[in] duration Interval defining the size of the bins, may be `NULL`
+ * @param[in] duration Interval defining the size of the bins @nullable
  * @param[in] spantype Span type of the value dimension
  */
 static bool
@@ -1153,7 +1153,7 @@ tnumber_value_time_split(const Temporal *temp, Datum vsize,
  * @param[in] vorigin Value origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
- * @param[out] bins Array of bins
+ * @param[out] bins Array of bins @nullable
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
@@ -1229,7 +1229,7 @@ tbigint_value_split(const Temporal *temp, int64 vsize, int64 vorigin,
  * @param[in] vorigin Value origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
- * @param[out] bins Array of bins
+ * @param[out] bins Array of bins @nullable
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_split()
  */
@@ -1269,7 +1269,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
  * @param[in] torigin Time origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
- * @param[out] value_bins Array of value bins
+ * @param[out] value_bins Array of value bins @nullable
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_time_split()
@@ -1316,7 +1316,7 @@ tint_value_time_split(const Temporal *temp, int vsize, const Interval *duration,
  * @param[in] torigin Time origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
- * @param[out] value_bins Array of value bins
+ * @param[out] value_bins Array of value bins @nullable
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_time_split()
@@ -1364,7 +1364,7 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
  * @param[in] torigin Time origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
- * @param[out] value_bins Array of value bins
+ * @param[out] value_bins Array of value bins @nullable
  * @param[out] time_bins Array of time bins
  * @param[out] count Number of values in the output array
  * @csqlfn #Tnumber_value_time_split()

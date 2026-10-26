@@ -647,7 +647,7 @@ ea_spatialrel_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] func Spatial relationship function to be called
  * @param[in] tpfn Segment function returning where the relationship changes,
- * or NULL
+ * or NULL @nullable
  * @param[in] param Parameter of the segment function
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @param[in] bbox_test True if a bounding text can be used for filtering

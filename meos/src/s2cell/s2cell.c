@@ -396,7 +396,7 @@ s2cell_from_face_ij(uint32_t face, uint32_t i, uint32_t j, uint32_t level,
  * @brief Return the leaf `(i, j)` and the Hilbert orientation of a cell
  * @param[in] cell S2 cell
  * @param[out] i,j Leaf indices in `[0, 2^30)`
- * @param[out] orientation Hilbert orientation, ignored when NULL
+ * @param[out] orientation Hilbert orientation, ignored when NULL @nullable
  * @return The cube face of @p cell
  */
 uint32_t

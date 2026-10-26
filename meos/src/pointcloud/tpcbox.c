@@ -536,7 +536,7 @@ tpcbox_as_hexewkb(const TPCBox *box, uint8_t variant, size_t *size_out)
  * @param[in] pcid pgpointcloud schema id (0 = unknown)
  * @param[in] xmin,xmax,ymin,ymax,zmin,zmax Spatial bounds (ignored unless
  *   @p hasx; @p zmin/@p zmax ignored unless @p hasz)
- * @param[in] period Time bounds (ignored unless @p hast; may be NULL)
+ * @param[in] period Time bounds (ignored unless @p hast) @nullable
  * @csqlfn #Tpcbox_constructor_2d(), #Tpcbox_constructor_3d(),
  *   #Tpcbox_constructor_t(), #Tpcbox_constructor_xt(), #Tpcbox_constructor_zt()
  */

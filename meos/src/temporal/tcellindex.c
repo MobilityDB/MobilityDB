@@ -808,7 +808,7 @@ dggs_arc_point(const DggsArc *arc, double t, double *lon, double *lat)
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
  * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
- * from vertex `edge` to the next vertex
+ * from vertex `edge` to the next vertex @nullable
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
@@ -891,7 +891,7 @@ dggs_arc_normals_exit_param(const DggsArc *arc, const double *normals,
  * @param[in] tmin Parameter at which the path entered the cell
  * @param[in] entry Mask of the edges the path entered the cell through, bit
  * `i` for the edge from vertex `i`
- * @param[out] edge When not `NULL`, the edge crossed at the exit
+ * @param[out] edge When not `NULL`, the edge crossed at the exit @nullable
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
@@ -987,7 +987,7 @@ dggs_arc_hemisphere_exit_param(const DggsArc *arc, const double *lons,
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
  * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
- * from vertex `edge` to the next vertex
+ * from vertex `edge` to the next vertex @nullable
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
@@ -2015,7 +2015,7 @@ dggs_line_point(const DggsLine *line, double t, double *lon, double *lat)
  * exactly zero, where a height read from the centre leaves the residue of a
  * dot product of two unit vectors and states a side no vertex of an edge has.
  * @param[in] org Position the plane holds, or NULL for a plane through the
- * centre of the sphere stated by a normal of its own
+ * centre of the sphere stated by a normal of its own @nullable
  */
 static void
 dggs_line_height(const DggsLine *line, const POINT3D *m, const POINT3D *org,
@@ -2315,7 +2315,7 @@ dggs_line_exit_param_edges(const DggsLine *line, const double *lons,
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
  * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
- * from vertex `edge` to the next vertex
+ * from vertex `edge` to the next vertex @nullable
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */
@@ -2368,7 +2368,7 @@ dggs_line_normals_exit_param(const DggsLine *line, const double *normals,
  * `i` for the edge from vertex `i`, which it never leaves through: a line
  * does not cross back over the tile boundary it has just crossed
  * @param[out] edge When not `NULL`, the edge crossed at the exit, the one
- * from vertex `edge` to the next vertex
+ * from vertex `edge` to the next vertex @nullable
  * @return The path parameter of the exit, or a value above 1 when the path
  * ends inside the cell
  */

@@ -50,7 +50,7 @@
 /**
  * @ingroup meos_internal_setspan_agg
  * @brief Transition function for span extent aggregate of values
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] value Value to aggregate
  * @param[in] basetype Type of the value
  */
@@ -70,8 +70,8 @@ spanbase_extent_transfn(Span *state, Datum value, MeosType basetype)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of sets
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Set to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] s Set to aggregate @nullable
  * @csqlfn #Set_extent_transfn()
  * @csqlaggfn #extentTransition()
  */
@@ -102,8 +102,8 @@ set_extent_transfn(Span *state, const Set *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of spans
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Span to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] s Span to aggregate @nullable
  * @note The function is also the combine function of the aggregate, the
  * span to aggregate being the state of another partial aggregation
  * @csqlfn #Span_extent_transfn(), #Span_extent_combinefn()
@@ -133,8 +133,8 @@ span_extent_transfn(Span *state, const Span *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of span sets
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] ss Span set to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] ss Span set to aggregate @nullable
  * @csqlfn #Spanset_extent_transfn()
  * @csqlaggfn #extentTransition()
  */
@@ -251,8 +251,8 @@ spanset_append_spanset(SpanSet *ss1, const SpanSet *ss2, bool expand)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] s Span to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] s Span to aggregate @nullable
  * @return When the state variable has space for adding the new span, the 
  * function returns the current state variable. Otherwise, a NEW state 
  * variable is returned and the input state is freed.
@@ -283,8 +283,8 @@ span_union_transfn(SpanSet *state, const Span *s)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span set aggregate union
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] ss Span set to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] ss Span set to aggregate @nullable
  * @return When the state variable has space for adding the new span set, the 
  * function returns the current state variable. Otherwise, a NEW state 
  * variable is returned and the input state is freed.
@@ -319,7 +319,7 @@ spanset_union_transfn(SpanSet *state, const SpanSet *ss)
 /**
  * @ingroup meos_setspan_agg
  * @brief Final function for span and span set union aggregate
- * @param[in] state Current aggregate state, may be `NULL`
+ * @param[in] state Current aggregate state @nullable
  * @csqlfn #Span_union_finalfn()
  */
 SpanSet *
@@ -335,8 +335,8 @@ spanset_union_finalfn(SpanSet *state)
 /**
  * @ingroup meos_setspan_agg
  * @brief Combine function for span and span set union aggregates
- * @param[in,out] state1 Current aggregate state
- * @param[in] state2 Aggregate state to combine with the first one
+ * @param[in,out] state1 Current aggregate state @nullable
+ * @param[in] state2 Aggregate state to combine with the first one @nullable
  * @return The state holding the spans of both, which is the first state when
  * it has space for the spans of the second one and a NEW state otherwise, the
  * first state being freed; the second state is left to the caller

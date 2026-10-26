@@ -2887,6 +2887,14 @@ pg_jsonb_set(const Jsonb *jb, text **path_elems, int path_len,
  * @ingroup meos_json_base_transf
  * @brief Replace a JSONB value specified by a path with a new value
  * elements can be either field keys or array indexes
+ * @param[in] jb JSONB value
+ * @param[in] path_elems Path elements
+ * @param[in] path_len Number of path elements
+ * @param[in] newjb New value, `NULL` treated as @p handle_null states @nullable
+ * @param[in] create When true, @p newjb is added where the path names a missing
+ * key
+ * @param[in] handle_null Treatment of a `NULL` new value: `raise_exception`,
+ * `use_json_null`, `delete_key` or `return_target`
  * @csqlfn #Jsonb_set_lax()
  * @note Derived from PostgreSQL function
  * @p jsonb_set_lax(jsonb, text[], jsonb, boolean, text)

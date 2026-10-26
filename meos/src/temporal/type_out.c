@@ -1370,7 +1370,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * #OUT_DEFAULT_DECIMAL_DIGITS are written. It is only used when the base type
  * has floating point components, such as tfloat or tgeometry
  * @param[in] srs Name of the coordinate reference system, which the output
- * states in place of the one of the SRID, may be `NULL`
+ * states in place of the one of the SRID @nullable
  * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
  */
@@ -3609,7 +3609,7 @@ datum_as_hexwkb(Datum value, MeosType type, uint8_t variant, size_t *size)
  * variant flags and passed to the @p *_as_wkb / @p *_as_hexwkb functions, so a
  * caller can select the byte order from a textual value.
  * @param[in] endian Endian encoding: an empty string (machine endianness),
- * `"ndr"` (little-endian) or `"xdr"` (big-endian)
+ * `"ndr"` (little-endian) or `"xdr"` (big-endian) @nullable
  * @errval 0
  */
 uint8_t

@@ -207,9 +207,9 @@ derive_quadbin(GDALDatasetH ds, uint64 *quadbin, const char *label)
  * handler leaves through `ereport(ERROR)` and the standalone one exits, so a
  * release written after the report never runs and the dataset leaks. Reporting
  * last is the idiom the rest of MEOS follows.
- * @param[in] ds Open GDAL dataset, or NULL
- * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file
- * @param[in] buf Band buffer, or NULL
+ * @param[in] ds Open GDAL dataset @nullable
+ * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file @nullable
+ * @param[in] buf Band buffer @nullable
  */
 static void
 raquet_gdal_release(GDALDatasetH ds, const char *vpath, uint8_t *buf)
@@ -234,7 +234,7 @@ raquet_gdal_release(GDALDatasetH ds, const char *vpath, uint8_t *buf)
  * @p vpath, releasing both on every path, so that the release still happens
  * when a report does not return; @p label names the source in error messages.
  * @param[in] ds Open GDAL dataset, taken over by this function
- * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file
+ * @param[in] vpath `/vsimem/` path backing @p ds, or NULL for a real file @nullable
  * @param[in] quadbin CARTO QUADBIN cell, or 0 to derive it
  * @param[in] label Source name used in error messages
  */

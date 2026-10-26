@@ -1305,7 +1305,7 @@ dist_geom_morton_cmp(const void *a, const void *b)
  * bounding box is too coarse for large coastal polygons, but the bucket boxes
  * are tight.
  * @param[in] segs Edges
- * @param[in] face Face of each edge, or NULL
+ * @param[in] face Face of each edge @nullable
  * @param[in] n Number of edges
  * @param[in] gxmin,gymin,gxmax,gymax Bounding box of the edges
  * @param[out] sorted Array of @p n edges receiving them in their Morton order
@@ -2127,7 +2127,7 @@ circ_leaf_set(const POINT2D *p1, const POINT2D *p2, CIRC_NODE *node)
  * @param[in] earth Model of the earth and circle tree of the geography
  * @param[in] bound Running minimum of the distance
  * @param[out] fraction Location of the closest point, may be NULL, set when
- * the result is below @p bound
+ * the result is below @p bound @nullable
  */
 static double
 geog_edge_distance_fraction(const POINT2D *p1, const POINT2D *p2,
@@ -2848,7 +2848,7 @@ nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
@@ -2890,7 +2890,7 @@ nai_tgeoseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  */
 static TInstant *
 nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo,
@@ -2907,7 +2907,7 @@ nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo,
  * @param[in] ss Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  */
 static TInstant *
 nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo,
@@ -2934,7 +2934,7 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo,
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] bound Running minimum of the distance, which a geography edge
  * that cannot be nearer returns without measuring on the spheroid
  * @param[out] t Timestamp
@@ -2990,7 +2990,7 @@ nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
  * @param[out] t Timestamp
  */

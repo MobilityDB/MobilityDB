@@ -236,7 +236,7 @@ typedef struct
 {
   const GSERIALIZED *ref1;   /**< Reference geometry of the first operand */
   DistRefPoly body1;         /**< Body of the first operand */
-  const GSERIALIZED *gs;     /**< Static geometry, or NULL */
+  const GSERIALIZED *gs;     /**< Static geometry @nullable */
   DistPart *parts;           /**< Parts of the static geometry */
   int nparts;                /**< Number of parts */
   const GSERIALIZED *ref2;   /**< Reference geometry of a temporal rigid
@@ -567,7 +567,7 @@ dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
  * the result is the minimum of the distances to its parts.
  * @param[in] seq1 Sequence of the rigid geometry
  * @param[in] seq2 Sequence of the second operand with the same timestamps,
- * or NULL for a static geometry
+ * or NULL for a static geometry @nullable
  */
 static Temporal *
 dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
@@ -623,7 +623,7 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
  * @brief Return the temporal distance between two operands
  * @param[in] temp1 Temporal rigid geometry
  * @param[in] temp2 Second operand with the same subtype and timestamps, or
- * NULL for a static geometry
+ * NULL for a static geometry @nullable
  */
 static Temporal *
 dist_temporal(const DistOps *ops, const Temporal *temp1, const Temporal *temp2)
@@ -922,7 +922,7 @@ typedef struct
   const TSequence *seq;        /**< Sequence */
   int k;                       /**< Instant starting the segment */
   TimestampTz t;               /**< Time of the pose */
-  const Pose *pose;            /**< Pose, or NULL */
+  const Pose *pose;            /**< Pose @nullable */
   bool alloc;                  /**< True if the pose is allocated */
 } DistPoseCache;
 

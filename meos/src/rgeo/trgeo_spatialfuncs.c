@@ -231,7 +231,7 @@ body_on_excluded_border(const GSERIALIZED *body, const STBox *box)
  * @param[in] body Body, already placed in the world
  * @param[in] target Target geometry
  * @param[in] excl Box whose upper borders are left out, NULL to meet the
- * target as a closed region
+ * target as a closed region @nullable
  */
 static bool
 body_meets_target(const GSERIALIZED *body, const GSERIALIZED *target,
@@ -395,7 +395,7 @@ rotating_change_ratio(const GSERIALIZED *ref, const Pose *pose1,
  * @param[in] pose1,pose2 Poses at the ends of the segment
  * @param[in] t1,t2 Times at the ends of the segment
  * @param[in] target Target geometry
- * @param[in] excl Box whose upper borders are left out, NULL for none
+ * @param[in] excl Box whose upper borders are left out, NULL for none @nullable
  * @param[in,out] spans,nspans,spancap Spans to append to
  */
 static void

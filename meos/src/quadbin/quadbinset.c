@@ -517,7 +517,7 @@ minus_set_quadbin(const Set *s, Quadbin cell)
 /**
  * @ingroup meos_quadbin_set_setops
  * @brief Transition function for set union aggregate of quadbin cells
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] cell Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

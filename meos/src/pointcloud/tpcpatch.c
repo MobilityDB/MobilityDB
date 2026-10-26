@@ -512,8 +512,8 @@ tpcpatch_npoints(const Temporal *temp)
  * @ingroup meos_pointcloud_agg
  * @brief Transition function for the temporal sum of the number of points of
  * temporal pgpointcloud patches
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal pgpointcloud patch @nullable
  * @csqlfn #Tpcpatch_tnpoints_transfn()
  * @csqlaggfn #tnpointsTransition()
  */
@@ -542,8 +542,8 @@ tpcpatch_tnpoints_transfn(SkipList *state, const Temporal *temp)
  * @ingroup meos_pointcloud_agg
  * @brief Transition function for the temporal sum of the density of
  * temporal pgpointcloud patches
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal pgpointcloud patch, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal pgpointcloud patch @nullable
  * @csqlfn #Tpcpatch_tdensity_transfn()
  * @csqlaggfn #tdensityTransition()
  */
