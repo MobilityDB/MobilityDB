@@ -75,4 +75,19 @@ SELECT ST_AsText(shortestLine(
   trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]',
   tgeompoint '[Point(5 3)@2001-01-01, Point(5 3)@2001-01-02]'));
 
+-- The values are synchronized whatever their subtypes: the instants taken out
+-- of a rigid geometry carry no reference geometry
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02}',
+  tgeompoint '{Point(10 0)@2001-01-01, Point(10 0)@2001-01-02}');
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02}',
+  tgeompoint '[Point(10 0)@2001-01-01, Point(10 0)@2001-01-02]');
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02]',
+  tgeompoint '{Point(10 0)@2001-01-01, Point(10 0)@2001-01-02}');
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{[Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02],[Pose(Point(5 0),0)@2001-01-03, Pose(Point(6 0),0)@2001-01-04]}',
+  tgeompoint '{[Point(10 0)@2001-01-01, Point(10 0)@2001-01-04]}');
+
 -------------------------------------------------------------------------------

@@ -89,3 +89,11 @@ SELECT round((
  1.878058267
 (1 row)
 
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-02}',
+  trgeometry 'Polygon((0 0,1 0,1 1,0 0));{Pose(Point(10 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02}');
+                            tdistance                             
+------------------------------------------------------------------
+ {9@Mon Jan 01 00:00:00 2001 PST, 4@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
