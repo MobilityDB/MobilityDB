@@ -1204,10 +1204,16 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
     return NULL;
 #if RGEO
   /* A rigid geometry sequence keeps once the reference geometry its instants
-   * carry, which every instant must state alike */
+   * carry, which every instant must state alike. The instants taken out of a
+   * sequence, as the synchronization of two values takes them, carry none and
+   * build a sequence without it. */
   if (instants[0]->temptype == T_TRGEOMETRY)
-    return trgeoseq_make_exp(trgeoinst_geom_p(instants[0]), instants, count,
-      count, lower_inc, upper_inc, interp, normalize);
+  {
+    for (int i = 0; i < count; i++)
+      if (MEOS_FLAGS_GET_GEOM(instants[i]->flags))
+        return trgeoseq_make_exp(trgeoinst_geom_p(instants[i]), instants,
+          count, count, lower_inc, upper_inc, interp, normalize);
+  }
 #endif /* RGEO */
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
