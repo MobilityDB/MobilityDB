@@ -49,7 +49,16 @@ jobs:
           slow=no
           while IFS=$'\t' read -r id name; do
             [ -n "$id" ] || continue
-            if gh api "repos/$REPO/actions/jobs/$id/logs" | grep -qF "$mark"; then
+            # The log is read with curl, as GitHub documents the endpoint: gh
+            # refuses to print a response holding terminal escape sequences,
+            # which every job log holds. The log of a job that has just ended
+            # may not be stored yet, so the read is retried, and a log that
+            # cannot be read fails the step instead of reading as no mark.
+            log=$(curl -fsSL --retry 5 --retry-all-errors --retry-delay 15 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$GITHUB_API_URL/repos/$REPO/actions/jobs/$id/logs")
+            if grep -qF "$mark" <<< "$log"; then
               echo "job $id ($name): a slow mirror reached the apt-get time limit"
               slow=yes
             else
