@@ -319,6 +319,11 @@ typedef int (*tpfunc_base)(Datum, Datum, Datum, TimestampTz, TimestampTz,
 typedef int (*tpfunc_temp)(Datum, Datum, Datum, Datum, Datum, TimestampTz,
   TimestampTz, TimestampTz *, TimestampTz *);
 
+/* Definition of the value of a predicate of two temporal types at a turning
+ * point of a segment */
+typedef bool (*tpfunc_temp_at)(Datum, Datum, Datum, Datum, Datum,
+  TimestampTz, TimestampTz, TimestampTz);
+
 /*****************************************************************************
  * fmgr macros temporal types
  *****************************************************************************/

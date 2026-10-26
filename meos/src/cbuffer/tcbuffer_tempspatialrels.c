@@ -2846,6 +2846,7 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
   lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
+  lfinfo.tpfn_temp_at = &tcbuffersegm_tdwithin_at;
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb), &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
 }
@@ -2898,6 +2899,7 @@ tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
+  lfinfo.tpfn_temp_at = &tcbuffersegm_tdwithin_at;
   Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);

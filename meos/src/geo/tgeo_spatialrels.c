@@ -2486,6 +2486,40 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
 }
 
 /**
+ * @brief Return true if two temporal point segments are within a distance at
+ * an instant of the segments
+ * @details The value of #tpointsegm_tdwithin_turnpt at a bound of the period
+ * it returns: for planar points, discs of radius 0, decided exactly
+ * (#point_motion_dwithin_at_exact), a bound dated by truncation before an
+ * instant at which the points come within the distance being an instant at
+ * which they are not; for geodetic points, whose period is not decided
+ * exactly, the bound is within
+ * @param[in] start1,end1 Base values defining the first segment
+ * @param[in] start2,end2 Base values defining the second segment
+ * @param[in] value Distance
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[in] t Timestamp in [lower, upper]
+ */
+bool
+tpointsegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz t)
+{
+  assert(lower < upper); assert(lower <= t && t <= upper);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(start1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(start2);
+  if (FLAGS_GET_GEODETIC(gs1->gflags))
+    return true;
+  bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
+  double a0[3], a1[3], b0[3], b1[3];
+  point_coords(start1, hasz, a0);
+  point_coords(end1, hasz, a1);
+  point_coords(start2, hasz, b0);
+  point_coords(end2, hasz, b1);
+  return point_motion_dwithin_at_exact(a0, a1, b0, b1, hasz ? 3 : 2, 0.0, 0.0,
+    0.0, 0.0, DatumGetFloat8(value), upper - lower, t - lower);
+}
+
+/**
  * @ingroup meos_internal_geo_spatial_rel_ever
  * @brief Return 1 if two temporal geos are ever/always within a distance,
  * 0 if not, -1 on error or if the temporal geos do not intersect on time

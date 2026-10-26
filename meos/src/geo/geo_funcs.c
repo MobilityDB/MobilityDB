@@ -4511,6 +4511,45 @@ point_motion_dwithin_period_exact(const double *a0, const double *a1,
 }
 
 /**
+ * @brief Return true where two discs moving linearly over a segment of @p D
+ * microseconds are within a distance at the microsecond @p n of it, decided
+ * exactly
+ * @details The discs are within where `D^2 q(n / D)` is not positive, the
+ * sign #point_motion_dwithin_period_exact searches on (#dwithin_grid_sign).
+ * A bound of the period that it dates by truncation lies at a microsecond at
+ * which the discs need not be within: the one before a root at which they
+ * come within, unless the root is that microsecond
+ * @param[in] a0,a1 Centre of the first disc at the start and at the end
+ * @param[in] b0,b1 Centre of the second disc at the start and at the end
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] ra0,ra1 Radius of the first disc at the start and at the end
+ * @param[in] rb0,rb1 Radius of the second disc at the start and at the end
+ * @param[in] d Distance
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] n Microsecond from the start of the segment
+ * @pre The radii and the distance are finite and not negative, `D > 0`
+ */
+bool
+point_motion_dwithin_at_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, int64 D, int64 n)
+{
+  assert(D > 0); assert(ndims == 2 || ndims == 3);
+  DWithinGrid g;
+  WideDyadic B, C, B2, t, wD;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
+    &g.A, &B, &C);
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&B2, &wD, &g.B2D);
+  wide_dyadic_mul(&C, &wD, &t);
+  wide_dyadic_mul(&t, &wD, &g.CD2);
+  wide_dyadic_mul(&B, &wD, &g.BD);
+  return dwithin_grid_sign(&g, n, false) <= 0;
+}
+
+/**
  * @brief Return the answer of #point_motion_dwithin_period_exact for a
  * segment its filter does not settle, on the exact quadratic
  * @details Kept out of line, as #point_distance_nearest is, so that the
