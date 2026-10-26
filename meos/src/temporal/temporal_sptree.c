@@ -406,8 +406,12 @@ tpcbox_project(const void *in, void *out)
  *****************************************************************************/
 
 /**
+ * @ingroup meos_internal_box_index
  * @brief Create an in-memory space-partitioning index for a bounding box type
- * @param[in] bboxtype Type of the bounding box (a span type or @p T_TBOX)
+ * @details A host creates the index of a column of any type with the key
+ * #type_bboxtype states for it
+ * @param[in] bboxtype Type of the bounding box (a span type, @p T_TBOX,
+ * @p T_STBOX or @p T_TPCBOX)
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  */
