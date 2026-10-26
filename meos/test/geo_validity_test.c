@@ -45,7 +45,8 @@
  * the constructors of a temporal instant and of a sequence from a timestamptz
  * span, and a geometry that is not a point by the temporal point one. It
  * verifies as well that the elevation restriction refuses a temporal geometry
- * whose values are not points and restricts a temporal point.
+ * whose values are not points and restricts a temporal point, and that a
+ * geography refuses a curve, as the value or a member of a collection.
  *
  * The program can be build as follows
  * @code
@@ -212,6 +213,47 @@ int main(void)
   assert(elev != NULL);
   assert(meos_errno() == 0);
   free(elev); free(tpt); free(tpoly); free(zspan);
+
+  /* A geography holds points, lines, polygons, their multi variants and
+   * collections of these, so a curve is refused whether it is the value or a
+   * member of a collection, by the input, by the cast from a geometry and by
+   * the input of a temporal geography, and a collection of a point and a line
+   * is read */
+  GSERIALIZED *gcurve = geog_in("CircularString(0 0,1 1,2 0)", -1);
+  int gcurve_errno = meos_errno();
+  printf("geog_in(CircularString): %s, errno %d\n",
+    gcurve ? "a value" : "NULL", gcurve_errno);
+  assert(gcurve == NULL && gcurve_errno == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  GSERIALIZED *gnested = geog_in("GeometryCollection(GeometryCollection("
+    "CircularString(0 0,1 1,2 0)))", -1);
+  int gnested_errno = meos_errno();
+  printf("geog_in(collection of a collection of a curve): %s, errno %d\n",
+    gnested ? "a value" : "NULL", gnested_errno);
+  assert(gnested == NULL && gnested_errno == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  GSERIALIZED *mcurve = geom_in("GeometryCollection(Point(1 1),"
+    "CircularString(0 0,1 1,2 0))", -1);
+  assert(mcurve != NULL);
+  GSERIALIZED *mcast = geom_to_geog(mcurve);
+  int mcast_errno = meos_errno();
+  printf("geom_to_geog(collection holding a curve): %s, errno %d\n",
+    mcast ? "a value" : "NULL", mcast_errno);
+  assert(mcast == NULL && mcast_errno == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  Temporal *tcurve = tgeography_in("{Point(1 1)@2001-01-01, "
+    "CircularString(0 0,1 1,2 0)@2001-01-02}");
+  int tcurve_errno = meos_errno();
+  printf("tgeography_in(an instant holding a curve): %s, errno %d\n",
+    tcurve ? "a value" : "NULL", tcurve_errno);
+  assert(tcurve == NULL && tcurve_errno == MEOS_ERR_INVALID_ARG_TYPE);
+  meos_errno_reset();
+  GSERIALIZED *gcoll = geog_in("GeometryCollection(Point(1 1),"
+    "LineString(0 0,1 1))", -1);
+  printf("geog_in(collection of a point and a line): %s, errno %d\n",
+    gcoll ? "a value" : "NULL", meos_errno());
+  assert(gcoll != NULL && meos_errno() == 0);
+  free(mcurve); free(gcoll);
 
   /* Finalize MEOS */
   meos_finalize();

@@ -7270,17 +7270,46 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Ensure that the geography type is valid
  * @details The geography type only supports POINT, LINESTRING, POLYGON, MULTI*
  * variants of same, and GEOMETRYCOLLECTION. If the input type is not one of
- * those, shut down the query.
+ * those, raise an error and return false.
  */
-void
+static bool
 geography_valid_type(uint8_t type)
 {
   if (! (type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
           type == MULTIPOINTTYPE || type == MULTILINETYPE ||
           type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Geography type does not support %s", lwtype_name(type));
-  return;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a geometry and every geometry it collects have a type a
+ * geography supports
+ * @details A collection is checked through its members, which are the types
+ * #geography_valid_type accepts at any depth, as the geodetic flag that
+ * lwgeom_set_geodetic sets in each member requires. PostGIS reads only the
+ * type of the outer geometry and relies on lwgeom_set_geodetic raising for a
+ * member, an error that ends the statement; under an error handler that does
+ * not exit the check comes first, so that no geography is built over a curve.
+ */
+bool
+ensure_valid_geography(const LWGEOM *geom)
+{
+  if (! geography_valid_type(geom->type))
+    return false;
+  if (geom->type == MULTIPOINTTYPE || geom->type == MULTILINETYPE ||
+      geom->type == MULTIPOLYGONTYPE || geom->type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < col->ngeoms; i++)
+      if (! ensure_valid_geography(col->geoms[i]))
+        return false;
+  }
+  return true;
 }
 
 /**
@@ -7294,11 +7323,12 @@ geog_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
 {
   GSERIALIZED *result = NULL;
 
+  /* Check that this is a type we can handle */
+  if (! ensure_valid_geography(lwgeom))
+    return NULL;
+
   /* Set geodetic flag */
   lwgeom_set_geodetic(lwgeom, true);
-
-  /* Check that this is a type we can handle */
-  geography_valid_type(lwgeom->type);
 
   /* Force the geometry to have valid geodetic coordinate range. */
   lwgeom_nudge_geodetic(lwgeom);
@@ -7398,7 +7428,11 @@ geom_to_geog(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  geography_valid_type(lwgeom_get_type(lwgeom));
+  if (! ensure_valid_geography(lwgeom))
+  {
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
   /* Force default SRID */
   if ((int) lwgeom->srid <= 0)
     lwgeom->srid = SRID_DEFAULT;

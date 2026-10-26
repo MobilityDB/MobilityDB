@@ -46,6 +46,8 @@ SELECT tgeography 'Point empty@2012-01-01 08:00:00';
 SELECT tgeometry 'Point(1 1)@2001-01-01 00:00:00+01 ,';
 SELECT tgeography 'Point(1 1)@2001-01-01 00:00:00+01 ,';
 SELECT tgeography 'SRID=5676;[Point(1 1)@2001-01-01 00:00:00+01]';
+SELECT tgeography 'CircularString(0 0,1 1,2 0)@2001-01-01';
+SELECT tgeography 'GeometryCollection(Point(1 1),CircularString(0 0,1 1,2 0))@2001-01-01';
 
 -------------------------------------------------------------------------------
 
@@ -525,6 +527,8 @@ SELECT asEWKT(tgeography(tgeometry 'Point(1 1)@2001-01-01'));
 SELECT asEWKT(tgeography(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02}'));
 SELECT asEWKT(tgeography(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]'));
 SELECT asEWKT(tgeography(tgeometry '{[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02], [Point(2 2)@2001-01-03, Point(2 2)@2001-01-04]}'));
+/* Errors */
+SELECT asEWKT(tgeography(tgeometry 'CircularString(0 0,1 1,2 0)@2001-01-01'));
 
 -------------------------------------------------------------------------------
 -- Transformation functions
