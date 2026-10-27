@@ -6908,6 +6908,10 @@ geo_out(const GSERIALIZED *gs)
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its WKT representation (and
  * optionally a SRID)
+ * @details A text carrying an SRID, the EWKT form #geom_in reads, is read
+ * with a warning, which leaves the error number as it is, and the SRID given
+ * replaces the one read, as PostGIS's @c ST_GeomFromText (@c LWGEOM_from_text)
+ * does
  * @param[in] wkt WKT string
  * @param[in] srid SRID
  */
@@ -6931,11 +6935,8 @@ geo_from_text(const char *wkt, int32_t srid)
   lwgeom = lwg_parser_result.geom;
 
   if ( lwgeom->srid != SRID_UNKNOWN )
-  {
     meos_error(WARNING, MEOS_ERR_TEXT_INPUT,
       "OGC WKT expected, EWKT provided - use GeomFromEWKT() for this");
-    return NULL;
-  }
 
   /* read user-requested SRID if any */
   if ( srid > 0 )

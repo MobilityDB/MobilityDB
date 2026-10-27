@@ -245,7 +245,7 @@ span_upper_cmp(const Span *s1, const Span *s2)
  * has no next value, and the span is refused with the message PostgreSQL
  * raises for the ranges of these types.
  */
-static bool
+bool
 ensure_span_bound_has_next(Datum value, MeosType basetype)
 {
   switch (basetype)

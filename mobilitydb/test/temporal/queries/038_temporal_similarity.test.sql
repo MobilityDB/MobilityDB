@@ -461,6 +461,6 @@ SELECT dynTimeWarpDistance(tbigint '1152921504606846977@2001-01-01', tbigint '11
 SELECT hausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
 SELECT averageHausdorffDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01');
 SELECT lcssDistance(tbigint '1152921504606846977@2001-01-01', tbigint '1152921504606846976@2001-01-01', 0.5);
-SELECT hausdorffDistance(tbigint '9223372036854775807@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
+SELECT hausdorffDistance(tbigint '9223372036854775806@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
 
 -------------------------------------------------------------------------------

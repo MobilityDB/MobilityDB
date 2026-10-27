@@ -448,6 +448,8 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
   VALIDATE_NOT_NULL(sequences, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+  for (int i = 0; i < count; i++)
+    VALIDATE_NOT_NULL(sequences[i], NULL);
 #if RGEO
   /* A rigid geometry sequence set keeps once the reference geometry its
    * sequences carry, which every sequence must state alike. The sequences
@@ -1784,7 +1786,12 @@ tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
     box = TSEQUENCE_BBOX_PTR(seq);
     numspan_delta_scale_iter(&box->span, origin, delta, hasshift, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
+    if (! tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift,
+        scale))
+    {
+      pfree(result);
+      return NULL;
+    }
   }
   return result;
 }

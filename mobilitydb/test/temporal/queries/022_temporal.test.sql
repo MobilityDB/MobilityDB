@@ -45,8 +45,8 @@ SELECT tint '1@2012-01-01 08:00:00';
 SELECT tint '2@2012-01-01 08:00:00';
 SELECT tbigint '1@2012-01-01 08:00:00';
 SELECT tbigint '2@2012-01-01 08:00:00';
-SELECT tint '2147483647@2012-01-01 08:00:00';
-SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
+SELECT tint '2147483646@2012-01-01 08:00:00';
+SELECT tbigint '9223372036854775806@2012-01-01 08:00:00';
 SELECT tfloat '1@2012-01-01 08:00:00';
 SELECT tfloat '2@2012-01-01 08:00:00';
 SELECT ttext 'AAA@2012-01-01 08:00:00';
@@ -58,6 +58,12 @@ SELECT tbigint 'TRUE@2012-01-01 08:00:00';
 SELECT tfloat 'ABC@2012-01-01 08:00:00';
 SELECT tfloat '25';
 SELECT tfloat '2@2012-01-01 08:00:00,';
+-- A temporal integer holds no value at the maximum of its base type
+SELECT tint '2147483647@2012-01-01 08:00:00';
+SELECT tbigint '9223372036854775807@2012-01-01 08:00:00';
+SELECT tint '{1@2001-01-01, 2147483647@2001-01-02}';
+SELECT tint '[1@2001-01-01, 2147483647@2001-01-02]';
+SELECT tint '{[2147483647@2001-01-01], [1@2001-01-02]}';
 
 -------------------------------------------------------------------------------
 -- Temporal discrete sequence
@@ -577,17 +583,32 @@ SELECT tint(tfloat '1.5@2001-01-01');
 SELECT tint(tfloat '{1.5@2001-01-01, 2.5@2001-01-02}');
 SELECT tint(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 2.5@2001-01-03]');
 SELECT tint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-01-03, 2.5@2001-01-04]}');
+-- A value truncates to an integer down to the bounds of the type
+SELECT tint(tfloat '{2147483646.5@2001-01-01, -2147483648.5@2001-01-02}');
 /* Errors */
 SELECT tint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 SELECT tint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
+-- A value outside the range of the integer type is refused, as for the base
+-- type
+SELECT tint(tfloat '2147483648@2001-01-01');
+SELECT tint(tfloat '{1@2001-01-01, -2147483649@2001-01-02}');
+SELECT tint(tfloat 'Interp=Step;[1@2001-01-01, 3e9@2001-01-02]');
+SELECT tint(tfloat 'Infinity@2001-01-01');
 
 SELECT tbigint(tfloat '1.5@2001-01-01');
 SELECT tbigint(tfloat '{1.5@2001-01-01, 2.5@2001-01-02}');
 SELECT tbigint(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 2.5@2001-01-03]');
 SELECT tbigint(tfloat 'Interp=Step;{[1.5@2001-01-01, 1.5@2001-01-02], [2.5@2001-01-03, 2.5@2001-01-04]}');
+-- A value truncates to a big integer down to the bounds of the type
+SELECT tbigint(tfloat '{9.2233720368547748e18@2001-01-01, -9223372036854775808@2001-01-02}');
 /* Errors */
 SELECT tbigint(tfloat '[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]');
 SELECT tbigint(tfloat '{[1@2001-01-01, 1@2001-01-02], [2@2001-01-03, 2@2001-01-04]}');
+-- A value outside the range of the big integer type is refused, as for the
+-- base type
+SELECT tbigint(tfloat '9223372036854775808@2001-01-01');
+SELECT tbigint(tfloat '{1@2001-01-01, -1e19@2001-01-02}');
+SELECT tbigint(tfloat '-Infinity@2001-01-01');
 
 -------------------------------------------------------------------------------
 -- Transformation functions
@@ -1810,6 +1831,14 @@ SELECT shiftScaleValue(tfloat '{1@2001-01-01}', 1, 2);
 SELECT shiftValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 1);
 SELECT scaleValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 2);
 SELECT shiftScaleValue(tfloat '{1@2001-01-01, 2@2001-01-02, 3@2001-01-03}', 1, 2);
+SELECT shiftValue(tint '2147483645@2001-01-01', 1);
+SELECT shiftValue(tint '[1@2001-01-01, 2147483645@2001-01-02]', 1);
+/* Errors */
+-- A shift reaching the maximum of the base type has no representation
+SELECT shiftValue(tint '2147483646@2001-01-01', 1);
+SELECT shiftValue(tint '[1@2001-01-01, 2147483646@2001-01-02]', 1);
+SELECT shiftValue(tint '{[1@2001-01-01], [2147483646@2001-01-02]}', 1);
+SELECT shiftValue(tbigint '9223372036854775806@2001-01-01', 1);
 
 SELECT shiftTime(tbool 't@2001-01-01', '5 min');
 SELECT shiftTime(tbool '{t@2001-01-01, f@2001-01-02, t@2001-01-03}', '5 min');

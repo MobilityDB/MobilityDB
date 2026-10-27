@@ -651,9 +651,18 @@ tsequence_tagg_iter(const TSequence *seq1, const TSequence *seq2,
       }
     }
   }
-  sequences[nseqs++] = tsequence_make_free(instants, syncseq1->count,
+  TSequence *aggseq = tsequence_make_free(instants, syncseq1->count,
     lower_inc, upper_inc, MEOS_FLAGS_GET_INTERP(seq1->flags), NORMALIZE);
   pfree(syncseq1); pfree(syncseq2);
+  if (! aggseq)
+  {
+    /* The aggregated values have no representation, and a negative answer
+     * tells the caller that it wrote nothing */
+    for (int j = 0; j < nseqs; j++)
+      pfree(sequences[j]);
+    return -1;
+  }
+  sequences[nseqs++] = aggseq;
 
   /* Compute the aggregation on the period after the intersection of the
    * intervals */
@@ -1081,14 +1090,21 @@ skiplist_temporal_values(SkipList *list)
 /**
  * @ingroup meos_temporal_agg
  * @brief Generic final function for aggregating temporal values
+ * @details The state is freed with #skiplist_free, also when it holds no
+ * value, as a step refusing its value leaves it
  * @param[in] state Current aggregate state @nullable
  * @csqlfn #Temporal_tagg_finalfn()
  */
 Temporal *
 temporal_tagg_finalfn(SkipList *state)
 {
-  if (! state || state->length == 0)
+  if (! state)
     return NULL;
+  if (state->length == 0)
+  {
+    skiplist_free(state);
+    return NULL;
+  }
   /* A copy of the values is needed for switching from aggregate context,
    * for this reason the #skiplist_values cannot be used */
   /* The reference geometry the values carry, copied since freeing the state

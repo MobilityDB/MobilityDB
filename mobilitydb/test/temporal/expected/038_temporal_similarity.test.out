@@ -1426,7 +1426,7 @@ SELECT lcssDistance(tbigint '1152921504606846977@2001-01-01', tbigint '115292150
             0
 (1 row)
 
-SELECT hausdorffDistance(tbigint '9223372036854775807@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
+SELECT hausdorffDistance(tbigint '9223372036854775806@2001-01-01', tbigint '-9223372036854775808@2001-01-01') = 2::float ^ 64;
  ?column? 
 ----------
  t

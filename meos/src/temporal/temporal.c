@@ -1201,8 +1201,9 @@ tbigint_to_tint(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
 
-  /* Return NULL if there is overflow */
-  if (ever_gt_temporal_base(temp, INT_MAX) ||
+  /* Return NULL if there is overflow, a temporal integer holding no value
+   * at the maximum of its type */
+  if (ever_ge_temporal_base(temp, INT_MAX) ||
       ever_lt_temporal_base(temp, INT_MIN))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
@@ -1257,6 +1258,14 @@ tfloat_to_tint(const Temporal *temp)
       "Cannot cast temporal float with linear interpolation to temporal integer");
     return NULL;
   }
+  /* Ensure that each value truncates to an integer, as #tbigint_to_tint
+   * ensures it for a big integer */
+  if (ever_ge_temporal_base(temp, Float8GetDatum(2147483648.0)) ||
+      ever_le_temporal_base(temp, Float8GetDatum(-2147483649.0)))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "integer out of range");
+    return NULL;
+  }
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1281,6 +1290,14 @@ tfloat_to_tbigint(const Temporal *temp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot cast temporal float with linear interpolation to temporal big integer");
+    return NULL;
+  }
+  /* Ensure that each value truncates to a big integer, the bounds being
+   * those of FLOAT8_FITS_IN_INT64 */
+  if (ever_ge_temporal_base(temp, Float8GetDatum(0x1p63)) ||
+      ever_lt_temporal_base(temp, Float8GetDatum(-0x1p63)))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "bigint out of range");
     return NULL;
   }
 

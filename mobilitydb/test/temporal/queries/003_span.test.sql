@@ -202,6 +202,11 @@ SELECT expand(tstzspan '(2001-01-01,2001-01-02)', '-2 days');
 
 SELECT shift(intspan '[1,2)', 2);
 SELECT shift(datespan '[2001-01-01,2001-01-02)', 2);
+/* Errors */
+-- A bound shifted outside the range of the base type is refused, as for the
+-- base type
+SELECT shift(intspan '[1,2147482647)', 2000);
+SELECT shift(datespan '[2001-01-01,2001-01-02)', 2147483000);
 
 SELECT shift(tstzspan '[2001-01-01,2001-01-01]', '5 min');
 SELECT shift(tstzspan '[2001-01-01,2001-01-02]', '5 min');
