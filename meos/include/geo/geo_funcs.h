@@ -254,15 +254,22 @@ extern void point_segment_shortestline_exact(const double *c, double r,
   const double *a, const double *b, double *sx, double *sy, double *ex,
   double *ey);
 extern double point_segment_distance_offset_exact(const double *p,
-  const double *a, const double *b, double r);
+  const double *a, const double *b, int ndims, double r);
 extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, double r);
 extern int segment_distance_square(const double *a, const double *b,
-  const double *c, const double *d);
+  const double *c, const double *d, int ndims);
 extern int linesegm_param_cmp(const double *a, const double *b,
   const double *p, const double *q);
+extern bool segment_distance_range(const double *p0, const double *u,
+  double a, const double *q0, const double *v, double c, int ndims,
+  double big, double *lo, double *hi);
+extern int segment_interior_range(const double *a, const double *b,
+  const double *c, const double *d, double *lo, double *hi);
 extern double segment_distance_exact(const double *a, const double *b,
-  const double *c, const double *d);
+  const double *c, const double *d, int ndims);
+extern double segment_distance_exact_bounded(const double *a,
+  const double *b, const double *c, const double *d, int ndims, double big);
 extern double point_motion_nad_exact(const double *p0, const double *p1,
   int64 s0, int64 s1, const double *q0, const double *q1, int64 r0, int64 r1,
   int64 ta, int64 tb);
