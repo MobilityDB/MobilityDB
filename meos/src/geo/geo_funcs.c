@@ -16304,11 +16304,16 @@ typedef struct
                             #kept */
   MeosArray *own;      /**< Its own edges, ending at the input vertices: the
                             array #arr is cut from for a value
-                            #relate_reads_union names, #arr itself otherwise */
+                            #relate_reads_union names, #arr itself otherwise;
+                            NULL until a question reads them, through
+                            #relate_operand_own, which keeps them in
+                            #ownkept */
   MeosArray **kept;    /**< Where #arr is kept once read, as #index keeps the
                             index: the operand's own #arr, or that of the
                             context that lends it, so that a copy of the
                             operand reads and fills the same one */
+  MeosArray **ownkept; /**< Where #own is kept once read, as #kept keeps
+                            #arr */
   EdgeIndex **index;   /**< Where the index over #arr is kept for the calls
                             that follow, NULL for an operand read for one
                             call, which indexes by the size of the pair */
@@ -16324,18 +16329,40 @@ typedef struct
  * that follow
  */
 static MeosArray *
-relate_operand_arr(const RelateOperand *op)
+relate_operand_own(const RelateOperand *op)
 {
-  if (! *op->kept)
+  if (! *op->ownkept)
   {
-    /* The union of an operand a context lends lives as long as the context,
-     * so it is read into the memory that keeps the context, never into the
-     * caller's, as #relate_edges_init_kept reads the index */
+    /* The edges of an operand a context lends live as long as the context,
+     * so they are read into the memory that keeps the context, never into
+     * the caller's, as #relate_edges_init_kept reads the index */
 #if ! MEOS
     MemoryContext oldctx = op->index ?
       MemoryContextSwitchTo(TopMemoryContext) : NULL;
 #endif
-    *op->kept = relate_union_edges(op->geom, op->own);
+    *op->ownkept = geom_extract_edges(op->geom);
+#if ! MEOS
+    if (op->index)
+      MemoryContextSwitchTo(oldctx);
+#endif
+  }
+  return *op->ownkept;
+}
+
+static MeosArray *
+relate_operand_arr(const RelateOperand *op)
+{
+  if (! *op->kept)
+  {
+    MeosArray *own = relate_operand_own(op);
+    /* The union of an operand a context lends lives as long as the context,
+     * as its own edges do (#relate_operand_own) */
+#if ! MEOS
+    MemoryContext oldctx = op->index ?
+      MemoryContextSwitchTo(TopMemoryContext) : NULL;
+#endif
+    *op->kept = relate_reads_union(op->geom) ?
+      relate_union_edges(op->geom, own) : own;
 #if ! MEOS
     if (op->index)
       MemoryContextSwitchTo(oldctx);
@@ -16367,10 +16394,12 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
   for (int k = 0; k < 2; k++)
   {
     /* The union is cut from the geometry's own edges, which are kept for the
-     * questions they answer exactly (#meos_intersects) */
+     * questions they answer exactly (#meos_intersects); both are read the
+     * first time a question asks for them (#relate_operand_own,
+     * #relate_operand_arr) */
     ops->op[k].geom = g[k];
-    ops->op[k].own = geom_extract_edges(g[k]);
-    ops->op[k].arr = relate_reads_union(g[k]) ? NULL : ops->op[k].own;
+    ops->op[k].own = ops->op[k].arr = NULL;
+    ops->op[k].ownkept = &ops->op[k].own;
     ops->op[k].kept = &ops->op[k].arr;
     ops->op[k].index = NULL;
   }
@@ -16387,7 +16416,7 @@ relate_operands_free(RelateOperands *ops)
 {
   for (int k = 0; k < 2; k++)
   {
-    if (ops->op[k].own != ops->op[k].arr)
+    if (ops->op[k].own && ops->op[k].own != ops->op[k].arr)
       meos_array_destroy(ops->op[k].own);
     if (ops->op[k].arr)
       meos_array_destroy(ops->op[k].arr);
@@ -22060,6 +22089,163 @@ relate_edge_pointers(const MeosArray *arr)
 }
 
 /**
+ * @brief Return true if a point lies in or on a geometry of straight edges,
+ * read on its input coordinates
+ * @details Each member is read alone, so members that overlap need no union:
+ * a point in or on any member is a point of the geometry, as GEOS locates a
+ * point against the polygons of a collection one by one
+ * (`RelatePointLocator::locateOnPolygons`). A curve is not read, and a point
+ * it alone would hold answers false, which a caller reads as nothing known
+ */
+static bool
+relate_geom_holds_vertex(const LWGEOM *g, double x, double y)
+{
+  if (lwgeom_is_empty(g))
+    return false;
+  /* The box read from a serialized value is rounded outward, so a point
+   * outside it is outside the geometry */
+  if (g->bbox && (x < g->bbox->xmin || x > g->bbox->xmax ||
+      y < g->bbox->ymin || y > g->bbox->ymax))
+    return false;
+  switch (g->type)
+  {
+    case POINTTYPE:
+    {
+      const POINT2D *p = getPoint2d_cp(((const LWPOINT *) g)->point, 0);
+      return p->x == x && p->y == y;
+    }
+    case LINETYPE:
+    {
+      const POINTARRAY *pa = ((const LWLINE *) g)->points;
+      for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+      {
+        const POINT2D *a = getPoint2d_cp(pa, i);
+        const POINT2D *b = getPoint2d_cp(pa, i + 1);
+        if (point_on_segment_exact(x, y, a->x, a->y, b->x, b->y))
+          return true;
+      }
+      return false;
+    }
+    /* An input vertex in a polygon or on one of its rings, read exactly by
+     * #point_in_rings_exact, which answers 0 only outside */
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) g;
+      const POINT2D pt = {x, y};
+      return point_in_rings_exact(&pt, poly->rings, poly->nrings) != 0;
+    }
+    case TRIANGLETYPE:
+    {
+      POINTARRAY *ring = ((const LWTRIANGLE *) g)->points;
+      const POINT2D pt = {x, y};
+      return point_in_rings_exact(&pt, &ring, 1) != 0;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) g;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (relate_geom_holds_vertex(coll->geoms[i], x, y))
+          return true;
+      return false;
+    }
+    /* What a curve holds is not read here, and the edges answer it */
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+      return false;
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return false;
+  }
+}
+
+/**
+ * @brief Return in the last arguments the first input vertex of a geometry,
+ * false where it has none
+ * @details As #lwgeom_startpoint reads it, for every type a geometry of
+ * the engine carries: that function raises on a multisurface or a
+ * multicurve, where a question that only looks for a witness must answer
+ * nothing. A collection, a compound curve and a curve polygon are read
+ * through their members (#lwgeom_is_collection)
+ */
+static bool
+relate_geom_first_vertex(const LWGEOM *g, double *x, double *y)
+{
+  if (lwgeom_is_empty(g))
+    return false;
+  const POINTARRAY *pa = NULL;
+  switch (g->type)
+  {
+    case POINTTYPE:
+      pa = ((const LWPOINT *) g)->point;
+      break;
+    case LINETYPE:
+    case CIRCSTRINGTYPE:
+    case TRIANGLETYPE:
+      pa = ((const LWLINE *) g)->points;
+      break;
+    case POLYGONTYPE:
+      pa = ((const LWPOLY *) g)->nrings > 0 ? ((const LWPOLY *) g)->rings[0] :
+        NULL;
+      break;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) g;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (relate_geom_first_vertex(coll->geoms[i], x, y))
+          return true;
+      return false;
+    }
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return false;
+  }
+  if (! pa || pa->npoints == 0)
+    return false;
+  const POINT2D *p = getPoint2d_cp(pa, 0);
+  *x = p->x;
+  *y = p->y;
+  return true;
+}
+
+/**
+ * @brief Return true if the first vertex of one geometry lies in or on the
+ * other, read on the input coordinates of both, with no edge extracted
+ * @details As GEOS RelateNG locates a vertex before it reads an edge
+ * (`RelateNG::computeAreaVertex`), a pair that meets mostly shows it at the
+ * first vertex of one or the other, and extracting the edges is then what
+ * the answer would have cost. The distance walk reads the same first vertex
+ * (#geom_distance_first_point) against the polygons of the other. A false
+ * answer says nothing, and the caller reads the edges
+ */
+static bool
+relate_vertex_witness(const LWGEOM *from, const LWGEOM *in)
+{
+  double x, y;
+  if (! relate_geom_first_vertex(from, &x, &y))
+    return false;
+  return relate_geom_holds_vertex(in, x, y);
+}
+
+/**
  * @brief Return whether two geometries share a point
  * @details This is the `INTERSECTS` relationship, which #meos_spatialrel
  * reads from the DE-9IM matrix as the pattern `FF*FF****` failing. Answering
@@ -22077,7 +22263,16 @@ meos_intersects(const RelateOperands *ops, bool *result)
    * edges of the union, which only a pair no curve of which meets the other
    * asks (#relate_edges_within). The two are one array except for a
    * collection #relate_reads_union names */
-  MeosArray *own[2] = {ops->op[0].own, ops->op[1].own};
+  /* The first vertex of either geometry in or on the other is a point they
+   * share, read before any edge of either (#relate_vertex_witness) */
+  if (relate_vertex_witness(ops->op[1].geom, ops->op[0].geom) ||
+      relate_vertex_witness(ops->op[0].geom, ops->op[1].geom))
+  {
+    *result = true;
+    return;
+  }
+  MeosArray *own[2] = {relate_operand_own(&ops->op[0]),
+    relate_operand_own(&ops->op[1])};
   Edge **eo[2] = {relate_edge_pointers(own[0]), relate_edge_pointers(own[1])};
 
   /* Every question this kernel asks reads one of the two arrays once per edge
@@ -22291,11 +22486,12 @@ relate_ctx_make(const LWGEOM *geom)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
-  ctx->op.own = geom_extract_edges(geom);
-  /* The union of a collection's members is read the first time a question
-   * asks for it (#relate_operand_arr), and kept here for every call that
-   * borrows the context */
-  ctx->op.arr = relate_reads_union(geom) ? NULL : ctx->op.own;
+  /* The edges and the union of a collection's members are read the first
+   * time a question asks for them (#relate_operand_own,
+   * #relate_operand_arr), and kept here for every call that borrows the
+   * context */
+  ctx->op.own = ctx->op.arr = NULL;
+  ctx->op.ownkept = &ctx->op.own;
   ctx->op.kept = &ctx->op.arr;
   ctx->index = NULL;
   ctx->op.index = &ctx->index;
@@ -22821,7 +23017,7 @@ relate_ctx_free(void *ctxv)
     return;
   if (ctx->index)
     edge_index_free(ctx->index);
-  if (ctx->op.own != ctx->op.arr)
+  if (ctx->op.own && ctx->op.own != ctx->op.arr)
     meos_array_destroy(ctx->op.own);
   if (ctx->op.arr)
     meos_array_destroy(ctx->op.arr);
