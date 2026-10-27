@@ -401,14 +401,17 @@ and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each
 data and checks (branch `meos/sptree-examples`, `54c57ea5c6` on master `71282af6fc`, the R-tree, the
 quad-tree and the k-d tree finding the same values for each of the 13 searches, every `contains`
 check of `rtree_example.c` querying a stored box, and its `stbox` values taking the corners of the
-text form). The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
+text form). `rtree_create_tpcbox`, `sptree_create_tpcbox` and `meos_initialize_pointcloud` are
+declared in `meos_pointcloud.h`, where a program compiled against the installed headers, which
+define no family flag, reads them (branch `meos/sptree-tpcbox-declared`, `f509d7611b` on master
+`71282af6fc`, `sptree_test` running its TPCBox quad-tree and k-d tree sections). The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
 of `meos_catalog.c` answers for every type, the owner's decision of 2026-10-26: a box type, a span
 or a temporal, spatiotemporal or point cloud box, is its own; every other type is bounded by its
 box, the span its bounds state for a number or time set and for a span set, and the box a spatial
 set or a temporal value stores. A number or time set stores no box (`set_bbox_size`).
 `meostype_from_string` answers the type of a canonical name, the inverse of `meostype_name`, so a
-host reads both from MEOS; branch `meos/index-bboxtype-catalog` (`f982aec767` on master
-`c1d030d810`), whose test checks the key of the 47 types and that no other type has one but the
+host reads both from MEOS; branch `meos/index-bboxtype-catalog` (`3c4f44c65a` on master
+`71282af6fc`), whose test checks the key of the 47 types and that no other type has one but the
 internal states of the temporal averages. DECIDED BY THE OWNER 2026-10-26: every type with
 a key is indexed in both hosts, 47 types: the 37 PostgreSQL's GiST and SP-GiST operator classes
 index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
