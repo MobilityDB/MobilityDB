@@ -4028,7 +4028,7 @@ temporal_sortkey_type(MeosType temptype)
  * its bytes when the buffer is NULL
  * @param[in] box Bounding box
  * @param[in] bboxtype Type of the bounding box
- * @param[out] out Buffer, or NULL to count
+ * @param[out] out Buffer @nullable
  * @return The number of bytes of the key
  */
 static size_t
@@ -4062,7 +4062,7 @@ temporal_bbox_sortkey_put(const bboxunion *box, MeosType bboxtype,
  * buffer is NULL
  * @details The key is the timestamp followed by the value
  * @param[in] inst Temporal instant
- * @param[out] out Buffer, or NULL to count
+ * @param[out] out Buffer @nullable
  * @return The number of bytes of the key
  */
 static size_t
@@ -4098,7 +4098,7 @@ tinstant_sortkey_put(const TInstant *inst, uint8_t *out)
  * one-element wrappers, as #temporal_cmp reads them, so that the values
  * #temporal_eq holds equal have one key.
  * @param[in] temp Temporal value
- * @param[out] out Buffer, or NULL to count
+ * @param[out] out Buffer @nullable
  * @return The number of bytes of the key
  */
 static size_t
