@@ -326,12 +326,6 @@ pgtypes/utils/jsonfuncs.c	json_array_elements	js unstated
 pgtypes/utils/jsonfuncs.c	json_array_elements_text	count unstated
 pgtypes/utils/jsonfuncs.c	json_array_elements_text	js unstated
 pgtypes/utils/jsonfuncs.c	json_array_length	js unstated
-pgtypes/utils/jsonfuncs.c	json_each	count unstated
-pgtypes/utils/jsonfuncs.c	json_each	js unstated
-pgtypes/utils/jsonfuncs.c	json_each	values unstated
-pgtypes/utils/jsonfuncs.c	json_each_text	count unstated
-pgtypes/utils/jsonfuncs.c	json_each_text	js unstated
-pgtypes/utils/jsonfuncs.c	json_each_text	values unstated
 pgtypes/utils/jsonfuncs.c	json_extract_path	js unstated
 pgtypes/utils/jsonfuncs.c	json_extract_path	path_elems unstated
 pgtypes/utils/jsonfuncs.c	json_extract_path_text	js unstated
@@ -359,12 +353,6 @@ pgtypes/utils/jsonfuncs.c	jsonb_delete_array	keys_elems unstated
 pgtypes/utils/jsonfuncs.c	jsonb_delete_index	jb unstated
 pgtypes/utils/jsonfuncs.c	jsonb_delete_path	jb unstated
 pgtypes/utils/jsonfuncs.c	jsonb_delete_path	path_elems unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each	count unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each	jb unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each	values unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each_text	count unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each_text	jb unstated
-pgtypes/utils/jsonfuncs.c	jsonb_each_text	values unstated
 pgtypes/utils/jsonfuncs.c	jsonb_extract_path	jb unstated
 pgtypes/utils/jsonfuncs.c	jsonb_extract_path	path_elems unstated
 pgtypes/utils/jsonfuncs.c	jsonb_extract_path_text	jb unstated

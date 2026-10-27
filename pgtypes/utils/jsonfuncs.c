@@ -1795,7 +1795,17 @@ text **
 json_each(const text *js, text ***values, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! js || ! values || ! count)
+  if (! js)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! values)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
@@ -1822,7 +1832,17 @@ text **
 json_each_text(const text *js, text ***values, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! js || ! values || ! count)
+  if (! js)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! values)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
@@ -2156,7 +2176,17 @@ text **
 jsonb_each(const Jsonb *jb, Jsonb ***values, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! jb || ! values || ! count)
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! values)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
@@ -2184,7 +2214,17 @@ text **
 jsonb_each_text(const Jsonb *jb, text ***values, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! jb || ! values || ! count)
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! values)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! count)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
