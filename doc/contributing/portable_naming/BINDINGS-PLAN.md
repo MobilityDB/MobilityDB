@@ -64,7 +64,8 @@ binds before and after, so that no function leaves unseen.
 | Task | Repository | Change | State |
 |---|---|---|---|
 | B1 | every binding | the rule stated in each binding's `GENERATION.md` | open |
-| B2 | GoMEOS | `tools/codegen.py` groups the catalog by `family` and declares each function in the cgo preamble from its catalog signature, `HEADER_FILES` removed; the 93 methods without a flat function are bound | open |
+| B2 | GoMEOS | `tools/codegen.py` takes its headers from the catalog's `file` field, those of a bound `family` the prefix installs, `HEADER_FILES` removed; the object layer reaches 1524 methods and defers 67 (52 `Interval *` arguments, B3; the results of B4; `float4`, `float8`, `Numeric` and `Oid` the generator maps no Go type to); the 227 internal functions of `pgtypes.h` and `pgsql_compat.h`, headers the prefix does not install, are named in its report | branch `codegen/headers-from-catalog` (`fcb9cf89` on main `fbf003a`) |
+| B2b | MEOS-API, GoMEOS | the catalog states each typedef with its header, and GoMEOS declares the internal functions of a header the prefix does not install from their catalog signature where every type they name has an installed header, as rule 2 binds the internal functions in the low-level layer | after B2 |
 | B3 | GoMEOS | the object layer (`tools/objectgen.py`) maps the 52 `Interval *` arguments it defers, through the `pg_interval.h` functions B2 binds | after B2 |
 | B4 | GoMEOS | the object layer maps the 10 results it defers | after B2 |
 | B5 | MobilityDuck | `tools/codegen_duck_udfs.py` loses `TU_C_HEADERS` and `header_symbols` and follows rules 1, 3 and 4 | open |
