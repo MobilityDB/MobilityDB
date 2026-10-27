@@ -39,6 +39,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_json.h>
 #include <pg_bool.h>
@@ -133,9 +134,9 @@ int main(void)
   }
   free(txtarray); free(textarray_result);
 
-  /* text **json_each(const text *js, text **values, int *count); */
-  text *values[2];
-  textarray_result = json_each(js1, values, &count);
+  /* text **json_each(const text *js, text ***values, int *count); */
+  text **values;
+  textarray_result = json_each(js1, &values, &count);
   printf("json_each(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
@@ -152,10 +153,10 @@ int main(void)
     free(values[i]);
     free(textarray_result[i]);
   }
-  free(textarray_result);
+  free(textarray_result); free(values);
   
-  /* text **json_each_text(const text *js, text **values, int *count); */
-  textarray_result = json_each_text(js1, values, &count);
+  /* text **json_each_text(const text *js, text ***values, int *count); */
+  textarray_result = json_each_text(js1, &values, &count);
   printf("json_each_text(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
@@ -172,7 +173,42 @@ int main(void)
     free(textarray_result[i]);
     free(values[i]);
   }
-  free(textarray_result);
+  free(textarray_result); free(values);
+
+  /* The values array is allocated by the function, as long as the number of
+   * fields of the object, and json_each answers each value as JSON while
+   * json_each_text answers it as text */
+  text *js5 = json_in("{\"a\":\"x\", \"b\":2, \"c\":[1], \"d\":{\"e\":3}, \"f\":4}");
+  text **values5;
+  text **keys5 = json_each(js5, &values5, &count);
+  char *first = text_out(values5[0]);
+  printf("json_each over 5 fields: %d fields, first value %s\n", count, first);
+  if (count != 5 || strcmp(first, "\"x\"") != 0)
+  {
+    printf("FAILED: json_each\n");
+    exit(1);
+  }
+  free(first);
+  for (int i = 0; i < count; i++)
+  {
+    free(keys5[i]); free(values5[i]);
+  }
+  free(keys5); free(values5);
+  keys5 = json_each_text(js5, &values5, &count);
+  first = text_out(values5[0]);
+  printf("json_each_text over 5 fields: %d fields, first value %s\n", count,
+    first);
+  if (count != 5 || strcmp(first, "x") != 0)
+  {
+    printf("FAILED: json_each_text\n");
+    exit(1);
+  }
+  free(first);
+  for (int i = 0; i < count; i++)
+  {
+    free(keys5[i]); free(values5[i]);
+  }
+  free(keys5); free(values5); free(js5);
 
   /* text *json_in(const char *str); */
   text_result = json_in("{\"a\":1, \"b\":[1,2]}");
@@ -239,6 +275,14 @@ int main(void)
   char_result = text_out(text_result);
   printf("json_typeof(%s): %s\n", js1_out, char_result);
   free(text_result); free(char_result);
+
+  /* An object and an array holding more members than the parser first
+   * allocates room for are read and written back whole */
+  Jsonb *jbwide = jsonb_in(
+    "{\"a\":1, \"b\":2, \"c\":3, \"d\":4, \"e\":5, \"f\":[1,2,3,4,5,6]}");
+  char_result = jsonb_out(jbwide);
+  printf("jsonb_in of 6 pairs and 6 elements: %s\n", char_result);
+  free(jbwide); free(char_result);
 
   /* Jsonb **jsonb_array_elements(const Jsonb *jb, int *count); */
   Jsonb *jbarray = jsonb_in("[\"a\", \"b\", \"c\"]");
@@ -331,9 +375,9 @@ int main(void)
   printf("jsonb_delete_path(%s, \"a\"): %s\n", jb1_out, char_result);
   free(path); free(jsonb_result); free(char_result);
 
-  /* text **jsonb_each(const Jsonb *jb, Jsonb **values, int *count); */
-  Jsonb *jsonbarr[2];
-  textarray_result = jsonb_each(jb1, jsonbarr, &count);
+  /* text **jsonb_each(const Jsonb *jb, Jsonb ***values, int *count); */
+  Jsonb **jsonbarr;
+  textarray_result = jsonb_each(jb1, &jsonbarr, &count);
   printf("jsonb_each(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
@@ -350,10 +394,10 @@ int main(void)
     free(jsonbarr[i]);
     free(textarray_result[i]);
   }
-  free(textarray_result);
+  free(textarray_result); free(jsonbarr);
   
-  /* text **jsonb_each_text(const Jsonb *jb, text **values, int *count); */
-  textarray_result = jsonb_each_text(jb1, values, &count);
+  /* text **jsonb_each_text(const Jsonb *jb, text ***values, int *count); */
+  textarray_result = jsonb_each_text(jb1, &values, &count);
   printf("jsonb_each_text(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
@@ -370,8 +414,27 @@ int main(void)
     free(textarray_result[i]);
     free(values[i]);
   }
-  free(textarray_result);
+  free(textarray_result); free(values);
   
+  /* The values array is allocated by the function, as long as the number of
+   * fields of the object */
+  Jsonb *jb5 = jsonb_in("{\"a\":\"x\", \"c\":[1], \"f\":4}");
+  Jsonb **jvalues5;
+  text **jkeys5 = jsonb_each(jb5, &jvalues5, &count);
+  char *jlast = jsonb_out(jvalues5[count - 1]);
+  printf("jsonb_each over 3 fields: %d fields, last value %s\n", count, jlast);
+  if (count != 3 || strcmp(jlast, "4") != 0)
+  {
+    printf("FAILED: jsonb_each\n");
+    exit(1);
+  }
+  free(jlast);
+  for (int i = 0; i < count; i++)
+  {
+    free(jkeys5[i]); free(jvalues5[i]);
+  }
+  free(jkeys5); free(jvalues5); free(jb5);
+
   /* bool jsonb_eq(const Jsonb *jb1, const Jsonb *jb2); */
   bool_result = jsonb_eq(jb1, jb2);
   printf("jsonb_eq(%s, %s): %c\n", jb1_out, jb2_out, bool_result ? 't' : 'f');

@@ -401,7 +401,7 @@ static void checkTimezoneIsUsedForCast(bool useTz, const char *type1,
  * on our own.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -440,7 +440,7 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * handling
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -491,7 +491,7 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * JSONB array
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -527,7 +527,7 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
  * item. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -564,7 +564,7 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
  * a C array. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed

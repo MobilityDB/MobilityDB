@@ -95,12 +95,12 @@ rtree_query_srid(const RTree *rtree)
  * @brief Return true if a point is located in a polygon
  * @param[in] x,y Point
  * @param[in] edges,nedges Edges of the polygon
- * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan @nullable
  * @param[in] xmax Greatest x the edges reach, which bounds the ray
  * @param[in] reach Widest distance at which an end of an edge is read as
  * lying on the ray, 0 for a caller that reads the index along the ray alone
  * @param[in] results Array the index search collects its ids into, made by
- * #index_result_create, or @p NULL when @p rtree is @p NULL
+ * #index_result_create, or @p NULL when @p rtree is @p NULL @nullable
  * @param[in] vertex True if the point is an input vertex, which lies on an
  * edge, and on either side of the crossing of a ray cast at its own height,
  * exactly where its coordinates say so
@@ -355,7 +355,7 @@ point_in_polygon_vertex(double x, double y, Edge **edges, int nedges)
  * ray from it can meet out of an index
  * @param[in] x,y Point
  * @param[in] edges,nedges Edges the index is built over, in its own order
- * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan @nullable
  * @param[in] xmax Greatest x the edges reach, which bounds the ray
  */
 int
@@ -386,13 +386,13 @@ point_in_polygon_index(double x, double y, Edge **edges, int nedges,
  * the index
  * @param[in] x,y Point
  * @param[in] edges,nedges Edges the index is built over, in its own order
- * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan
+ * @param[in] rtree Index over the boxes of those edges, or @p NULL to scan @nullable
  * @param[in] xmax Greatest x the edges reach, which bounds the ray
  * @param[in] reach Widest distance at which an end of an edge is read as
  * lying on the ray, which makes the answer the one the scan gives: the widest
  * rounding of an edge, or of the radius of an arc, the edges carry
  * @param[in] results Array the search collects its ids into, made by
- * #index_result_create, or @p NULL when @p rtree is @p NULL
+ * #index_result_create, or @p NULL when @p rtree is @p NULL @nullable
  * @param[in] vertex True if the point is an input vertex
  */
 int
@@ -677,7 +677,7 @@ point_on_poly_boundary(double px, double py, Edge **edges, int nedges)
  * instead, the +x ray of #point_in_polygon_impl, which excludes only the edges
  * that lie left of the point or off the ray's height and so is identical to
  * the full scan
- * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all
+ * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all @nullable
  * @param[in] xmax Geometry bounding-box maximum abscissa, which bounds the ray
  */
 static void
@@ -873,9 +873,9 @@ point_inter_points_lines(const POINT2D *a, Edge **edges, int nedges)
  * @param[in] inst Temporal sequence
  * @param[in] edges Array of geometry edges
  * @param[in] nedges Number of edges in the array
- * @param[in] rtree R-tree for the edges, may be `NULL` if no index is used
+ * @param[in] rtree R-tree for the edges, `NULL` if no index is used @nullable
  * @param[in] cand_edges Edge array buffer of size `nedges` for storing the
- * result of an R-tree look up, may be `NULL` if no index is used
+ * result of an R-tree look up, `NULL` if no index is used @nullable
  */
 static void
 tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
@@ -933,9 +933,9 @@ tpointinst_clip_edges(const TInstant *inst, Edge **edges, int nedges,
  * @param[in] seq Temporal sequence
  * @param[in] edges Array of geometry edges
  * @param[in] nedges Number of edges in the array
- * @param[in] rtree R-tree for the edges, may be `NULL` if no index is used
+ * @param[in] rtree R-tree for the edges, `NULL` if no index is used @nullable
  * @param[in] cand_edges Edge array buffer of size `nedges` for storing the
- * result of an R-tree look up, may be `NULL` if no index is used
+ * result of an R-tree look up, `NULL` if no index is used @nullable
  */
 static void
 tpointseq_clip_edges(const TSequence *seq, Edge **edges, int nedges,
@@ -2813,7 +2813,7 @@ within_roots_from_edge(double ax, double ay, double rx, double ry,
  * @param[in] all_edges,all_nedges Full edge array, used for the interior-aware
  * midpoint classification (the polygon ray-cast needs every edge)
  * @param[in] dist Distance threshold
- * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all
+ * @param[in] rtree R-tree over @p all_edges, or NULL to scan them all @nullable
  * @param[in] srid,xmax SRID and geometry bounding-box maximum abscissa, used
  * to query @p rtree
  */

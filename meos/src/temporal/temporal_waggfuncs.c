@@ -532,7 +532,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
 /**
  * @brief Generic moving window transition function for min, max, and sum
  * aggregation
- * @param[in,out] state Skiplist containing the state, may be `NULL`
+ * @param[in,out] state Skiplist containing the state @nullable
  * @param[in] temp Temporal value
  * @param[in] interv Interval
  * @param[in] func Function

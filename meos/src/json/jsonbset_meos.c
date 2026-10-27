@@ -47,7 +47,7 @@
 /**
  * @ingroup meos_json_set_json
  * @brief Transition function for set union aggregate of JSONB values
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] jb Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

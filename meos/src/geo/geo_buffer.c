@@ -44,6 +44,7 @@
 /* PostGIS */
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"
+#include <gserialized2.h>
 /* MEOS */
 #include "meos.h"
 #include "meos_internal_geo.h"
@@ -1782,7 +1783,7 @@ typedef struct
   uint32_t index;       /**< The piece, as its place among the selected */
   BufferLocator *own;   /**< The geometry the piece bounds */
   bool inverted;        /**< The answer lies on the side it does not cover */
-  BufferOperandRings *rings; /**< The rings of that geometry, or NULL */
+  BufferOperandRings *rings; /**< The rings of that geometry @nullable */
   int32_t ring;         /**< The ring the piece is cut from, -1 where it is not
                              known */
 } BufferSideAsk;
@@ -3848,7 +3849,7 @@ buffer_piece_answer_left(const Edge *piece, BufferLocator *own, bool inverted)
  * not cover
  * @param[in,out] deferred Where non-NULL, the side is not read here but asked
  * there, for #buffer_frame_where_read() to read where the walk consults it
- * @param[in,out] rings The rings of the geometry the piece bounds, or NULL
+ * @param[in,out] rings The rings of the geometry the piece bounds @nullable
  * @param[in] ring The ring the piece is cut from, -1 where it is not known
  */
 static void
@@ -3928,8 +3929,7 @@ buffer_pieces_scale(const MeosArray *pieces)
  * @param[in] pieces Pieces of the boundary
  * @param[in] other Locator of the other geometry
  * @param[in] nodes Nodes the boundaries were cut at, as #POINT2D
- * @param[in,out] ix Node index of @p nodes, sized from the pieces as well, or
- * NULL
+ * @param[in,out] ix Node index of @p nodes, sized from the pieces as well @nullable
  * @param[out] locations Location of each piece
  */
 static void
@@ -5103,6 +5103,20 @@ buffer_build_ring_from_pieces(const MeosArray *pieces, int32_t srid)
   return ring;
 }
 
+/* Whether a piece of a ring an arrangement answers is written as an arc: an
+ * arc whose three points are not on one line, which #cross_product_sign
+ * decides on the doubles, or whose ends are one point and its middle
+ * another, the whole circle through its middle, the circular string of a
+ * full turn */
+static inline bool
+buffer_piece_writes_arc(const ArrangePiece *e)
+{
+  return e->arc && ((e->x1 == e->x2 && e->y1 == e->y2) ?
+    (e->mx != e->x1 || e->my != e->y1) :
+    cross_product_sign(e->x1, e->y1, e->x2, e->y2, e->x1, e->y1, e->mx,
+      e->my) != 0);
+}
+
 /**
  * @brief Construct a compound curve from the pieces of a ring an
  * arrangement answers, as they are
@@ -5123,13 +5137,8 @@ buffer_ring_write(const MeosArray *pieces, int32_t srid)
     return NULL;
   const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
   bool *arc = palloc(sizeof(bool) * n);
-  /* An arc whose ends are one point is the whole circle through its middle,
-   * the circular string of a full turn */
   for (uint32_t i = 0; i < n; i++)
-    arc[i] = e[i].arc && ((e[i].x1 == e[i].x2 && e[i].y1 == e[i].y2) ?
-      (e[i].mx != e[i].x1 || e[i].my != e[i].y1) :
-      cross_product_sign(e[i].x1, e[i].y1, e[i].x2, e[i].y2, e[i].x1,
-        e[i].y1, e[i].mx, e[i].my) != 0);
+    arc[i] = buffer_piece_writes_arc(&e[i]);
   /* The members, counted first: every arc is one, and every run of
    * segments between two arcs */
   uint32_t nmembers = 0;
@@ -7900,8 +7909,8 @@ buffer_sweep_lines(const MeosArray *lout, int32_t srid)
  * #buffer_surfaces_from_rings answers them, its linework and its points: the
  * one kind there is, else the collection of them; @p NULL where there is
  * nothing
- * @param[in] region The surfaces, owned by the answer, or @p NULL
- * @param[in] lout The pieces of linework no surface covers, or @p NULL
+ * @param[in] region The surfaces, owned by the answer @nullable
+ * @param[in] lout The pieces of linework no surface covers @nullable
  * @param[in] pts,pkeep,npts The points, and whether each is kept
  * @param[in] srid Spatial reference identifier
  */
@@ -7964,7 +7973,7 @@ buffer_sweep_assemble(LWGEOM *region, const MeosArray *lout,
  * (#arrange_union_surfaces), the surfaces in the order of the sequence
  * @param[in] centres,radii The discs, in the order of the sequence
  * @param[in] link For every disc but the last, whether the sweep moves from
- * it to the next, or NULL where it never does
+ * it to the next, or NULL where it never does @nullable
  * @param[in] count Number of discs
  * @param[in] srid Spatial reference identifier
  * @return The set of points swept: the surfaces, the linework of the moves
@@ -9245,8 +9254,9 @@ buffer_ring_box(const MeosArray *pieces, GBOX *box)
     double cross = fabs(l - r);
     if (cross > 1e-6 * (fabs(l) + fabs(r)))
     {
-      double radius = hypot(ax, ay) * hypot(bx, by) *
-        hypot(bx - ax, by - ay) / (2.0 * cross);
+      double cx2 = bx - ax, cy2 = by - ay;
+      double radius = sqrt((ax * ax + ay * ay) * (bx * bx + by * by) *
+        (cx2 * cx2 + cy2 * cy2)) / (2.0 * cross);
       double reach = 2.5 * radius + 1e-9 * (fabs(e[i].x1) + fabs(e[i].x2) +
         fabs(e[i].y1) + fabs(e[i].y2));
       double cx = 0.5 * (e[i].x1 + e[i].x2), cy = 0.5 * (e[i].y1 + e[i].y2);
@@ -9341,6 +9351,368 @@ buffer_surfaces_from_rings(MeosArray **rings, uint32_t nrings, int32_t *owner,
     result->bbox->ymin = box.ymin; result->bbox->ymax = box.ymax;
   }
   return result;
+}
+
+/* The size the members of a ring take serialized, as #buffer_ring_write
+ * makes them: a type and a number of points, then the points */
+static size_t
+buffer_ring_serialized_size(const MeosArray *pieces, const bool *arc)
+{
+  uint32_t n = pieces->count;
+  size_t size = 2 * sizeof(uint32_t);
+  for (uint32_t i = 0; i < n; )
+  {
+    uint32_t end = i + 1;
+    if (! arc[i])
+      while (end < n && ! arc[end])
+        end++;
+    size += 2 * sizeof(uint32_t) + 2 * sizeof(double) *
+      (arc[i] ? 3 : end - i + 1);
+    i = end;
+  }
+  return size;
+}
+
+static inline uint8_t *
+buffer_write_word(uint8_t *loc, uint32_t w)
+{
+  memcpy(loc, &w, sizeof(uint32_t));
+  return loc + sizeof(uint32_t);
+}
+
+static inline uint8_t *
+buffer_write_point(uint8_t *loc, double x, double y)
+{
+  memcpy(loc, &x, sizeof(double));
+  memcpy(loc + sizeof(double), &y, sizeof(double));
+  return loc + 2 * sizeof(double);
+}
+
+/* Write a ring serialized, as #gserialized2_from_lwgeom writes the compound
+ * curve #buffer_ring_write makes of its pieces */
+static uint8_t *
+buffer_ring_serialize(const MeosArray *pieces, const bool *arc, uint8_t *loc)
+{
+  uint32_t n = pieces->count;
+  const ArrangePiece *e = (const ArrangePiece *) pieces->elems;
+  uint32_t nmembers = 0;
+  for (uint32_t i = 0; i < n; i++)
+    if (arc[i] || i == 0 || arc[i - 1])
+      nmembers++;
+  loc = buffer_write_word(loc, COMPOUNDTYPE);
+  loc = buffer_write_word(loc, nmembers);
+  for (uint32_t i = 0; i < n; )
+  {
+    if (arc[i])
+    {
+      loc = buffer_write_word(loc, CIRCSTRINGTYPE);
+      loc = buffer_write_word(loc, 3);
+      loc = buffer_write_point(loc, e[i].x1, e[i].y1);
+      loc = buffer_write_point(loc, e[i].mx, e[i].my);
+      loc = buffer_write_point(loc, e[i].x2, e[i].y2);
+      i++;
+      continue;
+    }
+    uint32_t end = i;
+    while (end < n && ! arc[end])
+      end++;
+    loc = buffer_write_word(loc, LINETYPE);
+    loc = buffer_write_word(loc, end - i + 1);
+    loc = buffer_write_point(loc, e[i].x1, e[i].y1);
+    for (uint32_t m = i; m < end; m++)
+      loc = buffer_write_point(loc, e[m].x2, e[m].y2);
+    i = end;
+  }
+  return loc;
+}
+
+/**
+ * @brief Return the region rings an arrangement answers bound, serialized
+ * as #geo_serialize serializes the surfaces #buffer_surfaces_from_rings
+ * makes of them, written at once rather than through them
+ * @details Every shell its own curve polygon, its holes after it in their
+ * order, one surface written alone and more as a multisurface, the box that
+ * of every ring (#buffer_ring_box)
+ * @param[in] rings,nrings The rings, released here unless @p NULL is returned
+ * @param[in] owner The shell owning each ring, -1 for a shell, released here
+ * unless @p NULL is returned
+ * @param[in] srid Spatial reference identifier
+ * @return @p NULL where a ring has no piece, which #buffer_ring_write does
+ * not write, the rings then left to the caller
+ */
+static GSERIALIZED *
+buffer_rings_serialize(MeosArray **rings, uint32_t nrings, int32_t *owner,
+  int32_t srid)
+{
+  uint32_t total = 0, nshells = 0;
+  for (uint32_t i = 0; i < nrings; i++)
+  {
+    if (rings[i]->count == 0)
+      return NULL;
+    total += rings[i]->count;
+    if (owner[i] < 0)
+      nshells++;
+  }
+  if (nshells == 0)
+    return NULL;
+  /* Where each ring's pieces are written as arcs, and the holes of each
+   * shell in their order */
+  bool *arc = palloc(sizeof(bool) * total);
+  uint32_t *aoff = palloc(sizeof(uint32_t) * (nrings + 1));
+  uint32_t *hoff = palloc0(sizeof(uint32_t) * (nrings + 1));
+  uint32_t *holes = palloc(sizeof(uint32_t) * Max(nrings, 1u));
+  size_t size = 8 + 4 * sizeof(float);
+  if (nshells > 1)
+    size += 2 * sizeof(uint32_t);
+  aoff[0] = 0;
+  for (uint32_t i = 0; i < nrings; i++)
+  {
+    const ArrangePiece *e = (const ArrangePiece *) rings[i]->elems;
+    for (uint32_t k = 0; k < rings[i]->count; k++)
+      arc[aoff[i] + k] = buffer_piece_writes_arc(&e[k]);
+    aoff[i + 1] = aoff[i] + rings[i]->count;
+    size += buffer_ring_serialized_size(rings[i], &arc[aoff[i]]);
+    if (owner[i] < 0)
+      size += 2 * sizeof(uint32_t);
+    else
+      hoff[owner[i] + 1]++;
+  }
+  for (uint32_t i = 0; i < nrings; i++)
+    hoff[i + 1] += hoff[i];
+  uint32_t *fill = palloc(sizeof(uint32_t) * Max(nrings, 1u));
+  memcpy(fill, hoff, sizeof(uint32_t) * nrings);
+  for (uint32_t i = 0; i < nrings; i++)
+    if (owner[i] >= 0)
+      holes[fill[owner[i]]++] = i;
+  pfree(fill);
+  GBOX box;
+  box.xmin = box.ymin = INFINITY;
+  box.xmax = box.ymax = -INFINITY;
+  for (uint32_t i = 0; i < nrings; i++)
+    buffer_ring_box(rings[i], &box);
+
+  GSERIALIZED *g = lwalloc(size);
+  lwflags_t flags = lwflags(0, 0, 0);
+  FLAGS_SET_BBOX(flags, 1);
+  LWSIZE_SET(g->size, size);
+  gserialized2_set_srid(g, srid);
+  g->gflags = lwflags_get_g2flags(flags);
+  uint8_t *loc = (uint8_t *) g + 8;
+  float f[4] = {next_float_down(box.xmin), next_float_up(box.xmax),
+    next_float_down(box.ymin), next_float_up(box.ymax)};
+  memcpy(loc, f, sizeof(f));
+  loc += sizeof(f);
+  if (nshells > 1)
+  {
+    loc = buffer_write_word(loc, MULTISURFACETYPE);
+    loc = buffer_write_word(loc, nshells);
+  }
+  for (uint32_t i = 0; i < nrings; i++)
+  {
+    if (owner[i] >= 0)
+      continue;
+    loc = buffer_write_word(loc, CURVEPOLYTYPE);
+    loc = buffer_write_word(loc, 1 + hoff[i + 1] - hoff[i]);
+    loc = buffer_ring_serialize(rings[i], &arc[aoff[i]], loc);
+    for (uint32_t h = hoff[i]; h < hoff[i + 1]; h++)
+      loc = buffer_ring_serialize(rings[holes[h]], &arc[aoff[holes[h]]],
+        loc);
+  }
+  assert((size_t) (loc - (uint8_t *) g) == size);
+  SET_VARSIZE(g, size);
+  pfree(arc); pfree(aoff); pfree(hoff); pfree(holes);
+  arrange_rings_free(rings, nrings);
+  pfree(owner);
+  return g;
+}
+
+/*****************************************************************************
+ * Buffer - the exact offset curves of polygons with round joins
+ *****************************************************************************/
+
+/**
+ * @brief Add to an edge array the offset curve of a ring with round joins,
+ * every piece of it exact
+ * @details The ring is read turning in the sense asked (#ring_area_sign,
+ * exact), a point repeating the one before it dropped, and offset by the
+ * distance to its right. The offset of an edge is the segment between the
+ * points where the common tangent on its right touches the circles of the
+ * distance about its two ends (#edges_add_tangent_segment), and the join at
+ * a vertex is the arc of the circle about it from where the offset of the
+ * edge arriving touches it to where that of the edge leaving does
+ * (#edges_add_tangent_arc): counterclockwise where the ring turns left,
+ * clockwise where it turns right, and a half turn counterclockwise where it
+ * turns back, the turn decided exactly. Where the ring runs straight on the
+ * two offsets meet at one point and no arc joins them. This is the
+ * convolution of the ring with the circle of the distance
+ * (#buffer_round_offsets)
+ * @param[in] pa Points of the ring, closed, enclosing some area
+ * @param[in] ccw True for a ring turning counterclockwise
+ * @param[in] radius Distance, positive
+ * @param[in,out] tps The tangent points, two per edge appended at @p ntp
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ */
+static void
+buffer_round_ring_offsets(const POINTARRAY *pa, bool ccw, double radius,
+  TangentPoint *tps, uint32_t *ntp, MeosArray *edges)
+{
+  bool reverse = (ring_area_sign(pa) > 0) != ccw;
+  uint32_t n = pa->npoints;
+  POINT2D *v = palloc(sizeof(POINT2D) * n);
+  uint32_t m = 0;
+  for (uint32_t i = 0; i + 1 < n; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, reverse ? n - 1 - i : i);
+    if (m == 0 || p->x != v[m - 1].x || p->y != v[m - 1].y)
+      v[m++] = *p;
+  }
+  while (m > 1 && v[m - 1].x == v[0].x && v[m - 1].y == v[0].y)
+    m--;
+  /* The points where the offset of each edge touches the circles about its
+   * start and its end */
+  TangentPoint *ts = &tps[*ntp], *te = &tps[*ntp + m];
+  for (uint32_t k = 0; k < m; k++)
+  {
+    const POINT2D *a = &v[k], *b = &v[(k + 1) % m];
+    ts[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 0};
+    te[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 1};
+  }
+  *ntp += 2 * m;
+  for (uint32_t k = 0; k < m; k++)
+  {
+    edges_add_tangent_segment(edges, &ts[k], &te[k]);
+    uint32_t l = (k + 1) % m;
+    const POINT2D *a = &v[k], *b = &v[l], *c = &v[(l + 1) % m];
+    int turn = cross_product_sign(a->x, a->y, b->x, b->y, b->x, b->y, c->x,
+      c->y);
+    /* Two edges along one line run on, or turn back, as the signs of the
+     * coordinates of their directions tell */
+    if (turn == 0 && (b->x > a->x) == (c->x > b->x) &&
+        (b->x < a->x) == (c->x < b->x) && (b->y > a->y) == (c->y > b->y) &&
+        (b->y < a->y) == (c->y < b->y))
+      continue;
+    edges_add_tangent_arc(edges, b->x, b->y, radius, turn >= 0, &te[k],
+      &ts[l]);
+  }
+  pfree(v);
+  return;
+}
+
+/**
+ * @brief Return the rings bounding the buffer of a polygon or a multipolygon
+ * with round joins, the region the exact offset curves of its rings wind
+ * around
+ * @details Every ring is offset with round joins (#buffer_round_ring_offsets),
+ * the shells turning counterclockwise and the holes clockwise. The curves
+ * wind around a point as many times as the parts the polygons have within
+ * the distance of it, less the holes lying within that distance of it whole:
+ * the Euler characteristic of the polygons within the disc about the point.
+ * A hole that a circle no larger than the distance encloses is covered by
+ * the buffer whole and is left out, and no other hole lies within such a
+ * disc but at a set of points bounding no area, so the buffer is the set of
+ * points the curves wind around at least once, read off their arrangement
+ * (#arrange_wound_tangent_surfaces), and the buffers of the polygons of a
+ * multipolygon are united in that one arrangement. Each offset and each
+ * join is fixed by the input doubles and the distance alone, so no point of
+ * the curves is constructed and then asked about, and only the vertices of
+ * the answer are rounded, each once
+ * @param[in] geom Polygon or multipolygon
+ * @param[in] radius Distance, positive
+ * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
+ * owning each, as #arrange_wound_tangent_surfaces answers them
+ * @return False for another type, a shell enclosing no area, where the
+ * arrangement leaves the region unanswered or answers no ring -- a caller
+ * that has another way to answer may take it
+ */
+static bool
+buffer_round_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner)
+{
+  assert(geom); assert(radius > 0.0);
+  if (lwgeom_is_empty(geom) ||
+      (geom->type != POLYGONTYPE && geom->type != MULTIPOLYGONTYPE))
+    return false;
+  const LWGEOM *const *parts = &geom;
+  uint32_t nparts = 1;
+  if (geom->type == MULTIPOLYGONTYPE)
+  {
+    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
+    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
+  }
+  uint32_t total = 0;
+  for (uint32_t i = 0; i < nparts; i++)
+  {
+    const LWPOLY *poly = (const LWPOLY *) parts[i];
+    if (parts[i]->type != POLYGONTYPE ||
+        (poly->nrings > 0 && ring_area_sign(poly->rings[0]) == 0))
+      return false;
+    for (uint32_t r = 0; r < poly->nrings; r++)
+      total += poly->rings[r]->npoints;
+  }
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 2 * Max(total, 1u));
+  /* An offset segment and at most one arc for every point */
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  edge_array_reserve(edges, 2 * (size_t) total);
+  uint32_t ntp = 0;
+  POINT2D *pts = palloc(sizeof(POINT2D) * Max(total, 1u));
+  for (uint32_t i = 0; i < nparts; i++)
+  {
+    const LWPOLY *poly = (const LWPOLY *) parts[i];
+    for (uint32_t r = 0; r < poly->nrings; r++)
+    {
+      const POINTARRAY *pa = poly->rings[r];
+      /* A hole enclosing no area takes nothing from its polygon */
+      if (r > 0 && ring_area_sign(pa) == 0)
+        continue;
+      /* A hole within a circle no larger than the distance lies within that
+       * distance of its own ring, the buffer covering it whole: kept, it
+       * would lie within the disc of the distance about the points it holds
+       * and take from the winding number there (#buffer_round_ring_offsets),
+       * so it is left out, the smallest enclosing circle compared with the
+       * distance exactly (#mec_radius_cmp) */
+      if (r > 0)
+      {
+        for (uint32_t k = 0; k < pa->npoints; k++)
+          pts[k] = *getPoint2d_cp(pa, k);
+        if (mec_radius_cmp(pts, (int) pa->npoints, radius) <= 0)
+          continue;
+      }
+      buffer_round_ring_offsets(pa, r == 0, radius, tps, &ntp, edges);
+    }
+  }
+  pfree(pts);
+  bool found = false;
+  if (edges->count > 0 && arrange_wound_tangent_surfaces(edges, rings,
+        nrings, owner) == ARR_ANSWERED)
+  {
+    found = *nrings > 0;
+    if (! found)
+    {
+      arrange_rings_free(*rings, *nrings);
+      if (*owner)
+        pfree(*owner);
+    }
+  }
+  meos_array_destroy(edges);
+  pfree(tps);
+  return found;
+}
+
+/**
+ * @brief Return the buffer of a polygon or a multipolygon with round joins,
+ * the surfaces the rings of #buffer_round_rings bound
+ * @return @p NULL where #buffer_round_rings answers no ring
+ */
+static LWGEOM *
+buffer_round_offsets(const LWGEOM *geom, double radius, int32_t srid)
+{
+  MeosArray **rings;
+  uint32_t nrings;
+  int32_t *owner;
+  if (! buffer_round_rings(geom, radius, &rings, &nrings, &owner))
+    return NULL;
+  return buffer_surfaces_from_rings(rings, nrings, owner, srid);
 }
 
 /**
@@ -9850,6 +10222,16 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
     return meos_erode_mpoly((const LWMPOLY *) geom, -radius, join_style,
       cap_style, mitre_limit);
   }
+  /* Round joins about the vertices of polygons are arcs of the circles the
+   * vertices and the distance fix exactly, and the buffer the region the
+   * exact offset curves wind around */
+  if (join_style == JOIN_ROUND &&
+      (geom->type == POLYGONTYPE || geom->type == MULTIPOLYGONTYPE))
+  {
+    LWGEOM *exact = buffer_round_offsets(geom, radius, srid);
+    if (exact)
+      return exact;
+  }
   switch (geom->type)
   {
     case POINTTYPE:
@@ -10048,6 +10430,28 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
     return NULL;
   }
 
+  /* Round joins about the vertices of polygons: the region the exact offset
+   * curves wind around (#buffer_round_rings), serialized from the rings of
+   * their arrangement at once (#buffer_rings_serialize) */
+  if (size > 0.0 && join_style == JOIN_ROUND &&
+      (lwg->type == POLYGONTYPE || lwg->type == MULTIPOLYGONTYPE))
+  {
+    MeosArray **rings;
+    uint32_t nrings;
+    int32_t *owner;
+    if (buffer_round_rings(lwg, size, &rings, &nrings, &owner))
+    {
+      GSERIALIZED *result = buffer_rings_serialize(rings, nrings, owner,
+        lwgeom_get_srid(lwg));
+      if (result)
+      {
+        lwgeom_free(lwg);
+        return result;
+      }
+      arrange_rings_free(rings, nrings);
+      pfree(owner);
+    }
+  }
   LWGEOM *res = meos_buffer(lwg, size, join_style, cap_style, mitre_limit);
   /* A geometry the arc-exact buffer does not cover, such as one whose offset
    * ring collapses or self-intersects, which the boundary overlay resolves

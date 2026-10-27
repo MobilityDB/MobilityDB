@@ -338,7 +338,7 @@ geo_cluster_intersecting_geoms(LWGEOM **geoms, uint32_t ngeoms,
  * @param[in] minpoints Number of geometries within the distance of a geometry
  * that puts it at the core of a cluster
  * @param[out] in_cluster Whether each geometry belongs to a cluster, which
- * every one does when the minimum is one. May be @p NULL
+ * every one does when the minimum is one @nullable
  * @return False if a distance cannot be computed
  * @note The clustering of PostGIS function @p ST_ClusterDBSCAN, without GEOS
  */

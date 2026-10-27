@@ -51,8 +51,8 @@
  * @ingroup meos_npoint_agg
  * @brief Transition function for temporal centroid aggregation of temporal
  * network points
- * @param[in] state Current aggregate value, may be `NULL`
- * @param[in] temp Temporal network point
+ * @param[in] state Current aggregate value @nullable
+ * @param[in] temp Temporal network point @nullable
  * @csqlfn #Tnpoint_tcentroid_transfn()
  * @csqlaggfn #tCentroidTransition()
  */

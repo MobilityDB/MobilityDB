@@ -136,7 +136,13 @@ typedef struct
                                       double holds, those points, (x1,y1) and
                                       (x2,y2) holding them rounded once; NULL
                                       for an edge whose ends are its doubles
-                                      (#edges_add_tangent_segment) */
+                                      (#edges_add_tangent_segment). For a
+                                      centred arc, the points of its circle
+                                      it runs between, the arc then being
+                                      the part of the circle from @p from to
+                                      @p to in the sense it turns, or NULL
+                                      for the whole circle
+                                      (#edges_add_tangent_arc) */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -366,6 +372,7 @@ extern void edges_add_arc(MeosArray *edges, const POINT2D *a,
 extern void edges_add_circle(MeosArray *edges, double cx, double cy,
   double radius, bool ccw);
 extern int ring_area_sign(const POINTARRAY *pa);
+extern int mec_radius_cmp(POINT2D *pts, int count, double radius);
 
 /* How a meeting of two edges arises, the data that place it exactly */
 typedef enum
@@ -421,6 +428,8 @@ typedef struct
 
 extern void edges_add_tangent_segment(MeosArray *edges,
   const TangentPoint *from, const TangentPoint *to);
+extern void edges_add_tangent_arc(MeosArray *edges, double cx, double cy,
+  double radius, bool ccw, const TangentPoint *from, const TangentPoint *to);
 extern int towerseg_meet(const Edge *p, const Edge *q, TowerMeet out[2]);
 extern int meets_order_tower(const Edge *e, bool ccw, const MeetPoint *a,
   const MeetPoint *b);
@@ -428,6 +437,8 @@ extern int towerseg_side(const Edge *s, double px, double py);
 extern int meet_point_y_side(const MeetPoint *m, double py);
 extern int meet_point_x_side(const MeetPoint *m, double ox, double d);
 extern int meets_x_cmp(const MeetPoint *a, const MeetPoint *b);
+extern bool tangent_point_box(const TangentPoint *tp, double x, double y,
+  double box[4]);
 extern bool meet_point_bounds(const MeetPoint *m, double *x, double *y,
   double box[4]);
 extern int meets_same_point(const MeetPoint *a, const MeetPoint *b);

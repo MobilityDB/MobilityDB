@@ -703,7 +703,7 @@ temporal_convert_same_subtype(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_temporal_modif
  * @brief Merge two temporal values
- * @param[in] temp1,temp2 Temporal values, may be `NULL`
+ * @param[in] temp1,temp2 Temporal values @nullable
  * @return Return @p NULL if both arguments are @p NULL.
  * If one argument is null, return the other argument.
  * @csqlfn #Temporal_merge()
@@ -1922,7 +1922,7 @@ temporal_append_free(void *temp UNUSED, bool consume UNUSED)
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
  * @param[in] consume True when the ownership of the sequence is transferred to
  * this function, which frees the sequence whenever it returns a new value
@@ -2103,7 +2103,7 @@ tsequence_append_tinstant1(TSequence *seq, const TInstant *inst,
  * @param[in,out] seq Temporal sequence
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the sequence passed as first argument has space for adding the
@@ -2187,7 +2187,7 @@ tsequence_append_tsequence(const TSequence *seq1, const TSequence *seq2,
  * @param[in,out] ss Temporal sequence set
  * @param[in] inst Temporal instant
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the sequence set passed as first argument has space for adding
@@ -2422,7 +2422,7 @@ tsequenceset_append_tsequence(TSequenceSet *ss, const TSequence *seq,
  * @param[in] inst Temporal instant
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @param[in] expand True when reserving space for additional instants
  * @csqlfn #Temporal_append_tinstant()
  * @return When the temporal value passed as first argument has space for

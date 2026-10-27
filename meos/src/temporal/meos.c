@@ -48,6 +48,9 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#if POINTCLOUD
+  #include <meos_pointcloud.h>
+#endif
 
 /***************************************************************************
  * Functions for the PostgreSQL pseudo-random number generator

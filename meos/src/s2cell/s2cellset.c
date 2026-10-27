@@ -483,7 +483,7 @@ minus_set_s2cell(const Set *s, S2CellId cell)
 /**
  * @ingroup meos_s2cell_set_setops
  * @brief Transition function for set union aggregate of S2 cells
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] cell Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

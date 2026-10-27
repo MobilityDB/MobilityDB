@@ -171,8 +171,8 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup meos_box_constructor
  * @brief Return a temporal box from a number span and a timestamptz span
- * @param[in] s Value span, may be `NULL`
- * @param[in] p Time span, may be `NULL`
+ * @param[in] s Value span @nullable
+ * @param[in] p Time span @nullable
  * @errval NULL
  */
 TBox *
@@ -1366,8 +1366,8 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
  * @param[in] box Temporal box
- * @param[in] shift Interval to shift the value span, may be NULL
- * @param[in] duration Duration of the result, may be NULL
+ * @param[in] shift Interval to shift the value span @nullable
+ * @param[in] duration Duration of the result @nullable
  * @csqlfn #Tbox_shift_time(), #Tbox_scale_time(), #Tbox_shift_scale_time()
  */
 TBox *

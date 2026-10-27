@@ -414,9 +414,6 @@ extern RTree *rtree_create_datespan();
 extern RTree *rtree_create_tstzspan();
 extern RTree *rtree_create_tbox();
 extern RTree *rtree_create_stbox();
-#if POINTCLOUD
-extern RTree *rtree_create_tpcbox();
-#endif
 extern void rtree_free(RTree *rtree);
 extern int rtree_num_entries(const RTree *rtree);
 extern int64 rtree_mem_size(const RTree *rtree);
@@ -463,9 +460,6 @@ extern SPTree *sptree_create_datespan(SPTreeKind kind);
 extern SPTree *sptree_create_tstzspan(SPTreeKind kind);
 extern SPTree *sptree_create_tbox(SPTreeKind kind);
 extern SPTree *sptree_create_stbox(SPTreeKind kind);
-#if POINTCLOUD
-extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
-#endif
 extern void sptree_free(SPTree *sptree);
 extern int sptree_num_entries(const SPTree *sptree);
 extern int64 sptree_mem_size(const SPTree *sptree);
@@ -521,9 +515,6 @@ extern void meos_finalize_collation(void);
 extern void meos_finalize_projsrs(void);
 extern void meos_finalize_relate(void);
 extern void meos_finalize_ways(void);
-#if POINTCLOUD
-extern void meos_initialize_pointcloud(void);
-#endif
 
 extern bool meos_set_datestyle(const char *newval, void *extra);
 extern bool meos_set_intervalstyle(const char *newval, int extra);

@@ -1885,8 +1885,8 @@ typedef struct
   double best;         /**< Least distance found, INFINITY before the first */
   double thr2;         /**< Square the double evaluation is compared with */
   double xl, xr, yl, yr; /**< Window of the centre plus or minus the reach */
-  double *seg;         /**< Ends of the segment answering it, or NULL */
-  bool *inside;        /**< Whether a polygon holds the centre, or NULL */
+  double *seg;         /**< Ends of the segment answering it @nullable */
+  bool *inside;        /**< Whether a polygon holds the centre @nullable */
 } DiscWalk;
 
 /* Read exactly a segment the window keeps, a point being a segment of no
@@ -2071,8 +2071,8 @@ geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
  * @param[in] c Centre, two coordinates
  * @param[in] r Radius, not negative
  * @param[in] gs Geometry, not empty
- * @param[out] seg Ends of the segment, or NULL
- * @param[out] inside Whether a polygon holds the centre, or NULL
+ * @param[out] seg Ends of the segment @nullable
+ * @param[out] inside Whether a polygon holds the centre @nullable
  */
 double
 geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
@@ -7046,7 +7046,7 @@ geog_from_hexewkb(const char *hexwkb)
  * @param[in] gs Geometry/geography
  * @param[in] endian Endian encoding: an empty string (machine endianness),
  * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
- * reads it
+ * reads it @nullable
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
  * @csqlfn #Geo_as_hexewkb()
  */
@@ -7108,7 +7108,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @details The byte order is read as #geo_as_hexewkb reads it: `NDR` or `XDR`
  * in any case, and the order of the machine for `NULL` or an empty string
  * @param[in] gs Geometry/geography
- * @param[in] endian Byte order, may be `NULL`
+ * @param[in] endian Byte order @nullable
  * @param[out] size Size of result
  * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
@@ -7187,7 +7187,7 @@ geo_from_geojson(const char *geojson)
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
  * @param[in] srs Name of the coordinate reference system, which the output
- * states in place of the one of the SRID, may be `NULL`
+ * states in place of the one of the SRID @nullable
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  * @sqlfn asGeoJSON()
@@ -7787,6 +7787,17 @@ typedef struct
   int turn;        /**< Sign of the cross product of u and v */
 } MecExact;
 
+/* The square of the radius of the circle of #MecExact against that of m, the
+ * sum it holds in its slot for the midpoint, both times G^2:
+ * |u|^2 |v|^2 |w|^2 - 4 m^2 (ux vy - uy vx)^2 */
+static const PolyTerm MEC_RADIUS_TERMS[11] = {
+  { 1.0, 6, {0, 0, 2, 2, 4, 4}}, { 1.0, 6, {0, 0, 2, 2, 5, 5}},
+  { 1.0, 6, {0, 0, 3, 3, 4, 4}}, { 1.0, 6, {0, 0, 3, 3, 5, 5}},
+  { 1.0, 6, {1, 1, 2, 2, 4, 4}}, { 1.0, 6, {1, 1, 2, 2, 5, 5}},
+  { 1.0, 6, {1, 1, 3, 3, 4, 4}}, { 1.0, 6, {1, 1, 3, 3, 5, 5}},
+  {-4.0, 6, {6, 6, 0, 0, 3, 3}}, { 8.0, 6, {6, 6, 0, 3, 1, 2}},
+  {-4.0, 6, {6, 6, 1, 1, 2, 2}}};
+
 /**
  * @brief Return true where a coordinate of the centre (`which` 0 or 1) or the
  * radius (`which` 2) of the circle of #MecExact lies beyond the midpoint from
@@ -7828,15 +7839,7 @@ mec_beyond(MecExact *e, int which, double c)
       return true;
     const double m[2] = {c, h};
     exact_sum_set(&e->s[6], m, 2);
-    /* |u|^2 |v|^2 |w|^2 - 4 m^2 (ux vy - uy vx)^2 */
-    static const PolyTerm r[11] = {
-      { 1.0, 6, {0, 0, 2, 2, 4, 4}}, { 1.0, 6, {0, 0, 2, 2, 5, 5}},
-      { 1.0, 6, {0, 0, 3, 3, 4, 4}}, { 1.0, 6, {0, 0, 3, 3, 5, 5}},
-      { 1.0, 6, {1, 1, 2, 2, 4, 4}}, { 1.0, 6, {1, 1, 2, 2, 5, 5}},
-      { 1.0, 6, {1, 1, 3, 3, 4, 4}}, { 1.0, 6, {1, 1, 3, 3, 5, 5}},
-      {-4.0, 6, {6, 6, 0, 0, 3, 3}}, { 8.0, 6, {6, 6, 0, 3, 1, 2}},
-      {-4.0, 6, {6, 6, 1, 1, 2, 2}}};
-    sign = polynomial_sign_exact(e->s, r, 11);
+    sign = polynomial_sign_exact(e->s, MEC_RADIUS_TERMS, 11);
   }
   uint64 bits;
   memcpy(&bits, &c, sizeof(bits));
@@ -7923,6 +7926,24 @@ mec_nearest(MecExact *e, int which, double cand)
 }
 
 /**
+ * @brief Set the exact sums of the circle through three points that turn
+ */
+static void
+mec_exact_set(MecExact *e, const POINT2D *a, const POINT2D *b,
+  const POINT2D *c)
+{
+  const double terms[6][2] = {{b->x, -a->x}, {b->y, -a->y}, {c->x, -a->x},
+    {c->y, -a->y}, {b->x, -c->x}, {b->y, -c->y}};
+  for (int i = 0; i < 6; i++)
+    exact_sum_set(&e->s[i], terms[i], 2);
+  e->a[0] = a->x;
+  e->a[1] = a->y;
+  e->turn = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x,
+    c->y);
+  return;
+}
+
+/**
  * @brief Return the centre and radius of the circle of a support, each the
  * double nearest the exact value
  * @details The circle of a support is a rational function of the input
@@ -7954,13 +7975,7 @@ mec_circle(const MecSupport *s)
     return circ;
   }
   MecExact e;
-  const double terms[6][2] = {{b.x, -a.x}, {b.y, -a.y}, {c.x, -a.x},
-    {c.y, -a.y}, {b.x, -c.x}, {b.y, -c.y}};
-  for (int i = 0; i < 6; i++)
-    exact_sum_set(&e.s[i], terms[i], 2);
-  e.a[0] = a.x;
-  e.a[1] = a.y;
-  e.turn = cross_product_sign(a.x, a.y, b.x, b.y, a.x, a.y, c.x, c.y);
+  mec_exact_set(&e, &a, &b, &c);
   /* The candidates, from the rounded formulas */
   double ux = b.x - a.x, uy = b.y - a.y, vx = c.x - a.x, vy = c.y - a.y;
   double wx = b.x - c.x, wy = b.y - c.y;
@@ -7974,20 +7989,20 @@ mec_circle(const MecSupport *s)
 }
 
 /**
- * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle, returning
+ * the points defining it
  * @details Equivalent to the recursive Welzl algorithm but uses constant
  * stack space. The three nested loops correspond to the three levels of
  * recursion (boundary set size 0, 1, 2). Despite appearing O(n^3), the
  * expected runtime is O(n) with random shuffling. The circle is held as the
- * points defining it, every point is put inside or outside it exactly
- * (#mec_encloses), and its centre and radius are computed once, from the final
- * support (#mec_circle)
+ * points defining it, every point put inside or outside it exactly
+ * (#mec_encloses)
  * @param[in] P Array of points (must be shuffled beforehand)
  * @param[in] n Number of points
  * @pre n >= 1
  */
-static Circle
-mec_welzl(const POINT2D *P, int n)
+static MecSupport
+mec_welzl_support(const POINT2D *P, int n)
 {
   MecSupport S = {{P[0]}, 1};
   for (int i = 1; i < n; i++)
@@ -8009,6 +8024,21 @@ mec_welzl(const POINT2D *P, int n)
       }
     }
   }
+  return S;
+}
+
+/**
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @details The circle of the support #mec_welzl_support finds, its centre
+ * and radius computed once (#mec_circle)
+ * @param[in] P Array of points (must be shuffled beforehand)
+ * @param[in] n Number of points
+ * @pre n >= 1
+ */
+static Circle
+mec_welzl(const POINT2D *P, int n)
+{
+  MecSupport S = mec_welzl_support(P, n);
   return mec_circle(&S);
 }
 
@@ -8072,14 +8102,12 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 }
 
 /**
- * @brief Return the Minimum Enclosing Circle of an array of points, which it
- * shuffles
- * @pre The array holds at least one point
+ * @brief Shuffle an array of points, as Welzl's algorithm reads them
+ * (Fisher-Yates)
  */
-static Circle
-mec_points(POINT2D *pts, int count)
+static void
+mec_shuffle(POINT2D *pts, int count)
 {
-  /* Fisher-Yates shuffle */
   for (int i = count - 1; i > 0; i--)
   {
     int j = rand() % (i + 1);
@@ -8087,7 +8115,61 @@ mec_points(POINT2D *pts, int count)
     pts[i] = pts[j];
     pts[j] = tmp;
   }
+  return;
+}
+
+/**
+ * @brief Return the Minimum Enclosing Circle of an array of points, which it
+ * shuffles
+ * @pre The array holds at least one point
+ */
+static Circle
+mec_points(POINT2D *pts, int count)
+{
+  mec_shuffle(pts, count);
   return mec_welzl(pts, count);
+}
+
+/**
+ * @brief Return how the radius of the smallest circle enclosing an array of
+ * points, which it shuffles, compares with a distance, decided exactly: -1
+ * where it is smaller, 0 where they are equal, 1 where it is larger
+ * @details The circle is held as the points defining it (#mec_welzl_support)
+ * and never constructed: a single point has radius zero, the radius of a
+ * diameter from A to B is compared through |B - A|^2 - 4 r^2, and that of
+ * the circle of three points through the polynomial #mec_beyond reads,
+ * |u|^2 |v|^2 |w|^2 - 4 r^2 (u x v)^2, each a sign of exact sums of the
+ * input doubles (#polynomial_sign_exact)
+ * @param[in,out] pts Points, shuffled
+ * @param[in] count Number of points, at least one
+ * @param[in] radius Distance, not negative
+ * @note Exact where no product of six coordinate differences overflows or
+ * underflows
+ */
+int
+mec_radius_cmp(POINT2D *pts, int count, double radius)
+{
+  assert(pts); assert(count > 0); assert(radius >= 0.0);
+  mec_shuffle(pts, count);
+  MecSupport S = mec_welzl_support(pts, count);
+  if (S.n == 1)
+    return (radius > 0.0) ? -1 : 0;
+  if (S.n == 2)
+  {
+    const double t[3][2] = {{S.p[1].x, - S.p[0].x}, {S.p[1].y, - S.p[0].y},
+      {radius, 0.0}};
+    ExactSum sums[3];
+    for (int i = 0; i < 3; i++)
+      exact_sum_set(&sums[i], t[i], 2);
+    const PolyTerm terms[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}},
+      {-4.0, 2, {2, 2}}};
+    return polynomial_sign_exact(sums, terms, 3);
+  }
+  MecExact e;
+  mec_exact_set(&e, &S.p[0], &S.p[1], &S.p[2]);
+  const double m[1] = {radius};
+  exact_sum_set(&e.s[6], m, 1);
+  return polynomial_sign_exact(e.s, MEC_RADIUS_TERMS, 11);
 }
 
 /**

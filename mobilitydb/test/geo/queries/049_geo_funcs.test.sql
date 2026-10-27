@@ -121,6 +121,22 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mi
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1, 'join=mitre'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', -1, 'join=mitre'), 6));
 
+-- A hole narrower than twice the distance closes, one exactly that wide
+-- shrinks to a point and closes too, a wider one survives
+SELECT h, round(ST_Area(buffer(ST_MakePolygon(
+    ST_MakeLine(ARRAY[ST_Point(6400000, 6400000), ST_Point(6400010, 6400000),
+      ST_Point(6400010, 6400010), ST_Point(6400000, 6400010), ST_Point(6400000, 6400000)]),
+    ARRAY[ST_MakeLine(ARRAY[ST_Point(6400005 - h, 6400005 - h), ST_Point(6400005 - h, 6400005 + h),
+      ST_Point(6400005 + h, 6400005 + h), ST_Point(6400005 + h, 6400005 - h),
+      ST_Point(6400005 - h, 6400005 - h)])]), 0.001))::numeric, 6)
+FROM unnest(ARRAY[0.0005, 0.001, 0.002]) AS h;
+
+-- Round joins: the buffer of a square, and of one whose hole as wide as twice
+-- the distance shrinks to a point, are of area 140 + pi, read on their arcs
+SELECT round(area(buffer(geometry 'Polygon((0 0,10 0,10 10,0 10,0 0))', 1))::numeric, 6);
+SELECT round(area(buffer(geometry
+  'Polygon((0 0,10 0,10 10,0 10,0 0),(4 4,4 6,6 6,6 4,4 4))', 1))::numeric, 6);
+
 -- A circular string keeps its arcs, and so does the buffer of one
 SELECT ST_AsText(round(buffer(geometry 'Circularstring(0 0,2 2,4 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))', 1), 6));

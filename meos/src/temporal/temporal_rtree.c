@@ -1340,7 +1340,7 @@ node_search_tbox(const RTreeNode *node, const TBox *query, IndexSearchOp op,
  * @param[in] rtree1,rtree2 The RTrees being joined
  * @param[in] node1,node2 The nodes to be joined
  * @param[in] box1,box2 The boxes the parents hold for @p node1 and @p node2,
- * `NULL` for a root
+ * `NULL` for a root @nullable
  * @param[in] op The join operation
  * @param[out] result MeosArray collecting the two ids of each pair
  */
@@ -2413,8 +2413,8 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
  * time extents for temporal box types) is reported last with an infinite
  * distance.
  * @param[in] cursor The cursor previously opened with #rtree_nn_cursor_open
- * @param[out] id_out Receives the id of the next neighbour, or @p NULL
- * @param[out] dist_out Receives the distance of the next neighbour, or @p NULL
+ * @param[out] id_out Receives the id of the next neighbour @nullable
+ * @param[out] dist_out Receives the distance of the next neighbour @nullable
  * @return @p true if a neighbour was produced, @p false once exhausted or on
  * error
  */
@@ -2464,7 +2464,7 @@ rtree_nn_cursor_next(RTreeNNCursor *cursor, int64 *id_out, double *dist_out)
 /**
  * @ingroup meos_temporal_box_index
  * @brief Close a nearest-neighbour cursor and free its resources
- * @param[in] cursor The cursor to close; @p NULL is ignored
+ * @param[in] cursor The cursor to close; @p NULL is ignored @nullable
  */
 void
 rtree_nn_cursor_close(RTreeNNCursor *cursor)

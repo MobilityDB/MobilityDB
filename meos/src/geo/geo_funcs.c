@@ -7594,7 +7594,7 @@ edge_direction_half_plane(int sx, int sy)
  * that it comes after a segment counterclockwise. The ordering mirrors that
  * of the intervals the arrangement reads first (#arcarc_meet_exact computes
  * on the same centres)
- * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis
+ * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point rather than
  * arrives at it
@@ -9007,14 +9007,40 @@ towerseg_side_pred(TowerCtx *ctx, const void *arg)
   return tower_orient(ctx, &e0, &e1, &p);
 }
 
+static inline bool towerseg_offset(const Edge *e, int *s);
+
 /**
  * @brief Return the side of a segment between tangent points a point stands
  * on, decided exactly: 1 to its left, -1 to its right, 0 on its line
+ * @details The offset by r to the side s of the segment from C1 to C2
+ * between the centres of two circles of one radius (#towerseg_offset) is
+ * the line d x (X - C1) = s r |d|, d = C2 - C1, so a point P stands on the
+ * side of the sign of d x (P - C1) - s r |d| of the segment from its point
+ * on the first circle, read off the doubles with a bound on its error; the
+ * tower decides what the bound does not
  */
 int
 towerseg_side(const Edge *s, double px, double py)
 {
   assert(s);
+  int so;
+  if (towerseg_offset(s, &so))
+  {
+    const TangentPoint *t = s->from;
+    ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
+    ArcsegFilter dy = arcseg_f_diff(t->c2y, t->c1y);
+    ArcsegFilter qx = arcseg_f_diff(px, t->c1x);
+    ArcsegFilter qy = arcseg_f_diff(py, t->c1y);
+    ArcsegFilter r = {t->r1, 0.0};
+    ArcsegFilter len = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dx, dx),
+      arcseg_f_mul(dy, dy)));
+    ArcsegFilter v = arcseg_f_sub(arcseg_f_sub(arcseg_f_mul(dx, qy),
+      arcseg_f_mul(dy, qx)), arcseg_f_scale(arcseg_f_mul(r, len),
+      (double) so));
+    int sg = arcseg_f_sign(v);
+    if (sg != 2)
+      return (t->k == 0) ? sg : - sg;
+  }
   TowerSideArg arg = {s, px, py};
   return tower_pred_run(towerseg_side_pred, &arg);
 }
@@ -9286,14 +9312,285 @@ meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
   return 1;
 }
 
+/* A point where the common tangent of two circles of one radius touches one
+ * of them, Ck + side r rot(d) / |d| as #tangent_point_round reads it, and a
+ * box holding it exactly: each operation rounds to nearest, so the offset is
+ * off by less than 12 units of the machine epsilon of its size and the sum
+ * by half a unit of its own, a bound taken four times over. False for two
+ * radii, or where the squares leave the range the bound holds in, which
+ * #meet_point_bounds_pred places in the tower instead */
+static bool
+tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
+  double box[4])
+{
+  if (tp->r1 != tp->r2)
+    return false;
+  double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
+  double d2 = dx * dx + dy * dy;
+  if (! (d2 > 0x1p-900 && d2 < 0x1p900))
+    return false;
+  double f = tp->side * tp->r1 / sqrt(d2);
+  double ox = - f * dy, oy = f * dx;
+  double cx = tp->k ? tp->c2x : tp->c1x, cy = tp->k ? tp->c2y : tp->c1y;
+  *x = cx + ox;
+  *y = cy + oy;
+  double ex = 48.0 * DBL_EPSILON * fabs(ox) + 2.0 * DBL_EPSILON * fabs(*x) +
+    4.0 * DBL_MIN;
+  double ey = 48.0 * DBL_EPSILON * fabs(oy) + 2.0 * DBL_EPSILON * fabs(*y) +
+    4.0 * DBL_MIN;
+  if (! isfinite(*x) || ! isfinite(*y) || ! isfinite(ex) || ! isfinite(ey))
+    return false;
+  box[0] = *x - ex; box[1] = *x + ex;
+  box[2] = *y - ey; box[3] = *y + ey;
+  return true;
+}
+
+/**
+ * @brief Set a box holding exactly a point where a tangent touches one of
+ * two circles of one radius, given the point as #tangent_point_bounds
+ * rounds it, as the ends of a segment between tangent points carry it
+ * (#edges_add_tangent_segment): the bound of #tangent_point_bounds with the
+ * offset, whose length the rounding keeps below twice the radius, taken at
+ * twice the radius
+ * @return False where #tangent_point_bounds does not read the point off the
+ * doubles
+ */
+bool
+tangent_point_box(const TangentPoint *tp, double x, double y, double box[4])
+{
+  assert(tp); assert(box);
+  if (tp->r1 != tp->r2)
+    return false;
+  double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
+  double d2 = dx * dx + dy * dy;
+  if (! (d2 > 0x1p-900 && d2 < 0x1p900))
+    return false;
+  /* Far within the range of the doubles, where the point of
+   * #tangent_point_bounds is finite and is the one given */
+  if (! (fabs(x) < 0x1p1000 && fabs(y) < 0x1p1000))
+    return false;
+  double o = 96.0 * DBL_EPSILON * fabs(tp->r1);
+  double ex = o + 2.0 * DBL_EPSILON * fabs(x) + 4.0 * DBL_MIN;
+  double ey = o + 2.0 * DBL_EPSILON * fabs(y) + 4.0 * DBL_MIN;
+  if (! isfinite(x) || ! isfinite(y) || ! isfinite(ex) || ! isfinite(ey))
+    return false;
+  box[0] = x - ex; box[1] = x + ex;
+  box[2] = y - ey; box[3] = y + ey;
+  return true;
+}
+
+/* Whether a segment between tangent points lies on the offset of the
+ * segment between the centres of one pair of circles of one radius, the
+ * common tangent of both its ends, the side @p s of C1 -> C2 */
+static inline bool
+towerseg_offset(const Edge *e, int *s)
+{
+  const TangentPoint *a = e->from, *b = e->to;
+  if (! a || ! b || a->r1 != a->r2 || a->side != b->side || a->k == b->k ||
+      a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
+      a->c2y != b->c2y || a->r1 != b->r1)
+    return false;
+  *s = a->side;
+  return true;
+}
+
+/* The coordinates of a point taken from an origin, each an offset read
+ * with a bound on its error, written where the bound holds the coordinate
+ * to a few units in its last place, as #meet_point_bounds_pred writes them */
+static bool
+filter_point_bounds(double ox, double oy, ArcsegFilter fx, ArcsegFilter fy,
+  double *x, double *y, double box[4])
+{
+  const double org[2] = {ox, oy};
+  const ArcsegFilter off[2] = {fx, fy};
+  double *val[2] = {x, y};
+  for (int j = 0; j < 2; j++)
+  {
+    double c = org[j] + off[j].v;
+    double ce = off[j].e + DBL_EPSILON * fabs(c) + DBL_MIN;
+    if (! isfinite(c) || ! isfinite(off[j].e) ||
+        ! (ce <= 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN))
+      return false;
+    box[2 * j] = c - ce; box[2 * j + 1] = c + ce;
+    *val[j] = c;
+  }
+  return true;
+}
+
+/* A quotient of filtered values as a filtered value, false where the
+ * divisor's bound holds zero (#tower_f_div) */
+static inline bool
+filter_div(ArcsegFilter a, ArcsegFilter b, ArcsegFilter *r)
+{
+  return tower_f_div(a, b, &r->v, &r->e);
+}
+
+/* The crossing of two segments between tangent points that are offsets of
+ * the segments between the centres of pairs of circles of one radius
+ * (#towerseg_offset), and a box holding it exactly, read off the doubles
+ * with a bound on their error as #meet_point_bounds_pred reads a tower. Two
+ * offsets of segments sharing a centre V are tangent to the circle about V
+ * on the sides of their unit normals m1 and m2 from it, so they cross at
+ * V + r (m1 + m2) / (1 + m1 . m2), which no cancellation loses however
+ * little the segments turn; any two others at O + (hp dq - hq dp) /
+ * (dp x dq), the offset of C1 -> C2 on the side s at the distance r being
+ * the line d x (X - C1) = s r |d|, d = C2 - C1, and hp and hq its right
+ * sides taken from the first centre O of the first. False where a bound is
+ * wider than a few units in the last place, as where the lines are nearly
+ * parallel, which the tower places instead */
+static bool
+offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  int sp, sq;
+  if (! m->p || ! m->q || ! towerseg_offset(m->p, &sp) ||
+      ! towerseg_offset(m->q, &sq))
+    return false;
+  const TangentPoint *p = m->p->from, *q = m->q->from;
+  ArcsegFilter dpx = arcseg_f_diff(p->c2x, p->c1x);
+  ArcsegFilter dpy = arcseg_f_diff(p->c2y, p->c1y);
+  ArcsegFilter dqx = arcseg_f_diff(q->c2x, q->c1x);
+  ArcsegFilter dqy = arcseg_f_diff(q->c2y, q->c1y);
+  ArcsegFilter rp = {p->r1, 0.0}, rq = {q->r1, 0.0};
+  ArcsegFilter lp = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dpx, dpx),
+    arcseg_f_mul(dpy, dpy)));
+  ArcsegFilter lq = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dqx, dqx),
+    arcseg_f_mul(dqy, dqy)));
+  /* A centre both segments share, and one radius */
+  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
+    (p->c1x == q->c2x && p->c1y == q->c2y);
+  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
+    (p->c2x == q->c2x && p->c2y == q->c2y);
+  if (p->r1 == q->r1 && (vp || vq))
+  {
+    double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
+    /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
+     * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
+    ArcsegFilter wp = arcseg_f_scale(lq, (double) sp);
+    ArcsegFilter wq = arcseg_f_scale(lp, (double) sq);
+    ArcsegFilter nx = arcseg_f_scale(arcseg_f_add(arcseg_f_mul(wp, dpy),
+      arcseg_f_mul(wq, dqy)), -1.0);
+    ArcsegFilter ny = arcseg_f_add(arcseg_f_mul(wp, dpx),
+      arcseg_f_mul(wq, dqx));
+    ArcsegFilter den = arcseg_f_add(arcseg_f_mul(lp, lq),
+      arcseg_f_scale(arcseg_f_add(arcseg_f_mul(dpx, dqx),
+        arcseg_f_mul(dpy, dqy)), (double) (sp * sq)));
+    ArcsegFilter fx, fy;
+    if (! filter_div(arcseg_f_mul(rp, nx), den, &fx) ||
+        ! filter_div(arcseg_f_mul(rp, ny), den, &fy))
+      return false;
+    return filter_point_bounds(vx, vy, fx, fy, x, y, box);
+  }
+  double ox = p->c1x, oy = p->c1y;
+  ArcsegFilter ax = arcseg_f_diff(q->c1x, ox), ay = arcseg_f_diff(q->c1y, oy);
+  ArcsegFilter hp = arcseg_f_scale(arcseg_f_mul(rp, lp), (double) sp);
+  ArcsegFilter hq = arcseg_f_add(arcseg_f_sub(arcseg_f_mul(dqx, ay),
+    arcseg_f_mul(dqy, ax)), arcseg_f_scale(arcseg_f_mul(rq, lq),
+    (double) sq));
+  ArcsegFilter den = arcseg_f_sub(arcseg_f_mul(dpx, dqy),
+    arcseg_f_mul(dpy, dqx));
+  ArcsegFilter fx, fy;
+  if (! filter_div(arcseg_f_sub(arcseg_f_mul(hp, dqx),
+        arcseg_f_mul(hq, dpx)), den, &fx) ||
+      ! filter_div(arcseg_f_sub(arcseg_f_mul(hp, dqy),
+        arcseg_f_mul(hq, dpy)), den, &fy))
+    return false;
+  return filter_point_bounds(ox, oy, fx, fy, x, y, box);
+}
+
+/* The meeting of an offset of the segment between the centres of a pair of
+ * circles of one radius (#towerseg_offset) with the circle of a centred
+ * arc, the root sigma along the segment as #tower_point_line_circle places
+ * it, read off the doubles with a bound on their error. The offset on the
+ * side s of d = C2 - C1 at the distance r is the line rot(d) . (X - C1) =
+ * s r |d|, so from the centre C of the circle of radius R the meeting is
+ * (delta rot(d) + sigma u sqrt(R^2 - delta^2) d) / |d| with
+ * delta = s r - d x (C - C1) / |d| and u the sense the segment runs along
+ * d. False where a bound is wide, as where the line nearly touches the
+ * circle, which the tower places instead */
+static bool
+offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
+  double box[4])
+{
+  int s;
+  if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
+    return false;
+  const TangentPoint *t = m->p->from;
+  double u = (m->p->to->k == 1) ? 1.0 : -1.0;
+  ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
+  ArcsegFilter dy = arcseg_f_diff(t->c2y, t->c1y);
+  ArcsegFilter ax = arcseg_f_diff(m->q->cx, t->c1x);
+  ArcsegFilter ay = arcseg_f_diff(m->q->cy, t->c1y);
+  ArcsegFilter r = {t->r1, 0.0}, rr = {m->q->radius, 0.0};
+  ArcsegFilter l = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dx, dx),
+    arcseg_f_mul(dy, dy)));
+  ArcsegFilter cr = arcseg_f_sub(arcseg_f_mul(dx, ay), arcseg_f_mul(dy, ax));
+  ArcsegFilter q, delta, h, fx, fy;
+  if (! filter_div(cr, l, &q))
+    return false;
+  delta = arcseg_f_sub(arcseg_f_scale(r, (double) s), q);
+  h = arcseg_f_sub(arcseg_f_mul(rr, rr), arcseg_f_mul(delta, delta));
+  if (arcseg_f_sign(h) != 1)
+    return false;
+  ArcsegFilter sq = arcseg_f_scale(tower_f_sqrt(h), (double) m->sigma * u);
+  if (! filter_div(arcseg_f_add(arcseg_f_scale(arcseg_f_mul(delta, dy),
+        -1.0), arcseg_f_mul(sq, dx)), l, &fx) ||
+      ! filter_div(arcseg_f_add(arcseg_f_mul(delta, dx),
+        arcseg_f_mul(sq, dy)), l, &fy))
+    return false;
+  return filter_point_bounds(m->q->cx, m->q->cy, fx, fy, x, y, box);
+}
+
+/* The crossing sigma of the circles of two centred arcs of one radius, as
+ * #tower_point_circles places it, read off the doubles with a bound on
+ * their error: with d = C2 - C1 and D = |d|^2 it is
+ * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)). False where a
+ * bound is wide, as where the circles nearly touch */
+static bool
+equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
+      m->p->radius != m->q->radius)
+    return false;
+  ArcsegFilter dx = arcseg_f_diff(m->q->cx, m->p->cx);
+  ArcsegFilter dy = arcseg_f_diff(m->q->cy, m->p->cy);
+  ArcsegFilter r = {m->p->radius, 0.0};
+  ArcsegFilter dd = arcseg_f_add(arcseg_f_mul(dx, dx), arcseg_f_mul(dy, dy));
+  ArcsegFilter h = arcseg_f_sub(arcseg_f_scale(arcseg_f_mul(r, r), 4.0), dd);
+  if (arcseg_f_sign(h) != 1 || arcseg_f_sign(dd) != 1)
+    return false;
+  ArcsegFilter f;
+  if (! filter_div(tower_f_sqrt(h), arcseg_f_scale(tower_f_sqrt(dd), 2.0),
+      &f))
+    return false;
+  f = arcseg_f_scale(f, (double) m->sigma);
+  ArcsegFilter fx = arcseg_f_sub(arcseg_f_scale(dx, 0.5), arcseg_f_mul(f, dy));
+  ArcsegFilter fy = arcseg_f_add(arcseg_f_scale(dy, 0.5), arcseg_f_mul(f, dx));
+  return filter_point_bounds(m->p->cx, m->p->cy, fx, fy, x, y, box);
+}
+
 /**
  * @brief Set the point of a meeting rounded once and a box holding it
  * exactly; false where it cannot be placed
+ * @details A point where a tangent touches one of two circles of one radius
+ * is read off the doubles with a bound on their error
+ * (#tangent_point_bounds), and so, where the bound is tight, are the
+ * crossing of two offsets of segments between the centres of such circles
+ * (#offset_lines_bounds), the meeting of such an offset with a circle
+ * (#offset_line_circle_bounds) and the crossing of two circles of one
+ * radius (#equal_circles_bounds); any other is placed in its tower
  */
 bool
 meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   assert(m); assert(x); assert(y); assert(box);
+  if (m->kind == MEET_TANGENT && tangent_point_bounds(m->tp, x, y, box))
+    return true;
+  if (m->kind == MEET_LINES && offset_lines_bounds(m, x, y, box))
+    return true;
+  if (m->kind == MEET_LINECIRCLE && offset_line_circle_bounds(m, x, y, box))
+    return true;
+  if (m->kind == MEET_ARCARC && equal_circles_bounds(m, x, y, box))
+    return true;
   TowerBoundsArg arg = {m, x, y, box};
   return tower_pred_run(meet_point_bounds_pred, &arg) == 1;
 }
@@ -9475,7 +9772,7 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
  * counterclockwise from the positive x axis, decided exactly: the
  * #edges_turn_cmp_exact of a point no double holds
  * @param[in] e1,e2 Segments between tangent points or centred arcs holding
- * the point; NULL for the positive x axis
+ * the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point
  * @param[in] at The point
@@ -9518,12 +9815,15 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   memset(&m1, 0, sizeof(MeetPoint));
   m0.kind = m1.kind = MEET_TANGENT;
   m0.tp = from; m1.tp = to;
-  if (! meet_point_bounds(&m0, &e.x1, &e.y1, box0) ||
-      ! meet_point_bounds(&m1, &e.x2, &e.y2, box1))
+  /* Each end bounded where the doubles bound it, else rounded alone */
+  if (! meet_point_bounds(&m0, &e.x1, &e.y1, box0))
   {
     tangent_point_round(from, &e.x1, &e.y1);
-    tangent_point_round(to, &e.x2, &e.y2);
     box0[0] = box0[1] = e.x1; box0[2] = box0[3] = e.y1;
+  }
+  if (! meet_point_bounds(&m1, &e.x2, &e.y2, box1))
+  {
+    tangent_point_round(to, &e.x2, &e.y2);
     box1[0] = box1[1] = e.x2; box1[2] = box1[3] = e.y2;
   }
   e.xmin = Min(box0[0], box1[0]); e.xmax = Max(box0[1], box1[1]);
@@ -9531,6 +9831,36 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
   e.length = e.dx * e.dx + e.dy * e.dy;
   edge_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the arc of the circle of a centre and a radius
+ * between two points where tangents touch that circle, which no double holds
+ * (#TangentPoint): the round join of a buffer about a vertex, between the
+ * offsets of the two edges meeting there
+ * @details The circle is the one the three doubles fix exactly, carried as
+ * #edges_add_circle carries it, and the arc is its part from @p from to
+ * @p to in the sense it turns; both points lie on it as the points where
+ * their tangents touch it, the circle they are built on. Every exact
+ * question about the arc reads the circle and the two points
+ * (#arrange_wound_tangent_surfaces), so the arc built about a vertex is
+ * that vertex's circle exactly, whatever the coordinates of its ends round to
+ * @param[in,out] edges Edge array
+ * @param[in] cx,cy Centre
+ * @param[in] radius Radius, positive
+ * @param[in] ccw Whether the arc turns counterclockwise
+ * @param[in] from,to The ends, points of the circle; they outlive the edge
+ * array
+ */
+void
+edges_add_tangent_arc(MeosArray *edges, double cx, double cy, double radius,
+  bool ccw, const TangentPoint *from, const TangentPoint *to)
+{
+  assert(edges); assert(radius > 0.0); assert(from); assert(to);
+  edges_add_circle(edges, cx, cy, radius, ccw);
+  Edge *e = &((Edge *) edges->elems)[edges->count - 1];
+  e->from = from; e->to = to;
   return;
 }
 
@@ -10617,8 +10947,8 @@ hull_arc_holds(const HullFeature *f, double phi)
  * their own
  * @param[in] feats,nfeats Features supporting the hull
  * @param[in] phi Direction
- * @param[out] px,py Point reaching that far, ignored when null
- * @param[out] which Feature reaching that far, ignored when null
+ * @param[out] px,py Point reaching that far, ignored when null @nullable
+ * @param[out] which Feature reaching that far, ignored when null @nullable
  */
 static double
 hull_support(const HullFeature *feats, int nfeats, double phi, double *px,
@@ -15411,7 +15741,7 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
  * at the first stretch of the line inside the area
  * @param[in] line_geom,area_geom Geometries
  * @param[in] ops Operands of the relationship, NULL where there is none
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix
  */
 static void
@@ -18285,7 +18615,7 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  * dimension of the boundary of a linear geometry reads the parity of all its
  * endpoints, which a query answered by the interiors does not pay
  * @param[in] g1,g2 Geometries
- * @param[in] q Query, NULL for the whole matrix
+ * @param[in] q Query, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix, initialized by the caller
  */
 static void
@@ -18375,7 +18705,7 @@ relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
  * @param[in] g1,g2 Geometries
  * @param[in] ops Operands of the relationship the matrix answers a step of,
  * NULL where the matrix is asked for on its own
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in] meet True where the caller has found that the geometries share a
  * point, which settles that neither is empty and that their extents are not
  * apart

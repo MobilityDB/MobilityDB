@@ -274,8 +274,8 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
  * @ingroup meos_pointcloud_agg
  * @brief Transition function for temporal extent aggregate of temporal point
  * clouds
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal point cloud to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal point cloud to aggregate @nullable
  * @csqlfn #Tpc_extent_transfn()
  * @csqlaggfn #extentTransition()
  */
@@ -306,8 +306,8 @@ tpc_extent_transfn(TPCBox *state, const Temporal *temp)
  * @ingroup meos_pointcloud_agg
  * @brief Transition function for temporal extent aggregate of temporal point
  * cloud boxes
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] box Temporal point cloud box to aggregate, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] box Temporal point cloud box to aggregate @nullable
  * @note The function is also the combine function of the extent aggregates
  * of temporal point cloud boxes and temporal point clouds, the box to
  * aggregate being the state of another partial aggregation

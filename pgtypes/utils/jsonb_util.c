@@ -117,6 +117,30 @@ json_add_tofree(void *value)
 }
 
 /**
+ * @brief Replace a value to be freed after a JSONB parsing by the one it moved
+ * to (MEOS)
+ * @details A container whose array is enlarged with repalloc moves to a new
+ * block and the old one is released, so the list keeps the block the
+ * container holds and the reset frees it once
+ */
+void
+json_move_tofree(void *old, void *moved)
+{
+  json_to_free *list = JSON_TO_FREE;
+  if (! list || old == moved)
+    return;
+  for (int i = list->tofree_count - 1; i >= 0; i--)
+  {
+    if (list->tofree[i] == old)
+    {
+      list->tofree[i] = moved;
+      return;
+    }
+  }
+  return;
+}
+
+/**
  * @brief Reset the list that contains the values to be freed after a JSON
  * parsing
  */
@@ -855,8 +879,11 @@ appendKey(JsonbParseState *pstate, JsonbValue *string)
   if (object->val.object.nPairs >= (int) pstate->size)
   {
     pstate->size *= 2;
+    JsonbPair *pairs = object->val.object.pairs; /* MEOS */
     object->val.object.pairs = repalloc(object->val.object.pairs,
       sizeof(JsonbPair) * pstate->size);
+    /* MEOS: the list to free follows the pairs to their new block */
+    json_move_tofree(pairs, object->val.object.pairs);
   }
   object->val.object.pairs[object->val.object.nPairs].key = *string;
   object->val.object.pairs[object->val.object.nPairs].order = object->val.object.nPairs;
@@ -894,8 +921,11 @@ appendElement(JsonbParseState *pstate, JsonbValue *scalarVal)
   if (array->val.array.nElems >= (int) pstate->size)
   {
     pstate->size *= 2;
+    JsonbValue *elems = array->val.array.elems; /* MEOS */
     array->val.array.elems = repalloc(array->val.array.elems,
       sizeof(JsonbValue) * pstate->size);
+    /* MEOS: the list to free follows the elements to their new block */
+    json_move_tofree(elems, array->val.array.elems);
   }
   array->val.array.elems[array->val.array.nElems++] = *scalarVal;
 }

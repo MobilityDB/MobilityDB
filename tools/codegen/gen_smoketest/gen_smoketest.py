@@ -2285,13 +2285,10 @@ TJSONB_CONFIG = dict(
     },
     skip={},
     # json_each / json_each_text / jsonb_each / jsonb_each_text return the
-    # object's keys, but ALSO write each value directly into the caller-supplied
-    # `values` buffer element-by-element (`values[i] = state->values[i]`,
-    # pgtypes/utils/jsonfuncs.c) -- there is no `int *` capacity in, only
-    # `int *count` out, so the caller must pre-size the buffer before knowing the
-    # object's key count. That shape (a pre-sized OUT buffer, not a sized INPUT
-    # array) is not one of emit_call's generic paths; it is exercised by hand in
-    # the cleanup block instead, matching trgeometry_value_n.
+    # object's keys and, through `values`, an array of its values the function
+    # allocates, both `count` long. Two arrays answered by one call are not one
+    # of emit_call's generic paths; they are exercised by hand in the cleanup
+    # block instead, matching trgeometry_value_n.
     manual=[r"re:^json_each$|^json_each_text$|^jsonb_each$|^jsonb_each_text$"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
@@ -2385,60 +2382,58 @@ TJSONB_CONFIG = dict(
 """,
     cleanup="""\
   /* Manually exercise json_each / json_each_text / jsonb_each /
-   * jsonb_each_text: each writes its values directly into a caller-supplied
-   * buffer element-by-element with no advance sizing beyond the internal
-   * 256-element cap they document, so the caller pre-sizes a generous stack
-   * buffer rather than being handed one. */
+   * jsonb_each_text: each answers the keys and, through its values
+   * parameter, the array of values it allocates, both count long. */
   {
-    text *values_buf[64];
+    text **values_buf = NULL;
     int count = 0;
-    text **keys = json_each(json_doc1, values_buf, &count);
+    text **keys = json_each(json_doc1, &values_buf, &count);
     printf("json_each: %s n=%d\\n", keys ? "OK" : "NULL", count);
     if (keys) {
       for (int _i = 0; _i < count; _i++) {
         if (keys[_i]) free(keys[_i]);
         if (values_buf[_i]) free(values_buf[_i]);
       }
-      free(keys);
+      free(keys); free(values_buf);
     }
   }
   {
-    text *values_buf[64];
+    text **values_buf = NULL;
     int count = 0;
-    text **keys = json_each_text(json_doc1, values_buf, &count);
+    text **keys = json_each_text(json_doc1, &values_buf, &count);
     printf("json_each_text: %s n=%d\\n", keys ? "OK" : "NULL", count);
     if (keys) {
       for (int _i = 0; _i < count; _i++) {
         if (keys[_i]) free(keys[_i]);
         if (values_buf[_i]) free(values_buf[_i]);
       }
-      free(keys);
+      free(keys); free(values_buf);
     }
   }
   {
-    Jsonb *values_buf[64];
+    Jsonb **values_buf = NULL;
     int count = 0;
-    text **keys = jsonb_each(jb_obj1, values_buf, &count);
+    text **keys = jsonb_each(jb_obj1, &values_buf, &count);
     printf("jsonb_each: %s n=%d\\n", keys ? "OK" : "NULL", count);
     if (keys) {
       for (int _i = 0; _i < count; _i++) {
         if (keys[_i]) free(keys[_i]);
         if (values_buf[_i]) free(values_buf[_i]);
       }
-      free(keys);
+      free(keys); free(values_buf);
     }
   }
   {
-    text *values_buf[64];
+    text **values_buf = NULL;
     int count = 0;
-    text **keys = jsonb_each_text(jb_obj1, values_buf, &count);
+    text **keys = jsonb_each_text(jb_obj1, &values_buf, &count);
     printf("jsonb_each_text: %s n=%d\\n", keys ? "OK" : "NULL", count);
     if (keys) {
       for (int _i = 0; _i < count; _i++) {
         if (keys[_i]) free(keys[_i]);
         if (values_buf[_i]) free(values_buf[_i]);
       }
-      free(keys);
+      free(keys); free(values_buf);
     }
   }
 

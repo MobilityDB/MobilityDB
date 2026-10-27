@@ -194,7 +194,7 @@ extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
 typedef struct
 {
   const char *name;           /**< Dimension name, unique within the schema */
-  const char *description;    /**< Dimension description, may be @p NULL */
+  const char *description;    /**< Dimension description @nullable */
   int32_t position;           /**< Position within the schema, from 1 */
   const char *interpretation; /**< Name of the numeric type stored */
   double scale;               /**< Factor a stored value is multiplied by */
@@ -216,6 +216,12 @@ extern int32_t meos_pc_schema_srid(uint32_t pcid);
 extern const char *meos_pc_schema_compression(uint32_t pcid);
 extern int32_t meos_pc_schema_ndims(uint32_t pcid);
 extern void meos_set_pointcloud_schemas_xml(const char *path);
+extern void meos_initialize_pointcloud(void);
+
+/* Indexes of TPCBox values */
+
+extern RTree *rtree_create_tpcbox();
+extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
 
 /* Comparison */
 

@@ -400,7 +400,7 @@ stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @param[in] srid SRID
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
- * @param[in] s Span, may be `NULL`
+ * @param[in] s Span @nullable
  * @csqlfn #Stbox_constructor_x(), #Stbox_constructor_z(),
  *   #Stbox_constructor_t(), #Stbox_constructor_xt(), #Stbox_constructor_zt(),
  *   #Geodstbox_constructor_z(), #Geodstbox_constructor_zt()
@@ -1604,8 +1604,8 @@ stboxarr_round(const STBox *boxarr, int count, int maxdd)
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
  * by two intervals
  * @param[in] box Spatiotemporal box
- * @param[in] shift Interval to shift the value span, may be `NULL`
- * @param[in] duration Duration of the result, may be `NULL`
+ * @param[in] shift Interval to shift the value span @nullable
+ * @param[in] duration Duration of the result @nullable
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *

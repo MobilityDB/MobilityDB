@@ -62,8 +62,8 @@
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal and of temporal booleans
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tbool_tand_transfn()
  * @csqlaggfn #tAndTransition()
  */
@@ -82,8 +82,8 @@ tbool_tand_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal or of temporal booleans
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tbool_tor_transfn()
  * @csqlaggfn #tOrTransition()
  */
@@ -102,8 +102,8 @@ tbool_tor_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tint_tmin_transfn()
  * @csqlaggfn #tMinTransition()
  */
@@ -122,8 +122,8 @@ tint_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tbigint_tmin_transfn()
  * @csqlaggfn #tMinTransition()
  */
@@ -142,8 +142,8 @@ tbigint_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tfloat_tmin_transfn()
  * @csqlaggfn #tMinTransition()
  */
@@ -162,8 +162,8 @@ tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tint_tmax_transfn()
  * @csqlaggfn #tMaxTransition()
  */
@@ -182,8 +182,8 @@ tint_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tbigint_tmax_transfn()
  * @csqlaggfn #tMaxTransition()
  */
@@ -202,8 +202,8 @@ tbigint_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tfloat_tmax_transfn()
  * @csqlaggfn #tMaxTransition()
  */
@@ -222,8 +222,8 @@ tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tint_tsum_transfn()
  * @csqlaggfn #tSumTransition()
  */
@@ -242,8 +242,8 @@ tint_tsum_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tbigint_tsum_transfn()
  * @csqlaggfn #tSumTransition()
  */
@@ -262,8 +262,8 @@ tbigint_tsum_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tfloat_tsum_transfn()
  * @csqlaggfn #tSumTransition()
  */
@@ -282,8 +282,8 @@ tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal average of temporal numbers
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Tnumber_tavg_transfn()
  * @csqlaggfn #tAvgTransition()
  */
@@ -303,8 +303,8 @@ tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal text values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Ttext_tmin_transfn()
  * @csqlaggfn #tMinTransition()
  */
@@ -323,8 +323,8 @@ ttext_tmin_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal text values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Ttext_tmax_transfn()
  * @csqlaggfn #tMaxTransition()
  */
@@ -343,8 +343,8 @@ ttext_tmax_transfn(SkipList *state, const Temporal *temp)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for the merge aggregate of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value to aggregate
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
  * @csqlfn #Temporal_merge_transfn()
  * @csqlaggfn #mergeTransition()
  */
@@ -478,8 +478,8 @@ tnumber_tavg_combinefn(SkipList *state1, SkipList *state2)
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wmin_transfn()
  * @csqlaggfn #wMinTransition()
@@ -501,8 +501,8 @@ tint_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmin_transfn()
  * @csqlaggfn #wMinTransition()
@@ -524,8 +524,8 @@ tbigint_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal minimum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmin_transfn()
  * @csqlaggfn #wMinTransition()
@@ -547,8 +547,8 @@ tfloat_wmin_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
@@ -570,8 +570,8 @@ tint_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
@@ -593,8 +593,8 @@ tbigint_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal maximum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wmax_transfn()
  * @csqlaggfn #wMaxTransition()
@@ -616,8 +616,8 @@ tfloat_wmax_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tint_wsum_transfn()
  * @csqlaggfn #wSumTransition()
@@ -639,8 +639,8 @@ tint_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tbigint_wsum_transfn()
  * @csqlaggfn #wSumTransition()
@@ -662,8 +662,8 @@ tbigint_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal sum of temporal values
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tfloat_wsum_transfn()
  * @csqlaggfn #wSumTransition()
@@ -685,8 +685,8 @@ tfloat_wsum_transfn(SkipList *state, const Temporal *temp,
 /**
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal average of temporal numbers
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Tnumber_wavg_transfn()
  * @csqlaggfn #wAvgTransition()
@@ -710,8 +710,8 @@ tnumber_wavg_transfn(SkipList *state, const Temporal *temp,
  * @ingroup meos_temporal_agg
  * @brief Transition function for temporal count of temporal values over a
  * moving window
- * @param[in,out] state Current aggregate state, may be `NULL`
- * @param[in] temp Temporal value
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value @nullable
  * @param[in] interv Interval
  * @csqlfn #Temporal_wcount_transfn()
  * @csqlaggfn #wCountTransition()
