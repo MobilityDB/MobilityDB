@@ -88,6 +88,12 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   0.9955, 0.9167, 0.5725 and 0.8140 times GEOS 3.14.1 called directly. Left from the same
   report: the order of a segment and an arc leaving one tangent point alike (ARR_TURN), and the
   winding numbers about a node of a ring whose spike revisits its own coordinates (ARR_DEPTH).
+- **The buffer at extreme coordinates waits for the buffer to be exact on every input**, as the
+  owner decided on 2026-10-27: a shape whose tower needs more than 160 limbs keeps declining; a
+  distance below the rounding of the coordinates, where the written offsets fall onto the input,
+  is declined once the old pipeline is removed and the arrangement is the only path; the sign of
+  a cross product whose terms overflow (`cross_product_sign`) is its own pull request. Next is
+  mitre and bevel joins on the arrangement.
 - **Open pull requests** on 2026-10-02: MobilityDB #2861 (these notes) and #2919, which names an
   operation over a base value as MobilityDB names it over its own types (decision 0.5); #2920
   touches the GEOS checker's baseline only; #785, #777 and #677 touch none of these names or
