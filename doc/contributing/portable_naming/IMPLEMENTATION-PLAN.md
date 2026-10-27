@@ -57,6 +57,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `meos/sortkey-buffer-nullable` rewrites `71207d8043` there, the notes of `out` in `temporal.c`.
   MEOS-API reads the tag alone, branch `parser/nullable-reads-the-tag-only`: the ecosystem targets 1.4,
   as the owner decided on 2026-10-27, so no prose note of `stable-1.3` is read.
+  A SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument, as the
+  owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
+  branch `tools/strict-agrees-with-nullable`; the findings are fixed one topic at a time.
 - **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
   plan: the shuffle of the smallest enclosing circle (`mec_shuffle` of
   `meos/src/geo/postgis_funcs.c`) draws from a generator of its own call instead of the C
