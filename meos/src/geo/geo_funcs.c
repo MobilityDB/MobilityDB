@@ -1702,6 +1702,42 @@ square_products_sign(const double *left, const double *right,
 }
 
 /**
+ * @brief Return the sign of the squared distance between two points in the
+ * plane less the square of a sum of up to three doubles, computed exactly
+ * @details The squared distance is the sum over the coordinates of
+ * `q*q - 2*q*p + p*p` and the square of the sum that of the squares of its
+ * terms and of twice the product of each pair, each a product of the input
+ * doubles times 1, -1 or -2, as #point_distance_offset_side_sign sets them,
+ * so #square_products_sign decides it for any finite doubles, where a product
+ * underflows below the smallest double or overflows past the largest
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] t,nt Terms of the sum and their number, from 1 to 3
+ */
+int
+point_distance_square_sum_sign(const double *p, const double *q,
+  const double *t, int nt)
+{
+  assert(nt >= 1 && nt <= 3);
+  double left[12], right[12], factor[12];
+  int n = 0;
+  for (int i = 0; i < 2; i++)
+  {
+    left[n] = q[i]; right[n] = q[i]; factor[n++] = 1.0;
+    left[n] = q[i]; right[n] = p[i]; factor[n++] = -2.0;
+    left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
+  }
+  for (int i = 0; i < nt; i++)
+  {
+    left[n] = t[i]; right[n] = t[i]; factor[n++] = -1.0;
+    for (int j = i + 1; j < nt; j++)
+    {
+      left[n] = t[i]; right[n] = t[j]; factor[n++] = -2.0;
+    }
+  }
+  return square_products_sign(left, right, factor, n);
+}
+
+/**
  * @brief Widen a range of lowest bits by those of some doubles, zeros left
  * out
  */

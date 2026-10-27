@@ -1182,8 +1182,10 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * length the sign states whether the centres are nearer than, at, or farther
  * than it, which is how the relationships below read the discs, on the
  * doubles they hold and without constructing any distance. The sign is
- * filtered and then exact, as #cross_product_sign_exact decides an
- * orientation, through #polynomial_sign_exact
+ * filtered and then exact, through #point_distance_square_sum_sign, whose
+ * products of the input doubles are exact for any finite doubles, where a
+ * product of two subnormal values underflows and one of two values beyond
+ * 2^512 overflows
  * @param[in] cb1,cb2 Circular buffers
  * @param[in] lterms,nterms Doubles whose sum is the length
  */
@@ -1222,17 +1224,9 @@ cbuffer_gap_sign(const Cbuffer *cb1, const Cbuffer *cb2, const double *lterms,
       return -1;
   }
 
-  /* Exact sums: the differences of the coordinates and the length */
-  ExactSum sums[3];
-  double t[2];
-  t[0] = cb1->x; t[1] = - cb2->x;
-  exact_sum_set(&sums[0], t, 2);
-  t[0] = cb1->y; t[1] = - cb2->y;
-  exact_sum_set(&sums[1], t, 2);
-  exact_sum_set(&sums[2], lterms, nterms);
-  static const PolyTerm gap[3] = {
-    {1.0, 2, {0, 0, 0, 0}}, {1.0, 2, {1, 1, 0, 0}}, {-1.0, 2, {2, 2, 0, 0}}};
-  return polynomial_sign_exact(sums, gap, 3);
+  /* The exact sign on the input doubles */
+  const double p[2] = {cb1->x, cb1->y}, q[2] = {cb2->x, cb2->y};
+  return point_distance_square_sum_sign(p, q, lterms, nterms);
 }
 
 /**

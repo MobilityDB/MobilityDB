@@ -246,6 +246,8 @@ extern double cross_product_exact(double ax, double ay, double bx, double by,
 extern int dot_product_sign_exact(const POINT3D *p, const POINT3D *q);
 extern int point_within_distance_sign_exact(double px, double py, double qx,
   double qy, double d);
+extern int point_distance_square_sum_sign(const double *p, const double *q,
+  const double *t, int nt);
 extern double point_distance_exact(const double *p, const double *q,
   int ndims);
 extern double point_distance_offset_exact(const double *p, const double *q,
