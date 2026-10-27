@@ -59,7 +59,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   exact sums of three points (`mec_exact_set`), the support Welzl's loop finds
   (`mec_welzl_support`) and the shuffle (`mec_shuffle`). Branch
   `geo/buffer-exact-join-arc` rewrites `adbb2ebad1` there, its 26 lines moved unchanged into
-  those four, as the owner approved on 2026-10-27.
+  those four, as the owner approved on 2026-10-27. The branch buffers a polygon with round joins
+  by its exact offset curves (commit `3ee90815ff` on master `71282af6fc`, five commits): CGAL's
+  circle-segment traits agree on 3979820 of 3979820 sharp queries and 1313 of 1313 natural
+  areas, and its callgrind cost beside GEOS 3.14.1 called directly is 0.9955 at distance 1,
+  0.9167 at 50, 0.5725 at 500 and 0.8140 on the joints. Left: lines, points, mitre and bevel
+  joins, caps, curves, erosion and collections, each moved onto the arrangement in its own
+  pull request; lines on branch `fix/buffer-a-line-exactly`.
 - **Open pull requests** on 2026-10-02: MobilityDB #2861 (these notes) and #2919, which names an
   operation over a base value as MobilityDB names it over its own types (decision 0.5); #2920
   touches the GEOS checker's baseline only; #785, #777 and #677 touch none of these names or
