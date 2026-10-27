@@ -148,6 +148,14 @@ jobs:
       - name: Check that every pointer argument states whether it accepts NULL
         run: python3 tools/scripts/check_nullable_params.py
 
+  strict_nullable_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Check that a SQL function is STRICT exactly where no argument reaches a MEOS argument accepting NULL
+        run: python3 tools/scripts/check_strict_nullable.py
+
   fixture_dates_check:
     runs-on: ubuntu-latest
     steps:
