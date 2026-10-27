@@ -13634,6 +13634,31 @@ make_geometry_points(int32_t srid, const POINT2D *points, uint32_t nhull)
 }
 
 /**
+ * @brief Return the convex hull of the end points of the edges of a geometry
+ * @details The hull is not closed. When @p points is not NULL it receives the
+ * end points in the order of the edges, and the caller frees them
+ */
+static uint32_t
+edges_points_hull(const MeosArray *edges, POINT2D **points, uint32_t *npoints,
+  POINT2D **hull)
+{
+  uint32_t nedges = edges->count;
+  POINT2D *pts = palloc(sizeof(POINT2D) * Max(2 * nedges, 1));
+  uint32_t n = 0;
+  for (uint32_t i = 0; i < nedges; i++)
+    add_edge_points((Edge *) meos_array_get_intl(edges, i), pts, &n);
+  uint32_t nhull = convex_hull_points(pts, n, hull);
+  if (points)
+  {
+    *points = pts;
+    *npoints = n;
+  }
+  else
+    pfree(pts);
+  return nhull;
+}
+
+/**
  * @brief Order the two vertices of a degenerate hull as they appear in the
  * geometry
  * @details PostGIS function @p ST_ConvexHull() reports a two-vertex hull in
@@ -14152,58 +14177,50 @@ hull_circle_inside(const POINT2D *hull, uint32_t nhull,
 }
 
 /**
- * @brief Collect the vertices of the hull of the end points of the edges of a
- * geometry and the arcs reaching past that hull
- * @details A point within the hull of the other points never supports the
- * hull, so the points are reduced to their own hull, which is what keeps the
- * number of features small; an arc whose circle lies inside that hull never
- * supports it either, and is left out (#hull_circle_inside)
+ * @brief Return the arcs of a geometry reaching past the hull of the end
+ * points of its edges
+ * @details An arc whose circle lies inside that hull never supports the hull
+ * of the geometry, and is left out (#hull_circle_inside)
  * @param[in] edges Edges of the geometry
- * @param[out] hull Vertices of the hull of the points, counterclockwise
- * (#convex_hull_points)
- * @param[out] arcs,narcs Arcs whose circle that hull does not hold
- * @return The number of vertices of the hull of the points
+ * @param[in] hull,nhull Vertices of the hull of the end points of the edges,
+ * counterclockwise (#edges_points_hull)
+ * @param[out] narcs Number of arcs returned
  */
-static uint32_t
-hull_points_arcs(const MeosArray *edges, POINT2D **hull, const Edge ***arcs,
+static const Edge **
+hull_points_arcs(const MeosArray *edges, const POINT2D *hull, uint32_t nhull,
   int *narcs)
 {
   int nedges = (int) edges->count;
-  POINT2D *points = palloc(sizeof(POINT2D) * 2 * Max(nedges, 1));
-  uint32_t npoints = 0;
-  for (int i = 0; i < nedges; i++)
-    add_edge_points((Edge *) meos_array_get_intl(edges, i), points, &npoints);
-  uint32_t nhull = convex_hull_points(points, npoints, hull);
-  pfree(points);
   const Edge **result = palloc(sizeof(Edge *) * Max(nedges, 1));
   HullEdgeMax max;
-  HullEdgeFilter *ef = hull_edge_filters(*hull, nhull, &max);
+  HullEdgeFilter *ef = hull_edge_filters(hull, nhull, &max);
   int n = 0;
   for (int i = 0; i < nedges; i++)
   {
     const Edge *e = (Edge *) meos_array_get_intl(edges, i);
     if ((e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) &&
-        ! hull_circle_inside(*hull, nhull, ef, &max, e))
+        ! hull_circle_inside(hull, nhull, ef, &max, e))
       result[n++] = e;
   }
   pfree(ef);
-  *arcs = result;
   *narcs = n;
-  return nhull;
+  return result;
 }
 
 /**
  * @brief Collect the features supporting the convex hull of a geometry: the
  * vertices of the hull of the end points of its edges and the circles of the
  * arcs reaching past that hull (#hull_points_arcs)
+ * @details A point within the hull of the other points never supports the
+ * hull, so reading the vertices of that hull rather than every end point
+ * keeps the number of features small
  */
 static HullFeature *
-hull_features(const MeosArray *edges, int *nfeats)
+hull_features(const MeosArray *edges, const POINT2D *hull, uint32_t nhull,
+  int *nfeats)
 {
-  POINT2D *hull = NULL;
-  const Edge **arcs = NULL;
   int narcs = 0;
-  uint32_t nhull = hull_points_arcs(edges, &hull, &arcs, &narcs);
+  const Edge **arcs = hull_points_arcs(edges, hull, nhull, &narcs);
   HullFeature *result = palloc(sizeof(HullFeature) *
     Max((int) nhull + narcs, 1));
   int n = 0;
@@ -14222,8 +14239,6 @@ hull_features(const MeosArray *edges, int *nfeats)
     result[n].ccw = e->ccw; result[n].is_arc = true;
     n++;
   }
-  if (hull)
-    pfree(hull);
   pfree(arcs);
   *nfeats = n;
   return result;
@@ -15713,42 +15728,6 @@ hull_boundary_geometry(int32_t srid, const HullBoundary *pieces, int npieces)
 }
 
 /**
- * @brief Return the convex hull of a geometry carrying a circular arc
- * @details The boundary is walked (#hull_walk) where an arc reaches past the
- * hull of the points; where none does, or none of those touches the hull,
- * the hull is the one the points place
- */
-static LWGEOM *
-convex_hull_arc(const LWGEOM *geom, const MeosArray *edges)
-{
-  POINT2D *hull = NULL;
-  const Edge **arcs = NULL;
-  int narcs = 0;
-  uint32_t nhull = hull_points_arcs(edges, &hull, &arcs, &narcs);
-  int npieces = 0;
-  HullBoundary *pieces = (narcs > 0 && nhull > 0) ?
-    hull_walk(hull, nhull, arcs, narcs, &npieces) : NULL;
-  bool curved = false;
-  for (int i = 0; i < npieces && ! curved; i++)
-    curved = pieces[i].is_arc;
-  LWGEOM *result;
-  if (narcs > 0 && nhull > 0 && ! pieces)
-    result = NULL;
-  else if (curved)
-    result = hull_boundary_geometry(geom->srid, pieces, npieces);
-  else
-    result = (nhull == 0) ?
-      lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0)) :
-      make_geometry_hull(geom->srid, hull, nhull);
-  if (hull)
-    pfree(hull);
-  if (pieces)
-    pfree(pieces);
-  pfree(arcs);
-  return result;
-}
-
-/**
  * @brief Return the area of the rectangle of a given direction enclosing a
  * geometry, and its corners
  * @details The rectangle holds every point reaching no further than the
@@ -15792,8 +15771,12 @@ mrr_arc_rectangle(const HullFeature *feats, int nfeats, double phi,
 static LWGEOM *
 mrr_arc(const LWGEOM *geom, const MeosArray *edges)
 {
+  POINT2D *hull = NULL;
+  uint32_t nhull = edges_points_hull(edges, NULL, NULL, &hull);
   int nfeats = 0;
-  HullFeature *feats = hull_features(edges, &nfeats);
+  HullFeature *feats = hull_features(edges, hull, nhull, &nfeats);
+  if (hull)
+    pfree(hull);
   double *dirs;
   int ndirs = hull_directions(feats, nfeats, &dirs);
 
@@ -15895,25 +15878,10 @@ meos_oriented_envelope(const LWGEOM *geom)
     return result;
   }
 
-  /* Every edge contributes its two end points */
-  uint32_t maxpoints = 2 * nedges;
-  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
-  uint32_t npoints = 0;
-
-  /* Extract the exact extremal points */
-  for (uint32_t i = 0; i < nedges; i++)
-  {
-    const Edge *e = (Edge *) meos_array_get_intl(edge_array, i);
-    add_edge_points(e, points, &npoints);
-  }
-
-  /* We no longer need the edge array for the convex hull */
-  meos_array_destroy(edge_array);
-
-  /* Convex hull */
+  /* The hull of the end points of the edges */
   POINT2D *hull = NULL;
-  uint32_t nhull = convex_hull_points(points, npoints, &hull);
-  pfree(points);
+  uint32_t nhull = edges_points_hull(edge_array, NULL, NULL, &hull);
+  meos_array_destroy(edge_array);
   if (nhull == 0)
     return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
 
@@ -16090,46 +16058,46 @@ convex_hull(const LWGEOM *geom)
     return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
   }
 
-  /* The hull below is placed on the vertices, which are the whole of a
-   * geometry only while every edge of it is a segment. An arc reaches past
-   * the points that define it, and belongs to the hull as the piece of its
-   * circle that no other feature reaches past */
-  if (lwgeom_has_arc(geom))
+  /* The hull of the end points of the edges */
+  POINT2D *points, *hull = NULL;
+  uint32_t npoints;
+  uint32_t nhull = edges_points_hull(edge_array, &points, &npoints, &hull);
+
+  /* An arc reaches past the points that define it, and belongs to the hull as
+   * the piece of its circle that no other feature reaches past: the boundary
+   * is walked (#hull_walk) where an arc reaches past the hull of the points */
+  LWGEOM *result = NULL;
+  bool declined = false;
+  if (nhull > 0 && lwgeom_has_arc(geom))
   {
-    LWGEOM *result = convex_hull_arc(geom, edge_array);
-    meos_array_destroy(edge_array);
-    return result;
+    int narcs = 0, npieces = 0;
+    const Edge **arcs = hull_points_arcs(edge_array, hull, nhull, &narcs);
+    HullBoundary *pieces = (narcs > 0) ?
+      hull_walk(hull, nhull, arcs, narcs, &npieces) : NULL;
+    declined = (narcs > 0 && ! pieces);
+    for (int i = 0; i < npieces && ! result; i++)
+    {
+      if (pieces[i].is_arc)
+        result = hull_boundary_geometry(geom->srid, pieces, npieces);
+    }
+    if (pieces)
+      pfree(pieces);
+    pfree(arcs);
   }
-
-  /* Every edge contributes its two end points */
-  uint32_t maxpoints = 2 * nedges;
-  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
-  uint32_t npoints = 0;
-
-  /* Extract the exact extremal points */
-  for (uint32_t i = 0; i < nedges; i++)
-  {
-    const Edge *e = (Edge *) meos_array_get_intl(edge_array, i);
-    add_edge_points(e, points, &npoints);
-  }
-
-  /* We no longer need the edge array for the convex hull */
   meos_array_destroy(edge_array);
 
-  /* Convex hull */
-  POINT2D *hull = NULL;
-  uint32_t nhull = convex_hull_points(points, npoints, &hull);
-  if (nhull == 0)
+  /* No arc reaches past the points, so the hull is the one they place */
+  if (! result && ! declined)
   {
-    pfree(points);
-    return lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0));
+    if (nhull == 2)
+      hull_order_as_input(points, npoints, hull);
+    result = (nhull == 0) ?
+      lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0)) :
+      make_geometry_hull(geom->srid, hull, nhull);
   }
-  if (nhull == 2)
-    hull_order_as_input(points, npoints, hull);
   pfree(points);
-
-  LWGEOM *result = make_geometry_hull(geom->srid, hull, nhull);
-  pfree(hull);
+  if (hull)
+    pfree(hull);
   return result;
 }
 
