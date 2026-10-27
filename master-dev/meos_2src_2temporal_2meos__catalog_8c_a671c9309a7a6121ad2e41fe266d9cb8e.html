@@ -119,6 +119,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a7c3bd404d0de8486d9b5655f80029648.html#a7c3bd404d0de8486d9b5655f80029648">MEOS_TYPE_NAMES</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a7c840081eeaf8d0db64f3095beaa565c.html#a7c840081eeaf8d0db64f3095beaa565c">meosoper_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a8b78d4d0f4b56ec512fc03a1b321f4d3.html#a8b78d4d0f4b56ec512fc03a1b321f4d3">meosoper_name</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a652d68b9e06e4cbe9919aef6f09e959a.html#a652d68b9e06e4cbe9919aef6f09e959a">meostype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_abb0f0d2126e6a2e1ab18a69aae1c12ed.html#abb0f0d2126e6a2e1ab18a69aae1c12ed">meostype_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a1667fb7625ceab7594c69c5926fd9a1f.html#a1667fb7625ceab7594c69c5926fd9a1f">meostype_name</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2meos__catalog_8c_a4309dae1cb659dd06cfc280739f7eb5c.html#a4309dae1cb659dd06cfc280739f7eb5c">numset_type</a></td></tr>
@@ -188,8 +189,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the bounding box type of a set or a temporal type. </p>
-<p >A value carries the bounding box its type prescribes: a span for a temporal alphanumeric value, a temporal box for a temporal number, a spatiotemporal box for a spatial set and a temporal spatial value, and a point cloud box for a temporal point cloud value, whose dimensions live in the schema its identifier names. A type that carries no bounding box, such as an alphanumeric or a point cloud SET, answers <code>T_UNKNOWN</code>. </p>
+<p>Return the bounding box type of a type. </p>
+<p >A box type, a span or a temporal, spatiotemporal or point cloud box, is its own bounding box; every other type is bounded by its box: the span its bounds state for a number or time set and for a span set, the spatiotemporal box a spatial set stores, a span for a temporal alphanumeric value, a temporal box for a temporal number, a spatiotemporal box for a temporal spatial value, and a point cloud box for a temporal point cloud value, whose dimensions live in the schema its identifier names. Every host indexes a value by this box, so the GiST and SP-GiST operator classes of MobilityDB and the in-memory <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> and <a class="el" href="structSPTree.html" title="In-memory space-partitioning index (quad-tree or k-d tree)">SPTree</a>, which MobilityDuck's indexes are, store the same key. A type with no box, such as a base type, an alphanumeric set or a point cloud set, answers <code>T_UNKNOWN</code>. </p>
 
 </div>
 </div>
