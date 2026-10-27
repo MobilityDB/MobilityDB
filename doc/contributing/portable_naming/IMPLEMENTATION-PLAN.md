@@ -73,7 +73,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   joins, caps, curves, erosion and collections, each moved onto the arrangement in its own
   pull request; lines on branch `fix/buffer-a-line-exactly`.
 - **A tower question stops computing in expansions once they leave their exact range**, outside
-  the plan: branch `fix/buffer-cost-at-wide-exponent-spread` (`a3109bb41a` on `887fdf4646`).
+  the plan: branch `fix/buffer-cost-at-wide-exponent-spread` (`ac6f4e4f22` on `887fdf4646`).
   `tx_add` and `tx_mul` of `meos/src/geo/geo_funcs.c` return their first operand once the arena
   is unsafe, the run's answer being discarded for the one in WideDyadic. The buffer of a rhombus
   whose coordinates span 2^1000 answers in 0.016 s against 7 s; CGAL agrees on
