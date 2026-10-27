@@ -414,15 +414,21 @@ a key is indexed in both hosts, 47 types: the 37 PostgreSQL's GiST and SP-GiST o
 index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
 `poseset`, `posechainset`, `cbufferset`, `h3indexset`, `quadbinset`, `s2cellset`), whose `stbox`
 the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
-`intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked); branch
-`index/pg-every-keyed-type` (`647190c6c6` on master `71282af6fc`) gives the nine an R-tree GiST
-class and quad-tree and k-d tree SP-GiST classes, the geo sets' in `073_tgeo_gist` and
-`074_tgeo_spgist` and the others' in their family's set file, `<->` served for the sets whose
-elements have a distance. A pose chain reads as the pose its composition gives
-(`posechain_prefix_pose`), so `tposechain` has every operation `tpose` has (DECIDED BY THE OWNER
-2026-10-27): its distance surface, through `tposechain_to_tpose` as the temporal spatial
-relationships of `564_tposechain_tempspatialrels` go, and then the classes of `tpose` from the
-`indexes` template. MobilityDuck's
+`intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). A pose chain reads as
+the pose its composition gives (`posechain_prefix_pose`), so `tposechain` has every operation
+`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (`840a0d544d` on
+master `71282af6fc`) gives it the distance surface of `tpose`, the MEOS functions composing
+through `tposechain_to_tpose` and the SQL from a `distance` template of the inherited generator
+that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
+gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
+`Unknown types for distance between values: posechain`), and pose chain sets take `setDistance`.
+Branch `index/pg-every-keyed-type` (`1a3e77bdbb`, stacked on it) gives the nine sets and
+`tposechain` an R-tree GiST class and quad-tree and k-d tree SP-GiST classes, a set's classes
+written by the template of its temporal type's index file under the generator flags `setindex`
+and `setmetric`, the geo sets' in `073_tgeo_gist` and `074_tgeo_spgist`, `<->` served for the sets
+whose elements have a distance; a set file cannot carry them, its generated set operations and
+distance owning its end. Left by the same definition: the ever and always spatial relationships
+of `tpose` (`eIntersects`, `aIntersects`, `eDwithin`), which `tposechain` lacks. MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
