@@ -46,6 +46,8 @@
  * - coordinate transforms (tspatial_transform) work concurrently because
  * each thread drives PROJ through its own per-thread PJ_CONTEXT, never
  * the shared global PJ_DEFAULT_CTX;
+ * - float parsing (tfloat_in, through meos_strtod) works concurrently,
+ * the C-locale handle it shares being made once per process;
  * - meos_errno reads/writes remain isolated per thread;
  * - the GMT timezone bootstrap (postgres/timezone/localtime.c) is
  * no longer racy under concurrent first-use.
@@ -132,6 +134,14 @@ worker(void *arg)
       free(tproj);
 
     free(t);
+
+    /* Parse a float, whose C-locale handle (meos_strtod) every thread
+     * shares, and read it back. */
+    snprintf(wkt, sizeof(wkt), "%d.5@2024-01-01", i);
+    Temporal *tf = tfloat_in(wkt);
+    if (! tf || tfloat_start_value(tf) != i + 0.5)
+      atomic_fetch_add(&w->errors, 1);
+    free(tf);
 
     /* Verify per-thread errno isolation in the same hot loop. */
     int marker = w->id * 1000003 + i;
