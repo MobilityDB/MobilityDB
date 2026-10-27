@@ -59,7 +59,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   as the owner decided on 2026-10-27, so no prose note of `stable-1.3` is read.
   A SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument, as the
   owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
-  branch `tools/strict-agrees-with-nullable`; the findings are fixed one topic at a time.
+  MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time.
 - **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
   plan: the shuffle of the smallest enclosing circle (`mec_shuffle` of
   `meos/src/geo/postgis_funcs.c`) draws from a generator of its own call instead of the C
