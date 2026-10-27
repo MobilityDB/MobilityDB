@@ -19661,31 +19661,81 @@ relate_in_area_union(double x, double y, const RelateComp *comps, int ncomp)
 }
 
 /**
- * @brief Return the distance from a point to an edge
+ * @brief Return the squared distance from a point to a segment
+ * @details The nearest point of the segment is the projection clamped to it.
+ * A segment of no length is its start, which is exactly where the squared
+ * length is zero; a squared length too small for a double is zero too. The
+ * segment case of #point_edge_dist2
  */
-static double
-relate_edge_distance(double x, double y, const Edge *e)
+double
+point_seg_dist2(double px, double py, double x1, double y1, double x2,
+  double y2)
 {
-  double d1 = hypot(x - e->x1, y - e->y1);
-  double d2 = hypot(x - e->x2, y - e->y2);
-  double result = Min(d1, d2);
-  if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+  const double ux = x2 - x1, uy = y2 - y1;
+  const double l2 = ux * ux + uy * uy;
+  if (l2 == 0.0)
   {
-    if (arc_contains_angle(e, atan2(y - e->cy, x - e->cx)))
-      result = Min(result, fabs(hypot(x - e->cx, y - e->cy) - e->radius));
-    return result;
+    const double dx = px - x1, dy = py - y1;
+    return dx * dx + dy * dy;
   }
-  /* The nearest point of a segment is its projection where that falls within
-   * the segment, and an endpoint otherwise */
-  double len2 = e->dx * e->dx + e->dy * e->dy;
-  if (len2 > 0)
+  double s = ((px - x1) * ux + (py - y1) * uy) / l2;
+  if (s < 0.0) s = 0.0; else if (s > 1.0) s = 1.0;
+  const double qx = x1 + s * ux, qy = y1 + s * uy;
+  const double dx = px - qx, dy = py - qy;
+  return dx * dx + dy * dy;
+}
+
+/**
+ * @brief Return the squared distance from a point to an arc edge
+ * @details When the point projects within the arc's angular span the distance
+ * is the difference to the supporting circle, which takes the root of the
+ * squared distance to the centre before it is squared, otherwise it is the
+ * distance to the nearer arc endpoint. The arc case of #point_edge_dist2
+ */
+double
+point_arc_dist2(double px, double py, const Edge *e)
+{
+  const double dxc = px - e->cx, dyc = py - e->cy;
+  if (arc_contains_angle(e, atan2(dyc, dxc)))
   {
-    double t = ((x - e->x1) * e->dx + (y - e->y1) * e->dy) / len2;
-    if (t > 0 && t < 1)
-      result = Min(result, fabs((x - e->x1) * e->dy - (y - e->y1) * e->dx) /
-        sqrt(len2));
+    const double dd = sqrt(dxc * dxc + dyc * dyc) - e->radius;
+    return dd * dd;
   }
-  return result;
+  const double d0x = px - e->x1, d0y = py - e->y1;
+  const double d1x = px - e->x2, d1y = py - e->y2;
+  const double d0 = d0x * d0x + d0y * d0y;
+  const double d1 = d1x * d1x + d1y * d1y;
+  return Min(d0, d1);
+}
+
+/**
+ * @brief Return the squared distance from a point to a single edge
+ * @details The geometry layer's one reading of it, the square of what
+ * #buffer_point_edge_distance answers for the buffer: the clip engine of a
+ * moving point and the clearance search of a union (#relate_clearance) both
+ * compare these squares, and none of them takes a root but the one an arc's
+ * circle needs
+ */
+double
+point_edge_dist2(double px, double py, const Edge *e)
+{
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+    {
+      const double dx = px - e->x1, dy = py - e->y1;
+      return dx * dx + dy * dy;
+    }
+    case EDGE_LINESEG:
+    case EDGE_POLYSEG:
+      return point_seg_dist2(px, py, e->x1, e->y1, e->x2, e->y2);
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
+      return point_arc_dist2(px, py, e);
+  }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown edge type: %d", e->etype);
+  return DBL_MAX;
 }
 
 /**
@@ -19705,16 +19755,20 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
    * feature found no further than r is therefore the nearest there is. Where
    * a component carries no index the walk below answers, and it answers if
    * the growth ever runs out, so the two paths agree by construction */
-  bool indexed = (ncomp > 0);
+  /* The search compares squared distances (#point_edge_dist2) and takes one
+   * root, of the clearance it answers, a length its caller places points at.
+   * A seed of no extent, a piece of no length, grows no box: the walk below
+   * answers it */
+  bool indexed = (ncomp > 0 && seed > 0.0);
   for (int i = 0; i < ncomp && indexed; i++)
     indexed = (comps[i].re.index != NULL);
   if (indexed)
   {
     MeosArray *candidates = index_result_create();
-    double r = seed > MEOS_GEOM_TOLERANCE ? seed : MEOS_GEOM_TOLERANCE;
+    double r = seed;
     for (int round = 0; round < 64; round++)
     {
-      double best = -1;
+      double best2 = -1;
       for (int i = 0; i < ncomp; i++)
       {
         int nc = edge_index_query(comps[i].re.index, comps[i].re.edges,
@@ -19722,43 +19776,45 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
         for (int c = 0; c < nc; c++)
         {
           int j = (int) INDEX_RESULT_ID_N(candidates, c);
-          double d = relate_edge_distance(x, y, comps[i].edges[j]);
+          const Edge *e = comps[i].edges[j];
+          double d2 = point_edge_dist2(x, y, e);
           /* An edge the point LIES ON is no clearance from it. What the
            * distance misses the edge by is a property of the arithmetic --
            * a few units in the last place of the largest coordinate -- so an
            * absolute floor leaves a point on its own edge reading as a
            * feature a rounding step away */
-          if (d <= comps[i].edges[j]->tol)
+          if (d2 <= e->tol * e->tol)
             continue;
-          if (best < 0 || d < best)
-            best = d;
+          if (best2 < 0 || d2 < best2)
+            best2 = d2;
         }
       }
-      if (best >= 0 && best <= r)
+      if (best2 >= 0 && best2 <= r * r)
       {
         meos_array_destroy(candidates);
-        return best;
+        return sqrt(best2);
       }
       r *= 4;
     }
     meos_array_destroy(candidates);
   }
-  double result = -1;
+  double result2 = -1;
   for (int i = 0; i < ncomp; i++)
     for (int j = 0; j < comps[i].nedges; j++)
     {
-      double d = relate_edge_distance(x, y, comps[i].edges[j]);
+      const Edge *e = comps[i].edges[j];
+      double d2 = point_edge_dist2(x, y, e);
       /* An edge the point LIES ON is no clearance from it. What the
        * distance misses the edge by is a property of the arithmetic --
        * a few units in the last place of the largest coordinate -- so an
        * absolute floor leaves a point on its own edge reading as a
        * feature a rounding step away */
-      if (d <= comps[i].edges[j]->tol)
+      if (d2 <= e->tol * e->tol)
         continue;
-      if (result < 0 || d < result)
-        result = d;
+      if (result2 < 0 || d2 < result2)
+        result2 = d2;
     }
-  return result;
+  return (result2 < 0) ? -1 : sqrt(result2);
 }
 
 /**
@@ -19817,11 +19873,14 @@ relate_portion_inside_union(const Edge *e, double t, const RelateComp *comps,
     if (reaching < 2)
       return false;
   }
-  /* The portion's own edge sets the scale the search starts at: the feature
-   * nearest a point of a boundary is normally the next one along it */
+  /* The portion's own edge sets the scale the search starts at, a length: the
+   * radius of an arc, and a sixteenth of the larger extent of a segment's box,
+   * which no root reaches and which a power of two keeps exact under scaling.
+   * The box of the first round then holds the features nearest a point of a
+   * boundary, normally the next ones along it, and few others */
   double delta = relate_clearance(x, y, comps, ncomp,
     e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC ?
-      e->radius : e->length);
+      e->radius : 0.0625 * Max(fabs(e->dx), fabs(e->dy)));
   if (delta <= 0)
     return false;
   delta *= 0.5;
@@ -20490,7 +20549,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
       {
         piece.dx = piece.x2 - piece.x1;
         piece.dy = piece.y2 - piece.y1;
-        piece.length = hypot(piece.dx, piece.dy);
+        piece.length = piece.dx * piece.dx + piece.dy * piece.dy;
         piece.xmin = Min(piece.x1, piece.x2);
         piece.xmax = Max(piece.x1, piece.x2);
         piece.ymin = Min(piece.y1, piece.y2);
