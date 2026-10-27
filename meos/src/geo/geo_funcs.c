@@ -1422,7 +1422,7 @@ pow2_double(int k)
 
 /**
  * @brief Set the products whose sum is the squared distance between two
- * points less the square of a sum of up to three doubles, each as two factors
+ * points less the square of a sum of up to four doubles, each as two factors
  * and an exact multiplier of 1, -1, 2 or -2, and return their number
  * @details The squared distance is the sum over the coordinates of
  * `(d + e)^2 = d*d + 2*d*e + e*e`, where `d + e` is a coordinate difference
@@ -1431,14 +1431,14 @@ pow2_double(int k)
  * product of each pair of them
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] t,nt Terms of the sum and their number, at most 3
- * @param[out] left,right,factor Room for 15 products each
+ * @param[in] t,nt Terms of the sum and their number, at most 4
+ * @param[out] left,right,factor Room for 19 products each
  */
 static pg_attribute_always_inline int
 point_distance_square_terms(const double *d, const double *e, int ndims,
   const double *t, int nt, double *left, double *right, double *factor)
 {
-  assert(nt >= 1 && nt <= 3);
+  assert(nt >= 1 && nt <= 4);
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -1751,7 +1751,7 @@ point_distance_square_inputs_exact(const double *d, const double *e,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of a sum of up to three doubles, computed exactly for any finite
+ * square of a sum of up to four doubles, computed exactly for any finite
  * doubles
  * @details The sign of the last component of the expansion of the products of
  * #point_distance_square_terms where @p exact says the expansion holds them,
@@ -1762,7 +1762,7 @@ static pg_attribute_always_inline int
 point_distance_square_sign_given(const double *d, const double *e, int ndims,
   const double *t, int nt, bool exact)
 {
-  double left[15], right[15], factor[15];
+  double left[19], right[19], factor[19];
   int n = point_distance_square_terms(d, e, ndims, t, nt, left, right, factor);
   if (! exact)
   {
@@ -1781,7 +1781,7 @@ point_distance_square_sign_given(const double *d, const double *e, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of a sum of up to three doubles, computed exactly for any finite
+ * square of a sum of up to four doubles, computed exactly for any finite
  * doubles, as #point_distance_square_sign_given computes it once
  * #point_distance_square_inputs_exact has read its inputs.
  * #point_distance_midpoint_sign calls it where its filter cannot tell
@@ -1907,7 +1907,7 @@ point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
 }
 
 static double point_distance_offset_inputs(const double *p, const double *q,
-  int ndims, double r);
+  int ndims, double r, double rlo);
 
 /**
  * @brief Return the distance between two points as the double nearest it,
@@ -1933,7 +1933,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
     /* Where the scaling rounds a difference or its error, every side is read
      * on the input coordinates */
     if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
-      return point_distance_offset_inputs(p, q, ndims, 0.0);
+      return point_distance_offset_inputs(p, q, ndims, 0.0, 0.0);
     for (int i = 0; i < ndims; i++)
     {
       d[i] = d[i] * f1 * f2;
@@ -2153,27 +2153,28 @@ point_distance_exact(const double *p, const double *q, int ndims)
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `r + c + g/2`, computed exactly for any finite doubles
+ * square of `r + rlo + c + g/2`, computed exactly for any finite doubles
  * @details This is the side of a midpoint #point_distance_offset_exact
- * decides, `c` a candidate and `g` the signed gap to its neighbour, so that
- * the midpoint is no double where `c` is subnormal. The squared distance is
- * the sum over the coordinates of `q*q - 2*q*p + p*p` and the square the sum
- * of `r*r`, `c*c`, `g*g/4`, `2*r*c`, `r*g` and `c*g`, each a product of the
+ * decides, `r + rlo` the radius, `c` a candidate and `g` the signed gap to its
+ * neighbour, so that the midpoint is no double where `c` is subnormal. The
+ * squared distance is the sum over the coordinates of `q*q - 2*q*p + p*p` and
+ * the square the sum of the squares of the terms and of twice the product of
+ * each pair, as #point_distance_square_terms sets them, each a product of the
  * input doubles times a power of two, so #square_products_sign decides it
  * where a coordinate difference overflows and where the products of a
  * candidate far below the radius underflow
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius
+ * @param[in] r,rlo Radius as the sum of two doubles, @p rlo 0 for one double
  * @param[in] c Candidate
  * @param[in] g Gap from the candidate to its upper neighbour, or the negated
  * gap to its lower one
  */
 static int
-point_distance_offset_side_sign(const double *p, const double *q, int ndims,
-  double r, double c, double g)
+point_distance_offset_pair_side_sign(const double *p, const double *q,
+  int ndims, double r, double rlo, double c, double g)
 {
-  double left[15], right[15], factor[15];
+  double left[19], right[19], factor[19];
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -2187,7 +2188,26 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
   left[n] = r; right[n] = c; factor[n++] = -2.0;
   left[n] = r; right[n] = g; factor[n++] = -1.0;
   left[n] = c; right[n] = g; factor[n++] = -1.0;
+  if (rlo != 0.0)
+  {
+    left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
+    left[n] = r; right[n] = rlo; factor[n++] = -2.0;
+    left[n] = rlo; right[n] = c; factor[n++] = -2.0;
+    left[n] = rlo; right[n] = g; factor[n++] = -1.0;
+  }
   return square_products_sign(left, right, factor, n);
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of `r + c + g/2`, computed exactly for any finite doubles, as
+ * #point_distance_offset_pair_side_sign reads it for a radius of one double
+ */
+static inline int
+point_distance_offset_side_sign(const double *p, const double *q, int ndims,
+  double r, double c, double g)
+{
+  return point_distance_offset_pair_side_sign(p, q, ndims, r, 0.0, c, g);
 }
 
 /**
@@ -2198,7 +2218,8 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
  * @param[in] p,q Coordinates of the two points
  * @param[in] d,e Scaled coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r,rs Radius and the radius scaled
+ * @param[in] r,rlo Radius as the sum of two doubles
+ * @param[in] rs,rlos The two scaled
  * @param[in] c Candidate
  * @param[in] g Gap from the candidate to its upper neighbour, or the negated
  * gap to its lower one
@@ -2210,15 +2231,17 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
  */
 static inline int
 point_distance_offset_side(const double *p, const double *q, const double *d,
-  const double *e, int ndims, double r, double rs, double c, double g,
-  bool scaled, int k, double f1, double f2, int low, int high, double cmin)
+  const double *e, int ndims, double r, double rlo, double rs, double rlos,
+  double c, double g, bool scaled, int k, double f1, double f2, int low,
+  int high, double cmin)
 {
   /* The twin of #point_distance_midpoint_sign for a radius. A candidate of at
    * least cmin and its half gap scale exactly and keep the products exact */
+  int nt = (rlo != 0.0) ? 4 : 3;
   if (scaled && c >= cmin)
   {
-    const double t[3] = {rs, c * f1 * f2, g * f1 * f2 / 2.0};
-    return point_distance_square_sign_given(d, e, ndims, t, 3, true);
+    const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
+    return point_distance_square_sign_given(d, e, ndims, t, nt, true);
   }
   /* Scaling by 2^k, and halving, is exact where the lowest bit of the
    * result is not below 2^-1074, the scaled values below 2 */
@@ -2226,7 +2249,7 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
   int lg = double_lowest_bit(g) + k - 1;
   if (scaled && lc >= -1074 && lg >= -1074)
   {
-    const double t[3] = {rs, c * f1 * f2, g * f1 * f2 / 2.0};
+    const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
     if (lc != INT_MAX)
     {
       low = (lc < low) ? lc : low;
@@ -2234,10 +2257,10 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
     }
     low = (lg < low) ? lg : low;
     high = (lg > high) ? lg : high;
-    return point_distance_square_sign_given(d, e, ndims, t, 3,
+    return point_distance_square_sign_given(d, e, ndims, t, nt,
       lowest_bits_exact(low, high));
   }
-  return point_distance_offset_side_sign(p, q, ndims, r, c, g);
+  return point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, g);
 }
 
 /**
@@ -2248,23 +2271,24 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
  * (#point_distance_scale_exact): the lowest bits of the scaled values cannot
  * show that rounding, so no decision reads them. Whether the points are
  * farther apart than the radius, and each side of every candidate, is the
- * sign #point_distance_offset_side_sign reads on the input coordinates, exact
- * for any finite doubles. The first candidate is read from the integer
+ * sign #point_distance_offset_pair_side_sign reads on the input coordinates,
+ * exact for any finite doubles. The first candidate is read from the integer
  * #square_products_wide sets for `S - r^2` on the input coordinates, a start
  * only, as #point_distance_offset_exact reads it where the difference lies
  * below the smallest double
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, not negative, 0 for the distance itself
+ * @param[in] r,rlo Radius as the sum of two doubles, not negative, both 0 for
+ * the distance itself
  */
 static double
 point_distance_offset_inputs(const double *p, const double *q, int ndims,
-  double r)
+  double r, double rlo)
 {
   /* No farther apart than the radius: S - r^2 is not positive */
-  if (point_distance_offset_side_sign(p, q, ndims, r, 0.0, 0.0) <= 0)
+  if (point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, 0.0, 0.0) <= 0)
     return 0.0;
-  double left[10], right[10], factor[10];
+  double left[12], right[12], factor[12];
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -2273,6 +2297,8 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
   }
   left[n] = r; right[n] = r; factor[n++] = -1.0;
+  left[n] = r; right[n] = rlo; factor[n++] = -2.0;
+  left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
   uint64_t acc[WIDE_LIMBS];
   square_products_wide(left, right, factor, n, acc);
   /* (S - r^2) / (sqrt(S) + r), its numerator m * 2^exp and its denominator
@@ -2294,7 +2320,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     double hs = ldexp(h[i], - hexp);
     sum += hs * hs;
   }
-  double den = 2.0 * sqrt(sum) + ldexp(r, - hexp);
+  double den = 2.0 * sqrt(sum) + ldexp(r, - hexp) + ldexp(rlo, - hexp);
   double c = (den > 0.0) ? ldexp(m / den, exp - hexp) : 0.0;
   if (! (c > 0.0))
     c = 0.0;
@@ -2313,7 +2339,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     /* The gap to the upper neighbour, past the largest double the gap below
      * it, 2^971 */
     double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_side_sign(p, q, ndims, r, c, gu);
+    int su = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, gu);
     if (su > 0 || (su == 0 && ! even))
     {
       if (isinf(up))
@@ -2326,7 +2352,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
       uint64_t downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_side_sign(p, q, ndims, r, c,
+      int sd = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c,
         - (c - down));
       if (sd < 0 || (sd == 0 && ! even))
       {
@@ -2340,16 +2366,17 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `a + b1 + b2`, or 0 where a filter on doubles cannot tell
+ * square of `a + b1 + b2 + b3`, or 0 where a filter on doubles cannot tell
  * @details The squared distance arrives as the sum `s` of the rounded squares
  * of the coordinate differences and the double `lo` of its small terms, whose
  * magnitudes add to @p lomag, as #point_distance_offset_filter forms them. The
  * square of `a` is split by #two_square, so the value is
- * `(s - x) + (lo - y - 2*a*b - b*b)`, `b` the rounded `b1 + b2`. The first
- * difference is exact where `s` is within a factor of two of `x` (Sterbenz),
- * and every other term carries its rounding into the bound: the summing of
- * `lo` (at most 15 operations on terms below @p lomag), the rounding of `b`
- * (`|2a(b - b1 - b2)| <= DBL_EPSILON |2ab|`, and twice that on `b*b`), the
+ * `(s - x) + (lo - y - 2*a*b - b*b)`, `b` the rounded `b1 + b2 + b3`. The
+ * first difference is exact where `s` is within a factor of two of `x`
+ * (Sterbenz), and every other term carries its rounding into the bound: the
+ * summing of `lo` (at most 15 operations on terms below @p lomag), the
+ * rounding of `b` (`|b - b1 - b2 - b3| <= DBL_EPSILON bmag`, `bmag` the sum of
+ * their magnitudes, which `2a` and `2 bmag` carry into the products), the
  * products and the three subtractions, each below `DBL_EPSILON` times the
  * magnitudes they read, and an absolute `DBL_MIN` for a square that underflows
  * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
@@ -2357,18 +2384,19 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
  */
 static inline int
 point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
-  double b1, double b2)
+  double b1, double b2, double b3)
 {
   double x, y;
   two_square(a, &x, &y);
   double hi = s - x;
   bool hiexact = (s >= 0.5 * x && s <= 2.0 * x);
-  double b = b1 + b2;
+  double b = (b1 + b2) + b3;
+  double bmag = fabs(b1) + fabs(b2) + fabs(b3);
   double ab = 2.0 * a * b, bb = b * b;
   double value = hi + (((lo - y) - ab) - bb);
   double bound = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
     32.0 * DBL_EPSILON * (lomag + fabs(y) + fabs(ab) + bb + fabs(value)) +
-    4.0 * DBL_MIN;
+    4.0 * DBL_EPSILON * bmag * (fabs(a) + bmag) + 4.0 * DBL_MIN;
   if (value > bound)
     return 1;
   if (value < - bound)
@@ -2385,23 +2413,24 @@ point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
  * `0 <= q <= (S - t^2)^2 / (8 t^3)`: `S - t^2` is read as `(s - x) + (lo - y)`,
  * `t^2` split by #two_square into `x + y`, its first difference exact by
  * Sterbenz as `x` lies within a factor of two of `s`; `t - r` is split by
- * #two_sum into `h + l`, exactly, and the correction added to `l`. The value
- * `v = h + l` then lies within `E` of `sqrt(S) - r`, `E` the sum of the error
- * of `S` carried through the division, the rounding of the two additions and
- * of the division, and `q`, each bounded by the magnitudes it reads and the
- * whole doubled. The answer is 0 where `v + E < 0`, and the double `c` nearest
- * `v` where `v` lies farther than `E` from both midpoints between `c` and its
- * neighbours, read on the exact remainder `v - c` of a second #two_sum
+ * #two_sum into `h + l`, exactly, and `- rlo` and the correction added to
+ * `l`. The value `v = h + l` then lies within `E` of `sqrt(S) - r - rlo`, `E`
+ * the sum of the error of `S` carried through the division, the rounding of
+ * the three additions and of the division, and `q`, each bounded by the
+ * magnitudes it reads and the whole doubled. The answer is 0 where
+ * `v + E < 0`, and the double `c` nearest `v` where `v` lies farther than `E`
+ * from both midpoints between `c` and its neighbours, read on the exact
+ * remainder `v - c` of a second #two_sum
  * @param[in] s,lo,delta The squared distance, the double of its small terms
  * and the bound of their error
- * @param[in] r Radius, positive
+ * @param[in] r,rlo Radius as the sum of two doubles, positive
  * @param[out] result The answer where the function returns true
  * @return False where the value lies within its bound of a midpoint, which
  * every tie does, and the caller's filter and exact search answer
  */
 static inline bool
 point_distance_offset_dd(double s, double lo, double delta, double r,
-  double *result)
+  double rlo, double *result)
 {
   double t = sqrt(s + lo);
   double x, y;
@@ -2414,10 +2443,12 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   double corr = w / (2.0 * t);
   double h, l;
   two_sum(t, - r, &h, &l);
-  double l1 = l + corr;
+  double l0 = l - rlo;
+  double l1 = l0 + corr;
   double big = fabs(w) + dw;
   double err = 2.0 * (dw / (2.0 * t) + DBL_EPSILON * fabs(corr) +
-    DBL_EPSILON * fabs(l1) + big * big / (8.0 * t * t * t)) + 4.0 * DBL_MIN;
+    DBL_EPSILON * (fabs(l0) + fabs(l1)) + big * big / (8.0 * t * t * t)) +
+    4.0 * DBL_MIN;
   double c, rem;
   two_sum(h, l1, &c, &rem);
   if (c + rem + err < 0.0)
@@ -2460,19 +2491,21 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
  * squares of `r + c` less half the gap to its lower neighbour and plus half
  * the gap to its upper one: `r + c` is split by #two_sum into `a + a1`, and
  * each half gap, a power of two, is exact for a candidate of at least
- * 2^-900, so each side is the sign of `S - (a + a1 + h)^2`. The candidate
- * moves to a neighbour while a side certainly says so, at most four times.
- * Any side the filter cannot tell, which every tie is, returns false, and the
- * exact search of #point_distance_offset_exact answers
+ * 2^-900, so each side is the sign of `S - (a + a1 + rlo + h)^2`, `rlo` the
+ * second double of the radius. The candidate moves to a neighbour while a
+ * side certainly says so, at most four times. Any side the filter cannot
+ * tell, which every tie is, returns false, and the exact search of
+ * #point_distance_offset_exact answers
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, positive and below twice @p maxd
+ * @param[in] r,rlo Radius as the sum of two doubles, positive and @p r below
+ * twice @p maxd
  * @param[in] maxd Largest absolute difference, positive
  * @param[out] result The answer where the function returns true
  */
 static bool
 point_distance_offset_filter(const double *d, const double *e, int ndims,
-  double r, double maxd, double *result)
+  double r, double rlo, double maxd, double *result)
 {
   uint64_t maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
@@ -2493,10 +2526,12 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
    * midpoint; the summing of lo, at most 15 operations on terms below
    * lomag, bounds the error of S as #point_distance_offset_filter_sign
    * reads it */
-  if (point_distance_offset_dd(s, lo, 32.0 * DBL_EPSILON * lomag, r, result))
+  if (point_distance_offset_dd(s, lo, 32.0 * DBL_EPSILON * lomag, r, rlo,
+      result))
     return true;
   /* The side of S - r^2 */
-  int side = point_distance_offset_filter_sign(s, lo, lomag, r, 0.0, 0.0);
+  int side = point_distance_offset_filter_sign(s, lo, lomag, r, rlo, 0.0,
+    0.0);
   if (side == 0)
     return false;
   if (side < 0)
@@ -2507,7 +2542,8 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   /* First candidate, (S - r^2) / (sqrt(S) + r) on doubles */
   double rx, ry;
   two_square(r, &rx, &ry);
-  double c = ((s - rx) + (lo - ry)) / (sqrt(s + lo) + r);
+  double c = ((s - rx) + (lo - ry - rlo * (2.0 * r + rlo))) /
+    (sqrt(s + lo) + r + rlo);
   for (int move = 0; move < 4; move++)
   {
     if (! (c >= 0x1p-900) || ! isfinite(c))
@@ -2522,14 +2558,14 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
       return false;
     double a, a1;
     two_sum(r, c, &a, &a1);
-    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1,
+    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       0.5 * (cu - c));
     if (su > 0)
     {
       c = cu;
       continue;
     }
-    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1,
+    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       - 0.5 * (c - cd));
     if (sd < 0)
     {
@@ -2567,23 +2603,28 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
  * while `S` lies beyond a midpoint. The values are scaled as in
  * #point_distance_exact, and a radius of at least twice the largest
  * coordinate difference exceeds the distance outright.
+ *
+ * The radius is the exact sum `r + rlo` of two doubles, so that the sum of
+ * two radii, which rounds as a double, is read as it is: `rlo` enters every
+ * side as one more term of the sum whose square is taken.
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, not negative
+ * @param[in] r,rlo Radius as the sum of two doubles, not negative, @p rlo 0
+ * for a radius of one double
  * @note Correctly rounded for any finite coordinates and radius: whether the
  * points are farther apart than the radius is decided by
  * #square_products_sign, and each side of a candidate on the input
- * coordinates by #point_distance_offset_side_sign, so neither a coordinate
- * difference beyond the largest double nor an answer far below the radius
- * leaves a double the decision cannot read
+ * coordinates by #point_distance_offset_pair_side_sign, so neither a
+ * coordinate difference beyond the largest double nor an answer far below the
+ * radius leaves a double the decision cannot read
  */
-double
-point_distance_offset_exact(const double *p, const double *q, int ndims,
-  double r)
+static double
+point_distance_offset_pair(const double *p, const double *q, int ndims,
+  double r, double rlo)
 {
   assert(ndims == 2 || ndims == 3);
   assert(r >= 0.0);
-  if (r == 0.0)
+  if (r == 0.0 && rlo == 0.0)
     return point_distance_exact(p, q, ndims);
   double d[3], e[3], maxd;
   int status = point_distance_diffs(p, q, ndims, d, e, &maxd);
@@ -2594,28 +2635,30 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
   if (status == 0 && maxd > 0.0 && r < 2.0 * maxd)
   {
     double result;
-    if (point_distance_offset_filter(d, e, ndims, r, maxd, &result))
+    if (point_distance_offset_filter(d, e, ndims, r, rlo, maxd, &result))
       return result;
   }
   double c;
   if (status == 2)
   {
     /* A difference beyond the largest double puts the points farther apart
-     * than the radius; the first candidate is twice half their distance,
-     * read on the halves of the coordinates scaled by 2^-600, less half the
+     * than a radius of one double, though not always than one of two; the
+     * first candidate is four times a quarter of their distance, read on the
+     * halves of the coordinates scaled by 2^-600, less a quarter of the
      * radius, so that neither the distance nor the candidate overflows
-     * before the answer does */
+     * before the answer does, which a radius of two doubles below twice the
+     * largest double leaves finite where half the distance is not */
     double sum = 0.0;
     for (int i = 0; i < ndims; i++)
     {
       double h = ldexp(q[i] * 0.5 - p[i] * 0.5, -600);
       sum += h * h;
     }
-    c = 2.0 * (ldexp(sqrt(sum), 600) - r * 0.5);
+    c = 4.0 * (ldexp(sqrt(sum), 599) - r * 0.25 - rlo * 0.25);
   }
   /* The values scaled by 2^k, read where they are exact */
   int k = 0;
-  double f1 = 1.0, f2 = 1.0, g1 = 1.0, g2 = 1.0, rs = 0.0;
+  double f1 = 1.0, f2 = 1.0, g1 = 1.0, g2 = 1.0, rs = 0.0, rlos = 0.0;
   bool scaled = false;
   int low = INT_MAX, high = INT_MIN;
   /* The least candidate whose scaled value and half gap keep every product
@@ -2625,13 +2668,15 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
   {
     /* The distance is below sqrt(3) times the largest difference, and below
      * twice it however the difference rounded */
-    if (r >= 2.0 * maxd)
+    if (r > 2.0 * maxd || (r == 2.0 * maxd && rlo >= 0.0))
       return 0.0;
     point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
-    /* Where the scaling rounds a difference or its error, every side is read
-     * on the input coordinates; the radius is read below */
-    if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
-      return point_distance_offset_inputs(p, q, ndims, r);
+    /* Where the scaling rounds a difference or its error, or the second
+     * double of the radius, every side is read on the input coordinates; the
+     * first double of the radius is read below */
+    if (! point_distance_scale_exact(d, e, ndims, k, 0.0) ||
+        (rlo != 0.0 && double_lowest_bit(rlo) + k < -1074))
+      return point_distance_offset_inputs(p, q, ndims, r, rlo);
     /* Every scaled value is below 4, so its lowest bit is at most 2^-50 and
      * only the lowest one is tracked */
     double sum = 0.0;
@@ -2652,15 +2697,21 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     int lr = double_lowest_bit(r) + k;
     scaled = (lr >= -1074);
     low = Min(low, lr);
+    if (rlo != 0.0)
+    {
+      rlos = rlo * f1 * f2;
+      low = Min(low, double_lowest_bit(rlo) + k);
+    }
 
     /* No farther apart than the radius: S - r^2 is not positive. The radius
      * scaled is a double or below the squared distance however it rounds.
      * The first candidate is (S - r^2) / (sqrt(S) + r), the difference summed
      * from its smallest component up, or read with its power of two where it
      * lies below the smallest double */
+    const double rt[2] = {rs, rlos};
     double left[15], right[15], factor[15];
-    int n = point_distance_square_terms(d, e, ndims, &rs, 1, left, right,
-      factor);
+    int n = point_distance_square_terms(d, e, ndims, rt, (rlo != 0.0) ? 2 : 1,
+      left, right, factor);
     /* A candidate of at least 2^(-480-k) scales to a value whose lowest bit,
      * and that of its half gap, is above 2^-537, and every scaled candidate
      * is below 4, so its products stay exact wherever those of the inputs do */
@@ -2687,7 +2738,7 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
       double diff = 0.0;
       for (int i = 0; i < len; i++)
         diff += ex[i];
-      c = diff / (sqrt(sum) + rs) * g1 * g2;
+      c = diff / (sqrt(sum) + rs + rlos) * g1 * g2;
     }
     else
     {
@@ -2697,7 +2748,7 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
         return 0.0;
       int exp;
       double m = wide_frexp(acc, &exp);
-      c = ldexp(m / (sqrt(sum) + rs), exp - k);
+      c = ldexp(m / (sqrt(sum) + rs + rlos), exp - k);
     }
   }
   if (! (c > 0.0))
@@ -2717,8 +2768,8 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     /* The gap to the upper neighbour, past the largest double the gap below
      * it, 2^971 */
     double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_side(p, q, d, e, ndims, r, rs, c, gu,
-      scaled, k, f1, f2, low, high, cmin);
+    int su = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs, rlos,
+      c, gu, scaled, k, f1, f2, low, high, cmin);
     if (su > 0 || (su == 0 && ! even))
     {
       if (isinf(up))
@@ -2731,8 +2782,8 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
       uint64_t downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_side(p, q, d, e, ndims, r, rs, c,
-        - (c - down), scaled, k, f1, f2, low, high, cmin);
+      int sd = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs,
+        rlos, c, - (c - down), scaled, k, f1, f2, low, high, cmin);
       if (sd < 0 || (sd == 0 && ! even))
       {
         c = down;
@@ -2741,6 +2792,53 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     }
     return c;
   }
+}
+
+/**
+ * @brief Return the distance between two points less a radius, computed
+ * exactly and rounded once, or 0 where the points are no farther apart than
+ * the radius
+ * @details This is the distance of a circular buffer to a point, as
+ * #point_distance_offset_pair answers it for a radius of one double
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative
+ * @note Correctly rounded for any finite coordinates and radius
+ */
+double
+point_distance_offset_exact(const double *p, const double *q, int ndims,
+  double r)
+{
+  return point_distance_offset_pair(p, q, ndims, r, 0.0);
+}
+
+/**
+ * @brief Return the distance between two points less the sum of two radii,
+ * computed exactly and rounded once, or 0 where the points are no farther
+ * apart than that sum
+ * @details This is the distance between two circular buffers. The sum of the
+ * radii rounds as a double, so it is split by #two_sum into the exact sum of
+ * two doubles, which #point_distance_offset_pair reads as the radius. A sum
+ * beyond the largest double is read as the two radii themselves, the larger
+ * first, whose sum is exact all the same
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r1,r2 Radii, not negative
+ * @note Correctly rounded for any finite coordinates and radii
+ */
+double
+point_distance_offset_sum_exact(const double *p, const double *q, int ndims,
+  double r1, double r2)
+{
+  assert(r1 >= 0.0 && r2 >= 0.0);
+  double r, rlo;
+  two_sum(r1, r2, &r, &rlo);
+  if (isinf(r))
+  {
+    r = fmax(r1, r2);
+    rlo = fmin(r1, r2);
+  }
+  return point_distance_offset_pair(p, q, ndims, r, rlo);
 }
 
 /**

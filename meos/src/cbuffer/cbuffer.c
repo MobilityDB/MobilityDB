@@ -1061,14 +1061,16 @@ cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipelinestr,
 /**
  * @ingroup meos_internal_cbuffer_dist
  * @brief Return the distance between two circular buffers
+ * @details The distance between the centres less the sum of the radii, not
+ * below zero, as the double nearest it (#point_distance_offset_sum_exact)
  * @param[in] cb1,cb2 Circular buffers
  * @note The function assumes that all validity tests have been previously done
  */
 double
 cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return Max(hypot(cb2->x - cb1->x, cb2->y - cb1->y) -
-    cb1->radius - cb2->radius, 0);
+  const double p[2] = {cb1->x, cb1->y}, q[2] = {cb2->x, cb2->y};
+  return point_distance_offset_sum_exact(p, q, 2, cb1->radius, cb2->radius);
 }
 
 /**
