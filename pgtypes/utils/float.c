@@ -338,8 +338,9 @@ float4_out(float4 num)
  * MEOS pins numeric I/O to the C locale regardless of the process locale.
  * Two implementation strategies are tried in order:
  *
- *   1. POSIX strtod_l() against a private, lazily-initialised locale_t.
- *      This is thread-safe.
+ *   1. POSIX strtod_l() against a private locale_t, made once per process
+ *      by the first parse of any thread (pthread_once). This is
+ *      thread-safe.
  *   2. Save / setlocale(LC_NUMERIC,"C") / strtod / restore. Portable
  *      everywhere strtod_l is unavailable, but not thread-safe (the
  *      restore window is observable to other threads). MEOS is not
@@ -364,6 +365,8 @@ float4_out(float4 num)
 #endif
 
 #if MEOS_HAVE_STRTOD_L
+#include <pthread.h>
+
 /* Explicit forward declarations: strtod_l/newlocale require POSIX 2008
  * feature test macros to appear in <stdlib.h>/<locale.h>, and the MEOS
  * build doesn't set those globally (the postgres headers manage their
@@ -378,6 +381,14 @@ extern locale_t newlocale(int category_mask, const char *locale,
  * it. We never call it anyway: the C-locale handle lives for the
  * process lifetime. */
 static locale_t meos_c_locale = (locale_t) 0;
+static pthread_once_t meos_c_locale_once = PTHREAD_ONCE_INIT;
+
+/* Make the C-locale handle; pthread_once runs it once per process */
+static void
+meos_c_locale_make(void)
+{
+  meos_c_locale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+}
 #endif
 
 /* On Windows, <postgres.h> transitively pulls in port/win32_port.h which
@@ -398,8 +409,7 @@ double
 meos_strtod(const char *str, char **endptr)
 {
 #if MEOS_HAVE_STRTOD_L
-  if (meos_c_locale == (locale_t) 0)
-    meos_c_locale = newlocale(LC_NUMERIC_MASK, "C", (locale_t) 0);
+  pthread_once(&meos_c_locale_once, meos_c_locale_make);
   if (meos_c_locale != (locale_t) 0)
     return strtod_l(str, endptr, meos_c_locale);
 #endif
