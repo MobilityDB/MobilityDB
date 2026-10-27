@@ -3665,6 +3665,23 @@ arr_tangent_turn_cmp(const Arr *a, const ArrNode *nd, uint32_t e1,
   return (left == arc1) ? 1 : -1;
 }
 
+/* Return how the positive x axis and a half of a node are ordered
+ * counterclockwise from that axis where the doubles give the direction of the
+ * half exactly (#arr_half_exact), as #arr_tangent_turn_cmp orders two halves:
+ * -1, the axis first, unless the half leaves along the axis, or 2 where the
+ * direction is not given so or the half leaves along the axis */
+static int
+arr_tangent_axis_cmp(const Arr *a, const ArrNode *nd, uint32_t e, bool out)
+{
+  const TangentPoint *t;
+  int s;
+  if (! arr_half_exact(a, e, out, nd, &t, &s))
+    return 2;
+  int h = arr_exact_half_plane(t->c1x, t->c1y, t->c2x, t->c2y, s > 0);
+  int sy = ((t->c2y > t->c1y) - (t->c2y < t->c1y)) * s;
+  return (h == 1 || sy > 0) ? -1 : 2;
+}
+
 /* Return how two halves of a vertex, or a half and the positive x axis
  * (NULL), are ordered counterclockwise from that axis: #arr_turn_cmp on the
  * intervals of their directions, and #edges_turn_cmp_exact where those
@@ -3685,6 +3702,12 @@ arr_half_cmp(const Arr *a, uint32_t v, const ArrHalf *h1, Ival d1x,
     c = arr_tangent_turn_cmp(a, nd, e1, h1->eout, e2, h2->eout);
     if (c != 2)
       return c;
+  }
+  else if (h1 || h2)
+  {
+    c = arr_tangent_axis_cmp(a, nd, h1 ? e1 : e2, h1 ? h1->eout : h2->eout);
+    if (c != 2)
+      return h1 ? - c : c;
   }
   /* A node no double holds is read in its tower */
   if (nd->tower)
@@ -4184,6 +4207,9 @@ arr_piece_ray_all(const Arr *a, const ArrPiece *p, Ival px, double py,
  * @brief Return the winding number of the region around a point, counted by
  * the labelled pieces a ray from it along the positive x axis crosses
  * (#arr_piece_ray)
+ * @details A component is made of whole rings, each of which winds around
+ * no point outside its box, so a component whose box keeps clear of the
+ * point adds nothing to the winding number and none of its pieces is asked
  * @return false where the intervals cannot tell a crossing
  */
 static bool
@@ -4194,9 +4220,9 @@ arr_winding_at(const Arr *a, const uint32_t *cpieces, const uint32_t *coff,
   int c = 0;
   for (uint32_t m = 0; m < ncomp; m++)
   {
-    /* A component whose box the ray cannot meet is passed over whole */
+    /* A component whose box keeps clear of the point is passed over whole */
     const double *cb = cbox[m];
-    if (cb[3] < py || cb[2] > py || cb[1] < px.lo)
+    if (cb[3] < py || cb[2] > py || cb[1] < px.lo || cb[0] > px.hi)
       continue;
     for (uint32_t k = coff[m]; k < coff[m + 1]; k++)
     {
@@ -4226,6 +4252,65 @@ arr_node_meet(const Arr *a, uint32_t v)
   return m;
 }
 
+/* Set @p x to two doubles whose sum is the x of the point where a common
+ * tangent touches one of two circles of one radius whose centres are at one
+ * y or at one x (#tangent_point_round): the centre's x where the tangent runs
+ * along x, the centre's x less side r times the sign of the run along y where
+ * it runs along y; false for any other tangent point */
+static bool
+arr_tangent_x_sum(const TangentPoint *tp, double x[2])
+{
+  if (tp->r1 != tp->r2)
+    return false;
+  x[0] = tp->k ? tp->c2x : tp->c1x;
+  if (tp->c1y == tp->c2y && tp->c1x != tp->c2x)
+  {
+    x[1] = 0.0;
+    return true;
+  }
+  if (tp->c1x == tp->c2x && tp->c1y != tp->c2y)
+  {
+    bool up = tp->c2y > tp->c1y;
+    x[1] = ((tp->side > 0) == up) ? - tp->r1 : tp->r1;
+    return true;
+  }
+  return false;
+}
+
+/* Set @p x to two doubles whose sum is the x of node v, exactly: a vertex,
+ * a point where a tangent touches a circle (#arr_tangent_x_sum), or the
+ * crossing of a segment between two such points running along y with
+ * another; false where no two doubles are known to hold it */
+static bool
+arr_node_x_sum(const Arr *a, uint32_t v, double x[2])
+{
+  const ArrNode *nd = &a->nodes[v];
+  if (nd->vertex)
+  {
+    x[0] = nd->x;
+    x[1] = 0.0;
+    return true;
+  }
+  if (! nd->tower)
+    return false;
+  if (nd->meet.kind == MEET_TANGENT)
+    return arr_tangent_x_sum(nd->meet.tp, x);
+  if (nd->meet.kind != MEET_LINES)
+    return false;
+  const Edge *e[2] = {nd->meet.p, nd->meet.q};
+  for (int i = 0; i < 2; i++)
+  {
+    const TangentPoint *f = e[i]->from, *t = e[i]->to;
+    /* A segment between the two points of one tangent running along y */
+    if (f && t && f->c1x == f->c2x && f->c1x == t->c1x &&
+        f->c2x == t->c2x && f->c1y == t->c1y && f->c2y == t->c2y &&
+        f->r1 == t->r1 && f->r2 == t->r2 && f->side == t->side &&
+        arr_tangent_x_sum(f, x))
+      return true;
+  }
+  return false;
+}
+
 /* Return how the x coordinates of two nodes compare, exactly: their order
  * along a horizontal segment pointing along the positive x axis
  * (#meets_order_exact); 2 where it cannot be told */
@@ -4241,6 +4326,16 @@ arr_node_x_cmp(const Arr *a, uint32_t v, uint32_t w)
     (nw->xp && ! arr_is_arc(nw->xp) && ! arr_is_arc(nw->xq));
   if ((nv->tower || nw->tower) && tv && tw)
   {
+    /* Two x a sum of two doubles holds, compared as one exact sum */
+    double xv[2], xw[2];
+    if (arr_node_x_sum(a, v, xv) && arr_node_x_sum(a, w, xw))
+    {
+      const double t[4] = {xv[0], xv[1], - xw[0], - xw[1]};
+      ExactSum s;
+      exact_sum_set(&s, t, 4);
+      const PolyTerm term = {1.0, 1, {0}};
+      return polynomial_sign_exact(&s, &term, 1);
+    }
     ArrMeet mv = arr_node_meet(a, v), mw = arr_node_meet(a, w);
     MeetPoint pv = arr_meet_point(&mv), pw = arr_meet_point(&mw);
     pv.p = mv.p; pv.q = mv.q;
@@ -4731,6 +4826,20 @@ arr_point_clear(const Arr *a, double x, double y, Ival bx, Ival by,
   return true;
 }
 
+/* Set @p sufhi[m] to the greatest upper bound of the rightmost points of the
+ * components from position m of @p order on, and -infinity past the last:
+ * where it lies left of a point, no later point can reach it, as no later box
+ * reaches one in the sweep of #arr_box_pairs */
+static void
+arr_suffix_hi(const ArrSweep *order, const ArrExtreme *cex, uint32_t ncomp,
+  double *sufhi)
+{
+  sufhi[ncomp] = -INFINITY;
+  for (uint32_t m = ncomp; m > 0; m--)
+    sufhi[m - 1] = arr_fmax(sufhi[m], cex[order[m - 1].id].x.hi);
+  return;
+}
+
 /**
  * @brief Label every piece with the winding numbers on each side, component
  * by component, each from its rightmost point
@@ -4817,9 +4926,16 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
   }
   if (st == ARR_ANSWERED)
     arr_sweep_sort(order, ncomp);
+  /* The greatest upper bound of the points of the components from each
+   * position on: where it lies left of the point at k, every later point is
+   * told apart from it */
+  double *sufhi = palloc(sizeof(double) * (ncomp + 1));
+  arr_suffix_hi(order, cex, ncomp, sufhi);
   for (uint32_t k = 0; k < ncomp && st == ARR_ANSWERED; k++)
     for (uint32_t m = k + 1; m < ncomp && st == ARR_ANSWERED; m++)
     {
+      if (sufhi[m] < cex[order[k].id].x.lo)
+        break;
       const Ival *xk = &cex[order[k].id].x, *xm = &cex[order[m].id].x;
       const ArrExtreme *ek = &cex[order[k].id], *em = &cex[order[m].id];
       bool arcs = ek->on_arc && em->on_arc && a->e[ek->edge].centred &&
@@ -4847,6 +4963,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
           else if (pk->radius < pm->radius)
           {
             ArrSweep t = order[k]; order[k] = order[m]; order[m] = t;
+            arr_suffix_hi(order, cex, ncomp, sufhi);
             /* The component now at k is compared with all after it anew */
             m = k;
           }
@@ -4874,6 +4991,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
         if (d > 0)
         {
           ArrSweep t = order[k]; order[k] = order[m]; order[m] = t;
+          arr_suffix_hi(order, cex, ncomp, sufhi);
           m = k;
           continue;
         }
@@ -4886,6 +5004,7 @@ arr_label_all(Arr *a, uint32_t *outer_piece)
       if (kinm || mink)
         st = ARR_DEPTH;
     }
+  pfree(sufhi);
 
   /* The pieces of every component labelled, component by component, and
    * the box of each, which the rays of the later ones read */
