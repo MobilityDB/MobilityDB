@@ -7879,6 +7879,18 @@ tx_val(TowerCtx *ctx, double v)
   return tx_diff(ctx, v, 0.0);
 }
 
+/* Whether the expansions of a tower have left their exact range, so that
+ * nothing more is computed in them: every answer of a context that is
+ * unsafe is discarded (#tower_ctx_unsafe, #tower_pred_run), and an
+ * expansion holding a component that overflowed keeps every component of
+ * the values it is added to or multiplied by, compression merging none of
+ * them, so that each later sum or product costs more than the last */
+static inline bool
+tx_spent(const TowerCtx *ctx)
+{
+  return ! ctx->filter && tower_ctx_unsafe(ctx);
+}
+
 static TowerX
 tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 {
@@ -7890,6 +7902,8 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
+    if (tx_spent(ctx))
+      return a;
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
     return r;
   }
@@ -7942,6 +7956,8 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
+    if (tx_spent(ctx))
+      return a;
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
     return r;
   }
@@ -8063,11 +8079,13 @@ tower_scale_k(TowerCtx *ctx, const TowerX *x, double s, int k, TowerX *out)
   return;
 }
 
-/* Multiplied by a value */
+/* Multiplied by a value, the first coefficient written before the others
+ * as #tower_set writes it */
 static void
 tower_mulx_k(TowerCtx *ctx, const TowerX *x, TowerX v, int k, TowerX *out)
 {
-  for (int m = 0; m < (1 << k); m++)
+  out[0] = tx_mul(ctx, x[0], v);
+  for (int m = 1; m < (1 << k); m++)
     out[m] = tx_mul(ctx, x[m], v);
   return;
 }

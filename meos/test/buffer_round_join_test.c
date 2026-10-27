@@ -34,8 +34,9 @@
  * radius the distance. The polygons below make those arcs meet or tie
  * exactly: an axis-aligned square, whose joins on one side reach the same
  * greatest coordinate; a square with a hole that the distance shrinks to
- * exactly a point; and a square at projected coordinates narrower than the
- * distance. Each buffer is a surface that covers the polygon it is taken of,
+ * exactly a point; a square at projected coordinates narrower than the
+ * distance; and a rhombus whose coordinates span 2^1000, its offsets and
+ * joins decided across that spread. Each buffer is a surface that covers the polygon it is taken of,
  * with no error, and the holed square's buffer also covers its hole.
  *
  * The area of a buffer has a closed form where the polygon is a square, and
@@ -80,6 +81,27 @@ buffer_covers(const char *label, const char *wkt, const char *cover)
   free(geo); free(cov); free(buf);
 }
 
+/* The buffer of @p wkt by 1, as #buffer_covers takes it, asserted to be
+ * answered with no error and to have a box holding the box of the polygon:
+ * at coordinates whose squares no double holds, where a relate cannot read
+ * the cover */
+static void
+buffer_box_holds(const char *label, const char *wkt)
+{
+  GSERIALIZED *geo = geom_in(wkt, -1);
+  assert(geo != NULL);
+  meos_errno_reset();
+  GSERIALIZED *buf = geom_buffer(geo, 1.0, "");
+  printf("geom_buffer(%s): %d, errno %d\n", label, buf != NULL, meos_errno());
+  assert(buf != NULL);
+  assert(meos_errno() == 0);
+  STBox *box = geo_to_stbox(geo), *bbox = geo_to_stbox(buf);
+  bool holds = contains_stbox_stbox(bbox, box);
+  printf("  its box holds that of the polygon: %d\n", holds);
+  assert(holds);
+  free(geo); free(buf); free(box); free(bbox);
+}
+
 /* The buffer of @p wkt by 1, as #buffer_covers takes it, asserted to have
  * the area @p area to the rounding of the points of its arcs */
 static void
@@ -117,6 +139,10 @@ main(void)
   const char *narrow = "Polygon((6400000 6400000,6400000.02 6400000,"
     "6400000.02 6400000.02,6400000 6400000.02,6400000 6400000))";
   buffer_covers("a square narrower than the distance", narrow, narrow);
+
+  const char *spread = "Polygon((-1.0715086071862673e+301 1,0 0,"
+    "1.0715086071862673e+301 1,0 2,-1.0715086071862673e+301 1))";
+  buffer_box_holds("a rhombus whose coordinates span 2^1000", spread);
 
   /* A square of side 10 by 1: its area, its perimeter by 1 and the disc */
   const double pi = 3.14159265358979323846;
