@@ -224,6 +224,55 @@ int main(void)
   }
   meos_errno_reset();
 
+  /* A collection contains each of its members, and when the members overlap
+   * its boundary is that of their union, which runs along part of a member's
+   * edge and leaves it where another member crosses it. The member P below is
+   * a sliver of four slanted edges, and its copy moved by (0.04, 0.26) crosses
+   * it: the union then keeps a piece of the edge from (1 31) to (5 5) that
+   * ends where the copy crosses it, at a point no double holds, so the piece
+   * read off its rounded ends leaves the line of P's own edge and P reads as
+   * reaching outside the collection. The truth is 212F11FF2: the boundary of
+   * the collection meets P only along that edge, and nothing of P lies outside
+   * the collection. The last record is the same shape in projected metres,
+   * thinned from a real protected area */
+  const char *member_wkt[][2] = {
+    {"GeometryCollection(Polygon((1 31,5 5,3 16,1 30,1 31)),"
+       "Polygon((1.04 31.26,5.04 5.26,3.04 16.26,1.04 30.26,1.04 31.26)))",
+     "Polygon((1 31,5 5,3 16,1 30,1 31))"},
+    {"GeometryCollection(Polygon((1 31,5 5,3 16,1 30,1 31)),"
+       "Polygon((1.04 31.26,5.04 5.26,3.04 16.26,1.04 30.26,1.04 31.26)))",
+     "Polygon((1.04 31.26,5.04 5.26,3.04 16.26,1.04 30.26,1.04 31.26))"},
+    {"GeometryCollection(MultiPolygon(((591135.223367782 6360069.366158976,"
+       "591474.242942395 6357471.075010731,591294.252716372 6358609.023431268,"
+       "591135.0419414708 6360023.755448561,"
+       "591135.223367782 6360069.366158976))),"
+       "MultiPolygon(((591138.6153777912 6360095.349070459,"
+       "591477.6349524043 6357497.057922213,"
+       "591297.6447263813 6358635.00634275,"
+       "591138.4339514801 6360049.738360044,"
+       "591138.6153777912 6360095.349070459))))",
+     "MultiPolygon(((591135.223367782 6360069.366158976,"
+       "591474.242942395 6357471.075010731,591294.252716372 6358609.023431268,"
+       "591135.0419414708 6360023.755448561,"
+       "591135.223367782 6360069.366158976)))"}};
+  for (size_t i = 0; i < sizeof(member_wkt) / sizeof(member_wkt[0]); i++)
+  {
+    GSERIALIZED *members = geom_in(member_wkt[i][0], -1);
+    GSERIALIZED *member = geom_in(member_wkt[i][1], -1);
+    assert(members != NULL); assert(member != NULL);
+    meos_errno_reset();
+    char *mm = geom_relate(members, member);
+    bool holds = geom_contains(members, member);
+    printf("geom_relate(overlapping members, member %zu): %s, contains %d, "
+      "errno %d\n", i, mm ? mm : "(NULL)", holds, meos_errno());
+    assert(mm != NULL);
+    assert(strcmp(mm, "212F11FF2") == 0);
+    assert(holds);
+    assert(meos_errno() == 0);
+    free(mm); free(members); free(member);
+  }
+  meos_errno_reset();
+
   /* A geometry covers itself, whatever its coordinates are and however short
    * its edges. Both records below answered otherwise: the first is a five
    * metre feature in a projected CRS, where the engine split its own edges at
