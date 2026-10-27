@@ -197,6 +197,37 @@ tpcbox_resolve_srid(int32_t srid, uint32_t pcid, int errcode,
 }
 
 /**
+ * @brief Return the SRID the schema of a pcid states
+ * @details The schema is what holds the SRID, so a box built from a pcid
+ * reads it from there rather than being told: pgpointcloud registers one SRID
+ * per pcid and derives every value's SRID from it. A pcid of 0 is
+ * pgpointcloud's "unknown" value and names no schema, so it states SRID 0;
+ * any other pcid naming no registered schema is an error rather than a box
+ * with an assumed SRID, which is how @c PC_MakePoint answers the same input.
+ * Reading a written value never comes here: #tpcbox_resolve_srid reconciles
+ * the SRID it states with the schema where one resolves
+ * @param[in] pcid pgpointcloud schema id
+ * @param[out] result SRID of the box
+ */
+bool
+tpcbox_pcid_srid(uint32_t pcid, int32_t *result)
+{
+  assert(result);
+  *result = SRID_UNKNOWN;
+  if (pcid == 0)
+    return true;
+  int32_t srid = meos_pc_schema_srid(pcid);
+  if (srid == SRID_INVALID)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pcid);
+    return false;
+  }
+  *result = srid;
+  return true;
+}
+
+/**
  * @brief Parse a TPCBox from its Well-Known Text (WKT) representation
  * @details Mirrors #stbox_parse: an optional `SRID=` prefix, then the
  * `(GEOD)TPCBOX` keyword wrapping — in parentheses — the box body shared with
@@ -296,7 +327,7 @@ tpcbox_parse(const char **str)
     return NULL;
   }
 
-  TPCBox *result = tpcbox_make(hasx, hasz, hast, geodetic, srid, pcid,
+  TPCBox *result = tpcbox_srid_make(hasx, hasz, hast, geodetic, srid, pcid,
     box->xmin, box->xmax, box->ymin, box->ymax, box->zmin, box->zmax,
     hast ? &box->period : NULL);
   pfree(box);
@@ -530,29 +561,24 @@ tpcbox_as_hexewkb(const TPCBox *box, uint8_t variant, size_t *size_out)
  *****************************************************************************/
 
 /**
- * @ingroup meos_pointcloud_box_constructor
- * @brief Return a fresh TPCBox from component values
- * @param[in] hasx,hasz,hast,geodetic Dimensionality flags
+ * @ingroup meos_internal_pointcloud_box_constructor
+ * @brief Return a fresh TPCBox from component values and its SRID
+ * @details The text and WKB readers state the SRID a value carries, which
+ * they reconcile with the schema of its pcid by #tpcbox_resolve_srid
+ * @param[in] hasx,hasz,hast,geodetic Dimensionality flags, at least one of
+ *   @p hasx and @p hast
  * @param[in] srid Spatial reference system (0 = unknown)
  * @param[in] pcid pgpointcloud schema id (0 = unknown)
  * @param[in] xmin,xmax,ymin,ymax,zmin,zmax Spatial bounds (ignored unless
  *   @p hasx; @p zmin/@p zmax ignored unless @p hasz)
  * @param[in] period Time bounds (ignored unless @p hast) @nullable
- * @csqlfn #Tpcbox_constructor_2d(), #Tpcbox_constructor_3d(),
- *   #Tpcbox_constructor_t(), #Tpcbox_constructor_xt(), #Tpcbox_constructor_zt()
  */
 TPCBox *
-tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
+tpcbox_srid_make(bool hasx, bool hasz, bool hast, bool geodetic,
   int32_t srid, uint32_t pcid, double xmin, double xmax, double ymin,
   double ymax, double zmin, double zmax, const Span *period)
 {
-  if (! hasx && ! hast)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "TPCBox must have at least one of spatial (X) or temporal (T) "
-      "dimension");
-    return NULL;
-  }
+  assert(hasx || hast);
   TPCBox *result = palloc0(sizeof(TPCBox));
   result->srid = srid;
   result->pcid = pcid;
@@ -572,6 +598,40 @@ tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
   if (hast && period)
     memcpy(&result->period, period, sizeof(Span));
   return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_box_constructor
+ * @brief Return a fresh TPCBox from component values
+ * @details The SRID of a box with a spatial dimension is the one the schema of
+ * its pcid states, as #tpcbox_pcid_srid reads it; a box with no spatial
+ * dimension states SRID 0
+ * @param[in] hasx,hasz,hast,geodetic Dimensionality flags
+ * @param[in] pcid pgpointcloud schema id (0 = unknown)
+ * @param[in] xmin,xmax,ymin,ymax,zmin,zmax Spatial bounds (ignored unless
+ *   @p hasx; @p zmin/@p zmax ignored unless @p hasz)
+ * @param[in] period Time bounds (ignored unless @p hast) @nullable
+ * @csqlfn #Tpcbox_constructor_2d(), #Tpcbox_constructor_3d(),
+ *   #Tpcbox_constructor_t(), #Tpcbox_constructor_xt(), #Tpcbox_constructor_zt()
+ */
+TPCBox *
+tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic, uint32_t pcid,
+  double xmin, double xmax, double ymin, double ymax, double zmin,
+  double zmax, const Span *period)
+{
+  /* Ensure the validity of the arguments */
+  if (! hasx && ! hast)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "TPCBox must have at least one of spatial (X) or temporal (T) "
+      "dimension");
+    return NULL;
+  }
+  int32_t srid = SRID_UNKNOWN;
+  if (hasx && ! tpcbox_pcid_srid(pcid, &srid))
+    return NULL;
+  return tpcbox_srid_make(hasx, hasz, hast, geodetic, srid, pcid, xmin, xmax,
+    ymin, ymax, zmin, zmax, period);
 }
 
 /**
@@ -642,8 +702,8 @@ pcpatch_z_extent(const Pcpatch *pa, const PCSCHEMA *schema, double *zmin,
 }
 
 /**
- * @ingroup meos_pointcloud_box_conversion
- * @brief Return the spatial bounding box of a pcpatch as a TPCBox
+ * @ingroup meos_internal_pointcloud_box_conversion
+ * @brief Return the spatial bounding box of a pcpatch as a TPCBox of an SRID
  * @details The schema the pcid of the patch names decides whether the box
  * carries a Z dimension, in the same way it decides whether the box of a
  * pcpoint carries one. The X and Y extent is the one the @c PCBOUNDS header
@@ -654,13 +714,11 @@ pcpatch_z_extent(const Pcpatch *pa, const PCSCHEMA *schema, double *zmin,
  * @param[in] pa Patch
  * @param[in] srid Spatial reference system of the result, which the caller
  *   states so that it can override the one of the schema
- * @csqlfn #Pcpatch_to_tpcbox()
  */
 TPCBox *
-pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
+pcpatch_srid_to_tpcbox(const Pcpatch *pa, int32_t srid)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pa, NULL);
+  assert(pa);
   const PCSCHEMA *schema = meos_pc_schema_lookup(pa->pcid);
   double zmin = 0.0, zmax = 0.0;
   bool hasz = schema && schema->zdim &&
@@ -668,7 +726,7 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
 
   Span empty_period;
   memset(&empty_period, 0, sizeof(Span));
-  return tpcbox_make(
+  return tpcbox_srid_make(
     /* hasx */ true, hasz, /* hast */ false,
     /* geodetic */ false, srid, pa->pcid,
     /* PCBOUNDS is {xmin, xmax, ymin, ymax}, the order the bounds field of
@@ -677,6 +735,26 @@ pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid)
     pa->bounds[2], pa->bounds[3],  /* ymin, ymax */
     zmin, zmax,
     &empty_period);
+}
+
+/**
+ * @ingroup meos_pointcloud_box_conversion
+ * @brief Return the spatial bounding box of a pcpatch as a TPCBox
+ * @details The SRID of the box is the one the schema of the pcid of the patch
+ * states, as #tpcbox_pcid_srid reads it, and the box is the one
+ * #pcpatch_srid_to_tpcbox states
+ * @param[in] pa Patch
+ * @csqlfn #Pcpatch_to_tpcbox()
+ */
+TPCBox *
+pcpatch_to_tpcbox(const Pcpatch *pa)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
+  int32_t srid;
+  if (! tpcbox_pcid_srid(pa->pcid, &srid))
+    return NULL;
+  return pcpatch_srid_to_tpcbox(pa, srid);
 }
 
 /*****************************************************************************

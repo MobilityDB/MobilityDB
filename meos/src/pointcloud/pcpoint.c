@@ -61,6 +61,7 @@
 #include "temporal/temporal.h"
 #include "pointcloud/meos_schema_hook.h"
 #include "pointcloud/pgsql_compat.h"
+#include "pointcloud/tpcbox.h"
 
 /*****************************************************************************
  * Struct-tail padding
@@ -589,21 +590,18 @@ pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
- * @brief Return the X coordinate of a pcpoint via the given schema
+ * @ingroup meos_internal_pointcloud_base_accessor
+ * @brief Return the X coordinate of a pcpoint read in a schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
  * @param[out] out Result
  * @return @p true on success; @p false if the schema lacks an X dimension
  *   or the byte read fails
- * @csqlfn #Pcpoint_get_x()
  */
 bool
-pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+pcpoint_schema_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
-  VALIDATE_NOT_NULL(out, false);
+  assert(pt); assert(schema); assert(out);
   if (! schema->xdim)
     return false;
   PCPOINT pcpt;
@@ -612,19 +610,16 @@ pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
- * @brief Return the Y coordinate of a pcpoint via the given schema
+ * @ingroup meos_internal_pointcloud_base_accessor
+ * @brief Return the Y coordinate of a pcpoint read in a schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
  * @param[out] out Result
- * @csqlfn #Pcpoint_get_y()
  */
 bool
-pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+pcpoint_schema_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
-  VALIDATE_NOT_NULL(out, false);
+  assert(pt); assert(schema); assert(out);
   if (! schema->ydim)
     return false;
   PCPOINT pcpt;
@@ -633,19 +628,16 @@ pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
- * @brief Return the Z coordinate of a pcpoint via the given schema
+ * @ingroup meos_internal_pointcloud_base_accessor
+ * @brief Return the Z coordinate of a pcpoint read in a schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
  * @param[out] out Result
- * @csqlfn #Pcpoint_get_z()
  */
 bool
-pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
+pcpoint_schema_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
-  VALIDATE_NOT_NULL(out, false);
+  assert(pt); assert(schema); assert(out);
   if (! schema->zdim)
     return false;
   PCPOINT pcpt;
@@ -654,30 +646,46 @@ pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out)
 }
 
 /**
- * @ingroup meos_pointcloud_base_accessor
- * @brief Return any named dimension of a pcpoint via the given schema
+ * @ingroup meos_internal_pointcloud_base_accessor
+ * @brief Return any named dimension of a pcpoint read in a schema
  * @param[in] pt Point
  * @param[in] schema Point cloud schema
  * @param[in] name Dimension name
  * @param[out] out Result
- * @csqlfn #Pcpoint_get_dim()
  */
 bool
-pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
+pcpoint_schema_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
   const char *name, double *out)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(schema, false);
-  VALIDATE_NOT_NULL(name, false); VALIDATE_NOT_NULL(out, false);
+  assert(pt); assert(schema); assert(name); assert(out);
   PCPOINT pcpt;
   pcpoint_as_pcpt(pt, schema, &pcpt);
   return pc_point_get_double_by_name(&pcpt, name, out) != 0;
 }
 
 /**
+ * @brief Return the schema the pcid of a pcpoint names
+ * @details A point stores its dimensions as the bytes of a layout its schema
+ * states, so reading any of them needs that schema; a pcid naming no
+ * registered schema is an error, as pgpointcloud answers it
+ * @param[in] pt Point
+ * @errval NULL
+ */
+PCSCHEMA *
+pcpoint_schema(const Pcpoint *pt)
+{
+  assert(pt);
+  PCSCHEMA *result = meos_pc_schema_lookup(pt->pcid);
+  if (! result)
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "No schema registered for pcid %u", pt->pcid);
+  return result;
+}
+
+/**
  * @brief Return every dimension of a pcpoint, in the order its schema states
  * them, the array #pcpoint_make takes
- * @details The values are read as #pcpoint_get_dim reads one, through
+ * @details The values are read as #pcpoint_schema_get_dim reads one, through
  * pgpointcloud's own reader, so each carries its scale and offset, and setting
  * them back recovers the stored bytes of the point. Every dimension of the
  * layout of the schema is read, which is what pgpointcloud's text form writes
@@ -689,13 +697,9 @@ double *
 pcpoint_dims(const Pcpoint *pt, int *count)
 {
   assert(pt); assert(count);
-  PCSCHEMA *schema = meos_pc_schema_lookup(pt->pcid);
+  PCSCHEMA *schema = pcpoint_schema(pt);
   if (! schema)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "No schema registered for pcid %u", pt->pcid);
     return NULL;
-  }
   PCPOINT pcpt;
   pcpoint_as_pcpt(pt, schema, &pcpt);
   double *result = palloc(sizeof(double) * (schema->ndims ? schema->ndims : 1));
@@ -714,17 +718,18 @@ pcpoint_dims(const Pcpoint *pt, int *count)
 }
 
 /**
- * @ingroup meos_pointcloud_box_constructor
- * @brief Convert a pcpoint to a degenerate single-point TPCBox
+ * @ingroup meos_internal_pointcloud_box_conversion
+ * @brief Convert a pcpoint read in a schema to a degenerate single-point
+ * TPCBox
+ * @param[in] pt Point
+ * @param[in] schema Point cloud schema
  * @return Newly-palloc'd TPCBox, or @p NULL if the schema lacks the
  *   required X/Y dimensions.
- * @csqlfn #Pcpoint_to_tpcbox()
  */
 TPCBox *
-pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
+pcpoint_schema_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pt, NULL); VALIDATE_NOT_NULL(schema, NULL);
+  assert(pt); assert(schema);
   if (! schema->xdim || ! schema->ydim)
     return NULL;
   PCPOINT pcpt;
@@ -734,9 +739,112 @@ pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema)
   if (! pc_point_get_x(&pcpt, &x) || ! pc_point_get_y(&pcpt, &y) ||
       (has_z && ! pc_point_get_z(&pcpt, &z)))
     return NULL;
-  return tpcbox_make(/* hasx */ true, /* hasz */ has_z,
+  return tpcbox_srid_make(/* hasx */ true, /* hasz */ has_z,
     /* hast */ false, /* geodetic */ false,
     (int32_t) schema->srid, pt->pcid, x, x, y, y, z, z, NULL);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the X coordinate of a pcpoint
+ * @param[in] pt Point
+ * @param[out] out Result
+ * @return @p true on success; @p false if the schema lacks an X dimension
+ *   or the byte read fails
+ * @csqlfn #Pcpoint_get_x()
+ */
+bool
+pcpoint_get_x(const Pcpoint *pt, double *out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(out, false);
+  PCSCHEMA *schema = pcpoint_schema(pt);
+  if (! schema)
+    return false;
+  return pcpoint_schema_get_x(pt, schema, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the Y coordinate of a pcpoint
+ * @param[in] pt Point
+ * @param[out] out Result
+ * @return @p true on success; @p false if the schema lacks a Y dimension
+ *   or the byte read fails
+ * @csqlfn #Pcpoint_get_y()
+ */
+bool
+pcpoint_get_y(const Pcpoint *pt, double *out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(out, false);
+  PCSCHEMA *schema = pcpoint_schema(pt);
+  if (! schema)
+    return false;
+  return pcpoint_schema_get_y(pt, schema, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return the Z coordinate of a pcpoint
+ * @param[in] pt Point
+ * @param[out] out Result
+ * @return @p true on success; @p false if the schema lacks a Z dimension
+ *   or the byte read fails
+ * @csqlfn #Pcpoint_get_z()
+ */
+bool
+pcpoint_get_z(const Pcpoint *pt, double *out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(out, false);
+  PCSCHEMA *schema = pcpoint_schema(pt);
+  if (! schema)
+    return false;
+  return pcpoint_schema_get_z(pt, schema, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_base_accessor
+ * @brief Return any named dimension of a pcpoint
+ * @param[in] pt Point
+ * @param[in] name Dimension name
+ * @param[out] out Result
+ * @return @p true on success; @p false if the schema lacks the dimension
+ *   or the byte read fails
+ * @csqlfn #Pcpoint_get_dim()
+ */
+bool
+pcpoint_get_dim(const Pcpoint *pt, const char *name, double *out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, false); VALIDATE_NOT_NULL(name, false);
+  VALIDATE_NOT_NULL(out, false);
+  PCSCHEMA *schema = pcpoint_schema(pt);
+  if (! schema)
+    return false;
+  return pcpoint_schema_get_dim(pt, schema, name, out);
+}
+
+/**
+ * @ingroup meos_pointcloud_box_constructor
+ * @brief Convert a pcpoint to a degenerate single-point TPCBox
+ * @details The SRID of the box is the one the schema of the pcid of the
+ * point states
+ * @param[in] pt Point
+ * @return Newly-palloc'd TPCBox, or @p NULL if the schema lacks the
+ *   required X/Y dimensions
+ * @csqlfn #Pcpoint_to_tpcbox()
+ */
+TPCBox *
+pcpoint_to_tpcbox(const Pcpoint *pt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pt, NULL);
+  PCSCHEMA *schema = pcpoint_schema(pt);
+  if (! schema)
+    return NULL;
+  return pcpoint_schema_to_tpcbox(pt, schema);
 }
 
 /*****************************************************************************/

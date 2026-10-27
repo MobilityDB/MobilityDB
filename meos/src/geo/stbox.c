@@ -74,6 +74,7 @@
   #include "pointcloud/pcpatch.h"
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/tpc_boxops.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 #if POSE
   #include "pose/pose.h"
@@ -1143,7 +1144,7 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
       PCSCHEMA *schema = meos_pc_schema(pcpoint_get_pcid(pt));
       if (! schema)
         return false;
-      TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+      TPCBox *box = pcpoint_schema_to_tpcbox(pt, schema);
       if (! box)
         return false;
       tpcbox_set_stbox(box, result);
@@ -1153,7 +1154,7 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     case T_PCPATCH:
     {
       const Pcpatch *pa = DatumGetPcpatchP(d);
-      TPCBox *box = pcpatch_to_tpcbox(pa,
+      TPCBox *box = pcpatch_srid_to_tpcbox(pa,
         meos_pc_schema_srid(pcpatch_get_pcid(pa)));
       if (! box)
         return false;

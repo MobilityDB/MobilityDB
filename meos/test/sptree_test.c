@@ -425,8 +425,24 @@ test_stbox(SPTreeKind kind, const char *kindname)
  * The tpcbox tree is internally an STBox tree (the boxes are projected on
  * entry), so the oracle here uses the native tpcbox predicates to prove that
  * the projection loses nothing. All boxes share the same pcid and srid, as
- * required by the tpcbox predicates.
+ * required by the tpcbox predicates: the pcid names a schema of SRID 0, the
+ * SRID a box built from it takes.
  *****************************************************************************/
+
+/* The schema of pcid 1, stated by its two coordinate dimensions */
+static void
+register_tpcbox_schema(void)
+{
+  PCDimensionSpec dims[2] = {
+    { "X", NULL, 1, "int32_t", 1, 0, true },
+    { "Y", NULL, 2, "int32_t", 1, 0, true }
+  };
+  if (! meos_pc_schema_register_dims(1, 0, "none", dims, 2))
+  {
+    printf("FAILED: the schema of pcid 1 is not registered\n");
+    exit(1);
+  }
+}
 
 static TPCBox *
 random_tpcbox(int sspan, int tspan)
@@ -436,7 +452,7 @@ random_tpcbox(int sspan, int tspan)
   TimestampTz tlo = (TimestampTz) random_int(0, 1000000) * 1000000;
   Span *t = tstzspan_make(tlo, tlo + (TimestampTz) random_int(1, tspan) *
     1000000, true, false);
-  TPCBox *box = tpcbox_make(true, false, true, false, 0, 1, xlo,
+  TPCBox *box = tpcbox_make(true, false, true, false, 1, xlo,
     xlo + random_int(1, sspan) / 10.0, ylo, ylo + random_int(1, sspan) / 10.0,
     0, 0, t);
   free(t);
@@ -1234,6 +1250,7 @@ main(void)
   test_tbox_period(SPTREE_KDTREE, "k-d tree");
   test_stbox(SPTREE_QUADTREE, "quad-tree");
   test_stbox(SPTREE_KDTREE, "k-d tree");
+  register_tpcbox_schema();
   test_tpcbox(SPTREE_QUADTREE, "quad-tree");
   test_tpcbox(SPTREE_KDTREE, "k-d tree");
   test_selective_intspan(SPTREE_QUADTREE, "quad-tree");

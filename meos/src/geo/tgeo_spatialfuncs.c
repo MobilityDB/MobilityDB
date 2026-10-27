@@ -74,6 +74,7 @@
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/pcpatch.h"
   #include "pointcloud/meos_schema_hook.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -481,7 +482,7 @@ pcpoint_flags(const Pcpoint *pt)
     MEOS_FLAGS_SET_X(result, true);
     return result;
   }
-  TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+  TPCBox *box = pcpoint_schema_to_tpcbox(pt, schema);
   if (! box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -504,7 +505,7 @@ static int16
 pcpatch_flags(const Pcpatch *pa)
 {
   int32_t srid = meos_pc_schema_srid(pcpatch_get_pcid(pa));
-  TPCBox *box = pcpatch_to_tpcbox(pa, srid);
+  TPCBox *box = pcpatch_srid_to_tpcbox(pa, srid);
   if (! box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

@@ -70,7 +70,7 @@ pcpoint_to_geompoint2d(const Pcpoint *pt)
   if (!schema)
     return NULL;
   double x = 0.0, y = 0.0;
-  if (!pcpoint_get_x(pt, schema, &x) || !pcpoint_get_y(pt, schema, &y))
+  if (!pcpoint_schema_get_x(pt, schema, &x) || !pcpoint_schema_get_y(pt, schema, &y))
     return NULL;
   return geompoint_make2d((int32_t) schema->srid, x, y);
 }
@@ -106,10 +106,10 @@ tpcpointinst_to_tgeompointinst(const TInstant *inst, PCSCHEMA *schema)
   const Pcpoint *pt =
     (const Pcpoint *) DatumGetPointer(tinstant_value_p(inst));
   double x, y, z = 0.0;
-  if (! pcpoint_get_x(pt, schema, &x) || ! pcpoint_get_y(pt, schema, &y))
+  if (! pcpoint_schema_get_x(pt, schema, &x) || ! pcpoint_schema_get_y(pt, schema, &y))
     return NULL;
   bool hasz = (schema->zdim != NULL);
-  if (hasz && ! pcpoint_get_z(pt, schema, &z))
+  if (hasz && ! pcpoint_schema_get_z(pt, schema, &z))
     return NULL;
   GSERIALIZED *gs = geopoint_make(x, y, z, hasz, /* geodetic */ false,
     (int32_t) schema->srid);

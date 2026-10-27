@@ -184,44 +184,59 @@ int main(void)
   boxcorpus_check("tbox", (boxcorpus_cmp) tbox_cmp, (boxcorpus_eq) tbox_eq,
     (boxcorpus_key) tbox_sortkey);
 
-  /* Spatiotemporal boxes, then point cloud boxes over the same shapes and
-   * several schema ids */
+  /* Spatiotemporal boxes over several SRIDs, then point cloud boxes over the
+   * same shapes and several schema ids, each naming a schema of one of these
+   * SRIDs, the SRID a point cloud box takes from its schema id */
   const int32_t srids[] = {0, 3857, 4326};
   const double coords[] = {-INFINITY, -1e300, -1.0, -0.0, 0.0, 0.5, 1e300};
   const int nc = sizeof(coords) / sizeof(coords[0]);
-  const uint32_t pcids[] = {0, 1, 0x80000000u, UINT32_MAX};
+  const struct { uint32_t pcid; int32_t srid; } schemas[] = {
+    {0, 0}, {1, 0}, {2, 3857}, {3, 4326}, {0x80000000u, 3857},
+    {UINT32_MAX, 4326}};
+  PCDimensionSpec dims[2] = {
+    { "X", NULL, 1, "int32_t", 1, 0, true },
+    { "Y", NULL, 2, "int32_t", 1, 0, true }
+  };
+  /* Schema id 0 names no schema */
+  for (int k = 1; k < 6; k++)
+    if (! meos_pc_schema_register_dims(schemas[k].pcid, schemas[k].srid,
+        "none", dims, 2))
+    {
+      printf("FAILED: the schema of pcid %u is not registered\n",
+        schemas[k].pcid);
+      return 1;
+    }
   for (int pc = 0; pc < 2; pc++)
   {
-    const int npc = pc ? 4 : 1;
-    for (int k = 0; k < npc; k++)
-      for (int r = 0; r < 3; r++)
-        for (int p = 0; p < np; p++)
-          for (int fl = 0; fl < 4; fl++)
+    const int nk = pc ? 6 : 3;
+    for (int k = 0; k < nk; k++)
+      for (int p = 0; p < np; p++)
+        for (int fl = 0; fl < 4; fl++)
+        {
+          bool hasx = fl > 0, hasz = fl > 1, geodetic = fl == 3;
+          if (! hasx)
           {
-            bool hasx = fl > 0, hasz = fl > 1, geodetic = fl == 3;
-            if (! hasx)
-            {
-              if (! periods[p])
-                continue;
-              boxcorpus_add(pc ?
-                (void *) tpcbox_make(false, false, true, false, srids[r],
-                  pcids[k], 0, 0, 0, 0, 0, 0, periods[p]) :
-                (void *) stbox_make(false, false, false, srids[r], 0, 0, 0,
-                  0, 0, 0, periods[p]));
+            if (! periods[p])
               continue;
-            }
-            for (int a = 0; a < nc; a += 1 + pc)
-              for (int b = a; b < nc; b += 2 + pc)
-              {
-                double lo = coords[a], hi = coords[b];
-                boxcorpus_add(pc ?
-                  (void *) tpcbox_make(true, hasz, periods[p] != NULL,
-                    geodetic, srids[r], pcids[k], lo, hi, -hi, -lo, lo, hi,
-                    periods[p]) :
-                  (void *) stbox_make(true, hasz, geodetic, srids[r], lo, hi,
-                    -hi, -lo, lo, hi, periods[p]));
-              }
+            boxcorpus_add(pc ?
+              (void *) tpcbox_make(false, false, true, false,
+                schemas[k].pcid, 0, 0, 0, 0, 0, 0, periods[p]) :
+              (void *) stbox_make(false, false, false, srids[k], 0, 0, 0,
+                0, 0, 0, periods[p]));
+            continue;
           }
+          for (int a = 0; a < nc; a += 1 + pc)
+            for (int b = a; b < nc; b += 2 + pc)
+            {
+              double lo = coords[a], hi = coords[b];
+              boxcorpus_add(pc ?
+                (void *) tpcbox_make(true, hasz, periods[p] != NULL,
+                  geodetic, schemas[k].pcid, lo, hi, -hi, -lo, lo, hi,
+                  periods[p]) :
+                (void *) stbox_make(true, hasz, geodetic, srids[k], lo, hi,
+                  -hi, -lo, lo, hi, periods[p]));
+            }
+        }
     if (pc)
       boxcorpus_check("tpcbox", (boxcorpus_cmp) tpcbox_cmp,
         (boxcorpus_eq) tpcbox_eq, (boxcorpus_key) tpcbox_sortkey);
@@ -234,8 +249,8 @@ int main(void)
   size_t size;
   TBox *tbox = tbox_make(NULL, periods[2]);
   STBox *stbox = stbox_make(true, false, false, 0, 0, 1, 0, 1, 0, 0, NULL);
-  TPCBox *tpcbox = tpcbox_make(true, false, false, false, 0, 1, 0, 1, 0, 1,
-    0, 0, NULL);
+  TPCBox *tpcbox = tpcbox_make(true, false, false, false, 1, 0, 1, 0, 1, 0,
+    0, NULL);
   void *values[] = {tbox, stbox, tpcbox};
   boxcorpus_key keys[] = {(boxcorpus_key) tbox_sortkey,
     (boxcorpus_key) stbox_sortkey, (boxcorpus_key) tpcbox_sortkey};
