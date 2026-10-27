@@ -398,7 +398,7 @@ aligns what still differs and renames no type (the owner, 2026-10-26: the cursor
 `meos/void-parameter-lists`, `6ed1ae0d8b` on master `a23e01a60b`), and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
-data and checks (branch `meos/sptree-examples`, `8f9d4fb0c8` on master `a23e01a60b`, the R-tree, the
+data and checks (branch `meos/sptree-examples`, MobilityDB #3221, `8f9d4fb0c8` on master `a23e01a60b`, the R-tree, the
 quad-tree and the k-d tree finding the same values for each of the 13 searches, every `contains`
 check of `rtree_example.c` querying a stored box, and its `stbox` values taking the corners of the
 text form). `rtree_create_tpcbox`, `sptree_create_tpcbox` and `meos_initialize_pointcloud` are
