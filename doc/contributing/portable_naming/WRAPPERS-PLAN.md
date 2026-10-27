@@ -404,7 +404,7 @@ check of `rtree_example.c` querying a stored box, and its `stbox` values taking 
 text form). `rtree_create_tpcbox`, `sptree_create_tpcbox` and `meos_initialize_pointcloud` are
 declared in `meos_pointcloud.h`, where a program compiled against the installed headers, which
 define no family flag, reads them (branch `meos/sptree-tpcbox-declared`, `75d8c6a705` on master
-`71282af6fc`, `sptree_test` running its TPCBox quad-tree and k-d tree sections). The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
+`71282af6fc`, MobilityDB #3207, CI 47 of 47 green, `sptree_test` running its TPCBox quad-tree and k-d tree sections). The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
 of `meos_catalog.c` answers for every type, the owner's decision of 2026-10-26: a box type, a span
 or a temporal, spatiotemporal or point cloud box, is its own; every other type is bounded by its
 box, the span its bounds state for a number or time set and for a span set, and the box a spatial
