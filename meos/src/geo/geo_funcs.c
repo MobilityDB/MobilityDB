@@ -117,6 +117,7 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     Edge e;
     e.centred = false;
     e.from = e.to = NULL;
+    e.cut = false;
     e.x1 = a->x; e.y1 = a->y;
     e.x2 = b->x; e.y2 = b->y;
     e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -168,6 +169,7 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   Edge e;
   e.centred = false;
   e.from = e.to = NULL;
+  e.cut = false;
   e.x1 = e.x2 = e.xmin = e.xmax = p->x;
   e.y1 = e.y2 = e.ymin = e.ymax = p->y;
   e.dx = e.dy = e.length = 0;
@@ -397,6 +399,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       Edge e;
       e.centred = false;
       e.from = e.to = NULL;
+      e.cut = false;
       e.cx = mx; e.cy = my; e.radius = radius;
       /* Both halves lie on the circle on the diameter between the two input
        * points, which an exact question about it reads */
@@ -435,6 +438,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       Edge e;
       e.centred = false;
       e.from = e.to = NULL;
+      e.cut = false;
       e.x1 = px[i]; e.y1 = py[i];
       e.x2 = px[i + 1]; e.y2 = py[i + 1];
       e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -454,6 +458,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   Edge e;
   e.centred = false;
   e.from = e.to = NULL;
+  e.cut = false;
   /* Circumcenter of the three points */
   e.cx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   e.cy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
@@ -15159,6 +15164,186 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
 }
 
 /**
+ * @brief Set a segment of the given ends in the form the exact order of
+ * meetings reads (#meets_order_exact), as #buffer_piece_from_edge sets one
+ */
+static void
+relate_input_segment(double x1, double y1, double x2, double y2, Edge *out)
+{
+  memset(out, 0, sizeof(Edge));
+  out->x1 = x1; out->y1 = y1;
+  out->x2 = x2; out->y2 = y2;
+  out->dx = x2 - x1; out->dy = y2 - y1;
+  out->etype = EDGE_POLYSEG;
+  return;
+}
+
+/* Where a meeting lies along a piece of an input segment
+ * (#relate_piece_locate) */
+typedef enum
+{
+  RELATE_PIECE_UNDECIDED,
+  RELATE_PIECE_OUTSIDE,
+  RELATE_PIECE_START,
+  RELATE_PIECE_INSIDE,
+  RELATE_PIECE_END
+} RelatePiecePos;
+
+/**
+ * @brief Return where a meeting on an input segment lies against a piece of
+ * it, ordering it exactly against the two ends of the piece
+ * @details An end of the piece is the point its coordinates hold, or the
+ * crossing of the input segment with the one recorded for it, which no double
+ * holds; #meets_order_exact orders a meeting of either kind along the input
+ * segment, exactly, and leaves undecided an order it cannot read
+ * @param[in] piece Piece, running along @p line from its start to its end
+ * @param[in] line Input segment of the piece
+ * @param[in] m Meeting on @p line
+ */
+static RelatePiecePos
+relate_piece_locate(const Edge *piece, const Edge *line, const MeetPoint *m)
+{
+  Edge crosser[2];
+  MeetPoint ends[2];
+  memset(ends, 0, sizeof(ends));
+  for (int k = 0; k < 2; k++)
+  {
+    if (piece->cut && piece->crossed[k])
+    {
+      relate_input_segment(piece->crosser[k][0], piece->crosser[k][1],
+        piece->crosser[k][2], piece->crosser[k][3], &crosser[k]);
+      ends[k].kind = MEET_SEGSEG;
+      ends[k].p = line;
+      ends[k].q = &crosser[k];
+    }
+    else
+    {
+      ends[k].kind = MEET_VERTEX;
+      ends[k].x = k ? piece->x2 : piece->x1;
+      ends[k].y = k ? piece->y2 : piece->y1;
+    }
+  }
+  int s = meets_order_exact(line, false, &ends[0], m);
+  if (s == 2)
+    return RELATE_PIECE_UNDECIDED;
+  if (s >= 0)
+    return s == 0 ? RELATE_PIECE_START : RELATE_PIECE_OUTSIDE;
+  int t = meets_order_exact(line, false, m, &ends[1]);
+  if (t == 2)
+    return RELATE_PIECE_UNDECIDED;
+  if (t >= 0)
+    return t == 0 ? RELATE_PIECE_END : RELATE_PIECE_OUTSIDE;
+  return RELATE_PIECE_INSIDE;
+}
+
+/**
+ * @brief Return how two segments meet, as #linesegm_intersect answers it,
+ * reading a piece of the boundary of a union on the input segment it is cut
+ * from
+ * @details An end of a piece is constructed on its input segment and rounded
+ * once (#relate_union_edges), so it falls off that segment's line and to
+ * either side of the segment that cut it: read off its ends, a piece running
+ * along a segment of the other geometry crosses it or misses it, and a piece
+ * ending on a segment crosses it a rounding step before its end or misses it.
+ * Every question is therefore asked of the input segments. Whether the two
+ * lie on one line is a sign of cross products of input coordinates
+ * (#cross_product_sign), and the stretch they share runs between their own
+ * ends. Otherwise the input segments meet at one point or nowhere
+ * (#linesegm_intersect), and that point is ordered exactly against the ends
+ * of each piece (#relate_piece_locate): it lies outside a piece, at one of
+ * its ends -- the crossing it was cut at -- or inside it. An order the exact
+ * reading leaves undecided is read on the rounded ends
+ */
+static IntersectResult
+relate_segments_intersect(const Edge *a, const Edge *b)
+{
+  if (! a->cut && ! b->cut)
+    return linesegm_intersect(a->x1, a->y1, a->x2, a->y2, b->x1, b->y1,
+      b->x2, b->y2);
+  Edge la, lb;
+  relate_input_segment(a->cut ? a->sx : a->x1, a->cut ? a->sy : a->y1,
+    a->cut ? a->ex : a->x2, a->cut ? a->ey : a->y2, &la);
+  relate_input_segment(b->cut ? b->sx : b->x1, b->cut ? b->sy : b->y1,
+    b->cut ? b->ex : b->x2, b->cut ? b->ey : b->y2, &lb);
+  int oc = cross_product_sign(la.x1, la.y1, la.x2, la.y2, la.x1, la.y1,
+    lb.x1, lb.y1);
+  int od = cross_product_sign(la.x1, la.y1, la.x2, la.y2, la.x1, la.y1,
+    lb.x2, lb.y2);
+  if (oc == 0 && od == 0)
+    return linesegm_intersect_collinear(a->x1, a->y1, a->x2, a->y2, b->x1,
+      b->y1, b->x2, b->y2);
+
+  /* Where the input segments meet, exactly: an input vertex lying on the
+   * other segment, or the crossing of the two */
+  IntersectResult none = {INTERSECT_NONE, 0, 0};
+  IntersectResult ri = linesegm_intersect(la.x1, la.y1, la.x2, la.y2, lb.x1,
+    lb.y1, lb.x2, lb.y2);
+  if (ri.type == INTERSECT_NONE)
+    return none;
+  int oa = cross_product_sign(lb.x1, lb.y1, lb.x2, lb.y2, lb.x1, lb.y1,
+    la.x1, la.y1);
+  int ob = cross_product_sign(lb.x1, lb.y1, lb.x2, lb.y2, lb.x1, lb.y1,
+    la.x2, la.y2);
+  MeetPoint m;
+  memset(&m, 0, sizeof(MeetPoint));
+  m.kind = MEET_VERTEX;
+  if (oa == 0)
+  {
+    m.x = la.x1; m.y = la.y1;
+  }
+  else if (ob == 0)
+  {
+    m.x = la.x2; m.y = la.y2;
+  }
+  else if (oc == 0)
+  {
+    m.x = lb.x1; m.y = lb.y1;
+  }
+  else if (od == 0)
+  {
+    m.x = lb.x2; m.y = lb.y2;
+  }
+  else
+  {
+    m.kind = MEET_SEGSEG;
+    m.p = &la;
+    m.q = &lb;
+  }
+
+  /* The meeting is one of the pieces only where it lies on both */
+  RelatePiecePos pa = a->cut ? relate_piece_locate(a, &la, &m) :
+    RELATE_PIECE_INSIDE;
+  RelatePiecePos pb = b->cut ? relate_piece_locate(b, &lb, &m) :
+    RELATE_PIECE_INSIDE;
+  if (pa == RELATE_PIECE_UNDECIDED || pb == RELATE_PIECE_UNDECIDED)
+  {
+    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2, b->x1,
+      b->y1, b->x2, b->y2);
+    if (r.type == INTERSECT_OVERLAP)
+      r.type = INTERSECT_POINT;
+    return r;
+  }
+  if (pa == RELATE_PIECE_OUTSIDE || pb == RELATE_PIECE_OUTSIDE)
+    return none;
+  IntersectResult r = {INTERSECT_POINT, 0, 0};
+  if (pa == RELATE_PIECE_START)
+    r.t0 = 0.0;
+  else if (pa == RELATE_PIECE_END)
+    r.t0 = 1.0;
+  else if (! a->cut)
+    r.t0 = ri.t0;
+  else
+  {
+    /* Inside the piece: its position, read on the rounded ends */
+    double px = la.x1 + ri.t0 * la.dx, py = la.y1 + ri.t0 * la.dy;
+    double t = (fabs(a->dx) >= fabs(a->dy)) ? (px - a->x1) / a->dx :
+      (py - a->y1) / a->dy;
+    r.t0 = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  }
+  return r;
+}
+
+/**
  * @brief Process the intersection between one linear edge and one polygon
  * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
@@ -15173,8 +15358,7 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
   /* Line / Poly */
   if (line->etype == EDGE_LINESEG && boundary->etype == EDGE_POLYSEG)
   {
-    IntersectResult r =  linesegm_intersect(line->x1, line->y1, line->x2,
-      line->y2, boundary->x1, boundary->y1, boundary->x2, boundary->y2);
+    IntersectResult r = relate_segments_intersect(line, boundary);
     if (r.type == INTERSECT_NONE)
       return;
     if (r.type == INTERSECT_OVERLAP)
@@ -16361,8 +16545,7 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
   /* Line / Line */
   if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
   {
-    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
-      b->x1, b->y1, b->x2, b->y2);
+    IntersectResult r = relate_segments_intersect(a, b);
     if (r.type == INTERSECT_NONE)
       return 0;
     if (r.type == INTERSECT_OVERLAP)
@@ -18080,6 +18263,92 @@ relate_members_apart(const LWGEOM *geom)
   return relate_members_apart_within(geom, RELATE_INDEX_MIN_PAIRS);
 }
 
+/* What fixes a parameter an edge of a union is cut at (#relate_union_edges):
+ * an end of the edge or a meeting held only rounded, the crossing of a
+ * segment, or a vertex of the edge running along it */
+typedef enum
+{
+  RELATE_CUT_ROUNDED,
+  RELATE_CUT_CROSSING,
+  RELATE_CUT_VERTEX1,
+  RELATE_CUT_VERTEX2
+} RelateCutKind;
+
+/* A parameter an edge of a union is cut at, with the edge that cuts it */
+typedef struct
+{
+  double t;
+  RelateCutKind kind;
+  const Edge *by;
+} RelateCut;
+
+/**
+ * @brief Sort the cuts of an edge by their parameter, as
+ * #relate_area_parameter_cmp sorts the parameters
+ */
+static int
+relate_cut_cmp(const void *a, const void *b)
+{
+  return relate_area_parameter_cmp(&((const RelateCut *) a)->t,
+    &((const RelateCut *) b)->t);
+}
+
+/**
+ * @brief Add a parameter to the cuts of an edge, as #relate_area_add_parameter
+ * adds it, recording what cuts the edge there where it is added
+ */
+static void
+relate_union_add_cut(double t, RelateCutKind kind, const Edge *by,
+  double *params, RelateCut *cuts, int *nparams, int maxparams)
+{
+  int n = *nparams;
+  relate_area_add_parameter(t, params, nparams, maxparams);
+  if (*nparams > n)
+  {
+    cuts[n].t = params[n];
+    cuts[n].kind = kind;
+    cuts[n].by = by;
+  }
+  return;
+}
+
+/**
+ * @brief Set an end of a piece of an edge of a union to the point it is cut
+ * at, keeping what fixes that point exactly
+ * @details A vertex of an edge running along this one is that input vertex. A
+ * crossing of two segments is a point no double holds: the piece holds it
+ * rounded once and keeps the input segment crossing it, so that every
+ * question about that end reads the crossing (#relate_segments_intersect)
+ */
+static void
+relate_union_piece_end(const Edge *e, const RelateCut *cut, int end,
+  Edge *piece)
+{
+  double *x = end ? &piece->x2 : &piece->x1;
+  double *y = end ? &piece->y2 : &piece->y1;
+  switch (cut->kind)
+  {
+    case RELATE_CUT_VERTEX1:
+      *x = cut->by->x1; *y = cut->by->y1;
+      return;
+    case RELATE_CUT_VERTEX2:
+      *x = cut->by->x2; *y = cut->by->y2;
+      return;
+    case RELATE_CUT_CROSSING:
+      piece->crossed[end] = true;
+      piece->crosser[end][0] = cut->by->x1;
+      piece->crosser[end][1] = cut->by->y1;
+      piece->crosser[end][2] = cut->by->x2;
+      piece->crosser[end][3] = cut->by->y2;
+      relate_area_edge_point(e, cut->t, x, y);
+      return;
+    case RELATE_CUT_ROUNDED:
+      relate_area_edge_point(e, cut->t, x, y);
+      return;
+  }
+  return;
+}
+
 /**
  * @brief Return the edges of a collection, carrying the boundary of the union
  * of its areal components in place of the boundaries of the components
@@ -18119,6 +18388,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
   MeosArray *result = meos_array_create(sizeof(Edge));
   int maxparams = 2 * nall + 2;
   double *params = palloc(sizeof(double) * maxparams);
+  RelateCut *cuts = palloc(sizeof(RelateCut) * maxparams);
   /* Every edge is asked against every other, so the walk costs the SQUARE of
    * the array while indexing it costs one pass. Two edges that meet have
    * boxes that meet, so the index answers the pairs the walk would split at
@@ -18142,6 +18412,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     int nparams = 0;
     params[nparams++] = 0.0;
     params[nparams++] = 1.0;
+    cuts[0] = (RelateCut) {0.0, RELATE_CUT_ROUNDED, NULL};
+    cuts[1] = (RelateCut) {1.0, RELATE_CUT_ROUNDED, NULL};
     /* The query is grown by the widest tolerance the array asks for, which is
      * what makes it admit every edge the walk would have solved against */
     int ncand = nall;
@@ -18166,30 +18438,42 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
          * is where the other one starts and ends, not the two points an
          * intersection reports for a pair that merely crosses */
         if (relate_point_on_edge(other->x1, other->y1, e, false))
-          relate_area_add_parameter(relate_area_edge_parameter(e, other->x1,
-            other->y1), params, &nparams, maxparams);
+          relate_union_add_cut(relate_area_edge_parameter(e, other->x1,
+            other->y1), RELATE_CUT_VERTEX1, other, params, cuts, &nparams,
+            maxparams);
         if (relate_point_on_edge(other->x2, other->y2, e, false))
-          relate_area_add_parameter(relate_area_edge_parameter(e, other->x2,
-            other->y2), params, &nparams, maxparams);
+          relate_union_add_cut(relate_area_edge_parameter(e, other->x2,
+            other->y2), RELATE_CUT_VERTEX2, other, params, cuts, &nparams,
+            maxparams);
         continue;
       }
+      /* Two segments cross at one point, which the input segment of the
+       * other one fixes; an arc's meeting is held rounded */
+      RelateCutKind kind = (n == 1 && e->etype == EDGE_POLYSEG &&
+        other->etype == EDGE_POLYSEG && ! other->cut) ?
+        RELATE_CUT_CROSSING : RELATE_CUT_ROUNDED;
       for (int k = 0; k < n; k++)
-        relate_area_add_parameter(relate_area_edge_parameter(e, ix[k], iy[k]),
-          params, &nparams, maxparams);
+        relate_union_add_cut(relate_area_edge_parameter(e, ix[k], iy[k]),
+          kind, other, params, cuts, &nparams, maxparams);
     }
-    qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
+    qsort(cuts, nparams, sizeof(RelateCut), relate_cut_cmp);
 
     for (int k = 0; k < nparams - 1; k++)
     {
-      double t0 = params[k], t1 = params[k + 1];
+      double t0 = cuts[k].t, t1 = cuts[k + 1].t;
       if (t1 - t0 <= MEOS_GEOM_TOLERANCE)
         continue;
       if (relate_portion_inside_union(e, (t0 + t1) * 0.5, comps, ncomp))
         continue;
-      /* The portion lies on the boundary of the union, so it is kept */
+      /* The portion lies on the boundary of the union, so it is kept. An end
+       * of the edge is the input vertex itself; any other end is constructed
+       * on the edge and rounded once */
       Edge piece = *e;
-      relate_area_edge_point(e, t0, &piece.x1, &piece.y1);
-      relate_area_edge_point(e, t1, &piece.x2, &piece.y2);
+      piece.crossed[0] = piece.crossed[1] = false;
+      if (t0 > 0.0)
+        relate_union_piece_end(e, &cuts[k], 0, &piece);
+      if (t1 < 1.0)
+        relate_union_piece_end(e, &cuts[k + 1], 1, &piece);
       if (piece.etype == EDGE_POLYARC)
       {
         piece.theta0 = atan2(piece.y1 - piece.cy, piece.x1 - piece.cx);
@@ -18198,6 +18482,15 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
       }
       else
       {
+        /* A constructed end falls off the line of the input segment, which
+         * the piece keeps, so that whether it runs along a segment of another
+         * geometry is read on that line (#relate_segments_intersect) */
+        if ((t0 > 0.0 || t1 < 1.0) && ! e->cut)
+        {
+          piece.sx = e->x1; piece.sy = e->y1;
+          piece.ex = e->x2; piece.ey = e->y2;
+          piece.cut = true;
+        }
         piece.dx = piece.x2 - piece.x1;
         piece.dy = piece.y2 - piece.y1;
         piece.length = piece.dx * piece.dx + piece.dy * piece.dy;
@@ -18216,6 +18509,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     }
   }
   pfree(params);
+  pfree(cuts);
   if (candidates)
     meos_array_destroy(candidates);
   relate_edges_clear(&re);
