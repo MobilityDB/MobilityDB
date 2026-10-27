@@ -302,7 +302,7 @@ $(function() {
 <p >Neither list needs a mark ending it. Two values with one bounding box have one period, whose upper bound is the timestamp of the last instant, so two values whose first instants agree hold as many instants, and two values holding the same instants hold runs over them that differ, if at all, before either list ends. The instants and the runs are read through the one-element wrappers, as <a class="el" href="group__meos__temporal__comp__trad_ga65db6989f0f55b926c1d9430ec76b29a.html#ga65db6989f0f55b926c1d9430ec76b29a" title="Return -1, 0, or 1 depending on whether the first temporal value is less than, equal to,...">temporal_cmp</a> reads them, so that the values <a class="el" href="group__meos__temporal__comp__trad_gabdbb95ce6b3ea7e13405e18550faf6b8.html#gabdbb95ce6b3ea7e13405e18550faf6b8" title="Return true if two temporal values are equal.">temporal_eq</a> holds equal have one key. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Buffer, or NULL to count </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Buffer (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>
