@@ -101,6 +101,8 @@ extern Datum datum_div(Datum l, Datum r, MeosType type);
 
 extern int datum_cmp(Datum l, Datum r, MeosType type);
 extern size_t datum_sortkey_size(MeosType type);
+extern bool datum_sortkey_type(MeosType type);
+extern size_t datum_sortkey_len(Datum d, MeosType type);
 extern void datum_sortkey_put(Datum d, MeosType type, uint8_t *out);
 extern bool datum_eq(Datum l, Datum r, MeosType type);
 extern bool datum_ne(Datum l, Datum r, MeosType type);

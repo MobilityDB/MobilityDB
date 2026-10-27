@@ -216,8 +216,6 @@ extern bool pose_gt(const Pose *pose1, const Pose *pose2);
 extern bool pose_le(const Pose *pose1, const Pose *pose2);
 extern bool pose_lt(const Pose *pose1, const Pose *pose2);
 extern bool pose_ne(const Pose *pose1, const Pose *pose2);
-extern bool pose_nsame(const Pose *pose1, const Pose *pose2);
-extern bool pose_same(const Pose *pose1, const Pose *pose2);
 
 /******************************************************************************
  * Functions for pose sets
@@ -494,8 +492,6 @@ extern char *tposechainarr_as_geopose(const Temporal **temparr, int count, int p
 
 extern bool posechain_eq(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_ne(const PoseChain *pc1, const PoseChain *pc2);
-extern bool posechain_same(const PoseChain *pc1, const PoseChain *pc2);
-extern bool posechain_nsame(const PoseChain *pc1, const PoseChain *pc2);
 extern int posechain_cmp(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_lt(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_le(const PoseChain *pc1, const PoseChain *pc2);

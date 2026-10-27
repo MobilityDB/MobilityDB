@@ -60,6 +60,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <pgtypes.h>
+#include <utils/float.h>
 #include <pg_int.h>
 #include "temporal/span.h"
 #include "temporal/tsequence.h"
@@ -1563,7 +1564,7 @@ npoint_eq(const Npoint *np1, const Npoint *np2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(np1, false); VALIDATE_NOT_NULL(np2, false);
-  return np1->rid == np2->rid && fabs(np1->pos - np2->pos) < MEOS_EPSILON;
+  return np1->rid == np2->rid && float8_eq(np1->pos, np2->pos);
 }
 
 /**
@@ -1667,8 +1668,8 @@ nsegment_eq(const Nsegment *ns1, const Nsegment *ns2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(ns1, false); VALIDATE_NOT_NULL(ns2, false);
-  return ns1->rid == ns2->rid && fabs(ns1->pos1 - ns2->pos1) < MEOS_EPSILON &&
-    fabs(ns1->pos2 - ns2->pos2) < MEOS_EPSILON;
+  return ns1->rid == ns2->rid && float8_eq(ns1->pos1, ns2->pos1) &&
+    float8_eq(ns1->pos2, ns2->pos2);
 }
 
 /**

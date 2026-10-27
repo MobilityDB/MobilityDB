@@ -426,6 +426,7 @@ extern bool adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 extern int tpcbox_cmp(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2);
+extern uint8_t *tpcbox_sortkey(const TPCBox *box, size_t *size);
 extern bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_le(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2);

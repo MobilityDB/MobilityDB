@@ -1894,10 +1894,11 @@ span_sortkey_body_size(MeosType basetype)
 }
 
 /**
- * @brief Write the bounds of a span into a sort key in the order #span_cmp
- * compares them: the lower bound, whether it is exclusive, the upper bound,
- * whether it is inclusive, so that an inclusive lower bound precedes an
- * exclusive one and an inclusive upper bound follows an exclusive one
+ * @brief Write the bounds of a span into a sort key
+ * @details The bounds are written in the order #span_cmp compares them: the
+ * lower bound, whether it is exclusive, the upper bound, whether it is
+ * inclusive, so that an inclusive lower bound precedes an exclusive one and
+ * an inclusive upper bound follows an exclusive one
  * @param[in] s Span
  * @param[out] out Buffer of #span_sortkey_body_size bytes
  * @return The first byte after the bounds

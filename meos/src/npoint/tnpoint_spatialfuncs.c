@@ -190,36 +190,6 @@ tnpoint_trajectory(const Temporal *temp)
 }
 
 /*****************************************************************************
- * Approximate equality for network points
- *****************************************************************************/
-
-/**
- * @ingroup meos_npoint_base_comp
- * @brief Return true if two network points are approximately equal with
- * respect to an epsilon value
- * @details Two network points may be have different route identifier but
- * represent the same spatial point at the intersection of the two route
- * identifiers
- * @csqlfn #Npoint_same()
- */
-bool
-npoint_same(const Npoint *np1, const Npoint *np2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(np1, false); VALIDATE_NOT_NULL(np2, false);
-
-  /* Equal route identifier and same position */
-  if (np1->rid == np2->rid && fabs(np1->pos - np2->pos) > MEOS_EPSILON)
-    return false;
-  /* Same point */
-  Datum point1 = PointerGetDatum(npoint_to_geompoint(np1));
-  Datum point2 = PointerGetDatum(npoint_to_geompoint(np2));
-  bool result = datum_point_same(point1, point2);
-  pfree(DatumGetPointer(point1)); pfree(DatumGetPointer(point2));
-  return result;
-}
-
-/*****************************************************************************
  * Length functions
  *****************************************************************************/
 

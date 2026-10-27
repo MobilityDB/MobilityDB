@@ -796,6 +796,7 @@ extern bool set_gt(const Set *s1, const Set *s2);
 extern bool set_le(const Set *s1, const Set *s2);
 extern bool set_lt(const Set *s1, const Set *s2);
 extern bool set_ne(const Set *s1, const Set *s2);
+extern uint8_t *set_sortkey(const Set *s, size_t *size);
 extern int span_cmp(const Span *s1, const Span *s2);
 extern bool span_eq(const Span *s1, const Span *s2);
 extern bool span_ge(const Span *s1, const Span *s2);
@@ -1391,6 +1392,7 @@ extern bool tbox_gt(const TBox *box1, const TBox *box2);
 extern bool tbox_le(const TBox *box1, const TBox *box2);
 extern bool tbox_lt(const TBox *box1, const TBox *box2);
 extern bool tbox_ne(const TBox *box1, const TBox *box2);
+extern uint8_t *tbox_sortkey(const TBox *box, size_t *size);
 
 /*===========================================================================*
  * Functions for temporal types
@@ -1650,6 +1652,7 @@ extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
+extern uint8_t *temporal_sortkey(const Temporal *temp, size_t *size);
 
 /*****************************************************************************/
 

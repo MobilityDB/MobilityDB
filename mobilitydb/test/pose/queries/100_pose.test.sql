@@ -164,22 +164,12 @@ SELECT ST_AsText(round(pose 'Pose(Point(1 1),0.2)'::geometry, 6));
 -- Comparisons
 -------------------------------------------------------------------------------
 
--- true
-SELECT pose 'Pose(Point(1.000001 1),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
-SELECT pose 'Pose(Point(1 1.000001),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
-SELECT pose 'Pose(Point(1 1),0.5000001)' ~= pose 'Pose(Point(1 1),0.5)';
--- false
-SELECT pose 'Pose(Point(1.00001 1),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
-SELECT pose 'Pose(Point(1 1.00001),0.5)' ~= pose 'Pose(Point(1 1),0.5)';
-SELECT pose 'Pose(Point(1 1),0.500001)' ~= pose 'Pose(Point(1 1),0.5)';
-SELECT poseSame(pose 'Pose(Point(1.000001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
-SELECT poseSame(pose 'Pose(Point(1.00001 1),0.5)', pose 'Pose(Point(1 1),0.5)');
-
--------------------------------------------------------------------------------
-
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(1 1),0.7)';
 SELECT pose 'Pose(Point(1 1),0.5)' = pose 'Pose(Point(2 2),0.5)';
+-- A planar and a geodetic pose of one SRID differ, the planar one first
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' = pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
+SELECT pose 'SRID=4326;Pose(Point(1 1),0.5)' < pose 'SRID=4326;GeodPose(Point(1 1),0.5)';
 
 SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.5)';
 SELECT pose 'Pose(Point(1 1),0.5)' != pose 'Pose(Point(1 1),0.7)';
@@ -321,7 +311,6 @@ SELECT asHexWKB(pose 'SRID=3812;Pose(Point(1 2),1)')
      = asHexEWKB(pose 'SRID=3812;Pose(Point(1 2),1)') AS hexwkb_eq_hexewkb;
 SELECT hash(pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)')
      = hash(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)') AS hash_canonical;
-SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' ~= pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS approx_canonical;
 
 -- A pose read back from its binary form is the pose that was written, so the
 -- binary form is lossless and COPY BINARY carries a table unchanged. The

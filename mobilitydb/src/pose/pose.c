@@ -983,27 +983,6 @@ Pose_transform_pipeline(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Approximate equality for poses
- *****************************************************************************/
-
-PGDLLEXPORT Datum Pose_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Pose_same);
-/**
- * @ingroup mobilitydb_pose_base_comp
- * @brief Return true if two poses are approximately equal with respect to an
- * epsilon value
- * @sqlfn poseSame()
- * @sqlop @p ~=
- */
-Datum
-Pose_same(PG_FUNCTION_ARGS)
-{
-  Pose *pose1 = PG_GETARG_POSE_P(0);
-  Pose *pose2 = PG_GETARG_POSE_P(1);
-  PG_RETURN_BOOL(pose_same(pose1, pose2));
-}
-
-/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

@@ -622,6 +622,8 @@ extern LWGEOM *lwpointarr_make_trajectory(LWGEOM **points, int count,
 extern bool ensure_valid_geo_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
 extern int geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern size_t geopoint_sortkey_size(const GSERIALIZED *gs);
+extern uint8_t *geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out);
 extern bool geopoint_eq(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geopoint_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool same_spatial_dimensionality(int16 flags1, int16 flags2);

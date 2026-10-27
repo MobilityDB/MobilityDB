@@ -198,6 +198,10 @@
  *   @ingroup meos_internal_box_bbox
  *   @brief Position functions for box types
  *
+ * @defgroup meos_internal_box_comp Comparison functions
+ * @ingroup meos_internal_box
+ * @brief Comparison functions for box types
+ *
  * @defgroup meos_internal_box_index Index functions
  * @ingroup meos_internal_box
  * @brief Index functions for box types, for callers that have validated

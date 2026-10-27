@@ -1551,7 +1551,7 @@ cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
   VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
   return cb1->srid == cb2->srid &&
     float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
@@ -1568,7 +1568,7 @@ cbuffer_eq_intl(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   assert(cb1); assert(cb2); assert(cb1->srid == cb2->srid);
   return float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
@@ -1581,37 +1581,6 @@ bool
 cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return (! cbuffer_eq(cb1, cb2));
-}
-
-/**
- * @ingroup meos_cbuffer_base_comp
- * @brief Return true if two circular buffers are approximately equal with
- * respect to an epsilon value
- * @csqlfn #Cbuffer_same()
- */
-bool
-cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
-
-  /* Same radius */
-  if (fabs(cb1->radius - cb2->radius) > MEOS_EPSILON)
-    return false;
-  /* Same points */
-  return cb1->srid == cb2->srid &&
-    MEOS_FP_EQ(cb1->x, cb2->x) && MEOS_FP_EQ(cb1->y, cb2->y);
-}
-
-/**
- * @ingroup meos_cbuffer_base_comp
- * @brief Return true if two circular buffers are approximately equal with
- * respect to an epsilon value
- */
-bool
-cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
-{
-  return ! cbuffer_same(cb1, cb2);
 }
 
 /**

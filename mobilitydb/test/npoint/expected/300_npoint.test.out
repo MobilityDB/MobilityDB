@@ -446,6 +446,18 @@ SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(2,0.5)';
  f
 (1 row)
 
+SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5000006)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT npoint 'npoint(1,0.5)' < npoint 'npoint(1,0.5000006)';
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(1,0.5)';
  ?column? 
 ----------
@@ -552,6 +564,18 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.7)';
  ?column? 
 ----------
  f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5000006)';
+ ?column? 
+----------
+ f
+(1 row)
+
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(1,0.3,0.5000006)';
+ ?column? 
+----------
+ t
 (1 row)
 
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.5,0.7)';

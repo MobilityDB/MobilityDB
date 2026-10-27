@@ -176,6 +176,9 @@ SELECT geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'::nsegment;
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5)';
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.7)';
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(2,0.5)';
+-- Equality is exact, as the order is: positions closer than any tolerance differ
+SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5000006)';
+SELECT npoint 'npoint(1,0.5)' < npoint 'npoint(1,0.5000006)';
 
 SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(1,0.5)';
 SELECT npoint 'npoint(1,0.5)' != npoint 'npoint(1,0.7)';
@@ -201,6 +204,9 @@ SELECT cmp(nsegment 'nsegment(1,0.3,0.5)', nsegment 'nsegment(1,0.3,0.4)');
 
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5)';
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.7)';
+-- Equality is exact, as the order is: positions closer than any tolerance differ
+SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.3,0.5000006)';
+SELECT nsegment 'nsegment(1,0.3,0.5)' < nsegment 'nsegment(1,0.3,0.5000006)';
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment 'nsegment(1,0.3,0.5)' = nsegment 'nsegment(2,0.3,0.5)';
 

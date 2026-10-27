@@ -848,6 +848,7 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Comparison functions for set and span types */
 
+extern uint8_t *set_sortkey_intl(const Set *s, size_t *size);
 extern uint8_t *span_sortkey_intl(const Span *s, size_t *size);
 extern uint8_t *spanset_sortkey_intl(const SpanSet *ss, size_t *size);
 
@@ -1096,6 +1097,10 @@ extern bool tbox_overafter(const TBox *box1, const TBox *box2);
 /* Set functions for box types */
 
 extern bool inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result);
+
+/* Comparison functions for box types */
+
+extern uint8_t *tbox_sortkey_intl(const TBox *box, size_t *size);
 
 /*****************************************************************************
  * Functions for temporal types
@@ -1378,6 +1383,7 @@ extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const 
 /* Traditional comparison functions for temporal types */
 
 extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
+extern uint8_t *temporal_sortkey_intl(const Temporal *temp, size_t *size);
 extern bool tinstant_eq(const TInstant *inst1, const TInstant *inst2);
 extern int tsequence_cmp(const TSequence *seq1, const TSequence *seq2);
 extern bool tsequence_eq(const TSequence *seq1, const TSequence *seq2);

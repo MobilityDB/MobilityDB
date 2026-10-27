@@ -317,22 +317,6 @@ CREATE FUNCTION transformPipeline(pose, text, srid integer DEFAULT 0,
   AS 'MODULE_PATHNAME', 'Pose_transform_pipeline'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/*****************************************************************************
- * Same
- *****************************************************************************/
-
-CREATE FUNCTION poseSame(pose, pose)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Pose_same'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = poseSame,
-  LEFTARG = pose, RIGHTARG = pose,
-  COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
 /******************************************************************************
  * Comparisons
  ******************************************************************************/

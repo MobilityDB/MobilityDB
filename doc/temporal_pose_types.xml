@@ -494,24 +494,6 @@ SELECT pose 'Pose(Point(1 1), 0.6)' &gt;= pose 'Pose(Point(1 1), 0.5)';
 </programlisting>
 				</listitem>
 
-				<listitem xml:id="pose_same">
-					<indexterm significance="normal"><primary><varname>poseSame</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>posechainSame</varname></primary></indexterm>
-					<indexterm significance="normal"><primary><varname>~=</varname></primary></indexterm>
-					<para>Are the two values approximately equal with respect to an epsilon value?</para>
-					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-poseSame(pose,pose) &#8594; boolean
-posechainSame(posechain,posechain) &#8594; boolean
-pose ~= pose &#8594; boolean
-posechain ~= posechain &#8594; boolean
-</programlisting>
-					<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT pose 'Pose(SRID=5676;Point(1 1), 0.3)' ~= pose 'Pose(SRID=5676;
-  Point(1 1.0000001), 0.30000001)';
--- true
-</programlisting>
-				</listitem>
-
 			</itemizedlist>
 		</sect2>
 	</sect1>

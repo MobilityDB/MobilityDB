@@ -138,22 +138,12 @@ SELECT asText(round(cbuffer(geometry 'GeometryCollection(Point(0 0),Linestring(5
 -- Comparisons
 -------------------------------------------------------------------------------
 
--- true
-SELECT cbuffer 'Cbuffer(Point(1.000001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
-SELECT cbuffer 'Cbuffer(Point(1 1.000001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
-SELECT cbuffer 'Cbuffer(Point(1 1),0.5000001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
--- false
-SELECT cbuffer 'Cbuffer(Point(1.00001 1),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
-SELECT cbuffer 'Cbuffer(Point(1 1.00001),0.5)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
-SELECT cbuffer 'Cbuffer(Point(1 1),0.500001)' ~= cbuffer 'Cbuffer(Point(1 1),0.5)';
-SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.000001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
-SELECT cbufferSame(cbuffer 'Cbuffer(Point(1.00001 1),0.5)', cbuffer 'Cbuffer(Point(1 1),0.5)');
-
--------------------------------------------------------------------------------
-
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(1 1),0.7)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' = cbuffer 'Cbuffer(Point(2 2),0.5)';
+-- Equality is exact, as the order is: radii closer than any tolerance differ
+SELECT cbuffer 'Cbuffer(Point(1 1),1.0)' = cbuffer 'Cbuffer(Point(1 1),1.0000006)';
+SELECT cbuffer 'Cbuffer(Point(1 1),1.0)' < cbuffer 'Cbuffer(Point(1 1),1.0000006)';
 
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' != cbuffer 'Cbuffer(Point(1 1),0.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' != cbuffer 'Cbuffer(Point(1 1),0.7)';
