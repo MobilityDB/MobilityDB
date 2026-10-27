@@ -1,0 +1,203 @@
+CREATE FUNCTION test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION
+DROP TABLE IF EXISTS tbl_geomset_idx;
+NOTICE:  table "tbl_geomset_idx" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_geomset_idx AS
+WITH src AS (
+SELECT k, g AS s FROM tbl_geomset)
+SELECT k, s FROM src
+UNION ALL
+SELECT t1.k + 100000, t1.s + t2.s FROM src t1, src t2 WHERE t2.k = t1.k + 1;
+SELECT 199
+ANALYZE tbl_geomset_idx;
+ANALYZE
+DROP TABLE IF EXISTS test_geomset_idx;
+NOTICE:  table "test_geomset_idx" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_geomset_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+  kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
+  kdtree_probe boolean);
+CREATE TABLE
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('&&', (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s)::text);
+INSERT 0 1
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('=', (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s)::text);
+INSERT 0 1
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('@> set', (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s)::text);
+INSERT 0 1
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('<@', (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s)::text);
+INSERT 0 1
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('@> value', (SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v)::text);
+INSERT 0 1
+INSERT INTO test_geomset_idx(op, no_idx) VALUES ('<->', (SELECT COUNT(DISTINCT d)::text || ':' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2)::text);
+INSERT 0 1
+CREATE INDEX tbl_geomset_idx_rtree ON tbl_geomset_idx USING gist(s);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s')
+WHERE op = '&&';
+UPDATE 1
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s')
+WHERE op = '=';
+UPDATE 1
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s')
+WHERE op = '@> set';
+UPDATE 1
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s')
+WHERE op = '<@';
+UPDATE 1
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v')
+WHERE op = '@> value';
+UPDATE 1
+UPDATE test_geomset_idx SET rtree_idx = (SELECT COUNT(DISTINCT d)::text || ':' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(DISTINCT d)::text || '':'' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2')
+WHERE op = '<->';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_geomset_idx_rtree;
+DROP INDEX
+CREATE INDEX tbl_geomset_idx_quadtree ON tbl_geomset_idx USING spgist(s);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s')
+WHERE op = '&&';
+UPDATE 1
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s')
+WHERE op = '=';
+UPDATE 1
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s')
+WHERE op = '@> set';
+UPDATE 1
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s')
+WHERE op = '<@';
+UPDATE 1
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v')
+WHERE op = '@> value';
+UPDATE 1
+UPDATE test_geomset_idx SET quadtree_idx = (SELECT COUNT(DISTINCT d)::text || ':' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(DISTINCT d)::text || '':'' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2')
+WHERE op = '<->';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_geomset_idx_quadtree;
+DROP INDEX
+CREATE INDEX tbl_geomset_idx_kdtree ON tbl_geomset_idx USING spgist(s geomset_kdtree_ops);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s && t2.s')
+WHERE op = '&&';
+UPDATE 1
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s = t2.s')
+WHERE op = '=';
+UPDATE 1
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s @> t2.s')
+WHERE op = '@> set';
+UPDATE 1
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, tbl_geomset_idx t2 WHERE t1.s <@ t2.s')
+WHERE op = '<@';
+UPDATE 1
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_geomset_idx t1, (SELECT startValue(s) AS v FROM tbl_geomset_idx) t2 WHERE t1.s @> t2.v')
+WHERE op = '@> value';
+UPDATE 1
+UPDATE test_geomset_idx SET kdtree_idx = (SELECT COUNT(DISTINCT d)::text || ':' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(DISTINCT d)::text || '':'' || md5(array_agg(d ORDER BY rn)::text) FROM (SELECT d, row_number() OVER () AS rn FROM (SELECT round((s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1))::numeric, 6) AS d FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY s <-> (SELECT startValue(s) FROM tbl_geomset_idx WHERE s IS NOT NULL ORDER BY k LIMIT 1)) t1) t2')
+WHERE op = '<->';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_geomset_idx_kdtree;
+DROP INDEX
+SELECT op, split_part(no_idx, ':', 1) AS no_idx FROM test_geomset_idx ORDER BY op;
+    op    | no_idx 
+----------+--------
+ &&       | 783
+ <->      | 146
+ <@       | 393
+ =        | 197
+ @> set   | 393
+ @> value | 588
+(6 rows)
+
+SELECT * FROM test_geomset_idx
+WHERE no_idx IS DISTINCT FROM rtree_idx OR no_idx IS DISTINCT FROM quadtree_idx OR
+  no_idx IS DISTINCT FROM kdtree_idx OR NOT rtree_probe OR NOT quadtree_probe OR
+  NOT kdtree_probe
+ORDER BY op;
+ op | no_idx | rtree_idx | quadtree_idx | kdtree_idx | rtree_probe | quadtree_probe | kdtree_probe 
+----+--------+-----------+--------------+------------+-------------+----------------+--------------
+(0 rows)
+
+DROP TABLE test_geomset_idx;
+DROP TABLE
+DROP TABLE tbl_geomset_idx;
+DROP TABLE
+DROP FUNCTION test_probes_index(text);
+DROP FUNCTION

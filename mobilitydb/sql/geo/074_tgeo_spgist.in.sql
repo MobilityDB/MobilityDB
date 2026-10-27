@@ -30,7 +30,7 @@
 /**
  * @file
  * @brief Quad-tree and k-d tree SP-GiST index for temporal
- * geometries/geographies
+ * geometries/geographies and for the spatial sets
  */
 
 CREATE FUNCTION stbox_spgist_config(internal, internal)
@@ -353,5 +353,105 @@ CREATE OPERATOR CLASS tgeography_kdtree_ops
   FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6  tspatial_spgist_compress(internal);
+
+/******************************************************************************/
+
+/******************************************************************************
+ * Spatial sets, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE FUNCTION spatialset_spgist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Spatialset_spgist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS geomset_quadtree_ops
+  DEFAULT FOR TYPE geomset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (geomset, geomset),
+  -- same
+  OPERATOR  6    = (geomset, geomset),
+  -- contains
+  OPERATOR  7    @> (geomset, geometry),
+  OPERATOR  7    @> (geomset, geomset),
+  -- contained by
+  OPERATOR  8    <@ (geomset, geomset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geomset, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geomset, geomset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS geomset_kdtree_ops
+  FOR TYPE geomset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (geomset, geomset),
+  -- same
+  OPERATOR  6    = (geomset, geomset),
+  -- contains
+  OPERATOR  7    @> (geomset, geometry),
+  OPERATOR  7    @> (geomset, geomset),
+  -- contained by
+  OPERATOR  8    <@ (geomset, geomset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geomset, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geomset, geomset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_kdtree_choose(internal, internal),
+  FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS geogset_quadtree_ops
+  DEFAULT FOR TYPE geogset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (geogset, geogset),
+  -- same
+  OPERATOR  6    = (geogset, geogset),
+  -- contains
+  OPERATOR  7    @> (geogset, geography),
+  OPERATOR  7    @> (geogset, geogset),
+  -- contained by
+  OPERATOR  8    <@ (geogset, geogset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geogset, geography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geogset, geogset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS geogset_kdtree_ops
+  FOR TYPE geogset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (geogset, geogset),
+  -- same
+  OPERATOR  6    = (geogset, geogset),
+  -- contains
+  OPERATOR  7    @> (geogset, geography),
+  OPERATOR  7    @> (geogset, geogset),
+  -- contained by
+  OPERATOR  8    <@ (geogset, geogset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geogset, geography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geogset, geogset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_kdtree_choose(internal, internal),
+  FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  spatialset_spgist_compress(internal);
 
 /******************************************************************************/

@@ -36,6 +36,7 @@ SET(LOCAL_FILES
   559_tposechain_posops
   560_tposechain_distance
   564_tposechain_tempspatialrels
+  566_tposechain_indexes
   )
 
 foreach (f ${LOCAL_FILES})

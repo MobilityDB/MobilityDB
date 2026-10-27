@@ -1980,11 +1980,11 @@ SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
 	<sect1 xml:id="tpose_indexing">
 		<title>Indexing</title>
 
-		<para>GiST and SP-GiST indexes can be created for table columns of temporal poses. An example of index creation is follows:</para>
+		<para>GiST and SP-GiST indexes can be created for table columns of temporal poses and temporal pose chains, and of pose sets and pose chain sets. An example of index creation is follows:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
-		<para>The GiST and SP-GiST indexes store the bounding box for the temporal poses, which is an <varname>stbox</varname>, as all spatiotemporal types.</para>
+		<para>The GiST and SP-GiST indexes store the bounding box of the values, which is an <varname>stbox</varname>, as for all spatiotemporal types; the box of a pose chain covers the composed position of every one of its joints. A set is indexed by the box it stores, as described in <xref linkend="setspan_indexing"/>.</para>
 
 		<para>A GiST or SP-GiST index can accelerate queries involving the following operators:</para>
 		<itemizedlist>
