@@ -13948,14 +13948,52 @@ static bool relate_point_on_edge(double x, double y, const Edge *e,
 typedef struct
 {
   const LWGEOM *geom;  /**< Geometry the edges are those of */
-  MeosArray *arr;      /**< Edges its interior and boundary are read from */
+  MeosArray *arr;      /**< Edges its interior and boundary are read from, for
+                            a value #relate_reads_union names NULL until a
+                            question reads them; read through
+                            #relate_operand_arr, which keeps them in
+                            #kept */
   MeosArray *own;      /**< Its own edges, ending at the input vertices: the
                             array #arr is cut from for a value
                             #relate_reads_union names, #arr itself otherwise */
+  MeosArray **kept;    /**< Where #arr is kept once read, as #index keeps the
+                            index: the operand's own #arr, or that of the
+                            context that lends it, so that a copy of the
+                            operand reads and fills the same one */
   EdgeIndex **index;   /**< Where the index over #arr is kept for the calls
                             that follow, NULL for an operand read for one
                             call, which indexes by the size of the pair */
 } RelateOperand;
+
+/**
+ * @brief Return the edges an operand's interior and boundary are read from,
+ * reading the union of its members the first time a question asks for it
+ * @details Whether two geometries share a point is read from their own edges
+ * (#meos_intersects), and it is the question a relationship mostly asks, so
+ * the union of a collection's members, what a call on such a value mostly
+ * costs, is built only where a question reads it, and kept for the questions
+ * that follow
+ */
+static MeosArray *
+relate_operand_arr(const RelateOperand *op)
+{
+  if (! *op->kept)
+  {
+    /* The union of an operand a context lends lives as long as the context,
+     * so it is read into the memory that keeps the context, never into the
+     * caller's, as #relate_edges_init_kept reads the index */
+#if ! MEOS
+    MemoryContext oldctx = op->index ?
+      MemoryContextSwitchTo(TopMemoryContext) : NULL;
+#endif
+    *op->kept = relate_union_edges(op->geom, op->own);
+#if ! MEOS
+    if (op->index)
+      MemoryContextSwitchTo(oldctx);
+#endif
+  }
+  return *op->kept;
+}
 
 /**
  * @brief The two operands of a relationship, each carrying its edges
@@ -13983,8 +14021,8 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
      * questions they answer exactly (#meos_intersects) */
     ops->op[k].geom = g[k];
     ops->op[k].own = geom_extract_edges(g[k]);
-    ops->op[k].arr = relate_reads_union(g[k]) ?
-      relate_union_edges(g[k], ops->op[k].own) : ops->op[k].own;
+    ops->op[k].arr = relate_reads_union(g[k]) ? NULL : ops->op[k].own;
+    ops->op[k].kept = &ops->op[k].arr;
     ops->op[k].index = NULL;
   }
   return;
@@ -13992,6 +14030,8 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
 
 /**
  * @brief Release the edges of both operands of a relationship
+ * @details As #relate_ctx_free releases those of a context: the own edges
+ * where the union was cut from them, and the union where a question read it
  */
 static void
 relate_operands_free(RelateOperands *ops)
@@ -14000,7 +14040,8 @@ relate_operands_free(RelateOperands *ops)
   {
     if (ops->op[k].own != ops->op[k].arr)
       meos_array_destroy(ops->op[k].own);
-    meos_array_destroy(ops->op[k].arr);
+    if (ops->op[k].arr)
+      meos_array_destroy(ops->op[k].arr);
   }
   return;
 }
@@ -14020,7 +14061,7 @@ relate_borrow_edges(const RelateOperands *ops, const LWGEOM *geom)
   if (ops)
     for (int i = 0; i < 2; i++)
       if (ops->op[i].geom == geom)
-        return ops->op[i].arr;
+        return relate_operand_arr(&ops->op[i]);
   return relate_extract_edges(geom);
 }
 
@@ -14034,7 +14075,7 @@ relate_return_edges(const RelateOperands *ops, MeosArray *arr)
 {
   if (ops)
     for (int i = 0; i < 2; i++)
-      if (ops->op[i].arr == arr)
+      if (*ops->op[i].kept == arr)
         return;
   meos_array_destroy(arr);
   return;
@@ -17230,7 +17271,7 @@ relate_edges_init_kept(RelateEdges *re, Edge **edges, int nedges,
   EdgeIndex **kept = NULL;
   if (ops)
     for (int k = 0; k < 2 && ! kept; k++)
-      if (ops->op[k].arr == arr)
+      if (*ops->op[k].kept == arr)
         kept = ops->op[k].index;
   if (! kept)
   {
@@ -19705,7 +19746,8 @@ meos_intersects(const RelateOperands *ops, bool *result)
     *result = (meet > 0);
   else
   {
-    MeosArray *area[2] = {ops->op[0].arr, ops->op[1].arr};
+    MeosArray *area[2] = {relate_operand_arr(&ops->op[0]),
+      relate_operand_arr(&ops->op[1])};
     bool aindex = (double) area[0]->count * (double) area[1]->count >=
       RELATE_INDEX_MIN_PAIRS;
     RelateEdges ra[2];
@@ -19757,7 +19799,8 @@ static void
 meos_covers_possible(const RelateOperands *ops, bool *result)
 {
   assert(ops); assert(result);
-  MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
+  const MeosArray *a1 = relate_operand_arr(&ops->op[0]);
+  const MeosArray *a2 = relate_operand_arr(&ops->op[1]);
   Edge **e1 = relate_edge_pointers(a1);
   Edge **e2 = relate_edge_pointers(a2);
 
@@ -19900,8 +19943,11 @@ relate_ctx_make(const LWGEOM *geom)
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
   ctx->op.own = geom_extract_edges(geom);
-  ctx->op.arr = relate_reads_union(geom) ?
-    relate_union_edges(geom, ctx->op.own) : ctx->op.own;
+  /* The union of a collection's members is read the first time a question
+   * asks for it (#relate_operand_arr), and kept here for every call that
+   * borrows the context */
+  ctx->op.arr = relate_reads_union(geom) ? NULL : ctx->op.own;
+  ctx->op.kept = &ctx->op.arr;
   ctx->index = NULL;
   ctx->op.index = &ctx->index;
   return ctx;
@@ -20428,7 +20474,8 @@ relate_ctx_free(void *ctxv)
     edge_index_free(ctx->index);
   if (ctx->op.own != ctx->op.arr)
     meos_array_destroy(ctx->op.own);
-  meos_array_destroy(ctx->op.arr);
+  if (ctx->op.arr)
+    meos_array_destroy(ctx->op.arr);
   pfree(ctx);
   return;
 }
