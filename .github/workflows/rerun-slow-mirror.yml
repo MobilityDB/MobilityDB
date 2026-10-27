@@ -40,12 +40,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
           RUN: ${{ github.event.workflow_run.id }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
         run: |
           # The line the apt-get wrapper of the resilient apt action writes
           # when its last attempt reaches the time limit.
           mark='attempt 3 of 3 ended with status 124'
-          jobs=$(gh api "repos/$REPO/actions/runs/$RUN/jobs?per_page=100" --paginate \
-            --jq '.jobs[] | select(.conclusion == "failure") | "\(.id)\t\(.name)"')
+          # The failed jobs of the attempt that failed. The listing of a run that
+          # has just ended may not show the conclusion of its last job yet, so a
+          # failed run listing no failed job is read again, and one that still
+          # lists none fails the step instead of reading as nothing to rerun.
+          for try in 1 2 3 4 5 6; do
+            jobs=$(gh api "repos/$REPO/actions/runs/$RUN/attempts/$ATTEMPT/jobs?per_page=100" \
+              --paginate --jq '.jobs[] | select(.conclusion == "failure") | "\(.id)\t\(.name)"')
+            [ -n "$jobs" ] && break
+            echo "run $RUN attempt $ATTEMPT: no failed job listed yet (read $try)"
+            sleep 20
+          done
+          if [ -z "$jobs" ]; then
+            echo "::error::run $RUN attempt $ATTEMPT failed and lists no failed job"
+            exit 1
+          fi
+          echo "run $RUN attempt $ATTEMPT: $(wc -l <<< "$jobs") failed job(s)"
           slow=no
           while IFS=$'\t' read -r id name; do
             [ -n "$id" ] || continue
