@@ -394,23 +394,36 @@ API: a creator per key type (`intspan`, `bigintspan`, `floatspan`, `datespan`, `
 `join`, the temporal entry points `insert_temporal` and `search_temporal`, the multi-entry ones of
 MEST (`insert_temporal_split`, `search_temporal_dedup`) and a nearest-neighbour cursor. The pass
 aligns what still differs and renames no type (the owner, 2026-10-26: the cursors stay
-`RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)`, and
+`RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)` (branch
+`meos/void-parameter-lists`, `646df6ec4d` on master `71282af6fc`), and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
-data and checks. The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
+data and checks (branch `meos/sptree-examples`, `54c57ea5c6` on master `71282af6fc`, the R-tree, the
+quad-tree and the k-d tree finding the same values for each of the 13 searches, every `contains`
+check of `rtree_example.c` querying a stored box, and its `stbox` values taking the corners of the
+text form). The key of a type is a catalog fact, its bounding box, which `type_bboxtype`
 of `meos_catalog.c` answers for every type, the owner's decision of 2026-10-26: a box type, a span
 or a temporal, spatiotemporal or point cloud box, is its own; every other type is bounded by its
 box, the span its bounds state for a number or time set and for a span set, and the box a spatial
 set or a temporal value stores. A number or time set stores no box (`set_bbox_size`).
 `meostype_from_string` answers the type of a canonical name, the inverse of `meostype_name`, so a
-host reads both from MEOS; branch `meos/index-bboxtype-catalog` (`f9547774ee` on master
-`c1d030d810`). DECIDED BY THE OWNER 2026-10-26: every type with
-a key is indexed in both hosts, 46 types: the 37 PostgreSQL's GiST and SP-GiST operator classes
-index on master `c1d030d810` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
+host reads both from MEOS; branch `meos/index-bboxtype-catalog` (`f982aec767` on master
+`c1d030d810`), whose test checks the key of the 47 types and that no other type has one but the
+internal states of the temporal averages. DECIDED BY THE OWNER 2026-10-26: every type with
+a key is indexed in both hosts, 47 types: the 37 PostgreSQL's GiST and SP-GiST operator classes
+index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`, `geogset`, `npointset`,
 `poseset`, `posechainset`, `cbufferset`, `h3indexset`, `quadbinset`, `s2cellset`), whose `stbox`
 the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
-`intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). MobilityDuck's
-`TRTREE` and `TSPTREE` are the two trees and take the 46 types from the catalog rather than from
+`intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked); branch
+`index/pg-every-keyed-type` (`647190c6c6` on master `71282af6fc`) gives the nine an R-tree GiST
+class and quad-tree and k-d tree SP-GiST classes, the geo sets' in `073_tgeo_gist` and
+`074_tgeo_spgist` and the others' in their family's set file, `<->` served for the sets whose
+elements have a distance. A pose chain reads as the pose its composition gives
+(`posechain_prefix_pose`), so `tposechain` has every operation `tpose` has (DECIDED BY THE OWNER
+2026-10-27): its distance surface, through `tposechain_to_tpose` as the temporal spatial
+relationships of `564_tposechain_tempspatialrels` go, and then the classes of `tpose` from the
+`indexes` template. MobilityDuck's
+`TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
 both hosts recheck a candidate the index returns for one: PostgreSQL through the classes' recheck,
