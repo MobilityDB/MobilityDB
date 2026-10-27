@@ -144,8 +144,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Write the bounds of a span into a sort key in the order <a class="el" href="group__meos__setspan__comp_ga5139b55286281c0ab1d9ad745657f600.html#ga5139b55286281c0ab1d9ad745657f600" title="Return -1, 0, or 1 depending on whether the first span is less than, equal to, or greater than the se...">span_cmp</a> compares them: the lower bound, whether it is exclusive, the upper bound, whether it is inclusive, so that an inclusive lower bound precedes an exclusive one and an inclusive upper bound follows an exclusive one. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Write the bounds of a span into a sort key. </p>
+<p >The bounds are written in the order <a class="el" href="group__meos__setspan__comp_ga5139b55286281c0ab1d9ad745657f600.html#ga5139b55286281c0ab1d9ad745657f600" title="Return -1, 0, or 1 depending on whether the first span is less than, equal to, or greater than the se...">span_cmp</a> compares them: the lower bound, whether it is exclusive, the upper bound, whether it is inclusive, so that an inclusive lower bound precedes an exclusive one and an inclusive upper bound follows an exclusive one </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Buffer of <a class="el" href="meos_2src_2temporal_2span_8c_a92715b6543f8d097371998dd050d1ab8.html#a92715b6543f8d097371998dd050d1ab8" title="Return the number of bytes the bounds of a span take in a sort key.">span_sortkey_body_size</a> bytes </td></tr>

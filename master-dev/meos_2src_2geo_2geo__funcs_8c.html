@@ -101,6 +101,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="postgis__funcs_8h_source.html">geo/postgis_funcs.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="meos__transform_8h_source.html">geo/meos_transform.h</a>&quot;</code><br />
+<code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;port/sort_template.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -795,6 +796,12 @@ Functions</h2></td></tr>
 <tr class="memitem:aec0cdbf6de4fde6de67870382b739149"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">geopoint_same</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs1, const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs2)</td></tr>
 <tr class="memdesc:aec0cdbf6de4fde6de67870382b739149"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the points are equal taking into account floating point imprecision.  <a href="meos_2src_2geo_2geo__funcs_8c_aec0cdbf6de4fde6de67870382b739149.html#aec0cdbf6de4fde6de67870382b739149">More...</a><br /></td></tr>
 <tr class="separator:aec0cdbf6de4fde6de67870382b739149"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d453ddfa6019d5c806924ef63587100"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a3d453ddfa6019d5c806924ef63587100.html#a3d453ddfa6019d5c806924ef63587100">geopoint_sortkey_put</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, uint8_t *out)</td></tr>
+<tr class="memdesc:a3d453ddfa6019d5c806924ef63587100"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write the sort key of a point.  <a href="meos_2src_2geo_2geo__funcs_8c_a3d453ddfa6019d5c806924ef63587100.html#a3d453ddfa6019d5c806924ef63587100">More...</a><br /></td></tr>
+<tr class="separator:a3d453ddfa6019d5c806924ef63587100"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45804284c3dce1b5001be2899682d297"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a45804284c3dce1b5001be2899682d297.html#a45804284c3dce1b5001be2899682d297">geopoint_sortkey_size</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
+<tr class="memdesc:a45804284c3dce1b5001be2899682d297"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the number of bytes of the sort key of a point.  <a href="meos_2src_2geo_2geo__funcs_8c_a45804284c3dce1b5001be2899682d297.html#a45804284c3dce1b5001be2899682d297">More...</a><br /></td></tr>
+<tr class="separator:a45804284c3dce1b5001be2899682d297"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03c3a55d4c1ce68d2397e52898489320"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2geo__funcs_8c_a03c3a55d4c1ce68d2397e52898489320.html#a03c3a55d4c1ce68d2397e52898489320">grow_expansion</a> (int elen, const double *e, double b, double *h)</td></tr>
 <tr class="memdesc:a03c3a55d4c1ce68d2397e52898489320"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a double to an expansion, a sum of doubles that do not overlap, held in increasing order of magnitude, and return its new length.  <a href="meos_2src_2geo_2geo__funcs_8c_a03c3a55d4c1ce68d2397e52898489320.html#a03c3a55d4c1ce68d2397e52898489320">More...</a><br /></td></tr>
 <tr class="separator:a03c3a55d4c1ce68d2397e52898489320"><td class="memSeparator" colspan="2">&#160;</td></tr>

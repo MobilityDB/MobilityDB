@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: Pose_same</title>
+<title>MobilityDB: tpcbox_sortkey_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__mobilitydb__pose__base__comp.html">Comparison functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__pointcloud__box__comp.html">Comparison functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,38 +79,46 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_gae8d881e396e7741f054855e243d698a5.html#gae8d881e396e7741f054855e243d698a5">Pose_cmp</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_ga55632b8596015ded9e59879044fa56d8.html#ga55632b8596015ded9e59879044fa56d8">Pose_eq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_gacbccf699899216ee19f57a12bc2c1290.html#gacbccf699899216ee19f57a12bc2c1290">Pose_ge</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_ga4a55338bad228de4d667c6e05119db01.html#ga4a55338bad228de4d667c6e05119db01">Pose_gt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_gac7f4854b90164fa1cbc1361588545cb8.html#gac7f4854b90164fa1cbc1361588545cb8">Pose_hash</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_gab335c32cab0ff072254974abb4a99916.html#gab335c32cab0ff072254974abb4a99916">Pose_hash_extended</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_ga708353fe3d54245c271c56be3a3ed83d.html#ga708353fe3d54245c271c56be3a3ed83d">Pose_le</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_ga5cfee77b84e760f675a122ca7fe57991.html#ga5cfee77b84e760f675a122ca7fe57991">Pose_lt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pose__base__comp_gabfc85f8376e261998d347dc520532c3a.html#gabfc85f8376e261998d347dc520532c3a">Pose_ne</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__mobilitydb__pose__base__comp_ga268c38915d71697b967107140a95c8e5.html#ga268c38915d71697b967107140a95c8e5">Pose_same</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__pointcloud__box__comp_gab8b22fe6c68b42049720b151f59dad2d.html#gab8b22fe6c68b42049720b151f59dad2d">tpcbox_sortkey_intl</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga268c38915d71697b967107140a95c8e5" name="ga268c38915d71697b967107140a95c8e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga268c38915d71697b967107140a95c8e5">&#9670;&#160;</a></span>Pose_same()</h2>
+<a id="gab8b22fe6c68b42049720b151f59dad2d" name="gab8b22fe6c68b42049720b151f59dad2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab8b22fe6c68b42049720b151f59dad2d">&#9670;&#160;</a></span>tpcbox_sortkey_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Datum Pose_same </td>
+          <td class="memname">uint8_t * tpcbox_sortkey_intl </td>
           <td>(</td>
-          <td class="paramtype">PG_FUNCTION_ARGS&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structTPCBox.html">TPCBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two poses are approximately equal with respect to an epsilon value @sqlfn poseSame() </p>
-<dl class="section user"><dt>SQL Operator:</dt><dd><code>~=</code> </dd></dl>
+<p>Return the sort key of a point cloud box. </p>
+<p >The key is the schema id, written as an integer, followed by the sort key of the spatiotemporal box the point cloud box extends, as <a class="el" href="group__meos__internal__geo__box__comp_gac8a624313109b6935d729c91f7dc3a2d.html#gac8a624313109b6935d729c91f7dc3a2d" title="Return the sort key of a spatiotemporal box.">stbox_sortkey_intl</a> writes it, so that comparing two keys byte by byte as unsigned values orders the boxes as <a class="el" href="group__meos__pointcloud__box__comp_ga9c17e573e3088dad2d85ceca78a5fbd7.html#ga9c17e573e3088dad2d85ceca78a5fbd7" title="Total-order comparator for TPCBox.">tpcbox_cmp</a> does and two boxes have the same key when <a class="el" href="group__meos__pointcloud__box__comp_ga8bfb60fd5f317f79bed2c0d566ac6a9c.html#ga8bfb60fd5f317f79bed2c0d566ac6a9c" title="Return true if two TPCBox values are strictly equal @csqlfn Tpcbox_eq()">tpcbox_eq</a> holds </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Point cloud box </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>Number of bytes of the key </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__pointcloud__box__comp_gaddde94d661bbfd544745018521097a7d.html#gaddde94d661bbfd544745018521097a7d" title="Return the sort key of a point cloud box.">tpcbox_sortkey</a> </dd></dl>
 
 </div>
 </div>

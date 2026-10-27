@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: posechain_nsame</title>
+<title>MobilityDB: stbox_sortkey_intl</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__posechain__base__comp.html">Comparison functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__geo__box__comp.html">Comparison functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,38 +79,28 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_gac78a8f8a3be4e946e42b113ac0738e85.html#gac78a8f8a3be4e946e42b113ac0738e85">posechain_cmp</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga4af90f392be71ef2e9c5a77967dd7bb4.html#ga4af90f392be71ef2e9c5a77967dd7bb4">posechain_eq</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga9efa3b9fa194e69df006bbdd7b16cc4b.html#ga9efa3b9fa194e69df006bbdd7b16cc4b">posechain_ge</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_gad8090404ee3d4bc507ccdfdfa8275347.html#gad8090404ee3d4bc507ccdfdfa8275347">posechain_gt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga92c75ae10361c149e0d6ca0a21ff8760.html#ga92c75ae10361c149e0d6ca0a21ff8760">posechain_hash</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga80215d08ecdfce26f702341d5370ba12.html#ga80215d08ecdfce26f702341d5370ba12">posechain_hash_extended</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_gadf137401734ca96d546085675015bd45.html#gadf137401734ca96d546085675015bd45">posechain_le</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga5457a0558311649002cf28c6d5da98ed.html#ga5457a0558311649002cf28c6d5da98ed">posechain_lt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_ga8488873de5604986e9d03f700e7bf77e.html#ga8488873de5604986e9d03f700e7bf77e">posechain_ne</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__posechain__base__comp_ga1f377adbcc2a19d76696032d71242f83.html#ga1f377adbcc2a19d76696032d71242f83">posechain_nsame</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__posechain__base__comp_gadd5eebd4e4369fa02a5419a173a6698f.html#gadd5eebd4e4369fa02a5419a173a6698f">posechain_same</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__geo__box__comp_gac8a624313109b6935d729c91f7dc3a2d.html#gac8a624313109b6935d729c91f7dc3a2d">stbox_sortkey_intl</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga1f377adbcc2a19d76696032d71242f83" name="ga1f377adbcc2a19d76696032d71242f83"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga1f377adbcc2a19d76696032d71242f83">&#9670;&#160;</a></span>posechain_nsame()</h2>
+<a id="gac8a624313109b6935d729c91f7dc3a2d" name="gac8a624313109b6935d729c91f7dc3a2d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac8a624313109b6935d729c91f7dc3a2d">&#9670;&#160;</a></span>stbox_sortkey_intl()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool posechain_nsame </td>
+          <td class="memname">uint8_t * stbox_sortkey_intl </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPoseChain.html">PoseChain</a> *&#160;</td>
-          <td class="paramname"><em>pc1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structSTBox.html">STBox</a> *&#160;</td>
+          <td class="paramname"><em>box</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="structPoseChain.html">PoseChain</a> *&#160;</td>
-          <td class="paramname"><em>pc2</em>&#160;</td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>size</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -120,13 +110,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if the first pose chain is not equal to the second one up to the tolerance of the comparison of floating-point values. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the sort key of a spatiotemporal box. </p>
+<p >The key is the SRID and the flags, written as integers, the bounds of the period when the box has a time dimension, as <a class="el" href="group__meos__internal__setspan__comp_ga55898d389345e0d1f703a619b6a58375.html#ga55898d389345e0d1f703a619b6a58375" title="Return the sort key of a span.">span_sortkey_intl</a> writes them, then the minima and the maxima of the coordinates the box carries, so that comparing two keys byte by byte as unsigned values orders the boxes as <a class="el" href="group__meos__geo__box__comp_ga2ec44bd03f51582b46b8d22811e02d3f.html#ga2ec44bd03f51582b46b8d22811e02d3f" title="Return -1, 0, or 1 depending on whether the first spatiotemporal box is less than,...">stbox_cmp</a> does and two boxes have the same key when <a class="el" href="group__meos__geo__box__comp_ga19ce28e3c59fabe54a8f492a5e4ab410.html#ga19ce28e3c59fabe54a8f492a5e4ab410" title="Return true if the spatiotemporal boxes are equal.">stbox_eq</a> holds </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pc1,pc2</td><td><a class="el" href="structPose.html" title="Structure to represent pose values.">Pose</a> chains </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size</td><td>Number of bytes of the key </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__meos__geo__box__comp_ga4b3ba2ccd5749a13714760d5d4e042b1.html#ga4b3ba2ccd5749a13714760d5d4e042b1" title="Return the sort key of a spatiotemporal box, the bytes whose unsigned byte order is the order of stbo...">stbox_sortkey</a> </dd></dl>
 
 </div>
 </div>
