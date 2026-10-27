@@ -50,7 +50,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
 - **A MEOS parameter that accepts `NULL` says so with the `@nullable` token of its own `@param`
   entry**, outside the plan: the free-text notes reading "may be `NULL`" become the tag, the
   Doxygen alias expands it, and `tools/scripts/check_nullable_params.py` with its baseline checks
-  it in CI, as the owner decided on 2026-10-26. On master `71282af6fc` (commit `a69025fcc3`):
+  it in CI, as the owner decided on 2026-10-26. On master `71282af6fc` (commit `6ff362c69f`):
   branch `meos/nullable-tag` rewrites `0cbaf9817d` there, the notes of `func` in `temporal_aggfuncs.c`;
   branch `meos/nullable-tag` rewrites `5e7da7e8d9` there, the notes of `state` in the cell sets.
 - **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
