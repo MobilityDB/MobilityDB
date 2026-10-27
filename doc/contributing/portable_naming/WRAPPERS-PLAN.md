@@ -419,13 +419,13 @@ index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`,
 the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
 `intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). A pose chain reads as
 the pose its composition gives (`posechain_prefix_pose`), so `tposechain` has every operation
-`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (`67792f89dd` on
+`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (`ed5c905f04` on
 master `a23e01a60b`) gives it the distance surface of `tpose`, the MEOS functions composing
 through `tposechain_to_tpose` and the SQL from a `distance` template of the inherited generator
 that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
 gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
 `Unknown types for distance between values: posechain`), and pose chain sets take `setDistance`.
-Branch `index/pg-every-keyed-type` (`b08621119a`, stacked on it) gives the nine sets and
+Branch `index/pg-every-keyed-type` (`9286044b1e`, stacked on it) gives the nine sets and
 `tposechain` an R-tree GiST class and quad-tree and k-d tree SP-GiST classes, a set's classes
 written by the template of its temporal type's index file under the generator flags `setindex`
 and `setmetric`, the geo sets' in `073_tgeo_gist` and `074_tgeo_spgist`, `<->` served for the sets
