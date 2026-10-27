@@ -121,7 +121,10 @@ typedef struct
   double sx, sy, mx, my, ex, ey; /**< Input points fixing the circle of an arc
                                       (an arc only): its start, middle and end,
                                       or the ends of its diameter in (sx,sy)
-                                      and (ex,ey) */
+                                      and (ex,ey). For a segment @p cut from
+                                      an input one, the ends of that segment
+                                      in (sx,sy) and (ex,ey), which fix its
+                                      line */
   bool diameter;                 /**< The circle of an arc is the one on the
                                       diameter from (sx,sy) to (ex,ey) */
   bool centred;                  /**< The arc is the whole circle of centre
@@ -143,6 +146,21 @@ typedef struct
                                       @p to in the sense it turns, or NULL
                                       for the whole circle
                                       (#edges_add_tangent_arc) */
+  bool cut;                      /**< A segment is a piece of the input
+                                      segment from (sx,sy) to (ex,ey), an end
+                                      of it constructed on that segment and
+                                      rounded once, so off its line
+                                      (#relate_union_edges); false for one
+                                      whose ends are input vertices */
+  bool crossed[2];               /**< For a segment @p cut, its start [0] or
+                                      its end [1] is where the input segment
+                                      @p crosser crosses the one from (sx,sy)
+                                      to (ex,ey), a point no double holds;
+                                      false where that end is the point its
+                                      coordinates hold */
+  double crosser[2][4];          /**< The input segment crossing a segment
+                                      @p cut at an end @p crossed, as x1, y1,
+                                      x2, y2 */
   EdgeType etype;                /**< Edge type */
 } Edge;
 
@@ -823,7 +841,56 @@ linesegm_param(double ax, double ay, double bx, double by, double r2,
 }
 
 /**
- * @brief Return the intersection value obtained by computing the intersection 
+ * @brief Return how two segments lying on one line meet, as
+ * #linesegm_intersect answers it
+ * @details The shared stretch runs between the positions of the ends along
+ * the line, read off the coordinate the first segment advances most in and
+ * oriented to grow from its start to its end, so the order of two positions
+ * is the order of two input coordinates. A first segment of no length meets
+ * nothing
+ * @param[in] ax,ay,bx,by Coordinates of the points defining the first segment
+ * @param[in] cx,cy,dx,dy Coordinates of the points defining the second segment
+ */
+static inline IntersectResult
+linesegm_intersect_collinear(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy)
+{
+  IntersectResult res = {INTERSECT_NONE, 0, 0};
+  if (ax == bx && ay == by)
+    return res;
+  double rx = bx - ax, ry = by - ay;
+  double r2 = rx * rx + ry * ry;
+  bool alongx = fabs(rx) >= fabs(ry);
+  double sgn = ((alongx ? rx : ry) > 0.0) ? 1.0 : -1.0;
+  double pa = sgn * (alongx ? ax : ay), pb = sgn * (alongx ? bx : by);
+  double pc = sgn * (alongx ? cx : cy), pd = sgn * (alongx ? dx : dy);
+  bool cfirst = pc <= pd;
+  double plo = cfirst ? pc : pd, phi = cfirst ? pd : pc;
+  double lox = cfirst ? cx : dx, loy = cfirst ? cy : dy;
+  double hix = cfirst ? dx : cx, hiy = cfirst ? dy : cy;
+  if (plo < pa)
+  {
+    plo = pa; lox = ax; loy = ay;
+  }
+  if (phi > pb)
+  {
+    phi = pb; hix = bx; hiy = by;
+  }
+  if (plo > phi)
+    return res;
+  res.t0 = linesegm_param(ax, ay, bx, by, r2, lox, loy);
+  if (plo == phi)
+  {
+    res.type = INTERSECT_POINT;
+    return res;
+  }
+  res.type = INTERSECT_OVERLAP;
+  res.t1 = linesegm_param(ax, ay, bx, by, r2, hix, hiy);
+  return res;
+}
+
+/**
+ * @brief Return the intersection value obtained by computing the intersection
  * of a line segment defined by two 2D points intersects an edge
  * @details The verdict is decided on the four endpoints and is exact: whether
  * the two directions are parallel, whether the segments lie on one line and
@@ -859,39 +926,7 @@ linesegm_intersect(double ax, double ay, double bx, double by,
     return res;
 
   if (oc == 0 && od == 0)
-  {
-    /* One line: the shared stretch runs between the positions of the ends
-     * along it, read off the coordinate the first segment advances most in
-     * and oriented to grow from its start to its end, so the order of two
-     * positions is the order of two input coordinates */
-    bool alongx = fabs(rx) >= fabs(ry);
-    double sgn = ((alongx ? rx : ry) > 0.0) ? 1.0 : -1.0;
-    double pa = sgn * (alongx ? ax : ay), pb = sgn * (alongx ? bx : by);
-    double pc = sgn * (alongx ? cx : cy), pd = sgn * (alongx ? dx : dy);
-    bool cfirst = pc <= pd;
-    double plo = cfirst ? pc : pd, phi = cfirst ? pd : pc;
-    double lox = cfirst ? cx : dx, loy = cfirst ? cy : dy;
-    double hix = cfirst ? dx : cx, hiy = cfirst ? dy : cy;
-    if (plo < pa)
-    {
-      plo = pa; lox = ax; loy = ay;
-    }
-    if (phi > pb)
-    {
-      phi = pb; hix = bx; hiy = by;
-    }
-    if (plo > phi)
-      return res;
-    res.t0 = linesegm_param(ax, ay, bx, by, r2, lox, loy);
-    if (plo == phi)
-    {
-      res.type = INTERSECT_POINT;
-      return res;
-    }
-    res.type = INTERSECT_OVERLAP;
-    res.t1 = linesegm_param(ax, ay, bx, by, r2, hix, hiy);
-    return res;
-  }
+    return linesegm_intersect_collinear(ax, ay, bx, by, cx, cy, dx, dy);
 
   /* Crossing directions: the segments meet where the first does not lie
    * wholly on one side of the line of the second either */
