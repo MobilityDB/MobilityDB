@@ -170,8 +170,12 @@ def generated(text: str, tmpl: str) -> str:
 # is a `geography` ({GEO}), its boundary is not flattened into a planar
 # `tgeometry`, and it declares the matrix a temporal geography declares, as
 # `point_target` does for a temporal geometry point.
+# `setindex`: the set of the family's base values is indexed by the stbox it
+# stores, its classes emitted beside those of the temporal type in the family's
+# index file; `setmetric`: that set has a distance, so its classes serve `<->`.
 DEFAULT_FALSE_FLAGS = {"front_back", "index_support", "point_target",
-                       "native_ever_intersects", "geodetic_target"}
+                       "native_ever_intersects", "geodetic_target", "setindex",
+                       "setmetric"}
 
 
 def apply_conditionals(text: str, sub: dict) -> str:
@@ -281,6 +285,7 @@ def render(behaviour: str, sub: dict) -> str:
         details = details.replace("{TEMP}", sub["temp"]).replace("{BOUNDARY}", boundary)
     body = (tmpl.replace("{DETAILS}\n", details_lines(details))
                 .replace("{TEMP}", sub["temp"])
+                .replace("{SET}", sub.get("set", sub["base"] + "set"))
                 .replace("{BASESYM}", basesym)
                 .replace("{BASE}", sub["base"])
                 .replace("{CBASE}", cbase)

@@ -105,6 +105,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/stratnum.h"
 #include "temporal/temporal.h"
@@ -883,6 +884,22 @@ Tspatial_spgist_compress(PG_FUNCTION_ARGS)
   Temporal *temp = temporal_slice(tempdatum);
   STBox *result = palloc(sizeof(STBox));
   tspatial_set_stbox(temp, result);
+  PG_RETURN_STBOX_P(result);
+}
+
+PGDLLEXPORT Datum Spatialset_spgist_compress(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spatialset_spgist_compress);
+/**
+ * @brief SP-GiST compress function for spatial sets
+ * @note Mirrors #Set_spgist_compress, keying a spatial set by the box it
+ * stores as a number or time set is keyed by its span
+ */
+Datum
+Spatialset_spgist_compress(PG_FUNCTION_ARGS)
+{
+  Set *s = PG_GETARG_SET_P(0);
+  STBox *result = palloc(sizeof(STBox));
+  spatialset_set_stbox(s, result);
   PG_RETURN_STBOX_P(result);
 }
 

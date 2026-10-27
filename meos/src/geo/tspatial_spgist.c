@@ -104,6 +104,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/stratnum.h"
 #include "temporal/temporal.h"
@@ -778,9 +779,13 @@ tspatial_spgist_get_stbox(Datum value, MeosType type, STBox *result)
   {
     memcpy(result, DatumGetSTboxP(value), sizeof(STBox));
   }
-  else if (geo_basetype(type))
+  else if (spatial_basetype(type))
   {
-    geo_set_stbox(DatumGetGserializedP(value), result);
+    spatial_set_stbox(value, type, result);
+  }
+  else if (spatialset_type(type) && type_bboxtype(type) == T_STBOX)
+  {
+    spatialset_set_stbox(DatumGetSetP(value), result);
   }
   else if (tspatial_type(type))
   {

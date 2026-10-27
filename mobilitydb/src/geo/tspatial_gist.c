@@ -43,6 +43,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/set.h"
 #include "temporal/stratnum.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
@@ -79,13 +80,22 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, MeosType type)
       return false;
     memcpy(result, box, sizeof(STBox));
   }
-  else if (geo_basetype(type))
+  else if (spatial_basetype(type))
   {
     if (PG_ARGISNULL(1))
       return false;
-    GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-    if (! geo_set_stbox(gs, result))
+    /* A value of variable length is read detoasted */
+    Datum value = (meostype_length(type) == -1) ?
+      PointerGetDatum(PG_DETOAST_DATUM(PG_GETARG_DATUM(1))) :
+      PG_GETARG_DATUM(1);
+    if (! spatial_set_stbox(value, type, result))
       return false;
+  }
+  else if (spatialset_type(type) && type_bboxtype(type) == T_STBOX)
+  {
+    if (PG_ARGISNULL(1))
+      return false;
+    spatialset_set_stbox(PG_GETARG_SET_P(1), result);
   }
   else if (tspatial_type(type))
   {
@@ -176,6 +186,29 @@ Tspatial_gist_compress(PG_FUNCTION_ARGS)
     gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
       entry->offset, false);
     PG_RETURN_STBOX_P(retval);
+  }
+  PG_RETURN_POINTER(entry);
+}
+
+PGDLLEXPORT Datum Spatialset_gist_compress(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Spatialset_gist_compress);
+/**
+ * @brief GiST compress method for spatial sets
+ * @note Mirrors #Set_gist_compress, keying a spatial set by the box it stores
+ * as a number or time set is keyed by its span
+ */
+Datum
+Spatialset_gist_compress(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  if (entry->leafkey)
+  {
+    GISTENTRY *retval = palloc(sizeof(GISTENTRY));
+    STBox *box = palloc(sizeof(STBox));
+    spatialset_set_stbox(DatumGetSetP(entry->key), box);
+    gistentryinit(*retval, PointerGetDatum(box), entry->rel, entry->page,
+      entry->offset, false);
+    PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);
 }

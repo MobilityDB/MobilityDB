@@ -126,4 +126,35 @@ CREATE OPERATOR CLASS ts2cell_rtree_ops
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
 
+/******************************************************************************
+ * Sets of the base values, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE FUNCTION s2cellset_gist_consistent(internal, s2cellset, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS s2cellset_rtree_ops
+  DEFAULT FOR TYPE s2cellset USING gist AS
+  STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (s2cellset, s2cellset),
+  -- same
+  OPERATOR  6    = (s2cellset, s2cellset),
+  -- contains
+  OPERATOR  7    @> (s2cellset, s2cell),
+  OPERATOR  7    @> (s2cellset, s2cellset),
+  -- contained by
+  OPERATOR  8    <@ (s2cellset, s2cellset),
+  -- functions
+  FUNCTION  1 s2cellset_gist_consistent(internal, s2cellset, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 spatialset_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
+
 /******************************************************************************/

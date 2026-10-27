@@ -124,8 +124,9 @@ Temporal<T>              temporal_type      = ALL temporal types
   sharing their outermost frame.
   Its distance is the one of the temporal pose its composition gives:
   `560_tposechain_distance.in.sql` is written by the `distance` template, as
-  `110_tpose_distance.in.sql` is. ⛔ The family carries no spatial
-  relationships and no index file.
+  `110_tpose_distance.in.sql` is, and `566_tposechain_indexes.in.sql` by the
+  `indexes` template, with the classes of `posechainset`. ⛔ The family carries
+  no spatial relationships.
 - **`TCellIndex<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited distance aspect, and relate their cells through the
@@ -208,7 +209,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
-| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time |
+| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the three templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | `distance.sql.tmpl` | **GENERATED** for `tpose` (`110_tpose_distance`) and `tposechain` (`560_tposechain_distance`); every other family's distance file is hand-written |
@@ -667,18 +668,17 @@ plain = the file exists but is still hand-maintained.
 | cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
 | npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
 | pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | 112 | **114** | **116** | 107 |
-| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | — | **564** | — | — |
+| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | — | **564** | **566** | — |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
 | quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
 | s2cell (600) | **604** | 605 | **608** | **609** | — | **611** | **612** | **614** | **622**·**623** | **607** |
 
 Reading the table:
-- **`compops`/`topops`/`posops` are generated for every derived family, and `idx` for
-  every one but posechain,** via the `subtypes:` `files:` track (§3): cbuffer and
+- **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the `subtypes:` `files:` track (§3): cbuffer and
   rgeo (`[compops, topops, posops, indexes]`), npoint (`[compops, posops, topops,
   spatialrels, indexes]`), pose (`[compops, topops, posops,
-  distance, indexes]`), posechain (`[compops, topops, posops, distance]`) and h3,
+  distance, indexes]`), posechain (`[compops, topops, posops, distance, indexes]`) and h3,
   quadbin, s2cell (`[compops, posops, topops, spatialrels, gist, spgist]` — the three
   cell families declare one and the same list).
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin,
@@ -1035,6 +1035,8 @@ unlike the SRID rows this is a lift gap, and it is the same gap in all three.
   so its GiST/SP-GiST opclasses exist exactly for the five span-basetype sets
   (the file contains no textset occurrence), and its GIN opclasses exist only
   for intset, bigintset and dateset — the `span_canon_basetype()` discretes.
+  A spatial set is indexed by the `stbox` it stores instead, its classes written
+  in the index file of its temporal type under the `setindex` key of §3.
 
 ### 9.3 `doc/set_span_types.xml` — section-by-section
 

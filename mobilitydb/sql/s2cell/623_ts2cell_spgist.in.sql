@@ -190,4 +190,47 @@ CREATE OPERATOR CLASS ts2cell_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tspatial_spgist_compress(internal);
 
+/******************************************************************************
+ * Sets of the base values, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE OPERATOR CLASS s2cellset_quadtree_ops
+  DEFAULT FOR TYPE s2cellset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (s2cellset, s2cellset),
+  -- same
+  OPERATOR  6    = (s2cellset, s2cellset),
+  -- contains
+  OPERATOR  7    @> (s2cellset, s2cell),
+  OPERATOR  7    @> (s2cellset, s2cellset),
+  -- contained by
+  OPERATOR  8    <@ (s2cellset, s2cellset),
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS s2cellset_kdtree_ops
+  FOR TYPE s2cellset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (s2cellset, s2cellset),
+  -- same
+  OPERATOR  6    = (s2cellset, s2cellset),
+  -- contains
+  OPERATOR  7    @> (s2cellset, s2cell),
+  OPERATOR  7    @> (s2cellset, s2cellset),
+  -- contained by
+  OPERATOR  8    <@ (s2cellset, s2cellset),
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_kdtree_choose(internal, internal),
+  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
 /******************************************************************************/

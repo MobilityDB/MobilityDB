@@ -160,4 +160,59 @@ CREATE OPERATOR CLASS {TEMP}_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tspatial_spgist_compress(internal);
 
+-- @IF setindex
+/******************************************************************************
+ * Sets of the base values, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE OPERATOR CLASS {SET}_quadtree_ops
+  DEFAULT FOR TYPE {SET} USING spgist AS
+  -- overlaps
+  OPERATOR  3    && ({SET}, {SET}),
+  -- same
+  OPERATOR  6    = ({SET}, {SET}),
+  -- contains
+  OPERATOR  7    @> ({SET}, {BASE}),
+  OPERATOR  7    @> ({SET}, {SET}),
+  -- contained by
+  OPERATOR  8    <@ ({SET}, {SET}),
+-- @IF setmetric
+  -- nearest approach distance
+  OPERATOR  25    <-> ({SET}, {BASE}) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> ({SET}, {SET}) FOR ORDER BY pg_catalog.float_ops,
+-- @ENDIF
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS {SET}_kdtree_ops
+  FOR TYPE {SET} USING spgist AS
+  -- overlaps
+  OPERATOR  3    && ({SET}, {SET}),
+  -- same
+  OPERATOR  6    = ({SET}, {SET}),
+  -- contains
+  OPERATOR  7    @> ({SET}, {BASE}),
+  OPERATOR  7    @> ({SET}, {SET}),
+  -- contained by
+  OPERATOR  8    <@ ({SET}, {SET}),
+-- @IF setmetric
+  -- nearest approach distance
+  OPERATOR  25    <-> ({SET}, {BASE}) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> ({SET}, {SET}) FOR ORDER BY pg_catalog.float_ops,
+-- @ENDIF
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_kdtree_choose(internal, internal),
+  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
+-- @ENDIF
 /******************************************************************************/
