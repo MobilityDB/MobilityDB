@@ -93,6 +93,10 @@
  * Each part asks the nearest approach too, which reaches the same per-element
  * distance through the synchronous walk.
  *
+ * Exactness is defined for finite coordinates. The last part asks geometries
+ * holding a NaN or an infinite coordinate, invalid as GEOS reports them,
+ * whose distance is unspecified, and checks only that it is answered.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o distance_point_test distance_point_test.c -L/usr/local/lib -lmeos -lm
@@ -348,6 +352,19 @@ geometry_entry(const char *wkt1, const char *wkt2, double expected)
   assert(gs1 != NULL && gs2 != NULL);
   assert(geom_distance2d(gs1, gs2) == expected);
   assert(geom_distance2d(gs2, gs1) == expected);
+  free(gs1);
+  free(gs2);
+}
+
+/* The 3D distance of two static geometries, against the double nearest the
+ * exact one, asked in both orders; the 3D twin of #geometry_entry */
+static void
+geometry3d_entry(const char *wkt1, const char *wkt2, double expected)
+{
+  GSERIALIZED *gs1 = geom_in(wkt1, -1), *gs2 = geom_in(wkt2, -1);
+  assert(gs1 != NULL && gs2 != NULL);
+  assert(geom_distance3d(gs1, gs2) == expected);
+  assert(geom_distance3d(gs2, gs1) == expected);
   free(gs1);
   free(gs2);
 }
@@ -722,6 +739,53 @@ int main(void)
     "557537.950561732 5026245.457869001)", 244.85998629456884);
   printf("%d moving circular buffers of constant radius answered as the "
     "nearest double\n", buffers);
+
+  /* 3D: two skew segments nearest inside both, at a height of 2 and at 2^0
+   * and 2^-500 off any grid, a point above the middle of a segment, two points
+   * far apart, and a point moving in 3D past a line */
+  int threed = 6;
+  geometry3d_entry("LINESTRING Z(-1 0 0,1 0 0)", "LINESTRING Z(0 -1 2,0 1 2)",
+    2.0);
+  geometry3d_entry("LINESTRING Z(-0.5292459994962462 0.06323248353375807 0.0, "
+    "0.5063004071983743 0.05425922393417745 0.05986246556260197)",
+    "LINESTRING Z(0.04268869440782394 -0.9688957856061766 0.4701167392280732, "
+    "-0.0573981907985764 0.525515361828762 0.47011673922807323)",
+    0.4402944762457317);
+  geometry3d_entry("LINESTRING Z(-1.616812849097776e-151 1.931712133016675e-152 "
+    "0.0, 1.5467155248049707e-151 1.6575847625178678e-152 "
+    "1.8287602285593557e-152)",
+    "LINESTRING Z(1.3041124485678358e-152 -2.9599149678898258e-151 "
+    "1.4361767217577018e-151, -1.7534782026965946e-152 "
+    "1.6054159884283372e-151 1.436176721757702e-151)",
+    1.3450716061310987e-151);
+  geometry3d_entry("POINT Z(0 3 4)", "LINESTRING Z(-1 0 0,1 0 0)", 5.0);
+  geometry3d_entry("POINT Z(0 0 0)", "POINT Z(0 0 1e39)", 1e39);
+  moving_entry("[POINT Z(-1 0 0)@2001-01-01, POINT Z(1 0 0)@2001-01-02]",
+    "LINESTRING Z(0 -1 2,0 1 2)", 2.0);
+  printf("%d distances in 3D answered as the nearest double\n", threed);
+
+  /* Outside the domain of exact computation, a coordinate that is NaN or
+   * infinite, invalid as GEOS reports it: the distance is unspecified, and it
+   * is answered, in 3D, where the walk reads the boxes the geometries carry,
+   * and in 2D, in both orders */
+  const char *nonfinite[] = {"LINESTRING Z(0 0 0,NaN 1 1,2 2 2)",
+    "LINESTRING Z(0 0 0,1e400 1 1,2 2 2)",
+    "LINESTRING Z(NaN NaN NaN,1 1 1,2 2 2)"};
+  int controls = (int) (sizeof(nonfinite) / sizeof(nonfinite[0]));
+  GSERIALIZED *finite = geom_in("LINESTRING Z(0 5 0,1 5 1,2 5 2)", -1);
+  for (int i = 0; i < controls; i++)
+  {
+    GSERIALIZED *gs = geom_in(nonfinite[i], -1);
+    assert(gs != NULL);
+    (void) geom_distance3d(gs, finite);
+    (void) geom_distance3d(finite, gs);
+    (void) geom_distance2d(gs, finite);
+    (void) geom_distance2d(finite, gs);
+    free(gs);
+  }
+  free(finite);
+  printf("%d geometries holding a NaN or an infinite coordinate answered "
+    "without fault\n", controls);
 
   /* Finalize MEOS */
   meos_finalize();
