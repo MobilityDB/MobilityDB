@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcpoint_get_z</title>
+<title>MobilityDB: pcpoint_get_dim</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -84,24 +84,24 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gaa584062d1f5985dbd56aa1184ee5d676.html#gaa584062d1f5985dbd56aa1184ee5d676">pcpatch_npoints</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gad94dad11cb5d1a8acc64790229367804.html#gad94dad11cb5d1a8acc64790229367804">pcpatch_point_n</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga99a06a5f7fd52f28d43c150c675a6cab.html#ga99a06a5f7fd52f28d43c150c675a6cab">pcpatch_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga06a4a88076e90f8b3dea6e388f29426f.html#ga06a4a88076e90f8b3dea6e388f29426f">pcpoint_get_dim</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga02625ff9d334a815a0c6c138f7ef2d68.html#ga02625ff9d334a815a0c6c138f7ef2d68">pcpoint_get_dim</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga5c947b0c862b2261ba25b87ccb915ce8.html#ga5c947b0c862b2261ba25b87ccb915ce8">pcpoint_get_pcid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga8baca796de0edfa1945a802c31c5bda4.html#ga8baca796de0edfa1945a802c31c5bda4">pcpoint_get_x</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga238a713e796b6568b06989cbbc63bc73.html#ga238a713e796b6568b06989cbbc63bc73">pcpoint_get_y</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga135af50c777d2c65c2bbcd6fac8bae2d.html#ga135af50c777d2c65c2bbcd6fac8bae2d">pcpoint_get_z</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gafcf34da2bd7eee63bbc9148a3861e5e7.html#gafcf34da2bd7eee63bbc9148a3861e5e7">pcpoint_get_x</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gaf2af99f75912e66d42dfba78d4d9cc8c.html#gaf2af99f75912e66d42dfba78d4d9cc8c">pcpoint_get_y</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_gaf69a716a31c71bf16b5dd498595bc1f9.html#gaf69a716a31c71bf16b5dd498595bc1f9">pcpoint_get_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__base__accessor_ga62ea16db05123413e78e3ae994ca2bcf.html#ga62ea16db05123413e78e3ae994ca2bcf">pcpoint_mem_size</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga135af50c777d2c65c2bbcd6fac8bae2d" name="ga135af50c777d2c65c2bbcd6fac8bae2d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga135af50c777d2c65c2bbcd6fac8bae2d">&#9670;&#160;</a></span>pcpoint_get_z()</h2>
+<a id="ga02625ff9d334a815a0c6c138f7ef2d68" name="ga02625ff9d334a815a0c6c138f7ef2d68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga02625ff9d334a815a0c6c138f7ef2d68">&#9670;&#160;</a></span>pcpoint_get_dim()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool pcpoint_get_z </td>
+          <td class="memname">bool pcpoint_get_dim </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structPcpoint.html">Pcpoint</a> *&#160;</td>
           <td class="paramname"><em>pt</em>, </td>
@@ -109,8 +109,8 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td>
-          <td class="paramname"><em>schema</em>, </td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -126,15 +126,16 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the Z coordinate of a pcpoint via the given schema. </p>
+<p>Return any named dimension of a pcpoint. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pt</td><td>Point </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">schema</td><td>Point cloud schema </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Result @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__accessor_gab7188d14864d68d3ea36d283aef74852.html#gab7188d14864d68d3ea36d283aef74852" title="Return the Z dimension of a pcpoint (NULL if schema has no Z) @sqlfn getZ()">Pcpoint_get_z()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Dimension name </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out</td><td>Result </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd><code>true</code> on success; <code>false</code> if the schema lacks the dimension or the byte read fails @csqlfn <a class="el" href="group__mobilitydb__pointcloud__base__accessor_ga2558fb1327067a86d79859151aaa2497.html#ga2558fb1327067a86d79859151aaa2497" title="Return an arbitrary dimension of a pcpoint by name @sqlfn getDim()">Pcpoint_get_dim()</a> </dd></dl>
 
 </div>
 </div>

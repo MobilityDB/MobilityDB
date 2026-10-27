@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tpcbox_make</title>
+<title>MobilityDB: tpcbox_srid_make</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="group__meos__pointcloud__box__constructor.html">Constructor functions</a></li>  </ul>
+<li class="navelem"><a class="el" href="group__meos__internal__pointcloud__box__constructor.html">Constructor functions</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,21 +79,19 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga932d94fa4bc720c3b32c35c6818c4573.html#ga932d94fa4bc720c3b32c35c6818c4573">pcpoint_to_tpcbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_gadfe87b6c77e6dfe27e796f087a8d169b.html#gadfe87b6c77e6dfe27e796f087a8d169b">tpcbox_copy</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga38f057409ec34c43074c20214cb4f7e6.html#ga38f057409ec34c43074c20214cb4f7e6">tpcbox_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__internal__pointcloud__box__constructor_ga37868d998ffdf438336302342fec6254.html#ga37868d998ffdf438336302342fec6254">tpcbox_srid_make</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga38f057409ec34c43074c20214cb4f7e6" name="ga38f057409ec34c43074c20214cb4f7e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga38f057409ec34c43074c20214cb4f7e6">&#9670;&#160;</a></span>tpcbox_make()</h2>
+<a id="ga37868d998ffdf438336302342fec6254" name="ga37868d998ffdf438336302342fec6254"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga37868d998ffdf438336302342fec6254">&#9670;&#160;</a></span>tpcbox_srid_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * tpcbox_make </td>
+          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * tpcbox_srid_make </td>
           <td>(</td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>hasx</em>, </td>
@@ -178,14 +176,14 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a fresh <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> from component values. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a fresh <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> from component values and its SRID. </p>
+<p >The text and WKB readers state the SRID a value carries, which they reconcile with the schema of its pcid by <a class="el" href="meos_2src_2pointcloud_2tpcbox_8c_a630617c36fbfa4dbb91bcab6c40b8a7f.html#a630617c36fbfa4dbb91bcab6c40b8a7f" title="Return in the last argument the SRID of a TPCBox from the SRID its value states and the one the schem...">tpcbox_resolve_srid</a> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">hasx,hasz,hast,geodetic</td><td>Dimensionality flags </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hasx,hasz,hast,geodetic</td><td>Dimensionality flags, at least one of <code>hasx</code> and <code>hast</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference system (0 = unknown) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pcid</td><td>pgpointcloud schema id (0 = unknown) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmin,xmax,ymin,ymax,zmin,zmax</td><td>Spatial bounds (ignored unless <code>hasx</code>; <code>zmin/<code>zmax</code> ignored</code> unless <code>hasz</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">period</td><td>Time bounds (ignored unless <code>hast</code>) (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaf4f7c9fc09cbee3140be2724ad106dfb.html#gaf4f7c9fc09cbee3140be2724ad106dfb" title="2D constructor — tpcbox(xmin, ymin, xmax, ymax, pcid, srid) @sqlfn tpcboxX()">Tpcbox_constructor_2d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga8e752ca1f52b9d8da21667e031dff9f6.html#ga8e752ca1f52b9d8da21667e031dff9f6" title="3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid, srid) @sqlfn tpcboxZ()">Tpcbox_constructor_3d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga584543a9f7c99f5395ca5377545d6ed6.html#ga584543a9f7c99f5395ca5377545d6ed6" title="Time-only constructor — tpcboxT(period, pcid) @sqlfn tpcboxT()">Tpcbox_constructor_t()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga412b98ab5ea425e0535889db749ff317.html#ga412b98ab5ea425e0535889db749ff317" title="XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid, srid) @sqlfn tpcboxXT()">Tpcbox_constructor_xt()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gadbe3810115555a126cb64ef1a1f74ac3.html#gadbe3810115555a126cb64ef1a1f74ac3" title="XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid, srid) @sqlfn tpcboxZT(...">Tpcbox_constructor_zt()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">period</td><td>Time bounds (ignored unless <code>hast</code>) (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

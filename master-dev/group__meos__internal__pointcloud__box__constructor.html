@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: pcpoint_to_tpcbox</title>
+<title>MobilityDB: Constructor functions</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -47,6 +47,7 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
+</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -68,58 +69,24 @@ $(function() {
 </div>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="group__meos__pointcloud__box__constructor.html">Constructor functions</a></li>  </ul>
-</div>
-</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
+  <div class="headertitle"><div class="title">Constructor functions<div class="ingroups"><a class="el" href="group__meos.html">MEOS library</a> &raquo; <a class="el" href="group__meos__internal.html">Internal API</a> &raquo; <a class="el" href="group__meos__internal__pointcloud.html">Functions for temporal pgpointcloud types</a></div></div></div>
+</div><!--header-->
 <div class="contents">
-<table cellspacing="0" cellpadding="0" border="0">
-  <tr>
-   <td valign="top">
-      <div class="navtab">
-        <table>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga932d94fa4bc720c3b32c35c6818c4573.html#ga932d94fa4bc720c3b32c35c6818c4573">pcpoint_to_tpcbox</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_gadfe87b6c77e6dfe27e796f087a8d169b.html#gadfe87b6c77e6dfe27e796f087a8d169b">tpcbox_copy</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga38f057409ec34c43074c20214cb4f7e6.html#ga38f057409ec34c43074c20214cb4f7e6">tpcbox_make</a></td></tr>
-        </table>
-      </div>
-   </td>
-   <td valign="top" class="mempage">
-<a id="ga932d94fa4bc720c3b32c35c6818c4573" name="ga932d94fa4bc720c3b32c35c6818c4573"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga932d94fa4bc720c3b32c35c6818c4573">&#9670;&#160;</a></span>pcpoint_to_tpcbox()</h2>
 
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structTPCBox.html">TPCBox</a> * pcpoint_to_tpcbox </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structPcpoint.html">Pcpoint</a> *&#160;</td>
-          <td class="paramname"><em>pt</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="meos__pointcloud_8h_a2ddd866faf8fced9f7400b1810bf8b69.html#a2ddd866faf8fced9f7400b1810bf8b69">PCSCHEMA</a> *&#160;</td>
-          <td class="paramname"><em>schema</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Convert a pcpoint to a degenerate single-point <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a>. </p>
-<dl class="section return"><dt>Returns</dt><dd>Newly-palloc'd <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a>, or <code>NULL</code> if the schema lacks the required X/Y dimensions. @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaa81ae5078c3ab66a0266577e074e6de7.html#gaa81ae5078c3ab66a0266577e074e6de7" title="Return a degenerate (single-point) TPCBox built from a pcpoint.">Pcpoint_to_tpcbox()</a> </dd></dl>
-
-</div>
-</div>
-    </td>
-  </tr>
+<p>Constructor functions for pgpointcloud boxes given their SRID.  
+<a href="#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ga37868d998ffdf438336302342fec6254"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTPCBox.html">TPCBox</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__internal__pointcloud__box__constructor_ga37868d998ffdf438336302342fec6254.html#ga37868d998ffdf438336302342fec6254">tpcbox_srid_make</a> (bool hasx, bool hasz, bool hast, bool geodetic, int32_t srid, uint32_t pcid, double xmin, double xmax, double ymin, double ymax, double zmin, double zmax, const <a class="el" href="structSpan.html">Span</a> *period)</td></tr>
+<tr class="memdesc:ga37868d998ffdf438336302342fec6254"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a fresh <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> from component values and its SRID.  <a href="group__meos__internal__pointcloud__box__constructor_ga37868d998ffdf438336302342fec6254.html#ga37868d998ffdf438336302342fec6254">More...</a><br /></td></tr>
+<tr class="separator:ga37868d998ffdf438336302342fec6254"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<p >Constructor functions for pgpointcloud boxes given their SRID. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
