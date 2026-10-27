@@ -53,8 +53,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   it in CI, as the owner decided on 2026-10-26. MERGED as MobilityDB #3208 (`6e22d6c736`):
   branch `meos/nullable-tag` rewrites `0cbaf9817d` there, the notes of `func` in `temporal_aggfuncs.c`;
   branch `meos/nullable-tag` rewrites `5e7da7e8d9` there, the notes of `state` in the cell sets.
-  The buffer the sort-key writers count with when it is NULL carries the tag:
-  branch `meos/sortkey-buffer-nullable` rewrites `71207d8043` there, the notes of `out` in `temporal.c`.
+  The buffer the sort-key writers count with when it is NULL carries the tag, MERGED as
+  MobilityDB #3216 (`9a18efe9df`): branch `meos/sortkey-buffer-nullable` rewrites `71207d8043` there.
   MEOS-API reads the tag alone, branch `parser/nullable-reads-the-tag-only`: the ecosystem targets 1.4,
   as the owner decided on 2026-10-27, so no prose note of `stable-1.3` is read.
   A SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument, as the
