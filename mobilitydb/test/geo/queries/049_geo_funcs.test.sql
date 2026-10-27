@@ -66,6 +66,12 @@ SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
 -- on the three points defining a semicircular arc leaves the whole arc outside
 SELECT ST_AsText(convexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
 SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+-- An arc bulging into the rectangle its ends close reaches past no point, so
+-- the hull is that rectangle
+SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Compoundcurve(Circularstring(0 0,1 1,2 0),(2 0,2 10,0 10,0 0)))'));
+-- The two vertices of a degenerate hull keep the order of the geometry, an
+-- arc whose points are collinear as a line does
+SELECT ST_AsText(convexHull(geometry 'Circularstring(2 0,1 0,0 0)'));
 
 -- Two arcs are joined by their outer common tangent, which touches the
 -- circles of radii 1 and 2 eleven apart at (1 - 1/11, sqrt(120)/11) and
