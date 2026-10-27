@@ -147,6 +147,10 @@ The aggregates in every engine, their names, the functions of their roles and th
 Every SQL signature of MobilityDB the MEOS catalog does not state, so that no binding reaches it, and
 the tag, the call or the public MEOS function each one needs: [The SQL functions MEOS answers](WRAPPERS-PLAN.md).
 
+The one rule by which every binding chooses the MEOS functions it binds and the declarations it calls
+them through, where each binding stands against it, and the pull requests that bring each one to it:
+[The MEOS functions every binding binds](BINDINGS-PLAN.md).
+
 What the generated Flink and Spark surfaces carry of the 168 set-returning functions, and the gaps
 behind it by repository: [Set-returning functions](10-SET-RETURNING.md).
 

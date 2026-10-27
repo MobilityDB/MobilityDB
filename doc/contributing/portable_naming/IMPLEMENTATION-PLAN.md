@@ -145,6 +145,10 @@ The catalog and the generators then carry what Part I declares: the set-returnin
 their `OUT` columns and repeated arguments, the type encodings, and the Flink and Spark forms
 of a function returning rows.
 
+Every binding chooses the MEOS functions it binds, and the declarations it calls them through, by
+one rule taken from JMEOS, and the pull requests B1 to B9 bring each binding to it: [The MEOS
+functions every binding binds](BINDINGS-PLAN.md).
+
 ### MEOS-API
 
 | PR | Topic | Waits on |
