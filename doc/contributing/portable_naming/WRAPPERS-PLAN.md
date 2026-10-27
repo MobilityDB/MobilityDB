@@ -419,8 +419,8 @@ index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`,
 the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
 `intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). A pose chain reads as
 the pose its composition gives (`posechain_prefix_pose`), so `tposechain` has every operation
-`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (`1387789ee6` on
-master `71282af6fc`) gives it the distance surface of `tpose`, the MEOS functions composing
+`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (`67792f89dd` on
+master `a23e01a60b`) gives it the distance surface of `tpose`, the MEOS functions composing
 through `tposechain_to_tpose` and the SQL from a `distance` template of the inherited generator
 that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
 gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
