@@ -63,10 +63,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   distance from the points defining the circle, which it never constructs, and shares with the
   construction of the circle the eleven terms of the radius polynomial (`MEC_RADIUS_TERMS`), the
   exact sums of three points (`mec_exact_set`), the support Welzl's loop finds
-  (`mec_welzl_support`) and the shuffle (`mec_shuffle`). Branch
-  `geo/buffer-exact-join-arc` rewrites `adbb2ebad1` there, its 26 lines moved unchanged into
-  those four, as the owner approved on 2026-10-27. The branch buffers a polygon with round joins
-  by its exact offset curves (commit `3ee90815ff` on master `71282af6fc`, five commits): CGAL's
+  (`mec_welzl_support`) and the shuffle (`mec_shuffle`). MobilityDB
+  #3205 (`geo/buffer-exact-join-arc`, in master as `ddb9be7089`) rewrites `adbb2ebad1` there, its 26 lines moved unchanged into
+  those four, as the owner approved on 2026-10-27. It buffers a polygon with round joins
+  by its exact offset curves (five commits, last `3ee90815ff`): CGAL's
   circle-segment traits agree on 3979820 of 3979820 sharp queries and 1313 of 1313 natural
   areas, and its callgrind cost beside GEOS 3.14.1 called directly is 0.9955 at distance 1,
   0.9167 at 50, 0.5725 at 500 and 0.8140 on the joints. Left: lines, points, mitre and bevel
