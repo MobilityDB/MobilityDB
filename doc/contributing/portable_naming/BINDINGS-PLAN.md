@@ -86,9 +86,9 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
 
 | Task | Repository | Change | State |
 |---|---|---|---|
-| B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | MEOS-API #216, branch `ci/provision-without-gsl-and-geos` (`e90e268` on master `11b7bac`), CI green |
+| B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | MERGED as MEOS-API #216 (`18fcdca26`) |
 | B11 | MEOS-API | `provision-meos` builds GDAL 3.12.0 from source with `-DGDAL_USE_GEOS=OFF` and checks that no `libgeos` loads with libmeos | after B10 |
-| B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | GEOS half MERGED as GoMEOS #32 (`934f40529`); GSL half branch `build/no-gsl` (`09a5eff`) |
+| B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | MERGED as GoMEOS #32 (`934f40529`) and #33 (`fbf003a77`) |
 | B13 | PyMEOS-CFFI | its workflows install no `gsl` and no `geos` | open |
 | B14 | JMEOS | its README installs no `libgsl-dev` and no `libgeos-dev` | open |
 | B15 | MobilityDuck | `CMakeLists.txt` finds and links no GSL | open |
