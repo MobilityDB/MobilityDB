@@ -86,7 +86,7 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
 
 | Task | Repository | Change | State |
 |---|---|---|---|
-| B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | open |
+| B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | branch `ci/provision-without-gsl-and-geos` (`24e4533` on master `11b7bac`) |
 | B11 | MEOS-API | `provision-meos` builds GDAL 3.12.0 from source with `-DGDAL_USE_GEOS=OFF` and checks that no `libgeos` loads with libmeos | after B10 |
 | B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | GEOS half in GoMEOS #32 |
 | B13 | PyMEOS-CFFI | its workflows install no `gsl` and no `geos` | open |
