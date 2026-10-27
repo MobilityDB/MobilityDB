@@ -72,6 +72,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   0.9167 at 50, 0.5725 at 500 and 0.8140 on the joints. Left: lines, points, mitre and bevel
   joins, caps, curves, erosion and collections, each moved onto the arrangement in its own
   pull request; lines on branch `fix/buffer-a-line-exactly`.
+- **A tower question stops computing in expansions once they leave their exact range**, outside
+  the plan: branch `fix/buffer-cost-at-wide-exponent-spread` (`a3109bb41a` on `887fdf4646`).
+  `tx_add` and `tx_mul` of `meos/src/geo/geo_funcs.c` return their first operand once the arena
+  is unsafe, the run's answer being discarded for the one in WideDyadic. The buffer of a rhombus
+  whose coordinates span 2^1000 answers in 0.016 s against 7 s; CGAL agrees on
+  1328512 of 1328512 sharp queries and 1313 of 1313 natural areas, and the buffer cells cost
+  0.9955, 0.9167, 0.5725 and 0.8140 times GEOS 3.14.1 called directly. Left from the same
+  report: the order of a segment and an arc leaving one tangent point alike (ARR_TURN), and the
+  winding numbers about a node of a ring whose spike revisits its own coordinates (ARR_DEPTH).
 - **Open pull requests** on 2026-10-02: MobilityDB #2861 (these notes) and #2919, which names an
   operation over a base value as MobilityDB names it over its own types (decision 0.5); #2920
   touches the GEOS checker's baseline only; #785, #777 and #677 touch none of these names or
