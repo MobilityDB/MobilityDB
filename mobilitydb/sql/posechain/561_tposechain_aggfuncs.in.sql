@@ -130,6 +130,13 @@ CREATE FUNCTION appendInstantTransition(tposechain, tposechain,
   AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 
+CREATE FUNCTION appendInstantTransition(tposechain, tposechain,
+    interp text, maxdist float,
+    maxt interval)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Temporal_app_tinst_transfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 
 CREATE FUNCTION appendInstantFinal(tposechain, tposechain)
   RETURNS tposechain
@@ -158,6 +165,19 @@ CREATE FUNCTION appendInstantFinal(tposechain, tposechain, interp text, maxt int
   AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
   LANGUAGE C IMMUTABLE PARALLEL SAFE;
 CREATE AGGREGATE appendInstant(tposechain, interp text, maxt interval) (
+  SFUNC = appendInstantTransition,
+  STYPE = tposechain,
+  FINALFUNC = appendInstantFinal,
+  FINALFUNC_EXTRA,
+  PARALLEL = safe
+);
+CREATE FUNCTION appendInstantFinal(tposechain, tposechain, interp text, maxdist float,
+    maxt interval)
+  RETURNS tposechain
+  AS 'MODULE_PATHNAME', 'Temporal_append_finalfn'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+CREATE AGGREGATE appendInstant(tposechain, interp text, maxdist float,
+    maxt interval) (
   SFUNC = appendInstantTransition,
   STYPE = tposechain,
   FINALFUNC = appendInstantFinal,

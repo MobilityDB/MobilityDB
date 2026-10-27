@@ -122,9 +122,10 @@ Temporal<T>              temporal_type      = ALL temporal types
   `asGeoPose(tposechain, …)` and `tposechainFromGeoPose`, and the Composite
   Graph writer `asGeoPose(tposechain[], …)`, which encodes a set of chains
   sharing their outermost frame.
-  ⛔ The family carries no distance, no spatial relationships and no index
-  file: a pose chain has no distance function, and the ordering operator waits
-  on the kNN question.
+  Its distance is the one of the temporal pose its composition gives:
+  `560_tposechain_distance.in.sql` is written by the `distance` template, as
+  `110_tpose_distance.in.sql` is. ⛔ The family carries no spatial
+  relationships and no index file.
 - **`TCellIndex<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited distance aspect, and relate their cells through the
@@ -210,7 +211,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
-| distance | — | reserved position, **HAND** |
+| distance | `distance.sql.tmpl` | **GENERATED** for `tpose` (`110_tpose_distance`) and `tposechain` (`560_tposechain_distance`); every other family's distance file is hand-written |
 
 ⛔ **`front_back` reaches BOTH the operator declaration and the operator class.** It is an
 additive flag (`DEFAULT_FALSE_FLAGS` in `generate.py`), so a family opts in and every other
@@ -319,7 +320,7 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 |---|---|---|---|
 | `021_tbox` (TBox type: value × time) | TNumber | ✗ HAND | the number bounding box; its **C dispatchers ARE generated** — `boxops.c.tmpl` box type `tbox` region in `temporal_boxops.c` |
 | `026_tnumber_mathfuncs` (`+ - * /`, abs, delta, trend, derivative) | TNumber | ✓ **GEN** | `mathfuncs.sql.tmpl` + `mathfunc_families`, **1 entry** (`tnumber`, `reference: true`) — the whole-file TNumber arithmetic surface |
-| `036_tnumber_distance` (tDistance, nad) | TNumber | ✗ HAND | no distance template |
+| `036_tnumber_distance` (tDistance, nad) | TNumber | ✗ HAND | the `distance` template writes the pose families' spatial distance only |
 | number Restrictions (atSpan/atSpanset/atTbox) | TNumber | ✓ **GEN** | inside `022_temporal.in.sql`, governed by `restriction_families`' `temporal` entry (§4 table) |
 | number Aggregates (extent, tSum, tAvg, tMin/tMax) | TNumber | ✓ **GEN** | `040_temporal_aggfuncs`, governed by `aggregate_families`' `temporal` entry (§4b) |
 | `028_tbool_boolops` (`&` `\|` `~`, tAnd/tOr/tNot) | TAlpha (tbool) | ✗ HAND | tbool-specific |
@@ -590,7 +591,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Restrictions | `tspatial_`/`tgeo_` | ✗ HAND | atGeometry/atStbox/minus… (in the family's `spatialfuncs` file — no template) |
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
-| Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ✗ HAND | tDistance/nad/nai/shortestLine — reserved position, no template |
+| Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ◐ PARTIAL | tDistance/nad/nai/shortestLine — `distance.sql.tmpl` via the `subtypes:` track (§3) writes the files of `tpose` and `tposechain`; every other family's is hand-written |
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
 | Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
@@ -647,8 +648,8 @@ nor `tquadbin` states (measured: 1 occurrence in the S2 file, 0 in each sibling)
 note is the `seq` op's `pre:`, the `{op, pre}` form `_ctor_op` already accepts, never a
 `lit:` block — a `lit:` cannot cancel the leading newline the next `ops:` group emits.
 
-⛔ `distance_families` 10/16 is missing `s2cellset` AND `h3indexset`, `quadbinset`,
-`posechainset`, `pcpointset`, `pcpatchset` — a set-type-wide gap, NOT an S2 one; reading
+⛔ `distance_families` 11/16 is missing `s2cellset` AND `h3indexset`, `quadbinset`,
+`pcpointset`, `pcpatchset` — a set-type-wide gap, NOT an S2 one; reading
 it as one over-counts the cell work.
 ⛔ `tiling_families` names `th3index` and `quadbin` on their temporal-type file
 (253/353) beside their `_boxops` entry, and names S2 through `s2cell_boxops` alone.
@@ -665,17 +666,21 @@ plain = the file exists but is still hand-maintained.
 |---|---|---|---|---|---|---|---|---|---|---|
 | cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
 | npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
-| pose (100) | **104** | 105 | **108** | **109** | 110 | **111** | 112 | **114** | **116** | 107 |
+| pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | 112 | **114** | **116** | 107 |
+| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | — | **564** | — | — |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
 | quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
 | s2cell (600) | **604** | 605 | **608** | **609** | — | **611** | **612** | **614** | **622**·**623** | **607** |
 
 Reading the table:
-- **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the
-  `subtypes:` `files:` track (§3): cbuffer, npoint, pose, rgeo (`[compops, topops,
-  posops, indexes]`) and h3, quadbin, s2cell (`[compops, posops, topops, spatialrels,
-  gist, spgist]` — the three cell families declare one and the same list).
+- **`compops`/`topops`/`posops` are generated for every derived family, and `idx` for
+  every one but posechain,** via the `subtypes:` `files:` track (§3): cbuffer and
+  rgeo (`[compops, topops, posops, indexes]`), npoint (`[compops, posops, topops,
+  spatialrels, indexes]`), pose (`[compops, topops, posops,
+  distance, indexes]`), posechain (`[compops, topops, posops, distance]`) and h3,
+  quadbin, s2cell (`[compops, posops, topops, spatialrels, gist, spgist]` — the three
+  cell families declare one and the same list).
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin,
   s2cell** via the whole-file `aggregate_families` axis (§4b), not the `subtypes:`
   track (`--gaps`: `aggregate_families` 20/20, full coverage).
@@ -719,8 +724,9 @@ Reading the table:
   `eCovers`/`aCovers` take the geometry first only, and `eTouches`/`aTouches` have
   no direction between two values of the family. A cell-index family, whose value
   is a boundary polygon, omits the flag and keeps all three directions.
-- **`spatialfuncs` and `distance`** are generated for no family — no template
-  exists; hand everywhere.
+- **`spatialfuncs`** is generated for no family — no template exists; hand
+  everywhere. **`distance`** is generated for pose and posechain by
+  `distance.sql.tmpl`, and hand-written for cbuffer, npoint and rgeo.
 - **`boxops`** (the box-cast `.in.sql` file holding `spans`/`splitNSpans`/
   `splitEachNSpans`, not the C dispatcher) is generated via the `tiling_families`
   axis (reference-block entries, no dedicated template) for **h3 (257)**,
@@ -787,10 +793,8 @@ its last edit:
   reads a patch as the `MULTIPOINT` of the positions its points occupy, and
   `tpcpatch_to_tgeometry` lifts that over time — so the manifest line rests on a
   MEOS entry rather than on a cast chain that already existed.
-- `distance_families`, **10/16** of the value-domain types: `posechainset`,
-  `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`. `posechainset` is
-  deliberate and `setfamilies.yaml` says so in place — a pose chain has no
-  distance function, so the set deploys none.
+- `distance_families`, **11/16** of the value-domain types: `h3indexset`, `quadbinset`,
+  `s2cellset`, `pcpointset`, `pcpatchset`.
   A family whose `setDistance` reads an earth model names its operator procedure in its
   manifest entry, `procedure` with one C symbol per direction in `procsyms`: the geo set family
   declares `setDistanceOpr` after each `setDistance` of its geometry and geography pairs, and its
@@ -1050,7 +1054,7 @@ column names the `manifest.d/` key) · ✗ HAND = hand-maintained.
 | BBox Ops · Topological | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/topop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Position | ✓ GEN (ordered sets only) | ✓ GEN | ✓ GEN | `manifest.d/posop_families.yaml` · `span_families` (005/009) |
 | BBox Ops · Splitting | ✓ GEN (`spans`/`splitNSpans`/`splitEachNSpans` live in `003_span.in.sql`) | ✓ GEN | ✓ GEN | `span_families` (003/007 entries) |
-| Distance | ✓ GEN (metric sets only) — `--gaps` 10/16, missing `posechainset`, `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`; the denominator is `numset` ∪ `timeset` ∪ `spatialset`, and the spatial families answer through the `SpatialSet<T>` override of §9.1b | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
+| Distance | ✓ GEN (metric sets only) — `--gaps` 11/16, missing `h3indexset`, `quadbinset`, `s2cellset`, `pcpointset`, `pcpatchset`; the denominator is `numset` ∪ `timeset` ∪ `spatialset`, and the spatial families answer through the `SpatialSet<T>` override of §9.1b | ✓ GEN | ✓ GEN | `manifest.d/distance_families.yaml` · `span_families` (005/009) |
 | Comparisons | ✓ GEN | ✓ GEN | ✓ GEN | `manifest.d/comparison_families.yaml` (`set` family entries) + `manifest.d/hash_families.yaml` · `span_families` (003/007) |
 | Aggregations | ✓ GEN — the `extent` aggregates over sets in `015_span_aggfuncs.in.sql`, `setUnion` in `001_set.in.sql`, and the per-family `setUnion` regions | ✓ GEN | ✓ GEN | `span_families` (015 entry + `set_aggregations` + the per-family `*set_setunion` entries) |
 | Indexing | ✓ GEN (span-basetype sets only, §9.2) | ✓ GEN | ✓ GEN | `span_families` (011/012/013 entries) |
@@ -1110,7 +1114,7 @@ flags the per-surface set axes implement as deployment gates.
 |---|---|
 | `ordered` | the base has a SEMANTIC total order (int, bigint, float, text, date, timestamptz) — **this flag is what decides whether position operators are emitted at all**; the 10 unordered bases get none |
 | `posops_spelling` | `value` = `<< >> &< &>` (numbers + text) · `time` = `<<# #>> &<# #&>` (date + timestamptz); omitted when not ordered |
-| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/cbufferset) — the gate of `manifest.d/distance_families.yaml` |
+| `metric` | `<->` / `setDistance` is deployed (all ordered bases except text, plus geomset/geogset/npointset/poseset/posechainset/cbufferset) — the gate of `manifest.d/distance_families.yaml` |
 | `spatial` | the set STORES A BOUNDING BOX and carries the SRS section (§9.3). ⛔ NOT `spatialset_type()`, which answers whether the elements carry an SRID: pcpointset/pcpatchset are spatial sets that store no box, so they are `false` here |
 
 ### 9.7 What the `span_families:` axis encodes
