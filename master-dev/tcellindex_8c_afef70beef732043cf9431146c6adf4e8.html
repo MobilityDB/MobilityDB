@@ -208,7 +208,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of edges </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tmin</td><td>Parameter at which the path entered the cell </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">entry</td><td>Mask of the edges the path entered the cell through, bit <code>i</code> for the edge from vertex <code>i</code>, which it never leaves through: a line does not cross back over the tile boundary it has just crossed </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">edge</td><td>When not <code>NULL</code>, the edge crossed at the exit, the one from vertex <code>edge</code> to the next vertex </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">edge</td><td>When not <code>NULL</code>, the edge crossed at the exit, the one from vertex <code>edge</code> to the next vertex (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

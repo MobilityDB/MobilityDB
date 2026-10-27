@@ -127,8 +127,8 @@ $(function() {
 <p>Transition function of the aggregate testing whether rasters lie on the same grid. </p>
 <p >The aggregate of PostGIS's <code>ST_SameAlignment(raster)</code>, in the shape of <a class="el" href="group__meos__setspan__agg_ga582616a855237359cde137e8731a8de3.html#ga582616a855237359cde137e8731a8de3" title="Transition function for set union aggregate of sets.">set_union_transfn</a>: the state keeps the grid of the first raster and whether every raster read is aligned with it, so a raster is tested only while every one before it is aligned. A NULL raster leaves the state as it is, and two rasters in different reference systems raise an error </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

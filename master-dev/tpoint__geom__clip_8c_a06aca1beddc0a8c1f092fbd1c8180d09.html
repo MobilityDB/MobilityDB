@@ -222,10 +222,10 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">x,y</td><td>Point </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">edges,nedges</td><td>Edges the index is built over, in its own order </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>Index over the boxes of those edges, or <code>NULL</code> to scan (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Greatest x the edges reach, which bounds the ray </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">reach</td><td>Widest distance at which an end of an edge is read as lying on the ray, which makes the answer the one the scan gives: the widest rounding of an edge, or of the radius of an arc, the edges carry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">results</td><td>Array the search collects its ids into, made by <a class="el" href="group__meos__temporal__box__index_ga7bf70c905fcb1f1f1cf6eb5a655f1c2c.html#ga7bf70c905fcb1f1f1cf6eb5a655f1c2c" title="Return an array collecting the ids an in-memory index answers.">index_result_create</a>, or <code>NULL</code> when <code>rtree</code> is <code>NULL</code> (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">vertex</td><td>True if the point is an input vertex </td></tr>
   </table>
   </dd>

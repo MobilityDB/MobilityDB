@@ -117,7 +117,7 @@ $(function() {
 <p>Final function of the aggregate summarizing the pixels of rasters. </p>
 <p >The mean is the sum over the count and the standard deviation the square root of the sum of squared deviations over the count, as PostGIS's <code>RASTER_summaryStats_finalfn</code> takes them when every pixel is read. The state is freed, as <a class="el" href="group__meos__raster__base__agg_gac6e25a5f1fcb150c369318fc25d3c91e.html#gac6e25a5f1fcb150c369318fc25d3c91e" title="Final function of the aggregate testing whether rasters lie on the same grid.">raster_same_alignment_finalfn</a> frees its own </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Aggregate state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Aggregate state (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

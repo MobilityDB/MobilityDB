@@ -192,7 +192,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Array of new values </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">crossings</td><td>True if turning points are added in the segments when aggregating temporal value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the values array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function used when aggregating temporal values, may be NULL for the merge aggregate function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function used when aggregating temporal values (accepts <code>NULL</code>) for the merge aggregate function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">newcount</td><td>Number of elements in the output array </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">tofree</td><td>Array of values that must be freed </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">nfree</td><td>Number of values that must be freed </td></tr>

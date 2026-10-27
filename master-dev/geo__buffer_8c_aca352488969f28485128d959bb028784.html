@@ -407,7 +407,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">own</td><td>Locator of the geometry the piece bounds </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">inverted</td><td>True where the answer lies on the side the geometry does not cover </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">deferred</td><td>Where non-NULL, the side is not read here but asked there, for <a class="el" href="geo__buffer_8c_aa1efa03d7f454f132bb0c6afa23330f7.html#aa1efa03d7f454f132bb0c6afa23330f7" title="Read the side the answer lies on of the selected pieces the walk consults it for.">buffer_frame_where_read()</a> to read where the walk consults it </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">rings</td><td>The rings of the geometry the piece bounds, or NULL </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">rings</td><td>The rings of the geometry the piece bounds (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ring</td><td>The ring the piece is cut from, -1 where it is not known </td></tr>
   </table>
   </dd>

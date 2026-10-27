@@ -206,7 +206,7 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">seq1,seq2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> sequence values to be aggregated </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function, may be NULL for the merge aggregate function </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">func</td><td>Function, NULL for the merge aggregate function (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">crossings</td><td>True if turning points are added in the segments </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>Array on which the pointers of the newly constructed ranges are stored </td></tr>
   </table>

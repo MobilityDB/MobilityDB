@@ -777,7 +777,7 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">g1,g2</td><td>Geometries </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ops</td><td>Operands of the relationship the matrix answers a step of, NULL where the matrix is asked for on its own </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>Query the matrix answers, NULL for the whole matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>Query the matrix answers, NULL for the whole matrix (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">meet</td><td>True where the caller has found that the geometries share a point, which settles that neither is empty and that their extents are not apart </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>The matrix, which matches every pattern of <code>q</code> exactly as the whole matrix does; where <code>q</code> is NULL it is the whole matrix </td></tr>
   </table>

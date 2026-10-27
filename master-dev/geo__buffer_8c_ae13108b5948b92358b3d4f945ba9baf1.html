@@ -396,8 +396,8 @@ $(function() {
 <p>Return the set of points a sweep covers from its surfaces, as <a class="el" href="geo__buffer_8c_aaa1c6aa347ca4bf8f5cc1bf02b40d62f.html#aaa1c6aa347ca4bf8f5cc1bf02b40d62f" title="Return the region rings an arrangement answers bound, as a curve polygon where it is one surface and ...">buffer_surfaces_from_rings</a> answers them, its linework and its points: the one kind there is, else the collection of them; <code>NULL</code> where there is nothing. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">region</td><td>The surfaces, owned by the answer, or <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lout</td><td>The pieces of linework no surface covers, or <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">region</td><td>The surfaces, owned by the answer (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">lout</td><td>The pieces of linework no surface covers (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pts,pkeep,npts</td><td>The points, and whether each is kept </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference identifier </td></tr>
   </table>

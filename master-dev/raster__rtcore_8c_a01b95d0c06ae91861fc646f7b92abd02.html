@@ -324,10 +324,10 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to warp </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Target reference system, or the subject's own to keep it </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">coord_op</td><td>Coordinate operation from the system of the subject to the target system, as a PROJ string, or NULL to let GDAL derive it </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">scale_x,scale_y</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> size in the units of the target system, or NULL to let the warp choose it </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">grid_x,grid_y</td><td>Point of the target system a grid line of the result passes through, or NULL to let the warp place the grid </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">skew_x,skew_y</td><td>Skew of the result, or NULL for none </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">coord_op</td><td>Coordinate operation from the system of the subject to the target system, as a PROJ string, or NULL to let GDAL derive it (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale_x,scale_y</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> size in the units of the target system, or NULL to let the warp choose it (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">grid_x,grid_y</td><td>Point of the target system a grid line of the result passes through, or NULL to let the warp place the grid (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">skew_x,skew_y</td><td>Skew of the result, or NULL for none (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">max_err</td><td>Error in input pixels the warp may commit, 0 for none </td></tr>
   </table>

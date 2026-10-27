@@ -168,8 +168,8 @@ $(function() {
 <p>Transition function for temporal count of temporal values over a moving window. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, may be <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> value (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">interv</td><td><a class="el" href="structInterval.html">Interval</a> @csqlfn <a class="el" href="group__mobilitydb__temporal__agg_ga87c678459ada9a1c7d21e9704a9d31cc.html#ga87c678459ada9a1c7d21e9704a9d31cc" title="Transition function for moving window count aggregation for temporal values @sqlfn wCountTransition()...">Temporal_wcount_transfn()</a> @csqlaggfn #wCountTransition() </td></tr>
   </table>
   </dd>

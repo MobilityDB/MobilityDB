@@ -127,8 +127,8 @@ $(function() {
 <p>Combine function of the aggregate summarizing the pixels of rasters. </p>
 <p >The counts, sums, smallest and largest values are combined as they are, and the running means and sums of squared deviations of the two states by the pairwise formula of Chan, Golub and LeVeque, so the standard deviation of the combined state is that of every pixel the two have read. PostGIS's <code>ST_SummaryStatsAgg</code> has no combine function. Two states of different bands, or one leaving nodata out and one counting it, raise an error </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state1</td><td>Current aggregate state </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">state2</td><td>Aggregate state to combine with the first one </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state1</td><td>Current aggregate state (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state2</td><td>Aggregate state to combine with the first one (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

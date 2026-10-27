@@ -764,7 +764,7 @@ $(function() {
 <p >Neither geometry meets the other, so the interior and the boundary of each fall entirely in the exterior of the other, each keeping its own dimension, and the two exteriors meet in dimension 2. An empty geometry contributes nothing. Only the cells the query reads are set, and the two boundary cells last and only where the others leave the query undecided: the dimension of the boundary of a linear geometry reads the parity of all its endpoints, which a query answered by the interiors does not pay </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">g1,g2</td><td>Geometries </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>Query, NULL for the whole matrix </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">q</td><td>Query, NULL for the whole matrix (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">m</td><td>Matrix, initialized by the caller </td></tr>
   </table>
   </dd>

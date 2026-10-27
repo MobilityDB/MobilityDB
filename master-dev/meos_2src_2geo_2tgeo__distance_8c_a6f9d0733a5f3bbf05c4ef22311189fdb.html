@@ -272,7 +272,7 @@ $(function() {
 <p >The buckets let a swept-capsule unit skip whole groups of edges that are farther than the running minimum, turning the per-unit edge scan from O(edges) into roughly O(sqrt(edges) + matches) — the geometry's overall bounding box is too coarse for large coastal polygons, but the bucket boxes are tight. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">segs</td><td>Edges </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">face</td><td>Face of each edge, or NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">face</td><td>Face of each edge (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">n</td><td>Number of edges </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gxmin,gymin,gxmax,gymax</td><td>Bounding box of the edges </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">sorted</td><td>Array of <code>n</code> edges receiving them in their Morton order </td></tr>

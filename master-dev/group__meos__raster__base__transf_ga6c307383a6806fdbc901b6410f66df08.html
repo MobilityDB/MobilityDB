@@ -165,10 +165,10 @@ $(function() {
 <p >The bands kept are read in turn against a mask the geometry is burnt into, as the PostGIS <code>ST_Clip</code> reads them. A pixel the geometry does not cover answers the nodata value of its band: the value <code>nodata</code> states, one for every band or one per band with the last standing for the bands after it, or otherwise the nodata value of the band, and the smallest value its pixel type holds where the band states none. When <code>crop</code> is true the result carries the extent the two share, and otherwise it carries the extent of the subject </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to clip </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">bands</td><td>Numbers of the bands to keep, starting at 1, in the order of the result, or NULL for every band </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bands</td><td>Numbers of the bands to keep, starting at 1, in the order of the result, or NULL for every band (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nbands</td><td>Number of elements of <code>bands</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry to clip it to </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>Nodata values of the bands of the result, or NULL for the nodata value of each band </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>Nodata values of the bands of the result, or NULL for the nodata value of each band (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nnodata</td><td>Number of elements of <code>nodata</code> </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">crop</td><td>True to reduce the result to the extent the raster and the geometry share </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">touched</td><td>True to keep every pixel the geometry touches, false to keep the pixels whose centre it covers </td></tr>

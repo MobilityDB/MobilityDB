@@ -145,9 +145,9 @@ $(function() {
 <p>Release the resources a raquet ingest holds. </p>
 <p >Every error path calls this before <a class="el" href="group__meos__misc_gae25eac26575ca0d33b0667ca0c635278.html#gae25eac26575ca0d33b0667ca0c635278" title="Report an error at the given level/code with a printf-style message.">meos_error</a>, because the error handler a host installs need not return to the caller: the PostgreSQL handler leaves through <code>ereport(ERROR)</code> and the standalone one exits, so a release written after the report never runs and the dataset leaks. Reporting last is the idiom the rest of MEOS follows. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Open GDAL dataset, or NULL </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">buf</td><td>Band buffer, or NULL </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Open GDAL dataset (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">buf</td><td>Band buffer (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

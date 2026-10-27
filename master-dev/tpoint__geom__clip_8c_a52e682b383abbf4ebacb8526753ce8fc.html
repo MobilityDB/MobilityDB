@@ -222,7 +222,7 @@ $(function() {
 <p>Compute the intersection intervals of a trajectory segment with an array of polygon edges. </p>
 <p >The ray-casting cannot use the edges filtered by the segment box, since an edge outside it still crosses the ray and the even-odd containment test would break. It is given the full array and its own R-tree query instead, the +x ray of <a class="el" href="tpoint__geom__clip_8c_a48ced82b517564f3fbf7e57ebedb3614.html#a48ced82b517564f3fbf7e57ebedb3614" title="Return true if a point is located in a polygon.">point_in_polygon_impl</a>, which excludes only the edges that lie left of the point or off the ray's height and so is identical to the full scan </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>R-tree over <code>all_edges</code>, or NULL to scan them all </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rtree</td><td>R-tree over <code>all_edges</code>, or NULL to scan them all (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmax</td><td>Geometry bounding-box maximum abscissa, which bounds the ray </td></tr>
   </table>
   </dd>

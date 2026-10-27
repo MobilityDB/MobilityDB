@@ -151,8 +151,8 @@ $(function() {
 <p >Returns the next id in order of increasing distance to the query box. When <code>id_out</code> or <code>dist_out</code> is not <code>NULL</code> it receives the id and its distance. An id whose box has no valid distance to the query (e.g. disjoint time extents for temporal box types) is reported last with an infinite distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cursor</td><td>The cursor previously opened with <a class="el" href="group__meos__temporal__box__index_gaa0c0a7cc751369700b9500e7190cd771.html#gaa0c0a7cc751369700b9500e7190cd771" title="Open a nearest-neighbour cursor that yields the ids stored in an RTree in order of increasing distanc...">rtree_nn_cursor_open</a> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">id_out</td><td>Receives the id of the next neighbour, or <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dist_out</td><td>Receives the distance of the next neighbour, or <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">id_out</td><td>Receives the id of the next neighbour (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dist_out</td><td>Receives the distance of the next neighbour (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

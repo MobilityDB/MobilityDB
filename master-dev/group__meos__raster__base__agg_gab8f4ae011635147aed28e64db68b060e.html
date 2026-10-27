@@ -117,7 +117,7 @@ $(function() {
 <p>Final function of the aggregate uniting rasters. </p>
 <p >The bands of the union, a mean or a range computed from its two parts as PostGIS's <code>RASTER_union_finalfn</code> computes them. The state is freed, as <a class="el" href="group__meos__raster__base__agg_gac6e25a5f1fcb150c369318fc25d3c91e.html#gac6e25a5f1fcb150c369318fc25d3c91e" title="Final function of the aggregate testing whether rasters lie on the same grid.">raster_same_alignment_finalfn</a> frees its own. A NULL state, an aggregate over no raster, answers NULL </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Aggregate state </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>Aggregate state (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

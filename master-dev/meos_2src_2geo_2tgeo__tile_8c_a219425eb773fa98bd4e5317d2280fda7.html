@@ -164,7 +164,7 @@ $(function() {
 <p>Read the origin of a spatial grid as the point the grid state places its tiles from. </p>
 <p >An origin without Z places the Z of the grid at 0, and a missing origin is the point at the origin of the coordinates. The grid reads the Z of the origin only over a value with Z, as <a class="el" href="meos_2src_2geo_2tgeo__tile_8c_aecd61ebb50df1379a07f88b94dffe0d2.html#aecd61ebb50df1379a07f88b94dffe0d2" title="Create the initial state that persists across multiple calls of the function.">stbox_tile_state_make</a> reads it </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin validated by <a class="el" href="meos_2src_2geo_2tgeo__tile_8c_a2253fd676784bd369c012c5401fc9764.html#a2253fd676784bd369c012c5401fc9764" title="Ensure that the origin of a spatial grid fits the value the grid is laid over.">ensure_valid_grid_origin</a>, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin validated by <a class="el" href="meos_2src_2geo_2tgeo__tile_8c_a2253fd676784bd369c012c5401fc9764.html#a2253fd676784bd369c012c5401fc9764" title="Ensure that the origin of a spatial grid fits the value the grid is laid over.">ensure_valid_grid_origin</a> (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">pt</td><td>Point </td></tr>
   </table>
   </dd>

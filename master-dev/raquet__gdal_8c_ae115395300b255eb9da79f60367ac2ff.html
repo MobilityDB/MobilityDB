@@ -152,7 +152,7 @@ $(function() {
 <p >The band data type must be one of Byte / Int16 / Int32 / Float32 / Float64; the band nodata value (if any) is carried into the tile. When <code>quadbin</code> is 0 the tile identifier is derived from the dataset georeferencing. This function takes over <code>ds</code> and the <code>/vsimem/</code> file <code>vpath</code>, releasing both on every path, so that the release still happens when a report does not return; <code>label</code> names the source in error messages. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ds</td><td>Open GDAL dataset, taken over by this function </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">vpath</td><td><code>/vsimem/</code> path backing <code>ds</code>, or NULL for a real file (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">quadbin</td><td>CARTO QUADBIN cell, or 0 to derive it </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">label</td><td>Source name used in error messages </td></tr>
   </table>

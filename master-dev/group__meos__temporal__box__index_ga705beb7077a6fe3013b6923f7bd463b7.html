@@ -151,8 +151,8 @@ $(function() {
 <p >Returns the next id in order of increasing distance to the query box. When <code>id_out</code> or <code>dist_out</code> is not <code>NULL</code> it receives the id and its distance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cursor</td><td>The cursor previously opened with <a class="el" href="group__meos__temporal__box__index_gac0b74b016f58b09a0b05e88267c0b7ff.html#gac0b74b016f58b09a0b05e88267c0b7ff" title="Open a nearest-neighbour cursor that yields the ids stored in an SPTree in order of increasing distan...">sptree_nn_cursor_open</a> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">id_out</td><td>Receives the id of the next neighbour, or <code>NULL</code> </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">dist_out</td><td>Receives the distance of the next neighbour, or <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">id_out</td><td>Receives the id of the next neighbour (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">dist_out</td><td>Receives the distance of the next neighbour (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

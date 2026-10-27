@@ -140,8 +140,8 @@ $(function() {
 <p >The aggregate of PostGIS's <code>ST_SummaryStatsAgg</code>, keeping what PostGIS's <code>RASTER_summaryStats_transfn</code> keeps: the count, the sum, the smallest and the largest value of the pixels read, and the running mean and sum of squared deviations from it that <code>rt_band_get_summary_stats</code> updates pixel by pixel across rasters, from which the final function takes the standard deviation in one pass. Every pixel is read, as <a class="el" href="group__meos__raster__base__accessor_ga9912da430857911ff3a45791b777a8d2.html#ga9912da430857911ff3a45791b777a8d2" title="Return what the pixels of a raster band amount to.">raster_summary_stats</a> reads them, so the statistics are exact rather than estimated from a sample.</p>
 <p >The band and whether nodata is left out are those of the first raster read. A NULL raster leaves the state as it is, and a band the raster lacks raises an error, as it does for <a class="el" href="group__meos__raster__base__accessor_ga9912da430857911ff3a45791b777a8d2.html#ga9912da430857911ff3a45791b777a8d2" title="Return what the pixels of a raster band amount to.">raster_summary_stats</a>, where PostGIS skips the raster </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Number of the band, starting at 1 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">exclude_nodata</td><td>True to leave the pixels the band states as nodata out of the statistics, false to count them as the values they hold </td></tr>
   </table>

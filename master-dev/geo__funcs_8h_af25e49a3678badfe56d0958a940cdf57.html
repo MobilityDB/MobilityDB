@@ -324,7 +324,7 @@ $(function() {
 <p>Return how two edges leaving a point of both are ordered counterclockwise from the positive x axis, decided exactly. </p>
 <p >Each direction is that of <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a4a9eaef965ba84cae6eafdf698d5ea9c.html#a4a9eaef965ba84cae6eafdf698d5ea9c">edge_direction_exact</a>. Two edges leaving in one direction are ordered by how they bend from it: a segment runs straight, and an arc bends toward its centre, which lies on its left where it leaves the point counterclockwise or arrives at it clockwise, so that it comes after a segment counterclockwise. The ordering mirrors that of the intervals the arrangement reads first (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a6530b3564d192312a29ef75e864473a6.html#a6530b3564d192312a29ef75e864473a6" title="Return where the circles of two arcs meet and whether each meeting lies within both arcs,...">arcarc_meet_exact</a> computes on the same centres) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">e1,e2</td><td>Edges holding the point; NULL for the positive x axis </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">e1,e2</td><td>Edges holding the point; NULL for the positive x axis (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ccw1,ccw2</td><td>Whether each arc turns counterclockwise </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">out1,out2</td><td>Whether each edge leaves the point rather than arrives at it </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">vx,vy</td><td>The point, an end of each edge or a vertex on it </td></tr>

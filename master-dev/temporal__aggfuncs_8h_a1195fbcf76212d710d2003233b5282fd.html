@@ -163,7 +163,7 @@ $(function() {
 <p>Return in the last two arguments the function and the crossings with which <a class="el" href="meos_2src_2temporal_2temporal__aggfuncs_8c_a489cdcb188b3f37c2012228865282bf1.html#a489cdcb188b3f37c2012228865282bf1" title="Generic combine function for aggregating temporal values.">temporal_tagg_combinefn</a> combines two states of a temporal minimum, maximum or sum aggregate, read from the type of their values. </p>
 <p >Validates, as <a class="el" href="meos_2src_2temporal_2temporal__aggfuncs_8c_ad320a369aae7e08546477cf603bbda19.html#ad320a369aae7e08546477cf603bbda19">ensure_same_skiplist_subtype</a> validates the subtype, that the states hold values of one type and that the aggregate takes it. The function is <code>NULL</code> when neither state holds a value, the combine then answering a state without calling it. Only the float minimum and maximum add the crossings, as their transitions do. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">state1,state2</td><td>Current aggregate states, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state1,state2</td><td>Current aggregate states (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">op</td><td>Operation of the aggregate </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">func</td><td>Function </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">crossings</td><td>True if turning points are added in the segments </td></tr>

@@ -127,8 +127,8 @@ $(function() {
 <p>Combine function of the aggregate uniting rasters. </p>
 <p >The union of the second state is united with the union of the first, part by part, by the pixel operation of the aggregate, the rasters read by the first state taken as read before those of the second: two counts are united by their sum. PostGIS's <code>ST_Union</code> has no combine function </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state1</td><td>Current aggregate state </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">state2</td><td>Aggregate state to combine with the first one </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state1</td><td>Current aggregate state (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">state2</td><td>Aggregate state to combine with the first one (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

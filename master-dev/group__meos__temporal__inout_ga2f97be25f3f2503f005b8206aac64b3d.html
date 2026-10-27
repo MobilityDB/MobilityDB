@@ -124,7 +124,7 @@ $(function() {
 <p>Return the WKB output variant flag corresponding to an endian encoding string. </p>
 <p >The result can be combined (with a bitwise OR) with the other WKB variant flags and passed to the <code>*_as_wkb</code> / <code>*_as_hexwkb</code> functions, so a caller can select the byte order from a textual value. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">endian</td><td>Endian encoding: an empty string (machine endianness), <code>"ndr"</code> (little-endian) or <code>"xdr"</code> (big-endian) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">endian</td><td>Endian encoding: an empty string (machine endianness), <code>"ndr"</code> (little-endian) or <code>"xdr"</code> (big-endian) (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>

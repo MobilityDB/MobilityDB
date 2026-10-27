@@ -198,10 +198,10 @@ $(function() {
 <p>Create the initial state that persists across multiple calls of the function. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point to split, may be <code>NULL</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> point to split (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Bounds for generating the multidimensional grid </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Tile sizes for the spatial dimensions in the units of the SRID, may be 0 for a time only grid </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Tile size for the temporal dimension as an interval, may be <code>NULL</code> for a space only grid </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Tile size for the temporal dimension as an interval, <code>NULL</code> for a space only grid (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Spatial origin of the tiles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Time origin of the tiles </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border, otherwise the upper border is assumed as outside of the box </td></tr>

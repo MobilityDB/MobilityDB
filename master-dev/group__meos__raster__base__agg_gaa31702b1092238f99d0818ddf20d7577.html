@@ -140,10 +140,10 @@ $(function() {
 <p >The aggregate of PostGIS's <code>ST_Union(raster)</code>, keeping per band the union built so far as PostGIS's <code>RASTER_union_transfn</code> keeps it: the union of the extents of the rasters read, each pixel the pixel operation of the pixels of the rasters holding a value there. A <code>MEAN</code> keeps a count and a sum and a <code>RANGE</code> a minimum and a maximum, which the final function reads.</p>
 <p >With <code>band</code> 0 every band is united, a band a raster lacks read as nodata; otherwise only that band, which every raster must hold. The band and the pixel operation are those of the first raster read. A NULL raster leaves the state as it is, rasters in different reference systems or on different grids raise an error, and so does a pixel operation outside those named, where PostGIS reads it as <code>LAST</code> </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">state</td><td>Current aggregate state, NULL before the first raster (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">band</td><td>Number of the band, starting at 1, or 0 for every band </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">uniontype</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> operation: <code>LAST</code>, <code>FIRST</code>, <code>MIN</code>, <code>MAX</code>, <code>COUNT</code>, <code>SUM</code>, <code>MEAN</code> or <code>RANGE</code>, regardless of case, or NULL for <code>LAST</code> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">uniontype</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> operation: <code>LAST</code>, <code>FIRST</code>, <code>MIN</code>, <code>MAX</code>, <code>COUNT</code>, <code>SUM</code>, <code>MEAN</code> or <code>RANGE</code>, regardless of case, or NULL for <code>LAST</code> (accepts <code>NULL</code>) </td></tr>
   </table>
   </dd>
 </dl>
