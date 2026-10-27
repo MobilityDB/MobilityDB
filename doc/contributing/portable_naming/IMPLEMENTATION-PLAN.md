@@ -47,6 +47,13 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   double nearest its radius by a polynomial of degree six, and every term of degree up to four
   reads as before. Branch `fix/enclosing-circle-is-the-exact-minimum` rewrites `34247bccf3` there,
   as the owner approved on 2026-10-19.
+- **A MEOS parameter that accepts `NULL` says so with the `@nullable` token of its own `@param`
+  entry**, outside the plan: the free-text notes reading "may be `NULL`" become the tag, the
+  Doxygen alias expands it, and `tools/scripts/check_nullable_params.py` with its baseline checks
+  it in CI. Branch `meos/nullable-tag` (commit `a69025fcc3` on master `71282af6fc`) rewrites
+  `0cbaf9817d` and `5e7da7e8d9` there, the `@param` notes of `func` in
+  `temporal_aggfuncs.c` and of `state` in `h3index_sets.c`, `quadbinset.c` and `s2cellset.c`,
+  as the owner decided on 2026-10-26.
 - **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
   plan: the shuffle of the smallest enclosing circle (`mec_shuffle` of
   `meos/src/geo/postgis_funcs.c`) draws from a generator of its own call instead of the C
