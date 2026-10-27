@@ -171,7 +171,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Report a liblwgeom notice through the MEOS error channel. </p>
-<p >A notice is advisory, so this handler returns as liblwgeom expects. </p>
+<p >A notice is advisory and accompanies an answer, so this handler reports it at level <code>NOTICE</code> with no error code, as the backend's <a class="el" href="mobilitydb_2src_2geo_2tgeo_8c_a20e7cc710936f4c08e5688efa5a30a54.html#a20e7cc710936f4c08e5688efa5a30a54" title="Output a notice message.">pg_notice</a> (<a class="el" href="mobilitydb_2src_2geo_2tgeo_8c.html" title="General functions for temporal geos.">mobilitydb/src/geo/tgeo.c</a>) and PostGIS's own report it, and returns as liblwgeom expects. The error number is left as it is. </p>
 
 </div>
 </div>

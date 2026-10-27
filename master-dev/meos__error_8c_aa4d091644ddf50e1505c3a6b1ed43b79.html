@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtabHL"><a class="navtab" href="meos__error_8c_aa4d091644ddf50e1505c3a6b1ed43b79.html#aa4d091644ddf50e1505c3a6b1ed43b79">default_error_handler</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos__error_8c_a9f602acc6e4275cd39cc028db5f0ed8f.html#a9f602acc6e4275cd39cc028db5f0ed8f">error_handler_errno</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__error_8c_a66fc95a1c436e1d75e892fb6e3fb074b.html#a66fc95a1c436e1d75e892fb6e3fb074b">error_handler_errno</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__error_8c_ab62143368d5ba3ff4c157f773810b963.html#ab62143368d5ba3ff4c157f773810b963">meos_check_for_interrupts</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__error_8c_a8f2b9daee62d1d2556445c0bed4a3689.html#a8f2b9daee62d1d2556445c0bed4a3689">MEOS_ERR_NO</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">meos_errno</a></td></tr>
@@ -94,6 +94,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_gaeb7ea3eefd3551c3db4f3297e1504fa9.html#gaeb7ea3eefd3551c3db4f3297e1504fa9">meos_initialize_noexit_error_handler</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__error_8c_aeee17c246b984602c840461d9c9f8c6e.html#aeee17c246b984602c840461d9c9f8c6e">MEOS_INTERRUPT_HANDLER</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos__error_8c_a4b21aadf241865ca351b8db10aace17b.html#a4b21aadf241865ca351b8db10aace17b">noexit_error_handler</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos__error_8c_a754ab130426286d742357308f1bf9d2f.html#a754ab130426286d742357308f1bf9d2f">StaticAssertDecl</a></td></tr>
         </table>
       </div>
    </td>
@@ -130,7 +131,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Default error handler function that prints the error message to stderr, sets the errcode, and exits if error level is equal to <code>ERROR</code> </p>
+<p>Default error handler function that prints the message to stderr and, for an error, records its code and exits. </p>
+<p >A message of a lower level than <code>ERROR</code> accompanies an answer, so it is printed and leaves the error number as it is </p>
 
 </div>
 </div>

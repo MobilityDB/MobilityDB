@@ -129,7 +129,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return a geometry/geography from its WKT representation (and optionally a SRID) </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >A text carrying an SRID, the EWKT form <a class="el" href="group__meos__geo__base__inout_ga30b02b5b5b332e9b6dc48b0f09da77a5.html#ga30b02b5b5b332e9b6dc48b0f09da77a5" title="Return a geometry from its Well-Known Text (WKT), Well-Known Binary (WKB) or GeoJSON representation.">geom_in</a> reads, is read with a warning, which leaves the error number as it is, and the SRID given replaces the one read, as PostGIS's <code>ST_GeomFromText</code> (<code>LWGEOM_from_text</code>) does </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">wkt</td><td>WKT string </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>SRID </td></tr>
