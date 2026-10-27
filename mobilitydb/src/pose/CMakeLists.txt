@@ -35,4 +35,5 @@ add_library(pg_pose OBJECT
   posechain.c
   tposechain.c
   tposechain_compops.c
+  tposechain_distance.c
   )

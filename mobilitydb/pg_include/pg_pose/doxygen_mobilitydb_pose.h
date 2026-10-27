@@ -175,6 +175,10 @@
  * @ingroup mobilitydb_posechain
  * @brief Transformation functions for temporal pose chains
  *
+ * @defgroup mobilitydb_posechain_dist Distance functions
+ * @ingroup mobilitydb_posechain
+ * @brief Distance functions for temporal pose chains
+ *
  * @defgroup mobilitydb_posechain_comp Comparison functions
  * @ingroup mobilitydb_posechain
  * @brief Comparison functions for temporal pose chains

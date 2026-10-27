@@ -1,0 +1,393 @@
+SELECT round(distance(geometry 'Point(1 0)', posechain 'PoseChain(Pose(Point(4 0),0))'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', posechain 'PoseChain(Pose(Point(4 0),0))'), 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(distance(posechain 'PoseChain(Pose(Point(4 0),0))', geometry 'Point(1 0)'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(nearestApproachDistance(posechain 'PoseChain(Pose(Point(4 0),0))', stbox 'STBOX X((1,-1),(3,1))'), 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' |=| posechain 'PoseChain(Pose(Point(4 0),0))', 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(4 0),0))' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(distance(posechain 'PoseChain(Pose(Point(0 0),0))', posechain 'PoseChain(Pose(Point(3 4),0))'), 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(geometry 'Point(1 0)' <-> posechain 'PoseChain(Pose(Point(4 0),0))', 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> posechain 'PoseChain(Pose(Point(4 0),0))', 6);
+ERROR:  operator does not exist: stbox <-> posechain
+LINE 1: SELECT round(stbox 'STBOX X((1,-1),(3,1))' <-> posechain 'Po...
+                                                   ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT round(posechain 'PoseChain(Pose(Point(4 0),0))' <-> geometry 'Point(1 0)', 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(4 0),0))' <-> stbox 'STBOX X((1,-1),(3,1))', 6);
+ERROR:  operator does not exist: posechain <-> stbox
+LINE 1: ...T round(posechain 'PoseChain(Pose(Point(4 0),0))' <-> stbox ...
+                                                             ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT round(posechain 'PoseChain(Pose(Point(0 0),0))' <-> posechain 'PoseChain(Pose(Point(3 4),0))', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(0 0),0))' <-> posechain 'PoseChain(Pose(Point(0 0),0))', 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(0 0),0.5))' <-> posechain 'PoseChain(Pose(Point(3 4),1.5))', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(posechain 'SRID=5676;PoseChain(Pose(Point(0 0),0))' <-> posechain 'SRID=5676;PoseChain(Pose(Point(3 4),0))', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> posechain 'PoseChain(Pose(Point(3 4 12), 1, 0, 0, 0))', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT round(geometry 'Point empty' <-> posechain 'PoseChain(Pose(Point(4 0),0))', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(4 0),0))' <-> geometry 'Point empty', 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT NULL::geometry <-> posechain 'PoseChain(Pose(Point(4 0),0))';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT posechain 'PoseChain(Pose(Point(4 0),0))' <-> NULL::stbox;
+ERROR:  operator does not exist: posechain <-> stbox
+LINE 1: SELECT posechain 'PoseChain(Pose(Point(4 0),0))' <-> NULL::s...
+                                                         ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+SELECT NULL::posechain <-> posechain 'PoseChain(Pose(Point(4 0),0))';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT posechain 'SRID=5676;PoseChain(Pose(Point(0 0),0))' <-> posechain 'PoseChain(Pose(Point(3 4),0))';
+ERROR:  Operation on mixed SRID
+SELECT geometry 'SRID=5676;Point(1 0)' <-> posechain 'PoseChain(Pose(Point(4 0),0))';
+ERROR:  Operation on mixed SRID
+SELECT round(tDistance(geometry 'Point(1 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(posechain 'PoseChain(Pose(Point(1 0),0))', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', geometry 'Point(1 0)'), 6);
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', posechain 'PoseChain(Pose(Point(1 0),0))'), 6);
+                                              round                                               
+--------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST, 3@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(
+  tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]',
+  tposechain '[PoseChain(Pose(Point(0 2),0))@2001-01-01, PoseChain(Pose(Point(4 2),0))@2001-01-05]'), 6);
+                              round                               
+------------------------------------------------------------------
+ [2@Mon Jan 01 00:00:00 2001 PST, 2@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
+                           astext                           
+------------------------------------------------------------
+ PoseChain(Pose(POINT(2 0),0))@Wed Jan 03 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(posechain 'PoseChain(Pose(Point(2 0),0))', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
+                           astext                           
+------------------------------------------------------------
+ PoseChain(Pose(POINT(2 0),0))@Wed Jan 03 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', geometry 'Point(2 0)'));
+                           astext                           
+------------------------------------------------------------
+ PoseChain(Pose(POINT(2 0),0))@Wed Jan 03 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', posechain 'PoseChain(Pose(Point(2 0),0))'));
+                           astext                           
+------------------------------------------------------------
+ PoseChain(Pose(POINT(2 0),0))@Wed Jan 03 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(nearestApproachInstant(
+  tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]',
+  tposechain '[PoseChain(Pose(Point(0 2),0))@2001-01-01, PoseChain(Pose(Point(4 2),0))@2001-01-05]'));
+                           astext                           
+------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT round(nearestApproachDistance(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(posechain 'PoseChain(Pose(Point(2 0),0))', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', geometry 'Point(2 0)'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX X((1,-1),(3,1))'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', posechain 'PoseChain(Pose(Point(2 0),0))'), 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])'), 6);
+ round 
+-------
+     8
+(1 row)
+
+SELECT round(nearestApproachDistance(stbox 'STBOX XT(((10,-1),(12,1)),[2001-01-01, 2001-01-03])', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'), 6);
+ round 
+-------
+     8
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX X((10,-1),(12,1))'), 6);
+ round 
+-------
+     6
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', stbox 'STBOX XT(((10,-1),(12,1)),[2001-02-01, 2001-02-02])'), 6);
+ round 
+-------
+      
+(1 row)
+
+SELECT round(nearestApproachDistance(
+  tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]',
+  tposechain '[PoseChain(Pose(Point(0 2),0))@2001-01-01, PoseChain(Pose(Point(4 2),0))@2001-01-05]'), 6);
+ round 
+-------
+     2
+(1 row)
+
+SELECT ST_AsText(shortestLine(geometry 'Point(2 0)', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
+      st_astext      
+---------------------
+ LINESTRING(2 0,2 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(posechain 'PoseChain(Pose(Point(2 0),0))', tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]'));
+      st_astext      
+---------------------
+ LINESTRING(2 0,2 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', geometry 'Point(2 0)'));
+      st_astext      
+---------------------
+ LINESTRING(2 0,2 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]', posechain 'PoseChain(Pose(Point(2 0),0))'));
+      st_astext      
+---------------------
+ LINESTRING(2 0,2 0)
+(1 row)
+
+SELECT ST_AsText(shortestLine(
+  tposechain '[PoseChain(Pose(Point(0 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0))@2001-01-05]',
+  tposechain '[PoseChain(Pose(Point(0 2),0))@2001-01-01, PoseChain(Pose(Point(4 2),0))@2001-01-05]'));
+      st_astext      
+---------------------
+ LINESTRING(0 0,0 2)
+(1 row)
+
+SELECT round(distance(posechain 'PoseChain(Pose(Point(1 0),0), Pose(Point(1 0),0))', geometry 'Point(5 0)'), 6);
+ round 
+-------
+     3
+(1 row)
+
+SELECT round(distance(posechain 'PoseChain(Pose(Point(1 0),0), Pose(Point(1 0),0))',
+  posechain 'PoseChain(Pose(Point(1 3),0), Pose(Point(1 1),0))'), 6);
+ round 
+-------
+     4
+(1 row)
+
+SELECT asText(round(tDistance(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', geometry 'Point(1 0)'), 6));
+                                    astext                                    
+------------------------------------------------------------------------------
+ Interp=Step;[0@Mon Jan 01 00:00:00 2001 PST, 4@Fri Jan 05 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', geometry 'Point(1 0)') = tDistance(tpose(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]'), geometry 'Point(1 0)');
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tDistance(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', tposechain '[PoseChain(Pose(Point(0 2),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 2),0), Pose(Point(1 0),0))@2001-01-05]') = tDistance(tpose(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]'), tpose(tposechain '[PoseChain(Pose(Point(0 2),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 2),0), Pose(Point(1 0),0))@2001-01-05]'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(nearestApproachInstant(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', geometry 'Point(3 0)'));
+                                    astext                                     
+-------------------------------------------------------------------------------
+ PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', tposechain '[PoseChain(Pose(Point(0 2),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 2),0), Pose(Point(1 0),0))@2001-01-05]'), 6) = round(nearestApproachDistance(tpose(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]'), tpose(tposechain '[PoseChain(Pose(Point(0 2),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 2),0), Pose(Point(1 0),0))@2001-01-05]')), 6);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT ST_AsText(shortestLine(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]', geometry 'Point(3 5)')) = ST_AsText(shortestLine(tpose(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01, PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]'), geometry 'Point(3 5)'));
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT round(setDistance(posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(4 0), 0))"}',
+  posechain 'PoseChain(Pose(Point(6 0), 0))'), 6);
+ round 
+-------
+     2
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(6 0), 0))' <->
+  posechainset '{"PoseChain(Pose(Point(0 0), 0))", "PoseChain(Pose(Point(4 0), 0))"}', 6);
+ round 
+-------
+     2
+(1 row)
+
+SELECT round(posechainset '{"PoseChain(Pose(Point(0 0), 0))"}' <->
+  posechainset '{"PoseChain(Pose(Point(0 5), 0))"}', 6);
+ round 
+-------
+     5
+(1 row)
+
+SELECT asText(tposechainSeqSetGaps(ARRAY[
+  tposechain 'PoseChain(Pose(Point(0 0),0))@2001-01-01',
+  tposechain 'PoseChain(Pose(Point(10 0),0))@2001-01-02'], NULL, 1.0));
+                                                                  astext                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST], [PoseChain(Pose(POINT(10 0),0))@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tposechainSeqSetGaps(ARRAY[
+  tposechain 'PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01',
+  tposechain 'PoseChain(Pose(Point(0.5 0),0), Pose(Point(1 0),0))@2001-01-02'], NULL, 1.0));
+                                                                                     astext                                                                                     
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Interp=Step;{[PoseChain(Pose(POINT(0 0),0),Pose(POINT(1 0),0))@Mon Jan 01 00:00:00 2001 PST, PoseChain(Pose(POINT(0.5 0),0),Pose(POINT(1 0),0))@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(appendInstant(temp, 'linear', 1.0, interval '2 days')) FROM (VALUES
+  (tposechain 'PoseChain(Pose(Point(0 0),0))@2001-01-01'),
+  (tposechain 'PoseChain(Pose(Point(10 0),0))@2001-01-02')) t(temp);
+                                                            astext                                                             
+-------------------------------------------------------------------------------------------------------------------------------
+ {[PoseChain(Pose(POINT(0 0),0))@Mon Jan 01 00:00:00 2001 PST], [PoseChain(Pose(POINT(10 0),0))@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(appendInstant(temp, 'linear', 1.0, interval '2 days')) FROM (VALUES
+  (tpose 'Pose(Point(0 0),0)@2001-01-01'),
+  (tpose 'Pose(Point(10 0),0)@2001-01-02')) t(temp);
+                                                 astext                                                  
+---------------------------------------------------------------------------------------------------------
+ {[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST], [Pose(POINT(10 0),0)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+

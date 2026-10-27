@@ -194,6 +194,10 @@
  * @ingroup meos_posechain
  * @brief Restriction functions for temporal pose chains
  *
+ * @defgroup meos_posechain_dist Distance functions
+ * @ingroup meos_posechain
+ * @brief Distance functions for temporal pose chains
+ *
  * @defgroup meos_posechain_comp Comparison functions
  * @ingroup meos_posechain
  * @brief Comparison functions for temporal pose chains
@@ -241,6 +245,10 @@
  * @defgroup meos_posechain_base_comp Comparison functions
  * @ingroup meos_posechain_base
  * @brief Comparison functions for static pose chains
+ *
+ * @defgroup meos_posechain_base_dist Distance functions
+ * @ingroup meos_posechain_base
+ * @brief Distance functions for static pose chains
  */
 
 /*****************************************************************************/
