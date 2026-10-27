@@ -5722,15 +5722,19 @@ arr_ring_within(const Arr *a, const uint32_t *rp, const uint32_t *roff,
 /*
  * The surfaces the rings bound: a ring lying within an odd number of the
  * others is a hole of the innermost of them, which lies within one ring
- * fewer; every other ring is a shell
+ * fewer; every other ring is a shell. A ring lies within another only where
+ * its box lies within the other's, so the rings asked of each other are the
+ * pairs whose boxes meet (#arr_box_pairs), each asked both ways
  */
 static ArrangeStatus
 arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
   const uint32_t *roff, int32_t *owner)
 {
-  double *box = palloc(sizeof(double) * 4 * Max(nrings, 1u));
+  double (*box)[4] = palloc(sizeof(double[4]) * Max(nrings, 1u));
   for (uint32_t i = 0; i < nrings; i++)
-    arr_ring_box(a, rp, roff[i], roff[i + 1], &box[4 * i]);
+    arr_ring_box(a, rp, roff[i], roff[i + 1], box[i]);
+  uint32_t npairs;
+  ArrPair *pairs = arr_box_pairs((const double (*)[4]) box, nrings, &npairs);
   bool *mark = palloc0(sizeof(bool) * Max(a->nnodes, 1u));
   uint32_t *depth = palloc0(sizeof(uint32_t) * Max(nrings, 1u));
   /* The rings each lies within, as a list per ring */
@@ -5738,12 +5742,12 @@ arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
   uint32_t *in_x = palloc(sizeof(uint32_t) * cap);
   uint32_t *in_y = palloc(sizeof(uint32_t) * cap);
   ArrangeStatus st = ARR_ANSWERED;
-  for (uint32_t x = 0; x < nrings && st == ARR_ANSWERED; x++)
-    for (uint32_t y = 0; y < nrings && st == ARR_ANSWERED; y++)
+  for (uint32_t k = 0; k < npairs && st == ARR_ANSWERED; k++)
+    for (int way = 0; way < 2 && st == ARR_ANSWERED; way++)
     {
-      if (x == y)
-        continue;
-      const double *bx = &box[4 * x], *by = &box[4 * y];
+      uint32_t x = way ? pairs[k].j : pairs[k].i;
+      uint32_t y = way ? pairs[k].i : pairs[k].j;
+      const double *bx = box[x], *by = box[y];
       if (bx[0] < by[0] || bx[1] > by[1] || bx[2] < by[2] || bx[3] > by[3])
         continue;
       int r = arr_ring_within(a, rp, roff, x, y, mark);
@@ -5772,7 +5776,8 @@ arr_surfaces(const Arr *a, uint32_t nrings, const uint32_t *rp,
   for (uint32_t i = 0; i < nrings && st == ARR_ANSWERED; i++)
     if (depth[i] % 2 == 1 && owner[i] < 0)
       st = ARR_SHELLS;
-  pfree(box); pfree(mark); pfree(depth); pfree(in_x); pfree(in_y);
+  pfree(box); pfree(pairs); pfree(mark); pfree(depth); pfree(in_x);
+  pfree(in_y);
   return st;
 }
 
