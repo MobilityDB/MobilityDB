@@ -73,8 +73,31 @@ binds before and after, so that no function leaves unseen.
 | B8 | PyMEOS, MEOS.js, MobilityNebula | each read against the rule, a pull request where one departs from it | open |
 | B9 | every binding generator | a CI step that fails on a hand-written header list or a read of a `.h` file in the generator | after B2 to B7 |
 
+## GEOS and GSL, which MEOS does not call
+
+MEOS calls neither GEOS nor GSL: its random draws come from the `pg_prng` generators of
+PostgreSQL, and over MobilityDB master `a23e01a60b` `libmeos.so` neither needs nor calls a GEOS or
+a GSL symbol. GEOS still loads with it through the GDAL it links: the GDAL a platform packages
+(`libgdal-dev` on Ubuntu, `gdal-devel` on Fedora, `mingw-w64-ucrt-x86_64-gdal` on MSYS2) links
+GEOS. A binding therefore installs, builds and links neither, and builds libmeos against GDAL 3.12.0,
+the version MobilityDuck takes, built from its source in its standard configuration with
+`-DGDAL_USE_GEOS=OFF`; PROJ and its sqlite3 stay, as the raster family needs them. The RTOS build of
+MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
+
+| Task | Repository | Change | State |
+|---|---|---|---|
+| B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | open |
+| B11 | MEOS-API | `provision-meos` builds GDAL 3.12.0 from source with `-DGDAL_USE_GEOS=OFF` and checks that no `libgeos` loads with libmeos | after B10 |
+| B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | GEOS half in GoMEOS #32 |
+| B13 | PyMEOS-CFFI | its workflows install no `gsl` and no `geos` | open |
+| B14 | JMEOS | its README installs no `libgsl-dev` and no `libgeos-dev` | open |
+| B15 | MobilityDuck | `CMakeLists.txt` finds and links no GSL | open |
+| B16 | meos-rs | no `gsl` submodule, and its workflow installs no `libgsl-dev` and no `libgeos-dev` | open |
+
 ## Decisions this plan rests on
 
 - The ecosystem targets 1.4 only, with no backward compatibility for 1.3 (the owner, 2026-10-27).
+- GEOS and GSL leave every binding, and the hosted bindings link a GDAL built from source without
+  GEOS (the owner, 2026-10-27).
 - The catalog is the one source of every binding, its FFI layer included, and only MEOS-API parses
   headers (the owner, 2026-07-10).
