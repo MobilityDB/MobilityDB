@@ -91,7 +91,7 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
 | B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | MERGED as GoMEOS #32 (`934f40529`) and #33 (`fbf003a77`) |
 | B13 | PyMEOS-CFFI | its workflows install no `gsl` and no `geos` | open |
 | B14 | JMEOS | its README installs no `libgsl-dev` and no `libgeos-dev` | open |
-| B15 | MobilityDuck | `CMakeLists.txt` finds and links no GSL, and no comment names a GEOS or GSL context | MobilityDuck #520, branch `build/no-gsl` (`e63488f63` on main `164801177`), CI green |
+| B15 | MobilityDuck | `CMakeLists.txt` finds and links no GSL, and no comment names a GEOS or GSL context | MERGED as MobilityDuck #520 (`080c3ad87`) |
 | B16 | meos-rs | no `gsl` submodule, and its workflow installs no `libgsl-dev` and no `libgeos-dev` | open |
 
 ## Decisions this plan rests on
