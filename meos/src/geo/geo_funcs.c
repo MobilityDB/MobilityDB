@@ -10201,7 +10201,8 @@ meet_val(ArcsegArena *arena, double v)
  * (#tower_merge).
  *
  * Each sign is read first in doubles carrying a bound on their error
- * (#ArcsegFilter), then exactly as expansions, and where a product of
+ * (#ArcsegFilter), then in pairs of doubles carrying one (#DDBound), then
+ * exactly as expansions, and where a product of
  * expansions leaves the range where they are exact -- their components span
  * the exponents of doubles, which the squarings of the recursion outgrow --
  * as #WideDyadic, the points of the question built again from what defines
@@ -10220,18 +10221,22 @@ typedef struct
   bool wide;
   bool filter;         /**< Doubles carrying a bound on their error, a sign
                             the bound cannot tell marking the arena unsafe */
+  bool dd;             /**< Pairs of doubles carrying a bound on their error
+                            (#DDBound), as @p filter */
   WideDyadic **blocks;
   int nblocks;
   int capblocks;
   int used;            /**< Taken from the last block */
 } TowerCtx;
 
-/* An exact value of the arithmetic of a #TowerCtx */
+/* A value of the arithmetic of a #TowerCtx, the whole union zeroed where it
+ * is formed so that a copy reads no byte left unset */
 typedef union
 {
   ArcsegExact x;
   WideDyadic *w;
   ArcsegFilter f;
+  DDBound d;
 } TowerX;
 
 /* A number of a tower, its coefficients by the products of the roots */
@@ -10260,6 +10265,7 @@ tower_ctx_init(TowerCtx *ctx, bool wide)
   ctx->arena.blocks = NULL;
   ctx->wide = wide;
   ctx->filter = false;
+  ctx->dd = false;
   ctx->blocks = NULL;
   ctx->nblocks = ctx->capblocks = 0;
   ctx->used = TOWER_WIDE_BLOCK;
@@ -10307,16 +10313,22 @@ tower_wide_alloc(TowerCtx *ctx)
 }
 
 /* The difference of two doubles, exactly */
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_diff(TowerCtx *ctx, double a, double b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     /* The rounding error of the difference, exactly (two-sum) */
     double v = a - b, bv = v - a;
     r.f.v = v;
     r.f.e = fabs((a - (v - bv)) + (- b - bv));
+    return r;
+  }
+  if (ctx->dd)
+  {
+    two_diff(a, b, &r.d.hi, &r.d.lo);
+    r.d.e = 0.0;
     return r;
   }
   if (! ctx->wide)
@@ -10347,16 +10359,21 @@ tx_val(TowerCtx *ctx, double v)
 static inline bool
 tx_spent(const TowerCtx *ctx)
 {
-  return ! ctx->filter && tower_ctx_unsafe(ctx);
+  return ! ctx->filter && ! ctx->dd && tower_ctx_unsafe(ctx);
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_add(a.f, b.f);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d = ddb_add(a.d, b.d);
     return r;
   }
   if (! ctx->wide)
@@ -10372,13 +10389,20 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 }
 
 /* Multiplied by a power of two, possibly negative, exactly */
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_scale(TowerCtx *ctx, TowerX a, double k)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_scale(a.f, k);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d.hi = a.d.hi * k;
+    r.d.lo = a.d.lo * k;
+    r.d.e = a.d.e * fabs(k);
     return r;
   }
   if (! ctx->wide)
@@ -10398,19 +10422,24 @@ tx_scale(TowerCtx *ctx, TowerX a, double k)
   return r;
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_sub(TowerCtx *ctx, TowerX a, TowerX b)
 {
   return tx_add(ctx, a, tx_scale(ctx, b, -1.0));
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_mul(a.f, b.f);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d = ddb_mul(a.d, b.d);
     return r;
   }
   if (! ctx->wide)
@@ -10426,11 +10455,13 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 }
 
 /* Whether a value is zero, read off its representation */
-static bool
+static pg_attribute_always_inline bool
 tx_zero(const TowerCtx *ctx, TowerX a)
 {
   if (ctx->filter)
     return a.f.v == 0.0 && a.f.e == 0.0;
+  if (ctx->dd)
+    return ddb_is_zero(a.d);
   if (ctx->wide)
     return a.w->sign == 0;
   for (int i = 0; i < a.x.n; i++)
@@ -10458,6 +10489,15 @@ tx_sign(TowerCtx *ctx, TowerX a)
     }
     return s;
   }
+  if (ctx->dd)
+  {
+    if (ddb_is_zero(a.d))
+      return 0;
+    int s = ddb_sign(a.d);
+    if (s == 0)
+      ctx->arena.unsafe = true;
+    return s;
+  }
   if (ctx->wide)
     return a.w->sign;
   return arcseg_x_sign_checked(&ctx->arena, a.x);
@@ -10470,6 +10510,13 @@ tx_filter(const TowerCtx *ctx, TowerX a)
   ArcsegFilter r;
   if (ctx->filter)
     return a.f;
+  if (ctx->dd)
+  {
+    /* The pair rounds once, its rounding error exactly (fast two-sum) */
+    r.v = a.d.hi + a.d.lo;
+    r.e = a.d.e + fabs(a.d.lo - (r.v - a.d.hi));
+    return r;
+  }
   if (ctx->wide)
   {
     int e;
@@ -10603,6 +10650,46 @@ tower_f_sqrt(ArcsegFilter h)
   return r;
 }
 
+/* The square root of a pair of doubles not negative: one Newton step from
+ * the root of its larger part, which lands within 2^-102 of the root, and
+ * within the error bound e of the pair the root moves as in #tower_f_sqrt */
+static DDBound
+tower_dd_sqrt(DDBound h)
+{
+  DDBound r;
+  double v = h.hi + h.lo;
+  if (! (h.hi > 0.0))
+  {
+    r.hi = r.lo = 0.0;
+    r.e = sqrt(fmax(v + h.e, 0.0)) * (1.0 + 4.0 * DBL_EPSILON) + DDB_TINY;
+    return r;
+  }
+  double s = sqrt(h.hi), p, pe;
+  two_product(s, s, &p, &pe);
+  two_sum(s, ((h.hi - p) - pe + h.lo) / (2.0 * s), &r.hi, &r.lo);
+  double lo = v - h.e;
+  double moved = (h.e == 0.0) ? 0.0 :
+    ((lo > 0.0) ? h.e / (s + sqrt(lo)) : sqrt(fmax(v + h.e, 0.0)));
+  r.e = moved * (1.0 + 4.0 * DBL_EPSILON) + DDB_EPS * s + DDB_TINY;
+  return r;
+}
+
+/* A number of k roots of a tower as a pair of doubles and a bound on its
+ * error, in the arithmetic of a context whose values are such pairs */
+static DDBound
+tower_dd_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+{
+  if (k == 0)
+    return x[0].d;
+  int half = 1 << (k - 1);
+  DDBound a = tower_dd_k(ctx, t, x, k - 1);
+  if (tower_zero_k(ctx, x + half, k - 1))
+    return a;
+  DDBound b = tower_dd_k(ctx, t, x + half, k - 1);
+  DDBound h = tower_dd_k(ctx, t, t->h[k - 1].c, k - 1);
+  return ddb_add(a, ddb_mul(b, tower_dd_sqrt(h)));
+}
+
 /* A number of k roots of a tower as a double and a bound on its error */
 static ArcsegFilter
 tower_filter_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
@@ -10626,9 +10713,19 @@ tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
 {
   if (k == 0)
     return tx_sign(ctx, x[0]);
-  int s = arcseg_f_sign(tower_filter_k(ctx, t, x, k));
-  if (s != 2)
-    return s;
+  int s;
+  if (ctx->dd)
+  {
+    s = ddb_sign(tower_dd_k(ctx, t, x, k));
+    if (s != 0)
+      return s;
+  }
+  else
+  {
+    s = arcseg_f_sign(tower_filter_k(ctx, t, x, k));
+    if (s != 2)
+      return s;
+  }
   int half = 1 << (k - 1);
   int sa = tower_sign_k(ctx, t, x, k - 1);
   if (tower_zero_k(ctx, x + half, k - 1))
@@ -11026,12 +11123,19 @@ static int
 tower_pred_run(TowerPred fn, const void *arg)
 {
   TowerCtx ctx;
-  /* In doubles carrying a bound on their error first */
-  tower_ctx_init(&ctx, false);
-  ctx.filter = true;
-  int r = fn(&ctx, arg);
-  bool again = (r == 2) || ctx.arena.unsafe;
-  tower_ctx_free(&ctx);
+  /* In doubles, then in pairs of doubles, carrying a bound on their error
+   * first */
+  int r = 2;
+  bool again = true;
+  for (int pass = 0; pass < 2 && again; pass++)
+  {
+    tower_ctx_init(&ctx, false);
+    ctx.filter = (pass == 0);
+    ctx.dd = (pass == 1);
+    r = fn(&ctx, arg);
+    again = (r == 2) || ctx.arena.unsafe;
+    tower_ctx_free(&ctx);
+  }
   if (! again)
     return r;
   tower_ctx_init(&ctx, false);
