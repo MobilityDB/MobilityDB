@@ -1646,22 +1646,22 @@ SELECT asText(round(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0
 				<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
 				<para>Ever and always relationships</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eContains(geometry,tpose) &#8594; boolean
-eCovers(geometry,tpose) &#8594; boolean
-eDisjoint({geometry,tpose},{geometry,tpose}) &#8594; boolean
-eDwithin({geometry,tpose},{geometry,tpose},float) &#8594; boolean
-eIntersects({geometry,tpose},{geometry,tpose}) &#8594; boolean
-eTouches(geometry,tpose) &#8594; boolean
-eTouches(tpose,geometry) &#8594; boolean
-aContains(geometry,tpose) &#8594; boolean
-aCovers(geometry,tpose) &#8594; boolean
-aDisjoint({geometry,tpose},{geometry,tpose}) &#8594; boolean
-aDwithin({geometry,tpose},{geometry,tpose},float) &#8594; boolean
-aIntersects({geometry,tpose},{geometry,tpose}) &#8594; boolean
-aTouches(geometry,tpose) &#8594; boolean
-aTouches(tpose,geometry) &#8594; boolean
+eContains(geometry,{tpose,tposechain}) &#8594; boolean
+eCovers(geometry,{tpose,tposechain}) &#8594; boolean
+eDisjoint({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+eDwithin({geometry,tpose,tposechain},{geometry,tpose,tposechain},float) &#8594; boolean
+eIntersects({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+eTouches(geometry,{tpose,tposechain}) &#8594; boolean
+eTouches({tpose,tposechain},geometry) &#8594; boolean
+aContains(geometry,{tpose,tposechain}) &#8594; boolean
+aCovers(geometry,{tpose,tposechain}) &#8594; boolean
+aDisjoint({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+aDwithin({geometry,tpose,tposechain},{geometry,tpose,tposechain},float) &#8594; boolean
+aIntersects({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+aTouches(geometry,{tpose,tposechain}) &#8594; boolean
+aTouches({tpose,tposechain},geometry) &#8594; boolean
 </programlisting>
-				<para>The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied and result in a <varname>boolean</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> and <varname>aCovers</varname> take the geometry first only, and <varname>eTouches</varname> and <varname>aTouches</varname> have no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch.</para>
+				<para>The <emphasis>ever</emphasis> and <emphasis>always</emphasis> relationships determine whether the topological or distance relationship is ever or always satisfied and result in a <varname>boolean</varname>. A temporal pose answers them at the position it occupies, so a value with linear interpolation is answered along its trajectory rather than at its instants alone. The temporal pose declares the relationships a moving point answers: <varname>eContains</varname>, <varname>aContains</varname>, <varname>eCovers</varname> and <varname>aCovers</varname> take the geometry first only, and <varname>eTouches</varname> and <varname>aTouches</varname> have no direction between two temporal poses, since a moving point neither contains nor covers a geometry and two moving points do not touch. A temporal pose chain answers them at the position of the temporal pose its composition gives, <varname>tpose(tposechain)</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Polygon((0 0,0 50,50 50,50 0,0 0))',
   tpose '[Pose(Point(1 1),0.1)@2001-01-01, Pose(Point(3 3),0.3)@2001-01-03]');
@@ -1681,6 +1681,9 @@ SELECT eTouches(tpose 'Pose(Point(0 0), 0.1)@2001-01-01',
 -- true
 SELECT aDwithin(tpose '[Pose(Point(1 1),0.1)@2001-01-01,
   Pose(Point(3 3),0.1)@2001-01-03]', geometry 'Point(9 9)', 1.0);
+-- false
+SELECT eIntersects(tposechain 'PoseChain(Pose(Point(1 1),0), Pose(Point(9 -1),0))@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- false
 </programlisting>
 			</listitem>

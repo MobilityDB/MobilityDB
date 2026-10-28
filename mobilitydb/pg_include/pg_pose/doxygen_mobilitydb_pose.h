@@ -179,6 +179,14 @@
  * @ingroup mobilitydb_posechain
  * @brief Distance functions for temporal pose chains
  *
+ * @defgroup mobilitydb_posechain_rel Spatial relationship functions
+ * @ingroup mobilitydb_posechain
+ * @brief Spatial relationship functions for temporal pose chains
+ *
+ *   @defgroup mobilitydb_posechain_rel_ever Ever and always spatial relationship functions
+ *   @ingroup mobilitydb_posechain_rel
+ *   @brief Ever and always spatial relationship functions for temporal pose chains
+ *
  * @defgroup mobilitydb_posechain_comp Comparison functions
  * @ingroup mobilitydb_posechain
  * @brief Comparison functions for temporal pose chains
