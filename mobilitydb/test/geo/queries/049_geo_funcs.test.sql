@@ -51,6 +51,11 @@ SELECT round(ST_Area(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,
 SELECT ST_AsText(round(convexHull(geometry 'Point(1 2)'), 6));
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
 
+-- A point off the line of two others by less than the rounding of their cross
+-- product in doubles is a vertex of their hull
+SELECT GeometryType(convexHull(geometry
+  'Multipoint(0.5 0.5,12.000000000000036 12.000000000000037,24 24)'));
+
 -- A point inside the hull of the others does not reach its boundary
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 
