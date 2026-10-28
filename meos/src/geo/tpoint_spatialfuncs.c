@@ -266,8 +266,8 @@ closest_point_on_segment_sphere(const POINT4D *p, const POINT4D *A,
  * @p p2 so that `len(p1,p) == len(p1,p2) * f` and @p p falls on the @p p1,p2
  * segment
  * @param[in] p1,p2 geography points we are interpolating between
- * @param[in] s Spheroid used for during the intepolation, may be @p NULL when
- * using sphere interpolation
+ * @param[in] s Spheroid used for during the intepolation, @p NULL when
+ * using sphere interpolation @nullable
  * @param[in] f Fraction
  * @param[out] p Result
  */
@@ -895,7 +895,7 @@ point_meas_to_lwpoint(Datum point, Datum meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point instant and optionally a temporal float (iterator function)
  * @param[in] inst Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static LWGEOM *
@@ -916,7 +916,7 @@ tpointinst_to_geomeas_iter(const TInstant *inst, const TInstant *meas)
  * @brief Return a geometry/geography with M measure from a temporal point
  * instant and optionally a temporal float
  * @param[in] inst Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -932,7 +932,7 @@ tpointinst_to_geomeas(const TInstant *inst, const TInstant *meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point discrete sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -971,7 +971,7 @@ tpointseq_disc_to_geomeas(const TSequence *seq, const TSequence *meas)
  * @brief Return a geometry/geography with M measure from the temporal
  * point sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  * @note The function does not add a point if is equal to the previous one.
  */
@@ -1044,7 +1044,7 @@ tpointseq_cont_to_geomeas(const TSequence *seq, const TSequence *meas)
  * @brief Return a geometry/geography with M measure from a temporal
  * point sequence set and optionally a temporal float
  * @param[in] ss Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @pre The temporal point and the measure are synchronized
  */
 static GSERIALIZED *
@@ -1119,7 +1119,7 @@ tpointseqset_to_geomeas(const TSequenceSet *ss, const TSequenceSet *meas)
  * @brief Return a geometry/geography with M measure from a temporal point
  * sequence and optionally a temporal float
  * @param[in] seq Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @return The result is a (Multi)Point when there are only instantaneous
  * sequences or a (Multi)linestring when each composing linestring corresponds
  * to a segment of a sequence of the temporal point
@@ -1183,7 +1183,7 @@ tpointseq_cont_to_geomeas_segm(const TSequence *seq, const TSequence *meas)
  * instantaneous sequences or a (Multi)linestring when each composing
  * linestring corresponds to a segment of a sequence of the temporal point
  * @param[in] ss Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  */
 static GSERIALIZED *
 tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
@@ -1254,7 +1254,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * of the temporal point in Unix time, that is, the number of seconds since
  * '1970-01-01'
  * @param[in] tpoint Temporal point
- * @param[in] meas Temporal float, may be @p NULL
+ * @param[in] meas Temporal float @nullable
  * @param[in] segmentize When true, in the general case the resulting geometry
  * will be a MultiLineString composed of one Linestring per segment of the
  * temporal sequence (set)
@@ -3097,40 +3097,64 @@ geog_distance_points(const POINT2D *p1, const POINT2D *p2)
 /**
  * @brief Return the distance between two points, read on the spheroid for
  * geodetic coordinates and in the plane otherwise
+ * @details A value for the bound of #stopwindow_within, which decides nothing
+ * alone: in the plane it is `sqrt(dx*dx + dy*dy)`, within two units in the
+ * last place of the distance and an absolute 2^-536 where a square
+ * underflows, and infinite where a square overflows
  */
 static double
 points_distance(const POINT2D *p1, const POINT2D *p2, bool geodetic)
 {
-  return geodetic ? geog_distance_points(p1, p2) :
-    hypot(p2->x - p1->x, p2->y - p1->y);
+  if (geodetic)
+    return geog_distance_points(p1, p2);
+  double dx = p2->x - p1->x, dy = p2->y - p1->y;
+  return sqrt(dx * dx + dy * dy);
 }
 
 /**
- * @brief Return the greatest distance between a point and a set of points
+ * @brief Return true when two points lie farther apart than a distance
+ * @details In the plane this is the exact sign of the squared distance less
+ * the square of the distance (#point_within_distance_sign), so that no
+ * rounded distance decides it; on the spheroid it reads the distance there
+ * @param[in] p1,p2 Points
+ * @param[in] dist Distance
+ * @param[in] geodetic True when the coordinates are geodetic
+ */
+static bool
+points_beyond(const POINT2D *p1, const POINT2D *p2, double dist,
+  bool geodetic)
+{
+  if (geodetic)
+    return geog_distance_points(p1, p2) > dist;
+  return point_within_distance_sign(p1->x, p1->y, p2->x, p2->y, dist) > 0;
+}
+
+/**
+ * @brief Return true when a point lies farther than a distance from one of a
+ * set of points
  * @details A set grows by one point at a time as long as the window it
- * measures keeps its start, and the diameter of the enlarged set is the
- * greater of the diameter it had and the distance the new point reaches: a
- * pair that does not involve the new point is one the previous diameter
+ * measures keeps its start, and the enlarged set has two points farther apart
+ * than the distance when the set had two or when the added point lies that far
+ * from one of it: a pair that does not involve the added point is one the set
  * already answered for. Reading it this way costs the size of the set per
  * instant, where reading every pair again costs its square
  * @param[in] points Points
  * @param[in] npoints Number of points
  * @param[in] p Point
+ * @param[in] dist Distance
  * @param[in] geodetic True when the coordinates are geodetic
  */
-static double
-point_max_distance(const POINT2D *points, uint32_t npoints, const POINT2D *p,
-  bool geodetic)
+static bool
+point_any_beyond(const POINT2D *points, uint32_t npoints, const POINT2D *p,
+  double dist, bool geodetic)
 {
   assert(points); assert(p);
-  double result = 0.0;
   for (uint32_t i = 0; i < npoints; i++)
   {
-    double d = points_distance(&points[i], p, geodetic);
-    if (d > result)
-      result = d;
+    if (points_beyond(&points[i], p, dist, geodetic))
+      return true;
   }
-  return result;
+  return false;
 }
 
 /**
@@ -3181,6 +3205,9 @@ tspatialseq_points(const TSequence *seq)
  * of a stop window stays below it to decide alone: it covers the rounding of
  * the two distances the bound adds */
 #define STOPS_REL_MARGIN 1.0e-9
+/* Margin, in the units of the coordinates, covering in addition the absolute
+ * error of a planar distance whose squares underflow (#points_distance) */
+#define STOPS_ABS_MARGIN 0x1p-535
 /* Margin, in meters, covering in addition the accuracy of a distance read on
  * the spheroid */
 #define STOPS_GEOD_MARGIN 1.0e-2
@@ -3189,11 +3216,12 @@ tspatialseq_points(const TSequence *seq)
  * @brief Distances read for the window of instants a stop is sought in
  * @details The window runs over the points of the sequence from a start to an
  * end. Its diameter, the greatest distance between two of its points, is
- * bounded by the distances from its first point, the anchor: the greatest of
- * them is itself the distance between two points of the window, and by the
- * triangle inequality no two points are farther apart than the sum of the two
- * greatest. Each reading is kept with the window it was made for, so that a
- * window keeping its start extends it by the instants it reaches
+ * bounded by the distances from its first point, the anchor: by the triangle
+ * inequality no two points are farther apart than the sum of the two
+ * greatest. Whether a point lies beyond the maximum distance from another is
+ * read on its exact sign (#points_beyond), and each reading is kept with the
+ * window it was made for, so that a window keeping its start extends it by
+ * the instants it reaches
  */
 typedef struct
 {
@@ -3205,14 +3233,17 @@ typedef struct
   int reach_end;         /**< Last point the reaches account for */
   double reach1;         /**< Greatest distance from the anchor */
   double reach2;         /**< Second greatest distance from the anchor */
-  int diam_start;        /**< First point the diameter accounts for */
-  int diam_end;          /**< Last point the diameter accounts for */
-  double diameter;       /**< Greatest distance between two points */
+  bool reach_beyond;     /**< True when a point lies beyond @p maxdist from
+                              the anchor */
+  int diam_start;        /**< First point the pairs account for */
+  int diam_end;          /**< Last point the pairs account for */
+  bool diam_beyond;      /**< True when two points lie farther apart than
+                              @p maxdist */
 } StopWindow;
 
 /**
- * @brief Extend the two greatest distances from the anchor of a stop window
- * to its end
+ * @brief Extend the two greatest distances from the anchor of a stop window,
+ * and whether a point lies beyond the maximum distance from it, to its end
  * @param[in,out] win Stop window
  * @param[in] start,end Indexes of the first and last points of the window
  */
@@ -3223,6 +3254,7 @@ stopwindow_reach(StopWindow *win, int start, int end)
   {
     win->reach_start = win->reach_end = start;
     win->reach1 = win->reach2 = 0.0;
+    win->reach_beyond = false;
   }
   for (int i = win->reach_end + 1; i <= end; i++)
   {
@@ -3235,34 +3267,33 @@ stopwindow_reach(StopWindow *win, int start, int end)
     }
     else if (d > win->reach2)
       win->reach2 = d;
+    if (! win->reach_beyond)
+      win->reach_beyond = points_beyond(&win->points[start], &win->points[i],
+        win->maxdist, win->geodetic);
   }
   win->reach_end = end;
 }
 
 /**
- * @brief Extend the diameter of a stop window to its end, reading every pair
- * of its points
- * @details The diameter of a window enlarged by one point is the greater of
- * the diameter it had and the greatest distance the added point reaches: a
- * pair not involving the added point is one the diameter already answers for
+ * @brief Extend to its end whether two points of a stop window lie farther
+ * apart than the maximum distance, reading every pair of its points
+ * @details A window enlarged by one point has such a pair when it had one or
+ * when the added point lies that far from one of its points
+ * (#point_any_beyond)
  * @param[in,out] win Stop window
  * @param[in] start,end Indexes of the first and last points of the window
  */
 static void
-stopwindow_diameter(StopWindow *win, int start, int end)
+stopwindow_pairs(StopWindow *win, int start, int end)
 {
   if (win->diam_start != start)
   {
     win->diam_start = win->diam_end = start;
-    win->diameter = 0.0;
+    win->diam_beyond = false;
   }
-  for (int i = win->diam_end + 1; i <= end; i++)
-  {
-    double d = point_max_distance(win->points + start, (uint32_t) (i - start),
-      &win->points[i], win->geodetic);
-    if (d > win->diameter)
-      win->diameter = d;
-  }
+  for (int i = win->diam_end + 1; i <= end && ! win->diam_beyond; i++)
+    win->diam_beyond = point_any_beyond(win->points + start,
+      (uint32_t) (i - start), &win->points[i], win->maxdist, win->geodetic);
   win->diam_end = end;
 }
 
@@ -3270,11 +3301,11 @@ stopwindow_diameter(StopWindow *win, int start, int end)
  * @brief Return true when the diameter of a stop window does not exceed the
  * maximum distance
  * @details Two points farther apart than the maximum distance settle the
- * answer, which a single distance shows for an object on the move. The sum of
- * the two greatest distances from the anchor settles it when it stays below
- * the maximum distance by the margin, which it does for an object at rest.
- * Only a window between the two bounds reads every pair of its points, so the
- * answer is always the one the pairs give
+ * answer, which a single exact sign shows for an object on the move. The sum
+ * of the two greatest distances from the anchor settles it when it stays
+ * below the maximum distance by the margin, which it does for an object at
+ * rest. Only a window between the two reads every pair of its points, so the
+ * answer is always the one the exact signs of the pairs give
  * @param[in,out] win Stop window
  * @param[in] start,end Indexes of the first and last points of the window
  */
@@ -3282,16 +3313,16 @@ static bool
 stopwindow_within(StopWindow *win, int start, int end)
 {
   if ((win->reach_start != start || win->reach_end != end - 1) &&
-      points_distance(&win->points[start], &win->points[end], win->geodetic) >
-        win->maxdist)
+      points_beyond(&win->points[start], &win->points[end], win->maxdist,
+        win->geodetic))
     return false;
   stopwindow_reach(win, start, end);
-  if (win->reach1 > win->maxdist)
+  if (win->reach_beyond)
     return false;
   if (win->reach1 + win->reach2 <= win->maxdist - win->margin)
     return true;
-  stopwindow_diameter(win, start, end);
-  return win->diameter <= win->maxdist;
+  stopwindow_pairs(win, start, end);
+  return ! win->diam_beyond;
 }
 
 /**
@@ -3328,11 +3359,12 @@ tpointseq_stops_iter(const TSequence *seq, double maxdist, int64 mintunits,
   win.geodetic = geodetic;
   win.maxdist = maxdist;
   win.margin = maxdist * STOPS_REL_MARGIN +
-    (geodetic ? STOPS_GEOD_MARGIN : 0.0);
+    (geodetic ? STOPS_GEOD_MARGIN : STOPS_ABS_MARGIN);
   win.reach_start = win.reach_end = -1;
   win.reach1 = win.reach2 = 0.0;
+  win.reach_beyond = false;
   win.diam_start = win.diam_end = -1;
-  win.diameter = 0.0;
+  win.diam_beyond = false;
 
   /* The window runs from the start to the end instant and grows while the
    * value stays within the area. When the value leaves the area at the end

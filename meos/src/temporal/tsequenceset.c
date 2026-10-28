@@ -57,6 +57,7 @@
 #endif
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -207,6 +208,15 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags,
 #if POSE
   if (type == T_POSE)
     return DatumGetFloat8(pose_distance(value1, value2));
+  if (type == T_POSECHAIN)
+  {
+    /* The composed poses, measured as the pose arm measures two poses */
+    Datum pose1 = datum_posechain_pose(value1);
+    Datum pose2 = datum_posechain_pose(value2);
+    double result = DatumGetFloat8(pose_distance(pose1, pose2));
+    pfree(DatumGetPointer(pose1)); pfree(DatumGetPointer(pose2));
+    return result;
+  }
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));
@@ -448,12 +458,20 @@ tsequenceset_make(TSequence **sequences, int count, bool normalize)
   VALIDATE_NOT_NULL(sequences, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+  for (int i = 0; i < count; i++)
+    VALIDATE_NOT_NULL(sequences[i], NULL);
 #if RGEO
   /* A rigid geometry sequence set keeps once the reference geometry its
-   * sequences carry, which every sequence must state alike */
+   * sequences carry, which every sequence must state alike. The sequences
+   * built by the synchronization of two values carry none and build a
+   * sequence set without it. */
   if (sequences[0]->temptype == T_TRGEOMETRY)
-    return trgeoseqset_make_exp(trgeoseq_geom_p(sequences[0]), sequences,
-      count, count, normalize);
+  {
+    for (int i = 0; i < count; i++)
+      if (MEOS_FLAGS_GET_GEOM(sequences[i]->flags))
+        return trgeoseqset_make_exp(trgeoseq_geom_p(sequences[i]), sequences,
+          count, count, normalize);
+  }
 #endif /* RGEO */
   return tsequenceset_make_exp(sequences, count, count, normalize);
 }
@@ -493,8 +511,7 @@ tsequenceset_make_free(TSequence **sequences, int count, bool normalize)
  * @param[in] merge True if a merge operation, which implies that the two
  *   consecutive instants may be equal
  * @param[in] maxdist Maximum distance to split the temporal sequence
- * @param[in] maxt Maximum time interval to split the temporal sequence, may be
- *   `NULL`
+ * @param[in] maxt Maximum time interval to split the temporal sequence @nullable
  * @param[out] nsplits Number of splits
  * @return Array of indices at which the temporal sequence is split
  */
@@ -583,7 +600,7 @@ tsequenceset_make_gaps_valid(TInstant **instants, int count, bool lower_inc,
  * @param[in] count Number of elements in the array
  * @param[in] interp Interpolation
  * @param[in] maxdist Maximum distance for defining a gap
- * @param[in] maxt Maximum time interval for defining a gap, may be `NULL`
+ * @param[in] maxt Maximum time interval for defining a gap @nullable
  * @csqlfn #Tsequenceset_constructor_gaps()
  */
 TSequenceSet *
@@ -595,10 +612,15 @@ tsequenceset_make_gaps(TInstant **instants, int count, interpType interp,
   if (! ensure_not_empty_array(count))
     return NULL;
 #if RGEO
-  /* A rigid geometry splits keeping the reference geometry of its instants */
+  /* A rigid geometry splits keeping the reference geometry of its instants,
+   * when they carry it */
   if (instants[0]->temptype == T_TRGEOMETRY)
-    return trgeometryseqset_make_gaps(trgeoinst_geom_p(instants[0]), instants,
-      count, interp, maxt, maxdist);
+  {
+    for (int i = 0; i < count; i++)
+      if (MEOS_FLAGS_GET_GEOM(instants[i]->flags))
+        return trgeometryseqset_make_gaps(trgeoinst_geom_p(instants[i]),
+          instants, count, interp, maxt, maxdist);
+  }
 #endif /* RGEO */
 
   TSequence *seq;
@@ -1774,7 +1796,12 @@ tnumberseqset_shift_scale_value(const TSequenceSet *ss, Datum shift,
     box = TSEQUENCE_BBOX_PTR(seq);
     numspan_delta_scale_iter(&box->span, origin, delta, hasshift, scale);
     /* Shift and/or scale each instant of the composing sequence */
-    tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift, scale);
+    if (! tnumberseq_shift_scale_value_iter(seq, origin, delta, hasshift,
+        scale))
+    {
+      pfree(result);
+      return NULL;
+    }
   }
   return result;
 }

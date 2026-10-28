@@ -50,7 +50,7 @@
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of integers
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] i Value to aggregate
  * @csqlfn #Spanbase_extent_transfn()
  * @csqlaggfn #extentTransition()
@@ -67,7 +67,7 @@ int_extent_transfn(Span *state, int i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of big integers
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] i Value to aggregate
  * @csqlfn #Spanbase_extent_transfn()
  * @csqlaggfn #extentTransition()
@@ -84,7 +84,7 @@ bigint_extent_transfn(Span *state, int64 i)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of floats
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] d Value to aggregate
  * @csqlfn #Spanbase_extent_transfn()
  * @csqlaggfn #extentTransition()
@@ -101,7 +101,7 @@ float_extent_transfn(Span *state, double d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of dates
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] d Value to aggregate
  * @csqlfn #Spanbase_extent_transfn()
  * @csqlaggfn #extentTransition()
@@ -118,7 +118,7 @@ date_extent_transfn(Span *state, DateADT d)
 /**
  * @ingroup meos_setspan_agg
  * @brief Transition function for span extent aggregate of timestamptz
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] t Value to aggregate
  * @csqlfn #Spanbase_extent_transfn()
  * @csqlaggfn #extentTransition()

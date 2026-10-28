@@ -401,7 +401,7 @@ static void checkTimezoneIsUsedForCast(bool useTz, const char *type1,
  * on our own.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -440,7 +440,7 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * handling
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -491,7 +491,7 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * JSONB array
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -527,7 +527,7 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
  * item. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -564,7 +564,7 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
  * a C array. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -667,9 +667,11 @@ executeJsonPath(JsonPath *path, void *vars, JsonPathGetVarCallback getVar,
      */
     JsonValueList vals = {0};
     res = executeItem(&cxt, &jsp, &jbv, &vals);
+    bool empty = JsonValueListIsEmpty(&vals);
+    JsonValueListClear(&vals);
     if (jperIsError(res))
       return res;
-    return JsonValueListIsEmpty(&vals) ? jperNotFound : jperOk;
+    return empty ? jperNotFound : jperOk;
   }
 
   res = executeItem(&cxt, &jsp, &jbv, result);
@@ -725,6 +727,10 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         baseObject = cxt->baseObject;
         getJsonPathItem(cxt, jsp, v);
         res = executeNextItem(cxt, jsp, &elem, v, found, hasNext);
+        /* v (palloc'd here) was appended to found; track it so the
+         * jsonb_path_* caller reclaims it via json_reset_tofree() */
+        if (! hasNext)
+          json_add_tofree(v);
         cxt->baseObject = baseObject;
       }
       break;
@@ -880,9 +886,23 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             }
 
             if (! hasNext && ! found)
+            {
+              if (! copy)
+                pfree(v);
               return jperOk;
+            }
 
             res = executeNextItem(cxt, jsp, &elem, v, found, copy);
+            /* free the element read from the container if it was not added
+             * to found list, track it otherwise, as for the value of an
+             * object key */
+            if (! copy)
+            {
+              if (hasNext || ! found)
+                pfree(v);
+              else
+                json_add_tofree(v);
+            }
             if (jperIsError(res))
               break;
             if (res == jperOk && ! found)
@@ -1021,6 +1041,11 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         jb->type = jbvNumeric;
         jb->val.numeric = int64_to_numeric(size);
         res = executeNextItem(cxt, jsp, NULL, jb, found, false);
+        /* jb and its number (palloc'd here) may be appended to found; track
+         * them so the jsonb_path_* caller reclaims them via
+         * json_reset_tofree() */
+        json_add_tofree(jb->val.numeric);
+        json_add_tofree(jb);
       }
       break;
 
@@ -1137,6 +1162,12 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         lastjbv->type = jbvNumeric;
         lastjbv->val.numeric = int64_to_numeric(last);
         res = executeNextItem(cxt, jsp, &elem, lastjbv, found, hasNext);
+        /* the number and, when it was appended to found, lastjbv (both
+         * palloc'd here) are tracked so the jsonb_path_* caller reclaims them
+         * via json_reset_tofree() */
+        json_add_tofree(lastjbv->val.numeric);
+        if (! hasNext)
+          json_add_tofree(lastjbv);
       }
       break;
 
@@ -1553,7 +1584,10 @@ executeItemOptUnwrapResult(JsonPathExecContext *cxt, JsonPathItem *jsp,
     JsonbValue *item;
 
     if (jperIsError(res))
+    {
+      JsonValueListClear(&seq);
       return res;
+    }
     JsonValueListInitIterator(&seq, &it);
     while ((item = JsonValueListNext(&seq, &it)))
     {
@@ -1563,6 +1597,7 @@ executeItemOptUnwrapResult(JsonPathExecContext *cxt, JsonPathItem *jsp,
       else
         JsonValueListAppend(found, item);
     }
+    JsonValueListClear(&seq);
     return jperOk;
   }
   return executeItem(cxt, jsp, jb, found);
@@ -1677,9 +1712,11 @@ executeBoolItem(JsonPathExecContext *cxt, JsonPathItem *jsp,
         JsonValueList vals = {0};
         JsonPathExecResult res =
           executeItemOptUnwrapResultNoThrow(cxt, &larg, jb, false, &vals);
+        bool empty = JsonValueListIsEmpty(&vals);
+        JsonValueListClear(&vals);
         if (jperIsError(res))
           return jpbUnknown; // TODO
-        return JsonValueListIsEmpty(&vals) ? jpbFalse : jpbTrue;
+        return empty ? jpbFalse : jpbTrue;
       }
       else
       {
@@ -1768,7 +1805,10 @@ executeAnyItem(JsonPathExecContext *cxt, JsonPathItem *jsp, JsonbContainer *jbc,
         else if (found)
           JsonValueListAppend(found, copyJsonbValue(&v));
         else
-          return jperOk;
+        {
+          res = jperOk;
+          break;
+        }
       }
 
       if (level < last && v.type == jbvBinary)
@@ -1782,34 +1822,35 @@ executeAnyItem(JsonPathExecContext *cxt, JsonPathItem *jsp, JsonbContainer *jbc,
       }
     }
   }
+  /* A walk stopped before its end leaves the iterator, which
+   * JsonbIteratorNext frees level by level only on reaching it */
+  while (it)
+  {
+    JsonbIterator *parent = it->parent;
+    pfree(it);
+    it = parent;
+  }
   return res;
 }
 
 /*
- * Execute unary or binary predicate.
- *
- * Predicates have existence semantics, because their operands are item
- * sequences.  Pairs of items from the left and right operand's sequences are
- * checked.  TRUE returned only if any pair satisfying the condition is found.
- * In strict mode, even if the desired pair has already been found, all pairs
- * still need to be examined to check the absence of errors.  If any error
- * occurs, UNKNOWN (analogous to SQL NULL) is returned.
+ * Body of executePredicate(), which owns the value lists it fills
+ * and clears them
  */
 static JsonPathBool
-executePredicate(JsonPathExecContext *cxt, JsonPathItem *pred,
+executePredicateSeqs(JsonPathExecContext *cxt, JsonPathItem *pred,
   JsonPathItem *larg, JsonPathItem *rarg, JsonbValue *jb, bool unwrapRightArg,
-  JsonPathPredicateCallback exec, void *param)
+  JsonPathPredicateCallback exec, void *param,
+  JsonValueList *lseq, JsonValueList *rseq)
 {
   JsonPathExecResult res;
   JsonValueListIterator lseqit;
-  JsonValueList lseq = {0};
-  JsonValueList rseq = {0};
   JsonbValue *lval;
   bool error = false;
   bool found = false;
 
   /* Left argument is always auto-unwrapped. */
-  res = executeItemOptUnwrapResultNoThrow(cxt, larg, jb, true, &lseq);
+  res = executeItemOptUnwrapResultNoThrow(cxt, larg, jb, true, lseq);
   if (jperIsError(res))
     return jpbUnknown;
 
@@ -1817,20 +1858,20 @@ executePredicate(JsonPathExecContext *cxt, JsonPathItem *pred,
   {
     /* Right argument is conditionally auto-unwrapped. */
     res = executeItemOptUnwrapResultNoThrow(cxt, rarg, jb, unwrapRightArg,
-      &rseq);
+      rseq);
     if (jperIsError(res))
       return jpbUnknown;
   }
 
-  JsonValueListInitIterator(&lseq, &lseqit);
-  while ((lval = JsonValueListNext(&lseq, &lseqit)))
+  JsonValueListInitIterator(lseq, &lseqit);
+  while ((lval = JsonValueListNext(lseq, &lseqit)))
   {
     JsonValueListIterator rseqit;
     JsonbValue *rval;
     bool first = true;
-    JsonValueListInitIterator(&rseq, &rseqit);
+    JsonValueListInitIterator(rseq, &rseqit);
     if (rarg)
-      rval = JsonValueListNext(&rseq, &rseqit);
+      rval = JsonValueListNext(rseq, &rseqit);
     else
       rval = NULL;
 
@@ -1852,7 +1893,7 @@ executePredicate(JsonPathExecContext *cxt, JsonPathItem *pred,
       }
       first = false;
       if (rarg)
-        rval = JsonValueListNext(&rseq, &rseqit);
+        rval = JsonValueListNext(rseq, &rseqit);
     }
   }
 
@@ -1864,17 +1905,41 @@ executePredicate(JsonPathExecContext *cxt, JsonPathItem *pred,
 }
 
 /*
- * Execute binary arithmetic expression on singleton numeric operands.
- * Array operands are automatically unwrapped in lax mode.
+ * Execute unary or binary predicate.
+ *
+ * Predicates have existence semantics, because their operands are item
+ * sequences.  Pairs of items from the left and right operand's sequences are
+ * checked.  TRUE returned only if any pair satisfying the condition is found.
+ * In strict mode, even if the desired pair has already been found, all pairs
+ * still need to be examined to check the absence of errors.  If any error
+ * occurs, UNKNOWN (analogous to SQL NULL) is returned.
+ */
+static JsonPathBool
+executePredicate(JsonPathExecContext *cxt, JsonPathItem *pred,
+  JsonPathItem *larg, JsonPathItem *rarg, JsonbValue *jb, bool unwrapRightArg,
+  JsonPathPredicateCallback exec, void *param)
+{
+  JsonValueList lseq = {0};
+  JsonValueList rseq = {0};
+  JsonPathBool result =
+    executePredicateSeqs(cxt, pred, larg, rarg, jb, unwrapRightArg, exec,
+      param, &lseq, &rseq);
+  JsonValueListClear(&lseq);
+  JsonValueListClear(&rseq);
+  return result;
+}
+
+/*
+ * Body of executeBinaryArithmExpr(), which owns the value lists it fills
+ * and clears them
  */
 static JsonPathExecResult
-executeBinaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
-  JsonbValue *jb, BinaryArithmFunc func, JsonValueList *found)
+executeBinaryArithmExprSeqs(JsonPathExecContext *cxt, JsonPathItem *jsp,
+  JsonbValue *jb, BinaryArithmFunc func, JsonValueList *found,
+  JsonValueList *lseq, JsonValueList *rseq)
 {
   JsonPathExecResult jper;
   JsonPathItem elem;
-  JsonValueList lseq = {0};
-  JsonValueList rseq = {0};
   JsonbValue *lval;
   JsonbValue *rval;
   Numeric res;
@@ -1885,17 +1950,17 @@ executeBinaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
    * XXX: By standard only operands of multiplicative expressions are
    * unwrapped.  We extend it to other binary arithmetic expressions too.
    */
-  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, &lseq);
+  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, lseq);
   if (jperIsError(jper))
     return jper;
 
   jspGetRightArg(jsp, &elem);
-  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, &rseq);
+  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, rseq);
   if (jperIsError(jper))
     return jper;
 
-  if (JsonValueListLength(&lseq) != 1 ||
-     ! (lval = getScalar(JsonValueListHead(&lseq), jbvNumeric)))
+  if (JsonValueListLength(lseq) != 1 ||
+     ! (lval = getScalar(JsonValueListHead(lseq), jbvNumeric)))
   {
     meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
       "left operand of jsonpath operator %s is not a single numeric value",
@@ -1903,8 +1968,8 @@ executeBinaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
     return jperError;
   }
 
-  if (JsonValueListLength(&rseq) != 1 ||
-      ! (rval = getScalar(JsonValueListHead(&rseq), jbvNumeric)))
+  if (JsonValueListLength(rseq) != 1 ||
+      ! (rval = getScalar(JsonValueListHead(rseq), jbvNumeric)))
   {
     meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
       "right operand of jsonpath operator %s is not a single numeric value",
@@ -1923,40 +1988,61 @@ executeBinaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
     if (error)
       return jperError;
   }
+  /* res and lval (palloc'd here) may be appended to found; track them so the
+   * jsonb_path_* caller reclaims them via json_reset_tofree() */
+  json_add_tofree(res);
 
   if (! jspGetNext(jsp, &elem) && ! found)
     return jperOk;
   lval = palloc(sizeof(*lval));
   lval->type = jbvNumeric;
   lval->val.numeric = res;
+  json_add_tofree(lval);
   return executeNextItem(cxt, jsp, &elem, lval, found, false);
 }
 
 /*
- * Execute unary arithmetic expression for each numeric item in its operand's
- * sequence.  Array operand is automatically unwrapped in lax mode.
+ * Execute binary arithmetic expression on singleton numeric operands.
+ * Array operands are automatically unwrapped in lax mode.
  */
 static JsonPathExecResult
-executeUnaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
-  JsonbValue *jb, UnaryArithmFunc func, JsonValueList *found)
+executeBinaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
+  JsonbValue *jb, BinaryArithmFunc func, JsonValueList *found)
+{
+  JsonValueList lseq = {0};
+  JsonValueList rseq = {0};
+  JsonPathExecResult result =
+    executeBinaryArithmExprSeqs(cxt, jsp, jb, func, found, &lseq, &rseq);
+  JsonValueListClear(&lseq);
+  JsonValueListClear(&rseq);
+  return result;
+}
+
+/*
+ * Body of executeUnaryArithmExpr(), which owns the value lists it fills
+ * and clears them
+ */
+static JsonPathExecResult
+executeUnaryArithmExprSeqs(JsonPathExecContext *cxt, JsonPathItem *jsp,
+  JsonbValue *jb, UnaryArithmFunc func, JsonValueList *found,
+  JsonValueList *seq)
 {
   JsonPathExecResult jper;
   JsonPathExecResult jper2;
   JsonPathItem elem;
-  JsonValueList seq = {0};
   JsonValueListIterator it;
   JsonbValue *val;
   bool hasNext;
 
   jspGetArg(jsp, &elem);
-  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, &seq);
+  jper = executeItemOptUnwrapResult(cxt, &elem, jb, true, seq);
   if (jperIsError(jper))
     return jper;
 
   jper = jperNotFound;
   hasNext = jspGetNext(jsp, &elem);
-  JsonValueListInitIterator(&seq, &it);
-  while ((val = JsonValueListNext(&seq, &it)))
+  JsonValueListInitIterator(seq, &it);
+  while ((val = JsonValueListNext(seq, &it)))
   {
     if ((val = getScalar(val, jbvNumeric)))
     {
@@ -1974,7 +2060,12 @@ executeUnaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
     }
 
     if (func)
+    {
       val->val.numeric = func(val->val.numeric);
+      /* the number (palloc'd here) may be appended to found with val; track
+       * it so the jsonb_path_* caller reclaims it via json_reset_tofree() */
+      json_add_tofree(val->val.numeric);
+    }
     jper2 = executeNextItem(cxt, jsp, &elem, val, found, false);
     if (jperIsError(jper2))
       return jper2;
@@ -1987,6 +2078,21 @@ executeUnaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
     }
   }
   return jper;
+}
+
+/*
+ * Execute unary arithmetic expression for each numeric item in its operand's
+ * sequence.  Array operand is automatically unwrapped in lax mode.
+ */
+static JsonPathExecResult
+executeUnaryArithmExpr(JsonPathExecContext *cxt, JsonPathItem *jsp,
+  JsonbValue *jb, UnaryArithmFunc func, JsonValueList *found)
+{
+  JsonValueList seq = {0};
+  JsonPathExecResult result =
+    executeUnaryArithmExprSeqs(cxt, jsp, jb, func, found, &seq);
+  JsonValueListClear(&seq);
+  return result;
 }
 
 /*
@@ -2058,11 +2164,15 @@ executeNumericItemMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
   }
 
   Numeric num = func(jb->val.numeric);
+  /* num and jb (palloc'd here) may be appended to found; track them so the
+   * jsonb_path_* caller reclaims them via json_reset_tofree() */
+  json_add_tofree(num);
   if (! jspGetNext(jsp, &next) && ! found)
     return jperOk;
   jb = palloc(sizeof(*jb));
   jb->type = jbvNumeric;
   jb->val.numeric = num;
+  json_add_tofree(jb);
   return executeNextItem(cxt, jsp, &next, jb, found, false);
 }
 
@@ -2123,6 +2233,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
     {
       meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
         "invalid jsonpath item type for .datetime() argument");
+      pfree(datetime);
       return jperError;
     }
 
@@ -2133,6 +2244,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
       res = jperError;
     else
       res = jperOk;
+    pfree(template);
   }
   else
   {
@@ -2177,6 +2289,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
         meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
           "invalid jsonpath item type for %s argument",
           jspOperationName(jsp->type));
+        pfree(datetime);
         return jperError;
       }
 
@@ -2187,6 +2300,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "time precision of jsonpath item method .%s() is out of range for type integer",
           jspOperationName(jsp->type));
+        pfree(datetime);
         return jperError;
       }
     }
@@ -2241,8 +2355,19 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           "%s format is not recognized: \"%s\"",
           jspOperationName(jsp->type), tmp);
       pfree(tmp);
+      pfree(datetime);
       return jperError;
     }
+  }
+
+  /* A timetz is the one datetime value held by reference; the value parsed
+   * and the one converted to are tracked, as the values appended to found
+   * are, so the jsonb_path_* caller reclaims them via json_reset_tofree() */
+  void *parsed_timetz = NULL;
+  if (res == jperOk && typid == TIMETZOID)
+  {
+    parsed_timetz = DatumGetPointer(value);
+    json_add_tofree(parsed_timetz);
   }
 
   /*
@@ -2270,6 +2395,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "date format is not recognized: \"%s\"", tmp);
             pfree(tmp);
+            pfree(datetime);
             return jperError;
           }
           case TIMESTAMPOID:
@@ -2282,6 +2408,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           default:
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "type with oid %u not supported", typid);
+            pfree(datetime);
             return jperError;
         }
         typid = DATEOID;
@@ -2299,6 +2426,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "time format is not recognized: \"%s\"", tmp);
             pfree(tmp);
+            pfree(datetime);
             return jperError;
           }
           case TIMEOID:  /* Nothing to do for TIME */
@@ -2317,6 +2445,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           default:
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "type with oid %u not supported", typid);
+            pfree(datetime);
             return jperError;
         }
 
@@ -2347,6 +2476,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "time_tz format is not recognized: \"%s\"", tmp);
             pfree(tmp);
+            pfree(datetime);
             return jperError;
           }
           case TIMEOID:
@@ -2362,6 +2492,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           default:
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "type with oid %u not supported", typid);
+            pfree(datetime);
             return jperError;
         }
 
@@ -2395,6 +2526,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "timestamp format is not recognized: \"%s\"", tmp);
             pfree(tmp);
+            pfree(datetime);
             return jperError;
           }
           case TIMESTAMPOID:  /* Nothing to do for TIMESTAMP */
@@ -2406,6 +2538,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           default:
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "type with oid %u not supported", typid);
+            pfree(datetime);
             return jperError;
         }
 
@@ -2422,6 +2555,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "time precision of jsonpath item method .%s() is invalid",
               jspOperationName(jsp->type));
+            pfree(datetime);
             return jperError;
           }
           value = TimestampGetDatum(result);
@@ -2476,6 +2610,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
           default:
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "type with oid %u not supported", typid);
+            pfree(datetime);
             return jperError;
         }
 
@@ -2492,6 +2627,7 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
               "time precision of jsonpath item method .%s() is invalid",
               jspOperationName(jsp->type));
+            pfree(datetime);
             return jperError;
           }
           value = TimestampTzGetDatum(result);
@@ -2505,12 +2641,15 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
     default:
       meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
         "unrecognized jsonpath item type: %d", jsp->type);
+      pfree(datetime);
       return jperError;
   }
 
   pfree(datetime);
   if (jperIsError(res))
     return res;
+  if (typid == TIMETZOID && DatumGetPointer(value) != parsed_timetz)
+    json_add_tofree(DatumGetPointer(value));
   hasNext = jspGetNext(jsp, &elem);
   if (! hasNext && ! found)
     return res;
@@ -2522,6 +2661,10 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
   jb->val.datetime.typid = typid;
   jb->val.datetime.typmod = typmod;
   jb->val.datetime.tz = tz;
+  /* jb (palloc'd here) is appended to found; track it so the jsonb_path_*
+   * caller reclaims it via json_reset_tofree() */
+  if (! hasNext)
+    json_add_tofree(jb);
   return executeNextItem(cxt, jsp, &elem, jb, found, hasNext);
 }
 
@@ -3096,11 +3239,17 @@ compareItems(int32 op, JsonbValue *jb1, JsonbValue *jb2, bool useTz)
   return res ? jpbTrue : jpbFalse;
 }
 
+/*
+ * The copy is appended to a found list, so it is tracked as
+ * #executeItemOptUnwrapTarget tracks the value it appends, and the
+ * jsonb_path_* caller reclaims it via json_reset_tofree()
+ */
 static JsonbValue *
 copyJsonbValue(JsonbValue *src)
 {
   JsonbValue *dst = palloc(sizeof(*dst));
   *dst = *src;
+  json_add_tofree(dst);
   return dst;
 }
 
@@ -3129,6 +3278,8 @@ getArrayIndex(JsonPathExecContext *cxt, JsonPathItem *jsp, JsonbValue *jb,
 
   Numeric numeric_index = pg_numeric_trunc(jbv->val.numeric, 0);
   *index = pg_numeric_int4_opt_error(numeric_index, &have_error);
+  pfree(numeric_index);
+  JsonValueListClear(&found);
 
   if (have_error)
   {

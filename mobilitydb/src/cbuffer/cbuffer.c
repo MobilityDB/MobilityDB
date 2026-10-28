@@ -699,27 +699,6 @@ Cbuffer_dwithin(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Approximate equality
- *****************************************************************************/
-
-PGDLLEXPORT Datum Cbuffer_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Cbuffer_same);
-/**
- * @ingroup mobilitydb_cbuffer_base_comp
- * @brief Return true if two circular buffers are approximately equal with 
- * respect to an epsilon value
- * @sqlfn cbufferSame()
- * @sqlop @p ~=
- */
-Datum
-Cbuffer_same(PG_FUNCTION_ARGS)
-{
-  Cbuffer *cb1 = PG_GETARG_CBUFFER_P(0);
-  Cbuffer *cb2 = PG_GETARG_CBUFFER_P(1);
-  PG_RETURN_BOOL(cbuffer_same(cb1, cb2));
-}
-
-/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

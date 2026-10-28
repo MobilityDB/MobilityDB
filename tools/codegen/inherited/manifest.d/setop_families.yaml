@@ -184,7 +184,7 @@ setop_families:
   file: mobilitydb/sql/posechain/551_posechainset.in.sql
   reference: true
   begin: "CREATE FUNCTION setUnion(posechain,"
-  whole_file: true
+  end: "CREATE FUNCTION setDistance("
   pairs: [[posechain, posechainset]]
   blocks:
   - lit: "/*****************************************************************************/\n\n"
@@ -199,7 +199,7 @@ setop_families:
   - setfns: intersection
   - lit: "\n"
   - setops: intersection
-  - lit: "\n/******************************************************************************/\n"
+  - lit: "\n"
 
 - family: quadbinset
   file: mobilitydb/sql/quadbin/351_quadbinset.in.sql

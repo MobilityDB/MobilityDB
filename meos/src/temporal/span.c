@@ -245,7 +245,7 @@ span_upper_cmp(const Span *s1, const Span *s2)
  * has no next value, and the span is refused with the message PostgreSQL
  * raises for the ranges of these types.
  */
-static bool
+bool
 ensure_span_bound_has_next(Datum value, MeosType basetype)
 {
   switch (basetype)
@@ -1311,8 +1311,8 @@ span_bounds_shift_scale_value(Datum shift, Datum width, MeosType basetype,
 
 /**
  * @brief Shift and/or scale period bounds by two intervals
- * @param[in] shift Interval to shift the bounds, may be NULL
- * @param[in] duration Interval for the duration of the result, may be NULL
+ * @param[in] shift Interval to shift the bounds @nullable
+ * @param[in] duration Interval for the duration of the result @nullable
  * @param[in,out] lower,upper Bounds of the period
  */
 void
@@ -1535,8 +1535,8 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
- * @param[in] shift Interval to shift the bounds, may be NULL
- * @param[in] duration Duation of the result, may be NULL
+ * @param[in] shift Interval to shift the bounds @nullable
+ * @param[in] duration Duation of the result @nullable
  * @csqlfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *
@@ -1894,10 +1894,11 @@ span_sortkey_body_size(MeosType basetype)
 }
 
 /**
- * @brief Write the bounds of a span into a sort key in the order #span_cmp
- * compares them: the lower bound, whether it is exclusive, the upper bound,
- * whether it is inclusive, so that an inclusive lower bound precedes an
- * exclusive one and an inclusive upper bound follows an exclusive one
+ * @brief Write the bounds of a span into a sort key
+ * @details The bounds are written in the order #span_cmp compares them: the
+ * lower bound, whether it is exclusive, the upper bound, whether it is
+ * inclusive, so that an inclusive lower bound precedes an exclusive one and
+ * an inclusive upper bound follows an exclusive one
  * @param[in] s Span
  * @param[out] out Buffer of #span_sortkey_body_size bytes
  * @return The first byte after the bounds

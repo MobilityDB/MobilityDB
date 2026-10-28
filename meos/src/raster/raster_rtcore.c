@@ -101,7 +101,7 @@ raster_destroy(rt_raster raster)
 /**
  * @brief Return the serialized form of an rt_core raster, destroying the
  * raster
- * @param[in] raster Raster to serialize and destroy, may be @p NULL
+ * @param[in] raster Raster to serialize and destroy @nullable
  * @errval NULL
  */
 static Raster *
@@ -930,11 +930,11 @@ raster_geo_mask(rt_raster raster, const GSERIALIZED *gs, bool touched)
  * extent of the subject
  * @param[in] rast Raster to clip
  * @param[in] bands Numbers of the bands to keep, starting at 1, in the order
- * of the result, or NULL for every band
+ * of the result, or NULL for every band @nullable
  * @param[in] nbands Number of elements of @p bands
  * @param[in] gs Geometry to clip it to
  * @param[in] nodata Nodata values of the bands of the result, or NULL for the
- * nodata value of each band
+ * nodata value of each band @nullable
  * @param[in] nnodata Number of elements of @p nodata
  * @param[in] crop True to reduce the result to the extent the raster and the
  * geometry share
@@ -1161,12 +1161,12 @@ raster_srs_text(int32_t srid)
  * @param[in] rast Raster to warp
  * @param[in] srid Target reference system, or the subject's own to keep it
  * @param[in] coord_op Coordinate operation from the system of the subject to
- * the target system, as a PROJ string, or NULL to let GDAL derive it
+ * the target system, as a PROJ string, or NULL to let GDAL derive it @nullable
  * @param[in] scale_x,scale_y Pixel size in the units of the target system, or
- * NULL to let the warp choose it
+ * NULL to let the warp choose it @nullable
  * @param[in] grid_x,grid_y Point of the target system a grid line of the result
- * passes through, or NULL to let the warp place the grid
- * @param[in] skew_x,skew_y Skew of the result, or NULL for none
+ * passes through, or NULL to let the warp place the grid @nullable
+ * @param[in] skew_x,skew_y Skew of the result, or NULL for none @nullable
  * @param[in] algorithm Name of the resampling algorithm
  * @param[in] max_err Error in input pixels the warp may commit, 0 for none
  * @errval NULL
@@ -1257,7 +1257,7 @@ raster_warp(const Raster *rast, int32_t srid, const char *coord_op,
  * @param[in] srid Target spatial reference system identifier
  * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
  * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case
+ * Max and Min, read without regard to case @nullable
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @param[in] scale_x,scale_y Pixel size of the result in the units of the
@@ -1467,7 +1467,7 @@ raster_coord_op(const char *pipelinestr, bool is_forward, int32_t src_srid,
  * @param[in] is_forward True to apply the operation, false its inverse
  * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
  * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case
+ * Max and Min, read without regard to case @nullable
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @param[in] scale_x,scale_y Pixel size of the result in the units of the
@@ -1503,7 +1503,7 @@ raster_transform_pipeline(const Raster *rast, const char *pipelinestr,
  * @param[in] alignto Raster whose grid the result lies on
  * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
  * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case
+ * Max and Min, read without regard to case @nullable
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
@@ -1545,7 +1545,7 @@ raster_transform_raster(const Raster *rast, const Raster *alignto,
  * geotransform states it
  * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
  * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case
+ * Max and Min, read without regard to case @nullable
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
@@ -1571,7 +1571,7 @@ raster_rescale(const Raster *rast, double scale_x, double scale_y,
 /**
  * @ingroup meos_raster_base_transf
  * @brief Release an array of polygons and the values they carry
- * @param[in] gvarr Array answered by #raster_dump_as_polygons()
+ * @param[in] gvarr Array answered by #raster_dump_as_polygons() @nullable
  * @param[in] count Number of elements it holds
  * @note Each polygon is released with it, so a caller keeping one copies it
  * first
@@ -1716,7 +1716,7 @@ raster_read_band(const Raster *rast, int band, rt_raster *raster)
 /**
  * @ingroup meos_raster_base_transf
  * @brief Free an array of pixels
- * @param[in] pixarr Array of pixels
+ * @param[in] pixarr Array of pixels @nullable
  * @param[in] count Number of elements in the array
  */
 void
@@ -2295,8 +2295,8 @@ raster_band_pixels(const Raster *rast, int band, size_t *size_out)
  * @param[in] width Number of columns of the block
  * @param[in] height Number of rows of the block
  * @param[in] values Values of the block
- * @param[in] nodata True for a value stated as nodata, NULL where none is
- * @param[in] noset True for a value not to set, NULL where every value is set
+ * @param[in] nodata True for a value stated as nodata, NULL where none is @nullable
+ * @param[in] noset True for a value not to set, NULL where every value is set @nullable
  * @param[in] count Number of values, the width times the height of the block
  * @param[in] keepnodata True to leave the pixels holding the nodata value
  * @errval NULL
@@ -2996,7 +2996,7 @@ raster_reclass(const Raster *rast, int band, const char *expr,
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
  * @param[in] exclude_nodata True to leave the nodata pixels out
- * @param[in] searchvalues Values to count, or NULL to count every value
+ * @param[in] searchvalues Values to count, or NULL to count every value @nullable
  * @param[in] nsearch Number of search values
  * @param[in] roundto Multiple the values are rounded to, 0 for none
  * @param[out] count Number of rows of the result
@@ -3338,8 +3338,8 @@ raster_grid(const Raster *rast)
  * and whether every raster read is aligned with it, so a raster is tested
  * only while every one before it is aligned. A NULL raster leaves the state as
  * it is, and two rasters in different reference systems raise an error
- * @param[in,out] state Current aggregate state, NULL before the first raster
- * @param[in] rast Raster
+ * @param[in,out] state Current aggregate state, NULL before the first raster @nullable
+ * @param[in] rast Raster @nullable
  * @errval NULL
  * @csqlfn #Raster_same_alignment_transfn()
  * @csqlaggfn #sameAlignmentTransition()
@@ -3375,8 +3375,8 @@ raster_same_alignment_transfn(RasterAlignState *state, const Raster *rast)
  * the same grid
  * @details The two states are aligned where each is and their grids are,
  * as #set_union_combinefn combines two sets
- * @param[in,out] state1 Current aggregate state
- * @param[in] state2 Aggregate state to combine with the first one
+ * @param[in,out] state1 Current aggregate state @nullable
+ * @param[in] state2 Aggregate state to combine with the first one @nullable
  * @return The first state, or a copy of the second where the first is NULL;
  * the second state is left to the caller
  * @errval NULL
@@ -3416,7 +3416,7 @@ raster_same_alignment_combinefn(RasterAlignState *state1,
  * same grid
  * @details The state is freed, as #set_union_finalfn frees its own. A NULL
  * state, an aggregate over no raster, answers false
- * @param[in] state Aggregate state
+ * @param[in] state Aggregate state @nullable
  * @csqlfn #Raster_same_alignment_finalfn()
  */
 bool
@@ -4087,7 +4087,7 @@ raster_idw_callback(rt_iterator_arg arg,
  * @param[in] rast Raster
  * @param[in] band Number of the band, starting at 1
  * @param[in] customextent Raster whose extent the result takes, or NULL for
- * the extent of @p rast
+ * the extent of @p rast @nullable
  * @param[in] pixeltype Name of the pixel type of the result
  * @param[in] interpolate_nodata True to interpolate the nodata pixels first
  * @param[in] callback Terrain function of a pixel
@@ -4203,7 +4203,7 @@ raster_terrain(const Raster *rast, int band, const Raster *customextent,
  * @param[in] rast Raster of elevations
  * @param[in] band Number of the band, starting at 1
  * @param[in] customextent Raster whose extent the result takes, or NULL for
- * the extent of @p rast
+ * the extent of @p rast @nullable
  * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
  * @param[in] units Units of the result: `DEGREES`, `RADIANS` or `PERCENT`
  * @param[in] scale Ratio of the vertical units to the horizontal ones, such as
@@ -4273,7 +4273,7 @@ raster_slope(const Raster *rast, int band, const Raster *customextent,
  * @param[in] rast Raster of elevations
  * @param[in] band Number of the band, starting at 1
  * @param[in] customextent Raster whose extent the result takes, or NULL for
- * the extent of @p rast
+ * the extent of @p rast @nullable
  * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
  * @param[in] interpolate_nodata True to interpolate the nodata pixels first
  * @errval NULL
@@ -4297,7 +4297,7 @@ raster_tri(const Raster *rast, int band, const Raster *customextent,
  * @param[in] rast Raster of elevations
  * @param[in] band Number of the band, starting at 1
  * @param[in] customextent Raster whose extent the result takes, or NULL for
- * the extent of @p rast
+ * the extent of @p rast @nullable
  * @param[in] pixeltype Name of the pixel type of the result, such as `32BF`
  * @param[in] interpolate_nodata True to interpolate the nodata pixels first
  * @errval NULL
@@ -4456,11 +4456,11 @@ raster_name_index(const char *name, const char * const *names, int count)
  * @param[in] stat Statistic: `MIN`, `MAX`, `SUM`, `MEAN`, `RANGE` or
  * `STDDEV`, regardless of case
  * @param[in] pixeltype Name of the pixel type of the result, or NULL for the
- * pixel type of the band
+ * pixel type of the band @nullable
  * @param[in] extenttype Extent of the result: `INTERSECTION`, `UNION`,
  * `FIRST`, `SECOND`, `LAST` or `CUSTOM`, regardless of case, or NULL for
- * `FIRST`
- * @param[in] customextent Raster whose extent the result takes where
+ * `FIRST` @nullable
+ * @param[in] customextent Raster whose extent the result takes where @nullable
  * @p extenttype is `CUSTOM`
  * @param[in] distancex Number of pixels of the neighbourhood on each side of
  * a pixel along X
@@ -5017,11 +5017,11 @@ rasterunionstate_free(RasterUnionState *state)
  * the state as it is, rasters in different reference systems or on different
  * grids raise an error, and so does a pixel operation outside those named,
  * where PostGIS reads it as `LAST`
- * @param[in,out] state Current aggregate state, NULL before the first raster
- * @param[in] rast Raster
+ * @param[in,out] state Current aggregate state, NULL before the first raster @nullable
+ * @param[in] rast Raster @nullable
  * @param[in] band Number of the band, starting at 1, or 0 for every band
  * @param[in] uniontype Pixel operation: `LAST`, `FIRST`, `MIN`, `MAX`,
- * `COUNT`, `SUM`, `MEAN` or `RANGE`, regardless of case, or NULL for `LAST`
+ * `COUNT`, `SUM`, `MEAN` or `RANGE`, regardless of case, or NULL for `LAST` @nullable
  * @errval NULL
  * @csqlfn #Raster_union_transfn(), #Raster_union_uniontype_transfn()
  * @csqlaggfn #rasterUnionTransition()
@@ -5131,8 +5131,8 @@ raster_union_transfn(RasterUnionState *state, const Raster *rast, int band,
  * read by the first state taken as read before those of the second: two
  * counts are united by their sum. PostGIS's `ST_Union` has no combine
  * function
- * @param[in,out] state1 Current aggregate state
- * @param[in] state2 Aggregate state to combine with the first one
+ * @param[in,out] state1 Current aggregate state @nullable
+ * @param[in] state2 Aggregate state to combine with the first one @nullable
  * @return The first state, or a copy of the second where the first is NULL;
  * the second state is left to the caller
  * @errval NULL
@@ -5216,7 +5216,7 @@ raster_union_combinefn(RasterUnionState *state1,
  * parts as PostGIS's `RASTER_union_finalfn` computes them. The state is
  * freed, as #raster_same_alignment_finalfn frees its own. A NULL state, an
  * aggregate over no raster, answers NULL
- * @param[in] state Aggregate state
+ * @param[in] state Aggregate state @nullable
  * @errval NULL
  * @csqlfn #Raster_union_finalfn()
  */
@@ -5440,8 +5440,8 @@ rasterunionstate_deserialize(const uint8_t *bytes, size_t size)
  * A NULL raster leaves the state as it is, and a band the raster lacks raises
  * an error, as it does for #raster_summary_stats, where PostGIS skips the
  * raster
- * @param[in,out] state Current aggregate state, NULL before the first raster
- * @param[in] rast Raster
+ * @param[in,out] state Current aggregate state, NULL before the first raster @nullable
+ * @param[in] rast Raster @nullable
  * @param[in] band Number of the band, starting at 1
  * @param[in] exclude_nodata True to leave the pixels the band states as nodata
  * out of the statistics, false to count them as the values they hold
@@ -5542,8 +5542,8 @@ raster_summary_stats_transfn(RasterStatsState *state, const Raster *rast,
  * PostGIS's `ST_SummaryStatsAgg` has no combine function. Two states of
  * different bands, or one leaving nodata out and one counting it, raise an
  * error
- * @param[in,out] state1 Current aggregate state
- * @param[in] state2 Aggregate state to combine with the first one
+ * @param[in,out] state1 Current aggregate state @nullable
+ * @param[in] state2 Aggregate state to combine with the first one @nullable
  * @return The first state, or a copy of the second where the first is NULL;
  * the second state is left to the caller
  * @errval NULL
@@ -5597,7 +5597,7 @@ raster_summary_stats_combinefn(RasterStatsState *state1,
  * square root of the sum of squared deviations over the count, as PostGIS's
  * `RASTER_summaryStats_finalfn` takes them when every pixel is read. The
  * state is freed, as #raster_same_alignment_finalfn frees its own
- * @param[in] state Aggregate state
+ * @param[in] state Aggregate state @nullable
  * @return The statistics, or NULL where the state is NULL, an aggregate over
  * no raster, or counts no pixel, in which case no error is stated
  * @errval NULL
@@ -6064,7 +6064,7 @@ raster_resample_bilinear(const char *resample, bool *bilinear)
  * @param[in] exclude_nodata True to leave out the positions over a nodata
  * pixel, false to answer the nodata value there
  * @param[in] resample Name of the read of a position, nearest or bilinear,
- * read without regard to case, NULL for nearest
+ * read without regard to case, NULL for nearest @nullable
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
  * @errval NULL

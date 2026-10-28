@@ -171,8 +171,8 @@ tbox_out(const TBox *box, int maxdd)
 /**
  * @ingroup meos_box_constructor
  * @brief Return a temporal box from a number span and a timestamptz span
- * @param[in] s Value span, may be `NULL`
- * @param[in] p Time span, may be `NULL`
+ * @param[in] s Value span @nullable
+ * @param[in] p Time span @nullable
  * @errval NULL
  */
 TBox *
@@ -1366,8 +1366,8 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
  * @brief Return a temporal box with the value span shifted and/or scaled by
  * the values
  * @param[in] box Temporal box
- * @param[in] shift Interval to shift the value span, may be NULL
- * @param[in] duration Duration of the result, may be NULL
+ * @param[in] shift Interval to shift the value span @nullable
+ * @param[in] duration Duration of the result @nullable
  * @csqlfn #Tbox_shift_time(), #Tbox_scale_time(), #Tbox_shift_scale_time()
  */
 TBox *
@@ -2347,6 +2347,88 @@ bool
 tbox_gt(const TBox *box1, const TBox *box2)
 {
   return tbox_cmp(box1, box2) > 0;
+}
+
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @brief Return the number of bytes of the sort key of a temporal box
+ * @param[in] box Temporal box
+ */
+size_t
+tbox_sortkey_size(const TBox *box)
+{
+  size_t result = datum_sortkey_size(T_INT4) + 1;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    result += span_sortkey_body_size(box->period.basetype);
+  if (MEOS_FLAGS_GET_X(box->flags))
+    result += span_sortkey_body_size(box->span.basetype);
+  return result;
+}
+
+/**
+ * @brief Write the sort key of a temporal box
+ * @details The fields are written in the order #tbox_cmp compares them: the
+ * flags, the span type of the value dimension, the bounds of the period when
+ * the box has a time dimension, then the bounds of the value span when it has
+ * a value dimension
+ * @param[in] box Temporal box
+ * @param[out] out Buffer of #tbox_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+tbox_sortkey_put(const TBox *box, uint8_t *out)
+{
+  datum_sortkey_put(Int32GetDatum(box->flags), T_INT4, out);
+  out += datum_sortkey_size(T_INT4);
+  *out++ = box->span.spantype;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    out = span_sortkey_body(&box->period, out);
+  if (MEOS_FLAGS_GET_X(box->flags))
+    out = span_sortkey_body(&box->span, out);
+  return out;
+}
+
+/**
+ * @ingroup meos_internal_box_comp
+ * @brief Return the sort key of a temporal box
+ * @details The key is the flags, written as an integer, the span type of the
+ * value dimension, then the bounds of the period when the box has a time
+ * dimension and the bounds of the value span when it has a value dimension,
+ * as #span_sortkey_intl writes them, so that comparing two keys byte by byte
+ * as unsigned values orders the boxes as #tbox_cmp does and two boxes have the
+ * same key when #tbox_eq holds. The span type orders the boxes of integer, big
+ * integer and float values, which are one type, before their value spans.
+ * @param[in] box Temporal box
+ * @param[out] size Number of bytes of the key
+ * @see #tbox_sortkey
+ */
+uint8_t *
+tbox_sortkey_intl(const TBox *box, size_t *size)
+{
+  assert(box); assert(size);
+  *size = tbox_sortkey_size(box);
+  uint8_t *result = palloc(*size);
+  tbox_sortkey_put(box, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_box_comp
+ * @brief Return the sort key of a temporal box, the bytes whose unsigned byte
+ * order is the order of #tbox_cmp and whose byte equality is #tbox_eq
+ * @param[in] box Temporal box
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+tbox_sortkey(const TBox *box, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return tbox_sortkey_intl(box, size);
 }
 
 /*****************************************************************************/

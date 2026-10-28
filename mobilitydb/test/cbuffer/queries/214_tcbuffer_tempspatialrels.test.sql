@@ -100,6 +100,11 @@ SELECT tDwithin(tcbuffer '[Cbuffer(Point(2 2),3)@2001-01-01, Cbuffer(Point(0 2),
 -- inside at its end is covered and contained throughout it
 SELECT tCovers(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
 SELECT tContains(tcbuffer '[Cbuffer(Point(0 0),3)@2001-01-01, Cbuffer(Point(0 0),3)@2001-01-03]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-03]');
+-- A buffer whose nearest approach to a point exceeds the bound by less than
+-- half a unit in the last place: never within at the bound, within at the
+-- next double
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+SELECT tDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317312);
 -- Crossings inside a segment at projected coordinates: the first centre jumps
 -- 330 km in 4 seconds and passes 64.9 m from the second. With constant radii
 -- the answers are those of the centres at the radii read as a distance, which
@@ -230,6 +235,12 @@ SELECT tDisjoint(tcbuffer '[Cbuffer(Point(3 3),0)@2001-01-01, Cbuffer(Point(-2 0
 -- A moving disc touching a stationary one at a single instant
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
 SELECT tDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-03]', tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-03]');
+-- A moving disc meeting a stationary one from 08:15:22.3199847 to
+-- 15:44:37.6800153: apart at the whole microsecond before it meets and after it
+-- leaves, meeting at the ones within
+SELECT valueAtTimestamp(tIntersects(tcbuffer '[Cbuffer(Point(343.4469752357655 644.134764860065),0.5)@2001-01-01 00:00:00+00, Cbuffer(Point(348.1833027851398 644.134764860065),0.5)@2001-01-02 00:00:00+00]', tcbuffer '[Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-01 00:00:00+00, Cbuffer(Point(345.81513901045264 644.2637366958002),0.25)@2001-01-02 00:00:00+00]'), t)
+FROM unnest(ARRAY[timestamptz '2001-01-01 08:15:22.319984+00', '2001-01-01 08:15:22.319985+00',
+  '2001-01-01 15:44:37.680015+00', '2001-01-01 15:44:37.680016+00']) AS t;
 
 /* Errors */
 SELECT tIntersects(geometry 'SRID=5676;Point(1 1)', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01');

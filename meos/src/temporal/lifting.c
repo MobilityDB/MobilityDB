@@ -98,6 +98,21 @@
  * instants add an instant sequence at the crossing. The result is a
  * `tfloatseq`.
  *
+ * Under an error handler that does not exit, a function that raises an error
+ * for one of the values returns its failure value, and the lifting goes on
+ * building its result from it. The entry functions #tfunc_temporal,
+ * #tfunc_temporal_base, #tfunc_temporal_temporal, #eafunc_temporal_base,
+ * #eafunc_temporal_temporal, #lfunc_set and #lfunc_set_bool therefore clear
+ * the error number on entry and read it on exit: when the function raised an
+ * error they free the result and answer their own failure value, NULL or -1,
+ * the error number keeping the code of the error; otherwise they restore the
+ * error number found on entry, as #meos_errno_reset describes. A value for
+ * which the function raised an error and returned no instant leaves the
+ * temporal value it belongs to unbuilt, so that the constructor raises no
+ * second error and the error number keeps the code the function raised. A
+ * warning or a notice leaves the error number clear, so it leaves the answer
+ * as it is. In the extension an error ends the statement where it is raised.
+ *
  * A struct named `LiftedFunctionInfo` is used to describe the above
  * characteristics of the function to be lifted. Such struct is filled by
  * the calling function and is passed through the dispatch functions.
@@ -198,6 +213,87 @@
   extern TSequenceSet *tfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo);
 #endif
 
+/**
+ * @brief Return true when no value of an array is missing
+ * @details A value is missing when the function lifted raised an error for
+ * it, and building a temporal value from the array would raise a second error
+ * that replaces the code of the first
+ */
+static bool
+lifting_values_made(void **values, int count)
+{
+  for (int i = 0; i < count; i++)
+  {
+    if (! values[i])
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Construct a temporal sequence from an array of temporal instants,
+ * or return NULL when one of them is missing
+ * @note See #lifting_values_made
+ */
+static TSequence *
+lifting_tsequence_make(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, bool normalize)
+{
+  if (! lifting_values_made((void **) instants, count))
+    return NULL;
+  return tsequence_make(instants, count, lower_inc, upper_inc, interp,
+    normalize);
+}
+
+/**
+ * @brief Construct a temporal sequence from an array of temporal instants and
+ * free the array and the instants, or return NULL when one of them is missing
+ * @note See #lifting_values_made
+ */
+static TSequence *
+lifting_tsequence_make_free(TInstant **instants, int count, bool lower_inc,
+  bool upper_inc, interpType interp, bool normalize)
+{
+  if (! lifting_values_made((void **) instants, count))
+  {
+    pfree_array((void **) instants, count);
+    return NULL;
+  }
+  return tsequence_make_free(instants, count, lower_inc, upper_inc, interp,
+    normalize);
+}
+
+/**
+ * @brief Construct a temporal sequence set from an array of temporal
+ * sequences and free the array and the sequences, or return NULL when one of
+ * them is missing
+ * @note See #lifting_values_made
+ */
+static TSequenceSet *
+lifting_tsequenceset_make_free(TSequence **sequences, int count,
+  bool normalize)
+{
+  if (! lifting_values_made((void **) sequences, count))
+  {
+    pfree_array((void **) sequences, count);
+    return NULL;
+  }
+  return tsequenceset_make_free(sequences, count, normalize);
+}
+
+/**
+ * @brief Convert a temporal instant into a temporal sequence and free the
+ * instant, or return NULL when the instant is missing
+ * @note See #lifting_values_made
+ */
+static TSequence *
+lifting_tinstant_to_tsequence_free(TInstant *inst, interpType interp)
+{
+  if (! inst)
+    return NULL;
+  return tinstant_to_tsequence_free(inst, interp);
+}
+
 /*****************************************************************************
  * Functions where the argument is a base type
  *****************************************************************************/
@@ -253,8 +349,12 @@ lfunc_base(Datum value, LiftedFunctionInfo *lfinfo)
  * The function is applied to the composing elements.
  *****************************************************************************/
 
-Set *
-lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
+/**
+ * @brief Apply a function to the elements of a set
+ * @note The error number is read by #lfunc_set
+ */
+static Set *
+lfunc_set_dispatch(const Set *set, LiftedFunctionInfo *lfinfo)
 {
   assert(set); assert(lfinfo); 
   MeosType basetype = settype_basetype(lfinfo->restype);
@@ -339,6 +439,25 @@ lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
 }
 
 /**
+ * @brief Apply a function to the elements of a set
+ * @param[in] set Set
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer NULL, see
+ * the note on errors at the beginning of the file
+ */
+Set *
+lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return (Set *) lifting_result(lfunc_set_dispatch(set, lfinfo),
+    last_errno);
+#else
+  return lfunc_set_dispatch(set, lfinfo);
+#endif /* MEOS */
+}
+
+/**
  * @brief Apply a lifted predicate to the elements of a set
  * @param[in] set Set
  * @param[in] lfinfo Information about the lifted function
@@ -346,14 +465,24 @@ lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
  * @note A predicate returns a Boolean for every element of the set. There is
  * no Boolean set type, and a set would remove the duplicate results and
  * reorder them, so the result is an array in the order of the elements
+ * @note An error raised by the function applied makes the answer NULL, see
+ * the note on errors at the beginning of the file
  */
 bool *
 lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo, int *count)
 {
   assert(set); assert(lfinfo); assert(count);
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   bool *result = palloc(sizeof(bool) * set->count);
   for (int i = 0; i < set->count; i++)
     result[i] = DatumGetBool(lfunc_base(SET_VAL_N(set, i), lfinfo));
+#if MEOS
+  result = (bool *) lifting_result(result, last_errno);
+  if (! result)
+    return NULL;
+#endif /* MEOS */
   *count = set->count;
   return result;
 }
@@ -558,7 +687,7 @@ tfunc_tlinearseq_adaptive(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     inst1 = inst2;
     value1 = value2;
   }
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+  return lifting_tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
@@ -614,7 +743,7 @@ tfunc_tlinearseq_turnpt(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     value1 = value2;
   }
   instants[ninsts++] = tfunc_tinstant(inst1, lfinfo);
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+  return lifting_tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
@@ -671,7 +800,7 @@ tfunc_tlinearseq_set(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     inst1 = inst2;
     value1 = value2;
   }
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
+  return lifting_tsequence_make_free(instants, ninsts, seq->period.lower_inc,
     seq->period.upper_inc, LINEAR, NORMALIZE);
 }
 
@@ -708,15 +837,16 @@ tfunc_tsequence(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     interp = STEP;
   /* The last two values of sequences with step interpolation and exclusive
    * upper bound must be equal */
-  if (! seq->period.upper_inc && interp == STEP && seq->count >= 2)
+  if (! seq->period.upper_inc && interp == STEP && seq->count >= 2 &&
+      instants[seq->count - 2] && instants[seq->count - 1])
   {
     TInstant *inst = instants[seq->count - 1];
     Datum value = tinstant_value_p(instants[seq->count - 2]);
     instants[seq->count - 1] = tinstant_make(value, lfinfo->restype, inst->t);
     pfree(inst);
   }
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+  return lifting_tsequence_make_free(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
 }
 
 /**
@@ -735,16 +865,15 @@ tfunc_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
     sequences[i] = tfunc_tsequence(TSEQUENCESET_SEQ_N(ss, i), lfinfo);
-  return tsequenceset_make_free(sequences, ss->count, NORMALIZE);
+  return lifting_tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
- * @brief Apply a lifted function to a temporal value (dispatch function)
- * @param[in] temp Temporal value
- * @param[in] lfinfo Information about the lifted function
+ * @brief Apply a lifted function to a temporal value
+ * @note The error number is read by #tfunc_temporal
  */
-Temporal *
-tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
+static Temporal *
+tfunc_temporal_dispatch(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 {
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -762,6 +891,25 @@ tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
     default: /* TSEQUENCESET */
       return (Temporal *) tfunc_tsequenceset((TSequenceSet *) temp, lfinfo);
   }
+}
+
+/**
+ * @brief Apply a lifted function to a temporal value
+ * @param[in] temp Temporal value
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer the
+ * failure value, see the note on errors at the beginning of the file
+ */
+Temporal *
+tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return (Temporal *) lifting_result(tfunc_temporal_dispatch(temp, lfinfo),
+    last_errno);
+#else
+  return tfunc_temporal_dispatch(temp, lfinfo);
+#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -855,7 +1003,8 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
     interp = STEP;
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
-  if (! seq->period.upper_inc && interp == STEP)
+  if (! seq->period.upper_inc && interp == STEP &&
+      instants[seq->count - 2] && instants[seq->count - 1])
   {
     TInstant *inst = instants[seq->count - 1];
     value = tinstant_value_p(instants[seq->count - 2]);
@@ -864,8 +1013,8 @@ tfunc_tsequence_base(const TSequence *seq, Datum value,
     pfree(inst);
   }
   /* Create the result */
-  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+  return lifting_tsequence_make_free(instants, seq->count,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
 }
 
 /**
@@ -925,8 +1074,8 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
     value1 = value2;
   }
   instants[ninsts++] = tfunc_tinstant_base(inst1, value, lfinfo);
-  result[0] = tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE);
+  result[0] = lifting_tsequence_make_free(instants, ninsts,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE);
   return 1;
 }
 
@@ -960,7 +1109,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   if (seq->count == 1)
   {
     instants[0] = tinstant_make_free(startresult, lfinfo->restype, start->t);
-    result[0] = tinstant_to_tsequence_free(instants[0], STEP);
+    result[0] = lifting_tinstant_to_tsequence_free(instants[0], STEP);
     return 1;
   }
 
@@ -1035,8 +1184,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
       {
         /* Close the current sequence at the start */
         instants[ninsts++] = tinstant_make(startresult, restype, start->t);
-        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, true,
-          STEP, NORMALIZE);
+        result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+          true, STEP, NORMALIZE);
         for (int j = 0; j < ninsts; j++)
           pfree(instants[j]);
         ninsts = 0;
@@ -1074,7 +1223,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
           /* The upper_inc bound of the closing sequence is true if lower_eq,
            * false if upper_eq */
-          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
             lower_eq, STEP, NORMALIZE);
           for (int j = 0; j < ninsts; j++)
             pfree(instants[j]);
@@ -1091,15 +1240,15 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
           /* The crossing is at the middle: close the current sequence */
           instants[ninsts++] = tinstant_make(startresult, restype, start->t);
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
-          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
-            STEP, NORMALIZE);
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+            false, STEP, NORMALIZE);
           for (int j = 0; j < ninsts; j++)
             pfree(instants[j]);
           ninsts = 0;
           /* Add a singleton sequence with the crossing */
           instants[0] = tinstant_make_free(tpresult, restype, tpt1);
-          result[nseqs++] = tsequence_make(instants, 1, true, true, STEP,
-            NORMALIZE);
+          result[nseqs++] = lifting_tsequence_make(instants, 1, true, true,
+            STEP, NORMALIZE);
           pfree(instants[0]);
           /* Start a new sequence from the crossing to the end of the segment */
           lower_inc = false;
@@ -1120,7 +1269,8 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
   {
     /* The last two values of sequences with step interpolation and exclusive
        upper bound must be equal */
-    if (! seq->period.upper_inc)
+    if (! seq->period.upper_inc && ninsts > 1 && instants[ninsts - 2] &&
+        instants[ninsts - 1])
     {
       TInstant *inst = instants[ninsts - 1];
       value = tinstant_value_p(instants[ninsts - 2]);
@@ -1128,7 +1278,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
         instants[ninsts - 1]->t);
       pfree(inst);
     }
-    result[nseqs++] = tsequence_make(instants, ninsts,
+    result[nseqs++] = lifting_tsequence_make(instants, ninsts,
       (ninsts == 1) ? true : lower_inc,
       (ninsts == 1) ? true : seq->period.upper_inc, STEP, NORMALIZE);
   }
@@ -1151,7 +1301,8 @@ tfunc_tlinearseq_base(const TSequence *seq, Datum value,
   {
     int nseqs = tfunc_tlinearseq_base_discfn(seq, value, lfinfo, sequences);
     /* We are sure that nseqs > 0 */
-    return (Temporal *) tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+    return (Temporal *) lifting_tsequenceset_make_free(sequences, nseqs,
+      NORMALIZE);
   }
   else
   {
@@ -1196,18 +1347,15 @@ tfunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
       sequences[nseqs++] = tfunc_tsequence_base(seq, value, lfinfo);
   }
   /* We are sure that nseqs > 0 */
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return lifting_tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /**
  * @brief Apply a lifted function to a temporal value and a base value
- * (dispatch function)
- * @param[in] temp Temporal value
- * @param[in] value Base value
- * @param[in] lfinfo Information about the lifted function
+ * @note The error number is read by #tfunc_temporal_base
  */
-Temporal *
-tfunc_temporal_base(const Temporal *temp, Datum value,
+static Temporal *
+tfunc_temporal_base_dispatch(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   assert(temptype_subtype(temp->subtype));
@@ -1223,6 +1371,27 @@ tfunc_temporal_base(const Temporal *temp, Datum value,
       return (Temporal *) tfunc_tsequenceset_base((TSequenceSet *) temp, value,
         lfinfo);
   }
+}
+
+/**
+ * @brief Apply a lifted function to a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer the
+ * failure value, see the note on errors at the beginning of the file
+ */
+Temporal *
+tfunc_temporal_base(const Temporal *temp, Datum value,
+  LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return (Temporal *) lifting_result(
+    tfunc_temporal_base_dispatch(temp, value, lfinfo), last_errno);
+#else
+  return tfunc_temporal_base_dispatch(temp, value, lfinfo);
+#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -1393,7 +1562,7 @@ tfunc_tdiscseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     else
       inst2 = TSEQUENCE_INST_N(seq2, ++j);
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+  return lifting_tsequence_make_free(instants, ninsts, true, true, DISCRETE,
     NORMALIZE_NO);
 }
 
@@ -1424,7 +1593,8 @@ tfunc_tcontseq_tdiscseq(const TSequence *seq1, const TSequence *seq2,
     if (upper1 < inst->t)
       break;
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  return lifting_tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -1476,7 +1646,8 @@ tfunc_tsequenceset_tdiscseq(const TSequenceSet *ss, const TSequence *seq,
     else
       j++;
   }
-  return tsequence_make_free(instants, ninsts, true, true, DISCRETE, NORMALIZE_NO);
+  return lifting_tsequence_make_free(instants, ninsts, true, true, DISCRETE,
+    NORMALIZE_NO);
 }
 
 /**
@@ -1622,7 +1793,8 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   /* We are sure that ninsts != 0 due to the period intersection test above */
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
-  if (! lfinfo->reslinear && ! inter->upper_inc && ninsts > 1)
+  if (! lfinfo->reslinear && ! inter->upper_inc && ninsts > 1 &&
+      instants[ninsts - 2] && instants[ninsts - 1])
   {
     tofree[nfree++] = instants[ninsts - 1];
     value = tinstant_value_p(instants[ninsts - 2]);
@@ -1634,7 +1806,7 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
     MEOS_FLAGS_GET_INTERP(seq2->flags));
   if (interp == LINEAR && ! lfinfo->reslinear)
     interp = STEP;
-  result[0] = tsequence_make_free(instants, ninsts, inter->lower_inc,
+  result[0] = lifting_tsequence_make_free(instants, ninsts, inter->lower_inc,
     inter->upper_inc, interp, NORMALIZE);
   return 1;
 }
@@ -1781,8 +1953,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
       {
         /* Close the current sequence at the start instant */
         instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
-        result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, true,
-          interp, NORMALIZE);
+        result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+          true, interp, NORMALIZE);
         for (int k = 0; k < ninsts; k++)
           pfree(instants[k]);
         ninsts = 0;
@@ -1817,7 +1989,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
           /* The upper_inc bound of the closing sequence is true if lower_eq,
            * false if upper_eq */
-          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
             lower_eq, interp, NORMALIZE);
           for (int k = 0; k < ninsts; k++)
             pfree(instants[k]);
@@ -1832,15 +2004,15 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
           /* The crossing is at the middle: close the current sequence */
           instants[ninsts++] = tinstant_make(startresult, restype, start1->t);
           instants[ninsts++] = tinstant_make(startresult, restype, tpt1);
-          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
-            interp, NORMALIZE);
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+            false, interp, NORMALIZE);
           for (int k = 0; k < ninsts; k++)
             pfree(instants[k]);
           ninsts = 0;
           /* Add a singleton sequence with the crossing */
           instants[0] = tinstant_make_free(tpresult, restype, tpt1);
-          result[nseqs++] = tsequence_make(instants, 1, true, true, interp,
-            NORMALIZE);
+          result[nseqs++] = lifting_tsequence_make(instants, 1, true, true,
+            interp, NORMALIZE);
           pfree(instants[0]);
           /* Start a new sequence from the crossing to the end of the segment */
           lower_inc = false;
@@ -1860,7 +2032,8 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
 
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
-  if (! inter->upper_inc && interp == STEP)
+  if (! inter->upper_inc && interp == STEP && instants[ninsts - 2] &&
+      instants[ninsts - 1])
   {
     TInstant *inst = instants[ninsts - 1];
     Datum value = tinstant_value_p(instants[ninsts - 2]);
@@ -1869,7 +2042,7 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     pfree(inst);
   }
   
-  result[nseqs++] = tsequence_make_free(instants, ninsts,
+  result[nseqs++] = lifting_tsequence_make_free(instants, ninsts,
     (ninsts == 1) ? true : lower_inc,
     (ninsts == 1) ? true : inter->upper_inc, interp, NORMALIZE);
   pfree_array((void *) tofree, nfree);
@@ -1989,8 +2162,8 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
         tfunc_base_base(endvalue1, startvalue2, lfinfo) :
         tfunc_base_base(startvalue1, endvalue2, lfinfo);
       instants[ninsts++] = tinstant_make_free(closeresult, restype, end1->t);
-      result[nseqs++] = tsequence_make(instants, ninsts, lower_inc, false,
-        LINEAR, NORMALIZE_NO);
+      result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
+        false, LINEAR, NORMALIZE_NO);
       for (int k = 0; k < ninsts; k++)
         pfree(instants[k]);
       ninsts = 0;
@@ -2005,7 +2178,7 @@ tfunc_tlinearseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
   if (inter->upper_inc)
     instants[ninsts++] = tinstant_make_free(startresult, restype, start1->t);
   if (ninsts > 0)
-    result[nseqs++] = tsequence_make(instants, ninsts,
+    result[nseqs++] = lifting_tsequence_make(instants, ninsts,
       (ninsts == 1) ? true : lower_inc, (ninsts == 1) ? true : inter->upper_inc,
       LINEAR, NORMALIZE);
   pfree_array((void **) tofree, nfree);
@@ -2036,7 +2209,7 @@ tfunc_tcontseq_tcontseq_dispatch(const TSequence *seq1, const TSequence *seq2,
     Datum resvalue = tfunc_base_base(value1, value2, lfinfo);
     TInstant *inst = tinstant_make_free(resvalue, lfinfo->restype, inter.lower);
     interpType interp = lfinfo->reslinear ? LINEAR : STEP;
-    result[0] = tinstant_to_tsequence_free(inst, interp);
+    result[0] = lifting_tinstant_to_tsequence_free(inst, interp);
     DATUM_FREE(value1, temptype_basetype(seq1->temptype));
     DATUM_FREE(value2, temptype_basetype(seq2->temptype));
     return 1;
@@ -2084,8 +2257,9 @@ tfunc_tcontseq_tcontseq(const TSequence *seq1, const TSequence *seq2,
   }
   else
   {
-    TSequenceSet *result = tsequenceset_make_free(sequences, nseqs, NORMALIZE);
-    if (result->count == 1)
+    TSequenceSet *result = lifting_tsequenceset_make_free(sequences, nseqs,
+      NORMALIZE);
+    if (result && result->count == 1)
     {
       Temporal *resultseq = (Temporal *) tsequenceset_as_tsequence(result);
       pfree(result);
@@ -2136,7 +2310,8 @@ tfunc_tsequenceset_tcontseq(const TSequenceSet *ss, const TSequence *seq,
       break;
   }
   /* We need to normalize when discont is true */
-  return (Temporal *) tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return (Temporal *) lifting_tsequenceset_make_free(sequences, nseqs,
+    NORMALIZE);
 }
 
 /**
@@ -2197,18 +2372,17 @@ tfunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
       j++;
   }
   /* We need to normalize if the function has instantaneous discontinuities */
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return lifting_tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 /*****************************************************************************/
 
 /**
- * @brief Synchronize two temporal values and apply to them a lifted function
- * @param[in] temp1,temp2 Temporal values
- * @param[in] lfinfo Information about the lifted function
+ * @brief Apply a lifted function to two temporal values
+ * @note The error number is read by #tfunc_temporal_temporal
  */
-Temporal *
-tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+static Temporal *
+tfunc_temporal_temporal_dispatch(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   /* Bounding box test */
@@ -2300,6 +2474,26 @@ tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
       }
     }
   }
+}
+
+/**
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer the
+ * failure value, see the note on errors at the beginning of the file
+ */
+Temporal *
+tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+  LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return (Temporal *) lifting_result(
+    tfunc_temporal_temporal_dispatch(temp1, temp2, lfinfo), last_errno);
+#else
+  return tfunc_temporal_temporal_dispatch(temp1, temp2, lfinfo);
+#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -2549,13 +2743,12 @@ eafunc_tsequenceset_base(const TSequenceSet *ss, Datum value,
 /*****************************************************************************/
 
 /**
- * @brief Apply a lifted function to a temporal value and a base value
- * @param[in] temp Temporal value
- * @param[in] value Base value
- * @param[in] lfinfo Information about the lifted function
+ * @brief Apply a lifted ever or always function to a temporal value and a
+ * base value
+ * @note The error number is read by #eafunc_temporal_base
  */
-int
-eafunc_temporal_base(const Temporal *temp, Datum value,
+static int
+eafunc_temporal_base_dispatch(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
   assert(temp);
@@ -2569,6 +2762,27 @@ eafunc_temporal_base(const Temporal *temp, Datum value,
     default: /* TSEQUENCESET */
       return eafunc_tsequenceset_base((TSequenceSet *) temp, value, lfinfo);
   }
+}
+
+/**
+ * @brief Apply a lifted function to a temporal value and a base value
+ * @param[in] temp Temporal value
+ * @param[in] value Base value
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer the
+ * failure value, see the note on errors at the beginning of the file
+ */
+int
+eafunc_temporal_base(const Temporal *temp, Datum value,
+  LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return lifting_result_int(
+    eafunc_temporal_base_dispatch(temp, value, lfinfo), last_errno);
+#else
+  return eafunc_temporal_base_dispatch(temp, value, lfinfo);
+#endif /* MEOS */
 }
 
 /*****************************************************************************/
@@ -3243,12 +3457,11 @@ eafunc_tsequenceset_tsequenceset(const TSequenceSet *ss1,
 /*****************************************************************************/
 
 /**
- * @brief Synchronize two temporal values and apply to them a lifted function
- * @param[in] temp1,temp2 Temporal values
- * @param[in] lfinfo Information about the lifted function
+ * @brief Apply a lifted ever or always function to two temporal values
+ * @note The error number is read by #eafunc_temporal_temporal
  */
-int
-eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+static int
+eafunc_temporal_temporal_dispatch(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
   assert(temp1); assert(temp2); assert(temp1->temptype == temp2->temptype);
@@ -3343,6 +3556,26 @@ eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   }
 }
 
+/**
+ * @brief Synchronize two temporal values and apply to them a lifted function
+ * @param[in] temp1,temp2 Temporal values
+ * @param[in] lfinfo Information about the lifted function
+ * @note An error raised by the function applied makes the answer the
+ * failure value, see the note on errors at the beginning of the file
+ */
+int
+eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
+  LiftedFunctionInfo *lfinfo)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+  return lifting_result_int(
+    eafunc_temporal_temporal_dispatch(temp1, temp2, lfinfo), last_errno);
+#else
+  return eafunc_temporal_temporal_dispatch(temp1, temp2, lfinfo);
+#endif /* MEOS */
+}
+
 /*****************************************************************************
  * The following functions are only allowed for JSON since currently it is
  * the only base type that can produce null values on input
@@ -3392,7 +3625,8 @@ tfunc_null_tdiscseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
   }
   if (! count)
     return NULL;
-  return tsequence_make_free(instants, count, true, true, DISCRETE, NORMALIZE);
+  return lifting_tsequence_make_free(instants, count, true, true, DISCRETE,
+    NORMALIZE);
 }
 
 /**
@@ -3451,7 +3685,7 @@ tfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
             if (ninsts == 1)
               lower_inc = true;
           }
-          result[nseqs++] = tsequence_make(instants, ninsts, lower_inc,
+          result[nseqs++] = lifting_tsequence_make(instants, ninsts, lower_inc,
             upper_inc, interp, NORMALIZE);
           ninsts = 0;
         }
@@ -3481,7 +3715,7 @@ tfunc_null_tcontseq_iter(const TSequence *seq, LiftedFunctionInfo *lfinfo,
     {
       lower_inc = upper_inc = true;
     }
-    result[nseqs++] = tsequence_make_free(instants, ninsts, lower_inc,
+    result[nseqs++] = lifting_tsequence_make_free(instants, ninsts, lower_inc,
       upper_inc, interp, NORMALIZE);
   }
   else
@@ -3508,7 +3742,7 @@ tfunc_null_tcontseq(const TSequence *seq, LiftedFunctionInfo *lfinfo)
     maxseqs = (int) ceil((double) seq->count / 2.0);
   TSequence **sequences = palloc(sizeof(TSequence *) * maxseqs);
   int count = tfunc_null_tcontseq_iter(seq, lfinfo, sequences);
-  return tsequenceset_make_free(sequences, count, NORMALIZE);
+  return lifting_tsequenceset_make_free(sequences, count, NORMALIZE);
 }
 
 /**
@@ -3575,7 +3809,7 @@ tfunc_null_tsequenceset(const TSequenceSet *ss, LiftedFunctionInfo *lfinfo)
       }
     }
   }
-  return tsequenceset_make_free(sequences, nseqs, NORMALIZE);
+  return lifting_tsequenceset_make_free(sequences, nseqs, NORMALIZE);
 }
 
 #endif /* JSON */

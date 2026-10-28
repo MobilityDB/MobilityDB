@@ -1023,7 +1023,7 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
 
 /**
  * @brief Create the initial state for tiling operations
- * @param[in] temp Temporal number, may be @p NULL
+ * @param[in] temp Temporal number @nullable
  * @param[in] box Bounds of the multidimensional grid
  * @param[in] vsize Value size of the tiles, may be 0 for time tiles
  * @param[in] duration Interval defining the time size of the tile, may be
@@ -1381,7 +1381,7 @@ tnumber_value_time_tile_init(const Temporal *temp, Datum vsize,
  * `vsize`, as #tgeo_space_time_split_init requires its spatial grid
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the value dimension, which must be positive
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the grid contains the upper border of the
@@ -1414,7 +1414,7 @@ tnumber_value_time_split_init(const Temporal *temp, Datum vsize,
  * @param[in] box Temporal box
  * @param[in] vsize Size of the value dimension, ignored when @p basetype is
  * `T_UNKNOWN`
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] basetype Base type of the value size and origin, `T_UNKNOWN`
@@ -1479,7 +1479,7 @@ tbox_value_time_tile_init(const TBox *box, Datum vsize,
  * a value and possibly a time grid
  * @param[in] temp Temporal number
  * @param[in] vsize Size of the value dimension
- * @param[in] duration Size of the time dimension as an interval, may be `NULL`
+ * @param[in] duration Size of the time dimension as an interval @nullable
  * @param[in] vorigin Origin for the value dimension
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the grid contains the upper border of the

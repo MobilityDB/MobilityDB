@@ -1061,14 +1061,16 @@ cbuffer_transform_pipeline(const Cbuffer *cb, const char *pipelinestr,
 /**
  * @ingroup meos_internal_cbuffer_dist
  * @brief Return the distance between two circular buffers
+ * @details The distance between the centres less the sum of the radii, not
+ * below zero, as the double nearest it (#point_distance_offset_sum_exact)
  * @param[in] cb1,cb2 Circular buffers
  * @note The function assumes that all validity tests have been previously done
  */
 double
 cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 {
-  return Max(hypot(cb2->x - cb1->x, cb2->y - cb1->y) -
-    cb1->radius - cb2->radius, 0);
+  const double p[2] = {cb1->x, cb1->y}, q[2] = {cb2->x, cb2->y};
+  return point_distance_offset_sum_exact(p, q, 2, cb1->radius, cb2->radius);
 }
 
 /**
@@ -1182,8 +1184,10 @@ distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * length the sign states whether the centres are nearer than, at, or farther
  * than it, which is how the relationships below read the discs, on the
  * doubles they hold and without constructing any distance. The sign is
- * filtered and then exact, as #cross_product_sign_exact decides an
- * orientation, through #polynomial_sign_exact
+ * filtered and then exact, through #point_distance_square_sum_sign, whose
+ * products of the input doubles are exact for any finite doubles, where a
+ * product of two subnormal values underflows and one of two values beyond
+ * 2^512 overflows
  * @param[in] cb1,cb2 Circular buffers
  * @param[in] lterms,nterms Doubles whose sum is the length
  */
@@ -1222,17 +1226,9 @@ cbuffer_gap_sign(const Cbuffer *cb1, const Cbuffer *cb2, const double *lterms,
       return -1;
   }
 
-  /* Exact sums: the differences of the coordinates and the length */
-  ExactSum sums[3];
-  double t[2];
-  t[0] = cb1->x; t[1] = - cb2->x;
-  exact_sum_set(&sums[0], t, 2);
-  t[0] = cb1->y; t[1] = - cb2->y;
-  exact_sum_set(&sums[1], t, 2);
-  exact_sum_set(&sums[2], lterms, nterms);
-  static const PolyTerm gap[3] = {
-    {1.0, 2, {0, 0, 0, 0}}, {1.0, 2, {1, 1, 0, 0}}, {-1.0, 2, {2, 2, 0, 0}}};
-  return polynomial_sign_exact(sums, gap, 3);
+  /* The exact sign on the input doubles */
+  const double p[2] = {cb1->x, cb1->y}, q[2] = {cb2->x, cb2->y};
+  return point_distance_square_sum_sign(p, q, lterms, nterms);
 }
 
 /**
@@ -1551,7 +1547,7 @@ cbuffer_eq(const Cbuffer *cb1, const Cbuffer *cb2)
   VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
   return cb1->srid == cb2->srid &&
     float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
@@ -1568,7 +1564,7 @@ cbuffer_eq_intl(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   assert(cb1); assert(cb2); assert(cb1->srid == cb2->srid);
   return float8_eq(cb1->x, cb2->x) && float8_eq(cb1->y, cb2->y) &&
-    fabs(cb1->radius - cb2->radius) < MEOS_EPSILON;
+    float8_eq(cb1->radius, cb2->radius);
 }
 
 /**
@@ -1581,37 +1577,6 @@ bool
 cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   return (! cbuffer_eq(cb1, cb2));
-}
-
-/**
- * @ingroup meos_cbuffer_base_comp
- * @brief Return true if two circular buffers are approximately equal with
- * respect to an epsilon value
- * @csqlfn #Cbuffer_same()
- */
-bool
-cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(cb1, false); VALIDATE_NOT_NULL(cb2, false);
-
-  /* Same radius */
-  if (fabs(cb1->radius - cb2->radius) > MEOS_EPSILON)
-    return false;
-  /* Same points */
-  return cb1->srid == cb2->srid &&
-    MEOS_FP_EQ(cb1->x, cb2->x) && MEOS_FP_EQ(cb1->y, cb2->y);
-}
-
-/**
- * @ingroup meos_cbuffer_base_comp
- * @brief Return true if two circular buffers are approximately equal with
- * respect to an epsilon value
- */
-bool
-cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2)
-{
-  return ! cbuffer_same(cb1, cb2);
 }
 
 /**

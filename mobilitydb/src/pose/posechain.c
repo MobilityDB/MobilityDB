@@ -651,23 +651,6 @@ Posechain_transform_pipeline(PG_FUNCTION_ARGS)
  * Comparison functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Posechain_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Posechain_same);
-/**
- * @ingroup mobilitydb_posechain_base_comp
- * @brief Return true if two pose chains are equal up to the tolerance of the
- * comparison of floating-point values
- * @sqlfn posechainSame()
- * @sqlop @p ~=
- */
-Datum
-Posechain_same(PG_FUNCTION_ARGS)
-{
-  PoseChain *pc1 = PG_GETARG_POSECHAIN_P(0);
-  PoseChain *pc2 = PG_GETARG_POSECHAIN_P(1);
-  PG_RETURN_BOOL(posechain_same(pc1, pc2));
-}
-
 PGDLLEXPORT Datum Posechain_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Posechain_eq);
 /**

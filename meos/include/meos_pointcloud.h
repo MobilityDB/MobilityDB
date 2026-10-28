@@ -163,20 +163,21 @@ extern uint32 pcpoint_hash(const Pcpoint *pt);
 extern uint64 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed);
 extern int pcpoint_mem_size(const Pcpoint *pt);
 
-/* Schema-aware coordinate accessors.  All write the result through @p out
- * and return @p true on success; @p false (without erroring) when the
- * requested dimension is absent from the schema or could not be read. */
+/* Coordinate accessors, reading the point in the schema its pcid names.
+ * All write the result through @p out and return @p true on success;
+ * @p false when the requested dimension is absent from the schema or could
+ * not be read. A pcid naming no registered schema is an error. */
 
-extern bool pcpoint_get_x(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_y(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_z(const Pcpoint *pt, PCSCHEMA *schema, double *out);
-extern bool pcpoint_get_dim(const Pcpoint *pt, PCSCHEMA *schema,
-  const char *name, double *out);
+extern bool pcpoint_get_x(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_y(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_z(const Pcpoint *pt, double *out);
+extern bool pcpoint_get_dim(const Pcpoint *pt, const char *name, double *out);
 
-/* Schema-aware conversion to TPCBox (degenerate single-point bbox).
- * Returns @p NULL if the schema lacks the required X/Y dimensions. */
+/* Conversion to TPCBox (degenerate single-point bbox), in the schema the
+ * pcid of the point names. Returns @p NULL if the schema lacks the required
+ * X/Y dimensions. */
 
-extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
+extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt);
 
 /* Schema cache — process-global lookup table of parsed PCSCHEMA values
  * keyed by pcid.  In a PG backend the cache is populated lazily via the
@@ -194,7 +195,7 @@ extern TPCBox *pcpoint_to_tpcbox(const Pcpoint *pt, PCSCHEMA *schema);
 typedef struct
 {
   const char *name;           /**< Dimension name, unique within the schema */
-  const char *description;    /**< Dimension description, may be @p NULL */
+  const char *description;    /**< Dimension description @nullable */
   int32_t position;           /**< Position within the schema, from 1 */
   const char *interpretation; /**< Name of the numeric type stored */
   double scale;               /**< Factor a stored value is multiplied by */
@@ -216,6 +217,12 @@ extern int32_t meos_pc_schema_srid(uint32_t pcid);
 extern const char *meos_pc_schema_compression(uint32_t pcid);
 extern int32_t meos_pc_schema_ndims(uint32_t pcid);
 extern void meos_set_pointcloud_schemas_xml(const char *path);
+extern void meos_initialize_pointcloud(void);
+
+/* Indexes of TPCBox values */
+
+extern RTree *rtree_create_tpcbox(void);
+extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
 
 /* Comparison */
 
@@ -365,13 +372,13 @@ extern char *tpcbox_out(const TPCBox *box, int maxdd);
 /* Constructor */
 
 extern TPCBox *tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
-  int32_t srid, uint32_t pcid, double xmin, double xmax, double ymin,
-  double ymax, double zmin, double zmax, const Span *period);
+  uint32_t pcid, double xmin, double xmax, double ymin, double ymax,
+  double zmin, double zmax, const Span *period);
 extern TPCBox *tpcbox_copy(const TPCBox *box);
 
 /* Conversion */
 
-extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa, int32_t srid);
+extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa);
 
 /* Accessors */
 
@@ -420,6 +427,7 @@ extern bool adjacent_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 extern int tpcbox_cmp(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2);
+extern uint8_t *tpcbox_sortkey(const TPCBox *box, size_t *size);
 extern bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_le(const TPCBox *box1, const TPCBox *box2);
 extern bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2);

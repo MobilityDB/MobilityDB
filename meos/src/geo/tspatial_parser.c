@@ -291,7 +291,7 @@ stbox_parse(const char **str)
  * @param[in] delim Separation character
  * @param[in,out] srid SRID of the result. If it is SRID_UNKNOWN, it may take
  * the value from the geometry if it is not SRID_UNKNOWN.
- * @param[out] result New geometry, may be NULL
+ * @param[out] result New geometry @nullable
  */
 bool 
 geo_parse(const char **str, MeosType basetype, char delim, int *srid,
@@ -347,7 +347,7 @@ geo_parse(const char **str, MeosType basetype, char delim, int *srid,
  * @param[in] delim Delimiter character
  * @param[in,out] temp_srid SRID of the result. If it is SRID_UNKNOWN, it may 
  * take the value from the base value if it is not SRID_UNKNOWN.
- * @param[out] result New spatial base value, may be NULL
+ * @param[out] result New spatial base value @nullable
  */
 bool 
 spatial_parse_elem(const char **str, MeosType temptype, char delim, 

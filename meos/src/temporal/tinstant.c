@@ -48,6 +48,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include "temporal/meos_catalog.h"
+#include "temporal/span.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
@@ -258,6 +259,12 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
   }
   /* Ensure that a float value is not NaN */
   if (temptype == T_TFLOAT && ! ensure_not_nan(DatumGetFloat8(value)))
+    return NULL;
+  /* Ensure that an integer value is not the maximum of its type, since the
+   * value span of the bounding box, whose upper bound is the next value, has
+   * no representation */
+  if ((temptype == T_TINT || temptype == T_TBIGINT) &&
+      ! ensure_span_bound_has_next(value, temptype_basetype(temptype)))
     return NULL;
 
   size_t value_offset = offsetof(TInstant, value);
@@ -563,12 +570,9 @@ TInstant *
 tnumberinst_shift_value(const TInstant *inst, Datum shift)
 {
   assert(inst);
-  TInstant *result = tinstant_copy(inst);
-  Datum value = tinstant_value_p(result);
-  MeosType basetype = temptype_basetype(result->temptype);
-  value = datum_add(value, shift, basetype);
-  tinstant_set(result, value, result->t);
-  return result;
+  MeosType basetype = temptype_basetype(inst->temptype);
+  Datum value = datum_add(tinstant_value_p(inst), shift, basetype);
+  return tinstant_make(value, inst->temptype, inst->t);
 }
 
 /**

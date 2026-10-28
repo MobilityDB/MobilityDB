@@ -63,8 +63,14 @@ SELECT MAX(endPosition(ns)) FROM tbl_nsegment;
 SELECT COUNT(*) FROM tbl_npoint WHERE np::geometry IS NOT NULL;
 SELECT COUNT(*) FROM tbl_nsegment WHERE ns::geometry IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_npoint WHERE np = (np::geometry)::npoint;
-SELECT COUNT(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;
+-- The cast to a geometry interpolates the point along its route and the cast
+-- back locates it, so the route comes back and the position comes back within
+-- the rounding of a parameter along a segment
+SELECT COUNT(*) FROM tbl_npoint WHERE route(np) = route((np::geometry)::npoint) AND
+  abs(getPosition(np) - getPosition((np::geometry)::npoint)) <= 1e-12;
+SELECT COUNT(*) FROM tbl_nsegment WHERE route(ns) = route((ns::geometry)::nsegment) AND
+  abs(startPosition(ns) - startPosition((ns::geometry)::nsegment)) <= 1e-12 AND
+  abs(endPosition(ns) - endPosition((ns::geometry)::nsegment)) <= 1e-12;
 
 SELECT COUNT(*) FROM tbl_geom_point WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::npoint IS NOT NULL END;
 SELECT COUNT(*) FROM tbl_geom_linestring WHERE CASE WHEN NOT ST_IsEmpty(g) THEN ST_SetSRID(g, 5676)::nsegment IS NOT NULL END;

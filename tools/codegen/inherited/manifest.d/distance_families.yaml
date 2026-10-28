@@ -68,3 +68,16 @@ distance_families:
   - lit: "\n"
   - distops: true
   - lit: "\n/*****************************************************************************/\n"
+- family: posechainset
+  file: mobilitydb/sql/posechain/551_posechainset.in.sql
+  reference: true
+  begin: "CREATE FUNCTION setDistance(posechain,"
+  whole_file: true
+  pairs: [[posechain, posechainset]]
+  rets: [float]
+  blocks:
+  - lit: "/*****************************************************************************/\n\n"
+  - distfns: true
+  - lit: "\n"
+  - distops: true
+  - lit: "\n/*****************************************************************************/\n"

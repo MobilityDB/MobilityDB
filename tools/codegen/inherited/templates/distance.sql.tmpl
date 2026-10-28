@@ -1,0 +1,233 @@
+@LICENSE@
+
+/**
+ * @file
+ * @brief Temporal distance for {BRIEF}
+ */
+
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+CREATE FUNCTION distance(geometry, {BASE})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geo_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance({BASE}, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_{BASE}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance({BASE}, {BASE})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_{BASE}_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = geometry,
+  RIGHTARG = {BASE},
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = {BASE},
+  RIGHTARG = geometry,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = {BASE},
+  RIGHTARG = {BASE},
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************
+ * Temporal distance functions
+ *****************************************************************************/
+
+CREATE FUNCTION tDistance(geometry(Point), {TEMP})
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_point_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance({BASE}, {TEMP})
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_{BASE}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance({TEMP}, geometry(Point))
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_{TEMP}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance({TEMP}, {BASE})
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_{TEMP}_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance({TEMP}, {TEMP})
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_{TEMP}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = geometry,
+  RIGHTARG = {TEMP},
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = {BASE},
+  RIGHTARG = {TEMP},
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = {TEMP},
+  RIGHTARG = geometry,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = {TEMP},
+  RIGHTARG = {BASE},
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = {TEMP},
+  RIGHTARG = {TEMP},
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************
+ * Nearest approach instant/distance and shortest line functions
+ *****************************************************************************/
+
+CREATE FUNCTION nearestApproachInstant(geometry, {TEMP})
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', 'NAI_geo_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant({BASE}, {TEMP})
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', 'NAI_{BASE}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant({TEMP}, geometry)
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', 'NAI_{TEMP}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant({TEMP}, {BASE})
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', 'NAI_{TEMP}_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant({TEMP}, {TEMP})
+  RETURNS {TEMP}
+  AS 'MODULE_PATHNAME', 'NAI_{TEMP}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
+
+CREATE FUNCTION nearestApproachDistance({BASE}, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{BASE}_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, {BASE})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(geometry, {TEMP})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_geo_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(stbox, {TEMP})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_stbox_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance({BASE}, {TEMP})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{BASE}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance({TEMP}, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{TEMP}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance({TEMP}, stbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{TEMP}_stbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance({TEMP}, {BASE})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{TEMP}_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance({TEMP}, {TEMP})
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_{TEMP}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  LEFTARG = {BASE}, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = {BASE},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = geometry, RIGHTARG = {TEMP},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = {TEMP}, RIGHTARG = geometry,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = stbox, RIGHTARG = {TEMP},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = {TEMP}, RIGHTARG = stbox,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = {BASE}, RIGHTARG = {TEMP},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = {TEMP}, RIGHTARG = {BASE},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = {TEMP}, RIGHTARG = {TEMP},
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+
+/*****************************************************************************/
+
+CREATE FUNCTION shortestLine(geometry, {TEMP})
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine({BASE}, {TEMP})
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_{BASE}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine({TEMP}, geometry)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_{TEMP}_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine({TEMP}, {BASE})
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_{TEMP}_{BASE}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine({TEMP}, {TEMP})
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_{TEMP}_{TEMP}'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/

@@ -48,6 +48,7 @@
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_tempspatialrels.h"
 #include "geo/tspatial_parser.h"
@@ -275,10 +276,11 @@ tcbuffersegm_dwithin_turnpt(Datum start1, Datum end1, Datum start2, Datum end2,
  * which the distance equals @p dist (used to split the temporal distance), this
  * returns the sub-interval `[t1, t2]` of `[lower, upper]` during which the two
  * segments are within @p dist, so the temporal `tDwithin` boolean is true on a
- * continuous interval rather than only at the crossing instant. It is derived
- * from the crossings together with the within status at the two segment
- * endpoints, which is read by the predicate the instants themselves are read
- * with.
+ * continuous interval rather than only at the crossing instant. The interval
+ * is decided exactly over continuous time and its bounds dated by truncation
+ * (#point_motion_dwithin_period_exact), the discs being within where the
+ * distance of their centres is at most the sum of their radii and the
+ * distance.
  * @param[in] start1,end1 Circular buffers defining the first segment
  * @param[in] start2,end2 Circular buffers defining the second segment
  * @param[in] dist Distance
@@ -297,56 +299,57 @@ tcbuffersegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
   const Cbuffer *sv2 = DatumGetCbufferP(start2);
   const Cbuffer *ev2 = DatumGetCbufferP(end2);
   double d = DatumGetFloat8(dist);
-  long double roots[2];
-  int nroots = tcbuffersegm_length_roots(sv1, ev1, sv2, ev2,
-    sv1->radius + sv2->radius + d, ev1->radius + ev2->radius + d, roots);
-  /* Within status at the two segment endpoints */
-  bool win_lower = cbuffer_dwithin(sv1, sv2, d);
-  bool win_upper = cbuffer_dwithin(ev1, ev2, d);
-  long double fstart, fend;
-  if (nroots == 0)
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  const double a0[2] = {spt1->x, spt1->y}, a1[2] = {ept1->x, ept1->y};
+  const double b0[2] = {spt2->x, spt2->y}, b1[2] = {ept2->x, ept2->y};
+  int64 n1, n2;
+  int result = point_motion_dwithin_period_exact(a0, a1, b0, b1, 2,
+    sv1->radius, ev1->radius, sv2->radius, ev2->radius, d, upper - lower,
+    &n1, &n2);
+  if (result == 0)
   {
-    /* No crossing: within throughout the segment, or never */
-    if (! win_lower)
-    {
-      *t1 = *t2 = (TimestampTz) 0;
-      return 0;
-    }
-    fstart = 0.0; fend = 1.0;
+    *t1 = *t2 = (TimestampTz) 0;
+    return 0;
   }
-  else if (nroots == 1)
-  {
-    /* One crossing: within on the side whose endpoint is within */
-    if (win_lower && ! win_upper)
-    {
-      fstart = 0.0; fend = roots[0];
-    }
-    else if (! win_lower && win_upper)
-    {
-      fstart = roots[0]; fend = 1.0;
-    }
-    else if (win_lower)
-    {
-      /* The gap between the discs, the distance of the centres less an affine
-       * length, is convex over the segment, so a segment within at both ends
-       * is within throughout: the crossing is a tangency at one of its ends */
-      fstart = 0.0; fend = 1.0;
-    }
-    else
-    {
-      /* Tangent touch from outside: within only at the crossing instant */
-      fstart = fend = roots[0];
-    }
-  }
-  else
-  {
-    /* Two crossings: within between them */
-    fstart = roots[0]; fend = roots[1];
-  }
-  double duration = (double) (upper - lower);
-  *t1 = lower + (TimestampTz) (fstart * duration);
-  *t2 = lower + (TimestampTz) (fend * duration);
-  return (*t1 == *t2) ? 1 : 2;
+  *t1 = lower + n1;
+  *t2 = lower + n2;
+  return result;
+}
+
+/**
+ * @brief Return true if two temporal circular buffer segments are within a
+ * distance at an instant of the segments, decided exactly
+ * @details The value of #tcbuffersegm_tdwithin_turnpt at a bound of the
+ * period it returns (#point_motion_dwithin_at_exact): a bound dated by
+ * truncation before an instant at which the buffers come within the distance
+ * is an instant at which they are not
+ * @param[in] start1,end1 Circular buffers defining the first segment
+ * @param[in] start2,end2 Circular buffers defining the second segment
+ * @param[in] dist Distance
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[in] t Timestamp in [lower, upper]
+ */
+bool
+tcbuffersegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum dist, TimestampTz lower, TimestampTz upper, TimestampTz t)
+{
+  assert(lower < upper); assert(lower <= t && t <= upper);
+  const Cbuffer *sv1 = DatumGetCbufferP(start1);
+  const Cbuffer *ev1 = DatumGetCbufferP(end1);
+  const Cbuffer *sv2 = DatumGetCbufferP(start2);
+  const Cbuffer *ev2 = DatumGetCbufferP(end2);
+  const POINT2D *spt1 = cbuffer_point2d_p(sv1);
+  const POINT2D *ept1 = cbuffer_point2d_p(ev1);
+  const POINT2D *spt2 = cbuffer_point2d_p(sv2);
+  const POINT2D *ept2 = cbuffer_point2d_p(ev2);
+  const double a0[2] = {spt1->x, spt1->y}, a1[2] = {ept1->x, ept1->y};
+  const double b0[2] = {spt2->x, spt2->y}, b1[2] = {ept2->x, ept2->y};
+  return point_motion_dwithin_at_exact(a0, a1, b0, b1, 2, sv1->radius,
+    ev1->radius, sv2->radius, ev2->radius, DatumGetFloat8(dist),
+    upper - lower, t - lower);
 }
 
 /**
@@ -590,20 +593,39 @@ tcbuffersegm_intersection_value(Datum start, Datum end, Datum value,
 }
 
 /**
- * @brief Return 1 or 2 if two temporal circular buffer segments intersect
- * during the period defined by the output timestamps, return 0 otherwise
- * @param[in] start1,end1 Temporal instants defining the first segment
- * @param[in] start2,end2 Temporal instants defining the second segment
+ * @brief Return 1 if two temporal circular buffer segments may be equal at
+ * the output timestamp, return 0 otherwise
+ * @details Two circular buffers are equal where their centres and their radii
+ * are both equal. A segment interpolates its centre and its radius linearly,
+ * so it moves the point (x, y, radius) along a segment of the space of three
+ * dimensions, and the two buffers may be equal only at the instant where
+ * these two points are nearest, as two temporal points with Z are
+ * (#tgeompointsegm_distance_turnpt)
+ * @param[in] start1,end1 Values defining the first segment
+ * @param[in] start2,end2 Values defining the second segment
  * @param[in] lower,upper Timestamps defining the segments
- * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
+ * @param[out] t1,t2 Timestamps defining the resulting period, equal
+ * @pre The segments are not both constants
  */
 int
 tcbuffersegm_intersection(Datum start1, Datum end1, Datum start2, Datum end2,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
-  return tcbuffersegm_dwithin_turnpt(start1, end1, start2, end2, (Datum) 0.0,
-    lower, upper, t1, t2);
+  const Cbuffer *cb1 = DatumGetCbufferP(start1);
+  const Cbuffer *cb2 = DatumGetCbufferP(end1);
+  const Cbuffer *cb3 = DatumGetCbufferP(start2);
+  const Cbuffer *cb4 = DatumGetCbufferP(end2);
+  POINT3DZ p1 = { cb1->x, cb1->y, cb1->radius };
+  POINT3DZ p2 = { cb2->x, cb2->y, cb2->radius };
+  POINT3DZ p3 = { cb3->x, cb3->y, cb3->radius };
+  POINT3DZ p4 = { cb4->x, cb4->y, cb4->radius };
+  double fraction;
+  if (! point3d_min_dist(&p1, &p2, &p3, &p4, &fraction))
+    return 0;
+  double duration = (double) (upper - lower);
+  *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
+  return 1;
 }
 
 /*****************************************************************************

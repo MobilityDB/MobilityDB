@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: PostgreSQL
+
+name: Rerun the jobs a slow mirror failed
+
+# The resilient apt action bounds every apt-get pass that downloads and fails
+# the job when three bounded attempts do not finish, as a mirror that trickles
+# makes them. The speed of the mirror belongs to the runner: the same install
+# finishes in seconds on another one. So when a workflow that installs through
+# the action fails and the log of one of its failed jobs states the bound
+# reached, the failed jobs of that run are run again, on new runners, at most
+# twice per run. A run whose jobs fail for other reasons only is left as it is.
+on:
+  workflow_run:
+    workflows:
+      - Check code
+      - Check doc reference
+      - Build for Ubuntu with clang
+      - CodeQL
+      - Cppcheck
+      - Generate MobilityDB documentation
+      - MEOS smoke tests (valgrind)
+      - Test MEOS compilation
+      - MEOS locale safety
+      - MEOS UTF-8 smoke
+      - Main Build
+    types: [completed]
+
+permissions:
+  actions: write
+
+jobs:
+  rerun:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.run_attempt < 3
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun the failed jobs when a slow mirror failed one
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN: ${{ github.event.workflow_run.id }}
+          ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+        run: |
+          # The line the apt-get wrapper of the resilient apt action writes
+          # when its last attempt reaches the time limit.
+          mark='attempt 3 of 3 ended with status 124'
+          # The failed jobs of the attempt that failed. The listing of a run that
+          # has just ended may not show the conclusion of its last job yet, so a
+          # failed run listing no failed job is read again, and one that still
+          # lists none fails the step instead of reading as nothing to rerun.
+          for try in 1 2 3 4 5 6; do
+            jobs=$(gh api "repos/$REPO/actions/runs/$RUN/attempts/$ATTEMPT/jobs?per_page=100" \
+              --paginate --jq '.jobs[] | select(.conclusion == "failure") | "\(.id)\t\(.name)"')
+            [ -n "$jobs" ] && break
+            echo "run $RUN attempt $ATTEMPT: no failed job listed yet (read $try)"
+            sleep 20
+          done
+          if [ -z "$jobs" ]; then
+            echo "::error::run $RUN attempt $ATTEMPT failed and lists no failed job"
+            exit 1
+          fi
+          echo "run $RUN attempt $ATTEMPT: $(wc -l <<< "$jobs") failed job(s)"
+          slow=no
+          while IFS=$'\t' read -r id name; do
+            [ -n "$id" ] || continue
+            # The log is read with curl, as GitHub documents the endpoint: gh
+            # refuses to print a response holding terminal escape sequences,
+            # which every job log holds. The log of a job that has just ended
+            # may not be stored yet, so the read is retried, and a log that
+            # cannot be read fails the step instead of reading as no mark.
+            log=$(curl -fsSL --retry 5 --retry-all-errors --retry-delay 15 \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Accept: application/vnd.github+json" \
+              "$GITHUB_API_URL/repos/$REPO/actions/jobs/$id/logs")
+            if grep -qF "$mark" <<< "$log"; then
+              echo "job $id ($name): a slow mirror reached the apt-get time limit"
+              slow=yes
+            else
+              echo "job $id ($name): failed for another reason"
+            fi
+          done <<< "$jobs"
+          if [ "$slow" = yes ]; then
+            gh api -X POST "repos/$REPO/actions/runs/$RUN/rerun-failed-jobs"
+            echo "run $RUN: failed jobs rerun"
+          fi

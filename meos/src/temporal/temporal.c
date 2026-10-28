@@ -49,6 +49,8 @@
 #include <meos_internal_geo.h>
 #include "temporal/doxygen_meos.h"
 #include "temporal/lifting.h"
+#include "temporal/span.h"
+#include "temporal/tbox.h"
 #include <pgtypes.h>
 #include "temporal/temporal_boxops.h"
 #include "temporal/temporal_tile.h"
@@ -57,6 +59,7 @@
 #include "temporal/tsequenceset.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
@@ -1198,8 +1201,9 @@ tbigint_to_tint(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, NULL);
 
-  /* Return NULL if there is overflow */
-  if (ever_gt_temporal_base(temp, INT_MAX) ||
+  /* Return NULL if there is overflow, a temporal integer holding no value
+   * at the maximum of its type */
+  if (ever_ge_temporal_base(temp, INT_MAX) ||
       ever_lt_temporal_base(temp, INT_MIN))
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
@@ -1254,6 +1258,14 @@ tfloat_to_tint(const Temporal *temp)
       "Cannot cast temporal float with linear interpolation to temporal integer");
     return NULL;
   }
+  /* Ensure that each value truncates to an integer, as #tbigint_to_tint
+   * ensures it for a big integer */
+  if (ever_ge_temporal_base(temp, Float8GetDatum(2147483648.0)) ||
+      ever_le_temporal_base(temp, Float8GetDatum(-2147483649.0)))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "integer out of range");
+    return NULL;
+  }
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1278,6 +1290,14 @@ tfloat_to_tbigint(const Temporal *temp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "Cannot cast temporal float with linear interpolation to temporal big integer");
+    return NULL;
+  }
+  /* Ensure that each value truncates to a big integer, the bounds being
+   * those of FLOAT8_FITS_IN_INT64 */
+  if (ever_ge_temporal_base(temp, Float8GetDatum(0x1p63)) ||
+      ever_lt_temporal_base(temp, Float8GetDatum(-0x1p63)))
+  {
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "bigint out of range");
     return NULL;
   }
 
@@ -1958,11 +1978,10 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
  * @ingroup meos_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by two intervals
  * @param[in] temp Temporal value
- * @param[in] shift Interval for shift, may be `NULL`
- * @param[in] duration Interval for scale, may be `NULL`
+ * @param[in] shift Interval for shift @nullable
+ * @param[in] duration Interval for scale @nullable
  * @pre The duration is greater than 0 if is not NULL
- * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
- *   #Temporal_shift_scale_time()
+ * @csqlfn #Temporal_shift_scale_time()
  */
 Temporal *
 temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
@@ -3984,6 +4003,207 @@ bool
 temporal_gt(const Temporal *temp1, const Temporal *temp2)
 {
   return temporal_cmp(temp1, temp2) > 0;
+}
+
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @brief Return true if the values of a temporal type have a sort key
+ * @details A temporal type has a key when its base type has one, as
+ * #datum_sortkey_type answers, or when it is a temporal point, whose values
+ * #datum_sortkey_put writes as points
+ * @param[in] temptype Temporal type
+ */
+bool
+temporal_sortkey_type(MeosType temptype)
+{
+  return tpoint_type(temptype) ||
+    datum_sortkey_type(temptype_basetype(temptype));
+}
+
+/**
+ * @brief Write the sort key of the bounding box of a temporal value, or count
+ * its bytes when the buffer is NULL
+ * @param[in] box Bounding box
+ * @param[in] bboxtype Type of the bounding box
+ * @param[out] out Buffer @nullable
+ * @return The number of bytes of the key
+ */
+static size_t
+temporal_bbox_sortkey_put(const bboxunion *box, MeosType bboxtype,
+  uint8_t *out)
+{
+  switch (bboxtype)
+  {
+    case T_TSTZSPAN:
+      if (out)
+        span_sortkey_body(&box->p, out);
+      return span_sortkey_body_size(T_TIMESTAMPTZ);
+    case T_TBOX:
+      if (out)
+        tbox_sortkey_put(&box->b, out);
+      return tbox_sortkey_size(&box->b);
+    case T_STBOX:
+      if (out)
+        stbox_sortkey_put(&box->g, out);
+      return stbox_sortkey_size(&box->g);
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown bounding box type for a sort key: %s",
+        meostype_name(bboxtype));
+      return 0;
+  }
+}
+
+/**
+ * @brief Write the sort key of a temporal instant, or count its bytes when the
+ * buffer is NULL
+ * @details The key is the timestamp followed by the value
+ * @param[in] inst Temporal instant
+ * @param[out] out Buffer @nullable
+ * @return The number of bytes of the key
+ */
+static size_t
+tinstant_sortkey_put(const TInstant *inst, uint8_t *out)
+{
+  Datum value = tinstant_value_p(inst);
+  MeosType basetype = temptype_basetype(inst->temptype);
+  size_t tsize = datum_sortkey_size(T_TIMESTAMPTZ);
+  if (out)
+  {
+    datum_sortkey_put(TimestampTzGetDatum(inst->t), T_TIMESTAMPTZ, out);
+    datum_sortkey_put(value, basetype, out + tsize);
+  }
+  return tsize + datum_sortkey_len(value, basetype);
+}
+
+/**
+ * @brief Write the sort key of a temporal value, or count its bytes when the
+ * buffer is NULL
+ * @details The key holds the fields in the order #temporal_cmp compares them:
+ * - the bounding box, as #tbox_sortkey_put, #stbox_sortkey_put or
+ *   #span_sortkey_body writes it;
+ * - each instant, as #tinstant_sortkey_put writes it;
+ * - each run, as #temporal_run reads it: its number of instants, whether it
+ *   holds its lower and its upper bound, an inclusive bound first, and its
+ *   interpolation.
+ *
+ * Neither list needs a mark ending it. Two values with one bounding box have
+ * one period, whose upper bound is the timestamp of the last instant, so two
+ * values whose first instants agree hold as many instants, and two values
+ * holding the same instants hold runs over them that differ, if at all,
+ * before either list ends. The instants and the runs are read through the
+ * one-element wrappers, as #temporal_cmp reads them, so that the values
+ * #temporal_eq holds equal have one key.
+ * @param[in] temp Temporal value
+ * @param[out] out Buffer @nullable
+ * @return The number of bytes of the key
+ */
+static size_t
+temporal_sortkey_put(const Temporal *temp, uint8_t *out)
+{
+  size_t result = 1;
+  if (out)
+    out[0] = temp->temptype;
+  bboxunion box;
+  temporal_set_bbox(temp, &box);
+  result += temporal_bbox_sortkey_put(&box, type_bboxtype(temp->temptype),
+    out ? out + result : NULL);
+
+  const Temporal *utemp = temporal_unwrapped(temp);
+  switch (utemp->subtype)
+  {
+    case TINSTANT:
+      result += tinstant_sortkey_put((const TInstant *) utemp,
+        out ? out + result : NULL);
+      break;
+    case TSEQUENCE:
+    {
+      const TSequence *seq = (const TSequence *) utemp;
+      for (int i = 0; i < seq->count; i++)
+        result += tinstant_sortkey_put(TSEQUENCE_INST_N(seq, i),
+          out ? out + result : NULL);
+      break;
+    }
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) utemp;
+      for (int i = 0; i < ss->count; i++)
+      {
+        const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
+        for (int j = 0; j < seq->count; j++)
+          result += tinstant_sortkey_put(TSEQUENCE_INST_N(seq, j),
+            out ? out + result : NULL);
+      }
+    }
+  }
+  size_t csize = datum_sortkey_size(T_INT4);
+  int nruns = temporal_num_runs(utemp);
+  for (int i = 0; i < nruns; i++)
+  {
+    int count;
+    bool lower_inc, upper_inc;
+    interpType interp;
+    temporal_run(utemp, i, &count, &lower_inc, &upper_inc, &interp);
+    if (out)
+    {
+      uint8_t *run = out + result;
+      datum_sortkey_put(Int32GetDatum(count), T_INT4, run);
+      run[csize] = lower_inc ? 0 : 1;
+      run[csize + 1] = upper_inc ? 0 : 1;
+      run[csize + 2] = (uint8_t) interp;
+    }
+    result += csize + 3;
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_temporal_comp_trad
+ * @brief Return the sort key of a temporal value
+ * @details Comparing two keys byte by byte as unsigned values orders the
+ * temporal values as #temporal_cmp does, and two values have the same key
+ * when #temporal_eq holds; #temporal_sortkey_put states the fields of the key
+ * @param[in] temp Temporal value
+ * @param[out] size Number of bytes of the key
+ * @see #temporal_sortkey
+ */
+uint8_t *
+temporal_sortkey_intl(const Temporal *temp, size_t *size)
+{
+  assert(temp); assert(size); assert(temporal_sortkey_type(temp->temptype));
+  *size = temporal_sortkey_put(temp, NULL);
+  uint8_t *result = palloc(*size);
+  temporal_sortkey_put(temp, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_comp_trad
+ * @brief Return the sort key of a temporal value
+ * @details The key is the bytes whose unsigned byte order is the order of
+ * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
+ * Booleans, integers, big integers, floats, texts, points and cells have a
+ * sort key.
+ * @param[in] temp Temporal value
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+temporal_sortkey(const Temporal *temp, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(size, NULL);
+  if (! temporal_sortkey_type(temp->temptype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "No sort key for a temporal value of type %s",
+      meostype_name(temp->temptype));
+    return NULL;
+  }
+  return temporal_sortkey_intl(temp, size);
 }
 
 /*****************************************************************************

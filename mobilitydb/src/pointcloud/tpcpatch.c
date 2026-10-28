@@ -160,7 +160,7 @@ Tpcpatch_npoints(PG_FUNCTION_ARGS)
  * overlaps the box's spatial extent and its timestamp falls in the box's
  * period. The X and Y extent is the one the PCBOUNDS header of the patch
  * states. When the box has Z, the Z extent is the one the points of the
- * patch state, read by @c pcpatch_to_tpcbox, so a patch of a schema
+ * patch state, read by @c pcpatch_srid_to_tpcbox, so a patch of a schema
  * without Z fails a box with Z, as each of its points fails it in
  * @c pcpoint_in_tpcbox. The patch payload is preserved verbatim.
  *
@@ -213,7 +213,7 @@ pcpatch_passes_tpcbox(const Pcpatch *pa, TimestampTz t, const TPCBox *box,
     return true;
   /* PCBOUNDS states no Z extent: the one of the points is the one the box
    * of the patch carries */
-  TPCBox *pbox = pcpatch_to_tpcbox(pa, box->srid);
+  TPCBox *pbox = pcpatch_srid_to_tpcbox(pa, box->srid);
   if (! pbox)
     return false;
   bool result = MEOS_FLAGS_GET_Z(pbox->flags) &&

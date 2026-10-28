@@ -75,23 +75,6 @@ CREATE FUNCTION minusStbox(tnpoint, stbox, boolean DEFAULT TRUE)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
- * Equals
- *****************************************************************************/
-
-CREATE FUNCTION npointSame(npoint, npoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Npoint_same'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR ~= (
-  PROCEDURE = npointSame,
-  LEFTARG = npoint, RIGHTARG = npoint,
-  COMMUTATOR = ~=,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-/*****************************************************************************
  * Length
  *****************************************************************************/
 

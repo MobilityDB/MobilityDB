@@ -1202,12 +1202,20 @@ tsequence_make(TInstant **instants, int count, bool lower_inc, bool upper_inc,
   VALIDATE_NOT_NULL(instants, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+  for (int i = 0; i < count; i++)
+    VALIDATE_NOT_NULL(instants[i], NULL);
 #if RGEO
   /* A rigid geometry sequence keeps once the reference geometry its instants
-   * carry, which every instant must state alike */
+   * carry, which every instant must state alike. The instants taken out of a
+   * sequence, as the synchronization of two values takes them, carry none and
+   * build a sequence without it. */
   if (instants[0]->temptype == T_TRGEOMETRY)
-    return trgeoseq_make_exp(trgeoinst_geom_p(instants[0]), instants, count,
-      count, lower_inc, upper_inc, interp, normalize);
+  {
+    for (int i = 0; i < count; i++)
+      if (MEOS_FLAGS_GET_GEOM(instants[i]->flags))
+        return trgeoseq_make_exp(trgeoinst_geom_p(instants[i]), instants,
+          count, count, lower_inc, upper_inc, interp, normalize);
+  }
 #endif /* RGEO */
   return tsequence_make_exp(instants, count, count, lower_inc, upper_inc,
     interp, normalize);
@@ -1246,7 +1254,7 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * dimension, and timestamps
  * @param[in] xcoords Array of x coordinates
  * @param[in] ycoords Array of y coordinates
- * @param[in] zcoords Array of z coordinates, may be `NULL`
+ * @param[in] zcoords Array of z coordinates @nullable
  * @param[in] times Array of z timestamps
  * @param[in] count Number of elements in the arrays
  * @param[in] srid SRID of the spatial coordinates
@@ -1675,8 +1683,10 @@ tsequence_set_interp(const TSequence *seq, interpType interp)
  * @brief Shift and/or scale the values of the instants of a temporal sequence
  * (iterator function)
  * @note This function is called for each sequence of a temporal sequence set.
+ * @return False when a value is the maximum of an integer type, which a
+ * temporal integer cannot hold, as #tinstant_make refuses it
  */
-void
+bool
 tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
   bool hasdelta, double scale)
 {
@@ -1687,21 +1697,18 @@ tnumberseq_shift_scale_value_iter(TSequence *seq, Datum origin, Datum delta,
     Datum value = tinstant_value_p(inst);
     /* The default value when there is not shift is 0 */
     if (hasdelta)
-    {
       value = datum_add(value, delta, basetype);
-      tinstant_set(inst, value, inst->t);
-    }
     /* The default value when there is not scale is 1.0 */
     if (scale != 1.0)
-    {
       /* The potential shift has been already taken care in the previous if */
       value = datum_add(origin, double_datum(
         datum_double(datum_sub(value, origin, basetype), basetype) * scale,
           basetype), basetype);
-      tinstant_set(inst, value, inst->t);
-    }
+    if (! ensure_span_bound_has_next(value, basetype))
+      return false;
+    tinstant_set(inst, value, inst->t);
   }
-  return;
+  return true;
 }
 
 /**
@@ -1768,7 +1775,12 @@ tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width,
   Datum origin = box->span.lower;
 
   /* Shift and/or scale the result */
-  tnumberseq_shift_scale_value_iter(result, origin, delta, hasshift, scale);
+  if (! tnumberseq_shift_scale_value_iter(result, origin, delta, hasshift,
+      scale))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 

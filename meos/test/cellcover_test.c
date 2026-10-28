@@ -93,6 +93,30 @@ holds(const uint64 *arr, int n, uint64 v)
 }
 
 /**
+ * @brief Return whether a split states, as #holds reads a cover, one fragment
+ * for each cell of the cover it is taken from, and print the counts
+ * @details The fragments, the cells and the cover are freed
+ */
+static bool
+split_matches_cover(const char *label, Temporal **frags, uint64 *cells,
+  int nsplit, Temporal *cover, uint64 *covercells, int ncover)
+{
+  bool ok = (frags != NULL && cells != NULL && nsplit > 0 &&
+    nsplit == ncover);
+  for (int i = 0; ok && i < nsplit; i++)
+    ok = (frags[i] != NULL && holds(covercells, ncover, cells[i]));
+  printf("%-20s fragments %d, cover cells %d\n", label, nsplit, ncover);
+  if (frags)
+  {
+    for (int i = 0; i < nsplit; i++)
+      free(frags[i]);
+    free(frags);
+  }
+  free(cells); free(covercells); free(cover);
+  return ok;
+}
+
+/**
  * @brief Write a linear two-instant segment and the dense discrete sequence
  * covering the identical positions
  */
@@ -696,6 +720,62 @@ int main(void)
         printf("  %ld ts2cell value(s) were not built at all\n", none);
       if (wrong > 0 || offpath > 0 || none > 0)
         failures++;
+    }
+  }
+
+  /* A split states one fragment for each cell of the cover it is taken from,
+   * and the cells come typed, as the cover's own values do: the H3 cells,
+   * quadbin tiles and S2 cells a planar and a geodetic point cross, the
+   * quadbin tiles at the zoom the covers above read */
+  {
+    const char *wkt = "SRID=4326;"
+      "[Point(11.300000000 55.500000000)@2020-01-01 00:00:00, "
+      "Point(11.350000000 55.502000000)@2020-01-01 00:10:00]";
+    const int32 qbres = 15;
+    const int32 level = 15;
+    bool ok = true;
+    for (int geodetic = 0; geodetic < 2; geodetic++)
+    {
+      Temporal *seg = geodetic ? tgeogpoint_in(wkt) : tgeompoint_in(wkt);
+      int nsplit = 0, ncover = 0;
+
+      H3Index *h3cells = NULL;
+      Temporal **frags = geodetic ?
+        tgeogpoint_h3index_split(seg, resolution, true, &h3cells, &nsplit) :
+        tgeompoint_h3index_split(seg, resolution, true, &h3cells, &nsplit);
+      Temporal *cover = geodetic ? tgeogpoint_to_th3index(seg, resolution,
+        true) : tgeompoint_to_th3index(seg, resolution, true);
+      H3Index *h3cover = cover ? th3index_values(cover, &ncover) : NULL;
+      ok &= split_matches_cover(geodetic ? "th3index geodetic" : "th3index",
+        frags, h3cells, nsplit, cover, h3cover, ncover);
+
+      Quadbin *qbcells = NULL;
+      frags = geodetic ?
+        tgeogpoint_quadbin_split(seg, qbres, true, &qbcells, &nsplit) :
+        tgeompoint_quadbin_split(seg, qbres, true, &qbcells, &nsplit);
+      cover = geodetic ? tgeogpoint_to_tquadbin(seg, qbres, true) :
+        tgeompoint_to_tquadbin(seg, qbres, true);
+      Quadbin *qbcover = cover ? tquadbin_values(cover, &ncover) : NULL;
+      ok &= split_matches_cover(geodetic ? "tquadbin geodetic" : "tquadbin",
+        frags, qbcells, nsplit, cover, qbcover, ncover);
+
+      S2CellId *s2cells = NULL;
+      frags = geodetic ?
+        tgeogpoint_s2cell_split(seg, level, true, &s2cells, &nsplit) :
+        tgeompoint_s2cell_split(seg, level, true, &s2cells, &nsplit);
+      cover = geodetic ? tgeogpoint_to_ts2cell(seg, level, true) :
+        tgeompoint_to_ts2cell(seg, level, true);
+      S2CellId *s2cover = cover ? ts2cell_values(cover, &ncover) : NULL;
+      ok &= split_matches_cover(geodetic ? "ts2cell geodetic" : "ts2cell",
+        frags, s2cells, nsplit, cover, s2cover, ncover);
+
+      free(seg);
+    }
+    if (! ok)
+    {
+      printf("FAILED: a split does not state one fragment for each cell of "
+        "its cover\n");
+      failures++;
     }
   }
 

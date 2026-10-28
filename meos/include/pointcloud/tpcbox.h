@@ -57,6 +57,14 @@
 extern bool tpcbox_resolve_srid(int32_t srid, uint32_t pcid, int errcode,
   int32_t *result);
 
+/* Constructor and conversion functions */
+
+extern bool tpcbox_pcid_srid(uint32_t pcid, int32_t *result);
+extern TPCBox *tpcbox_srid_make(bool hasx, bool hasz, bool hast,
+  bool geodetic, int32_t srid, uint32_t pcid, double xmin, double xmax,
+  double ymin, double ymax, double zmin, double zmax, const Span *period);
+extern TPCBox *pcpatch_srid_to_tpcbox(const Pcpatch *pa, int32_t srid);
+
 /* Validity functions */
 
 extern bool ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
@@ -88,6 +96,10 @@ extern bool tpcbox_overafter(const TPCBox *box1, const TPCBox *box2);
 /* Input/output functions */
 
 extern TPCBox *tpcbox_parse(const char **str);
+
+/* Comparison functions */
+
+extern uint8_t *tpcbox_sortkey_intl(const TPCBox *box, size_t *size);
 
 /*****************************************************************************/
 

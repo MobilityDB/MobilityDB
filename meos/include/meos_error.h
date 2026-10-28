@@ -65,7 +65,30 @@ typedef enum
 } errorCode;
 
 /**
+ * Levels of the messages an error handler receives, with the values
+ * PostgreSQL gives them, so that a handler installed with
+ * `meos_initialize_error_handler` tells an error from a warning without the
+ * PostgreSQL headers. They are named apart from PostgreSQL's `ERROR`, which
+ * the Windows header `wingdi.h` also defines.
+ *
+ * A message of level `MEOS_ERROR` reports a failure: the function returns its
+ * sentinel and the error number records the code. A message of a lower level
+ * accompanies an answer and leaves the error number as it is.
+ */
+typedef enum
+{
+  MEOS_INFO                           = 17, // Information the caller asked for
+  MEOS_NOTICE                         = 18, // Helpful message about the operation
+  MEOS_WARNING                        = 19, // Unexpected input the operation took
+  MEOS_ERROR                          = 21, // Failure of the operation
+} errorLevel;
+
+/**
  * Report an error at the given level/code with a printf-style message.
+ *
+ * The level is one of errorLevel. Every message reaches the installed error
+ * handler; only a message of level MEOS_ERROR states a failure, whose code the
+ * error number records, while a lower level accompanies an answer.
  *
  * @note Return-or-not contract is **undefined**: this function MAY
  * return control to the caller, depending on the installed error
@@ -105,7 +128,11 @@ extern void meos_error(int errlevel, int errcode, const char *format, ...)
   ;
 #endif
 
-/* Set or read error level */
+/*
+ * Read, set, restore or clear the error number, which records the code of the
+ * last message of level MEOS_ERROR: a set error number means that the answer
+ * of the call is a sentinel. The error number is per thread.
+ */
 
 extern int meos_errno(void);
 extern int meos_errno_set(int err);

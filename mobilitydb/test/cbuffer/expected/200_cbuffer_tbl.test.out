@@ -33,7 +33,9 @@ SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cb ~= (cb::geometry)::cbuffer;
+SELECT COUNT(*) FROM tbl_cbuffer WHERE
+  ST_DWithin(point(cb), point((cb::geometry)::cbuffer), 1e-12) AND
+  abs(radius(cb) - radius((cb::geometry)::cbuffer)) <= 1e-12;
  count 
 -------
    100

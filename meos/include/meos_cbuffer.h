@@ -181,8 +181,6 @@ extern bool cbuffer_gt(const Cbuffer *cb1, const Cbuffer *cb2);
 extern bool cbuffer_le(const Cbuffer *cb1, const Cbuffer *cb2);
 extern bool cbuffer_lt(const Cbuffer *cb1, const Cbuffer *cb2);
 extern bool cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2);
-extern bool cbuffer_nsame(const Cbuffer *cb1, const Cbuffer *cb2);
-extern bool cbuffer_same(const Cbuffer *cb1, const Cbuffer *cb2);
 
 /******************************************************************************
  * Functions for circular buffer sets

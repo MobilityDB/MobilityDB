@@ -848,6 +848,7 @@ extern SpanSet *spanset_make_free(Span *spans, int count, bool normalize, bool o
 
 /* Comparison functions for set and span types */
 
+extern uint8_t *set_sortkey_intl(const Set *s, size_t *size);
 extern uint8_t *span_sortkey_intl(const Span *s, size_t *size);
 extern uint8_t *spanset_sortkey_intl(const SpanSet *ss, size_t *size);
 
@@ -970,6 +971,8 @@ extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
 extern bool ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2);
 extern bool ensure_index_join_op(IndexSearchOp op);
 extern bool ensure_index_result(const MeosArray *result);
+extern RTree *rtree_create(MeosType bboxtype);
+extern SPTree *sptree_create(MeosType bboxtype, SPTreeKind kind);
 extern int rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query, MeosArray *result);
 extern int sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query, MeosArray *result);
 extern void *bbox_temporal_split_boxes(MeosType bboxtype, size_t boxsize,
@@ -1096,6 +1099,10 @@ extern bool tbox_overafter(const TBox *box1, const TBox *box2);
 /* Set functions for box types */
 
 extern bool inter_tbox_tbox(const TBox *box1, const TBox *box2, TBox *result);
+
+/* Comparison functions for box types */
+
+extern uint8_t *tbox_sortkey_intl(const TBox *box, size_t *size);
 
 /*****************************************************************************
  * Functions for temporal types
@@ -1378,6 +1385,7 @@ extern TSequenceSet *tsequenceset_restrict_values(const TSequenceSet *ss, const 
 /* Traditional comparison functions for temporal types */
 
 extern int tinstant_cmp(const TInstant *inst1, const TInstant *inst2);
+extern uint8_t *temporal_sortkey_intl(const Temporal *temp, size_t *size);
 extern bool tinstant_eq(const TInstant *inst1, const TInstant *inst2);
 extern int tsequence_cmp(const TSequence *seq1, const TSequence *seq2);
 extern bool tsequence_eq(const TSequence *seq1, const TSequence *seq2);
@@ -1469,7 +1477,7 @@ extern TSequenceSet *tsequenceset_compact(const TSequenceSet *ss);
 
 /* Aggregate functions for temporal types */
 
-extern SkipList *temporal_skiplist_make();
+extern SkipList *temporal_skiplist_make(void);
 extern SkipList *skiplist_make(size_t key_size, size_t value_size,
   int (*comp_fn)(void *, void *), void *(*merge_fn)(void *, void *));
 extern int skiplist_search(SkipList *list, void *key, void *value);

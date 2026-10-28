@@ -475,9 +475,11 @@ tinterrel_tcbufferseq_linear_geom(const TSequence *seq, const GSERIALIZED *gs,
     for (int j = 0; j < npoints; j++)
     {
       Cbuffer *cb = cbuffer_make(points[j], 0.0);
-      /* Check whether the segment endpoints already satisfy the condition */
-      bool start_in = (cbuffer_distance(cb1_start, cb) <= 0.0);
-      bool end_in   = (cbuffer_distance(cb1_end,   cb) <= 0.0);
+      /* Check whether the segment endpoints already satisfy the condition,
+       * on the exact sign #cbuffer_intersects reads, since a distance that
+       * rounds to 0 does not say the discs meet */
+      bool start_in = (cbuffer_intersects(cb1_start, cb) != 0);
+      bool end_in   = (cbuffer_intersects(cb1_end,   cb) != 0);
       TimestampTz t1, t2;
       int found = tcbuffersegm_intersection_value(tinstant_value_p(inst1),
         tinstant_value_p(inst2), PointerGetDatum(cb), inst1->t, inst2->t,
@@ -2790,6 +2792,18 @@ tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
 
+  /* A point is the circular buffer of radius 0 at it, the same set, against
+   * which the period within the distance is decided exactly over continuous
+   * time (#tcbuffersegm_tdwithin_turnpt), as #ea_dwithin_tgeo_geo carries a
+   * point to the exact pair of temporal points. No other geometry is a
+   * circular buffer, and each keeps the native path below */
+  if (gserialized_get_type(gs) == POINTTYPE)
+  {
+    Cbuffer *cb = cbuffer_make(gs, 0.0);
+    Temporal *result = tdwithin_tcbuffer_cbuffer(temp, cb, dist);
+    pfree(cb);
+    return result;
+  }
   return tinterrel_tcbuffer_geo_dist(temp, gs, TINTERSECTS, dist);
 }
 
@@ -2834,6 +2848,7 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
   lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
+  lfinfo.tpfn_temp_at = &tcbuffersegm_tdwithin_at;
   return tdwithin_tspatial_spatial(temp, PointerGetDatum(cb), &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
 }
@@ -2886,6 +2901,7 @@ tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   lfinfo.func = (varfunc) &datum_cbuffer_dwithin;
   lfinfo.numparam = 1;
   lfinfo.param[0] = Float8GetDatum(dist);
+  lfinfo.tpfn_temp_at = &tcbuffersegm_tdwithin_at;
   Temporal *result = tdwithin_tspatial_tspatial(sync1, sync2, &lfinfo,
     &tcbuffersegm_tdwithin_turnpt);
   pfree(sync1); pfree(sync2);

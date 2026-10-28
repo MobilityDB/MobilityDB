@@ -34,6 +34,7 @@ SET(LOCAL_FILES
   561_tposechain_aggfuncs
   558_tposechain_topops
   559_tposechain_posops
+  560_tposechain_distance
   564_tposechain_tempspatialrels
   )
 

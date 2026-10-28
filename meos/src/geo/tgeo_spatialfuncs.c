@@ -74,6 +74,7 @@
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/pcpatch.h"
   #include "pointcloud/meos_schema_hook.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 
 #include <utils/jsonb.h>
@@ -150,22 +151,6 @@ datum_point_eq_intl(Datum point1, Datum point2)
   assert(FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags));
   assert(FLAGS_GET_GEODETIC(gs1->gflags) == FLAGS_GET_GEODETIC(gs2->gflags));
   return geopoint_eq(gs1, gs2);
-}
-
-/**
- * @brief Return true if the points are equal taking into account floating 
- * point imprecision
- */
-bool
-datum_point_same(Datum point1, Datum point2)
-{
-  const GSERIALIZED *gs1 = DatumGetGserializedP(point1);
-  const GSERIALIZED *gs2 = DatumGetGserializedP(point2);
-  if (gserialized_get_srid(gs1) != gserialized_get_srid(gs2) ||
-      FLAGS_GET_Z(gs1->gflags) != FLAGS_GET_Z(gs2->gflags) ||
-      FLAGS_GET_GEODETIC(gs1->gflags) != FLAGS_GET_GEODETIC(gs2->gflags))
-    return false;
-  return geopoint_same(gs1, gs2);
 }
 
 /**
@@ -497,7 +482,7 @@ pcpoint_flags(const Pcpoint *pt)
     MEOS_FLAGS_SET_X(result, true);
     return result;
   }
-  TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+  TPCBox *box = pcpoint_schema_to_tpcbox(pt, schema);
   if (! box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -520,7 +505,7 @@ static int16
 pcpatch_flags(const Pcpatch *pa)
 {
   int32_t srid = meos_pc_schema_srid(pcpatch_get_pcid(pa));
-  TPCBox *box = pcpatch_to_tpcbox(pa, srid);
+  TPCBox *box = pcpatch_srid_to_tpcbox(pa, srid);
   if (! box)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -1519,7 +1504,7 @@ tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
  * @brief Scale a temporal geo by given factors
  * @param[in] temp Temporal geo
  * @param[in] scale Geometry for the scale factors
- * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @param[in] sorigin Point geometry for the origin @nullable
  * @csqlfn #Tgeo_scale_geo()
  */
 Temporal *
@@ -1954,7 +1939,7 @@ geo_rotate_z(const GSERIALIZED *gs, double angle)
  * plane when the vertical factor moves it
  * @param[in] gs Geometry
  * @param[in] scale Point geometry stating the scale factors
- * @param[in] sorigin Point geometry for the origin, may be `NULL`
+ * @param[in] sorigin Point geometry for the origin @nullable
  * @csqlfn #Geo_scale_geo()
  */
 GSERIALIZED *

@@ -59,7 +59,7 @@
 #include "temporal/type_util.h"
 
 #if ! MEOS
-  extern FunctionCallInfo fetch_fcinfo();
+  extern FunctionCallInfo fetch_fcinfo(void);
   extern void store_fcinfo(FunctionCallInfo fcinfo);
   extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
   extern void unset_aggregation_context(MemoryContext ctx);
@@ -107,7 +107,7 @@ prng_random64(void)
  * result so that this draw yields the maximum height instead.
  */
 static int
-random_level()
+random_level(void)
 {
   return Min(ffsl(~(prng_random64() &
     ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1))), SKIPLIST_MAXLEVEL);
@@ -150,7 +150,7 @@ skiplist_make(size_t key_size, size_t value_size,
  * @brief Constructs an empty skiplist
  */
 SkipList *
-temporal_skiplist_make()
+temporal_skiplist_make(void)
 {
   return skiplist_make(0, 0, NULL, NULL);
 }
@@ -431,8 +431,8 @@ skiplist_print(const SkipList *list)
  * @brief Determine the segment of the list that overlaps with the new set of
  * key-value pairs
  * @param[in] list Skiplist
- * @param[in] keys Array of keys, may be `NULL` when the comparison is done
- * with the values
+ * @param[in] keys Array of keys, `NULL` when the comparison is done
+ * with the values @nullable
  * @param[in] values Array of values
  * @param[in] count Number of elements in the arrays
  * @param[out] lower Array index of the start of the segment 
@@ -500,8 +500,9 @@ keyval_skiplist_common(SkipList *list, void **keys, void **values, int count,
  * key-value counterpart of #tinstant_tagg, which merges the instants of a
  * temporal skiplist.
  * @param[in] list Skiplist
- * @param[in] keys1,keys2 Arrays of keys, `keys2` is `NULL` when the
- * comparison is done with the values
+ * @param[in] keys1 Array of keys
+ * @param[in] keys2 Array of keys, `NULL` when the comparison is done with the
+ * values @nullable
  * @param[in] values1,values2 Arrays of values
  * @param[in] count1,count2 Number of values in the input arrays
  * @param[out] newcount Number of values in the output array
@@ -586,7 +587,7 @@ keyval_skiplist_merge(SkipList *list, void **keys1, void **values1,
  * @param[in] keys Array of keys
  * @param[in] values Array of values
  * @param[in] count Number of elements in the array
- * @param[in] func Function used when aggregating temporal values, may be NULL
+ * @param[in] func Function used when aggregating temporal values @nullable
  * for the merge aggregate function
  * @param[in] crossings True if turning points are added in the segments when
  * aggregating temporal value

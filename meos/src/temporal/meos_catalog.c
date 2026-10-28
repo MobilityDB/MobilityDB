@@ -246,27 +246,31 @@ static const char *MEOS_OPER_NAMES[] =
 static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
 {
   [T_DATE] = { .basetype_settype = T_DATESET, .basetype_spantype = T_DATESPAN },
-  [T_DATESET] = { .settype_basetype = T_DATE },
-  [T_DATESPAN] = { .spantype_basetype = T_DATE,
+  [T_DATESET] = { .type_bboxtype = T_DATESPAN, .settype_basetype = T_DATE },
+  [T_DATESPAN] = { .type_bboxtype = T_DATESPAN, .spantype_basetype = T_DATE,
     .spantype_spansettype = T_DATESPANSET },
-  [T_DATESPANSET] = { .spansettype_spantype = T_DATESPAN },
+  [T_DATESPANSET] = { .type_bboxtype = T_DATESPAN,
+    .spansettype_spantype = T_DATESPAN },
   [T_FLOAT8] = { .basetype_settype = T_FLOATSET,
     .basetype_spantype = T_FLOATSPAN },
-  [T_FLOATSET] = { .settype_basetype = T_FLOAT8 },
-  [T_FLOATSPAN] = { .spantype_basetype = T_FLOAT8,
+  [T_FLOATSET] = { .type_bboxtype = T_FLOATSPAN, .settype_basetype = T_FLOAT8 },
+  [T_FLOATSPAN] = { .type_bboxtype = T_FLOATSPAN, .spantype_basetype = T_FLOAT8,
     .spantype_spansettype = T_FLOATSPANSET },
-  [T_FLOATSPANSET] = { .spansettype_spantype = T_FLOATSPAN },
+  [T_FLOATSPANSET] = { .type_bboxtype = T_FLOATSPAN,
+    .spansettype_spantype = T_FLOATSPAN },
   [T_INT4] = { .basetype_settype = T_INTSET, .basetype_spantype = T_INTSPAN },
-  [T_INTSET] = { .settype_basetype = T_INT4 },
-  [T_INTSPAN] = { .spantype_basetype = T_INT4,
+  [T_INTSET] = { .type_bboxtype = T_INTSPAN, .settype_basetype = T_INT4 },
+  [T_INTSPAN] = { .type_bboxtype = T_INTSPAN, .spantype_basetype = T_INT4,
     .spantype_spansettype = T_INTSPANSET },
-  [T_INTSPANSET] = { .spansettype_spantype = T_INTSPAN },
+  [T_INTSPANSET] = { .type_bboxtype = T_INTSPAN,
+    .spansettype_spantype = T_INTSPAN },
   [T_INT8] = { .basetype_settype = T_BIGINTSET,
     .basetype_spantype = T_BIGINTSPAN },
-  [T_BIGINTSET] = { .settype_basetype = T_INT8 },
-  [T_BIGINTSPAN] = { .spantype_basetype = T_INT8,
+  [T_BIGINTSET] = { .type_bboxtype = T_BIGINTSPAN, .settype_basetype = T_INT8 },
+  [T_BIGINTSPAN] = { .type_bboxtype = T_BIGINTSPAN, .spantype_basetype = T_INT8,
     .spantype_spansettype = T_BIGINTSPANSET },
-  [T_BIGINTSPANSET] = { .spansettype_spantype = T_BIGINTSPAN },
+  [T_BIGINTSPANSET] = { .type_bboxtype = T_BIGINTSPAN,
+    .spansettype_spantype = T_BIGINTSPAN },
   [T_TBOOL] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_BOOL },
   [T_TDOUBLE2] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_DOUBLE2 },
   [T_TDOUBLE3] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_DOUBLE3 },
@@ -277,11 +281,16 @@ static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
   [T_TIMESTAMPTZ] = { .basetype_settype = T_TSTZSET,
     .basetype_spantype = T_TSTZSPAN },
   [T_TINT] = { .type_bboxtype = T_TBOX, .temptype_basetype = T_INT4 },
-  [T_TSTZSET] = { .settype_basetype = T_TIMESTAMPTZ },
-  [T_TSTZSPAN] = { .spantype_basetype = T_TIMESTAMPTZ,
+  [T_TSTZSET] = { .type_bboxtype = T_TSTZSPAN,
+    .settype_basetype = T_TIMESTAMPTZ },
+  [T_TSTZSPAN] = { .type_bboxtype = T_TSTZSPAN,
+    .spantype_basetype = T_TIMESTAMPTZ,
     .spantype_spansettype = T_TSTZSPANSET },
-  [T_TSTZSPANSET] = { .spansettype_spantype = T_TSTZSPAN },
+  [T_TSTZSPANSET] = { .type_bboxtype = T_TSTZSPAN,
+    .spansettype_spantype = T_TSTZSPAN },
   [T_TTEXT] = { .type_bboxtype = T_TSTZSPAN, .temptype_basetype = T_TEXT },
+  [T_TBOX] = { .type_bboxtype = T_TBOX },
+  [T_STBOX] = { .type_bboxtype = T_STBOX },
   [T_GEOMETRY] = { .basetype_settype = T_GEOMSET },
   [T_GEOMSET] = { .type_bboxtype = T_STBOX, .settype_basetype = T_GEOMETRY },
   [T_GEOGRAPHY] = { .basetype_settype = T_GEOGSET },
@@ -322,6 +331,7 @@ static const reltype_catalog_struct MEOS_RELTYPE_CATALOG[] =
   [T_PCPATCH] = { .basetype_settype = T_PCPATCHSET },
   [T_PCPATCHSET] = { .settype_basetype = T_PCPATCH },
   [T_TPCPATCH] = { .type_bboxtype = T_TPCBOX, .temptype_basetype = T_PCPATCH },
+  [T_TPCBOX] = { .type_bboxtype = T_TPCBOX },
 };
 
 #define TEMPSUBTYPE_STR_MAXLEN 12
@@ -473,6 +483,25 @@ meosoper_name(MeosOper oper)
 }
 
 /**
+ * @brief Return the type whose name is a string, the inverse of #meostype_name
+ * @details The name is the canonical one #meostype_name answers, which every
+ * host gives the type: the SQL type of MobilityDB and the column type of
+ * MobilityDuck. A name naming no type answers @p T_UNKNOWN
+ * @param[in] name Name of the type
+ */
+MeosType
+meostype_from_string(const char *name)
+{
+  int n = (int) (sizeof(MEOS_TYPE_NAMES) / sizeof(MEOS_TYPE_NAMES[0]));
+  for (int i = 0; i < n; i++)
+  {
+    if (MEOS_TYPE_NAMES[i] && strcmp(MEOS_TYPE_NAMES[i], name) == 0)
+      return (MeosType) i;
+  }
+  return T_UNKNOWN;
+}
+
+/**
  * @brief Fetch the operator number from its name
  * @arg[in] str Name of the type
  */
@@ -553,13 +582,18 @@ temptype_basetype(MeosType type)
  *****************************************************************************/
 
 /**
- * @brief Return the bounding box type of a set or a temporal type
- * @details A value carries the bounding box its type prescribes: a span for a
- * temporal alphanumeric value, a temporal box for a temporal number, a
- * spatiotemporal box for a spatial set and a temporal spatial value, and a
- * point cloud box for a temporal point cloud value, whose dimensions live in
- * the schema its identifier names. A type that carries no bounding box, such
- * as an alphanumeric or a point cloud SET, answers @p T_UNKNOWN.
+ * @brief Return the bounding box type of a type
+ * @details A box type, a span or a temporal, spatiotemporal or point cloud
+ * box, is its own bounding box; every other type is bounded by its box: the
+ * span its bounds state for a number or time set and for a span set, the
+ * spatiotemporal box a spatial set stores, a span for a temporal alphanumeric
+ * value, a temporal box for a temporal number, a spatiotemporal box for a
+ * temporal spatial value, and a point cloud box for a temporal point cloud
+ * value, whose dimensions live in the schema its identifier names. Every host
+ * indexes a value by this box, so the GiST and SP-GiST operator classes of
+ * MobilityDB and the in-memory RTree and SPTree, which MobilityDuck's indexes
+ * are, store the same key. A type with no box, such as a base type, an
+ * alphanumeric set or a point cloud set, answers @p T_UNKNOWN.
  */
 MeosType
 type_bboxtype(MeosType type)

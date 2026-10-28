@@ -47,6 +47,7 @@
 #include <meos_quadbin.h>
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
+#include "quadbin/tquadbin.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 
@@ -249,10 +250,11 @@ typedef struct
 /**
  * @brief Return the fragments of a temporal point split by the quadbin cells
  * it crosses, and the cell of each
+ * @details The cells come as the datums the rows carry, from the internal
+ * function, as #Tnumber_value_time_split_common takes its bins
  */
 static Datum
-Tpoint_quadbin_split_ext(FunctionCallInfo fcinfo,
-  Temporal **(*split)(const Temporal *, int32, bool, Datum **, int *))
+Tpoint_quadbin_split_ext(FunctionCallInfo fcinfo)
 {
   FuncCallContext *funcctx;
 
@@ -270,8 +272,8 @@ Tpoint_quadbin_split_ext(FunctionCallInfo fcinfo,
     bool border_inc = PG_GETARG_BOOL(2);
     /* Create function state */
     QuadbinSplitState *state = palloc0(sizeof(QuadbinSplitState));
-    state->frags = split(temp, resolution, border_inc, &state->cells,
-      &state->count);
+    state->frags = tpoint_quadbin_split(temp, resolution, border_inc,
+      &state->cells, &state->count);
     state->done = (state->count == 0);
     funcctx->user_fctx = state;
     /* Build a tuple description for the function output */
@@ -324,7 +326,7 @@ PG_FUNCTION_INFO_V1(Tgeompoint_quadbin_split);
 Datum
 Tgeompoint_quadbin_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_quadbin_split_ext(fcinfo, &tgeompoint_quadbin_split);
+  return Tpoint_quadbin_split_ext(fcinfo);
 }
 
 PGDLLEXPORT Datum Tgeogpoint_quadbin_split(PG_FUNCTION_ARGS);
@@ -338,7 +340,7 @@ PG_FUNCTION_INFO_V1(Tgeogpoint_quadbin_split);
 Datum
 Tgeogpoint_quadbin_split(PG_FUNCTION_ARGS)
 {
-  return Tpoint_quadbin_split_ext(fcinfo, &tgeogpoint_quadbin_split);
+  return Tpoint_quadbin_split_ext(fcinfo);
 }
 
 /*****************************************************************************/

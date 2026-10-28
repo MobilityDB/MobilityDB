@@ -407,16 +407,13 @@ typedef struct RTree RTree;
 
 /* RTree functions */
 
-extern RTree *rtree_create_intspan();
-extern RTree *rtree_create_bigintspan();
-extern RTree *rtree_create_floatspan();
-extern RTree *rtree_create_datespan();
-extern RTree *rtree_create_tstzspan();
-extern RTree *rtree_create_tbox();
-extern RTree *rtree_create_stbox();
-#if POINTCLOUD
-extern RTree *rtree_create_tpcbox();
-#endif
+extern RTree *rtree_create_intspan(void);
+extern RTree *rtree_create_bigintspan(void);
+extern RTree *rtree_create_floatspan(void);
+extern RTree *rtree_create_datespan(void);
+extern RTree *rtree_create_tstzspan(void);
+extern RTree *rtree_create_tbox(void);
+extern RTree *rtree_create_stbox(void);
 extern void rtree_free(RTree *rtree);
 extern int rtree_num_entries(const RTree *rtree);
 extern int64 rtree_mem_size(const RTree *rtree);
@@ -463,9 +460,6 @@ extern SPTree *sptree_create_datespan(SPTreeKind kind);
 extern SPTree *sptree_create_tstzspan(SPTreeKind kind);
 extern SPTree *sptree_create_tbox(SPTreeKind kind);
 extern SPTree *sptree_create_stbox(SPTreeKind kind);
-#if POINTCLOUD
-extern SPTree *sptree_create_tpcbox(SPTreeKind kind);
-#endif
 extern void sptree_free(SPTree *sptree);
 extern int sptree_num_entries(const SPTree *sptree);
 extern int64 sptree_mem_size(const SPTree *sptree);
@@ -492,7 +486,11 @@ extern void sptree_nn_cursor_close(SPNNCursor *cursor);
  * Initialization of the MEOS library
  *****************************************************************************/
 
-/* Definition of error handler function */
+/* Definition of error handler function, which receives every message with its
+ * level (errorLevel), its code (errorCode) and its text. A handler records the
+ * code of a message of level MEOS_ERROR with meos_errno_set, which tells the
+ * caller that the answer is a sentinel, and reports the lower levels, which
+ * accompany an answer, without touching the error number */
 typedef void (*error_handler_fn)(int, int, const char *);
 
 extern void meos_initialize_error_handler(error_handler_fn err_handler);
@@ -521,9 +519,6 @@ extern void meos_finalize_collation(void);
 extern void meos_finalize_projsrs(void);
 extern void meos_finalize_relate(void);
 extern void meos_finalize_ways(void);
-#if POINTCLOUD
-extern void meos_initialize_pointcloud(void);
-#endif
 
 extern bool meos_set_datestyle(const char *newval, void *extra);
 extern bool meos_set_intervalstyle(const char *newval, int extra);
@@ -805,6 +800,7 @@ extern bool set_gt(const Set *s1, const Set *s2);
 extern bool set_le(const Set *s1, const Set *s2);
 extern bool set_lt(const Set *s1, const Set *s2);
 extern bool set_ne(const Set *s1, const Set *s2);
+extern uint8_t *set_sortkey(const Set *s, size_t *size);
 extern int span_cmp(const Span *s1, const Span *s2);
 extern bool span_eq(const Span *s1, const Span *s2);
 extern bool span_ge(const Span *s1, const Span *s2);
@@ -1400,6 +1396,7 @@ extern bool tbox_gt(const TBox *box1, const TBox *box2);
 extern bool tbox_le(const TBox *box1, const TBox *box2);
 extern bool tbox_lt(const TBox *box1, const TBox *box2);
 extern bool tbox_ne(const TBox *box1, const TBox *box2);
+extern uint8_t *tbox_sortkey(const TBox *box, size_t *size);
 
 /*===========================================================================*
  * Functions for temporal types
@@ -1659,6 +1656,7 @@ extern bool temporal_gt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_le(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_lt(const Temporal *temp1, const Temporal *temp2);
 extern bool temporal_ne(const Temporal *temp1, const Temporal *temp2);
+extern uint8_t *temporal_sortkey(const Temporal *temp, size_t *size);
 
 /*****************************************************************************/
 

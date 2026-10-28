@@ -55,6 +55,7 @@
 #include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/meos_transform.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Extract edges from a geometry that can be of type point, line, polygon or
@@ -116,6 +117,7 @@ emit_ring_edges(const POINTARRAY *pa, MeosArray *edges, EdgeType etype)
     Edge e;
     e.centred = false;
     e.from = e.to = NULL;
+    e.cut = false;
     e.x1 = a->x; e.y1 = a->y;
     e.x2 = b->x; e.y2 = b->y;
     e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -167,6 +169,7 @@ extract_point(const LWPOINT *pt, MeosArray *edges)
   Edge e;
   e.centred = false;
   e.from = e.to = NULL;
+  e.cut = false;
   e.x1 = e.x2 = e.xmin = e.xmax = p->x;
   e.y1 = e.y2 = e.ymin = e.ymax = p->y;
   e.dx = e.dy = e.length = 0;
@@ -396,6 +399,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       Edge e;
       e.centred = false;
       e.from = e.to = NULL;
+      e.cut = false;
       e.cx = mx; e.cy = my; e.radius = radius;
       /* Both halves lie on the circle on the diameter between the two input
        * points, which an exact question about it reads */
@@ -434,6 +438,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
       Edge e;
       e.centred = false;
       e.from = e.to = NULL;
+      e.cut = false;
       e.x1 = px[i]; e.y1 = py[i];
       e.x2 = px[i + 1]; e.y2 = py[i + 1];
       e.xmin = Min(e.x1, e.x2); e.xmax = Max(e.x1, e.x2);
@@ -453,6 +458,7 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   Edge e;
   e.centred = false;
   e.from = e.to = NULL;
+  e.cut = false;
   /* Circumcenter of the three points */
   e.cx = (a2 * (by - cy) + b2 * (cy - ay) + c2 * (ay - by)) / d;
   e.cy = (a2 * (cx - bx) + b2 * (ax - cx) + c2 * (bx - ax)) / d;
@@ -1046,6 +1052,62 @@ two_sum(double a, double b, double *x, double *y)
 }
 
 /**
+ * @brief Set the product of two pairs of doubles as a pair, within
+ * 2^-104 of the magnitude of the product of their larger parts and of the
+ * cross terms
+ */
+static pg_attribute_always_inline void
+pair_mul(double ah, double al, double bh, double bl, double *rh, double *rl)
+{
+  double p, e;
+  two_product(ah, bh, &p, &e);
+  e += ah * bl + al * bh;
+  *rh = p + e;
+  *rl = e - (*rh - p);
+}
+
+/**
+ * @brief Set the sum of two pairs of doubles as a pair, within 2^-104 of the
+ * sum of the magnitudes of the operands
+ */
+static pg_attribute_always_inline void
+pair_add(double ah, double al, double bh, double bl, double *rh, double *rl)
+{
+  double s, e;
+  two_sum(ah, bh, &s, &e);
+  e += al + bl;
+  *rh = s + e;
+  *rl = e - (*rh - s);
+}
+
+/**
+ * @brief Return the sign of `q - m^2 l` at a midpoint `m` given as a pair,
+ * where its evaluation in pairs of doubles carries it, 0 otherwise
+ * @details `q` and `l` are pairs within @p eq and @p el of the values they
+ * stand for; the products and the difference each err by 2^-104 of the
+ * magnitudes they combine, which `2^-96` covers, and a value below 2^-960,
+ * whose products could underflow, is not told
+ * @param[in] q,eq The value and a bound on its error
+ * @param[in] l,el The factor of the squared midpoint and a bound on its error
+ * @param[in] mh,ml The midpoint as a pair
+ */
+static pg_attribute_always_inline int
+pair_mid_sign(const double *q, double eq, const double *l, double el,
+  double mh, double ml)
+{
+  double m2h, m2l, ph, pl, vh, vl;
+  pair_mul(mh, ml, mh, ml, &m2h, &m2l);
+  pair_mul(m2h, m2l, l[0], l[1], &ph, &pl);
+  pair_add(q[0], q[1], - ph, - pl, &vh, &vl);
+  double m2 = fabs(m2h), aq = fabs(q[0]), al = fabs(l[0]);
+  double bound = (eq + m2 * el + 0x1p-96 * (aq + m2 * al) + 0x1p-960) *
+    (1.0 + 16.0 * DBL_EPSILON);
+  if (! isfinite(vh) || ! isfinite(bound))
+    return 0;
+  return (vh > bound) ? 1 : ((vh < - bound) ? -1 : 0);
+}
+
+/**
  * @brief Multiply an expansion by a double exactly, and return the length of
  * the product
  * @details Each component times the double is its rounded value plus its
@@ -1184,12 +1246,27 @@ void
 exact_sum_set(ExactSum *sum, const double *terms, int nterms)
 {
   assert(nterms > 0 && nterms <= EXACT_SUM_MAXTERMS);
-  double buf[EXACT_SUM_MAXTERMS + 1];
   int len = 0;
-  for (int i = 0; i < nterms; i++)
+  if (nterms == 2)
   {
-    len = grow_expansion(len, sum->e, terms[i], buf);
-    memcpy(sum->e, buf, (size_t) len * sizeof(double));
+    /* The second step of #grow_expansion on the first term, with no copy:
+     * the error of the sum where it is not zero, then the sum */
+    double q = terms[1], e0 = terms[0];
+    double s = q + e0, bv = s - q, av = s - bv;
+    double err = (q - av) + (e0 - bv);
+    if (err != 0.0)
+      sum->e[len++] = err;
+    if (s != 0.0 || len == 0)
+      sum->e[len++] = s;
+  }
+  else
+  {
+    double buf[EXACT_SUM_MAXTERMS + 1];
+    for (int i = 0; i < nterms; i++)
+    {
+      len = grow_expansion(len, sum->e, terms[i], buf);
+      memcpy(sum->e, buf, (size_t) len * sizeof(double));
+    }
   }
   sum->n = len;
   double approx = 0.0, mag = 0.0;
@@ -1275,6 +1352,65 @@ polynomial_sign_pairs(const ExactSum *sums, const PolyTerm *terms,
   return 0;
 }
 
+/** Number of doubles of the arena in which #polynomial_sign_stack forms each
+ * term, and of each of its two buffers of the total */
+#define POLY_STACK_ARENA 2048
+#define POLY_STACK_TOTAL 1024
+
+/**
+ * @brief Set in @p sign the exact sign of a polynomial in exact sums and
+ * return true, evaluated in buffers on the stack, or return false where an
+ * expansion outgrows them
+ * @details The evaluation of #polynomial_sign_exact: each term is formed in an
+ * arena that is reset for the next one, and the total alternates between two
+ * buffers, so that no expansion is allocated
+ */
+static bool
+polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
+  int nterms, int *sign)
+{
+  double arena[POLY_STACK_ARENA], total[2][POLY_STACK_TOTAL];
+  int tlen = 0, cur = 0;
+  for (int i = 0; i < nterms; i++)
+  {
+    /* The term, starting from its coefficient */
+    double *prod = arena;
+    int plen = 1, top = 1;
+    prod[0] = terms[i].coef;
+    for (int k = 0; k < terms[i].deg; k++)
+    {
+      const ExactSum *s = &sums[terms[i].sum[k]];
+      int cap = 2 * plen * s->n;
+      if (top + 2 * cap + 2 * plen > POLY_STACK_ARENA)
+        return false;
+      double *h = arena + top, *tmp = h + cap, *part = tmp + cap;
+      top += 2 * cap + 2 * plen;
+      int hlen = expansion_product(plen, prod, s->n, s->e, h, tmp, part);
+      prod = tmp;
+      plen = compress_expansion(hlen, h, prod);
+    }
+    /* Add the term to the total */
+    if (tlen + plen > POLY_STACK_TOTAL || top + tlen + plen > POLY_STACK_ARENA)
+      return false;
+    if (tlen == 0)
+    {
+      memcpy(total[cur], prod, sizeof(double) * plen);
+      tlen = plen;
+    }
+    else
+    {
+      double *h = arena + top;
+      int hlen = expansion_sum(tlen, total[cur], plen, prod, h,
+        total[1 - cur]);
+      cur = 1 - cur;
+      tlen = compress_expansion(hlen, h, total[cur]);
+    }
+  }
+  double last = tlen ? total[cur][tlen - 1] : 0.0;
+  *sign = (last > 0.0) ? 1 : ((last < 0.0) ? -1 : 0);
+  return true;
+}
+
 /**
  * @brief Return the sign of a polynomial in exact sums, computed exactly
  * @details The polynomial is first evaluated in doubles together with a bound
@@ -1319,6 +1455,8 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
     return (val > 0.0) ? 1 : -1;
   int sign = polynomial_sign_pairs(sums, terms, nterms);
   if (sign != 0)
+    return sign;
+  if (polynomial_sign_stack(sums, terms, nterms, &sign))
     return sign;
 
   /* Exact evaluation */
@@ -1421,7 +1559,7 @@ pow2_double(int k)
 
 /**
  * @brief Set the products whose sum is the squared distance between two
- * points less the square of a sum of up to three doubles, each as two factors
+ * points less the square of a sum of up to four doubles, each as two factors
  * and an exact multiplier of 1, -1, 2 or -2, and return their number
  * @details The squared distance is the sum over the coordinates of
  * `(d + e)^2 = d*d + 2*d*e + e*e`, where `d + e` is a coordinate difference
@@ -1430,14 +1568,14 @@ pow2_double(int k)
  * product of each pair of them
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] t,nt Terms of the sum and their number, at most 3
- * @param[out] left,right,factor Room for 15 products each
+ * @param[in] t,nt Terms of the sum and their number, at most 4
+ * @param[out] left,right,factor Room for 19 products each
  */
 static pg_attribute_always_inline int
 point_distance_square_terms(const double *d, const double *e, int ndims,
   const double *t, int nt, double *left, double *right, double *factor)
 {
-  assert(nt >= 1 && nt <= 3);
+  assert(nt >= 1 && nt <= 4);
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -1701,6 +1839,42 @@ square_products_sign(const double *left, const double *right,
 }
 
 /**
+ * @brief Return the sign of the squared distance between two points in the
+ * plane less the square of a sum of up to three doubles, computed exactly
+ * @details The squared distance is the sum over the coordinates of
+ * `q*q - 2*q*p + p*p` and the square of the sum that of the squares of its
+ * terms and of twice the product of each pair, each a product of the input
+ * doubles times 1, -1 or -2, as #point_distance_offset_side_sign sets them,
+ * so #square_products_sign decides it for any finite doubles, where a product
+ * underflows below the smallest double or overflows past the largest
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] t,nt Terms of the sum and their number, from 1 to 3
+ */
+int
+point_distance_square_sum_sign(const double *p, const double *q,
+  const double *t, int nt)
+{
+  assert(nt >= 1 && nt <= 3);
+  double left[12], right[12], factor[12];
+  int n = 0;
+  for (int i = 0; i < 2; i++)
+  {
+    left[n] = q[i]; right[n] = q[i]; factor[n++] = 1.0;
+    left[n] = q[i]; right[n] = p[i]; factor[n++] = -2.0;
+    left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
+  }
+  for (int i = 0; i < nt; i++)
+  {
+    left[n] = t[i]; right[n] = t[i]; factor[n++] = -1.0;
+    for (int j = i + 1; j < nt; j++)
+    {
+      left[n] = t[i]; right[n] = t[j]; factor[n++] = -2.0;
+    }
+  }
+  return square_products_sign(left, right, factor, n);
+}
+
+/**
  * @brief Widen a range of lowest bits by those of some doubles, zeros left
  * out
  */
@@ -1750,7 +1924,7 @@ point_distance_square_inputs_exact(const double *d, const double *e,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of a sum of up to three doubles, computed exactly for any finite
+ * square of a sum of up to four doubles, computed exactly for any finite
  * doubles
  * @details The sign of the last component of the expansion of the products of
  * #point_distance_square_terms where @p exact says the expansion holds them,
@@ -1761,7 +1935,7 @@ static pg_attribute_always_inline int
 point_distance_square_sign_given(const double *d, const double *e, int ndims,
   const double *t, int nt, bool exact)
 {
-  double left[15], right[15], factor[15];
+  double left[19], right[19], factor[19];
   int n = point_distance_square_terms(d, e, ndims, t, nt, left, right, factor);
   if (! exact)
   {
@@ -1780,7 +1954,7 @@ point_distance_square_sign_given(const double *d, const double *e, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of a sum of up to three doubles, computed exactly for any finite
+ * square of a sum of up to four doubles, computed exactly for any finite
  * doubles, as #point_distance_square_sign_given computes it once
  * #point_distance_square_inputs_exact has read its inputs.
  * #point_distance_midpoint_sign calls it where its filter cannot tell
@@ -1906,7 +2080,7 @@ point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
 }
 
 static double point_distance_offset_inputs(const double *p, const double *q,
-  int ndims, double r);
+  int ndims, double r, double rlo);
 
 /**
  * @brief Return the distance between two points as the double nearest it,
@@ -1932,7 +2106,7 @@ point_distance_nearest(const double *p, const double *q, double *d,
     /* Where the scaling rounds a difference or its error, every side is read
      * on the input coordinates */
     if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
-      return point_distance_offset_inputs(p, q, ndims, 0.0);
+      return point_distance_offset_inputs(p, q, ndims, 0.0, 0.0);
     for (int i = 0; i < ndims; i++)
     {
       d[i] = d[i] * f1 * f2;
@@ -2152,27 +2326,28 @@ point_distance_exact(const double *p, const double *q, int ndims)
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `r + c + g/2`, computed exactly for any finite doubles
+ * square of `r + rlo + c + g/2`, computed exactly for any finite doubles
  * @details This is the side of a midpoint #point_distance_offset_exact
- * decides, `c` a candidate and `g` the signed gap to its neighbour, so that
- * the midpoint is no double where `c` is subnormal. The squared distance is
- * the sum over the coordinates of `q*q - 2*q*p + p*p` and the square the sum
- * of `r*r`, `c*c`, `g*g/4`, `2*r*c`, `r*g` and `c*g`, each a product of the
+ * decides, `r + rlo` the radius, `c` a candidate and `g` the signed gap to its
+ * neighbour, so that the midpoint is no double where `c` is subnormal. The
+ * squared distance is the sum over the coordinates of `q*q - 2*q*p + p*p` and
+ * the square the sum of the squares of the terms and of twice the product of
+ * each pair, as #point_distance_square_terms sets them, each a product of the
  * input doubles times a power of two, so #square_products_sign decides it
  * where a coordinate difference overflows and where the products of a
  * candidate far below the radius underflow
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius
+ * @param[in] r,rlo Radius as the sum of two doubles, @p rlo 0 for one double
  * @param[in] c Candidate
  * @param[in] g Gap from the candidate to its upper neighbour, or the negated
  * gap to its lower one
  */
 static int
-point_distance_offset_side_sign(const double *p, const double *q, int ndims,
-  double r, double c, double g)
+point_distance_offset_pair_side_sign(const double *p, const double *q,
+  int ndims, double r, double rlo, double c, double g)
 {
-  double left[15], right[15], factor[15];
+  double left[19], right[19], factor[19];
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -2186,7 +2361,26 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
   left[n] = r; right[n] = c; factor[n++] = -2.0;
   left[n] = r; right[n] = g; factor[n++] = -1.0;
   left[n] = c; right[n] = g; factor[n++] = -1.0;
+  if (rlo != 0.0)
+  {
+    left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
+    left[n] = r; right[n] = rlo; factor[n++] = -2.0;
+    left[n] = rlo; right[n] = c; factor[n++] = -2.0;
+    left[n] = rlo; right[n] = g; factor[n++] = -1.0;
+  }
   return square_products_sign(left, right, factor, n);
+}
+
+/**
+ * @brief Return the sign of the squared distance between two points less the
+ * square of `r + c + g/2`, computed exactly for any finite doubles, as
+ * #point_distance_offset_pair_side_sign reads it for a radius of one double
+ */
+static inline int
+point_distance_offset_side_sign(const double *p, const double *q, int ndims,
+  double r, double c, double g)
+{
+  return point_distance_offset_pair_side_sign(p, q, ndims, r, 0.0, c, g);
 }
 
 /**
@@ -2197,7 +2391,8 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
  * @param[in] p,q Coordinates of the two points
  * @param[in] d,e Scaled coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r,rs Radius and the radius scaled
+ * @param[in] r,rlo Radius as the sum of two doubles
+ * @param[in] rs,rlos The two scaled
  * @param[in] c Candidate
  * @param[in] g Gap from the candidate to its upper neighbour, or the negated
  * gap to its lower one
@@ -2209,15 +2404,17 @@ point_distance_offset_side_sign(const double *p, const double *q, int ndims,
  */
 static inline int
 point_distance_offset_side(const double *p, const double *q, const double *d,
-  const double *e, int ndims, double r, double rs, double c, double g,
-  bool scaled, int k, double f1, double f2, int low, int high, double cmin)
+  const double *e, int ndims, double r, double rlo, double rs, double rlos,
+  double c, double g, bool scaled, int k, double f1, double f2, int low,
+  int high, double cmin)
 {
   /* The twin of #point_distance_midpoint_sign for a radius. A candidate of at
    * least cmin and its half gap scale exactly and keep the products exact */
+  int nt = (rlo != 0.0) ? 4 : 3;
   if (scaled && c >= cmin)
   {
-    const double t[3] = {rs, c * f1 * f2, g * f1 * f2 / 2.0};
-    return point_distance_square_sign_given(d, e, ndims, t, 3, true);
+    const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
+    return point_distance_square_sign_given(d, e, ndims, t, nt, true);
   }
   /* Scaling by 2^k, and halving, is exact where the lowest bit of the
    * result is not below 2^-1074, the scaled values below 2 */
@@ -2225,7 +2422,7 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
   int lg = double_lowest_bit(g) + k - 1;
   if (scaled && lc >= -1074 && lg >= -1074)
   {
-    const double t[3] = {rs, c * f1 * f2, g * f1 * f2 / 2.0};
+    const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
     if (lc != INT_MAX)
     {
       low = (lc < low) ? lc : low;
@@ -2233,10 +2430,10 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
     }
     low = (lg < low) ? lg : low;
     high = (lg > high) ? lg : high;
-    return point_distance_square_sign_given(d, e, ndims, t, 3,
+    return point_distance_square_sign_given(d, e, ndims, t, nt,
       lowest_bits_exact(low, high));
   }
-  return point_distance_offset_side_sign(p, q, ndims, r, c, g);
+  return point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, g);
 }
 
 /**
@@ -2247,23 +2444,24 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
  * (#point_distance_scale_exact): the lowest bits of the scaled values cannot
  * show that rounding, so no decision reads them. Whether the points are
  * farther apart than the radius, and each side of every candidate, is the
- * sign #point_distance_offset_side_sign reads on the input coordinates, exact
- * for any finite doubles. The first candidate is read from the integer
+ * sign #point_distance_offset_pair_side_sign reads on the input coordinates,
+ * exact for any finite doubles. The first candidate is read from the integer
  * #square_products_wide sets for `S - r^2` on the input coordinates, a start
  * only, as #point_distance_offset_exact reads it where the difference lies
  * below the smallest double
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, not negative, 0 for the distance itself
+ * @param[in] r,rlo Radius as the sum of two doubles, not negative, both 0 for
+ * the distance itself
  */
 static double
 point_distance_offset_inputs(const double *p, const double *q, int ndims,
-  double r)
+  double r, double rlo)
 {
   /* No farther apart than the radius: S - r^2 is not positive */
-  if (point_distance_offset_side_sign(p, q, ndims, r, 0.0, 0.0) <= 0)
+  if (point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, 0.0, 0.0) <= 0)
     return 0.0;
-  double left[10], right[10], factor[10];
+  double left[12], right[12], factor[12];
   int n = 0;
   for (int i = 0; i < ndims; i++)
   {
@@ -2272,6 +2470,8 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
   }
   left[n] = r; right[n] = r; factor[n++] = -1.0;
+  left[n] = r; right[n] = rlo; factor[n++] = -2.0;
+  left[n] = rlo; right[n] = rlo; factor[n++] = -1.0;
   uint64_t acc[WIDE_LIMBS];
   square_products_wide(left, right, factor, n, acc);
   /* (S - r^2) / (sqrt(S) + r), its numerator m * 2^exp and its denominator
@@ -2293,7 +2493,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     double hs = ldexp(h[i], - hexp);
     sum += hs * hs;
   }
-  double den = 2.0 * sqrt(sum) + ldexp(r, - hexp);
+  double den = 2.0 * sqrt(sum) + ldexp(r, - hexp) + ldexp(rlo, - hexp);
   double c = (den > 0.0) ? ldexp(m / den, exp - hexp) : 0.0;
   if (! (c > 0.0))
     c = 0.0;
@@ -2312,7 +2512,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
     /* The gap to the upper neighbour, past the largest double the gap below
      * it, 2^971 */
     double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_side_sign(p, q, ndims, r, c, gu);
+    int su = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c, gu);
     if (su > 0 || (su == 0 && ! even))
     {
       if (isinf(up))
@@ -2325,7 +2525,7 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
       uint64_t downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_side_sign(p, q, ndims, r, c,
+      int sd = point_distance_offset_pair_side_sign(p, q, ndims, r, rlo, c,
         - (c - down));
       if (sd < 0 || (sd == 0 && ! even))
       {
@@ -2339,16 +2539,17 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
 
 /**
  * @brief Return the sign of the squared distance between two points less the
- * square of `a + b1 + b2`, or 0 where a filter on doubles cannot tell
+ * square of `a + b1 + b2 + b3`, or 0 where a filter on doubles cannot tell
  * @details The squared distance arrives as the sum `s` of the rounded squares
  * of the coordinate differences and the double `lo` of its small terms, whose
  * magnitudes add to @p lomag, as #point_distance_offset_filter forms them. The
  * square of `a` is split by #two_square, so the value is
- * `(s - x) + (lo - y - 2*a*b - b*b)`, `b` the rounded `b1 + b2`. The first
- * difference is exact where `s` is within a factor of two of `x` (Sterbenz),
- * and every other term carries its rounding into the bound: the summing of
- * `lo` (at most 15 operations on terms below @p lomag), the rounding of `b`
- * (`|2a(b - b1 - b2)| <= DBL_EPSILON |2ab|`, and twice that on `b*b`), the
+ * `(s - x) + (lo - y - 2*a*b - b*b)`, `b` the rounded `b1 + b2 + b3`. The
+ * first difference is exact where `s` is within a factor of two of `x`
+ * (Sterbenz), and every other term carries its rounding into the bound: the
+ * summing of `lo` (at most 15 operations on terms below @p lomag), the
+ * rounding of `b` (`|b - b1 - b2 - b3| <= DBL_EPSILON bmag`, `bmag` the sum of
+ * their magnitudes, which `2a` and `2 bmag` carry into the products), the
  * products and the three subtractions, each below `DBL_EPSILON` times the
  * magnitudes they read, and an absolute `DBL_MIN` for a square that underflows
  * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
@@ -2356,18 +2557,19 @@ point_distance_offset_inputs(const double *p, const double *q, int ndims,
  */
 static inline int
 point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
-  double b1, double b2)
+  double b1, double b2, double b3)
 {
   double x, y;
   two_square(a, &x, &y);
   double hi = s - x;
   bool hiexact = (s >= 0.5 * x && s <= 2.0 * x);
-  double b = b1 + b2;
+  double b = (b1 + b2) + b3;
+  double bmag = fabs(b1) + fabs(b2) + fabs(b3);
   double ab = 2.0 * a * b, bb = b * b;
   double value = hi + (((lo - y) - ab) - bb);
   double bound = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
     32.0 * DBL_EPSILON * (lomag + fabs(y) + fabs(ab) + bb + fabs(value)) +
-    4.0 * DBL_MIN;
+    4.0 * DBL_EPSILON * bmag * (fabs(a) + bmag) + 4.0 * DBL_MIN;
   if (value > bound)
     return 1;
   if (value < - bound)
@@ -2384,23 +2586,24 @@ point_distance_offset_filter_sign(double s, double lo, double lomag, double a,
  * `0 <= q <= (S - t^2)^2 / (8 t^3)`: `S - t^2` is read as `(s - x) + (lo - y)`,
  * `t^2` split by #two_square into `x + y`, its first difference exact by
  * Sterbenz as `x` lies within a factor of two of `s`; `t - r` is split by
- * #two_sum into `h + l`, exactly, and the correction added to `l`. The value
- * `v = h + l` then lies within `E` of `sqrt(S) - r`, `E` the sum of the error
- * of `S` carried through the division, the rounding of the two additions and
- * of the division, and `q`, each bounded by the magnitudes it reads and the
- * whole doubled. The answer is 0 where `v + E < 0`, and the double `c` nearest
- * `v` where `v` lies farther than `E` from both midpoints between `c` and its
- * neighbours, read on the exact remainder `v - c` of a second #two_sum
+ * #two_sum into `h + l`, exactly, and `- rlo` and the correction added to
+ * `l`. The value `v = h + l` then lies within `E` of `sqrt(S) - r - rlo`, `E`
+ * the sum of the error of `S` carried through the division, the rounding of
+ * the three additions and of the division, and `q`, each bounded by the
+ * magnitudes it reads and the whole doubled. The answer is 0 where
+ * `v + E < 0`, and the double `c` nearest `v` where `v` lies farther than `E`
+ * from both midpoints between `c` and its neighbours, read on the exact
+ * remainder `v - c` of a second #two_sum
  * @param[in] s,lo,delta The squared distance, the double of its small terms
  * and the bound of their error
- * @param[in] r Radius, positive
+ * @param[in] r,rlo Radius as the sum of two doubles, positive
  * @param[out] result The answer where the function returns true
  * @return False where the value lies within its bound of a midpoint, which
  * every tie does, and the caller's filter and exact search answer
  */
 static inline bool
 point_distance_offset_dd(double s, double lo, double delta, double r,
-  double *result)
+  double rlo, double *result)
 {
   double t = sqrt(s + lo);
   double x, y;
@@ -2413,10 +2616,12 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
   double corr = w / (2.0 * t);
   double h, l;
   two_sum(t, - r, &h, &l);
-  double l1 = l + corr;
+  double l0 = l - rlo;
+  double l1 = l0 + corr;
   double big = fabs(w) + dw;
   double err = 2.0 * (dw / (2.0 * t) + DBL_EPSILON * fabs(corr) +
-    DBL_EPSILON * fabs(l1) + big * big / (8.0 * t * t * t)) + 4.0 * DBL_MIN;
+    DBL_EPSILON * (fabs(l0) + fabs(l1)) + big * big / (8.0 * t * t * t)) +
+    4.0 * DBL_MIN;
   double c, rem;
   two_sum(h, l1, &c, &rem);
   if (c + rem + err < 0.0)
@@ -2459,19 +2664,21 @@ point_distance_offset_dd(double s, double lo, double delta, double r,
  * squares of `r + c` less half the gap to its lower neighbour and plus half
  * the gap to its upper one: `r + c` is split by #two_sum into `a + a1`, and
  * each half gap, a power of two, is exact for a candidate of at least
- * 2^-900, so each side is the sign of `S - (a + a1 + h)^2`. The candidate
- * moves to a neighbour while a side certainly says so, at most four times.
- * Any side the filter cannot tell, which every tie is, returns false, and the
- * exact search of #point_distance_offset_exact answers
+ * 2^-900, so each side is the sign of `S - (a + a1 + rlo + h)^2`, `rlo` the
+ * second double of the radius. The candidate moves to a neighbour while a
+ * side certainly says so, at most four times. Any side the filter cannot
+ * tell, which every tie is, returns false, and the exact search of
+ * #point_distance_offset_exact answers
  * @param[in] d,e Coordinate differences and the errors of their rounding
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, positive and below twice @p maxd
+ * @param[in] r,rlo Radius as the sum of two doubles, positive and @p r below
+ * twice @p maxd
  * @param[in] maxd Largest absolute difference, positive
  * @param[out] result The answer where the function returns true
  */
 static bool
 point_distance_offset_filter(const double *d, const double *e, int ndims,
-  double r, double maxd, double *result)
+  double r, double rlo, double maxd, double *result)
 {
   uint64_t maxbits;
   memcpy(&maxbits, &maxd, sizeof(maxbits));
@@ -2492,10 +2699,12 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
    * midpoint; the summing of lo, at most 15 operations on terms below
    * lomag, bounds the error of S as #point_distance_offset_filter_sign
    * reads it */
-  if (point_distance_offset_dd(s, lo, 32.0 * DBL_EPSILON * lomag, r, result))
+  if (point_distance_offset_dd(s, lo, 32.0 * DBL_EPSILON * lomag, r, rlo,
+      result))
     return true;
   /* The side of S - r^2 */
-  int side = point_distance_offset_filter_sign(s, lo, lomag, r, 0.0, 0.0);
+  int side = point_distance_offset_filter_sign(s, lo, lomag, r, rlo, 0.0,
+    0.0);
   if (side == 0)
     return false;
   if (side < 0)
@@ -2506,7 +2715,8 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
   /* First candidate, (S - r^2) / (sqrt(S) + r) on doubles */
   double rx, ry;
   two_square(r, &rx, &ry);
-  double c = ((s - rx) + (lo - ry)) / (sqrt(s + lo) + r);
+  double c = ((s - rx) + (lo - ry - rlo * (2.0 * r + rlo))) /
+    (sqrt(s + lo) + r + rlo);
   for (int move = 0; move < 4; move++)
   {
     if (! (c >= 0x1p-900) || ! isfinite(c))
@@ -2521,14 +2731,14 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
       return false;
     double a, a1;
     two_sum(r, c, &a, &a1);
-    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1,
+    int su = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       0.5 * (cu - c));
     if (su > 0)
     {
       c = cu;
       continue;
     }
-    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1,
+    int sd = point_distance_offset_filter_sign(s, lo, lomag, a, a1, rlo,
       - 0.5 * (c - cd));
     if (sd < 0)
     {
@@ -2566,23 +2776,28 @@ point_distance_offset_filter(const double *d, const double *e, int ndims,
  * while `S` lies beyond a midpoint. The values are scaled as in
  * #point_distance_exact, and a radius of at least twice the largest
  * coordinate difference exceeds the distance outright.
+ *
+ * The radius is the exact sum `r + rlo` of two doubles, so that the sum of
+ * two radii, which rounds as a double, is read as it is: `rlo` enters every
+ * side as one more term of the sum whose square is taken.
  * @param[in] p,q Coordinates of the two points
  * @param[in] ndims Number of coordinates, 2 or 3
- * @param[in] r Radius, not negative
+ * @param[in] r,rlo Radius as the sum of two doubles, not negative, @p rlo 0
+ * for a radius of one double
  * @note Correctly rounded for any finite coordinates and radius: whether the
  * points are farther apart than the radius is decided by
  * #square_products_sign, and each side of a candidate on the input
- * coordinates by #point_distance_offset_side_sign, so neither a coordinate
- * difference beyond the largest double nor an answer far below the radius
- * leaves a double the decision cannot read
+ * coordinates by #point_distance_offset_pair_side_sign, so neither a
+ * coordinate difference beyond the largest double nor an answer far below the
+ * radius leaves a double the decision cannot read
  */
-double
-point_distance_offset_exact(const double *p, const double *q, int ndims,
-  double r)
+static double
+point_distance_offset_pair(const double *p, const double *q, int ndims,
+  double r, double rlo)
 {
   assert(ndims == 2 || ndims == 3);
   assert(r >= 0.0);
-  if (r == 0.0)
+  if (r == 0.0 && rlo == 0.0)
     return point_distance_exact(p, q, ndims);
   double d[3], e[3], maxd;
   int status = point_distance_diffs(p, q, ndims, d, e, &maxd);
@@ -2593,28 +2808,30 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
   if (status == 0 && maxd > 0.0 && r < 2.0 * maxd)
   {
     double result;
-    if (point_distance_offset_filter(d, e, ndims, r, maxd, &result))
+    if (point_distance_offset_filter(d, e, ndims, r, rlo, maxd, &result))
       return result;
   }
   double c;
   if (status == 2)
   {
     /* A difference beyond the largest double puts the points farther apart
-     * than the radius; the first candidate is twice half their distance,
-     * read on the halves of the coordinates scaled by 2^-600, less half the
+     * than a radius of one double, though not always than one of two; the
+     * first candidate is four times a quarter of their distance, read on the
+     * halves of the coordinates scaled by 2^-600, less a quarter of the
      * radius, so that neither the distance nor the candidate overflows
-     * before the answer does */
+     * before the answer does, which a radius of two doubles below twice the
+     * largest double leaves finite where half the distance is not */
     double sum = 0.0;
     for (int i = 0; i < ndims; i++)
     {
       double h = ldexp(q[i] * 0.5 - p[i] * 0.5, -600);
       sum += h * h;
     }
-    c = 2.0 * (ldexp(sqrt(sum), 600) - r * 0.5);
+    c = 4.0 * (ldexp(sqrt(sum), 599) - r * 0.25 - rlo * 0.25);
   }
   /* The values scaled by 2^k, read where they are exact */
   int k = 0;
-  double f1 = 1.0, f2 = 1.0, g1 = 1.0, g2 = 1.0, rs = 0.0;
+  double f1 = 1.0, f2 = 1.0, g1 = 1.0, g2 = 1.0, rs = 0.0, rlos = 0.0;
   bool scaled = false;
   int low = INT_MAX, high = INT_MIN;
   /* The least candidate whose scaled value and half gap keep every product
@@ -2624,13 +2841,15 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
   {
     /* The distance is below sqrt(3) times the largest difference, and below
      * twice it however the difference rounded */
-    if (r >= 2.0 * maxd)
+    if (r > 2.0 * maxd || (r == 2.0 * maxd && rlo >= 0.0))
       return 0.0;
     point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
-    /* Where the scaling rounds a difference or its error, every side is read
-     * on the input coordinates; the radius is read below */
-    if (! point_distance_scale_exact(d, e, ndims, k, 0.0))
-      return point_distance_offset_inputs(p, q, ndims, r);
+    /* Where the scaling rounds a difference or its error, or the second
+     * double of the radius, every side is read on the input coordinates; the
+     * first double of the radius is read below */
+    if (! point_distance_scale_exact(d, e, ndims, k, 0.0) ||
+        (rlo != 0.0 && double_lowest_bit(rlo) + k < -1074))
+      return point_distance_offset_inputs(p, q, ndims, r, rlo);
     /* Every scaled value is below 4, so its lowest bit is at most 2^-50 and
      * only the lowest one is tracked */
     double sum = 0.0;
@@ -2651,15 +2870,21 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     int lr = double_lowest_bit(r) + k;
     scaled = (lr >= -1074);
     low = Min(low, lr);
+    if (rlo != 0.0)
+    {
+      rlos = rlo * f1 * f2;
+      low = Min(low, double_lowest_bit(rlo) + k);
+    }
 
     /* No farther apart than the radius: S - r^2 is not positive. The radius
      * scaled is a double or below the squared distance however it rounds.
      * The first candidate is (S - r^2) / (sqrt(S) + r), the difference summed
      * from its smallest component up, or read with its power of two where it
      * lies below the smallest double */
+    const double rt[2] = {rs, rlos};
     double left[15], right[15], factor[15];
-    int n = point_distance_square_terms(d, e, ndims, &rs, 1, left, right,
-      factor);
+    int n = point_distance_square_terms(d, e, ndims, rt, (rlo != 0.0) ? 2 : 1,
+      left, right, factor);
     /* A candidate of at least 2^(-480-k) scales to a value whose lowest bit,
      * and that of its half gap, is above 2^-537, and every scaled candidate
      * is below 4, so its products stay exact wherever those of the inputs do */
@@ -2686,7 +2911,7 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
       double diff = 0.0;
       for (int i = 0; i < len; i++)
         diff += ex[i];
-      c = diff / (sqrt(sum) + rs) * g1 * g2;
+      c = diff / (sqrt(sum) + rs + rlos) * g1 * g2;
     }
     else
     {
@@ -2696,7 +2921,7 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
         return 0.0;
       int exp;
       double m = wide_frexp(acc, &exp);
-      c = ldexp(m / (sqrt(sum) + rs), exp - k);
+      c = ldexp(m / (sqrt(sum) + rs + rlos), exp - k);
     }
   }
   if (! (c > 0.0))
@@ -2716,8 +2941,8 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     /* The gap to the upper neighbour, past the largest double the gap below
      * it, 2^971 */
     double gu = isinf(up) ? ldexp(1.0, 971) : up - c;
-    int su = point_distance_offset_side(p, q, d, e, ndims, r, rs, c, gu,
-      scaled, k, f1, f2, low, high, cmin);
+    int su = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs, rlos,
+      c, gu, scaled, k, f1, f2, low, high, cmin);
     if (su > 0 || (su == 0 && ! even))
     {
       if (isinf(up))
@@ -2730,8 +2955,8 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
       uint64_t downbits = bits - 1;
       double down;
       memcpy(&down, &downbits, sizeof(down));
-      int sd = point_distance_offset_side(p, q, d, e, ndims, r, rs, c,
-        - (c - down), scaled, k, f1, f2, low, high, cmin);
+      int sd = point_distance_offset_side(p, q, d, e, ndims, r, rlo, rs,
+        rlos, c, - (c - down), scaled, k, f1, f2, low, high, cmin);
       if (sd < 0 || (sd == 0 && ! even))
       {
         c = down;
@@ -2740,6 +2965,53 @@ point_distance_offset_exact(const double *p, const double *q, int ndims,
     }
     return c;
   }
+}
+
+/**
+ * @brief Return the distance between two points less a radius, computed
+ * exactly and rounded once, or 0 where the points are no farther apart than
+ * the radius
+ * @details This is the distance of a circular buffer to a point, as
+ * #point_distance_offset_pair answers it for a radius of one double
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative
+ * @note Correctly rounded for any finite coordinates and radius
+ */
+double
+point_distance_offset_exact(const double *p, const double *q, int ndims,
+  double r)
+{
+  return point_distance_offset_pair(p, q, ndims, r, 0.0);
+}
+
+/**
+ * @brief Return the distance between two points less the sum of two radii,
+ * computed exactly and rounded once, or 0 where the points are no farther
+ * apart than that sum
+ * @details This is the distance between two circular buffers. The sum of the
+ * radii rounds as a double, so it is split by #two_sum into the exact sum of
+ * two doubles, which #point_distance_offset_pair reads as the radius. A sum
+ * beyond the largest double is read as the two radii themselves, the larger
+ * first, whose sum is exact all the same
+ * @param[in] p,q Coordinates of the two points
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r1,r2 Radii, not negative
+ * @note Correctly rounded for any finite coordinates and radii
+ */
+double
+point_distance_offset_sum_exact(const double *p, const double *q, int ndims,
+  double r1, double r2)
+{
+  assert(r1 >= 0.0 && r2 >= 0.0);
+  double r, rlo;
+  two_sum(r1, r2, &r, &rlo);
+  if (isinf(r))
+  {
+    r = fmax(r1, r2);
+    rlo = fmin(r1, r2);
+  }
+  return point_distance_offset_pair(p, q, ndims, r, rlo);
 }
 
 /**
@@ -2838,20 +3110,33 @@ point_within_distance_sign_exact(double px, double py, double qx, double qy,
  * in exact sums of doubles that #polynomial_sign_exact decides. A tie is
  * beyond when the last bit of `c` is odd, so the double nearest the distance,
  * a tie going to the even one, is the smallest for which this is false
- * @param[in] sums Exact sums: the two coordinates of `w`, the two of `u`
+ * @param[in] sums Exact sums: the coordinates of `w`, then those of `u`, then
+ * room for the sum of the radius, the candidate and the half gap
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r,c,h Scaled radius, candidate and half gap to its upper neighbour
  * @param[in] odd Whether the last bit of the candidate is odd
  */
 static bool
-point_segment_beyond(ExactSum *sums, double r, double c, double h, bool odd)
+point_segment_beyond(ExactSum *sums, int ndims, double r, double c, double h,
+  bool odd)
 {
   const double m[3] = {r, c, h};
-  exact_sum_set(&sums[4], m, 3);
-  /* (wx uy - wy ux)^2 - (r + c + h)^2 (ux ux + uy uy) */
-  static const PolyTerm terms[5] = {
-    { 1.0, 4, {0, 0, 3, 3}}, {-2.0, 4, {0, 3, 1, 2}}, { 1.0, 4, {1, 1, 2, 2}},
-    {-1.0, 4, {4, 4, 2, 2}}, {-1.0, 4, {4, 4, 3, 3}}};
-  int sign = polynomial_sign_exact(sums, terms, 5);
+  int nm = 2 * ndims;
+  exact_sum_set(&sums[nm], m, 3);
+  /* |w x u|^2 - (r + c + h)^2 (u . u), the squared cross product the sum over
+   * the planes of two coordinates of (w_i u_j - w_j u_i)^2 */
+  PolyTerm terms[12];
+  int n = 0;
+  for (int i = 0; i < ndims; i++)
+    for (int j = i + 1; j < ndims; j++)
+    {
+      terms[n++] = (PolyTerm) { 1.0, 4, {i, i, ndims + j, ndims + j}};
+      terms[n++] = (PolyTerm) {-2.0, 4, {i, ndims + j, j, ndims + i}};
+      terms[n++] = (PolyTerm) { 1.0, 4, {j, j, ndims + i, ndims + i}};
+    }
+  for (int k = 0; k < ndims; k++)
+    terms[n++] = (PolyTerm) {-1.0, 4, {nm, nm, ndims + k, ndims + k}};
+  int sign = polynomial_sign_exact(sums, terms, n);
   return sign > 0 || (sign == 0 && odd);
 }
 
@@ -3038,6 +3323,35 @@ wide_dyadic_fits(int n)
 }
 
 /**
+ * @brief Set in @p out, of @p nx + @p ny limbs, the product of two
+ * magnitudes of @p nx and @p ny limbs, the lowest first
+ */
+static void
+wide_limbs_mul(const uint64_t *x, int nx, const uint64_t *y, int ny,
+  uint64_t *out)
+{
+  memset(out, 0, (size_t) (nx + ny) * sizeof(uint64_t));
+  for (int i = 0; i < nx; i++)
+  {
+    uint64_t carry = 0;
+    for (int j = 0; j < ny; j++)
+    {
+      uint64_t hi, lo;
+      wide_mul64(x[i], y[j], &hi, &lo);
+      uint64_t s = out[i + j] + lo;
+      hi += (s < lo);
+      uint64_t s2 = s + carry;
+      hi += (s2 < s);
+      out[i + j] = s2;
+      carry = hi;
+    }
+    /* No earlier row reaches past limb i + ny - 1 */
+    out[i + ny] = carry;
+  }
+  return;
+}
+
+/**
  * @brief Set the product of two #WideDyadic, exactly
  * @note The result is not one of the operands
  */
@@ -3049,30 +3363,84 @@ wide_dyadic_mul(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
   r->exp = 0;
   if (a->sign == 0 || b->sign == 0 || ! wide_dyadic_fits(a->len + b->len))
     return;
-  int n = a->len + b->len;
-  memset(r->limb, 0, (size_t) n * sizeof(uint64_t));
-  for (int i = 0; i < a->len; i++)
-  {
-    uint64_t carry = 0;
-    for (int j = 0; j < b->len; j++)
-    {
-      uint64_t hi, lo;
-      wide_mul64(a->limb[i], b->limb[j], &hi, &lo);
-      uint64_t s = r->limb[i + j] + lo;
-      hi += (s < lo);
-      uint64_t s2 = s + carry;
-      hi += (s2 < s);
-      r->limb[i + j] = s2;
-      carry = hi;
-    }
-    /* No earlier row reaches past limb i + b->len - 1 */
-    r->limb[i + b->len] = carry;
-  }
-  r->len = n;
+  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
+  r->len = a->len + b->len;
   r->sign = a->sign * b->sign;
   r->exp = a->exp + b->exp;
   wide_dyadic_normalize(r);
   return;
+}
+
+/** Number of limbs of a product of two #WideDyadic, and of its shift */
+#define WIDE_PRODUCT_LIMBS (2 * WIDE_DYADIC_LIMBS + 2)
+
+/**
+ * @brief Return the sign of `a b - c d` for four #WideDyadic, exactly
+ * @details Each product is formed in limbs of twice the capacity of a
+ * #WideDyadic (#wide_limbs_mul), so a comparison whose four factors are held
+ * exactly has its two products held exactly too: a sign of degree six in the
+ * input doubles is read on factors of degree at most four, none of which
+ * exceeds the capacity. The products are ordered by the weights of their
+ * highest bits, and otherwise on their limbs aligned to the lower of their
+ * lowest bits, as #wide_dyadic_cmp orders two values
+ */
+static int
+wide_dyadic_product_cmp(const WideDyadic *a, const WideDyadic *b,
+  const WideDyadic *c, const WideDyadic *d)
+{
+  int s1 = a->sign * b->sign, s2 = c->sign * d->sign;
+  if (s1 != s2)
+    return (s1 > s2) ? 1 : -1;
+  if (s1 == 0)
+    return 0;
+  const WideDyadic *f[2][2] = {{a, b}, {c, d}};
+  uint64_t prod[2][WIDE_PRODUCT_LIMBS];
+  int len[2], exp[2], top[2];
+  for (int k = 0; k < 2; k++)
+  {
+    wide_limbs_mul(f[k][0]->limb, f[k][0]->len, f[k][1]->limb, f[k][1]->len,
+      prod[k]);
+    len[k] = f[k][0]->len + f[k][1]->len;
+    while (len[k] > 1 && prod[k][len[k] - 1] == 0)
+      len[k]--;
+    exp[k] = f[k][0]->exp + f[k][1]->exp;
+    uint64_t hl = prod[k][len[k] - 1];
+    int bits = 0;
+    while (hl)
+    {
+      bits++;
+      hl >>= 1;
+    }
+    top[k] = exp[k] + 64 * (len[k] - 1) + bits;
+  }
+  if (top[0] != top[1])
+    return (top[0] > top[1]) ? s1 : - s1;
+  /* The highest bits weigh the same, so each product shifted to the lower of
+   * the two lowest bits spans at most its own limbs and one more */
+  int e = (exp[0] < exp[1]) ? exp[0] : exp[1];
+  uint64_t al[2][WIDE_PRODUCT_LIMBS];
+  int n[2];
+  for (int k = 0; k < 2; k++)
+  {
+    int sh = exp[k] - e, ls = sh / 64, bs = sh % 64;
+    n[k] = len[k] + ls + 1;
+    assert(n[k] <= WIDE_PRODUCT_LIMBS);
+    memset(al[k], 0, (size_t) n[k] * sizeof(uint64_t));
+    for (int i = 0; i < len[k]; i++)
+    {
+      al[k][i + ls] |= prod[k][i] << bs;
+      if (bs)
+        al[k][i + ls + 1] |= prod[k][i] >> (64 - bs);
+    }
+  }
+  int m = (n[0] > n[1]) ? n[0] : n[1];
+  for (int i = m - 1; i >= 0; i--)
+  {
+    uint64_t x = (i < n[0]) ? al[0][i] : 0, y = (i < n[1]) ? al[1][i] : 0;
+    if (x != y)
+      return (x > y) ? s1 : - s1;
+  }
+  return 0;
 }
 
 /**
@@ -3485,6 +3853,292 @@ wide_dyadic_nearest_root(const WideDyadic *n, const WideDyadic *d)
   return result;
 }
 
+/*****************************************************************************
+ * The nearest double of a value read exactly
+ *****************************************************************************/
+
+/* The sign of the value a search reads less @p mid */
+typedef int (*NearestSide)(const WideDyadic *mid, const void *arg);
+
+/* True where the value, negated where @p neg is true, lies beyond the
+ * midpoint from the double of bit pattern @p bits to the next one, a tie
+ * being beyond where the last bit of that double is odd, so a tie goes to
+ * the even double, as #wide_dyadic_root_beyond reads it */
+static bool
+nearest_bits_beyond(uint64_t bits, bool neg, NearestSide side,
+  const void *arg)
+{
+  double lo, up;
+  uint64_t b2 = bits + 1;
+  memcpy(&lo, &bits, sizeof(lo));
+  memcpy(&up, &b2, sizeof(up));
+  WideDyadic wl, wu, mid;
+  wide_dyadic_set_double(&wl, lo);
+  wide_dyadic_set_double(&wu, up);
+  wide_dyadic_add(&wl, &wu, &mid);
+  if (mid.sign != 0)
+    mid.exp -= 1;
+  /* -v beyond mid is v below -mid */
+  if (neg)
+    mid.sign = - mid.sign;
+  int s = side(&mid, arg);
+  if (neg)
+    s = - s;
+  return s > 0 || (s == 0 && (bits & 1) != 0);
+}
+
+/**
+ * @brief Return the double nearest a value that @p side reads exactly, a tie
+ * going to the even double
+ * @details The sign of the value is read exactly at 0; a negative value is
+ * the negation of the double nearest its magnitude. That double is the
+ * smallest bit pattern whose upper midpoint the magnitude does not pass: a
+ * gallop from the candidate @p c brackets it, then halving the bracket finds
+ * it, as #wide_dyadic_nearest_root finds a root
+ * @pre The value lies strictly between -DBL_MAX and DBL_MAX
+ */
+static double
+nearest_double_exact(double c, NearestSide side, const void *arg)
+{
+  WideDyadic zero;
+  zero.sign = 0; zero.len = 0; zero.exp = 0;
+  int s0 = side(&zero, arg);
+  if (s0 == 0)
+    return 0.0;
+  bool neg = s0 < 0;
+  c = fabs(c);
+  if (! isfinite(c))
+    c = DBL_MAX;
+  const uint64_t max_bits = 0x7FEFFFFFFFFFFFFFULL;
+  uint64_t bits, lo, hi, step = 1;
+  memcpy(&bits, &c, sizeof(bits));
+  if (nearest_bits_beyond(bits, neg, side, arg))
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    lo = bits;
+    while (true)
+    {
+      hi = (lo < max_bits - step) ? lo + step : max_bits;
+      if (hi == max_bits || ! nearest_bits_beyond(hi, neg, side, arg))
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    hi = bits;
+    while (true)
+    {
+      lo = (hi > step) ? hi - step : 0;
+      if (lo == 0 || nearest_bits_beyond(lo, neg, side, arg))
+        break;
+      hi = lo;
+      step *= 2;
+    }
+    /* The magnitude lies below the upper midpoint of 0 */
+    if (lo == 0 && ! nearest_bits_beyond(0, neg, side, arg))
+      hi = 0;
+  }
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    if (nearest_bits_beyond(mid, neg, side, arg))
+      lo = mid;
+    else
+      hi = mid;
+  }
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return neg ? - result : result;
+}
+
+/* A quotient `n / d`, d > 0 */
+typedef struct
+{
+  const WideDyadic *n, *d;
+} NearestQuotient;
+
+/* The sign of `n / d - mid`, that of `n - mid d` */
+static int
+nearest_quotient_side(const WideDyadic *mid, const void *arg)
+{
+  const NearestQuotient *q = (const NearestQuotient *) arg;
+  WideDyadic md, diff;
+  wide_dyadic_mul(mid, q->d, &md);
+  md.sign = - md.sign;
+  wide_dyadic_add(q->n, &md, &diff);
+  return diff.sign;
+}
+
+/* A value `c + b / sqrt(s)`, s > 0 */
+typedef struct
+{
+  const WideDyadic *c, *b, *s;
+} NearestOffsetRoot;
+
+/* The sign of `c + b / sqrt(s) - mid`, that of `b - a sqrt(s)` with
+ * `a = mid - c`, read on squares where both sides have one sign */
+static int
+nearest_offset_root_side(const WideDyadic *mid, const void *arg)
+{
+  const NearestOffsetRoot *v = (const NearestOffsetRoot *) arg;
+  WideDyadic nc = *v->c, a, a2, a2s, b2, diff;
+  nc.sign = - nc.sign;
+  wide_dyadic_add(mid, &nc, &a);
+  int sa = a.sign, sb = v->b->sign;
+  if (sa <= 0 && sb >= 0)
+    return (sa == 0 && sb == 0) ? 0 : 1;
+  if (sa >= 0 && sb <= 0)
+    return -1;
+  /* Both of one sign: compare b^2 with a^2 s */
+  wide_dyadic_mul(&a, &a, &a2);
+  wide_dyadic_mul(&a2, v->s, &a2s);
+  wide_dyadic_mul(v->b, v->b, &b2);
+  a2s.sign = - a2s.sign;
+  wide_dyadic_add(&b2, &a2s, &diff);
+  return (sb > 0) ? diff.sign : - diff.sign;
+}
+
+/* The double nearest `n / d`, d > 0 */
+static double
+wide_dyadic_nearest_quotient(const WideDyadic *n, const WideDyadic *d)
+{
+  int en, ed;
+  double mn = wide_dyadic_frexp(n, &en), md = wide_dyadic_frexp(d, &ed);
+  double c = ldexp(mn / md, en - ed);
+  NearestQuotient q = {n, d};
+  return nearest_double_exact(c, &nearest_quotient_side, &q);
+}
+
+/* The double nearest `c + b / sqrt(s)`, s > 0 */
+static double
+wide_dyadic_nearest_offset_root(double c, const WideDyadic *b,
+  const WideDyadic *s)
+{
+  int eb, es;
+  double mb = wide_dyadic_frexp(b, &eb), ms = wide_dyadic_frexp(s, &es);
+  if (es % 2 != 0)
+  {
+    ms *= 2.0;
+    es -= 1;
+  }
+  double guess = c + b->sign * ldexp(mb / sqrt(ms), eb - es / 2);
+  WideDyadic wc;
+  wide_dyadic_set_double(&wc, c);
+  NearestOffsetRoot v = {&wc, b, s};
+  return nearest_double_exact(guess, &nearest_offset_root_side, &v);
+}
+
+/**
+ * @brief Set the shortest line from a point or a disc at rest to a segment,
+ * each end the double nearest its exact value
+ * @details The nearest point Q of the segment ab to the centre c is
+ * `a + t (b - a)`, `t = N / D` with `N = (c - a).(b - a)` and
+ * `D = |b - a|^2` clamped to [0, 1], so each coordinate of Q is the rational
+ * `(a D + (b - a) N) / D`, rounded once to its nearest double. The line
+ * starts at the centre for a point (@p r = 0), at Q for a disc meeting the
+ * segment (`|Q - c| <= r`), and otherwise at the point of the circle towards
+ * Q, `c + r (Q - c) / |Q - c|`. At an end `Q - c` is `a - c` or `b - c`; at
+ * the foot it is `X (-uy, ux) / D`, with `X = w x u`, perpendicular to the
+ * segment, so the point of the circle is `c + r sign(X) (-uy, ux) / |u|`.
+ * Either way each coordinate is `c + b / sqrt(s)`, with `b` and `s` of degree
+ * two in the input doubles, decided by exact signs of squares; no root is
+ * taken in doubles. Every test has degree at most four, which #WideDyadic
+ * holds for every finite input
+ * @param[in] c Centre
+ * @param[in] r Radius, 0 for a point
+ * @param[in] a,b Ends of the segment
+ * @param[out] sx,sy Start of the line
+ * @param[out] ex,ey End of the line
+ */
+void
+point_segment_shortestline_exact(const double *c, double r, const double *a,
+  const double *b, double *sx, double *sy, double *ex, double *ey)
+{
+  WideDyadic wcx, wcy, wax, way, wbx, wby, ux, uy, wx, wy, t1, t2, n, d;
+  wide_dyadic_set_double(&wcx, c[0]); wide_dyadic_set_double(&wcy, c[1]);
+  wide_dyadic_set_double(&wax, a[0]); wide_dyadic_set_double(&way, a[1]);
+  wide_dyadic_set_double(&wbx, b[0]); wide_dyadic_set_double(&wby, b[1]);
+  /* u = b - a, w = c - a, N = w.u, D = u.u, all exact */
+  WideDyadic nax = wax, nay = way;
+  nax.sign = - nax.sign; nay.sign = - nay.sign;
+  wide_dyadic_add(&wbx, &nax, &ux); wide_dyadic_add(&wby, &nay, &uy);
+  wide_dyadic_add(&wcx, &nax, &wx); wide_dyadic_add(&wcy, &nay, &wy);
+  wide_dyadic_mul(&wx, &ux, &t1); wide_dyadic_mul(&wy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &n);
+  wide_dyadic_mul(&ux, &ux, &t1); wide_dyadic_mul(&uy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &d);
+  /* Q = (qxn, qyn) / den */
+  WideDyadic qxn, qyn, den;
+  bool foot = false;
+  if (d.sign == 0 || n.sign <= 0)
+  {
+    qxn = wax; qyn = way;
+    wide_dyadic_set_double(&den, 1.0);
+  }
+  else if (wide_dyadic_cmp(&n, &d) >= 0)
+  {
+    qxn = wbx; qyn = wby;
+    wide_dyadic_set_double(&den, 1.0);
+  }
+  else
+  {
+    wide_dyadic_mul(&wax, &d, &t1); wide_dyadic_mul(&ux, &n, &t2);
+    wide_dyadic_add(&t1, &t2, &qxn);
+    wide_dyadic_mul(&way, &d, &t1); wide_dyadic_mul(&uy, &n, &t2);
+    wide_dyadic_add(&t1, &t2, &qyn);
+    den = d;
+    foot = true;
+  }
+  *ex = wide_dyadic_nearest_quotient(&qxn, &den);
+  *ey = wide_dyadic_nearest_quotient(&qyn, &den);
+  if (r == 0.0)
+  {
+    *sx = c[0]; *sy = c[1];
+    return;
+  }
+  /* The direction from c to Q, (dx, dy) / sqrt(s), and the square it is
+   * compared with: at the foot (-uy, ux) X / D, |Q - c|^2 = X^2 / D, against
+   * r^2 as X^2 against r^2 D; at an end Q - c, against r^2 */
+  WideDyadic dx, dy, s, lhs, rhs, wr, bx, by;
+  wide_dyadic_set_double(&wr, r);
+  wide_dyadic_mul(&wr, &wr, &t1);
+  if (foot)
+  {
+    WideDyadic x, t3;
+    wide_dyadic_mul(&wx, &uy, &t2); wide_dyadic_mul(&wy, &ux, &t3);
+    t3.sign = - t3.sign;
+    wide_dyadic_add(&t2, &t3, &x);
+    dx = uy; dx.sign = - dx.sign * x.sign;
+    dy = ux; dy.sign = dy.sign * x.sign;
+    s = d;
+    wide_dyadic_mul(&x, &x, &lhs);
+    wide_dyadic_mul(&t1, &d, &rhs);
+  }
+  else
+  {
+    WideDyadic ncx = wcx, ncy = wcy;
+    ncx.sign = - ncx.sign; ncy.sign = - ncy.sign;
+    wide_dyadic_add(&qxn, &ncx, &dx); wide_dyadic_add(&qyn, &ncy, &dy);
+    wide_dyadic_mul(&dx, &dx, &t2); wide_dyadic_mul(&dy, &dy, &lhs);
+    wide_dyadic_add(&t2, &lhs, &s);
+    lhs = s;
+    rhs = t1;
+  }
+  if (wide_dyadic_cmp(&lhs, &rhs) <= 0)
+  {
+    /* The disc meets the segment: the line collapses to Q */
+    *sx = *ex; *sy = *ey;
+    return;
+  }
+  wide_dyadic_mul(&wr, &dx, &bx); wide_dyadic_mul(&wr, &dy, &by);
+  *sx = wide_dyadic_nearest_offset_root(c[0], &bx, &s);
+  *sy = wide_dyadic_nearest_offset_root(c[1], &by, &s);
+  return;
+}
+
 /**
  * @brief Return the nearest approach of two points moving linearly over the
  * interval [ta, tb], the double nearest its exact value
@@ -3758,70 +4412,991 @@ point_motion_nad_exceeds(const double *p0, const double *p1, int64 s0,
     d, true) == 0;
 }
 
+/*****************************************************************************/
+
+/**
+ * @brief Add @p x to the #WideDyadic @p acc, exactly
+ */
+static inline void
+wide_dyadic_accumulate(WideDyadic *acc, const WideDyadic *x)
+{
+  WideDyadic sum;
+  wide_dyadic_add(acc, x, &sum);
+  *acc = sum;
+  return;
+}
+
+/**
+ * @brief Add the double @p x times @p sign to the #WideDyadic @p acc, exactly
+ */
+static inline void
+wide_dyadic_accumulate_double(WideDyadic *acc, double x, int sign)
+{
+  WideDyadic t;
+  wide_dyadic_set_double(&t, x);
+  t.sign *= sign;
+  wide_dyadic_accumulate(acc, &t);
+  return;
+}
+
+/**
+ * @brief Return the value of a #WideDyadic, rounded, or an infinity or zero
+ * outside the doubles
+ */
+static double
+wide_dyadic_approx(const WideDyadic *a)
+{
+  int e;
+  double m = wide_dyadic_frexp(a, &e);
+  return a->sign * ldexp(m, e);
+}
+
+/**
+ * @brief Set the coefficients of the quadratic whose sign says whether two
+ * discs moving linearly over a segment are within a distance, exactly
+ * @details Over the fraction f in [0, 1] of the segment the centres stand
+ * apart by `w(f) = w0 + f w1`, with `w0 = a0 - b0` and
+ * `w1 = (a1 - a0) - (b1 - b0)`, and the discs are within @p d where
+ * `|w(f)| <= L(f)`, `L(f) = L0 + f dL` the sum of the radii and the
+ * distance, from `L0 = ra0 + rb0 + d` to `L1 = ra1 + rb1 + d`. The radii and
+ * the distance are not negative, so neither is `L` over the segment, and the
+ * discs are within where `q(f) = |w(f)|^2 - L(f)^2 = A f^2 + 2 B f + C` is not
+ * positive, with `A = |w1|^2 - dL^2`, `B = w0 . w1 - L0 dL` and
+ * `C = |w0|^2 - L0^2`, each a sum of products of the input doubles, held
+ * exactly as #point_motion_squares holds its sums. The distance is the sum
+ * @p d + @p dlo, exactly, so that the midpoint of two doubles can be one
+ */
+static void
+point_motion_dwithin_coeffs(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, double dlo, WideDyadic *A, WideDyadic *B,
+  WideDyadic *C)
+{
+  WideDyadic w0, w1, sq, l0, dl;
+  A->sign = 0; A->len = 0; A->exp = 0;
+  B->sign = 0; B->len = 0; B->exp = 0;
+  C->sign = 0; C->len = 0; C->exp = 0;
+  for (int c = 0; c < ndims; c++)
+  {
+    w0.sign = 0; w0.len = 0; w0.exp = 0;
+    wide_dyadic_accumulate_double(&w0, a0[c], 1);
+    wide_dyadic_accumulate_double(&w0, b0[c], -1);
+    w1.sign = 0; w1.len = 0; w1.exp = 0;
+    wide_dyadic_accumulate_double(&w1, a1[c], 1);
+    wide_dyadic_accumulate_double(&w1, a0[c], -1);
+    wide_dyadic_accumulate_double(&w1, b1[c], -1);
+    wide_dyadic_accumulate_double(&w1, b0[c], 1);
+    wide_dyadic_mul(&w1, &w1, &sq);
+    wide_dyadic_accumulate(A, &sq);
+    wide_dyadic_mul(&w0, &w1, &sq);
+    wide_dyadic_accumulate(B, &sq);
+    wide_dyadic_mul(&w0, &w0, &sq);
+    wide_dyadic_accumulate(C, &sq);
+  }
+  l0.sign = 0; l0.len = 0; l0.exp = 0;
+  wide_dyadic_accumulate_double(&l0, ra0, 1);
+  wide_dyadic_accumulate_double(&l0, rb0, 1);
+  wide_dyadic_accumulate_double(&l0, d, 1);
+  wide_dyadic_accumulate_double(&l0, dlo, 1);
+  dl.sign = 0; dl.len = 0; dl.exp = 0;
+  wide_dyadic_accumulate_double(&dl, ra1, 1);
+  wide_dyadic_accumulate_double(&dl, rb1, 1);
+  wide_dyadic_accumulate_double(&dl, ra0, -1);
+  wide_dyadic_accumulate_double(&dl, rb0, -1);
+  wide_dyadic_mul(&dl, &dl, &sq);
+  sq.sign = - sq.sign;
+  wide_dyadic_accumulate(A, &sq);
+  wide_dyadic_mul(&l0, &dl, &sq);
+  sq.sign = - sq.sign;
+  wide_dyadic_accumulate(B, &sq);
+  wide_dyadic_mul(&l0, &l0, &sq);
+  sq.sign = - sq.sign;
+  wide_dyadic_accumulate(C, &sq);
+  return;
+}
+
+/**
+ * @brief The quadratic of #point_motion_dwithin_coeffs read at the whole
+ * microseconds of a segment of `D` microseconds: `n` is within where
+ * `A n^2 + 2 B D n + C D^2`, which is `D^2 q(n / D)`, is not positive
+ */
+typedef struct
+{
+  WideDyadic A;     /**< A */
+  WideDyadic B2D;   /**< 2 B D */
+  WideDyadic CD2;   /**< C D^2 */
+  WideDyadic BD;    /**< B D, for the vertex test A n + B D */
+} DWithinGrid;
+
+/**
+ * @brief Return the sign of `D^2 q(n / D)` (@p vertex false) or of
+ * `A n + B D` (@p vertex true), exactly
+ */
+static int
+dwithin_grid_sign(const DWithinGrid *g, int64 n, bool vertex)
+{
+  WideDyadic wn, t, acc;
+  wide_dyadic_set_int(&wn, n);
+  if (vertex)
+  {
+    wide_dyadic_mul(&g->A, &wn, &t);
+    wide_dyadic_add(&t, &g->BD, &acc);
+    return acc.sign;
+  }
+  WideDyadic n2;
+  wide_dyadic_mul(&wn, &wn, &n2);
+  wide_dyadic_mul(&g->A, &n2, &acc);
+  wide_dyadic_mul(&g->B2D, &wn, &t);
+  wide_dyadic_accumulate(&acc, &t);
+  wide_dyadic_accumulate(&acc, &g->CD2);
+  return acc.sign;
+}
+
+/**
+ * @brief Return the microsecond strictly inside (@p lo, @p hi) that a search
+ * starts from: the truncation of the estimate @p est where it falls there,
+ * the middle otherwise
+ */
+static int64
+dwithin_grid_start(double est, int64 lo, int64 hi)
+{
+  int64 start = lo + (hi - lo) / 2;
+  if (isfinite(est) && est > (double) lo + 1.0 && est < (double) hi - 1.0)
+    start = llrint(floor(est));
+  return start;
+}
+
+/**
+ * @brief Return the largest @p n in [@p lo, @p hi) at which the sign of
+ * #dwithin_grid_sign is not positive, that sign being not positive at @p lo,
+ * positive at @p hi and changing once in between
+ * @details A gallop from the estimate @p est brackets the answer, then halving
+ * the bracket finds it, as #wide_dyadic_nearest_root finds its answer
+ */
+static int64
+dwithin_grid_last(const DWithinGrid *g, int64 lo, int64 hi, double est,
+  bool vertex)
+{
+  if (hi - lo <= 1)
+    return lo;
+  int64 start = dwithin_grid_start(est, lo, hi);
+  int64 step = 1;
+  if (dwithin_grid_sign(g, start, vertex) <= 0)
+  {
+    lo = start;
+    while (true)
+    {
+      int64 next = (hi - lo > step) ? lo + step : hi;
+      if (next == hi || dwithin_grid_sign(g, next, vertex) > 0)
+      {
+        hi = next;
+        break;
+      }
+      lo = next;
+      step *= 2;
+    }
+  }
+  else
+  {
+    hi = start;
+    while (true)
+    {
+      int64 next = (hi - lo > step) ? hi - step : lo;
+      if (next == lo || dwithin_grid_sign(g, next, vertex) <= 0)
+      {
+        lo = next;
+        break;
+      }
+      hi = next;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (dwithin_grid_sign(g, mid, vertex) <= 0)
+      lo = mid;
+    else
+      hi = mid;
+  }
+  return lo;
+}
+
+/**
+ * @brief Return the twin of #dwithin_grid_last for a sign that is positive at
+ * @p lo and not positive at @p hi: the smallest @p n in (@p lo, @p hi] at
+ * which the sign of `D^2 q(n / D)` is not positive
+ */
+static int64
+dwithin_grid_first(const DWithinGrid *g, int64 lo, int64 hi, double est)
+{
+  if (hi - lo <= 1)
+    return hi;
+  int64 start = dwithin_grid_start(est, lo, hi);
+  int64 step = 1;
+  if (dwithin_grid_sign(g, start, false) <= 0)
+  {
+    hi = start;
+    while (true)
+    {
+      int64 next = (hi - lo > step) ? hi - step : lo;
+      if (next == lo || dwithin_grid_sign(g, next, false) > 0)
+      {
+        lo = next;
+        break;
+      }
+      hi = next;
+      step *= 2;
+    }
+  }
+  else
+  {
+    lo = start;
+    while (true)
+    {
+      int64 next = (hi - lo > step) ? lo + step : hi;
+      if (next == hi || dwithin_grid_sign(g, next, false) <= 0)
+      {
+        hi = next;
+        break;
+      }
+      lo = next;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    int64 mid = lo + (hi - lo) / 2;
+    if (dwithin_grid_sign(g, mid, false) <= 0)
+      hi = mid;
+    else
+      lo = mid;
+  }
+  return hi;
+}
+
+/**
+ * @brief Return the microsecond, from the start of a segment of @p D
+ * microseconds, at which truncation dates a root of the quadratic of
+ * #point_motion_dwithin_coeffs
+ * @param[in] g The quadratic at the whole microseconds
+ * @param[in] root A double estimate of the root, a fraction of the segment
+ * @param[in] D Duration of the segment
+ * @param[in] rising True for a root at which the quadratic turns positive,
+ * false for one at which it stops being positive
+ * @param[in] lo,hi Microseconds bracketing the root: the quadratic is not
+ * positive at @p lo and positive at @p hi where @p rising, and the reverse
+ * otherwise
+ */
+static int64
+dwithin_grid_root(const DWithinGrid *g, double root, int64 D, bool rising,
+  int64 lo, int64 hi)
+{
+  double est = root * (double) D;
+  /* A root at which the quadratic turns positive lies in [n, n + 1) for the
+   * last n at which it is not positive, so truncation dates it at n */
+  if (rising)
+    return dwithin_grid_last(g, lo, hi, est, false);
+  /* A root at which it stops being positive lies in (m - 1, m] for the first
+   * m at which it is not positive: at m where it is zero there, and inside
+   * (m - 1, m) otherwise, which truncation dates at m - 1 */
+  int64 m = dwithin_grid_first(g, lo, hi, est);
+  return (dwithin_grid_sign(g, m, false) == 0) ? m : m - 1;
+}
+
+/**
+ * @brief Return 1, 2 or 0 where two discs moving linearly over a segment are
+ * certainly within a distance over the whole segment, certainly within it at
+ * some instant, or certainly never within it, -1 where doubles cannot decide
+ * @details The twin of #point_motion_dwithin_filter for the quadratic of
+ * #point_motion_dwithin_coeffs, read on the rounded differences `w0`, `w1`,
+ * `L0` and `dL`. With `M` the largest magnitude of the inputs, each rounded
+ * difference is a sum of at most six of them formed in at most five
+ * roundings, so it lies within `e = 2^-47 M` of the exact one; a product of
+ * two of them is within `e (|x| + |y| + e)` of the exact one, and a sum of at
+ * most four products within `2^-50` of the magnitudes of its terms. With `T`
+ * the sum of the magnitudes of the rounded differences, every product reads
+ * terms of at most `T` and each coefficient sums at most four of them, so one
+ * bound `E = e (2 T + 4 e) + 2^-50 T^2` holds for `A`, `B` and `C` alike,
+ * and `T` is a NaN or an infinity where an input is. The discs are within
+ * throughout where `q(0)` and `q(1)` are certainly not positive, the gap
+ * `|w| - L` being convex; never where both are certainly positive and so is
+ * the least of `q` over the segment: at an end where the parabola is
+ * certainly concave, or certainly convex with its vertex certainly outside,
+ * and at the vertex where `A C - B^2` is certainly positive. Each bound is
+ * widened by #MOTION_FILTER_SLACK and each comparison read by
+ * #point_motion_filter_exceeds
+ */
+static int
+point_motion_dwithin_period_filter(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d)
+{
+  double A = 0.0, B = 0.0, C = 0.0, T = 0.0, M = 0.0, G = 0.0;
+  for (int c = 0; c < ndims; c++)
+  {
+    double w0 = a0[c] - b0[c];
+    double w1 = (a1[c] - a0[c]) - (b1[c] - b0[c]);
+    A += w1 * w1;
+    B += w0 * w1;
+    C += w0 * w0;
+    T += fabs(w0) + fabs(w1);
+    /* The magnitudes are read with Max rather than fmax, a call: a NaN they
+     * would drop is refused below through T */
+    M = Max(M, Max(Max(fabs(a0[c]), fabs(a1[c])),
+      Max(fabs(b0[c]), fabs(b1[c]))));
+    /* The gap from 0 to the interval the coordinate of w(f) sweeps */
+    double lo = Min(w0, w0 + w1), hi = Max(w0, w0 + w1);
+    double gap = Max(Max(lo, - hi), 0.0);
+    G += gap * gap;
+  }
+  double L0 = (ra0 + rb0) + d;
+  double dL = (ra1 + rb1) - (ra0 + rb0);
+  A -= dL * dL;
+  B -= L0 * dL;
+  C -= L0 * L0;
+  T += fabs(L0) + fabs(dL);
+  M = Max(M, Max(Max(Max(ra0, ra1), Max(rb0, rb1)), d));
+  /* The negations also refuse a NaN, which T carries from any input */
+  if (! (T <= MOTION_FILTER_MAXMAG) || ! (M <= MOTION_FILTER_MAXMAG) ||
+      M < MOTION_FILTER_MINMAG)
+    return -1;
+  const double sl = 1.0 + MOTION_FILTER_SLACK;
+  /* Exact, M lying above #MOTION_FILTER_MINMAG */
+  const double e = M * 0x1p-47;
+  /* Never within where the box w(f) sweeps lies farther from the origin than
+   * the largest L. Each end of the interval a coordinate sweeps is within 3 e
+   * of the exact one, so each gap is, and the squared distance of the box,
+   * a sum of gaps of at most T in all, exceeds G less 8 e (T + 4 e); the
+   * largest L is within 4 e of the exact one, and taken above it */
+  double Lmax = Max(L0, L0 + dL) + 4.0 * e;
+  if (point_motion_filter_exceeds(G - sl * 8.0 * e * (T + 4.0 * e),
+      sl * Lmax * Lmax))
+    return 0;
+  const double E = sl * (e * (2.0 * T + 4.0 * e) + 0x1p-50 * T * T);
+  double q1 = (A + 2.0 * B) + C;
+  double e1 = sl * (4.0 * E + 0x1p-51 * (fabs(A) + 2.0 * fabs(B) +
+    fabs(C)));
+  bool in0 = point_motion_filter_exceeds(0.0, C + E);
+  bool out0 = point_motion_filter_exceeds(C - E, 0.0);
+  bool in1 = point_motion_filter_exceeds(0.0, q1 + e1);
+  bool out1 = point_motion_filter_exceeds(q1 - e1, 0.0);
+  if (in0 && in1)
+    return 1;
+  /* Within at an end, so within at some instant */
+  if (! out0 || ! out1)
+    return (in0 || in1) ? 2 : -1;
+  /* A parabola lies at most A / 4 below the chord of its ends, so the least
+   * is certainly positive where the lesser end exceeds that, which settles a
+   * segment at rest, A = 0, and every one moving slowly against the gap */
+  if (point_motion_filter_exceeds(fmin(C - E, q1 - e1),
+      0.25 * (fabs(A) + E)))
+    return 0;
+  /* Certainly concave: the least is at an end */
+  if (point_motion_filter_exceeds(0.0, A + E))
+    return 0;
+  if (! point_motion_filter_exceeds(A - E, 0.0))
+    return -1;
+  /* Certainly convex with the vertex -B / A at or before the start, B >= 0,
+   * or at or after the end, A + B <= 0: the least is at an end */
+  if (point_motion_filter_exceeds(B - E, 0.0) ||
+      point_motion_filter_exceeds(- (A + B) - 2.0 * E, 0.0))
+    return 0;
+  /* The least at the vertex is (A C - B^2) / A */
+  double ac = A * C, bb = B * B;
+  double ed = sl * (E * (fabs(A) + fabs(C) + 2.0 * fabs(B) + 2.0 * E) +
+    0x1p-51 * (fabs(ac) + bb));
+  if (point_motion_filter_exceeds(ac - bb - ed, 0.0))
+    return 0;
+  /* Within at the vertex, certainly inside, so within at some instant */
+  if (point_motion_filter_exceeds(0.0, B + E) &&
+      point_motion_filter_exceeds(A + B - 2.0 * E, 0.0) &&
+      point_motion_filter_exceeds(0.0, ac - bb + ed))
+    return 2;
+  return -1;
+}
+
+static int point_motion_dwithin_period_wide(const double *a0,
+  const double *a1, const double *b0, const double *b1, int ndims,
+  double ra0, double ra1, double rb0, double rb1, double d, int64 D,
+  int64 *n1, int64 *n2);
+
+/**
+ * @brief Return 2, 1 or 0 where two discs moving linearly over a segment of
+ * @p D microseconds are within a distance during a period of it, at a single
+ * instant of it, or never, setting in @p n1 and @p n2 the microseconds from
+ * the start of the segment that bound the period, decided exactly over
+ * continuous time
+ * @details The discs are within where the quadratic `q` of
+ * #point_motion_dwithin_coeffs is not positive. The gap `|w(f)| - L(f)`
+ * between them is convex in the fraction `f` of the segment, a norm of an
+ * affine map less an affine map, and `L` is not negative, so the fractions at
+ * which they are within form one interval of [0, 1], possibly a single
+ * fraction or none. Each bound of it is an end of the segment or a root of
+ * `q`, and is dated as MEOS dates a crossing, by truncating its exact offset
+ * to a whole microsecond: a microsecond `n` lies at or after a bound at which
+ * the discs come within, and at or before one at which they leave, exactly
+ * where `D^2 q(n / D)` is not positive, an exact sign on the input doubles
+ * and the integer @p D, so the dates are found by galloping searches on that
+ * sign from a double estimate (#dwithin_grid_root), and no root of a rounded
+ * value decides one. A period narrower than a microsecond holds no whole
+ * microsecond, and both its bounds are dated at the truncation of its vertex,
+ * a single instant. Points are discs of radius 0. The filter
+ * #point_motion_dwithin_period_filter answers where doubles decide that the
+ * discs are within over the whole segment or never.
+ * @param[in] a0,a1 Centre of the first disc at the start and at the end
+ * @param[in] b0,b1 Centre of the second disc at the start and at the end
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] ra0,ra1 Radius of the first disc at the start and at the end
+ * @param[in] rb0,rb1 Radius of the second disc at the start and at the end
+ * @param[in] d Distance
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] n1,n2 Bounds of the period in microseconds from the start
+ * @pre The radii and the distance are finite and not negative, `D > 0`
+ */
+int
+point_motion_dwithin_period_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, int64 D, int64 *n1, int64 *n2)
+{
+  assert(D > 0); assert(ndims == 2 || ndims == 3);
+  assert(ra0 >= 0.0 && ra1 >= 0.0 && rb0 >= 0.0 && rb1 >= 0.0 && d >= 0.0);
+  int filter = point_motion_dwithin_period_filter(a0, a1, b0, b1, ndims, ra0,
+    ra1, rb0, rb1, d);
+  if (filter == 1)
+  {
+    *n1 = 0;
+    *n2 = D;
+    return 2;
+  }
+  if (filter == 0)
+    return 0;
+  return point_motion_dwithin_period_wide(a0, a1, b0, b1, ndims, ra0, ra1,
+    rb0, rb1, d, D, n1, n2);
+}
+
+/**
+ * @brief Return true where two discs moving linearly over a segment of @p D
+ * microseconds are within a distance at the microsecond @p n of it, decided
+ * exactly
+ * @details The discs are within where `D^2 q(n / D)` is not positive, the
+ * sign #point_motion_dwithin_period_exact searches on (#dwithin_grid_sign).
+ * A bound of the period that it dates by truncation lies at a microsecond at
+ * which the discs need not be within: the one before a root at which they
+ * come within, unless the root is that microsecond
+ * @param[in] a0,a1 Centre of the first disc at the start and at the end
+ * @param[in] b0,b1 Centre of the second disc at the start and at the end
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] ra0,ra1 Radius of the first disc at the start and at the end
+ * @param[in] rb0,rb1 Radius of the second disc at the start and at the end
+ * @param[in] d Distance
+ * @param[in] D Duration of the segment in microseconds
+ * @param[in] n Microsecond from the start of the segment
+ * @pre The radii and the distance are finite and not negative, `D > 0`
+ */
+bool
+point_motion_dwithin_at_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, int64 D, int64 n)
+{
+  assert(D > 0); assert(ndims == 2 || ndims == 3);
+  DWithinGrid g;
+  WideDyadic B, C, B2, t, wD;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
+    &g.A, &B, &C);
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&B2, &wD, &g.B2D);
+  wide_dyadic_mul(&C, &wD, &t);
+  wide_dyadic_mul(&t, &wD, &g.CD2);
+  wide_dyadic_mul(&B, &wD, &g.BD);
+  return dwithin_grid_sign(&g, n, false) <= 0;
+}
+
+/**
+ * @brief Return the answer of #point_motion_dwithin_period_exact for a
+ * segment its filter does not settle, on the exact quadratic
+ * @details Kept out of line, as #point_distance_nearest is, so that the
+ * exact values it holds do not enlarge the frame of every call the filter
+ * answers
+ */
+static pg_noinline int
+point_motion_dwithin_period_wide(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, int64 D, int64 *n1, int64 *n2)
+{
+  DWithinGrid g;
+  WideDyadic B, C, B2, t, q1;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
+    &g.A, &B, &C);
+  /* q(1) = A + 2 B + C */
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_add(&g.A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  bool in0 = C.sign <= 0, in1 = q1.sign <= 0;
+  /* Within at both ends, within throughout, the gap being convex */
+  if (in0 && in1)
+  {
+    *n1 = 0;
+    *n2 = D;
+    return 2;
+  }
+  WideDyadic wD;
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&B2, &wD, &g.B2D);
+  wide_dyadic_mul(&C, &wD, &t);
+  wide_dyadic_mul(&t, &wD, &g.CD2);
+  wide_dyadic_mul(&B, &wD, &g.BD);
+  /* Estimates of the roots of A x^2 + 2 B x + C, which only start the
+   * searches, the one a difference of close values would form taken from
+   * their product C / A */
+  double a = wide_dyadic_approx(&g.A), b = wide_dyadic_approx(&B),
+    c = wide_dyadic_approx(&C);
+  double disc = b * b - a * c;
+  double sq = (disc > 0.0) ? sqrt(disc) : 0.0;
+  double qq = (b >= 0.0) ? -(b + sq) : -(b - sq);
+  double ra = (a != 0.0) ? qq / a : ((b != 0.0) ? - c / (2.0 * b) : 0.5);
+  double rb = (qq != 0.0) ? c / qq : ra;
+  double rlo = fmin(ra, rb), rhi = fmax(ra, rb);
+
+  /* Within at the start, not at the end: one root, at which q turns
+   * positive */
+  if (in0)
+  {
+    *n1 = 0;
+    *n2 = dwithin_grid_root(&g, (rlo >= 0.0) ? rlo : rhi, D, true, 0, D);
+    return (*n2 == 0) ? 1 : 2;
+  }
+  /* Within at the end, not at the start: one root, at which q stops being
+   * positive */
+  if (in1)
+  {
+    *n1 = dwithin_grid_root(&g, (rhi <= 1.0) ? rhi : rlo, D, false, 0, D);
+    *n2 = D;
+    return (*n1 == D) ? 1 : 2;
+  }
+  /* Within at neither end: within in between only where the parabola is
+   * convex, its vertex -B / A lies inside, and its discriminant B^2 - A C is
+   * not negative */
+  WideDyadic bb, ac, dw, apb;
+  wide_dyadic_mul(&B, &B, &bb);
+  wide_dyadic_mul(&g.A, &C, &ac);
+  ac.sign = - ac.sign;
+  wide_dyadic_add(&bb, &ac, &dw);
+  wide_dyadic_add(&g.A, &B, &apb);
+  if (g.A.sign <= 0 || B.sign >= 0 || apb.sign <= 0 || dw.sign < 0)
+    return 0;
+  /* The microsecond the vertex truncates to, the last n with A n + B D <= 0,
+   * which is 0 < -B D / A < D */
+  double v = (a != 0.0) ? - b / a : 0.5;
+  int64 nv = dwithin_grid_last(&g, 0, D, v * (double) D, true);
+  /* A whole microsecond within the period, if any, lies next to the vertex */
+  int64 inside = -1;
+  if (dwithin_grid_sign(&g, nv, false) <= 0)
+    inside = nv;
+  else if (nv + 1 <= D && dwithin_grid_sign(&g, nv + 1, false) <= 0)
+    inside = nv + 1;
+  /* A period holding no whole microsecond lies inside (nv, nv + 1), and
+   * truncation dates both its bounds at nv */
+  if (inside < 0)
+  {
+    *n1 = *n2 = nv;
+    return 1;
+  }
+  *n1 = dwithin_grid_root(&g, rlo, D, false, 0, inside);
+  *n2 = dwithin_grid_root(&g, rhi, D, true, inside, D);
+  return (*n1 == *n2) ? 1 : 2;
+}
+
+/**
+ * @brief Return true if two discs moving linearly over a segment are within
+ * a distance at one end of it and at no other fraction of it, decided exactly
+ * @details The fractions at which they are within form one interval of
+ * [0, 1] (#point_motion_dwithin_period_exact). It is the start alone where the
+ * quadratic `q = A f^2 + 2 B f + C` of #point_motion_dwithin_coeffs is zero
+ * there and turns positive after it, `C = 0` and `B > 0`, or `B = 0` and
+ * `A > 0`; the end alone where `q(1) = 0` and `q` is positive before it,
+ * `A + B < 0`, or `A + B = 0` and `A > 0`. An excluded end of a sequence is
+ * the one case where a segment within at some fraction is within at no
+ * instant of the sequence
+ * @param[in] a0,a1,b0,b1,ndims,ra0,ra1,rb0,rb1,d As for
+ * #point_motion_dwithin_period_exact
+ * @param[in] start True for the start of the segment, false for its end
+ */
+bool
+point_motion_dwithin_only_at_end(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, double d, bool start)
+{
+  WideDyadic A, B, C, B2, t, q1, apb;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, d, 0.0,
+    &A, &B, &C);
+  if (start)
+    return C.sign == 0 && (B.sign > 0 || (B.sign == 0 && A.sign > 0));
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_add(&A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  wide_dyadic_add(&A, &B, &apb);
+  return q1.sign == 0 && (apb.sign < 0 || (apb.sign == 0 && A.sign > 0));
+}
+
+/**
+ * @brief Return the sign of the least, over a segment, of the gap between a
+ * disc moving linearly and a point, less a distance `d + dlo`, exactly
+ * @details The gap `|w(f)| - L(f)` and the quadratic `q(f)` of
+ * #point_motion_dwithin_coeffs have the same sign at every fraction, `L`
+ * being not negative, so the sign of the least gap is that of the least of
+ * `q` over [0, 1]: at an end, or at the vertex `-B / A` where the parabola is
+ * convex and the vertex lies inside, there `(A C - B^2) / A`
+ */
+typedef struct
+{
+  WideDyadic A;     /**< A, which no distance changes */
+  WideDyadic B0;    /**< B at the distance 0 */
+  WideDyadic C0;    /**< C at the distance 0 */
+  WideDyadic R1;    /**< The radius at the start, L0 at the distance 0 */
+  WideDyadic DR;    /**< The change of the radius, dL */
+} PointMotionGap;
+
+/**
+ * @brief Set the parts of the quadratic of #point_motion_dwithin_coeffs for a
+ * disc moving against a point that no distance changes, so that each
+ * distance a search asks costs two products (#point_motion_gap_sign)
+ */
+static void
+point_motion_gap_init(PointMotionGap *g, const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2)
+{
+  point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, 0.0,
+    0.0, &g->A, &g->B0, &g->C0);
+  wide_dyadic_set_double(&g->R1, r1);
+  g->DR = g->R1;
+  g->DR.sign = - g->DR.sign;
+  wide_dyadic_accumulate_double(&g->DR, r2, 1);
+  return;
+}
+
+/**
+ * @brief Return the sign of the least, over a segment, of the gap between a
+ * disc moving linearly and a point, less a distance `d + dlo`, exactly, from
+ * the parts of #point_motion_gap_init: with `L = d + dlo` the distance adds
+ * `L` to `L0` and nothing to `dL`, so `B = B0 - L dL` and
+ * `C = C0 - L (2 r1 + L)`
+ * @details As #point_motion_gap_sign
+ */
+static int
+point_motion_gap_sign_at(const PointMotionGap *g, double d, double dlo)
+{
+  WideDyadic L, t, t2, B, C, B2, q1, apb, bb, ac, v, two;
+  wide_dyadic_set_double(&L, d);
+  wide_dyadic_accumulate_double(&L, dlo, 1);
+  wide_dyadic_mul(&L, &g->DR, &t);
+  t.sign = - t.sign;
+  wide_dyadic_add(&g->B0, &t, &B);
+  wide_dyadic_set_int(&two, 2);
+  wide_dyadic_mul(&g->R1, &two, &t);
+  wide_dyadic_add(&t, &L, &t2);
+  wide_dyadic_mul(&L, &t2, &t);
+  t.sign = - t.sign;
+  wide_dyadic_add(&g->C0, &t, &C);
+  const WideDyadic *A = &g->A;
+  wide_dyadic_mul(&B, &two, &B2);
+  wide_dyadic_add(A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
+  wide_dyadic_add(A, &B, &apb);
+  if (A->sign > 0 && B.sign < 0 && apb.sign > 0)
+  {
+    wide_dyadic_mul(A, &C, &ac);
+    wide_dyadic_mul(&B, &B, &bb);
+    bb.sign = - bb.sign;
+    wide_dyadic_add(&ac, &bb, &v);
+    if (v.sign < sign)
+      sign = v.sign;
+  }
+  return sign;
+}
+
+static int
+point_motion_gap_sign(const double *c1, const double *c2, const double *p,
+  int ndims, double r1, double r2, double d, double dlo)
+{
+  WideDyadic A, B, C, B2, t, q1, apb, bb, ac, v;
+  point_motion_dwithin_coeffs(c1, c2, p, p, ndims, r1, r2, 0.0, 0.0, d, dlo,
+    &A, &B, &C);
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_add(&A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  int sign = (C.sign < q1.sign) ? C.sign : q1.sign;
+  wide_dyadic_add(&A, &B, &apb);
+  if (A.sign > 0 && B.sign < 0 && apb.sign > 0)
+  {
+    wide_dyadic_mul(&A, &C, &ac);
+    wide_dyadic_mul(&B, &B, &bb);
+    bb.sign = - bb.sign;
+    wide_dyadic_add(&ac, &bb, &v);
+    if (v.sign < sign)
+      sign = v.sign;
+  }
+  return sign;
+}
+
+/**
+ * @brief Return true if a disc moving linearly over a segment is certainly
+ * never within a distance of a point, false where it is or doubles cannot
+ * tell (#point_motion_dwithin_period_filter)
+ */
+bool
+point_motion_dwithin_never(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d)
+{
+  return point_motion_dwithin_period_filter(c1, c2, p, p, ndims, r1, r2, 0.0,
+    0.0, d) == 0;
+}
+
+/**
+ * @brief Return 1 or 0 where a disc moving linearly over a segment is
+ * certainly within a distance of a point at some instant or certainly never
+ * within it, -1 where doubles cannot tell
+ * (#point_motion_dwithin_period_filter)
+ */
+static int
+point_motion_dwithin_ever_filter(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d)
+{
+  int filter = point_motion_dwithin_period_filter(c1, c2, p, p, ndims, r1,
+    r2, 0.0, 0.0, d);
+  return (filter == 1 || filter == 2) ? 1 : filter;
+}
+
+/**
+ * @brief Return the least distance of a disc moving linearly to a point, less
+ * the radius, the double nearest its exact value, or 0 where the disc reaches
+ * the point
+ * @details The disc moves from @p c1 with radius @p r1 to @p c2 with radius
+ * @p r2. Its least distance less the radius exceeds a value `x` exactly where
+ * it is never within `x` of the point, the sign of
+ * #point_motion_gap_sign at the distance `x`, a quadratic in rationals of the
+ * input doubles. The answer is the smallest double whose upper midpoint the
+ * least does not pass, the midpoint being the sum of the double and half the
+ * gap to the next one, and a tie going to the even double, found by a gallop
+ * from the double estimate of its closed form and halving the bracket, as
+ * #wide_dyadic_nearest_root finds its answer, so no root of a rounded value
+ * decides it
+ * @param[in] c1,c2 Centre of the disc at the start and at the end
+ * @param[in] p The point
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r1,r2 Radius at the start and at the end, not negative
+ */
+double
+point_motion_point_offset_exact(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2)
+{
+  /* The disc reaches the point where it is ever within 0 of it, which the
+   * filter tells but near a contact */
+  int reach = point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, 0.0);
+  if (reach == 1 || (reach < 0 &&
+      point_motion_gap_sign(c1, c2, p, ndims, r1, r2, 0.0, 0.0) <= 0))
+    return 0.0;
+  /* The estimate: the least of the ends and of the stationary point of
+   * |u + f v| - (r1 + f k), inside where |k| < |v| */
+  /* Read in extended precision, so that the search starts within a unit or
+   * two in the last place of the answer and the filter answers its steps but
+   * the last ones */
+  long double uu = 0.0L, uv = 0.0L, vv = 0.0L, ee = 0.0L, cr = 0.0L;
+  for (int i = 0; i < ndims; i++)
+  {
+    long double u = (long double) c1[i] - p[i];
+    long double w = (long double) c2[i] - c1[i];
+    long double e = (long double) c2[i] - p[i];
+    uu += u * u; uv += u * w; vv += w * w; ee += e * e;
+  }
+  /* |u x v|, componentwise in the plane and by Lagrange's identity beyond */
+  if (ndims == 2)
+    cr = fabsl(((long double) c1[0] - p[0]) * ((long double) c2[1] - c1[1]) -
+      ((long double) c1[1] - p[1]) * ((long double) c2[0] - c1[0]));
+  else
+    cr = sqrtl(fmaxl(uu * vv - uv * uv, 0.0L));
+  long double k = (long double) r2 - r1;
+  long double est = fminl(sqrtl(uu) - r1, sqrtl(ee) - r2);
+  if (vv > k * k)
+  {
+    long double sd = sqrtl(vv - k * k);
+    long double ts = (- uv + k * cr / sd) / vv;
+    if (ts > 0.0L && ts < 1.0L)
+      est = fminl(est, (cr * sd + k * uv) / vv - r1);
+  }
+  double c = (double) est;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &c, sizeof(bits));
+  PointMotionGap gap;
+  point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2);
+#define PMO_BEYOND(bb, res) \
+  do { \
+    double cc, nn; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nn, &b2, sizeof(nn)); \
+    /* Beyond where certainly never within the upper neighbour, and not \
+     * where certainly within the double itself: the filter answers every \
+     * step but those next to the answer */ \
+    if (! isinf(nn) && point_motion_dwithin_ever_filter(c1, c2, p, ndims, \
+        r1, r2, nn) == 0) \
+    { \
+      (res) = true; \
+      break; \
+    } \
+    if (point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, cc) == 1) \
+    { \
+      (res) = false; \
+      break; \
+    } \
+    double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0; \
+    int s = point_motion_gap_sign_at(&gap, cc, hh); \
+    (res) = s > 0 || (s == 0 && (b1 & 1) != 0); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  PMO_BEYOND(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (true)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      PMO_BEYOND(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    while (true)
+    {
+      if (hi == 0)
+        return 0.0;
+      lo = (hi > step) ? hi - step : 0;
+      PMO_BEYOND(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      if (lo == 0)
+        return 0.0;
+      step *= 2;
+    }
+  }
+  while (hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    PMO_BEYOND(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef PMO_BEYOND
+  double result;
+  memcpy(&result, &hi, sizeof(result));
+  return result;
+}
+
 /**
  * @brief Return the sign of the squared distance of a point to the line of a
  * segment, times the squared length of the segment, less the square of
  * `r + c + g/2` times that squared length, computed exactly for any finite
  * doubles
  * @details This is the side of a midpoint #point_segment_distance_offset_exact
- * decides, `(w x u)^2 - (r + c + g/2)^2 (u . u)` with `w = p - a` and
- * `u = b - a`, read on the input coordinates where scaling them would round a
- * value or leave a product of four outside the doubles. The cross product
- * `w x u`, the squared length `u . u` and `(r + c + g/2)^2` are each a sum of
- * products of two input doubles, an integer #square_products_wide sets as
- * #point_distance_offset_side_sign sets its terms; the cross product squared
- * and the product of the other two are compared on their exact products
+ * decides, `|w x u|^2 - m^2 (u . u)` with `w = p - a`, `u = b - a` and
+ * `m = r + c + g/2`, read on the input coordinates where scaling them would
+ * round a value or leave a product of four outside the doubles. By Lagrange's
+ * identity `|w x u|^2 = (w . w)(u . u) - (w . u)^2`, in two coordinates as in
+ * three, so the value is `(u . u)(w . w - m^2) - (w . u)^2`. The squared
+ * length `u . u`, the difference `w . w - m^2` and the dot product `w . u`
+ * are each a sum of products of two input doubles, an integer
+ * #square_products_wide sets as #point_distance_offset_side_sign sets its
+ * terms, and the two products are compared on their exact values
  * (#wide_product), the two having the weight of the same lowest bit
  * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius
  * @param[in] c Candidate
  * @param[in] g Gap from the candidate to its upper neighbour
  */
 static int
 point_segment_side_sign_inputs(const double *p, const double *a,
-  const double *b, double r, double c, double g)
+  const double *b, int ndims, double r, double c, double g)
 {
-  double left[6], right[6], factor[6];
-  uint64_t cross[WIDE_LIMBS], len[WIDE_LIMBS], mid[WIDE_LIMBS];
-  /* (px - ax)(by - ay) - (py - ay)(bx - ax), the products of ax and ay
-   * cancelling */
-  left[0] = p[0]; right[0] = b[1]; factor[0] = 1.0;
-  left[1] = p[0]; right[1] = a[1]; factor[1] = -1.0;
-  left[2] = a[0]; right[2] = b[1]; factor[2] = -1.0;
-  left[3] = p[1]; right[3] = b[0]; factor[3] = -1.0;
-  left[4] = p[1]; right[4] = a[0]; factor[4] = 1.0;
-  left[5] = a[1]; right[5] = b[0]; factor[5] = 1.0;
-  square_products_wide(left, right, factor, 6, cross);
-  /* (bx - ax)^2 + (by - ay)^2 */
-  for (int i = 0; i < 2; i++)
+  /* At most 15 products, each of a weight from 1/4 to 2, which the integer
+   * of #square_products_wide holds */
+  double left[15], right[15], factor[15];
+  uint64_t wm[WIDE_LIMBS], len[WIDE_LIMBS], dot[WIDE_LIMBS];
+  /* w . w - m^2 */
+  int n = 0;
+  for (int i = 0; i < ndims; i++)
   {
-    left[3 * i] = b[i]; right[3 * i] = b[i]; factor[3 * i] = 1.0;
-    left[3 * i + 1] = b[i]; right[3 * i + 1] = a[i];
-    factor[3 * i + 1] = -2.0;
-    left[3 * i + 2] = a[i]; right[3 * i + 2] = a[i]; factor[3 * i + 2] = 1.0;
+    left[n] = p[i]; right[n] = p[i]; factor[n++] = 1.0;
+    left[n] = p[i]; right[n] = a[i]; factor[n++] = -2.0;
+    left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
   }
-  square_products_wide(left, right, factor, 6, len);
-  /* (r + c + g/2)^2 */
-  left[0] = r; right[0] = r; factor[0] = 1.0;
-  left[1] = c; right[1] = c; factor[1] = 1.0;
-  left[2] = g; right[2] = g; factor[2] = 0.25;
-  left[3] = r; right[3] = c; factor[3] = 2.0;
-  left[4] = r; right[4] = g; factor[4] = 1.0;
-  left[5] = c; right[5] = g; factor[5] = 1.0;
-  square_products_wide(left, right, factor, 6, mid);
+  left[n] = r; right[n] = r; factor[n++] = -1.0;
+  left[n] = c; right[n] = c; factor[n++] = -1.0;
+  left[n] = g; right[n] = g; factor[n++] = -0.25;
+  left[n] = r; right[n] = c; factor[n++] = -2.0;
+  left[n] = r; right[n] = g; factor[n++] = -1.0;
+  left[n] = c; right[n] = g; factor[n++] = -1.0;
+  square_products_wide(left, right, factor, n, wm);
+  /* u . u */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    left[n] = b[i]; right[n] = b[i]; factor[n++] = 1.0;
+    left[n] = b[i]; right[n] = a[i]; factor[n++] = -2.0;
+    left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
+  }
+  square_products_wide(left, right, factor, n, len);
+  /* w . u */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    left[n] = p[i]; right[n] = b[i]; factor[n++] = 1.0;
+    left[n] = p[i]; right[n] = a[i]; factor[n++] = -1.0;
+    left[n] = a[i]; right[n] = b[i]; factor[n++] = -1.0;
+    left[n] = a[i]; right[n] = a[i]; factor[n++] = 1.0;
+  }
+  square_products_wide(left, right, factor, n, dot);
 
-  uint64_t mcross[WIDE_LIMBS], mlen[WIDE_LIMBS], mmid[WIDE_LIMBS];
-  wide_magnitude(cross, mcross);
+  uint64_t mwm[WIDE_LIMBS], mlen[WIDE_LIMBS], mdot[WIDE_LIMBS];
+  int swm = wide_magnitude(wm, mwm);
   int slen = wide_magnitude(len, mlen);
-  int smid = wide_magnitude(mid, mmid);
+  int sdot = wide_magnitude(dot, mdot);
+  /* The square of the dot product is not negative; the other product carries
+   * the signs of its factors */
+  int slhs = slen * swm;
+  if (slhs < 0)
+    return -1;
+  if (slhs == 0)
+    return (sdot != 0) ? -1 : 0;
   uint32_t lhs[4 * WIDE_LIMBS], rhs[4 * WIDE_LIMBS];
-  wide_product(mcross, mcross, lhs);
-  wide_product(mmid, mlen, rhs);
-  /* The cross product squared is not negative; the other product carries the
-   * signs of its factors, both not negative for a segment and a midpoint */
-  int srhs = slen * smid;
-  if (srhs < 0)
-    return 1;
+  wide_product(mlen, mwm, lhs);
+  wide_product(mdot, mdot, rhs);
   for (int i = 4 * WIDE_LIMBS - 1; i >= 0; i--)
   {
     if (lhs[i] != rhs[i])
@@ -3838,15 +5413,16 @@ point_segment_side_sign_inputs(const double *p, const double *a,
  * #point_segment_side_sign_inputs; past the largest double the gap is the one
  * below it, 2^971
  * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r,c,n Radius, candidate and its upper neighbour
  * @param[in] odd Whether the last bit of the candidate is odd
  */
 static bool
 point_segment_beyond_inputs(const double *p, const double *a, const double *b,
-  double r, double c, double n, bool odd)
+  int ndims, double r, double c, double n, bool odd)
 {
   double g = isinf(n) ? ldexp(1.0, 971) : n - c;
-  int sign = point_segment_side_sign_inputs(p, a, b, r, c, g);
+  int sign = point_segment_side_sign_inputs(p, a, b, ndims, r, c, g);
   return sign > 0 || (sign == 0 && odd);
 }
 
@@ -3866,14 +5442,22 @@ point_segment_beyond_inputs(const double *p, const double *a, const double *b,
  */
 static int
 point_segment_dot_sign_inputs(const double *p, const double *s,
-  const double *a, const double *b)
+  const double *a, const double *b, int ndims)
 {
-  double wx = p[0] - s[0], wy = p[1] - s[1];
-  double vx = b[0] - a[0], vy = b[1] - a[1];
-  if ((wx == 0.0 || vx == 0.0) && (wy == 0.0 || vy == 0.0))
+  bool zero = true;
+  double dot = 0.0, mag = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double w = p[i] - s[i], v = b[i] - a[i];
+    if (w != 0.0 && v != 0.0)
+      zero = false;
+    double t = w * v;
+    dot += t;
+    mag += fabs(t);
+  }
+  if (zero)
     return 0;
-  double l = wx * vx, r = wy * vy, dot = l + r;
-  double bound = 4.0 * DBL_EPSILON * (fabs(l) + fabs(r)) + DBL_MIN;
+  double bound = 4.0 * DBL_EPSILON * mag + DBL_MIN;
   if (isfinite(bound))
   {
     if (dot > bound)
@@ -3881,9 +5465,9 @@ point_segment_dot_sign_inputs(const double *p, const double *s,
     if (dot < - bound)
       return -1;
   }
-  double left[8], right[8], factor[8];
+  double left[12] = {0.0}, right[12] = {0.0}, factor[12] = {0.0};
   int n = 0;
-  for (int i = 0; i < 2; i++)
+  for (int i = 0; i < ndims; i++)
   {
     left[n] = p[i]; right[n] = b[i]; factor[n++] = 1.0;
     left[n] = p[i]; right[n] = a[i]; factor[n++] = -1.0;
@@ -3900,9 +5484,9 @@ point_segment_dot_sign_inputs(const double *p, const double *s,
 static int
 linesegm_param_side(const double *a, const double *b, const double *p)
 {
-  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
+  if (point_segment_dot_sign_inputs(p, a, a, b, 2) <= 0)
     return -1;
-  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
+  if (point_segment_dot_sign_inputs(p, b, a, b, 2) >= 0)
     return 1;
   return 0;
 }
@@ -3929,7 +5513,7 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
   int sp = linesegm_param_side(a, b, p), sq = linesegm_param_side(a, b, q);
   if (sp != 0 || sq != 0)
     return (sp > sq) ? 1 : ((sp < sq) ? -1 : 0);
-  return point_segment_dot_sign_inputs(p, q, a, b);
+  return point_segment_dot_sign_inputs(p, q, a, b, 2);
 }
 
 /**
@@ -3946,22 +5530,23 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
  * (#point_segment_beyond_inputs), found by the galloping search of
  * #point_segment_distance_offset_exact from a rounded start
  * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius, not negative
  */
 static double
 point_segment_distance_offset_inputs(const double *p, const double *a,
-  const double *b, double r)
+  const double *b, int ndims, double r)
 {
-  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
-    return point_distance_offset_exact(p, a, 2, r);
-  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
-    return point_distance_offset_exact(p, b, 2, r);
+  if (point_segment_dot_sign_inputs(p, a, a, b, ndims) <= 0)
+    return point_distance_offset_exact(p, a, ndims, r);
+  if (point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
+    return point_distance_offset_exact(p, b, ndims, r);
 
   /* First candidate, a start only, from the halves of the differences scaled
    * by 2^-hexp, which brings the largest into [1/2, 1), so that neither the
    * cross product nor the length overflows or vanishes */
-  double hw[2], hu[2], maxh = 0.0;
-  for (int i = 0; i < 2; i++)
+  double hw[3], hu[3], maxh = 0.0;
+  for (int i = 0; i < ndims; i++)
   {
     hw[i] = p[i] * 0.5 - a[i] * 0.5;
     hu[i] = b[i] * 0.5 - a[i] * 0.5;
@@ -3969,11 +5554,21 @@ point_segment_distance_offset_inputs(const double *p, const double *a,
   }
   int hexp;
   (void) frexp(maxh, &hexp);
-  double wx = ldexp(hw[0], - hexp), wy = ldexp(hw[1], - hexp);
-  double ux = ldexp(hu[0], - hexp), uy = ldexp(hu[1], - hexp);
-  double ul = sqrt(ux * ux + uy * uy);
-  double c = (ul > 0.0) ?
-    ldexp(fabs(wx * uy - wy * ux) / ul, 1 + hexp) - r : 0.0;
+  double w[3], u[3], ul2 = 0.0, x2 = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    w[i] = ldexp(hw[i], - hexp);
+    u[i] = ldexp(hu[i], - hexp);
+    ul2 += u[i] * u[i];
+  }
+  for (int i = 0; i < ndims; i++)
+    for (int j = i + 1; j < ndims; j++)
+    {
+      double x = w[i] * u[j] - w[j] * u[i];
+      x2 += x * x;
+    }
+  double ul = sqrt(ul2);
+  double c = (ul > 0.0) ? ldexp(sqrt(x2) / ul, 1 + hexp) - r : 0.0;
   if (! (c > 0.0))
     c = 0.0;
   if (isinf(c))
@@ -3989,7 +5584,8 @@ point_segment_distance_offset_inputs(const double *p, const double *a,
     uint64_t b1 = (bb), b2 = (bb) + 1; \
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nn, &b2, sizeof(nn)); \
-    (res) = point_segment_beyond_inputs(p, a, b, r, cc, nn, (b1 & 1) != 0); \
+    (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
+      (b1 & 1) != 0); \
   } while (0)
   uint64_t lo, hi;
   bool beyond;
@@ -4078,10 +5674,16 @@ point_segment_scale_exact(const double *v, int n, int k)
  */
 static bool
 point_segment_quarter_rounds(const double *p, const double *a,
-  const double *b, double r)
+  const double *b, int ndims, double r)
 {
-  const double v[7] = {p[0], p[1], a[0], a[1], b[0], b[1], r};
-  for (int i = 0; i < 7; i++)
+  double v[10];
+  int n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    v[n++] = p[i]; v[n++] = a[i]; v[n++] = b[i];
+  }
+  v[n++] = r;
+  for (int i = 0; i < n; i++)
   {
     if (v[i] != 0.0 && double_lowest_bit(v[i]) - 2 < -1074)
       return true;
@@ -4090,47 +5692,45 @@ point_segment_quarter_rounds(const double *p, const double *a,
 }
 
 /**
- * @brief Return the sign of `X^2 - (a + b1 + b2)^2 L`, or 0 where a filter on
+ * @brief Return the sign of `Q - (a + b1 + b2)^2 L`, or 0 where a filter on
  * doubles cannot tell, setting in @p value the double it reads
  * @details The twin of #point_distance_offset_filter_sign for a point and a
- * segment: `X` is the cross product of the point less the segment's start and
- * the segment, held as `xs + xlo` within @p ex, and `L` the squared length of
- * the segment, held as `ls + llo` within @p el. The square of `xs` and of `a`
- * are split by #two_square and `a*a*ls` by #two_product, so the value is
- * `(x - q) + (y + 2*xs*xlo + xlo^2 - qe - a^2 llo - P (ls + llo))`, with
+ * segment: `Q` is the squared cross product of the point less the segment's
+ * start and the segment, held as `qs + qlo` within @p eq, `qmag` the
+ * magnitude of the terms of `qlo`, and `L` the squared length of the segment,
+ * held as `ls + llo` within @p el. The square of `a` is split by #two_square
+ * and `a*a*ls` by #two_product, so the value is
+ * `(qs - q) + (qlo - qe - a^2 llo - P (ls + llo))`, with
  * `P = ya + 2ab + b^2` and `b` the rounded `b1 + b2`. The first difference is
  * exact where one term is within a factor of two of the other (Sterbenz).
- * The bound adds the error that `ex` and `el` carry into the squares, the
- * rounding of `b` (`|2(a + b)(b - b1 - b2)| <= 2 DBL_EPSILON (|ab| + b^2)`
- * times `L`), and the rounding of every product and sum, each below
- * `DBL_EPSILON` times the magnitudes it reads, with a factor of 32 over the
- * count of operations, and an absolute `4 DBL_MIN` for the products that
- * underflow
+ * The bound adds the error that `eq` and `el` carry, the rounding of `b`
+ * (`|2(a + b)(b - b1 - b2)| <= 2 DBL_EPSILON (|ab| + b^2)` times `L`), and
+ * the rounding of every product and sum, each below `DBL_EPSILON` times the
+ * magnitudes it reads, with a factor of 32 over the count of operations, and
+ * an absolute `4 DBL_MIN` for the products that underflow
  * @return 1 or -1 where the value stands clear of the bound, 0 otherwise,
  * never the sign of an exact tie, which the caller reads exactly
  */
 static inline int
-point_segment_offset_filter_sign(double xs, double xlo, double ex, double ls,
-  double llo, double el, double a, double b1, double b2, double *value)
+point_segment_offset_filter_sign(double qs, double qlo, double qmag,
+  double eq, double ls, double llo, double el, double a, double b1, double b2,
+  double *value)
 {
-  double x, y, xa, ya, q, qe;
-  two_square(xs, &x, &y);
+  double xa, ya, q, qe;
   two_square(a, &xa, &ya);
   two_product(xa, ls, &q, &qe);
   double b = b1 + b2;
   double ab2 = 2.0 * a * b, bb = b * b;
   double pp = (ya + ab2) + bb;
-  double t1 = 2.0 * xs * xlo, t2 = xlo * xlo;
   double t3 = xa * llo, t4 = pp * ls, t5 = pp * llo;
-  double hi = x - q;
-  bool hiexact = (x >= 0.5 * q && x <= 2.0 * q);
-  double v = hi + (((((y + t1) + t2) - qe) - t3) - (t4 + t5));
+  double hi = qs - q;
+  bool hiexact = (qs >= 0.5 * q && qs <= 2.0 * q);
+  double v = hi + (((qlo - qe) - t3) - (t4 + t5));
   double lsum = ls + fabs(llo) + el;
-  double bound = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) +
-    2.0 * (fabs(xs) + fabs(xlo)) * ex + ex * ex +
+  double bound = (hiexact ? 0.0 : DBL_EPSILON * fabs(hi)) + eq +
     (xa + fabs(pp)) * el * (1.0 + 4.0 * DBL_EPSILON) +
     4.0 * DBL_EPSILON * (fabs(ab2) + bb) * lsum +
-    32.0 * DBL_EPSILON * (fabs(y) + fabs(t1) + t2 + fabs(qe) + fabs(t3) +
+    32.0 * DBL_EPSILON * (qmag + fabs(qe) + fabs(t3) +
       fabs(t4) + fabs(t5) + (fabs(ya) + fabs(ab2) + bb) * lsum + fabs(v)) +
     4.0 * DBL_MIN;
   *value = v;
@@ -4139,6 +5739,30 @@ point_segment_offset_filter_sign(double xs, double xlo, double ex, double ls,
   if (v < - bound)
     return -1;
   return 0;
+}
+
+/**
+ * @brief Set the cross product `w_i u_j - w_j u_i` of the plane of the
+ * coordinates @p i and @p j as `xs + xlo` within @p ex
+ * @details Each product is split by #two_product and the rounding errors of
+ * the differences enter as their products with the other factor, within a
+ * bound of 16 DBL_EPSILON of the magnitude of those terms
+ */
+static inline void
+point_segment_cross_plane(const double *dw, const double *ew,
+  const double *du, const double *eu, int i, int j, double *xs, double *xlo,
+  double *ex)
+{
+  double p1, e1, p2, e2, t;
+  two_product(dw[i], du[j], &p1, &e1);
+  two_product(dw[j], du[i], &p2, &e2);
+  two_sum(p1, - p2, xs, &t);
+  double c1 = dw[i] * eu[j], c2 = ew[i] * du[j], c3 = dw[j] * eu[i],
+    c4 = ew[j] * du[i], c5 = ew[i] * eu[j], c6 = ew[j] * eu[i];
+  *xlo = (((t + e1) - e2) + ((c1 + c2) - (c3 + c4))) + (c5 - c6);
+  *ex = 16.0 * DBL_EPSILON * (fabs(t) + fabs(e1) + fabs(e2) +
+    fabs(c1) + fabs(c2) + fabs(c3) + fabs(c4) + fabs(c5) + fabs(c6)) +
+    4.0 * DBL_MIN;
 }
 
 /**
@@ -4153,16 +5777,18 @@ point_segment_offset_filter_sign(double xs, double xlo, double ex, double ls,
  * `w . u - u . u` are read in doubles against Shewchuk's bound, the error
  * terms of the differences adding at most 2^-52 of each product: an end is
  * answered by #point_distance_offset_exact, and the foot as follows. The
- * cross product `X = w x u` and the squared length `L` are formed from
- * #two_product and #two_square as a double and the double of its small
- * terms, within a bound of 16 DBL_EPSILON of the magnitude of those terms.
- * The squared distance to the line is `X^2 / L`, so the answer is 0 where
- * `X^2 - r^2 L` is certainly not positive, and otherwise the double `c` for
- * which `X^2 - (r + c + h)^2 L` is positive at the lower midpoint and
+ * cross product of each plane of two coordinates (#point_segment_cross_plane)
+ * and the squared length `L` are formed from #two_product and #two_square as
+ * a double and the double of its small terms, and the squared cross product
+ * `Q = |w x u|^2` is the square of the one plane in 2D, the sum of the squares
+ * of the three in 3D, whose additions the bound of `Q` carries as `L`'s does.
+ * The squared distance to the line is `Q / L`, so the answer is 0 where
+ * `Q - r^2 L` is certainly not positive, and otherwise the double `c` for
+ * which `Q - (r + c + h)^2 L` is positive at the lower midpoint and
  * negative at the upper one, each read by #point_segment_offset_filter_sign
  * with `r + c` split by #two_sum and `h` half a gap, exact for a candidate of
- * at least 2^-900. The candidate starts at `(X^2 - r^2 L) / (L (|X| / sqrt(L)
- * + r))`, whose numerator keeps its precision however much the distance and
+ * at least 2^-900. The candidate starts at `(Q - r^2 L) / (L (sqrt(Q) /
+ * sqrt(L) + r))`, whose numerator keeps its precision however much the distance and
  * the radius cancel, and moves while a side certainly says so, at most four
  * times. Any sign the filter cannot tell, which every tie is, returns false,
  * and the exact search answers
@@ -4170,54 +5796,81 @@ point_segment_offset_filter_sign(double xs, double xlo, double ex, double ls,
  * from its start, and the errors of their rounding
  * @param[in] maxw,maxu Largest absolute differences
  * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius, not negative
  * @param[out] result The answer where the function returns true
  */
 static bool
 point_segment_offset_filter(const double *dw, const double *ew,
   const double *du, const double *eu, double maxw, double maxu,
-  const double *p, const double *a, const double *b, double r, double *result)
+  const double *p, const double *a, const double *b, int ndims, double r,
+  double *result)
 {
   if (! (maxw >= 0x1p-120 && maxw <= 0x1p120 && maxu >= 0x1p-120 &&
       maxu <= 0x1p120 && r < 0x1p122))
     return false;
   /* The nearest point of the segment: the start, the end or the foot */
-  double m0 = fabs(dw[0] * du[0]), m1 = fabs(dw[1] * du[1]);
-  double l0 = du[0] * du[0], l1 = du[1] * du[1];
+  double dmag = fabs(dw[0] * du[0]) + fabs(dw[1] * du[1]);
+  double l = du[0] * du[0] + du[1] * du[1];
   double dot = dw[0] * du[0] + dw[1] * du[1];
-  double dbound = 8.0 * DBL_EPSILON * (m0 + m1) + 4.0 * DBL_MIN;
+  if (ndims == 3)
+  {
+    dmag += fabs(dw[2] * du[2]);
+    l += du[2] * du[2];
+    dot += dw[2] * du[2];
+  }
+  double dbound = 8.0 * DBL_EPSILON * dmag + 4.0 * DBL_MIN;
   if (dot < - dbound)
   {
-    *result = point_distance_offset_exact(p, a, 2, r);
+    *result = point_distance_offset_exact(p, a, ndims, r);
     return true;
   }
   if (dot <= dbound)
     return false;
-  double dl = dot - (l0 + l1);
-  double dlbound = 8.0 * DBL_EPSILON * (m0 + m1 + l0 + l1 + fabs(dl)) +
-    4.0 * DBL_MIN;
+  double dl = dot - l;
+  double dlbound = 8.0 * DBL_EPSILON * (dmag + l + fabs(dl)) + 4.0 * DBL_MIN;
   if (dl > dlbound)
   {
-    *result = point_distance_offset_exact(p, b, 2, r);
+    *result = point_distance_offset_exact(p, b, ndims, r);
     return true;
   }
   if (dl >= - dlbound)
     return false;
 
-  /* The foot. X = w x u as xs + xlo within ex */
-  double p1, e1, p2, e2, xs, t;
-  two_product(dw[0], du[1], &p1, &e1);
-  two_product(dw[1], du[0], &p2, &e2);
-  two_sum(p1, - p2, &xs, &t);
-  double c1 = dw[0] * eu[1], c2 = ew[0] * du[1], c3 = dw[1] * eu[0],
-    c4 = ew[1] * du[0], c5 = ew[0] * eu[1], c6 = ew[1] * eu[0];
-  double xlo = (((t + e1) - e2) + ((c1 + c2) - (c3 + c4))) + (c5 - c6);
-  double ex = 16.0 * DBL_EPSILON * (fabs(t) + fabs(e1) + fabs(e2) +
-    fabs(c1) + fabs(c2) + fabs(c3) + fabs(c4) + fabs(c5) + fabs(c6)) +
-    4.0 * DBL_MIN;
+  /* The foot. Q = |w x u|^2 as qs + qlo within eq, from the cross product
+   * xs + xlo within ex of each plane */
+  double xs, xlo, ex, qs, qlo, qmag, eq, xabs;
+  point_segment_cross_plane(dw, ew, du, eu, 0, 1, &xs, &xlo, &ex);
+  {
+    double y, t1 = 2.0 * xs * xlo, t2 = xlo * xlo;
+    two_square(xs, &qs, &y);
+    qlo = (y + t1) + t2;
+    qmag = (fabs(y) + fabs(t1)) + t2;
+    eq = 2.0 * (fabs(xs) + fabs(xlo)) * ex + ex * ex;
+    xabs = fabs(xs);
+  }
+  if (ndims == 3)
+  {
+    static const int plane[2][2] = {{0, 2}, {1, 2}};
+    double qsum = 0.0;
+    for (int k = 0; k < 2; k++)
+    {
+      point_segment_cross_plane(dw, ew, du, eu, plane[k][0], plane[k][1],
+        &xs, &xlo, &ex);
+      double x, y, s, t1 = 2.0 * xs * xlo, t2 = xlo * xlo;
+      two_square(xs, &x, &y);
+      two_sum(qs, x, &qs, &s);
+      qlo += (s + y) + (t1 + t2);
+      qmag += fabs(s) + fabs(y) + fabs(t1) + t2;
+      eq += 2.0 * (fabs(xs) + fabs(xlo)) * ex + ex * ex;
+      qsum += fabs(qlo);
+    }
+    eq += 32.0 * DBL_EPSILON * (qmag + qsum);
+    xabs = sqrt(qs);
+  }
   /* L = u . u as ls + llo within el */
   double ls = 0.0, llo = 0.0, lmag = 0.0;
-  for (int i = 0; i < 2; i++)
+  for (int i = 0; i < ndims; i++)
   {
     double x, y, s;
     two_square(du[i], &x, &y);
@@ -4232,8 +5885,8 @@ point_segment_offset_filter(const double *dw, const double *ew,
 
   /* The side of X^2 - r^2 L */
   double num;
-  int side = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, r,
-    0.0, 0.0, &num);
+  int side = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
+    r, 0.0, 0.0, &num);
   if (side == 0)
     return false;
   if (side < 0)
@@ -4241,7 +5894,7 @@ point_segment_offset_filter(const double *dw, const double *ew,
     *result = 0.0;
     return true;
   }
-  double c = num / (ls * (fabs(xs) / sqrt(ls) + r));
+  double c = num / (ls * (xabs / sqrt(ls) + r));
   for (int move = 0; move < 4; move++)
   {
     if (! (c >= 0x1p-900) || ! isfinite(c))
@@ -4256,15 +5909,15 @@ point_segment_offset_filter(const double *dw, const double *ew,
       return false;
     double m, m1e, v;
     two_sum(r, c, &m, &m1e);
-    int su = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, m,
-      m1e, 0.5 * (cu - c), &v);
+    int su = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
+      m, m1e, 0.5 * (cu - c), &v);
     if (su > 0)
     {
       c = cu;
       continue;
     }
-    int sd = point_segment_offset_filter_sign(xs, xlo, ex, ls, llo, el, m,
-      m1e, - 0.5 * (c - cd), &v);
+    int sd = point_segment_offset_filter_sign(qs, qlo, qmag, eq, ls, llo, el,
+      m, m1e, - 0.5 * (c - cd), &v);
     if (sd < 0)
     {
       c = cd;
@@ -4274,6 +5927,392 @@ point_segment_offset_filter(const double *dw, const double *ew,
     {
       *result = c;
       return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+/**
+ * @brief A value held as the unevaluated sum of two doubles, with a bound on
+ * its distance to the exact value it stands for, the filter of the 3D interior distance
+ * @details The sum is formed by the error-free transforms #two_diff,
+ * #two_product and #two_sum, so it carries about 104 bits on every platform
+ * and under every emulator that rounds a double and a fused multiply-add
+ * correctly
+ */
+typedef struct
+{
+  double hi;  /**< The value, rounded */
+  double lo;  /**< What the rounding leaves out */
+  double e;   /**< A bound on the error of hi + lo */
+} DDBound;
+
+/* The relative rounding of one operation on two-double values, with a wide
+ * margin, and an absolute term for a product that underflows */
+#define DDB_EPS 0x1p-100
+#define DDB_TINY 0x1p-1060
+/* The least magnitude of a product of two doubles that #two_product splits
+ * exactly: below it the part that rounding leaves out may itself round */
+#define DDB_EXACT_PRODUCT 0x1p-969
+
+/**
+ * @brief Set the three coordinates of `q - p`, exact as two doubles
+ */
+static pg_attribute_always_inline void
+ddb_diff3(const double *q, const double *p, DDBound *r)
+{
+  for (int c = 0; c < 3; c++)
+  {
+    two_diff(q[c], p[c], &r[c].hi, &r[c].lo);
+    r[c].e = 0.0;
+  }
+  return;
+}
+
+/**
+ * @brief Return true if a bounded value is exactly zero: both doubles zero and
+ * no error
+ */
+static pg_attribute_always_inline bool
+ddb_is_zero(DDBound a)
+{
+  return a.hi == 0.0 && a.lo == 0.0 && a.e == 0.0;
+}
+
+/**
+ * @brief Return true if a bounded value is a double held exactly
+ */
+static pg_attribute_always_inline bool
+ddb_is_double(DDBound a)
+{
+  return a.lo == 0.0 && a.e == 0.0;
+}
+
+/**
+ * @brief Return the product of two bounded values, with its bound
+ * @details A product with an exact zero is an exact zero, and the product of
+ * two doubles held exactly is exact as two doubles (#two_product)
+ */
+static pg_attribute_always_inline DDBound
+ddb_mul(DDBound a, DDBound b)
+{
+  DDBound r;
+  if (ddb_is_zero(a) || ddb_is_zero(b))
+  {
+    r.hi = r.lo = r.e = 0.0;
+    return r;
+  }
+  if (ddb_is_double(a) && ddb_is_double(b))
+  {
+    two_product(a.hi, b.hi, &r.hi, &r.lo);
+    /* A product that underflows is not split exactly */
+    r.e = (fabs(r.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    return r;
+  }
+  double p, pe;
+  two_product(a.hi, b.hi, &p, &pe);
+  pe += a.hi * b.lo + a.lo * b.hi;
+  two_sum(p, pe, &r.hi, &r.lo);
+  double ma = fabs(a.hi) + fabs(a.lo), mb = fabs(b.hi) + fabs(b.lo);
+  r.e = ma * b.e + mb * a.e + a.e * b.e + fabs(a.lo * b.lo) +
+    DDB_EPS * fabs(p) + DDB_TINY;
+  return r;
+}
+
+/**
+ * @brief Return the sum of two bounded values, with its bound
+ */
+static pg_attribute_always_inline DDBound
+ddb_add(DDBound a, DDBound b)
+{
+  /* A sum with an exact zero is the other term, and the sum of two doubles
+   * held exactly is exact as two doubles (#two_sum) */
+  if (ddb_is_zero(b))
+    return a;
+  if (ddb_is_zero(a))
+    return b;
+  double s, se;
+  two_sum(a.hi, b.hi, &s, &se);
+  DDBound r;
+  if (ddb_is_double(a) && ddb_is_double(b))
+  {
+    r.hi = s;
+    r.lo = se;
+    r.e = 0.0;
+    return r;
+  }
+  se += a.lo + b.lo;
+  two_sum(s, se, &r.hi, &r.lo);
+  r.e = a.e + b.e + DDB_EPS * (fabs(a.hi) + fabs(b.hi)) + DDB_TINY;
+  return r;
+}
+
+/**
+ * @brief Return the difference of two bounded values, with its bound
+ */
+static pg_attribute_always_inline DDBound
+ddb_sub(DDBound a, DDBound b)
+{
+  b.hi = - b.hi;
+  b.lo = - b.lo;
+  return ddb_add(a, b);
+}
+
+/**
+ * @brief Return the dot product of two vectors of three bounded values
+ * @details Where every component is a double held exactly, each product is
+ * exact as two doubles (#two_product), as in #ddb_cross3, and only the sums
+ * round
+ */
+static pg_attribute_always_inline DDBound
+ddb_dot3(const DDBound *a, const DDBound *b)
+{
+  if (a[0].lo == 0.0 && a[0].e == 0.0 && a[1].lo == 0.0 && a[1].e == 0.0 &&
+      a[2].lo == 0.0 && a[2].e == 0.0 && b[0].lo == 0.0 && b[0].e == 0.0 &&
+      b[1].lo == 0.0 && b[1].e == 0.0 && b[2].lo == 0.0 && b[2].e == 0.0)
+  {
+    DDBound p[3];
+    for (int c = 0; c < 3; c++)
+    {
+      two_product(a[c].hi, b[c].hi, &p[c].hi, &p[c].lo);
+      p[c].e = (a[c].hi != 0.0 && b[c].hi != 0.0 &&
+        fabs(p[c].hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    }
+    return ddb_add(ddb_add(p[0], p[1]), p[2]);
+  }
+  return ddb_add(ddb_add(ddb_mul(a[0], b[0]), ddb_mul(a[1], b[1])),
+    ddb_mul(a[2], b[2]));
+}
+
+/**
+ * @brief Set the cross product of two vectors of three bounded values
+ * @details Where every component is a double held exactly, as the difference
+ * of two coordinates is wherever it does not round, each product is exact as
+ * two doubles (#two_product) and only the sum of the two rounds, by the
+ * bound #ddb_add gives it
+ */
+static pg_attribute_always_inline void
+ddb_cross3(const DDBound *a, const DDBound *b, DDBound *r)
+{
+  bool exact = true;
+  for (int c = 0; c < 3; c++)
+    exact = exact && a[c].lo == 0.0 && a[c].e == 0.0 && b[c].lo == 0.0 &&
+      b[c].e == 0.0;
+  if (exact)
+  {
+    for (int c = 0; c < 3; c++)
+    {
+      int i = (c + 1) % 3, j = (c + 2) % 3;
+      double p1, e1, p2, e2, s, se;
+      two_product(a[i].hi, b[j].hi, &p1, &e1);
+      two_product(a[j].hi, b[i].hi, &p2, &e2);
+      /* Two exact products are equal where their pairs are, the pair of a
+       * product being unique, and their difference is then an exact zero;
+       * a product that underflows is not split exactly, so two of them say
+       * nothing by being equal */
+      bool under = (p1 != 0.0 && fabs(p1) < DDB_EXACT_PRODUCT) ||
+        (p2 != 0.0 && fabs(p2) < DDB_EXACT_PRODUCT) ||
+        (p1 == 0.0 && a[i].hi != 0.0 && b[j].hi != 0.0) ||
+        (p2 == 0.0 && a[j].hi != 0.0 && b[i].hi != 0.0);
+      if (! under && p1 == p2 && e1 == e2)
+      {
+        r[c].hi = r[c].lo = r[c].e = 0.0;
+        continue;
+      }
+      two_diff(p1, p2, &s, &se);
+      se += e1 - e2;
+      two_sum(s, se, &r[c].hi, &r[c].lo);
+      r[c].e = DDB_EPS * (fabs(p1) + fabs(p2)) + DDB_TINY;
+    }
+    return;
+  }
+  for (int c = 0; c < 3; c++)
+  {
+    int i = (c + 1) % 3, j = (c + 2) % 3;
+    r[c] = ddb_sub(ddb_mul(a[i], b[j]), ddb_mul(a[j], b[i]));
+  }
+  return;
+}
+
+/**
+ * @brief Set the triple product `(c - a) . ((b - a) x (d - c))` computed
+ * exactly from the coordinates and rounded to two doubles
+ * @details Each component of the cross product is the cross product of the two
+ * vectors in a plane of two coordinates, whose exact expansion
+ * #cross_product_exact sums; scaled by the two doubles of each difference
+ * (#scale_expansion), added (#expansion_sum) and compressed
+ * (#compress_expansion), the triple product keeps its precision relative to
+ * itself where the segments nearly meet and the products of the rounded
+ * differences of #ddb_cross3 cancel. The two largest components of the
+ * compressed expansion, summed exactly, hold it to about twice the precision
+ * of a double; an exact zero is held as one
+ */
+static void
+ddb_triple3_points(const double *a, const double *b, const double *c,
+  const double *d, DDBound *r)
+{
+  static const int plane[3][2] = {{1, 2}, {2, 0}, {0, 1}};
+  double total[512], tmp[512], part[128], comp[512];
+  int tlen = 0;
+  for (int k = 0; k < 3; k++)
+  {
+    int i = plane[k][0], j = plane[k][1];
+    double buf1[32], buf2[32];
+    const double *n;
+    int nlen = cross_product_expansion(a[i], a[j], b[i], b[j], c[i], c[j],
+      d[i], d[j], buf1, buf2, &n);
+    if (nlen == 0)
+      continue;
+    double eh, el;
+    two_diff(c[k], a[k], &eh, &el);
+    const double ev[2] = {eh, el};
+    for (int h = 0; h < 2; h++)
+    {
+      if (ev[h] == 0.0)
+        continue;
+      int plen = scale_expansion(nlen, n, ev[h], part);
+      if (tlen == 0)
+      {
+        memcpy(total, part, (size_t) plen * sizeof(double));
+        tlen = plen;
+      }
+      else
+        tlen = expansion_sum(tlen, total, plen, part, total, tmp);
+    }
+  }
+  int clen = (tlen == 0) ? 0 : compress_expansion(tlen, total, comp);
+  while (clen > 0 && comp[clen - 1] == 0.0)
+    clen--;
+  /* The expansions are exact where no product of three differences
+   * underflows, which a difference below 2^-320 may make it do: there the
+   * value holds the bound of an underflow, and no exact zero */
+  double least = INFINITY;
+  const double *from[3] = {a, c, a}, *to[3] = {b, d, c};
+  for (int w = 0; w < 3; w++)
+    for (int k = 0; k < 3; k++)
+    {
+      double dh, dl;
+      two_diff(to[w][k], from[w][k], &dh, &dl);
+      if (dh != 0.0)
+        least = fmin(least, fabs(dh));
+      if (dl != 0.0)
+        least = fmin(least, fabs(dl));
+    }
+  double under = (least < 0x1p-320) ? DDB_TINY : 0.0;
+  if (clen == 0)
+  {
+    r->hi = r->lo = 0.0;
+    r->e = under;
+    return;
+  }
+  if (clen == 1)
+  {
+    r->hi = comp[0];
+    r->lo = 0.0;
+    r->e = under;
+    return;
+  }
+  double rest = 0.0;
+  for (int i = 0; i < clen - 2; i++)
+    rest += comp[i];
+  two_sum(comp[clen - 1], comp[clen - 2], &r->hi, &r->lo);
+  r->lo += rest;
+  r->e = ((clen == 2) ? 0.0 : DDB_EPS * fabs(r->hi) + DDB_TINY) + under;
+  return;
+}
+
+/**
+ * @brief Return the sign of a bounded value where the bound decides it: 1 or
+ * -1, or 0 where the value may lie on either side of zero
+ * @details The bound is itself computed in doubles, hence the margin; a value
+ * that is not finite decides nothing
+ */
+static pg_attribute_always_inline int
+ddb_sign(DDBound a)
+{
+  double bound = a.e * (1.0 + 1e-6) + DDB_TINY;
+  double mag = fabs(a.hi) - fabs(a.lo);
+  if (! isfinite(a.hi) || ! isfinite(a.lo) || ! isfinite(bound))
+    return 0;
+  if (mag <= bound)
+    return 0;
+  return (a.hi > 0.0) ? 1 : -1;
+}
+
+/**
+ * @brief Return true and write in the last argument the double nearest the
+ * root of `n / d`, `d` positive, where the bounds place the root strictly
+ * inside the rounding cell of one double
+ * @details The residual search of #point_distance_nearest, with `d` scaling
+ * the gaps: with `c` a candidate, the root lies inside its cell exactly where
+ * the residual `n - c^2 d` falls short of `d gu (c + gu / 4)` and exceeds
+ * `- d gd (c - gd / 4)`, `gu` and `gd` the gaps from `c` to its upper and
+ * lower neighbours. The residual is formed once per candidate on two doubles
+ * with a bound on its error (#ddb_mul, #ddb_sub), and a residual beyond
+ * either gap moves the candidate to that neighbour. A tie, or a root the
+ * bounds cannot place, decides nothing
+ */
+static bool
+ddb_nearest_root(DDBound n, DDBound d, double *result)
+{
+  if (ddb_sign(d) <= 0)
+    return false;
+  /* An exact zero is the root of zero, which is zero */
+  if (ddb_is_zero(n))
+  {
+    *result = 0.0;
+    return true;
+  }
+  if (ddb_sign(n) <= 0)
+    return false;
+  double dv = d.hi + d.lo;
+  /* The bound of d must leave the gaps their meaning */
+  if (! (d.e <= 0x1p-60 * dv))
+    return false;
+  /* The quotient and the root in doubles round twice, so the candidate may
+   * be a neighbour of the answer: a few steps towards the side the residual
+   * names reach it */
+  double c = sqrt((n.hi + n.lo) / dv);
+  for (int step = 0; step < 4; step++)
+  {
+    if (! (c > 0.0 && c < DBL_MAX))
+      return false;
+    uint64_t bits, ubits, dbits;
+    memcpy(&bits, &c, sizeof(bits));
+    ubits = bits + 1;
+    dbits = bits - 1;
+    double cu, cd;
+    memcpy(&cu, &ubits, sizeof(cu));
+    memcpy(&cd, &dbits, sizeof(cd));
+    if (! (cd > 0.0))
+      return false;
+    double gu = cu - c, gd = c - cd;
+    /* The residual n - c^2 d and a bound on its error */
+    DDBound cc;
+    two_product(c, c, &cc.hi, &cc.lo);
+    cc.e = (fabs(cc.hi) < DDB_EXACT_PRODUCT) ? DDB_TINY : 0.0;
+    DDBound r = ddb_sub(n, ddb_mul(cc, d));
+    if (! isfinite(r.hi) || ! isfinite(r.lo) || ! isfinite(r.e))
+      return false;
+    double rv = r.hi + r.lo;
+    double rerr = r.e + DBL_EPSILON * fabs(rv);
+    double up = gu * (c + 0.25 * gu) * dv, down = gd * (c - 0.25 * gd) * dv;
+    double near = (fabs(rv) + rerr) * (1.0 + 0x1p-50);
+    if (near < down * (1.0 - 0x1p-48) && near < up * (1.0 - 0x1p-48))
+    {
+      *result = c;
+      return true;
+    }
+    if ((rv - rerr) * (1.0 - 0x1p-50) > up * (1.0 + 0x1p-48))
+    {
+      c = cu;
+      continue;
+    }
+    if (- (rv + rerr) * (1.0 - 0x1p-50) > gd * c * dv * (1.0 + 0x1p-48))
+    {
+      c = cd;
+      continue;
     }
     return false;
   }
@@ -4297,8 +6336,11 @@ point_segment_offset_filter(const double *dw, const double *ew,
  * however much the distance and the radius cancel. The differences and the
  * radius are scaled by the power of two that brings the largest difference
  * into [1, 2), which is exact, as #point_distance_exact scales them
- * @param[in] p,a,b The point and the two ends of the segment, two coordinates
- * each
+ * @param[in] p,a,b The point and the two ends of the segment, @p ndims
+ * coordinates each
+ * @param[in] ndims Number of coordinates, 2 or 3: in 3D the squared cross
+ * product is the sum over the planes of two coordinates of the squares of
+ * their cross products, `(w_i u_j - w_j u_i)^2`
  * @param[in] r Radius, not negative
  * @note Correctly rounded where, after the scaling, no product of the exact
  * sums underflows: the differences, their rounding errors, the radius and the
@@ -4306,38 +6348,86 @@ point_segment_offset_filter(const double *dw, const double *ew,
  */
 double
 point_segment_distance_offset_exact(const double *p, const double *a,
-  const double *b, double r)
+  const double *b, int ndims, double r)
 {
-  assert(r >= 0.0);
-  double dw[2], ew[2], du[2], eu[2], maxw, maxu;
-  int sw = point_distance_diffs(a, p, 2, dw, ew, &maxw);
-  int su = point_distance_diffs(a, b, 2, du, eu, &maxu);
+  assert(r >= 0.0); assert(ndims == 2 || ndims == 3);
+  double dw[3], ew[3], du[3], eu[3], maxw, maxu;
+  int sw = point_distance_diffs(a, p, ndims, dw, ew, &maxw);
+  int su = point_distance_diffs(a, b, ndims, du, eu, &maxu);
   if (sw == 1 || su == 1)
     return NAN;
   /* A degenerate segment is a point, exactly */
-  if (du[0] == 0.0 && du[1] == 0.0)
-    return point_distance_offset_exact(p, a, 2, r);
+  bool degenerate = true;
+  for (int i = 0; i < ndims; i++)
+    degenerate = degenerate && du[i] == 0.0;
+  if (degenerate)
+    return point_distance_offset_exact(p, a, ndims, r);
   /* The first test on doubles, which settles every pair but those near a
    * midpoint, a tie or an end, as #point_distance_offset_exact does */
   if (sw == 0 && su == 0)
   {
     double result;
-    if (point_segment_offset_filter(dw, ew, du, eu, maxw, maxu, p, a, b, r,
-        &result))
+    if (point_segment_offset_filter(dw, ew, du, eu, maxw, maxu, p, a, b,
+        ndims, r, &result))
       return result;
+    /* With no radius, two doubles with a bound on their error, an exact zero
+     * held as one (#DDBound), place the nearest point by the signs of w . u
+     * and of w . u - u . u, and the distance to the foot is the root of
+     * |w x u|^2 / (u . u), answered wherever they hold it clear of the
+     * midpoints of its rounding (#ddb_nearest_root) */
+    if (r == 0.0)
+    {
+      DDBound fw[3], fu[3];
+      for (int i = 0; i < ndims; i++)
+      {
+        two_diff(p[i], a[i], &fw[i].hi, &fw[i].lo);
+        two_diff(b[i], a[i], &fu[i].hi, &fu[i].lo);
+        fw[i].e = fu[i].e = 0.0;
+      }
+      DDBound fdot = {0.0, 0.0, 0.0}, fl = {0.0, 0.0, 0.0},
+        fq = {0.0, 0.0, 0.0};
+      for (int i = 0; i < ndims; i++)
+      {
+        fdot = ddb_add(fdot, ddb_mul(fw[i], fu[i]));
+        fl = ddb_add(fl, ddb_mul(fu[i], fu[i]));
+      }
+      int sdot = ddb_is_zero(fdot) ? 0 : ddb_sign(fdot);
+      if (ddb_is_zero(fdot) || sdot < 0)
+        return point_distance_offset_exact(p, a, ndims, r);
+      DDBound fdl = ddb_sub(fdot, fl);
+      if (ddb_is_zero(fdl) || ddb_sign(fdl) > 0)
+        return point_distance_offset_exact(p, b, ndims, r);
+      if (sdot > 0 && ddb_sign(fdl) < 0)
+      {
+        for (int i = 0; i < ndims; i++)
+          for (int j = i + 1; j < ndims; j++)
+          {
+            DDBound x = ddb_sub(ddb_mul(fw[i], fu[j]),
+              ddb_mul(fw[j], fu[i]));
+            fq = ddb_add(fq, ddb_mul(x, x));
+          }
+        if (ddb_nearest_root(fq, fl, &result))
+          return result;
+      }
+    }
   }
   /* A difference beyond the largest double where a quarter of a coordinate
    * or of the radius would round: every sign on the input coordinates */
-  if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, r))
-    return point_segment_distance_offset_inputs(p, a, b, r);
+  if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, ndims, r))
+    return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   /* A difference beyond the largest double: a quarter of every value is
    * exact and its differences are doubles, so solve there and scale back */
   if (sw == 2 || su == 2)
   {
-    const double p4[2] = {p[0] / 4.0, p[1] / 4.0};
-    const double a4[2] = {a[0] / 4.0, a[1] / 4.0};
-    const double b4[2] = {b[0] / 4.0, b[1] / 4.0};
-    return point_segment_distance_offset_exact(p4, a4, b4, r / 4.0) * 4.0;
+    double p4[3] = {0.0}, a4[3] = {0.0}, b4[3] = {0.0};
+    for (int i = 0; i < ndims; i++)
+    {
+      p4[i] = p[i] / 4.0;
+      a4[i] = a[i] / 4.0;
+      b4[i] = b[i] / 4.0;
+    }
+    return point_segment_distance_offset_exact(p4, a4, b4, ndims, r / 4.0) *
+      4.0;
   }
   double maxd = (maxw > maxu) ? maxw : maxu;
   int k;
@@ -4346,40 +6436,94 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   /* Where the scaling rounds a value or leaves a product of four of them
    * outside the doubles, every sign on the input coordinates */
   {
-    const double v[9] = {dw[0], dw[1], ew[0], ew[1], du[0], du[1], eu[0],
-      eu[1], r};
-    if (! point_segment_scale_exact(v, 9, k))
-      return point_segment_distance_offset_inputs(p, a, b, r);
+    double v[13];
+    int nv = 0;
+    for (int i = 0; i < ndims; i++)
+    {
+      v[nv++] = dw[i]; v[nv++] = ew[i]; v[nv++] = du[i]; v[nv++] = eu[i];
+    }
+    v[nv++] = r;
+    if (! point_segment_scale_exact(v, nv, k))
+      return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   }
-  ExactSum sums[5];
+  ExactSum sums[7];
   double t[2];
-  for (int i = 0; i < 2; i++)
+  for (int i = 0; i < ndims; i++)
   {
     t[0] = dw[i] * f1 * f2; t[1] = ew[i] * f1 * f2;
     exact_sum_set(&sums[i], t, 2);
     t[0] = du[i] * f1 * f2; t[1] = eu[i] * f1 * f2;
-    exact_sum_set(&sums[2 + i], t, 2);
+    exact_sum_set(&sums[ndims + i], t, 2);
   }
-  /* Beyond the ends of the segment the nearest point is an end */
-  static const PolyTerm dot[2] = {{1.0, 2, {0, 2, 0, 0}},
-    {1.0, 2, {1, 3, 0, 0}}};
-  static const PolyTerm dotlen[4] = {{1.0, 2, {0, 2, 0, 0}},
-    {1.0, 2, {1, 3, 0, 0}}, {-1.0, 2, {2, 2, 0, 0}}, {-1.0, 2, {3, 3, 0, 0}}};
-  if (polynomial_sign_exact(sums, dot, 2) <= 0)
-    return point_distance_offset_exact(p, a, 2, r);
-  if (polynomial_sign_exact(sums, dotlen, 4) >= 0)
-    return point_distance_offset_exact(p, b, 2, r);
+  /* Beyond the ends of the segment the nearest point is an end: the signs of
+   * w . u and of w . u - u . u */
+  PolyTerm dot[3], dotlen[6];
+  int ndot = 0, ndotlen = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    dot[ndot++] = dotlen[ndotlen++] = (PolyTerm) {1.0, 2, {i, ndims + i}};
+  }
+  for (int i = 0; i < ndims; i++)
+    dotlen[ndotlen++] = (PolyTerm) {-1.0, 2, {ndims + i, ndims + i}};
+  if (polynomial_sign_exact(sums, dot, ndot) <= 0)
+    return point_distance_offset_exact(p, a, ndims, r);
+  if (polynomial_sign_exact(sums, dotlen, ndotlen) >= 0)
+    return point_distance_offset_exact(p, b, ndims, r);
   /* The distance to the line is below that to the start, which is below
    * twice the largest difference */
   if (r >= 2.0 * maxw)
     return 0.0;
   double rs = r * f1 * f2;
 
+  /* The squared cross product Q and the squared length L in pairs of doubles,
+   * each scaled sum two doubles and so a pair exactly, which tell every
+   * midpoint the search asks but those nearest the answer
+   * (#pair_mid_sign) */
+  double Wp[3][2], Up[3][2], Q[2] = {0.0, 0.0}, L[2] = {0.0, 0.0};
+  double magq = 0.0, magl = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    const ExactSum *sumw = &sums[i], *sumu = &sums[ndims + i];
+    two_sum(sumw->e[sumw->n - 1], (sumw->n > 1) ? sumw->e[0] : 0.0, &Wp[i][0],
+      &Wp[i][1]);
+    two_sum(sumu->e[sumu->n - 1], (sumu->n > 1) ? sumu->e[0] : 0.0, &Up[i][0],
+      &Up[i][1]);
+    double th, tl;
+    pair_mul(Up[i][0], Up[i][1], Up[i][0], Up[i][1], &th, &tl);
+    pair_add(L[0], L[1], th, tl, &L[0], &L[1]);
+    magl += fabs(th);
+  }
+  for (int i = 0; i < ndims; i++)
+    for (int j = i + 1; j < ndims; j++)
+    {
+      double ph, pl, qh, ql, xh, xl;
+      pair_mul(Wp[i][0], Wp[i][1], Up[j][0], Up[j][1], &ph, &pl);
+      pair_mul(Wp[j][0], Wp[j][1], Up[i][0], Up[i][1], &qh, &ql);
+      pair_add(ph, pl, - qh, - ql, &xh, &xl);
+      double mx = fabs(ph) + fabs(qh);
+      pair_mul(xh, xl, xh, xl, &ph, &pl);
+      pair_add(Q[0], Q[1], ph, pl, &Q[0], &Q[1]);
+      magq += mx * mx;
+    }
+  double eq = 0x1p-96 * magq, el = 0x1p-96 * magl;
+
   /* First candidate, from the rounded cross product over the rounded length */
-  double wx = sums[0].approx, wy = sums[1].approx;
-  double ux = sums[2].approx, uy = sums[3].approx;
-  double c = (fabs(wx * uy - wy * ux) / sqrt(ux * ux + uy * uy) - rs) * g1 *
-    g2;
+  double cross2 = 0.0, len2 = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double ui = sums[ndims + i].approx;
+    len2 += ui * ui;
+    for (int j = i + 1; j < ndims; j++)
+    {
+      double x = sums[i].approx * sums[ndims + j].approx -
+        sums[j].approx * ui;
+      cross2 += x * x;
+    }
+  }
+  double cross = (ndims == 2) ?
+    fabs(sums[0].approx * sums[3].approx - sums[1].approx * sums[2].approx) :
+    sqrt(cross2);
+  double c = (cross / sqrt(len2) - rs) * g1 * g2;
   if (! (c > 0.0))
     c = 0.0;
   if (isinf(c))
@@ -4399,12 +6543,19 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     if ((cc != 0.0 && double_lowest_bit(cc) + k < -268) || \
         (! isinf(nn) && double_lowest_bit(nn - cc) - 1 + k < -268)) \
     { \
-      (res) = point_segment_beyond_inputs(p, a, b, r, cc, nn, \
+      (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
         (b1 & 1) != 0); \
       break; \
     } \
     double hh = isinf(nn) ? ldexp(1.0, 970 + k) : (nn - cc) * f1 * f2 / 2.0; \
-    (res) = point_segment_beyond(sums, rs, cc * f1 * f2, hh, (b1 & 1) != 0); \
+    /* The midpoint r + c + h as a pair, within 2^-104 of it */ \
+    double s1, e1, mh, e2; \
+    two_sum(rs, cc * f1 * f2, &s1, &e1); \
+    two_sum(s1, hh, &mh, &e2); \
+    int sign = pair_mid_sign(Q, eq, L, el, mh, e1 + e2); \
+    (res) = (sign != 0) ? (sign > 0) : \
+      point_segment_beyond(sums, ndims, rs, cc * f1 * f2, hh, \
+        (b1 & 1) != 0); \
   } while (0)
   uint64_t lo, hi;
   bool beyond;
@@ -4483,11 +6634,11 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
   double r)
 {
   assert(r >= 0.0);
-  if (point_segment_dot_sign_inputs(p, a, a, b) <= 0)
+  if (point_segment_dot_sign_inputs(p, a, a, b, 2) <= 0)
     return point_distance_offset_side_sign(p, a, 2, r, 0.0, 0.0);
-  if (point_segment_dot_sign_inputs(p, b, a, b) >= 0)
+  if (point_segment_dot_sign_inputs(p, b, a, b, 2) >= 0)
     return point_distance_offset_side_sign(p, b, 2, r, 0.0, 0.0);
-  return point_segment_side_sign_inputs(p, a, b, r, 0.0, 0.0);
+  return point_segment_side_sign_inputs(p, a, b, 2, r, 0.0, 0.0);
 }
 
 /**
@@ -4496,9 +6647,9 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
  */
 typedef struct
 {
-  PolyTerm num[3];       /**< Terms of the numerator */
+  PolyTerm num[9];       /**< Terms of the numerator */
   int nnum;              /**< Number of terms of the numerator */
-  PolyTerm den[2];       /**< Terms of the denominator */
+  PolyTerm den[3];       /**< Terms of the denominator */
   int nden;              /**< Number of terms of the denominator */
 } SegmentSquare;
 
@@ -4511,7 +6662,7 @@ static int
 segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
   const SegmentSquare *s2)
 {
-  PolyTerm terms[12];
+  PolyTerm terms[54];
   int n = 0;
   for (int side = 0; side < 2; side++)
   {
@@ -4532,11 +6683,13 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
 
 /**
  * @brief Return the least of the exact squares of the distances `want`
- * selects, as the mask of those that reach it, 2D (#segment_distance_square)
+ * selects, as the mask of those that reach it (#segment_distance_square)
  * @details With `w` the end less the start of the other segment, `u` that
  * segment and `z` the end less the end of the other segment, the square is
- * `w . w` at the start, `z . z` at the end and `(w x u)^2 / (u . u)` at the
- * foot of the perpendicular; every square is a quotient of polynomials of
+ * `w . w` at the start, `z . z` at the end and `|w x u|^2 / (u . u)` at the
+ * foot of the perpendicular, the squared cross product the sum over the
+ * planes of two coordinates of `(w_i u_j - w_j u_i)^2`; every square is a
+ * quotient of polynomials of
  * degree at most 4 in the coordinate differences, and two compare by the sign
  * of a polynomial of degree at most 6 (#polynomial_sign_exact). The
  * differences and the errors of their rounding are scaled by the power of two
@@ -4549,24 +6702,26 @@ segment_square_cmp(const ExactSum *sums, const SegmentSquare *s1,
  * @param[in] near Where the nearest point of each lies: 0 the start, 1 the
  * end, 2 the foot
  * @param[in] want The mask of the distances to compare
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @return The mask of those that reach the least, or -1 where a difference is
  * not finite, or where the scaling leaves a product of six outside the doubles
  */
 static int
-segment_square_least(const double *pt[4][3], const int *near, int want)
+segment_square_least(const double *pt[4][3], const int *near, int want,
+  int ndims)
 {
   /* The differences w = p - s, u = e - s and z = p - e of each, and the
    * errors of their rounding */
-  double dv[4][3][2], ev[4][3][2], maxd = 0.0;
+  double dv[4][3][3], ev[4][3][3], maxd = 0.0;
   for (int i = 0; i < 4; i++)
   {
     if (! (want & (1 << i)))
       continue;
     const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
     double m[3];
-    if (point_distance_diffs(s, p, 2, dv[i][0], ev[i][0], &m[0]) ||
-        point_distance_diffs(s, e, 2, dv[i][1], ev[i][1], &m[1]) ||
-        point_distance_diffs(e, p, 2, dv[i][2], ev[i][2], &m[2]))
+    if (point_distance_diffs(s, p, ndims, dv[i][0], ev[i][0], &m[0]) ||
+        point_distance_diffs(s, e, ndims, dv[i][1], ev[i][1], &m[1]) ||
+        point_distance_diffs(e, p, ndims, dv[i][2], ev[i][2], &m[2]))
       return -1;
     for (int j = 0; j < 3; j++)
       if (m[j] > maxd)
@@ -4577,22 +6732,22 @@ segment_square_least(const double *pt[4][3], const int *near, int want)
   int k;
   double f1, f2, g1, g2;
   point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
-  /* The exact sums, sum (3 i + j) * 2 + c for coordinate c of difference j of
-   * distance i */
-  ExactSum sums[24];
+  /* The exact sums, sum (3 i + j) * ndims + c for coordinate c of difference
+   * j of distance i */
+  ExactSum sums[36];
   for (int i = 0; i < 4; i++)
   {
     if (! (want & (1 << i)))
       continue;
     for (int j = 0; j < 3; j++)
-      for (int cc = 0; cc < 2; cc++)
+      for (int cc = 0; cc < ndims; cc++)
       {
         double v = dv[i][j][cc], e = ev[i][j][cc];
         if ((v != 0.0 && double_lowest_bit(v) + k < -179) ||
             (e != 0.0 && double_lowest_bit(e) + k < -179))
           return -1;
         const double t[2] = {v * f1 * f2, e * f1 * f2};
-        exact_sum_set(&sums[(3 * i + j) * 2 + cc], t, 2);
+        exact_sum_set(&sums[(3 * i + j) * ndims + cc], t, 2);
       }
   }
   /* The square of each distance */
@@ -4601,29 +6756,35 @@ segment_square_least(const double *pt[4][3], const int *near, int want)
   {
     if (! (want & (1 << i)))
       continue;
-    int w0 = (3 * i) * 2, w1 = w0 + 1, u0 = w0 + 2, u1 = w0 + 3;
-    int z0 = w0 + 4, z1 = w0 + 5;
+    /* The first sum of w, of u and of z */
+    int w = (3 * i) * ndims, u = w + ndims;
     SegmentSquare *s = &sq[i];
+    s->nnum = s->nden = 0;
     if (near[i] < 2)
     {
       /* The start, w . w, or the end, z . z */
-      int x0 = near[i] ? z0 : w0, x1 = near[i] ? z1 : w1;
-      s->num[0] = (PolyTerm) {1.0, 2, {x0, x0}};
-      s->num[1] = (PolyTerm) {1.0, 2, {x1, x1}};
-      s->nnum = 2;
-      s->den[0] = (PolyTerm) {1.0, 0, {0}};
-      s->nden = 1;
+      int z = u + ndims;
+      int x = near[i] ? z : w;
+      for (int c = 0; c < ndims; c++)
+        s->num[s->nnum++] = (PolyTerm) {1.0, 2, {x + c, x + c}};
+      s->den[s->nden++] = (PolyTerm) {1.0, 0, {0}};
     }
     else
     {
-      /* The foot: (w0 u1 - w1 u0)^2 / (u . u) */
-      s->num[0] = (PolyTerm) {1.0, 4, {w0, w0, u1, u1}};
-      s->num[1] = (PolyTerm) {-2.0, 4, {w0, w1, u0, u1}};
-      s->num[2] = (PolyTerm) {1.0, 4, {w1, w1, u0, u0}};
-      s->nnum = 3;
-      s->den[0] = (PolyTerm) {1.0, 2, {u0, u0}};
-      s->den[1] = (PolyTerm) {1.0, 2, {u1, u1}};
-      s->nden = 2;
+      /* The foot: the sum over the planes of (w_a u_b - w_b u_a)^2, over
+       * u . u */
+      for (int a = 0; a < ndims; a++)
+        for (int b = a + 1; b < ndims; b++)
+        {
+          s->num[s->nnum++] = (PolyTerm) {1.0, 4, {w + a, w + a, u + b,
+            u + b}};
+          s->num[s->nnum++] = (PolyTerm) {-2.0, 4, {w + a, w + b, u + a,
+            u + b}};
+          s->num[s->nnum++] = (PolyTerm) {1.0, 4, {w + b, w + b, u + a,
+            u + a}};
+        }
+      for (int c = 0; c < ndims; c++)
+        s->den[s->nden++] = (PolyTerm) {1.0, 2, {u + c, u + c}};
     }
   }
   int best = -1, mask = 0;
@@ -4645,13 +6806,14 @@ segment_square_least(const double *pt[4][3], const int *near, int want)
 
 /**
  * @brief Return true where two pairs of points are the same pair, in either
- * order, 2D
+ * order
  */
 static inline bool
 point_pair_eq(const double *p1, const double *q1, const double *p2,
-  const double *q2)
+  const double *q2, int ndims)
 {
-#define PT_EQ(x, y) ((x)[0] == (y)[0] && (x)[1] == (y)[1])
+#define PT_EQ(x, y) ((x)[0] == (y)[0] && (x)[1] == (y)[1] && \
+  (ndims == 2 || (x)[2] == (y)[2]))
   bool result = (PT_EQ(p1, p2) && PT_EQ(q1, q2)) ||
     (PT_EQ(p1, q2) && PT_EQ(q1, p2));
 #undef PT_EQ
@@ -4660,7 +6822,7 @@ point_pair_eq(const double *p1, const double *q1, const double *p2,
 
 /**
  * @brief Return which of the four distances of an end of one segment to the
- * other reach the least of them, decided on their squares exactly, 2D
+ * other reach the least of them, decided on their squares exactly
  * @details The four distances are those of #segment_distance_exact: the two
  * ends of the first segment to the second, then the two ends of the second to
  * the first. Their order is that of their squares, so the least is found as
@@ -4674,8 +6836,10 @@ point_pair_eq(const double *p1, const double *q1, const double *p2,
  * points are the same pair of input points, an end of each segment, are the
  * same distance; the others are compared on their exact squares
  * (#segment_square_least)
- * @param[in] a,b The two ends of the first segment, two coordinates each
- * @param[in] c,d The two ends of the second segment, two coordinates each
+ * @param[in] a,b The two ends of the first segment, @p ndims coordinates each
+ * @param[in] c,d The two ends of the second segment, @p ndims coordinates
+ * each
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @return The mask of the distances that reach the least, bit `i` for the
  * `i`-th of the four; -1 where a coordinate is not finite, or where the exact
  * squares cannot be compared in the doubles, which leaves the four to be
@@ -4683,14 +6847,14 @@ point_pair_eq(const double *p1, const double *q1, const double *p2,
  */
 int
 segment_distance_square(const double *a, const double *b, const double *c,
-  const double *d)
+  const double *d, int ndims)
 {
   /* Each distance: the end, the start and the end of the other segment */
   const double *pt[4][3] = {{a, c, d}, {b, c, d}, {c, a, b}, {d, a, b}};
-  if (! isfinite(a[0]) || ! isfinite(a[1]) || ! isfinite(b[0]) ||
-      ! isfinite(b[1]) || ! isfinite(c[0]) || ! isfinite(c[1]) ||
-      ! isfinite(d[0]) || ! isfinite(d[1]))
-    return -1;
+  for (int k = 0; k < ndims; k++)
+    if (! isfinite(a[k]) || ! isfinite(b[k]) || ! isfinite(c[k]) ||
+        ! isfinite(d[k]))
+      return -1;
   /* The bounds of each distance, with `e` the unit roundoff: the computed
    * distance at the clamped rounded parameter is within
    * `8e (|w|_1 + |u|_1) + 3e D` of the distance `D` (#dist_rest_bounds), and
@@ -4703,24 +6867,41 @@ segment_distance_square(const double *a, const double *b, const double *c,
   {
     const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
     side[i] = 0;
-    double wx = p[0] - s[0], wy = p[1] - s[1];
-    double ux = e[0] - s[0], uy = e[1] - s[1];
-    double w1 = fabs(wx) + fabs(wy), u1 = fabs(ux) + fabs(uy);
+    double w[3], u[3], w1 = 0.0, u1 = 0.0;
+    for (int k = 0; k < ndims; k++)
+    {
+      w[k] = p[k] - s[k];
+      u[k] = e[k] - s[k];
+      w1 += fabs(w[k]);
+      u1 += fabs(u[k]);
+    }
     double m = w1 + u1;
     lo[i] = 0.0;
     hi[i] = INFINITY;
     if (! (m <= 0x1p480) || (m > 0.0 && m < 0x1p-400))
       continue;
-    double qx = wx, qy = wy;
+    double q2 = 0.0;
     if (u1 > 0.0)
     {
-      double t = (wx * ux + wy * uy) / (ux * ux + uy * uy);
+      double wu = 0.0, uu = 0.0;
+      for (int k = 0; k < ndims; k++)
+      {
+        wu += w[k] * u[k];
+        uu += u[k] * u[k];
+      }
+      double t = wu / uu;
       side[i] = (t >= 1.0) ? 1 : 0;
       t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
-      qx = wx - t * ux;
-      qy = wy - t * uy;
+      for (int k = 0; k < ndims; k++)
+      {
+        double q = w[k] - t * u[k];
+        q2 += q * q;
+      }
     }
-    double dist = sqrt(qx * qx + qy * qy);
+    else
+      for (int k = 0; k < ndims; k++)
+        q2 += w[k] * w[k];
+    double dist = sqrt(q2);
     double delta = 32.0 * DBL_EPSILON * (m + dist);
     double l = dist - delta, h = dist + delta;
     lo[i] = (l > 0.0) ? l * l : 0.0;
@@ -4744,11 +6925,13 @@ segment_distance_square(const double *a, const double *b, const double *c,
     if (! (left & (1 << i)))
       continue;
     const double *p = pt[i][0], *s = pt[i][1], *e = pt[i][2];
-    if (side[i] == 1 && point_segment_dot_sign_inputs(p, e, e, s) <= 0)
+    if (side[i] == 1 &&
+        point_segment_dot_sign_inputs(p, e, e, s, ndims) <= 0)
       near[i] = 1;
-    else if (point_segment_dot_sign_inputs(p, s, s, e) <= 0)
+    else if (point_segment_dot_sign_inputs(p, s, s, e, ndims) <= 0)
       near[i] = 0;
-    else if (side[i] != 1 && point_segment_dot_sign_inputs(p, e, e, s) <= 0)
+    else if (side[i] != 1 &&
+        point_segment_dot_sign_inputs(p, e, e, s, ndims) <= 0)
       near[i] = 1;
     else
       near[i] = 2;
@@ -4759,7 +6942,7 @@ segment_distance_square(const double *a, const double *b, const double *c,
         continue;
       const double *qi = (near[i] == 1) ? pt[i][2] : pt[i][1];
       const double *qj = (near[j] == 1) ? pt[j][2] : pt[j][1];
-      if (point_pair_eq(pt[i][0], qi, pt[j][0], qj))
+      if (point_pair_eq(pt[i][0], qi, pt[j][0], qj, ndims))
       {
         group[j] |= 1 << i;
         group[i] = 0;
@@ -4772,7 +6955,7 @@ segment_distance_square(const double *a, const double *b, const double *c,
   int least_mask = want;
   if (want & (want - 1))
   {
-    least_mask = segment_square_least(pt, near, want);
+    least_mask = segment_square_least(pt, near, want, ndims);
     if (least_mask < 0)
       return -1;
   }
@@ -4783,49 +6966,1413 @@ segment_distance_square(const double *a, const double *b, const double *c,
   return mask;
 }
 
+
+/*****************************************************************************
+ * The closest parameters of two segments, ported from Geometric Tools
+ *
+ * The four functions below port DCPQuery<T, Segment, Segment>::ComputeRobust
+ * and its helpers GetClampedRoot, ComputeIntersection and
+ * ComputeMinimumParameters of GTE/Mathematics/DistSegmentSegment.h, file
+ * version 8.0.2025.05.10:
+ *   David Eberly, Geometric Tools, Redmond WA 98052
+ *   Copyright (c) 1998-2026
+ *   Distributed under the Boost Software License, Version 1.0.
+ *   https://www.boost.org/LICENSE_1_0.txt
+ * The search is a conjugate gradient search for the minimum of the squared
+ * distance on [0,1]^2, robust for nearly parallel segments; see
+ * https://www.geometrictools.com/Documentation/DistanceLine3Line3.pdf
+ *****************************************************************************/
+
 /**
- * @brief Return the double nearest the distance of two segments, 2D
+ * @brief Return the root of `h0 + slope z` clamped to [0, 1], GTE's
+ * GetClampedRoot
+ */
+static pg_attribute_always_inline double
+gte_clamped_root(double slope, double h0, double h1)
+{
+  if (h0 < 0.0)
+  {
+    if (h1 > 0.0)
+    {
+      double r = - h0 / slope;
+      return (r > 1.0) ? 0.5 : r;
+    }
+    return 1.0;
+  }
+  return 0.0;
+}
+
+/**
+ * @brief Set the ends of the segment where the line dR/ds = 0 meets
+ * [0,1]^2 and the edges they lie on, GTE's ComputeIntersection
+ */
+static pg_attribute_always_inline void
+gte_compute_intersection(const double *svalue, const int *classify, double b,
+  double f00, double f10, int *edge, double end[2][2])
+{
+  if (classify[0] < 0)
+  {
+    edge[0] = 0;
+    end[0][0] = 0.0;
+    end[0][1] = f00 / b;
+    if (end[0][1] < 0.0 || end[0][1] > 1.0)
+      end[0][1] = 0.5;
+    if (classify[1] == 0)
+    {
+      edge[1] = 3;
+      end[1][0] = svalue[1];
+      end[1][1] = 1.0;
+    }
+    else
+    {
+      edge[1] = 1;
+      end[1][0] = 1.0;
+      end[1][1] = f10 / b;
+      if (end[1][1] < 0.0 || end[1][1] > 1.0)
+        end[1][1] = 0.5;
+    }
+  }
+  else if (classify[0] == 0)
+  {
+    edge[0] = 2;
+    end[0][0] = svalue[0];
+    end[0][1] = 0.0;
+    if (classify[1] < 0)
+    {
+      edge[1] = 0;
+      end[1][0] = 0.0;
+      end[1][1] = f00 / b;
+      if (end[1][1] < 0.0 || end[1][1] > 1.0)
+        end[1][1] = 0.5;
+    }
+    else if (classify[1] == 0)
+    {
+      edge[1] = 3;
+      end[1][0] = svalue[1];
+      end[1][1] = 1.0;
+    }
+    else
+    {
+      edge[1] = 1;
+      end[1][0] = 1.0;
+      end[1][1] = f10 / b;
+      if (end[1][1] < 0.0 || end[1][1] > 1.0)
+        end[1][1] = 0.5;
+    }
+  }
+  else
+  {
+    edge[0] = 1;
+    end[0][0] = 1.0;
+    end[0][1] = f10 / b;
+    if (end[0][1] < 0.0 || end[0][1] > 1.0)
+      end[0][1] = 0.5;
+    if (classify[1] == 0)
+    {
+      edge[1] = 3;
+      end[1][0] = svalue[1];
+      end[1][1] = 1.0;
+    }
+    else
+    {
+      edge[1] = 0;
+      end[1][0] = 0.0;
+      end[1][1] = f00 / b;
+      if (end[1][1] < 0.0 || end[1][1] > 1.0)
+        end[1][1] = 0.5;
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Set the parameters of the minimum of R on the segment where the line
+ * dR/ds = 0 meets [0,1]^2, GTE's ComputeMinimumParameters
+ */
+static pg_attribute_always_inline void
+gte_compute_minimum_parameters(const int *edge, double end[2][2], double b,
+  double c, double e, double g00, double g10, double g01, double g11,
+  double *param)
+{
+  double delta = end[1][1] - end[0][1];
+  double h0 = delta * (- b * end[0][0] + c * end[0][1] - e);
+  if (h0 >= 0.0)
+  {
+    if (edge[0] == 0)
+    {
+      param[0] = 0.0;
+      param[1] = gte_clamped_root(c, g00, g01);
+    }
+    else if (edge[0] == 1)
+    {
+      param[0] = 1.0;
+      param[1] = gte_clamped_root(c, g10, g11);
+    }
+    else
+    {
+      param[0] = end[0][0];
+      param[1] = end[0][1];
+    }
+    return;
+  }
+  double h1 = delta * (- b * end[1][0] + c * end[1][1] - e);
+  if (h1 <= 0.0)
+  {
+    if (edge[1] == 0)
+    {
+      param[0] = 0.0;
+      param[1] = gte_clamped_root(c, g00, g01);
+    }
+    else if (edge[1] == 1)
+    {
+      param[0] = 1.0;
+      param[1] = gte_clamped_root(c, g10, g11);
+    }
+    else
+    {
+      param[0] = end[1][0];
+      param[1] = end[1][1];
+    }
+    return;
+  }
+  double z = h0 / (h0 - h1);
+  z = (z < 0.0) ? 0.0 : ((z > 1.0) ? 1.0 : z);
+  param[0] = (1.0 - z) * end[0][0] + z * end[1][0];
+  param[1] = (1.0 - z) * end[0][1] + z * end[1][1];
+  return;
+}
+
+/**
+ * @brief Set the parameters of the closest points of two segments on their
+ * coefficients, GTE's ComputeRobust: the squared distance is
+ * `R(s,t) = a s^2 - 2 b s t + c t^2 + 2 d s - 2 e t + f` on [0,1]^2
+ */
+static pg_attribute_always_inline void
+gte_segment_closest(double a, double b, double c, double d, double e,
+  double *param)
+{
+  double f00 = d, f10 = f00 + a;
+  double g00 = - e, g01 = g00 + c;
+  if (a > 0.0 && c > 0.0)
+  {
+    double f01 = f00 - b, f11 = f10 - b, g10 = g00 - b, g11 = g10 + c;
+    const double svalue[2] = {gte_clamped_root(a, f00, f10),
+      gte_clamped_root(a, f01, f11)};
+    int classify[2];
+    for (int i = 0; i < 2; i++)
+      classify[i] = (svalue[i] <= 0.0) ? -1 : ((svalue[i] >= 1.0) ? 1 : 0);
+    if (classify[0] == -1 && classify[1] == -1)
+    {
+      param[0] = 0.0;
+      param[1] = gte_clamped_root(c, g00, g01);
+    }
+    else if (classify[0] == 1 && classify[1] == 1)
+    {
+      param[0] = 1.0;
+      param[1] = gte_clamped_root(c, g10, g11);
+    }
+    else
+    {
+      int edge[2] = {0, 0};
+      double end[2][2];
+      gte_compute_intersection(svalue, classify, b, f00, f10, edge, end);
+      gte_compute_minimum_parameters(edge, end, b, c, e, g00, g10, g01, g11,
+        param);
+    }
+  }
+  else if (a > 0.0)
+  {
+    param[0] = gte_clamped_root(a, f00, f10);
+    param[1] = 0.0;
+  }
+  else if (c > 0.0)
+  {
+    param[0] = 0.0;
+    param[1] = gte_clamped_root(c, g00, g01);
+  }
+  else
+  {
+    param[0] = 0.0;
+    param[1] = 0.0;
+  }
+  return;
+}
+
+/**
+ * @brief Return the minimum over x in [0, 1] of `g (y - x)` for y in {0, 1},
+ * the term of one parameter in the Frank-Wolfe gap
+ */
+static pg_attribute_always_inline double
+segment_fw_term(double g, double x)
+{
+  return fmin(- g * x, g * (1.0 - x));
+}
+
+
+/**
+ * @brief Write in the last two arguments an interval holding the squared
+ * distance of two segments, and return false where the doubles leave it, for
+ * a number of coordinates the compiler knows (#segment_distance_range)
+ */
+static pg_attribute_always_inline bool
+segment_distance_range_dims(const double *p0, const double *u, double a,
+  const double *q0, const double *v, double c, int ndims, double big,
+  double *lo, double *hi)
+{
+  const double eps = 8.0 * DBL_EPSILON, tiny = 0x1p-1000;
+  double w[3];
+  for (int k = 0; k < ndims; k++)
+    w[k] = p0[k] - q0[k];
+  /* The margin, where the bound on the differences allows it */
+  if (big >= 0x1p-400 && big <= 0x1p400)
+  {
+    double b = 0.0, d = 0.0, e = 0.0, f = 0.0;
+    for (int k = 0; k < ndims; k++)
+    {
+      b += u[k] * v[k];
+      d += u[k] * w[k];
+      e += v[k] * w[k];
+      f += w[k] * w[k];
+    }
+    double x[2];
+    gte_segment_closest(a, b, c, d, e, x);
+    double s = (x[0] < 0.0) ? 0.0 : ((x[0] > 1.0) ? 1.0 : x[0]);
+    double t = (x[1] < 0.0) ? 0.0 : ((x[1] > 1.0) ? 1.0 : x[1]);
+    double r = a * s * s - 2.0 * b * s * t + c * t * t + 2.0 * d * s -
+      2.0 * e * t + f;
+    double gs = 2.0 * (a * s - b * t + d), gt = 2.0 * (- b * s + c * t - e);
+    double margin = 0x1p-40 * big * big;
+    *hi = r + margin;
+    *lo = r + segment_fw_term(gs, s) + segment_fw_term(gt, t) - margin;
+    if (*lo < 0.0)
+      *lo = 0.0;
+    return true;
+  }
+  double b = 0.0, d = 0.0, e = 0.0, f = 0.0;
+  double mb = 0.0, md = 0.0, me = 0.0;
+  for (int k = 0; k < ndims; k++)
+  {
+    b += u[k] * v[k];
+    d += u[k] * w[k];
+    e += v[k] * w[k];
+    f += w[k] * w[k];
+    mb += fabs(u[k] * v[k]);
+    md += fabs(u[k] * w[k]);
+    me += fabs(v[k] * w[k]);
+  }
+  double ea = eps * a + tiny, eb = eps * mb + tiny, ec = eps * c + tiny;
+  double ed = eps * md + tiny, ee = eps * me + tiny, ef = eps * f + tiny;
+  double x[2];
+  gte_segment_closest(a, b, c, d, e, x);
+  double s = (x[0] < 0.0) ? 0.0 : ((x[0] > 1.0) ? 1.0 : x[0]);
+  double t = (x[1] < 0.0) ? 0.0 : ((x[1] > 1.0) ? 1.0 : x[1]);
+  double r = a * s * s - 2.0 * b * s * t + c * t * t + 2.0 * d * s -
+    2.0 * e * t + f;
+  double mr = a * s * s + 2.0 * fabs(b) * s * t + c * t * t +
+    2.0 * fabs(d) * s + 2.0 * fabs(e) * t + f;
+  double er = ea * s * s + 2.0 * eb * s * t + ec * t * t + 2.0 * ed * s +
+    2.0 * ee * t + ef + eps * mr + tiny;
+  double gs = 2.0 * (a * s - b * t + d), gt = 2.0 * (- b * s + c * t - e);
+  double egs = 2.0 * (ea * s + eb * t + ed) +
+    eps * 2.0 * (a * s + fabs(b) * t + fabs(d)) + tiny;
+  double egt = 2.0 * (eb * s + ec * t + ee) +
+    eps * 2.0 * (fabs(b) * s + c * t + fabs(e)) + tiny;
+  double gap = fmin(segment_fw_term(gs - egs, s),
+    segment_fw_term(gs + egs, s)) +
+    fmin(segment_fw_term(gt - egt, t), segment_fw_term(gt + egt, t));
+  *hi = (r + er) * (1.0 + eps);
+  *lo = (r - er + gap * (1.0 + eps)) * (1.0 - eps);
+  if (*lo < 0.0)
+    *lo = 0.0;
+  return isfinite(*hi) && isfinite(*lo) && isfinite(gap);
+}
+
+/**
+ * @brief Write in the last two arguments an interval holding the squared
+ * distance of two segments in 2D, and return false where the doubles leave
+ * it (#segment_distance_range), kept out of the 3D entry the distance walk
+ * calls
+ */
+static pg_noinline bool
+segment_distance_range_2d(const double *p0, const double *u, double a,
+  const double *q0, const double *v, double c, double big, double *lo,
+  double *hi)
+{
+  return segment_distance_range_dims(p0, u, a, q0, v, c, 2, big, lo, hi);
+}
+
+/**
+ * @brief Write in the last two arguments an interval holding the squared
+ * distance of two segments, and return false where the doubles leave it
+ * @details The parameters of GTE's search (#gte_segment_closest) are a pair of
+ * points of the two segments, so the squared distance there bounds the least
+ * from above. The squared distance `R` is convex on [0,1]^2, its Hessian
+ * `[a -b; -b c]` having `a c >= b^2`, so at any point `x` of the square the
+ * least is at least `R(x) + sum_i min(g_i (0 - x_i), g_i (1 - x_i))` with
+ * `g` the gradient there: the Frank-Wolfe duality gap. Each coefficient,
+ * value and gradient carries a bound on its rounding in doubles, at most
+ * 8 DBL_EPSILON of the magnitudes it combines, and the gap's term is concave
+ * in `g`, so its least over the bounded gradient lies at an end of that
+ * range. Where a bound on the differences of the coordinates lies within a
+ * factor 2^400 of 1, the evaluation in doubles errs far less than 2^-40 of its
+ * square, the margin #geom_distance_walk allows its own evaluation, and the
+ * interval is read with that margin instead. It decides no answer: the walk
+ * reads it to keep the pairs that may be the nearest, which
+ * #segment_distance_exact then answers
+ * @param[in] p0,u The start of the first segment and its end less its start,
+ * rounded, @p ndims coordinates each
+ * @param[in] a The rounded squared length of `u`
+ * @param[in] q0,v The start of the second segment and its end less its start,
+ * rounded, @p ndims coordinates each
+ * @param[in] c The rounded squared length of `v`
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] big A bound on the magnitude of every difference of two of their
+ * coordinates, or 0 where none is known
+ * @param[out] lo,hi The interval
+ */
+bool
+segment_distance_range(const double *p0, const double *u, double a,
+  const double *q0, const double *v, double c, int ndims, double big,
+  double *lo, double *hi)
+{
+  assert(ndims == 2 || ndims == 3);
+  if (ndims == 2)
+    return segment_distance_range_2d(p0, u, a, q0, v, c, big, lo, hi);
+  return segment_distance_range_dims(p0, u, a, q0, v, c, 3, big, lo, hi);
+}
+
+/* The sums of segment_interior_distance: u at 0 to 2, v at 3 to 5, e at 6 to 8
+ * and the midpoint at 9 */
+#define SI_U 0
+#define SI_V 3
+#define SI_E 6
+#define SI_M 9
+
+/**
+ * @brief Set the terms of `n . n` (@p what 0), `(e x v) . n` (1) or
+ * `(e x u) . n` (2), `n = u x v`, on the sums of #segment_interior_distance,
+ * each times @p coef, and return their number
+ * @details Component `k` of a cross product `p x q` is `p_i q_j - p_j q_i`
+ * with `i = k + 1` and `j = k + 2` modulo 3, so each product of two components
+ * is four terms of degree four, and the square of one is three
+ */
+static int
+segment_interior_terms(int what, double coef, PolyTerm *t)
+{
+  int n = 0;
+  for (int k = 0; k < 3; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    if (what == 0)
+    {
+      t[n++] = (PolyTerm) {coef, 4, {SI_U + i, SI_U + i, SI_V + j, SI_V + j}};
+      t[n++] = (PolyTerm) {-2.0 * coef, 4, {SI_U + i, SI_V + j, SI_U + j,
+        SI_V + i}};
+      t[n++] = (PolyTerm) {coef, 4, {SI_U + j, SI_U + j, SI_V + i, SI_V + i}};
+    }
+    else
+    {
+      int q = (what == 1) ? SI_V : SI_U;
+      t[n++] = (PolyTerm) {coef, 4, {SI_E + i, q + j, SI_U + i, SI_V + j}};
+      t[n++] = (PolyTerm) {-coef, 4, {SI_E + i, q + j, SI_U + j, SI_V + i}};
+      t[n++] = (PolyTerm) {-coef, 4, {SI_E + j, q + i, SI_U + i, SI_V + j}};
+      t[n++] = (PolyTerm) {coef, 4, {SI_E + j, q + i, SI_U + j, SI_V + i}};
+    }
+  }
+  return n;
+}
+
+
+/**
+ * @brief Return true where the nearest points of the lines of two segments
+ * lie strictly inside both, the signs read by @p sign on `n . n`,
+ * `(e x v) . n` and `(e x u) . n` and their differences
+ * @details With `n` not zero the parameters of the nearest points are
+ * `s = ((e x v) . n) / (n . n)` along the first segment and
+ * `t = ((e x u) . n) / (n . n)` along the second; a parameter at 0 or 1
+ * places the nearest point at an end, which the ends answer
+ */
+#define SEGMENT_INSIDE(snn, ss, ss1, st, st1) \
+  ((snn) > 0 && (ss) > 0 && (ss1) < 0 && (st) > 0 && (st1) < 0)
+
+
+/**
+ * @brief Write the signs that place the nearest points of the lines of two
+ * segments, 3D, where a bound on their rounding in doubles decides them, 0
+ * where it does not
+ * @details With `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, the
+ * signs are those of `(e x v) . n`, of `(e x v) . n - n . n`, of
+ * `(e x u) . n` and of `(e x u) . n - n . n`: the nearest points lie inside
+ * both segments exactly where they read 1, -1, 1, -1. Every difference,
+ * product and sum errs by at most 4 DBL_EPSILON of the magnitudes it
+ * combines, carried through the cross products as
+ * #cross_product_sign carries the error of a cross product
+ * The same evaluation gives `e . n` and `n . n` with a bound on the error of
+ * each, from which #segment_interior_certify and #segment_interior_lower
+ * bound the distance of the lines
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[out] sign The four signs
+ * @param[out] est `e . n`, a bound on its error, `n . n` and a bound on its
+ * error
+ */
+static pg_attribute_always_inline void
+segment_interior_signs(const double *a, const double *b, const double *c,
+  const double *d, int *sign, double *est)
+{
+  const double eps = 4.0 * DBL_EPSILON, tiny = 0x1p-1000;
+  const double u[3] = {b[0] - a[0], b[1] - a[1], b[2] - a[2]};
+  const double v[3] = {d[0] - c[0], d[1] - c[1], d[2] - c[2]};
+  const double e[3] = {c[0] - a[0], c[1] - a[1], c[2] - a[2]};
+  double n[3], en[3], ev[3], eev[3], eu[3], eeu[3];
+  for (int k = 0; k < 3; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    double l = u[i] * v[j], r = u[j] * v[i];
+    n[k] = l - r;
+    en[k] = eps * (fabs(l) + fabs(r)) + tiny;
+    l = e[i] * v[j]; r = e[j] * v[i];
+    ev[k] = l - r;
+    eev[k] = eps * (fabs(l) + fabs(r)) + tiny;
+    l = e[i] * u[j]; r = e[j] * u[i];
+    eu[k] = l - r;
+    eeu[k] = eps * (fabs(l) + fabs(r)) + tiny;
+  }
+  double nn = 0.0, ns = 0.0, nt = 0.0, enn = tiny, ens = tiny, ent = tiny;
+  double dot = 0.0, edot = tiny;
+  for (int k = 0; k < 3; k++)
+  {
+    dot += e[k] * n[k];
+    edot += fabs(e[k]) * en[k] + eps * fabs(e[k] * n[k]) +
+      eps * fabs(e[k]) * en[k];
+    nn += n[k] * n[k];
+    ns += ev[k] * n[k];
+    nt += eu[k] * n[k];
+    enn += 2.0 * fabs(n[k]) * en[k] + en[k] * en[k] + eps * n[k] * n[k];
+    ens += fabs(ev[k]) * en[k] + fabs(n[k]) * eev[k] + eev[k] * en[k] +
+      eps * fabs(ev[k] * n[k]);
+    ent += fabs(eu[k]) * en[k] + fabs(n[k]) * eeu[k] + eeu[k] * en[k] +
+      eps * fabs(eu[k] * n[k]);
+  }
+  const double val[4] = {ns, ns - nn, nt, nt - nn};
+  const double err[4] = {ens, ens + enn + eps * fabs(ns - nn), ent,
+    ent + enn + eps * fabs(nt - nn)};
+  for (int i = 0; i < 4; i++)
+  {
+    double bound = err[i] * (1.0 + 1e-6) + tiny;
+    sign[i] = (! isfinite(val[i]) || ! isfinite(bound) ||
+      fabs(val[i]) <= bound) ? 0 : ((val[i] > 0.0) ? 1 : -1);
+  }
+  est[0] = dot;
+  est[1] = edot * (1.0 + 1e-6) + tiny;
+  est[2] = nn;
+  est[3] = enn * (1.0 + 1e-6) + tiny;
+  return;
+}
+
+/**
+ * @brief Set in @p lo and @p hi bounds of the distance of the lines of two
+ * segments, `|e . n| / sqrt(n . n)`, from the evaluation of
+ * #segment_interior_signs, and return false where it bounds nothing
+ * @details Each value lies within its error bound of the one read, and each
+ * of the four operations forming a bound errs by half a unit in the last
+ * place, which the factors `1 -+ 2^-50` cover
+ */
+static pg_attribute_always_inline bool
+segment_interior_bounds(const double *est, double *lo, double *hi)
+{
+  double x = fabs(est[0]), ex = est[1], nn = est[2], enn = est[3];
+  if (! (nn - enn > 0.0) || ! isfinite(x + ex) || ! isfinite(nn + enn))
+    return false;
+  *lo = (x - ex) / sqrt(nn + enn) * (1.0 - 0x1p-50);
+  *hi = (x + ex) / sqrt(nn - enn) * (1.0 + 0x1p-50);
+  return isfinite(*hi);
+}
+
+/**
+ * @brief Return true where the double nearest the distance of the lines of
+ * two segments is certified by the evaluation of #segment_interior_signs,
+ * setting it in @p result
+ * @details The distance lies within the bounds of #segment_interior_bounds;
+ * where both lie strictly between the midpoints of a double and its two
+ * neighbours, that double is the nearest. A midpoint is exact where the double
+ * is above 2^-960, half its gap to a neighbour then being a double
+ */
+static bool
+segment_interior_certify(const double *est, double *result)
+{
+  double lo, hi;
+  if (! segment_interior_bounds(est, &lo, &hi) || ! (lo > 0x1p-960))
+    return false;
+  double c = lo + (hi - lo) / 2.0;
+  double cd = nextafter(c, 0.0), cu = nextafter(c, INFINITY);
+  if (! isfinite(cu))
+    return false;
+  if (lo > c - (c - cd) / 2.0 && hi < c + (cu - c) / 2.0)
+  {
+    *result = c;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return 1 where the nearest points of the lines of two segments in 3D
+ * certainly lie inside both, setting in @p lo and @p hi bounds of their
+ * distance, -1 where they certainly do not, and 0 where the evaluation in
+ * doubles of #segment_interior_signs cannot tell
+ * @details A walk over pairs of segments reads it to bound a pair: inside,
+ * the distance is that of the lines; outside, an end of one of the segments
+ * is nearest
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[out] lo,hi Bounds of the distance where the function returns 1
+ */
+int
+segment_interior_range(const double *a, const double *b, const double *c,
+  const double *d, double *lo, double *hi)
+{
+  int q[4];
+  double est[4];
+  segment_interior_signs(a, b, c, d, q, est);
+  if (q[0] < 0 || q[1] > 0 || q[2] < 0 || q[3] > 0)
+    return -1;
+  if (! SEGMENT_INSIDE(1, q[0], q[1], q[2], q[3]) ||
+      ! segment_interior_bounds(est, lo, hi))
+    return 0;
+  if (*lo < 0.0)
+    *lo = 0.0;
+  return 1;
+}
+
+/* The value `|e . n| / sqrt(n . n)` that #nearest_double_exact searches */
+typedef struct
+{
+  const WideDyadic *en, *nn;
+} NearestLines;
+
+/* The sign of `|e . n| / sqrt(n . n) - mid`, that of
+ * `(e . n)^2 - mid^2 (n . n)` for a midpoint not negative */
+static int
+nearest_lines_side(const WideDyadic *mid, const void *arg)
+{
+  const NearestLines *v = (const NearestLines *) arg;
+  if (mid->sign < 0)
+    return 1;
+  WideDyadic m2;
+  wide_dyadic_mul(mid, mid, &m2);
+  return wide_dyadic_product_cmp(v->en, v->en, &m2, v->nn);
+}
+
+/**
+ * @brief Return true where the nearest points of two segments in 3D lie
+ * inside both, setting in @p result the double nearest their distance, read
+ * on #WideDyadic for any finite coordinates
+ * @details The differences, `n = u x v` and the dot products have degree at
+ * most four in the input doubles, which a #WideDyadic holds for every finite
+ * input, and the rounding compares `(e . n)^2` with `mid^2 (n . n)`, degree
+ * six, as a comparison of two products (#wide_dyadic_product_cmp)
+ */
+static bool
+segment_interior_wide(const double *a, const double *b, const double *c,
+  const double *d, double *result)
+{
+  WideDyadic u[3], v[3], e[3], n[3], x, y, t1, t2;
+  for (int k = 0; k < 3; k++)
+  {
+    WideDyadic pa, pb, pc, pd;
+    wide_dyadic_set_double(&pa, a[k]); wide_dyadic_set_double(&pb, b[k]);
+    wide_dyadic_set_double(&pc, c[k]); wide_dyadic_set_double(&pd, d[k]);
+    pa.sign = - pa.sign; pc.sign = - pc.sign;
+    wide_dyadic_add(&pb, &pa, &u[k]);
+    wide_dyadic_add(&pd, &pc, &v[k]);
+    pc.sign = - pc.sign;
+    wide_dyadic_add(&pc, &pa, &e[k]);
+  }
+  /* n = u x v, and the cross products of e with v and with u */
+  WideDyadic ev[3], eu[3];
+  const WideDyadic *lhs[3] = {u, e, e}, *rhs[3] = {v, v, u};
+  WideDyadic *out[3] = {n, ev, eu};
+  for (int w = 0; w < 3; w++)
+    for (int k = 0; k < 3; k++)
+    {
+      int i = (k + 1) % 3, j = (k + 2) % 3;
+      wide_dyadic_mul(&lhs[w][i], &rhs[w][j], &t1);
+      wide_dyadic_mul(&lhs[w][j], &rhs[w][i], &t2);
+      t2.sign = - t2.sign;
+      wide_dyadic_add(&t1, &t2, &out[w][k]);
+    }
+  /* The dot products of n with itself, with e x v, with e x u and with e */
+  WideDyadic dot[4];
+  const WideDyadic *with[4] = {n, ev, eu, e};
+  for (int w = 0; w < 4; w++)
+  {
+    dot[w].sign = 0; dot[w].len = 0; dot[w].exp = 0;
+    for (int k = 0; k < 3; k++)
+    {
+      wide_dyadic_mul(&n[k], &with[w][k], &x);
+      wide_dyadic_add(&dot[w], &x, &y);
+      dot[w] = y;
+    }
+  }
+  WideDyadic *nn = &dot[0], *en = &dot[3];
+  int ss1 = wide_dyadic_cmp(&dot[1], nn), st1 = wide_dyadic_cmp(&dot[2], nn);
+  if (! SEGMENT_INSIDE(nn->sign, dot[1].sign, ss1, dot[2].sign, st1))
+    return false;
+  if (en->sign == 0)
+  {
+    *result = 0.0;
+    return true;
+  }
+  int ee, en2;
+  double me = wide_dyadic_frexp(en, &ee), mn = wide_dyadic_frexp(nn, &en2);
+  double ratio = me * me / mn;
+  int ex = 2 * ee - en2;
+  if (ex % 2 != 0)
+  {
+    ratio *= 2.0;
+    ex -= 1;
+  }
+  double guess = ldexp(sqrt(ratio), ex / 2);
+  NearestLines lines = {en, nn};
+  *result = nearest_double_exact(guess, &nearest_lines_side, &lines);
+  return true;
+}
+
+
+/**
+ * @brief Return the sign of `(e . n)^2 - m^2 (n . n)` at a midpoint `m` given
+ * as a pair, where its evaluation in pairs of doubles carries it, 0 otherwise
+ * @param[in] en,een `e . n` as a pair and a bound on its error
+ * @param[in] nn,enn `n . n` as a pair and a bound on its error
+ * @param[in] mh,ml The midpoint as a pair
+ */
+static pg_attribute_always_inline int
+segment_interior_mid_sign(const double *en, double een, const double *nn,
+  double enn, double mh, double ml)
+{
+  double e2h, e2l, m2h, m2l, qh, ql, vh, vl;
+  pair_mul(en[0], en[1], en[0], en[1], &e2h, &e2l);
+  pair_mul(mh, ml, mh, ml, &m2h, &m2l);
+  pair_mul(m2h, m2l, nn[0], nn[1], &qh, &ql);
+  pair_add(e2h, e2l, - qh, - ql, &vh, &vl);
+  double ae = fabs(en[0]), m2 = fabs(m2h), an = fabs(nn[0]);
+  /* Values whose products of the pairs could underflow are not told */
+  if (ae * ae < 0x1p-900 || m2 * an < 0x1p-900)
+    return 0;
+  double bound = (2.0 * ae * een + een * een + m2 * enn +
+    0x1p-96 * (ae * ae + m2 * an)) * (1.0 + 16.0 * DBL_EPSILON);
+  if (! isfinite(vh) || ! isfinite(bound))
+    return 0;
+  return (vh > bound) ? 1 : ((vh < - bound) ? -1 : 0);
+}
+
+/* The values of #segment_interior_distance in pairs of doubles, each with a
+ * bound on its error: e . n, n . n, (e x v) . n and (e x u) . n */
+typedef struct
+{
+  double en[2], nn[2], ns[2], nt[2];
+  double een, enn, ens, ent;
+} SegmentPairs;
+
+/**
+ * @brief Evaluate in pairs of doubles the values that place and round the
+ * distance of the lines of two segments, from the differences `u`, `v` and
+ * `e`, each a pair
+ * @details The cross products
+ * `n = u x v`, `e x v` and `e x u` and the dot products are formed as pairs,
+ * each product and sum within 2^-104 of the magnitudes it combines, which the
+ * bounds `2^-96` times the magnitude of each value cover with room for the
+ * depth of its evaluation
+ */
+static void
+segment_interior_pairs_from(double U[3][2], double V[3][2], double Ev[3][2],
+  bool signs, SegmentPairs *pv)
+{
+  /* The cross products of u and v, and where the signs are asked, of e and v
+   * and of e and u */
+  const double (*lhs[3])[2] = {U, Ev, Ev}, (*rhs[3])[2] = {V, V, U};
+  double X[3][3][2], mag[3][3];
+  int nw = signs ? 3 : 1;
+  for (int w = 0; w < nw; w++)
+    for (int k = 0; k < 3; k++)
+    {
+      int i = (k + 1) % 3, j = (k + 2) % 3;
+      double ph, pl, qh, ql;
+      pair_mul(lhs[w][i][0], lhs[w][i][1], rhs[w][j][0], rhs[w][j][1], &ph,
+        &pl);
+      pair_mul(lhs[w][j][0], lhs[w][j][1], rhs[w][i][0], rhs[w][i][1], &qh,
+        &ql);
+      pair_add(ph, pl, - qh, - ql, &X[w][k][0], &X[w][k][1]);
+      mag[w][k] = fabs(ph) + fabs(qh);
+    }
+  /* The dot products of n with e, with itself, and where the signs are asked,
+   * with e x v and with e x u */
+  double *out[4] = {pv->en, pv->nn, pv->ns, pv->nt};
+  double *err[4] = {&pv->een, &pv->enn, &pv->ens, &pv->ent};
+  int nd = signs ? 4 : 2;
+  for (int d = 0; d < nd; d++)
+  {
+    double m = 0.0;
+    out[d][0] = out[d][1] = 0.0;
+    for (int k = 0; k < 3; k++)
+    {
+      const double *x = (d == 0) ? Ev[k] : (d == 1) ? X[0][k] : X[d - 1][k];
+      double mx = (d == 0) ? fabs(Ev[k][0]) : (d == 1) ? mag[0][k] :
+        mag[d - 1][k];
+      double ph, pl;
+      pair_mul(x[0], x[1], X[0][k][0], X[0][k][1], &ph, &pl);
+      pair_add(out[d][0], out[d][1], ph, pl, &out[d][0], &out[d][1]);
+      m += mx * mag[0][k];
+    }
+    *err[d] = 0x1p-96 * m;
+  }
+  return;
+}
+
+/**
+ * @brief Evaluate the values of #segment_interior_pairs_from on the scaled
+ * sums of #segment_interior_distance, each two doubles, a pair exactly
+ */
+static void
+segment_interior_pairs(const ExactSum *sums, SegmentPairs *pv)
+{
+  double U[3][2], V[3][2], Ev[3][2];
+  for (int i = 0; i < 3; i++)
+  {
+    const ExactSum *su = &sums[SI_U + i], *sv = &sums[SI_V + i],
+      *se = &sums[SI_E + i];
+    two_sum(su->e[su->n - 1], (su->n > 1) ? su->e[0] : 0.0, &U[i][0],
+      &U[i][1]);
+    two_sum(sv->e[sv->n - 1], (sv->n > 1) ? sv->e[0] : 0.0, &V[i][0],
+      &V[i][1]);
+    two_sum(se->e[se->n - 1], (se->n > 1) ? se->e[0] : 0.0, &Ev[i][0],
+      &Ev[i][1]);
+  }
+  segment_interior_pairs_from(U, V, Ev, true, pv);
+  return;
+}
+
+/* The sign of a value of #segment_interior_pairs where its bound tells it, 0
+ * otherwise */
+static inline int
+segment_pair_sign(const double *v, double err)
+{
+  if (! isfinite(v[0]) || ! isfinite(err))
+    return 0;
+  return (v[0] > err) ? 1 : ((v[0] < - err) ? -1 : 0);
+}
+
+/* The sign of the difference of two values of #segment_interior_pairs where
+ * its bound tells it, 0 otherwise */
+static inline int
+segment_pair_diff_sign(const double *a, double ea, const double *b,
+  double eb)
+{
+  double h, l;
+  pair_add(a[0], a[1], - b[0], - b[1], &h, &l);
+  double bound = (ea + eb + 0x1p-100 * (fabs(a[0]) + fabs(b[0]))) *
+    (1.0 + 16.0 * DBL_EPSILON);
+  const double v[2] = {h, l};
+  return segment_pair_sign(v, bound);
+}
+
+/**
+ * @brief Return true where the double nearest the distance of the lines of
+ * two segments, `|e . n| / sqrt(n . n)`, is certified by the evaluation in
+ * pairs of doubles of #segment_interior_pairs, setting it in @p result
+ * @details The candidate is the rounded quotient; it is the nearest double
+ * where `(e . n)^2 - m^2 (n . n)` is certainly positive at its lower midpoint
+ * and certainly negative at its upper one (#segment_interior_mid_sign), each
+ * midpoint the pair of the scaled candidate and half its scaled gap. Values
+ * below 2^-400, whose products of the pairs could underflow, decline
+ * @param[in] pv The values in pairs of doubles
+ * @param[in] f,g The scale and its inverse, powers of two
+ * @param[out] result The distance where the function returns true
+ */
+static bool
+segment_interior_certify_pairs(const SegmentPairs *pv, double f, double g,
+  double *result)
+{
+  /* A scale that is no double, beyond 2^1023, leaves it to the search */
+  if (! (f > 0.0) || ! isfinite(f) || ! (g > 0.0) || ! isfinite(g))
+    return false;
+  const double *en = pv->en, *nn = pv->nn;
+  double een = pv->een, enn = pv->enn;
+  if (! (fabs(en[0]) > 0x1p-400) || ! (nn[0] > 0x1p-400) ||
+      ! (fabs(en[0]) > 2.0 * een) || ! (nn[0] > 2.0 * enn))
+    return false;
+  double c = fabs(en[0]) / sqrt(nn[0]) * g;
+  if (! (c > 0x1p-900) || ! isfinite(c))
+    return false;
+  double cd = nextafter(c, 0.0), cu = nextafter(c, INFINITY);
+  if (! isfinite(cu))
+    return false;
+  double cs = c * f;
+  if (segment_interior_mid_sign(en, een, nn, enn, cs, - (c - cd) / 2.0 * f)
+        > 0 &&
+      segment_interior_mid_sign(en, een, nn, enn, cs, (cu - c) / 2.0 * f) < 0)
+  {
+    *result = c;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Return true where the nearest points of two segments in 3D lie
+ * inside both, setting in @p result the double nearest their distance
+ * @details With `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v` not
+ * zero, the nearest points of the lines are at the parameters
+ * `s = ((e x v) . n) / (n . n)` along the first and
+ * `t = ((e x u) . n) / (n . n)` along the second; where both lie strictly
+ * between 0 and 1 the squared distance is `(e . n)^2 / (n . n)`, the least
+ * over both segments, since the squared distance is convex in the parameters
+ * and that is its stationary point. The differences and the errors of their
+ * rounding are scaled as #segment_square_least scales them, each sign is that
+ * of a polynomial in exact sums (#polynomial_sign_exact), and the answer is
+ * the smallest double whose upper midpoint `m` has `(e . n)^2 - m^2 (n . n)`
+ * not positive, a polynomial of degree six, found by a gallop from the
+ * rounded quotient, as #point_segment_distance_offset_exact finds its answer.
+ * Where a difference overflows or the scaling leaves a product of six
+ * outside the doubles, the values are read on #WideDyadic
+ * (#segment_interior_wide)
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[out] result The distance where the function returns true
+ */
+static bool
+segment_interior_distance(const double *a, const double *b, const double *c,
+  const double *d, double *result)
+{
+  /* The signs read in doubles settle all but the pairs near a boundary of
+   * the interior: outside, the ends answer */
+  int q[4];
+  double est[4];
+  segment_interior_signs(a, b, c, d, q, est);
+  if (q[0] < 0 || q[1] > 0 || q[2] < 0 || q[3] > 0)
+    return false;
+  bool inside = SEGMENT_INSIDE(1, q[0], q[1], q[2], q[3]);
+  /* Inside, the evaluation in doubles answers wherever it places the distance
+   * clear of every midpoint */
+  if (inside && segment_interior_certify(est, result))
+    return true;
+  /* On two doubles with a bound on their error, an exact zero held as one
+   * (#DDBound): the cross product n, n . n and, where the signs in doubles
+   * do not tell, the parameters' numerators; inside, the root of
+   * (e . n)^2 / (n . n), from e . n read as the triple product exactly where
+   * its rounded factors cancel (#ddb_triple3_points) */
+  {
+    DDBound fu[3], fv[3], fe[3], fn[3];
+    ddb_diff3(b, a, fu);
+    ddb_diff3(d, c, fv);
+    ddb_diff3(c, a, fe);
+    ddb_cross3(fu, fv, fn);
+    DDBound fnn = ddb_dot3(fn, fn);
+    if (! inside)
+    {
+      /* Parallel lines, their cross product an exact zero, are nearest at an
+       * end of one of the segments */
+      if (ddb_is_zero(fnn))
+        return false;
+      if (ddb_sign(fnn) > 0)
+      {
+        DDBound fev[3], feu[3];
+        ddb_cross3(fe, fv, fev);
+        ddb_cross3(fe, fu, feu);
+        DDBound fns = ddb_dot3(fev, fn), fnt = ddb_dot3(feu, fn);
+        DDBound fns1 = ddb_sub(fns, fnn), fnt1 = ddb_sub(fnt, fnn);
+        const int sg[4] = {ddb_sign(fns), ddb_sign(fns1), ddb_sign(fnt),
+          ddb_sign(fnt1)};
+        /* A parameter at 0 or 1 exactly places the nearest point of the
+         * lines at an end of a segment, which the ends answer */
+        if (sg[0] < 0 || sg[1] > 0 || sg[2] < 0 || sg[3] > 0 ||
+            ddb_is_zero(fns) || ddb_is_zero(fns1) || ddb_is_zero(fnt) ||
+            ddb_is_zero(fnt1))
+          return false;
+        inside = SEGMENT_INSIDE(1, sg[0], sg[1], sg[2], sg[3]);
+      }
+    }
+    if (inside)
+    {
+      DDBound fen = ddb_dot3(fe, fn);
+      if (ddb_nearest_root(ddb_mul(fen, fen), fnn, result))
+        return true;
+      ddb_triple3_points(a, b, c, d, &fen);
+      if (ddb_is_zero(fen))
+      {
+        *result = 0.0;
+        return true;
+      }
+      if (ddb_nearest_root(ddb_mul(fen, fen), fnn, result))
+        return true;
+    }
+  }
+  /* Where every difference lies from 2^-100 to 2^100 in magnitude, each is a
+   * pair exactly (#two_diff) and no product of six of them leaves the
+   * doubles, so the evaluation in pairs reads them as they are */
+  SegmentPairs fv;
+  bool have_fv = false;
+  {
+    double U[3][2], V[3][2], Ev[3][2];
+    const double *from[3] = {a, c, a}, *to[3] = {b, d, c};
+    double (*dst[3])[2] = {U, V, Ev};
+    bool ok = true;
+    for (int w = 0; w < 3 && ok; w++)
+      for (int i = 0; i < 3 && ok; i++)
+      {
+        two_diff(to[w][i], from[w][i], &dst[w][i][0], &dst[w][i][1]);
+        double m = fabs(dst[w][i][0]);
+        if (! (m <= 0x1p100) || (m != 0.0 && m < 0x1p-100))
+          ok = false;
+      }
+    if (ok)
+    {
+      segment_interior_pairs_from(U, V, Ev, ! inside, &fv);
+      have_fv = true;
+      if (! inside)
+      {
+        const int pq[5] = {segment_pair_sign(fv.nn, fv.enn),
+          segment_pair_sign(fv.ns, fv.ens),
+          segment_pair_diff_sign(fv.ns, fv.ens, fv.nn, fv.enn),
+          segment_pair_sign(fv.nt, fv.ent),
+          segment_pair_diff_sign(fv.nt, fv.ent, fv.nn, fv.enn)};
+        if (pq[0] < 0 || pq[1] < 0 || pq[2] > 0 || pq[3] < 0 || pq[4] > 0)
+          return false;
+        inside = SEGMENT_INSIDE(pq[0], pq[1], pq[2], pq[3], pq[4]);
+      }
+      if (inside && segment_interior_certify_pairs(&fv, 1.0, 1.0, result))
+        return true;
+    }
+  }
+  double dv[3][3], ev[3][3], m[3], maxd = 0.0;
+  int st[3];
+  st[0] = point_distance_diffs(a, b, 3, dv[0], ev[0], &m[0]);
+  st[1] = point_distance_diffs(c, d, 3, dv[1], ev[1], &m[1]);
+  st[2] = point_distance_diffs(a, c, 3, dv[2], ev[2], &m[2]);
+  for (int j = 0; j < 3; j++)
+  {
+    if (st[j] == 1)
+      return false;
+    if (st[j] == 2)
+      return segment_interior_wide(a, b, c, d, result);
+    if (m[j] > maxd)
+      maxd = m[j];
+  }
+  if (maxd == 0.0)
+    return false;
+  int k;
+  double f1, f2, g1, g2;
+  point_distance_scale(maxd, &k, &f1, &f2, &g1, &g2);
+  ExactSum sums[10];
+  for (int j = 0; j < 3; j++)
+    for (int i = 0; i < 3; i++)
+    {
+      double x = dv[j][i], y = ev[j][i];
+      if ((x != 0.0 && double_lowest_bit(x) + k < -179) ||
+          (y != 0.0 && double_lowest_bit(y) + k < -179))
+        return segment_interior_wide(a, b, c, d, result);
+      const double t[2] = {x * f1 * f2, y * f1 * f2};
+      exact_sum_set(&sums[3 * j + i], t, 2);
+    }
+  /* Whether the nearest points of the lines lie inside both segments, where
+   * the signs in doubles do not tell: in pairs of doubles, the evaluation of
+   * the differences as they are where it was read, at the scale @p pscale
+   * of its values, then exactly */
+  SegmentPairs pv;
+  double pscale = 1.0;
+  if (have_fv)
+    pv = fv;
+  else
+  {
+    segment_interior_pairs(sums, &pv);
+    pscale = f1 * f2;
+    if (! inside)
+    {
+      const int pq[5] = {segment_pair_sign(pv.nn, pv.enn),
+        segment_pair_sign(pv.ns, pv.ens),
+        segment_pair_diff_sign(pv.ns, pv.ens, pv.nn, pv.enn),
+        segment_pair_sign(pv.nt, pv.ent),
+        segment_pair_diff_sign(pv.nt, pv.ent, pv.nn, pv.enn)};
+      if (pq[0] < 0 || pq[1] < 0 || pq[2] > 0 || pq[3] < 0 || pq[4] > 0)
+        return false;
+      inside = SEGMENT_INSIDE(pq[0], pq[1], pq[2], pq[3], pq[4]);
+    }
+  }
+  PolyTerm terms[45];
+  int nt;
+  if (! inside)
+  {
+    /* n . n is positive exactly where a component of n = u x v is not zero,
+     * each a difference of two products, of degree two */
+    int snn = 0;
+    for (int kk = 0; kk < 3 && snn == 0; kk++)
+    {
+      int i = (kk + 1) % 3, j = (kk + 2) % 3;
+      const PolyTerm nk[2] = {{1.0, 2, {SI_U + i, SI_V + j}},
+        {-1.0, 2, {SI_U + j, SI_V + i}}};
+      snn = (polynomial_sign_exact(sums, nk, 2) != 0) ? 1 : 0;
+    }
+    if (snn <= 0)
+      return false;
+    int sgn[4];
+    for (int w = 1; w <= 2; w++)
+    {
+      nt = segment_interior_terms(w, 1.0, terms);
+      sgn[2 * (w - 1)] = polynomial_sign_exact(sums, terms, nt);
+      nt += segment_interior_terms(0, -1.0, terms + nt);
+      sgn[2 * (w - 1) + 1] = polynomial_sign_exact(sums, terms, nt);
+    }
+    if (! SEGMENT_INSIDE(snn, sgn[0], sgn[1], sgn[2], sgn[3]))
+      return false;
+  }
+
+  /* The evaluation in pairs of doubles answers wherever it places the
+   * distance clear of the midpoints of the candidate */
+  if (! have_fv &&
+      segment_interior_certify_pairs(&pv, f1 * f2, g1 * g2, result))
+    return true;
+
+  /* e . n, six terms of degree three, and (e . n)^2 - m^2 (n . n) */
+  PolyTerm en[6];
+  int ne = 0;
+  for (int kk = 0; kk < 3; kk++)
+  {
+    int i = (kk + 1) % 3, j = (kk + 2) % 3;
+    en[ne++] = (PolyTerm) {1.0, 3, {SI_E + kk, SI_U + i, SI_V + j}};
+    en[ne++] = (PolyTerm) {-1.0, 3, {SI_E + kk, SI_U + j, SI_V + i}};
+  }
+  if (polynomial_sign_exact(sums, en, ne) == 0)
+  {
+    *result = 0.0;
+    return true;
+  }
+  nt = 0;
+  for (int i = 0; i < ne; i++)
+    for (int j = 0; j < ne; j++)
+    {
+      PolyTerm *t = &terms[nt++];
+      t->coef = en[i].coef * en[j].coef;
+      t->deg = 6;
+      memcpy(t->sum, en[i].sum, 3 * sizeof(int));
+      memcpy(t->sum + 3, en[j].sum, 3 * sizeof(int));
+    }
+  PolyTerm nn[9];
+  int nnn = segment_interior_terms(0, -1.0, nn);
+  for (int i = 0; i < nnn; i++)
+  {
+    PolyTerm *t = &terms[nt++];
+    t->coef = nn[i].coef;
+    t->deg = 6;
+    t->sum[0] = t->sum[1] = SI_M;
+    memcpy(t->sum + 2, nn[i].sum, 4 * sizeof(int));
+  }
+
+  /* First candidate, from the rounded quotient */
+  double cx[3], dot = 0.0, len2 = 0.0;
+  for (int kk = 0; kk < 3; kk++)
+  {
+    int i = (kk + 1) % 3, j = (kk + 2) % 3;
+    cx[kk] = sums[SI_U + i].approx * sums[SI_V + j].approx -
+      sums[SI_U + j].approx * sums[SI_V + i].approx;
+    len2 += cx[kk] * cx[kk];
+    dot += sums[SI_E + kk].approx * cx[kk];
+  }
+  double cand = fabs(dot) / sqrt(len2) * g1 * g2;
+  if (! (cand > 0.0))
+    cand = 0.0;
+  if (isinf(cand))
+    cand = DBL_MAX;
+  uint64_t bits;
+  memcpy(&bits, &cand, sizeof(bits));
+
+  /* The answer is the smallest bit pattern that is not beyond: gallop from the
+   * candidate to bracket it, then halve the bracket. A candidate or a half
+   * gap scaled below 2^-179 leaves a product of six outside the doubles, and
+   * the values are then read on #WideDyadic */
+  bool wide = false;
+#define SI_BEYOND(bb, res) \
+  do { \
+    double cc, nx; \
+    uint64_t b1 = (bb), b2 = (bb) + 1; \
+    memcpy(&cc, &b1, sizeof(cc)); \
+    memcpy(&nx, &b2, sizeof(nx)); \
+    if ((cc != 0.0 && double_lowest_bit(cc) + k < -179) || \
+        (! isinf(nx) && double_lowest_bit(nx - cc) - 1 + k < -179)) \
+    { \
+      wide = true; \
+      (res) = false; \
+      break; \
+    } \
+    double hh = isinf(nx) ? ldexp(1.0, 970 + k) : (nx - cc) * f1 * f2 / 2.0; \
+    /* The evaluation in pairs of doubles first, which tells every midpoint \
+     * clear of the distance by more than its bound */ \
+    double hp = isinf(nx) ? ldexp(1.0, 970) * pscale : \
+      (nx - cc) / 2.0 * pscale; \
+    int sign = segment_interior_mid_sign(pv.en, pv.een, pv.nn, pv.enn, \
+      cc * pscale, hp); \
+    if (sign == 0) \
+    { \
+      const double mt[2] = {cc * f1 * f2, hh}; \
+      exact_sum_set(&sums[SI_M], mt, 2); \
+      sign = polynomial_sign_exact(sums, terms, nt); \
+    } \
+    (res) = sign > 0 || (sign == 0 && (b1 & 1) != 0); \
+  } while (0)
+  uint64_t lo, hi;
+  bool beyond;
+  SI_BEYOND(bits, beyond);
+  if (beyond)
+  {
+    /* The answer is above: lo is beyond, hi is not */
+    uint64_t step = 1;
+    lo = bits;
+    const uint64_t inf_bits = 0x7FF0000000000000ULL;
+    while (! wide)
+    {
+      hi = (lo + step < inf_bits) ? lo + step : inf_bits;
+      if (hi == inf_bits)
+        break;
+      SI_BEYOND(hi, beyond);
+      if (! beyond)
+        break;
+      lo = hi;
+      step *= 2;
+    }
+  }
+  else
+  {
+    /* The answer is at or below: hi is not beyond, lo is beyond or zero */
+    uint64_t step = 1;
+    hi = bits;
+    lo = 0;
+    while (! wide && hi > 0)
+    {
+      lo = (hi > step) ? hi - step : 0;
+      SI_BEYOND(lo, beyond);
+      if (beyond)
+        break;
+      hi = lo;
+      step *= 2;
+    }
+    if (! wide && hi == 0)
+    {
+      *result = 0.0;
+      return true;
+    }
+  }
+  /* lo is beyond, hi is not, and the answer is the least not beyond */
+  while (! wide && hi - lo > 1)
+  {
+    uint64_t mid = lo + (hi - lo) / 2;
+    SI_BEYOND(mid, beyond);
+    if (beyond)
+      lo = mid;
+    else
+      hi = mid;
+  }
+#undef SI_BEYOND
+  if (wide)
+    return segment_interior_wide(a, b, c, d, result);
+  memcpy(result, &hi, sizeof(double));
+  return true;
+}
+
+/**
+ * @brief Return the distance of a point to a segment in doubles, which orders
+ * the ends #segment_distance_exact rounds and decides no answer
+ */
+static pg_attribute_always_inline double
+point_segment_distance_approx(const double *p, const double *a,
+  const double *b, int ndims)
+{
+  double u[3], w[3], l2 = 0.0, wu = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    u[i] = b[i] - a[i];
+    w[i] = p[i] - a[i];
+    l2 += u[i] * u[i];
+    wu += w[i] * u[i];
+  }
+  double t = (l2 > 0.0) ? wu / l2 : 0.0;
+  t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  double result = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double dd = w[i] - t * u[i];
+    result += dd * dd;
+  }
+  return sqrt(result);
+}
+
+/**
+ * @brief Return the double nearest the distance of two segments, read on the
+ * coordinates as they are (#segment_distance_exact)
+ * @param[in] big The largest magnitude of their coordinates
+ */
+static double
+segment_distance_unscaled(const double *a, const double *b, const double *c,
+  const double *d, int ndims, double big)
+{
+  if (ndims == 2)
+  {
+    IntersectResult meet = linesegm_intersect(a[0], a[1], b[0], b[1], c[0],
+      c[1], d[0], d[1]);
+    if (meet.type != INTERSECT_NONE)
+      return 0.0;
+  }
+  else
+  {
+    double inner;
+    if (segment_interior_distance(a, b, c, d, &inner))
+      return inner;
+  }
+  /* The four ends, in the order of their distance in doubles, each rounded
+   * once while it may be nearer than the least found: where the coordinates
+   * lie within a factor 2^400 of 1, that distance errs far less than 2^-40 of
+   * the largest coordinate, so an end it places farther than the least by
+   * that margin cannot answer less; rounding is monotone */
+  const double *pt[4][3] = {{a, c, d}, {b, c, d}, {c, a, b}, {d, a, b}};
+  bool filter = big >= 0x1p-400 && big <= 0x1p400;
+  double margin = 0x1p-40 * big;
+  double approx[4];
+  int order[4] = {0, 1, 2, 3};
+  for (int i = 0; i < 4; i++)
+    approx[i] = point_segment_distance_approx(pt[i][0], pt[i][1], pt[i][2],
+      ndims);
+  for (int i = 1; i < 4; i++)
+    for (int j = i; j > 0 && approx[order[j]] < approx[order[j - 1]]; j--)
+    {
+      int t = order[j];
+      order[j] = order[j - 1];
+      order[j - 1] = t;
+    }
+  double best = INFINITY;
+  for (int i = 0; i < 4; i++)
+  {
+    int k = order[i];
+    if (filter && approx[k] > best + margin)
+      break;
+    best = fmin(best, point_segment_distance_offset_exact(pt[k][0], pt[k][1],
+      pt[k][2], ndims, 0.0));
+  }
+  return best;
+}
+
+/**
+ * @brief Return the power of two of the largest coordinate of the ends of two
+ * segments where scaling them by its inverse is exact and needed, 0
+ * otherwise
+ * @details Scaling is not needed where the largest coordinate lies within
+ * 2^100 of 1, and not exact where it rounds the smallest nonzero coordinate
+ * below the normal range
+ * @param[in] pts The four ends, @p ndims coordinates each
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] big The largest magnitude of their coordinates
+ */
+static inline int
+segment_distance_scale_exponent(const double *const *pts, int ndims,
+  double big)
+{
+  /* The largest coordinate alone decides the common case, in range */
+  if (big == 0.0 || (big >= 0x1p-100 && big <= 0x1p100) || ! isfinite(big))
+    return 0;
+  double small = INFINITY;
+  for (int i = 0; i < 4; i++)
+    for (int k = 0; k < ndims; k++)
+    {
+      double v = fabs(pts[i][k]);
+      if (isnan(v))
+        return 0;
+      if (v > 0.0)
+        small = fmin(small, v);
+    }
+  int e = ilogb(big);
+  if (ilogb(small) - e < DBL_MIN_EXP - 1)
+    return 0;
+  return e;
+}
+
+/**
+ * @brief Return the double nearest the distance of two segments
  * @details Two segments meet or not by exact orientations
- * (#linesegm_intersect), and where they meet the distance is 0. Two segments
- * that do not meet are nearest at an end of one of them, so the distance is
+ * (#linesegm_intersect), and where they meet the distance is 0. In 3D two
+ * segments whose nearest points lie inside both answer that distance
+ * (#segment_interior_distance), 0 where they cross. Otherwise two segments
+ * are nearest at an end of one of them, so the distance is
  * the least of the distances of the two ends of each to the other: which one,
  * by their squares (#segment_distance_square), and that one rounded once to
  * the double nearest it (#point_segment_distance_offset_exact). Where the
  * squares are not compared, each of the four is rounded, and rounding is
  * monotone, so the least of them is the double nearest the least distance. A
  * segment of no length is a point: it meets nothing in #linesegm_intersect,
- * and its distance to the other is one of the four
- * @param[in] a,b The two ends of the first segment, two coordinates each
- * @param[in] c,d The two ends of the second segment, two coordinates each
+ * and its distance to the other is one of the four. The bounded values of
+ * the 3D kernels (#DDBound) read products of up to the sixth degree of the
+ * coordinates, which underflow or overflow far from 1, and a distance scales
+ * exactly with a power of two, so the kernels read the coordinates brought
+ * near 1 (#segment_distance_scale_exponent)
+ * @param[in] a,b The two ends of the first segment, @p ndims coordinates each
+ * @param[in] c,d The two ends of the second segment, @p ndims coordinates
+ * each
+ * @param[in] ndims Number of coordinates, 2 or 3
  */
 double
 segment_distance_exact(const double *a, const double *b, const double *c,
-  const double *d)
+  const double *d, int ndims)
 {
-  IntersectResult meet = linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1],
-    d[0], d[1]);
-  if (meet.type != INTERSECT_NONE)
-    return 0.0;
-  int mask = segment_distance_square(a, b, c, d);
-  if (mask > 0)
+  assert(ndims == 2 || ndims == 3);
+  const double *pts[4] = {a, b, c, d};
+  /* A NaN compares false, so it leaves the largest coordinate as fmax does */
+  double big = 0.0;
+  for (int i = 0; i < 4; i++)
+    for (int k = 0; k < ndims; k++)
+    {
+      double v = fabs(pts[i][k]);
+      if (v > big)
+        big = v;
+    }
+  int e = segment_distance_scale_exponent(pts, ndims, big);
+  if (e != 0)
   {
-    const double *pt[4][3] = {{a, c, d}, {b, c, d}, {c, a, b}, {d, a, b}};
-    int i = 0;
-    while (! (mask & (1 << i)))
-      i++;
-    return point_segment_distance_offset_exact(pt[i][0], pt[i][1], pt[i][2],
-      0.0);
+    double sa[3] = {0.0}, sb[3] = {0.0}, sc[3] = {0.0}, sd[3] = {0.0};
+    for (int k = 0; k < ndims; k++)
+    {
+      sa[k] = ldexp(a[k], -e);
+      sb[k] = ldexp(b[k], -e);
+      sc[k] = ldexp(c[k], -e);
+      sd[k] = ldexp(d[k], -e);
+    }
+    double r = segment_distance_unscaled(sa, sb, sc, sd, ndims,
+      ldexp(big, -e));
+    double dist = ldexp(r, e);
+    /* Scaled back exactly where it lies in the normal range */
+    if (r == 0.0 || (isfinite(dist) && dist >= DBL_MIN))
+      return dist;
   }
-  double cand[4];
-  cand[0] = point_segment_distance_offset_exact(a, c, d, 0.0);
-  cand[1] = point_segment_distance_offset_exact(b, c, d, 0.0);
-  cand[2] = point_segment_distance_offset_exact(c, a, b, 0.0);
-  cand[3] = point_segment_distance_offset_exact(d, a, b, 0.0);
-  double best = cand[0];
-  for (int i = 1; i < 4; i++)
-    if (cand[i] < best)
-      best = cand[i];
-  return best;
+  return segment_distance_unscaled(a, b, c, d, ndims, big);
+}
+
+/**
+ * @brief Return the double nearest the distance of two segments, given a
+ * bound on the magnitudes of their coordinates (#segment_distance_exact)
+ * @details A bound within 2^100 of 1 leaves no coordinate to scale, which
+ * spares the walk of two geometries reading the largest coordinate of every
+ * pair; a bound above the largest coordinate widens the margin of the ends,
+ * which stays an upper bound of their error
+ * @param[in] a,b The two ends of the first segment, @p ndims coordinates each
+ * @param[in] c,d The two ends of the second segment, @p ndims coordinates
+ * each
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] big A bound on the magnitudes of their coordinates
+ */
+double
+segment_distance_exact_bounded(const double *a, const double *b,
+  const double *c, const double *d, int ndims, double big)
+{
+  assert(ndims == 2 || ndims == 3);
+  if (big >= 0x1p-100 && big <= 0x1p100)
+    return segment_distance_unscaled(a, b, c, d, ndims, big);
+  return segment_distance_exact(a, b, c, d, ndims);
 }
 
 /**
@@ -6402,7 +9949,7 @@ edge_direction_half_plane(int sx, int sy)
  * that it comes after a segment counterclockwise. The ordering mirrors that
  * of the intervals the arrangement reads first (#arcarc_meet_exact computes
  * on the same centres)
- * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis
+ * @param[in] e1,e2 Edges holding the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point rather than
  * arrives at it
@@ -6686,6 +10233,18 @@ tx_val(TowerCtx *ctx, double v)
   return tx_diff(ctx, v, 0.0);
 }
 
+/* Whether the expansions of a tower have left their exact range, so that
+ * nothing more is computed in them: every answer of a context that is
+ * unsafe is discarded (#tower_ctx_unsafe, #tower_pred_run), and an
+ * expansion holding a component that overflowed keeps every component of
+ * the values it is added to or multiplied by, compression merging none of
+ * them, so that each later sum or product costs more than the last */
+static inline bool
+tx_spent(const TowerCtx *ctx)
+{
+  return ! ctx->filter && tower_ctx_unsafe(ctx);
+}
+
 static TowerX
 tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 {
@@ -6697,6 +10256,8 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
+    if (tx_spent(ctx))
+      return a;
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
     return r;
   }
@@ -6749,6 +10310,8 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
   }
   if (! ctx->wide)
   {
+    if (tx_spent(ctx))
+      return a;
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
     return r;
   }
@@ -6870,11 +10433,13 @@ tower_scale_k(TowerCtx *ctx, const TowerX *x, double s, int k, TowerX *out)
   return;
 }
 
-/* Multiplied by a value */
+/* Multiplied by a value, the first coefficient written before the others
+ * as #tower_set writes it */
 static void
 tower_mulx_k(TowerCtx *ctx, const TowerX *x, TowerX v, int k, TowerX *out)
 {
-  for (int m = 0; m < (1 << k); m++)
+  out[0] = tx_mul(ctx, x[0], v);
+  for (int m = 1; m < (1 << k); m++)
     out[m] = tx_mul(ctx, x[m], v);
   return;
 }
@@ -7815,14 +11380,40 @@ towerseg_side_pred(TowerCtx *ctx, const void *arg)
   return tower_orient(ctx, &e0, &e1, &p);
 }
 
+static inline bool towerseg_offset(const Edge *e, int *s);
+
 /**
  * @brief Return the side of a segment between tangent points a point stands
  * on, decided exactly: 1 to its left, -1 to its right, 0 on its line
+ * @details The offset by r to the side s of the segment from C1 to C2
+ * between the centres of two circles of one radius (#towerseg_offset) is
+ * the line d x (X - C1) = s r |d|, d = C2 - C1, so a point P stands on the
+ * side of the sign of d x (P - C1) - s r |d| of the segment from its point
+ * on the first circle, read off the doubles with a bound on its error; the
+ * tower decides what the bound does not
  */
 int
 towerseg_side(const Edge *s, double px, double py)
 {
   assert(s);
+  int so;
+  if (towerseg_offset(s, &so))
+  {
+    const TangentPoint *t = s->from;
+    ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
+    ArcsegFilter dy = arcseg_f_diff(t->c2y, t->c1y);
+    ArcsegFilter qx = arcseg_f_diff(px, t->c1x);
+    ArcsegFilter qy = arcseg_f_diff(py, t->c1y);
+    ArcsegFilter r = {t->r1, 0.0};
+    ArcsegFilter len = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dx, dx),
+      arcseg_f_mul(dy, dy)));
+    ArcsegFilter v = arcseg_f_sub(arcseg_f_sub(arcseg_f_mul(dx, qy),
+      arcseg_f_mul(dy, qx)), arcseg_f_scale(arcseg_f_mul(r, len),
+      (double) so));
+    int sg = arcseg_f_sign(v);
+    if (sg != 2)
+      return (t->k == 0) ? sg : - sg;
+  }
   TowerSideArg arg = {s, px, py};
   return tower_pred_run(towerseg_side_pred, &arg);
 }
@@ -8094,14 +11685,285 @@ meet_point_bounds_pred(TowerCtx *ctx, const void *arg)
   return 1;
 }
 
+/* A point where the common tangent of two circles of one radius touches one
+ * of them, Ck + side r rot(d) / |d| as #tangent_point_round reads it, and a
+ * box holding it exactly: each operation rounds to nearest, so the offset is
+ * off by less than 12 units of the machine epsilon of its size and the sum
+ * by half a unit of its own, a bound taken four times over. False for two
+ * radii, or where the squares leave the range the bound holds in, which
+ * #meet_point_bounds_pred places in the tower instead */
+static bool
+tangent_point_bounds(const TangentPoint *tp, double *x, double *y,
+  double box[4])
+{
+  if (tp->r1 != tp->r2)
+    return false;
+  double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
+  double d2 = dx * dx + dy * dy;
+  if (! (d2 > 0x1p-900 && d2 < 0x1p900))
+    return false;
+  double f = tp->side * tp->r1 / sqrt(d2);
+  double ox = - f * dy, oy = f * dx;
+  double cx = tp->k ? tp->c2x : tp->c1x, cy = tp->k ? tp->c2y : tp->c1y;
+  *x = cx + ox;
+  *y = cy + oy;
+  double ex = 48.0 * DBL_EPSILON * fabs(ox) + 2.0 * DBL_EPSILON * fabs(*x) +
+    4.0 * DBL_MIN;
+  double ey = 48.0 * DBL_EPSILON * fabs(oy) + 2.0 * DBL_EPSILON * fabs(*y) +
+    4.0 * DBL_MIN;
+  if (! isfinite(*x) || ! isfinite(*y) || ! isfinite(ex) || ! isfinite(ey))
+    return false;
+  box[0] = *x - ex; box[1] = *x + ex;
+  box[2] = *y - ey; box[3] = *y + ey;
+  return true;
+}
+
+/**
+ * @brief Set a box holding exactly a point where a tangent touches one of
+ * two circles of one radius, given the point as #tangent_point_bounds
+ * rounds it, as the ends of a segment between tangent points carry it
+ * (#edges_add_tangent_segment): the bound of #tangent_point_bounds with the
+ * offset, whose length the rounding keeps below twice the radius, taken at
+ * twice the radius
+ * @return False where #tangent_point_bounds does not read the point off the
+ * doubles
+ */
+bool
+tangent_point_box(const TangentPoint *tp, double x, double y, double box[4])
+{
+  assert(tp); assert(box);
+  if (tp->r1 != tp->r2)
+    return false;
+  double dx = tp->c2x - tp->c1x, dy = tp->c2y - tp->c1y;
+  double d2 = dx * dx + dy * dy;
+  if (! (d2 > 0x1p-900 && d2 < 0x1p900))
+    return false;
+  /* Far within the range of the doubles, where the point of
+   * #tangent_point_bounds is finite and is the one given */
+  if (! (fabs(x) < 0x1p1000 && fabs(y) < 0x1p1000))
+    return false;
+  double o = 96.0 * DBL_EPSILON * fabs(tp->r1);
+  double ex = o + 2.0 * DBL_EPSILON * fabs(x) + 4.0 * DBL_MIN;
+  double ey = o + 2.0 * DBL_EPSILON * fabs(y) + 4.0 * DBL_MIN;
+  if (! isfinite(x) || ! isfinite(y) || ! isfinite(ex) || ! isfinite(ey))
+    return false;
+  box[0] = x - ex; box[1] = x + ex;
+  box[2] = y - ey; box[3] = y + ey;
+  return true;
+}
+
+/* Whether a segment between tangent points lies on the offset of the
+ * segment between the centres of one pair of circles of one radius, the
+ * common tangent of both its ends, the side @p s of C1 -> C2 */
+static inline bool
+towerseg_offset(const Edge *e, int *s)
+{
+  const TangentPoint *a = e->from, *b = e->to;
+  if (! a || ! b || a->r1 != a->r2 || a->side != b->side || a->k == b->k ||
+      a->c1x != b->c1x || a->c1y != b->c1y || a->c2x != b->c2x ||
+      a->c2y != b->c2y || a->r1 != b->r1)
+    return false;
+  *s = a->side;
+  return true;
+}
+
+/* The coordinates of a point taken from an origin, each an offset read
+ * with a bound on its error, written where the bound holds the coordinate
+ * to a few units in its last place, as #meet_point_bounds_pred writes them */
+static bool
+filter_point_bounds(double ox, double oy, ArcsegFilter fx, ArcsegFilter fy,
+  double *x, double *y, double box[4])
+{
+  const double org[2] = {ox, oy};
+  const ArcsegFilter off[2] = {fx, fy};
+  double *val[2] = {x, y};
+  for (int j = 0; j < 2; j++)
+  {
+    double c = org[j] + off[j].v;
+    double ce = off[j].e + DBL_EPSILON * fabs(c) + DBL_MIN;
+    if (! isfinite(c) || ! isfinite(off[j].e) ||
+        ! (ce <= 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN))
+      return false;
+    box[2 * j] = c - ce; box[2 * j + 1] = c + ce;
+    *val[j] = c;
+  }
+  return true;
+}
+
+/* A quotient of filtered values as a filtered value, false where the
+ * divisor's bound holds zero (#tower_f_div) */
+static inline bool
+filter_div(ArcsegFilter a, ArcsegFilter b, ArcsegFilter *r)
+{
+  return tower_f_div(a, b, &r->v, &r->e);
+}
+
+/* The crossing of two segments between tangent points that are offsets of
+ * the segments between the centres of pairs of circles of one radius
+ * (#towerseg_offset), and a box holding it exactly, read off the doubles
+ * with a bound on their error as #meet_point_bounds_pred reads a tower. Two
+ * offsets of segments sharing a centre V are tangent to the circle about V
+ * on the sides of their unit normals m1 and m2 from it, so they cross at
+ * V + r (m1 + m2) / (1 + m1 . m2), which no cancellation loses however
+ * little the segments turn; any two others at O + (hp dq - hq dp) /
+ * (dp x dq), the offset of C1 -> C2 on the side s at the distance r being
+ * the line d x (X - C1) = s r |d|, d = C2 - C1, and hp and hq its right
+ * sides taken from the first centre O of the first. False where a bound is
+ * wider than a few units in the last place, as where the lines are nearly
+ * parallel, which the tower places instead */
+static bool
+offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  int sp, sq;
+  if (! m->p || ! m->q || ! towerseg_offset(m->p, &sp) ||
+      ! towerseg_offset(m->q, &sq))
+    return false;
+  const TangentPoint *p = m->p->from, *q = m->q->from;
+  ArcsegFilter dpx = arcseg_f_diff(p->c2x, p->c1x);
+  ArcsegFilter dpy = arcseg_f_diff(p->c2y, p->c1y);
+  ArcsegFilter dqx = arcseg_f_diff(q->c2x, q->c1x);
+  ArcsegFilter dqy = arcseg_f_diff(q->c2y, q->c1y);
+  ArcsegFilter rp = {p->r1, 0.0}, rq = {q->r1, 0.0};
+  ArcsegFilter lp = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dpx, dpx),
+    arcseg_f_mul(dpy, dpy)));
+  ArcsegFilter lq = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dqx, dqx),
+    arcseg_f_mul(dqy, dqy)));
+  /* A centre both segments share, and one radius */
+  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
+    (p->c1x == q->c2x && p->c1y == q->c2y);
+  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
+    (p->c2x == q->c2x && p->c2y == q->c2y);
+  if (p->r1 == q->r1 && (vp || vq))
+  {
+    double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
+    /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
+     * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
+    ArcsegFilter wp = arcseg_f_scale(lq, (double) sp);
+    ArcsegFilter wq = arcseg_f_scale(lp, (double) sq);
+    ArcsegFilter nx = arcseg_f_scale(arcseg_f_add(arcseg_f_mul(wp, dpy),
+      arcseg_f_mul(wq, dqy)), -1.0);
+    ArcsegFilter ny = arcseg_f_add(arcseg_f_mul(wp, dpx),
+      arcseg_f_mul(wq, dqx));
+    ArcsegFilter den = arcseg_f_add(arcseg_f_mul(lp, lq),
+      arcseg_f_scale(arcseg_f_add(arcseg_f_mul(dpx, dqx),
+        arcseg_f_mul(dpy, dqy)), (double) (sp * sq)));
+    ArcsegFilter fx, fy;
+    if (! filter_div(arcseg_f_mul(rp, nx), den, &fx) ||
+        ! filter_div(arcseg_f_mul(rp, ny), den, &fy))
+      return false;
+    return filter_point_bounds(vx, vy, fx, fy, x, y, box);
+  }
+  double ox = p->c1x, oy = p->c1y;
+  ArcsegFilter ax = arcseg_f_diff(q->c1x, ox), ay = arcseg_f_diff(q->c1y, oy);
+  ArcsegFilter hp = arcseg_f_scale(arcseg_f_mul(rp, lp), (double) sp);
+  ArcsegFilter hq = arcseg_f_add(arcseg_f_sub(arcseg_f_mul(dqx, ay),
+    arcseg_f_mul(dqy, ax)), arcseg_f_scale(arcseg_f_mul(rq, lq),
+    (double) sq));
+  ArcsegFilter den = arcseg_f_sub(arcseg_f_mul(dpx, dqy),
+    arcseg_f_mul(dpy, dqx));
+  ArcsegFilter fx, fy;
+  if (! filter_div(arcseg_f_sub(arcseg_f_mul(hp, dqx),
+        arcseg_f_mul(hq, dpx)), den, &fx) ||
+      ! filter_div(arcseg_f_sub(arcseg_f_mul(hp, dqy),
+        arcseg_f_mul(hq, dpy)), den, &fy))
+    return false;
+  return filter_point_bounds(ox, oy, fx, fy, x, y, box);
+}
+
+/* The meeting of an offset of the segment between the centres of a pair of
+ * circles of one radius (#towerseg_offset) with the circle of a centred
+ * arc, the root sigma along the segment as #tower_point_line_circle places
+ * it, read off the doubles with a bound on their error. The offset on the
+ * side s of d = C2 - C1 at the distance r is the line rot(d) . (X - C1) =
+ * s r |d|, so from the centre C of the circle of radius R the meeting is
+ * (delta rot(d) + sigma u sqrt(R^2 - delta^2) d) / |d| with
+ * delta = s r - d x (C - C1) / |d| and u the sense the segment runs along
+ * d. False where a bound is wide, as where the line nearly touches the
+ * circle, which the tower places instead */
+static bool
+offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
+  double box[4])
+{
+  int s;
+  if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
+    return false;
+  const TangentPoint *t = m->p->from;
+  double u = (m->p->to->k == 1) ? 1.0 : -1.0;
+  ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
+  ArcsegFilter dy = arcseg_f_diff(t->c2y, t->c1y);
+  ArcsegFilter ax = arcseg_f_diff(m->q->cx, t->c1x);
+  ArcsegFilter ay = arcseg_f_diff(m->q->cy, t->c1y);
+  ArcsegFilter r = {t->r1, 0.0}, rr = {m->q->radius, 0.0};
+  ArcsegFilter l = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dx, dx),
+    arcseg_f_mul(dy, dy)));
+  ArcsegFilter cr = arcseg_f_sub(arcseg_f_mul(dx, ay), arcseg_f_mul(dy, ax));
+  ArcsegFilter q, delta, h, fx, fy;
+  if (! filter_div(cr, l, &q))
+    return false;
+  delta = arcseg_f_sub(arcseg_f_scale(r, (double) s), q);
+  h = arcseg_f_sub(arcseg_f_mul(rr, rr), arcseg_f_mul(delta, delta));
+  if (arcseg_f_sign(h) != 1)
+    return false;
+  ArcsegFilter sq = arcseg_f_scale(tower_f_sqrt(h), (double) m->sigma * u);
+  if (! filter_div(arcseg_f_add(arcseg_f_scale(arcseg_f_mul(delta, dy),
+        -1.0), arcseg_f_mul(sq, dx)), l, &fx) ||
+      ! filter_div(arcseg_f_add(arcseg_f_mul(delta, dx),
+        arcseg_f_mul(sq, dy)), l, &fy))
+    return false;
+  return filter_point_bounds(m->q->cx, m->q->cy, fx, fy, x, y, box);
+}
+
+/* The crossing sigma of the circles of two centred arcs of one radius, as
+ * #tower_point_circles places it, read off the doubles with a bound on
+ * their error: with d = C2 - C1 and D = |d|^2 it is
+ * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)). False where a
+ * bound is wide, as where the circles nearly touch */
+static bool
+equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
+      m->p->radius != m->q->radius)
+    return false;
+  ArcsegFilter dx = arcseg_f_diff(m->q->cx, m->p->cx);
+  ArcsegFilter dy = arcseg_f_diff(m->q->cy, m->p->cy);
+  ArcsegFilter r = {m->p->radius, 0.0};
+  ArcsegFilter dd = arcseg_f_add(arcseg_f_mul(dx, dx), arcseg_f_mul(dy, dy));
+  ArcsegFilter h = arcseg_f_sub(arcseg_f_scale(arcseg_f_mul(r, r), 4.0), dd);
+  if (arcseg_f_sign(h) != 1 || arcseg_f_sign(dd) != 1)
+    return false;
+  ArcsegFilter f;
+  if (! filter_div(tower_f_sqrt(h), arcseg_f_scale(tower_f_sqrt(dd), 2.0),
+      &f))
+    return false;
+  f = arcseg_f_scale(f, (double) m->sigma);
+  ArcsegFilter fx = arcseg_f_sub(arcseg_f_scale(dx, 0.5), arcseg_f_mul(f, dy));
+  ArcsegFilter fy = arcseg_f_add(arcseg_f_scale(dy, 0.5), arcseg_f_mul(f, dx));
+  return filter_point_bounds(m->p->cx, m->p->cy, fx, fy, x, y, box);
+}
+
 /**
  * @brief Set the point of a meeting rounded once and a box holding it
  * exactly; false where it cannot be placed
+ * @details A point where a tangent touches one of two circles of one radius
+ * is read off the doubles with a bound on their error
+ * (#tangent_point_bounds), and so, where the bound is tight, are the
+ * crossing of two offsets of segments between the centres of such circles
+ * (#offset_lines_bounds), the meeting of such an offset with a circle
+ * (#offset_line_circle_bounds) and the crossing of two circles of one
+ * radius (#equal_circles_bounds); any other is placed in its tower
  */
 bool
 meet_point_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   assert(m); assert(x); assert(y); assert(box);
+  if (m->kind == MEET_TANGENT && tangent_point_bounds(m->tp, x, y, box))
+    return true;
+  if (m->kind == MEET_LINES && offset_lines_bounds(m, x, y, box))
+    return true;
+  if (m->kind == MEET_LINECIRCLE && offset_line_circle_bounds(m, x, y, box))
+    return true;
+  if (m->kind == MEET_ARCARC && equal_circles_bounds(m, x, y, box))
+    return true;
   TowerBoundsArg arg = {m, x, y, box};
   return tower_pred_run(meet_point_bounds_pred, &arg) == 1;
 }
@@ -8283,7 +12145,7 @@ edges_turn_cmp_meet_pred(TowerCtx *ctx, const void *arg)
  * counterclockwise from the positive x axis, decided exactly: the
  * #edges_turn_cmp_exact of a point no double holds
  * @param[in] e1,e2 Segments between tangent points or centred arcs holding
- * the point; NULL for the positive x axis
+ * the point; NULL for the positive x axis @nullable
  * @param[in] ccw1,ccw2 Whether each arc turns counterclockwise
  * @param[in] out1,out2 Whether each edge leaves the point
  * @param[in] at The point
@@ -8326,12 +12188,15 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   memset(&m1, 0, sizeof(MeetPoint));
   m0.kind = m1.kind = MEET_TANGENT;
   m0.tp = from; m1.tp = to;
-  if (! meet_point_bounds(&m0, &e.x1, &e.y1, box0) ||
-      ! meet_point_bounds(&m1, &e.x2, &e.y2, box1))
+  /* Each end bounded where the doubles bound it, else rounded alone */
+  if (! meet_point_bounds(&m0, &e.x1, &e.y1, box0))
   {
     tangent_point_round(from, &e.x1, &e.y1);
-    tangent_point_round(to, &e.x2, &e.y2);
     box0[0] = box0[1] = e.x1; box0[2] = box0[3] = e.y1;
+  }
+  if (! meet_point_bounds(&m1, &e.x2, &e.y2, box1))
+  {
+    tangent_point_round(to, &e.x2, &e.y2);
     box1[0] = box1[1] = e.x2; box1[2] = box1[3] = e.y2;
   }
   e.xmin = Min(box0[0], box1[0]); e.xmax = Max(box0[1], box1[1]);
@@ -8339,6 +12204,36 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   e.dx = e.x2 - e.x1; e.dy = e.y2 - e.y1;
   e.length = e.dx * e.dx + e.dy * e.dy;
   edge_array_add(edges, &e);
+  return;
+}
+
+/**
+ * @brief Add to an edge array the arc of the circle of a centre and a radius
+ * between two points where tangents touch that circle, which no double holds
+ * (#TangentPoint): the round join of a buffer about a vertex, between the
+ * offsets of the two edges meeting there
+ * @details The circle is the one the three doubles fix exactly, carried as
+ * #edges_add_circle carries it, and the arc is its part from @p from to
+ * @p to in the sense it turns; both points lie on it as the points where
+ * their tangents touch it, the circle they are built on. Every exact
+ * question about the arc reads the circle and the two points
+ * (#arrange_wound_tangent_surfaces), so the arc built about a vertex is
+ * that vertex's circle exactly, whatever the coordinates of its ends round to
+ * @param[in,out] edges Edge array
+ * @param[in] cx,cy Centre
+ * @param[in] radius Radius, positive
+ * @param[in] ccw Whether the arc turns counterclockwise
+ * @param[in] from,to The ends, points of the circle; they outlive the edge
+ * array
+ */
+void
+edges_add_tangent_arc(MeosArray *edges, double cx, double cy, double radius,
+  bool ccw, const TangentPoint *from, const TangentPoint *to)
+{
+  assert(edges); assert(radius > 0.0); assert(from); assert(to);
+  edges_add_circle(edges, cx, cy, radius, ccw);
+  Edge *e = &((Edge *) edges->elems)[edges->count - 1];
+  e->from = from; e->to = to;
   return;
 }
 
@@ -9425,8 +13320,8 @@ hull_arc_holds(const HullFeature *f, double phi)
  * their own
  * @param[in] feats,nfeats Features supporting the hull
  * @param[in] phi Direction
- * @param[out] px,py Point reaching that far, ignored when null
- * @param[out] which Feature reaching that far, ignored when null
+ * @param[out] px,py Point reaching that far, ignored when null @nullable
+ * @param[out] which Feature reaching that far, ignored when null @nullable
  */
 static double
 hull_support(const HullFeature *feats, int nfeats, double phi, double *px,
@@ -10849,6 +14744,51 @@ geopoint_cmp(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return 0;
   }
 }
+
+/**
+ * @brief Return the number of bytes of the sort key of a point
+ * @param[in] gs Point
+ */
+size_t
+geopoint_sortkey_size(const GSERIALIZED *gs)
+{
+  return (FLAGS_GET_Z(gs->gflags) ? 3 : 2) * datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a point
+ * @details The key is the coordinates in the order #geopoint_cmp compares
+ * them, each written as a double
+ * @param[in] gs Point
+ * @param[out] out Buffer of #geopoint_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+geopoint_sortkey_put(const GSERIALIZED *gs, uint8_t *out)
+{
+  double coords[3];
+  int ncoords;
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    const POINT3DZ *point = GSERIALIZED_POINT3DZ_P(gs);
+    coords[0] = point->x; coords[1] = point->y; coords[2] = point->z;
+    ncoords = 3;
+  }
+  else
+  {
+    const POINT2D *point = GSERIALIZED_POINT2D_P(gs);
+    coords[0] = point->x; coords[1] = point->y;
+    ncoords = 2;
+  }
+  size_t n = datum_sortkey_size(T_FLOAT8);
+  for (int i = 0; i < ncoords; i++)
+  {
+    datum_sortkey_put(Float8GetDatum(coords[i]), T_FLOAT8, out);
+    out += n;
+  }
+  return out;
+}
+
 /**
  * @brief Return true if the points are equal
  * @note This function is called in the iterations over sequences where we
@@ -12357,14 +16297,79 @@ static bool relate_point_on_edge(double x, double y, const Edge *e,
 typedef struct
 {
   const LWGEOM *geom;  /**< Geometry the edges are those of */
-  MeosArray *arr;      /**< Edges its interior and boundary are read from */
+  MeosArray *arr;      /**< Edges its interior and boundary are read from, for
+                            a value #relate_reads_union names NULL until a
+                            question reads them; read through
+                            #relate_operand_arr, which keeps them in
+                            #kept */
   MeosArray *own;      /**< Its own edges, ending at the input vertices: the
                             array #arr is cut from for a value
-                            #relate_reads_union names, #arr itself otherwise */
+                            #relate_reads_union names, #arr itself otherwise;
+                            NULL until a question reads them, through
+                            #relate_operand_own, which keeps them in
+                            #ownkept */
+  MeosArray **kept;    /**< Where #arr is kept once read, as #index keeps the
+                            index: the operand's own #arr, or that of the
+                            context that lends it, so that a copy of the
+                            operand reads and fills the same one */
+  MeosArray **ownkept; /**< Where #own is kept once read, as #kept keeps
+                            #arr */
   EdgeIndex **index;   /**< Where the index over #arr is kept for the calls
                             that follow, NULL for an operand read for one
                             call, which indexes by the size of the pair */
 } RelateOperand;
+
+/**
+ * @brief Return the edges an operand's interior and boundary are read from,
+ * reading the union of its members the first time a question asks for it
+ * @details Whether two geometries share a point is read from their own edges
+ * (#meos_intersects), and it is the question a relationship mostly asks, so
+ * the union of a collection's members, what a call on such a value mostly
+ * costs, is built only where a question reads it, and kept for the questions
+ * that follow
+ */
+static MeosArray *
+relate_operand_own(const RelateOperand *op)
+{
+  if (! *op->ownkept)
+  {
+    /* The edges of an operand a context lends live as long as the context,
+     * so they are read into the memory that keeps the context, never into
+     * the caller's, as #relate_edges_init_kept reads the index */
+#if ! MEOS
+    MemoryContext oldctx = op->index ?
+      MemoryContextSwitchTo(TopMemoryContext) : NULL;
+#endif
+    *op->ownkept = geom_extract_edges(op->geom);
+#if ! MEOS
+    if (op->index)
+      MemoryContextSwitchTo(oldctx);
+#endif
+  }
+  return *op->ownkept;
+}
+
+static MeosArray *
+relate_operand_arr(const RelateOperand *op)
+{
+  if (! *op->kept)
+  {
+    MeosArray *own = relate_operand_own(op);
+    /* The union of an operand a context lends lives as long as the context,
+     * as its own edges do (#relate_operand_own) */
+#if ! MEOS
+    MemoryContext oldctx = op->index ?
+      MemoryContextSwitchTo(TopMemoryContext) : NULL;
+#endif
+    *op->kept = relate_reads_union(op->geom) ?
+      relate_union_edges(op->geom, own) : own;
+#if ! MEOS
+    if (op->index)
+      MemoryContextSwitchTo(oldctx);
+#endif
+  }
+  return *op->kept;
+}
 
 /**
  * @brief The two operands of a relationship, each carrying its edges
@@ -12389,11 +16394,13 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
   for (int k = 0; k < 2; k++)
   {
     /* The union is cut from the geometry's own edges, which are kept for the
-     * questions they answer exactly (#meos_intersects) */
+     * questions they answer exactly (#meos_intersects); both are read the
+     * first time a question asks for them (#relate_operand_own,
+     * #relate_operand_arr) */
     ops->op[k].geom = g[k];
-    ops->op[k].own = geom_extract_edges(g[k]);
-    ops->op[k].arr = relate_reads_union(g[k]) ?
-      relate_union_edges(g[k], ops->op[k].own) : ops->op[k].own;
+    ops->op[k].own = ops->op[k].arr = NULL;
+    ops->op[k].ownkept = &ops->op[k].own;
+    ops->op[k].kept = &ops->op[k].arr;
     ops->op[k].index = NULL;
   }
   return;
@@ -12401,15 +16408,18 @@ relate_operands_init(RelateOperands *ops, const LWGEOM *g1, const LWGEOM *g2)
 
 /**
  * @brief Release the edges of both operands of a relationship
+ * @details As #relate_ctx_free releases those of a context: the own edges
+ * where the union was cut from them, and the union where a question read it
  */
 static void
 relate_operands_free(RelateOperands *ops)
 {
   for (int k = 0; k < 2; k++)
   {
-    if (ops->op[k].own != ops->op[k].arr)
+    if (ops->op[k].own && ops->op[k].own != ops->op[k].arr)
       meos_array_destroy(ops->op[k].own);
-    meos_array_destroy(ops->op[k].arr);
+    if (ops->op[k].arr)
+      meos_array_destroy(ops->op[k].arr);
   }
   return;
 }
@@ -12429,7 +16439,7 @@ relate_borrow_edges(const RelateOperands *ops, const LWGEOM *geom)
   if (ops)
     for (int i = 0; i < 2; i++)
       if (ops->op[i].geom == geom)
-        return ops->op[i].arr;
+        return relate_operand_arr(&ops->op[i]);
   return relate_extract_edges(geom);
 }
 
@@ -12443,7 +16453,7 @@ relate_return_edges(const RelateOperands *ops, MeosArray *arr)
 {
   if (ops)
     for (int i = 0; i < 2; i++)
-      if (ops->op[i].arr == arr)
+      if (*ops->op[i].kept == arr)
         return;
   meos_array_destroy(arr);
   return;
@@ -13573,6 +17583,186 @@ relate_arc_arc_points(const Edge *a, const Edge *b, double x[2], double y[2],
 }
 
 /**
+ * @brief Set a segment of the given ends in the form the exact order of
+ * meetings reads (#meets_order_exact), as #buffer_piece_from_edge sets one
+ */
+static void
+relate_input_segment(double x1, double y1, double x2, double y2, Edge *out)
+{
+  memset(out, 0, sizeof(Edge));
+  out->x1 = x1; out->y1 = y1;
+  out->x2 = x2; out->y2 = y2;
+  out->dx = x2 - x1; out->dy = y2 - y1;
+  out->etype = EDGE_POLYSEG;
+  return;
+}
+
+/* Where a meeting lies along a piece of an input segment
+ * (#relate_piece_locate) */
+typedef enum
+{
+  RELATE_PIECE_UNDECIDED,
+  RELATE_PIECE_OUTSIDE,
+  RELATE_PIECE_START,
+  RELATE_PIECE_INSIDE,
+  RELATE_PIECE_END
+} RelatePiecePos;
+
+/**
+ * @brief Return where a meeting on an input segment lies against a piece of
+ * it, ordering it exactly against the two ends of the piece
+ * @details An end of the piece is the point its coordinates hold, or the
+ * crossing of the input segment with the one recorded for it, which no double
+ * holds; #meets_order_exact orders a meeting of either kind along the input
+ * segment, exactly, and leaves undecided an order it cannot read
+ * @param[in] piece Piece, running along @p line from its start to its end
+ * @param[in] line Input segment of the piece
+ * @param[in] m Meeting on @p line
+ */
+static RelatePiecePos
+relate_piece_locate(const Edge *piece, const Edge *line, const MeetPoint *m)
+{
+  Edge crosser[2];
+  MeetPoint ends[2];
+  memset(ends, 0, sizeof(ends));
+  for (int k = 0; k < 2; k++)
+  {
+    if (piece->cut && piece->crossed[k])
+    {
+      relate_input_segment(piece->crosser[k][0], piece->crosser[k][1],
+        piece->crosser[k][2], piece->crosser[k][3], &crosser[k]);
+      ends[k].kind = MEET_SEGSEG;
+      ends[k].p = line;
+      ends[k].q = &crosser[k];
+    }
+    else
+    {
+      ends[k].kind = MEET_VERTEX;
+      ends[k].x = k ? piece->x2 : piece->x1;
+      ends[k].y = k ? piece->y2 : piece->y1;
+    }
+  }
+  int s = meets_order_exact(line, false, &ends[0], m);
+  if (s == 2)
+    return RELATE_PIECE_UNDECIDED;
+  if (s >= 0)
+    return s == 0 ? RELATE_PIECE_START : RELATE_PIECE_OUTSIDE;
+  int t = meets_order_exact(line, false, m, &ends[1]);
+  if (t == 2)
+    return RELATE_PIECE_UNDECIDED;
+  if (t >= 0)
+    return t == 0 ? RELATE_PIECE_END : RELATE_PIECE_OUTSIDE;
+  return RELATE_PIECE_INSIDE;
+}
+
+/**
+ * @brief Return how two segments meet, as #linesegm_intersect answers it,
+ * reading a piece of the boundary of a union on the input segment it is cut
+ * from
+ * @details An end of a piece is constructed on its input segment and rounded
+ * once (#relate_union_edges), so it falls off that segment's line and to
+ * either side of the segment that cut it: read off its ends, a piece running
+ * along a segment of the other geometry crosses it or misses it, and a piece
+ * ending on a segment crosses it a rounding step before its end or misses it.
+ * Every question is therefore asked of the input segments. Whether the two
+ * lie on one line is a sign of cross products of input coordinates
+ * (#cross_product_sign), and the stretch they share runs between their own
+ * ends. Otherwise the input segments meet at one point or nowhere
+ * (#linesegm_intersect), and that point is ordered exactly against the ends
+ * of each piece (#relate_piece_locate): it lies outside a piece, at one of
+ * its ends -- the crossing it was cut at -- or inside it. An order the exact
+ * reading leaves undecided is read on the rounded ends
+ */
+static IntersectResult
+relate_segments_intersect(const Edge *a, const Edge *b)
+{
+  if (! a->cut && ! b->cut)
+    return linesegm_intersect(a->x1, a->y1, a->x2, a->y2, b->x1, b->y1,
+      b->x2, b->y2);
+  Edge la, lb;
+  relate_input_segment(a->cut ? a->sx : a->x1, a->cut ? a->sy : a->y1,
+    a->cut ? a->ex : a->x2, a->cut ? a->ey : a->y2, &la);
+  relate_input_segment(b->cut ? b->sx : b->x1, b->cut ? b->sy : b->y1,
+    b->cut ? b->ex : b->x2, b->cut ? b->ey : b->y2, &lb);
+  int oc = cross_product_sign(la.x1, la.y1, la.x2, la.y2, la.x1, la.y1,
+    lb.x1, lb.y1);
+  int od = cross_product_sign(la.x1, la.y1, la.x2, la.y2, la.x1, la.y1,
+    lb.x2, lb.y2);
+  if (oc == 0 && od == 0)
+    return linesegm_intersect_collinear(a->x1, a->y1, a->x2, a->y2, b->x1,
+      b->y1, b->x2, b->y2);
+
+  /* Where the input segments meet, exactly: an input vertex lying on the
+   * other segment, or the crossing of the two */
+  IntersectResult none = {INTERSECT_NONE, 0, 0};
+  IntersectResult ri = linesegm_intersect(la.x1, la.y1, la.x2, la.y2, lb.x1,
+    lb.y1, lb.x2, lb.y2);
+  if (ri.type == INTERSECT_NONE)
+    return none;
+  int oa = cross_product_sign(lb.x1, lb.y1, lb.x2, lb.y2, lb.x1, lb.y1,
+    la.x1, la.y1);
+  int ob = cross_product_sign(lb.x1, lb.y1, lb.x2, lb.y2, lb.x1, lb.y1,
+    la.x2, la.y2);
+  MeetPoint m;
+  memset(&m, 0, sizeof(MeetPoint));
+  m.kind = MEET_VERTEX;
+  if (oa == 0)
+  {
+    m.x = la.x1; m.y = la.y1;
+  }
+  else if (ob == 0)
+  {
+    m.x = la.x2; m.y = la.y2;
+  }
+  else if (oc == 0)
+  {
+    m.x = lb.x1; m.y = lb.y1;
+  }
+  else if (od == 0)
+  {
+    m.x = lb.x2; m.y = lb.y2;
+  }
+  else
+  {
+    m.kind = MEET_SEGSEG;
+    m.p = &la;
+    m.q = &lb;
+  }
+
+  /* The meeting is one of the pieces only where it lies on both */
+  RelatePiecePos pa = a->cut ? relate_piece_locate(a, &la, &m) :
+    RELATE_PIECE_INSIDE;
+  RelatePiecePos pb = b->cut ? relate_piece_locate(b, &lb, &m) :
+    RELATE_PIECE_INSIDE;
+  if (pa == RELATE_PIECE_UNDECIDED || pb == RELATE_PIECE_UNDECIDED)
+  {
+    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2, b->x1,
+      b->y1, b->x2, b->y2);
+    if (r.type == INTERSECT_OVERLAP)
+      r.type = INTERSECT_POINT;
+    return r;
+  }
+  if (pa == RELATE_PIECE_OUTSIDE || pb == RELATE_PIECE_OUTSIDE)
+    return none;
+  IntersectResult r = {INTERSECT_POINT, 0, 0};
+  if (pa == RELATE_PIECE_START)
+    r.t0 = 0.0;
+  else if (pa == RELATE_PIECE_END)
+    r.t0 = 1.0;
+  else if (! a->cut)
+    r.t0 = ri.t0;
+  else
+  {
+    /* Inside the piece: its position, read on the rounded ends */
+    double px = la.x1 + ri.t0 * la.dx, py = la.y1 + ri.t0 * la.dy;
+    double t = (fabs(a->dx) >= fabs(a->dy)) ? (px - a->x1) / a->dx :
+      (py - a->y1) / a->dy;
+    r.t0 = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
+  }
+  return r;
+}
+
+/**
  * @brief Process the intersection between one linear edge and one polygon
  * boundary edge
  * @details Updates the DE-9IM cells corresponding to the intersection between
@@ -13587,8 +17777,7 @@ relate_linear_area_edge_intersection(const Edge *line, const Edge *boundary,
   /* Line / Poly */
   if (line->etype == EDGE_LINESEG && boundary->etype == EDGE_POLYSEG)
   {
-    IntersectResult r =  linesegm_intersect(line->x1, line->y1, line->x2,
-      line->y2, boundary->x1, boundary->y1, boundary->x2, boundary->y2);
+    IntersectResult r = relate_segments_intersect(line, boundary);
     if (r.type == INTERSECT_NONE)
       return;
     if (r.type == INTERSECT_OVERLAP)
@@ -14219,7 +18408,7 @@ relate_linear_area_stop(const MeosDE9IM *m, int want, const RelateQuery *q,
  * at the first stretch of the line inside the area
  * @param[in] line_geom,area_geom Geometries
  * @param[in] ops Operands of the relationship, NULL where there is none
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix
  */
 static void
@@ -14775,8 +18964,7 @@ relate_area_edge_intersection(const Edge *a, const Edge *b, double ix[2],
   /* Line / Line */
   if (a->etype == EDGE_POLYSEG && b->etype == EDGE_POLYSEG)
   {
-    IntersectResult r = linesegm_intersect(a->x1, a->y1, a->x2, a->y2,
-      b->x1, b->y1, b->x2, b->y2);
+    IntersectResult r = relate_segments_intersect(a, b);
     if (r.type == INTERSECT_NONE)
       return 0;
     if (r.type == INTERSECT_OVERLAP)
@@ -15461,7 +19649,7 @@ relate_edges_init_kept(RelateEdges *re, Edge **edges, int nedges,
   EdgeIndex **kept = NULL;
   if (ops)
     for (int k = 0; k < 2 && ! kept; k++)
-      if (ops->op[k].arr == arr)
+      if (*ops->op[k].kept == arr)
         kept = ops->op[k].index;
   if (! kept)
   {
@@ -15726,31 +19914,81 @@ relate_in_area_union(double x, double y, const RelateComp *comps, int ncomp)
 }
 
 /**
- * @brief Return the distance from a point to an edge
+ * @brief Return the squared distance from a point to a segment
+ * @details The nearest point of the segment is the projection clamped to it.
+ * A segment of no length is its start, which is exactly where the squared
+ * length is zero; a squared length too small for a double is zero too. The
+ * segment case of #point_edge_dist2
  */
-static double
-relate_edge_distance(double x, double y, const Edge *e)
+double
+point_seg_dist2(double px, double py, double x1, double y1, double x2,
+  double y2)
 {
-  double d1 = hypot(x - e->x1, y - e->y1);
-  double d2 = hypot(x - e->x2, y - e->y2);
-  double result = Min(d1, d2);
-  if (e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC)
+  const double ux = x2 - x1, uy = y2 - y1;
+  const double l2 = ux * ux + uy * uy;
+  if (l2 == 0.0)
   {
-    if (arc_contains_angle(e, atan2(y - e->cy, x - e->cx)))
-      result = Min(result, fabs(hypot(x - e->cx, y - e->cy) - e->radius));
-    return result;
+    const double dx = px - x1, dy = py - y1;
+    return dx * dx + dy * dy;
   }
-  /* The nearest point of a segment is its projection where that falls within
-   * the segment, and an endpoint otherwise */
-  double len2 = e->dx * e->dx + e->dy * e->dy;
-  if (len2 > 0)
+  double s = ((px - x1) * ux + (py - y1) * uy) / l2;
+  if (s < 0.0) s = 0.0; else if (s > 1.0) s = 1.0;
+  const double qx = x1 + s * ux, qy = y1 + s * uy;
+  const double dx = px - qx, dy = py - qy;
+  return dx * dx + dy * dy;
+}
+
+/**
+ * @brief Return the squared distance from a point to an arc edge
+ * @details When the point projects within the arc's angular span the distance
+ * is the difference to the supporting circle, which takes the root of the
+ * squared distance to the centre before it is squared, otherwise it is the
+ * distance to the nearer arc endpoint. The arc case of #point_edge_dist2
+ */
+double
+point_arc_dist2(double px, double py, const Edge *e)
+{
+  const double dxc = px - e->cx, dyc = py - e->cy;
+  if (arc_contains_angle(e, atan2(dyc, dxc)))
   {
-    double t = ((x - e->x1) * e->dx + (y - e->y1) * e->dy) / len2;
-    if (t > 0 && t < 1)
-      result = Min(result, fabs((x - e->x1) * e->dy - (y - e->y1) * e->dx) /
-        sqrt(len2));
+    const double dd = sqrt(dxc * dxc + dyc * dyc) - e->radius;
+    return dd * dd;
   }
-  return result;
+  const double d0x = px - e->x1, d0y = py - e->y1;
+  const double d1x = px - e->x2, d1y = py - e->y2;
+  const double d0 = d0x * d0x + d0y * d0y;
+  const double d1 = d1x * d1x + d1y * d1y;
+  return Min(d0, d1);
+}
+
+/**
+ * @brief Return the squared distance from a point to a single edge
+ * @details The geometry layer's one reading of it, the square of what
+ * #buffer_point_edge_distance answers for the buffer: the clip engine of a
+ * moving point and the clearance search of a union (#relate_clearance) both
+ * compare these squares, and none of them takes a root but the one an arc's
+ * circle needs
+ */
+double
+point_edge_dist2(double px, double py, const Edge *e)
+{
+  switch (e->etype)
+  {
+    case EDGE_POINT:
+    {
+      const double dx = px - e->x1, dy = py - e->y1;
+      return dx * dx + dy * dy;
+    }
+    case EDGE_LINESEG:
+    case EDGE_POLYSEG:
+      return point_seg_dist2(px, py, e->x1, e->y1, e->x2, e->y2);
+    case EDGE_LINEARC:
+    case EDGE_POLYARC:
+      return point_arc_dist2(px, py, e);
+  }
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown edge type: %d", e->etype);
+  return DBL_MAX;
 }
 
 /**
@@ -15770,16 +20008,20 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
    * feature found no further than r is therefore the nearest there is. Where
    * a component carries no index the walk below answers, and it answers if
    * the growth ever runs out, so the two paths agree by construction */
-  bool indexed = (ncomp > 0);
+  /* The search compares squared distances (#point_edge_dist2) and takes one
+   * root, of the clearance it answers, a length its caller places points at.
+   * A seed of no extent, a piece of no length, grows no box: the walk below
+   * answers it */
+  bool indexed = (ncomp > 0 && seed > 0.0);
   for (int i = 0; i < ncomp && indexed; i++)
     indexed = (comps[i].re.index != NULL);
   if (indexed)
   {
     MeosArray *candidates = index_result_create();
-    double r = seed > MEOS_GEOM_TOLERANCE ? seed : MEOS_GEOM_TOLERANCE;
+    double r = seed;
     for (int round = 0; round < 64; round++)
     {
-      double best = -1;
+      double best2 = -1;
       for (int i = 0; i < ncomp; i++)
       {
         int nc = edge_index_query(comps[i].re.index, comps[i].re.edges,
@@ -15787,43 +20029,45 @@ relate_clearance(double x, double y, const RelateComp *comps, int ncomp,
         for (int c = 0; c < nc; c++)
         {
           int j = (int) INDEX_RESULT_ID_N(candidates, c);
-          double d = relate_edge_distance(x, y, comps[i].edges[j]);
+          const Edge *e = comps[i].edges[j];
+          double d2 = point_edge_dist2(x, y, e);
           /* An edge the point LIES ON is no clearance from it. What the
            * distance misses the edge by is a property of the arithmetic --
            * a few units in the last place of the largest coordinate -- so an
            * absolute floor leaves a point on its own edge reading as a
            * feature a rounding step away */
-          if (d <= comps[i].edges[j]->tol)
+          if (d2 <= e->tol * e->tol)
             continue;
-          if (best < 0 || d < best)
-            best = d;
+          if (best2 < 0 || d2 < best2)
+            best2 = d2;
         }
       }
-      if (best >= 0 && best <= r)
+      if (best2 >= 0 && best2 <= r * r)
       {
         meos_array_destroy(candidates);
-        return best;
+        return sqrt(best2);
       }
       r *= 4;
     }
     meos_array_destroy(candidates);
   }
-  double result = -1;
+  double result2 = -1;
   for (int i = 0; i < ncomp; i++)
     for (int j = 0; j < comps[i].nedges; j++)
     {
-      double d = relate_edge_distance(x, y, comps[i].edges[j]);
+      const Edge *e = comps[i].edges[j];
+      double d2 = point_edge_dist2(x, y, e);
       /* An edge the point LIES ON is no clearance from it. What the
        * distance misses the edge by is a property of the arithmetic --
        * a few units in the last place of the largest coordinate -- so an
        * absolute floor leaves a point on its own edge reading as a
        * feature a rounding step away */
-      if (d <= comps[i].edges[j]->tol)
+      if (d2 <= e->tol * e->tol)
         continue;
-      if (result < 0 || d < result)
-        result = d;
+      if (result2 < 0 || d2 < result2)
+        result2 = d2;
     }
-  return result;
+  return (result2 < 0) ? -1 : sqrt(result2);
 }
 
 /**
@@ -15882,11 +20126,14 @@ relate_portion_inside_union(const Edge *e, double t, const RelateComp *comps,
     if (reaching < 2)
       return false;
   }
-  /* The portion's own edge sets the scale the search starts at: the feature
-   * nearest a point of a boundary is normally the next one along it */
+  /* The portion's own edge sets the scale the search starts at, a length: the
+   * radius of an arc, and a sixteenth of the larger extent of a segment's box,
+   * which no root reaches and which a power of two keeps exact under scaling.
+   * The box of the first round then holds the features nearest a point of a
+   * boundary, normally the next ones along it, and few others */
   double delta = relate_clearance(x, y, comps, ncomp,
     e->etype == EDGE_POLYARC || e->etype == EDGE_LINEARC ?
-      e->radius : e->length);
+      e->radius : 0.0625 * Max(fabs(e->dx), fabs(e->dy)));
   if (delta <= 0)
     return false;
   delta *= 0.5;
@@ -16435,6 +20682,92 @@ relate_members_apart(const LWGEOM *geom)
   return relate_members_apart_within(geom, RELATE_INDEX_MIN_PAIRS);
 }
 
+/* What fixes a parameter an edge of a union is cut at (#relate_union_edges):
+ * an end of the edge or a meeting held only rounded, the crossing of a
+ * segment, or a vertex of the edge running along it */
+typedef enum
+{
+  RELATE_CUT_ROUNDED,
+  RELATE_CUT_CROSSING,
+  RELATE_CUT_VERTEX1,
+  RELATE_CUT_VERTEX2
+} RelateCutKind;
+
+/* A parameter an edge of a union is cut at, with the edge that cuts it */
+typedef struct
+{
+  double t;
+  RelateCutKind kind;
+  const Edge *by;
+} RelateCut;
+
+/**
+ * @brief Sort the cuts of an edge by their parameter, as
+ * #relate_area_parameter_cmp sorts the parameters
+ */
+static int
+relate_cut_cmp(const void *a, const void *b)
+{
+  return relate_area_parameter_cmp(&((const RelateCut *) a)->t,
+    &((const RelateCut *) b)->t);
+}
+
+/**
+ * @brief Add a parameter to the cuts of an edge, as #relate_area_add_parameter
+ * adds it, recording what cuts the edge there where it is added
+ */
+static void
+relate_union_add_cut(double t, RelateCutKind kind, const Edge *by,
+  double *params, RelateCut *cuts, int *nparams, int maxparams)
+{
+  int n = *nparams;
+  relate_area_add_parameter(t, params, nparams, maxparams);
+  if (*nparams > n)
+  {
+    cuts[n].t = params[n];
+    cuts[n].kind = kind;
+    cuts[n].by = by;
+  }
+  return;
+}
+
+/**
+ * @brief Set an end of a piece of an edge of a union to the point it is cut
+ * at, keeping what fixes that point exactly
+ * @details A vertex of an edge running along this one is that input vertex. A
+ * crossing of two segments is a point no double holds: the piece holds it
+ * rounded once and keeps the input segment crossing it, so that every
+ * question about that end reads the crossing (#relate_segments_intersect)
+ */
+static void
+relate_union_piece_end(const Edge *e, const RelateCut *cut, int end,
+  Edge *piece)
+{
+  double *x = end ? &piece->x2 : &piece->x1;
+  double *y = end ? &piece->y2 : &piece->y1;
+  switch (cut->kind)
+  {
+    case RELATE_CUT_VERTEX1:
+      *x = cut->by->x1; *y = cut->by->y1;
+      return;
+    case RELATE_CUT_VERTEX2:
+      *x = cut->by->x2; *y = cut->by->y2;
+      return;
+    case RELATE_CUT_CROSSING:
+      piece->crossed[end] = true;
+      piece->crosser[end][0] = cut->by->x1;
+      piece->crosser[end][1] = cut->by->y1;
+      piece->crosser[end][2] = cut->by->x2;
+      piece->crosser[end][3] = cut->by->y2;
+      relate_area_edge_point(e, cut->t, x, y);
+      return;
+    case RELATE_CUT_ROUNDED:
+      relate_area_edge_point(e, cut->t, x, y);
+      return;
+  }
+  return;
+}
+
 /**
  * @brief Return the edges of a collection, carrying the boundary of the union
  * of its areal components in place of the boundaries of the components
@@ -16474,6 +20807,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
   MeosArray *result = meos_array_create(sizeof(Edge));
   int maxparams = 2 * nall + 2;
   double *params = palloc(sizeof(double) * maxparams);
+  RelateCut *cuts = palloc(sizeof(RelateCut) * maxparams);
   /* Every edge is asked against every other, so the walk costs the SQUARE of
    * the array while indexing it costs one pass. Two edges that meet have
    * boxes that meet, so the index answers the pairs the walk would split at
@@ -16497,6 +20831,8 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     int nparams = 0;
     params[nparams++] = 0.0;
     params[nparams++] = 1.0;
+    cuts[0] = (RelateCut) {0.0, RELATE_CUT_ROUNDED, NULL};
+    cuts[1] = (RelateCut) {1.0, RELATE_CUT_ROUNDED, NULL};
     /* The query is grown by the widest tolerance the array asks for, which is
      * what makes it admit every edge the walk would have solved against */
     int ncand = nall;
@@ -16521,30 +20857,42 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
          * is where the other one starts and ends, not the two points an
          * intersection reports for a pair that merely crosses */
         if (relate_point_on_edge(other->x1, other->y1, e, false))
-          relate_area_add_parameter(relate_area_edge_parameter(e, other->x1,
-            other->y1), params, &nparams, maxparams);
+          relate_union_add_cut(relate_area_edge_parameter(e, other->x1,
+            other->y1), RELATE_CUT_VERTEX1, other, params, cuts, &nparams,
+            maxparams);
         if (relate_point_on_edge(other->x2, other->y2, e, false))
-          relate_area_add_parameter(relate_area_edge_parameter(e, other->x2,
-            other->y2), params, &nparams, maxparams);
+          relate_union_add_cut(relate_area_edge_parameter(e, other->x2,
+            other->y2), RELATE_CUT_VERTEX2, other, params, cuts, &nparams,
+            maxparams);
         continue;
       }
+      /* Two segments cross at one point, which the input segment of the
+       * other one fixes; an arc's meeting is held rounded */
+      RelateCutKind kind = (n == 1 && e->etype == EDGE_POLYSEG &&
+        other->etype == EDGE_POLYSEG && ! other->cut) ?
+        RELATE_CUT_CROSSING : RELATE_CUT_ROUNDED;
       for (int k = 0; k < n; k++)
-        relate_area_add_parameter(relate_area_edge_parameter(e, ix[k], iy[k]),
-          params, &nparams, maxparams);
+        relate_union_add_cut(relate_area_edge_parameter(e, ix[k], iy[k]),
+          kind, other, params, cuts, &nparams, maxparams);
     }
-    qsort(params, nparams, sizeof(double), relate_area_parameter_cmp);
+    qsort(cuts, nparams, sizeof(RelateCut), relate_cut_cmp);
 
     for (int k = 0; k < nparams - 1; k++)
     {
-      double t0 = params[k], t1 = params[k + 1];
+      double t0 = cuts[k].t, t1 = cuts[k + 1].t;
       if (t1 - t0 <= MEOS_GEOM_TOLERANCE)
         continue;
       if (relate_portion_inside_union(e, (t0 + t1) * 0.5, comps, ncomp))
         continue;
-      /* The portion lies on the boundary of the union, so it is kept */
+      /* The portion lies on the boundary of the union, so it is kept. An end
+       * of the edge is the input vertex itself; any other end is constructed
+       * on the edge and rounded once */
       Edge piece = *e;
-      relate_area_edge_point(e, t0, &piece.x1, &piece.y1);
-      relate_area_edge_point(e, t1, &piece.x2, &piece.y2);
+      piece.crossed[0] = piece.crossed[1] = false;
+      if (t0 > 0.0)
+        relate_union_piece_end(e, &cuts[k], 0, &piece);
+      if (t1 < 1.0)
+        relate_union_piece_end(e, &cuts[k + 1], 1, &piece);
       if (piece.etype == EDGE_POLYARC)
       {
         piece.theta0 = atan2(piece.y1 - piece.cy, piece.x1 - piece.cx);
@@ -16553,9 +20901,18 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
       }
       else
       {
+        /* A constructed end falls off the line of the input segment, which
+         * the piece keeps, so that whether it runs along a segment of another
+         * geometry is read on that line (#relate_segments_intersect) */
+        if ((t0 > 0.0 || t1 < 1.0) && ! e->cut)
+        {
+          piece.sx = e->x1; piece.sy = e->y1;
+          piece.ex = e->x2; piece.ey = e->y2;
+          piece.cut = true;
+        }
         piece.dx = piece.x2 - piece.x1;
         piece.dy = piece.y2 - piece.y1;
-        piece.length = hypot(piece.dx, piece.dy);
+        piece.length = piece.dx * piece.dx + piece.dy * piece.dy;
         piece.xmin = Min(piece.x1, piece.x2);
         piece.xmax = Max(piece.x1, piece.x2);
         piece.ymin = Min(piece.y1, piece.y2);
@@ -16571,6 +20928,7 @@ relate_union_edges(const LWGEOM *geom, MeosArray *all)
     }
   }
   pfree(params);
+  pfree(cuts);
   if (candidates)
     meos_array_destroy(candidates);
   relate_edges_clear(&re);
@@ -17093,7 +21451,7 @@ relate_dispatch(const LWGEOM *g1, const LWGEOM *g2, int mask1, int mask2,
  * dimension of the boundary of a linear geometry reads the parity of all its
  * endpoints, which a query answered by the interiors does not pay
  * @param[in] g1,g2 Geometries
- * @param[in] q Query, NULL for the whole matrix
+ * @param[in] q Query, NULL for the whole matrix @nullable
  * @param[in,out] m Matrix, initialized by the caller
  */
 static void
@@ -17183,7 +21541,7 @@ relate_extents_apart(const LWGEOM *g1, const LWGEOM *g2)
  * @param[in] g1,g2 Geometries
  * @param[in] ops Operands of the relationship the matrix answers a step of,
  * NULL where the matrix is asked for on its own
- * @param[in] q Query the matrix answers, NULL for the whole matrix
+ * @param[in] q Query the matrix answers, NULL for the whole matrix @nullable
  * @param[in] meet True where the caller has found that the geometries share a
  * point, which settles that neither is empty and that their extents are not
  * apart
@@ -17731,6 +22089,163 @@ relate_edge_pointers(const MeosArray *arr)
 }
 
 /**
+ * @brief Return true if a point lies in or on a geometry of straight edges,
+ * read on its input coordinates
+ * @details Each member is read alone, so members that overlap need no union:
+ * a point in or on any member is a point of the geometry, as GEOS locates a
+ * point against the polygons of a collection one by one
+ * (`RelatePointLocator::locateOnPolygons`). A curve is not read, and a point
+ * it alone would hold answers false, which a caller reads as nothing known
+ */
+static bool
+relate_geom_holds_vertex(const LWGEOM *g, double x, double y)
+{
+  if (lwgeom_is_empty(g))
+    return false;
+  /* The box read from a serialized value is rounded outward, so a point
+   * outside it is outside the geometry */
+  if (g->bbox && (x < g->bbox->xmin || x > g->bbox->xmax ||
+      y < g->bbox->ymin || y > g->bbox->ymax))
+    return false;
+  switch (g->type)
+  {
+    case POINTTYPE:
+    {
+      const POINT2D *p = getPoint2d_cp(((const LWPOINT *) g)->point, 0);
+      return p->x == x && p->y == y;
+    }
+    case LINETYPE:
+    {
+      const POINTARRAY *pa = ((const LWLINE *) g)->points;
+      for (uint32_t i = 0; i + 1 < pa->npoints; i++)
+      {
+        const POINT2D *a = getPoint2d_cp(pa, i);
+        const POINT2D *b = getPoint2d_cp(pa, i + 1);
+        if (point_on_segment_exact(x, y, a->x, a->y, b->x, b->y))
+          return true;
+      }
+      return false;
+    }
+    /* An input vertex in a polygon or on one of its rings, read exactly by
+     * #point_in_rings_exact, which answers 0 only outside */
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) g;
+      const POINT2D pt = {x, y};
+      return point_in_rings_exact(&pt, poly->rings, poly->nrings) != 0;
+    }
+    case TRIANGLETYPE:
+    {
+      POINTARRAY *ring = ((const LWTRIANGLE *) g)->points;
+      const POINT2D pt = {x, y};
+      return point_in_rings_exact(&pt, &ring, 1) != 0;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) g;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (relate_geom_holds_vertex(coll->geoms[i], x, y))
+          return true;
+      return false;
+    }
+    /* What a curve holds is not read here, and the edges answer it */
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+      return false;
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return false;
+  }
+}
+
+/**
+ * @brief Return in the last arguments the first input vertex of a geometry,
+ * false where it has none
+ * @details As #lwgeom_startpoint reads it, for every type a geometry of
+ * the engine carries: that function raises on a multisurface or a
+ * multicurve, where a question that only looks for a witness must answer
+ * nothing. A collection, a compound curve and a curve polygon are read
+ * through their members (#lwgeom_is_collection)
+ */
+static bool
+relate_geom_first_vertex(const LWGEOM *g, double *x, double *y)
+{
+  if (lwgeom_is_empty(g))
+    return false;
+  const POINTARRAY *pa = NULL;
+  switch (g->type)
+  {
+    case POINTTYPE:
+      pa = ((const LWPOINT *) g)->point;
+      break;
+    case LINETYPE:
+    case CIRCSTRINGTYPE:
+    case TRIANGLETYPE:
+      pa = ((const LWLINE *) g)->points;
+      break;
+    case POLYGONTYPE:
+      pa = ((const LWPOLY *) g)->nrings > 0 ? ((const LWPOLY *) g)->rings[0] :
+        NULL;
+      break;
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case COMPOUNDTYPE:
+    case CURVEPOLYTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) g;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (relate_geom_first_vertex(coll->geoms[i], x, y))
+          return true;
+      return false;
+    }
+    default:
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+        "Unsupported geometry type");
+      return false;
+  }
+  if (! pa || pa->npoints == 0)
+    return false;
+  const POINT2D *p = getPoint2d_cp(pa, 0);
+  *x = p->x;
+  *y = p->y;
+  return true;
+}
+
+/**
+ * @brief Return true if the first vertex of one geometry lies in or on the
+ * other, read on the input coordinates of both, with no edge extracted
+ * @details As GEOS RelateNG locates a vertex before it reads an edge
+ * (`RelateNG::computeAreaVertex`), a pair that meets mostly shows it at the
+ * first vertex of one or the other, and extracting the edges is then what
+ * the answer would have cost. The distance walk reads the same first vertex
+ * (#geom_distance_first_point) against the polygons of the other. A false
+ * answer says nothing, and the caller reads the edges
+ */
+static bool
+relate_vertex_witness(const LWGEOM *from, const LWGEOM *in)
+{
+  double x, y;
+  if (! relate_geom_first_vertex(from, &x, &y))
+    return false;
+  return relate_geom_holds_vertex(in, x, y);
+}
+
+/**
  * @brief Return whether two geometries share a point
  * @details This is the `INTERSECTS` relationship, which #meos_spatialrel
  * reads from the DE-9IM matrix as the pattern `FF*FF****` failing. Answering
@@ -17748,7 +22263,16 @@ meos_intersects(const RelateOperands *ops, bool *result)
    * edges of the union, which only a pair no curve of which meets the other
    * asks (#relate_edges_within). The two are one array except for a
    * collection #relate_reads_union names */
-  MeosArray *own[2] = {ops->op[0].own, ops->op[1].own};
+  /* The first vertex of either geometry in or on the other is a point they
+   * share, read before any edge of either (#relate_vertex_witness) */
+  if (relate_vertex_witness(ops->op[1].geom, ops->op[0].geom) ||
+      relate_vertex_witness(ops->op[0].geom, ops->op[1].geom))
+  {
+    *result = true;
+    return;
+  }
+  MeosArray *own[2] = {relate_operand_own(&ops->op[0]),
+    relate_operand_own(&ops->op[1])};
   Edge **eo[2] = {relate_edge_pointers(own[0]), relate_edge_pointers(own[1])};
 
   /* Every question this kernel asks reads one of the two arrays once per edge
@@ -17766,7 +22290,8 @@ meos_intersects(const RelateOperands *ops, bool *result)
     *result = (meet > 0);
   else
   {
-    MeosArray *area[2] = {ops->op[0].arr, ops->op[1].arr};
+    MeosArray *area[2] = {relate_operand_arr(&ops->op[0]),
+      relate_operand_arr(&ops->op[1])};
     bool aindex = (double) area[0]->count * (double) area[1]->count >=
       RELATE_INDEX_MIN_PAIRS;
     RelateEdges ra[2];
@@ -17818,7 +22343,8 @@ static void
 meos_covers_possible(const RelateOperands *ops, bool *result)
 {
   assert(ops); assert(result);
-  MeosArray *a1 = ops->op[0].arr, *a2 = ops->op[1].arr;
+  const MeosArray *a1 = relate_operand_arr(&ops->op[0]);
+  const MeosArray *a2 = relate_operand_arr(&ops->op[1]);
   Edge **e1 = relate_edge_pointers(a1);
   Edge **e2 = relate_edge_pointers(a2);
 
@@ -17960,9 +22486,13 @@ relate_ctx_make(const LWGEOM *geom)
     return NULL;
   struct RelateCtx *ctx = palloc(sizeof(struct RelateCtx));
   ctx->op.geom = geom;
-  ctx->op.own = geom_extract_edges(geom);
-  ctx->op.arr = relate_reads_union(geom) ?
-    relate_union_edges(geom, ctx->op.own) : ctx->op.own;
+  /* The edges and the union of a collection's members are read the first
+   * time a question asks for them (#relate_operand_own,
+   * #relate_operand_arr), and kept here for every call that borrows the
+   * context */
+  ctx->op.own = ctx->op.arr = NULL;
+  ctx->op.ownkept = &ctx->op.own;
+  ctx->op.kept = &ctx->op.arr;
   ctx->index = NULL;
   ctx->op.index = &ctx->index;
   return ctx;
@@ -18487,9 +23017,10 @@ relate_ctx_free(void *ctxv)
     return;
   if (ctx->index)
     edge_index_free(ctx->index);
-  if (ctx->op.own != ctx->op.arr)
+  if (ctx->op.own && ctx->op.own != ctx->op.arr)
     meos_array_destroy(ctx->op.own);
-  meos_array_destroy(ctx->op.arr);
+  if (ctx->op.arr)
+    meos_array_destroy(ctx->op.arr);
   pfree(ctx);
   return;
 }

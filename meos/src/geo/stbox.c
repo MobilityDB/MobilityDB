@@ -74,6 +74,7 @@
   #include "pointcloud/pcpatch.h"
   #include "pointcloud/pcpoint.h"
   #include "pointcloud/tpc_boxops.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 #if POSE
   #include "pose/pose.h"
@@ -400,7 +401,7 @@ stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out)
  * @param[in] srid SRID
  * @param[in] xmin,ymin,zmin Minimum bounds for the spatial dimension
  * @param[in] xmax,ymax,zmax Maximum bounds for the spatial dimension
- * @param[in] s Span, may be `NULL`
+ * @param[in] s Span @nullable
  * @csqlfn #Stbox_constructor_x(), #Stbox_constructor_z(),
  *   #Stbox_constructor_t(), #Stbox_constructor_xt(), #Stbox_constructor_zt(),
  *   #Geodstbox_constructor_z(), #Geodstbox_constructor_zt()
@@ -1143,7 +1144,7 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
       PCSCHEMA *schema = meos_pc_schema(pcpoint_get_pcid(pt));
       if (! schema)
         return false;
-      TPCBox *box = pcpoint_to_tpcbox(pt, schema);
+      TPCBox *box = pcpoint_schema_to_tpcbox(pt, schema);
       if (! box)
         return false;
       tpcbox_set_stbox(box, result);
@@ -1153,7 +1154,7 @@ spatial_set_stbox(Datum d, MeosType basetype, STBox *result)
     case T_PCPATCH:
     {
       const Pcpatch *pa = DatumGetPcpatchP(d);
-      TPCBox *box = pcpatch_to_tpcbox(pa,
+      TPCBox *box = pcpatch_srid_to_tpcbox(pa,
         meos_pc_schema_srid(pcpatch_get_pcid(pa)));
       if (! box)
         return false;
@@ -1604,8 +1605,8 @@ stboxarr_round(const STBox *boxarr, int count, int maxdd)
  * @brief Return a spatiotemporal box with the time span expanded and/or scaled
  * by two intervals
  * @param[in] box Spatiotemporal box
- * @param[in] shift Interval to shift the value span, may be `NULL`
- * @param[in] duration Duration of the result, may be `NULL`
+ * @param[in] shift Interval to shift the value span @nullable
+ * @param[in] duration Duration of the result @nullable
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *
@@ -3105,6 +3106,103 @@ bool
 stbox_gt(const STBox *box1, const STBox *box2)
 {
   return stbox_cmp(box1, box2) > 0;
+}
+
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @brief Return the number of bytes of the sort key of a spatiotemporal box
+ * @param[in] box Spatiotemporal box
+ */
+size_t
+stbox_sortkey_size(const STBox *box)
+{
+  size_t result = 2 * datum_sortkey_size(T_INT4);
+  if (MEOS_FLAGS_GET_T(box->flags))
+    result += span_sortkey_body_size(box->period.basetype);
+  if (MEOS_FLAGS_GET_X(box->flags))
+    result += (MEOS_FLAGS_GET_Z(box->flags) ? 6 : 4) *
+      datum_sortkey_size(T_FLOAT8);
+  return result;
+}
+
+/**
+ * @brief Write the sort key of a spatiotemporal box
+ * @details The fields are written in the order #stbox_cmp compares them: the
+ * SRID, the flags, the bounds of the period when the box has a time
+ * dimension, then the minima and the maxima of the coordinates the box
+ * carries
+ * @param[in] box Spatiotemporal box
+ * @param[out] out Buffer of #stbox_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+stbox_sortkey_put(const STBox *box, uint8_t *out)
+{
+  size_t n = datum_sortkey_size(T_INT4);
+  datum_sortkey_put(Int32GetDatum(box->srid), T_INT4, out);
+  out += n;
+  datum_sortkey_put(Int32GetDatum(box->flags), T_INT4, out);
+  out += n;
+  if (MEOS_FLAGS_GET_T(box->flags))
+    out = span_sortkey_body(&box->period, out);
+  if (MEOS_FLAGS_GET_X(box->flags))
+  {
+    bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+    double coords[6] = {box->xmin, box->ymin, box->zmin, box->xmax,
+      box->ymax, box->zmax};
+    size_t d = datum_sortkey_size(T_FLOAT8);
+    for (int i = 0; i < 6; i++)
+    {
+      /* The z coordinates are read only when the box has a z dimension */
+      if (! hasz && (i == 2 || i == 5))
+        continue;
+      datum_sortkey_put(Float8GetDatum(coords[i]), T_FLOAT8, out);
+      out += d;
+    }
+  }
+  return out;
+}
+
+/**
+ * @ingroup meos_internal_geo_box_comp
+ * @brief Return the sort key of a spatiotemporal box
+ * @details The key is the SRID and the flags, written as integers, the bounds
+ * of the period when the box has a time dimension, as #span_sortkey_intl
+ * writes them, then the minima and the maxima of the coordinates the box
+ * carries, so that comparing two keys byte by byte as unsigned values orders
+ * the boxes as #stbox_cmp does and two boxes have the same key when
+ * #stbox_eq holds
+ * @param[in] box Spatiotemporal box
+ * @param[out] size Number of bytes of the key
+ * @see #stbox_sortkey
+ */
+uint8_t *
+stbox_sortkey_intl(const STBox *box, size_t *size)
+{
+  assert(box); assert(size);
+  *size = stbox_sortkey_size(box);
+  uint8_t *result = palloc(*size);
+  stbox_sortkey_put(box, result);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_box_comp
+ * @brief Return the sort key of a spatiotemporal box, the bytes whose unsigned
+ * byte order is the order of #stbox_cmp and whose byte equality is #stbox_eq
+ * @param[in] box Spatiotemporal box
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+stbox_sortkey(const STBox *box, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(size, NULL);
+  return stbox_sortkey_intl(box, size);
 }
 
 /*****************************************************************************/

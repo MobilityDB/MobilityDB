@@ -285,6 +285,13 @@ SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{Cbuffer(Point(1 1),0.
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', 2);
 SELECT eDwithin(geometry 'Linestring(1 1,2 2)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}', 2);
 
+-- A buffer whose nearest approach to a point exceeds the bound by less than
+-- half a unit in the last place, so that the distance rounds onto the bound:
+-- never within at the bound, within at the next double
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+SELECT eDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317312);
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(527907.1297028208 6071945.5835641585),44.08996977335839)@2025-01-01 15:52:39+01, Cbuffer(Point(527907.3359142023 6071953.819442066),44.08996977335839)@2025-01-01 15:55:40+01]', geometry 'Point(500301.77828158485 6334704.844821885)', 264153.1245317311);
+
 SELECT eDwithin(tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
 SELECT eDwithin(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03}', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]', tcbuffer 'Cbuffer(Point(1 1),0.5)@2001-01-01', 2);
@@ -311,6 +318,15 @@ SELECT eDwithin(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(0 0
 -- 64.9 m from the second, so the discs of radius 10 km overlap mid-segment
 SELECT eDwithin(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]', 100);
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(579857.891 6033318.651),10000)@2025-01-01 16:35:22+01, Cbuffer(Point(907012.682 6077040.908),10000)@2025-01-01 16:35:26+01]', tcbuffer '[Cbuffer(Point(861632.965 6071043.606),10000)@2025-01-01 16:35:21+01, Cbuffer(Point(861552.021 6071027.955),10000)@2025-01-01 16:35:32+01]');
+
+/* Two discs meet where the distance of their centres is the sum of their radii:
+ * a disc passing a disc at exactly that distance midway through three
+ * microseconds touches it at 1.5 microseconds, one passing 2^-40 nearer meets
+ * it during a few microseconds of a day, and one passing 2^-40 farther never
+ * meets it */
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-1 1),0.5)@2001-01-01 00:00:00, Cbuffer(Point(1 1),0.5)@2001-01-01 00:00:00.000003]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01 00:00:00, Cbuffer(Point(0 0),0.5)@2001-01-01 00:00:00.000003]');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-10 0.9999999999990905),0.5)@2001-01-01, Cbuffer(Point(10 0.9999999999990905),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-02]');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(-10 1.0000000000009095),0.5)@2001-01-01, Cbuffer(Point(10 1.0000000000009095),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(0 0),0.5)@2001-01-02]');
 
 -- No shared time (active periods fall in the other's gap) is NULL for every
 -- box-short-circuited predicate, not a spurious value.

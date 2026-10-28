@@ -74,13 +74,16 @@ SELECT COUNT(*) FROM tbl_nsegment WHERE ns::geometry IS NOT NULL;
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_npoint WHERE np = (np::geometry)::npoint;
+SELECT COUNT(*) FROM tbl_npoint WHERE route(np) = route((np::geometry)::npoint) AND
+  abs(getPosition(np) - getPosition((np::geometry)::npoint)) <= 1e-12;
  count 
 -------
    100
 (1 row)
 
-SELECT COUNT(*) FROM tbl_nsegment WHERE ns = (ns::geometry)::nsegment;
+SELECT COUNT(*) FROM tbl_nsegment WHERE route(ns) = route((ns::geometry)::nsegment) AND
+  abs(startPosition(ns) - startPosition((ns::geometry)::nsegment)) <= 1e-12 AND
+  abs(endPosition(ns) - endPosition((ns::geometry)::nsegment)) <= 1e-12;
  count 
 -------
    100

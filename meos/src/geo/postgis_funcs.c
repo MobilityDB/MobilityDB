@@ -1593,14 +1593,15 @@ geom_distance_nsegs(const POINTARRAY *pa)
 }
 
 /**
- * @brief Return the ends of the segment of rank @p k of a point array
+ * @brief Return the ends of the segment of rank @p k of a point array, each
+ * the coordinates of a point, its x first
  */
 static void
-geom_distance_seg(const POINTARRAY *pa, uint32_t k, const POINT2D **a,
-  const POINT2D **b)
+geom_distance_seg(const POINTARRAY *pa, uint32_t k, const double **a,
+  const double **b)
 {
-  *a = getPoint2d_cp(pa, k);
-  *b = getPoint2d_cp(pa, (pa->npoints == 1) ? k : k + 1);
+  *a = (const double *) getPoint2d_cp(pa, k);
+  *b = (const double *) getPoint2d_cp(pa, (pa->npoints == 1) ? k : k + 1);
 }
 
 /**
@@ -1610,29 +1611,137 @@ geom_distance_seg(const POINTARRAY *pa, uint32_t k, const POINT2D **a,
  * the largest coordinate of the exact distance, far below the margin that
  * walk allows it: it passes over a pair and decides no answer
  */
-static double
-geom_distance_pt_seg_sqr(const POINT2D *p, const POINT2D *a,
-  const POINT2D *b)
+static pg_attribute_always_inline double
+geom_distance_pt_seg_sqr(const double *p, const double *a, const double *b,
+  int ndims)
 {
-  double ux = b->x - a->x, uy = b->y - a->y, l2 = ux * ux + uy * uy;
-  double t = (l2 > 0.0) ? ((p->x - a->x) * ux + (p->y - a->y) * uy) / l2 : 0.0;
+  double u[3], w[3], l2 = 0.0, wu = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    u[i] = b[i] - a[i];
+    w[i] = p[i] - a[i];
+    l2 += u[i] * u[i];
+    wu += w[i] * u[i];
+  }
+  double t = (l2 > 0.0) ? wu / l2 : 0.0;
   t = (t < 0.0) ? 0.0 : ((t > 1.0) ? 1.0 : t);
-  double dx = p->x - (a->x + t * ux), dy = p->y - (a->y + t * uy);
-  return dx * dx + dy * dy;
+  double result = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double dd = p[i] - (a[i] + t * u[i]);
+    result += dd * dd;
+  }
+  return result;
 }
 
 /**
- * @brief Return in the last two arguments the gaps of the boxes of two
- * segments along x and along y, 0 where they overlap along it
+ * @brief Return the lesser of two doubles as `fmin` answers it, the number
+ * where one is NaN, with no call
+ * @note Only the sign of a zero may differ from `fmin`, which no bound of the
+ * distance walks reads
  */
-static void
-geom_distance_box_gaps(const POINT2D *a, const POINT2D *b, const POINT2D *c,
-  const POINT2D *d, double *gx, double *gy)
+static inline double
+geom_distance_fmin(double x, double y)
 {
-  *gx = fmax(fmax(fmin(c->x, d->x) - fmax(a->x, b->x),
-    fmin(a->x, b->x) - fmax(c->x, d->x)), 0.0);
-  *gy = fmax(fmax(fmin(c->y, d->y) - fmax(a->y, b->y),
-    fmin(a->y, b->y) - fmax(c->y, d->y)), 0.0);
+  return (x < y || isnan(y)) ? x : y;
+}
+
+/**
+ * @brief Return the greater of two doubles as `fmax` answers it, the number
+ * where one is NaN, with no call
+ * @note Only the sign of a zero may differ from `fmax`, which no bound of the
+ * distance walks reads
+ */
+static inline double
+geom_distance_fmax(double x, double y)
+{
+  return (x > y || isnan(y)) ? x : y;
+}
+
+/**
+ * @brief Set the box of a segment, the least and the greatest of its two ends
+ * along each coordinate
+ * @pre Every coordinate is finite, where a comparison answers as `fmin` and
+ * `fmax` do
+ */
+static pg_attribute_always_inline void
+geom_distance_seg_box(const double *a, const double *b, int ndims,
+  double *lo, double *hi)
+{
+  for (int i = 0; i < ndims; i++)
+  {
+    bool less = a[i] < b[i];
+    lo[i] = less ? a[i] : b[i];
+    hi[i] = less ? b[i] : a[i];
+  }
+}
+
+/**
+ * @brief Return true where the box of a segment, given by its least and
+ * greatest coordinates, and the box of another segment lie farther apart than
+ * the root of a bound on the squared distance, and otherwise set @p overlap
+ * to whether they overlap along every coordinate
+ * @details The squared gaps are summed coordinate by coordinate, each partial
+ * sum a lower bound, moved down past its rounding, and a sum below 2^-900
+ * passes over nothing
+ * @pre Every coordinate is finite (#geom_distance_seg_box)
+ */
+static pg_attribute_always_inline bool
+geom_distance_box_beyond(const double *lo, const double *hi,
+  const double *c, const double *d, int ndims, double bound, bool *overlap)
+{
+  double sum = 0.0;
+  *overlap = true;
+  for (int i = 0; i < ndims; i++)
+  {
+    bool less = c[i] < d[i];
+    double clo = less ? c[i] : d[i], chi = less ? d[i] : c[i];
+    double g;
+    if (clo > hi[i])
+      g = clo - hi[i];
+    else if (lo[i] > chi)
+      g = lo[i] - chi;
+    else
+      continue;
+    *overlap = false;
+    sum += g * g;
+    double lb2 = sum * (1.0 - 0x1p-48);
+    if (lb2 >= 0x1p-900 && lb2 > bound)
+      return true;
+  }
+  return false;
+}
+
+/** Point arrays of a geometry whose boxes the distance walk holds on the
+ * stack */
+#define GEOM_DISTANCE_BOXES 32
+
+/**
+ * @brief Return true where two boxes, each its least coordinates then its
+ * greatest, lie farther apart than the root of a bound on the squared
+ * distance, as #geom_distance_box_beyond compares the boxes of two segments
+ * @pre Every coordinate is finite
+ */
+static pg_attribute_always_inline bool
+geom_distance_boxes_beyond(const double *box1, const double *box2, int ndims,
+  double bound)
+{
+  double sum = 0.0;
+  for (int i = 0; i < ndims; i++)
+  {
+    double g;
+    if (box2[i] > box1[3 + i])
+      g = box2[i] - box1[3 + i];
+    else if (box1[i] > box2[3 + i])
+      g = box1[i] - box2[3 + i];
+    else
+      continue;
+    sum += g * g;
+    double lb2 = sum * (1.0 - 0x1p-48);
+    if (lb2 >= 0x1p-900 && lb2 > bound)
+      return true;
+  }
+  return false;
 }
 
 /**
@@ -1689,26 +1798,306 @@ geom_distance_first_point(const LWGEOM *part)
     NULL;
 }
 
+/** A pair of segments whose distance may be the least, and a lower bound of
+ * it (#geom_distance_walk) */
+typedef struct
+{
+  const double *a, *b, *c, *d;   /**< The ends of the two segments */
+  double lo;                     /**< Lower bound of their distance */
+} GeomDistanceCand;
+
+/** Candidate pairs the distance walk holds on the stack */
+#define GEOM_DISTANCE_CANDS 32
+
+/**
+ * @brief Bound the distance of a pair of segments in doubles for the first
+ * tier of #geom_distance_walk, keeping the pair where its lower bound reaches
+ * the least upper bound found; return false where the segments meet
+ * @details In 2D two segments whose boxes overlap meet by an exact
+ * intersection test (#linesegm_intersect). Where the coordinates are within a
+ * factor 2^400 of 1, the distance of the ends in doubles lies within the
+ * margin of the exact one, and so bounds the distance where the nearest point
+ * is an end: always in 2D, and in 3D where the evaluation in doubles places
+ * the nearest points of the lines outside a segment
+ * (#segment_interior_range), which otherwise bounds the distance of the
+ * lines inside both or, where it cannot tell, leaves 0 as the lower bound.
+ * Outside that range the pair is answered exactly at once
+ */
+static pg_attribute_always_inline bool
+geom_distance_visit(const double *a, const double *b, const double *c,
+  const double *d, bool overlap, int ndims, bool filter, double big,
+  double ext, double margin,
+  GeomDistanceCand **cand, const GeomDistanceCand *candstack, int *ncand,
+  int *maxcand, double *minhi, double *best)
+{
+  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
+      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
+    return false;
+  if (! filter)
+  {
+    double v = segment_distance_exact_bounded(a, b, c, d, ndims, big);
+    *best = geom_distance_fmin(*best, v);
+    return v > 0.0;
+  }
+  double lo = 0.0, hi = 0.0;
+  int side = -1;
+  if (ndims == 3)
+  {
+    /* The interval of the squared distance of GTE's closest parameters and
+     * of the Frank-Wolfe gap (#segment_distance_range), its roots moved out
+     * past their rounding */
+    double uu[3], vv[3], la = 0.0, lc = 0.0;
+    for (int k = 0; k < 3; k++)
+    {
+      uu[k] = b[k] - a[k];
+      vv[k] = d[k] - c[k];
+      la += uu[k] * uu[k];
+      lc += vv[k] * vv[k];
+    }
+    double lo2, hi2;
+    if (segment_distance_range(a, uu, la, c, vv, lc, 3, ext, &lo2, &hi2))
+    {
+      lo = sqrt(lo2) * (1.0 - 0x1p-50);
+      hi = sqrt(hi2) * (1.0 + 0x1p-50);
+      side = 1;
+    }
+  }
+  if (side <= 0)
+  {
+    double e = sqrt(geom_distance_fmin(geom_distance_fmin(geom_distance_pt_seg_sqr(a, c, d, ndims),
+      geom_distance_pt_seg_sqr(b, c, d, ndims)),
+      geom_distance_fmin(geom_distance_pt_seg_sqr(c, a, b, ndims),
+      geom_distance_pt_seg_sqr(d, a, b, ndims))));
+    hi = (e + margin) * (1.0 + 0x1p-50);
+    lo = (side < 0) ?
+      geom_distance_fmax((e - margin) * (1.0 - 0x1p-50), 0.0) : 0.0;
+  }
+  if (lo > geom_distance_fmin(*minhi, *best))
+    return true;
+  if (*ncand == *maxcand)
+  {
+    GeomDistanceCand *grown = palloc(sizeof(GeomDistanceCand) * 2 * *maxcand);
+    memcpy(grown, *cand, sizeof(GeomDistanceCand) * *ncand);
+    if (*cand != candstack)
+      pfree(*cand);
+    *cand = grown;
+    *maxcand *= 2;
+  }
+  (*cand)[(*ncand)++] = (GeomDistanceCand) {a, b, c, d, lo};
+  *minhi = geom_distance_fmin(*minhi, hi);
+  return true;
+}
+
+/**
+ * @brief Return the double nearest the least distance of two segments, one
+ * of each of two lists of point arrays, in two or three coordinates
+ * @details A point is a segment of no length. Rounding is monotone, so the
+ * least of the doubles nearest the distances of the pairs is the double
+ * nearest the least distance. The search runs in two tiers, as a correctly
+ * rounded function does: first, every pair whose boxes lie no farther apart
+ * than the least upper bound found is bounded in doubles
+ * (#geom_distance_visit), which keeps the pairs whose lower bound reaches it,
+ * and two segments that meet answer 0; then the pairs kept, by increasing
+ * lower bound, are each answered
+ * as the double nearest their distance (#segment_distance_exact) while their
+ * lower bound reaches the least found. Every bound only passes over pairs, so
+ * no rounded value decides the answer
+ * @param[in] arr1,n1 Point arrays of the first geometry and their number
+ * @param[in] arr2,n2 Point arrays of the second geometry and their number
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] bounds Where not NULL, a bound on the magnitude of every
+ * coordinate and a bound on every difference of two of them, which spare the
+ * walk its pass over the coordinates (#geom_distance3d_exact)
+ * @return DBL_MAX where a list holds no point
+ */
+static pg_attribute_always_inline double
+geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
+  const POINTARRAY *const *arr2, uint32_t n2, int ndims,
+  const double *bounds)
+{
+  /* Two single segments, a point being one of no length, are the kernel's
+   * own question */
+  const double *a, *b, *c, *d;
+  if (n1 == 1 && n2 == 1 && geom_distance_nsegs(arr1[0]) == 1 &&
+      geom_distance_nsegs(arr2[0]) == 1)
+  {
+    geom_distance_seg(arr1[0], 0, &a, &b);
+    geom_distance_seg(arr2[0], 0, &c, &d);
+    return segment_distance_exact(a, b, c, d, ndims);
+  }
+
+  /* The largest magnitude of a coordinate, which sizes the margin of the
+   * double evaluation, a NaN comparing false as `fmax` leaves it; a value
+   * less itself is 0, or NaN where it is NaN or infinite, so @p finite tells
+   * whether the boxes, read by comparisons, may prune a pair */
+  double big = 0.0, z = 0.0;
+  double lo[3] = {INFINITY, INFINITY, INFINITY},
+    hi[3] = {-INFINITY, -INFINITY, -INFINITY};
+  for (int g = 0; g < 2 && ! bounds; g++)
+  {
+    const POINTARRAY *const *arr = g ? arr2 : arr1;
+    uint32_t n = g ? n2 : n1;
+    for (uint32_t k = 0; k < n; k++)
+      for (uint32_t v = 0; v < arr[k]->npoints; v++)
+      {
+        const double *p = (const double *) getPoint2d_cp(arr[k], v);
+        for (int dim = 0; dim < ndims; dim++)
+        {
+          double m = fabs(p[dim]);
+          if (m > big)
+            big = m;
+          if (p[dim] < lo[dim])
+            lo[dim] = p[dim];
+          if (p[dim] > hi[dim])
+            hi[dim] = p[dim];
+          z += p[dim] - p[dim];
+        }
+      }
+  }
+  bool finite = (z == 0.0);
+  /* The extent of the two geometries along their coordinates, moved up past
+   * its rounding, bounds every difference of two coordinates, which the
+   * bounds of a pair of segments read (#segment_distance_range) */
+  double ext = 0.0;
+  if (bounds)
+  {
+    big = bounds[0];
+    ext = bounds[1];
+  }
+  else
+  {
+    if (finite)
+      for (int dim = 0; dim < ndims; dim++)
+        if (hi[dim] - lo[dim] > ext)
+          ext = hi[dim] - lo[dim];
+    ext *= 1.0 + 0x1p-50;
+    if (! isfinite(ext))
+      ext = 0.0;
+  }
+  bool filter = big >= 0x1p-400 && big <= 0x1p400;
+  double margin = 0x1p-40 * big;
+
+  /* With several point arrays, the box of each, its least coordinates then
+   * its greatest, which passes over a pair of arrays at once */
+  double boxstack[2][GEOM_DISTANCE_BOXES][6], *boxes[2] = {NULL, NULL};
+  if (finite && (n1 > 1 || n2 > 1))
+    for (int g = 0; g < 2; g++)
+    {
+      const POINTARRAY *const *arr = g ? arr2 : arr1;
+      uint32_t n = g ? n2 : n1;
+      boxes[g] = (n > GEOM_DISTANCE_BOXES) ?
+        palloc(sizeof(double) * 6 * n) : &boxstack[g][0][0];
+      for (uint32_t k = 0; k < n; k++)
+      {
+        double *box = &boxes[g][6 * k];
+        for (int dim = 0; dim < ndims; dim++)
+        {
+          box[dim] = INFINITY;
+          box[3 + dim] = -INFINITY;
+        }
+        for (uint32_t v = 0; v < arr[k]->npoints; v++)
+        {
+          const double *p = (const double *) getPoint2d_cp(arr[k], v);
+          for (int dim = 0; dim < ndims; dim++)
+          {
+            if (p[dim] < box[dim])
+              box[dim] = p[dim];
+            if (p[dim] > box[3 + dim])
+              box[3 + dim] = p[dim];
+          }
+        }
+      }
+    }
+
+  /* First tier: the bounds of every pair whose boxes lie no farther apart
+   * than the least upper bound found, the pairs whose lower bound reaches it
+   * kept */
+  GeomDistanceCand candstack[GEOM_DISTANCE_CANDS], *cand = candstack;
+  int ncand = 0, maxcand = GEOM_DISTANCE_CANDS;
+  double minhi = INFINITY, best = INFINITY;
+  bool overlap, meet = false;
+  for (uint32_t k1 = 0; k1 < n1 && ! meet; k1++)
+    for (uint32_t k2 = 0; k2 < n2 && ! meet; k2++)
+    {
+      /* Two point arrays whose boxes lie beyond the least found hold no
+       * nearer pair */
+      if (boxes[0])
+      {
+        double up = geom_distance_fmin(minhi, best);
+        if (geom_distance_boxes_beyond(&boxes[0][6 * k1], &boxes[1][6 * k2],
+            ndims, up * up * (1.0 + 0x1p-48) + 0x1p-1060))
+          continue;
+      }
+      uint32_t m1 = geom_distance_nsegs(arr1[k1]);
+      uint32_t m2 = geom_distance_nsegs(arr2[k2]);
+      for (uint32_t l1 = 0; l1 < m1 && ! meet; l1++)
+      {
+        geom_distance_seg(arr1[k1], l1, &a, &b);
+        double blo[3], bhi[3];
+        if (finite)
+          geom_distance_seg_box(a, b, ndims, blo, bhi);
+        for (uint32_t l2 = 0; l2 < m2 && ! meet; l2++)
+        {
+          geom_distance_seg(arr2[k2], l2, &c, &d);
+          /* The gap of the boxes against the square of the least found moved
+           * up past its rounding; a coordinate not finite leaves every pair
+           * to the visit */
+          overlap = true;
+          if (finite)
+          {
+            double up = geom_distance_fmin(minhi, best);
+            if (geom_distance_box_beyond(blo, bhi, c, d, ndims,
+                up * up * (1.0 + 0x1p-48) + 0x1p-1060, &overlap))
+              continue;
+          }
+          meet = ! geom_distance_visit(a, b, c, d, overlap, ndims, filter,
+            big, ext, margin, &cand, candstack, &ncand, &maxcand, &minhi, &best);
+        }
+      }
+    }
+
+  /* Second tier: the pairs kept, by increasing lower bound, each answered
+   * exactly while its lower bound reaches the least found */
+  if (meet)
+    best = 0.0;
+  else
+  {
+    for (int i = 1; i < ncand; i++)
+      for (int j = i; j > 0 && cand[j].lo < cand[j - 1].lo; j--)
+      {
+        GeomDistanceCand t = cand[j];
+        cand[j] = cand[j - 1];
+        cand[j - 1] = t;
+      }
+    for (int i = 0; i < ncand && best > 0.0; i++)
+    {
+      if (cand[i].lo > geom_distance_fmin(minhi, best))
+        break;
+      best = geom_distance_fmin(best, segment_distance_exact_bounded(cand[i].a,
+        cand[i].b, cand[i].c, cand[i].d, ndims, big));
+    }
+  }
+  if (cand != candstack)
+    pfree(cand);
+  for (int g = 0; g < 2; g++)
+    if (boxes[g] && boxes[g] != &boxstack[g][0][0])
+      pfree(boxes[g]);
+  /* A list holding no point leaves no pair */
+  return isinf(best) ? DBL_MAX : best;
+}
+
+/** Point arrays the distance walks hold on the stack, the rings and members
+ * of the two geometries */
+#define GEOM_DISTANCE_ARRAYS 32
+
 /**
  * @brief Return the double nearest the distance of two geometries of
  * straight edges, 2D
  * @details The geometries meet where two of their segments do or where a part
  * of one lies inside a polygon of the other, and their distance is otherwise
- * the least distance of two segments, one of each (#segment_distance_exact),
- * a point being a segment of no length. Rounding is monotone, so the least of
- * the doubles nearest the distances of the pairs is the double nearest the
- * least distance, and a pair whose distance exceeds the least found cannot
- * answer less. The search starts from the segments through the two vertices
- * nearest in doubles, and passes over a pair whose boxes lie farther apart
- * than the least found, their squared gap moved down past its rounding. Two
- * segments meet only where their boxes overlap, which an exact intersection
- * test decides (#linesegm_intersect), and two that do not meet are nearest at
- * an end of one of them; where the coordinates are within a factor 2^400 of
- * 1, the squared distance of the ends in doubles is within a few units in the
- * last place of the largest coordinate of the exact one, so a pair it places
- * farther than the least found by 2^-40 of that coordinate is passed over as
- * well. Where no segment meets the other geometry, a part lies inside a
- * polygon exactly where one of its points does
+ * the least distance of two segments, one of each (#geom_distance_walk), over
+ * the point arrays of their parts. Where no segment meets the other
+ * geometry, a part lies inside a polygon exactly where one of its points does
  * @param[in] geom1,geom2 Geometries of the types #geom_distance_straight_type
  * admits, not empty
  */
@@ -1718,6 +2107,9 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
   const LWGEOM *const *parts[2];
   uint32_t nparts[2];
   const LWGEOM *geoms[2] = {geom1, geom2};
+  const POINTARRAY *stack[2][GEOM_DISTANCE_ARRAYS];
+  const POINTARRAY **arrs[2];
+  uint32_t narrs[2];
   for (int i = 0; i < 2; i++)
   {
     if (lwgeom_is_collection(geoms[i]))
@@ -1731,129 +2123,35 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
       parts[i] = &geoms[i];
       nparts[i] = 1;
     }
-  }
-
-  /* The largest magnitude of a coordinate, which sizes the margin of the
-   * double evaluation */
-  double big = 0.0;
-  for (int g = 0; g < 2; g++)
-    for (uint32_t i = 0; i < nparts[g]; i++)
+    /* The point arrays of the parts, in one list */
+    uint32_t total = 0;
+    for (uint32_t j = 0; j < nparts[i]; j++)
     {
       POINTARRAY *const *arr;
-      uint32_t n = geom_distance_arrays(parts[g][i], &arr);
+      total += geom_distance_arrays(parts[i][j], &arr);
+    }
+    if (total > GEOM_DISTANCE_ARRAYS)
+      arrs[i] = palloc(sizeof(POINTARRAY *) * total);
+    else
+      /* The stack holds the pointers written below, none read before */
+      /* cppcheck-suppress legacyUninitvar */
+      arrs[i] = stack[i];
+    narrs[i] = 0;
+    for (uint32_t j = 0; j < nparts[i]; j++)
+    {
+      POINTARRAY *const *arr;
+      uint32_t n = geom_distance_arrays(parts[i][j], &arr);
       for (uint32_t k = 0; k < n; k++)
-        for (uint32_t v = 0; v < arr[k]->npoints; v++)
-        {
-          const POINT2D *p = getPoint2d_cp(arr[k], v);
-          big = fmax(big, fmax(fabs(p->x), fabs(p->y)));
-        }
-    }
-  bool filter = big >= 0x1p-400 && big <= 0x1p400;
-  double margin = 0x1p-40 * big;
-
-  /* The two vertices nearest in doubles: a segment of each through them
-   * seeds the search */
-  const POINTARRAY *spa1 = NULL, *spa2 = NULL;
-  uint32_t sv1 = 0, sv2 = 0;
-  double sbest = INFINITY;
-  for (uint32_t i = 0; i < nparts[0]; i++)
-  {
-    POINTARRAY *const *arr1;
-    uint32_t n1 = geom_distance_arrays(parts[0][i], &arr1);
-    for (uint32_t j = 0; j < nparts[1]; j++)
-    {
-      POINTARRAY *const *arr2;
-      uint32_t n2 = geom_distance_arrays(parts[1][j], &arr2);
-      for (uint32_t k1 = 0; k1 < n1; k1++)
-        for (uint32_t k2 = 0; k2 < n2; k2++)
-          for (uint32_t v1 = 0; v1 < arr1[k1]->npoints; v1++)
-          {
-            const POINT2D *p = getPoint2d_cp(arr1[k1], v1);
-            for (uint32_t v2 = 0; v2 < arr2[k2]->npoints; v2++)
-            {
-              const POINT2D *q = getPoint2d_cp(arr2[k2], v2);
-              double dx = p->x - q->x, dy = p->y - q->y;
-              double v = dx * dx + dy * dy;
-              if (! spa1 || v < sbest)
-              {
-                sbest = v;
-                spa1 = arr1[k1]; sv1 = v1;
-                spa2 = arr2[k2]; sv2 = v2;
-              }
-            }
-          }
+        arrs[i][narrs[i]++] = arr[k];
     }
   }
-  if (! spa1)
-    return DBL_MAX;
-  const POINT2D *a, *b, *c, *d;
-  geom_distance_seg(spa1, (sv1 + 1 < spa1->npoints || sv1 == 0) ? sv1 :
-    sv1 - 1, &a, &b);
-  geom_distance_seg(spa2, (sv2 + 1 < spa2->npoints || sv2 == 0) ? sv2 :
-    sv2 - 1, &c, &d);
-  double best = segment_distance_exact((const double *) a, (const double *) b,
-    (const double *) c, (const double *) d);
-
-  /* The squares the boxes and the double evaluation are compared with, moved
-   * up past their rounding */
-  double best2 = best * best * (1.0 + 0x1p-48) + 0x1p-1060;
-  double thr2 = filter ? (best + margin) * (best + margin) * (1.0 + 0x1p-48) :
-    INFINITY;
-  for (uint32_t i = 0; i < nparts[0] && best > 0.0; i++)
-  {
-    POINTARRAY *const *arr1;
-    uint32_t n1 = geom_distance_arrays(parts[0][i], &arr1);
-    for (uint32_t j = 0; j < nparts[1] && best > 0.0; j++)
-    {
-      POINTARRAY *const *arr2;
-      uint32_t n2 = geom_distance_arrays(parts[1][j], &arr2);
-      for (uint32_t k1 = 0; k1 < n1 && best > 0.0; k1++)
-        for (uint32_t k2 = 0; k2 < n2 && best > 0.0; k2++)
-        {
-          uint32_t m1 = geom_distance_nsegs(arr1[k1]);
-          uint32_t m2 = geom_distance_nsegs(arr2[k2]);
-          for (uint32_t l1 = 0; l1 < m1 && best > 0.0; l1++)
-          {
-            geom_distance_seg(arr1[k1], l1, &a, &b);
-            for (uint32_t l2 = 0; l2 < m2 && best > 0.0; l2++)
-            {
-              geom_distance_seg(arr2[k2], l2, &c, &d);
-              double gx, gy;
-              geom_distance_box_gaps(a, b, c, d, &gx, &gy);
-              if (gx > 0.0 || gy > 0.0)
-              {
-                double lb2 = (gx * gx + gy * gy) * (1.0 - 0x1p-48);
-                if (lb2 >= 0x1p-900 && lb2 > best2)
-                  continue;
-              }
-              else if (linesegm_intersect(a->x, a->y, b->x, b->y, c->x, c->y,
-                  d->x, d->y).type != INTERSECT_NONE)
-              {
-                best = 0.0;
-                break;
-              }
-              if (filter &&
-                  fmin(fmin(geom_distance_pt_seg_sqr(a, c, d),
-                    geom_distance_pt_seg_sqr(b, c, d)),
-                  fmin(geom_distance_pt_seg_sqr(c, a, b),
-                    geom_distance_pt_seg_sqr(d, a, b))) > thr2)
-                continue;
-              double v = segment_distance_exact((const double *) a,
-                (const double *) b, (const double *) c, (const double *) d);
-              if (v < best)
-              {
-                best = v;
-                best2 = best * best * (1.0 + 0x1p-48) + 0x1p-1060;
-                if (filter)
-                  thr2 = (best + margin) * (best + margin) * (1.0 + 0x1p-48);
-              }
-            }
-          }
-        }
-    }
-  }
-  if (best == 0.0)
-    return 0.0;
+  double best = geom_distance_walk(arrs[0], narrs[0], arrs[1], narrs[1], 2,
+    NULL);
+  for (int i = 0; i < 2; i++)
+    if (arrs[i] != stack[i])
+      pfree(arrs[i]);
+  if (best == 0.0 || best == DBL_MAX)
+    return best;
 
   /* No segment meets the other geometry: a part lies inside a polygon of the
    * other exactly where its first point does */
@@ -1870,6 +2168,311 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
         return 0.0;
     }
   return best;
+}
+
+/**
+ * @brief Return true if a geometry of the type is one of points and segments
+ * whose 3D distance #geom_distance3d_exact answers
+ */
+static bool
+geom_distance3d_straight_type(uint32_t type)
+{
+  return type == POINTTYPE || type == LINETYPE || type == MULTIPOINTTYPE ||
+    type == MULTILINETYPE;
+}
+
+/**
+ * @brief Return the point arrays of a serialized geometry of the types
+ * #geom_distance3d_straight_type admits, read in place, writing their number
+ * in the last argument
+ * @details Each array references the serialized coordinates, as
+ * #geo_walk_measure reads them: one for a point or a line, one per member of
+ * a multipoint or a multiline. They are written in @p stack where they fit,
+ * and allocated otherwise
+ * @param[in] gs Geometry
+ * @param[in] stack Arrays on the caller's stack, #GEOM_DISTANCE_ARRAYS
+ * @param[out] n Number of arrays
+ */
+static POINTARRAY *
+geom_distance_gs_arrays(const GSERIALIZED *gs, POINTARRAY *stack,
+  uint32_t *n)
+{
+  /* The flags of the point arrays: the dimensions of the serialized form, no
+   * bounding box, and read only, since they reference the serialized form */
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, G2FLAGS_GET_Z(gs->gflags));
+  FLAGS_SET_M(flags, G2FLAGS_GET_M(gs->gflags));
+  FLAGS_SET_READONLY(flags, 1);
+  size_t ptsize = (size_t) FLAGS_NDIMS(flags) * sizeof(double);
+  const uint8_t *p = gs_geometry_ptr(gs);
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  bool multi = (type == MULTIPOINTTYPE || type == MULTILINETYPE);
+  *n = multi ? num : 1;
+  POINTARRAY *result = (*n > GEOM_DISTANCE_ARRAYS) ?
+    palloc(sizeof(POINTARRAY) * *n) : stack;
+  size_t off = multi ? 8 : 0;
+  for (uint32_t i = 0; i < *n; i++)
+  {
+    uint32_t npoints;
+    memcpy(&npoints, p + off + 4, 4);
+    result[i].flags = flags;
+    result[i].npoints = result[i].maxpoints = npoints;
+    result[i].serialized_pointlist = (uint8_t *) (p + off + 8);
+    off += 8 + npoints * ptsize;
+  }
+  return result;
+}
+
+/**
+ * @brief Return the double nearest the distance of two geometries of points
+ * and segments, 3D, read on their serialized form
+ * (#geom_distance_walk, #geom_distance_gs_arrays)
+ * @param[in] gs1,gs2 Geometries with Z of the types
+ * #geom_distance3d_straight_type admits, not empty
+ */
+static double
+geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  const GSERIALIZED *gss[2] = {gs1, gs2};
+  POINTARRAY stack[2][GEOM_DISTANCE_ARRAYS], *pas[2];
+  const POINTARRAY *pstack[2][GEOM_DISTANCE_ARRAYS];
+  const POINTARRAY **arrs[2];
+  uint32_t npas[2];
+  for (int i = 0; i < 2; i++)
+  {
+    pas[i] = geom_distance_gs_arrays(gss[i], stack[i], &npas[i]);
+    if (npas[i] > GEOM_DISTANCE_ARRAYS)
+      arrs[i] = palloc(sizeof(POINTARRAY *) * npas[i]);
+    else
+      /* The stack holds the pointers written below, none read before */
+      /* cppcheck-suppress legacyUninitvar */
+      arrs[i] = pstack[i];
+    for (uint32_t k = 0; k < npas[i]; k++)
+      arrs[i][k] = &pas[i][k];
+  }
+  /* The boxes the serialized geometries carry, rounded outward to floats,
+   * bound every finite coordinate: exactness is defined for finite
+   * coordinates, and a geometry holding NaN, invalid as GEOS reports it, has
+   * an unspecified distance. A float holds 24 bits and no magnitude below
+   * 2^-149, so the boxes are read only where they are tight: their largest
+   * magnitude within 2^100 of 1 and their extent at least 2^-20 of it, the
+   * rounding of a float then at most an eighth of the extent. Elsewhere, or
+   * where either box is missing or not finite, the walk reads the
+   * coordinates themselves; two single segments, which the walk answers at
+   * once, read no box */
+  GBOX box[2];
+  double bounds[2];
+  const double *pbounds = NULL;
+  bool single = npas[0] == 1 && npas[1] == 1 &&
+    geom_distance_nsegs(&pas[0][0]) == 1 &&
+    geom_distance_nsegs(&pas[1][0]) == 1;
+  if (! single && gserialized_fast_gbox_p(gs1, &box[0]) == LW_SUCCESS &&
+      gserialized_fast_gbox_p(gs2, &box[1]) == LW_SUCCESS &&
+      FLAGS_GET_Z(box[0].flags) && FLAGS_GET_Z(box[1].flags))
+  {
+    double big = 0.0, ext = 0.0;
+    const double lo[2][3] = {{box[0].xmin, box[0].ymin, box[0].zmin},
+      {box[1].xmin, box[1].ymin, box[1].zmin}};
+    const double hi[2][3] = {{box[0].xmax, box[0].ymax, box[0].zmax},
+      {box[1].xmax, box[1].ymax, box[1].zmax}};
+    bool ok = true;
+    for (int c = 0; c < 3; c++)
+    {
+      for (int g = 0; g < 2; g++)
+      {
+        ok = ok && isfinite(lo[g][c]) && isfinite(hi[g][c]);
+        if (fabs(lo[g][c]) > big)
+          big = fabs(lo[g][c]);
+        if (fabs(hi[g][c]) > big)
+          big = fabs(hi[g][c]);
+      }
+      double e = ((hi[0][c] > hi[1][c]) ? hi[0][c] : hi[1][c]) -
+        ((lo[0][c] < lo[1][c]) ? lo[0][c] : lo[1][c]);
+      if (e > ext)
+        ext = e;
+    }
+    ext *= 1.0 + 0x1p-50;
+    if (ok && isfinite(ext) && big >= 0x1p-100 && big <= 0x1p100 &&
+        ext >= 0x1p-20 * big)
+    {
+      bounds[0] = big;
+      bounds[1] = ext;
+      pbounds = bounds;
+    }
+  }
+  double best = geom_distance_walk(arrs[0], npas[0], arrs[1], npas[1], 3,
+    pbounds);
+  for (int i = 0; i < 2; i++)
+  {
+    if (arrs[i] != pstack[i])
+      pfree(arrs[i]);
+    if (pas[i] != stack[i])
+      pfree(pas[i]);
+  }
+  return best;
+}
+
+/**
+ * @brief State of the in-place walk of #geom_distance2d_disc_witness
+ */
+typedef struct
+{
+  const double *c;     /**< Centre */
+  POINT2D centre;      /**< Centre, as a point */
+  double r;            /**< Radius */
+  bool filter;         /**< Whether the double evaluation filters */
+  double margin;       /**< Margin of the double evaluation */
+  double best;         /**< Least distance found, INFINITY before the first */
+  double thr2;         /**< Square the double evaluation is compared with */
+  double xl, xr, yl, yr; /**< Window of the centre plus or minus the reach */
+  double *seg;         /**< Ends of the segment answering it @nullable */
+  bool *inside;        /**< Whether a polygon holds the centre @nullable */
+} DiscWalk;
+
+/* Read exactly a segment the window keeps, a point being a segment of no
+ * length, unless its squared distance in doubles lies beyond the least found
+ * by the margin; return true where it lowers the least found, the window and
+ * the threshold then shrinking with it */
+static bool
+disc_walk_read(DiscWalk *w, const POINT2D *a, const POINT2D *b)
+{
+  if (w->filter && geom_distance_pt_seg_sqr((const double *) &w->centre,
+      (const double *) a, (const double *) b, 2) > w->thr2)
+    return false;
+  double v = point_segment_distance_offset_exact(w->c, (const double *) a,
+    (const double *) b, 2, w->r);
+  if (! (v < w->best))
+    return false;
+  w->best = v;
+  if (w->seg)
+  {
+    w->seg[0] = a->x; w->seg[1] = a->y; w->seg[2] = b->x; w->seg[3] = b->y;
+  }
+  double reach = v + w->r;
+  if (w->filter)
+    w->thr2 = (reach + w->margin) * (reach + w->margin) * (1.0 + 0x1p-48);
+  double h = reach + 4.0 * DBL_EPSILON * (fabs(w->c[0]) + fabs(w->c[1]) +
+    reach) + DBL_MIN;
+  w->xl = w->c[0] - h; w->xr = w->c[0] + h;
+  w->yl = w->c[1] - h; w->yr = w->c[1] + h;
+  return true;
+}
+
+/* Read the segments of a line or a ring of @p npoints serialized
+ * coordinates: a segment whose two ends lie beyond one side of the window is
+ * passed over, and a NaN makes each comparison false and passes over no
+ * segment. Where @p inring is not NULL, the even-odd crossings of the
+ * rightward ray from the centre are counted on every segment before it is
+ * passed over, as #geom_distance_ring_contains counts them, each end compared
+ * with the centre once. The window is read from locals, refreshed only where a
+ * segment lowers the least found, and the walk stops where it reaches 0 */
+static pg_attribute_always_inline void
+disc_walk_points(DiscWalk *w, const double *pts, uint32_t npoints, size_t st,
+  bool *inring)
+{
+  if (npoints == 0)
+    return;
+  if (npoints == 1)
+  {
+    if (w->best > 0.0)
+      disc_walk_read(w, (const POINT2D *) pts, (const POINT2D *) pts);
+    return;
+  }
+  const double cx = w->c[0], cy = w->c[1];
+  double xl = w->xl, xr = w->xr, yl = w->yl, yr = w->yr;
+  const double *q = pts, *end = pts + (size_t) (npoints - 1) * st;
+  bool above = q[1] > cy, par = false;
+  for (; q < end; q += st)
+  {
+    const double *n = q + st;
+    bool nabove = n[1] > cy;
+    if (inring && above != nabove)
+    {
+      /* One end lies above the centre, so the segment rises where the end
+       * it reaches does */
+      int side = cross_product_sign(q[0], q[1], n[0], n[1], q[0], q[1], cx,
+        cy);
+      if (nabove ? side > 0 : side < 0)
+        par = ! par;
+    }
+    above = nabove;
+    if ((q[0] > xr && n[0] > xr) || (q[0] < xl && n[0] < xl) ||
+        (q[1] > yr && n[1] > yr) || (q[1] < yl && n[1] < yl))
+      continue;
+    if (disc_walk_read(w, (const POINT2D *) q, (const POINT2D *) n))
+    {
+      if (! (w->best > 0.0))
+        break;
+      xl = w->xl; xr = w->xr; yl = w->yl; yr = w->yr;
+    }
+  }
+  if (inring)
+    *inring = par;
+  return;
+}
+
+/* Read the geometry serialized at @p p, a point, a line, a polygon or a
+ * collection of them, as #geo_walk_measure reads it, setting in @p size the
+ * number of bytes it takes, and stopping where the least distance reaches 0.
+ * The centre lies inside a polygon where it lies inside its shell and in none
+ * of its holes, each ring read by #disc_walk_points */
+static void
+disc_walk_geom(DiscWalk *w, const uint8_t *p, uint32_t ndims, size_t *size)
+{
+  uint32_t type, num;
+  memcpy(&type, p, 4);
+  memcpy(&num, p + 4, 4);
+  size_t st = ndims;
+  if (type == POINTTYPE || type == LINETYPE)
+  {
+    /* The coordinates as doubles aligned on 8 bytes, as #poly_walk_measure
+     * reads them */
+    const void *coords = p + 8;
+    disc_walk_points(w, coords, num, st, NULL);
+    *size = 8 + (size_t) num * st * sizeof(double);
+    return;
+  }
+  if (type == POLYGONTYPE)
+  {
+    /* The numbers of points of the rings, padded to a multiple of 8 bytes,
+     * precede their coordinates, as #poly_walk_measure reads them */
+    const uint8_t *counts = p + 8;
+    const void *coords = counts + 4 * num + ((num % 2) ? 4 : 0);
+    const double *pts = coords;
+    bool inpoly = false;
+    for (uint32_t k = 0; k < num; k++)
+    {
+      uint32_t npoints;
+      memcpy(&npoints, counts + 4 * k, 4);
+      bool inring = false;
+      if (w->best > 0.0)
+        disc_walk_points(w, pts, npoints, st, &inring);
+      /* Inside the shell and outside every hole */
+      inpoly = (k == 0) ? inring : (inpoly && ! inring);
+      pts += (size_t) npoints * st;
+    }
+    /* The disc meets a polygon holding its centre */
+    if (inpoly && w->best > 0.0)
+    {
+      w->best = 0.0;
+      if (w->inside)
+        *w->inside = true;
+    }
+    *size = (size_t) ((const uint8_t *) pts - p);
+    return;
+  }
+  /* A multipoint, a multiline or a multipolygon */
+  size_t off = 8;
+  for (uint32_t i = 0; i < num && w->best > 0.0; i++)
+  {
+    size_t sub;
+    disc_walk_geom(w, p + off, ndims, &sub);
+    off += sub;
+  }
+  *size = off;
+  return;
 }
 
 /**
@@ -1898,24 +2501,36 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
 double
 geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
 {
+  return geom_distance2d_disc_witness(c, r, gs, NULL, NULL);
+}
+
+/**
+ * @brief Return the distance of #geom_distance2d_disc, setting the segment
+ * that answers it
+ * @details The segment is the first whose distance less the radius is the
+ * least, its ends in @p seg as `ax, ay, bx, by`, a point being a segment of
+ * no length; @p inside is true where the answer is 0 because a polygon holds
+ * the centre, the segment then being the one found before
+ * @param[in] c Centre, two coordinates
+ * @param[in] r Radius, not negative
+ * @param[in] gs Geometry, not empty
+ * @param[out] seg Ends of the segment @nullable
+ * @param[out] inside Whether a polygon holds the centre @nullable
+ */
+double
+geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
+  double *seg, bool *inside)
+{
+  if (inside)
+    *inside = false;
   if (! geom_distance_straight_type(gserialized_get_type(gs)))
     return -1.0;
-  LWGEOM *geom = lwgeom_from_gserialized(gs);
-  const LWGEOM *const *parts;
-  uint32_t nparts;
-  if (lwgeom_is_collection(geom))
-  {
-    const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
-    parts = (const LWGEOM *const *) coll->geoms;
-    nparts = coll->ngeoms;
-  }
-  else
-  {
-    parts = (const LWGEOM *const *) &geom;
-    nparts = 1;
-  }
-  const POINT2D centre = {c[0], c[1]};
-
+  DiscWalk w;
+  w.c = c;
+  w.centre.x = c[0]; w.centre.y = c[1];
+  w.r = r;
+  w.seg = seg;
+  w.inside = inside;
   /* The largest magnitude of a coordinate, which sizes the margin of the
    * double evaluation, read from the box of the geometry, whose bounds are
    * rounded outward; comparisons leave it as it is on a NaN, where the exact
@@ -1932,98 +2547,18 @@ geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
   }
   else
     big = INFINITY;
-  /* The first segment seeds the search: the filter in doubles passes only a
-   * segment whose distance may lie below the least found, so the exact
-   * distances read after it are those that may lower it */
-  const POINTARRAY *spa = NULL;
-  for (uint32_t i = 0; i < nparts && ! spa; i++)
-  {
-    POINTARRAY *const *arr;
-    uint32_t n = geom_distance_arrays(parts[i], &arr);
-    for (uint32_t k = 0; k < n && ! spa; k++)
-      if (arr[k]->npoints > 0)
-        spa = arr[k];
-  }
-  if (! spa)
-  {
-    lwgeom_free(geom);
-    return DBL_MAX;
-  }
-  bool filter = big >= 0x1p-400 && big <= 0x1p400;
-  double margin = 0x1p-40 * big;
-  const POINT2D *a, *b;
-  geom_distance_seg(spa, 0, &a, &b);
-  double best = point_segment_distance_offset_exact(c, (const double *) a,
-    (const double *) b, r);
-
-  /* The square the double evaluation is compared with, moved up past its
-   * rounding */
-  double reach = best + r;
-  double thr2 = filter ? (reach + margin) * (reach + margin) *
-    (1.0 + 0x1p-48) : INFINITY;
-  /* The window of the centre plus or minus the reach, widened past the
-   * rounding of its bounds: a segment whose two ends lie beyond one of its
-   * sides lies farther than the reach, and a NaN makes each comparison false
-   * and passes over no segment */
-  double w = reach + 4.0 * DBL_EPSILON * (fabs(c[0]) + fabs(c[1]) + reach) +
-    DBL_MIN;
-  double xl = c[0] - w, xr = c[0] + w, yl = c[1] - w, yr = c[1] + w;
-  for (uint32_t i = 0; i < nparts && best > 0.0; i++)
-  {
-    POINTARRAY *const *arr;
-    uint32_t n = geom_distance_arrays(parts[i], &arr);
-    /* The centre lies inside a polygon where it lies inside its shell and in
-     * none of its holes, each ring read by the even-odd crossings of the
-     * rightward ray from the centre as #geom_distance_ring_contains reads it,
-     * counted on every segment before the segment is passed over */
-    bool poly = parts[i]->type == POLYGONTYPE;
-    bool inpoly = false;
-    for (uint32_t k = 0; k < n && best > 0.0; k++)
-    {
-      uint32_t m = geom_distance_nsegs(arr[k]);
-      /* The coordinates read in place, the stride of the array once */
-      const double *pts = (const double *) arr[k]->serialized_pointlist;
-      size_t st = (size_t) FLAGS_NDIMS(arr[k]->flags);
-      bool inring = false;
-      for (uint32_t l = 0; l < m && best > 0.0; l++)
-      {
-        a = (const POINT2D *) (pts + l * st);
-        b = (arr[k]->npoints == 1) ? a : (const POINT2D *) (pts + (l + 1) * st);
-        if (poly && ((a->y > c[1]) != (b->y > c[1])))
-        {
-          int side = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y,
-            c[0], c[1]);
-          if ((b->y > a->y) ? side > 0 : side < 0)
-            inring = ! inring;
-        }
-        if ((a->x > xr && b->x > xr) || (a->x < xl && b->x < xl) ||
-            (a->y > yr && b->y > yr) || (a->y < yl && b->y < yl))
-          continue;
-        if (filter && geom_distance_pt_seg_sqr(&centre, a, b) > thr2)
-          continue;
-        double v = point_segment_distance_offset_exact(c, (const double *) a,
-          (const double *) b, r);
-        if (v < best)
-        {
-          best = v;
-          reach = best + r;
-          if (filter)
-            thr2 = (reach + margin) * (reach + margin) * (1.0 + 0x1p-48);
-          w = reach + 4.0 * DBL_EPSILON * (fabs(c[0]) + fabs(c[1]) + reach) +
-            DBL_MIN;
-          xl = c[0] - w; xr = c[0] + w; yl = c[1] - w; yr = c[1] + w;
-        }
-      }
-      /* Inside the shell and outside every hole */
-      if (poly)
-        inpoly = (k == 0) ? inring : (inpoly && ! inring);
-    }
-    /* The disc meets a polygon holding its centre */
-    if (poly && inpoly && best > 0.0)
-      best = 0.0;
-  }
-  lwgeom_free(geom);
-  return best;
+  w.filter = big >= 0x1p-400 && big <= 0x1p400;
+  w.margin = 0x1p-40 * big;
+  /* No distance found yet: the window and the threshold pass the first
+   * segment, which seeds the search */
+  w.best = INFINITY;
+  w.thr2 = INFINITY;
+  w.xl = w.yl = -INFINITY;
+  w.xr = w.yr = INFINITY;
+  size_t size;
+  disc_walk_geom(&w, gs_geometry_ptr(gs), (uint32_t) G2FLAGS_NDIMS(gs->gflags),
+    &size);
+  return (w.best == INFINITY) ? DBL_MAX : w.best;
 }
 
 /**
@@ -2033,6 +2568,9 @@ geom_distance2d_disc(const double *c, double r, const GSERIALIZED *gs)
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
+ * @note The answer is the double nearest the exact distance for finite
+ * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
+ * it, leaves the distance unspecified
  * @errval DBL_MAX
  */
 double
@@ -2185,6 +2723,9 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
+ * @note The answer is the double nearest the exact distance for finite
+ * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
+ * it, leaves the distance unspecified
  * @errval DBL_MAX
  */
 double
@@ -2197,6 +2738,20 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
+
+  /* Two geometries with Z of points and segments: the double nearest their 3D
+   * distance, two points from their coordinates without deserializing them */
+  uint32_t ztype1 = gserialized_get_type(gs1);
+  uint32_t ztype2 = gserialized_get_type(gs2);
+  if (FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) &&
+      geom_distance3d_straight_type(ztype1) &&
+      geom_distance3d_straight_type(ztype2))
+  {
+    if (ztype1 == POINTTYPE && ztype2 == POINTTYPE)
+      return point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
+        (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3);
+    return geom_distance3d_exact(gs1, gs2);
+  }
 
   /* Fast path: the distance between two points with Z is computed from their
    * coordinates with the primitive that the general computation reaches, which
@@ -3276,6 +3831,20 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geo_geo(gs1, gs2))
+    return false;
+
+  /* Two values each carrying the box it was serialized with, rounded outward
+   * to float, stand apart where those boxes do, and none of the four
+   * relationships holds between geometries that share no point. The boxes
+   * are read in place, as GEOS reads the envelope a geometry keeps
+   * (`RelateNG::hasRequiredEnvelopeInteraction`); a value carries a box only
+   * where it is not empty, and a geodetic one carries a geocentric box,
+   * which the test below reads instead */
+  const float *f1 = gserialized_is_geodetic(gs1) ? NULL :
+    gserialized_get_float_box_p(gs1, NULL);
+  const float *f2 = f1 ? gserialized_get_float_box_p(gs2, NULL) : NULL;
+  if (f1 && f2 && (f1[0] > f2[1] || f2[0] > f1[1] || f1[2] > f2[3] ||
+      f2[2] > f1[3]))
     return false;
 
   /* A.Intersects(Empty) == FALSE */
@@ -6816,6 +7385,10 @@ geo_out(const GSERIALIZED *gs)
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry/geography from its WKT representation (and
  * optionally a SRID)
+ * @details A text carrying an SRID, the EWKT form #geom_in reads, is read
+ * with a warning, which leaves the error number as it is, and the SRID given
+ * replaces the one read, as PostGIS's @c ST_GeomFromText (@c LWGEOM_from_text)
+ * does
  * @param[in] wkt WKT string
  * @param[in] srid SRID
  */
@@ -6839,11 +7412,8 @@ geo_from_text(const char *wkt, int32_t srid)
   lwgeom = lwg_parser_result.geom;
 
   if ( lwgeom->srid != SRID_UNKNOWN )
-  {
     meos_error(WARNING, MEOS_ERR_TEXT_INPUT,
       "OGC WKT expected, EWKT provided - use GeomFromEWKT() for this");
-    return NULL;
-  }
 
   /* read user-requested SRID if any */
   if ( srid > 0 )
@@ -6954,7 +7524,7 @@ geog_from_hexewkb(const char *hexwkb)
  * @param[in] gs Geometry/geography
  * @param[in] endian Endian encoding: an empty string (machine endianness),
  * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
- * reads it
+ * reads it @nullable
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
  * @csqlfn #Geo_as_hexewkb()
  */
@@ -7016,7 +7586,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
  * @details The byte order is read as #geo_as_hexewkb reads it: `NDR` or `XDR`
  * in any case, and the order of the machine for `NULL` or an empty string
  * @param[in] gs Geometry/geography
- * @param[in] endian Byte order, may be `NULL`
+ * @param[in] endian Byte order @nullable
  * @param[out] size Size of result
  * @errval NULL
  * @note PostGIS function: @p WKBFromLWGEOM(PG_FUNCTION_ARGS)
@@ -7095,7 +7665,7 @@ geo_from_geojson(const char *geojson)
  * @param[in] option Option
  * @param[in] precision Maximum number of decimal digits
  * @param[in] srs Name of the coordinate reference system, which the output
- * states in place of the one of the SRID, may be `NULL`
+ * states in place of the one of the SRID @nullable
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  * @sqlfn asGeoJSON()
@@ -7178,17 +7748,46 @@ geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @brief Ensure that the geography type is valid
  * @details The geography type only supports POINT, LINESTRING, POLYGON, MULTI*
  * variants of same, and GEOMETRYCOLLECTION. If the input type is not one of
- * those, shut down the query.
+ * those, raise an error and return false.
  */
-void
+static bool
 geography_valid_type(uint8_t type)
 {
   if (! (type == POINTTYPE || type == LINETYPE || type == POLYGONTYPE ||
           type == MULTIPOINTTYPE || type == MULTILINETYPE ||
           type == MULTIPOLYGONTYPE || type == COLLECTIONTYPE) )
+  {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
       "Geography type does not support %s", lwtype_name(type));
-  return;
+    return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Ensure that a geometry and every geometry it collects have a type a
+ * geography supports
+ * @details A collection is checked through its members, which are the types
+ * #geography_valid_type accepts at any depth, as the geodetic flag that
+ * lwgeom_set_geodetic sets in each member requires. PostGIS reads only the
+ * type of the outer geometry and relies on lwgeom_set_geodetic raising for a
+ * member, an error that ends the statement; under an error handler that does
+ * not exit the check comes first, so that no geography is built over a curve.
+ */
+bool
+ensure_valid_geography(const LWGEOM *geom)
+{
+  if (! geography_valid_type(geom->type))
+    return false;
+  if (geom->type == MULTIPOINTTYPE || geom->type == MULTILINETYPE ||
+      geom->type == MULTIPOLYGONTYPE || geom->type == COLLECTIONTYPE)
+  {
+    const LWCOLLECTION *col = (const LWCOLLECTION *) geom;
+    for (uint32_t i = 0; i < col->ngeoms; i++)
+      if (! ensure_valid_geography(col->geoms[i]))
+        return false;
+  }
+  return true;
 }
 
 /**
@@ -7202,11 +7801,12 @@ geog_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
 {
   GSERIALIZED *result = NULL;
 
+  /* Check that this is a type we can handle */
+  if (! ensure_valid_geography(lwgeom))
+    return NULL;
+
   /* Set geodetic flag */
   lwgeom_set_geodetic(lwgeom, true);
-
-  /* Check that this is a type we can handle */
-  geography_valid_type(lwgeom->type);
 
   /* Force the geometry to have valid geodetic coordinate range. */
   lwgeom_nudge_geodetic(lwgeom);
@@ -7306,7 +7906,11 @@ geom_to_geog(const GSERIALIZED *gs)
   VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
-  geography_valid_type(lwgeom_get_type(lwgeom));
+  if (! ensure_valid_geography(lwgeom))
+  {
+    lwgeom_free(lwgeom);
+    return NULL;
+  }
   /* Force default SRID */
   if ((int) lwgeom->srid <= 0)
     lwgeom->srid = SRID_DEFAULT;
@@ -7661,6 +8265,17 @@ typedef struct
   int turn;        /**< Sign of the cross product of u and v */
 } MecExact;
 
+/* The square of the radius of the circle of #MecExact against that of m, the
+ * sum it holds in its slot for the midpoint, both times G^2:
+ * |u|^2 |v|^2 |w|^2 - 4 m^2 (ux vy - uy vx)^2 */
+static const PolyTerm MEC_RADIUS_TERMS[11] = {
+  { 1.0, 6, {0, 0, 2, 2, 4, 4}}, { 1.0, 6, {0, 0, 2, 2, 5, 5}},
+  { 1.0, 6, {0, 0, 3, 3, 4, 4}}, { 1.0, 6, {0, 0, 3, 3, 5, 5}},
+  { 1.0, 6, {1, 1, 2, 2, 4, 4}}, { 1.0, 6, {1, 1, 2, 2, 5, 5}},
+  { 1.0, 6, {1, 1, 3, 3, 4, 4}}, { 1.0, 6, {1, 1, 3, 3, 5, 5}},
+  {-4.0, 6, {6, 6, 0, 0, 3, 3}}, { 8.0, 6, {6, 6, 0, 3, 1, 2}},
+  {-4.0, 6, {6, 6, 1, 1, 2, 2}}};
+
 /**
  * @brief Return true where a coordinate of the centre (`which` 0 or 1) or the
  * radius (`which` 2) of the circle of #MecExact lies beyond the midpoint from
@@ -7702,15 +8317,7 @@ mec_beyond(MecExact *e, int which, double c)
       return true;
     const double m[2] = {c, h};
     exact_sum_set(&e->s[6], m, 2);
-    /* |u|^2 |v|^2 |w|^2 - 4 m^2 (ux vy - uy vx)^2 */
-    static const PolyTerm r[11] = {
-      { 1.0, 6, {0, 0, 2, 2, 4, 4}}, { 1.0, 6, {0, 0, 2, 2, 5, 5}},
-      { 1.0, 6, {0, 0, 3, 3, 4, 4}}, { 1.0, 6, {0, 0, 3, 3, 5, 5}},
-      { 1.0, 6, {1, 1, 2, 2, 4, 4}}, { 1.0, 6, {1, 1, 2, 2, 5, 5}},
-      { 1.0, 6, {1, 1, 3, 3, 4, 4}}, { 1.0, 6, {1, 1, 3, 3, 5, 5}},
-      {-4.0, 6, {6, 6, 0, 0, 3, 3}}, { 8.0, 6, {6, 6, 0, 3, 1, 2}},
-      {-4.0, 6, {6, 6, 1, 1, 2, 2}}};
-    sign = polynomial_sign_exact(e->s, r, 11);
+    sign = polynomial_sign_exact(e->s, MEC_RADIUS_TERMS, 11);
   }
   uint64 bits;
   memcpy(&bits, &c, sizeof(bits));
@@ -7797,6 +8404,24 @@ mec_nearest(MecExact *e, int which, double cand)
 }
 
 /**
+ * @brief Set the exact sums of the circle through three points that turn
+ */
+static void
+mec_exact_set(MecExact *e, const POINT2D *a, const POINT2D *b,
+  const POINT2D *c)
+{
+  const double terms[6][2] = {{b->x, -a->x}, {b->y, -a->y}, {c->x, -a->x},
+    {c->y, -a->y}, {b->x, -c->x}, {b->y, -c->y}};
+  for (int i = 0; i < 6; i++)
+    exact_sum_set(&e->s[i], terms[i], 2);
+  e->a[0] = a->x;
+  e->a[1] = a->y;
+  e->turn = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x,
+    c->y);
+  return;
+}
+
+/**
  * @brief Return the centre and radius of the circle of a support, each the
  * double nearest the exact value
  * @details The circle of a support is a rational function of the input
@@ -7828,13 +8453,7 @@ mec_circle(const MecSupport *s)
     return circ;
   }
   MecExact e;
-  const double terms[6][2] = {{b.x, -a.x}, {b.y, -a.y}, {c.x, -a.x},
-    {c.y, -a.y}, {b.x, -c.x}, {b.y, -c.y}};
-  for (int i = 0; i < 6; i++)
-    exact_sum_set(&e.s[i], terms[i], 2);
-  e.a[0] = a.x;
-  e.a[1] = a.y;
-  e.turn = cross_product_sign(a.x, a.y, b.x, b.y, a.x, a.y, c.x, c.y);
+  mec_exact_set(&e, &a, &b, &c);
   /* The candidates, from the rounded formulas */
   double ux = b.x - a.x, uy = b.y - a.y, vx = c.x - a.x, vy = c.y - a.y;
   double wx = b.x - c.x, wy = b.y - c.y;
@@ -7848,20 +8467,20 @@ mec_circle(const MecSupport *s)
 }
 
 /**
- * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle, returning
+ * the points defining it
  * @details Equivalent to the recursive Welzl algorithm but uses constant
  * stack space. The three nested loops correspond to the three levels of
  * recursion (boundary set size 0, 1, 2). Despite appearing O(n^3), the
  * expected runtime is O(n) with random shuffling. The circle is held as the
- * points defining it, every point is put inside or outside it exactly
- * (#mec_encloses), and its centre and radius are computed once, from the final
- * support (#mec_circle)
+ * points defining it, every point put inside or outside it exactly
+ * (#mec_encloses)
  * @param[in] P Array of points (must be shuffled beforehand)
  * @param[in] n Number of points
  * @pre n >= 1
  */
-static Circle
-mec_welzl(const POINT2D *P, int n)
+static MecSupport
+mec_welzl_support(const POINT2D *P, int n)
 {
   MecSupport S = {{P[0]}, 1};
   for (int i = 1; i < n; i++)
@@ -7883,6 +8502,21 @@ mec_welzl(const POINT2D *P, int n)
       }
     }
   }
+  return S;
+}
+
+/**
+ * @brief Iterative Welzl algorithm for the minimum enclosing circle
+ * @details The circle of the support #mec_welzl_support finds, its centre
+ * and radius computed once (#mec_circle)
+ * @param[in] P Array of points (must be shuffled beforehand)
+ * @param[in] n Number of points
+ * @pre n >= 1
+ */
+static Circle
+mec_welzl(const POINT2D *P, int n)
+{
+  MecSupport S = mec_welzl_support(P, n);
   return mec_circle(&S);
 }
 
@@ -7946,14 +8580,12 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 }
 
 /**
- * @brief Return the Minimum Enclosing Circle of an array of points, which it
- * shuffles
- * @pre The array holds at least one point
+ * @brief Shuffle an array of points, as Welzl's algorithm reads them
+ * (Fisher-Yates)
  */
-static Circle
-mec_points(POINT2D *pts, int count)
+static void
+mec_shuffle(POINT2D *pts, int count)
 {
-  /* Fisher-Yates shuffle */
   for (int i = count - 1; i > 0; i--)
   {
     int j = rand() % (i + 1);
@@ -7961,7 +8593,61 @@ mec_points(POINT2D *pts, int count)
     pts[i] = pts[j];
     pts[j] = tmp;
   }
+  return;
+}
+
+/**
+ * @brief Return the Minimum Enclosing Circle of an array of points, which it
+ * shuffles
+ * @pre The array holds at least one point
+ */
+static Circle
+mec_points(POINT2D *pts, int count)
+{
+  mec_shuffle(pts, count);
   return mec_welzl(pts, count);
+}
+
+/**
+ * @brief Return how the radius of the smallest circle enclosing an array of
+ * points, which it shuffles, compares with a distance, decided exactly: -1
+ * where it is smaller, 0 where they are equal, 1 where it is larger
+ * @details The circle is held as the points defining it (#mec_welzl_support)
+ * and never constructed: a single point has radius zero, the radius of a
+ * diameter from A to B is compared through |B - A|^2 - 4 r^2, and that of
+ * the circle of three points through the polynomial #mec_beyond reads,
+ * |u|^2 |v|^2 |w|^2 - 4 r^2 (u x v)^2, each a sign of exact sums of the
+ * input doubles (#polynomial_sign_exact)
+ * @param[in,out] pts Points, shuffled
+ * @param[in] count Number of points, at least one
+ * @param[in] radius Distance, not negative
+ * @note Exact where no product of six coordinate differences overflows or
+ * underflows
+ */
+int
+mec_radius_cmp(POINT2D *pts, int count, double radius)
+{
+  assert(pts); assert(count > 0); assert(radius >= 0.0);
+  mec_shuffle(pts, count);
+  MecSupport S = mec_welzl_support(pts, count);
+  if (S.n == 1)
+    return (radius > 0.0) ? -1 : 0;
+  if (S.n == 2)
+  {
+    const double t[3][2] = {{S.p[1].x, - S.p[0].x}, {S.p[1].y, - S.p[0].y},
+      {radius, 0.0}};
+    ExactSum sums[3];
+    for (int i = 0; i < 3; i++)
+      exact_sum_set(&sums[i], t[i], 2);
+    const PolyTerm terms[3] = {{1.0, 2, {0, 0}}, {1.0, 2, {1, 1}},
+      {-4.0, 2, {2, 2}}};
+    return polynomial_sign_exact(sums, terms, 3);
+  }
+  MecExact e;
+  mec_exact_set(&e, &S.p[0], &S.p[1], &S.p[2]);
+  const double m[1] = {radius};
+  exact_sum_set(&e.s[6], m, 1);
+  return polynomial_sign_exact(e.s, MEC_RADIUS_TERMS, 11);
 }
 
 /**

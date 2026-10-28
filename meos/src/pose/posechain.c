@@ -1143,6 +1143,74 @@ posechain_transform_pipeline(const PoseChain *pc, const char *pipelinestr,
 }
 
 /*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between a pose chain and a geometry
+ * @details A pose chain answers the distance of the pose its composition
+ * gives, as #distance_pose_geo answers it for that pose
+ * @param[in] pc Pose chain
+ * @param[in] gs Geometry
+ * @errval DBL_MAX
+ * @csqlfn #Distance_posechain_geo() #Distance_geo_posechain()
+ */
+double
+distance_posechain_geo(const PoseChain *pc, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  Pose *pose = posechain_to_pose(pc);
+  double result = distance_pose_geo(pose, gs);
+  pfree(pose);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between two pose chains
+ * @details Each pose chain answers for the pose its composition gives, as
+ * #distance_pose_pose answers for two poses
+ * @param[in] pc1,pc2 Pose chains
+ * @errval DBL_MAX
+ * @csqlfn #Distance_posechain_posechain()
+ */
+double
+distance_posechain_posechain(const PoseChain *pc1, const PoseChain *pc2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_posechain_posechain(pc1, pc2))
+    return DBL_MAX;
+  Pose *pose1 = posechain_to_pose(pc1);
+  Pose *pose2 = posechain_to_pose(pc2);
+  double result = distance_pose_pose(pose1, pose2);
+  pfree(pose1); pfree(pose2);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between a pose chain and a spatiotemporal box
+ * @details A pose chain answers for the pose its composition gives, as
+ * #distance_pose_stbox answers for that pose
+ * @param[in] pc Pose chain
+ * @param[in] box Spatiotemporal box
+ * @errval DBL_MAX
+ * @csqlfn #NAD_posechain_stbox() #NAD_stbox_posechain()
+ */
+double
+distance_posechain_stbox(const PoseChain *pc, const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, DBL_MAX); VALIDATE_NOT_NULL(box, DBL_MAX);
+  Pose *pose = posechain_to_pose(pc);
+  double result = distance_pose_stbox(pose, box);
+  pfree(pose);
+  return result;
+}
+
+/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 
@@ -1185,44 +1253,6 @@ posechain_ne(const PoseChain *pc1, const PoseChain *pc2)
 
 /**
  * @ingroup meos_posechain_base_comp
- * @brief Return true if the first pose chain is equal to the second one up to
- * the tolerance of the comparison of floating-point values
- * @param[in] pc1,pc2 Pose chains
- * @csqlfn #Posechain_same()
- */
-bool
-posechain_same(const PoseChain *pc1, const PoseChain *pc2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pc1, false); VALIDATE_NOT_NULL(pc2, false);
-
-  if (pc1->count != pc2->count ||
-      MEOS_FLAGS_GET_Z(pc1->flags) != MEOS_FLAGS_GET_Z(pc2->flags) ||
-      MEOS_FLAGS_GET_GEODETIC(pc1->flags) !=
-        MEOS_FLAGS_GET_GEODETIC(pc2->flags) ||
-      posechain_srid(pc1) != posechain_srid(pc2))
-    return false;
-  int nvalues = POSECHAIN_LINK_SIZE(pc1) * pc1->count;
-  for (int i = 0; i < nvalues; i++)
-    if (! MEOS_FP_EQ(pc1->data[i], pc2->data[i]))
-      return false;
-  return true;
-}
-
-/**
- * @ingroup meos_posechain_base_comp
- * @brief Return true if the first pose chain is not equal to the second one
- * up to the tolerance of the comparison of floating-point values
- * @param[in] pc1,pc2 Pose chains
- */
-bool
-posechain_nsame(const PoseChain *pc1, const PoseChain *pc2)
-{
-  return ! posechain_same(pc1, pc2);
-}
-
-/**
- * @ingroup meos_posechain_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is less
  * than, equal to, or greater than the second one
  * @param[in] pc1,pc2 Pose chains
@@ -1235,13 +1265,17 @@ posechain_cmp(const PoseChain *pc1, const PoseChain *pc2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pc1, INT_MAX); VALIDATE_NOT_NULL(pc2, INT_MAX);
 
-  /* Compare first the dimension, then the SRID, then the links in order,
-     and last the number of links, so that a chain precedes every chain
-     that extends it */
+  /* Compare first the dimension, then whether the chains are geodetic, then
+     the SRID, then the links in order, and last the number of links, so that
+     a chain precedes every chain that extends it */
   bool hasz1 = MEOS_FLAGS_GET_Z(pc1->flags),
        hasz2 = MEOS_FLAGS_GET_Z(pc2->flags);
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
+  bool geodetic1 = MEOS_FLAGS_GET_GEODETIC(pc1->flags),
+       geodetic2 = MEOS_FLAGS_GET_GEODETIC(pc2->flags);
+  if (geodetic1 != geodetic2)
+    return (geodetic1 ? 1 : -1);
 
   int32_t srid1 = posechain_srid(pc1), srid2 = posechain_srid(pc2);
   if (srid1 < srid2)

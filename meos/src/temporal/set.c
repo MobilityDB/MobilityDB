@@ -232,12 +232,15 @@ set_out(const Set *s, int maxdd)
 static size_t
 set_bbox_size(MeosType settype)
 {
-  /* The bounding box a set carries is the one its type prescribes. A set type
-   * that prescribes none — an alphanumeric set, and a point cloud set whose
-   * schema-dependent dimensions the MEOS layer cannot extract — answers zero,
-   * TPCBox being the separate type that carries point cloud spatial bounds. */
+  /* The bounding box a set stores is the one its type prescribes. A number or
+   * time set stores none, its span being the one its first and last values
+   * state, and a set type that prescribes no box — an alphanumeric set, and a
+   * point cloud set whose schema-dependent dimensions the MEOS layer cannot
+   * extract — stores none either, TPCBox being the separate type that carries
+   * point cloud spatial bounds. */
   MeosType bboxtype = type_bboxtype(settype);
-  return (bboxtype == T_UNKNOWN) ? 0 : bbox_get_size(bboxtype);
+  return (bboxtype == T_UNKNOWN || set_spantype(settype)) ? 0 :
+    bbox_get_size(bboxtype);
 }
 
 #if DEBUG_BUILD
@@ -1044,8 +1047,8 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz set shifted and/or scaled by two intervals
  * @param[in] s Set
- * @param[in] shift Interval to shift the elements, may be NULL
- * @param[in] duration Duation of the result, may be NULL
+ * @param[in] shift Interval to shift the elements @nullable
+ * @param[in] duration Duation of the result @nullable
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *
@@ -1303,6 +1306,64 @@ set_hash_extended(const Set *s, uint64 seed)
     result = (result << 5) - result + value_hash;
   }
   return result;
+}
+
+/*****************************************************************************
+ * Sort keys
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_internal_setspan_comp
+ * @brief Return the sort key of a set
+ * @details The key is the set type followed by the key of each value, as
+ * #datum_sortkey_put writes it, so that comparing two keys byte by byte as
+ * unsigned values orders the sets as #set_cmp does: value by value, and the
+ * set whose values are a prefix of the other's first
+ * @param[in] s Set
+ * @param[out] size Number of bytes of the key
+ * @see #set_sortkey
+ */
+uint8_t *
+set_sortkey_intl(const Set *s, size_t *size)
+{
+  assert(s); assert(size); assert(datum_sortkey_type(s->basetype));
+  *size = 1;
+  for (int i = 0; i < s->count; i++)
+    *size += datum_sortkey_len(SET_VAL_N(s, i), s->basetype);
+  uint8_t *result = palloc(*size);
+  result[0] = s->settype;
+  uint8_t *out = result + 1;
+  for (int i = 0; i < s->count; i++)
+  {
+    Datum value = SET_VAL_N(s, i);
+    datum_sortkey_put(value, s->basetype, out);
+    out += datum_sortkey_len(value, s->basetype);
+  }
+  return result;
+}
+
+/**
+ * @ingroup meos_setspan_comp
+ * @brief Return the sort key of a set, the bytes whose unsigned byte order is
+ * the order of #set_cmp and whose byte equality is #set_eq
+ * @details The sets of integers, big integers, floats, dates, timestamps,
+ * texts and cells have a sort key
+ * @param[in] s Set
+ * @param[out] size Number of bytes of the key
+ * @errval NULL
+ */
+uint8_t *
+set_sortkey(const Set *s, size_t *size)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, NULL); VALIDATE_NOT_NULL(size, NULL);
+  if (! datum_sortkey_type(s->basetype))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+      "No sort key for a set of type %s", meostype_name(s->settype));
+    return NULL;
+  }
+  return set_sortkey_intl(s, size);
 }
 
 /*****************************************************************************/

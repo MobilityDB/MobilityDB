@@ -2276,6 +2276,27 @@ adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
 /*****************************************************************************/
 
 /**
+ * @brief Set the coordinates of a point, its z coordinate 0 when it has none
+ * @param[in] value Point
+ * @param[in] hasz True when the coordinates read are three
+ * @param[out] coords Coordinates
+ */
+static void
+point_coords(Datum value, bool hasz, double coords[3])
+{
+  if (hasz)
+  {
+    const POINT3DZ *p = DATUM_POINT3DZ_P(value);
+    coords[0] = p->x; coords[1] = p->y; coords[2] = p->z;
+  }
+  else
+  {
+    const POINT2D *p = DATUM_POINT2D_P(value);
+    coords[0] = p->x; coords[1] = p->y; coords[2] = 0.0;
+  }
+}
+
+/**
  * @brief Return 1 or 2 if two temporal point segments are within a distance
  * during the period defined by the output timestamps, return 0 otherwise
  * @param[in] start1,end1 Base values defining the first segment
@@ -2300,7 +2321,25 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
    * arguments are 3D */
   bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
   bool geodetic = FLAGS_GET_GEODETIC(gs1->gflags);
-  datum_func3 func = hasz ? &datum_geom_dwithin3d : &datum_geom_dwithin2d;
+  /* Planar points are discs of radius 0, whose period within the distance
+   * is decided exactly over continuous time and dated by truncation */
+  if (! geodetic)
+  {
+    double a0[3], a1[3], b0[3], b1[3];
+    point_coords(start1, hasz, a0);
+    point_coords(end1, hasz, a1);
+    point_coords(start2, hasz, b0);
+    point_coords(end2, hasz, b1);
+    int64 n1, n2;
+    int result = point_motion_dwithin_period_exact(a0, a1, b0, b1,
+      hasz ? 3 : 2, 0.0, 0.0, 0.0, 0.0, dist, upper - lower, &n1, &n2);
+    if (result > 0)
+    {
+      *t1 = lower + n1;
+      *t2 = lower + n2;
+    }
+    return result;
+  }
   long double a, b, c;
   if (hasz) /* 3D */
   {
@@ -2386,10 +2425,8 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
      * and always dwithin, takes the instants it answers as candidates and
      * evaluates the dwithin at each of them with the model it carries, so
      * the model here selects candidates and never decides a value */
-    Datum within = geodetic ?
-      datum_geog_dwithin(start1, start2, Float8GetDatum(dist),
-        BoolGetDatum(true)) :
-      func(start1, start2, Float8GetDatum(dist));
+    Datum within = datum_geog_dwithin(start1, start2, Float8GetDatum(dist),
+      BoolGetDatum(true));
     if (! DatumGetBool(within))
       return 0;
     *t1 = lower;
@@ -2446,6 +2483,40 @@ tpointsegm_tdwithin_turnpt(Datum start1, Datum end1, Datum start2,
       return 2;
     }
   }
+}
+
+/**
+ * @brief Return true if two temporal point segments are within a distance at
+ * an instant of the segments
+ * @details The value of #tpointsegm_tdwithin_turnpt at a bound of the period
+ * it returns: for planar points, discs of radius 0, decided exactly
+ * (#point_motion_dwithin_at_exact), a bound dated by truncation before an
+ * instant at which the points come within the distance being an instant at
+ * which they are not; for geodetic points, whose period is not decided
+ * exactly, the bound is within
+ * @param[in] start1,end1 Base values defining the first segment
+ * @param[in] start2,end2 Base values defining the second segment
+ * @param[in] value Distance
+ * @param[in] lower,upper Timestamps defining the segments
+ * @param[in] t Timestamp in [lower, upper]
+ */
+bool
+tpointsegm_tdwithin_at(Datum start1, Datum end1, Datum start2, Datum end2,
+  Datum value, TimestampTz lower, TimestampTz upper, TimestampTz t)
+{
+  assert(lower < upper); assert(lower <= t && t <= upper);
+  const GSERIALIZED *gs1 = DatumGetGserializedP(start1);
+  const GSERIALIZED *gs2 = DatumGetGserializedP(start2);
+  if (FLAGS_GET_GEODETIC(gs1->gflags))
+    return true;
+  bool hasz = FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags);
+  double a0[3], a1[3], b0[3], b1[3];
+  point_coords(start1, hasz, a0);
+  point_coords(end1, hasz, a1);
+  point_coords(start2, hasz, b0);
+  point_coords(end2, hasz, b1);
+  return point_motion_dwithin_at_exact(a0, a1, b0, b1, hasz ? 3 : 2, 0.0, 0.0,
+    0.0, 0.0, DatumGetFloat8(value), upper - lower, t - lower);
 }
 
 /**

@@ -435,6 +435,18 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(-5 -5), 0.3)@2001-
  0.000000
 (1 row)
 
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(0 3), 0)@2001-01-01, Cbuffer(Point(10 3), 2)@2001-01-02]', geometry 'Point(5 0)') = 1.9393876913398138;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT nearestApproachDistance(tcbuffer '[Cbuffer(Point(-10 1), 0.25)@2001-01-01, Cbuffer(Point(10 1), 0.75)@2001-01-02]', geometry 'Point(0 0)') = 0.49968745115661023;
+ ?column? 
+----------
+ t
+(1 row)
+
 SELECT round(minValue(tcbuffer 'Cbuffer(Point(0 8), 1)@2001-01-01' <-> geometry 'CircularString(5 0, 0 5, -5 0)')::numeric, 6);
   round   
 ----------
@@ -901,9 +913,9 @@ SELECT round(nearestApproachDistance(tcbuffer '[Cbuffer(Point(579857.891 6033318
 (1 row)
 
 SELECT tDwithin(tgeompoint '[Point(579857.891 6033318.651)@2025-01-01 16:35:22+01, Point(907012.682 6077040.908)@2025-01-01 16:35:26+01]', tgeompoint '[Point(861632.965 6071043.606)@2025-01-01 16:35:21+01, Point(861552.021 6071027.955)@2025-01-01 16:35:32+01]', 20000);
-                                                                                         tdwithin                                                                                          
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {[f@Wed Jan 01 07:35:22 2025 PST, t@Wed Jan 01 07:35:25.202509 2025 PST, t@Wed Jan 01 07:35:25.687218 2025 PST], (f@Wed Jan 01 07:35:25.687218 2025 PST, f@Wed Jan 01 07:35:26 2025 PST]}
+                                                                                                              tdwithin                                                                                                              
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Wed Jan 01 07:35:22 2025 PST, f@Wed Jan 01 07:35:25.202509 2025 PST], (t@Wed Jan 01 07:35:25.202509 2025 PST, t@Wed Jan 01 07:35:25.687218 2025 PST], (f@Wed Jan 01 07:35:25.687218 2025 PST, f@Wed Jan 01 07:35:26 2025 PST]}
 (1 row)
 
 SELECT asText(tdistance(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),5)@2001-01-05]', cbuffer 'Cbuffer(Point(5 6),0)'), 6);

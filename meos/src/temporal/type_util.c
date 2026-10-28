@@ -48,6 +48,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/span.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #if CBUFFER
   #include <meos_cbuffer.h>
@@ -73,6 +74,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <common/int.h>
 #include <pg_int.h>
 /* Function defined in formatting.c */
 extern bool scanner_isspace(char ch);
@@ -420,7 +422,8 @@ datum_add(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+      return Int32GetDatum(add_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -431,15 +434,32 @@ datum_add(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
+      return Int64GetDatum(add_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+      return Float8GetDatum(float8_pl(DatumGetFloat8(l), DatumGetFloat8(r)));
     case T_DATE:
       /* For dates we ALWAYS add integers */
-      return DateADTGetDatum(DatumGetDateADT(l) + DatumGetInt32(r));
+      return DateADTGetDatum(add_date_int(DatumGetDateADT(l),
+        DatumGetInt32(r)));
     case T_TIMESTAMPTZ:
-      /* For timestamps we ALWAYS add big integers */
-      return TimestampTzGetDatum(DatumGetTimestampTz(l) + DatumGetInt64(r));
+    {
+      /* For timestamps we ALWAYS add big integers, the offset in
+       * microseconds; an infinite timestamp stays infinite and a result
+       * outside the range of timestamps is refused, as PostgreSQL adds an
+       * interval to a timestamp */
+      TimestampTz t = DatumGetTimestampTz(l), result;
+      if (TIMESTAMP_NOT_FINITE(t))
+        return l;
+      if (unlikely(pg_add_s64_overflow(t, DatumGetInt64(r), &result)) ||
+          ! IS_VALID_TIMESTAMP(result))
+      {
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+          "timestamp out of range");
+        return TimestampTzGetDatum(DT_NOEND);
+      }
+      return TimestampTzGetDatum(result);
+    }
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown add function for type: %s", meostype_name(type));
@@ -456,7 +476,8 @@ datum_sub(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) - DatumGetInt32(r));
+      return Int32GetDatum(minus_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -467,12 +488,14 @@ datum_sub(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) - DatumGetInt64(r));
+      return Int64GetDatum(minus_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) - DatumGetFloat8(r));
+      return Float8GetDatum(float8_mi(DatumGetFloat8(l), DatumGetFloat8(r)));
     case T_DATE:
       /* For dates we ALWAYS substract integers */
-      return DateADTGetDatum(DatumGetDateADT(l) - DatumGetInt32(r));
+      return DateADTGetDatum(minus_date_int(DatumGetDateADT(l),
+        DatumGetInt32(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown subtract function for type: %s", meostype_name(type));
@@ -489,7 +512,8 @@ datum_mul(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) * DatumGetInt32(r));
+      return Int32GetDatum(mul_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -500,9 +524,11 @@ datum_mul(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) * DatumGetInt64(r));
+      return Int64GetDatum(mul_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) * DatumGetFloat8(r));
+      return Float8GetDatum(float8_mul(DatumGetFloat8(l),
+        DatumGetFloat8(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown multiplication function for type: %s", meostype_name(type));
@@ -519,7 +545,8 @@ datum_div(Datum l, Datum r, MeosType type)
   switch (type)
   {
     case T_INT4:
-      return Int32GetDatum(DatumGetInt32(l) / DatumGetInt32(r));
+      return Int32GetDatum(div_int32_int32(DatumGetInt32(l),
+        DatumGetInt32(r)));
 #if H3
     case T_H3INDEX:
 #endif
@@ -530,9 +557,11 @@ datum_div(Datum l, Datum r, MeosType type)
     case T_S2CELL:
 #endif
     case T_INT8:
-      return Int64GetDatum(DatumGetInt64(l) / DatumGetInt64(r));
+      return Int64GetDatum(div_int64_int64(DatumGetInt64(l),
+        DatumGetInt64(r)));
     case T_FLOAT8:
-      return Float8GetDatum(DatumGetFloat8(l) / DatumGetFloat8(r));
+      return Float8GetDatum(float8_div(DatumGetFloat8(l),
+        DatumGetFloat8(r)));
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
         "Unknown division function for type: %s", meostype_name(type));
@@ -698,14 +727,91 @@ datum_sortkey_size(MeosType type)
 {
   switch (type)
   {
+    case T_BOOL:
+      return 1;
     case T_INT4:
     case T_DATE:
       return sizeof(int32);
+#if H3
+    case T_H3INDEX:
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
     case T_FLOAT8:
     case T_TIMESTAMPTZ:
       return sizeof(int64);
     default:
+      return 0;
+  }
+}
+
+/**
+ * @brief Return true if the values of a base type have a sort key
+ * @param[in] type Base type
+ */
+bool
+datum_sortkey_type(MeosType type)
+{
+  return datum_sortkey_size(type) > 0 || type == T_TEXT;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a value
+ * @details The function has one arm per base type of #datum_sortkey_put,
+ * which writes the key. The key of a text is its bytes, a zero byte written
+ * as a zero byte followed by 0xFF, then two zero bytes ending it. The key of
+ * a point is its coordinates, as #geopoint_sortkey_size counts them.
+ * @param[in] d Value
+ * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
+ * or geography type when the value is a point
+ */
+size_t
+datum_sortkey_len(Datum d, MeosType type)
+{
+  switch (type)
+  {
+    case T_TEXT:
+    {
+      const text *txt = DatumGetTextP(d);
+      const char *str = VARDATA_ANY(txt);
+      size_t len = VARSIZE_ANY_EXHDR(txt);
+      size_t result = len + 2;
+      for (size_t i = 0; i < len; i++)
+        if (str[i] == '\0')
+          result++;
+      return result;
+    }
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      const GSERIALIZED *gs = DatumGetGserializedP(d);
+      assert(gserialized_get_type(gs) == POINTTYPE);
+      return geopoint_sortkey_size(gs);
+    }
+    case T_BOOL:
+    case T_INT4:
+    case T_DATE:
+#if H3
+    case T_H3INDEX:
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
+#endif
+    case T_INT8:
+    case T_FLOAT8:
+    case T_TIMESTAMPTZ:
+      return datum_sortkey_size(type);
+    default:
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+        "Unknown sort key for type: %s", meostype_name(type));
       return 0;
   }
 }
@@ -725,26 +831,36 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
 }
 
 /**
- * @brief Write the sort key of a value of a fixed-size ordered base type
+ * @brief Write the sort key of a value of an ordered base type
  * @details The key is written most significant byte first, whatever the byte
  * order of the machine, so that comparing two keys byte by byte as unsigned
  * values orders them as #datum_cmp orders the values. A signed integer has its
  * sign bit flipped. A double canonicalizes the values #pg_float8_cmp holds
  * equal, -0.0 to 0.0 and every NaN to one NaN, then flips its sign bit when it
  * is positive and every bit when it is negative, which places NaN above
- * infinity as #pg_float8_cmp does.
+ * infinity as #pg_float8_cmp does. A text, which #text_cmp orders by its bytes
+ * and a prefix first, writes its bytes, a zero byte as a zero byte followed by
+ * 0xFF, and ends with two zero bytes, which sort below every byte that
+ * continues a longer text, so that the key of a value followed by other keys
+ * still orders as the value does. A point writes its coordinates through
+ * #geopoint_sortkey_put.
  * @param[in] d Value
- * @param[in] type Base type, one #datum_sortkey_size accepts
- * @param[out] out Buffer of #datum_sortkey_size bytes
+ * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
+ * or geography type when the value is a point
+ * @param[out] out Buffer of #datum_sortkey_len bytes
  */
 void
 datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
 {
-  assert(datum_sortkey_size(type) > 0); assert(out);
+  assert(out);
   const uint32 sign32 = UINT32_C(0x80000000);
   const uint64 sign64 = UINT64CONST(0x8000000000000000);
   switch (type)
   {
+    case T_BOOL:
+      /* False precedes true, as #datum_cmp orders them */
+      *out = DatumGetBool(d) ? 1 : 0;
+      return;
     case T_INT4:
     {
       uint32 v = DatumGetInt32(d);
@@ -757,6 +873,15 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       sortkey_put_uint64(v ^ sign32, 4, out);
       return;
     }
+#if H3
+    case T_H3INDEX:
+#endif
+#if QUADBIN
+    case T_QUADBIN:
+#endif
+#if S2CELL
+    case T_S2CELL:
+#endif
     case T_INT8:
     {
       uint64 v = DatumGetInt64(d);
@@ -788,6 +913,29 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
         memcpy(&bits, &v, sizeof(bits));
       bits = (bits & sign64) ? ~bits : bits ^ sign64;
       sortkey_put_uint64(bits, 8, out);
+      return;
+    }
+    case T_TEXT:
+    {
+      const text *txt = DatumGetTextP(d);
+      const char *str = VARDATA_ANY(txt);
+      size_t len = VARSIZE_ANY_EXHDR(txt);
+      for (size_t i = 0; i < len; i++)
+      {
+        *out++ = (uint8_t) str[i];
+        if (str[i] == '\0')
+          *out++ = 0xFF;
+      }
+      *out++ = 0;
+      *out = 0;
+      return;
+    }
+    case T_GEOMETRY:
+    case T_GEOGRAPHY:
+    {
+      const GSERIALIZED *gs = DatumGetGserializedP(d);
+      assert(gserialized_get_type(gs) == POINTTYPE);
+      geopoint_sortkey_put(gs, out);
       return;
     }
     default: /* Error! */

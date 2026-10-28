@@ -43,7 +43,6 @@
 #define geography_centroid_from_mline meos_geography_centroid_from_mline
 #define geography_centroid_from_mpoly meos_geography_centroid_from_mpoly
 #define geography_centroid_from_wpoints meos_geography_centroid_from_wpoints
-#define geography_valid_type meos_geography_valid_type
 #define postgis_valid_typmod meos_postgis_valid_typmod
 #define itree_pip_contains meos_itree_pip_contains
 #define itree_pip_covers meos_itree_pip_covers
@@ -66,6 +65,7 @@
 
 extern GSERIALIZED* geom_serialize(LWGEOM *lwgeom);
 extern GSERIALIZED* geog_serialize(LWGEOM *lwgeom);
+extern bool ensure_valid_geography(const LWGEOM *geom);
 
 /* Functions adapted from gserialized_typmod.c */
 
@@ -85,6 +85,8 @@ extern bool geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   spatialRel rel);
 extern double geom_distance2d_disc(const double *c, double r,
   const GSERIALIZED *gs);
+extern double geom_distance2d_disc_witness(const double *c, double r,
+  const GSERIALIZED *gs, double *seg, bool *inside);
 extern bool meos_point_in_polygon(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2, spatialRel rel);
 

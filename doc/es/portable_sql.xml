@@ -75,7 +75,7 @@
 					<row><entry></entry><entry>@&gt;</entry><entry><indexterm significance="normal"><primary><varname>setContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxContains</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxContains</varname></primary></indexterm>setContains / spanContains / spansetContains / tboxContains / stboxContains / tpcboxContains (a, b)</entry></row>
 					<row><entry></entry><entry>&lt;@</entry><entry><indexterm significance="normal"><primary><varname>setContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxContained</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxContained</varname></primary></indexterm>setContained / spanContained / spansetContained / tboxContained / stboxContained / tpcboxContained (a, b)</entry></row>
 					<row><entry></entry><entry>-|-</entry><entry><indexterm significance="normal"><primary><varname>spanAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxAdjacent</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxAdjacent</varname></primary></indexterm>spanAdjacent / spansetAdjacent / tboxAdjacent / stboxAdjacent / tpcboxAdjacent (a, b)</entry></row>
-					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>spanSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxSame</varname></primary></indexterm>spanSame / tboxSame / stboxSame / tpcboxSame (a, b), <indexterm significance="normal"><primary><varname>cbufferSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>npointSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>poseSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>posechainSame</varname></primary></indexterm>cbufferSame / npointSame / poseSame / posechainSame (a, b)</entry></row>
+					<row><entry></entry><entry>~=</entry><entry><indexterm significance="normal"><primary><varname>spanSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>stboxSame</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tpcboxSame</varname></primary></indexterm>spanSame / tboxSame / stboxSame / tpcboxSame (a, b)</entry></row>
 					<row><entry>Rango de tiempo de un valor JSONB temporal</entry><entry>#@&gt;</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContains</varname></primary></indexterm>tjsonbContains(a, b)</entry></row>
 					<row><entry></entry><entry>&lt;@#</entry><entry><indexterm significance="normal"><primary><varname>tjsonbContained</varname></primary></indexterm>tjsonbContained(a, b)</entry></row>
 					<row><entry>Identificador de ruta (punto de red)</entry><entry>@=</entry><entry><indexterm significance="normal"><primary><varname>sameRid</varname></primary></indexterm>sameRid(a, b)</entry></row>
@@ -524,11 +524,14 @@
 						<row><entry>setUnion, spanUnion, spansetUnion (los agregados)</entry><entry>valor base, conjunto, rango, conjunto de rangos</entry><entry>setUnionAgg, spanUnionAgg, spansetUnionAgg</entry></row>
 						<row><entry>sameAlignment (el agregado)</entry><entry>raster</entry><entry>sameAlignmentAgg</entry></row>
 						<row><entry>wAvg (el agregado)</entry><entry>tint, tbigint, tfloat</entry><entry>wAvgAgg</entry></row>
+						<row><entry>jsonbSet, jsonbSetLax</entry><entry>jsonb</entry><entry>pgJsonbSet, pgJsonbSetLax</entry></row>
 						<row><entry>unnest</entry><entry>conjunto, temporal</entry><entry>setUnnest, temporalUnnest</entry></row>
 						<row><entry>set (el constructor)</entry><entry>cualquiera</entry><entry>setMake</entry></row>
 					</tbody>
 				</tgroup>
 			</informaltable>
+			<para>Las funciones <varname>jsonbSet</varname> y <varname>jsonbSetLax</varname> toman el prefijo <varname>pg</varname> de PostgreSQL, que las proporciona, ya que Spark y Flink, que ignoran las mayúsculas de un nombre, leerían <varname>jsonbSet</varname> como <varname>jsonbset</varname>, la conversión de un <type>textset</type> en un <type>jsonbset</type>.</para>
+
 			<para>Los nombres que comparten un raster y un raquet también toman el prefijo de su tipo, aunque el motor no defina ese nombre: ambos viajan como WKB, por lo que un motor con una sola función por nombre no distingue un raster dado a <varname>width</varname> de un raquet.</para>
 		</sect2>
 
@@ -588,5 +591,136 @@ WHERE stboxOverlaps(trip, stboxFromText('SRID=3857;STBOX X((0,0),(1000,1000))'))
 			<para>Aquí <varname>round</varname> se aplica a un número, por lo que es la función propia del motor y conserva su nombre.</para>
 		</sect2>
 
+	</sect1>
+
+	<sect1 xml:id="portable_sql_host_rasters">
+		<title>Los rásteres de los motores</title>
+
+		<para>Un <varname>raster</varname> de MobilityDB es el mismo tipo, con las mismas funciones, en todos los motores (<xref linkend="tcell_raster_specific"/>). Dos motores tienen además un ráster propio: DuckDB mediante su extensión de rásteres, y Apache Spark mediante Apache Sedona; Apache Flink no tiene ninguno. Cada anfitrión nombra todo lo que añade con un prefijo, <varname>RT_</varname> en DuckDB y <varname>RS_</varname> en Sedona, y MobilityDB no nombra nada con ninguno de los dos, de modo que el nombre de una función indica sobre qué ráster trabaja: <varname>RT_Read</varname> y <varname>RS_FromGeoTiff</varname> son del anfitrión, <varname>summaryStats</varname> y <varname>rasterValue</varname> de MobilityDB. Una consulta calcula con el ráster de MobilityDB y convierte un valor en la frontera solo donde necesita al anfitrión: para leer un archivo ráster con el lector del anfitrión, o para pasar un ráster a una de las funciones del anfitrión. La conversión conserva cada valor de píxel y la georreferenciación, de modo que un ráster convertido al ráster del anfitrión y de vuelta es el ráster que era.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<colspec colnum="1" colname="col1" colwidth="3*"/>
+				<colspec colnum="2" colname="col2" colwidth="4*"/>
+				<colspec colnum="3" colname="col3" colwidth="4*"/>
+				<thead>
+					<row>
+						<entry>Lo que hace la consulta</entry>
+						<entry>DuckDB con su extensión de rásteres</entry>
+						<entry>Spark con Apache Sedona</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>Disponer del ráster del anfitrión</entry><entry>LOAD raster</entry><entry>SedonaContext.create(spark), junto al registro de MobilitySpark</entry></row>
+					<row><entry>Leer un archivo ráster</entry><entry>RT_Read(file), y luego raster(databand_1, tile_x, tile_y, metadata) para cada tesela</entry><entry>RS_FromGeoTiff(content), y luego la conversión de <xref linkend="portable_sql_host_rasters_sedona"/></entry></row>
+					<row><entry>Pasar un ráster a las funciones del anfitrión</entry><entry>CAST(rast AS RT_DATACUBE) para sus píxeles, rasterMetadata(rast) para su georreferenciación</entry><entry>RS_AddBandFromArray sobre RS_MakeEmptyRaster, a partir de sus accesores</entry></row>
+					<row><entry>Pasar las estadísticas de una banda al anfitrión</entry><entry>CAST(stats AS RT_STATS), y de vuelta CAST(stats AS summarystats)</entry><entry>ninguna</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<para>Los dos anfitriones admiten tipos de píxel distintos. Cada tipo de píxel de MobilityDB se convierte en el tipo de cada anfitrión de su fila, y un ráster de un tipo para el que un anfitrión no tiene ninguno no tiene ráster en ese anfitrión.</para>
+
+		<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+			<?dblatex table-width="autowidth.column: 1 2 3"?>
+			<tgroup cols="3" align="left" colsep="1" rowsep="1">
+				<thead>
+					<row>
+						<entry>Tipo de píxel del ráster</entry>
+						<entry>Datacube de DuckDB</entry>
+						<entry>Tipo de píxel de Sedona</entry>
+					</row>
+				</thead>
+				<tbody>
+					<row><entry>1BB, 2BUI, 4BUI</entry><entry>UINT8</entry><entry>ninguno</entry></row>
+					<row><entry>8BUI</entry><entry>UINT8</entry><entry>B</entry></row>
+					<row><entry>8BSI</entry><entry>INT8</entry><entry>ninguno</entry></row>
+					<row><entry>16BUI</entry><entry>UINT16</entry><entry>US</entry></row>
+					<row><entry>16BSI</entry><entry>INT16</entry><entry>S</entry></row>
+					<row><entry>32BUI</entry><entry>UINT32</entry><entry>ninguno</entry></row>
+					<row><entry>32BSI</entry><entry>INT32</entry><entry>I</entry></row>
+					<row><entry>32BF</entry><entry>FLOAT</entry><entry>F</entry></row>
+					<row><entry>64BF</entry><entry>DOUBLE</entry><entry>D</entry></row>
+				</tbody>
+			</tgroup>
+		</informaltable>
+
+		<sect2 xml:id="portable_sql_host_rasters_duckdb">
+			<title>DuckDB y su extensión de rásteres</title>
+
+			<para>La extensión de rásteres de DuckDB, una extensión de la comunidad, lee un archivo ráster con <varname>RT_Read</varname> como una tabla con una fila por tesela: los píxeles de cada banda en una columna <varname>databand_N</varname> de tipo <varname>RT_DATACUBE</varname>, la georreferenciación de todo el archivo en una columna JSON <varname>metadata</varname>, y la posición de la tesela en <varname>tile_x</varname> y <varname>tile_y</varname>. No tiene un valor ráster propio, solo estas columnas. Un ráster de MobilityDB se construye a partir de las cuatro columnas de una tesela, y devuelve un datacube y una columna de metadatos, las dos columnas a partir de las cuales las propias funciones de la extensión leen una tesela. Los metadatos que escribe <varname>rasterMetadata</varname> son los de un archivo que contiene el ráster como su única tesela, de modo que el ráster se reconstruye a partir de ellos en la tesela (0, 0).</para>
+
+			<para>El tipo <varname>RT_DATACUBE</varname> solo existe una vez cargada la extensión, de modo que una consulta que lo nombra se ejecuta después de <literal>LOAD raster</literal>; antes, DuckDB responde que no existe ningún tipo <varname>RT_DATACUBE</varname>. Las conversiones son conversiones de tipo y funciones explícitas: un ráster nunca se convierte por sí solo en un datacube al pasarlo a una función <varname>RT_</varname>, puesto que un datacube deja atrás la georreferenciación.</para>
+
+			<informaltable frame="all" colsep="1" rowsep="1" tabstyle="tabular">
+				<tgroup cols="3" align="left" colsep="1" rowsep="1">
+					<colspec colnum="1" colname="col1" colwidth="2*"/>
+					<colspec colnum="2" colname="col2" colwidth="2*"/>
+					<colspec colnum="3" colname="col3" colwidth="4*"/>
+					<thead>
+						<row>
+							<entry>Desde</entry>
+							<entry>Hacia</entry>
+							<entry>SQL</entry>
+						</row>
+					</thead>
+					<tbody>
+						<row><entry>una tesela de RT_Read, o cualquier datacube con sus metadatos</entry><entry>raster</entry><entry><indexterm significance="normal"><primary><varname>raster</varname></primary></indexterm>raster(databand_1, tile_x, tile_y, metadata)</entry></row>
+						<row><entry>raster</entry><entry>RT_DATACUBE</entry><entry>CAST(rast AS RT_DATACUBE)</entry></row>
+						<row><entry>raster</entry><entry>los metadatos de una tesela</entry><entry><indexterm significance="normal"><primary><varname>rasterMetadata</varname></primary></indexterm>rasterMetadata(rast)</entry></row>
+						<row><entry>summarystats</entry><entry>RT_STATS</entry><entry>CAST(stats AS RT_STATS)</entry></row>
+						<row><entry>RT_STATS</entry><entry>summarystats</entry><entry>CAST(stats AS summarystats)</entry></row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+
+			<para>Un datacube tiene un solo tipo de píxel para todas sus bandas, y cada tipo de píxel de MobilityDB pasa a ser el tipo de datacube que GDAL le asigna, como ocurre con un ráster de PostGIS escrito mediante GDAL. Los tipos de 1, 2 y 4 bits no tienen un tipo más pequeño en un datacube: sus valores se conservan exactamente en 8 bits, y un ráster reconstruido a partir del datacube tiene el tipo <varname>8BUI</varname>.</para>
+
+			<para>Una conversión conserva todos los valores o produce un error; nunca responde con una aproximación. Un datacube tiene un solo tipo de píxel y un solo valor nodata, de modo que un ráster cuyas bandas difieren en alguno de ellos no puede convertirse a <varname>RT_DATACUBE</varname>. Un datacube de tipo <varname>UINT64</varname> o <varname>INT64</varname> no tiene un tipo de píxel de MobilityDB al que convertirse. Un datacube o una columna de metadatos mal formados, truncados, con un tipo o un formato desconocido, o que declaran más píxeles de los que contienen, se rechazan en lugar de leerse. El sistema de referencia de coordenadas de los metadatos se lee como <literal>EPSG:</literal><replaceable>n</replaceable> y da el SRID del ráster; un ráster combinado con un valor de otro SRID produce el error que produce cualquier mezcla de SRID. Un ráster convertido a datacube escribe sus píxeles sin comprimir; un datacube se lee sea cual sea la compresión con que la extensión lo escribió, <varname>RAW</varname>, <varname>SNAPPY</varname>, <varname>GZIP</varname>, <varname>ZSTD</varname> o <varname>LZ4</varname>.</para>
+
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+LOAD raster;
+-- The tiles of 2 x 2 pixels of a 4 x 4 GeoTIFF of elevations, as MobilityDB rasters
+CREATE TABLE elevation AS
+SELECT tile_x, tile_y, raster(databand_1, tile_x, tile_y, metadata) AS rast
+FROM RT_Read('elevation.tif', blocksize_x := 2, blocksize_y := 2);
+-- MobilityDB's raster functions over them
+SELECT count(*), summarystatsMean(summaryStatsAgg(rast, true)) FROM elevation;
+-- 4 | 57.06666666666667
+-- A MobilityDB raster handed to a function of the extension
+SELECT tile_x, tile_y, RT_CubeStats(CAST(rast AS RT_DATACUBE), 0).mean
+FROM elevation ORDER BY tile_y, tile_x;
+-- 0 | 0 | 53.5
+-- 1 | 0 | 68.5
+-- 0 | 1 | 46.0
+-- 1 | 1 | 61.333333333333336
+-- A raster converted to the extension's columns and back is the raster it was
+SELECT bool_and(raster(CAST(rast AS RT_DATACUBE), 0, 0, rasterMetadata(rast)) = rast)
+FROM elevation;
+-- true
+</programlisting>
+		</sect2>
+
+		<sect2 xml:id="portable_sql_host_rasters_sedona">
+			<title>Spark y Apache Sedona</title>
+
+			<para>Apache Sedona registra su tipo ráster y sus funciones <varname>RS_</varname> en una sesión de Spark mediante <literal>SedonaContext.create(spark)</literal>, junto a las funciones de MobilitySpark; ningún nombre de una de ellas es un nombre de la otra. Un ráster de Sedona es un valor, que se lee de un archivo con <varname>RS_FromGeoTiff</varname> y se escribe con <varname>RS_AsGeoTiff</varname>, y se convierte desde y hacia un ráster de MobilityDB mediante las funciones que ambos ya tienen: la georreferenciación pasa por los accesores de cada uno, y los valores de una banda como un arreglo.</para>
+
+			<para>Un ráster de Sedona se construye a partir de un ráster <varname>r</varname> de MobilityDB mediante <varname>RS_MakeEmptyRaster</varname> con la georreferenciación de <varname>r</varname> y <varname>RS_AddBandFromArray</varname> con los valores de una banda, su tipo de píxel y su valor nodata. Un ráster de MobilityDB se construye a partir de un ráster <varname>s</varname> de Sedona mediante <varname>raster(pixels, width, height, upperleftx, upperlefty, scalex, scaley, skewx, skewy, srid, pixeltype[, nodataval])</varname> sobre los accesores <varname>RS_</varname> de <varname>s</varname>, siendo sus píxeles los bytes de los valores de <varname>RS_BandAsArray(s, 1)</varname> en su orden; cada valor se convierte en sus bytes como el píxel de una banda de un solo píxel, <varname>rasterPixels(addBand(makeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0), 1, pixeltype, v), 1)</varname>. Ambas direcciones leen una banda; un ráster de varias bandas se convierte banda por banda.</para>
+
+			<para>Los seis tipos de píxel que admite Sedona se convierten en ambas direcciones, con o sin valor nodata, sin cambiar ningún valor, y un ráster convertido a Sedona y de vuelta es el ráster que era, byte a byte; los demás no tienen ráster de Sedona.</para>
+
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A Sedona raster from the georeferencing and the band of a MobilityDB raster r
+SELECT RS_AddBandFromArray(
+    RS_MakeEmptyRaster(1, CASE rasterBandPixelType(r, 1) WHEN 'uint8' THEN 'B'
+        WHEN 'int16' THEN 'S' WHEN 'uint16' THEN 'US' WHEN 'int32' THEN 'I'
+        WHEN 'float32' THEN 'F' WHEN 'float64' THEN 'D' END,
+      rasterWidth(r), rasterHeight(r), upperLeftX(r), upperLeftY(r),
+      scaleX(r), scaleY(r), skewX(r), skewY(r), SRID(r)),
+    flatten(dumpValues(r, 1, false)), 1, rasterBandNoDataValue(r, 1)) AS s
+FROM t;
+</programlisting>
+		</sect2>
 	</sect1>
 </chapter>

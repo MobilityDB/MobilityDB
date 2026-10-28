@@ -968,26 +968,6 @@ Npoint_tstzspan_to_stbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * Approximate equality for network points
- *****************************************************************************/
-
-PGDLLEXPORT Datum Npoint_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Npoint_same);
-/**
- * @ingroup mobilitydb_npoint_comp
- * @brief Return true if two network points are spatially equal
- * @sqlfn npointSame()
- * @sqlop @p ~=
- */
-Datum
-Npoint_same(PG_FUNCTION_ARGS)
-{
-  Npoint *np1 = PG_GETARG_NPOINT_P(0);
-  Npoint *np2 = PG_GETARG_NPOINT_P(1);
-  PG_RETURN_BOOL(npoint_same(np1, np2));
-}
-
-/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

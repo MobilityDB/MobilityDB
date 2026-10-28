@@ -836,7 +836,7 @@ minus_set_h3index(const Set *s, H3Index cell)
 /**
  * @ingroup meos_h3_set_setops
  * @brief Transition function for set union aggregate of H3 cells
- * @param[in,out] state Current aggregate state, may be `NULL`
+ * @param[in,out] state Current aggregate state @nullable
  * @param[in] cell Value
  * @csqlfn #Value_union_transfn()
  * @csqlaggfn #setUnionTransition()

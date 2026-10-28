@@ -51,7 +51,12 @@ SELECT MAX(radius(cb)) FROM tbl_cbuffer;
 
 SELECT COUNT(*) FROM tbl_cbuffer WHERE cb::geometry IS NOT NULL;
 
-SELECT COUNT(*) FROM tbl_cbuffer WHERE cb ~= (cb::geometry)::cbuffer;
+-- The cast to a geometry builds the circle and the cast back recomputes its
+-- center and its radius, so both come back within the rounding of that
+-- construction
+SELECT COUNT(*) FROM tbl_cbuffer WHERE
+  ST_DWithin(point(cb), point((cb::geometry)::cbuffer), 1e-12) AND
+  abs(radius(cb) - radius((cb::geometry)::cbuffer)) <= 1e-12;
 
 -------------------------------------------------------------------------------
 -- Transformations

@@ -77,13 +77,12 @@ round_point_n(POINTARRAY *points, uint32_t n, int maxdd, bool hasz, bool hasm)
 }
 
 /**
- * @ingroup meos_internal_geo_base_transf
  * @brief Return a point with the coordinates set to a number of decimal places
- * @param[in] gs Geometry/geography
- * @param[in] maxdd Maximum number of decimal digits
+ * @pre The argument @p gs is a copy owned by the caller: the point read from
+ * a serialization shares its coordinates, which are rounded in place
  */
-GSERIALIZED *
-point_round(const GSERIALIZED *gs, int maxdd)
+static GSERIALIZED *
+round_point(const GSERIALIZED *gs, int maxdd)
 {
   assert(gserialized_get_type(gs) == POINTTYPE);
   bool hasz = (bool) FLAGS_GET_Z(gs->gflags);
@@ -92,6 +91,23 @@ point_round(const GSERIALIZED *gs, int maxdd)
   round_point_n(point->point, 0, maxdd, hasz, hasm);
   GSERIALIZED *result = geo_serialize((LWGEOM *) point);
   lwpoint_free(point);
+  return result;
+}
+
+/**
+ * @ingroup meos_internal_geo_base_transf
+ * @brief Return a point with the coordinates set to a number of decimal places
+ * @details The point read from a serialization shares its coordinates, which
+ * are rounded in place, so it is read from a copy, as in #geo_round
+ * @param[in] gs Geometry/geography
+ * @param[in] maxdd Maximum number of decimal digits
+ */
+GSERIALIZED *
+point_round(const GSERIALIZED *gs, int maxdd)
+{
+  GSERIALIZED *copy = geo_copy(gs);
+  GSERIALIZED *result = round_point(copy, maxdd);
+  pfree(copy);
   return result;
 }
 
@@ -541,38 +557,56 @@ geo_round(const GSERIALIZED *gs, int maxdd)
   if (gserialized_is_empty(gs))
     return geo_copy(gs);
 
+  /* The geometry read from a serialization shares its coordinates, which are
+   * rounded in place, so it is read from a copy, as in #geo_transform */
   uint32_t type = gserialized_get_type(gs);
+  GSERIALIZED *copy = geo_copy(gs);
+  GSERIALIZED *result;
   switch (type)
   {
     case POINTTYPE:
-      return point_round(gs, maxdd);
+      result = round_point(copy, maxdd);
+      break;
     case LINETYPE:
-      return round_linestring(gs, maxdd);
+      result = round_linestring(copy, maxdd);
+      break;
     case POLYGONTYPE:
-      return round_polygon(gs, maxdd);
+      result = round_polygon(copy, maxdd);
+      break;
     case MULTIPOINTTYPE:
-      return round_multipoint(gs, maxdd);
+      result = round_multipoint(copy, maxdd);
+      break;
     case MULTILINETYPE:
-      return round_multilinestring(gs, maxdd);
+      result = round_multilinestring(copy, maxdd);
+      break;
     case MULTIPOLYGONTYPE:
-      return round_multipolygon(gs, maxdd);
+      result = round_multipolygon(copy, maxdd);
+      break;
     case COLLECTIONTYPE:
-      return round_geometrycollection(gs, maxdd);
+      result = round_geometrycollection(copy, maxdd);
+      break;
     case CIRCSTRINGTYPE:
-      return round_circularstring(gs, maxdd);
+      result = round_circularstring(copy, maxdd);
+      break;
     case MULTICURVETYPE:
-      return round_multicurve(gs, maxdd);
+      result = round_multicurve(copy, maxdd);
+      break;
     case COMPOUNDTYPE:
-      return round_compoundcurve(gs, maxdd);
+      result = round_compoundcurve(copy, maxdd);
+      break;
     case CURVEPOLYTYPE:
-      return round_curvepolygon(gs, maxdd);
+      result = round_curvepolygon(copy, maxdd);
+      break;
     case TRIANGLETYPE:
-      return round_triangle(gs, maxdd);
+      result = round_triangle(copy, maxdd);
+      break;
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "Unsupported geometry type in round function: %s", geo_typename(type));
-      return NULL;
+      result = NULL;
   }
+  pfree(copy);
+  return result;
 }
 
 /**

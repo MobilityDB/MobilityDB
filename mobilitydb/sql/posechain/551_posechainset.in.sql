@@ -524,4 +524,35 @@ CREATE OPERATOR * (
   COMMUTATOR = *
 );
 
-/******************************************************************************/
+/*****************************************************************************/
+
+CREATE FUNCTION setDistance(posechain, posechainset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_value_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistance(posechainset, posechain)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_set_value'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION setDistance(posechainset, posechainset)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_set_set'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = setDistance,
+  LEFTARG = posechain, RIGHTARG = posechainset,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = setDistance,
+  LEFTARG = posechainset, RIGHTARG = posechain,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = setDistance,
+  LEFTARG = posechainset, RIGHTARG = posechainset,
+  COMMUTATOR = <->
+);
+
+/*****************************************************************************/

@@ -1017,6 +1017,47 @@ tcbufferseq_shortestline(const TSequence *seq, const DistGeom *g,
 }
 
 /**
+ * @brief Return true where every instant of a temporal circular buffer holds
+ * the same disc, its centre set in @p c and its radius in @p r
+ * @details The tree has no test of a constant temporal value; this one walks
+ * the instants as #tcbufferseq_shortestline walks them, and stops at the
+ * first that differs
+ */
+static bool
+tcbuffer_at_rest(const Temporal *temp, double *c, double *r)
+{
+  if (temp->subtype == TINSTANT)
+  {
+    const Cbuffer *cb = DatumGetCbufferP(
+      tinstant_value_p((const TInstant *) temp));
+    const POINT2D *p = cbuffer_point2d_p(cb);
+    c[0] = p->x; c[1] = p->y; *r = cb->radius;
+    return true;
+  }
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int nseq = ss ? ss->count : 1;
+  for (int i = 0; i < nseq; i++)
+  {
+    const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, i) :
+      (const TSequence *) temp;
+    for (int j = 0; j < seq->count; j++)
+    {
+      const Cbuffer *cb = DatumGetCbufferP(
+        tinstant_value_p(TSEQUENCE_INST_N(seq, j)));
+      const POINT2D *p = cbuffer_point2d_p(cb);
+      if (i == 0 && j == 0)
+      {
+        c[0] = p->x; c[1] = p->y; *r = cb->radius;
+      }
+      else if (p->x != c[0] || p->y != c[1] || cb->radius != *r)
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
  * @brief Shortest line between a temporal circular buffer and a geometry,
  * arc-exact for circular-arc input
  * @details Returns NULL when the analytic path does not apply (an unsupported
@@ -1026,12 +1067,22 @@ tcbufferseq_shortestline(const TSequence *seq, const DistGeom *g,
 static GSERIALIZED *
 shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* A disc at rest reads the geometry in place, as a point at rest does in
+   * #shortestline_tpoint_geo_analytic */
+  double centre[2] = {0.0, 0.0}, r = 0.0;
+  if (tcbuffer_at_rest(temp, centre, &r))
+  {
+    GSERIALIZED *line = dist_shortline_rest(centre, r, gs);
+    if (line)
+      return line;
+  }
+
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return NULL;
 
   DistShortLine w;
-  w.d = DBL_MAX; w.set = false;
+  w.d = DBL_MAX; w.set = false; w.rest = false;
   w.px = w.py = w.qx = w.qy = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1049,6 +1100,7 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
       tcbufferseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
+  dist_shortline_exact(&w);
   dist_geom_free(&g);
   if (! w.set)
     return NULL;

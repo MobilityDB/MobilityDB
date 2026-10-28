@@ -2719,6 +2719,8 @@ pose_eq(const Pose *pose1, const Pose *pose2)
   VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
 
   if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
+      MEOS_FLAGS_GET_GEODETIC(pose1->flags) !=
+        MEOS_FLAGS_GET_GEODETIC(pose2->flags) ||
       pose_srid(pose1) != pose_srid(pose2))
     return false;
   bool result = (
@@ -2750,47 +2752,6 @@ pose_ne(const Pose *pose1, const Pose *pose2)
 
 /**
  * @ingroup meos_pose_base_comp
- * @brief Return true if the first pose is equal to the second one
- * @param[in] pose1,pose2 Poses
- * @csqlfn #Pose_same()
- */
-bool
-pose_same(const Pose *pose1, const Pose *pose2)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(pose1, false); VALIDATE_NOT_NULL(pose2, false);
-
-  if (MEOS_FLAGS_GET_Z(pose1->flags) != MEOS_FLAGS_GET_Z(pose2->flags) ||
-      pose_srid(pose1) != pose_srid(pose2))
-    return false;
-  bool result = (
-    MEOS_FP_EQ(pose1->data[0], pose2->data[0]) &&
-    MEOS_FP_EQ(pose1->data[1], pose2->data[1]) &&
-    MEOS_FP_EQ(pose1->data[2], pose2->data[2])
-  );
-  if (MEOS_FLAGS_GET_Z(pose1->flags))
-    result &= (
-      MEOS_FP_EQ(pose1->data[3], pose2->data[3]) &&
-      MEOS_FP_EQ(pose1->data[4], pose2->data[4]) &&
-      MEOS_FP_EQ(pose1->data[5], pose2->data[5]) &&
-      MEOS_FP_EQ(pose1->data[6], pose2->data[6])
-    );
-  return result;
-}
-
-/**
- * @ingroup meos_pose_base_comp
- * @brief Return true if the first pose is not equal to the second one
- * @param[in] pose1,pose2 Poses
- */
-bool
-pose_nsame(const Pose *pose1, const Pose *pose2)
-{
-  return ! pose_same(pose1, pose2);
-}
-
-/**
- * @ingroup meos_pose_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose
  * is less than, equal to, or greater than the second one
  * @param[in] pose1,pose2 Poses
@@ -2803,12 +2764,16 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose1, INT_MAX); VALIDATE_NOT_NULL(pose2, INT_MAX);
 
-  /* Compare first the dimension, then the SRID,
-     then the position, then the orientation */
+  /* Compare first the dimension, then whether the poses are geodetic, then
+     the SRID, then the position, then the orientation */
   bool hasz1 = MEOS_FLAGS_GET_Z(pose1->flags),
        hasz2 = MEOS_FLAGS_GET_Z(pose2->flags);
   if (hasz1 != hasz2)
     return (hasz1 ? 1 : -1);
+  bool geodetic1 = MEOS_FLAGS_GET_GEODETIC(pose1->flags),
+       geodetic2 = MEOS_FLAGS_GET_GEODETIC(pose2->flags);
+  if (geodetic1 != geodetic2)
+    return (geodetic1 ? 1 : -1);
 
   int32_t srid1 = pose_srid(pose1),
         srid2 = pose_srid(pose2);

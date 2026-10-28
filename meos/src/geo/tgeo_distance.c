@@ -378,7 +378,7 @@ dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
     *argt = grows ? 1.0 : 0.0;
   double r = grows ? r2 : r1;
   const double c[2] = {cx, cy}, a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
-  double clear = point_segment_distance_offset_exact(c, a, b, r);
+  double clear = point_segment_distance_offset_exact(c, a, b, 2, r);
   if (clear > 0.0)
     return clear;
   /* The rounded distance to the nearest point of the edge, less the radius */
@@ -484,7 +484,7 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
   t[1] = 1.0;
   t[2] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) : 0.0;
   t[3] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) : 0.0;
-  int mask = segment_distance_square(c1, c2, a, b);
+  int mask = segment_distance_square(c1, c2, a, b, 2);
   if (mask > 0)
   {
     /* The earliest of the distances that reach the least, rounded once. The
@@ -504,11 +504,11 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
     if (argt)
       *argt = t[w];
     return point_segment_distance_offset_exact(pt[w][0], pt[w][1], pt[w][2],
-      0.0);
+      2, 0.0);
   }
   for (int i = 0; i < 4; i++)
     cand[i] = point_segment_distance_offset_exact(pt[i][0], pt[i][1],
-      pt[i][2], 0.0);
+      pt[i][2], 2, 0.0);
   const double *at[4] = {c1, c2, a, b};
   int w = 0;
   for (int i = 1; i < 4; i++)
@@ -551,7 +551,7 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
   {
     const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
     const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
-    int mask = segment_distance_square(c1, c2, a, b);
+    int mask = segment_distance_square(c1, c2, a, b, 2);
     if (mask > 0)
     {
       const double *pt[4][3] = {{c1, a, b}, {c2, a, b}, {a, c1, c2},
@@ -560,16 +560,16 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
       while (! (mask & (1 << w)))
         w++;
       double clear = point_segment_distance_offset_exact(pt[w][0], pt[w][1],
-        pt[w][2], r);
+        pt[w][2], 2, r);
       if (clear > 0.0)
         return clear;
       return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL) - r;
     }
     double clear = fmin(
-      fmin(point_segment_distance_offset_exact(c1, a, b, r),
-        point_segment_distance_offset_exact(c2, a, b, r)),
-      fmin(point_segment_distance_offset_exact(a, c1, c2, r),
-        point_segment_distance_offset_exact(b, c1, c2, r)));
+      fmin(point_segment_distance_offset_exact(c1, a, b, 2, r),
+        point_segment_distance_offset_exact(c2, a, b, 2, r)),
+      fmin(point_segment_distance_offset_exact(a, c1, c2, 2, r),
+        point_segment_distance_offset_exact(b, c1, c2, 2, r)));
     if (clear > 0.0)
       return clear;
   }
@@ -578,11 +578,78 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
 
 /**
  * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius changes from r1 to
+ * r2, the double nearest it, or 0 where the disc reaches the edge
+ * @details The twin of #dist_moving_offset for a radius that changes. Over the
+ * instants of the segment and the points of the edge the distance less the
+ * radius is convex, a norm of an affine map less an affine map. Where the
+ * path does not meet the edge (#linesegm_intersect) it is smooth, and where
+ * it is stationary inside, the centre lies over the edge and the distance to
+ * its line less the radius is affine in time with slope zero, so its least is
+ * also reached on the boundary of the domain: at the start or the end of the
+ * segment against the edge, each the double nearest the exact one
+ * (#point_segment_distance_offset_exact), or against an end of the edge, the
+ * disc moving against a point (#point_motion_point_offset_exact). Rounding is
+ * monotone, so the least of the four is the double nearest the least. A
+ * caller reading only a value below @p below passes it: an end of the edge
+ * the disc is certainly never within @p below of
+ * (#point_motion_dwithin_never) is not searched, and the value then answered
+ * is below @p below exactly where the least is, and the double nearest it
+ * there
+ */
+static double
+dist_moving_varying(double cx1, double cy1, double cx2, double cy2,
+  const Edge *e, double r1, double r2, double below)
+{
+  const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+  const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  bool point = (a[0] == b[0] && a[1] == b[1]);
+  if (! point)
+  {
+    IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1,
+      e->y1, e->x2, e->y2);
+    if (meet.type != INTERSECT_NONE)
+      return 0.0;
+  }
+  double result = point ? DBL_MAX : fmin(
+    point_segment_distance_offset_exact(c1, a, b, 2, r1),
+    point_segment_distance_offset_exact(c2, a, b, 2, r2));
+  const double *ends[2] = {a, b};
+  for (int i = 0; i < (point ? 1 : 2); i++)
+  {
+    double bound = fmin(result, below);
+    if (bound < DBL_MAX && point_motion_dwithin_never(c1, c2, ends[i], 2, r1,
+        r2, bound))
+      continue;
+    result = fmin(result, point_motion_point_offset_exact(c1, c2, ends[i], 2,
+      r1, r2));
+  }
+  return result;
+}
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
+ * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2, for
+ * a caller reading only a value below @p below (#dist_moving_varying)
+ */
+static double
+dist_segm_edge_mindist_below(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below);
+
+/**
+ * @brief Minimum of [ dist(c(t), edge) - r(t) ] for t in [0,1], where the
  * centre moves from (cx1,cy1) to (cx2,cy2) and the radius from r1 to r2
  */
 double
 dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   double r1, double r2, const Edge *e)
+{
+  return dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, e, DBL_MAX);
+}
+
+static double
+dist_segm_edge_mindist_below(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below)
 {
   const double dcx = cx2 - cx1, dcy = cy2 - cy1;
   const double dr = r2 - r1;
@@ -602,6 +669,13 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
   /* A circular buffer of constant radius moving against the edge */
   if (r1 == r2)
     return dist_moving_offset(cx1, cy1, cx2, cy2, e, r1);
+  /* A circular buffer whose radius changes, clear of the edge */
+  double clear = dist_moving_varying(cx1, cy1, cx2, cy2, e, r1, r2, below);
+  if (clear > 0.0)
+    return clear;
+
+  /* The disc reaches the edge: the least below is not positive, which the
+   * callers read to rank overlaps */
 
   /* Degenerate edge (a point): distance to that point over the whole t */
   if (l2 <= 1e-24)
@@ -609,7 +683,7 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
     double A = dcx * dcx + dcy * dcy;
     double B = 2.0 * ((cx1 - ax) * dcx + (cy1 - ay) * dcy);
     double C = (cx1 - ax) * (cx1 - ax) + (cy1 - ay) * (cy1 - ay);
-    return dist_minfun(A, B, C, r1, dr, 0.0, 1.0);
+    return fmin(dist_minfun(A, B, C, r1, dr, 0.0, 1.0), 0.0);
   }
 
   /* Projection parameter s(t) = (s0 + s1 t) / l2, split [0,1] at s=0, s=1 */
@@ -664,7 +738,7 @@ dist_segm_edge_mindist(double cx1, double cy1, double cx2, double cy2,
     double m = dist_minfun(A, B, C, r1, dr, lo, hi);
     if (m < best) best = m;
   }
-  return best;
+  return fmin(best, 0.0);
 }
 
 /**
@@ -1231,7 +1305,7 @@ dist_geom_morton_cmp(const void *a, const void *b)
  * bounding box is too coarse for large coastal polygons, but the bucket boxes
  * are tight.
  * @param[in] segs Edges
- * @param[in] face Face of each edge, or NULL
+ * @param[in] face Face of each edge @nullable
  * @param[in] n Number of edges
  * @param[in] gxmin,gymin,gxmax,gymax Bounding box of the edges
  * @param[out] sorted Array of @p n edges receiving them in their Morton order
@@ -1662,7 +1736,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       }
       double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
         dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
-        dist_segm_edge_mindist(cx1, cy1, cx2, cy2, r1, r2, ed);
+        dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, ed, *best);
       if (m < *best)
       {
         *best = m;
@@ -1715,6 +1789,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       double ix = in1 ? cx1 : cx2, iy = in1 ? cy1 : cy2;
       w->d = 0.0; w->px = ix; w->py = iy; w->qx = ix; w->qy = iy;
       w->set = true;
+      w->rest = false;
       return;
     }
   }
@@ -1780,10 +1855,99 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         }
         w->d = m; w->px = pxp; w->py = pyp; w->qx = qx; w->qy = qy;
         w->set = true;
+        /* A unit at rest against an edge whose ends are its own doubles:
+         * #dist_shortline_exact constructs its line once the search ends */
+        w->rest = cx1 == cx2 && cy1 == cy2 && r1 == r2 &&
+          (e->etype == EDGE_POINT || e->etype == EDGE_LINESEG ||
+           e->etype == EDGE_POLYSEG) && ! e->from && ! e->to;
+        if (w->rest)
+        {
+          w->cx = cx1; w->cy = cy1; w->r = r1;
+          w->ax = e->x1; w->ay = e->y1; w->bx = e->x2; w->by = e->y2;
+        }
         thr2 = dist_unit_thr2(m, rmax);
       }
     }
   }
+}
+
+/**
+ * @brief Construct the line of a witness at rest exactly
+ * @details The search of #dist_segm_shortestline finds the witness in
+ * doubles; where it is a unit at rest against an edge whose ends are its own
+ * doubles, each end of its line is set to the double nearest its exact value
+ * (#point_segment_shortestline_exact), once per search, and a line whose
+ * unit meets the geometry (a distance of at most 0, which the exact kernel
+ * decides) collapses to its end
+ */
+void
+dist_shortline_exact(DistShortLine *w)
+{
+  if (! w->set || ! w->rest)
+    return;
+  const double c[2] = {w->cx, w->cy}, a[2] = {w->ax, w->ay},
+    b[2] = {w->bx, w->by};
+  double sx = w->px, sy = w->py;
+  point_segment_shortestline_exact(c, w->r, a, b, &sx, &sy, &w->qx, &w->qy);
+  if (w->d <= 0.0)
+  {
+    sx = w->qx; sy = w->qy;
+  }
+  w->px = sx; w->py = sy;
+  return;
+}
+
+/**
+ * @brief Return the line from (px py) to (qx qy) in the SRID @p srid
+ */
+GSERIALIZED *
+dist_shortline_serialize(int32_t srid, double px, double py, double qx,
+  double qy)
+{
+  POINTARRAY *pa = ptarray_construct(0, 0, 2);
+  POINT4D p4;
+  p4.z = 0.0; p4.m = 0.0;
+  p4.x = px; p4.y = py;
+  ptarray_set_point4d(pa, 0, &p4);
+  p4.x = qx; p4.y = qy;
+  ptarray_set_point4d(pa, 1, &p4);
+  LWLINE *ln = lwline_construct(srid, NULL, pa);
+  GSERIALIZED *line = geo_serialize(lwline_as_lwgeom(ln));
+  lwline_free(ln);
+  return line;
+}
+
+/**
+ * @brief Return the shortest line from a point (@p r = 0) or a disc at rest
+ * to a geometry of straight edges, not empty, or NULL for a geometry of
+ * another type
+ * @details A unit at rest asks one question of the geometry, so it reads the
+ * coordinates in place (#geom_distance2d_disc_witness) instead of paying for
+ * the edges and the bucket hierarchy of #dist_geom_build, which a moving
+ * value reads over its many units. The segment that answers the distance
+ * gives the line, each end the double nearest its exact value
+ * (#point_segment_shortestline_exact); a centre inside a polygon gives the
+ * line of no length at the centre, and a disc meeting the geometry the line
+ * of no length at its nearest point, as #dist_segm_shortestline gives them
+ */
+GSERIALIZED *
+dist_shortline_rest(const double *c, double r, const GSERIALIZED *gs)
+{
+  double seg[4];
+  bool inside;
+  double d = geom_distance2d_disc_witness(c, r, gs, seg, &inside);
+  if (d < 0.0)
+    return NULL;
+  int32_t srid = gserialized_get_srid(gs);
+  if (inside)
+    return dist_shortline_serialize(srid, c[0], c[1], c[0], c[1]);
+  double sx = c[0], sy = c[1], ex, ey;
+  point_segment_shortestline_exact(c, r, seg, seg + 2, &sx, &sy, &ex, &ey);
+  if (d <= 0.0)
+  {
+    sx = ex; sy = ey;
+  }
+  return dist_shortline_serialize(srid, sx, sy, ex, ey);
 }
 
 /**
@@ -1963,7 +2127,7 @@ circ_leaf_set(const POINT2D *p1, const POINT2D *p2, CIRC_NODE *node)
  * @param[in] earth Model of the earth and circle tree of the geography
  * @param[in] bound Running minimum of the distance
  * @param[out] fraction Location of the closest point, may be NULL, set when
- * the result is below @p bound
+ * the result is below @p bound @nullable
  */
 static double
 geog_edge_distance_fraction(const POINT2D *p1, const POINT2D *p2,
@@ -2684,7 +2848,7 @@ nad_tcont_tcont_sync_applies(const Temporal *temp1, const Temporal *temp2)
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] mindist Current minimum distance, it is set at DBL_MAX at the
  * begining but contains the minimum distance found in the previous
  * sequences of a temporal sequence set
@@ -2726,7 +2890,7 @@ nai_tgeoseq_discstep_geo_iter(const TSequence *seq, const LWGEOM *geo,
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  */
 static TInstant *
 nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo,
@@ -2743,7 +2907,7 @@ nai_tgeoseq_discstep_geo(const TSequence *seq, const LWGEOM *geo,
  * @param[in] ss Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  */
 static TInstant *
 nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo,
@@ -2770,7 +2934,7 @@ nai_tgeoseqset_step_geo(const TSequenceSet *ss, const LWGEOM *geo,
  * @param[in] inst1,inst2 Temporal segment
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] bound Running minimum of the distance, which a geography edge
  * that cannot be nearer returns without measuring on the spheroid
  * @param[out] t Timestamp
@@ -2826,7 +2990,7 @@ nai_tpointsegm_linear_geo1(const TInstant *inst1, const TInstant *inst2,
  * @param[in] seq Temporal geo
  * @param[in] geo Geometry/geography
  * @param[in] earth Model of the earth and circle tree of a geography, NULL
- * for a geometry
+ * for a geometry @nullable
  * @param[in] mindist Minimum distance found so far, or DBL_MAX at the beginning
  * @param[out] t Timestamp
  */
@@ -3079,6 +3243,43 @@ tpointseq_shortestline(const TSequence *seq, const DistGeom *g,
 }
 
 /**
+ * @brief Return true where every instant of a planar temporal point holds
+ * the same point, set in @p c
+ * @details The tree has no test of a constant temporal value; this one walks
+ * the instants as #tpointseq_shortestline walks them, and stops at the first
+ * that differs
+ */
+static bool
+tpoint_at_rest(const Temporal *temp, double *c)
+{
+  if (temp->subtype == TINSTANT)
+  {
+    const POINT2D *p = tgeoinst_point2d((const TInstant *) temp);
+    c[0] = p->x; c[1] = p->y;
+    return true;
+  }
+  const TSequenceSet *ss = (temp->subtype == TSEQUENCESET) ?
+    (const TSequenceSet *) temp : NULL;
+  int nseq = ss ? ss->count : 1;
+  for (int i = 0; i < nseq; i++)
+  {
+    const TSequence *seq = ss ? TSEQUENCESET_SEQ_N(ss, i) :
+      (const TSequence *) temp;
+    for (int j = 0; j < seq->count; j++)
+    {
+      const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, j));
+      if (i == 0 && j == 0)
+      {
+        c[0] = p->x; c[1] = p->y;
+      }
+      else if (p->x != c[0] || p->y != c[1])
+        return false;
+    }
+  }
+  return true;
+}
+
+/**
  * @brief Shortest line between a planar temporal point and a
  * geometry; returns NULL when the geometry does not decompose
  */
@@ -3088,11 +3289,20 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
 
+  /* A point at rest reads the geometry in place */
+  double c[2] = {0.0, 0.0};
+  if (tpoint_at_rest(temp, c))
+  {
+    GSERIALIZED *line = dist_shortline_rest(c, 0.0, gs);
+    if (line)
+      return line;
+  }
+
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return NULL;
   DistShortLine w;
-  w.d = DBL_MAX; w.set = false;
+  w.d = DBL_MAX; w.set = false; w.rest = false;
   w.px = w.py = w.qx = w.qy = 0.0;
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -3108,6 +3318,7 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     for (int i = 0; i < ss->count && ! (w.set && w.d <= 0.0); i++)
       tpointseq_shortestline(TSEQUENCESET_SEQ_N(ss, i), &g, &w);
   }
+  dist_shortline_exact(&w);
   dist_geom_free(&g);
   if (! w.set)
     return NULL;

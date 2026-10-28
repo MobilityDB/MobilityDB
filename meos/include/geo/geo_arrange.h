@@ -83,6 +83,8 @@ extern ArrangeStatus arrange_union_surfaces_lines(const MeosArray *edges,
   const uint32_t *soff, uint32_t nsurf, const Edge *lines, uint32_t nlines,
   const POINT2D *pts, uint32_t npts, MeosArray ***rings, uint32_t *nrings,
   int32_t **owner, MeosArray **lout, bool *pkeep);
+extern ArrangeStatus arrange_wound_tangent_surfaces(const MeosArray *edges,
+  MeosArray ***rings, uint32_t *nrings, int32_t **owner);
 extern void arrange_rings_free(MeosArray **rings, uint32_t nrings);
 
 #endif /* __GEO_ARRANGE_H__ */

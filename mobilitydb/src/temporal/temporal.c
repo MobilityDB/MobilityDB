@@ -101,7 +101,7 @@ static FunctionCallInfo MOBDB_PG_FCINFO;
  * @brief Fetch from the cache the fcinfo of the external function
  */
 FunctionCallInfo
-fetch_fcinfo()
+fetch_fcinfo(void)
 {
   assert(MOBDB_PG_FCINFO);
   return MOBDB_PG_FCINFO;
@@ -1703,7 +1703,7 @@ Temporal_shift_time(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_scale_time(temp, shift, NULL);
+  Temporal *result = temporal_shift_time(temp, shift);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }
@@ -1720,7 +1720,7 @@ Temporal_scale_time(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Temporal *result = temporal_shift_scale_time(temp, NULL, duration);
+  Temporal *result = temporal_scale_time(temp, duration);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TEMPORAL_P(result);
 }

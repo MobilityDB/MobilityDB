@@ -35,4 +35,10 @@ set(QUADBIN_SOURCES
   tquadbin_compops.c
 )
 
+# The typed functions over the internal functions that carry the cells as
+# datums, built in MEOS alone.
+if(MEOS)
+  list(APPEND QUADBIN_SOURCES tquadbin_ops_meos.c)
+endif()
+
 add_library(quadbin OBJECT ${QUADBIN_SOURCES})

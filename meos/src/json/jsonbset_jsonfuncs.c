@@ -602,7 +602,7 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
  * returns at least one item for it
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -639,7 +639,7 @@ jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * predicate check
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -676,7 +676,7 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * JSONB value
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -713,7 +713,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
  * @details If there are no items, return NULL.
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables, may be NULL
+ * @param[in] vars JSON variables @nullable
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed

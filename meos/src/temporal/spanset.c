@@ -1244,8 +1244,8 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
  * @ingroup meos_setspan_transf
  * @brief Return a timestamptz span set shifted and/or scaled by two intervals
  * @param[in] ss Span set
- * @param[in] shift Interval to shift the span set, may be NULL
- * @param[in] duration Interval for the duration of the result, may be NULL
+ * @param[in] shift Interval to shift the span set @nullable
+ * @param[in] duration Interval for the duration of the result @nullable
  * @csqlfn #Tstzspanset_shift(), #Tstzspanset_scale(), #Tstzspanset_shift_scale()
  */
 SpanSet *
