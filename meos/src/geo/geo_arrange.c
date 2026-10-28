@@ -348,6 +348,17 @@ arr_arc_ccw(const Edge *arc)
     arc->sy, arc->ex, arc->ey) > 0;
 }
 
+/* A pseudo-angle of quadrant k, k + n / d with n / d in [0, 1], kept there
+ * where the quotient of intervals holding zero leaves it unbounded */
+static inline Ival
+arr_quadrant_clamp(Ival p, double k)
+{
+  Ival r;
+  r.lo = (p.lo >= k) ? p.lo : k;
+  r.hi = (p.hi <= k + 1.0) ? p.hi : k + 1.0;
+  return r;
+}
+
 /**
  * @brief Return how far along an arc a point of its circle stands, as an
  * interval of a pseudo-angle that grows with the angle turned from its start
@@ -413,14 +424,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_div(vv, ival_add(uu, vv));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 0.0)); any = true;
   }
   /* v >= 0, u <= 0: 1 + (-u) / (v - u) in [1, 2] */
   if (v.hi >= 0.0 && u.lo <= 0.0)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(1.0), ival_div(ival_neg(uu), ival_sub(vv, uu)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 1.0)); any = true;
   }
   /* v <= 0, u <= 0: 2 + (-v) / (-u - v) in [2, 3] */
   if (v.lo <= 0.0 && u.lo <= 0.0 && v.lo < 0.0)
@@ -428,14 +439,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(2.0), ival_div(ival_neg(vv),
       ival_sub(ival_neg(uu), vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 2.0)); any = true;
   }
   /* v <= 0, u >= 0: 3 + u / (u - v) in [3, 4), unless it is the start */
   if (v.lo < 0.0 && u.hi >= 0.0 && v.hi < 0.0)
   {
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_add(ival(3.0), ival_div(uu, ival_sub(uu, vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 3.0)); any = true;
   }
   if (! any)
   {
