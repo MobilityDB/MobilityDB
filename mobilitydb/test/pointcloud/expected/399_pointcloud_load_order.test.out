@@ -1,0 +1,19 @@
+SELECT PC_AsText(PC_MakePoint(1, ARRAY[1, 2, 3]::float8[]));
+        pc_astext        
+-------------------------
+ {"pcid":1,"pt":[1,2,3]}
+(1 row)
+
+SELECT pointCloudSchemaNDims(1);
+ pointcloudschemandims 
+-----------------------
+                     3
+(1 row)
+
+SELECT getX(pcpoint(1, 1, 2, 3)), getY(pcpoint(1, 1, 2, 3)),
+  getZ(pcpoint(1, 1, 2, 3));
+ getx | gety | getz 
+------+------+------
+    1 |    2 |    3
+(1 row)
+
