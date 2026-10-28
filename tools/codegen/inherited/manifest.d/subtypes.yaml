@@ -201,14 +201,25 @@ subtypes:
     # A temporal pose delegates its spatial relationships (114) to tgeometry via
     # the tgeompoint cast chain, from the `impl: cast` entry in
     # manifest.d/tempspatialrel_families.yaml (not a cell-boundary function, and
-    # not a cell index, so that entry overrides the conversion expression). The
-    # ever/always spatial relationships are a hybrid (the
-    # ever intersects/dwithin are native C with index support), so
-    # 112_tpose_spatialrels stays hand-written.
+    # not a cell index, so that entry overrides the conversion expression). Its
+    # ever/always spatial relationships (112) are those of the temporal geometry
+    # point of its position. The box of a temporal pose is the box of that
+    # temporal geometry point, so the ever intersects/dwithin are C wrappers with
+    # SUPPORT tspatial_supportfn (tpose_spatialrels.c), and the other
+    # relationships stay SQL cast-compositions.
+    index_support: true
+    convert: "@N@::@extschema@.tgeompoint"
+    point_target: true
+    details:
+      spatialrels: |-
+        Each function converts its temporal pose operand to the temporal
+        geometry point of its position, through the standard tpose::tgeompoint
+        cast, and delegates to the temporal geometry point ever/always spatial
+        relationship.
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
-    files: [compops, topops, posops, distance, indexes]
+    files: [compops, topops, posops, distance, spatialrels, indexes]
 
   - temp:  tposechain
     base:  posechain
