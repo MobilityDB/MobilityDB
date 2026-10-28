@@ -425,7 +425,7 @@ through `tposechain_to_tpose` and the SQL from a `distance` template of the inhe
 that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
 gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
 `Unknown types for distance between values: posechain`), and pose chain sets take `setDistance`.
-Branch `index/pg-every-keyed-type` (`9286044b1e`, stacked on it) gives the nine sets and
+`geo_round` rounds a geometry on a copy of it, as `geo_transform` does, since the geometry `lwgeom_from_gserialized` reads shares the coordinates of its serialization: rounding in place rounded the argument too, so `set_round` left a set holding rounded values under the box of the full ones, and the `round(g, 6)` queries of `050_set_tbl` broke the geometry and geography set indexes the later tests read (branch `fix/geo-round-reads-a-copy`, `7a2a85624f` on master `a23e01a60b`). Branch `index/pg-every-keyed-type` (`4c5df0848a`, stacked on the round fix and the distance) gives the nine sets and
 `tposechain` an R-tree GiST class and quad-tree and k-d tree SP-GiST classes, a set's classes
 written by the template of its temporal type's index file under the generator flags `setindex`
 and `setmetric`, the geo sets' in `073_tgeo_gist` and `074_tgeo_spgist`, `<->` served for the sets
