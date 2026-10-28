@@ -125,8 +125,11 @@ Temporal<T>              temporal_type      = ALL temporal types
   Its distance is the one of the temporal pose its composition gives:
   `560_tposechain_distance.in.sql` is written by the `distance` template, as
   `110_tpose_distance.in.sql` is, and `566_tposechain_indexes.in.sql` by the
-  `indexes` template, with the classes of `posechainset`. ⛔ The family carries
-  no spatial relationships.
+  `indexes` template, with the classes of `posechainset`. Its ever/always
+  spatial relationships are those of the temporal geometry point of its composed
+  pose: `562_tposechain_spatialrels.in.sql` is written by the `spatialrels`
+  template, as `320_tnpoint_spatialrels.in.sql` is, its ever intersects and
+  dwithin being the C wrappers of `tposechain_spatialrels.c` with index support.
 - **`TCellIndex<T>`** (`tcellindex_type`, prefix `tcellindex_`) is a real abstract class
   factored via the `DggsCellOps` descriptor (§5a). Its cell families are **discrete**:
   they drop the continuous inherited distance aspect, and relate their cells through the
@@ -593,7 +596,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ◐ PARTIAL | tDistance/nad/nai/shortestLine — `distance.sql.tmpl` via the `subtypes:` track (§3) writes the files of `tpose` and `tposechain`; every other family's is hand-written |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tposechain — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
 | Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
@@ -668,7 +671,7 @@ plain = the file exists but is still hand-maintained.
 | cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
 | npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
 | pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | 112 | **114** | **116** | 107 |
-| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | — | **564** | **566** | — |
+| posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | **562** | **564** | **566** | — |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
 | quadbin (350) | **354** | 355 | **358** | **359** | — | **361** | **362** | **364** | **372**·**373** | **357** |
@@ -678,7 +681,7 @@ Reading the table:
 - **`compops`/`topops`/`posops`/`idx` are generated for every derived family** via the `subtypes:` `files:` track (§3): cbuffer and
   rgeo (`[compops, topops, posops, indexes]`), npoint (`[compops, posops, topops,
   spatialrels, indexes]`), pose (`[compops, topops, posops,
-  distance, indexes]`), posechain (`[compops, topops, posops, distance, indexes]`) and h3,
+  distance, indexes]`), posechain (`[compops, topops, posops, distance, spatialrels, indexes]`) and h3,
   quadbin, s2cell (`[compops, posops, topops, spatialrels, gist, spgist]` — the three
   cell families declare one and the same list).
 - **`aggfuncs` is generated for cbuffer, npoint, pose, posechain, rgeo, h3, quadbin,
@@ -707,9 +710,10 @@ Reading the table:
   does.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
   **cast-delegated families** (h3 262, quadbin 362, s2cell 612, npoint 320,
-  tpcpoint 443, tpcpatch 449) via the `subtypes:` `spatialrels` behaviour — a
-  cell-boundary→`tgeometry` cast for the three cell families, a `tnpoint::tgeompoint` /
-  `tpcpoint::tgeompoint` cast for the two point families, a
+  posechain 562, tpcpoint 443, tpcpatch 449) via the `subtypes:` `spatialrels`
+  behaviour — a cell-boundary→`tgeometry` cast for the three cell families, a
+  `tnpoint::tgeompoint` / `tposechain::tpose::tgeompoint` /
+  `tpcpoint::tgeompoint` cast for the three point families, a
   `tpcpatch::tgeometry` cast for the patch. ⛔ `native_ever_intersects` is the
   additive flag a family sets when its type file already declares
   `eIntersects(<temp>, geometry)` over a kernel that reads the value directly —

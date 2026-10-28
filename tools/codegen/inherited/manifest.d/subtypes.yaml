@@ -223,7 +223,23 @@ subtypes:
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
-    files: [compops, topops, posops, distance, indexes]
+    # Its ever/always spatial relationships (562) are those of the temporal
+    # geometry point of the composed pose, the cast target its temporal
+    # spatial relationships (564) take. The box of a pose chain bounds every
+    # joint, the end pose among them, so the ever intersects/dwithin are C
+    # wrappers with SUPPORT tspatial_supportfn (tposechain_spatialrels.c), as
+    # those of a temporal pose are.
+    index_support: true
+    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
+    point_target: true
+    details:
+      spatialrels: |-
+        Each function converts its pose chain operand to the temporal pose
+        its composition gives, and that one to the temporal geometry point of
+        its position, through the standard tposechain::tpose and
+        tpose::tgeompoint casts, and delegates to the temporal geometry point
+        ever/always spatial relationship.
+    files: [compops, topops, posops, distance, spatialrels, indexes]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an

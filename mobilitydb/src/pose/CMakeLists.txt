@@ -36,4 +36,5 @@ add_library(pg_pose OBJECT
   tposechain.c
   tposechain_compops.c
   tposechain_distance.c
+  tposechain_spatialrels.c
   )
