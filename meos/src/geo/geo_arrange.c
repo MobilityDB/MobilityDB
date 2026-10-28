@@ -1164,6 +1164,8 @@ arr_offsets_cross_order(const Arr *a, uint32_t i, const ArrMeet *x,
   return (t->tp == e->from) ? 1 : -1;
 }
 
+static int arr_meet_circle_start(const Edge *e, const ArrMeet *m);
+
 /* Return how two points of the line of an edge are ordered along it, by
  * their positions and, where the intervals overlap, by
  * #arr_offsets_cross_order or #meets_order_exact: -1, 1, 0 for one point, 2
@@ -1179,6 +1181,23 @@ arr_line_order(const Arr *a, uint32_t i, Ival t1, const ArrMeet *m1, Ival t2,
   {
     if (m1->kind == m2->kind && m1->sigma == m2->sigma)
       return 0;
+    /* Another meeting at that point, read where the circle starts or, as
+     * the end of a stretch reaching it (#arr_end_position), where it ends,
+     * is that end, asked exactly (#arr_meet_circle_start) */
+    if (m1->kind != m2->kind && a->e[i].centred)
+    {
+      const ArrMeet *o = (m1->kind == MEET_ORIGIN) ? m1 : m2;
+      const ArrMeet *x = (o == m1) ? m2 : m1;
+      Ival tx = (o == m1) ? t2 : t1;
+      if (o->sigma ? isinf(tx.lo) : (tx.lo <= 0.0 && ! isinf(tx.hi)))
+      {
+        int at = arr_meet_circle_start(&a->e[i], x);
+        if (at == 2)
+          return 2;
+        if (at == 1)
+          return 0;
+      }
+    }
     if (m1->kind == MEET_ORIGIN)
       return m1->sigma ? 1 : -1;
     return m2->sigma ? -1 : 1;
@@ -1337,6 +1356,12 @@ arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
       op.kind = MEET_VERTEX;
       op.x = e->x1; op.y = e->y1;
       at = meets_same_point(&mp, &op);
+      if (at == 2)
+        return ARR_UNTOLD;
+    }
+    else if (t.lo <= 0.0 || t.hi >= 4.0)
+    {
+      at = arr_meet_circle_start(e, m);
       if (at == 2)
         return ARR_UNTOLD;
     }
