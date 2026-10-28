@@ -3833,6 +3833,20 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
   if (! ensure_valid_geo_geo(gs1, gs2))
     return false;
 
+  /* Two values each carrying the box it was serialized with, rounded outward
+   * to float, stand apart where those boxes do, and none of the four
+   * relationships holds between geometries that share no point. The boxes
+   * are read in place, as GEOS reads the envelope a geometry keeps
+   * (`RelateNG::hasRequiredEnvelopeInteraction`); a value carries a box only
+   * where it is not empty, and a geodetic one carries a geocentric box,
+   * which the test below reads instead */
+  const float *f1 = gserialized_is_geodetic(gs1) ? NULL :
+    gserialized_get_float_box_p(gs1, NULL);
+  const float *f2 = f1 ? gserialized_get_float_box_p(gs2, NULL) : NULL;
+  if (f1 && f2 && (f1[0] > f2[1] || f2[0] > f1[1] || f1[2] > f2[3] ||
+      f2[2] > f1[3]))
+    return false;
+
   /* A.Intersects(Empty) == FALSE */
   if ( gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
     return false;
