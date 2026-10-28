@@ -9726,6 +9726,13 @@ arcseg_f_mul(ArcsegFilter a, ArcsegFilter b)
   r.v = a.v * b.v;
   r.e = fabs(a.v) * b.e + fabs(b.v) * a.e + a.e * b.e +
     DBL_EPSILON * fabs(r.v);
+  /* A product below the range of normal doubles, and the terms of its
+   * bound, lose less than DBL_MIN each to their rounding, which the bound
+   * then carries, unless a factor is exactly zero: an underflow to zero is
+   * no exact zero. A normal product carries its rounding already */
+  if (fabs(r.v) < DBL_MIN &&
+      ! ((a.v == 0.0 && a.e == 0.0) || (b.v == 0.0 && b.e == 0.0)))
+    r.e += 4.0 * DBL_MIN;
   return r;
 }
 
