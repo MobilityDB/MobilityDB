@@ -19,7 +19,7 @@ typedef PCDIMENSION **PCDIMENSION_LIST;
  * Comparators
  */
 
-int pc_compare_dim(const void *a, const void *b, void *arg)
+static int pc_compare_dim(const void *a, const void *b, void *arg) /* MEOS */
 {
   PCDIMENSION_LIST dim = (PCDIMENSION_LIST)arg;
   uint32_t byteoffset = dim[0]->byteoffset;
