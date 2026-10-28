@@ -9228,6 +9228,111 @@ arcseg_root_sign(int su, int sw, int sq)
 }
 
 /*
+ * The discriminant of the quadratic where the line through A and B meets the
+ * circle of an arc, in one arithmetic. The vectors are taken from a point of
+ * the arc's own, its start S or the centre of a whole circle, so the
+ * coefficients are of the size of the arc and of its distance to the line
+ * however far the line lies, which a filter then tells. About that origin
+ * the circle is D |X|^2 - X.K - L = 0: through S, M and E with m = M - S and
+ * n = E - S, D = m x n and K = (|m|^2 n_y - |n|^2 m_y, |n|^2 m_x - |m|^2 n_x),
+ * L = 0; on the diameter from S to E, D = 1, K = n, L = 0; a whole circle of
+ * radius r, D = 1, K = 0, L = r^2. On X = P + t (B - A), P = A less the
+ * origin, it is a t^2 + b t + c = 0 with a = D |B - A|^2,
+ * b = 2 D P.(B - A) - K.(B - A), c = D |P|^2 - P.K - L
+ */
+#define ARCSEG_LINE_DISC(T, DIFF, ADD, SUB, MUL, SCALE, ONE)                 \
+{                                                                            \
+  double ox = arc->centred ? arc->cx : arc->sx;                              \
+  double oy = arc->centred ? arc->cy : arc->sy;                              \
+  T ex = DIFF(bx, ax), ey = DIFF(by, ay);                                    \
+  T px = DIFF(ax, ox), py = DIFF(ay, oy);                                    \
+  T d = ONE, kx = ONE, ky = ONE, l = ONE;                                    \
+  bool round = false;                                                        \
+  if (arc->centred)                                                          \
+  {                                                                          \
+    T r = DIFF(arc->radius, 0.0);                                            \
+    l = MUL(r, r);                                                           \
+    round = true;                                                            \
+  }                                                                          \
+  else if (arc->diameter)                                                    \
+  {                                                                          \
+    kx = DIFF(arc->ex, ox);                                                  \
+    ky = DIFF(arc->ey, oy);                                                  \
+  }                                                                          \
+  else                                                                       \
+  {                                                                          \
+    T mx = DIFF(arc->mx, ox), my = DIFF(arc->my, oy);                        \
+    T nx = DIFF(arc->ex, ox), ny = DIFF(arc->ey, oy);                        \
+    T mm = ADD(MUL(mx, mx), MUL(my, my));                                    \
+    T nn = ADD(MUL(nx, nx), MUL(ny, ny));                                    \
+    d = SUB(MUL(mx, ny), MUL(my, nx));                                       \
+    kx = SUB(MUL(mm, ny), MUL(nn, my));                                      \
+    ky = SUB(MUL(nn, mx), MUL(mm, nx));                                      \
+  }                                                                          \
+  T ee = ADD(MUL(ex, ex), MUL(ey, ey));                                      \
+  T pe = ADD(MUL(px, ex), MUL(py, ey));                                      \
+  T pp = ADD(MUL(px, px), MUL(py, py));                                      \
+  T qa = round ? ee : MUL(d, ee);                                            \
+  T qb = round ? SCALE(pe, 2.0) : SUB(SCALE(MUL(d, pe), 2.0),                \
+    ADD(MUL(kx, ex), MUL(ky, ey)));                                          \
+  T qc = round ? SUB(pp, l) : SUB(MUL(d, pp), ADD(MUL(px, kx),               \
+    MUL(py, ky)));                                                           \
+  disc = SUB(MUL(qb, qb), SCALE(MUL(qa, qc), 4.0));                          \
+}
+
+/**
+ * @brief Return the sign of the discriminant of the quadratic where the line
+ * through A and B meets the circle of an arc, decided exactly: negative where
+ * the line misses the circle, zero where it touches it, positive where it
+ * crosses it
+ * @details The discriminant (#ARCSEG_LINE_DISC) is read in doubles with a
+ * bound on its error and formed again as expansions where the bound cannot
+ * tell, as #arcseg_signs_exact forms its own
+ */
+static int
+arcseg_line_disc_sign(double ax, double ay, double bx, double by,
+  const Edge *arc)
+{
+  const ArcsegFilter one = {1.0, 0.0};
+  int result;
+  {
+    ArcsegFilter disc;
+    ARCSEG_LINE_DISC(ArcsegFilter, arcseg_f_diff, arcseg_f_add, arcseg_f_sub,
+      arcseg_f_mul, arcseg_f_scale, one)
+    result = arcseg_f_sign(disc);
+  }
+  if (result != 2)
+    return result;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
+  arena_.blocks = NULL;
+  ArcsegExact xdisc, xone;
+  xone.e = arcseg_arena_alloc(arena, 1);
+  xone.e[0] = 1.0;
+  xone.n = 1;
+  xone.err = 0.0;
+#define XDIFF(a, b) arcseg_x_diff(arena, a, b)
+#define XADD(a, b) arcseg_x_add(arena, a, b)
+#define XSUB(a, b) arcseg_x_sub(arena, a, b)
+#define XMUL(a, b) arcseg_x_mul(arena, a, b)
+#define XSCALE(a, k) arcseg_x_scale(arena, a, k)
+  {
+    ArcsegExact disc;
+    ARCSEG_LINE_DISC(ArcsegExact, XDIFF, XADD, XSUB, XMUL, XSCALE, xone)
+    xdisc = disc;
+  }
+#undef XDIFF
+#undef XADD
+#undef XSUB
+#undef XMUL
+#undef XSCALE
+  result = arcseg_x_sign(xdisc);
+  arcseg_arena_free(arena);
+  return result;
+}
+
+/*
  * The signs of a meeting where an end of the segment is an end of the arc,
  * read in one arithmetic: the quadratic then has a root at that end exactly,
  * and the other is a quotient of its coefficients. With A shared, g(t) =
@@ -10096,7 +10201,8 @@ meet_val(ArcsegArena *arena, double v)
  * (#tower_merge).
  *
  * Each sign is read first in doubles carrying a bound on their error
- * (#ArcsegFilter), then exactly as expansions, and where a product of
+ * (#ArcsegFilter), then in pairs of doubles carrying one (#DDBound), then
+ * exactly as expansions, and where a product of
  * expansions leaves the range where they are exact -- their components span
  * the exponents of doubles, which the squarings of the recursion outgrow --
  * as #WideDyadic, the points of the question built again from what defines
@@ -10115,18 +10221,22 @@ typedef struct
   bool wide;
   bool filter;         /**< Doubles carrying a bound on their error, a sign
                             the bound cannot tell marking the arena unsafe */
+  bool dd;             /**< Pairs of doubles carrying a bound on their error
+                            (#DDBound), as @p filter */
   WideDyadic **blocks;
   int nblocks;
   int capblocks;
   int used;            /**< Taken from the last block */
 } TowerCtx;
 
-/* An exact value of the arithmetic of a #TowerCtx */
+/* A value of the arithmetic of a #TowerCtx, the whole union zeroed where it
+ * is formed so that a copy reads no byte left unset */
 typedef union
 {
   ArcsegExact x;
   WideDyadic *w;
   ArcsegFilter f;
+  DDBound d;
 } TowerX;
 
 /* A number of a tower, its coefficients by the products of the roots */
@@ -10155,6 +10265,7 @@ tower_ctx_init(TowerCtx *ctx, bool wide)
   ctx->arena.blocks = NULL;
   ctx->wide = wide;
   ctx->filter = false;
+  ctx->dd = false;
   ctx->blocks = NULL;
   ctx->nblocks = ctx->capblocks = 0;
   ctx->used = TOWER_WIDE_BLOCK;
@@ -10202,16 +10313,22 @@ tower_wide_alloc(TowerCtx *ctx)
 }
 
 /* The difference of two doubles, exactly */
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_diff(TowerCtx *ctx, double a, double b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     /* The rounding error of the difference, exactly (two-sum) */
     double v = a - b, bv = v - a;
     r.f.v = v;
     r.f.e = fabs((a - (v - bv)) + (- b - bv));
+    return r;
+  }
+  if (ctx->dd)
+  {
+    two_diff(a, b, &r.d.hi, &r.d.lo);
+    r.d.e = 0.0;
     return r;
   }
   if (! ctx->wide)
@@ -10242,16 +10359,21 @@ tx_val(TowerCtx *ctx, double v)
 static inline bool
 tx_spent(const TowerCtx *ctx)
 {
-  return ! ctx->filter && tower_ctx_unsafe(ctx);
+  return ! ctx->filter && ! ctx->dd && tower_ctx_unsafe(ctx);
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_add(a.f, b.f);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d = ddb_add(a.d, b.d);
     return r;
   }
   if (! ctx->wide)
@@ -10267,13 +10389,20 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
 }
 
 /* Multiplied by a power of two, possibly negative, exactly */
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_scale(TowerCtx *ctx, TowerX a, double k)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_scale(a.f, k);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d.hi = a.d.hi * k;
+    r.d.lo = a.d.lo * k;
+    r.d.e = a.d.e * fabs(k);
     return r;
   }
   if (! ctx->wide)
@@ -10293,19 +10422,24 @@ tx_scale(TowerCtx *ctx, TowerX a, double k)
   return r;
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_sub(TowerCtx *ctx, TowerX a, TowerX b)
 {
   return tx_add(ctx, a, tx_scale(ctx, b, -1.0));
 }
 
-static TowerX
+static pg_attribute_always_inline TowerX
 tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 {
-  TowerX r;
+  TowerX r = {0};
   if (ctx->filter)
   {
     r.f = arcseg_f_mul(a.f, b.f);
+    return r;
+  }
+  if (ctx->dd)
+  {
+    r.d = ddb_mul(a.d, b.d);
     return r;
   }
   if (! ctx->wide)
@@ -10321,11 +10455,13 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
 }
 
 /* Whether a value is zero, read off its representation */
-static bool
+static pg_attribute_always_inline bool
 tx_zero(const TowerCtx *ctx, TowerX a)
 {
   if (ctx->filter)
     return a.f.v == 0.0 && a.f.e == 0.0;
+  if (ctx->dd)
+    return ddb_is_zero(a.d);
   if (ctx->wide)
     return a.w->sign == 0;
   for (int i = 0; i < a.x.n; i++)
@@ -10353,6 +10489,15 @@ tx_sign(TowerCtx *ctx, TowerX a)
     }
     return s;
   }
+  if (ctx->dd)
+  {
+    if (ddb_is_zero(a.d))
+      return 0;
+    int s = ddb_sign(a.d);
+    if (s == 0)
+      ctx->arena.unsafe = true;
+    return s;
+  }
   if (ctx->wide)
     return a.w->sign;
   return arcseg_x_sign_checked(&ctx->arena, a.x);
@@ -10365,6 +10510,13 @@ tx_filter(const TowerCtx *ctx, TowerX a)
   ArcsegFilter r;
   if (ctx->filter)
     return a.f;
+  if (ctx->dd)
+  {
+    /* The pair rounds once, its rounding error exactly (fast two-sum) */
+    r.v = a.d.hi + a.d.lo;
+    r.e = a.d.e + fabs(a.d.lo - (r.v - a.d.hi));
+    return r;
+  }
   if (ctx->wide)
   {
     int e;
@@ -10498,6 +10650,46 @@ tower_f_sqrt(ArcsegFilter h)
   return r;
 }
 
+/* The square root of a pair of doubles not negative: one Newton step from
+ * the root of its larger part, which lands within 2^-102 of the root, and
+ * within the error bound e of the pair the root moves as in #tower_f_sqrt */
+static DDBound
+tower_dd_sqrt(DDBound h)
+{
+  DDBound r;
+  double v = h.hi + h.lo;
+  if (! (h.hi > 0.0))
+  {
+    r.hi = r.lo = 0.0;
+    r.e = sqrt(fmax(v + h.e, 0.0)) * (1.0 + 4.0 * DBL_EPSILON) + DDB_TINY;
+    return r;
+  }
+  double s = sqrt(h.hi), p, pe;
+  two_product(s, s, &p, &pe);
+  two_sum(s, ((h.hi - p) - pe + h.lo) / (2.0 * s), &r.hi, &r.lo);
+  double lo = v - h.e;
+  double moved = (h.e == 0.0) ? 0.0 :
+    ((lo > 0.0) ? h.e / (s + sqrt(lo)) : sqrt(fmax(v + h.e, 0.0)));
+  r.e = moved * (1.0 + 4.0 * DBL_EPSILON) + DDB_EPS * s + DDB_TINY;
+  return r;
+}
+
+/* A number of k roots of a tower as a pair of doubles and a bound on its
+ * error, in the arithmetic of a context whose values are such pairs */
+static DDBound
+tower_dd_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
+{
+  if (k == 0)
+    return x[0].d;
+  int half = 1 << (k - 1);
+  DDBound a = tower_dd_k(ctx, t, x, k - 1);
+  if (tower_zero_k(ctx, x + half, k - 1))
+    return a;
+  DDBound b = tower_dd_k(ctx, t, x + half, k - 1);
+  DDBound h = tower_dd_k(ctx, t, t->h[k - 1].c, k - 1);
+  return ddb_add(a, ddb_mul(b, tower_dd_sqrt(h)));
+}
+
 /* A number of k roots of a tower as a double and a bound on its error */
 static ArcsegFilter
 tower_filter_k(const TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
@@ -10521,9 +10713,19 @@ tower_sign_k(TowerCtx *ctx, const Tower *t, const TowerX *x, int k)
 {
   if (k == 0)
     return tx_sign(ctx, x[0]);
-  int s = arcseg_f_sign(tower_filter_k(ctx, t, x, k));
-  if (s != 2)
-    return s;
+  int s;
+  if (ctx->dd)
+  {
+    s = ddb_sign(tower_dd_k(ctx, t, x, k));
+    if (s != 0)
+      return s;
+  }
+  else
+  {
+    s = arcseg_f_sign(tower_filter_k(ctx, t, x, k));
+    if (s != 2)
+      return s;
+  }
   int half = 1 << (k - 1);
   int sa = tower_sign_k(ctx, t, x, k - 1);
   if (tower_zero_k(ctx, x + half, k - 1))
@@ -10921,12 +11123,19 @@ static int
 tower_pred_run(TowerPred fn, const void *arg)
 {
   TowerCtx ctx;
-  /* In doubles carrying a bound on their error first */
-  tower_ctx_init(&ctx, false);
-  ctx.filter = true;
-  int r = fn(&ctx, arg);
-  bool again = (r == 2) || ctx.arena.unsafe;
-  tower_ctx_free(&ctx);
+  /* In doubles, then in pairs of doubles, carrying a bound on their error
+   * first */
+  int r = 2;
+  bool again = true;
+  for (int pass = 0; pass < 2 && again; pass++)
+  {
+    tower_ctx_init(&ctx, false);
+    ctx.filter = (pass == 0);
+    ctx.dd = (pass == 1);
+    r = fn(&ctx, arg);
+    again = (r == 2) || ctx.arena.unsafe;
+    tower_ctx_free(&ctx);
+  }
   if (! again)
     return r;
   tower_ctx_init(&ctx, false);
@@ -12941,11 +13150,9 @@ pointarr_find_splits(const POINT2D **points, int npoints, int *count)
 /**
  * @brief Compare two 2D points lexicographically
  */
-static int
-point2d_cmp(const void *a, const void *b)
+static inline int
+point2d_cmp(const POINT2D *pa, const POINT2D *pb)
 {
-  const POINT2D *pa = (const POINT2D *) a;
-  const POINT2D *pb = (const POINT2D *) b;
   if (pa->x < pb->x)
     return -1;
   if (pa->x > pb->x)
@@ -12956,6 +13163,16 @@ point2d_cmp(const void *a, const void *b)
     return 1;
   return 0;
 }
+
+/* Sort points lexicographically with their order written into the sort, as
+ * #edge_key_sort sorts the edges of an index */
+#define ST_SORT point2d_sort
+#define ST_ELEMENT_TYPE POINT2D
+#define ST_COMPARE(a, b) point2d_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
 
 /**
  * @brief Cross product of AB and AC
@@ -12978,25 +13195,23 @@ add_point(POINT2D *points, uint32_t *npoints, double x, double y)
 }
 
 /**
- * @brief Add the geometrically relevant points of an edge
- * @details For a line, only the two endpoints are needed. For an arc, the two
- * endpoints and every cardinal point of the supporting circle lying on the arc
- * are added. The latter are essential: an arc may attain its X/Y extrema in
- * its interior.
+ * @brief Add the two end points of an edge
+ * @details The end points that repeat are removed by #convex_hull_points
  */
 static void
 add_edge_points(const Edge *e, POINT2D *points, uint32_t *npoints)
 {
   assert(e); assert(points); assert(npoints);
   add_point(points, npoints, e->x1, e->y1);
-  if (fabs(e->x2 - e->x1) > MEOS_GEOM_TOLERANCE || fabs(e->y2 - e->y1) > MEOS_GEOM_TOLERANCE)
-    add_point(points, npoints, e->x2, e->y2);
+  add_point(points, npoints, e->x2, e->y2);
 }
 
 /**
  * @brief Compute the convex hull of a set of 2D points
- * @details The returned hull is not closed.
- * The implementation uses Andrew's monotone-chain algorithm.
+ * @details The returned hull is not closed, counterclockwise, and has no three
+ * vertices on one line. The implementation uses Andrew's monotone-chain
+ * algorithm, each turn read as the exact sign of a cross product
+ * (#cross_product_sign).
  */
 static uint32_t
 convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
@@ -13009,7 +13224,7 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   /* Sort a copy of the points */
   POINT2D *sorted = palloc(sizeof(POINT2D) * npoints);
   memcpy(sorted, points, sizeof(POINT2D) * npoints);
-  qsort(sorted, npoints, sizeof(POINT2D), point2d_cmp);
+  point2d_sort(sorted, npoints);
 
   /* Remove duplicate points */
   uint32_t n = 0;
@@ -13037,7 +13252,9 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   for (uint32_t i = 0; i < n; i++)
   {
     while (nhull >= 2 &&
-      cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+      cross_product_sign(h[nhull - 2].x, h[nhull - 2].y, h[nhull - 1].x,
+        h[nhull - 1].y, h[nhull - 2].x, h[nhull - 2].y, sorted[i].x,
+        sorted[i].y) <= 0)
     {
       nhull--;
     }
@@ -13049,7 +13266,9 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   for (int i = (int) n - 2; i >= 0; i--)
   {
     while (nhull > lower &&
-        cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+        cross_product_sign(h[nhull - 2].x, h[nhull - 2].y, h[nhull - 1].x,
+        h[nhull - 1].y, h[nhull - 2].x, h[nhull - 2].y, sorted[i].x,
+        sorted[i].y) <= 0)
       nhull--;
     h[nhull++] = sorted[i];
   }
@@ -13276,9 +13495,9 @@ make_geometry_hull(int32_t srid, const POINT2D *hull, uint32_t nhull)
  * the points that define it, so a hull placed on those points leaves the arc
  * outside itself. What an arc does carry is a support: in a direction its
  * angular span holds, the point of its circle furthest that way belongs to
- * the hull. Reading the hull through its support function answers both the
- * hull and the rectangle of minimum area enclosing it, exactly and for arcs
- * as much as for segments
+ * the hull. The hull is walked along its boundary from one supporting feature
+ * to the next (#hull_walk), and the rectangle of minimum area enclosing it is
+ * read through its support function
  *****************************************************************************/
 
 /**
@@ -13430,30 +13649,348 @@ hull_directions(const HullFeature *feats, int nfeats, double **result)
 }
 
 /**
- * @brief Collect the features supporting the convex hull of a geometry
- * @details Every edge contributes its two end points and an arc edge
- * contributes its circle. A point within the hull of the other points never
- * supports the hull, so the points are reduced to their own hull first, which
- * is what keeps the number of features small
+ * @brief A feature of the hull of a geometry carrying arcs, a point or an
+ * arc
+ */
+typedef struct
+{
+  const Edge *arc;       /**< The arc, NULL for a point */
+  double x, y;           /**< The point, or for a direction of an end of an
+                              arc that end */
+} HullAt;
+
+/**
+ * @brief Return the point of a feature its exact numbers are taken from: the
+ * point, the start of an arc, or the centre of a whole circle
+ */
+static void
+hull_at_origin(const HullAt *f, double *ox, double *oy)
+{
+  if (! f->arc)
+  {
+    *ox = f->x; *oy = f->y;
+  }
+  else if (f->arc->centred)
+  {
+    *ox = f->arc->cx; *oy = f->arc->cy;
+  }
+  else
+  {
+    *ox = f->arc->sx; *oy = f->arc->sy;
+  }
+  return;
+}
+
+/**
+ * @brief The centre of a feature and the square of its radius, exactly: the
+ * centre is (px / w, py / w) from an origin, w positive, and rw is the square
+ * of the radius times w^2, zero for a point
+ */
+typedef struct
+{
+  TowerX px, py, w, rw;
+} HullExact;
+
+/**
+ * @brief Set the centre and the square of the radius of a feature, exactly
+ * @details The circle through S, M and E, with m = M - S, n = E - S and
+ * D = m x n, has its centre at S + K / (2 D) for
+ * K = (|m|^2 n_y - |n|^2 m_y, |n|^2 m_x - |m|^2 n_x), so that w = 2 |D| and
+ * rw = |K|^2, the sign of D being the exact turn of the three points
+ * (#cross_product_sign). The circle on the diameter from S to E has its
+ * centre at S + n / 2, and a whole circle the centre and the radius it is
+ * given
+ */
+static void
+hull_exact(TowerCtx *ctx, const HullAt *f, double ox, double oy,
+  HullExact *out)
+{
+  const Edge *e = f->arc;
+  if (! e)
+  {
+    out->px = tx_diff(ctx, f->x, ox);
+    out->py = tx_diff(ctx, f->y, oy);
+    out->w = tx_val(ctx, 1.0);
+    out->rw = tx_val(ctx, 0.0);
+    return;
+  }
+  if (e->centred)
+  {
+    TowerX r = tx_val(ctx, e->radius);
+    out->px = tx_diff(ctx, e->cx, ox);
+    out->py = tx_diff(ctx, e->cy, oy);
+    out->w = tx_val(ctx, 1.0);
+    out->rw = tx_mul(ctx, r, r);
+    return;
+  }
+  TowerX nx = tx_diff(ctx, e->ex, e->sx), ny = tx_diff(ctx, e->ey, e->sy);
+  TowerX kx = nx, ky = ny;
+  if (e->diameter)
+    out->w = tx_val(ctx, 2.0);
+  else
+  {
+    TowerX mx = tx_diff(ctx, e->mx, e->sx), my = tx_diff(ctx, e->my, e->sy);
+    TowerX mm = tx_add(ctx, tx_mul(ctx, mx, mx), tx_mul(ctx, my, my));
+    TowerX nn = tx_add(ctx, tx_mul(ctx, nx, nx), tx_mul(ctx, ny, ny));
+    double turn = (double) cross_product_sign(e->sx, e->sy, e->mx, e->my,
+      e->sx, e->sy, e->ex, e->ey);
+    kx = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, mm, ny), tx_mul(ctx, nn, my)),
+      turn);
+    ky = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, nn, mx), tx_mul(ctx, mm, nx)),
+      turn);
+    out->w = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, mx, ny),
+      tx_mul(ctx, my, nx)), 2.0 * turn);
+  }
+  out->px = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, e->sx, ox), out->w), kx);
+  out->py = tx_add(ctx, tx_mul(ctx, tx_diff(ctx, e->sy, oy), out->w), ky);
+  out->rw = tx_add(ctx, tx_mul(ctx, kx, kx), tx_mul(ctx, ky, ky));
+  return;
+}
+
+/**
+ * @brief A feature of the hull in doubles with a bound on the error of each
+ * (#ArcsegFilter), from its own origin (#hull_at_origin): its centre
+ * (px / w, py / w), w positive, and r, its radius times w (#hull_exact)
+ */
+typedef struct
+{
+  ArcsegFilter px, py, w, r;
+  double ox, oy;         /**< The origin */
+} HullFilter;
+
+/**
+ * @brief Set a feature of the hull in doubles with bounds on their errors
+ */
+static void
+hull_filter_set(const HullAt *f, HullFilter *out)
+{
+  hull_at_origin(f, &out->ox, &out->oy);
+  if (! f->arc)
+  {
+    out->px.v = out->px.e = out->py.v = out->py.e = 0.0;
+    out->w.v = 1.0; out->w.e = 0.0;
+    out->r.v = out->r.e = 0.0;
+    return;
+  }
+  TowerCtx ctx;
+  tower_ctx_init(&ctx, false);
+  ctx.filter = true;
+  HullExact e;
+  hull_exact(&ctx, f, out->ox, out->oy, &e);
+  out->px = e.px.f;
+  out->py = e.py.f;
+  out->w = e.w.f;
+  out->r = tower_f_sqrt(e.rw.f);
+  tower_ctx_free(&ctx);
+  return;
+}
+
+/**
+ * @brief Set the centre of a feature in doubles from another origin, times
+ * its w: its own numbers moved by the difference of the two origins, which
+ * the bounds then size to the distance between them rather than to the
+ * coordinates
+ */
+static void
+hull_filter_from(const HullFilter *f, double ox, double oy, ArcsegFilter *px,
+  ArcsegFilter *py)
+{
+  *px = arcseg_f_add(f->px, arcseg_f_mul(arcseg_f_diff(f->ox, ox), f->w));
+  *py = arcseg_f_add(f->py, arcseg_f_mul(arcseg_f_diff(f->oy, oy), f->w));
+  return;
+}
+
+/**
+ * @brief Return the sign of a value in doubles with a bound on its error, an
+ * exact zero being zero (#tx_sign), or 2 where the bound does not tell it
+ */
+static int
+hull_filter_sign(ArcsegFilter a)
+{
+  return (a.v == 0.0 && a.e == 0.0) ? 0 : arcseg_f_sign(a);
+}
+
+/**
+ * @brief An edge from A to B of the hull of a set of points in doubles with
+ * bounds on their errors, as #HullFilter holds a feature
+ * @details It holds B - A, its length, and k = (B - A) x (A - G) from the
+ * origin G, the first vertex of the hull
+ */
+typedef struct
+{
+  ArcsegFilter ex, ey, len, k;
+} HullEdgeFilter;
+
+/**
+ * @brief The largest of each quantity of #HullEdgeFilter over the edges of a
+ * hull and the largest bound on its error, which bound the error of a sum
+ * over any edge read in doubles alone (#hull_circle_inside)
+ */
+typedef struct
+{
+  double e, ee;          /**< |B - A| along either axis, and its error */
+  double k, ke;
+  double len, lene;
+} HullEdgeMax;
+
+/**
+ * @brief Return the edges of the hull of a set of points in doubles with
+ * bounds on their errors (#HullEdgeFilter), and set their largest values
+ */
+static HullEdgeFilter *
+hull_edge_filters(const POINT2D *hull, uint32_t nhull, HullEdgeMax *max)
+{
+  HullEdgeFilter *result = palloc(sizeof(HullEdgeFilter) * Max(nhull, 1));
+  memset(max, 0, sizeof(HullEdgeMax));
+  for (uint32_t i = 0; i < nhull; i++)
+  {
+    const POINT2D *a = &hull[i], *b = &hull[(i + 1) % nhull];
+    HullEdgeFilter *e = &result[i];
+    e->ex = arcseg_f_diff(b->x, a->x);
+    e->ey = arcseg_f_diff(b->y, a->y);
+    e->len = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(e->ex, e->ex),
+      arcseg_f_mul(e->ey, e->ey)));
+    e->k = arcseg_f_sub(
+      arcseg_f_mul(e->ex, arcseg_f_diff(a->y, hull[0].y)),
+      arcseg_f_mul(e->ey, arcseg_f_diff(a->x, hull[0].x)));
+    max->e = fmax(max->e, fmax(fabs(e->ex.v), fabs(e->ey.v)));
+    max->ee = fmax(max->ee, fmax(e->ex.e, e->ey.e));
+    max->k = fmax(max->k, fabs(e->k.v));
+    max->ke = fmax(max->ke, e->k.e);
+    max->len = fmax(max->len, e->len.v);
+    max->lene = fmax(max->lene, e->len.e);
+  }
+  return result;
+}
+
+/**
+ * @brief Return true when a circle lies inside the hull of a set of points,
+ * clear of its boundary
+ * @details An arc of such a circle supports the hull in no direction. The
+ * hull is counterclockwise with no three vertices collinear
+ * (#convex_hull_points). The circle lies inside where the line of every edge
+ * misses it (#arcseg_line_disc_sign) and a point of it lies strictly left of
+ * that edge (#cross_product_sign): its start, an input point on it, or for a
+ * whole circle its centre. The end of an arc lies on its circle too, so an
+ * end that does not lie strictly left of an edge tells, without the
+ * discriminant, that the line meets the circle, as it does where an edge of
+ * the hull leaves an arc along its tangent. Each sign is decided exactly on
+ * the input points that fix the circle, never on the centre and radius
+ * constructed from them. Most edges are told first in doubles carrying bounds
+ * on their errors (#hull_filter_set): the centre lies left of the edge by
+ * more than the radius where S = (B - A) x (C - A) w is positive and
+ * S - r w |B - A| too. From the origin G of #HullEdgeFilter,
+ * S = (B - A) x (C - G) w - w (B - A) x (A - G), the second cross product
+ * read once for every circle
+ * @param[in] hull,nhull Vertices of the hull
+ * @param[in] ef Edges of the hull in doubles (#hull_edge_filters)
+ * @param[in] max Their largest values (#HullEdgeMax), which tell most edges
+ * from doubles alone
+ * @param[in] arc Arc edge
+ */
+static bool
+hull_circle_inside(const POINT2D *hull, uint32_t nhull,
+  const HullEdgeFilter *ef, const HullEdgeMax *max, const Edge *arc)
+{
+  if (nhull < 3)
+    return false;
+  HullAt f = {arc, 0.0, 0.0};
+  HullFilter c;
+  hull_filter_set(&f, &c);
+  ArcsegFilter gx, gy;
+  hull_filter_from(&c, hull[0].x, hull[0].y, &gx, &gy);
+  double qx = arc->centred ? arc->cx : arc->sx;
+  double qy = arc->centred ? arc->cy : arc->sy;
+  /* A bound on the error of S - r w |B - A| read in doubles alone over any
+   * edge: seven roundings of the sum of the magnitudes of its four products,
+   * and the errors of their factors, each factor taken at its largest */
+  double gs = fabs(gx.v) + fabs(gy.v), ge = gx.e + gy.e;
+  double wv = fabs(c.w.v), rv = fabs(c.r.v);
+  double bound = 8.0 * DBL_EPSILON *
+      (max->e * gs + wv * max->k + rv * max->len) +
+    max->e * ge + max->ee * (gs + ge) +
+    wv * max->ke + c.w.e * (max->k + max->ke) +
+    rv * max->lene + c.r.e * (max->len + max->lene);
+  bound = bound * (1.0 + 1e-6) + DBL_MIN;
+  for (uint32_t i = 0; i < nhull; i++)
+  {
+    const POINT2D *a = &hull[i], *b = &hull[(i + 1) % nhull];
+    const HullEdgeFilter *e = &ef[i];
+    /* The circle clears the edge where S - r w |B - A| exceeds the bound */
+    if (e->ex.v * gy.v - e->ey.v * gx.v - c.w.v * e->k.v -
+        c.r.v * e->len.v > bound)
+      continue;
+    ArcsegFilter sa = arcseg_f_sub(arcseg_f_sub(arcseg_f_mul(e->ex, gy),
+      arcseg_f_mul(e->ey, gx)), arcseg_f_mul(c.w, e->k));
+    int side = hull_filter_sign(sa);
+    int clear = hull_filter_sign(arcseg_f_sub(sa,
+      arcseg_f_mul(c.r, e->len)));
+    if (side == 1 && clear == 1)
+      continue;
+    if (side == 0 || side == -1 || (side == 1 && clear != 2))
+      return false;
+    if (cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, qx, qy) <= 0 ||
+        (! arc->centred && cross_product_sign(a->x, a->y, b->x, b->y, a->x,
+          a->y, arc->ex, arc->ey) <= 0) ||
+        arcseg_line_disc_sign(a->x, a->y, b->x, b->y, arc) >= 0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Collect the vertices of the hull of the end points of the edges of a
+ * geometry and the arcs reaching past that hull
+ * @details A point within the hull of the other points never supports the
+ * hull, so the points are reduced to their own hull, which is what keeps the
+ * number of features small; an arc whose circle lies inside that hull never
+ * supports it either, and is left out (#hull_circle_inside)
+ * @param[in] edges Edges of the geometry
+ * @param[out] hull Vertices of the hull of the points, counterclockwise
+ * (#convex_hull_points)
+ * @param[out] arcs,narcs Arcs whose circle that hull does not hold
+ * @return The number of vertices of the hull of the points
+ */
+static uint32_t
+hull_points_arcs(const MeosArray *edges, POINT2D **hull, const Edge ***arcs,
+  int *narcs)
+{
+  int nedges = (int) edges->count;
+  POINT2D *points = palloc(sizeof(POINT2D) * 2 * Max(nedges, 1));
+  uint32_t npoints = 0;
+  for (int i = 0; i < nedges; i++)
+    add_edge_points((Edge *) meos_array_get_intl(edges, i), points, &npoints);
+  uint32_t nhull = convex_hull_points(points, npoints, hull);
+  pfree(points);
+  const Edge **result = palloc(sizeof(Edge *) * Max(nedges, 1));
+  HullEdgeMax max;
+  HullEdgeFilter *ef = hull_edge_filters(*hull, nhull, &max);
+  int n = 0;
+  for (int i = 0; i < nedges; i++)
+  {
+    const Edge *e = (Edge *) meos_array_get_intl(edges, i);
+    if ((e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC) &&
+        ! hull_circle_inside(*hull, nhull, ef, &max, e))
+      result[n++] = e;
+  }
+  pfree(ef);
+  *arcs = result;
+  *narcs = n;
+  return nhull;
+}
+
+/**
+ * @brief Collect the features supporting the convex hull of a geometry: the
+ * vertices of the hull of the end points of its edges and the circles of the
+ * arcs reaching past that hull (#hull_points_arcs)
  */
 static HullFeature *
 hull_features(const MeosArray *edges, int *nfeats)
 {
-  int nedges = (int) edges->count;
-  uint32_t maxpoints = 2 * (uint32_t) nedges;
-  POINT2D *points = palloc(sizeof(POINT2D) * maxpoints);
-  uint32_t npoints = 0;
-  int narcs = 0;
-  for (int i = 0; i < nedges; i++)
-  {
-    const Edge *e = (Edge *) meos_array_get_intl(edges, i);
-    add_edge_points(e, points, &npoints);
-    if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
-      narcs++;
-  }
-
   POINT2D *hull = NULL;
-  uint32_t nhull = convex_hull_points(points, npoints, &hull);
+  const Edge **arcs = NULL;
+  int narcs = 0;
+  uint32_t nhull = hull_points_arcs(edges, &hull, &arcs, &narcs);
   HullFeature *result = palloc(sizeof(HullFeature) *
     Max((int) nhull + narcs, 1));
   int n = 0;
@@ -13464,11 +14001,9 @@ hull_features(const MeosArray *edges, int *nfeats)
     result[n].ccw = true; result[n].is_arc = false;
     n++;
   }
-  for (int i = 0; i < nedges; i++)
+  for (int i = 0; i < narcs; i++)
   {
-    const Edge *e = (Edge *) meos_array_get_intl(edges, i);
-    if (e->etype != EDGE_LINEARC && e->etype != EDGE_POLYARC)
-      continue;
+    const Edge *e = arcs[i];
     result[n].x = e->cx; result[n].y = e->cy; result[n].radius = e->radius;
     result[n].theta0 = e->theta0; result[n].theta1 = e->theta1;
     result[n].ccw = e->ccw; result[n].is_arc = true;
@@ -13476,7 +14011,7 @@ hull_features(const MeosArray *edges, int *nfeats)
   }
   if (hull)
     pfree(hull);
-  pfree(points);
+  pfree(arcs);
   *nfeats = n;
   return result;
 }
@@ -13492,170 +14027,1419 @@ typedef struct
   bool is_arc;           /**< Whether the piece is an arc */
 } HullBoundary;
 
+/*****************************************************************************
+ * The walk of the boundary of the convex hull of a geometry carrying arcs
+ *
+ * The boundary is walked counterclockwise by its outward normal, once around
+ * from the direction (0, -1). The directions where the hull of the points
+ * passes from one vertex to the next, where the span of the normals of an arc
+ * starts and ends, and the four axes cut the turn into windows of less than a
+ * quarter of it. Within a window the hull is supported by the vertex of the
+ * hull of the points supporting that hull there or by an arc whose span holds
+ * the window: every other point lies inside the hull of the points. The
+ * feature supporting the hull at the start of a window supports it until
+ * another reaches past it, which first happens where the outer common tangent
+ * of the two touches both, and the walk follows that tangent to the feature.
+ *
+ * Every decision is the exact sign of a number of a tower of square roots
+ * (#TowerNum), read in doubles carrying a bound on their error and formed again
+ * exactly where the bound cannot tell (#tower_pred_run). The circle through
+ * three points has a rational centre and a rational square of its radius, so
+ * its radius is the root of a rational, and the outer common tangent of two
+ * circles adds the root of E = |C2 - C1|^2 - (r1 - r2)^2. No decision reads
+ * the centre or the radius an arc edge carries in doubles: those build the
+ * points the boundary passes through, each rounded once, an input point being
+ * its own double.
+ *****************************************************************************/
+
 /**
- * @brief Move a point onto the vertex of the geometry it stands for
- * @details The end of an arc piece is read from the centre and the radius of
- * its circle, which names the vertex the arc ends on to within the rounding of
- * that arithmetic. The vertex itself is the point the geometry carries, so the
- * answer is given in the coordinates of the input rather than in a rounding of
- * them
+ * @brief The kinds of a direction of the walk
+ */
+typedef enum
+{
+  HULL_DIR_AXIS,         /**< The unit vector (a.x, a.y) */
+  HULL_DIR_EDGE,         /**< The outward normal of the edge from the point a
+                              to the point b of a counterclockwise ring */
+  HULL_DIR_END,          /**< The outward normal of the arc a at its end
+                              (a.x, a.y) */
+  HULL_DIR_TANGENT,      /**< The outward normal of the outer common tangent
+                              walked counterclockwise from the feature a to
+                              the feature b */
+} HullDirKind;
+
+/**
+ * @brief A direction of the walk, given by what defines it
+ */
+typedef struct
+{
+  HullDirKind kind;
+  HullAt a, b;
+} HullDir;
+
+/**
+ * @brief Return true if two features are one
+ */
+static bool
+hull_at_same(const HullAt *f, const HullAt *g)
+{
+  if (f->arc || g->arc)
+    return f->arc == g->arc;
+  return f->x == g->x && f->y == g->y;
+}
+
+/**
+ * @brief Add to a tower the root of a number of the roots it holds, and
+ * return where the root stands
+ */
+static int
+hull_tower_root(Tower *t, const TowerX *h)
+{
+  int k = t->depth;
+  assert(k < TOWER_MAXDEPTH);
+  memcpy(t->h[k].c, h, sizeof(TowerX) * (1 << k));
+  t->key[k] = NULL;
+  t->depth = k + 1;
+  return k;
+}
+
+/**
+ * @brief Add to a tower the root of the square of the radius of a feature
+ * times w^2, and return where it stands, -1 for a point
+ */
+static int
+hull_tower_radius(TowerCtx *ctx, Tower *t, const HullAt *f,
+  const HullExact *e)
+{
+  if (! f->arc)
+    return -1;
+  TowerX h[TOWER_SIZE];
+  tower_set(ctx, e->rw, t->depth, h);
+  return hull_tower_root(t, h);
+}
+
+/**
+ * @brief Set the vector of a direction given by rationals: an axis, the
+ * normal of an edge, or the end of an arc less its centre, times w
  */
 static void
-hull_snap_to_vertex(const HullFeature *feats, int nfeats, double *x, double *y)
+hull_dir_vector(TowerCtx *ctx, const HullDir *d, TowerX *vx, TowerX *vy)
 {
-  for (int i = 0; i < nfeats; i++)
-    if (! feats[i].is_arc &&
-        fabs(feats[i].x - *x) <= MEOS_GEOM_TOLERANCE &&
-        fabs(feats[i].y - *y) <= MEOS_GEOM_TOLERANCE)
+  if (d->kind == HULL_DIR_AXIS)
+  {
+    *vx = tx_val(ctx, d->a.x);
+    *vy = tx_val(ctx, d->a.y);
+  }
+  else if (d->kind == HULL_DIR_EDGE)
+  {
+    *vx = tx_diff(ctx, d->b.y, d->a.y);
+    *vy = tx_diff(ctx, d->a.x, d->b.x);
+  }
+  else
+  {
+    /* The centre from the end of the arc is (px, py) / w */
+    HullExact e;
+    hull_exact(ctx, &d->a, d->a.x, d->a.y, &e);
+    *vx = tx_scale(ctx, e.px, -1.0);
+    *vy = tx_scale(ctx, e.py, -1.0);
+  }
+  return;
+}
+
+/**
+ * @brief Set the vector of a direction in a tower, adding the roots it needs
+ * @details The vector of an axis, of the normal of an edge or of the end of
+ * an arc is rational. That of the tangent from the feature A to the feature
+ * B, with D = (C_B - C_A) w_A w_B and rho = (r_A - r_B) w_A w_B, is
+ * n = rho D - sqrt(E) rot(D), rot(x, y) = (-y, x) and E = |D|^2 - rho^2, of
+ * length |D|^2: the normal of the tangent that leaves both features on its
+ * left, the one #tower_point_tangent places for the side -1. Its roots are
+ * the radius of A, that of B, then sqrt(E)
+ * @param[in] ctx Arithmetic
+ * @param[in] d Direction
+ * @param[in] ox,oy Origin of the exact numbers
+ * @param[in,out] t Tower
+ * @param[out] nx,ny Vector
+ * @param[out] len Where not NULL, the length of the vector, adding its root
+ * for the normal of an edge or of the end of an arc @nullable
+ * @param[out] ra Where not NULL, where the root of the radius of A stands, -1
+ * for none @nullable
+ */
+static void
+hull_dir_tower(TowerCtx *ctx, const HullDir *d, double ox, double oy,
+  Tower *t, TowerX *nx, TowerX *ny, TowerX *len, int *ra)
+{
+  TowerX zero = tx_val(ctx, 0.0);
+  TowerX h[TOWER_SIZE];
+  tower_set(ctx, zero, TOWER_MAXDEPTH, nx);
+  tower_set(ctx, zero, TOWER_MAXDEPTH, ny);
+  if (len)
+    tower_set(ctx, zero, TOWER_MAXDEPTH, len);
+  if (ra)
+    *ra = -1;
+  if (d->kind != HULL_DIR_TANGENT)
+  {
+    hull_dir_vector(ctx, d, &nx[0], &ny[0]);
+    if (! len)
+      return;
+    if (d->kind == HULL_DIR_AXIS)
     {
-      *x = feats[i].x;
-      *y = feats[i].y;
+      len[0] = tx_val(ctx, 1.0);
+      return;
+    }
+    tower_set(ctx, tx_add(ctx, tx_mul(ctx, nx[0], nx[0]),
+      tx_mul(ctx, ny[0], ny[0])), t->depth, h);
+    len[1 << hull_tower_root(t, h)] = tx_val(ctx, 1.0);
+    return;
+  }
+  HullExact ea, eb;
+  hull_exact(ctx, &d->a, ox, oy, &ea);
+  hull_exact(ctx, &d->b, ox, oy, &eb);
+  TowerX rho[TOWER_SIZE];
+  tower_set(ctx, zero, TOWER_MAXDEPTH, rho);
+  int i = hull_tower_radius(ctx, t, &d->a, &ea);
+  if (i >= 0)
+    rho[1 << i] = eb.w;
+  if (ra)
+    *ra = i;
+  i = hull_tower_radius(ctx, t, &d->b, &eb);
+  if (i >= 0)
+    rho[1 << i] = tx_scale(ctx, ea.w, -1.0);
+  TowerX dx = tx_sub(ctx, tx_mul(ctx, eb.px, ea.w), tx_mul(ctx, ea.px, eb.w));
+  TowerX dy = tx_sub(ctx, tx_mul(ctx, eb.py, ea.w), tx_mul(ctx, ea.py, eb.w));
+  TowerX dd = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+  int k = t->depth;
+  TowerX rr[TOWER_SIZE];
+  tower_mul_k(ctx, t, rho, rho, k, rr);
+  tower_set(ctx, dd, k, h);
+  tower_sub_k(ctx, h, rr, k, h);
+  int ie = hull_tower_root(t, h);
+  k = t->depth;
+  tower_mulx_k(ctx, rho, dx, k, nx);
+  tower_mulx_k(ctx, rho, dy, k, ny);
+  nx[1 << ie] = dy;
+  ny[1 << ie] = tx_scale(ctx, dx, -1.0);
+  if (len)
+    len[0] = dd;
+  return;
+}
+
+/**
+ * @brief Return true where an arc defined by input points carries a point
+ * among them, which lies exactly on its circle
+ */
+static bool
+hull_arc_carries(const Edge *e, double x, double y)
+{
+  if (e->centred)
+    return false;
+  return (e->sx == x && e->sy == y) || (e->ex == x && e->ey == y) ||
+    (! e->diameter && e->mx == x && e->my == y);
+}
+
+/**
+ * @brief Return true where the features X and F are two arcs carrying one
+ * input point, and set it
+ * @details The point is the end of X or of F where the direction stands
+ * where both carry it, otherwise one carried by both
+ */
+static bool
+hull_shared_point(const HullAt *x, const HullAt *f, const HullDir *d,
+  double *px, double *py)
+{
+  const Edge *a = x->arc, *b = f->arc;
+  if (! a || ! b || a->centred || b->centred)
+    return false;
+  if (d->kind == HULL_DIR_END && (d->a.arc == a || d->a.arc == b) &&
+      hull_arc_carries(a, d->a.x, d->a.y) &&
+      hull_arc_carries(b, d->a.x, d->a.y))
+  {
+    *px = d->a.x; *py = d->a.y;
+    return true;
+  }
+  double pts[3][2] = {{a->sx, a->sy}, {a->ex, a->ey}, {a->mx, a->my}};
+  for (int k = 0; k < (a->diameter ? 2 : 3); k++)
+    if (hull_arc_carries(b, pts[k][0], pts[k][1]))
+    {
+      *px = pts[k][0]; *py = pts[k][1];
+      return true;
+    }
+  return false;
+}
+
+/**
+ * @brief Return true where the circles of two arcs through the point P touch
+ * there from one side, their centres C_X and C_F on one ray from P
+ * @details With c = C - P, the radius of a circle through P is |c|, and two
+ * distinct circles through P touch there where c_X x c_F is zero, from one
+ * side where c_X . c_F is positive too: two signs of the input points, with no
+ * root (#hull_exact)
+ */
+static bool
+hull_shared_tangent(TowerCtx *ctx, const HullExact *ex, const HullExact *ef)
+{
+  TowerX cross = tx_sub(ctx, tx_mul(ctx, ex->px, ef->py),
+    tx_mul(ctx, ex->py, ef->px));
+  if (tx_sign(ctx, cross) != 0)
+    return false;
+  TowerX dot = tx_add(ctx, tx_mul(ctx, ex->px, ef->px),
+    tx_mul(ctx, ex->py, ef->py));
+  return tx_sign(ctx, dot) > 0;
+}
+
+/**
+ * @brief Return the sign of how much further than the feature X the feature
+ * F reaches in a direction, (C_F - C_X) . n + (r_F - r_X) |n| times
+ * w_X w_F, or 2 where the arithmetic does not tell it
+ * @details Where X and F are two arcs through an input point P and the
+ * direction is the normal of one of them at P, the sign is told with no
+ * root: with c = C - P, F reaches past X along the normal -c_X / |c_X| of X
+ * by |c_F| - c_F . c_X / |c_X|, which is not negative and is zero where the
+ * circles touch at P from one side (#hull_shared_tangent), and X reaches past
+ * F along the normal of F likewise. The arcs of one circle given in pieces,
+ * their circles a rounding apart, ask this of every end they share. Along
+ * the normal of an edge of the hull of the points whose ends the features
+ * carry, how far each reaches past the edge's line is formed without the
+ * cancellation of an edge nearly touching an arc, as the hull of a buffer
+ * leaves one arc for the next along their common tangent
+ */
+static int
+hull_reach_sign(TowerCtx *ctx, const HullAt *x, const HullAt *f,
+  const HullDir *d)
+{
+  double qx, qy;
+  if (d->kind == HULL_DIR_END && (d->a.arc == x->arc || d->a.arc == f->arc) &&
+      hull_shared_point(x, f, d, &qx, &qy) && d->a.x == qx && d->a.y == qy)
+  {
+    HullExact cx, cf;
+    hull_exact(ctx, x, qx, qy, &cx);
+    hull_exact(ctx, f, qx, qy, &cf);
+    int result = hull_shared_tangent(ctx, &cx, &cf) ? 0 :
+      ((d->a.arc == x->arc) ? 1 : -1);
+    return tower_ctx_unsafe(ctx) ? 2 : result;
+  }
+  /* A point Q and an arc carrying the input point P, along the normal n of
+   * the edge from one to the other: Q . n = P . n, which the circle reaches
+   * past unless the edge touches it at P, (P - C) x n zero and (P - C) . n
+   * positive */
+  if (d->kind == HULL_DIR_EDGE && (x->arc != NULL) != (f->arc != NULL))
+  {
+    const HullAt *q = x->arc ? f : x, *arc = x->arc ? x : f;
+    const HullAt *pe = (d->a.x == q->x && d->a.y == q->y) ? &d->b :
+      ((d->b.x == q->x && d->b.y == q->y) ? &d->a : NULL);
+    if (pe && hull_arc_carries(arc->arc, pe->x, pe->y))
+    {
+      HullExact ca;
+      hull_exact(ctx, arc, pe->x, pe->y, &ca);
+      TowerX nx, ny;
+      hull_dir_vector(ctx, d, &nx, &ny);
+      /* (px, py) / w is C - P */
+      bool touch = tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, ca.px, ny),
+        tx_mul(ctx, ca.py, nx))) == 0 &&
+        tx_sign(ctx, tx_add(ctx, tx_mul(ctx, ca.px, nx),
+          tx_mul(ctx, ca.py, ny))) < 0;
+      int result = touch ? 0 : (x->arc ? -1 : 1);
+      return tower_ctx_unsafe(ctx) ? 2 : result;
+    }
+  }
+  /* Two arcs carrying the ends P_X and P_F of the edge, along its normal n:
+   * P_X . n = P_F . n, so that F reaches past X by delta_F - delta_X, where
+   * delta = |c| |n| - c . n with c = P - C is how far the circle reaches past
+   * P. An edge nearly touching both arcs cancels each delta, and
+   * delta = (c x n)^2 / (|c| |n| + c . n) does not where c . n is positive:
+   * with (p_x, p_y) / w = C - P, the sign is that of
+   * (p_F x n)^2 w_X D_X - (p_X x n)^2 w_F D_F, D = sqrt(r^2 w^2) |n| - p . n */
+  if (d->kind == HULL_DIR_EDGE && x->arc && f->arc)
+  {
+    const HullAt *ends[2] = {&d->a, &d->b}, *pxe = NULL, *pfe = NULL;
+    for (int k = 0; k < 2; k++)
+    {
+      if (! pxe && hull_arc_carries(x->arc, ends[k]->x, ends[k]->y))
+        pxe = ends[k];
+      if (! pfe && hull_arc_carries(f->arc, ends[k]->x, ends[k]->y))
+        pfe = ends[k];
+    }
+    if (pxe && pfe)
+    {
+      HullExact cx, cf;
+      hull_exact(ctx, x, pxe->x, pxe->y, &cx);
+      hull_exact(ctx, f, pfe->x, pfe->y, &cf);
+      TowerX nx, ny;
+      hull_dir_vector(ctx, d, &nx, &ny);
+      TowerX dotx = tx_add(ctx, tx_mul(ctx, cx.px, nx),
+        tx_mul(ctx, cx.py, ny));
+      TowerX dotf = tx_add(ctx, tx_mul(ctx, cf.px, nx),
+        tx_mul(ctx, cf.py, ny));
+      if (tx_sign(ctx, dotx) < 0 && tx_sign(ctx, dotf) < 0)
+      {
+        TowerX crx = tx_sub(ctx, tx_mul(ctx, cx.px, ny),
+          tx_mul(ctx, cx.py, nx));
+        TowerX crf = tx_sub(ctx, tx_mul(ctx, cf.px, ny),
+          tx_mul(ctx, cf.py, nx));
+        TowerX a = tx_mul(ctx, tx_mul(ctx, crf, crf), cx.w);
+        TowerX b = tx_mul(ctx, tx_mul(ctx, crx, crx), cf.w);
+        Tower t;
+        t.depth = 0;
+        TowerX h[TOWER_SIZE], u[TOWER_SIZE];
+        tower_set(ctx, cx.rw, t.depth, h);
+        int ix = hull_tower_root(&t, h);
+        tower_set(ctx, cf.rw, t.depth, h);
+        int i = hull_tower_root(&t, h);
+        tower_set(ctx, tx_add(ctx, tx_mul(ctx, nx, nx), tx_mul(ctx, ny, ny)),
+          t.depth, h);
+        int in = hull_tower_root(&t, h);
+        tower_set(ctx, tx_sub(ctx, tx_mul(ctx, b, dotf),
+          tx_mul(ctx, a, dotx)), TOWER_MAXDEPTH, u);
+        u[(1 << ix) | (1 << in)] = a;
+        u[(1 << i) | (1 << in)] = tx_scale(ctx, b, -1.0);
+        int result = tower_sign_k(ctx, &t, u, t.depth);
+        return tower_ctx_unsafe(ctx) ? 2 : result;
+      }
+    }
+  }
+
+  double ox, oy;
+  hull_at_origin(x, &ox, &oy);
+  HullExact ex, ef;
+  hull_exact(ctx, x, ox, oy, &ex);
+  hull_exact(ctx, f, ox, oy, &ef);
+  TowerX dx = tx_sub(ctx, tx_mul(ctx, ef.px, ex.w), tx_mul(ctx, ex.px, ef.w));
+  TowerX dy = tx_sub(ctx, tx_mul(ctx, ef.py, ex.w), tx_mul(ctx, ex.py, ef.w));
+  Tower t;
+  t.depth = 0;
+  TowerX nx[TOWER_SIZE], ny[TOWER_SIZE], len[TOWER_SIZE], rho[TOWER_SIZE],
+    u[TOWER_SIZE], v[TOWER_SIZE];
+  int ix;
+  hull_dir_tower(ctx, d, ox, oy, &t, nx, ny, len, &ix);
+  /* The root of the radius of X is that of the tangent leaving it */
+  if (d->kind != HULL_DIR_TANGENT || ! hull_at_same(&d->a, x))
+    ix = hull_tower_radius(ctx, &t, x, &ex);
+  int i = hull_tower_radius(ctx, &t, f, &ef);
+  int k = t.depth;
+  tower_set(ctx, tx_val(ctx, 0.0), TOWER_MAXDEPTH, rho);
+  if (i >= 0)
+    rho[1 << i] = ex.w;
+  if (ix >= 0)
+    rho[1 << ix] = tx_scale(ctx, ef.w, -1.0);
+  tower_mulx_k(ctx, nx, dx, k, u);
+  tower_mulx_k(ctx, ny, dy, k, v);
+  tower_add_k(ctx, u, v, k, u);
+  tower_mul_k(ctx, &t, rho, len, k, v);
+  tower_add_k(ctx, u, v, k, u);
+  int result = tower_sign_k(ctx, &t, u, k);
+  return tower_ctx_unsafe(ctx) ? 2 : result;
+}
+
+/**
+ * @brief Arguments of #hull_reach_pred
+ */
+typedef struct
+{
+  const HullAt *x, *f;
+  const HullDir *d;
+} HullReachArg;
+
+static int
+hull_reach_pred(TowerCtx *ctx, const void *arg)
+{
+  const HullReachArg *a = arg;
+  return hull_reach_sign(ctx, a->x, a->f, a->d);
+}
+
+/**
+ * @brief Arguments of #hull_passes_pred
+ */
+typedef struct
+{
+  const HullAt *x, *f;
+  const HullDir *from, *to;
+} HullPassArg;
+
+/**
+ * @brief Return 1 where the centre of the interval J of #hull_passes_pred
+ * lies strictly between its two directions, 0 where not, 2 where not told
+ * @details The centre is the direction of D = C_F - C_X, strictly after the
+ * first direction and before the second where n x D for the first and
+ * D x n for the second are positive. Both must be, so the one whose direction
+ * needs no root is read first: the normal of an end of one of two arcs given
+ * in pieces tells the answer from the input points alone where the tangent
+ * the walk arrived by would add three roots
+ * @param[in] ctx Arithmetic
+ * @param[in] a Question
+ * @param[in] ox,oy Origin of the exact numbers
+ * @param[in] dx,dy D times w_X w_F
+ */
+static int
+hull_passes_centre(TowerCtx *ctx, const HullPassArg *a, double ox, double oy,
+  TowerX dx, TowerX dy)
+{
+  Tower t;
+  TowerX nx[TOWER_SIZE], ny[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+  int first = (a->from->kind == HULL_DIR_TANGENT &&
+    a->to->kind != HULL_DIR_TANGENT) ? 1 : 0;
+  for (int i = 0; i < 2; i++)
+  {
+    int j = first ^ i;
+    t.depth = 0;
+    hull_dir_tower(ctx, j ? a->to : a->from, ox, oy, &t, nx, ny, NULL, NULL);
+    int k = t.depth;
+    tower_mulx_k(ctx, nx, dy, k, u);
+    tower_mulx_k(ctx, ny, dx, k, v);
+    tower_sub_k(ctx, u, v, k, u);
+    int s = tower_sign_k(ctx, &t, u, k) * (j ? -1 : 1);
+    if (s <= 0)
+      return tower_ctx_unsafe(ctx) ? 2 : 0;
+  }
+  return tower_ctx_unsafe(ctx) ? 2 : 1;
+}
+
+/**
+ * @brief Return 1 where the feature F reaches past the feature X at a
+ * direction strictly between two others less than a half turn apart, X
+ * reaching furthest of all at the first, 0 where it does not, and 2 where the
+ * arithmetic does not tell
+ * @details The directions where F reaches past X form one open interval J
+ * centred on the direction of C_F - C_X, which is not empty where
+ * r_F > r_X or |C_F - C_X| > r_X - r_F, and which does not hold the first
+ * direction. J meets the interval between the two directions where it holds
+ * the second (#hull_reach_sign), and otherwise where it lies within it, so
+ * where it is not empty and its centre lies between the two, each a cross
+ * product
+ */
+static int
+hull_passes_pred(TowerCtx *ctx, const void *arg)
+{
+  const HullPassArg *a = arg;
+  int s = hull_reach_sign(ctx, a->x, a->f, a->to);
+  if (s != -1 && s != 0)
+    return (s == 1) ? 1 : 2;
+  /* J ends where the walk left F for X along their tangent, so that its
+   * centre lies before that direction */
+  if (a->from->kind == HULL_DIR_TANGENT && hull_at_same(&a->from->a, a->f) &&
+      hull_at_same(&a->from->b, a->x))
+    return tower_ctx_unsafe(ctx) ? 2 : 0;
+
+  double ox, oy;
+  hull_at_origin(a->x, &ox, &oy);
+  HullExact ex, ef;
+  hull_exact(ctx, a->x, ox, oy, &ex);
+  hull_exact(ctx, a->f, ox, oy, &ef);
+  TowerX dx = tx_sub(ctx, tx_mul(ctx, ef.px, ex.w), tx_mul(ctx, ex.px, ef.w));
+  TowerX dy = tx_sub(ctx, tx_mul(ctx, ef.py, ex.w), tx_mul(ctx, ex.py, ef.w));
+  Tower t;
+  TowerX h[TOWER_SIZE], u[TOWER_SIZE], v[TOWER_SIZE];
+
+  /* J is not empty: rho = (r_X - r_F) w_X w_F is negative, or
+   * |D|^2 - rho^2 is positive. Two distinct circles through an input point
+   * P cross there, so that |D| > |r_X - r_F|, unless they touch there from
+   * one side (#hull_shared_tangent), where |D| = |r_X - r_F| and J is empty
+   * where r_X^2 >= r_F^2, all signs with no root */
+  double qx, qy;
+  if (hull_shared_point(a->x, a->f, a->to, &qx, &qy))
+  {
+    HullExact cx, cf;
+    hull_exact(ctx, a->x, qx, qy, &cx);
+    hull_exact(ctx, a->f, qx, qy, &cf);
+    if (hull_shared_tangent(ctx, &cx, &cf) &&
+        tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, cx.rw, tx_mul(ctx, cf.w, cf.w)),
+          tx_mul(ctx, cf.rw, tx_mul(ctx, cx.w, cx.w)))) >= 0)
+      return tower_ctx_unsafe(ctx) ? 2 : 0;
+    return hull_passes_centre(ctx, a, ox, oy, dx, dy);
+  }
+  t.depth = 0;
+  int ix = hull_tower_radius(ctx, &t, a->x, &ex);
+  int i = hull_tower_radius(ctx, &t, a->f, &ef);
+  int k = t.depth;
+  tower_set(ctx, tx_val(ctx, 0.0), TOWER_MAXDEPTH, h);
+  if (ix >= 0)
+    h[1 << ix] = ef.w;
+  if (i >= 0)
+    h[1 << i] = tx_scale(ctx, ex.w, -1.0);
+  if (tower_sign_k(ctx, &t, h, k) >= 0)
+  {
+    tower_mul_k(ctx, &t, h, h, k, u);
+    tower_set(ctx, tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy)), k,
+      v);
+    tower_sub_k(ctx, v, u, k, v);
+    if (tower_sign_k(ctx, &t, v, k) <= 0)
+      return tower_ctx_unsafe(ctx) ? 2 : 0;
+  }
+
+  return hull_passes_centre(ctx, a, ox, oy, dx, dy);
+}
+
+/**
+ * @brief A direction of the walk in doubles with bounds on their errors: the
+ * vector of an axis, an edge or the end of an arc and its length, or the two
+ * features of a tangent
+ */
+typedef struct
+{
+  bool tangent;
+  ArcsegFilter vx, vy, len;
+  HullFilter a, b;
+} HullDirFilter;
+
+/**
+ * @brief Set the vector of a direction in doubles with bounds on their
+ * errors, and its length: that of the tangent from A to B is
+ * rho D - sqrt(E) rot(D), of length |D|^2 (#hull_dir_tower)
+ */
+static void
+hull_dir_filter(const HullDirFilter *d, ArcsegFilter *nx, ArcsegFilter *ny,
+  ArcsegFilter *len)
+{
+  if (! d->tangent)
+  {
+    *nx = d->vx; *ny = d->vy; *len = d->len;
+    return;
+  }
+  ArcsegFilter bx, by;
+  hull_filter_from(&d->b, d->a.ox, d->a.oy, &bx, &by);
+  ArcsegFilter dx = arcseg_f_sub(arcseg_f_mul(bx, d->a.w),
+    arcseg_f_mul(d->a.px, d->b.w));
+  ArcsegFilter dy = arcseg_f_sub(arcseg_f_mul(by, d->a.w),
+    arcseg_f_mul(d->a.py, d->b.w));
+  ArcsegFilter dd = arcseg_f_add(arcseg_f_mul(dx, dx), arcseg_f_mul(dy, dy));
+  ArcsegFilter rho = arcseg_f_sub(arcseg_f_mul(d->a.r, d->b.w),
+    arcseg_f_mul(d->b.r, d->a.w));
+  ArcsegFilter s = tower_f_sqrt(arcseg_f_sub(dd, arcseg_f_mul(rho, rho)));
+  *nx = arcseg_f_add(arcseg_f_mul(rho, dx), arcseg_f_mul(s, dy));
+  *ny = arcseg_f_sub(arcseg_f_mul(rho, dy), arcseg_f_mul(s, dx));
+  *len = dd;
+  return;
+}
+
+/**
+ * @brief Return the answer of #hull_passes_pred from doubles carrying bounds
+ * on their errors, 2 where the bounds do not tell it, and 3 where they leave
+ * untold only whether F reaches past X at the second direction
+ * @details The four signs it reads are each true, false or not told, and
+ * the answer is told where they tell it whatever the signs not told are
+ */
+static int
+hull_passes_filter(const HullFilter *x, const HullFilter *f,
+  const HullDirFilter *from, const HullDirFilter *to)
+{
+  ArcsegFilter fx, fy;
+  hull_filter_from(f, x->ox, x->oy, &fx, &fy);
+  ArcsegFilter dx = arcseg_f_sub(arcseg_f_mul(fx, x->w),
+    arcseg_f_mul(x->px, f->w));
+  ArcsegFilter dy = arcseg_f_sub(arcseg_f_mul(fy, x->w),
+    arcseg_f_mul(x->py, f->w));
+  ArcsegFilter nx, ny, len;
+  hull_dir_filter(to, &nx, &ny, &len);
+  /* F reaches past X at the second direction */
+  ArcsegFilter rho = arcseg_f_sub(arcseg_f_mul(f->r, x->w),
+    arcseg_f_mul(x->r, f->w));
+  int s = hull_filter_sign(arcseg_f_add(arcseg_f_add(arcseg_f_mul(dx, nx),
+    arcseg_f_mul(dy, ny)), arcseg_f_mul(rho, len)));
+  if (s == 1)
+    return 1;
+  int reach = (s == 2) ? 2 : 0;
+  /* J is not empty: r_X - r_F is negative or |D|^2 - (r_X - r_F)^2 is
+   * positive, all times w_X w_F */
+  int sr = hull_filter_sign(rho);
+  int se = hull_filter_sign(arcseg_f_sub(arcseg_f_add(arcseg_f_mul(dx, dx),
+    arcseg_f_mul(dy, dy)), arcseg_f_mul(rho, rho)));
+  int nested = (sr == 1 || se == 1) ? 1 :
+    ((sr == 2 || se == 2) ? 2 : 0);
+  /* The centre of J is strictly after the first direction and before the
+   * second */
+  if (nested != 0)
+  {
+    ArcsegFilter mx, my, mlen;
+    hull_dir_filter(from, &mx, &my, &mlen);
+    int c0 = hull_filter_sign(arcseg_f_sub(arcseg_f_mul(mx, dy),
+      arcseg_f_mul(my, dx)));
+    int c1 = hull_filter_sign(arcseg_f_sub(arcseg_f_mul(dx, ny),
+      arcseg_f_mul(dy, nx)));
+    if ((c0 != 1 && c0 != 2) || (c1 != 1 && c1 != 2))
+      nested = 0;
+    else if (c0 == 2 || c1 == 2)
+      nested = 2;
+  }
+  if (nested == 1)
+    return 1;
+  if (nested == 0)
+    return (reach == 0) ? 0 : 3;
+  return 2;
+}
+
+/**
+ * @brief Return the half turn from (0, -1) a vector lies in: 0 from (0, -1)
+ * up to (0, 1) excluded, 1 for the rest
+ */
+static int
+hull_dir_half(TowerCtx *ctx, TowerX vx, TowerX vy)
+{
+  int s = tx_sign(ctx, vx);
+  if (s != 0)
+    return (s > 0) ? 0 : 1;
+  return (tx_sign(ctx, vy) < 0) ? 0 : 1;
+}
+
+static int
+hull_dir_order_pred(TowerCtx *ctx, const void *arg)
+{
+  const HullDir *const *d = arg;
+  TowerX ux, uy, vx, vy;
+  hull_dir_vector(ctx, d[0], &ux, &uy);
+  hull_dir_vector(ctx, d[1], &vx, &vy);
+  int hu = hull_dir_half(ctx, ux, uy), hv = hull_dir_half(ctx, vx, vy);
+  int result = (hu != hv) ? ((hu < hv) ? -1 : 1) :
+    - tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, ux, vy), tx_mul(ctx, uy, vx)));
+  return tower_ctx_unsafe(ctx) ? 2 : result;
+}
+
+/**
+ * @brief Return -1, 0 or 1 as a direction given by rationals comes before, at
+ * or after another, turning counterclockwise from (0, -1), decided exactly
+ */
+static int
+hull_dir_order(const HullDir *u, const HullDir *v)
+{
+  const HullDir *d[2] = {u, v};
+  return tower_pred_run(hull_dir_order_pred, d);
+}
+
+/**
+ * @brief An event of the walk, a direction where the features that may
+ * support the hull change
+ */
+typedef struct
+{
+  HullDir dir;
+  int kind;              /**< 0 the end of the span of an arc, 1 an edge of
+                              the hull of the points, 2 the start of the span
+                              of an arc, 3 an axis: the order of the events of
+                              one direction */
+  int index;             /**< The arc or the edge */
+  ArcsegFilter vx, vy;   /**< The vector of the direction in doubles, with a
+                              bound on its error */
+  ArcsegFilter len;      /**< Its length */
+} HullEvent;
+
+/**
+ * @brief Set the vector of the direction of an event in doubles, with a
+ * bound on its error (#hull_dir_vector)
+ */
+static void
+hull_event_filter(HullEvent *e)
+{
+  TowerCtx ctx;
+  tower_ctx_init(&ctx, false);
+  ctx.filter = true;
+  TowerX vx, vy;
+  hull_dir_vector(&ctx, &e->dir, &vx, &vy);
+  e->vx = vx.f;
+  e->vy = vy.f;
+  if (e->dir.kind == HULL_DIR_AXIS)
+  {
+    e->len.v = 1.0;
+    e->len.e = 0.0;
+  }
+  else
+    e->len = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(e->vx, e->vx),
+      arcseg_f_mul(e->vy, e->vy)));
+  tower_ctx_free(&ctx);
+  return;
+}
+
+/**
+ * @brief Set the direction of an event in doubles with bounds on their errors
+ */
+static void
+hull_event_dir_filter(const HullEvent *e, HullDirFilter *out)
+{
+  out->tangent = false;
+  out->vx = e->vx;
+  out->vy = e->vy;
+  out->len = e->len;
+  return;
+}
+
+/**
+ * @brief Return the half turn from (0, -1) a vector in doubles lies in
+ * (#hull_dir_half), or 2 where its bound does not tell it
+ */
+static int
+hull_filter_half(ArcsegFilter vx, ArcsegFilter vy)
+{
+  int s = hull_filter_sign(vx);
+  if (s == 2)
+    return 2;
+  if (s != 0)
+    return (s > 0) ? 0 : 1;
+  s = hull_filter_sign(vy);
+  return (s == 2) ? 2 : ((s < 0) ? 0 : 1);
+}
+
+/**
+ * @brief Comparator of two events: their directions in doubles where the
+ * bounds tell them apart, exactly otherwise (#hull_dir_order)
+ */
+static inline int
+hull_event_cmp(const HullEvent *ea, const HullEvent *eb)
+{
+  int result = 2;
+  int ha = hull_filter_half(ea->vx, ea->vy);
+  int hb = hull_filter_half(eb->vx, eb->vy);
+  if (ha != 2 && hb != 2)
+  {
+    if (ha != hb)
+      result = (ha < hb) ? -1 : 1;
+    else
+    {
+      int s = hull_filter_sign(arcseg_f_sub(arcseg_f_mul(ea->vx, eb->vy),
+        arcseg_f_mul(ea->vy, eb->vx)));
+      if (s != 2)
+        result = - s;
+    }
+  }
+  if (result == 2)
+    result = hull_dir_order(&ea->dir, &eb->dir);
+  if (result != 0)
+    return result;
+  if (ea->kind != eb->kind)
+    return (ea->kind < eb->kind) ? -1 : 1;
+  return (ea->index < eb->index) ? -1 : ((ea->index > eb->index) ? 1 : 0);
+}
+
+/* Sort the events with their order written into the sort, as #point2d_sort
+ * sorts the points */
+#define ST_SORT hull_event_sort
+#define ST_ELEMENT_TYPE HullEvent
+#define ST_COMPARE(a, b) hull_event_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
+
+/**
+ * @brief Return a value as a double, setting @p loose where it is read in
+ * doubles or pairs of doubles carrying a bound on its error and that bound
+ * exceeds 64 epsilons of it
+ * @details A value formed exactly is rounded once (#tx_filter); one read
+ * within 64 epsilons builds a point of the boundary to a few roundings, as
+ * the exact one does
+ */
+static double
+hull_read(const TowerCtx *ctx, TowerX x, bool *loose)
+{
+  ArcsegFilter f = tx_filter(ctx, x);
+  if ((ctx->filter || ctx->dd) && ! (f.e <= 64.0 * DBL_EPSILON * fabs(f.v)))
+    *loose = true;
+  return f.v;
+}
+
+/**
+ * @brief Set the unit vector of #hull_tangent_unit in the arithmetic of a
+ * context, and return true where a value it reads is loose (#hull_read)
+ */
+static bool
+hull_tangent_unit_in(TowerCtx *ctx, const HullDir *d, bool shared, double ox,
+  double oy, double *ux, double *uy)
+{
+  bool loose = false;
+  HullExact ea, eb;
+  hull_exact(ctx, &d->a, ox, oy, &ea);
+  hull_exact(ctx, &d->b, ox, oy, &eb);
+  TowerX dx = tx_sub(ctx, tx_mul(ctx, eb.px, ea.w),
+    tx_mul(ctx, ea.px, eb.w));
+  TowerX dy = tx_sub(ctx, tx_mul(ctx, eb.py, ea.w),
+    tx_mul(ctx, ea.py, eb.w));
+  TowerX ua = tx_mul(ctx, ea.rw, tx_mul(ctx, eb.w, eb.w));
+  TowerX ub = tx_mul(ctx, eb.rw, tx_mul(ctx, ea.w, ea.w));
+  double va = hull_read(ctx, ua, &loose), vb = hull_read(ctx, ub, &loose);
+  double vx = hull_read(ctx, dx, &loose), vy = hull_read(ctx, dy, &loose);
+  double den = sqrt(va) + sqrt(vb);
+  /* rho enters the vector as rho D beside sqrt(E) rot(D), |D| the larger,
+   * so that it needs its error small against |D| rather than against
+   * itself, as two arcs of nearly one radius make it */
+  double rho = 0.0;
+  if (den > 0.0)
+  {
+    ArcsegFilter q = tx_filter(ctx, tx_sub(ctx, ua, ub));
+    if ((ctx->filter || ctx->dd) &&
+        ! (q.e <= 64.0 * DBL_EPSILON * den * hypot(vx, vy)))
+      loose = true;
+    rho = q.v / den;
+  }
+  double a, e, s = 2.0 * sqrt(va) * sqrt(vb);
+  if (shared)
+  {
+    TowerX ww = tx_mul(ctx, ea.w, eb.w);
+    a = -2.0 * hull_read(ctx, tx_mul(ctx, ww, tx_add(ctx,
+      tx_mul(ctx, ea.px, eb.px), tx_mul(ctx, ea.py, eb.py))), &loose);
+    double c = hull_read(ctx, tx_mul(ctx, ww, tx_sub(ctx,
+      tx_mul(ctx, ea.px, eb.py), tx_mul(ctx, ea.py, eb.px))), &loose);
+    e = (a >= 0.0) ? a + s : -4.0 * c * c / (a - s);
+  }
+  else
+  {
+    TowerX ta = tx_sub(ctx, tx_add(ctx, tx_mul(ctx, dx, dx),
+      tx_mul(ctx, dy, dy)), tx_add(ctx, ua, ub));
+    a = hull_read(ctx, ta, &loose);
+    e = (a >= 0.0) ? a + s :
+      hull_read(ctx, tx_sub(ctx, tx_mul(ctx, ta, ta),
+        tx_scale(ctx, tx_mul(ctx, ua, ub), 4.0)), &loose) / (a - s);
+  }
+  double se = sqrt(fmax(e, 0.0));
+  double nx = rho * vx + se * vy, ny = rho * vy - se * vx;
+  double len = hypot(nx, ny);
+  *ux = nx / len;
+  *uy = ny / len;
+  return loose;
+}
+
+/**
+ * @brief Return in doubles the unit vector of the tangent from one feature to
+ * another (#hull_dir_tower), each quantity that cancels formed exactly and
+ * rounded once
+ * @details The centres of two arcs of nearly one circle, as the arcs of a
+ * circle given in pieces, lie far less than a rounding of their coordinates
+ * apart, so a tangent read from the centres in doubles turns by as much as it
+ * likes. Formed exactly, D is the difference the input points fix. So are
+ * the numerators of rho = (u_A - u_B) / (sqrt(u_A) + sqrt(u_B)) and, where
+ * A = |D|^2 - u_A - u_B is negative,
+ * E = A + 2 sqrt(u_A u_B) = (A^2 - 4 u_A u_B) / (A - 2 sqrt(u_A u_B)), with
+ * u_A = r_A^2 w_A^2 w_B^2 and u_B = r_B^2 w_B^2 w_A^2: no denominator
+ * cancels, and the vector is then read to a few roundings. Two arcs through
+ * an input point P, from which their centres are a / w_A and b / w_B, have
+ * A = -2 w_A w_B a . b and A^2 - 4 u_A u_B = -4 (w_A w_B a x b)^2, the
+ * products of a lower degree that #hull_shared_tangent reads. Each quantity
+ * is read first in doubles, then in pairs of doubles, carrying a bound on its
+ * error, and formed exactly only where that bound exceeds a few roundings of
+ * it (#hull_read)
+ */
+static void
+hull_tangent_unit(const HullDir *d, double *ux, double *uy)
+{
+  double ox, oy;
+  bool shared = hull_shared_point(&d->a, &d->b, d, &ox, &oy);
+  if (! shared)
+    hull_at_origin(&d->a, &ox, &oy);
+  TowerCtx ctx;
+  for (int pass = 0; pass < 3; pass++)
+  {
+    tower_ctx_init(&ctx, false);
+    ctx.filter = (pass == 0);
+    ctx.dd = (pass == 1);
+    bool loose = hull_tangent_unit_in(&ctx, d, shared, ox, oy, ux, uy);
+    tower_ctx_free(&ctx);
+    if (! loose)
+      break;
+  }
+  return;
+}
+
+/**
+ * @brief Return in doubles the centre and the radius of the circle of an
+ * arc, each formed exactly and rounded once
+ * @details The circle an arc edge carries is read from its three points in
+ * doubles, which for three points nearly on one line, a circle far larger
+ * than they lie apart, errs by far more than a rounding, and a point of the
+ * boundary built from it far from those points carries that error. The
+ * numerators and the denominator of the centre (#hull_exact) are exact and
+ * rounded once before the division, as #mec_circle forms the circle of three
+ * points, which goes on to the nearest doubles
+ */
+static void
+hull_circle_round(const Edge *arc, double *cx, double *cy, double *r)
+{
+  HullAt f = {arc, 0.0, 0.0};
+  double ox, oy;
+  hull_at_origin(&f, &ox, &oy);
+  TowerCtx ctx;
+  /* In doubles, then in pairs of doubles, carrying bounds on their errors
+   * first (#hull_read) */
+  for (int pass = 0; pass < 3; pass++)
+  {
+    tower_ctx_init(&ctx, false);
+    ctx.filter = (pass == 0);
+    ctx.dd = (pass == 1);
+    bool loose = false;
+    HullExact e;
+    hull_exact(&ctx, &f, ox, oy, &e);
+    double w = hull_read(&ctx, e.w, &loose);
+    *cx = ox + hull_read(&ctx, e.px, &loose) / w;
+    *cy = oy + hull_read(&ctx, e.py, &loose) / w;
+    *r = sqrt(hull_read(&ctx, e.rw, &loose)) / w;
+    tower_ctx_free(&ctx);
+    if (! loose)
+      break;
+  }
+  return;
+}
+
+/**
+ * @brief The circles of the arcs of a walk in doubles (#hull_circle_round),
+ * each formed the first time it is read
+ */
+typedef struct
+{
+  const Edge **arcs;
+  int narcs;
+  double (*c)[3];        /**< The centre and the radius */
+  bool *set;
+} HullCircles;
+
+/**
+ * @brief Return in doubles the centre and the radius of the circle of an arc
+ * of a walk, formed once (#hull_circle_round)
+ */
+static void
+hull_circle_get(HullCircles *hc, const Edge *arc, double *cx, double *cy,
+  double *r)
+{
+  int j = 0;
+  while (j < hc->narcs && hc->arcs[j] != arc)
+    j++;
+  assert(j < hc->narcs);
+  if (! hc->set[j])
+  {
+    hull_circle_round(arc, &hc->c[j][0], &hc->c[j][1], &hc->c[j][2]);
+    hc->set[j] = true;
+  }
+  *cx = hc->c[j][0]; *cy = hc->c[j][1]; *r = hc->c[j][2];
+  return;
+}
+
+/**
+ * @brief Return in doubles the point where a feature touches the line of a
+ * unit normal, on the circle of #hull_circle_round
+ */
+static void
+hull_touch(HullCircles *hc, const HullAt *f, double ux, double uy, double *x,
+  double *y)
+{
+  if (! f->arc)
+  {
+    *x = f->x; *y = f->y;
+    return;
+  }
+  double cx, cy, r;
+  hull_circle_get(hc, f->arc, &cx, &cy, &r);
+  *x = cx + r * ux;
+  *y = cy + r * uy;
+  return;
+}
+
+/**
+ * @brief A piece of the boundary the walk collects, with the arc it lies on
+ * and its start and sweep about the centre
+ */
+typedef struct
+{
+  HullBoundary b;
+  const Edge *arc;
+  double cx, cy, r;      /**< The circle of the arc (#hull_circle_round) */
+  double theta, sweep;
+} HullPiece;
+
+/**
+ * @brief The pieces the walk has collected
+ */
+typedef struct
+{
+  HullPiece *p;
+  int n, cap;
+} HullPieces;
+
+static HullPiece *
+hull_piece_add(HullPieces *ps, double x1, double y1, double x2, double y2)
+{
+  if (ps->n == ps->cap)
+  {
+    ps->cap = ps->cap ? 2 * ps->cap : 16;
+    ps->p = ps->p ? repalloc(ps->p, sizeof(HullPiece) * ps->cap) :
+      palloc(sizeof(HullPiece) * ps->cap);
+  }
+  HullPiece *p = &ps->p[ps->n++];
+  p->b.x1 = x1; p->b.y1 = y1;
+  p->b.x2 = x2; p->b.y2 = y2;
+  p->b.xm = p->b.ym = 0.0;
+  p->b.is_arc = false;
+  p->arc = NULL;
+  p->cx = p->cy = p->r = 0.0;
+  p->theta = p->sweep = 0.0;
+  return p;
+}
+
+/**
+ * @brief Add the segment between two points, unless they are one
+ */
+static void
+hull_piece_segment(HullPieces *ps, double x1, double y1, double x2, double y2)
+{
+  if (x1 != x2 || y1 != y2)
+    (void) hull_piece_add(ps, x1, y1, x2, y2);
+  return;
+}
+
+/**
+ * @brief Add the piece of an arc between two of its points, walked
+ * counterclockwise across @p naxes axes, unless they are one
+ * @details The sweep in doubles is read about the centre of the arc
+ * (#hull_circle_get), within a half turn of the quarters of the axes
+ * crossed, which the true sweep lies within a quarter turn of
+ */
+static void
+hull_piece_arc(HullPieces *ps, HullCircles *hc, const Edge *arc, double x1,
+  double y1, double x2, double y2, int naxes)
+{
+  if (x1 == x2 && y1 == y2)
+    return;
+  HullPiece *p = hull_piece_add(ps, x1, y1, x2, y2);
+  p->b.is_arc = true;
+  p->arc = arc;
+  hull_circle_get(hc, arc, &p->cx, &p->cy, &p->r);
+  p->theta = atan2(y1 - p->cy, x1 - p->cx);
+  double sweep = atan2(y2 - p->cy, x2 - p->cx) - p->theta;
+  double base = naxes * M_PI_2;
+  while (sweep <= base - M_PI)
+    sweep += 2 * M_PI;
+  while (sweep > base + M_PI)
+    sweep -= 2 * M_PI;
+  p->sweep = sweep;
+  return;
+}
+
+/**
+ * @brief Hand the hull from a point to an arc whose span holds the window and
+ * which starts at that point, as the start of its span does (#hull_walk)
+ * @details The arc reaches past its first end at every direction of its span
+ * after the one of that end, so the point supports the hull no further. The
+ * walk reaches the point there at the direction the arc starts or along a
+ * tangent touching both, where the two are one
+ */
+static void
+hull_walk_handover(HullAt *x, HullFilter *xf, const HullAt *first,
+  const Edge **arcs, const HullFilter *arcf, const bool *active, int narcs,
+  int *naxes)
+{
+  if (x->arc)
+    return;
+  for (int j = 0; j < narcs; j++)
+    if (active[j] && first[j].x == x->x && first[j].y == x->y)
+    {
+      x->arc = arcs[j];
+      *xf = arcf[j];
+      *naxes = 0;
       return;
     }
   return;
 }
 
 /**
- * @brief Return the boundary of the convex hull of a geometry, walked
+ * @brief Return the boundary of the convex hull of points and arcs, walked
  * counterclockwise
- * @details Between two consecutive directions one feature supports the hull.
- * A point feature supporting a range of directions is one vertex of the hull;
- * an arc feature supporting one is the piece of its circle over that range.
- * Consecutive supports are joined by the segment between the point where one
- * stops touching the hull and the point where the next starts
+ * @param[in] hull,nhull Vertices of the hull of the points, counterclockwise,
+ * at least one
+ * @param[in] arcs,narcs Arcs reaching past that hull, their ends among the
+ * points
+ * @param[out] npieces Number of pieces
  */
 static HullBoundary *
-hull_boundary(const HullFeature *feats, int nfeats, int *npieces)
+hull_walk(const POINT2D *hull, uint32_t nhull, const Edge **arcs, int narcs,
+  int *npieces)
 {
-  double *dirs;
-  int ndirs = hull_directions(feats, nfeats, &dirs);
-
-  /* The feature supporting the hull between each direction and the next */
-  int *which = palloc(sizeof(int) * ndirs);
-  for (int k = 0; k < ndirs; k++)
+  /* The ends of every arc, first and last in the order of its normals: the
+   * order of the arc where it turns counterclockwise */
+  HullAt *first = palloc(sizeof(HullAt) * narcs);
+  HullAt *last = palloc(sizeof(HullAt) * narcs);
+  for (int j = 0; j < narcs; j++)
   {
-    double a = dirs[k];
-    double b = (k + 1 < ndirs) ? dirs[k + 1] : dirs[0] + 2 * M_PI;
-    which[k] = -1;
-    (void) hull_support(feats, nfeats, (a + b) / 2, NULL, NULL, &which[k]);
+    const Edge *e = arcs[j];
+    bool ccw = (e->centred || e->diameter) ? e->ccw :
+      cross_product_sign(e->sx, e->sy, e->mx, e->my, e->sx, e->sy, e->ex,
+        e->ey) > 0;
+    first[j].arc = last[j].arc = e;
+    first[j].x = ccw ? e->x1 : e->x2; first[j].y = ccw ? e->y1 : e->y2;
+    last[j].x = ccw ? e->x2 : e->x1; last[j].y = ccw ? e->y2 : e->y1;
   }
 
-  /* One feature may support the hull over several consecutive directions, and
-   * it touches the hull along one piece of it rather than along one piece per
-   * direction, so the walk starts where the support changes */
-  int start = 0;
-  for (int k = 0; k < ndirs; k++)
-    if (which[k] != which[(k + ndirs - 1) % ndirs])
-    {
-      start = k;
-      break;
-    }
-
-  HullBoundary *result = palloc(sizeof(HullBoundary) * (2 * ndirs + 2));
+  /* The events, in their order from (0, -1) */
+  static const double axes[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+  int nedges = (nhull >= 2) ? (int) nhull : 0;
+  int nev = 4 + nedges + 2 * narcs;
+  HullEvent *ev = palloc(sizeof(HullEvent) * nev);
   int n = 0;
-  double firstx = 0, firsty = 0, prevx = 0, prevy = 0;
-  bool started = false;
-  int k = 0;
-  while (k < ndirs)
+  for (int i = 0; i < 4; i++)
   {
-    int idx = (start + k) % ndirs;
-    if (which[idx] < 0)
+    ev[n].dir.kind = HULL_DIR_AXIS;
+    ev[n].dir.a.arc = NULL;
+    ev[n].dir.a.x = axes[i][0]; ev[n].dir.a.y = axes[i][1];
+    ev[n].kind = 3; ev[n].index = i;
+    n++;
+  }
+  for (int i = 0; i < nedges; i++)
+  {
+    const POINT2D *p = &hull[i], *q = &hull[(i + 1) % nhull];
+    ev[n].dir.kind = HULL_DIR_EDGE;
+    ev[n].dir.a.arc = ev[n].dir.b.arc = NULL;
+    ev[n].dir.a.x = p->x; ev[n].dir.a.y = p->y;
+    ev[n].dir.b.x = q->x; ev[n].dir.b.y = q->y;
+    ev[n].kind = 1; ev[n].index = i;
+    n++;
+  }
+  for (int j = 0; j < narcs; j++)
+  {
+    ev[n].dir.kind = HULL_DIR_END;
+    ev[n].dir.a = first[j];
+    ev[n].kind = 2; ev[n].index = j;
+    n++;
+    ev[n].dir.kind = HULL_DIR_END;
+    ev[n].dir.a = last[j];
+    ev[n].kind = 0; ev[n].index = j;
+    n++;
+  }
+  for (int i = 0; i < nev; i++)
+    hull_event_filter(&ev[i]);
+  hull_event_sort(ev, nev);
+
+  /* The features in doubles with bounds on their errors, which decide most
+   * questions before the towers are built (#hull_passes_filter) */
+  HullFilter *arcf = palloc(sizeof(HullFilter) * narcs);
+  for (int j = 0; j < narcs; j++)
+  {
+    HullAt f = {arcs[j], 0.0, 0.0};
+    hull_filter_set(&f, &arcf[j]);
+  }
+
+  /* The arcs whose span holds (0, -1): those whose span wraps past it, the
+   * events at (0, -1) starting or ending the others */
+  bool *active = palloc(sizeof(bool) * narcs);
+  for (int j = 0; j < narcs; j++)
+  {
+    HullDir s = {HULL_DIR_END, first[j], first[j]};
+    HullDir e = {HULL_DIR_END, last[j], last[j]};
+    active[j] = hull_dir_order(&s, &e) >= 0;
+  }
+
+  /* The feature reaching furthest along (0, -1): the vertex of the hull of
+   * the points supporting it just before, the lowest then leftmost, or an
+   * arc reaching further */
+  uint32_t vi = 0;
+  for (uint32_t i = 1; i < nhull; i++)
+    if (hull[i].y < hull[vi].y ||
+        (hull[i].y == hull[vi].y && hull[i].x < hull[vi].x))
+      vi = i;
+  HullAt x = {NULL, hull[vi].x, hull[vi].y};
+  HullDir down = ev[0].dir;
+  HullDirFilter downf;
+  hull_event_dir_filter(&ev[0], &downf);
+  for (int i = 0; i < nev; i++)
+    if (ev[i].kind == 3 && ev[i].index == 0)
     {
-      k++;
+      down = ev[i].dir;
+      hull_event_dir_filter(&ev[i], &downf);
+    }
+  for (int j = 0; j < narcs; j++)
+  {
+    if (! active[j])
+      continue;
+    HullAt f = {arcs[j], 0.0, 0.0};
+    HullReachArg ra = {&x, &f, &down};
+    if (tower_pred_run(hull_reach_pred, &ra) > 0)
+      x = f;
+  }
+  double px = x.arc ? x.arc->cx : x.x;
+  double py = x.arc ? x.arc->cy - x.arc->radius : x.y;
+  double startx = px, starty = py;
+  bool start_arc = (x.arc != NULL);
+
+  HullPieces ps = {NULL, 0, 0};
+  HullCircles hc = {arcs, narcs, palloc(sizeof(double[3]) * Max(narcs, 1)),
+    palloc0(sizeof(bool) * Max(narcs, 1))};
+  HullDir from = down;
+  HullFilter xf;
+  hull_filter_set(&x, &xf);
+  HullDirFilter fromf = downf;
+  int naxes = 0;
+  /* Every step leaves a feature for another at a later direction, and a
+   * feature supports the hull along at most as many pieces as there are
+   * features */
+  int maxsteps = 4 * (nev + narcs + (int) nhull) * (narcs + 2);
+  int nsteps = 0;
+  for (int i = 0; i <= nev; i++)
+  {
+    const HullDir *to = (i < nev) ? &ev[i].dir : &down;
+    HullDirFilter tof = downf;
+    if (i < nev)
+      hull_event_dir_filter(&ev[i], &tof);
+    /* The feature first reaching past X before the end of the window */
+    while (true)
+    {
+      HullAt best = x, v = {NULL, hull[vi].x, hull[vi].y};
+      HullFilter vf, bestf = xf;
+      hull_filter_set(&v, &vf);
+      HullDir tangent;
+      HullDirFilter tangentf;
+      bool found = false;
+      for (int j = -1; j < narcs; j++)
+      {
+        HullAt f = v;
+        const HullFilter *ff = &vf;
+        if (j >= 0)
+        {
+          if (! active[j])
+            continue;
+          f.arc = arcs[j];
+          ff = &arcf[j];
+        }
+        if (hull_at_same(&f, &x))
+          continue;
+        /* A point of the circle of X reaches past it in no direction
+         * (#point_on_arc_circle), which an end of the arc tells at no cost */
+        if (x.arc && ! f.arc && point_on_arc_circle(x.arc, f.x, f.y))
+          continue;
+        int r = hull_passes_filter(&xf, ff, &fromf, found ? &tangentf : &tof);
+        if (r == 3)
+        {
+          /* Only how far F reaches at the end of the interval is untold */
+          HullReachArg ra = {&x, &f, found ? &tangent : to};
+          r = (tower_pred_run(hull_reach_pred, &ra) > 0) ? 1 : 0;
+        }
+        else if (r == 2)
+        {
+          HullPassArg pa = {&x, &f, &from, found ? &tangent : to};
+          r = tower_pred_run(hull_passes_pred, &pa);
+        }
+        if (r == 1)
+        {
+          best = f;
+          bestf = *ff;
+          tangent.kind = HULL_DIR_TANGENT;
+          tangent.a = x;
+          tangent.b = f;
+          tangentf.tangent = true;
+          tangentf.a = xf;
+          tangentf.b = *ff;
+          found = true;
+        }
+      }
+      if (! found)
+        break;
+      if (++nsteps > maxsteps)
+      {
+        pfree(first); pfree(last); pfree(ev); pfree(active); pfree(arcf);
+        pfree(hc.c); pfree(hc.set);
+        if (ps.p)
+          pfree(ps.p);
+        *npieces = 0;
+        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          "The walk of the boundary of a convex hull does not end");
+        return NULL;
+      }
+      /* Follow the tangent from X to the feature */
+      double ux, uy, tx, ty, fx, fy;
+      hull_tangent_unit(&tangent, &ux, &uy);
+      hull_touch(&hc, &x, ux, uy, &tx, &ty);
+      hull_touch(&hc, &best, ux, uy, &fx, &fy);
+      if (x.arc)
+        hull_piece_arc(&ps, &hc, x.arc, px, py, tx, ty, naxes);
+      else
+      {
+        tx = px; ty = py;
+      }
+      hull_piece_segment(&ps, tx, ty, fx, fy);
+      px = fx; py = fy;
+      x = best;
+      xf = bestf;
+      from = tangent;
+      fromf = tangentf;
+      naxes = 0;
+      hull_walk_handover(&x, &xf, first, arcs, arcf, active, narcs, &naxes);
+    }
+    if (i == nev)
+      break;
+
+    const HullEvent *e = &ev[i];
+    int j = e->index;
+    if (e->kind == 0)
+    {
+      /* The span of the arc ends, where it hands the hull to its end */
+      active[j] = false;
+      if (x.arc == arcs[j])
+      {
+        hull_piece_arc(&ps, &hc, x.arc, px, py, last[j].x, last[j].y, naxes);
+        px = last[j].x; py = last[j].y;
+        x.arc = NULL; x.x = px; x.y = py;
+        hull_filter_set(&x, &xf);
+        hull_walk_handover(&x, &xf, first, arcs, arcf, active, narcs, &naxes);
+      }
+    }
+    else if (e->kind == 1)
+    {
+      /* The hull of the points passes to its next vertex */
+      vi = (uint32_t) (j + 1) % nhull;
+      if (! x.arc)
+      {
+        hull_piece_segment(&ps, px, py, hull[vi].x, hull[vi].y);
+        px = hull[vi].x; py = hull[vi].y;
+        x.x = px; x.y = py;
+        hull_filter_set(&x, &xf);
+        hull_walk_handover(&x, &xf, first, arcs, arcf, active, narcs, &naxes);
+      }
+    }
+    else if (e->kind == 2)
+    {
+      /* The span of the arc starts, where its first end supports the hull */
+      active[j] = true;
+      hull_walk_handover(&x, &xf, first, arcs, arcf, active, narcs, &naxes);
+    }
+    else if (x.arc)
+      naxes++;
+    from = e->dir;
+    hull_event_dir_filter(e, &fromf);
+  }
+  /* Back where the walk started */
+  if (x.arc)
+    hull_piece_arc(&ps, &hc, x.arc, px, py, startx, starty, naxes);
+  else
+    hull_piece_segment(&ps, px, py, startx, starty);
+  /* A walk starting on an arc splits it where it starts, and its last piece
+   * and its first are one */
+  if (start_arc && ps.n >= 2 && ps.p[0].arc &&
+      ps.p[0].arc == ps.p[ps.n - 1].arc)
+  {
+    HullPiece *a = &ps.p[ps.n - 1], *b = &ps.p[0];
+    b->b.x1 = a->b.x1; b->b.y1 = a->b.y1;
+    b->theta = a->theta;
+    b->sweep += a->sweep;
+    ps.n--;
+  }
+
+  HullBoundary *result = palloc(sizeof(HullBoundary) * Max(ps.n, 1));
+  for (int k = 0; k < ps.n; k++)
+  {
+    result[k] = ps.p[k].b;
+    const Edge *arc = ps.p[k].arc;
+    if (! arc)
+      continue;
+    /* A piece that is a whole arc of three input points passes through the
+     * middle one */
+    const HullBoundary *b = &ps.p[k].b;
+    if (! arc->centred && ! arc->diameter &&
+        ((b->x1 == arc->x1 && b->y1 == arc->y1 && b->x2 == arc->x2 &&
+          b->y2 == arc->y2) ||
+         (b->x1 == arc->x2 && b->y1 == arc->y2 && b->x2 == arc->x1 &&
+          b->y2 == arc->y1)))
+    {
+      result[k].xm = arc->mx;
+      result[k].ym = arc->my;
       continue;
     }
-    /* The whole run of directions this feature supports */
-    int len = 1;
-    while (k + len < ndirs && which[(start + k + len) % ndirs] == which[idx])
-      len++;
-    double a = dirs[idx];
-    double b = dirs[(start + k + len) % ndirs];
-    double sweep = angle_normalize(b - a);
-    if (sweep <= MEOS_GEOM_TOLERANCE)
-      sweep = 2 * M_PI;
-    const HullFeature *f = &feats[which[idx]];
-    double sx, sy, ex, ey, mx = 0, my = 0;
-    if (! f->is_arc)
-    {
-      sx = ex = f->x;
-      sy = ey = f->y;
-    }
-    else
-    {
-      sx = f->x + f->radius * cos(a);
-      sy = f->y + f->radius * sin(a);
-      ex = f->x + f->radius * cos(a + sweep);
-      ey = f->y + f->radius * sin(a + sweep);
-      mx = f->x + f->radius * cos(a + sweep / 2);
-      my = f->y + f->radius * sin(a + sweep / 2);
-      hull_snap_to_vertex(feats, nfeats, &sx, &sy);
-      hull_snap_to_vertex(feats, nfeats, &ex, &ey);
-    }
-
-    if (! started)
-    {
-      firstx = sx; firsty = sy;
-      started = true;
-    }
-    else if (hypot(sx - prevx, sy - prevy) > MEOS_GEOM_TOLERANCE)
-    {
-      /* The segment joining the previous support to this one */
-      result[n].x1 = prevx; result[n].y1 = prevy;
-      result[n].x2 = sx; result[n].y2 = sy;
-      result[n].is_arc = false;
-      n++;
-    }
-    else
-    {
-      /* The two meet, so the piece starts on the point already reached and
-       * the ring closes on itself rather than within the rounding of two
-       * ways of naming one point */
-      sx = prevx; sy = prevy;
-    }
-    if (f->is_arc && hypot(ex - sx, ey - sy) > MEOS_GEOM_TOLERANCE)
-    {
-      result[n].x1 = sx; result[n].y1 = sy;
-      result[n].xm = mx; result[n].ym = my;
-      result[n].x2 = ex; result[n].y2 = ey;
-      result[n].is_arc = true;
-      n++;
-    }
-    prevx = ex; prevy = ey;
-    k += len;
+    double mid = ps.p[k].theta + ps.p[k].sweep / 2;
+    result[k].xm = ps.p[k].cx + ps.p[k].r * cos(mid);
+    result[k].ym = ps.p[k].cy + ps.p[k].r * sin(mid);
   }
-
-  /* Close the ring on the point it starts from */
-  if (started && n > 0)
-  {
-    if (hypot(firstx - prevx, firsty - prevy) > MEOS_GEOM_TOLERANCE)
-    {
-      result[n].x1 = prevx; result[n].y1 = prevy;
-      result[n].x2 = firstx; result[n].y2 = firsty;
-      result[n].is_arc = false;
-      n++;
-    }
-    else
-    {
-      /* The ring ends where it starts up to the rounding of two ways of
-       * naming one point, and is closed on that point */
-      result[n - 1].x2 = firstx;
-      result[n - 1].y2 = firsty;
-    }
-  }
-  /* Every piece starts on the point the one before it ends on, so that the
-   * ring is continuous however the two ways of naming that point round */
-  for (int i = 1; i < n; i++)
-  {
-    result[i].x1 = result[i - 1].x2;
-    result[i].y1 = result[i - 1].y2;
-  }
-  if (n > 0)
-  {
-    result[0].x1 = result[n - 1].x2;
-    result[0].y1 = result[n - 1].y2;
-  }
-  pfree(which); pfree(dirs);
-  *npieces = n;
+  pfree(first); pfree(last); pfree(ev); pfree(active); pfree(arcf);
+  pfree(hc.c); pfree(hc.set);
+  if (ps.p)
+    pfree(ps.p);
+  *npieces = ps.n;
   return result;
 }
 
@@ -13717,43 +15501,37 @@ hull_boundary_geometry(int32_t srid, const HullBoundary *pieces, int npieces)
 
 /**
  * @brief Return the convex hull of a geometry carrying a circular arc
+ * @details The boundary is walked (#hull_walk) where an arc reaches past the
+ * hull of the points; where none does, or none of those touches the hull,
+ * the hull is the one the points place
  */
 static LWGEOM *
 convex_hull_arc(const LWGEOM *geom, const MeosArray *edges)
 {
-  int nfeats = 0;
-  HullFeature *feats = hull_features(edges, &nfeats);
+  POINT2D *hull = NULL;
+  const Edge **arcs = NULL;
+  int narcs = 0;
+  uint32_t nhull = hull_points_arcs(edges, &hull, &arcs, &narcs);
   int npieces = 0;
-  HullBoundary *pieces = hull_boundary(feats, nfeats, &npieces);
-
-  /* No arc reaches past the points, so the hull is the one they place */
+  HullBoundary *pieces = (narcs > 0 && nhull > 0) ?
+    hull_walk(hull, nhull, arcs, narcs, &npieces) : NULL;
   bool curved = false;
   for (int i = 0; i < npieces && ! curved; i++)
     curved = pieces[i].is_arc;
-  if (! curved)
-  {
-    POINT2D *points = palloc(sizeof(POINT2D) * Max(nfeats, 1));
-    uint32_t npoints = 0;
-    for (int i = 0; i < nfeats; i++)
-      if (! feats[i].is_arc)
-      {
-        points[npoints].x = feats[i].x;
-        points[npoints].y = feats[i].y;
-        npoints++;
-      }
-    POINT2D *hull = NULL;
-    uint32_t nhull = convex_hull_points(points, npoints, &hull);
-    LWGEOM *result = (nhull == 0) ?
+  LWGEOM *result;
+  if (narcs > 0 && nhull > 0 && ! pieces)
+    result = NULL;
+  else if (curved)
+    result = hull_boundary_geometry(geom->srid, pieces, npieces);
+  else
+    result = (nhull == 0) ?
       lwpoly_as_lwgeom(lwpoly_construct_empty(geom->srid, 0, 0)) :
       make_geometry_hull(geom->srid, hull, nhull);
-    if (hull)
-      pfree(hull);
-    pfree(points); pfree(pieces); pfree(feats);
-    return result;
-  }
-
-  LWGEOM *result = hull_boundary_geometry(geom->srid, pieces, npieces);
-  pfree(pieces); pfree(feats);
+  if (hull)
+    pfree(hull);
+  if (pieces)
+    pfree(pieces);
+  pfree(arcs);
   return result;
 }
 

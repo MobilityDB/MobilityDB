@@ -51,6 +51,11 @@ SELECT round(ST_Area(orientedEnvelope(geometry 'Curvepolygon(Circularstring(0 0,
 SELECT ST_AsText(round(convexHull(geometry 'Point(1 2)'), 6));
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,1 1,2 2)'), 6));
 
+-- A point off the line of two others by less than the rounding of their cross
+-- product in doubles is a vertex of their hull
+SELECT GeometryType(convexHull(geometry
+  'Multipoint(0.5 0.5,12.000000000000036 12.000000000000037,24 24)'));
+
 -- A point inside the hull of the others does not reach its boundary
 SELECT ST_AsText(round(convexHull(geometry 'Multipoint(0 0,10 0,10 10,0 10,5 5)'), 6));
 
@@ -61,6 +66,24 @@ SELECT ST_AsText(round(convexHull(geometry 'Polygon((0 0,10 0,10 10,5 5,0 10,0 0
 -- on the three points defining a semicircular arc leaves the whole arc outside
 SELECT ST_AsText(convexHull(geometry 'Circularstring(0 0,2 2,4 0)'));
 SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))'));
+
+-- Two arcs are joined by their outer common tangent, which touches the
+-- circles of radii 1 and 2 eleven apart at (1 - 1/11, sqrt(120)/11) and
+-- (12 - 2/11, 2 sqrt(120)/11)
+SELECT ST_AsText(round(convexHull(geometry
+  'Multicurve(Circularstring(0 0,1 1,2 0),Circularstring(10 0,12 2,14 0))'),
+  6));
+
+-- A circle given in five arcs, whose circles lie a rounding apart, is the
+-- hull of itself
+SELECT GeometryType(h), ST_AsText(h) LIKE '%NaN%'
+FROM (SELECT convexHull(geometry 'Curvepolygon(Circularstring('
+  '66.56284822756567 -78.56850234445656,63.22639155760828 -68.29994457883014,'
+  '54.491434593668544 -61.953626864231325,43.69443400570384 -61.95362686423132,'
+  '34.9594770417641 -68.29994457883012,31.62302037180671 -78.56850234445656,'
+  '34.9594770417641 -88.83706011008299,43.69443400570384 -95.1833778246818,'
+  '54.49143459366854 -95.1833778246818,63.22639155760828 -88.837060110083,'
+  '66.56284822756567 -78.56850234445656))') AS h) t;
 
 -------------------------------------------------------------------------------
 -- Simple geometries

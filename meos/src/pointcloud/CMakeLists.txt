@@ -234,9 +234,23 @@ if(POINTCLOUD)
   # object library is what lets a self-contained static libmeos fold these
   # objects in (meos/CMakeLists.txt): $<TARGET_OBJECTS:…> reads an OBJECT library
   # from any directory scope, so meos/ reaches them from two levels up.
+  # The pgPointCloud extension exports the names of its own libpc, so a session
+  # that loads it first would bind the calls of this copy to that libpc, which
+  # reads a schema without pc:active as one whose dimensions hold no value.
+  # Protected visibility binds the calls within libmeos and the extension to
+  # this copy while keeping its names exported: MEOS programs and MobilityDuck
+  # call them, and the libpc of pgPointCloud, which calls its stringbuffer
+  # through names that librttopo exports with another signature, binds to them
+  # when the extension loads first. Only an ELF library interposes names, and
+  # protected visibility is an ELF notion, so the property is set on ELF
+  # platforms alone.
   add_library(pointcloud_libpc_objects OBJECT ${POINTCLOUD_LIBPC_SRCS})
   set_target_properties(pointcloud_libpc_objects PROPERTIES
     POSITION_INDEPENDENT_CODE ON)
+  if(UNIX AND NOT APPLE)
+    set_target_properties(pointcloud_libpc_objects PROPERTIES
+      C_VISIBILITY_PRESET protected)
+  endif()
   target_include_directories(pointcloud_libpc_objects PRIVATE
     ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)   # holds sources + generated pc_config.h
   # libxml2 and zlib carry the include directories the libpc sources compile
