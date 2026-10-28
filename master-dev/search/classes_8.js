@@ -6,6 +6,19 @@ var searchData=
   ['h3cellplanes_3',['H3CellPlanes',['../structH3CellPlanes.html',1,'']]],
   ['h3indexsplitstate_4',['H3indexSplitState',['../structH3indexSplitState.html',1,'']]],
   ['h3segmentpath_5',['H3SegmentPath',['../structH3SegmentPath.html',1,'']]],
-  ['hullboundary_6',['HullBoundary',['../structHullBoundary.html',1,'']]],
-  ['hullfeature_7',['HullFeature',['../structHullFeature.html',1,'']]]
+  ['hullat_6',['HullAt',['../structHullAt.html',1,'']]],
+  ['hullboundary_7',['HullBoundary',['../structHullBoundary.html',1,'']]],
+  ['hullcircles_8',['HullCircles',['../structHullCircles.html',1,'']]],
+  ['hulldir_9',['HullDir',['../structHullDir.html',1,'']]],
+  ['hulldirfilter_10',['HullDirFilter',['../structHullDirFilter.html',1,'']]],
+  ['hulledgefilter_11',['HullEdgeFilter',['../structHullEdgeFilter.html',1,'']]],
+  ['hulledgemax_12',['HullEdgeMax',['../structHullEdgeMax.html',1,'']]],
+  ['hullevent_13',['HullEvent',['../structHullEvent.html',1,'']]],
+  ['hullexact_14',['HullExact',['../structHullExact.html',1,'']]],
+  ['hullfeature_15',['HullFeature',['../structHullFeature.html',1,'']]],
+  ['hullfilter_16',['HullFilter',['../structHullFilter.html',1,'']]],
+  ['hullpassarg_17',['HullPassArg',['../structHullPassArg.html',1,'']]],
+  ['hullpiece_18',['HullPiece',['../structHullPiece.html',1,'']]],
+  ['hullpieces_19',['HullPieces',['../structHullPieces.html',1,'']]],
+  ['hullreacharg_20',['HullReachArg',['../structHullReachArg.html',1,'']]]
 ];
