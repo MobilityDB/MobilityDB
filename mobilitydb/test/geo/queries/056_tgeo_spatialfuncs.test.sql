@@ -223,6 +223,12 @@ FROM test1, test2;
 
 --------------------------------------------------------
 
+-- Rounding a geometry leaves the geometry it reads unchanged
+SELECT ST_AsText(g), ST_AsText(round(g, 2)), ST_AsText(g)
+FROM (VALUES (geometry 'Point(1.123456789 2.987654321)')) t(g);
+SELECT ST_AsText(g), ST_AsText(round(g, 2)), ST_AsText(g)
+FROM (VALUES (geometry 'Linestring(1.123456789 2.987654321,3.333333333 4.444444444)')) t(g);
+
 -- 2D
 SELECT ST_AsText(round(geometry 'Point(1.123456789 1.123456789)', 6));
 SELECT ST_AsText(round(geometry 'Linestring(1.123456789 1.123456789,2.123456789 2.123456789,3.123456789 3.123456789)', 6));
