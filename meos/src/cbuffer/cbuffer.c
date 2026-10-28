@@ -1131,8 +1131,9 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
   if (dist_geom_build(gs, &g))
   {
     const POINT2D *p = cbuffer_point2d_p(cb);
-    double best = DBL_MAX;
-    dist_segm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &g, &best);
+    DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
+    dist_segm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &g, &n);
+    double best = dist_nad_exact(&n);
     dist_geom_free(&g);
     return best < 0.0 ? 0.0 : best;
   }

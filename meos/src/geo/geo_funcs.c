@@ -5310,6 +5310,98 @@ point_motion_dwithin_ever_filter(const double *c1, const double *c2,
 }
 
 /**
+ * @brief Return an estimate of the least distance of a disc moving linearly
+ * to a point, less the radius, not below 0
+ * @details The least of the ends and of the stationary point of
+ * `|u + f v| - (r1 + f k)`, inside where `|k| < |v|`, read in extended
+ * precision, so that a search starts within a unit or two in the last place
+ * of the answer and the filter answers its steps but the last ones. An
+ * estimate only: #point_motion_point_offset_exact and
+ * #point_motion_point_offset_bounds decide from it by exact signs
+ */
+static double
+point_motion_offset_estimate(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2)
+{
+  long double uu = 0.0L, uv = 0.0L, vv = 0.0L, ee = 0.0L, cr = 0.0L;
+  for (int i = 0; i < ndims; i++)
+  {
+    long double u = (long double) c1[i] - p[i];
+    long double w = (long double) c2[i] - c1[i];
+    long double e = (long double) c2[i] - p[i];
+    uu += u * u; uv += u * w; vv += w * w; ee += e * e;
+  }
+  /* |u x v|, componentwise in the plane and by Lagrange's identity beyond */
+  if (ndims == 2)
+    cr = fabsl(((long double) c1[0] - p[0]) * ((long double) c2[1] - c1[1]) -
+      ((long double) c1[1] - p[1]) * ((long double) c2[0] - c1[0]));
+  else
+    cr = sqrtl(fmaxl(uu * vv - uv * uv, 0.0L));
+  long double k = (long double) r2 - r1;
+  long double est = fminl(sqrtl(uu) - r1, sqrtl(ee) - r2);
+  if (vv > k * k)
+  {
+    long double sd = sqrtl(vv - k * k);
+    long double ts = (- uv + k * cr / sd) / vv;
+    if (ts > 0.0L && ts < 1.0L)
+      est = fminl(est, (cr * sd + k * uv) / vv - r1);
+  }
+  double c = (double) est;
+  if (! (c > 0.0))
+    c = 0.0;
+  if (isinf(c))
+    c = DBL_MAX;
+  return c;
+}
+
+/**
+ * @brief Bound in doubles the least distance of a disc moving linearly to a
+ * point, less the radius
+ * @details Where the disc stands clear of the point, the bounds bracket the
+ * estimate of #point_motion_offset_estimate: the disc is within the upper
+ * bound of the point at some instant and never within the lower one, each
+ * decided by the filter of #point_motion_dwithin_period_filter, which answers
+ * only where it is certain, so the exact least lies above the lower bound and
+ * at most at the upper one, and the double nearest it, rounding being
+ * monotone, between them. The bracket widens three times before it declines,
+ * so that a search ranks the distance without its exact value
+ * @param[in] c1,c2 Centre of the disc at the start and at the end
+ * @param[in] p The point
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r1,r2 Radius at the start and at the end, not negative
+ * @param[out] lo,hi The bounds, lo positive
+ * @return false where the filter cannot certify that the disc stands clear of
+ * the point or cannot certify a bracket, which leaves the distance to
+ * #point_motion_point_offset_exact
+ */
+bool
+point_motion_point_offset_bounds(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double *lo, double *hi)
+{
+  if (point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, 0.0) != 0)
+    return false;
+  double c = point_motion_offset_estimate(c1, c2, p, ndims, r1, r2);
+  if (! (c > 0.0) || c == DBL_MAX)
+    return false;
+  double m = Max(r1, r2);
+  for (int i = 0; i < ndims; i++)
+    m = Max(m, Max(Max(fabs(c1[i]), fabs(c2[i])), fabs(p[i])));
+  double delta = 0x1p-40 * (c + m);
+  for (int k = 0; k < 3; k++, delta *= 0x1p8)
+  {
+    double l = c - delta, h = c + delta;
+    if (l <= 0.0 ||
+        point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, h) != 1 ||
+        point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, l) != 0)
+      continue;
+    *lo = l;
+    *hi = h;
+    return true;
+  }
+  return false;
+}
+
+/**
  * @brief Return the least distance of a disc moving linearly to a point, less
  * the radius, the double nearest its exact value, or 0 where the disc reaches
  * the point
@@ -5344,39 +5436,7 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
   }
   if (reach == 1)
     return 0.0;
-  /* The estimate: the least of the ends and of the stationary point of
-   * |u + f v| - (r1 + f k), inside where |k| < |v| */
-  /* Read in extended precision, so that the search starts within a unit or
-   * two in the last place of the answer and the filter answers its steps but
-   * the last ones */
-  long double uu = 0.0L, uv = 0.0L, vv = 0.0L, ee = 0.0L, cr = 0.0L;
-  for (int i = 0; i < ndims; i++)
-  {
-    long double u = (long double) c1[i] - p[i];
-    long double w = (long double) c2[i] - c1[i];
-    long double e = (long double) c2[i] - p[i];
-    uu += u * u; uv += u * w; vv += w * w; ee += e * e;
-  }
-  /* |u x v|, componentwise in the plane and by Lagrange's identity beyond */
-  if (ndims == 2)
-    cr = fabsl(((long double) c1[0] - p[0]) * ((long double) c2[1] - c1[1]) -
-      ((long double) c1[1] - p[1]) * ((long double) c2[0] - c1[0]));
-  else
-    cr = sqrtl(fmaxl(uu * vv - uv * uv, 0.0L));
-  long double k = (long double) r2 - r1;
-  long double est = fminl(sqrtl(uu) - r1, sqrtl(ee) - r2);
-  if (vv > k * k)
-  {
-    long double sd = sqrtl(vv - k * k);
-    long double ts = (- uv + k * cr / sd) / vv;
-    if (ts > 0.0L && ts < 1.0L)
-      est = fminl(est, (cr * sd + k * uv) / vv - r1);
-  }
-  double c = (double) est;
-  if (! (c > 0.0))
-    c = 0.0;
-  if (isinf(c))
-    c = DBL_MAX;
+  double c = point_motion_offset_estimate(c1, c2, p, ndims, r1, r2);
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
   /* The WideDyadic parts of the quadratic, set at the first side the filters
