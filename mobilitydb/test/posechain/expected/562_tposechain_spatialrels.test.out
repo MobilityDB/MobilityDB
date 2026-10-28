@@ -1,0 +1,244 @@
+SELECT eContains(NULL::geometry, tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01');
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT eContains(geometry 'Point(1 1)', NULL::tposechain);
+ econtains 
+-----------
+ 
+(1 row)
+
+SELECT aDwithin(NULL::tposechain, geometry 'Point(1 1)', 1.0);
+ adwithin 
+----------
+ 
+(1 row)
+
+SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01', NULL::geometry, 1.0);
+ edwithin 
+----------
+ 
+(1 row)
+
+WITH t AS (
+  SELECT tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]' AS seq1,
+         tposechain '[PoseChain(Pose(Point(5 5), 0.2))@2001-01-01, PoseChain(Pose(Point(7 7), 0.2))@2001-01-03]' AS seq2,
+         geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))' AS region,
+         geometry 'Point(9 9)' AS far_point
+)
+SELECT
+  eContains(region, seq1) = eContains(region, seq1::tpose::tgeompoint) AS ec_geo_pc,
+  eCovers(region, seq1) = eCovers(region, seq1::tpose::tgeompoint) AS ecv_geo_pc,
+  eDisjoint(far_point, seq1) = eDisjoint(far_point, seq1::tpose::tgeompoint) AS edj_geo_pc,
+  eDisjoint(seq1, far_point) = eDisjoint(seq1::tpose::tgeompoint, far_point) AS edj_pc_geo,
+  eDisjoint(seq1, seq2) = eDisjoint(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint) AS edj_pc_pc,
+  eIntersects(region, seq1) = eIntersects(region, seq1::tpose::tgeompoint) AS ei_geo_pc,
+  eIntersects(seq1, region) = eIntersects(seq1::tpose::tgeompoint, region) AS ei_pc_geo,
+  eIntersects(seq1, seq2) = eIntersects(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint) AS ei_pc_pc,
+  eTouches(region, seq1) = eTouches(region, seq1::tpose::tgeompoint) AS etc_geo_pc,
+  eTouches(seq1, region) = eTouches(seq1::tpose::tgeompoint, region) AS etc_pc_geo,
+  eDwithin(region, seq1, 1.0) = eDwithin(region, seq1::tpose::tgeompoint, 1.0) AS edw_geo_pc,
+  eDwithin(seq1, region, 1.0) = eDwithin(seq1::tpose::tgeompoint, region, 1.0) AS edw_pc_geo,
+  eDwithin(seq1, seq2, 1.0) = eDwithin(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint, 1.0) AS edw_pc_pc
+FROM t;
+ ec_geo_pc | ecv_geo_pc | edj_geo_pc | edj_pc_geo | edj_pc_pc | ei_geo_pc | ei_pc_geo | ei_pc_pc | etc_geo_pc | etc_pc_geo | edw_geo_pc | edw_pc_geo | edw_pc_pc 
+-----------+------------+------------+------------+-----------+-----------+-----------+----------+------------+------------+------------+------------+-----------
+ t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
+(1 row)
+
+WITH t AS (
+  SELECT tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]' AS seq1,
+         tposechain '[PoseChain(Pose(Point(5 5), 0.2))@2001-01-01, PoseChain(Pose(Point(7 7), 0.2))@2001-01-03]' AS seq2,
+         geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))' AS region,
+         geometry 'Point(9 9)' AS far_point
+)
+SELECT
+  aContains(region, seq1) = aContains(region, seq1::tpose::tgeompoint) AS ac_geo_pc,
+  aCovers(region, seq1) = aCovers(region, seq1::tpose::tgeompoint) AS acv_geo_pc,
+  aDisjoint(far_point, seq1) = aDisjoint(far_point, seq1::tpose::tgeompoint) AS adj_geo_pc,
+  aDisjoint(seq1, far_point) = aDisjoint(seq1::tpose::tgeompoint, far_point) AS adj_pc_geo,
+  aDisjoint(seq1, seq2) = aDisjoint(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint) AS adj_pc_pc,
+  aIntersects(region, seq1) = aIntersects(region, seq1::tpose::tgeompoint) AS ai_geo_pc,
+  aIntersects(seq1, region) = aIntersects(seq1::tpose::tgeompoint, region) AS ai_pc_geo,
+  aIntersects(seq1, seq2) = aIntersects(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint) AS ai_pc_pc,
+  aTouches(region, seq1) = aTouches(region, seq1::tpose::tgeompoint) AS atc_geo_pc,
+  aTouches(seq1, region) = aTouches(seq1::tpose::tgeompoint, region) AS atc_pc_geo,
+  aDwithin(region, seq1, 1.0) = aDwithin(region, seq1::tpose::tgeompoint, 1.0) AS adw_geo_pc,
+  aDwithin(seq1, region, 1.0) = aDwithin(seq1::tpose::tgeompoint, region, 1.0) AS adw_pc_geo,
+  aDwithin(seq1, seq2, 1.0) = aDwithin(seq1::tpose::tgeompoint, seq2::tpose::tgeompoint, 1.0) AS adw_pc_pc
+FROM t;
+ ac_geo_pc | acv_geo_pc | adj_geo_pc | adj_pc_geo | adj_pc_pc | ai_geo_pc | ai_pc_geo | ai_pc_pc | atc_geo_pc | atc_pc_geo | adw_geo_pc | adw_pc_geo | adw_pc_pc 
+-----------+------------+------------+------------+-----------+-----------+-----------+----------+------------+------------+------------+------------+-----------
+ t         | t          | t          | t          | t         | t         | t         | t        | t          | t          | t          | t          | t
+(1 row)
+
+SELECT eIntersects(tposechain 'PoseChain(Pose(Point(1 1), 0), Pose(Point(9 -1), 0))@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(tposechain 'PoseChain(Pose(Point(1 1), 0), Pose(Point(9 -1), 0))@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0), Pose(Point(9 -1), 0))@2001-01-01',
+  geometry 'Point(10 0)', 0.5);
+ edwithin 
+----------
+ t
+(1 row)
+
+SELECT eIntersects(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tposechain '{PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03}',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aDisjoint(geometry 'Point(9 9)',
+  tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eDwithin(tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01, PoseChain(Pose(Point(3 3), 0.1))@2001-01-03]',
+  geometry 'Point(9 9)', 1.0);
+ edwithin 
+----------
+ f
+(1 row)
+
+SELECT eContains(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01');
+ econtains 
+-----------
+ f
+(1 row)
+
+SELECT eCovers(geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))',
+  tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01');
+ ecovers 
+---------
+ t
+(1 row)
+
+SELECT eTouches(tposechain 'PoseChain(Pose(Point(0 0), 0.1))@2001-01-01',
+  geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT eIntersects(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
+  tposechain 'PoseChain(Pose(Point(1 1), 0.5))@2001-01-01');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDwithin(tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01',
+  tposechain 'PoseChain(Pose(Point(1 2), 0.5))@2001-01-01', 2.0);
+ edwithin 
+----------
+ t
+(1 row)
+
+CREATE FUNCTION test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION
+DROP TABLE IF EXISTS tbl_tposechain_rel;
+NOTICE:  table "tbl_tposechain_rel" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tposechain_rel AS
+SELECT k, tposechain(posechain(ARRAY[pose(ST_Point(k % 10, k / 10), 0),
+  pose(ST_Point(1, 0), 0)]), timestamptz '2001-01-01') AS temp
+FROM generate_series(0, 99) AS k;
+SELECT 100
+CREATE INDEX tbl_tposechain_rel_rtree_idx ON tbl_tposechain_rel USING GIST(temp);
+CREATE INDEX
+ANALYZE tbl_tposechain_rel;
+ANALYZE
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT COUNT(*) FROM tbl_tposechain_rel
+WHERE eIntersects(temp, geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))');
+ count 
+-------
+    12
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain_rel
+WHERE eDwithin(temp, geometry 'Point(5 5)', 1.5);
+ count 
+-------
+     9
+(1 row)
+
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+SET enable_seqscan = off;
+SET
+SELECT COUNT(*) FROM tbl_tposechain_rel
+WHERE eIntersects(temp, geometry 'Polygon((0 0,0 3,3 3,3 0,0 0))');
+ count 
+-------
+    12
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tposechain_rel
+WHERE eDwithin(temp, geometry 'Point(5 5)', 1.5);
+ count 
+-------
+     9
+(1 row)
+
+SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+  'WHERE eIntersects(temp, geometry ''Polygon((0 0,0 3,3 3,3 0,0 0))'')');
+ test_probes_index 
+-------------------
+ t
+(1 row)
+
+SELECT test_probes_index('SELECT k FROM tbl_tposechain_rel '
+  'WHERE eDwithin(temp, geometry ''Point(5 5)'', 1.5)');
+ test_probes_index 
+-------------------
+ t
+(1 row)
+
+RESET enable_seqscan;
+RESET
+DROP TABLE tbl_tposechain_rel;
+DROP TABLE
+DROP FUNCTION test_probes_index(text);
+DROP FUNCTION
