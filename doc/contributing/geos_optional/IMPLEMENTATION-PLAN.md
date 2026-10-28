@@ -68,7 +68,10 @@ input ([note 5](05-WHAT-STILL-NEEDS-GEOS.md) §5.9).
 
 Step 9 is the one design change of the plan, and its four parts cannot be split: the frame alone
 loses seven real polygons that answered before, and the traversal alone has no witness without
-the frame (note 6 §6.6).
+the frame (note 6 §6.6). Since MobilityDB #3040 and #3205 the rings of a polygon with round joins
+are labelled on the exact arrangement, so of step 9 the frame remains; it is step 18 of Part VI,
+built on the exact line buffer of step 17, since on the older line path the frame moves lines the
+older path declines into the range where it answers them wrong.
 
 ## Part III — GEOS leaves the shipped library
 
@@ -88,6 +91,33 @@ the frame (note 6 §6.6).
 | # | Step | What clears it |
 |---|---|---|
 | 16 | The relationship of two areal operands is read off the noded arrangement of `geo_arrange.c`, the one the buffer reads, so no constructed point is located and no tolerance decides a cell; where the arrangement leaves a question unanswered, the engine as it stands answers it. Branch `fix/relate-areas-on-the-noded-arrangement` | The sliver of note 4 §4.1 reads 212111212 at every L from 10^3 to 10^15, CGAL deciding its cells; every corpus of §4.1 agrees with CGAL on the branch's head; every relationship speed cell at or below GEOS called directly |
+
+## Part VI — the buffer, exact on every input
+
+Since MobilityDB #3205 (`ddb9be7089`) the buffer of a polygon with round joins is read off the
+exact arrangement of its offset curves, each join the arc of the circle about its vertex. These
+steps bring every other input of the buffer to that arrangement, one pull request each, in this
+order; the older path is deleted last. Each is judged by CGAL on its own head, by the exact
+distance from a point to the input for round joins and by the exact union of the polygon, the
+rectangle each edge sweeps and the corner pieces for bevel and mitre joins, and every one of its
+speed cells stands at or below GEOS called directly. Inputs with extreme coordinates come after
+them (open items).
+
+| # | Step | What clears it |
+|---|---|---|
+| 17 | Lines with round joins and round caps: each line is walked out and back along its offset curve, and an offset whose written end does not lie strictly on its side of the edge it offsets declines rather than answers. Branch `fix/buffer-a-line-exactly` | Measured on its head before its rebase on master `cdfa50524d`: of 336 lines with a first vertex at 2^20 to 2^60 and spans past 2^1000, 238 agree with CGAL, 0 wrong, 98 decline (with the side test forced true, 5 wrong: its control); of 36 960 straight queries 30 960 agree, 0 wrong, 6 000 decline, every closed line. Owed: the 1 576 queries on AIS lines, their decline floor against the older path, and the speed cells of lines and polygons |
+| 18 | The frame of step 9: the buffer is built in a frame chosen from the geometry and the distance. Branch `fix/buffer-in-a-frame-next` | Built on step 17's head: CGAL agrees with every answer of the far-vertex, straight and AIS corpora, with no decline the line path alone answers; the open square of side s buffered by 8 s holds its centre (`049_geo_funcs`) |
+| 19 | Lines with square and flat caps | `LINESTRING(0 0,10 0)` buffered by 1 with `endcap=square` is the rectangle from (−1 −1) to (11 1), where master writes the degenerate ring `CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))`; `LINESTRING(0 0,10 0,0 0.5)` with `endcap=flat` has no spurious second ring; CGAL agrees on corpora of both caps |
+| 20 | Polygons with bevel joins: the join is the chord where the ring turns away from its offset side, and the offset runs back through the vertex where it turns towards it, so the winding number of the offset curve is the count of the polygon, edge rectangles and corner triangles holding a point, holes included. Branch `geo/buffer-exact-mitre-bevel`, five commits on master `d043de2e04` | CGAL on its head: 167 094 of 167 094 sharp queries and 159 846 of 159 846 natural, and the round corpora unchanged (1 313 of 1 313 natural, 1 328 512 of 1 328 512 sharp, 49 354 of 49 354 on 40 shapes). **Blocked on speed**: native over GEOS in instructions on the natural areas reads 1.40, 1.32 and 1.59 at distances 1, 50 and 500 |
+| 21 | Polygons with mitre joins: the crossing of the two offset lines and, past the limit, the two cut points become exact segment ends; past the limit the corner is cut square to the bisector at limit × r from the vertex, as GEOS cuts it | Master writes a bevel past the limit, which disagrees with GEOS's limited mitre at 438 of 148 200 points at limit 5 and 1 008 at limit 1.5; on the head CGAL agrees with every query at limits 5, 1.5 and 1.1 |
+| 22 | Polygons buffered by a negative distance with round joins, on the same arrangement | CGAL agrees with every answer, the decline floor no higher than master's on the natural areas |
+| 23 | Points, inputs with circular arcs, and collections of mixed dimension | Each by CGAL, arcs by CGAL's circular-arc support |
+| 24 | The older buffer path is deleted, and polygons narrower than an ulp of the output decline as lines do | No input reaches the older path; the corpora of steps 17 to 23 read the same |
+
+Step 20 renames the round-join functions of `geo_buffer.c` to the join style, so whichever of
+steps 17 and 20 lands second rebases across the other. Step 16 adds one optional base weight per
+input curve to the merge of overlapping stretches in `geo_arrange.c`, the file steps 20 to 22
+change: whichever lands second rebases across it.
 
 ## Decisions owed by the committers
 
@@ -127,5 +157,9 @@ the frame (note 6 §6.6).
 - **No exact-reference run is recorded for convex hull, oriented envelope and the simplicity
   test** (note 4 §4.6). The centroid has one: MobilityDB #3171, merged as `d51b32e664`, states CGAL
   agreeing with every answer of its head over 75 rows in six classes.
+- **The buffer at extreme coordinates** waits for Part VI: an exact product can exceed the
+  fixed width of the exact arithmetic from coordinates near 10^301, and a sign test past
+  overflow, the node index and the cost of arcs at such spreads are owed. Inputs reaching them
+  decline until then.
 - **The offset curve and make_valid are exposed by no function.** Their behaviour is decided
   (note 4 §4.10), and no step builds them until a function exposes them.
