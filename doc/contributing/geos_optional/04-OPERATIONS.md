@@ -59,7 +59,20 @@ for every query box. Each of the sixteen relationship cells, eight questions on 
 same eight on `geo_pairs`, reads at most GEOS's own instructions: from 0.02 for equality to 0.84 for
 touching.
 
-**Left.** Nothing.
+**Left.** A sliver the engine's tolerance cannot see. The square
+`POLYGON((100 100,100 200,200 200,200 100,100 100))` against
+`POLYGON((100 100,L 110,L 100,100 100))`, a triangle whose base runs along the square's bottom side
+and out of it, has the matrix 212111212 for every L from 10^3 to 10^15: CGAL decides the
+four predicates (`cgal_arc_relate`) and the two cells where a boundary meets the other interior
+(`cgal_de9im_cells`, with exact rational midpoints). The engine, on master `d043de2e04` with the
+witness of step 16 (`236793af75`), answers it to L = 10^12; at
+10^13 and 10^14 it reads 212F11212, the boundary of the square meeting no interior of the
+triangle, and at 10^15 2F2F11212, neither boundary meeting the other's interior. Inside the square
+the triangle is at most 1000/L high, 10^−12 at L = 10^15, which is below the tolerance a
+constructed sample point needs at coordinates of 10^15 (note 7 §7.2: an exact predicate needs a
+noded topology). Rescaling both operands by a power of two does not reach it, since it is the
+proportions of the shapes and not their size. Step 16 of the
+[implementation plan](IMPLEMENTATION-PLAN.md) answers it.
 
 ## 4.2 Point in polygon — never used GEOS
 

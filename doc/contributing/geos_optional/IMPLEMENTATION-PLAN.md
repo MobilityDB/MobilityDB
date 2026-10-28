@@ -83,6 +83,12 @@ the frame (note 6 §6.6).
 |---|---|---|
 | 15 | A chapter of the manual on the native engine, in English and Spanish, for a user deciding whether to trust it in place of GEOS | Every example in it runs and its output is harvested, not written by hand; it states where MEOS differs from GEOS — circular arcs first, each judged by the closed form — and where it is slower or narrower |
 
+## Part V — the relationships on the noded arrangement
+
+| # | Step | What clears it |
+|---|---|---|
+| 16 | The relationship of two areal operands is read off the noded arrangement of `geo_arrange.c`, the one the buffer reads, so no constructed point is located and no tolerance decides a cell; where the arrangement leaves a question unanswered, the engine as it stands answers it. Branch `fix/relate-areas-on-the-noded-arrangement` | The sliver of note 4 §4.1 reads 212111212 at every L from 10^3 to 10^15, CGAL deciding its cells; every corpus of §4.1 agrees with CGAL on the branch's head; every relationship speed cell at or below GEOS called directly |
+
 ## Decisions owed by the committers
 
 1. **Do the instruments and an exact-reference corpus enter the repository's tests?** The sweep
