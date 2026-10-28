@@ -118,6 +118,37 @@ typedef struct
 } DistShortLine;
 
 /**
+ * @brief A unit and an edge whose distance a running minimum holds by its
+ * bounds
+ */
+typedef struct
+{
+  double lo, hi;                      /**< The bounds */
+  double cx1, cy1, r1, cx2, cy2, r2;  /**< The unit */
+  const Edge *e;                      /**< The edge */
+} DistNadCand;
+
+/** @brief Number of units and edges a running minimum holds by their bounds,
+ * as #DIST_REST_NCAND bounds the edges a centre at rest ranks; the units and
+ * edges beyond it are read exactly at once */
+#define DIST_NAD_NCAND 8
+
+/**
+ * @brief Running minimum of the nearest approach distance over the units
+ * read: the least exact distance read, and the units and edges whose bounds
+ * reach below it, which #dist_nad_exact reads exactly
+ */
+typedef struct
+{
+  double best;     /**< An upper bound of the least, the least of the exact
+                        distance and the upper bounds held; DBL_MAX before
+                        any unit */
+  double exact;    /**< The least exact distance read; DBL_MAX before any */
+  int ncand;       /**< Number of units and edges held by their bounds */
+  DistNadCand cand[DIST_NAD_NCAND];  /**< Those units and edges */
+} DistNad;
+
+/**
  * @brief A spatially-local group of consecutive segments with its bounding box
  */
 typedef struct
@@ -183,7 +214,8 @@ extern double dist_segm_arc_mindist(double cx1, double cy1, double cx2, double c
 extern MEOS_TLS MeosArray *dist_pip_results;
 extern bool dist_geom_point_inside(double x, double y, const DistGeom *g);
 extern void dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const DistGeom *g, double *best);
+  double r2, const DistGeom *g, DistNad *n);
+extern double dist_nad_exact(DistNad *n);
 extern void dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
   double cy2, double r2, const DistGeom *g, DistShortLine *w);
 extern void dist_shortline_exact(DistShortLine *w);

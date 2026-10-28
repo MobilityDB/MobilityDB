@@ -142,9 +142,9 @@ tdistance_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 static inline double
 tcbuffer_geom_dist(double cx, double cy, double r, const DistGeom *g)
 {
-  double best = DBL_MAX;
-  dist_segm_nad(cx, cy, r, cx, cy, r, g, &best);
-  return fmax(best, 0.0);
+  DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
+  dist_segm_nad(cx, cy, r, cx, cy, r, g, &n);
+  return fmax(dist_nad_exact(&n), 0.0);
 }
 
 /**
@@ -916,29 +916,29 @@ tcbuffer_disc_within_dist(double cx, double cy, double r, double dist,
  * interpolation treats each instant as a stationary disk.
  */
 static void
-tcbufferseq_nad(const TSequence *seq, const DistGeom *g, double *best)
+tcbufferseq_nad(const TSequence *seq, const DistGeom *g, DistNad *n)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
   {
-    for (int i = 0; i < seq->count && *best > 0.0; i++)
+    for (int i = 0; i < seq->count && n->best > 0.0; i++)
     {
       const Cbuffer *c = DatumGetCbufferP(
         tinstant_value_p(TSEQUENCE_INST_N(seq, i)));
       const POINT2D *p = cbuffer_point2d_p(c);
-      dist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, best);
+      dist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, g, n);
     }
     return;
   }
   const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 1; i < seq->count && *best > 0.0; i++)
+  for (int i = 1; i < seq->count && n->best > 0.0; i++)
   {
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const Cbuffer *c1 = DatumGetCbufferP(tinstant_value_p(i1));
     const Cbuffer *c2 = DatumGetCbufferP(tinstant_value_p(i2));
     const POINT2D *p1 = cbuffer_point2d_p(c1);
     const POINT2D *p2 = cbuffer_point2d_p(c2);
-    dist_segm_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, best);
+    dist_segm_nad(p1->x, p1->y, c1->radius, p2->x, p2->y, c2->radius, g, n);
     i1 = i2;
   }
 }
@@ -961,23 +961,24 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     return result;
   }
 
-  double best = DBL_MAX;
+  DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const Cbuffer *c = DatumGetCbufferP(tinstant_value_p((TInstant *) temp));
     const POINT2D *p = cbuffer_point2d_p(c);
-    dist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &best);
+    dist_segm_nad(p->x, p->y, c->radius, p->x, p->y, c->radius, &g, &n);
   }
   else if (temp->subtype == TSEQUENCE)
-    tcbufferseq_nad((TSequence *) temp, &g, &best);
+    tcbufferseq_nad((TSequence *) temp, &g, &n);
   else /* TSEQUENCESET */
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
-    for (int i = 0; i < ss->count && best > 0.0; i++)
-      tcbufferseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
+    for (int i = 0; i < ss->count && n.best > 0.0; i++)
+      tcbufferseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &n);
   }
 
+  double best = dist_nad_exact(&n);
   dist_geom_free(&g);
   return best < 0.0 ? 0.0 : best;
 }

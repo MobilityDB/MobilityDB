@@ -390,11 +390,10 @@ dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
 }
 
 /**
- * @brief Bound in doubles what #dist_segm_edge_mindist answers for a centre
- * at rest against a straight edge, so that a search ranks the edges without
- * the exact distance of each
- * @details With `w` the centre less the start of the edge and `u` the edge,
- * the distance `D` of the centre to the edge is that to the point at the
+ * @brief Bound in doubles the distance of a point to a segment less a radius
+ * @details With `w` the point less the start of the segment and `u` the
+ * segment, the distance `D` of the point to the segment is that to the point
+ * at the
  * clamped parameter `(w . u) / (u . u)`. In doubles, with `e` the unit
  * roundoff 2^-53, the differences `w` and `u` are within `e` of their values
  * in each coordinate, and `D` moves by no more than they do; the dot product
@@ -409,22 +408,22 @@ dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
  * the rounded distance less the radius where it does not
  * (#dist_rest_point, #dist_rest_segment), lies within as much of `D - r`
  * again, so the bounds stand `32 DBL_EPSILON` times those magnitudes on
- * either side, four times what the two together need.
- * @param[in] cx,cy The centre
- * @param[in] r1,r2 The radius at the two ends of the unit, the larger one
- * read as #dist_rest_point and #dist_rest_segment read it
- * @param[in] e The edge, straight
+ * either side, four times what the two together need. The same holds for
+ * #point_segment_distance_offset_exact, the double nearest `D - r` where the
+ * point stands farther than the radius from the segment.
+ * @param[in] px,py The point
+ * @param[in] ax,ay,bx,by The segment
+ * @param[in] r The radius, not negative
  * @param[out] lo,hi The bounds
  * @return false where a magnitude leaves the range in which every product
- * above is a normal double, which leaves the edge to the exact kernels
+ * above is a normal double, which leaves the distance to the exact kernels
  */
-bool
-dist_rest_bounds(double cx, double cy, double r1, double r2, const Edge *e,
-  double *lo, double *hi)
+static bool
+point_segment_bounds(double px, double py, double ax, double ay, double bx,
+  double by, double r, double *lo, double *hi)
 {
-  double r = (r2 > r1) ? r2 : r1;
-  double wx = cx - e->x1, wy = cy - e->y1;
-  double ux = e->x2 - e->x1, uy = e->y2 - e->y1;
+  double wx = px - ax, wy = py - ay;
+  double ux = bx - ax, uy = by - ay;
   double w1 = fabs(wx) + fabs(wy), u1 = fabs(ux) + fabs(uy);
   double m = fmax(w1, fmax(u1, r));
   if (! (m <= 0x1p480) || (m > 0.0 && m < 0x1p-480))
@@ -443,6 +442,28 @@ dist_rest_bounds(double cx, double cy, double r1, double r2, const Edge *e,
   *lo = v - delta;
   *hi = v + delta;
   return true;
+}
+
+/**
+ * @brief Bound in doubles what #dist_segm_edge_mindist answers for a centre
+ * at rest against a straight edge
+ * @details The bounds of #point_segment_bounds for the centre and the edge,
+ * less the larger radius, which is what #dist_rest_point and
+ * #dist_rest_segment answer: the disc is largest at the end it grows to. A
+ * search ranks the edges by them without the exact distance of each
+ * @param[in] cx,cy The centre
+ * @param[in] r1,r2 The radius at the two ends of the unit
+ * @param[in] e The edge, straight
+ * @param[out] lo,hi The bounds
+ * @return false where #point_segment_bounds declines, which leaves the edge to
+ * the exact kernels
+ */
+bool
+dist_rest_bounds(double cx, double cy, double r1, double r2, const Edge *e,
+  double *lo, double *hi)
+{
+  return point_segment_bounds(cx, cy, e->x1, e->y1, e->x2, e->y2,
+    (r2 > r1) ? r2 : r1, lo, hi);
 }
 
 /**
@@ -625,6 +646,117 @@ dist_moving_varying(double cx1, double cy1, double cx2, double cy2,
       r1, r2));
   }
   return result;
+}
+
+/**
+ * @brief Bound in doubles what #dist_moving_segment answers for a moving
+ * point, and #dist_moving_offset for a circular buffer of constant radius
+ * @details Where the path and the edge do not meet, both kernels answer from
+ * the four distances of an end of one segment to the other, each the double
+ * nearest the exact one, less the radius: their least where the disc stands
+ * clear and the least distance less the radius, rounded, where it does not.
+ * Each of the four lies within the bounds #point_segment_bounds gives for it,
+ * and rounding is monotone, so the answer lies between the least of the lower
+ * bounds and the least of the upper ones. Where the path and the edge meet
+ * the answer is the radius below zero, which no end distance bounds, so a
+ * meeting, decided by the exact orientations the kernels read
+ * (#linesegm_intersect), leaves the edge to them
+ * @param[in] cx1,cy1,cx2,cy2 The path of the centre
+ * @param[in] r The radius, the same at both ends of the unit
+ * @param[in] e The edge, straight
+ * @param[out] lo,hi The bounds
+ * @return false where the path meets the edge, or where #point_segment_bounds
+ * declines one of the four distances, which leaves the edge to the exact
+ * kernels
+ */
+static bool
+dist_moving_bounds(double cx1, double cy1, double cx2, double cy2, double r,
+  const Edge *e, double *lo, double *hi)
+{
+  IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1, e->y1,
+    e->x2, e->y2);
+  if (meet.type != INTERSECT_NONE)
+    return false;
+  double l[4], h[4];
+  if (! point_segment_bounds(cx1, cy1, e->x1, e->y1, e->x2, e->y2, r, &l[0],
+        &h[0]) ||
+      ! point_segment_bounds(cx2, cy2, e->x1, e->y1, e->x2, e->y2, r, &l[1],
+        &h[1]) ||
+      ! point_segment_bounds(e->x1, e->y1, cx1, cy1, cx2, cy2, r, &l[2],
+        &h[2]) ||
+      ! point_segment_bounds(e->x2, e->y2, cx1, cy1, cx2, cy2, r, &l[3],
+        &h[3]))
+    return false;
+  *lo = fmin(fmin(l[0], l[1]), fmin(l[2], l[3]));
+  *hi = fmin(fmin(h[0], h[1]), fmin(h[2], h[3]));
+  return true;
+}
+
+/**
+ * @brief Bound in doubles what #dist_moving_varying answers for a circular
+ * buffer whose radius changes
+ * @details The twin of #dist_moving_varying: the least of the distances of
+ * the two ends of the path to the edge, less the radius at each end
+ * (#point_segment_bounds), and of the disc moving against each end of the
+ * edge (#point_motion_point_offset_bounds), each held between its bounds, so
+ * the answer lies between the least of the lower bounds and the least of the
+ * upper ones. An end of the edge the disc is certainly never within @p below
+ * or the least upper bound of (#point_motion_dwithin_never) is not searched,
+ * and that distance, which it exceeds, stands as its lower bound
+ * @param[in] cx1,cy1,cx2,cy2 The path of the centre
+ * @param[in] r1,r2 The radius at the two ends of the unit
+ * @param[in] e The edge, straight
+ * @param[in] below The value above which the caller reads nothing
+ * @param[out] lo,hi The bounds, lo positive
+ * @return false where the path meets the edge, where a bound declines, or
+ * where the disc may reach the edge, which leaves the edge to the exact
+ * kernels
+ */
+static bool
+dist_varying_bounds(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below, double *lo, double *hi)
+{
+  const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
+  const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+  bool point = (a[0] == b[0] && a[1] == b[1]);
+  double l = DBL_MAX, h = DBL_MAX;
+  if (! point)
+  {
+    IntersectResult meet = linesegm_intersect(cx1, cy1, cx2, cy2, e->x1,
+      e->y1, e->x2, e->y2);
+    if (meet.type != INTERSECT_NONE)
+      return false;
+    double l1, h1, l2, h2;
+    if (! point_segment_bounds(cx1, cy1, a[0], a[1], b[0], b[1], r1, &l1,
+          &h1) ||
+        ! point_segment_bounds(cx2, cy2, a[0], a[1], b[0], b[1], r2, &l2,
+          &h2))
+      return false;
+    l = fmin(l1, l2);
+    h = fmin(h1, h2);
+  }
+  const double *ends[2] = {a, b};
+  for (int i = 0; i < (point ? 1 : 2); i++)
+  {
+    double bound = fmin(h, below);
+    if (bound < DBL_MAX && point_motion_dwithin_never(c1, c2, ends[i], 2, r1,
+        r2, bound))
+    {
+      l = fmin(l, bound);
+      continue;
+    }
+    double le, he;
+    if (! point_motion_point_offset_bounds(c1, c2, ends[i], 2, r1, r2, &le,
+        &he))
+      return false;
+    l = fmin(l, le);
+    h = fmin(h, he);
+  }
+  if (! (l > 0.0))
+    return false;
+  *lo = l;
+  *hi = h;
+  return true;
 }
 
 /**
@@ -1570,43 +1702,177 @@ dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
 }
 
 /**
+ * @brief Keep in a running minimum only the units and edges whose lower bound
+ * lies below its upper bound
+ * @details A unit and edge whose lower bound is at or above the upper bound
+ * of the least cannot be less than it, and the double of the least is then at
+ * most its distance, rounding being monotone
+ */
+static void
+dist_nad_prune(DistNad *n)
+{
+  int k = 0;
+  for (int i = 0; i < n->ncand; i++)
+    if (n->cand[i].lo < n->best)
+      n->cand[k++] = n->cand[i];
+  n->ncand = k;
+  return;
+}
+
+/**
+ * @brief Return the least of a running minimum, reading exactly the units and
+ * edges it holds by their bounds
+ * @details The answer of the search: the double nearest the least of the
+ * exact distances of the units read, each the value #dist_segm_edge_mindist
+ * answers. A running minimum holds the least exact distance it has read and
+ * the units and edges whose bounds reach below it, which are read exactly
+ * here, as #dist_shortline_exact constructs exactly the line of the witness a
+ * shortest-line search ends on
+ */
+double
+dist_nad_exact(DistNad *n)
+{
+  for (int i = 0; i < n->ncand; i++)
+  {
+    const DistNadCand *c = &n->cand[i];
+    double m = dist_segm_edge_mindist(c->cx1, c->cy1, c->cx2, c->cy2, c->r1,
+      c->r2, c->e);
+    if (m < n->exact)
+      n->exact = m;
+  }
+  n->ncand = 0;
+  n->best = n->exact;
+  return n->best;
+}
+
+/**
+ * @brief Update a running minimum with the exact distance of a unit to an edge
+ * @details A distance not below the upper bound of the least cannot be less
+ * than it; one below it is the least exact distance read and the upper bound,
+ * and the units and edges held whose lower bound it does not exceed are
+ * dropped (#dist_nad_prune)
+ */
+static void
+dist_nad_offer(DistNad *n, double m)
+{
+  if (m >= n->best)
+    return;
+  n->best = n->exact = m;
+  dist_nad_prune(n);
+  return;
+}
+
+/**
+ * @brief Update a running minimum with the bounds of the distance of a unit
+ * to an edge
+ * @details Bounds at or above the upper bound of the least cannot lower it.
+ * Bounds below it are held with the unit and the edge, their upper bound
+ * lowering that of the least, and read exactly only if they still reach below
+ * it when the search ends (#dist_nad_exact): two units meeting at an instant
+ * reach an edge at the same distance there, so their bounds overlap, and
+ * holding both leaves the exact comparison to the end. A full running
+ * minimum reads those it holds exactly first. Every exact distance read is
+ * the one #dist_segm_edge_mindist answers, so the least is the least of
+ * those, whichever order the units come in
+ */
+static void
+dist_nad_offer_bounds(DistNad *n, double lo, double hi, double cx1,
+  double cy1, double cx2, double cy2, double r1, double r2, const Edge *e)
+{
+  if (lo >= n->best)
+    return;
+  if (n->ncand == DIST_NAD_NCAND)
+  {
+    dist_nad_exact(n);
+    if (lo >= n->best)
+      return;
+  }
+  DistNadCand *c = &n->cand[n->ncand++];
+  c->lo = lo; c->hi = hi;
+  c->cx1 = cx1; c->cy1 = cy1; c->r1 = r1;
+  c->cx2 = cx2; c->cy2 = cy2; c->r2 = r2;
+  c->e = e;
+  if (hi < n->best)
+  {
+    n->best = hi;
+    dist_nad_prune(n);
+  }
+  return;
+}
+
+/**
+ * @brief Bound in doubles what #dist_segm_edge_mindist answers for a unit
+ * against a straight edge that the disc stands clear of
+ * @details A centre at rest is bounded by #dist_rest_bounds, a centre that
+ * moves with a constant radius, zero for a point, by #dist_moving_bounds, and
+ * one whose radius changes by #dist_varying_bounds, which reads only the ends
+ * of the edge the disc may come within @p below of
+ * @param[in] cx1,cy1,cx2,cy2 The path of the centre
+ * @param[in] r1,r2 The radius at the two ends of the unit
+ * @param[in] e The edge
+ * @param[in] below The value above which the caller reads nothing
+ * @param[out] lo,hi The bounds, lo positive
+ * @return false for an arc, where a bound declines, or where the disc may
+ * reach the edge, which leaves the edge to the exact kernels
+ */
+static bool
+dist_unit_nad_bounds(double cx1, double cy1, double cx2, double cy2,
+  double r1, double r2, const Edge *e, double below, double *lo, double *hi)
+{
+  if (e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC)
+    return false;
+  bool bounded;
+  if (cx1 == cx2 && cy1 == cy2)
+    bounded = dist_rest_bounds(cx1, cy1, r1, r2, e, lo, hi);
+  else if (r1 == r2)
+    bounded = dist_moving_bounds(cx1, cy1, cx2, cy2, r1, e, lo, hi);
+  else
+    bounded = dist_varying_bounds(cx1, cy1, cx2, cy2, r1, r2, e, below, lo,
+      hi);
+  return bounded && *lo > 0.0;
+}
+
+/**
  * @brief Update the running minimum with a unit whose centre rests, against a
  * geometry of more than one edge (#dist_segm_nad)
+ * @details The running minimum holds a least it has not read exactly by its
+ * bounds and the unit and edge that reach it, as #dist_shortline_exact
+ * constructs exactly only the line of the witness the search ends on
  */
 static void
 dist_rest_nad(double cx, double cy, double r1, double r2, const DistGeom *g,
-  double *best, double thr2, double rmax)
+  DistNad *n, double thr2, double rmax)
 {
   /* A centre at rest ranks its straight edges by the bounds of
-   * #dist_rest_bounds and reads the exact distance only of those whose lower
-   * bound reaches below every upper bound and the running minimum: the least
-   * exact distance is among them, so the minimum is the one the exact distance
-   * of every edge gives. The least upper bound bounds the minimum, so it tightens
-   * the prune as the running minimum does. Each caller clamps the minimum at
-   * zero, so an edge the disc reaches is read exactly at once, as the scan
-   * stops there. A geometry of one edge has nothing to rank, and an edge
-   * beyond the room kept for them is read exactly at once too */
+   * #dist_rest_bounds and offers only those whose lower bound reaches below
+   * every upper bound and the running minimum: the least exact distance is
+   * among them, so the minimum is the one the exact distance of every edge
+   * gives. The least upper bound bounds the minimum, so it tightens the prune
+   * as the running minimum does. Each caller clamps the minimum at zero, so
+   * an edge the disc reaches is read exactly at once, as the scan stops
+   * there. A geometry of one edge has nothing to rank, and an edge beyond the
+   * room kept for them is read exactly at once too */
   int cand[DIST_REST_NCAND];
-  double candlo[DIST_REST_NCAND];
+  double candlo[DIST_REST_NCAND], candhi[DIST_REST_NCAND];
   int ncand = 0;
   double hibest = DBL_MAX;
   /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
    * farther than the running minimum, then the per-edge prune within a bucket */
-  for (int b = 0; b < g->nbk && *best > 0.0; b++)
+  for (int b = 0; b < g->nbk && n->best > 0.0; b++)
   {
     const DistBucket *bk = &g->bks[b];
-    if (*best != DBL_MAX || hibest != DBL_MAX)
+    if (n->best != DBL_MAX || hibest != DBL_MAX)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
           cx, cy, cx, cy) >= thr2)
         continue;
     }
     int e = bk->start + bk->n;
-    for (int k = bk->start; k < e && *best > 0.0; k++)
+    for (int k = bk->start; k < e && n->best > 0.0; k++)
     {
       const Edge *ed = &g->segs[k];
       bool arc = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC);
-      if (*best != DBL_MAX || hibest != DBL_MAX)
+      if (n->best != DBL_MAX || hibest != DBL_MAX)
       {
         if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
           cx, cy, cx, cy) >= thr2)
@@ -1622,39 +1888,41 @@ dist_rest_nad(double cx, double cy, double r1, double r2, const DistGeom *g,
       double lo, hi;
       if (! arc && dist_rest_bounds(cx, cy, r1, r2, ed, &lo, &hi))
       {
-        if (lo >= *best || lo > hibest)
+        if (lo >= n->best || lo > hibest)
           continue;
         if (hi >= 0.0 && ncand < DIST_REST_NCAND)
         {
           cand[ncand] = k;
-          candlo[ncand++] = lo;
+          candlo[ncand] = lo;
+          candhi[ncand++] = hi;
           if (hi < hibest)
           {
             hibest = hi;
-            thr2 = dist_unit_thr2(fmin(*best, hibest), rmax);
+            thr2 = dist_unit_thr2(fmin(n->best, hibest), rmax);
           }
           continue;
         }
       }
-      double m = arc ?
+      double old = n->best;
+      dist_nad_offer(n, arc ?
         dist_segm_arc_mindist(cx, cy, cx, cy, r1, r2, ed) :
-        dist_segm_edge_mindist(cx, cy, cx, cy, r1, r2, ed);
-      if (m < *best)
-      {
-        *best = m;
-        thr2 = dist_unit_thr2(fmin(m, hibest), rmax);
-      }
+        dist_segm_edge_mindist(cx, cy, cx, cy, r1, r2, ed));
+      if (n->best < old)
+        thr2 = dist_unit_thr2(fmin(n->best, hibest), rmax);
     }
   }
-  /* The exact distance of the edges that may still give the minimum */
-  for (int i = 0; i < ncand && *best > 0.0; i++)
+  /* The edges that may still give the minimum, each by its bounds where the
+   * disc stands clear of it and exactly where it may reach it */
+  for (int i = 0; i < ncand && n->best > 0.0; i++)
   {
-    if (candlo[i] >= *best || candlo[i] > hibest)
+    if (candlo[i] >= n->best || candlo[i] > hibest)
       continue;
-    double m = dist_segm_edge_mindist(cx, cy, cx, cy, r1, r2,
-      &g->segs[cand[i]]);
-    if (m < *best)
-      *best = m;
+    const Edge *ed = &g->segs[cand[i]];
+    if (candlo[i] > 0.0)
+      dist_nad_offer_bounds(n, candlo[i], candhi[i], cx, cy, cx, cy, r1, r2,
+        ed);
+    else
+      dist_nad_offer(n, dist_segm_edge_mindist(cx, cy, cx, cy, r1, r2, ed));
   }
 }
 
@@ -1664,14 +1932,14 @@ dist_rest_nad(double cx, double cy, double r1, double r2, const DistGeom *g,
  */
 void
 dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
-  double r2, const DistGeom *g, double *best)
+  double r2, const DistGeom *g, DistNad *n)
 {
   double cxmin = fmin(cx1, cx2);
   double cxmax = fmax(cx1, cx2);
   double cymin = fmin(cy1, cy2);
   double cymax = fmax(cy1, cy2);
   double rmax = fmax(r1, r2);
-  double thr2 = (*best == DBL_MAX) ? 0.0 : dist_unit_thr2(*best, rmax);
+  double thr2 = (n->best == DBL_MAX) ? 0.0 : dist_unit_thr2(n->best, rmax);
   /* Coarse branch-and-bound prune: the distance between this unit's centre
    * bounding box and the geometry's overall bounding box, minus the unit's
    * largest radius, is a lower bound on the unit's nearest approach (a box
@@ -1681,7 +1949,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * per-edge loop are skipped. A segment whose centre is inside a polygon
    * overlaps the geometry bounding box, giving a zero box distance, so it is
    * never wrongly pruned. */
-  if (*best != DBL_MAX)
+  if (n->best != DBL_MAX)
   {
     if (box2d_distance_sqr(g->xmin, g->ymin, g->xmax, g->ymax,
         cxmin, cymin, cxmax, cymax) >= thr2)
@@ -1694,7 +1962,7 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
       dist_geom_point_inside(cx2, cy2, g);
     if (in1 || in2)
     {
-      *best = 0.0;
+      dist_nad_offer(n, 0.0);
       return;
     }
   }
@@ -1702,25 +1970,25 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
    * (#dist_rest_nad) */
   if (cx1 == cx2 && cy1 == cy2 && g->n > 1)
   {
-    dist_rest_nad(cx1, cy1, r1, r2, g, best, thr2, rmax);
+    dist_rest_nad(cx1, cy1, r1, r2, g, n, thr2, rmax);
     return;
   }
   /* Bucket bounding-volume hierarchy: skip whole buckets of edges that are
    * farther than the running minimum, then the per-edge prune within a bucket */
-  for (int b = 0; b < g->nbk && *best > 0.0; b++)
+  for (int b = 0; b < g->nbk && n->best > 0.0; b++)
   {
     const DistBucket *bk = &g->bks[b];
-    if (*best != DBL_MAX)
+    if (n->best != DBL_MAX)
     {
       if (box2d_distance_sqr(bk->xmin, bk->ymin, bk->xmax, bk->ymax,
           cxmin, cymin, cxmax, cymax) >= thr2)
         continue;
     }
     int e = bk->start + bk->n;
-    for (int k = bk->start; k < e && *best > 0.0; k++)
+    for (int k = bk->start; k < e && n->best > 0.0; k++)
     {
       const Edge *ed = &g->segs[k];
-      if (*best != DBL_MAX)
+      if (n->best != DBL_MAX)
       {
         if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax,
           cxmin, cymin, cxmax, cymax) >= thr2)
@@ -1734,14 +2002,21 @@ dist_segm_nad(double cx1, double cy1, double r1, double cx2, double cy2,
             dist_edge_radius_prune(cx1, cy1, cx2, cy2, ed, thr2))
           continue;
       }
-      double m = (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
-        dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
-        dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, ed, *best);
-      if (m < *best)
-      {
-        *best = m;
-        thr2 = dist_unit_thr2(m, rmax);
-      }
+      /* An edge the disc stands clear of is offered by its bounds, and read
+       * exactly only where they overlap those of the least
+       * (#dist_nad_offer_bounds) */
+      double old = n->best, lo, hi;
+      if (dist_unit_nad_bounds(cx1, cy1, cx2, cy2, r1, r2, ed, n->best, &lo,
+          &hi))
+        dist_nad_offer_bounds(n, lo, hi, cx1, cy1, cx2, cy2, r1, r2, ed);
+      else
+        dist_nad_offer(n,
+          (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC) ?
+          dist_segm_arc_mindist(cx1, cy1, cx2, cy2, r1, r2, ed) :
+          dist_segm_edge_mindist_below(cx1, cy1, cx2, cy2, r1, r2, ed,
+            n->best));
+      if (n->best < old)
+        thr2 = dist_unit_thr2(n->best, rmax);
     }
   }
 }
@@ -3154,25 +3429,25 @@ tgeoinst_point2d(const TInstant *inst)
  * feeding each segment as a radius-0 disc
  */
 static void
-tgeoseq_nad(const TSequence *seq, const DistGeom *g, double *best)
+tgeoseq_nad(const TSequence *seq, const DistGeom *g, DistNad *n)
 {
   bool linear = MEOS_FLAGS_LINEAR_INTERP(seq->flags);
   if (seq->count == 1 || ! linear)
   {
-    for (int i = 0; i < seq->count && *best > 0.0; i++)
+    for (int i = 0; i < seq->count && n->best > 0.0; i++)
     {
       const POINT2D *p = tgeoinst_point2d(TSEQUENCE_INST_N(seq, i));
-      dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, g, best);
+      dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, g, n);
     }
     return;
   }
   const TInstant *i1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 1; i < seq->count && *best > 0.0; i++)
+  for (int i = 1; i < seq->count && n->best > 0.0; i++)
   {
     const TInstant *i2 = TSEQUENCE_INST_N(seq, i);
     const POINT2D *p1 = tgeoinst_point2d(i1);
     const POINT2D *p2 = tgeoinst_point2d(i2);
-    dist_segm_nad(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, best);
+    dist_segm_nad(p1->x, p1->y, 0.0, p2->x, p2->y, 0.0, g, n);
     i1 = i2;
   }
 }
@@ -3192,21 +3467,22 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return false;
-  double best = DBL_MAX;
+  DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {
     const POINT2D *p = tgeoinst_point2d((TInstant *) temp);
-    dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &best);
+    dist_segm_nad(p->x, p->y, 0.0, p->x, p->y, 0.0, &g, &n);
   }
   else if (temp->subtype == TSEQUENCE)
-    tgeoseq_nad((TSequence *) temp, &g, &best);
+    tgeoseq_nad((TSequence *) temp, &g, &n);
   else
   {
     const TSequenceSet *ss = (TSequenceSet *) temp;
-    for (int i = 0; i < ss->count && best > 0.0; i++)
-      tgeoseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &best);
+    for (int i = 0; i < ss->count && n.best > 0.0; i++)
+      tgeoseq_nad(TSEQUENCESET_SEQ_N(ss, i), &g, &n);
   }
+  double best = dist_nad_exact(&n);
   dist_geom_free(&g);
   *result = best < 0.0 ? 0.0 : best;
   return true;
