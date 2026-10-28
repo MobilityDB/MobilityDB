@@ -13046,11 +13046,9 @@ pointarr_find_splits(const POINT2D **points, int npoints, int *count)
 /**
  * @brief Compare two 2D points lexicographically
  */
-static int
-point2d_cmp(const void *a, const void *b)
+static inline int
+point2d_cmp(const POINT2D *pa, const POINT2D *pb)
 {
-  const POINT2D *pa = (const POINT2D *) a;
-  const POINT2D *pb = (const POINT2D *) b;
   if (pa->x < pb->x)
     return -1;
   if (pa->x > pb->x)
@@ -13061,6 +13059,16 @@ point2d_cmp(const void *a, const void *b)
     return 1;
   return 0;
 }
+
+/* Sort points lexicographically with their order written into the sort, as
+ * #edge_key_sort sorts the edges of an index */
+#define ST_SORT point2d_sort
+#define ST_ELEMENT_TYPE POINT2D
+#define ST_COMPARE(a, b) point2d_cmp(a, b)
+#define ST_SCOPE static
+#define ST_DECLARE
+#define ST_DEFINE
+#include "port/sort_template.h"
 
 /**
  * @brief Cross product of AB and AC
@@ -13083,25 +13091,23 @@ add_point(POINT2D *points, uint32_t *npoints, double x, double y)
 }
 
 /**
- * @brief Add the geometrically relevant points of an edge
- * @details For a line, only the two endpoints are needed. For an arc, the two
- * endpoints and every cardinal point of the supporting circle lying on the arc
- * are added. The latter are essential: an arc may attain its X/Y extrema in
- * its interior.
+ * @brief Add the two end points of an edge
+ * @details The end points that repeat are removed by #convex_hull_points
  */
 static void
 add_edge_points(const Edge *e, POINT2D *points, uint32_t *npoints)
 {
   assert(e); assert(points); assert(npoints);
   add_point(points, npoints, e->x1, e->y1);
-  if (fabs(e->x2 - e->x1) > MEOS_GEOM_TOLERANCE || fabs(e->y2 - e->y1) > MEOS_GEOM_TOLERANCE)
-    add_point(points, npoints, e->x2, e->y2);
+  add_point(points, npoints, e->x2, e->y2);
 }
 
 /**
  * @brief Compute the convex hull of a set of 2D points
- * @details The returned hull is not closed.
- * The implementation uses Andrew's monotone-chain algorithm.
+ * @details The returned hull is not closed, counterclockwise, and has no three
+ * vertices on one line. The implementation uses Andrew's monotone-chain
+ * algorithm, each turn read as the exact sign of a cross product
+ * (#cross_product_sign).
  */
 static uint32_t
 convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
@@ -13114,7 +13120,7 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   /* Sort a copy of the points */
   POINT2D *sorted = palloc(sizeof(POINT2D) * npoints);
   memcpy(sorted, points, sizeof(POINT2D) * npoints);
-  qsort(sorted, npoints, sizeof(POINT2D), point2d_cmp);
+  point2d_sort(sorted, npoints);
 
   /* Remove duplicate points */
   uint32_t n = 0;
@@ -13142,7 +13148,9 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   for (uint32_t i = 0; i < n; i++)
   {
     while (nhull >= 2 &&
-      cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+      cross_product_sign(h[nhull - 2].x, h[nhull - 2].y, h[nhull - 1].x,
+        h[nhull - 1].y, h[nhull - 2].x, h[nhull - 2].y, sorted[i].x,
+        sorted[i].y) <= 0)
     {
       nhull--;
     }
@@ -13154,7 +13162,9 @@ convex_hull_points(const POINT2D *points, uint32_t npoints, POINT2D **hull)
   for (int i = (int) n - 2; i >= 0; i--)
   {
     while (nhull > lower &&
-        cross_product(&h[nhull - 2], &h[nhull - 1], &sorted[i]) <= 0.0)
+        cross_product_sign(h[nhull - 2].x, h[nhull - 2].y, h[nhull - 1].x,
+        h[nhull - 1].y, h[nhull - 2].x, h[nhull - 2].y, sorted[i].x,
+        sorted[i].y) <= 0)
       nhull--;
     h[nhull++] = sorted[i];
   }
