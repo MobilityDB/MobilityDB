@@ -13157,7 +13157,22 @@ meets_order_tower_pred(TowerCtx *ctx, const void *arg)
   if (! e->centred)
   {
     TowerPoint e0, e1;
-    towerseg_ends(ctx, e, ox, oy, &e0, &e1);
+    const TangentPoint *f = e->from, *t = e->to;
+    /* The ends of a segment along one tangent of two circles of one radius
+     * are its centres moved by one vector, so the segment runs as they do,
+     * which no root holds: the question then stays in the roots of the two
+     * meetings */
+    if (f && t && f->r1 == f->r2 && f->side == t->side &&
+        f->c1x == t->c1x && f->c1y == t->c1y && f->r1 == t->r1 &&
+        f->c2x == t->c2x && f->c2y == t->c2y && f->r2 == t->r2)
+    {
+      tower_point_xy(ctx, f->k ? f->c2x : f->c1x, f->k ? f->c2y : f->c1y,
+        ox, oy, &e0);
+      tower_point_xy(ctx, t->k ? t->c2x : t->c1x, t->k ? t->c2y : t->c1y,
+        ox, oy, &e1);
+    }
+    else
+      towerseg_ends(ctx, e, ox, oy, &e0, &e1);
     int s = tower_dot(ctx, &pa, &pb, &e0, &e1);
     return (s == 2) ? 2 : -s;
   }
