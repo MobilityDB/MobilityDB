@@ -435,6 +435,14 @@ CREATE FUNCTION numPoints(tpcpatch)
   AS 'MODULE_PATHNAME', 'Tpcpatch_npoints'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- Swath: the region of the plane the patches sweep, the union of the convex
+-- hulls of the footprints of consecutive instants not more than maxt apart.
+-- The function is not strict, since maxt is optional
+CREATE FUNCTION swath(tpcpatch, maxt interval DEFAULT NULL)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Tpcpatch_swath'
+  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+
 -- Conversion to tgeometry: each instant's patch becomes the multipoint of the
 -- positions its points occupy, read through the schema its pcid names. The
 -- temporal spatial relationships of the type delegate through this cast.

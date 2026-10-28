@@ -2151,6 +2151,34 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tpcpatch_spatial">
+			<title>Operaciones espaciales</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_swath">
+					<indexterm significance="normal"><primary><varname>swath</varname></primary></indexterm>
+					<para>Devuelve la franja de un parche temporal, la región del plano que barren sus parches</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+swath(tpcpatch,maxt interval=NULL) → geometry
+</programlisting>
+					<para>La huella de un instante es la envolvente convexa de las posiciones de los puntos de su parche, leídas mediante el esquema que nombra su <varname>pcid</varname> y proyectadas sobre el plano. Las huellas de dos instantes consecutivos se unen mediante la envolvente convexa de ambas, y la franja es la unión de estas bandas, junto con la huella de cada instante que no se une a ninguno de sus vecinos. Los instantes consecutivos se unen salvo que estén separados por más de <varname>maxt</varname>, de modo que una pausa en la adquisición divide la franja; cuando no se da <varname>maxt</varname> se une todo intervalo. Un parche es el conjunto de puntos que captura una adquisición, como un ping de una ecosonda multihaz, y la franja es entonces la banda del fondo marino que sondean los pings de una línea de levantamiento. Mientras que el área recorrida de la conversión a <varname>tgeometry</varname> son los propios sondeos, cuya área es nula, la franja cubre el fondo marino entre ellos. La unión se calcula de forma exacta.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)),
+    '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)),
+    '2001-01-02'::timestamptz)])));
+-- POLYGON((0 0,0 1,2 1,2 0,0 0))
+SELECT ST_NumGeometries(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]),
+  interval '1 day'));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcpatch_bbox_ops">
 			<title>Operaciones de caja delimitadora</title>
 			<para>La misma superficie de operadores de caja que en <xref linkend="tpcpoint_bbox_ops" /> se aplica a <varname>tpcpatch</varname>. El predicado se evalúa sobre el <varname>tpcbox</varname> del valor, cuya extensión en X y en Y por instante es el <varname>PCBOUNDS</varname> embebido en el parche y cuya extensión en Z es la que indican los puntos del parche.</para>

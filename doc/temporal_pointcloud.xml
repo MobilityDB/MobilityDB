@@ -2151,6 +2151,34 @@ SELECT splitNSpans(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 			</itemizedlist>
 		</sect2>
 
+		<sect2 xml:id="tpcpatch_spatial">
+			<title>Spatial Operations</title>
+			<itemizedlist>
+				<listitem xml:id="tpcpatch_swath">
+					<indexterm significance="normal"><primary><varname>swath</varname></primary></indexterm>
+					<para>Return the swath of a temporal patch, the region of the plane its patches sweep</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+swath(tpcpatch,maxt interval=NULL) → geometry
+</programlisting>
+					<para>The footprint of an instant is the convex hull of the positions of the points of its patch, read through the schema its <varname>pcid</varname> names and projected on the plane. The footprints of two consecutive instants are joined by the convex hull of both, and the swath is the union of these strips, together with the footprint of every instant joined to neither of its neighbours. Consecutive instants are joined unless they are more than <varname>maxt</varname> apart, so that a pause in the acquisition splits the swath; every gap is joined when <varname>maxt</varname> is not given. A patch is the set of points one acquisition captures, such as a ping of a multibeam echosounder, and the swath is then the strip of the seabed the pings of a survey line sound. Whereas the traversed area of the conversion to <varname>tgeometry</varname> is the soundings themselves, whose area is zero, the swath covers the seabed between them. The union is computed exactly.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)),
+    '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)),
+    '2001-01-02'::timestamptz)])));
+-- POLYGON((0 0,0 1,2 1,2 0,0 0))
+SELECT ST_NumGeometries(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]),
+  interval '1 day'));
+-- 2
+</programlisting>
+				</listitem>
+			</itemizedlist>
+		</sect2>
+
 		<sect2 xml:id="tpcpatch_bbox_ops">
 			<title>Bounding Box Operations</title>
 			<para>The same bbox operator surface as <xref linkend="tpcpoint_bbox_ops" /> applies to <varname>tpcpatch</varname>. The predicate evaluates against the value's <varname>tpcbox</varname>, whose X and Y extent per instant is the patch's embedded <varname>PCBOUNDS</varname> and whose Z extent is the one the points of the patch state.</para>
