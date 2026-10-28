@@ -9525,6 +9525,50 @@ buffer_rings_serialize(MeosArray **rings, uint32_t nrings, int32_t *owner,
  *****************************************************************************/
 
 /**
+ * @brief Add to an edge array the offset curve of a closed walk with round
+ * joins, every piece of it exact, as #buffer_round_ring_offsets offsets a
+ * ring
+ * @param[in] v,m Points of the walk, closed from the last to the first, no
+ * point repeating the one before it
+ * @param[in] radius Distance, positive
+ * @param[in,out] tps The tangent points, two per edge appended at @p ntp
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ */
+static void
+buffer_round_walk_offsets(const POINT2D *v, uint32_t m, double radius,
+  TangentPoint *tps, uint32_t *ntp, MeosArray *edges)
+{
+  /* The points where the offset of each edge touches the circles about its
+   * start and its end */
+  TangentPoint *ts = &tps[*ntp], *te = &tps[*ntp + m];
+  for (uint32_t k = 0; k < m; k++)
+  {
+    const POINT2D *a = &v[k], *b = &v[(k + 1) % m];
+    ts[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 0};
+    te[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 1};
+  }
+  *ntp += 2 * m;
+  for (uint32_t k = 0; k < m; k++)
+  {
+    edges_add_tangent_segment(edges, &ts[k], &te[k]);
+    uint32_t l = (k + 1) % m;
+    const POINT2D *a = &v[k], *b = &v[l], *c = &v[(l + 1) % m];
+    int turn = cross_product_sign(a->x, a->y, b->x, b->y, b->x, b->y, c->x,
+      c->y);
+    /* Two edges along one line run on, or turn back, as the signs of the
+     * coordinates of their directions tell */
+    if (turn == 0 && (b->x > a->x) == (c->x > b->x) &&
+        (b->x < a->x) == (c->x < b->x) && (b->y > a->y) == (c->y > b->y) &&
+        (b->y < a->y) == (c->y < b->y))
+      continue;
+    edges_add_tangent_arc(edges, b->x, b->y, radius, turn >= 0, &te[k],
+      &ts[l]);
+  }
+  return;
+}
+
+/**
  * @brief Add to an edge array the offset curve of a ring with round joins,
  * every piece of it exact
  * @details The ring is read turning in the sense asked (#ring_area_sign,
@@ -9563,34 +9607,55 @@ buffer_round_ring_offsets(const POINTARRAY *pa, bool ccw, double radius,
   }
   while (m > 1 && v[m - 1].x == v[0].x && v[m - 1].y == v[0].y)
     m--;
-  /* The points where the offset of each edge touches the circles about its
-   * start and its end */
-  TangentPoint *ts = &tps[*ntp], *te = &tps[*ntp + m];
-  for (uint32_t k = 0; k < m; k++)
-  {
-    const POINT2D *a = &v[k], *b = &v[(k + 1) % m];
-    ts[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 0};
-    te[k] = (TangentPoint) {a->x, a->y, radius, b->x, b->y, radius, -1, 1};
-  }
-  *ntp += 2 * m;
-  for (uint32_t k = 0; k < m; k++)
-  {
-    edges_add_tangent_segment(edges, &ts[k], &te[k]);
-    uint32_t l = (k + 1) % m;
-    const POINT2D *a = &v[k], *b = &v[l], *c = &v[(l + 1) % m];
-    int turn = cross_product_sign(a->x, a->y, b->x, b->y, b->x, b->y, c->x,
-      c->y);
-    /* Two edges along one line run on, or turn back, as the signs of the
-     * coordinates of their directions tell */
-    if (turn == 0 && (b->x > a->x) == (c->x > b->x) &&
-        (b->x < a->x) == (c->x < b->x) && (b->y > a->y) == (c->y > b->y) &&
-        (b->y < a->y) == (c->y < b->y))
-      continue;
-    edges_add_tangent_arc(edges, b->x, b->y, radius, turn >= 0, &te[k],
-      &ts[l]);
-  }
+  buffer_round_walk_offsets(v, m, radius, tps, ntp, edges);
   pfree(v);
   return;
+}
+
+/**
+ * @brief Add to an edge array the offset curve of a line with round joins
+ * and round caps, every piece of it exact, as #buffer_round_ring_offsets
+ * offsets a ring
+ * @details The line is walked out to its end and back to its start, a point
+ * repeating the one before it dropped: a closed walk turning back about each
+ * end, offset by the distance to its right (#buffer_round_walk_offsets). Its
+ * offsets run along both sides of the line, and its half turn about each end
+ * is the round cap. The curve winds around a point once for every stretch of
+ * the line within the distance of it, so the points it winds around at least
+ * once are the buffer, however the line crosses itself
+ * @param[in] pa Points of the line
+ * @param[in] radius Distance, positive
+ * @param[in,out] tps The tangent points, two per edge of the walk appended
+ * at @p ntp
+ * @param[in,out] ntp Number of tangent points
+ * @param[in,out] edges Edges, appended to
+ * @return False where the line has fewer than two distinct points, nothing
+ * then appended
+ */
+static bool
+buffer_round_line_offsets(const POINTARRAY *pa, double radius,
+  TangentPoint *tps, uint32_t *ntp, MeosArray *edges)
+{
+  uint32_t n = pa->npoints;
+  POINT2D *v = palloc(sizeof(POINT2D) * Max(2 * n, 1u));
+  uint32_t m = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i);
+    if (m == 0 || p->x != v[m - 1].x || p->y != v[m - 1].y)
+      v[m++] = *p;
+  }
+  if (m < 2)
+  {
+    pfree(v);
+    return false;
+  }
+  /* The way back, from the point before the end to the one after the start */
+  for (uint32_t k = 1; k + 1 < m; k++)
+    v[2 * m - 2 - k] = v[k];
+  buffer_round_walk_offsets(v, 2 * m - 2, radius, tps, ntp, edges);
+  pfree(v);
+  return true;
 }
 
 /**
@@ -9682,6 +9747,103 @@ buffer_round_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
   {
     found = *nrings > 0;
     if (! found)
+    {
+      arrange_rings_free(*rings, *nrings);
+      if (*owner)
+        pfree(*owner);
+    }
+  }
+  meos_array_destroy(edges);
+  pfree(tps);
+  return found;
+}
+
+/**
+ * @brief Return whether the written ends of every offset segment lie strictly
+ * on the side of the edge they offset that their tangent points take, which
+ * #cross_product_sign decides exactly on the doubles, as
+ * #buffer_piece_writes_arc reads the written points of a piece
+ * @details An end is the tangent point rounded to doubles. Where the distance
+ * falls below the rounding of the coordinates of an edge, its end rounds onto
+ * the edge or across it, and no ring written in doubles holds the edge
+ * strictly inside
+ * @param[in] edges Edges of the offset curves
+ */
+static bool
+buffer_offsets_keep_their_side(const MeosArray *edges)
+{
+  const Edge *e = (const Edge *) edges->elems;
+  for (uint32_t k = 0; k < edges->count; k++)
+  {
+    if (e[k].etype != EDGE_POLYSEG || ! e[k].from)
+      continue;
+    const TangentPoint *t = e[k].from;
+    if (cross_product_sign(t->c1x, t->c1y, t->c2x, t->c2y, t->c1x, t->c1y,
+          e[k].x1, e[k].y1) != t->side ||
+        cross_product_sign(t->c1x, t->c1y, t->c2x, t->c2y, t->c1x, t->c1y,
+          e[k].x2, e[k].y2) != t->side)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the rings bounding the buffer of a line or a multiline with
+ * round joins and round caps, the region the exact offset curves of its
+ * lines wind around, as #buffer_round_rings answers a polygon
+ * @details Every line is offset out and back (#buffer_round_line_offsets),
+ * and the buffers of the lines of a multiline are united in one arrangement
+ * (#arrange_wound_tangent_surfaces). Where an offset segment is written on
+ * or across the edge it offsets (#buffer_offsets_keep_their_side) the region
+ * is left unanswered
+ * @param[in] geom Line or multiline
+ * @param[in] radius Distance, positive
+ * @param[out] rings,nrings,owner The rings bounding the buffer and the shell
+ * owning each, as #arrange_wound_tangent_surfaces answers them
+ * @param[out] answered Whether the arrangement answers the region
+ * @return False for another type or a line of fewer than two distinct
+ * points, which the caller answers otherwise; true with @p answered false
+ * where the arrangement leaves the region unanswered
+ */
+static bool
+buffer_round_line_rings(const LWGEOM *geom, double radius, MeosArray ***rings,
+  uint32_t *nrings, int32_t **owner, bool *answered)
+{
+  assert(geom); assert(radius > 0.0); assert(answered);
+  *answered = false;
+  if (lwgeom_is_empty(geom) ||
+      (geom->type != LINETYPE && geom->type != MULTILINETYPE))
+    return false;
+  const LWGEOM *const *parts = &geom;
+  uint32_t nparts = 1;
+  if (geom->type == MULTILINETYPE)
+  {
+    parts = (const LWGEOM *const *) ((const LWCOLLECTION *) geom)->geoms;
+    nparts = ((const LWCOLLECTION *) geom)->ngeoms;
+  }
+  uint32_t total = 0;
+  for (uint32_t i = 0; i < nparts; i++)
+  {
+    if (parts[i]->type != LINETYPE || lwgeom_is_empty(parts[i]))
+      return false;
+    total += ((const LWLINE *) parts[i])->points->npoints;
+  }
+  /* Two tangent points for every edge of the walk out and back */
+  TangentPoint *tps = palloc(sizeof(TangentPoint) * 4 * Max(total, 1u));
+  /* An offset segment and at most one arc for every edge of the walk */
+  MeosArray *edges = meos_array_create(sizeof(Edge));
+  edge_array_reserve(edges, 4 * (size_t) total);
+  uint32_t ntp = 0;
+  bool found = true;
+  for (uint32_t i = 0; i < nparts && found; i++)
+    found = buffer_round_line_offsets(((const LWLINE *) parts[i])->points,
+      radius, tps, &ntp, edges);
+  if (found && buffer_offsets_keep_their_side(edges) &&
+      arrange_wound_tangent_surfaces(edges, rings, nrings,
+        owner) == ARR_ANSWERED)
+  {
+    *answered = *nrings > 0;
+    if (! *answered)
     {
       arrange_rings_free(*rings, *nrings);
       if (*owner)
@@ -10447,6 +10609,37 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
       }
       arrange_rings_free(rings, nrings);
       pfree(owner);
+    }
+  }
+  /* Round joins and round caps about the vertices of lines: the region their
+   * exact offset curves wind around (#buffer_round_line_rings). Where the
+   * arrangement leaves it unanswered no other path answers it exactly, so
+   * the buffer is declined */
+  if (size > 0.0 && join_style == JOIN_ROUND && cap_style == ENDCAP_ROUND &&
+      (lwg->type == LINETYPE || lwg->type == MULTILINETYPE))
+  {
+    MeosArray **rings;
+    uint32_t nrings;
+    int32_t *owner;
+    bool answered;
+    if (buffer_round_line_rings(lwg, size, &rings, &nrings, &owner,
+        &answered))
+    {
+      GSERIALIZED *result = answered ? buffer_rings_serialize(rings, nrings,
+        owner, lwgeom_get_srid(lwg)) : NULL;
+      if (! result)
+      {
+        if (answered)
+        {
+          arrange_rings_free(rings, nrings);
+          pfree(owner);
+        }
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+          "The buffer of the geometry is not supported: %s",
+          geo_out(gs, &size_out));
+      }
+      lwgeom_free(lwg);
+      return result;
     }
   }
   LWGEOM *res = meos_buffer(lwg, size, join_style, cap_style, mitre_limit);
