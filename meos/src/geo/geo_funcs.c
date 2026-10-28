@@ -9228,6 +9228,111 @@ arcseg_root_sign(int su, int sw, int sq)
 }
 
 /*
+ * The discriminant of the quadratic where the line through A and B meets the
+ * circle of an arc, in one arithmetic. The vectors are taken from a point of
+ * the arc's own, its start S or the centre of a whole circle, so the
+ * coefficients are of the size of the arc and of its distance to the line
+ * however far the line lies, which a filter then tells. About that origin
+ * the circle is D |X|^2 - X.K - L = 0: through S, M and E with m = M - S and
+ * n = E - S, D = m x n and K = (|m|^2 n_y - |n|^2 m_y, |n|^2 m_x - |m|^2 n_x),
+ * L = 0; on the diameter from S to E, D = 1, K = n, L = 0; a whole circle of
+ * radius r, D = 1, K = 0, L = r^2. On X = P + t (B - A), P = A less the
+ * origin, it is a t^2 + b t + c = 0 with a = D |B - A|^2,
+ * b = 2 D P.(B - A) - K.(B - A), c = D |P|^2 - P.K - L
+ */
+#define ARCSEG_LINE_DISC(T, DIFF, ADD, SUB, MUL, SCALE, ONE)                 \
+{                                                                            \
+  double ox = arc->centred ? arc->cx : arc->sx;                              \
+  double oy = arc->centred ? arc->cy : arc->sy;                              \
+  T ex = DIFF(bx, ax), ey = DIFF(by, ay);                                    \
+  T px = DIFF(ax, ox), py = DIFF(ay, oy);                                    \
+  T d = ONE, kx = ONE, ky = ONE, l = ONE;                                    \
+  bool round = false;                                                        \
+  if (arc->centred)                                                          \
+  {                                                                          \
+    T r = DIFF(arc->radius, 0.0);                                            \
+    l = MUL(r, r);                                                           \
+    round = true;                                                            \
+  }                                                                          \
+  else if (arc->diameter)                                                    \
+  {                                                                          \
+    kx = DIFF(arc->ex, ox);                                                  \
+    ky = DIFF(arc->ey, oy);                                                  \
+  }                                                                          \
+  else                                                                       \
+  {                                                                          \
+    T mx = DIFF(arc->mx, ox), my = DIFF(arc->my, oy);                        \
+    T nx = DIFF(arc->ex, ox), ny = DIFF(arc->ey, oy);                        \
+    T mm = ADD(MUL(mx, mx), MUL(my, my));                                    \
+    T nn = ADD(MUL(nx, nx), MUL(ny, ny));                                    \
+    d = SUB(MUL(mx, ny), MUL(my, nx));                                       \
+    kx = SUB(MUL(mm, ny), MUL(nn, my));                                      \
+    ky = SUB(MUL(nn, mx), MUL(mm, nx));                                      \
+  }                                                                          \
+  T ee = ADD(MUL(ex, ex), MUL(ey, ey));                                      \
+  T pe = ADD(MUL(px, ex), MUL(py, ey));                                      \
+  T pp = ADD(MUL(px, px), MUL(py, py));                                      \
+  T qa = round ? ee : MUL(d, ee);                                            \
+  T qb = round ? SCALE(pe, 2.0) : SUB(SCALE(MUL(d, pe), 2.0),                \
+    ADD(MUL(kx, ex), MUL(ky, ey)));                                          \
+  T qc = round ? SUB(pp, l) : SUB(MUL(d, pp), ADD(MUL(px, kx),               \
+    MUL(py, ky)));                                                           \
+  disc = SUB(MUL(qb, qb), SCALE(MUL(qa, qc), 4.0));                          \
+}
+
+/**
+ * @brief Return the sign of the discriminant of the quadratic where the line
+ * through A and B meets the circle of an arc, decided exactly: negative where
+ * the line misses the circle, zero where it touches it, positive where it
+ * crosses it
+ * @details The discriminant (#ARCSEG_LINE_DISC) is read in doubles with a
+ * bound on its error and formed again as expansions where the bound cannot
+ * tell, as #arcseg_signs_exact forms its own
+ */
+static int
+arcseg_line_disc_sign(double ax, double ay, double bx, double by,
+  const Edge *arc)
+{
+  const ArcsegFilter one = {1.0, 0.0};
+  int result;
+  {
+    ArcsegFilter disc;
+    ARCSEG_LINE_DISC(ArcsegFilter, arcseg_f_diff, arcseg_f_add, arcseg_f_sub,
+      arcseg_f_mul, arcseg_f_scale, one)
+    result = arcseg_f_sign(disc);
+  }
+  if (result != 2)
+    return result;
+  ArcsegArena arena_, *arena = &arena_;
+  arena_.used = arena_.n = arena_.cap = 0;
+  arena_.unsafe = false;
+  arena_.blocks = NULL;
+  ArcsegExact xdisc, xone;
+  xone.e = arcseg_arena_alloc(arena, 1);
+  xone.e[0] = 1.0;
+  xone.n = 1;
+  xone.err = 0.0;
+#define XDIFF(a, b) arcseg_x_diff(arena, a, b)
+#define XADD(a, b) arcseg_x_add(arena, a, b)
+#define XSUB(a, b) arcseg_x_sub(arena, a, b)
+#define XMUL(a, b) arcseg_x_mul(arena, a, b)
+#define XSCALE(a, k) arcseg_x_scale(arena, a, k)
+  {
+    ArcsegExact disc;
+    ARCSEG_LINE_DISC(ArcsegExact, XDIFF, XADD, XSUB, XMUL, XSCALE, xone)
+    xdisc = disc;
+  }
+#undef XDIFF
+#undef XADD
+#undef XSUB
+#undef XMUL
+#undef XSCALE
+  result = arcseg_x_sign(xdisc);
+  arcseg_arena_free(arena);
+  return result;
+}
+
+/*
  * The signs of a meeting where an end of the segment is an end of the arc,
  * read in one arithmetic: the quadratic then has a root at that end exactly,
  * and the other is a quotient of its coefficients. With A shared, g(t) =
@@ -13430,11 +13535,49 @@ hull_directions(const HullFeature *feats, int nfeats, double **result)
 }
 
 /**
+ * @brief Return true when a circle lies inside the hull of a set of points,
+ * clear of its boundary
+ * @details An arc of such a circle supports the hull in no direction. The
+ * hull is counterclockwise with no three vertices collinear
+ * (#convex_hull_points). The circle lies inside where the line of every edge
+ * misses it (#arcseg_line_disc_sign) and a point of it lies strictly left of
+ * that edge (#cross_product_sign): its start, an input point on it, or for a
+ * whole circle its centre. The end of an arc lies on its circle too, so an
+ * end that does not lie strictly left of an edge tells, without the
+ * discriminant, that the line meets the circle, as it does where an edge of
+ * the hull leaves an arc along its tangent. Each sign is decided exactly on
+ * the input points that fix the circle, never on the centre and radius
+ * constructed from them
+ * @param[in] hull,nhull Vertices of the hull
+ * @param[in] arc Arc edge
+ */
+static bool
+hull_circle_inside(const POINT2D *hull, uint32_t nhull, const Edge *arc)
+{
+  if (nhull < 3)
+    return false;
+  double qx = arc->centred ? arc->cx : arc->sx;
+  double qy = arc->centred ? arc->cy : arc->sy;
+  for (uint32_t i = 0; i < nhull; i++)
+  {
+    const POINT2D *a = &hull[i], *b = &hull[(i + 1) % nhull];
+    if (cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, qx, qy) <= 0 ||
+        (! arc->centred && cross_product_sign(a->x, a->y, b->x, b->y, a->x,
+          a->y, arc->ex, arc->ey) <= 0) ||
+        arcseg_line_disc_sign(a->x, a->y, b->x, b->y, arc) >= 0)
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Collect the features supporting the convex hull of a geometry
  * @details Every edge contributes its two end points and an arc edge
  * contributes its circle. A point within the hull of the other points never
  * supports the hull, so the points are reduced to their own hull first, which
- * is what keeps the number of features small
+ * is what keeps the number of features small; an arc whose circle lies inside
+ * that hull never supports it either, and is no feature
+ * (#hull_circle_inside)
  */
 static HullFeature *
 hull_features(const MeosArray *edges, int *nfeats)
@@ -13468,6 +13611,8 @@ hull_features(const MeosArray *edges, int *nfeats)
   {
     const Edge *e = (Edge *) meos_array_get_intl(edges, i);
     if (e->etype != EDGE_LINEARC && e->etype != EDGE_POLYARC)
+      continue;
+    if (hull_circle_inside(hull, nhull, e))
       continue;
     result[n].x = e->cx; result[n].y = e->cy; result[n].radius = e->radius;
     result[n].theta0 = e->theta0; result[n].theta1 = e->theta1;
