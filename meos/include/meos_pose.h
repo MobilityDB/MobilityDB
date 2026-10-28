@@ -498,6 +498,12 @@ extern bool posechain_le(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_gt(const PoseChain *pc1, const PoseChain *pc2);
 extern bool posechain_ge(const PoseChain *pc1, const PoseChain *pc2);
 
+/* Distance functions */
+
+extern double distance_posechain_geo(const PoseChain *pc, const GSERIALIZED *gs);
+extern double distance_posechain_posechain(const PoseChain *pc1, const PoseChain *pc2);
+extern double distance_posechain_stbox(const PoseChain *pc, const STBox *box);
+
 /******************************************************************************
  * Functions for pose chain sets
  ******************************************************************************/
@@ -577,6 +583,22 @@ extern Temporal *tposechain_translate(const Temporal *temp, double deltax, doubl
 
 extern Temporal *tposechain_at_value(const Temporal *temp, const PoseChain *pc);
 extern Temporal *tposechain_minus_value(const Temporal *temp, const PoseChain *pc);
+
+/* Distance functions */
+
+extern Temporal *tdistance_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdistance_tposechain_posechain(const Temporal *temp, const PoseChain *pc);
+extern Temporal *tdistance_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern double nad_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern double nad_tposechain_posechain(const Temporal *temp, const PoseChain *pc);
+extern double nad_tposechain_stbox(const Temporal *temp, const STBox *box);
+extern double nad_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern TInstant *nai_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern TInstant *nai_tposechain_posechain(const Temporal *temp, const PoseChain *pc);
+extern TInstant *nai_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
+extern GSERIALIZED *shortestline_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern GSERIALIZED *shortestline_tposechain_posechain(const Temporal *temp, const PoseChain *pc);
+extern GSERIALIZED *shortestline_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2);
 
 /* Ever/always and temporal comparison functions */
 

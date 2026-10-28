@@ -378,7 +378,7 @@ dist_rest_segment(double cx, double cy, double r1, double r2, const Edge *e,
     *argt = grows ? 1.0 : 0.0;
   double r = grows ? r2 : r1;
   const double c[2] = {cx, cy}, a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
-  double clear = point_segment_distance_offset_exact(c, a, b, r);
+  double clear = point_segment_distance_offset_exact(c, a, b, 2, r);
   if (clear > 0.0)
     return clear;
   /* The rounded distance to the nearest point of the edge, less the radius */
@@ -484,7 +484,7 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
   t[1] = 1.0;
   t[2] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, a[0], a[1]) : 0.0;
   t[3] = (l2 > 0.0) ? linesegm_param(cx1, cy1, cx2, cy2, l2, b[0], b[1]) : 0.0;
-  int mask = segment_distance_square(c1, c2, a, b);
+  int mask = segment_distance_square(c1, c2, a, b, 2);
   if (mask > 0)
   {
     /* The earliest of the distances that reach the least, rounded once. The
@@ -504,11 +504,11 @@ dist_moving_segment(double cx1, double cy1, double cx2, double cy2,
     if (argt)
       *argt = t[w];
     return point_segment_distance_offset_exact(pt[w][0], pt[w][1], pt[w][2],
-      0.0);
+      2, 0.0);
   }
   for (int i = 0; i < 4; i++)
     cand[i] = point_segment_distance_offset_exact(pt[i][0], pt[i][1],
-      pt[i][2], 0.0);
+      pt[i][2], 2, 0.0);
   const double *at[4] = {c1, c2, a, b};
   int w = 0;
   for (int i = 1; i < 4; i++)
@@ -551,7 +551,7 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
   {
     const double c1[2] = {cx1, cy1}, c2[2] = {cx2, cy2};
     const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
-    int mask = segment_distance_square(c1, c2, a, b);
+    int mask = segment_distance_square(c1, c2, a, b, 2);
     if (mask > 0)
     {
       const double *pt[4][3] = {{c1, a, b}, {c2, a, b}, {a, c1, c2},
@@ -560,16 +560,16 @@ dist_moving_offset(double cx1, double cy1, double cx2, double cy2,
       while (! (mask & (1 << w)))
         w++;
       double clear = point_segment_distance_offset_exact(pt[w][0], pt[w][1],
-        pt[w][2], r);
+        pt[w][2], 2, r);
       if (clear > 0.0)
         return clear;
       return dist_moving_segment(cx1, cy1, cx2, cy2, e, NULL) - r;
     }
     double clear = fmin(
-      fmin(point_segment_distance_offset_exact(c1, a, b, r),
-        point_segment_distance_offset_exact(c2, a, b, r)),
-      fmin(point_segment_distance_offset_exact(a, c1, c2, r),
-        point_segment_distance_offset_exact(b, c1, c2, r)));
+      fmin(point_segment_distance_offset_exact(c1, a, b, 2, r),
+        point_segment_distance_offset_exact(c2, a, b, 2, r)),
+      fmin(point_segment_distance_offset_exact(a, c1, c2, 2, r),
+        point_segment_distance_offset_exact(b, c1, c2, 2, r)));
     if (clear > 0.0)
       return clear;
   }
@@ -612,8 +612,8 @@ dist_moving_varying(double cx1, double cy1, double cx2, double cy2,
       return 0.0;
   }
   double result = point ? DBL_MAX : fmin(
-    point_segment_distance_offset_exact(c1, a, b, r1),
-    point_segment_distance_offset_exact(c2, a, b, r2));
+    point_segment_distance_offset_exact(c1, a, b, 2, r1),
+    point_segment_distance_offset_exact(c2, a, b, 2, r2));
   const double *ends[2] = {a, b};
   for (int i = 0; i < (point ? 1 : 2); i++)
   {

@@ -769,6 +769,9 @@ aggregate_families:
   - lit: "\n"
   - fns:
     - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text, maxt interval)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false}
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantTransition(tposechain, tposechain,\n    interp text, maxdist float,\n    maxt interval)", ret: "tposechain", sym: "Temporal_app_tinst_transfn", strict: false}
   - lit: "\n\n"
   - fns:
     - {sig: "appendInstantFinal(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
@@ -781,6 +784,10 @@ aggregate_families:
   - fns:
     - {sig: "appendInstantFinal(tposechain, tposechain, interp text, maxt interval)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
   - lit: "CREATE AGGREGATE appendInstant(tposechain, interp text, maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
+  - lit: "\n"
+  - fns:
+    - {sig: "appendInstantFinal(tposechain, tposechain, interp text, maxdist float,\n    maxt interval)", ret: "tposechain", sym: "Temporal_append_finalfn", strict: false}
+  - lit: "CREATE AGGREGATE appendInstant(tposechain, interp text, maxdist float,\n    maxt interval) (\n  SFUNC = appendInstantTransition,\n  STYPE = tposechain,\n  FINALFUNC = appendInstantFinal,\n  FINALFUNC_EXTRA,\n  PARALLEL = safe\n);"
   - lit: "\n\n/*****************************************************************************/\n\n"
   - fns:
     - {sig: "appendSequenceTransition(tposechain, tposechain)", ret: "tposechain", sym: "Temporal_app_tseq_transfn", strict: false, pre: "-- The function is not STRICT\n"}

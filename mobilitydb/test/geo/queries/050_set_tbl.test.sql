@@ -128,6 +128,11 @@ SELECT MIN(array_length(getValues(g), 1)) FROM tbl_geogset;
 
 SELECT MIN(ST_X(startValue(round(g, 6)))) FROM tbl_geomset;
 SELECT MIN(ST_X(startValue(round(g, 6))::geometry)) FROM tbl_geogset;
+-- Rounding a set leaves the set it reads unchanged
+SELECT asText(g), asText(round(g, 2)), asText(g)
+FROM (VALUES (geomset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.444444444)"}')) t(g);
+SELECT asText(g), asText(round(g, 2)), asText(g)
+FROM (VALUES (geogset '{"Point(1.123456789 2.987654321)", "Point(3.333333333 4.444444444)"}')) t(g);
 
 -------------------------------------------------------------------------------
 -- Set_union and unnest functions

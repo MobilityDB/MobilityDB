@@ -475,9 +475,11 @@ tinterrel_tcbufferseq_linear_geom(const TSequence *seq, const GSERIALIZED *gs,
     for (int j = 0; j < npoints; j++)
     {
       Cbuffer *cb = cbuffer_make(points[j], 0.0);
-      /* Check whether the segment endpoints already satisfy the condition */
-      bool start_in = (cbuffer_distance(cb1_start, cb) <= 0.0);
-      bool end_in   = (cbuffer_distance(cb1_end,   cb) <= 0.0);
+      /* Check whether the segment endpoints already satisfy the condition,
+       * on the exact sign #cbuffer_intersects reads, since a distance that
+       * rounds to 0 does not say the discs meet */
+      bool start_in = (cbuffer_intersects(cb1_start, cb) != 0);
+      bool end_in   = (cbuffer_intersects(cb1_end,   cb) != 0);
       TimestampTz t1, t2;
       int found = tcbuffersegm_intersection_value(tinstant_value_p(inst1),
         tinstant_value_p(inst2), PointerGetDatum(cb), inst1->t, inst2->t,

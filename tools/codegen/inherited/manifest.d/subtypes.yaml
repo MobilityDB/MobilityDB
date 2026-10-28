@@ -193,7 +193,7 @@ subtypes:
     # ever/always spatial relationships are a hybrid (the
     # ever intersects/dwithin are native C with index support), so
     # 112_tpose_spatialrels stays hand-written.
-    files: [compops, topops, posops, indexes]
+    files: [compops, topops, posops, distance, indexes]
 
   - temp:  tposechain
     base:  posechain
@@ -203,11 +203,9 @@ subtypes:
     # A pose chain is 3-D-capable exactly as a pose is, so its position
     # operators carry the front/back (Z) direction as well.
     front_back: true
-    # A pose chain has no distance function, so the family deploys neither the
-    # ever/always nor the temporal spatial relationships, which every one of
-    # them needs. The index opclasses wait on the same answer: the ordering
-    # operator of a spatial opclass is the nearest approach distance.
-    files: [compops, topops, posops]
+    # A pose chain reads as the pose its composition gives, so its distance is
+    # the one of the composed temporal pose (tposechain_to_tpose).
+    files: [compops, topops, posops, distance]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an

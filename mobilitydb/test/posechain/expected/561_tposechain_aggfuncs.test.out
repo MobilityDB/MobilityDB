@@ -89,10 +89,11 @@ SELECT asText(appendInstant(inst, 'linear', interval '1 day')) FROM (VALUES
 
 SELECT asText(appendInstant(inst, 'linear', 10.0, interval '1 day')) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01')) t(inst);
-ERROR:  function appendinstant(tposechain, unknown, numeric, interval) does not exist
-LINE 1: SELECT asText(appendInstant(inst, 'linear', 10.0, interval '...
-                      ^
-HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+                             astext                             
+----------------------------------------------------------------
+ [PoseChain(Pose(POINT(1 1),0.1))@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
 SELECT asText(appendSequence(seq)) FROM (VALUES
   (tposechain '[PoseChain(Pose(Point(1 1), 0.1))@2001-01-01]'),
   (tposechain '[PoseChain(Pose(Point(2 2), 0.2))@2001-01-02]')) t(seq);

@@ -57,6 +57,7 @@
 #endif
 #if POSE
   #include "pose/pose.h"
+  #include "pose/posechain.h"
 #endif
 #if NPOINT
   #include "npoint/tnpoint_spatialfuncs.h"
@@ -207,6 +208,15 @@ datum_distance(Datum value1, Datum value2, MeosType type, int16 flags,
 #if POSE
   if (type == T_POSE)
     return DatumGetFloat8(pose_distance(value1, value2));
+  if (type == T_POSECHAIN)
+  {
+    /* The composed poses, measured as the pose arm measures two poses */
+    Datum pose1 = datum_posechain_pose(value1);
+    Datum pose2 = datum_posechain_pose(value2);
+    double result = DatumGetFloat8(pose_distance(pose1, pose2));
+    pfree(DatumGetPointer(pose1)); pfree(DatumGetPointer(pose2));
+    return result;
+  }
 #endif
   meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
     "Unknown types for distance between values: %s", meostype_name(type));

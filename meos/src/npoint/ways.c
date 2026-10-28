@@ -66,7 +66,7 @@ static int32_t SRID_WAYS = SRID_INVALID;
  * @errval SRID_INVALID
  */
 int32_t
-get_srid_ways()
+get_srid_ways(void)
 {
   /* Get the value from the global variable if it has been already set */
   if (SRID_WAYS != SRID_INVALID)

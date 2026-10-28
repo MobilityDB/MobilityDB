@@ -1143,6 +1143,74 @@ posechain_transform_pipeline(const PoseChain *pc, const char *pipelinestr,
 }
 
 /*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between a pose chain and a geometry
+ * @details A pose chain answers the distance of the pose its composition
+ * gives, as #distance_pose_geo answers it for that pose
+ * @param[in] pc Pose chain
+ * @param[in] gs Geometry
+ * @errval DBL_MAX
+ * @csqlfn #Distance_posechain_geo() #Distance_geo_posechain()
+ */
+double
+distance_posechain_geo(const PoseChain *pc, const GSERIALIZED *gs)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  Pose *pose = posechain_to_pose(pc);
+  double result = distance_pose_geo(pose, gs);
+  pfree(pose);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between two pose chains
+ * @details Each pose chain answers for the pose its composition gives, as
+ * #distance_pose_pose answers for two poses
+ * @param[in] pc1,pc2 Pose chains
+ * @errval DBL_MAX
+ * @csqlfn #Distance_posechain_posechain()
+ */
+double
+distance_posechain_posechain(const PoseChain *pc1, const PoseChain *pc2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_posechain_posechain(pc1, pc2))
+    return DBL_MAX;
+  Pose *pose1 = posechain_to_pose(pc1);
+  Pose *pose2 = posechain_to_pose(pc2);
+  double result = distance_pose_pose(pose1, pose2);
+  pfree(pose1); pfree(pose2);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_base_dist
+ * @brief Return the distance between a pose chain and a spatiotemporal box
+ * @details A pose chain answers for the pose its composition gives, as
+ * #distance_pose_stbox answers for that pose
+ * @param[in] pc Pose chain
+ * @param[in] box Spatiotemporal box
+ * @errval DBL_MAX
+ * @csqlfn #NAD_posechain_stbox() #NAD_stbox_posechain()
+ */
+double
+distance_posechain_stbox(const PoseChain *pc, const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, DBL_MAX); VALIDATE_NOT_NULL(box, DBL_MAX);
+  Pose *pose = posechain_to_pose(pc);
+  double result = distance_pose_stbox(pose, box);
+  pfree(pose);
+  return result;
+}
+
+/*****************************************************************************
  * Comparison functions
  *****************************************************************************/
 

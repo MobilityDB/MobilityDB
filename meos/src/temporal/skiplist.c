@@ -59,7 +59,7 @@
 #include "temporal/type_util.h"
 
 #if ! MEOS
-  extern FunctionCallInfo fetch_fcinfo();
+  extern FunctionCallInfo fetch_fcinfo(void);
   extern void store_fcinfo(FunctionCallInfo fcinfo);
   extern MemoryContext set_aggregation_context(FunctionCallInfo fcinfo);
   extern void unset_aggregation_context(MemoryContext ctx);
@@ -107,7 +107,7 @@ prng_random64(void)
  * result so that this draw yields the maximum height instead.
  */
 static int
-random_level()
+random_level(void)
 {
   return Min(ffsl(~(prng_random64() &
     ((UINT64CONST(1) << SKIPLIST_MAXLEVEL) - 1))), SKIPLIST_MAXLEVEL);
@@ -150,7 +150,7 @@ skiplist_make(size_t key_size, size_t value_size,
  * @brief Constructs an empty skiplist
  */
 SkipList *
-temporal_skiplist_make()
+temporal_skiplist_make(void)
 {
   return skiplist_make(0, 0, NULL, NULL);
 }

@@ -165,7 +165,7 @@ PROJSRSDestroyPJ(void *projection)
  * @details If it doesn't exist, make a new blank one and return it.
  */
 MEOSPROJSRSCache *
-GetMEOSPROJSRSCache()
+GetMEOSPROJSRSCache(void)
 {
   MEOSPROJSRSCache* cache = MEOS_PROJ_CACHE;
   if (! cache)

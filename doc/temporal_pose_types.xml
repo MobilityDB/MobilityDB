@@ -426,9 +426,12 @@ SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 32631), pipeli
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 distance({geo,pose},pose) → float
 distance(pose,{geo,pose}) → float
+distance({geo,posechain},posechain) → float
+distance(posechain,{geo,posechain}) → float
 {geo,pose} &lt;-&gt; pose → float
+{geo,posechain} &lt;-&gt; posechain → float
 </programlisting>
-					<para>Only the point component of the pose is taken into account, the orientation is ignored. The distance is computed in two dimensions, even when the arguments are three-dimensional. The result is <varname>NULL</varname> when the geometry is empty.</para>
+					<para>A pose chain is measured by the pose its composition gives. Only the point component of the pose is taken into account, the orientation is ignored. The distance is computed in two dimensions, even when the arguments are three-dimensional. The result is <varname>NULL</varname> when the geometry is empty.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
 -- 3
@@ -439,6 +442,9 @@ SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' &lt;-&gt;
 -- 5
 SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
 -- NULL
+SELECT round(distance(posechain 'PoseChain(Pose(Point(1 0),0), Pose(Point(1 0),0))',
+  geometry 'Point(5 0)'), 6);
+-- 3
 </programlisting>
 				</listitem>
 				<listitem xml:id="pose_nearestApproachDistance">
@@ -446,7 +452,9 @@ SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
 					<para>Return the nearest approach distance</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachDistance({stbox,pose},{pose,stbox}) → float
+nearestApproachDistance({stbox,posechain},{posechain,stbox}) → float
 {stbox,pose} |=| {pose,stbox} → float
+{stbox,posechain} |=| {posechain,stbox} → float
 </programlisting>
 					<para>The value is the least distance over the time the two arguments share, and is <varname>NULL</varname> when they share none. A pose carries no period, so it is present at every time the box spans. Only the point component of the pose is taken into account, the orientation is ignored.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -625,7 +633,7 @@ SELECT numPoses(tposechain 'PoseChain(Pose(Point(0 0), 0),
 
 		<para>A temporal pose chain interpolates link by link, each link as a pose does, that is, linearly in position and along the shortest arc in rotation. In the example below a two-link arm turns a quarter turn at its shoulder while its elbow stays where it is: halfway through, the shoulder has turned an eighth of a turn and the elbow is unchanged.</para>
 
-		<para>A pose chain has no distance function, since the distance between two articulated configurations is not defined by the standard the type follows. The temporal pose chain type therefore has neither the ever and always nor the spatiotemporal relationships, all of which are defined in terms of a distance.</para>
+		<para>A pose chain is placed where the pose its composition gives is placed, so its distance is the one of that pose, and the distance of a temporal pose chain is the one of the temporal pose its composition gives, <varname>tpose(tposechain)</varname>. That composition multiplies the rotations of the links, so for a chain of more than one link it is a step function, and the distance then holds the value of each instant until the next one.</para>
 		<para>The temporal pose type <varname>tpose</varname> allows to represent the evolution in time of the position of objects and their orientation. As all temporal types, it comes in three subtypes, namely, instant, sequence, and sequence set. Examples of <varname>tpose</varname> values in these subtypes are given next.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose 'Pose(Point(1 1), 0.5)@2001-01-01';
@@ -1529,7 +1537,7 @@ SELECT expandSpace(tposechain
 	<sect1 xml:id="tpose_distance">
 		<title>Distance Operations</title>
 		<para>
-			We present next the functions that compute distance operations for temporal poses. Notice that for these operations only the point component is considered, not the orientation.
+			We present next the functions that compute distance operations for temporal poses and temporal pose chains. Notice that for these operations only the point component is considered, not the orientation. A temporal pose chain is measured by the temporal pose its composition gives, <varname>tpose(tposechain)</varname>, which is a step function for a chain of more than one link.
 		</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_nearestApproachDistance">
@@ -1537,6 +1545,7 @@ SELECT expandSpace(tposechain
 				<para>Return the smallest distance ever</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {geo,pose,tpose,stbox} |=| {geo,pose,tpose,stbox} → float
+{geo,posechain,tposechain,stbox} |=| {geo,posechain,tposechain,stbox} → float
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
@@ -1560,6 +1569,7 @@ SELECT tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
 				<para>Return the instant of the first temporal pose at which the two arguments are at the nearest distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 nearestApproachInstant({geo,pose,tpose},{geo,pose,tpose}) → tpose
+nearestApproachInstant({geo,posechain,tposechain},{geo,posechain,tposechain}) → tposechain
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(nearestApproachInstant(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
@@ -1576,6 +1586,7 @@ SELECT asText(nearestApproachInstant(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 				<para>Return the line connecting the nearest approach point</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 shortestLine({geo,pose,tpose},{geo,pose,tpose}) → geometry
+shortestLine({geo,posechain,tposechain},{geo,posechain,tposechain}) → geometry
 </programlisting>
 				<para>The function will only return the first line that it finds if there are more than one.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -1592,7 +1603,10 @@ SELECT ST_AsText(shortestLine(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Return the temporal distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpose &lt;-&gt; tpose → tfloat
+tDistance({geompoint,pose,tpose},{geompoint,pose,tpose}) → tfloat
+tDistance({geompoint,posechain,tposechain},{geompoint,posechain,tposechain}) → tfloat
+{geompoint,pose,tpose} &lt;-&gt; {geompoint,pose,tpose} → tfloat
+{geompoint,posechain,tposechain} &lt;-&gt; {geompoint,posechain,tposechain} → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
@@ -1605,6 +1619,10 @@ SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
   Pose(Point(2 2), 0.5)@2001-01-03]' &lt;-&gt;
   tpose '[Pose(Point(1 2), 0.3)@2001-01-02, Pose(Point(2 1), 0.5)@2001-01-04]', 6);
 -- [0.707107@2001-01-02, 0.5@2001-01-02 12:00:00, 0.707107@2001-01-03]
+SELECT asText(round(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0))@2001-01-01,
+  PoseChain(Pose(Point(4 0),0), Pose(Point(1 0),0))@2001-01-05]' &lt;-&gt;
+  geometry 'Point(1 0)', 6));
+-- Interp=Step;[0@2001-01-01, 4@2001-01-05]
 </programlisting>
 			</listitem>
 		</itemizedlist>
@@ -1854,10 +1872,10 @@ SELECT extent(temp) FROM (VALUES (NULL::tposechain),
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 appendInstant({tpose,tposechain}) &#8594; {tpose,tposechain}
 appendInstant({tpose,tposechain},interp text) &#8594; {tpose,tposechain}
-appendInstant(tpose,interp text,maxdist float,maxt interval) &#8594; tpose
+appendInstant({tpose,tposechain},interp text,maxdist float,maxt interval) &#8594; {tpose,tposechain}
 appendInstant(tposechain,interp text,maxt interval) &#8594; tposechain
 </programlisting>
-				<para>A pose has a distance, which a maximum distance between consecutive instants reads; a pose chain has none, so its gaps are stated by time alone.</para>
+				<para>The gaps are stated by a maximum distance between consecutive instants, the distance of a pose chain being the one of the pose its composition gives, and by a maximum time.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(appendInstant(inst)) FROM (VALUES
   (tposechain 'PoseChain(Pose(Point(1 1), 0.1))@2001-01-01'),

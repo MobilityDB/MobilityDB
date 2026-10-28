@@ -37,6 +37,7 @@ set(POSE_SOURCES
   tposechain.c
   tposechain_boxops.c
   tposechain_compops.c
+  tposechain_distance.c
 )
 
 if(MEOS)

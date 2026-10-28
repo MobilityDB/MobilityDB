@@ -115,7 +115,7 @@ pg_info(const char *fmt, va_list ap)
  *   pgpointcloud's own @c _PG_init so either copy is safe.
  */
 void
-mobilitydb_init()
+mobilitydb_init(void)
 {
   lwgeom_set_handlers(palloc, repalloc, pfree, pg_error, pg_notice);
 #if POINTCLOUD
