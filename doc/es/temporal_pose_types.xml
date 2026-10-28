@@ -1975,11 +1975,11 @@ SELECT asText(douglasPeuckerSimplify(tpose '[Pose(Point(1 1), 0)@2001-01-01,
 	<sect1 xml:id="tpose_indexing">
 		<title>Indexación</title>
 
-		<para>Se pueden crear índices GiST y SP-GiST para columnas de tablas de poses temporales. Un ejemplo de creación de índice es el siguiente:</para>
+		<para>Se pueden crear índices GiST y SP-GiST para columnas de tablas de poses temporales y de cadenas de poses temporales, y de conjuntos de poses y de cadenas de poses. Un ejemplo de creación de índice es el siguiente:</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 CREATE INDEX Trips_Trip_SPGist_Idx ON Trips USING SPGist(Trip);
 </programlisting>
-		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador para las poses temporales, que es un <varname>stbox</varname>, como todos los tipos espaciotemporales.</para>
+		<para>Los índices GiST y SP-GiST almacenan el cuadro delimitador de los valores, que es un <varname>stbox</varname>, como para todos los tipos espaciotemporales; el cuadro de una cadena de poses cubre la posición compuesta de cada una de sus articulaciones. Un conjunto se indexa por el cuadro que almacena, como se describe en <xref linkend="setspan_indexing"/>.</para>
 
 		<para>Un índice GiST o SP-GiST puede acelerar las consultas que involucran los siguientes operadores:</para>
 		<itemizedlist>

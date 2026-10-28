@@ -28,6 +28,8 @@ subtypes:
     # cell-index layout (th3index 272/273), not the combined cbuffer `indexes` form.
     # tempspatialrels (364) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
     files: [compops, posops, topops, spatialrels, gist, spgist]
     details:
       spatialrels: &cell_spatialrels |-
@@ -53,6 +55,8 @@ subtypes:
     stboxes: false
     # tempspatialrels (264) is generated separately, from the `impl: cast` entry
     # in manifest.d/tempspatialrel_families.yaml.
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
     files: [compops, posops, topops, spatialrels, gist, spgist]
     # An H3 cell is bounded by great-circle arcs, so its exact reading is the
     # temporal geography of its boundary: the relationships take a geography
@@ -89,6 +93,8 @@ subtypes:
     # layout (th3index 272/273), not the combined cbuffer `indexes` form, whose
     # template declares a KNN ordering operator this family has no distance
     # function to back.
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
     files: [compops, posops, topops, spatialrels, gist, spgist]
     geodetic_target: true
     convert: "@extschema@.{BOUNDARY}(@N@)"
@@ -102,6 +108,9 @@ subtypes:
     bin:   200
     category: tspatial
     reference: true
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
+    setmetric: true
     files: [compops, posops, topops, indexes]
 
   # tjsonb's compops surface (base jsonb, eq/ne only, tspatial_supportfn/_sel) is
@@ -176,6 +185,9 @@ subtypes:
         network, cannot be related through network distance; the free-space
         relationship computed here is still well defined and is the
         documented behaviour for that case.
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
+    setmetric: true
     files: [compops, posops, topops, spatialrels, indexes]
 
   - temp:  tpose
@@ -193,6 +205,9 @@ subtypes:
     # ever/always spatial relationships are a hybrid (the
     # ever intersects/dwithin are native C with index support), so
     # 112_tpose_spatialrels stays hand-written.
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
+    setmetric: true
     files: [compops, topops, posops, distance, indexes]
 
   - temp:  tposechain
@@ -205,7 +220,10 @@ subtypes:
     front_back: true
     # A pose chain reads as the pose its composition gives, so its distance is
     # the one of the composed temporal pose (tposechain_to_tpose).
-    files: [compops, topops, posops, distance]
+    # Its set of base values is indexed beside it, by the box the set stores.
+    setindex: true
+    setmetric: true
+    files: [compops, topops, posops, distance, indexes]
 
   - temp:  trgeometry
     # The base-value comparison is against a `geometry` (the resolved geometry at an

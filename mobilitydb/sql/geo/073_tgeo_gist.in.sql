@@ -29,7 +29,8 @@
 
 /**
  * @file
- * @brief R-tree GiST index for temporal geometries/geographies
+ * @brief R-tree GiST index for temporal geometries/geographies and for the
+ * spatial sets
  */
 
 /******************************************************************************/
@@ -225,5 +226,85 @@ CREATE OPERATOR CLASS tgeography_rtree_ops
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
   FUNCTION  8  tgeography_gist_distance(internal, tgeography, smallint, oid, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
+
+/******************************************************************************/
+
+/******************************************************************************
+ * Spatial sets, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE FUNCTION spatialset_gist_compress(internal)
+  RETURNS internal
+  AS 'MODULE_PATHNAME', 'Spatialset_gist_compress'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geomset_gist_consistent(internal, geomset, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset_gist_distance(internal, geomset, smallint, oid, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS geomset_rtree_ops
+  DEFAULT FOR TYPE geomset USING gist AS
+  STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (geomset, geomset),
+  -- same
+  OPERATOR  6    = (geomset, geomset),
+  -- contains
+  OPERATOR  7    @> (geomset, geometry),
+  OPERATOR  7    @> (geomset, geomset),
+  -- contained by
+  OPERATOR  8    <@ (geomset, geomset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geomset, geometry) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geomset, geomset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  geomset_gist_consistent(internal, geomset, smallint, oid, internal),
+  FUNCTION  2  stbox_gist_union(internal, internal),
+  FUNCTION  3  spatialset_gist_compress(internal),
+  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6  stbox_gist_picksplit(internal, internal),
+  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8  geomset_gist_distance(internal, geomset, smallint, oid, internal),
+  FUNCTION 11  stbox_gist_sortsupport(internal);
+
+CREATE FUNCTION geogset_gist_consistent(internal, geogset, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geogset_gist_distance(internal, geogset, smallint, oid, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS geogset_rtree_ops
+  DEFAULT FOR TYPE geogset USING gist AS
+  STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (geogset, geogset),
+  -- same
+  OPERATOR  6    = (geogset, geogset),
+  -- contains
+  OPERATOR  7    @> (geogset, geography),
+  OPERATOR  7    @> (geogset, geogset),
+  -- contained by
+  OPERATOR  8    <@ (geogset, geogset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (geogset, geography) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (geogset, geogset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1  geogset_gist_consistent(internal, geogset, smallint, oid, internal),
+  FUNCTION  2  stbox_gist_union(internal, internal),
+  FUNCTION  3  spatialset_gist_compress(internal),
+  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6  stbox_gist_picksplit(internal, internal),
+  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8  geogset_gist_distance(internal, geogset, smallint, oid, internal),
+  FUNCTION 11  stbox_gist_sortsupport(internal);
 
 /******************************************************************************/
