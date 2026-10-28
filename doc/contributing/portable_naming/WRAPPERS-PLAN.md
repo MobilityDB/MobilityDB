@@ -434,8 +434,8 @@ distance owning its end. By the same definition `tposechain` answers the ever an
 relationships of `tpose`, the 26 signatures of `112_tpose_spatialrels`, at the position of its
 composed pose: the `spatialrels` template writes `562_tposechain_spatialrels` from the
 `tposechain::tpose::tgeompoint` conversion, its ever intersects and dwithin being C wrappers with
-`tspatial_supportfn` so the index of #3230 answers them (branch `pose/tposechain-spatialrels`,
-`c501959dfb` on master `cdfa50524d`; it rewrites `cdfa50524d`: the `files` list of `tposechain` in
+`tspatial_supportfn` so the index of #3230 answers them (branch `pose/tposechain-spatialrels`, which rewrites `cdfa50524d`,
+`c501959dfb` on master `cdfa50524d`: the `files` list of `tposechain` in
 `subtypes.yaml` gains `spatialrels`, and the posechain lines of `INHERITANCE_MAP.md` name the file
 `562` the index PR stated absent). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
