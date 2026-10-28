@@ -3292,13 +3292,18 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
   return;
 }
 
-/** Number of 64-bit limbs of a #WideDyadic. The widest quantities are the
- * terms #polynomial_sign_wide forms for #segment_square_least: a coefficient
- * times six exact sums of two doubles, a sum spanning the bits from the lowest
- * of a double to past the largest and so at most 34 limbs, the coefficient
- * times five of them at most 166, so the sixth product is formed in 200 limbs,
- * which hold the sum of the 54 terms too */
-#define WIDE_DYADIC_LIMBS 200
+/** Number of 64-bit limbs of a #WideDyadic, which holds the widest quantity
+ * of each of its callers. The terms #polynomial_sign_wide forms for
+ * #segment_square_least are a coefficient times six exact sums of two
+ * doubles, a sum spanning at most 34 limbs, so the sixth product is formed in
+ * 200 limbs, which hold the sum of the 54 terms too. The quantities
+ * #point_motion_squares forms are products of up to six differences of
+ * timestamps and four doubles, whose terms the exponents of the doubles spread
+ * over at most about 9100 bits. The signs of a tower of four square roots
+ * (#tower_sign_k), as where two segments between tangent points meet one
+ * circle, square their numbers once a root, to about 15400 bits on the line
+ * buffers of the AIS corpus, the widest of the three */
+#define WIDE_DYADIC_LIMBS 320
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
