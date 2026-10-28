@@ -71,7 +71,7 @@ binds before and after, so that no function leaves unseen.
 | B5 | MobilityDuck | `tools/codegen_duck_udfs.py` loses `TU_C_HEADERS` and `header_symbols` and follows rules 1, 3 and 4 | open |
 | B6 | PyMEOS-CFFI | `builder/build_header.py` loses `get_installed_headers`; the cdef declares every function rule 1 selects | open |
 | B7 | meos-rs | #6 regenerated from the catalog of MobilityDB master, the 1.4 the ecosystem targets | open |
-| B8 | PyMEOS, MEOS.js, MobilityNebula | each read against the rule, a pull request where one departs from it | open |
+| B8 | PyMEOS, MEOS.js, MobilityNebula | each read against the rule, a pull request where one departs from it; the MEOS.js `Dockerfile`, which builds MobilityDB master, builds a GSL stage (`gsl-2.8`) MEOS 1.4 does not call | open |
 | B9 | every binding generator | a CI step that fails on a hand-written header list or a read of a `.h` file in the generator | after B2 to B7 |
 
 ## GEOS and GSL, which MEOS does not call
@@ -88,7 +88,7 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
 | Task | Repository | Change | State |
 |---|---|---|---|
 | B10 | MEOS-API | `provision-meos` and `openapi-validate.yml` install no `libgsl-dev` and no `libgeos-dev` | MERGED as MEOS-API #216 (`18fcdca26`) |
-| B11 | MEOS-API | `provision-meos` builds GDAL 3.12.0 from source with `-DGDAL_USE_GEOS=OFF` and checks that no `libgeos` loads with libmeos | after B10 |
+| B11 | MEOS-API | `provision-meos` builds GDAL 3.12.0 from source with `-DGDAL_USE_GEOS=OFF` (`build-gdal.sh`, the configuration of MEOS.js's GDAL: optional drivers off, internal libraries, PROJ, SQLite and zlib), caches it on the runner image and the script, and checks that no `libgeos` loads with libmeos | branch `ci/provision-gdal-without-geos` on master `18fcdca` |
 | B12 | GoMEOS | the generator names no GEOS type and no `gsl_rng` | MERGED as GoMEOS #32 (`934f40529`) and #33 (`fbf003a77`) |
 | B13 | PyMEOS-CFFI | the workflows of `master`, which builds MobilityDB master, install no `gsl` and no `geos`; `stable-1.3` keeps both | MERGED as PyMEOS-CFFI #39 (`cce25779c`) |
 | B14 | JMEOS | its Dockerfile and README install no `libgsl-dev` and no `libgeos-dev`, and the Spark generator names no GEOS macro | branch `build/no-gsl-geos` (`2c24e96e` on main `0855f282`, which carries JMEOS #199: the Spark gaps ledger lists the sort keys of master) |
