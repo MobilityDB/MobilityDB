@@ -3264,8 +3264,11 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
 /** Number of 64-bit limbs of a #WideDyadic. The quantities
  * #point_motion_squares forms are products of up to six differences of
  * timestamps and four doubles, whose terms the exponents of the doubles spread
- * over at most about 9100 bits */
-#define WIDE_DYADIC_LIMBS 160
+ * over at most about 9100 bits; the signs of a tower of four square roots
+ * (#tower_sign_k), as where two segments between tangent points meet one
+ * circle, square their numbers once a root, to about 15400 bits on the line
+ * buffers of the AIS corpus */
+#define WIDE_DYADIC_LIMBS 320
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
