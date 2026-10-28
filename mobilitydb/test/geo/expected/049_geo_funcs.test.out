@@ -224,9 +224,9 @@ SELECT ST_AsText(round(buffer(geometry 'Point(0 0)', -1), 6));
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
-                                                     st_astext                                                      
---------------------------------------------------------------------------------------------------------------------
- CURVEPOLYGON(COMPOUNDCURVE((0 1,10 1),CIRCULARSTRING(10 1,11 0,10 -1),(10 -1,0 -1),CIRCULARSTRING(0 -1,-1 0,0 1)))
+                                                                                   st_astext                                                                                    
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE((0 -1,10 -1),CIRCULARSTRING(10 -1,11 0,10 1),(10 1,0 1),CIRCULARSTRING(0 1,-0.707107 0.707107,-1 0),CIRCULARSTRING(-1 0,-0.707107 -0.707107,0 -1)))
 (1 row)
 
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
@@ -241,6 +241,18 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square
  CURVEPOLYGON(COMPOUNDCURVE((0 1,0 1)))
 (1 row)
 
+SELECT contains(b, ST_Point(2 ^ 39, 2 ^ 39)) AS near,
+  contains(b, ST_Point(2 ^ 39, 2 ^ 39 + 1024)) AS far
+FROM (SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 40, 2 ^ 40), ST_Point(1, 0),
+  ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5)) AS b) AS t;
+ near | far 
+------+-----
+ t    | f
+(1 row)
+
+SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 60, 2 ^ 60), ST_Point(1, 0),
+  ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5));
+ERROR:  The buffer of the geometry is not supported: 010200000004000000000000000000B043000000000000B043000000000000F03F0000000000000000000000000000F03F000000000000F03F0000000000000000000000000000F03F
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
                                                              st_astext                                                              
 ------------------------------------------------------------------------------------------------------------------------------------
