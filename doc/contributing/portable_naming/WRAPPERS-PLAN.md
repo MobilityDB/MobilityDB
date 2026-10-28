@@ -395,10 +395,10 @@ API: a creator per key type (`intspan`, `bigintspan`, `floatspan`, `datespan`, `
 MEST (`insert_temporal_split`, `search_temporal_dedup`) and a nearest-neighbour cursor. The pass
 aligns what still differs and renames no type (the owner, 2026-10-26: the cursors stay
 `RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)` (branch
-`meos/void-parameter-lists`, MobilityDB #3231, `bd473aec10` on master `a23e01a60b`, rewrites `bb3faeaf2f`: its declaration of `rtree_create_tpcbox()` becomes `rtree_create_tpcbox(void)`), and
+`meos/void-parameter-lists`, merged as MobilityDB #3231, `a2fdfd8bd9`, rewrites `bb3faeaf2f`: its declaration of `rtree_create_tpcbox()` becomes `rtree_create_tpcbox(void)`), and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
-data and checks (branch `meos/sptree-examples`, MobilityDB #3221, `8f9d4fb0c8` on master `a23e01a60b`, the R-tree, the
+data and checks (branch `meos/sptree-examples`, merged as MobilityDB #3221, `e926fd6e68`, the R-tree, the
 quad-tree and the k-d tree finding the same values for each of the 13 searches, every `contains`
 check of `rtree_example.c` querying a stored box, and its `stbox` values taking the corners of the
 text form). `rtree_create_tpcbox`, `sptree_create_tpcbox` and `meos_initialize_pointcloud` are
@@ -419,19 +419,23 @@ index on master `c1d030d810`, `tposechain` and the nine spatial sets (`geomset`,
 the catalog states and which gain a GiST and an SP-GiST class over it, cloned from those of
 `intset` (their `&&`, `@>`, `<@` and `=` answered from the box, rechecked). A pose chain reads as
 the pose its composition gives (`posechain_prefix_pose`), so `tposechain` has every operation
-`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (MobilityDB #3225, `ed5c905f04` on
-master `a23e01a60b`) gives it the distance surface of `tpose`, the MEOS functions composing
+`tpose` has (DECIDED BY THE OWNER 2026-10-27). Branch `pose/tposechain-distance` (merged as MobilityDB #3225,
+`1fa64600db`) gives it the distance surface of `tpose`, the MEOS functions composing
 through `tposechain_to_tpose` and the SQL from a `distance` template of the inherited generator
 that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
 gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
 `Unknown types for distance between values: posechain`), and pose chain sets take `setDistance`.
-`geo_round` rounds a geometry on a copy of it, as `geo_transform` does, since the geometry `lwgeom_from_gserialized` reads shares the coordinates of its serialization: rounding in place rounded the argument too, so `set_round` left a set holding rounded values under the box of the full ones, and the `round(g, 6)` queries of `050_set_tbl` broke the geometry and geography set indexes the later tests read (MobilityDB #3228, branch `fix/geo-round-reads-a-copy`, `7a2a85624f` on master `a23e01a60b`). Branch `index/pg-every-keyed-type` (MobilityDB #3230, `4c5df0848a`, stacked on the round fix and the distance) gives the nine sets and
+`geo_round` rounds a geometry on a copy of it, as `geo_transform` does, since the geometry `lwgeom_from_gserialized` reads shares the coordinates of its serialization: rounding in place rounded the argument too, so `set_round` left a set holding rounded values under the box of the full ones, and the `round(g, 6)` queries of `050_set_tbl` broke the geometry and geography set indexes the later tests read (branch `fix/geo-round-reads-a-copy`, merged as MobilityDB #3228, `aa6168947d`). Branch `index/pg-every-keyed-type` (MobilityDB #3230, `44617b3724` on master `a2fdfd8bd9`) gives the nine sets and
 `tposechain` an R-tree GiST class and quad-tree and k-d tree SP-GiST classes, a set's classes
 written by the template of its temporal type's index file under the generator flags `setindex`
 and `setmetric`, the geo sets' in `073_tgeo_gist` and `074_tgeo_spgist`, `<->` served for the sets
 whose elements have a distance; a set file cannot carry them, its generated set operations and
-distance owning its end. Left by the same definition: the ever and always spatial relationships
-of `tpose` (`eIntersects`, `aIntersects`, `eDwithin`), which `tposechain` lacks. MobilityDuck's
+distance owning its end. By the same definition `tposechain` answers the ever and always spatial
+relationships of `tpose`, the 26 signatures of `112_tpose_spatialrels`, at the position of its
+composed pose: the `spatialrels` template writes `562_tposechain_spatialrels` from the
+`tposechain::tpose::tgeompoint` conversion, its ever intersects and dwithin being C wrappers with
+`tspatial_supportfn` so the index of #3230 answers them (branch `pose/tposechain-spatialrels`,
+stacked on #3230). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
