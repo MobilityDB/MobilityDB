@@ -1412,26 +1412,24 @@ polynomial_sign_stack(const ExactSum *sums, const PolyTerm *terms,
 }
 
 /**
- * @brief Return the sign of a polynomial in exact sums, computed exactly
- * @details The polynomial is first evaluated in doubles together with a bound
- * on the error of every operation, each rounding contributing at most
- * DBL_EPSILON times its result; where the value exceeds the bound its sign is
- * the exact one. Otherwise every term is formed as an expansion, the product
- * of its coefficient and of its exact sums (#expansion_product), the terms are
- * added (#expansion_sum), and the expansions are compressed as they grow; the
- * last component of the total carries the exact sign. Between the two, the
- * evaluation in pairs of doubles of #polynomial_sign_pairs is read against
- * its own bound
+ * @brief Return the sign of a polynomial in exact sums where its filters
+ * carry it, and 0 where they cannot tell
+ * @details The two filters of #polynomial_sign_exact, in doubles and else in
+ * pairs of doubles (#polynomial_sign_pairs). The polynomial is
+ * evaluated in doubles together with a bound on the error of every operation,
+ * each rounding contributing at most DBL_EPSILON times its result; where the
+ * value exceeds the bound its sign is the exact one. Neither filter answers a
+ * value outside the doubles, so a caller holding an exact route of its own
+ * reads it where this answers 0
  * @param[in] sums Exact sums the terms refer to
  * @param[in] terms,nterms Terms of the polynomial and their number
- * @return -1, 0, or 1
- * @note Exact where no product of the components overflows or underflows
+ * @return -1 or 1, or 0 where the filters cannot tell
  */
-int
-polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+static inline int
+polynomial_sign_filter(const ExactSum *sums, const PolyTerm *terms,
   int nterms)
 {
-  /* Filter: the value in doubles and a bound on its error */
+  /* The value in doubles and a bound on its error */
   double val = 0.0, err = 0.0;
   for (int i = 0; i < nterms; i++)
   {
@@ -1453,7 +1451,30 @@ polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
   double bound = err * (1.0 + 1e-6) + DBL_MIN;
   if (isfinite(val) && isfinite(bound) && fabs(val) > bound)
     return (val > 0.0) ? 1 : -1;
-  int sign = polynomial_sign_pairs(sums, terms, nterms);
+  return polynomial_sign_pairs(sums, terms, nterms);
+}
+
+/**
+ * @brief Return the sign of a polynomial in exact sums, computed exactly
+ * @details The polynomial is first evaluated in doubles together with a bound
+ * on the error of every operation, each rounding contributing at most
+ * DBL_EPSILON times its result; where the value exceeds the bound its sign is
+ * the exact one. Otherwise every term is formed as an expansion, the product
+ * of its coefficient and of its exact sums (#expansion_product), the terms are
+ * added (#expansion_sum), and the expansions are compressed as they grow; the
+ * last component of the total carries the exact sign. Between the two, the
+ * evaluation in pairs of doubles of #polynomial_sign_pairs is read against
+ * its own bound
+ * @param[in] sums Exact sums the terms refer to
+ * @param[in] terms,nterms Terms of the polynomial and their number
+ * @return -1, 0, or 1
+ * @note Exact where no product of the components overflows or underflows
+ */
+int
+polynomial_sign_exact(const ExactSum *sums, const PolyTerm *terms,
+  int nterms)
+{
+  int sign = polynomial_sign_filter(sums, terms, nterms);
   if (sign != 0)
     return sign;
   if (polynomial_sign_stack(sums, terms, nterms, &sign))
@@ -5146,6 +5167,121 @@ point_motion_gap_sign(const double *c1, const double *c2, const double *p,
 }
 
 /**
+ * @brief Return the sign of #point_motion_gap_sign where the filters of
+ * #polynomial_sign_filter carry it, and 2 where they cannot tell
+ * @details The quadratic `q(f) = A f^2 + 2 B f + C` of
+ * #point_motion_dwithin_coeffs, for a disc moving against a point, is read as
+ * polynomials in exact sums of the input doubles: `u = c1 - p` and
+ * `v = c2 - c1` in each coordinate, `L0 = r1 + d + dlo` and `dL = r2 - r1`,
+ * with `A = v . v - dL^2`, `B = u . v - L0 dL` and `C = u . u - L0^2`. The
+ * least of `q` is the least of `C` and `A + 2 B + C`, and of the value at the
+ * vertex where `A > 0`, `B < 0` and `A + B > 0`, whose sign is that of
+ * `A C - B^2 = |u|^2 |v|^2 - (u . v)^2 - L0^2 |v|^2 - dL^2 |u|^2 +
+ * 2 L0 dL (u . v)`, the terms of the two first products in one coordinate
+ * cancelling. Each sign is decided as #polynomial_sign_exact decides it but
+ * for the expansions, so that the WideDyadic route of #point_motion_gap_sign
+ * is read only for the signs the doubles and their pairs leave open
+ */
+static int
+point_motion_gap_sign_filter(const double *c1, const double *c2,
+  const double *p, int ndims, double r1, double r2, double d, double dlo)
+{
+  /* u: 0 .. ndims - 1, v: ndims .. 2 ndims - 1, L0: 2 ndims, dL: 2 ndims + 1 */
+  ExactSum sums[8];
+  for (int i = 0; i < ndims; i++)
+  {
+    const double tu[2] = {c1[i], - p[i]}, tv[2] = {c2[i], - c1[i]};
+    exact_sum_set(&sums[i], tu, 2);
+    exact_sum_set(&sums[ndims + i], tv, 2);
+  }
+  const int L = 2 * ndims, R = 2 * ndims + 1;
+  const double tl[3] = {r1, d, dlo}, tr[2] = {r2, - r1};
+  exact_sum_set(&sums[L], tl, 3);
+  exact_sum_set(&sums[R], tr, 2);
+
+  PolyTerm t[21];
+  int n = 0;
+  /* C = u . u - L0^2 */
+  for (int i = 0; i < ndims; i++)
+    t[n++] = (PolyTerm) {1.0, 2, {i, i}};
+  t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
+  int sc = polynomial_sign_filter(sums, t, n);
+  if (sc == 0)
+    return 2;
+  if (sc < 0)
+    return -1;
+  /* A + 2 B + C */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    t[n++] = (PolyTerm) {1.0, 2, {ndims + i, ndims + i}};
+    t[n++] = (PolyTerm) {2.0, 2, {i, ndims + i}};
+    t[n++] = (PolyTerm) {1.0, 2, {i, i}};
+  }
+  t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
+  t[n++] = (PolyTerm) {-2.0, 2, {L, R}};
+  t[n++] = (PolyTerm) {-1.0, 2, {L, L}};
+  int s1 = polynomial_sign_filter(sums, t, n);
+  if (s1 == 0)
+    return 2;
+  if (s1 < 0)
+    return -1;
+  /* Both ends are clear: the vertex decides where it lies inside */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+    t[n++] = (PolyTerm) {1.0, 2, {ndims + i, ndims + i}};
+  t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
+  int sa = polynomial_sign_filter(sums, t, n);
+  if (sa == 0)
+    return 2;
+  if (sa < 0)
+    return 1;
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+    t[n++] = (PolyTerm) {1.0, 2, {i, ndims + i}};
+  t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
+  int sb = polynomial_sign_filter(sums, t, n);
+  if (sb == 0)
+    return 2;
+  if (sb > 0)
+    return 1;
+  /* A + B */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+  {
+    t[n++] = (PolyTerm) {1.0, 2, {ndims + i, ndims + i}};
+    t[n++] = (PolyTerm) {1.0, 2, {i, ndims + i}};
+  }
+  t[n++] = (PolyTerm) {-1.0, 2, {R, R}};
+  t[n++] = (PolyTerm) {-1.0, 2, {L, R}};
+  int sab = polynomial_sign_filter(sums, t, n);
+  if (sab == 0)
+    return 2;
+  if (sab < 0)
+    return 1;
+  /* A C - B^2 */
+  n = 0;
+  for (int i = 0; i < ndims; i++)
+    for (int j = 0; j < ndims; j++)
+    {
+      if (i == j)
+        continue;
+      t[n++] = (PolyTerm) {1.0, 4, {ndims + i, ndims + i, j, j}};
+      t[n++] = (PolyTerm) {-1.0, 4, {i, ndims + i, j, ndims + j}};
+    }
+  for (int i = 0; i < ndims; i++)
+  {
+    t[n++] = (PolyTerm) {-1.0, 4, {L, L, ndims + i, ndims + i}};
+    t[n++] = (PolyTerm) {-1.0, 4, {R, R, i, i}};
+    t[n++] = (PolyTerm) {2.0, 4, {L, R, i, ndims + i}};
+  }
+  int sv = polynomial_sign_filter(sums, t, n);
+  if (sv == 0)
+    return 2;
+  return (sv < 0) ? -1 : 1;
+}
+
+/**
  * @brief Return true if a disc moving linearly over a segment is certainly
  * never within a distance of a point, false where it is or doubles cannot
  * tell (#point_motion_dwithin_period_filter)
@@ -5199,8 +5335,14 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
   /* The disc reaches the point where it is ever within 0 of it, which the
    * filter tells but near a contact */
   int reach = point_motion_dwithin_ever_filter(c1, c2, p, ndims, r1, r2, 0.0);
-  if (reach == 1 || (reach < 0 &&
-      point_motion_gap_sign(c1, c2, p, ndims, r1, r2, 0.0, 0.0) <= 0))
+  if (reach < 0)
+  {
+    int s = point_motion_gap_sign_filter(c1, c2, p, ndims, r1, r2, 0.0, 0.0);
+    if (s == 2)
+      s = point_motion_gap_sign(c1, c2, p, ndims, r1, r2, 0.0, 0.0);
+    reach = (s <= 0) ? 1 : 0;
+  }
+  if (reach == 1)
     return 0.0;
   /* The estimate: the least of the ends and of the stationary point of
    * |u + f v| - (r1 + f k), inside where |k| < |v| */
@@ -5237,8 +5379,10 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
     c = DBL_MAX;
   uint64_t bits;
   memcpy(&bits, &c, sizeof(bits));
+  /* The WideDyadic parts of the quadratic, set at the first side the filters
+   * of #point_motion_gap_sign_filter leave open */
   PointMotionGap gap;
-  point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2);
+  bool gapset = false;
 #define PMO_BEYOND(bb, res) \
   do { \
     double cc, nn; \
@@ -5260,7 +5404,16 @@ point_motion_point_offset_exact(const double *c1, const double *c2,
       break; \
     } \
     double hh = isinf(nn) ? ldexp(1.0, 970) : (nn - cc) / 2.0; \
-    int s = point_motion_gap_sign_at(&gap, cc, hh); \
+    int s = point_motion_gap_sign_filter(c1, c2, p, ndims, r1, r2, cc, hh); \
+    if (s == 2) \
+    { \
+      if (! gapset) \
+      { \
+        point_motion_gap_init(&gap, c1, c2, p, ndims, r1, r2); \
+        gapset = true; \
+      } \
+      s = point_motion_gap_sign_at(&gap, cc, hh); \
+    } \
     (res) = s > 0 || (s == 0 && (b1 & 1) != 0); \
   } while (0)
   uint64_t lo, hi;
