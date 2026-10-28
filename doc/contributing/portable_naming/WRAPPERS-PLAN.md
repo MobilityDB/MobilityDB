@@ -437,7 +437,12 @@ composed pose: the `spatialrels` template writes `562_tposechain_spatialrels` fr
 `tspatial_supportfn` so the index of #3230 answers them (branch `pose/tposechain-spatialrels`, which rewrites `cdfa50524d`,
 merged as MobilityDB #3232, `7303e1a47b`: the `files` list of `tposechain` in
 `subtypes.yaml` gains `spatialrels`, and the posechain lines of `INHERITANCE_MAP.md` name the file
-`562` the index PR stated absent). MobilityDuck's
+`562` the index PR stated absent). The same template then writes `112_tpose_spatialrels` itself
+from the `tpose::tgeompoint` conversion, the file having been hand-written as exactly the hybrid
+the template emits under `index_support`, with its 26 signatures, bodies and 6 C symbols unchanged
+(branch `gen/tpose-spatialrels-template`: the `tpose` entry of `subtypes.yaml` gains
+`spatialrels`, `112` leaves `coverage_exceptions.txt`, and `INHERITANCE_MAP.md` states pose
+generated). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
