@@ -395,7 +395,7 @@ API: a creator per key type (`intspan`, `bigintspan`, `floatspan`, `datespan`, `
 MEST (`insert_temporal_split`, `search_temporal_dedup`) and a nearest-neighbour cursor. The pass
 aligns what still differs and renames no type (the owner, 2026-10-26: the cursors stay
 `RTreeNNCursor` and `SPNNCursor`): the `RTree` creators are declared with `(void)` (branch
-`meos/void-parameter-lists`, `6ed1ae0d8b` on master `a23e01a60b`), and
+`meos/void-parameter-lists`, `bd473aec10` on master `a23e01a60b`), and
 `meos/examples` holds four programs, `rtree_example.c` and `rtree_mest_example.c`
 and their `SPTree` siblings `sptree_example.c` and `sptree_mest_example.c`, each pair over the same
 data and checks (branch `meos/sptree-examples`, MobilityDB #3221, `8f9d4fb0c8` on master `a23e01a60b`, the R-tree, the
