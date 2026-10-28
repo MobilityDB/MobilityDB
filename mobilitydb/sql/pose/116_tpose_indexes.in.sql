@@ -314,4 +314,87 @@ CREATE OPERATOR CLASS tpose_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tspatial_spgist_compress(internal);
 
+/******************************************************************************
+ * Sets of the base values, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE FUNCTION poseset_gist_consistent(internal, poseset, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION poseset_gist_distance(internal, poseset, smallint, oid, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS poseset_rtree_ops
+  DEFAULT FOR TYPE poseset USING gist AS
+  STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (poseset, poseset),
+  -- same
+  OPERATOR  6    = (poseset, poseset),
+  -- contains
+  OPERATOR  7    @> (poseset, pose),
+  OPERATOR  7    @> (poseset, poseset),
+  -- contained by
+  OPERATOR  8    <@ (poseset, poseset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (poseset, pose) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (poseset, poseset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1 poseset_gist_consistent(internal, poseset, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 spatialset_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 poseset_gist_distance(internal, poseset, smallint, oid, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
+
+CREATE OPERATOR CLASS poseset_quadtree_ops
+  DEFAULT FOR TYPE poseset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (poseset, poseset),
+  -- same
+  OPERATOR  6    = (poseset, poseset),
+  -- contains
+  OPERATOR  7    @> (poseset, pose),
+  OPERATOR  7    @> (poseset, poseset),
+  -- contained by
+  OPERATOR  8    <@ (poseset, poseset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (poseset, pose) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (poseset, poseset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
+CREATE OPERATOR CLASS poseset_kdtree_ops
+  FOR TYPE poseset USING spgist AS
+  -- overlaps
+  OPERATOR  3    && (poseset, poseset),
+  -- same
+  OPERATOR  6    = (poseset, poseset),
+  -- contains
+  OPERATOR  7    @> (poseset, pose),
+  OPERATOR  7    @> (poseset, poseset),
+  -- contained by
+  OPERATOR  8    <@ (poseset, poseset),
+  -- nearest approach distance
+  OPERATOR  25    <-> (poseset, pose) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    <-> (poseset, poseset) FOR ORDER BY pg_catalog.float_ops,
+  -- functions
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_kdtree_choose(internal, internal),
+  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 spatialset_spgist_compress(internal);
+
 /******************************************************************************/

@@ -126,4 +126,35 @@ CREATE OPERATOR CLASS tquadbin_rtree_ops
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
 
+/******************************************************************************
+ * Sets of the base values, keyed by the box they store, the set operators
+ * rechecked on the set
+ ******************************************************************************/
+
+CREATE FUNCTION quadbinset_gist_consistent(internal, quadbinset, smallint, oid, internal)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR CLASS quadbinset_rtree_ops
+  DEFAULT FOR TYPE quadbinset USING gist AS
+  STORAGE stbox,
+  -- overlaps
+  OPERATOR  3    && (quadbinset, quadbinset),
+  -- same
+  OPERATOR  6    = (quadbinset, quadbinset),
+  -- contains
+  OPERATOR  7    @> (quadbinset, quadbin),
+  OPERATOR  7    @> (quadbinset, quadbinset),
+  -- contained by
+  OPERATOR  8    <@ (quadbinset, quadbinset),
+  -- functions
+  FUNCTION  1 quadbinset_gist_consistent(internal, quadbinset, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 spatialset_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION 11 stbox_gist_sortsupport(internal);
+
 /******************************************************************************/
