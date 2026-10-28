@@ -1,0 +1,123 @@
+SELECT swath(NULL::tpcpatch);
+ swath 
+-------
+ 
+(1 row)
+
+SELECT swath(NULL::tpcpatch, interval '1 day');
+ swath 
+-------
+ 
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 4, 0, 0), pcpoint(1, 0, 3, 0)), '2001-01-01'::timestamptz)));
+         st_astext          
+----------------------------
+ POLYGON((0 0,0 3,4 0,0 0))
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz)));
+      st_astext      
+---------------------
+ LINESTRING(0 0,2 0)
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)),
+  '2001-01-01'::timestamptz)));
+ st_astext  
+------------
+ POINT(1 1)
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz)])));
+           st_astext            
+--------------------------------
+ POLYGON((0 0,0 1,2 1,2 0,0 0))
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 2, 0), pcpoint(1, 1, 2, 0), pcpoint(1, 2, 2, 0)), '2001-01-03'::timestamptz)])));
+               st_astext                
+----------------------------------------
+ POLYGON((0 0,2 0,2 1,2 2,0 2,0 1,0 0))
+(1 row)
+
+SELECT ST_Area(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 2, 0), pcpoint(1, 1, 2, 0), pcpoint(1, 2, 2, 0)), '2001-01-03'::timestamptz)], 'discrete')));
+ st_area 
+---------
+       4
+(1 row)
+
+SELECT ST_Area(swath(tpcpatchSeqSet(ARRAY[
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+    tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz)]),
+  tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 0, 2, 0), pcpoint(1, 1, 2, 0), pcpoint(1, 2, 2, 0)), '2001-01-03'::timestamptz),
+    tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 1, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-04'::timestamptz)])])));
+ st_area 
+---------
+      10
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 1, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]), interval '1 day'));
+                               st_astext                                
+------------------------------------------------------------------------
+ GEOMETRYCOLLECTION(LINESTRING(0 5,2 5),POLYGON((0 0,0 1,2 1,2 0,0 0)))
+(1 row)
+
+SELECT ST_AsText(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 2, 0), pcpoint(1, 1, 2, 0), pcpoint(1, 2, 2, 0)), '2001-01-03'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 1, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]), interval '1 day'));
+                   st_astext                    
+------------------------------------------------
+ MULTILINESTRING((0 0,2 0),(0 2,2 2),(0 5,2 5))
+(1 row)
+
+SELECT ST_NumGeometries(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]),
+  interval '1 day'));
+ st_numgeometries 
+------------------
+                2
+(1 row)
+
+SELECT ST_Area(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz)]), interval '1 day'));
+ st_area 
+---------
+       2
+(1 row)
+
+SELECT ST_Area(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 5, 0), pcpoint(1, 1, 5, 0), pcpoint(1, 2, 5, 0)), '2001-01-05'::timestamptz)]), NULL));
+ st_area 
+---------
+      10
+(1 row)
+
+SELECT ST_Area(traversedArea(tgeometry(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz)], 'discrete')))),
+  ST_Area(swath(tpcpatchSeq(ARRAY[
+  tpcpatch(pcpatch(pcpoint(1, 0, 0, 0), pcpoint(1, 1, 0, 0), pcpoint(1, 2, 0, 0)), '2001-01-01'::timestamptz),
+  tpcpatch(pcpatch(pcpoint(1, 0, 1, 0), pcpoint(1, 1, 1, 0), pcpoint(1, 2, 1, 0)), '2001-01-02'::timestamptz)], 'discrete')));
+ st_area | st_area 
+---------+---------
+       0 |       2
+(1 row)
+

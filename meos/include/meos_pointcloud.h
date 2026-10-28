@@ -548,6 +548,7 @@ extern uint32_t tpcpatch_pcid(const Temporal *temp);
 extern uint32_t tpcpatch_start_npoints(const Temporal *temp);
 extern uint32_t tpcpatch_end_npoints(const Temporal *temp);
 extern int64 tpcpatch_npoints(const Temporal *temp);
+extern GSERIALIZED *tpcpatch_swath(const Temporal *temp, const Interval *maxt);
 
 /*****************************************************************************
  * Ever/always and temporal comparisons
