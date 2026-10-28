@@ -425,7 +425,7 @@ through `tposechain_to_tpose` and the SQL from a `distance` template of the inhe
 that writes `110_tpose_distance` unchanged; `datum_distance` answers for pose chains, so the
 gaps of `tposechainSeqSetGaps` and `appendInstant` take a maximum distance (master raises
 `Unknown types for distance between values: posechain`), and pose chain sets take `setDistance`.
-`geo_round` rounds a geometry on a copy of it, as `geo_transform` does, since the geometry `lwgeom_from_gserialized` reads shares the coordinates of its serialization: rounding in place rounded the argument too, so `set_round` left a set holding rounded values under the box of the full ones, and the `round(g, 6)` queries of `050_set_tbl` broke the geometry and geography set indexes the later tests read (branch `fix/geo-round-reads-a-copy`, merged as MobilityDB #3228, `aa6168947d`). Branch `index/pg-every-keyed-type` (MobilityDB #3230, `f450273ba8` on master `d043de2e04`; it rewrites `1fa64600db`: the `files` list of `tposechain` in `subtypes.yaml` gains `indexes`, and the posechain lines of `INHERITANCE_MAP.md` name the index file `566` the distance PR stated absent) gives the nine sets and
+`geo_round` rounds a geometry on a copy of it, as `geo_transform` does, since the geometry `lwgeom_from_gserialized` reads shares the coordinates of its serialization: rounding in place rounded the argument too, so `set_round` left a set holding rounded values under the box of the full ones, and the `round(g, 6)` queries of `050_set_tbl` broke the geometry and geography set indexes the later tests read (branch `fix/geo-round-reads-a-copy`, merged as MobilityDB #3228, `aa6168947d`). Branch `index/pg-every-keyed-type` (merged as MobilityDB #3230, `cdfa50524d`; it rewrites `1fa64600db`: the `files` list of `tposechain` in `subtypes.yaml` gains `indexes`, and the posechain lines of `INHERITANCE_MAP.md` name the index file `566` the distance PR stated absent) gives the nine sets and
 `tposechain` an R-tree GiST class and quad-tree and k-d tree SP-GiST classes, a set's classes
 written by the template of its temporal type's index file under the generator flags `setindex`
 and `setmetric`, the geo sets' in `073_tgeo_gist` and `074_tgeo_spgist`, `<->` served for the sets
@@ -435,7 +435,7 @@ relationships of `tpose`, the 26 signatures of `112_tpose_spatialrels`, at the p
 composed pose: the `spatialrels` template writes `562_tposechain_spatialrels` from the
 `tposechain::tpose::tgeompoint` conversion, its ever intersects and dwithin being C wrappers with
 `tspatial_supportfn` so the index of #3230 answers them (branch `pose/tposechain-spatialrels`,
-stacked on #3230). MobilityDuck's
+`c501959dfb` on master `cdfa50524d`). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
 the 15 their modules list on main; the tests run each index over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
