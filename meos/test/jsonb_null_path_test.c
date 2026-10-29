@@ -38,6 +38,9 @@
  * #jsonb_delete_array skip a NULL key, and #jsonb_delete_path, #jsonb_set and
  * #jsonb_insert report "path element at position N is null" when the path
  * reaches the element and answer their argument unchanged when it does not.
+ * The extractions of a JSON text, #json_extract_path and
+ * #json_extract_path_text, and those of a temporal JSONB, a temporal JSON and
+ * a JSONB set answer NULL for such a path as well, whatever the null handling.
  *
  * The program can be build as follows
  * @code
@@ -181,9 +184,41 @@ int main(void)
   expect_jsonb(jsonb_insert(jb, x_null, 2, three, false), JB,
     "jsonb_insert({x, NULL})");
 
+  /* The extractions of a JSON text answer NULL for such a path */
+  text *js = cstring_to_text(JB);
+  expect_null(json_extract_path(js, a_null, 2),
+    "json_extract_path({a, NULL})");
+  expect_null(json_extract_path_text(js, a_null, 2),
+    "json_extract_path_text({a, NULL})");
+
+  /* The extractions of a temporal JSONB, a temporal JSON and a JSONB set
+   * answer NULL for such a path, while the same path without its NULL element
+   * extracts a value */
+  text **speed = path2("speed", NULL);
+  Temporal *tjb = tjsonb_in("\"{\\\"speed\\\": 10}\"@2001-01-01");
+  Temporal *tj = ttext_in("\"{\\\"speed\\\": 10}\"@2001-01-01");
+  Set *jbset = jsonbset_in("{\"{\\\"speed\\\": 10}\"}");
+  assert(tjb); assert(tj); assert(jbset);
+  expect_null(tjsonb_extract_path(tjb, speed, 2, NULL_JSON_NULL),
+    "tjsonb_extract_path({speed, NULL})");
+  expect_null(tjsonb_extract_path_text(tjb, speed, 2, NULL_JSON_NULL),
+    "tjsonb_extract_path_text({speed, NULL})");
+  expect_null(tjson_extract_path(tj, speed, 2, NULL_JSON_NULL),
+    "tjson_extract_path({speed, NULL})");
+  expect_null(jsonbset_extract_path(jbset, speed, 2, NULL_JSON_NULL),
+    "jsonbset_extract_path({speed, NULL})");
+  expect_null(jsonbset_extract_path_text(jbset, speed, 2, NULL_JSON_NULL),
+    "jsonbset_extract_path_text({speed, NULL})");
+  Temporal *speed_t = tjsonb_extract_path(tjb, speed, 1, NULL_JSON_NULL);
+  Set *speed_s = jsonbset_extract_path(jbset, speed, 1, NULL_JSON_NULL);
+  printf("tjsonb_extract_path({speed}): %s, jsonbset_extract_path({speed}): %s\n",
+    speed_t ? "a value" : "NULL", speed_s ? "a value" : "NULL");
+  assert(speed_t); assert(speed_s);
+  free(speed_t); free(speed_s);
+
   path2_free(a_null); path2_free(null_a); path2_free(x_null);
-  path2_free(null_null);
-  free(jb); free(three);
+  path2_free(null_null); path2_free(speed);
+  free(jb); free(three); free(js); free(tjb); free(tj); free(jbset);
 
   meos_finalize();
   printf("jsonb_null_path_test: all checks passed\n");

@@ -69,6 +69,8 @@ extern void setPathArray(JsonbIterator **it, Datum *path_elems,
   bool *path_nulls, int path_len, JsonbParseState **st, int level,
   JsonbValue *newval, uint32_t nelems, int op_type);
 
+extern bool path_contains_nulls(text **path_elems, int path_len);
+
 /*****************************************************************************
  * Datum‐level JSONB operations used by the lifting infrastructure
  *****************************************************************************/
