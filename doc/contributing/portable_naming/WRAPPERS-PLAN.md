@@ -486,7 +486,7 @@ No SQL function changes name, signature or answer.
 **The order.** `temporal/span_meos.c` first, whose `timestamptz_to_span` gives J15d the period of
 `stboxT`, `stboxXT`, `stboxZT` and `geodstboxZT` (MEOS-API then reads the composition through the
 `Stbox_constructor` helper, deciding the type of its argument from the signature), then the other
-files of `temporal`, then the families. The first file: branch `meos/span-every-build` (`1bff6df783` on master `f0aac06f5b`) moves the 39 functions of `span_meos.c` into `span.c`, each beside its siblings in the section of the same name, takes `span_meos.c` off the MEOS-only list, and gives `Stbox_constructor` the period of a `timestamptz` through `timestamptz_to_span`; the extension's library defines the 39 functions.
+files of `temporal`, then the families. The first file: branch `meos/span-every-build` (`8215c9bb4f` on master `449a208430`) moves the 39 functions of `span_meos.c` into `span.c`, each beside its siblings in the section of the same name, takes `span_meos.c` off the MEOS-only list, and gives `Stbox_constructor` the period of a `timestamptz` through `timestamptz_to_span`; the extension's library defines the 39 functions.
 
 **Acceptance.** A `CMakeLists.txt` of `meos/src` lists under `if(MEOS)` only MEOS's part of a
 facility (`ways_meos.c`), `meos/src` holds no PostgreSQL part, no other source is named
