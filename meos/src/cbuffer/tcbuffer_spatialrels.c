@@ -45,11 +45,16 @@
 /* C */
 #include <assert.h>
 #include <math.h>
+/* PostgreSQL */
+#include <postgres.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
 #include "temporal/lifting.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
+#include "geo/tgeo_distance.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tgeo_spatialrels.h"
 #include "cbuffer/cbuffer.h"
@@ -2458,6 +2463,100 @@ ea_dwithin_tcbuffer_tcbuffer_sync(const Temporal *sync1,
 }
 
 /**
+ * @brief Set the disc of a linear circular buffer sequence at a timestamp of
+ * its segment that starts at its instant @p k, interpolated as
+ * #tsegment_value_at_timestamptz interpolates it, a sequence of one instant
+ * holding its disc
+ */
+static void
+tcbufferseq_disc_at(const TSequence *seq, int k, TimestampTz t, double *c,
+  double *r)
+{
+  const TInstant *inst0 = TSEQUENCE_INST_N(seq, k);
+  if (seq->count == 1 || t == inst0->t)
+  {
+    tcbufferinst_disc(inst0, c, r);
+    return;
+  }
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, k + 1);
+  if (t == inst1->t)
+  {
+    tcbufferinst_disc(inst1, c, r);
+    return;
+  }
+  const Cbuffer *cb0 = DatumGetCbufferP(tinstant_value_p(inst0));
+  const Cbuffer *cb1 = DatumGetCbufferP(tinstant_value_p(inst1));
+  long double ratio = (long double) (t - inst0->t) /
+    (long double) (inst1->t - inst0->t);
+  c[0] = cb0->x + (double) ((long double) (cb1->x - cb0->x) * ratio);
+  c[1] = cb0->y + (double) ((long double) (cb1->y - cb0->y) * ratio);
+  *r = floatsegm_interpolate(cb0->radius, cb1->radius, ratio);
+  return;
+}
+
+/** State of #tcbuffer_dwithin_interval */
+typedef struct
+{
+  double dist;   /**< Distance */
+  bool ever;     /**< True for the ever semantics, false for the always one */
+} TcbufferDwithin;
+
+/**
+ * @brief Decide the ever or always within a distance of two linear circular
+ * buffer sequences on one interval of #tcont_tcont_merge_walk, returning
+ * true where the interval decides it
+ * @details The interval is the segment of the two values synchronized
+ * (#synchronize_tsequence_tsequence), its discs those the synchronization
+ * interpolates, read as #ea_dwithin_tcbufferseq_tcbufferseq reads a segment:
+ * an interval of a single instant reads its discs, and an end of the interval
+ * that one of the sequences excludes bounds the time they share exclusively
+ */
+static bool
+tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
+  /* cppcheck-suppress constParameterCallback */
+  int k2, TimestampTz lower, TimestampTz upper, void *state)
+{
+  const TcbufferDwithin *st = (const TcbufferDwithin *) state;
+  double seg[4][2], rad[4];
+  int64 n1, n2;
+  tcbufferseq_disc_at(seq1, k1, lower, seg[0], &rad[0]);
+  tcbufferseq_disc_at(seq2, k2, lower, seg[2], &rad[2]);
+  if (lower == upper)
+  {
+    bool within = point_motion_dwithin_period_exact(seg[0], seg[0], seg[2],
+      seg[2], 2, rad[0], rad[0], rad[2], rad[2], st->dist, 1, &n1, &n2) > 0;
+    return within == st->ever;
+  }
+  tcbufferseq_disc_at(seq1, k1, upper, seg[1], &rad[1]);
+  tcbufferseq_disc_at(seq2, k2, upper, seg[3], &rad[3]);
+  int64 D = upper - lower;
+  int result = point_motion_dwithin_period_exact(seg[0], seg[1], seg[2],
+    seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, D, &n1, &n2);
+  if (! st->ever)
+    /* Not within over the whole interval */
+    return ! (result == 2 && n1 == 0 && n2 == D);
+  if (result == 0)
+    return false;
+  /* Within at an end alone that no instant of the shared time reaches */
+  bool start_out =
+    (lower == DatumGetTimestampTz(seq1->period.lower) &&
+      ! seq1->period.lower_inc) ||
+    (lower == DatumGetTimestampTz(seq2->period.lower) &&
+      ! seq2->period.lower_inc);
+  bool end_out =
+    (upper == DatumGetTimestampTz(seq1->period.upper) &&
+      ! seq1->period.upper_inc) ||
+    (upper == DatumGetTimestampTz(seq2->period.upper) &&
+      ! seq2->period.upper_inc);
+  if ((start_out && point_motion_dwithin_only_at_end(seg[0], seg[1],
+        seg[2], seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, true)) ||
+      (end_out && point_motion_dwithin_only_at_end(seg[0], seg[1], seg[2],
+        seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, false)))
+    return false;
+  return true;
+}
+
+/**
  * @ingroup meos_internal_cbuffer_spatial_rel_ever
  * @brief Return whether two temporal circular buffers are ever/always within
  * a distance
@@ -2511,6 +2610,21 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool pass = overlaps_stbox_stbox(&box1, &box2_exp);
   if (! pass)
     return 0;
+
+  /* Two linear values walked over the merged instants of their sequences,
+   * building no temporal value */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+  {
+    TcbufferDwithin state = {dist, ever};
+    bool shared;
+    bool decided = tcont_tcont_merge_walk(temp1, temp2,
+      /* cppcheck-suppress constParameterCallback */
+      &tcbuffer_dwithin_interval, &state, &shared);
+    if (! shared)
+      return -1;
+    return (decided == ever) ? 1 : 0;
+  }
 
   /* The two values synchronized without crossings, every segment of which
    * the exact walk reads over continuous time */
