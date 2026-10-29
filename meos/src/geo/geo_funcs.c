@@ -421,14 +421,16 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
     return;
   }
 
-  /* Collinear points: emit straight line edges. The three points are input
-   * vertices, so whether they lie on one line is the exact sign of the cross
-   * product of B -> A and B -> C, read on the doubles the geometry holds, and
-   * it answers the same at every scale. A triangle that is not flat but whose
-   * area above rounds to zero has a centre no double holds, and is emitted as
-   * the segments it approaches */
-  if (cross_product_sign(pb->x, pb->y, pa->x, pa->y, pb->x, pb->y, pc->x,
-        pc->y) == 0 || d == 0.0)
+  /* The turn of (start, mid, end): the exact sign of the cross product of
+   * A -> B and A -> C. The three points are input vertices, read on the
+   * doubles the geometry holds, so it answers the same at every scale */
+  int turn = cross_product_sign(pa->x, pa->y, pb->x, pb->y, pa->x, pa->y,
+    pc->x, pc->y);
+
+  /* Collinear points: emit straight line edges. A triangle that is not flat
+   * but whose area above rounds to zero has a centre no double holds, and is
+   * emitted as the segments it approaches */
+  if (turn == 0 || d == 0.0)
   {
     /* The points given, as the ends of an arc are */
     const double px[3] = {pa->x, pb->x, pc->x};
@@ -478,8 +480,8 @@ emit_arc_edge(const POINT2D *pa, const POINT2D *pb, const POINT2D *pc,
   e.x2 = pc->x; e.y2 = pc->y;
   e.theta0 = angles ? atan2(e.y1 - e.cy, e.x1 - e.cx) : 0.0;
   e.theta1 = angles ? atan2(e.y2 - e.cy, e.x2 - e.cx) : 0.0;
-  /* Traversal orientation from the signed area of (start, mid, end) */
-  e.ccw = ((bx - ax) * (cy - ay) - (by - ay) * (cx - ax)) > 0;
+  /* Traversal orientation: the turn of (start, mid, end) */
+  e.ccw = (turn > 0);
   e.dx = e.dy = e.length = 0;
   e.etype = arc_etype;
   arc_set_bbox(&e);

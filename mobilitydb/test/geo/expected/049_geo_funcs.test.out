@@ -89,6 +89,15 @@ SELECT ST_AsText(convexHull(geometry 'Circularstring(2 0,1 0,0 0)'));
  LINESTRING(2 0,0 0)
 (1 row)
 
+SELECT ST_AsText(round(convexHull(geometry 'Circularstring('
+  '0.918269344974626 -0.03255093347490989,'
+  '1.5722791133724234 -0.5984970332108608,'
+  '5.161357645272159 -3.7042992626650353)'), 6));
+                                                                   st_astext                                                                   
+-----------------------------------------------------------------------------------------------------------------------------------------------
+ CURVEPOLYGON(COMPOUNDCURVE(CIRCULARSTRING(5.161358 -3.704299,1.572279 -0.598497,0.918269 -0.032551),(0.918269 -0.032551,5.161358 -3.704299)))
+(1 row)
+
 SELECT ST_AsText(round(convexHull(geometry
   'Multicurve(Circularstring(0 0,1 1,2 0),Circularstring(10 0,12 2,14 0))'),
   6));
