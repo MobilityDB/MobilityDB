@@ -1149,6 +1149,10 @@ typedef struct
 {
   int kind;             /**< Always #TCBUF_CTX_GEO */
   DistGeom g;
+  bool hasbox;          /**< Whether @p box is set */
+  GBOX box;             /**< Box of the geometry as PostGIS keeps it, rounded
+                             outward to floats, so holding every point of the
+                             geometry, arcs included */
 } TcbufferGeoCtx;
 
 /**
@@ -1216,6 +1220,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   ctx->kind = TCBUF_CTX_GEO;
   g.rtree = dist_geom_build_rtree(g.segs, g.n);
   ctx->g = g;
+  ctx->hasbox = (gserialized_get_gbox_p(gs, &ctx->box) == LW_SUCCESS);
   /* Scratch buffer for the R-tree candidate ids, created with the R-tree and
    * freed with it in #tcbuffer_geo_ctx_free (see dist_pip_results). */
   dist_pip_results = index_result_create();
@@ -1279,6 +1284,39 @@ tcbuffer_geo_ctx_nsegs(const void *ctxv)
   if (*(const int *) ctxv == TCBUF_CTX_DISC)
     return 1;
   return ((const TcbufferGeoCtx *) ctxv)->g.n;
+}
+
+/**
+ * @brief Return true if a disk moving linearly from @p cb1 to @p cb2 stays
+ * clear of the box of the geometry of a context
+ * @details As in the coarse prune of #dist_segm_nad, over the segment the
+ * centre lies between its two ends and the radius does not exceed the larger
+ * of the two, so the disk keeps inside the box of the two end centres grown by
+ * that radius. A disk that keeps beyond the box of the geometry along one axis
+ * neither meets the geometry nor lies in it, and the touches, contains and
+ * covers relationships are false over the whole segment. The test is exact: a
+ * difference of two doubles is rounded to the nearest double, which is
+ * monotonic, and the radius is a double, so a difference read above the
+ * radius is above it exactly. A stationary disk is the segment whose two ends
+ * are equal. The function returns false for a disc context and for a
+ * geometry without a box.
+ */
+bool
+tcbufferseg_clear_of_box_ctx(const Cbuffer *cb1, const Cbuffer *cb2,
+  const void *ctxv)
+{
+  if (*(const int *) ctxv != TCBUF_CTX_GEO)
+    return false;
+  const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
+  if (! ctx->hasbox)
+    return false;
+  const POINT2D *p1 = cbuffer_point2d_p(cb1);
+  const POINT2D *p2 = cbuffer_point2d_p(cb2);
+  double r = fmax(cb1->radius, cb2->radius);
+  return ctx->box.xmin - fmax(p1->x, p2->x) > r ||
+    fmin(p1->x, p2->x) - ctx->box.xmax > r ||
+    ctx->box.ymin - fmax(p1->y, p2->y) > r ||
+    fmin(p1->y, p2->y) - ctx->box.ymax > r;
 }
 
 /**
@@ -1719,6 +1757,9 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
 bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
 {
+  /* A disk clear of the box of the geometry does not touch it */
+  if (tcbufferseg_clear_of_box_ctx(cb, cb, ctxv))
+    return false;
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
@@ -1767,6 +1808,9 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
     return (strict ? cbuffer_contains(outer, inner) :
       cbuffer_covers(outer, inner)) == 1;
   }
+  /* A disk clear of the box of the geometry does not lie in it */
+  if (tcbufferseg_clear_of_box_ctx(cb, cb, ctxv))
+    return false;
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
@@ -1802,6 +1846,9 @@ static int
 tcbufferseg_sg_roots(const Cbuffer *cb1, const Cbuffer *cb2,
   const void *ctxv, double *outt, int maxout, bool outside_only)
 {
+  /* A segment clear of the box of the geometry has no contact time */
+  if (tcbufferseg_clear_of_box_ctx(cb1, cb2, ctxv))
+    return 0;
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p1 = cbuffer_point2d_p(cb1);
   const POINT2D *p2 = cbuffer_point2d_p(cb2);
