@@ -440,7 +440,7 @@ merged as MobilityDB #3232, `7303e1a47b`: the `files` list of `tposechain` in
 `562` the index PR stated absent). The same template then writes `112_tpose_spatialrels` itself
 from the `tpose::tgeompoint` conversion, the file having been hand-written as exactly the hybrid
 the template emits under `index_support`, with its 26 signatures, bodies and 6 C symbols unchanged
-(branch `gen/tpose-spatialrels-template`, which rewrites `1fa64600db` and rewrites `7303e1a47b`: the `tpose` entry of `subtypes.yaml` gains
+(branch `gen/tpose-spatialrels-template`, which rewrites `1fa64600db` and rewrites `7303e1a47b`, merged as MobilityDB #3238, `d39972281c`: the `tpose` entry of `subtypes.yaml` gains
 `spatialrels`, `112` leaves `coverage_exceptions.txt`, and `INHERITANCE_MAP.md` states pose
 generated). MobilityDuck's
 `TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
