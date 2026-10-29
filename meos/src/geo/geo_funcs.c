@@ -12522,6 +12522,65 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
   return filter_point_bounds(ox, oy, fx, fy, x, y, box);
 }
 
+/* The meeting of #offset_line_circle_bounds, the same values in plain
+ * doubles, each computed as its filter computes it, and a bound on each
+ * coordinate that bounds the one the filters carry from their rules: with
+ * every difference and both radii zero or within 2^-300 and 2^300 of their
+ * size, to first order in eps, with Cc = |dx ay| + |dy ax|, the length l is
+ * off by 4 eps l, the cross product by 4 eps Cc, the quotient q by
+ * eps (4 Cc / l + 7 |q|) and delta by that and eps |delta|; h = R^2 -
+ * delta^2 carries its rules' bound he as they compute it, its root sqrt(h)
+ * moves by at most he / sqrt(h), and the numerator of x by
+ * |dy| (2 eps |delta| + delta's) + |dx| (2 eps sqrt(h) + the root's) plus
+ * eps of its size, that of y alike; 5, 8, 4 and the factor 1 + 16 eps
+ * cover the second order, 8 DBL_MIN a product below the normal doubles.
+ * False where the bound is wider than the filters allow, which the filters
+ * then place */
+static bool
+offset_line_circle_plain(const MeetPoint *m, int s, double *x, double *y,
+  double box[4])
+{
+  const TangentPoint *t = m->p->from;
+  double u = (m->p->to->k == 1) ? 1.0 : -1.0;
+  double dx = t->c2x - t->c1x, dy = t->c2y - t->c1y;
+  double ax = m->q->cx - t->c1x, ay = m->q->cy - t->c1y;
+  double r = t->r1, rr = m->q->radius;
+  if (! offset_term_in_range(dx) || ! offset_term_in_range(dy) ||
+      ! offset_term_in_range(ax) || ! offset_term_in_range(ay) ||
+      r == 0.0 || ! offset_term_in_range(r) || rr == 0.0 ||
+      ! offset_term_in_range(rr))
+    return false;
+  double l = sqrt(dx * dx + dy * dy);
+  if (l == 0.0)
+    return false;
+  double le = 5.0 * DBL_EPSILON * l;
+  double cc = fabs(dx * ay) + fabs(dy * ax);
+  double q = (dx * ay - dy * ax) / l;
+  double qe = DBL_EPSILON * (5.0 * (cc / l) + 8.0 * fabs(q)) + DBL_MIN;
+  double delta = r * (double) s - q;
+  double dle = qe * (1.0 + 16.0 * DBL_EPSILON) + DBL_EPSILON * fabs(delta);
+  double h = rr * rr - delta * delta;
+  double he = (DBL_EPSILON * (rr * rr + delta * delta + fabs(h)) +
+    2.0 * fabs(delta) * dle + dle * dle) * (1.0 + 16.0 * DBL_EPSILON) +
+    8.0 * DBL_MIN;
+  if (! (h - he > 0.0))
+    return false;
+  double sr = sqrt(h);
+  double se = (he / sr) * (1.0 + 4.0 * DBL_EPSILON) + 2.0 * DBL_EPSILON * sr;
+  double sg = sr * ((double) m->sigma * u);
+  double nx = (delta * dy) * -1.0 + sg * dx, ny = delta * dx + sg * dy;
+  double ad = fabs(delta);
+  double nex = (fabs(dy) * (2.0 * DBL_EPSILON * ad + dle) +
+    fabs(dx) * (2.0 * DBL_EPSILON * sr + se) + DBL_EPSILON * fabs(nx)) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  double ney = (fabs(dx) * (2.0 * DBL_EPSILON * ad + dle) +
+    fabs(dy) * (2.0 * DBL_EPSILON * sr + se) + DBL_EPSILON * fabs(ny)) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  return plain_quotient_point(m->q->cx, nx, nex, l, le, x, &box[0],
+      &box[1]) &&
+    plain_quotient_point(m->q->cy, ny, ney, l, le, y, &box[2], &box[3]);
+}
+
 /* The meeting of an offset of the segment between the centres of a pair of
  * circles of one radius (#towerseg_offset) with the circle of a centred
  * arc, the root sigma along the segment as #tower_point_line_circle places
@@ -12539,6 +12598,8 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   int s;
   if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
     return false;
+  if (offset_line_circle_plain(m, s, x, y, box))
+    return true;
   const TangentPoint *t = m->p->from;
   double u = (m->p->to->k == 1) ? 1.0 : -1.0;
   ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
