@@ -12400,6 +12400,51 @@ offset_lines_shared_bounds(const TangentPoint *p, const TangentPoint *q,
       &box[2], &box[3]);
 }
 
+/* The crossing of two offsets sharing no centre of #offset_lines_bounds,
+ * O + (hp dq - hq dp) / (dp x dq), the same values in plain doubles, each
+ * computed as its filter computes it, and a bound on each coordinate that
+ * bounds the one the filters carry from their rules: with every difference
+ * and both distances zero or within 2^-300 and 2^300 of their size, no
+ * product of up to three of them falls below the normal doubles, and to
+ * first order in eps, with P = |dpx dqy| + |dpy dqx| and
+ * C = |dqx ay| + |dqy ax|, the denominator is off by 4 eps P, hp by
+ * 6 eps |rp| lp, hq by 5 eps C + 7 eps |rq| lq, and the numerator of x by
+ * 10 eps |rp| lp |dqx| + |dpx| (9 eps C + 11 eps |rq| lq), that of y alike;
+ * 5, 11, 10 and 12 cover the second order, 8 DBL_MIN a product of a sum
+ * that cancels to below the normal doubles. False where the bound is wider
+ * than the filters allow, which the filters then place */
+static bool
+offset_lines_cross_bounds(const TangentPoint *p, const TangentPoint *q,
+  int sp, int sq, double *x, double *y, double box[4])
+{
+  double dpx = p->c2x - p->c1x, dpy = p->c2y - p->c1y;
+  double dqx = q->c2x - q->c1x, dqy = q->c2y - q->c1y;
+  double ox = p->c1x, oy = p->c1y;
+  double ax = q->c1x - ox, ay = q->c1y - oy;
+  double rp = p->r1, rq = q->r1;
+  if (! offset_term_in_range(dpx) || ! offset_term_in_range(dpy) ||
+      ! offset_term_in_range(dqx) || ! offset_term_in_range(dqy) ||
+      ! offset_term_in_range(ax) || ! offset_term_in_range(ay) ||
+      rp == 0.0 || ! offset_term_in_range(rp) || rq == 0.0 ||
+      ! offset_term_in_range(rq))
+    return false;
+  double lp = sqrt(dpx * dpx + dpy * dpy), lq = sqrt(dqx * dqx + dqy * dqy);
+  double hp = (rp * lp) * (double) sp;
+  double hq = (dqx * ay - dqy * ax) + (rq * lq) * (double) sq;
+  double den = dpx * dqy - dpy * dqx;
+  double de = 5.0 * DBL_EPSILON * (fabs(dpx * dqy) + fabs(dpy * dqx));
+  double hpl = fabs(rp) * lp, c = fabs(dqx * ay) + fabs(dqy * ax);
+  double hql = 10.0 * c + 12.0 * fabs(rq) * lq;
+  double nex = DBL_EPSILON * (11.0 * hpl * fabs(dqx) + fabs(dpx) * hql) +
+    8.0 * DBL_MIN;
+  double ney = DBL_EPSILON * (11.0 * hpl * fabs(dqy) + fabs(dpy) * hql) +
+    8.0 * DBL_MIN;
+  return plain_quotient_point(ox, hp * dqx - hq * dpx, nex, den, de, x,
+      &box[0], &box[1]) &&
+    plain_quotient_point(oy, hp * dqy - hq * dpy, ney, den, de, y,
+      &box[2], &box[3]);
+}
+
 /* The crossing of two segments between tangent points that are offsets of
  * the segments between the centres of pairs of circles of one radius
  * (#towerseg_offset), and a box holding it exactly, read off the doubles
@@ -12429,7 +12474,8 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
     (p->c2x == q->c2x && p->c2y == q->c2y);
   bool shared = p->r1 == q->r1 && (vp || vq);
   double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
-  if (shared && offset_lines_shared_bounds(p, q, sp, sq, vx, vy, x, y, box))
+  if (shared ? offset_lines_shared_bounds(p, q, sp, sq, vx, vy, x, y, box) :
+      offset_lines_cross_bounds(p, q, sp, sq, x, y, box))
     return true;
   ArcsegFilter dpx = arcseg_f_diff(p->c2x, p->c1x);
   ArcsegFilter dpy = arcseg_f_diff(p->c2y, p->c1y);
