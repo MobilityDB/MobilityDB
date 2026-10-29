@@ -1045,6 +1045,614 @@ Overafter_tbox_tbox(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Topological operators of a span and a temporal box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Adjacent_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a number span and a temporal box are
+ * adjacent
+ * @sqlfn tboxAdjacent()
+ * @sqlop @p -|-
+ */
+Datum
+Adjacent_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(adjacent_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Adjacent_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a number span are
+ * adjacent
+ * @sqlfn tboxAdjacent()
+ * @sqlop @p -|-
+ */
+Datum
+Adjacent_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(adjacent_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Contained_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a number span is contained in a temporal box
+ * @sqlfn tboxContained()
+ * @sqlop @p <@
+ */
+Datum
+Contained_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(contained_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Contained_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box is contained in the box of a number span
+ * @sqlfn tboxContained()
+ * @sqlop @p <@
+ */
+Datum
+Contained_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contained_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Contains_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a number span contains a temporal box
+ * @sqlfn tboxContains()
+ * @sqlop @p @>
+ */
+Datum
+Contains_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(contains_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Contains_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box contains the box of a number span
+ * @sqlfn tboxContains()
+ * @sqlop @p @>
+ */
+Datum
+Contains_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contains_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Overlaps_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a number span and a temporal box overlap
+ * @sqlfn tboxOverlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overlaps_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overlaps_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a number span overlap
+ * @sqlfn tboxOverlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overlaps_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Same_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a number span and a temporal box are equal
+ * in the common dimensions
+ * @sqlfn tboxSame()
+ * @sqlop @p ~=
+ */
+Datum
+Same_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(same_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Same_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a number span are equal
+ * in the common dimensions
+ * @sqlfn tboxSame()
+ * @sqlop @p ~=
+ */
+Datum
+Same_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(same_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Adjacent_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box are
+ * adjacent
+ * @sqlfn tboxAdjacent()
+ * @sqlop @p -|-
+ */
+Datum
+Adjacent_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(adjacent_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Adjacent_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Adjacent_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span are
+ * adjacent
+ * @sqlfn tboxAdjacent()
+ * @sqlop @p -|-
+ */
+Datum
+Adjacent_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(adjacent_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Contained_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a timestamptz span is contained in a
+ * temporal box
+ * @sqlfn tboxContained()
+ * @sqlop @p <@
+ */
+Datum
+Contained_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(contained_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Contained_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contained_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box is contained in the box of a timestamptz
+ * span
+ * @sqlfn tboxContained()
+ * @sqlop @p <@
+ */
+Datum
+Contained_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contained_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Contains_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a timestamptz span contains a temporal box
+ * @sqlfn tboxContains()
+ * @sqlop @p @>
+ */
+Datum
+Contains_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(contains_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Contains_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Contains_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box contains the box of a timestamptz span
+ * @sqlfn tboxContains()
+ * @sqlop @p @>
+ */
+Datum
+Contains_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(contains_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Overlaps_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box
+ * overlap
+ * @sqlfn tboxOverlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overlaps_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overlaps_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overlaps_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span
+ * overlap
+ * @sqlfn tboxOverlaps()
+ * @sqlop @p &&
+ */
+Datum
+Overlaps_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overlaps_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Same_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box are
+ * equal in the common dimensions
+ * @sqlfn tboxSame()
+ * @sqlop @p ~=
+ */
+Datum
+Same_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(same_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Same_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Same_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span are
+ * equal in the common dimensions
+ * @sqlfn tboxSame()
+ * @sqlop @p ~=
+ */
+Datum
+Same_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(same_tbox_tstzspan(box, s));
+}
+
+/*****************************************************************************
+ * Position operators of a span and a temporal box
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Left_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a number span is to the left of a temporal
+ * box
+ * @sqlfn tboxLeft()
+ * @sqlop @p <<
+ */
+Datum
+Left_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(left_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Left_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Left_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is to the left of the box of a number
+ * span
+ * @sqlfn tboxLeft()
+ * @sqlop @p <<
+ */
+Datum
+Left_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(left_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Overleft_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a number span does not extend to the right
+ * of a temporal box
+ * @sqlfn tboxOverleft()
+ * @sqlop @p &<
+ */
+Datum
+Overleft_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overleft_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overleft_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overleft_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box does not extend to the right of the box
+ * of a number span
+ * @sqlfn tboxOverleft()
+ * @sqlop @p &<
+ */
+Datum
+Overleft_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overleft_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Overright_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a number span does not extend to the left of
+ * a temporal box
+ * @sqlfn tboxOverright()
+ * @sqlop @p &>
+ */
+Datum
+Overright_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overright_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overright_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overright_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box does not extend to the left of the box
+ * of a number span
+ * @sqlfn tboxOverright()
+ * @sqlop @p &>
+ */
+Datum
+Overright_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overright_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum Right_numspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_numspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a number span is to the right of a temporal
+ * box
+ * @sqlfn tboxRight()
+ * @sqlop @p >>
+ */
+Datum
+Right_numspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(right_numspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Right_tbox_numspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Right_tbox_numspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is to the right of the box of a number
+ * span
+ * @sqlfn tboxRight()
+ * @sqlop @p >>
+ */
+Datum
+Right_tbox_numspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(right_tbox_numspan(box, s));
+}
+
+PGDLLEXPORT Datum After_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a timestamptz span is after a temporal box
+ * @sqlfn tboxAfter()
+ * @sqlop @p #>>
+ */
+Datum
+After_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(after_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum After_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(After_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is after the box of a timestamptz span
+ * @sqlfn tboxAfter()
+ * @sqlop @p #>>
+ */
+Datum
+After_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(after_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Before_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a timestamptz span is before a temporal box
+ * @sqlfn tboxBefore()
+ * @sqlop @p <<#
+ */
+Datum
+Before_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(before_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Before_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Before_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is before the box of a timestamptz span
+ * @sqlfn tboxBefore()
+ * @sqlop @p <<#
+ */
+Datum
+Before_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(before_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Overafter_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a timestamptz span is not before a temporal
+ * box
+ * @sqlfn tboxOverafter()
+ * @sqlop @p #&>
+ */
+Datum
+Overafter_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overafter_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overafter_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overafter_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is not before the box of a timestamptz
+ * span
+ * @sqlfn tboxOverafter()
+ * @sqlop @p #&>
+ */
+Datum
+Overafter_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overafter_tbox_tstzspan(box, s));
+}
+
+PGDLLEXPORT Datum Overbefore_tstzspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tstzspan_tbox);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if the box of a timestamptz span is not after a temporal
+ * box
+ * @sqlfn tboxOverbefore()
+ * @sqlop @p &<#
+ */
+Datum
+Overbefore_tstzspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  PG_RETURN_BOOL(overbefore_tstzspan_tbox(s, box));
+}
+
+PGDLLEXPORT Datum Overbefore_tbox_tstzspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Overbefore_tbox_tstzspan);
+/**
+ * @ingroup mobilitydb_box_pos
+ * @brief Return true if a temporal box is not after the box of a timestamptz
+ * span
+ * @sqlfn tboxOverbefore()
+ * @sqlop @p &<#
+ */
+Datum
+Overbefore_tbox_tstzspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  PG_RETURN_BOOL(overbefore_tbox_tstzspan(box, s));
+}
+
+/*****************************************************************************
  * Set operators
  *****************************************************************************/
 
