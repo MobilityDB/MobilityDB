@@ -40,6 +40,7 @@ add_library(pg_h3 OBJECT
   th3index_traversal.c
   th3index_metrics.c
   th3index_compops.c
+  th3index_spatialrels.c
   # Static-geometry → H3 cell / cell set + the Set ever-intersects
   # predicate that consumes the resulting cell set against a th3index
   # trip path (cross-platform spatial prefilter).

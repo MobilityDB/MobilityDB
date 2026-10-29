@@ -59,6 +59,30 @@ SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', geography 'Point(4.35 50.85)', 10
 SELECT aDwithin(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-01]', 1.0);
 
 -------------------------------------------------------------------------------
+-- The static operand first, and two temporal cells
+-------------------------------------------------------------------------------
+
+SELECT eIntersects(geography 'Point(4.35 50.85)', ts2cell '[47c3c3@2001-01-01]');
+SELECT eIntersects(geography 'Point(-122.4 37.8)', ts2cell '[47c3c3@2001-01-01]');
+SELECT eDwithin(geography 'Point(4.35 50.85)', ts2cell '[47c3c3@2001-01-01]', 1000.0);
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]',
+  ts2cell '[47c3c3@2001-01-01]');
+SELECT eDwithin(ts2cell '[47c3c3@2001-01-01, 47c3c3@2001-01-02]',
+  ts2cell '[47c3c3@2001-01-01]', 1000.0);
+
+-------------------------------------------------------------------------------
+-- Two temporal cells over disjoint times have no instant to answer on, and
+-- the relationship is NULL; an empty geography is ever reached by nothing
+-------------------------------------------------------------------------------
+
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-02]');
+SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', ts2cell '[47c3c3@2001-01-02]', 1000.0);
+SELECT eIntersects(geography 'Point EMPTY', ts2cell '[47c3c3@2001-01-01]');
+SELECT eIntersects(ts2cell '[47c3c3@2001-01-01]', geography 'Point EMPTY');
+SELECT eDwithin(geography 'Point EMPTY', ts2cell '[47c3c3@2001-01-01]', 1000.0);
+SELECT eDwithin(ts2cell '[47c3c3@2001-01-01]', geography 'Point EMPTY', 1000.0);
+
+-------------------------------------------------------------------------------
 -- The cell is the region S2 assigns its points to. The first point lies in
 -- the level-2 cell of the queries below and 1,220 km outside the polygon
 -- joining its vertices with straight lines in longitude and latitude; the

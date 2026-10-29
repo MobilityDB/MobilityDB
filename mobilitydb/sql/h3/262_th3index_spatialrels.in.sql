@@ -81,8 +81,9 @@ CREATE FUNCTION aDisjoint(th3index, th3index)
 
 CREATE FUNCTION eIntersects(geography, th3index)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects($1, @extschema@.cellToBoundary($2)) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(geography, th3index)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -90,8 +91,9 @@ CREATE FUNCTION aIntersects(geography, th3index)
 
 CREATE FUNCTION eIntersects(th3index, geography)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1), $2) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_th3index_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(th3index, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -99,9 +101,9 @@ CREATE FUNCTION aIntersects(th3index, geography)
 
 CREATE FUNCTION eIntersects(th3index, th3index)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eIntersects(@extschema@.cellToBoundary($1),
-                            @extschema@.cellToBoundary($2)) $$;
+  AS 'MODULE_PATHNAME', 'Eintersects_th3index_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(th3index, th3index)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
@@ -114,19 +116,21 @@ CREATE FUNCTION aIntersects(th3index, th3index)
 
 CREATE FUNCTION eDwithin(geography, th3index, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin($1, @extschema@.cellToBoundary($2), $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDwithin(th3index, geography, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1), $2, $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_th3index_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION eDwithin(th3index, th3index, dist float)
   RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDwithin(@extschema@.cellToBoundary($1),
-                         @extschema@.cellToBoundary($2), $3) $$;
+  AS 'MODULE_PATHNAME', 'Edwithin_th3index_th3index'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(th3index, th3index, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE

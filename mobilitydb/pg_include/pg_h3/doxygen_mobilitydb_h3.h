@@ -106,6 +106,14 @@
  *   @ingroup mobilitydb_h3_comp
  *   @brief Temporal comparison helpers (returning a temporal boolean)
  *
+ * @defgroup mobilitydb_h3_rel Spatial relationship functions
+ * @ingroup mobilitydb_h3
+ * @brief Spatial relationship functions for temporal H3 cell indices
+ *
+ *   @defgroup mobilitydb_h3_rel_ever Ever and always spatial relationship functions
+ *   @ingroup mobilitydb_h3_rel
+ *   @brief Ever and always spatial relationship functions for temporal H3 cell indices
+ *
  * @defgroup mobilitydb_h3_bbox Bounding-box operators
  * @ingroup mobilitydb_h3
  * @brief Bounding-box / positional / topology operators on temporal H3
