@@ -720,6 +720,9 @@ datum_hash_extended(Datum d, MeosType type, uint64 seed)
 /**
  * @brief Return the number of bytes of the sort key of a value of a fixed-size
  * ordered base type, 0 for another type
+ * @details The fixed-size types are the booleans, the integers, the floats,
+ * the dates, the timestamps, the cells, the circular buffers and the network
+ * points
  * @param[in] type Base type
  */
 size_t
@@ -745,6 +748,14 @@ datum_sortkey_size(MeosType type)
     case T_FLOAT8:
     case T_TIMESTAMPTZ:
       return sizeof(int64);
+#if CBUFFER
+    case T_CBUFFER:
+      return cbuffer_sortkey_size();
+#endif
+#if NPOINT
+    case T_NPOINT:
+      return npoint_sortkey_size();
+#endif
     default:
       return 0;
   }
@@ -765,7 +776,9 @@ datum_sortkey_type(MeosType type)
  * @details The function has one arm per base type of #datum_sortkey_put,
  * which writes the key. The key of a text is its bytes, a zero byte written
  * as a zero byte followed by 0xFF, then two zero bytes ending it. The key of
- * a point is its coordinates, as #geopoint_sortkey_size counts them.
+ * a point is its coordinates, as #geopoint_sortkey_size counts them. The
+ * key of a circular buffer and of a network point have a fixed size, which
+ * #cbuffer_sortkey_size and #npoint_sortkey_size give.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -808,6 +821,12 @@ datum_sortkey_len(Datum d, MeosType type)
     case T_INT8:
     case T_FLOAT8:
     case T_TIMESTAMPTZ:
+#if CBUFFER
+    case T_CBUFFER:
+#endif
+#if NPOINT
+    case T_NPOINT:
+#endif
       return datum_sortkey_size(type);
     default:
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
@@ -843,7 +862,9 @@ sortkey_put_uint64(uint64 v, int nbytes, uint8_t *out)
  * 0xFF, and ends with two zero bytes, which sort below every byte that
  * continues a longer text, so that the key of a value followed by other keys
  * still orders as the value does. A point writes its coordinates through
- * #geopoint_sortkey_put.
+ * #geopoint_sortkey_put, a circular buffer its SRID, centre and radius
+ * through #cbuffer_sortkey_put, and a network point its route and position
+ * through #npoint_sortkey_put.
  * @param[in] d Value
  * @param[in] type Base type, one #datum_sortkey_type accepts, or a geometry
  * or geography type when the value is a point
@@ -938,6 +959,16 @@ datum_sortkey_put(Datum d, MeosType type, uint8_t *out)
       geopoint_sortkey_put(gs, out);
       return;
     }
+#if CBUFFER
+    case T_CBUFFER:
+      cbuffer_sortkey_put(DatumGetCbufferP(d), out);
+      return;
+#endif
+#if NPOINT
+    case T_NPOINT:
+      npoint_sortkey_put(DatumGetNpointP(d), out);
+      return;
+#endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
         "Unknown sort key function for type: %s", meostype_name(type));

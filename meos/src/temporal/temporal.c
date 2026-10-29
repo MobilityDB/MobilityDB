@@ -4185,8 +4185,8 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @brief Return the sort key of a temporal value
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
- * Booleans, integers, big integers, floats, texts, points and cells have a
- * sort key.
+ * Booleans, integers, big integers, floats, texts, points, cells, circular
+ * buffers and network points have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL
