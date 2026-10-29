@@ -596,7 +596,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ◐ PARTIAL | tDistance/nad/nai/shortestLine — `distance.sql.tmpl` via the `subtypes:` track (§3) writes the files of `tpose` and `tposechain`; every other family's is hand-written |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tposechain — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand; pose is hand at both levels |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tpose, tposechain — `spatialrels.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while their own SQL wrapper files (212/170) stay hand |
 | Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
@@ -670,7 +670,7 @@ plain = the file exists but is still hand-maintained.
 |---|---|---|---|---|---|---|---|---|---|---|
 | cbuffer (200) | **204** | 205 | **208** | **209** | 210 | **211** | 212 | **214** | **216** | 207 |
 | npoint (300) | **304** | 306 | **308** | **309** | 312 | **314** | **320** | **322** | **316** | 307 |
-| pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | 112 | **114** | **116** | 107 |
+| pose (100) | **104** | 105 | **108** | **109** | **110** | **111** | **112** | **114** | **116** | 107 |
 | posechain (550) | **554** | 555 | **558** | **559** | **560** | **561** | **562** | **564** | **566** | — |
 | rgeo (150) | **154** | 156 | **161** | **162** | 164 | **168** | 170 | **172** | **173** | 160 |
 | h3 (250) | **254** | 255 | **258** | **259** | — | **261** | **262** | **264** | **272**·**273** | **257** |
@@ -710,17 +710,16 @@ Reading the table:
   does.
 - **`spatialrels` SQL** (the ever/always wrapper *file*) is generated for the
   **cast-delegated families** (h3 262, quadbin 362, s2cell 612, npoint 320,
-  posechain 562, tpcpoint 443, tpcpatch 449) via the `subtypes:` `spatialrels`
+  pose 112, posechain 562, tpcpoint 443, tpcpatch 449) via the `subtypes:` `spatialrels`
   behaviour — a cell-boundary→`tgeometry` cast for the three cell families, a
-  `tnpoint::tgeompoint` / `tposechain::tpose::tgeompoint` /
-  `tpcpoint::tgeompoint` cast for the three point families, a
+  `tnpoint::tgeompoint` / `tpose::tgeompoint` / `tposechain::tpose::tgeompoint` /
+  `tpcpoint::tgeompoint` cast for the four point families, a
   `tpcpatch::tgeometry` cast for the patch. ⛔ `native_ever_intersects` is the
   additive flag a family sets when its type file already declares
   `eIntersects(<temp>, geometry)` over a kernel that reads the value directly —
   `tpcpatch` walks the points of each instant and short-circuits — so the emitted
-  file covers 35 of the 36 cells and leaves that one where it is. cbuffer 212,
-  pose 112 and
-  rgeo 170 stay hand — even though their underlying **C** ever/always kernel
+  file covers 35 of the 36 cells and leaves that one where it is. cbuffer 212
+  and rgeo 170 stay hand — even though their underlying **C** ever/always kernel
   dispatch is generated (next bullet).
   ⛔ A family whose VALUES are positions carries `point_target: true`, the additive
   flag (`DEFAULT_FALSE_FLAGS`) whose `-- @IFNOT point_target` guards leave it the
@@ -821,8 +820,8 @@ its last edit:
 
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
-  tquadbin, ts2cell, tnpoint); cbuffer/pose/rgeo's own wrapper files (212/112/170) stay
-  hand even though cbuffer's and rgeo's C kernel is generated.
+  tquadbin, ts2cell, tnpoint, tpose, tposechain); cbuffer/rgeo's own wrapper files
+  (212/170) stay hand even though their C kernel is generated.
 
 ⭐ **THE DISCRIMINATOR THAT DECIDES WHETHER A GAP IS MECHANICAL**, and it is one
 command: take the behaviour's `begin`/`end` markers from the covered sibling's
