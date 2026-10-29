@@ -374,3 +374,52 @@ SELECT b, asText(ts2cell(tgeogpoint
 FROM (VALUES (true), (false)) t(b);
 
 -------------------------------------------------------------------------------
+
+-- The grid distance is the number of steps between edge neighbours: every
+-- pair of cells at level 2, on one face, on adjacent faces and on opposite
+-- ones, against a breadth-first search over s2EdgeNeighbors
+WITH RECURSIVE cells(c) AS (
+  SELECT unnest(cellToChildren(f, 2))
+  FROM unnest(ARRAY[s2cell '1', s2cell '3', s2cell '5', s2cell '7',
+    s2cell '9', s2cell 'b']) f
+),
+steps(o, c, k) AS (
+  SELECT c, c, 0 FROM cells
+  UNION
+  SELECT s.o, n, s.k + 1
+  FROM steps s, LATERAL unnest(s2EdgeNeighbors(s.c)) n
+  WHERE s.k < 11
+),
+pairs(o, d, k) AS (
+  SELECT o, c, min(k) FROM steps GROUP BY o, c
+)
+SELECT count(*) AS pairs, max(k) AS max_distance,
+  count(*) FILTER (WHERE startValue(ts2GridDistance(
+    ts2cell(o, timestamptz '2001-01-01'),
+    ts2cell(d, timestamptz '2001-01-01'))) <> k) AS mismatches
+FROM pairs;
+
+-- The cells of level 30 at the centres of two opposite faces are a path
+-- around the cube apart, two half faces and a face of 2^30 cells a side
+SELECT asText(ts2GridDistance(
+  ts2cell(geoToS2Cell(geography 'Point(0 0)', 30), timestamptz '2001-01-01'),
+  ts2cell(geoToS2Cell(geography 'Point(180 0)', 30),
+    timestamptz '2001-01-01')));
+
+-- The distance is taken over the time the two values share
+SELECT asText(ts2GridDistance(
+  ts2cell(s2cell '47c3c', tstzspan '[2001-01-01, 2001-01-03]'),
+  ts2cell(s2cell '47c34', tstzspan '[2001-01-02, 2001-01-04]')));
+
+-- The `<->` operator is the function, and the distance is symmetric
+SELECT ts2cell(s2cell '47c3c', timestamptz '2001-01-01') <->
+    ts2cell(s2cell '47c34', timestamptz '2001-01-01') =
+  ts2GridDistance(ts2cell(s2cell '47c34', timestamptz '2001-01-01'),
+    ts2cell(s2cell '47c3c', timestamptz '2001-01-01'));
+
+-- Two cells of different levels have no grid distance
+/* Errors */
+SELECT ts2GridDistance(ts2cell(s2cell '47c3c', timestamptz '2001-01-01'),
+  ts2cell(s2cell '47c3', timestamptz '2001-01-01'));
+
+-------------------------------------------------------------------------------

@@ -474,3 +474,50 @@ FROM quadbinSplit(tgeompoint
   'SRID=4326;[Point(-170 65)@2001-01-01, Point(-100 65)@2001-01-02]', 2);
 
 -------------------------------------------------------------------------------
+
+-- The grid distance is the smallest radius whose gridDisk around one cell
+-- holds the other: every pair of cells at zoom 3, the corners and the edges
+-- of the grid among them, against the disks of radius 0 to 7
+WITH cells(c) AS (
+  SELECT quadbinTileToCell(x, y, 3)
+  FROM generate_series(0, 7) x, generate_series(0, 7) y
+),
+pairs(o, d, k) AS (
+  SELECT o.c, d.c, (SELECT min(k) FROM generate_series(0, 7) k
+    WHERE gridDisk(o.c, k) @> d.c)
+  FROM cells o, cells d
+)
+SELECT count(*) AS pairs, max(k) AS max_distance,
+  count(*) FILTER (WHERE startValue(tquadbinGridDistance(
+    tquadbin(o, timestamptz '2001-01-01'),
+    tquadbin(d, timestamptz '2001-01-01'))) <> k) AS mismatches
+FROM pairs;
+
+-- No column wraps at the antimeridian and no row crosses a pole, so the
+-- cells at the two ends of a row or of a column are a whole side apart
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(0, 3, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(7, 3, 3), timestamptz '2001-01-01')));
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(3, 0, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(3, 7, 3), timestamptz '2001-01-01')));
+
+-- The distance is taken over the time the two values share
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
+  tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+
+-- The `<->` operator is the function, and the distance is symmetric
+SELECT tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01') <->
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01') =
+  tquadbinGridDistance(
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01'),
+    tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'));
+
+-- Two cells of different zooms have no grid distance
+/* Errors */
+SELECT tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(1, 1, 4), timestamptz '2001-01-01'));
+
+-------------------------------------------------------------------------------

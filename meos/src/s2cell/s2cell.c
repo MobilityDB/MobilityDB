@@ -496,10 +496,13 @@ s2cell_xyz_to_face_uv(const double xyz[3], double *u, double *v)
 }
 
 /**
- * @brief Return the unit vector of a `(face, u, v)` cube coordinate
+ * @brief Return the point of the cube `[-1, 1]^3` at a `(face, u, v)` cube
+ * coordinate
+ * @details The inverse of #s2cell_xyz_to_face_uv on the cube, which
+ * #s2cell_face_uv_to_xyz projects onto the sphere
  */
 static void
-s2cell_face_uv_to_xyz(uint32_t face, double u, double v, double xyz[3])
+s2cell_face_uv_to_cube(uint32_t face, double u, double v, double xyz[3])
 {
   switch (face)
   {
@@ -510,6 +513,17 @@ s2cell_face_uv_to_xyz(uint32_t face, double u, double v, double xyz[3])
     case 4: xyz[0] =    v; xyz[1] = -1.0; xyz[2] =   -u; break;
     default: xyz[0] =   v; xyz[1] =    u; xyz[2] = -1.0; break;
   }
+  return;
+}
+
+/**
+ * @brief Return the unit vector of a `(face, u, v)` cube coordinate
+ * @details The point #s2cell_face_uv_to_cube places on the cube, normalised
+ */
+static void
+s2cell_face_uv_to_xyz(uint32_t face, double u, double v, double xyz[3])
+{
+  s2cell_face_uv_to_cube(face, u, v, xyz);
   double norm = sqrt(xyz[0] * xyz[0] + xyz[1] * xyz[1] + xyz[2] * xyz[2]);
   xyz[0] /= norm;
   xyz[1] /= norm;
@@ -1121,6 +1135,74 @@ s2cell_edge_neighbors(S2CellId cell, int *count)
     level);
   *count = 4;
   return result;
+}
+
+/**
+ * @brief Set the centre of a cell of @p level on the cube `[-n, n]^3`, where
+ * `n` is the number of cells of the level along an edge of a face
+ * @details The point #s2cell_face_uv_to_cube places, scaled by `n`. The
+ * coordinates are integers: the one across the face is `n` or `-n` and those
+ * along the face are `2 * c + 1 - n` for the column or the row `c` of the
+ * cell, so the centres of two cells sharing an edge are 2 apart in the sum of
+ * the absolute differences of their coordinates, on one face as across an
+ * edge of the cube
+ */
+static void
+s2cell_cube_centre(S2CellId cell, uint32_t level, int64 centre[3])
+{
+  uint32_t i, j;
+  uint32_t face = s2cell_to_face_ij(cell, &i, &j, NULL);
+  int64 n = INT64_C(1) << level;
+  int64 col = i >> (S2_MAX_LEVEL - level), row = j >> (S2_MAX_LEVEL - level);
+  /* Dividing by a power of 2 and multiplying back by it is exact */
+  double xyz[3];
+  s2cell_face_uv_to_cube(face, (double) (2 * col + 1 - n) / (double) n,
+    (double) (2 * row + 1 - n) / (double) n, xyz);
+  for (int k = 0; k < 3; k++)
+    centre[k] = llround(xyz[k] * (double) n);
+  return;
+}
+
+/**
+ * @brief Return the grid distance of two S2 cells of one level, the number of
+ * steps between edge neighbours from one to the other
+ * @details A step to one of the edge neighbours of #s2cell_edge_neighbors
+ * moves the centre of #s2cell_cube_centre by 2 in the sum of the absolute
+ * differences of its coordinates, so half that sum bounds the distance from
+ * below, and a path following the cube reaches the bound unless the two cells
+ * lie on opposite faces. A path between opposite faces crosses one of the
+ * four faces between them, going around the cube along one axis of the faces,
+ * so the distance is the shortest of those four paths.
+ * @param[in] origin,dest S2 cells
+ * @return The distance, -1 when the levels differ
+ */
+int64
+s2cell_grid_distance(S2CellId origin, S2CellId dest)
+{
+  uint32_t level1 = s2cell_get_resolution(origin);
+  uint32_t level2 = s2cell_get_resolution(dest);
+  if (level1 != level2)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The S2 cells must have the same level: %u, %u", level1, level2);
+    return -1;
+  }
+  int64 p[3], q[3];
+  s2cell_cube_centre(origin, level1, p);
+  s2cell_cube_centre(dest, level1, q);
+  uint32_t face1 = s2cell_get_face(origin), face2 = s2cell_get_face(dest);
+  if (face1 == face2 || face1 % 3 != face2 % 3)
+    return (llabs(p[0] - q[0]) + llabs(p[1] - q[1]) +
+      llabs(p[2] - q[2])) / 2;
+  /* The faces are opposite along the axis a, and the path around the cube
+   * along the axis b goes by the face where b is -n or that where it is n */
+  int64 n = INT64_C(1) << level1;
+  uint32_t a = face1 % 3, b = (a + 1) % 3, c = (a + 2) % 3;
+  int64 around_b = llabs(p[c] - q[c]) +
+    Min(2 * n + p[b] + q[b], 2 * n - p[b] - q[b]);
+  int64 around_c = llabs(p[b] - q[b]) +
+    Min(2 * n + p[c] + q[c], 2 * n - p[c] - q[c]);
+  return (2 * n + Min(around_b, around_c)) / 2;
 }
 
 /*****************************************************************************

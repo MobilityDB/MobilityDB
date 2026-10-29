@@ -2378,6 +2378,25 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 -- 1202021322
 </programlisting>
 			</listitem>
+			<listitem xml:id="tcell_quadbin_grid_distance">
+				<indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal grid distance between two temporal QUADBIN cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tquadbinGridDistance(tquadbin,tquadbin) → tbigint
+tquadbin &lt;-&gt; tquadbin → tbigint
+</programlisting>
+				<para>The grid distance of two cells of the same zoom is the smallest radius whose <varname>gridDisk</varname> around one holds the other, the larger of the differences of their tile columns and rows. The grid has no cell beyond its edges, so the cells at the two ends of a row are a whole row apart. Equivalently, the <varname>&lt;-&gt;</varname> operator returns the same distance.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
+  tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+-- [3@2001-01-02, 3@2001-01-03]
+SELECT tquadbin(quadbinTileToCell(0, 3, 3), timestamptz '2001-01-01') &lt;-&gt;
+  tquadbin(quadbinTileToCell(7, 3, 3), timestamptz '2001-01-01');
+-- 7@2001-01-01
+</programlisting>
+			</listitem>
 			<listitem xml:id="tcell_quadbin_cell_to_tile">
 				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
 				<para>Decompose a cell back into its tile coordinate triple, returned as an integer array holding x, then y, then z</para>
@@ -2445,6 +2464,27 @@ SELECT s2TokenToCell('47c3c3');
 -- 47c3c3
 SELECT asText(ts2CellToToken(ts2cell '47c3c3@2001-01-01'));
 -- "47c3c3"@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_grid_distance">
+				<indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Return the temporal grid distance between two temporal S2 cells</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+ts2GridDistance(ts2cell,ts2cell) → tbigint
+ts2cell &lt;-&gt; ts2cell → tbigint
+</programlisting>
+				<para>The grid distance of two cells of the same level is the number of steps between edge neighbours, those <varname>s2EdgeNeighbors</varname> returns, from one to the other, across the edges of the cube faces as within a face. Two cells on opposite faces are a path around the cube apart. Equivalently, the <varname>&lt;-&gt;</varname> operator returns the same distance.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(ts2GridDistance(
+  ts2cell(s2cell '47c3c', tstzspan '[2001-01-01, 2001-01-03]'),
+  ts2cell(s2cell '47c34', tstzspan '[2001-01-02, 2001-01-04]')));
+-- [1@2001-01-02, 1@2001-01-03]
+SELECT ts2cell(geoToS2Cell(geography 'Point(0 0)', 30),
+    timestamptz '2001-01-01') &lt;-&gt;
+  ts2cell(geoToS2Cell(geography 'Point(180 0)', 30),
+    timestamptz '2001-01-01');
+-- 2147483648@2001-01-01
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_s2_common_ancestor">

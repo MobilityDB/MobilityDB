@@ -189,6 +189,30 @@ Tquadbin_cell_to_quadkey(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Grid distance, also the procedure behind the `<->` operator
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tquadbin_grid_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tquadbin_grid_distance);
+/**
+ * @ingroup mobilitydb_quadbin_traversal
+ * @brief Return the temporal grid distance of two temporal quadbin cells
+ * @details As #Th3index_grid_distance is for H3 cells
+ * @sqlfn tquadbinGridDistance()
+ * @sqlop @p \<->
+ */
+Datum
+Tquadbin_grid_distance(PG_FUNCTION_ARGS)
+{
+  Temporal *origin = PG_GETARG_TEMPORAL_P(0);
+  Temporal *dest = PG_GETARG_TEMPORAL_P(1);
+  Temporal *result = tquadbin_grid_distance(origin, dest);
+  PG_FREE_IF_COPY(origin, 0);
+  PG_FREE_IF_COPY(dest, 1);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+/*****************************************************************************
  * Conversion from a temporal point
  *****************************************************************************/
 

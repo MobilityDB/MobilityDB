@@ -77,6 +77,10 @@
  *   @defgroup mobilitydb_s2cell_rel_ever Ever and always spatial relationship functions
  *   @ingroup mobilitydb_s2cell_rel
  *   @brief Ever and always spatial relationship functions for temporal S2 cell indices
+ *
+ * @defgroup mobilitydb_s2cell_traversal Grid-traversal functions
+ * @ingroup mobilitydb_s2cell
+ * @brief Grid-traversal functions for temporal S2 cell indices
  */
 
 /*****************************************************************************/

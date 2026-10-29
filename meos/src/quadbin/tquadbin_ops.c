@@ -216,6 +216,48 @@ tquadbin_cell_to_quadkey(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Grid distance
+ *****************************************************************************/
+
+/**
+ * @brief Return the grid distance of two quadbin cells
+ */
+static Datum
+datum_quadbin_grid_distance(Datum origin_d, Datum dest_d)
+{
+  return Int64GetDatum(quadbin_grid_distance(DatumGetQuadbin(origin_d),
+    DatumGetQuadbin(dest_d)));
+}
+
+/**
+ * @ingroup meos_cellindex
+ * @brief Return the temporal grid distance of two temporal quadbin cells, the
+ * smallest radius whose ring around one holds the other at each instant
+ * @details As #th3index_grid_distance is for H3 cells, the procedure of the
+ * `<->` operator on `tquadbin`
+ * @param[in] origin,dest Temporal values
+ * @csqlfn #Tquadbin_grid_distance()
+ */
+Temporal *
+tquadbin_grid_distance(const Temporal *origin, const Temporal *dest)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TQUADBIN(origin, NULL); VALIDATE_TQUADBIN(dest, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_quadbin_grid_distance;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TQUADBIN;
+  lfinfo.argtype[1] = T_TQUADBIN;
+  lfinfo.restype = T_TBIGINT;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  return tfunc_temporal_temporal(origin, dest, &lfinfo);
+}
+
+/*****************************************************************************
  * tgeompoint -> tquadbin
  *****************************************************************************/
 
