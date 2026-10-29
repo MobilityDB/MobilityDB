@@ -993,7 +993,7 @@ PG_FUNCTION_INFO_V1(Raster_set_values);
  * @param[in] newvalueset Values of the block, a NULL one setting the pixel to
  * nodata
  * @param[in] noset True for a value not to set, absent where every value is
- * set; read over the block it shares with the values
+ * set; a block of its own, read over the block of the values
  * @param[in] keepnodata True to leave the pixels holding the nodata value
  * @note Not STRICT: the flags left out set every value, and a NULL
  * @p keepnodata takes its default
@@ -1017,25 +1017,27 @@ Raster_set_values(PG_FUNCTION_ARGS)
   for (int i = 0; i < count; i++)
     values[i] = nulls[i] ? 0.0 : DatumGetFloat8(elems[i]);
   pfree(elems);
-  /* The flags are read over the block they share with the values, a value
-   * beyond the flags being set, as PostGIS reads them */
+  /* The flags are a block of their own, which MEOS reads over the block of the
+   * values; a NULL flag sets its value, and no flag sets every value */
   bool *noset = NULL;
+  int nrows = 0, ncols = 0;
   if (! PG_ARGISNULL(5))
   {
-    int nrows, ncols, ncount;
+    int ncount;
     bool *nnulls;
     Datum *nelems = raster_block_extract(PG_GETARG_ARRAYTYPE_P(5), &nrows,
       &ncols, &nnulls, &ncount);
-    noset = palloc0(sizeof(bool) * (size_t) (count > 0 ? count : 1));
-    for (int j = 0; j < rows && j < nrows; j++)
-      for (int i = 0; i < cols && i < ncols; i++)
-        noset[j * cols + i] = ! nnulls[j * ncols + i] &&
-          DatumGetBool(nelems[j * ncols + i]);
+    if (ncount > 0)
+    {
+      noset = palloc(sizeof(bool) * (size_t) ncount);
+      for (int i = 0; i < ncount; i++)
+        noset[i] = ! nnulls[i] && DatumGetBool(nelems[i]);
+    }
     pfree(nelems); pfree(nnulls);
   }
   bool keepnodata = PG_ARGISNULL(6) ? false : PG_GETARG_BOOL(6);
   Raster *result = raster_set_values(rast, band, x, y, cols, rows, values,
-    nulls, noset, count, keepnodata);
+    nulls, noset, ncols, nrows, count, keepnodata);
   pfree(values); pfree(nulls);
   if (noset)
     pfree(noset);

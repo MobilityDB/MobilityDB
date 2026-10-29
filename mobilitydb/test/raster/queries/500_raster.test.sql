@@ -2782,6 +2782,20 @@ SELECT
     = asHexWKB(ST_SetValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]]::float8[],
       ARRAY[[true]]))
 FROM r;
+-- Flags wider and taller than the values are read over the block of the
+-- values, the first flags of each of its rows, a NULL flag setting its value.
+WITH r AS (SELECT ST_AddBand(ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0,
+  0.0, 0.0, 3857), '16BSI'::text, 5, -1) AS r)
+SELECT
+  asHexWKB(setValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]],
+      ARRAY[[false, false, false], [true, true, true], [true, true, true]]))
+    = asHexWKB(ST_SetValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]]::float8[],
+      ARRAY[[false, false, false], [true, true, true], [true, true, true]])),
+  dumpValues(setValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]],
+      ARRAY[[false, false, false], [true, true, true], [true, true, true]]), 1),
+  dumpValues(setValues(r, 1, 1, 1, ARRAY[[1, 2], [3, 4]],
+      ARRAY[[NULL, true], [false, NULL]]), 1)
+FROM r;
 -- The pixels holding the nodata value keep it, and a band stating no nodata
 -- value takes the least value of its type for a NULL.
 WITH r AS (SELECT ST_SetValues(ST_AddBand(ST_MakeEmptyRaster(2, 1, 0.0, 1.0,
