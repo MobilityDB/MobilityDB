@@ -345,10 +345,10 @@ static void iterator_free_chain(JsonbIterator *it);
 static JsonbValue *setPath(JsonbIterator **it, Datum *path_elems,
   bool *path_nulls, int path_len, JsonbParseState **st, int level,
   JsonbValue *newval, int op_type);
-static void setPathObject(JsonbIterator **it, Datum *path_elems,
+static bool setPathObject(JsonbIterator **it, Datum *path_elems,
   bool *path_nulls, int path_len, JsonbParseState **st, int level,
   JsonbValue *newval, uint32 npairs, int op_type);
-static void setPathArray(JsonbIterator **it, Datum *path_elems,
+static bool setPathArray(JsonbIterator **it, Datum *path_elems,
   bool *path_nulls, int path_len, JsonbParseState **st, int level,
   JsonbValue *newval, uint32 nelems, int op_type);
 
@@ -1530,6 +1530,13 @@ jsonb_set_element(Jsonb *jb, Datum *path, int path_len, JsonbValue *newval)
   bool *path_nulls = palloc0(path_len * sizeof(bool));
   JsonbValue *res = setPath(&it, path, path_nulls, path_len, &state, 0, newval,
     JB_PATH_CREATE | JB_PATH_FILL_GAPS | JB_PATH_CONSISTENT_POSITION);
+  if (! res)
+  {
+    /* MEOS: as #pg_jsonb_set answers an error setPath raises */
+    iterator_free_chain(it);
+    pfree(path_nulls);
+    return PointerGetDatum(NULL);
+  }
   Jsonb *result = JsonbValueToJsonb(res);
   pfree(res); pfree(path_nulls);
   return PointerGetDatum(result);
@@ -3301,16 +3308,20 @@ setPath(JsonbIterator **it, Datum *path_elems, bool *path_nulls, int path_len,
       }
 
       (void) meos_pushJsonbValue(st, r, NULL);
-      setPathArray(it, path_elems, path_nulls, path_len, st, level, newval,
-        v.val.array.nElems, op_type);
+      /* MEOS: an error the walk raises under an error handler that returns
+       * ends the walk, as the error ends it in PostgreSQL */
+      if (! setPathArray(it, path_elems, path_nulls, path_len, st, level,
+          newval, v.val.array.nElems, op_type))
+        return NULL;
       r = JsonbIteratorNext(it, &v, false);
       Assert(r == WJB_END_ARRAY);
       res = meos_pushJsonbValue(st, r, NULL);
       break;
     case WJB_BEGIN_OBJECT:
       (void) meos_pushJsonbValue(st, r, NULL);
-      setPathObject(it, path_elems, path_nulls, path_len, st, level, newval,
-        v.val.object.nPairs, op_type);
+      if (! setPathObject(it, path_elems, path_nulls, path_len, st, level,
+          newval, v.val.object.nPairs, op_type))
+        return NULL;
       r = JsonbIteratorNext(it, &v, true);
       Assert(r == WJB_END_OBJECT);
       res = meos_pushJsonbValue(st, r, NULL);
@@ -3344,8 +3355,9 @@ setPath(JsonbIterator **it, Datum *path_elems, bool *path_nulls, int path_len,
 
 /*
  * Object walker for setPath
+ * MEOS: Return false when the walk raises an error
  */
-static void
+static bool
 setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
   int path_len, JsonbParseState **st, int level, JsonbValue *newval,
   uint32 npairs, int op_type)
@@ -3393,16 +3405,7 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
         {
           meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "cannot replace existing key");
-          /* meos_error() may return control to the caller (e.g. under the
-           * no-exit error handler used for host-embedded MEOS). Skip the
-           * value paired with the key already consumed above and keep
-           * draining the object instead of returning mid-iteration, so the
-           * JsonbIterator stays in sync for the caller's subsequent
-           * WJB_END_OBJECT read; an unsynced iterator makes setPath() push
-           * a stray WJB_VALUE with a NULL JsonbValue, which crashes in
-           * appendValue() */ // MEOS
-          (void) JsonbIteratorNext(it, &v, true); // MEOS
-          continue; // MEOS
+          return false; // MEOS
         }
 
         r = JsonbIteratorNext(it, &v, true);  /* skip value */
@@ -3415,8 +3418,9 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
       else
       {
         (void) meos_pushJsonbValue(st, r, &k);
-        setPath(it, path_elems, path_nulls, path_len, st, level + 1, newval,
-          op_type);
+        if (! setPath(it, path_elems, path_nulls, path_len, st, level + 1,
+            newval, op_type))
+          return false; // MEOS
       }
     }
     else
@@ -3471,12 +3475,14 @@ setPathObject(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     (void) push_path(st, level, path_elems, path_nulls, path_len, newval);
     /* Result is closed with WJB_END_OBJECT outside of this function */
   }
+  return true;
 }
 
 /*
  * Array walker for setPath
+ * MEOS: Return false when the walk raises an error
  */
-static void
+static bool
 setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
   int path_len, JsonbParseState **st, int level, JsonbValue *newval,
   uint32 nelems, int op_type)
@@ -3498,7 +3504,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "path element at position %d is not an integer: \"%s\"", level + 1, c);
       pfree(path_str); /* MEOS */
-      return;
+      return false;
     }
     /* MEOS: the text of the path element has answered the index and is named
      * by nothing outside this block. PostgreSQL reclaims it by resetting the
@@ -3521,7 +3527,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
       {
         meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "path element at position %d is out of range: %d", level + 1, idx);
-        return;
+        return false;
       }
       else
         idx = PG_INT32_MIN;
@@ -3581,8 +3587,11 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
           (void) meos_pushJsonbValue(st, WJB_ELEM, newval);
       }
       else
-        (void) setPath(it, path_elems, path_nulls, path_len, st, level + 1,
-          newval, op_type);
+      {
+        if (! setPath(it, path_elems, path_nulls, path_len, st, level + 1,
+            newval, op_type))
+          return false; // MEOS
+      }
     }
     else
     {
@@ -3633,6 +3642,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     (void) push_path(st, level, path_elems, path_nulls, path_len, newval);
     /* Result is closed with WJB_END_OBJECT outside of this function */
   }
+  return true;
 }
 
 /*
