@@ -273,9 +273,9 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
     return (Datum) 0;
   }
 
-  /* Get the minimum distance between the values of the boxes */
-  Datum res = distance_value_value(box->span.lower, box1.span.upper,
-    box->span.basetype);
+  /* Get the minimum distance between the values of the boxes, on whichever
+   * side of the temporal number the box lies, as #nad_tbox_tbox does */
+  Datum res = distance_span_span(&box->span, &box1.span);
 
   if (hast)
     pfree(temp1);

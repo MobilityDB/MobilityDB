@@ -118,3 +118,47 @@ SELECT COUNT(*) FROM tbl_tfloat t1, tbl_tboxfloat t2 WHERE t1.temp |=| t2.b IS N
      1
 (1 row)
 
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM
+    (atTime(t1.temp, t2.b::tstzspan)::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tint t1, (SELECT shiftValue(b, -200) AS b FROM tbl_tboxint UNION ALL
+  SELECT b FROM tbl_tboxint UNION ALL SELECT shiftValue(b, 200) FROM tbl_tboxint) t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |     3
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM
+    (atTime(t1.temp, t2.b::tstzspan)::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tfloat t1, (SELECT shiftValue(b, -200.0) AS b FROM tbl_tboxfloat UNION ALL
+  SELECT b FROM tbl_tboxfloat UNION ALL SELECT shiftValue(b, 200.0) FROM tbl_tboxfloat) t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |     3
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM (t1.temp::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tint t1, (SELECT tbox(shiftValue(b, -200)::intspan) AS b FROM tbl_tboxint UNION ALL
+  SELECT tbox(b::intspan) FROM tbl_tboxint UNION ALL
+  SELECT tbox(shiftValue(b, 200)::intspan) FROM tbl_tboxint) t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 | 25668
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) IS DISTINCT FROM (t1.temp::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.temp) IS DISTINCT FROM (t1.temp |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.temp |=| t2.b) > 0)
+FROM tbl_tfloat t1, (SELECT tbox(shiftValue(b, -200.0)::floatspan) AS b FROM tbl_tboxfloat UNION ALL
+  SELECT tbox(b::floatspan) FROM tbl_tboxfloat UNION ALL
+  SELECT tbox(shiftValue(b, 200.0)::floatspan) FROM tbl_tboxfloat) t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 | 23516
+(1 row)
+
