@@ -3204,12 +3204,12 @@ minus_timestamptz_interval(TimestampTz ts, const Interval *interv)
  * @return On error return DT_NOEND
  * @note Derived from PostgreSQL function @p timestamptz_pl_interval_at_zone()
  */
-Timestamp
+TimestampTz
 add_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   const text *zone)
 {
   pg_tz *attimezone = lookup_timezone((text *) zone);
-  Timestamp result = timestamptz_pl_interval_internal(ts, (Interval *) interv,
+  TimestampTz result = timestamptz_pl_interval_internal(ts, (Interval *) interv,
     attimezone);
   return result;
 }
@@ -3220,12 +3220,12 @@ add_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
  * @return On error return DT_NOEND
  * @note Derived from PostgreSQL function @p timestamptz_mi_interval_at_zone()
  */
-Timestamp
+TimestampTz
 minus_timestamptz_interval_at_zone(TimestampTz ts, const Interval *interv,
   const text *zone)
 {
   pg_tz *attimezone = lookup_timezone((text *) zone);
-  Timestamp result = timestamptz_mi_interval_internal(ts, (Interval *) interv,
+  TimestampTz result = timestamptz_mi_interval_internal(ts, (Interval *) interv,
     attimezone);
   return result;
 }

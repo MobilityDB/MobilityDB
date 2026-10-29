@@ -83,7 +83,7 @@ extern bool numeric_le(Numeric num1, Numeric num2);
 extern Numeric numeric_ln(Numeric num);
 extern Numeric numeric_log(Numeric num1, Numeric num2);
 extern bool numeric_lt(Numeric num1, Numeric num2);
-extern uint32 numeric_min_scale(Numeric num);
+extern int32 numeric_min_scale(Numeric num);
 extern Numeric numeric_minus(Numeric num1, Numeric num2);
 extern Numeric numeric_mod(Numeric num1, Numeric num2);
 extern Numeric numeric_mul(Numeric num1, Numeric num2);

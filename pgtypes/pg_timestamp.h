@@ -43,8 +43,8 @@
 /* Functions for timestamps */
 
 extern Timestamp add_timestamp_interval(Timestamp ts, const Interval *interv);
-extern Timestamp add_timestamptz_interval(TimestampTz tstz, const Interval *interv);
-extern Timestamp add_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone);
+extern TimestampTz add_timestamptz_interval(TimestampTz tstz, const Interval *interv);
+extern TimestampTz add_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone);
 extern int32 cmp_timestamp_timestamp(Timestamp ts1, Timestamp ts2);
 extern int32 cmp_timestamp_timestamptz(Timestamp ts, TimestampTz tstz);
 extern int32 cmp_timestamptz_timestamp(TimestampTz tstz, Timestamp ts);
@@ -101,7 +101,7 @@ extern Interval *timestamptz_age(TimestampTz tstz1, TimestampTz tstz2);
 extern TimestampTz timestamptz_at_local(TimestampTz tstz);
 extern TimestampTz timestamptz_bin(TimestampTz tstz, const Interval *stride, TimestampTz origin);
 extern Numeric timestamptz_extract(TimestampTz tstz, const text *units);
-extern int32 timestamptz_hash(TimestampTz tstz);
+extern uint32 timestamptz_hash(TimestampTz tstz);
 extern uint64 timestamptz_hash_extended(TimestampTz tstz, uint64 seed);
 extern TimestampTz timestamptz_in(const char *str, int32 typmod);
 extern Timestamp timestamptz_izone(TimestampTz tstz, const Interval *zone);

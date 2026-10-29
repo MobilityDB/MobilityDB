@@ -59,7 +59,7 @@ extern Interval *minus_time_time(TimeADT time1, TimeADT time2);
 extern TimeTzADT *minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
 extern TimeADT plus_time_interval(TimeADT time, Interval *interv);
 extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
-extern int time_cmp(TimeADT time1, TimeADT time2);
+extern int32 time_cmp(TimeADT time1, TimeADT time2);
 extern bool time_eq(TimeADT time1, TimeADT time2);
 extern Numeric time_extract(TimeADT time, const text *units);
 extern bool time_ge(TimeADT time1, TimeADT time2);
