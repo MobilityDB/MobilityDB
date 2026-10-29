@@ -59,6 +59,10 @@ SELECT jsonbExtractPathText(jsonb '{"a": {"b": "z"}}', ARRAY['a', 'b']);
 SELECT jsonbPretty(jsonb '{"a": 1}');
 SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']) =
   jsonb '{"a": {"b": [10, 20]}}' #> ARRAY['a', 'b', '1'];
+-- A path holding a NULL element answers NULL
+SELECT jsonbExtractPath(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]) IS NULL,
+  jsonbExtractPath(jsonb '{"a": {"b": 1}}', ARRAY[NULL, 'a']) IS NULL,
+  jsonbExtractPathText(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]) IS NULL;
 
 -- Set-returning functions
 SELECT * FROM jsonbArrayElements(jsonb '[1, "two", {"three": 3}]');
@@ -72,6 +76,11 @@ SELECT COUNT(*) FROM jsonbArrayElements(jsonb '[]');
 SELECT jsonbExists(jsonb '{"a": 1}', 'a'), jsonbExists(jsonb '{"a": 1}', 'b');
 SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', 'a']);
 SELECT jsonbExistsAll(jsonb '{"a": 1}', ARRAY['b', 'a']);
+-- A NULL key is skipped
+SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['a', NULL]),
+  jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', NULL]),
+  jsonbExistsAll(jsonb '{"a": 1}', ARRAY['a', NULL]),
+  jsonbExistsAll(jsonb '{"a": 1}', ARRAY[NULL::text]);
 SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}');
 SELECT jsonbContained(jsonb '{"a": 1}', jsonb '{"a": 1, "b": 2}');
 SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}') =
@@ -90,6 +99,17 @@ SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'delete_key');
 SELECT jsonbSetLax(jsonb '{"a": 1}', ARRAY['a'], NULL, true, 'return_target');
 SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2');
 SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2', true);
+-- A NULL path element is an error where the path reaches it
+SELECT jsonbDeleteArray(jsonb '{"a": 1, "b": 2}', ARRAY['a', NULL]);
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL]);
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]);
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY[NULL::text]);
+SELECT jsonbSet(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL], jsonb '3');
+SELECT jsonbSet(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL], jsonb '3');
+SELECT jsonbSet(jsonb '{"d": [1, 2]}', ARRAY['d', NULL], jsonb '3');
+SELECT jsonbSetLax(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL], jsonb '3');
+SELECT jsonbInsert(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL], jsonb '3');
+SELECT jsonbInsert(jsonb '{"d": [1, 2]}', ARRAY['d', NULL], jsonb '3');
 SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}');
 SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}', true);
 

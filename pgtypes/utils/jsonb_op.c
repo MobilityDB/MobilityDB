@@ -91,6 +91,9 @@ pg_jsonb_exists_array(const Jsonb *jb, text **keys_elems, int keys_len,
 
   for (int i = 0; i < keys_len; i++)
   {
+    /* A NULL key is skipped, as in #pg_jsonb_delete_array */
+    if (! keys_elems[i])
+      continue;
     JsonbValue strVal;
     strVal.type = jbvString;
     /* We rely on the array elements not being toasted */

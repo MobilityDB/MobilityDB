@@ -87,6 +87,9 @@ SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1']
 SELECT tjsonbSetLax(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', '1'], NULL);
 SELECT tjsonbSetLax(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01,
   {"speed": 20}@2001-01-02]', ARRAY['units'], NULL, true, 'delete_key');
+-- A NULL path element is an error where the path reaches it, as for jsonbSet
+SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['gears', NULL], '2'::jsonb);
+SELECT tjsonbSet(tjsonb '{{"gears": [1, 3]}@2001-01-01}', ARRAY['x', NULL], '2'::jsonb);
 
 -------------------------------------------------------------------------------
 
@@ -94,6 +97,8 @@ SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-
 SELECT tjsonbExtractPath(tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}', ARRAY['speed']);
 SELECT tjsonbExtractPath(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]', ARRAY['speed']);
 SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed']);
+-- A path holding a NULL element extracts no value, as jsonbExtractPath answers NULL
+SELECT tjsonbExtractPath(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02}', ARRAY['speed', NULL]);
 
 /* Null handling */
 SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed'],'raise_exception');
