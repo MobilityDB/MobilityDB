@@ -49,6 +49,8 @@
  * - float parsing (tfloat_in, through meos_strtod) works concurrently,
  * the C-locale handle it shares being made once per process;
  * - meos_errno reads/writes remain isolated per thread;
+ * - the table of time zone abbreviations every thread shares is read
+ * concurrently, installed by the first thread and freed by the last;
  * - the GMT timezone bootstrap (postgres/timezone/localtime.c) is
  * no longer racy under concurrent first-use.
  *
@@ -70,6 +72,7 @@
 #include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <pg_timestamp.h>
 
 typedef struct
 {
@@ -87,6 +90,8 @@ worker(void *arg)
   /* Each thread allocates its own MEOS state. */
   meos_initialize();
   meos_initialize_timezone("UTC");
+  /* MSK, which the shared table of abbreviations looks up in Europe/Moscow */
+  TimestampTz msk_utc = timestamptz_in("2001-01-15 09:00:00+00", -1);
 
   /* Each thread uses a coordinate set that's unique to its id; if WKT
    * parsing were still process-shared, parse states would collide and
@@ -142,6 +147,10 @@ worker(void *arg)
     if (! tf || tfloat_start_value(tf) != i + 0.5)
       atomic_fetch_add(&w->errors, 1);
     free(tf);
+
+    /* Read a timestamp through the abbreviation table every thread shares */
+    if (timestamptz_in("2001-01-15 12:00:00 MSK", -1) != msk_utc)
+      atomic_fetch_add(&w->errors, 1);
 
     /* Verify per-thread errno isolation in the same hot loop. */
     int marker = w->id * 1000003 + i;
