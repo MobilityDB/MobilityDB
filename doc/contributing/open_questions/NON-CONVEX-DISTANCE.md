@@ -321,6 +321,9 @@ schedule. The status of the feature belongs to this note.
 
 ## 9. Relation to the other notes
 
+- **[Feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md).** The assessment of this plan against master:
+  the primitives it reuses, the exactness of the convex cover, the widening of the solver, the risks,
+  the obligations and the order of delivery.
 - **[Any number of turning points in the lifting](N-TURNING-POINTS.md).** The envelope gives any
   number of instants per segment: corners, minima, maxima. Today they are built inside the family's
   own walk (`dist_seq`). When that note's third pull request puts the rigid geometry distance on the
