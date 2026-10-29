@@ -66,7 +66,9 @@ The catalog's contract with its consumers is `docs/cross-repo-handoff.md` in MEO
 | `BASE_ORDER`, `SET_TYPES` (the sets registered) | `typeRelations.byBase[*].set` in `MeosType` order (`catalog_collection_bases`) | D8 |
 | `SPAN_BASES`/`SPAN_TYPES`, `SPANSET_BASES`/`SPANSET_TYPES`, `typereg_members` | `typeRelations.byBase[*].span` / `.spanset` | D8 |
 | the cell-set prefilter (`geoTo<Cell>Set`, `eEqual(<cell>set, t<cell>)`) | each function's declared `sqlSignatures` (`prefilter_signature`) | D8 |
-| `CORE_TYPES["tnumber"]` (lacks `tbigint`), the numbers of the box topology of `reg_scope`, `SPATIAL_ALLTYPES`, the box spans | to read `typeRelations.predicates` (`tnumber_type`, `tspatial_type`, `tnumber_spantype`) | D8, after A29 |
+| `SQL_BASE_TO_DUCK`, `SQL_CONTAINER_ACC`, the conversions `*_to_<set, span, spanset>` | `SET_TYPES`, `SPAN_TYPES`, `SPANSET_TYPES` above | D8 |
+| `CORE_TYPES["tnumber"]` (`tint`, `tfloat`, `tbigint`), the numbers of the box topology of `reg_scope`, `SPATIAL_ALLTYPES` | `objectModel.lattice` (`lattice_members`): the `TNumber` class, and the `TSpatial` class whose `temporalTypes[t].bbox` is `stbox` | D8 |
+| the spans of a `tbox` | no list: the box registrations come from each function's declared `sqlSignatures`, so the generator needs no copy of `typeRelations.predicates.tnumber_spantype` | |
 | `HAND_SET_BASES` (`geomset`, `geogset`), `BASE_LOGICAL` (each base's DuckDB element type), `ELEM_TO_SET`/`ELEM_TO_SPAN`/`ELEM_TO_SPANSET` (C scalar type → collection) | stay in the generator: they state how the binding marshals a value, not which types exist; a base the catalog gives a set and `BASE_LOGICAL` does not name stops the generation | |
 
 **MobilityDB** (`tools/codegen/inherited/`): `manifest.d/classes.yaml` keeps the members of each
@@ -78,6 +80,6 @@ the same tree.
 
 | Row | Repository | What |
 |---|---|---|
-| D8 | MobilityDuck #533, branch `codegen/set-families-from-catalog` | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; then the temporal classes and the box spans from `typeRelations.predicates` |
+| D8 | MobilityDuck #533, branch `codegen/set-families-from-catalog` | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; the temporal classes from `objectModel.lattice` |
 | A29 | MEOS-API #219 (merged, `cfb463611f`) | `typeRelations.predicates` |
 | G12 | MobilityDB #3243, #3247 (merged) | the grid distance of the cells, whose prefilter D8 completes |
