@@ -39,7 +39,10 @@
  * Each cycle populates the caches the chain releases before releasing them,
  * so the assertions are not vacuous: the collation cache is filled by
  * #meos_initialize_collation, the timezone cache by #meos_initialize_timezone,
- * and the PROJ SRS cache by a #geo_transform between two projections.
+ * the PROJ SRS cache by a #geo_transform between two projections, and the
+ * table of time zone abbreviations, which the last finalize frees and the
+ * next initialize installs again, by a timestamp carrying an abbreviation
+ * whose offset the table looks up in a zone.
  *
  * The program can be build as follows
  * @code
@@ -52,11 +55,17 @@
 #include <stdlib.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <pg_timestamp.h>
 
 /* A point in WGS 84, transformed to Web Mercator so that the cycle stores a
  * projection in the PROJ SRS cache the finalize chain then releases. */
 #define POINT_WKT "SRID=4326;POINT(4.35 50.85)"
 #define SRID_TO 3857
+
+/* MSK, whose offset PostgreSQL's Default set takes from Europe/Moscow at the
+ * instant, three hours east of UTC in January 2001 */
+#define TS_MSK "2001-01-15 12:00:00 MSK"
+#define TS_UTC "2001-01-15 09:00:00+00"
 
 /**
  * @brief Fill the caches that the finalize chain releases
@@ -71,6 +80,7 @@ populate_caches(void)
   assert(geo_srid(proj) == SRID_TO);
   free(proj);
   free(geom);
+  assert(timestamptz_in(TS_MSK, -1) == timestamptz_in(TS_UTC, -1));
 }
 
 int
