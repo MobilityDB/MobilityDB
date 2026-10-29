@@ -300,7 +300,8 @@ extern ValueCount *raster_value_count(const Raster *rast, int band,
   int *count);
 extern Raster *raster_set_values(const Raster *rast, int band, int x, int y,
   int width, int height, const double *values, const bool *nodata,
-  const bool *noset, int count, bool keepnodata);
+  const bool *noset, int nosetwidth, int nosetheight, int count,
+  bool keepnodata);
 extern Raster *raster_reclass(const Raster *rast, int band, const char *expr,
   const char *pixeltype, bool has_nodata, double nodataval);
 extern Raster *raster_slope(const Raster *rast, int band,
