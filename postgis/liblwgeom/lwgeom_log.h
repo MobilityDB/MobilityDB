@@ -32,6 +32,21 @@
 #include <stdarg.h>
 
 /*
+ * Archetype of the format attribute of the message functions, chosen as
+ * pgtypes chooses PG_PRINTF_ATTRIBUTE: GCC on MinGW reads printf with the
+ * Microsoft conversions, which have no %z, while gnu_printf reads the C99
+ * ones the messages are formatted with; clang has no gnu_printf and reads the
+ * C99 conversions under printf. liblwgeom.h states the same choice. MEOS
+ */
+#ifndef LW_PRINTF_ATTRIBUTE
+#if defined(__GNUC__) && ! defined(__clang__)
+#define LW_PRINTF_ATTRIBUTE gnu_printf
+#else
+#define LW_PRINTF_ATTRIBUTE printf
+#endif
+#endif
+
+/*
  * Debug macros
  */
 #if POSTGIS_DEBUG_LEVEL > 0
@@ -126,7 +141,7 @@
  * For debugging, use LWDEBUG() or LWDEBUGF().
  * @ingroup logging
  */
-void lwnotice(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void lwnotice(const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
 
 /**
  * Write a notice out to the error handler.
@@ -136,7 +151,7 @@ void lwnotice(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
  * For debugging, use LWDEBUG() or LWDEBUGF().
  * @ingroup logging
  */
-void lwerror(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void lwerror(const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
 
 /**
  * Write a debug message out.
@@ -145,7 +160,7 @@ void lwerror(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
  * efficiency.
  * @ingroup logging
  */
-void lwdebug(int level, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+void lwdebug(int level, const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 2, 3)));
 
 
 
