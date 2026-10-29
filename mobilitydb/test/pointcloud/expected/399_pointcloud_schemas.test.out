@@ -157,3 +157,233 @@ SELECT count(*) FROM pointcloud_dimensions WHERE pcid = 90;
 
 SELECT pcpoint(90, 1, 2, 3);
 ERROR:  No schema registered for pcid 90
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (93, 4326, 'none');
+INSERT 0 1
+INSERT INTO pointcloud_dimensions
+    (pcid, dim_no, dim_name, interpretation, dim_scale, dim_offset, description)
+  VALUES
+  (93, 1, 'X', 'int32_t', 0.01, 0, 'Easting & <metres>'),
+  (93, 2, 'Y', 'int32_t', 0.01, 100, NULL),
+  (93, 3, 'Z', 'double', 1, 0, 'Elevation');
+INSERT 0 3
+SELECT pcid, srid, PC_SchemaIsValid(schema) FROM pointcloud_formats
+WHERE pcid = 93;
+ pcid | srid | pc_schemaisvalid 
+------+------+------------------
+   93 | 4326 | t
+(1 row)
+
+SELECT schema FROM pointcloud_formats WHERE pcid = 93;
+                                                           schema                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ <?xml version="1.0" encoding="UTF-8"?>                                                                                     +
+ <pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">+
+   <pc:dimension>                                                                                                           +
+     <pc:position>1</pc:position>                                                                                           +
+     <pc:size>4</pc:size>                                                                                                   +
+     <pc:description>Easting &amp; &lt;metres&gt;</pc:description>                                                          +
+     <pc:name>X</pc:name>                                                                                                   +
+     <pc:interpretation>int32_t</pc:interpretation>                                                                         +
+     <pc:scale>0.01</pc:scale>                                                                                              +
+     <pc:offset>0</pc:offset>                                                                                               +
+     <pc:active>1</pc:active>                                                                                               +
+   </pc:dimension>                                                                                                          +
+   <pc:dimension>                                                                                                           +
+     <pc:position>2</pc:position>                                                                                           +
+     <pc:size>4</pc:size>                                                                                                   +
+     <pc:name>Y</pc:name>                                                                                                   +
+     <pc:interpretation>int32_t</pc:interpretation>                                                                         +
+     <pc:scale>0.01</pc:scale>                                                                                              +
+     <pc:offset>100</pc:offset>                                                                                             +
+     <pc:active>1</pc:active>                                                                                               +
+   </pc:dimension>                                                                                                          +
+   <pc:dimension>                                                                                                           +
+     <pc:position>3</pc:position>                                                                                           +
+     <pc:size>8</pc:size>                                                                                                   +
+     <pc:description>Elevation</pc:description>                                                                             +
+     <pc:name>Z</pc:name>                                                                                                   +
+     <pc:interpretation>double</pc:interpretation>                                                                          +
+     <pc:scale>1</pc:scale>                                                                                                 +
+     <pc:offset>0</pc:offset>                                                                                               +
+     <pc:active>1</pc:active>                                                                                               +
+   </pc:dimension>                                                                                                          +
+   <pc:metadata>                                                                                                            +
+     <Metadata name="compression">none</Metadata>                                                                           +
+   </pc:metadata>                                                                                                           +
+ </pc:PointCloudSchema>
+(1 row)
+
+SELECT PC_AsText(PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5]));
+             pc_astext              
+------------------------------------
+ {"pcid":93,"pt":[1.23,104.56,7.5]}
+(1 row)
+
+SELECT PC_Get(PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5]), 'X'),
+  PC_Get(PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5]), 'Y');
+ pc_get | pc_get 
+--------+--------
+   1.23 | 104.56
+(1 row)
+
+SELECT PC_NumPoints(PC_MakePatch(93, ARRAY[1, 101, 1, 2, 102, 2, 3, 103, 3])),
+  PC_AsText(PC_MakePatch(93, ARRAY[1, 101, 1, 2, 102, 2, 3, 103, 3]));
+ pc_numpoints |                     pc_astext                     
+--------------+---------------------------------------------------
+            3 | {"pcid":93,"pts":[[1,101,1],[2,102,2],[3,103,3]]}
+(1 row)
+
+SELECT PC_SchemaGetNDims(93), pointCloudSchemaNDims(93);
+ pc_schemagetndims | pointcloudschemandims 
+-------------------+-----------------------
+                 3 |                     3
+(1 row)
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+  SELECT 95, srid, schema FROM pointcloud_formats WHERE pcid = 93;
+INSERT 0 1
+SELECT pointCloudSchemaSRID(95), pointCloudSchemaNDims(95),
+  getX(pcpoint(93, 1.23, 104.56, 7.5)), getX(pcpoint(95, 1.23, 104.56, 7.5)),
+  getY(pcpoint(93, 1.23, 104.56, 7.5)), getY(pcpoint(95, 1.23, 104.56, 7.5));
+ pointcloudschemasrid | pointcloudschemandims | getx | getx |  gety  |  gety  
+----------------------+-----------------------+------+------+--------+--------
+                 4326 |                     3 | 1.23 | 1.23 | 104.56 | 104.56
+(1 row)
+
+INSERT INTO pointcloud_formats (pcid, srid, schema)
+  SELECT 93, 0, schema FROM pointcloud_formats WHERE pcid = 1;
+NOTICE:  The schema of pcid 93 is the one pointcloud_schemas and pointcloud_dimensions state
+INSERT 0 0
+SELECT srid, schema LIKE '%Easting%' FROM pointcloud_formats WHERE pcid = 93;
+ srid | ?column? 
+------+----------
+ 4326 | t
+(1 row)
+
+CREATE TABLE tbl_pcformats_point AS
+  SELECT PC_MakePoint(93, ARRAY[1.23, 104.56, 7.5])::text AS hex;
+SELECT 1
+SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
+ pc_get 
+--------
+   1.23
+(1 row)
+
+UPDATE pointcloud_dimensions SET dim_scale = 0.1 WHERE pcid = 93 AND dim_no = 1;
+UPDATE 1
+SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
+ pc_get 
+--------
+   12.3
+(1 row)
+
+UPDATE pointcloud_schemas SET srid = 3857 WHERE pcid = 93;
+UPDATE 1
+SELECT srid FROM pointcloud_formats WHERE pcid = 93;
+ srid 
+------
+ 3857
+(1 row)
+
+UPDATE pointcloud_dimensions SET active = false WHERE pcid = 93 AND dim_no = 3;
+UPDATE 1
+SELECT schema LIKE '%<pc:name>Z</pc:name>%<pc:active>0</pc:active>%'
+FROM pointcloud_formats WHERE pcid = 93;
+ ?column? 
+----------
+ t
+(1 row)
+
+UPDATE pointcloud_formats SET schema = f.schema FROM pointcloud_formats f
+WHERE pointcloud_formats.pcid = 95 AND f.pcid = 93;
+UPDATE 1
+SELECT pointCloudSchemaNDims(93), pointCloudSchemaNDims(95);
+ pointcloudschemandims | pointcloudschemandims 
+-----------------------+-----------------------
+                     2 |                     2
+(1 row)
+
+DELETE FROM pointcloud_formats WHERE pcid = 95;
+DELETE 1
+UPDATE pointcloud_dimensions SET active = true WHERE pcid = 93 AND dim_no = 3;
+UPDATE 1
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (94, 4326, 'none');
+INSERT 0 1
+SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
+ count 
+-------
+     0
+(1 row)
+
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
+  VALUES (94, 1, 'X', 'double');
+WARNING:  schema does not include a Y coordinate
+INSERT 0 1
+SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
+ count 
+-------
+     0
+(1 row)
+
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
+  VALUES (94, 2, 'Y', 'double');
+INSERT 0 1
+SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
+ count 
+-------
+     1
+(1 row)
+
+DELETE FROM pointcloud_dimensions WHERE pcid = 94 AND dim_no = 2;
+WARNING:  schema does not include a Y coordinate
+DELETE 1
+SELECT count(*) FROM pointcloud_formats WHERE pcid = 94;
+ count 
+-------
+     0
+(1 row)
+
+DELETE FROM pointcloud_schemas WHERE pcid = 94;
+DELETE 1
+INSERT INTO pointcloud_schemas (pcid, srid, compression) VALUES
+  (70000, 4326, 'none');
+INSERT 0 1
+INSERT INTO pointcloud_dimensions (pcid, dim_no, dim_name, interpretation)
+  VALUES (70000, 1, 'X', 'double'), (70000, 2, 'Y', 'double');
+INSERT 0 2
+SELECT pointCloudSchemaNDims(70000),
+  (SELECT count(*) FROM pointcloud_formats WHERE pcid = 70000);
+ pointcloudschemandims | count 
+-----------------------+-------
+                     2 |     0
+(1 row)
+
+DELETE FROM pointcloud_schemas WHERE pcid = 70000;
+DELETE 1
+BEGIN;
+BEGIN
+TRUNCATE pointcloud_schemas CASCADE;
+NOTICE:  truncate cascades to table "pointcloud_dimensions"
+TRUNCATE TABLE
+SELECT pcid FROM pointcloud_formats ORDER BY pcid;
+ pcid 
+------
+    1
+(1 row)
+
+ROLLBACK;
+ROLLBACK
+DELETE FROM pointcloud_schemas WHERE pcid = 93;
+DELETE 1
+SELECT count(*) FROM pointcloud_formats WHERE pcid = 93;
+ count 
+-------
+     0
+(1 row)
+
+SELECT PC_Get(hex::pcpoint, 'X') FROM tbl_pcformats_point;
+ERROR:  no entry in "public.pointcloud_formats" for pcid = 93
+DROP TABLE tbl_pcformats_point;
+DROP TABLE

@@ -134,9 +134,13 @@ inactive. `active boolean NOT NULL DEFAULT true` is the answer a user means, so 
 that both STATE the field agree, while a row and a document that omits it do not. A comparison of
 the two paths therefore states `active` on both sides, or it compares a statement against an absence.
 
+## What pgPointCloud reads
+
+⭐ **THE TWO TABLES WRITE THEIR DOCUMENT INTO `pointcloud_formats`.** The `pcpatch` and `pcpoint` types and the `PC_` functions belong to pgPointCloud, which reads a schema from `pointcloud_formats` alone, so a schema stated only in the two tables is one pgPointCloud cannot read. The trigger `pointCloudFormatsSync()` (`399_pointcloud_schemas.in.sql`) writes, for every `pcid` an insert, update or delete on either table touches, the document `pc_schema_from_xml` reads: one `pc:dimension` per row in the order of `dim_no`, its `pc:size` the width of its interpretation, and `pc:active` stated as `1` or `0`, the spellings both the upstream parser, which reads the field with `atoi`, and the vendored one read. It writes the row only while `pointcloud_formats` accepts it (an X and a Y dimension, a dimension at every position, a `pcid` below 65536), and removes it otherwise. A `pcid` the two tables state therefore has the document its rows write, and `pointCloudFormatsInsert()` keeps that document when a row of the same `pcid` is inserted into `pointcloud_formats`, which is what a restore of a dump does when it loads the two tables first.
+
 ## What does not change
 
-- **`pointcloud_formats` is pgPointCloud's**, created by that extension and read by `fetch_schema_row()` in `schema_cache.c` through a heap scan that errors when the relation is absent. Nothing here modifies it, and a database already registering schemas that way keeps working.
+- **`pointcloud_formats` is pgPointCloud's**, created by that extension and read by `fetch_schema_row()` in `schema_cache.c` through a heap scan that errors when the relation is absent. A database already registering schemas that way keeps working: a `pcid` the two tables do not state is read from it, and its rows are left as they are.
 - **The XML path stays.** A WKB blob may carry an embedded schema document for a `pcid` the backend has not seen, which `meos_pc_parse_xml_fn` handles; data written by other pgPointCloud tools stays readable.
 - ⇒ the two are alternative ways to state the same schema, and the SQL one is what a binding without a PostgreSQL catalog can offer.
 ## Why this reaches the bindings: one fact, two front ends
@@ -180,9 +184,13 @@ entry overrides.
 
 ⛔ **THE TWO FRONT ENDS DESYNCHRONISE, AND THAT IS ACCEPTED RATHER THAN REPAIRED.** A vendored
 `spatial_ref_sys.csv` is a snapshot; the PostGIS table is whatever the database holds. Nothing
-reconciles them, and the same holds here. ⇒ A trigger keeping one front end in step with the other
-is NOT the answer: it would exist in PostgreSQL alone, where the other hosts have nothing to
-synchronise, which is a host-specific special case rather than a shared mechanism.
+reconciles them, and the same holds here.
+
+⭐ **`pointcloud_formats` IS NOT A SECOND FRONT END, AND THE TRIGGER FILLING IT IS NO SPECIAL CASE.**
+pgPointCloud exists in PostgreSQL alone, so its catalog is not one of the front ends above but the
+one place the pgPointCloud types read a schema from. Writing the document of the two tables into it
+is the only way those types read a schema the tables state; no other host has a second catalog to
+fill, so nothing is shared that the trigger would specialise.
 
 ⚠️⛔ **WHERE THE ANALOGY WITH `spatial_ref_sys.csv` STOPS, AND IT DECIDES THE DEFAULT.** The EPSG
 registry is universal reference data — 4326 means the same thing to everybody — whereas a `pcid`
