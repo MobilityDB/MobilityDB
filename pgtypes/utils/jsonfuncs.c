@@ -340,6 +340,8 @@ static JsonParseErrorType sn_scalar(void *state, char *token,
 /* functions supporting jsonb_delete, jsonb_set and jsonb_concat */
 static JsonbValue *IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
   JsonbParseState **state);
+static bool *path_nulls_make(text **path_elems, int path_len);
+static void iterator_free_chain(JsonbIterator *it);
 static JsonbValue *setPath(JsonbIterator **it, Datum *path_elems,
   bool *path_nulls, int path_len, JsonbParseState **st, int level,
   JsonbValue *newval, int op_type);
@@ -1384,6 +1386,14 @@ pg_jsonb_get_element(Jsonb *jb, text **path_elems, int path_len, bool as_text)
   JsonbValue *v = NULL;
   int i;
   bool have_object = false, have_array = false;
+
+  /* A path holding a NULL element answers NULL, as a NULL operand of a
+   * nested series of extractions would */
+  for (i = 0; i < path_len; i++)
+  {
+    if (! path_elems[i])
+      return NULL;
+  }
 
   /* Identify whether we have object, array, or scalar at top-level */
   if (JB_ROOT_IS_OBJECT(jb))
@@ -2914,12 +2924,15 @@ pg_jsonb_set(const Jsonb *jb, text **path_elems, int path_len,
 
   JsonbIterator *it = JsonbIteratorInit(&((Jsonb *)jb)->root);
   JsonbParseState *st = NULL;
-  bool *path_nulls = palloc0(path_len * sizeof(bool));
+  bool *path_nulls = path_nulls_make(path_elems, path_len);
   JsonbValue *res = setPath(&it, (Datum *) path_elems, path_nulls, path_len,
     &st, 0, &newval, create ? JB_PATH_CREATE : JB_PATH_REPLACE);
-
-  assert(res != NULL);
   pfree(path_nulls); // MEOS
+  if (! res)
+  {
+    iterator_free_chain(it);
+    return NULL;
+  }
   return JsonbValueToJsonb(res);
 }
 
@@ -3036,12 +3049,15 @@ pg_jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len)
 
   JsonbIterator *it = JsonbIteratorInit(&((Jsonb *) jb)->root);
   JsonbParseState *st = NULL;
-  bool *path_nulls = palloc0(path_len * sizeof(bool));
+  bool *path_nulls = path_nulls_make(path_elems, path_len);
   JsonbValue *res = setPath(&it, (Datum *) path_elems, path_nulls, path_len,
     &st, 0, NULL, JB_PATH_DELETE);
-
-  assert(res != NULL);
   pfree(path_nulls);
+  if (! res)
+  {
+    iterator_free_chain(it);
+    return NULL;
+  }
   return JsonbValueToJsonb(res);
 }
 
@@ -3081,12 +3097,15 @@ pg_jsonb_insert(const Jsonb *jb, text **path_elems, int path_len,
 
   JsonbIterator *it = JsonbIteratorInit(&((Jsonb *)jb)->root);
   JsonbParseState *st = NULL;
-  bool *path_nulls = palloc0(path_len * sizeof(bool));
+  bool *path_nulls = path_nulls_make(path_elems, path_len);
   JsonbValue *res = setPath(&it, (Datum *) path_elems, path_nulls, path_len,
     &st, 0, &newval, after ? JB_PATH_INSERT_AFTER : JB_PATH_INSERT_BEFORE);
-
-  assert(res != NULL); 
   pfree(path_nulls);
+  if (! res)
+  {
+    iterator_free_chain(it);
+    return NULL;
+  }
   return JsonbValueToJsonb(res);
 }
 
@@ -3186,6 +3205,38 @@ IteratorConcat(JsonbIterator **it1, JsonbIterator **it2,
     res = meos_pushJsonbValue(state, WJB_END_ARRAY, NULL);
   }
   return res;
+}
+
+/**
+ * @brief Return for each element of a path whether it is NULL, which setPath
+ * reports when it reaches the element
+ * @note The flags PostgreSQL reads from the path array; a NULL element is a
+ * NULL of the array, as in #pg_jsonb_delete_array
+ */
+static bool *
+path_nulls_make(text **path_elems, int path_len)
+{
+  bool *result = palloc(path_len * sizeof(bool));
+  for (int i = 0; i < path_len; i++)
+    result[i] = (path_elems[i] == NULL);
+  return result;
+}
+
+/**
+ * @brief Free the levels of an iterator a walk stopped before its end, which
+ * JsonbIteratorNext frees level by level only on reaching it
+ * @note Each level freed as #freeAndGetParent frees it, as the walk of
+ * #executeAnyItem frees the iterator it stops
+ */
+static void
+iterator_free_chain(JsonbIterator *it)
+{
+  while (it)
+  {
+    JsonbIterator *parent = it->parent;
+    pfree(it);
+    it = parent;
+  }
 }
 
 /*
