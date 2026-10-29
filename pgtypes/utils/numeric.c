@@ -1617,13 +1617,13 @@ compute_bucket(Numeric operand, Numeric bound1, Numeric bound2,
  * @note Derived from PostgreSQL function @p numeric_cmp()
  */
 #if MEOS
-int
+int32
 numeric_cmp(Numeric num1, Numeric num2)
 {
   return pg_numeric_cmp(num1, num2);
 }
 #endif
-int
+int32
 pg_numeric_cmp(Numeric num1, Numeric num2)
 {
   return cmp_numerics(num1, num2);
@@ -3228,13 +3228,13 @@ numeric_pow(Numeric num1, Numeric num2)
  * @note Derived from PostgreSQL function @p numeric_scale()
  */
 #if MEOS
-int
+int32
 numeric_scale(Numeric num)
 {
   return pg_numeric_scale(num);
 }
 #endif
-int
+int32
 pg_numeric_scale(Numeric num)
 {
   if (NUMERIC_IS_SPECIAL(num))
@@ -3299,13 +3299,13 @@ get_min_scale(NumericVar *var)
  * @note Derived from PostgreSQL function @p numeric_min_scale()
  */
 #if MEOS
-int
+int32
 numeric_min_scale(Numeric num)
 {
   return pg_numeric_min_scale(num);
 }
 #endif
-int
+int32
 pg_numeric_min_scale(Numeric num)
 {
   NumericVar  arg;
