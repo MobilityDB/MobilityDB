@@ -13,7 +13,8 @@ type has, and which category a type belongs to. MEOS states all of it once, in i
 MEOS-API catalog publishes it; every generator reads it there. A list of types kept anywhere
 else is a second statement of a fact MEOS owns, and a new family falls out of it with no error.
 
-The rules (owner, 2026-10-29): every MEOS base type has by definition an associated set type; the
+The rules (owner, 2026-10-29): every MEOS base type has by definition an associated set type,
+except `bool`, whose set has no meaning; the
 C tables of `meos_catalog.h`/`meos_catalog.c` and their predicates determine every category; the
 bindings are orthogonal and automatic over them; the metamodel is `Temporal` with its classes
 (`TNumber`, ...), the spans and numeric spans with respect to the time spans, and the temporal box
@@ -80,6 +81,6 @@ the same tree.
 
 | Row | Repository | What |
 |---|---|---|
-| D8 | MobilityDuck #533, branch `codegen/set-families-from-catalog` | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; the temporal classes from `objectModel.lattice` |
+| D8 | MobilityDuck #533 (merged, `e658593d2e`) | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; the temporal classes from `objectModel.lattice` |
 | A29 | MEOS-API #219 (merged, `cfb463611f`) | `typeRelations.predicates` |
 | G12 | MobilityDB #3243, #3247 (merged) | the grid distance of the cells, whose prefilter D8 completes |
