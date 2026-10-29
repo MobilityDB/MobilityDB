@@ -736,7 +736,6 @@ quadbin_row_latitude(double y, double n)
 /**
  * @ingroup meos_quadbin
  * @brief Return the quadbin cell containing a lon/lat point at a resolution
- * @csqlfn #Quadbin_point_to_cell()
  */
 Quadbin
 quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
