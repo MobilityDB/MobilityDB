@@ -41,6 +41,7 @@
 #include <fmgr.h>
 #include <funcapi.h>
 #include <access/htup_details.h>
+#include <utils/timestamp.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -151,6 +152,29 @@ Tpcpatch_npoints(PG_FUNCTION_ARGS)
   int64 result = tpcpatch_npoints(temp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_INT64(result);
+}
+
+PGDLLEXPORT Datum Tpcpatch_swath(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_swath);
+/**
+ * @ingroup mobilitydb_pointcloud_accessor
+ * @brief Return the swath of a tpcpatch, the region of the plane its patches
+ * sweep
+ * @sqlfn swath()
+ * @note The function is not strict, since the largest gap joined is optional
+ */
+Datum
+Tpcpatch_swath(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Interval *maxt = PG_ARGISNULL(1) ? NULL : PG_GETARG_INTERVAL_P(1);
+  GSERIALIZED *result = tpcpatch_swath(temp, maxt);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************

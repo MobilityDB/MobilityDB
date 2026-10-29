@@ -166,20 +166,10 @@ hashtable_remove(hashtable *h, void *k);
     return (valuetype *)(hashtable_remove(h, k));                              \
   }
 
-/**
- * @name hash_str
- * @param str the string to hash
- * @return the hash value
- */
-unsigned int hash_str(const void *str);
-
-/**
- * @name str_eq
- * @param str1 the string to compare
- * @param str2 the string to compare
- * @return 1 if equal 0 if not
- */
-int str_eq(const void *str1, const void *str2);
+/* MEOS: hash_str and str_eq are static in hashtable.c. Their addresses are
+ * taken there, and the address of a function of protected visibility (see
+ * meos/src/pointcloud/CMakeLists.txt) taken in a shared object is refused by
+ * GNU ld 2.38 */
 
 /*****************************************************************************
 * hashtable_count

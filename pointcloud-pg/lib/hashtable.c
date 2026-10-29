@@ -29,7 +29,7 @@ const float max_load_factor = 0.65;
 
 /*****************************************************************************/
 /* hash_str */
-unsigned int hash_str(const void *vstr)
+static unsigned int hash_str(const void *vstr) /* MEOS */
 {
   unsigned int hash = 0;
   int c;
@@ -45,7 +45,7 @@ unsigned int hash_str(const void *vstr)
 
 /*****************************************************************************/
 /* str_eq */
-int str_eq(const void *str1, const void *str2)
+static int str_eq(const void *str1, const void *str2) /* MEOS */
 {
   return 0 == strcasecmp((const char *)str1, (const char *)str2);
 }

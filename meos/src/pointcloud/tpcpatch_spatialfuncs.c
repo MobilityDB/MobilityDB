@@ -37,7 +37,8 @@
  * what the type's temporal spatial relationships convert to before delegating
  * to the one geometry engine — the same route @ref tpcpoint_to_tgeompoint
  * opens for a tpcpoint, differing only in that a cluster of points is a
- * @p tgeometry where a single point is a @p tgeompoint.
+ * @p tgeometry where a single point is a @p tgeompoint. The region the
+ * patches of a temporal patch sweep is its swath, @ref tpcpatch_swath.
  */
 
 /* C */
@@ -54,6 +55,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
+#include <pgtypes.h>  /* minus_timestamptz_timestamptz, pg_interval_cmp */
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TGEOMETRY */
 #include "geo/geo_funcs.h"  /* geo_serialize */
@@ -209,6 +211,134 @@ tpcpatch_to_tgeometry(const Temporal *temp)
       return (Temporal *) tpcpatchseqset_to_tgeometryseqset(
         (const TSequenceSet *) temp);
   }
+}
+
+/*****************************************************************************
+ * Swath of a temporal patch
+ *****************************************************************************/
+
+/**
+ * @brief Return the footprint of a patch, the convex hull of the positions
+ * its points occupy on the plane
+ * @return @p NULL if the pcid schema cannot be resolved
+ */
+static GSERIALIZED *
+pcpatch_footprint(const Pcpatch *pa)
+{
+  GSERIALIZED *mpoint = pcpatch_to_geom(pa);
+  if (! mpoint)
+    return NULL;
+  GSERIALIZED *result = geom_convex_hull(mpoint);
+  pfree(mpoint);
+  return result;
+}
+
+/**
+ * @brief Return the strip a swath covers between two consecutive footprints,
+ * the convex hull of both
+ */
+static GSERIALIZED *
+pcpatch_footprints_strip(const GSERIALIZED *foot1, const GSERIALIZED *foot2)
+{
+  GSERIALIZED *pair[2] = {(GSERIALIZED *) foot1, (GSERIALIZED *) foot2};
+  GSERIALIZED *coll = geo_collect_garray(pair, 2);
+  GSERIALIZED *result = geom_convex_hull(coll);
+  pfree(coll);
+  return result;
+}
+
+/**
+ * @brief Return true if a swath joins the footprints of two consecutive
+ * instants
+ * @param[in] t1,t2 Timestamps of the instants
+ * @param[in] maxt Largest gap joined @nullable
+ */
+static bool
+tpcpatch_swath_joins(TimestampTz t1, TimestampTz t2, const Interval *maxt)
+{
+  if (! maxt)
+    return true;
+  Interval *gap = minus_timestamptz_timestamptz(t2, t1);
+  bool result = pg_interval_cmp(gap, maxt) <= 0;
+  pfree(gap);
+  return result;
+}
+
+/**
+ * @ingroup meos_pointcloud_accessor
+ * @brief Return the swath of a temporal patch, the region of the plane its
+ * patches sweep
+ * @details The footprint of an instant is the convex hull of the positions
+ * of the points of its patch, read through the schema its pcid names and
+ * projected on the plane. The footprints of two consecutive instants are
+ * joined by the convex hull of both, and the swath is the union of these
+ * strips, together with the footprint of every instant joined to neither of
+ * its neighbours. Consecutive instants are joined unless they are more than
+ * @p maxt apart, so that a pause in the acquisition splits the swath. A
+ * pcpatch is the set of points one acquisition captures, such as a ping of a
+ * multibeam echosounder, and the swath is then the strip of the seabed the
+ * pings of a survey line sound. The union is computed exactly by the areal
+ * union of MEOS.
+ * @param[in] temp Temporal patch
+ * @param[in] maxt Largest gap between two consecutive instants that is
+ * joined, every gap if @p NULL @nullable
+ * @return @p NULL if the pcid schema cannot be resolved
+ * @csqlfn #Tpcpatch_swath()
+ */
+GSERIALIZED *
+tpcpatch_swath(const Temporal *temp, const Interval *maxt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, NULL);
+  int count;
+  const TInstant **insts = temporal_insts_p(temp, &count);
+  GSERIALIZED **foots = palloc(sizeof(GSERIALIZED *) * count);
+  for (int i = 0; i < count; i++)
+  {
+    foots[i] = pcpatch_footprint(
+      (const Pcpatch *) DatumGetPointer(tinstant_value_p(insts[i])));
+    if (! foots[i])
+    {
+      for (int j = 0; j < i; j++)
+        pfree(foots[j]);
+      pfree(foots); pfree(insts);
+      return NULL;
+    }
+  }
+
+  /* A strip replaces the two footprints it joins, which it contains, so an
+   * instant contributes its own footprint only when it is joined to neither
+   * neighbour; there are then at most as many pieces as instants */
+  GSERIALIZED **pieces = palloc(sizeof(GSERIALIZED *) * count);
+  int npieces = 0;
+  bool joined_prev = false;
+  for (int i = 0; i < count; i++)
+  {
+    bool joined_next = i + 1 < count &&
+      tpcpatch_swath_joins(insts[i]->t, insts[i + 1]->t, maxt);
+    if (joined_next)
+      pieces[npieces++] = pcpatch_footprints_strip(foots[i], foots[i + 1]);
+    else if (! joined_prev)
+      pieces[npieces++] = geo_copy(foots[i]);
+    joined_prev = joined_next;
+  }
+  for (int i = 0; i < count; i++)
+    pfree(foots[i]);
+  pfree(foots); pfree(insts);
+
+  GSERIALIZED *result;
+  if (npieces == 1)
+    result = pieces[0];
+  else
+  {
+    GSERIALIZED *coll = geo_collect_garray(pieces, npieces);
+    for (int i = 0; i < npieces; i++)
+      pfree(pieces[i]);
+    result = geom_unary_union(coll);
+    pfree(coll);
+  }
+  pfree(pieces);
+  return result;
 }
 
 /*****************************************************************************/
