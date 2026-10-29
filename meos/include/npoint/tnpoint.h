@@ -110,6 +110,8 @@ extern char *npoint_wkt_out(Datum value, int maxdd);
 /* Constructor functions */
 
 extern void npoint_set(int64 rid, double pos, Npoint *np);
+extern size_t npoint_sortkey_size(void);
+extern uint8_t *npoint_sortkey_put(const Npoint *np, uint8_t *out);
 extern void nsegment_set(int64 rid, double pos1, double pos2, Nsegment *ns);
 
 /* Transformation functions */
