@@ -12322,6 +12322,84 @@ filter_div(ArcsegFilter a, ArcsegFilter b, ArcsegFilter *r)
   return tower_f_div(a, b, &r->v, &r->e);
 }
 
+/* Whether a difference of the doubles placing an offset is zero or within
+ * 2^-300 and 2^300 of its size, where no product of up to three of them
+ * leaves the range of normal doubles */
+static inline bool
+offset_term_in_range(double d)
+{
+  double a = fabs(d);
+  return a == 0.0 || (a >= 0x1p-300 && a <= 0x1p300);
+}
+
+/* One coordinate o + num / den of a point placed in plain doubles, and the
+ * interval holding it exactly, from the bounds ne of the numerator and de
+ * of the denominator, as #tower_f_div bounds the quotient and
+ * #filter_point_bounds the point; false where the denominator's bound
+ * holds zero or the interval is wider than a few units in the last place */
+static inline bool
+plain_quotient_point(double o, double num, double ne, double den, double de,
+  double *val, double *lo, double *hi)
+{
+  double m = fabs(den) - de;
+  if (! (m > 0.0))
+    return false;
+  double v = num / den;
+  double e = ((ne + fabs(v) * de) / m) * (1.0 + 4.0 * DBL_EPSILON) +
+    2.0 * DBL_EPSILON * fabs(v) + DBL_MIN;
+  double c = o + v;
+  double ce = e + DBL_EPSILON * fabs(c) + DBL_MIN;
+  if (! isfinite(c) || ! isfinite(e) ||
+      ! (ce <= 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN))
+    return false;
+  *lo = c - ce; *hi = c + ce; *val = c;
+  return true;
+}
+
+/* The crossing of two offsets sharing a centre V of #offset_lines_bounds,
+ * the same values in plain doubles, each computed as its filter computes
+ * it, and a bound on each coordinate that bounds the one the filters carry
+ * from their rules (#arcseg_f_mul, #arcseg_f_add, #tower_f_sqrt): with
+ * every difference zero or within 2^-300 and 2^300 of its size, no product
+ * falls below the normal doubles but r times a numerator, and to first
+ * order in eps the length lp is off by 4 eps lp, the numerator by
+ * 8 eps S with S = lq |dpy| + lp |dqy| (lq |dpx| + lp |dqx| for y), its
+ * product with r by 9 eps |r| S plus 4 DBL_MIN, the denominator by
+ * 17 eps lp lq, as |dp . dq| <= lp lq; 5, 11 and 18 cover the second order.
+ * The quotient and the point take them as #tower_f_div and
+ * #filter_point_bounds take theirs. False where the bound is wider than
+ * theirs allows, which the filters then place */
+static bool
+offset_lines_shared_bounds(const TangentPoint *p, const TangentPoint *q,
+  int sp, int sq, double vx, double vy, double *x, double *y, double box[4])
+{
+  double dpx = p->c2x - p->c1x, dpy = p->c2y - p->c1y;
+  double dqx = q->c2x - q->c1x, dqy = q->c2y - q->c1y;
+  double r = p->r1;
+  if (! offset_term_in_range(dpx) || ! offset_term_in_range(dpy) ||
+      ! offset_term_in_range(dqx) || ! offset_term_in_range(dqy) ||
+      r == 0.0 || ! offset_term_in_range(r))
+    return false;
+  double lp = sqrt(dpx * dpx + dpy * dpy), lq = sqrt(dqx * dqx + dqy * dqy);
+  if (lp == 0.0 || lq == 0.0)
+    return false;
+  /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
+   * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
+  double wp = lq * (double) sp, wq = lp * (double) sq;
+  const double num[2] = {r * ((wp * dpy + wq * dqy) * -1.0),
+    r * (wp * dpx + wq * dqx)};
+  const double sum[2] = {lq * fabs(dpy) + lp * fabs(dqy),
+    lq * fabs(dpx) + lp * fabs(dqx)};
+  double den = lp * lq + (dpx * dqx + dpy * dqy) * (double) (sp * sq);
+  double de = 18.0 * DBL_EPSILON * (lp * lq);
+  return plain_quotient_point(vx, num[0],
+      11.0 * DBL_EPSILON * fabs(r) * sum[0] + 4.0 * DBL_MIN, den, de, x,
+      &box[0], &box[1]) &&
+    plain_quotient_point(vy, num[1],
+      11.0 * DBL_EPSILON * fabs(r) * sum[1] + 4.0 * DBL_MIN, den, de, y,
+      &box[2], &box[3]);
+}
+
 /* The crossing of two segments between tangent points that are offsets of
  * the segments between the centres of pairs of circles of one radius
  * (#towerseg_offset), and a box holding it exactly, read off the doubles
@@ -12343,6 +12421,16 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
       ! towerseg_offset(m->q, &sq))
     return false;
   const TangentPoint *p = m->p->from, *q = m->q->from;
+  /* A centre both segments share, and one radius: in plain doubles first
+   * (#offset_lines_shared_bounds) */
+  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
+    (p->c1x == q->c2x && p->c1y == q->c2y);
+  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
+    (p->c2x == q->c2x && p->c2y == q->c2y);
+  bool shared = p->r1 == q->r1 && (vp || vq);
+  double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
+  if (shared && offset_lines_shared_bounds(p, q, sp, sq, vx, vy, x, y, box))
+    return true;
   ArcsegFilter dpx = arcseg_f_diff(p->c2x, p->c1x);
   ArcsegFilter dpy = arcseg_f_diff(p->c2y, p->c1y);
   ArcsegFilter dqx = arcseg_f_diff(q->c2x, q->c1x);
@@ -12352,14 +12440,8 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
     arcseg_f_mul(dpy, dpy)));
   ArcsegFilter lq = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dqx, dqx),
     arcseg_f_mul(dqy, dqy)));
-  /* A centre both segments share, and one radius */
-  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
-    (p->c1x == q->c2x && p->c1y == q->c2y);
-  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
-    (p->c2x == q->c2x && p->c2y == q->c2y);
-  if (p->r1 == q->r1 && (vp || vq))
+  if (shared)
   {
-    double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
     /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
      * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
     ArcsegFilter wp = arcseg_f_scale(lq, (double) sp);
