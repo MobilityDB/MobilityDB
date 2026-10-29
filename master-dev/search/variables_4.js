@@ -1,14 +1,14 @@
 var searchData=
 [
   ['c_0',['c',['../structdouble3_afaca650ada07a4d560d5ef18fd9b2e0f.html#afaca650ada07a4d560d5ef18fd9b2e0f',1,'double3::c()'],['../structtrip__t_a8e9b92176d767dcf69136953c1853f6d.html#a8e9b92176d767dcf69136953c1853f6d',1,'trip_t::c()'],['../structDiscWalk_a8837611c1709c1df90b440b89561ab32.html#a8837611c1709c1df90b440b89561ab32',1,'DiscWalk::c()'],['../structGeomDistanceCand_ae1f1234b37db2cd5dd690c6cccd8ada7.html#ae1f1234b37db2cd5dd690c6cccd8ada7',1,'GeomDistanceCand::c()'],['../structHullCircles_a61f2827690ff86a7c6051dc120e6aa26.html#a61f2827690ff86a7c6051dc120e6aa26',1,'HullCircles::c()'],['../structNearestOffsetRoot_a14e3505136fdf23e14590c55682fca54.html#a14e3505136fdf23e14590c55682fca54',1,'NearestOffsetRoot::c()'],['../structdouble4_a2ea3069de8a8d29c39adbab13749344e.html#a2ea3069de8a8d29c39adbab13749344e',1,'double4::c()'],['../structTowerNum_a48ca793e0ef91e9b2754029994bfc929.html#a48ca793e0ef91e9b2754029994bfc929',1,'TowerNum::c()']]],
-  ['c0_1',['c0',['../structDistFun_aa349f838681326c5a95f954de4f39287.html#aa349f838681326c5a95f954de4f39287',1,'DistFun::c0()'],['../structRecipe_adb3d0845f62b80c0d2cd1bace8b7558c.html#adb3d0845f62b80c0d2cd1bace8b7558c',1,'Recipe::c0()']]],
-  ['c0_2',['C0',['../structPointMotionGap_a9b85ac343a835642a06842dd0cf25fbb.html#a9b85ac343a835642a06842dd0cf25fbb',1,'PointMotionGap']]],
+  ['c0_1',['C0',['../structPointMotionGap_a9b85ac343a835642a06842dd0cf25fbb.html#a9b85ac343a835642a06842dd0cf25fbb',1,'PointMotionGap']]],
+  ['c0_2',['c0',['../structDistFun_aa349f838681326c5a95f954de4f39287.html#aa349f838681326c5a95f954de4f39287',1,'DistFun::c0()'],['../structRecipe_adb3d0845f62b80c0d2cd1bace8b7558c.html#adb3d0845f62b80c0d2cd1bace8b7558c',1,'Recipe::c0()']]],
   ['c1_3',['C1',['../structGeogSegmPair_a998acbb69422e3c35c2237c2ac5c7582.html#a998acbb69422e3c35c2237c2ac5c7582',1,'GeogSegmPair']]],
   ['c1_4',['c1',['../structDistFun_a9f7eb36c38c745c0a896d172b86c9e95.html#a9f7eb36c38c745c0a896d172b86c9e95',1,'DistFun::c1()'],['../structRecipe_ac3c9c68dd68059e862642b8248374b92.html#ac3c9c68dd68059e862642b8248374b92',1,'Recipe::c1()']]],
   ['c1x_5',['c1x',['../structTangentPoint_a75aaec6afdf70ed995df70240ac2b47a.html#a75aaec6afdf70ed995df70240ac2b47a',1,'TangentPoint']]],
   ['c1y_6',['c1y',['../structTangentPoint_a2a50b8e6bd97171e3959f83afbe12cc5.html#a2a50b8e6bd97171e3959f83afbe12cc5',1,'TangentPoint']]],
-  ['c2_7',['c2',['../structDistFun_ae77317ab4da4eb6f9c0de08468eb1ee0.html#ae77317ab4da4eb6f9c0de08468eb1ee0',1,'DistFun::c2()'],['../structRecipe_aa2f51a5f35fc3204f8727df5663b3133.html#aa2f51a5f35fc3204f8727df5663b3133',1,'Recipe::c2()']]],
-  ['c2_8',['C2',['../structGeogSegmPair_aca896dd730eaf0682ec97fdda084ee31.html#aca896dd730eaf0682ec97fdda084ee31',1,'GeogSegmPair']]],
+  ['c2_7',['C2',['../structGeogSegmPair_aca896dd730eaf0682ec97fdda084ee31.html#aca896dd730eaf0682ec97fdda084ee31',1,'GeogSegmPair']]],
+  ['c2_8',['c2',['../structDistFun_ae77317ab4da4eb6f9c0de08468eb1ee0.html#ae77317ab4da4eb6f9c0de08468eb1ee0',1,'DistFun::c2()'],['../structRecipe_aa2f51a5f35fc3204f8727df5663b3133.html#aa2f51a5f35fc3204f8727df5663b3133',1,'Recipe::c2()']]],
   ['c2x_9',['c2x',['../structTangentPoint_abe3f795658a652d0d70c557c40633f2e.html#abe3f795658a652d0d70c557c40633f2e',1,'TangentPoint']]],
   ['c2y_10',['c2y',['../structTangentPoint_a0ca120843b1288ab03e58ec5e16a8c93.html#a0ca120843b1288ab03e58ec5e16a8c93',1,'TangentPoint']]],
   ['cache1_11',['cache1',['../structDistEverWalk_a29c4af37403ae4bb159e164e9a63e9a8.html#a29c4af37403ae4bb159e164e9a63e9a8',1,'DistEverWalk']]],
