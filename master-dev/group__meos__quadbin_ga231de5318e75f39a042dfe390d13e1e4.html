@@ -133,14 +133,14 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the sibling cell in a cardinal direction. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The grid has no tile beyond its edges, as <code>tile_sibling</code> of the CARTO reference states: a column does not wrap at the antimeridian and a row does not cross a pole </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Quadbin cell </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">direction</td><td>One of "up", "down", "left", "right" </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The sibling cell, or 0 on an unknown direction @csqlfn <a class="el" href="group__mobilitydb__quadbin__hierarchy_gaef867e76d9486b80fbba4d55d41e521d.html#gaef867e76d9486b80fbba4d55d41e521d" title="Return the neighbouring cell at the same resolution in the given direction (up / down / left / right)...">Quadbin_cell_sibling()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The sibling cell, or 0 on an unknown direction or where the sibling would lie beyond an edge of the grid @csqlfn <a class="el" href="group__mobilitydb__quadbin__hierarchy_gaef867e76d9486b80fbba4d55d41e521d.html#gaef867e76d9486b80fbba4d55d41e521d" title="Return the neighbouring cell at the same resolution in the given direction (up / down / left / right)...">Quadbin_cell_sibling()</a> </dd></dl>
 
 </div>
 </div>

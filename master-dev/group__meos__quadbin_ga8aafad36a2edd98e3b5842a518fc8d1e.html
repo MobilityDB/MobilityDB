@@ -139,11 +139,11 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the cells within grid distance <code>k</code> of <code>cell</code> (square ring) </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The grid has no tile beyond its edges, as <code>tile_sibling</code> of the CARTO reference states: a column does not wrap at the antimeridian and a row does not cross a pole, so the ring of a cell within <code>k</code> of an edge is clipped to the grid, the columns and rows kept in it as <a class="el" href="meos_2src_2quadbin_2quadbin_8c_ac4e22662e7c3aade6f69a203b291fc87.html#ac4e22662e7c3aade6f69a203b291fc87" title="Return the tile holding a fractional tile coordinate, in the grid of n tiles a side.">quadbin_tile_index</a> keeps a tile </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cell</td><td>Quadbin cell </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">k</td><td>Ring radius (Chebyshev distance, &gt;= 0) </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of cells returned ((2k+1)^2) </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of cells returned, at most (2k+1)^2 </td></tr>
   </table>
   </dd>
 </dl>
