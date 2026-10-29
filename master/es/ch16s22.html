@@ -7,7 +7,7 @@ SELECT isValidIndex(quadbin '504b5fffffffffff');
 -- t
 </pre></li><li class="listitem"><a name="tcell_quadbin_cell_sibling"></a><a class="indexterm" name="id14651"></a><p>Devolver la celda vecina en la misma resolución en la dirección dada</p><pre class="programlisting">
 quadbinCellSibling(quadbin,text) → quadbin
-</pre><p><code class="varname">up</code> / <code class="varname">down</code> / <code class="varname">left</code> / <code class="varname">right</code>.</p><pre class="programlisting">
+</pre><p><code class="varname">up</code> / <code class="varname">down</code> / <code class="varname">left</code> / <code class="varname">right</code>. La respuesta es NULL para una celda vecina más allá de un borde de la cuadrícula, que no tiene celdas allí: una columna no da la vuelta en el antimeridiano y una fila no cruza un polo.</p><pre class="programlisting">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';

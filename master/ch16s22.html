@@ -7,7 +7,7 @@ SELECT isValidIndex(quadbin '504b5fffffffffff');
 -- t
 </pre></li><li class="listitem"><a name="tcell_quadbin_cell_sibling"></a><a class="indexterm" name="id15224"></a><p>Return the neighbouring cell at the same resolution in the given direction</p><pre class="programlisting">
 quadbinCellSibling(quadbin,text) → quadbin
-</pre><p><code class="varname">up</code> / <code class="varname">down</code> / <code class="varname">left</code> / <code class="varname">right</code>.</p><pre class="programlisting">
+</pre><p><code class="varname">up</code> / <code class="varname">down</code> / <code class="varname">left</code> / <code class="varname">right</code>. The answer is NULL for a sibling beyond an edge of the grid, which has no cell there: a column does not wrap at the antimeridian and a row does not cross a pole.</p><pre class="programlisting">
 SELECT quadbinCellSibling(
   quadbinCellSibling(quadbin '48427fffffffffff', 'right'), 'left')
   = quadbin '48427fffffffffff';
