@@ -62,6 +62,11 @@ subtypes:
     # temporal geography of its boundary: the relationships take a geography
     # and keep the boundary geodetic.
     geodetic_target: true
+    # Its geodetic stbox holds the whole cell, the latitudes its geodesic edges
+    # rise to included (259_th3index_boxops), so the ever intersects/dwithin
+    # relationships get spatial index support: C wrappers with SUPPORT
+    # tspatial_supportfn (th3index_spatialrels.c), as tquadbin's.
+    index_support: true
     convert: "@extschema@.{BOUNDARY}(@N@)"
     details:
       spatialrels: &cell_spatialrels_geodetic |-
@@ -88,8 +93,11 @@ subtypes:
     stboxes: false
     # An S2 cell is a region of the sphere bounded by great-circle arcs, so its
     # stbox is geodetic and its relationships take a geography, on the temporal
-    # geography of its boundary, as th3index's do. index_support is set by the
-    # planar tquadbin alone. GiST/SP-GiST are split, the canonical cell-index
+    # geography of its boundary, as th3index's do. Its stbox holds the whole
+    # cell, the latitudes its geodesic edges rise to included
+    # (607_ts2cell_boxops), so the ever intersects/dwithin relationships get
+    # spatial index support: C wrappers with SUPPORT tspatial_supportfn
+    # (ts2cell_spatialrels.c). GiST/SP-GiST are split, the canonical cell-index
     # layout (th3index 272/273), not the combined cbuffer `indexes` form, whose
     # template declares a KNN ordering operator this family has no distance
     # function to back.
@@ -97,6 +105,7 @@ subtypes:
     setindex: true
     files: [compops, posops, topops, spatialrels, gist, spgist]
     geodetic_target: true
+    index_support: true
     convert: "@extschema@.{BOUNDARY}(@N@)"
     details:
       spatialrels: *cell_spatialrels_geodetic

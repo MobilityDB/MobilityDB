@@ -261,6 +261,16 @@ predicates a temporal geography declares, dropping contains, covers, touches and
 `tIntersects` between two cells, the spatiotemporal predicates a temporal geography
 declares.
 
+**`index_support` makes the ever intersects and dwithin of a family C wrappers the index
+serves.** `tquadbin`, `th3index`, `ts2cell`, `tnpoint`, `tpose` and `tposechain` set it, and
+`spatialrels.sql.tmpl` then declares `eIntersects` and `eDwithin`, with the static operand on
+either side and between two temporal values, as C functions carrying `SUPPORT
+tspatial_supportfn` (`<family>_spatialrels.c`) in place of SQL bodies converting the operand.
+The index filters on the box of the value, which must hold every point the relationship reads:
+a QUADBIN tile's planar box holds the tile, and the geodetic box of an H3 or S2 cell holds the
+cell, the latitudes its geodesic edges rise to included (`259_th3index_boxops`,
+`607_ts2cell_boxops`).
+
 **`spheroid: true` on a direction reads the earth model from a final argument.** A
 `tDwithin` direction between temporal geography points, or between a temporal geography
 point and a geography, sets `spheroid: true`, and `tempspatialrels_native.sql.tmpl` then

@@ -56,6 +56,15 @@ SELECT
 FROM t;
 
 -------------------------------------------------------------------------------
+-- An empty geography is ever reached by nothing, in either order
+-------------------------------------------------------------------------------
+
+SELECT eIntersects(geography 'Point EMPTY', th3index '871fa44a8ffffff@2001-01-01');
+SELECT eIntersects(th3index '871fa44a8ffffff@2001-01-01', geography 'Point EMPTY');
+SELECT eDwithin(geography 'Point EMPTY', th3index '871fa44a8ffffff@2001-01-01', 1000.0);
+SELECT eDwithin(th3index '871fa44a8ffffff@2001-01-01', geography 'Point EMPTY', 1000.0);
+
+-------------------------------------------------------------------------------
 -- Always variants: at every instant the cell lies in the big region and away
 -- from the far one.
 -------------------------------------------------------------------------------
