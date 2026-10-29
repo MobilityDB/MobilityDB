@@ -72,6 +72,12 @@ SELECT ST_AsText(convexHull(geometry 'Curvepolygon(Compoundcurve(Circularstring(
 -- The two vertices of a degenerate hull keep the order of the geometry, an
 -- arc whose points are collinear as a line does
 SELECT ST_AsText(convexHull(geometry 'Circularstring(2 0,1 0,0 0)'));
+-- A nearly straight arc turns the way its three points do, which their
+-- coordinates decide exactly: its hull is the arc and its chord
+SELECT ST_AsText(round(convexHull(geometry 'Circularstring('
+  '0.918269344974626 -0.03255093347490989,'
+  '1.5722791133724234 -0.5984970332108608,'
+  '5.161357645272159 -3.7042992626650353)'), 6));
 
 -- Two arcs are joined by their outer common tangent, which touches the
 -- circles of radii 1 and 2 eleven apart at (1 - 1/11, sqrt(120)/11) and
