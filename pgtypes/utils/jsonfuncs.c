@@ -868,11 +868,17 @@ pg_jsonb_array_element_text(const Jsonb *jb, int idx)
 static text *
 get_path_all(text *js, text **path_elems, int path_len, bool as_text)
 {
+  /* A path holding a NULL element answers NULL, as in #pg_jsonb_get_element */
+  for (int i = 0; i < path_len; i++)
+  {
+    if (! path_elems[i])
+      return NULL;
+  }
+
   char **tpath = palloc(path_len * sizeof(char *));
   int *ipath = palloc(path_len * sizeof(int));
   for (int i = 0; i < path_len; i++)
   {
-    Assert(! path_elems[i]);
     tpath[i] = pg_text_to_cstring(path_elems[i]);
 
     /*

@@ -138,6 +138,12 @@ SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{
  {10, 20}
 (1 row)
 
+SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed', NULL]) IS NULL;
+ ?column? 
+----------
+ t
+(1 row)
+
 /* Null handling */
 SELECT jsonbsetExtractPath(jsonbset '{"{\"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed'],'raise_exception');
 ERROR:  The lifted operation returned NULL

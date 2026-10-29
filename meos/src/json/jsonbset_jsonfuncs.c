@@ -534,6 +534,9 @@ jsonbset_extract_path_common(const Set *set, text **path_elems, int path_len,
 {
   assert(set); assert(path_elems); assert(path_len > 0);
   assert(set->settype == T_JSONBSET);
+  /* A path holding a NULL element extracts no value */
+  if (path_contains_nulls(path_elems, path_len))
+    return NULL;
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
