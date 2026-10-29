@@ -2296,7 +2296,10 @@ raster_band_pixels(const Raster *rast, int band, size_t *size_out)
  * @param[in] height Number of rows of the block
  * @param[in] values Values of the block
  * @param[in] nodata True for a value stated as nodata, NULL where none is @nullable
- * @param[in] noset True for a value not to set, NULL where every value is set @nullable
+ * @param[in] noset True for a value not to set, row by row, NULL where every
+ * value is set @nullable
+ * @param[in] nosetwidth Number of columns of the flags not to set
+ * @param[in] nosetheight Number of rows of the flags not to set
  * @param[in] count Number of values, the width times the height of the block
  * @param[in] keepnodata True to leave the pixels holding the nodata value
  * @errval NULL
@@ -2305,7 +2308,7 @@ raster_band_pixels(const Raster *rast, int band, size_t *size_out)
 Raster *
 raster_set_values(const Raster *rast, int band, int x, int y, int width,
   int height, const double *values, const bool *nodata, const bool *noset,
-  int count, bool keepnodata)
+  int nosetwidth, int nosetheight, int count, bool keepnodata)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(values, NULL);
@@ -2314,6 +2317,13 @@ raster_set_values(const Raster *rast, int band, int x, int y, int width,
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "A block of %d x %d pixels takes as many values, not %d", width, height,
       count);
+    return NULL;
+  }
+  if (noset && (nosetwidth < 1 || nosetheight < 1))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A block of %d x %d flags not to set states none", nosetwidth,
+      nosetheight);
     return NULL;
   }
   /* rt_core writes the pixels where the band lies, which in a raster read in
@@ -2349,7 +2359,8 @@ raster_set_values(const Raster *rast, int band, int x, int y, int width,
     {
       int k = j * width + i;
       int px = x - 1 + i;
-      if ((noset && noset[k]) || px >= rwidth || py >= rheight)
+      if ((noset && i < nosetwidth && j < nosetheight &&
+            noset[j * nosetwidth + i]) || px >= rwidth || py >= rheight)
         continue;
       if (hasnodata && keepnodata)
       {

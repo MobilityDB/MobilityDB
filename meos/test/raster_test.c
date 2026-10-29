@@ -2175,7 +2175,7 @@ int main(void)
   double pb_values[6] = {1.5, 0.0, 3.0, 4.0, 5.0, 6.0};
   bool pb_isnodata[6] = {false, true, false, false, false, false};
   Raster *pb_set = raster_set_values(pb_b1, 1, 1, 1, 3, 2, pb_values,
-    pb_isnodata, NULL, 6, false);
+    pb_isnodata, NULL, 0, 0, 6, false);
   Raster *pb_built = raster_add_band(pb_set, 0, "8BUI", 7.0, 0.0, false);
   pb_hex = raster_as_hexwkb(pb_built, WKB_NDR, &pb_hex_size);
   printf("raster_add_band(raster_set_values(...)): %s\n", pb_hex);
@@ -2192,7 +2192,7 @@ int main(void)
   bool pb_noset[2] = {true, false};
   double pb_two_values[2] = {8.0, 9.0};
   Raster *pb_kept = raster_set_values(pb_built, 1, 1, 1, 2, 1, pb_two_values,
-    NULL, pb_noset, 2, true);
+    NULL, pb_noset, 2, 1, 2, true);
   bool *pb_dumpnodata = NULL;
   int pb_count;
   double *pb_dump = raster_dump_values(pb_kept, 1, true, &pb_dumpnodata,
@@ -2200,6 +2200,29 @@ int main(void)
   assert(pb_count == 6 && pb_dump[0] == 1.5 && pb_dumpnodata[1]);
   free(pb_dump); free(pb_dumpnodata);
   assert(meos_errno() == 0);
+
+  /* The flags not to set are a block of their own read over the block of the
+   * values: one flag over two rows of three values leaves the first value as
+   * it is and sets the others, and two rows of three flags over two rows of
+   * two values read the first two flags of each row */
+  double pb_six[6] = {11.0, 12.0, 13.0, 14.0, 15.0, 16.0};
+  bool pb_one_flag[1] = {true};
+  Raster *pb_fewer = raster_set_values(pb_built, 1, 1, 1, 3, 2, pb_six, NULL,
+    pb_one_flag, 1, 1, 6, false);
+  pb_dump = raster_dump_values(pb_fewer, 1, true, &pb_dumpnodata, &pb_count);
+  assert(pb_count == 6 && pb_dump[0] == 1.5 && pb_dump[1] == 12.0 &&
+    pb_dump[2] == 13.0 && pb_dump[3] == 14.0 && pb_dump[5] == 16.0);
+  free(pb_dump); free(pb_dumpnodata);
+  double pb_four[4] = {21.0, 22.0, 23.0, 24.0};
+  bool pb_more_flags[6] = {false, false, false, true, true, true};
+  Raster *pb_more = raster_set_values(pb_built, 1, 1, 1, 2, 2, pb_four,
+    NULL, pb_more_flags, 3, 2, 4, false);
+  pb_dump = raster_dump_values(pb_more, 1, true, &pb_dumpnodata, &pb_count);
+  assert(pb_count == 6 && pb_dump[0] == 21.0 && pb_dump[1] == 22.0 &&
+    pb_dump[3] == 4.0 && pb_dump[4] == 5.0);
+  free(pb_dump); free(pb_dumpnodata);
+  assert(meos_errno() == 0);
+  free(pb_fewer); free(pb_more);
 
   /* Bytes of another size, a pixel beyond its type, a pixel type no raster
    * band has, a band out of place, a block of another size and a band the
@@ -2216,10 +2239,12 @@ int main(void)
   Raster *pb_square = raster_make_empty(2, 2, 10.0, 20.0, 2.0, -1.0, 0.0,
     0.0, 3857);
   assert(raster_add_band_raster(pb_square, pb, 1, 0) == NULL);
-  assert(raster_set_values(pb_built, 1, 1, 1, 3, 2, pb_values, NULL, NULL, 5,
-    false) == NULL);
-  assert(raster_set_values(pb_built, 1, 4, 1, 1, 1, pb_values, NULL, NULL, 1,
-    false) == NULL);
+  assert(raster_set_values(pb_built, 1, 1, 1, 3, 2, pb_values, NULL, NULL, 0,
+    0, 5, false) == NULL);
+  assert(raster_set_values(pb_built, 1, 4, 1, 1, 1, pb_values, NULL, NULL, 0,
+    0, 1, false) == NULL);
+  assert(raster_set_values(pb_built, 1, 1, 1, 2, 1, pb_two_values, NULL,
+    pb_noset, 0, 1, 2, false) == NULL);
   assert(raster_band_pixels(pb, 3, &pb_size1) == NULL && pb_size1 == 0);
   assert(raster_band_pixels(NULL, 1, &pb_size1) == NULL);
   assert(meos_errno() != 0);
