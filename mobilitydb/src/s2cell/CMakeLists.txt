@@ -31,6 +31,7 @@ add_library(pg_s2cell OBJECT
   ts2cell.c
   ts2cell_compops.c
   ts2cell_ops.c
+  ts2cell_spatialrels.c
   # The subset shared with every DGGS family plus the operations that
   # are S2's own: the cube face, the Hilbert range a cell spans, the
   # level of the deepest common ancestor, and the token. There is no

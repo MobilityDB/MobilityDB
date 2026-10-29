@@ -1,0 +1,23 @@
+WITH bounds AS (
+  SELECT stbox(h3) AS box, ST_Segmentize(cellToBoundary(h3)::geography,
+    ST_Perimeter(cellToBoundary(h3)::geography) / 96)::geometry AS edges
+  FROM tbl_h3index WHERE h3 IS NOT NULL
+  UNION ALL
+  SELECT stbox(temp), ST_Segmentize(cellToBoundary(startValue(temp))::geography,
+    ST_Perimeter(cellToBoundary(startValue(temp))::geography) / 96)::geometry
+  FROM tbl_th3index WHERE temp IS NOT NULL )
+SELECT count(*) > 50 AS many_cells,
+  count(*) FILTER (WHERE EXISTS (
+    SELECT 1 FROM ST_DumpPoints(edges) d
+    WHERE ST_Y(d.geom) > yMax(box) + 1e-9 OR ST_Y(d.geom) < yMin(box) - 1e-9 OR
+      NOT (xMax(box) - xMin(box) >= 360 OR
+        ST_X(d.geom) BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9 OR
+        ST_X(d.geom) - 360 BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9 OR
+        ST_X(d.geom) + 360 BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9)))
+    AS outside_box
+FROM bounds;
+ many_cells | outside_box 
+------------+-------------
+ t          |           0
+(1 row)
+

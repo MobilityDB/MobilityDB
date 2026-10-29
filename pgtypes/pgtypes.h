@@ -361,7 +361,7 @@ extern uint64 date_hash_extended(DateADT date, int64 seed);
 extern bool date_is_finite(DateADT date);
 extern Timestamp date_time_to_timestamp(DateADT date, TimeADT time);
 extern Timestamp date_to_timestamp(DateADT date);
-extern Timestamp date_to_timestamptz(DateADT date);
+extern TimestampTz date_to_timestamptz(DateADT date);
 extern bool eq_date_date(DateADT date1, DateADT date2);
 extern bool eq_date_timestamp(DateADT date, Timestamp ts2);
 extern bool eq_date_timestamptz(DateADT date, TimestampTz ts2);
@@ -411,7 +411,7 @@ extern TimeADT interval_to_time(const Interval *interv);
 extern TimeADT minus_time_interval(TimeADT time, const Interval *interv);
 extern Interval *minus_time_time(TimeADT time1, TimeADT time2);
 extern TimeTzADT *minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
-extern int pg_time_cmp(TimeADT time1, TimeADT time2);
+extern int32 pg_time_cmp(TimeADT time1, TimeADT time2);
 extern bool pg_time_eq(TimeADT time1, TimeADT time2);
 extern bool pg_time_ge(TimeADT time1, TimeADT time2);
 extern bool pg_time_gt(TimeADT time1, TimeADT time2);
@@ -460,8 +460,8 @@ extern Numeric timetz_extract(const TimeTzADT *timetz, const text *units);
 /* Functions for timestamps */
 
 extern Timestamp add_timestamp_interval(Timestamp ts, const Interval *interv);
-extern Timestamp add_timestamptz_interval(TimestampTz tstz, const Interval *interv);
-extern Timestamp add_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone);
+extern TimestampTz add_timestamptz_interval(TimestampTz tstz, const Interval *interv);
+extern TimestampTz add_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone);
 extern int32 cmp_timestamp_timestamp(Timestamp ts1, Timestamp ts2);
 extern int32 cmp_timestamp_timestamptz(Timestamp ts, TimestampTz tstz);
 extern int32 cmp_timestamptz_timestamp(TimestampTz tstz, Timestamp ts);

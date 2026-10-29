@@ -96,3 +96,29 @@ SELECT SRID(stbox(h3index '8001fffffffffff', tstzspan '[2001-01-01, 2001-01-02]'
  4326
 (1 row)
 
+WITH cells AS (
+  SELECT DISTINCT latLngToCell(ST_SetSRID(ST_Point(x, y), 4326), r) AS c
+  FROM generate_series(-178.5, 178.5, 9.5) x,
+    generate_series(-84.5, 84.5, 6.5) y, generate_series(0, 15) r ),
+bounds AS (
+  SELECT stbox(c) AS box, cellToBoundary(c) AS vertices,
+    ST_Segmentize(cellToBoundary(c)::geography,
+      ST_Perimeter(cellToBoundary(c)::geography) / 96)::geometry AS edges
+  FROM cells )
+SELECT count(*) > 1000 AS many_cells,
+  count(*) FILTER (WHERE ST_YMax(edges) > ST_YMax(vertices) + 1e-9) > 0
+    AS edges_rise,
+  count(*) FILTER (WHERE EXISTS (
+    SELECT 1 FROM ST_DumpPoints(edges) d
+    WHERE ST_Y(d.geom) > yMax(box) + 1e-9 OR ST_Y(d.geom) < yMin(box) - 1e-9 OR
+      NOT (xMax(box) - xMin(box) >= 360 OR
+        ST_X(d.geom) BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9 OR
+        ST_X(d.geom) - 360 BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9 OR
+        ST_X(d.geom) + 360 BETWEEN xMin(box) - 1e-9 AND xMax(box) + 1e-9)))
+    AS outside_box
+FROM bounds;
+ many_cells | edges_rise | outside_box 
+------------+------------+-------------
+ t          | t          |           0
+(1 row)
+
