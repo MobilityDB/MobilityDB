@@ -67,6 +67,14 @@ VALUES (1000, 'CUSTOM', 'EXAMPLE', 'Example custom outer frame', 3857, false,
 SELECT srid, name, is_geographic FROM geopose_frames WHERE frame_id = 1000;
 SELECT geoPoseFrameName(1000);
 
+-- pg_dump writes the rows the filter recorded for the table selects, and
+-- CREATE EXTENSION seeds the frames MEOS registers in the restored database,
+-- so the filter selects the frame the user registered and none that MEOS does.
+SELECT format('SELECT frame_id AS dumped_frame_id FROM geopose_frames %s '
+  'ORDER BY frame_id', c.cond)
+FROM pg_extension e, unnest(e.extconfig, e.extcondition) AS c(tbl, cond)
+WHERE e.extname = 'mobilitydb' AND c.tbl = 'geopose_frames'::regclass \gexec
+
 -- Cleanup the user-added row so the test doesn't leave state behind.
 DELETE FROM geopose_frames WHERE frame_id = 1000;
 SELECT count(*) FROM geopose_frames;
