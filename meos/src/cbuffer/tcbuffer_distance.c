@@ -1598,9 +1598,9 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 
 /**
  * @brief Tolerance on the signed boundary distance at a contact instant the
- * walk constructs, or against a boundary with an arc
- * @details A disc at an input instant against straight edges is decided
- * exactly (#tcbuffer_disc_boundary_sign) and reads no tolerance.
+ * walk constructs, or against an arc #point_arc_offset_sign does not decide
+ * @details A disc against straight edges and arcs of three input points is
+ * decided exactly (#tcbuffer_disc_boundary_sign) and reads no tolerance.
  */
 #define TCBUFFER_TOUCH_EPS 1e-9
 
@@ -1694,20 +1694,21 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
 
 /**
  * @brief Return the sign of the signed nearest boundary distance of a
- * stationary disk, decided exactly where the boundary is straight
+ * stationary disk, decided exactly
  * @details The sign of the minimum over the boundary edges of
  * dist(centre, edge) - radius, which #tcbuffer_disc_signed_boundary rounds:
  * 1 where the disk clears the boundary, 0 where it is tangent to it, -1 where
- * it crosses it. An edge whose bounds (#dist_rest_bounds) lie above zero
- * clears the disk, and one whose bounds lie below crosses it, which settles
- * the sign at once; an edge they leave across zero is read by
- * #point_segment_offset_sign, the sign exact on the input doubles. The edges
+ * it crosses it. A straight edge whose bounds (#dist_rest_bounds) lie above
+ * zero clears the disk, and one whose bounds lie below crosses it, which
+ * settles the sign at once; an edge they leave across zero is read by
+ * #point_segment_offset_sign, and an arc by #point_arc_offset_sign, each the
+ * sign exact on the input doubles. The edges
  * asked are those whose box lies within the radius of the centre, the query
  * grown by the rounding of a point of that size (#coordinate_tolerance),
  * which only admits candidates. The function also sets @p inside to whether
  * the centre lies strictly inside a polygon of the geometry.
- * @return -1, 0 or 1, or 2 where an arc lies within reach, whose sign this
- * function does not decide
+ * @return -1, 0 or 1, or 2 where an arc #point_arc_offset_sign does not
+ * decide lies within reach
  */
 static int
 tcbuffer_disc_boundary_sign(double cx, double cy, double r,
@@ -1727,8 +1728,16 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
     if (box2d_distance_sqr(ed->xmin, ed->ymin, ed->xmax, ed->ymax, cx, cy,
         cx, cy) > reach * reach)
       continue;
+    const double c[2] = {cx, cy};
     if (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC)
-      return 2;
+    {
+      int s = point_arc_offset_sign(c, ed, r);
+      if (s == 2 || s < 0)
+        return s;
+      if (s == 0)
+        sign = 0;
+      continue;
+    }
     double lo, hi;
     if (dist_rest_bounds(cx, cy, r, r, ed, &lo, &hi))
     {
@@ -1737,8 +1746,7 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
       if (hi < 0.0)
         return -1;
     }
-    const double c[2] = {cx, cy}, a[2] = {ed->x1, ed->y1},
-      b[2] = {ed->x2, ed->y2};
+    const double a[2] = {ed->x1, ed->y1}, b[2] = {ed->x2, ed->y2};
     int s = point_segment_offset_sign(c, a, b, r);
     if (s < 0)
       return -1;
@@ -1763,8 +1771,9 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
-  /* Tangent exactly (#tcbuffer_disc_boundary_sign); a boundary with an arc
-   * within reach keeps the signed distance against the contact band */
+  /* Tangent exactly (#tcbuffer_disc_boundary_sign); a boundary with an arc it
+   * does not decide within reach keeps the signed distance against the
+   * contact band */
   int sign = tcbuffer_disc_boundary_sign(p->x, p->y, cb->radius, &ctx->g,
     &inside);
   if (sign != 2)
@@ -1817,8 +1826,8 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
   /* Clearance of the boundary is asked only of a disk of a zero radius */
   bool clear = strict && cb->radius == 0.0;
   /* Clear of the boundary or tangent to it, exactly
-   * (#tcbuffer_disc_boundary_sign); a boundary with an arc within reach keeps
-   * the signed distance against the contact band */
+   * (#tcbuffer_disc_boundary_sign); a boundary with an arc it does not decide
+   * within reach keeps the signed distance against the contact band */
   int sign = tcbuffer_disc_boundary_sign(p->x, p->y, cb->radius, &ctx->g,
     &inside);
   if (sign != 2)
