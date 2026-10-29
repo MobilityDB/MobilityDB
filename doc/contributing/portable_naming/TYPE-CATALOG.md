@@ -78,6 +78,6 @@ the same tree.
 
 | Row | Repository | What |
 |---|---|---|
-| D8 | MobilityDuck, branch `codegen/set-families-from-catalog` | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; then the temporal classes and the box spans from `typeRelations.predicates` |
+| D8 | MobilityDuck #533, branch `codegen/set-families-from-catalog` | the set, span and span set types from `typeRelations`; the cell-set prefilter of every cell family; then the temporal classes and the box spans from `typeRelations.predicates` |
 | A29 | MEOS-API #219, branch `catalog/type-predicates` | `typeRelations.predicates` |
 | G12 | MobilityDB #3243, #3247 (merged) | the grid distance of the cells, whose prefilter D8 completes |
