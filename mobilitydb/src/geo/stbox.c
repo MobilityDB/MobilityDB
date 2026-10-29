@@ -323,7 +323,7 @@ Stbox_constructor(FunctionCallInfo fcinfo, bool hasx, bool hasz,
     else /* basetype == T_TIMESTAMPTZ */
     {
       TimestampTz t = PG_GETARG_TIMESTAMPTZ(i++);
-      period = span_make(t, t, true, true, T_TIMESTAMPTZ);
+      period = timestamptz_to_span(t);
     }
   }
   if (hasx)
