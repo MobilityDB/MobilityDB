@@ -88,7 +88,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_gae4011172b4fb2e5a6d65cb369057e215.html#gae4011172b4fb2e5a6d65cb369057e215">raster_pixel_as_points</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_ga7d44320a848e01f51c87fa44b61ad6d8.html#ga7d44320a848e01f51c87fa44b61ad6d8">raster_reclass</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_gafd2cec94ee537a558d6d41e88b060a7d.html#gafd2cec94ee537a558d6d41e88b060a7d">raster_rescale</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__transf_gab74f3415bd4b163412d8367a9bca124f.html#gab74f3415bd4b163412d8367a9bca124f">raster_set_values</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__transf_ga62133a40bbc57e2bf984eb0d1007912c.html#ga62133a40bbc57e2bf984eb0d1007912c">raster_set_values</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_ga70a4d2996bcfdc842fb96dc74738a90d.html#ga70a4d2996bcfdc842fb96dc74738a90d">raster_slope</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_ga47c6014cc5f1ef212826a0f28d6621ab.html#ga47c6014cc5f1ef212826a0f28d6621ab">raster_tpi</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__transf_ga073ce84427035da023b1413c56deac49.html#ga073ce84427035da023b1413c56deac49">raster_transform</a></td></tr>
@@ -99,8 +99,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gab74f3415bd4b163412d8367a9bca124f" name="gab74f3415bd4b163412d8367a9bca124f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gab74f3415bd4b163412d8367a9bca124f">&#9670;&#160;</a></span>raster_set_values()</h2>
+<a id="ga62133a40bbc57e2bf984eb0d1007912c" name="ga62133a40bbc57e2bf984eb0d1007912c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga62133a40bbc57e2bf984eb0d1007912c">&#9670;&#160;</a></span>raster_set_values()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -163,6 +163,18 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nosetwidth</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>nosetheight</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>count</em>, </td>
         </tr>
         <tr>
@@ -190,7 +202,9 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">height</td><td>Number of rows of the block </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">values</td><td>Values of the block </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">nodata</td><td>True for a value stated as nodata, NULL where none is (accepts <code>NULL</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">noset</td><td>True for a value not to set, NULL where every value is set (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">noset</td><td>True for a value not to set, row by row, NULL where every value is set (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nosetwidth</td><td>Number of columns of the flags not to set </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nosetheight</td><td>Number of rows of the flags not to set </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of values, the width times the height of the block </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">keepnodata</td><td>True to leave the pixels holding the nodata value </td></tr>
   </table>
