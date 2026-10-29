@@ -114,6 +114,14 @@ SELECT jsonbExtractPath(jsonb '{"a": {"b": [10, 20]}}', ARRAY['a', 'b', '1']) =
  t
 (1 row)
 
+SELECT jsonbExtractPath(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]) IS NULL,
+  jsonbExtractPath(jsonb '{"a": {"b": 1}}', ARRAY[NULL, 'a']) IS NULL,
+  jsonbExtractPathText(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]) IS NULL;
+ ?column? | ?column? | ?column? 
+----------+----------+----------
+ t        | t        | t
+(1 row)
+
 SELECT * FROM jsonbArrayElements(jsonb '[1, "two", {"three": 3}]');
  jsonbarrayelements 
 --------------------
@@ -172,6 +180,15 @@ SELECT jsonbExistsAll(jsonb '{"a": 1}', ARRAY['b', 'a']);
  jsonbexistsall 
 ----------------
  f
+(1 row)
+
+SELECT jsonbExistsAny(jsonb '{"a": 1}', ARRAY['a', NULL]),
+  jsonbExistsAny(jsonb '{"a": 1}', ARRAY['b', NULL]),
+  jsonbExistsAll(jsonb '{"a": 1}', ARRAY['a', NULL]),
+  jsonbExistsAll(jsonb '{"a": 1}', ARRAY[NULL::text]);
+ jsonbexistsany | jsonbexistsany | jsonbexistsall | jsonbexistsall 
+----------------+----------------+----------------+----------------
+ t              | f              | t              | t
 (1 row)
 
 SELECT jsonbContains(jsonb '{"a": 1, "b": 2}', jsonb '{"a": 1}');
@@ -265,6 +282,42 @@ SELECT jsonbInsert(jsonb '[1, 3]', ARRAY['1'], jsonb '2', true);
  [1, 3, 2]
 (1 row)
 
+SELECT jsonbDeleteArray(jsonb '{"a": 1, "b": 2}', ARRAY['a', NULL]);
+ jsonbdeletearray 
+------------------
+ {"b": 2}
+(1 row)
+
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL]);
+ jsonbdeletepath 
+-----------------
+ {"a": {"b": 1}}
+(1 row)
+
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL]);
+ERROR:  path element at position 2 is null
+SELECT jsonbDeletePath(jsonb '{"a": {"b": 1}}', ARRAY[NULL::text]);
+ERROR:  path element at position 1 is null
+SELECT jsonbSet(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL], jsonb '3');
+    jsonbset     
+-----------------
+ {"a": {"b": 1}}
+(1 row)
+
+SELECT jsonbSet(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL], jsonb '3');
+ERROR:  path element at position 2 is null
+SELECT jsonbSet(jsonb '{"d": [1, 2]}', ARRAY['d', NULL], jsonb '3');
+ERROR:  path element at position 2 is null
+SELECT jsonbSetLax(jsonb '{"a": {"b": 1}}', ARRAY['a', NULL], jsonb '3');
+ERROR:  path element at position 2 is null
+SELECT jsonbInsert(jsonb '{"a": {"b": 1}}', ARRAY['x', NULL], jsonb '3');
+   jsonbinsert   
+-----------------
+ {"a": {"b": 1}}
+(1 row)
+
+SELECT jsonbInsert(jsonb '{"d": [1, 2]}', ARRAY['d', NULL], jsonb '3');
+ERROR:  path element at position 2 is null
 SELECT jsonbStripNulls(jsonb '{"a": null, "b": [1, null]}');
  jsonbstripnulls  
 ------------------
