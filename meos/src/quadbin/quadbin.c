@@ -571,9 +571,13 @@ quadbin_cell_to_children(Quadbin cell, uint32_t children_resolution,
 /**
  * @ingroup meos_quadbin
  * @brief Return the sibling cell in a cardinal direction
+ * @details The grid has no tile beyond its edges, as `tile_sibling` of the
+ * CARTO reference states: a column does not wrap at the antimeridian and a
+ * row does not cross a pole
  * @param[in] cell Quadbin cell
  * @param[in] direction One of "up", "down", "left", "right"
- * @return The sibling cell, or 0 on an unknown direction
+ * @return The sibling cell, or 0 on an unknown direction or where the sibling
+ * would lie beyond an edge of the grid
  * @csqlfn #Quadbin_cell_sibling()
  */
 Quadbin
@@ -584,17 +588,22 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
 
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
+  /* The column and row of the sibling, in long as the tile indices of
+   * quadbin_tile_index, so that one beyond an edge is outside the grid */
+  long last = (1L << z) - 1, col = x, row = y;
   if (strcmp(direction, "up") == 0)
-    y -= 1;
+    row -= 1;
   else if (strcmp(direction, "down") == 0)
-    y += 1;
+    row += 1;
   else if (strcmp(direction, "left") == 0)
-    x -= 1;
+    col -= 1;
   else if (strcmp(direction, "right") == 0)
-    x += 1;
+    col += 1;
   else
     return 0;
-  return quadbin_tile_to_cell(x, y, z);
+  if (col < 0 || col > last || row < 0 || row > last)
+    return 0;
+  return quadbin_tile_to_cell(col, row, z);
 }
 
 /*****************************************************************************
@@ -604,9 +613,14 @@ quadbin_cell_sibling(Quadbin cell, const char *direction)
 /**
  * @ingroup meos_quadbin
  * @brief Return the cells within grid distance @p k of @p cell (square ring)
+ * @details The grid has no tile beyond its edges, as `tile_sibling` of the
+ * CARTO reference states: a column does not wrap at the antimeridian and a
+ * row does not cross a pole, so the ring of a cell within @p k of an edge is
+ * clipped to the grid, the columns and rows kept in it as #quadbin_tile_index
+ * keeps a tile
  * @param[in] cell Quadbin cell
  * @param[in] k Ring radius (Chebyshev distance, >= 0)
- * @param[out] count Number of cells returned ((2k+1)^2)
+ * @param[out] count Number of cells returned, at most (2k+1)^2
  * @return A palloc'd array of cells
  */
 Quadbin *
@@ -617,14 +631,18 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
 
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
-  int side = 2 * k + 1;
-  int n = side * side;
+  /* The columns and rows of the ring that lie in the grid of 2^z tiles a
+   * side, in long as the tile indices of quadbin_tile_index; a radius
+   * beyond the side of the grid reaches no further tile */
+  long last = (1L << z) - 1, col = x, row = y, r = Min(k, last);
+  long xmin = Max(col - r, 0), xmax = Min(col + r, last);
+  long ymin = Max(row - r, 0), ymax = Min(row + r, last);
+  int n = (int) ((xmax - xmin + 1) * (ymax - ymin + 1));
   Quadbin *result = palloc(sizeof(Quadbin) * n);
   int idx = 0;
-  for (int dy = -k; dy <= k; dy++)
-    for (int dx = -k; dx <= k; dx++)
-      result[idx++] = quadbin_tile_to_cell((uint32_t) (x + dx),
-        (uint32_t) (y + dy), z);
+  for (long yy = ymin; yy <= ymax; yy++)
+    for (long xx = xmin; xx <= xmax; xx++)
+      result[idx++] = quadbin_tile_to_cell(xx, yy, z);
   *count = n;
   return result;
 }

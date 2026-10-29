@@ -339,3 +339,47 @@ SELECT hasX(stbox(quadbin '48a6227affffffff', timestamptz '2001-01-01')),
 SELECT SRID(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]'));
 
 -------------------------------------------------------------------------------
+-- The disk of a cell at the edges of the grid
+--
+-- At zoom z the grid has 2^z columns and rows and no tile beyond its edges, as
+-- `tile_sibling` of the CARTO reference states: a column does not wrap at the
+-- antimeridian and a row does not cross a pole. For origins at the corners and
+-- the middle of the edges of the grid, and one in its interior, the disk of
+-- radius 1 holds valid cells only, each a neighbour of the origin in the grid,
+-- and every such neighbour, so a cell on an edge has 6 and a corner 4.
+-------------------------------------------------------------------------------
+
+WITH origins AS (
+  SELECT DISTINCT z, ox, oy FROM generate_series(1, 26, 5) z,
+    LATERAL (VALUES (0, 0), ((1 << z) - 1, 0), (0, (1 << z) - 1),
+      ((1 << z) - 1, (1 << z) - 1), ((1 << z) / 2, 0), (0, (1 << z) / 2),
+      ((1 << z) / 2, (1 << z) / 2)) o(ox, oy) ),
+expected AS (
+  SELECT z, ox, oy, quadbinTileToCell(ox + dx, oy + dy, z) AS c
+  FROM origins, generate_series(-1, 1) dx, generate_series(-1, 1) dy
+  WHERE ox + dx BETWEEN 0 AND (1 << z) - 1
+    AND oy + dy BETWEEN 0 AND (1 << z) - 1 ),
+disk AS (
+  SELECT z, ox, oy, unnest(gridDisk(quadbinTileToCell(ox, oy, z), 1)) AS c
+  FROM origins )
+SELECT z, ox = 0 OR ox = (1 << z) - 1 AS edge_col, oy = 0 OR oy = (1 << z) - 1 AS edge_row,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)) AS members,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)
+    AND NOT isValidCell(d.c)) AS invalid,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)
+    AND d.c NOT IN (SELECT e.c FROM expected e
+      WHERE (e.z, e.ox, e.oy) = (o.z, o.ox, o.oy))) AS not_neighbour,
+  (SELECT count(*) FROM expected e WHERE (e.z, e.ox, e.oy) = (o.z, o.ox, o.oy)
+    AND e.c NOT IN (SELECT d.c FROM disk d
+      WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy))) AS missing
+FROM origins o ORDER BY z, ox, oy;
+
+-- A sibling beyond an edge of the grid does not exist, and one inside it does
+SELECT z, dir,
+  quadbinCellSibling(quadbinTileToCell(0, 0, z), dir) IS NULL AS from_top_left,
+  quadbinCellSibling(quadbinTileToCell((1 << z) - 1, (1 << z) - 1, z), dir) IS NULL
+    AS from_bottom_right
+FROM generate_series(1, 26, 25) z, unnest(ARRAY['up', 'down', 'left', 'right']) dir
+ORDER BY z, dir;
+
+-------------------------------------------------------------------------------

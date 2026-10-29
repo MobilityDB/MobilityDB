@@ -435,3 +435,88 @@ SELECT SRID(stbox(quadbin '48a6227affffffff', tstzspan '[2001-01-01, 2001-01-02]
  4326
 (1 row)
 
+WITH origins AS (
+  SELECT DISTINCT z, ox, oy FROM generate_series(1, 26, 5) z,
+    LATERAL (VALUES (0, 0), ((1 << z) - 1, 0), (0, (1 << z) - 1),
+      ((1 << z) - 1, (1 << z) - 1), ((1 << z) / 2, 0), (0, (1 << z) / 2),
+      ((1 << z) / 2, (1 << z) / 2)) o(ox, oy) ),
+expected AS (
+  SELECT z, ox, oy, quadbinTileToCell(ox + dx, oy + dy, z) AS c
+  FROM origins, generate_series(-1, 1) dx, generate_series(-1, 1) dy
+  WHERE ox + dx BETWEEN 0 AND (1 << z) - 1
+    AND oy + dy BETWEEN 0 AND (1 << z) - 1 ),
+disk AS (
+  SELECT z, ox, oy, unnest(gridDisk(quadbinTileToCell(ox, oy, z), 1)) AS c
+  FROM origins )
+SELECT z, ox = 0 OR ox = (1 << z) - 1 AS edge_col, oy = 0 OR oy = (1 << z) - 1 AS edge_row,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)) AS members,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)
+    AND NOT isValidCell(d.c)) AS invalid,
+  (SELECT count(*) FROM disk d WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy)
+    AND d.c NOT IN (SELECT e.c FROM expected e
+      WHERE (e.z, e.ox, e.oy) = (o.z, o.ox, o.oy))) AS not_neighbour,
+  (SELECT count(*) FROM expected e WHERE (e.z, e.ox, e.oy) = (o.z, o.ox, o.oy)
+    AND e.c NOT IN (SELECT d.c FROM disk d
+      WHERE (d.z, d.ox, d.oy) = (o.z, o.ox, o.oy))) AS missing
+FROM origins o ORDER BY z, ox, oy;
+ z  | edge_col | edge_row | members | invalid | not_neighbour | missing 
+----+----------+----------+---------+---------+---------------+---------
+  1 | t        | t        |       4 |       0 |             0 |       0
+  1 | t        | t        |       4 |       0 |             0 |       0
+  1 | t        | t        |       4 |       0 |             0 |       0
+  1 | t        | t        |       4 |       0 |             0 |       0
+  6 | t        | t        |       4 |       0 |             0 |       0
+  6 | t        | f        |       6 |       0 |             0 |       0
+  6 | t        | t        |       4 |       0 |             0 |       0
+  6 | f        | t        |       6 |       0 |             0 |       0
+  6 | f        | f        |       9 |       0 |             0 |       0
+  6 | t        | t        |       4 |       0 |             0 |       0
+  6 | t        | t        |       4 |       0 |             0 |       0
+ 11 | t        | t        |       4 |       0 |             0 |       0
+ 11 | t        | f        |       6 |       0 |             0 |       0
+ 11 | t        | t        |       4 |       0 |             0 |       0
+ 11 | f        | t        |       6 |       0 |             0 |       0
+ 11 | f        | f        |       9 |       0 |             0 |       0
+ 11 | t        | t        |       4 |       0 |             0 |       0
+ 11 | t        | t        |       4 |       0 |             0 |       0
+ 16 | t        | t        |       4 |       0 |             0 |       0
+ 16 | t        | f        |       6 |       0 |             0 |       0
+ 16 | t        | t        |       4 |       0 |             0 |       0
+ 16 | f        | t        |       6 |       0 |             0 |       0
+ 16 | f        | f        |       9 |       0 |             0 |       0
+ 16 | t        | t        |       4 |       0 |             0 |       0
+ 16 | t        | t        |       4 |       0 |             0 |       0
+ 21 | t        | t        |       4 |       0 |             0 |       0
+ 21 | t        | f        |       6 |       0 |             0 |       0
+ 21 | t        | t        |       4 |       0 |             0 |       0
+ 21 | f        | t        |       6 |       0 |             0 |       0
+ 21 | f        | f        |       9 |       0 |             0 |       0
+ 21 | t        | t        |       4 |       0 |             0 |       0
+ 21 | t        | t        |       4 |       0 |             0 |       0
+ 26 | t        | t        |       4 |       0 |             0 |       0
+ 26 | t        | f        |       6 |       0 |             0 |       0
+ 26 | t        | t        |       4 |       0 |             0 |       0
+ 26 | f        | t        |       6 |       0 |             0 |       0
+ 26 | f        | f        |       9 |       0 |             0 |       0
+ 26 | t        | t        |       4 |       0 |             0 |       0
+ 26 | t        | t        |       4 |       0 |             0 |       0
+(39 rows)
+
+SELECT z, dir,
+  quadbinCellSibling(quadbinTileToCell(0, 0, z), dir) IS NULL AS from_top_left,
+  quadbinCellSibling(quadbinTileToCell((1 << z) - 1, (1 << z) - 1, z), dir) IS NULL
+    AS from_bottom_right
+FROM generate_series(1, 26, 25) z, unnest(ARRAY['up', 'down', 'left', 'right']) dir
+ORDER BY z, dir;
+ z  |  dir  | from_top_left | from_bottom_right 
+----+-------+---------------+-------------------
+  1 | down  | f             | t
+  1 | left  | t             | f
+  1 | right | f             | t
+  1 | up    | t             | f
+ 26 | down  | f             | t
+ 26 | left  | t             | f
+ 26 | right | f             | t
+ 26 | up    | t             | f
+(8 rows)
+

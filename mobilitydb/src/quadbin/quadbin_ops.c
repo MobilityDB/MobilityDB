@@ -138,6 +138,9 @@ Quadbin_cell_sibling(PG_FUNCTION_ARGS)
   Quadbin result = quadbin_cell_sibling(cell, direction);
   pfree(direction);
   PG_FREE_IF_COPY(dir, 1);
+  /* No sibling, beyond an edge of the grid or in an unknown direction */
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_QUADBIN(result);
 }
 
