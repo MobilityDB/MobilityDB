@@ -107,8 +107,12 @@ CREATE FUNCTION geoPoseFrameIsGeographic(frame_id integer) RETURNS boolean
   AS 'MODULE_PATHNAME', 'Geopose_frame_is_geographic'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
-/* Mark the catalog as a configuration table so pg_dump preserves the row
- * data (the seed) but lets users edit it in place. */
-SELECT pg_catalog.pg_extension_config_dump('geopose_frames', '');
+/* Mark the catalog as a configuration table so that pg_dump preserves the
+ * frames a user registers. The frames geoPoseFrames() emits are left out of
+ * the dump: CREATE EXTENSION seeds them in the restored database, and a dump
+ * holding them too would fail the restore of the whole table on their keys.
+ * pg_dump runs with an empty search_path, hence the qualified name. */
+SELECT pg_catalog.pg_extension_config_dump('geopose_frames',
+  'WHERE frame_id NOT IN (SELECT frame_id FROM @extschema@.geoPoseFrames())');
 
 /*****************************************************************************/

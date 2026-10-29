@@ -463,3 +463,58 @@ FROM (VALUES (true), (false)) t(b);
  f | [9dc@Mon Jan 01 00:00:00 2001 PST, 9d4@Mon Jan 01 04:25:15.722512 2001 PST, 9cc@Mon Jan 01 05:38:43.329076 2001 PST, 9b4@Mon Jan 01 12:06:40.186462 2001 PST, 9ac@Mon Jan 01 18:41:46.827663 2001 PST, 9ac@Tue Jan 02 00:00:00 2001 PST]
 (2 rows)
 
+WITH RECURSIVE cells(c) AS (
+  SELECT unnest(cellToChildren(f, 2))
+  FROM unnest(ARRAY[s2cell '1', s2cell '3', s2cell '5', s2cell '7',
+    s2cell '9', s2cell 'b']) f
+),
+steps(o, c, k) AS (
+  SELECT c, c, 0 FROM cells
+  UNION
+  SELECT s.o, n, s.k + 1
+  FROM steps s, LATERAL unnest(s2EdgeNeighbors(s.c)) n
+  WHERE s.k < 11
+),
+pairs(o, d, k) AS (
+  SELECT o, c, min(k) FROM steps GROUP BY o, c
+)
+SELECT count(*) AS pairs, max(k) AS max_distance,
+  count(*) FILTER (WHERE startValue(ts2GridDistance(
+    ts2cell(o, timestamptz '2001-01-01'),
+    ts2cell(d, timestamptz '2001-01-01'))) <> k) AS mismatches
+FROM pairs;
+ pairs | max_distance | mismatches 
+-------+--------------+------------
+  9216 |           11 |          0
+(1 row)
+
+SELECT asText(ts2GridDistance(
+  ts2cell(geoToS2Cell(geography 'Point(0 0)', 30), timestamptz '2001-01-01'),
+  ts2cell(geoToS2Cell(geography 'Point(180 0)', 30),
+    timestamptz '2001-01-01')));
+                 astext                  
+-----------------------------------------
+ 2147483648@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(ts2GridDistance(
+  ts2cell(s2cell '47c3c', tstzspan '[2001-01-01, 2001-01-03]'),
+  ts2cell(s2cell '47c34', tstzspan '[2001-01-02, 2001-01-04]')));
+                              astext                              
+------------------------------------------------------------------
+ [1@Tue Jan 02 00:00:00 2001 PST, 1@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT ts2cell(s2cell '47c3c', timestamptz '2001-01-01') <->
+    ts2cell(s2cell '47c34', timestamptz '2001-01-01') =
+  ts2GridDistance(ts2cell(s2cell '47c34', timestamptz '2001-01-01'),
+    ts2cell(s2cell '47c3c', timestamptz '2001-01-01'));
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT ts2GridDistance(ts2cell(s2cell '47c3c', timestamptz '2001-01-01'),
+  ts2cell(s2cell '47c3', timestamptz '2001-01-01'));
+ERROR:  The S2 cells must have the same level: 7, 6

@@ -647,6 +647,31 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
   return result;
 }
 
+/**
+ * @brief Return the grid distance of two quadbin cells of one zoom, the
+ * smallest radius whose ring around one holds the other
+ * @details The ring of #quadbin_k_ring holds the tiles within a Chebyshev
+ * distance of the cell and no tile beyond an edge of the grid, so the grid
+ * distance is the Chebyshev distance of the two tiles
+ * @param[in] origin,dest Quadbin cells
+ * @return The distance, -1 when the zooms differ
+ */
+int64
+quadbin_grid_distance(Quadbin origin, Quadbin dest)
+{
+  uint32_t x1, y1, z1, x2, y2, z2;
+  quadbin_cell_tile(origin, &x1, &y1, &z1);
+  quadbin_cell_tile(dest, &x2, &y2, &z2);
+  if (z1 != z2)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The quadbin cells must have the same zoom: %u, %u", z1, z2);
+    return -1;
+  }
+  long dx = labs((long) x1 - (long) x2), dy = labs((long) y1 - (long) y2);
+  return Max(dx, dy);
+}
+
 /*****************************************************************************
  * Lat/Lng (Web-Mercator slippy-tile math)
  *

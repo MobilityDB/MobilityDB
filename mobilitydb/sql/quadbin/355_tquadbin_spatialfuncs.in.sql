@@ -168,6 +168,25 @@ CREATE FUNCTION tquadbinCellToQuadkey(tquadbin)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Grid distance
+ *
+ * The smallest radius whose `gridDisk` around one cell holds the other at
+ * each instant, the `<->` operator on `tquadbin` as `th3GridDistance` is on
+ * `th3index` (285_th3index_traversal.in.sql).
+ ******************************************************************************/
+
+CREATE FUNCTION tquadbinGridDistance(tquadbin, tquadbin)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Tquadbin_grid_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = tquadbinGridDistance,
+  LEFTARG = tquadbin, RIGHTARG = tquadbin,
+  COMMUTATOR = <->
+);
+
+/******************************************************************************
  * Convenience cast: tquadbin :: tgeompoint
  *
  * Reuses the lifted `cellToPoint` centroid conversion.

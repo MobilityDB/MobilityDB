@@ -87,6 +87,25 @@ CREATE FUNCTION ts2CellToToken(ts2cell)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /******************************************************************************
+ * Grid distance
+ *
+ * The number of steps between edge neighbours from one cell to the other at
+ * each instant, the `<->` operator on `ts2cell` as `th3GridDistance` is on
+ * `th3index` (285_th3index_traversal.in.sql).
+ ******************************************************************************/
+
+CREATE FUNCTION ts2GridDistance(ts2cell, ts2cell)
+  RETURNS tbigint
+  AS 'MODULE_PATHNAME', 'Ts2cell_grid_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <-> (
+  PROCEDURE = ts2GridDistance,
+  LEFTARG = ts2cell, RIGHTARG = ts2cell,
+  COMMUTATOR = <->
+);
+
+/******************************************************************************
  * Conversion from a temporal point
  *
  * `ts2cell(tgeogpoint, integer)` answers the temporal cell of a geodetic

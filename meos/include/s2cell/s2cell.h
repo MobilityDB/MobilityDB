@@ -72,6 +72,7 @@ extern uint32_t s2cell_from_face_ij(uint32_t face, uint32_t i, uint32_t j,
   uint32_t level, S2CellId *result);
 extern uint32_t s2cell_to_face_ij(S2CellId cell, uint32_t *i, uint32_t *j,
   uint32_t *orientation);
+extern int64 s2cell_grid_distance(S2CellId origin, S2CellId dest);
 
 /* The raw lon/lat forms, internal as the quadbin twins are: they assert their
  * out-parameters where the public geometry forms in s2cell_geo.c test theirs */

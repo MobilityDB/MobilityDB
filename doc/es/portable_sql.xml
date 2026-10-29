@@ -132,6 +132,8 @@
 
 		<para><varname>tDistance</varname> devuelve la distancia entre dos valores en cada instante, como un flotante temporal, y <varname>nearestApproachDistance</varname> la menor de estas distancias. <varname>distance</varname> y sus formas de conjunto, rango y conjunto de rangos devuelven la distancia entre dos valores, y <varname>th3GridDistance</varname> la distancia en la cuadrícula entre dos celdas H3 temporales en cada instante, como un entero grande temporal.</para>
 
+		<para><varname>tquadbinGridDistance</varname> y <varname>ts2GridDistance</varname> devuelven del mismo modo la distancia en la cuadrícula entre dos celdas QUADBIN o S2 temporales.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="3*"/>
@@ -148,7 +150,9 @@
 					<row><entry>Distancia</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
 					<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
 					<row><entry>Distancia (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>setDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
-					<row><entry>Distancia de rejilla (índice de celda)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>th3GridDistance / tquadbinGridDistance / ts2GridDistance (a, b)</entry></row>
+					<row><entry>Distancia de rejilla (índice de celda)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm>tquadbinGridDistance(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>ts2GridDistance(a, b)</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>

@@ -3397,6 +3397,9 @@
 					<para><link linkend="tcell_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Emit the base-4 slippy-tile quadkey string of a cell</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_quadbin_grid_distance"><varname>tquadbinGridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal grid distance between two temporal QUADBIN cells</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_quadbin_cell_to_tile"><varname>quadbinCellToTile</varname></link>: Decompose a cell back into its tile coordinate triple, returned as an integer array holding x, then y, then z</para>
 				</listitem>
 				<listitem>
@@ -3412,6 +3415,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_token"><varname>s2CellToToken</varname>, <varname>s2TokenToCell</varname>, <varname>ts2CellToToken</varname></link>: Convert between an S2 cell and its token, the form the S2 libraries publish</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_s2_grid_distance"><varname>ts2GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Return the temporal grid distance between two temporal S2 cells</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_common_ancestor"><varname>s2CommonAncestorLevel</varname></link>: Return the level of the deepest cell containing two S2 cells</para>

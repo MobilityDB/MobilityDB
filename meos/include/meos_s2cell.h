@@ -336,6 +336,11 @@ extern Temporal *tne_ts2cell_ts2cell(const Temporal *temp1,
 
 extern Temporal *ts2cell_cell_to_token(const Temporal *temp);
 
+/* Grid traversal */
+
+extern Temporal *ts2cell_grid_distance(const Temporal *origin,
+  const Temporal *dest);
+
 /*****************************************************************************/
 
 #endif /* __MEOS_S2CELL_H__ */
