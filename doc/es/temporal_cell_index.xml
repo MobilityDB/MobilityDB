@@ -2377,6 +2377,25 @@ SELECT quadbinCellToQuadkey(quadbin '48a6227affffffff');
 -- 1202021322
 </programlisting>
 			</listitem>
+			<listitem xml:id="tcell_quadbin_grid_distance">
+				<indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Devolver la distancia temporal en la cuadrícula entre dos celdas QUADBIN temporales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tquadbinGridDistance(tquadbin,tquadbin) → tbigint
+tquadbin &lt;-&gt; tquadbin → tbigint
+</programlisting>
+				<para>La distancia en la cuadrícula entre dos celdas del mismo zoom es el menor radio cuyo <varname>gridDisk</varname> alrededor de una contiene a la otra, la mayor de las diferencias entre sus columnas y sus filas de tesela. La cuadrícula no tiene celdas más allá de sus bordes, de modo que las celdas de los dos extremos de una fila están a una fila entera de distancia. De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
+  tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+-- [3@2001-01-02, 3@2001-01-03]
+SELECT tquadbin(quadbinTileToCell(0, 3, 3), timestamptz '2001-01-01') &lt;-&gt;
+  tquadbin(quadbinTileToCell(7, 3, 3), timestamptz '2001-01-01');
+-- 7@2001-01-01
+</programlisting>
+			</listitem>
 			<listitem xml:id="tcell_quadbin_cell_to_tile">
 				<indexterm significance="normal"><primary><varname>quadbinCellToTile</varname></primary></indexterm>
 				<para>Descomponer una celda de vuelta en su terna de coordenadas de tesela, devuelta como un arreglo de enteros que contiene x, después y, después z</para>
@@ -2444,6 +2463,27 @@ SELECT s2TokenToCell('47c3c3');
 -- 47c3c3
 SELECT asText(ts2CellToToken(ts2cell '47c3c3@2001-01-01'));
 -- "47c3c3"@2001-01-01
+</programlisting>
+			</listitem>
+			<listitem xml:id="tcell_s2_grid_distance">
+				<indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
+				<para>Devolver la distancia temporal en la cuadrícula entre dos celdas S2 temporales</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+ts2GridDistance(ts2cell,ts2cell) → tbigint
+ts2cell &lt;-&gt; ts2cell → tbigint
+</programlisting>
+				<para>La distancia en la cuadrícula entre dos celdas del mismo nivel es el número de pasos entre vecinas por una arista, las que devuelve <varname>s2EdgeNeighbors</varname>, de una a la otra, a través de las aristas de las caras del cubo como dentro de una cara. Dos celdas en caras opuestas están a un camino alrededor del cubo de distancia. De forma equivalente, el operador <varname>&lt;-&gt;</varname> devuelve la misma distancia.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(ts2GridDistance(
+  ts2cell(s2cell '47c3c', tstzspan '[2001-01-01, 2001-01-03]'),
+  ts2cell(s2cell '47c34', tstzspan '[2001-01-02, 2001-01-04]')));
+-- [1@2001-01-02, 1@2001-01-03]
+SELECT ts2cell(geoToS2Cell(geography 'Point(0 0)', 30),
+    timestamptz '2001-01-01') &lt;-&gt;
+  ts2cell(geoToS2Cell(geography 'Point(180 0)', 30),
+    timestamptz '2001-01-01');
+-- 2147483648@2001-01-01
 </programlisting>
 			</listitem>
 			<listitem xml:id="tcell_s2_common_ancestor">

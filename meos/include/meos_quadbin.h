@@ -348,8 +348,8 @@ extern Temporal **tgeompoint_quadbin_split(const Temporal *temp,
 extern Temporal *tquadbin_cell_to_quadkey(const Temporal *temp);
 
 /* Grid traversal + metrics */
-// extern Temporal *tquadbin_grid_distance(const Temporal *origin,
-//   const Temporal *dest);
+extern Temporal *tquadbin_grid_distance(const Temporal *origin,
+  const Temporal *dest);
 // extern Temporal *tquadbin_cell_area(const Temporal *temp);
 
 /*****************************************************************************/

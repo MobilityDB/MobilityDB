@@ -132,6 +132,8 @@
 
 		<para><varname>tDistance</varname> returns the distance between two values at each instant, as a temporal float, and <varname>nearestApproachDistance</varname> the smallest of these distances. <varname>distance</varname> and its set, span and span set forms return the distance between two values, and <varname>th3GridDistance</varname> the grid distance between two temporal H3 cells at each instant, as a temporal big integer.</para>
 
+		<para><varname>tquadbinGridDistance</varname> and <varname>ts2GridDistance</varname> return the grid distance between two temporal QUADBIN or S2 cells in the same way.</para>
+
 		<informaltable frame="all" colsep="1" rowsep="1">
 			<tgroup cols="3" align="left" colsep="1" rowsep="1">
 				<colspec colnum="1" colname="col1" colwidth="3*"/>
@@ -149,6 +151,8 @@
 					<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
 					<row><entry>Distance (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
 					<row><entry>Grid distance (cell index)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm>tquadbinGridDistance(a, b)</entry></row>
+					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>ts2GridDistance(a, b)</entry></row>
 				</tbody>
 			</tgroup>
 		</informaltable>

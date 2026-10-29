@@ -3388,6 +3388,9 @@
 					<para><link linkend="tcell_quadbin_cell_to_quadkey"><varname>quadbinCellToQuadkey</varname>, <varname>tquadbinCellToQuadkey</varname></link>: Emitir la cadena quadkey en base 4 de tesela deslizante de una celda</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tcell_quadbin_grid_distance"><varname>tquadbinGridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal en la cuadrícula entre dos celdas QUADBIN temporales</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tcell_quadbin_cell_to_tile"><varname>quadbinCellToTile</varname></link>: Descomponer una celda de vuelta en su terna de coordenadas de tesela, devuelta como un arreglo de enteros que contiene x, después y, después z</para>
 				</listitem>
 				<listitem>
@@ -3403,6 +3406,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_token"><varname>s2CellToToken</varname>, <varname>s2TokenToCell</varname>, <varname>ts2CellToToken</varname></link>: Convertir entre una celda S2 y su token, la forma que publican las bibliotecas de S2</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tcell_s2_grid_distance"><varname>ts2GridDistance</varname>, <varname>&lt;-&gt;</varname></link>: Devolver la distancia temporal en la cuadrícula entre dos celdas S2 temporales</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tcell_s2_common_ancestor"><varname>s2CommonAncestorLevel</varname></link>: Devolver el nivel de la celda más profunda que contiene a dos celdas S2</para>

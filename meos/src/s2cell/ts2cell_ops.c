@@ -193,6 +193,49 @@ ts2cell_cell_to_token(const Temporal *temp)
 }
 
 /*****************************************************************************
+ * Grid distance
+ *****************************************************************************/
+
+/**
+ * @brief Return the grid distance of two S2 cells
+ */
+static Datum
+datum_s2_grid_distance(Datum origin_d, Datum dest_d)
+{
+  return Int64GetDatum(s2cell_grid_distance(DatumGetS2Cell(origin_d),
+    DatumGetS2Cell(dest_d)));
+}
+
+/**
+ * @ingroup meos_s2cell
+ * @brief Return the temporal grid distance of two temporal S2 cells, the
+ * number of steps between edge neighbours from one to the other at each
+ * instant
+ * @details As #th3index_grid_distance is for H3 cells, the procedure of the
+ * `<->` operator on `ts2cell`
+ * @param[in] origin,dest Temporal values
+ * @csqlfn #Ts2cell_grid_distance()
+ */
+Temporal *
+ts2cell_grid_distance(const Temporal *origin, const Temporal *dest)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TS2CELL(origin, NULL); VALIDATE_TS2CELL(dest, NULL);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_s2_grid_distance;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = T_TS2CELL;
+  lfinfo.argtype[1] = T_TS2CELL;
+  lfinfo.restype = T_TBIGINT;
+  lfinfo.reslinear = false;
+  lfinfo.invert = INVERT_NO;
+  lfinfo.discont = CONTINUOUS;
+  return tfunc_temporal_temporal(origin, dest, &lfinfo);
+}
+
+/*****************************************************************************
  * Conversion from a temporal point
  *****************************************************************************/
 

@@ -582,3 +582,61 @@ FROM quadbinSplit(tgeompoint
          1
 (1 row)
 
+WITH cells(c) AS (
+  SELECT quadbinTileToCell(x, y, 3)
+  FROM generate_series(0, 7) x, generate_series(0, 7) y
+),
+pairs(o, d, k) AS (
+  SELECT o.c, d.c, (SELECT min(k) FROM generate_series(0, 7) k
+    WHERE gridDisk(o.c, k) @> d.c)
+  FROM cells o, cells d
+)
+SELECT count(*) AS pairs, max(k) AS max_distance,
+  count(*) FILTER (WHERE startValue(tquadbinGridDistance(
+    tquadbin(o, timestamptz '2001-01-01'),
+    tquadbin(d, timestamptz '2001-01-01'))) <> k) AS mismatches
+FROM pairs;
+ pairs | max_distance | mismatches 
+-------+--------------+------------
+  4096 |            7 |          0
+(1 row)
+
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(0, 3, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(7, 3, 3), timestamptz '2001-01-01')));
+             astext             
+--------------------------------
+ 7@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(3, 0, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(3, 7, 3), timestamptz '2001-01-01')));
+             astext             
+--------------------------------
+ 7@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), tstzspan '[2001-01-01, 2001-01-03]'),
+  tquadbin(quadbinTileToCell(4, 2, 3), tstzspan '[2001-01-02, 2001-01-04]')));
+                              astext                              
+------------------------------------------------------------------
+ [3@Tue Jan 02 00:00:00 2001 PST, 3@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01') <->
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01') =
+  tquadbinGridDistance(
+    tquadbin(quadbinTileToCell(4, 2, 3), timestamptz '2001-01-01'),
+    tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'));
+ ?column? 
+----------
+ t
+(1 row)
+
+/* Errors */
+SELECT tquadbinGridDistance(
+  tquadbin(quadbinTileToCell(1, 1, 3), timestamptz '2001-01-01'),
+  tquadbin(quadbinTileToCell(1, 1, 4), timestamptz '2001-01-01'));
+ERROR:  The quadbin cells must have the same zoom: 3, 4

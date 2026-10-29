@@ -77,6 +77,10 @@
  *   @defgroup mobilitydb_quadbin_rel_ever Ever and always spatial relationship functions
  *   @ingroup mobilitydb_quadbin_rel
  *   @brief Ever and always spatial relationship functions for temporal QUADBIN cell indices
+ *
+ * @defgroup mobilitydb_quadbin_traversal Grid-traversal functions
+ * @ingroup mobilitydb_quadbin
+ * @brief Grid-traversal functions for temporal QUADBIN cell indices
  */
 
 /*****************************************************************************/
