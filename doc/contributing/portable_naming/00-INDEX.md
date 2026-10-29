@@ -144,6 +144,10 @@ The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the func
 
 The aggregates in every engine, their names, the functions of their roles and the pull requests that finish them: [aggregates plan](AGGREGATES-PLAN.md).
 
+Where the types, their collection types and their categories come from, MEOS's catalog tables and
+membership predicates, the MEOS-API sections publishing them and the generator tables reading
+them, the one place to read that derivation: [Where the types and their categories come from](TYPE-CATALOG.md).
+
 Every SQL signature of MobilityDB the MEOS catalog does not state, so that no binding reaches it, and
 the tag, the call or the public MEOS function each one needs: [The SQL functions MEOS answers](WRAPPERS-PLAN.md).
 
