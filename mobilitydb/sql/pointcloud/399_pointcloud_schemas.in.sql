@@ -118,6 +118,145 @@ COMMENT ON COLUMN pointcloud_dimensions.active IS
 COMMENT ON COLUMN pointcloud_dimensions.description IS
   'Free-form description for human readers.';
 
+/* The pcpatch and pcpoint types and the PC_ functions are pgPointCloud's, and
+ * pgPointCloud reads a schema from its own catalog pointcloud_formats alone,
+ * as the XML document the column schema holds. The trigger below writes into
+ * that catalog the document of every schema the two tables state, so a schema
+ * registered once in SQL is read alike by MobilityDB and by pgPointCloud.
+ *
+ * The document is the one pc_schema_from_xml in pointcloud-pg/lib/pc_schema.c
+ * reads: one pc:dimension per row in the order of dim_no, its size the width
+ * of its interpretation, and pc:active stated as 1 or 0, the two spellings
+ * that both the upstream parser, which reads the field with atoi, and the one
+ * MEOS builds read, since a document omitting pc:active declares every
+ * dimension inactive. The names and the descriptions are escaped, and the
+ * scale and the offset are written with extra_float_digits = 3, which is
+ * exact whatever the session sets, as pg_dump writes a double.
+ *
+ * The row is written only while pointcloud_formats accepts it, that is, while
+ * the schema has an X and a Y dimension and a dimension at every position, as
+ * PC_SchemaIsValid checks, and while the pcid is one pgPointCloud can name.
+ * Otherwise, for instance after the schema row and before its dimensions are
+ * inserted, the pcid has no row there, as it has none once the schema goes.
+ * A row trigger fires after the statement has changed every row, so a schema
+ * whose dimensions one statement inserts is written once it is complete.
+ *
+ * pointcloud_formats lives in the schema of pgPointCloud, which the search
+ * path of CREATE EXTENSION holds, since pgPointCloud is required by this
+ * build, so the functions below keep that search path. */
+
+CREATE FUNCTION pointCloudFormatsSync() RETURNS trigger AS $$
+DECLARE
+  id integer;
+  doc text;
+BEGIN
+  IF TG_OP = 'TRUNCATE' THEN
+    /* Emptying either table leaves no schema with a dimension */
+    DELETE FROM pointcloud_formats f USING pointcloud_schemas s
+      WHERE f.pcid = s.pcid;
+    RETURN NULL;
+  END IF;
+  FOREACH id IN ARRAY ARRAY(SELECT DISTINCT p FROM unnest(ARRAY[
+      CASE WHEN TG_OP <> 'DELETE' THEN NEW.pcid END,
+      CASE WHEN TG_OP <> 'INSERT' THEN OLD.pcid END]) p
+      WHERE p IS NOT NULL) LOOP
+    SELECT '<?xml version="1.0" encoding="UTF-8"?>' || E'\n' ||
+      '<pc:PointCloudSchema xmlns:pc="http://pointcloud.org/schemas/PC/1.1" ' ||
+      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' || E'\n' ||
+      string_agg(
+        '  <pc:dimension>' || E'\n' ||
+        '    <pc:position>' || d.dim_no || '</pc:position>' || E'\n' ||
+        '    <pc:size>' || CASE d.interpretation
+          WHEN 'int8_t' THEN 1 WHEN 'uint8_t' THEN 1
+          WHEN 'int16_t' THEN 2 WHEN 'uint16_t' THEN 2
+          WHEN 'int32_t' THEN 4 WHEN 'uint32_t' THEN 4 WHEN 'float' THEN 4
+          WHEN 'int64_t' THEN 8 WHEN 'uint64_t' THEN 8 WHEN 'double' THEN 8
+          END || '</pc:size>' || E'\n' ||
+        CASE WHEN d.description IS NULL THEN '' ELSE
+          '    <pc:description>' || replace(replace(replace(d.description,
+          '&', '&amp;'), '<', '&lt;'), '>', '&gt;') || '</pc:description>' ||
+          E'\n' END ||
+        '    <pc:name>' || replace(replace(replace(d.dim_name,
+          '&', '&amp;'), '<', '&lt;'), '>', '&gt;') || '</pc:name>' || E'\n' ||
+        '    <pc:interpretation>' || d.interpretation ||
+          '</pc:interpretation>' || E'\n' ||
+        '    <pc:scale>' || d.dim_scale || '</pc:scale>' || E'\n' ||
+        '    <pc:offset>' || d.dim_offset || '</pc:offset>' || E'\n' ||
+        '    <pc:active>' || CASE WHEN d.active THEN 1 ELSE 0 END ||
+          '</pc:active>' || E'\n' ||
+        '  </pc:dimension>' || E'\n', '' ORDER BY d.dim_no) ||
+      '  <pc:metadata>' || E'\n' ||
+      '    <Metadata name="compression">' || s.compression || '</Metadata>' ||
+        E'\n' ||
+      '  </pc:metadata>' || E'\n' ||
+      '</pc:PointCloudSchema>'
+    INTO doc
+    FROM pointcloud_schemas s JOIN pointcloud_dimensions d ON d.pcid = s.pcid
+    WHERE s.pcid = id
+    GROUP BY s.pcid, s.compression;
+    IF doc IS NULL THEN
+      DELETE FROM pointcloud_formats WHERE pcid = id;
+    ELSE
+      BEGIN
+        UPDATE pointcloud_formats f SET srid = s.srid, schema = doc
+          FROM pointcloud_schemas s WHERE f.pcid = id AND s.pcid = id;
+        IF NOT FOUND THEN
+          INSERT INTO pointcloud_formats (pcid, srid, schema)
+            SELECT id, s.srid, doc FROM pointcloud_schemas s WHERE s.pcid = id;
+        END IF;
+      EXCEPTION WHEN check_violation THEN
+        DELETE FROM pointcloud_formats WHERE pcid = id;
+      END;
+    END IF;
+  END LOOP;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql
+  SET search_path FROM CURRENT
+  SET extra_float_digits = 3;
+
+CREATE TRIGGER pointcloud_schemas_formats
+  AFTER INSERT OR UPDATE OR DELETE ON pointcloud_schemas
+  FOR EACH ROW EXECUTE FUNCTION pointCloudFormatsSync();
+CREATE TRIGGER pointcloud_dimensions_formats
+  AFTER INSERT OR UPDATE OR DELETE ON pointcloud_dimensions
+  FOR EACH ROW EXECUTE FUNCTION pointCloudFormatsSync();
+CREATE TRIGGER pointcloud_schemas_formats_truncate
+  BEFORE TRUNCATE ON pointcloud_schemas
+  FOR EACH STATEMENT EXECUTE FUNCTION pointCloudFormatsSync();
+CREATE TRIGGER pointcloud_dimensions_formats_truncate
+  BEFORE TRUNCATE ON pointcloud_dimensions
+  FOR EACH STATEMENT EXECUTE FUNCTION pointCloudFormatsSync();
+
+/* pointcloud_formats is a configuration table of pgPointCloud, so pg_dump
+ * keeps the rows the trigger above writes, as it keeps the rows of the two
+ * tables. A restore loads the two tables and pointcloud_formats in an order
+ * pg_dump chooses: when the two tables come first, the trigger has written
+ * the row of each schema they state before the dumped copy of that row
+ * arrives. A row inserted for a pcid the two tables state, while a row of
+ * that pcid exists, is therefore not inserted: the document of that pcid is
+ * the one its rows write. The trigger is on a table of pgPointCloud, so it is
+ * declared to depend on this extension, which drops it with the extension. */
+
+CREATE FUNCTION pointCloudFormatsInsert() RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pointcloud_schemas WHERE pcid = NEW.pcid) AND
+     EXISTS (SELECT 1 FROM pointcloud_formats WHERE pcid = NEW.pcid) THEN
+    RAISE NOTICE 'The schema of pcid % is the one pointcloud_schemas and '
+      'pointcloud_dimensions state', NEW.pcid;
+    RETURN NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql
+  SET search_path FROM CURRENT;
+
+CREATE TRIGGER pointcloud_formats_stated
+  BEFORE INSERT ON pointcloud_formats
+  FOR EACH ROW EXECUTE FUNCTION pointCloudFormatsInsert();
+ALTER TRIGGER pointcloud_formats_stated ON pointcloud_formats
+  DEPENDS ON EXTENSION mobilitydb;
+
 /* Answer what a pcid names without a value of that schema in hand and without
  * exposing the table layout. The schema is resolved as a value of it is, from
  * these rows and else from pgPointCloud's pointcloud_formats, and a statement
