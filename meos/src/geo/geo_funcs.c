@@ -527,18 +527,20 @@ edges_add_circle(MeosArray *edges, double cx, double cy, double radius,
   bool ccw)
 {
   assert(edges); assert(radius > 0.0);
-  Edge e;
-  memset(&e, 0, sizeof(Edge));
-  e.etype = EDGE_POLYARC;
-  e.cx = cx; e.cy = cy; e.radius = radius;
-  e.centred = true;
-  e.ccw = ccw;
-  e.x1 = e.x2 = cx - radius;
-  e.y1 = e.y2 = cy;
-  e.theta0 = e.theta1 = M_PI;
-  e.xmin = cx - radius; e.xmax = cx + radius;
-  e.ymin = cy - radius; e.ymax = cy + radius;
-  edge_array_add(edges, &e);
+  /* Written in its place in the array, as #edges_add_tangent_segment does */
+  if (edges->count >= edges->capacity)
+    edge_array_reserve(edges, 1);
+  Edge *e = &((Edge *) edges->elems)[edges->count++];
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->cx = cx; e->cy = cy; e->radius = radius;
+  e->centred = true;
+  e->ccw = ccw;
+  e->x1 = e->x2 = cx - radius;
+  e->y1 = e->y2 = cy;
+  e->theta0 = e->theta1 = M_PI;
+  e->xmin = cx - radius; e->xmax = cx + radius;
+  e->ymin = cy - radius; e->ymax = cy + radius;
   return;
 }
 
