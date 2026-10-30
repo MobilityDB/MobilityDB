@@ -285,6 +285,53 @@ nad_tnumber_tbox(const Temporal *temp, const TBox *box)
 
 /**
  * @ingroup meos_internal_temporal_dist
+ * @brief Return the nearest approach distance between a number span and a
+ * temporal box, the distance of the box of the span to the box, as
+ * #nad_tbox_tbox answers for two boxes
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @return The distance in the base type of the span; the box of a span has no
+ * period, so the operands always share their time
+ * @csqlfn #NAD_intspan_tbox() #NAD_tbox_intspan() #NAD_bigintspan_tbox()
+ * #NAD_tbox_bigintspan() #NAD_floatspan_tbox() #NAD_tbox_floatspan()
+ */
+Datum
+nad_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* The preconditions the external function tests */
+  assert(s); assert(box); assert(numspan_type(s->spantype));
+  assert(MEOS_FLAGS_GET_X(box->flags));
+  assert(s->spantype == box->span.spantype);
+  TBox box1;
+  numspan_set_tbox(s, &box1);
+  return nad_tbox_tbox(&box1, box);
+}
+
+/**
+ * @ingroup meos_internal_temporal_dist
+ * @brief Return the nearest approach distance between a temporal number and
+ * a number span, the distance of the temporal number to the box of the span,
+ * as #nad_tnumber_tbox answers for a temporal box
+ * @param[in] temp Temporal value
+ * @param[in] s Span
+ * @return The distance in the base type of the temporal number; the box of a
+ * span has no period, so the operands always share their time
+ * @csqlfn #NAD_tint_intspan() #NAD_intspan_tint() #NAD_tbigint_bigintspan()
+ * #NAD_bigintspan_tbigint() #NAD_tfloat_floatspan() #NAD_floatspan_tfloat()
+ */
+Datum
+nad_tnumber_numspan(const Temporal *temp, const Span *s)
+{
+  /* The preconditions the external function tests */
+  assert(temp); assert(s); assert(tnumber_type(temp->temptype));
+  assert(temptype_basetype(temp->temptype) == s->basetype);
+  TBox box;
+  numspan_set_tbox(s, &box);
+  return nad_tnumber_tbox(temp, &box);
+}
+
+/**
+ * @ingroup meos_internal_temporal_dist
  * @brief Return the nearest approach distance between two temporal numbers
  * @param[in] temp1,temp2 Temporal boxes
  * @return The sentinel of the base type given by #distance_sentinel() where

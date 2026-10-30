@@ -1454,6 +1454,8 @@ extern Temporal *tdistance_tnumber_number(const Temporal *temp, Datum value);
 extern Datum nad_tbox_tbox(const TBox *box1, const TBox *box2);
 extern Datum nad_tnumber_number(const Temporal *temp, Datum value);
 extern Datum nad_tnumber_tbox(const Temporal *temp, const TBox *box);
+extern Datum nad_numspan_tbox(const Span *s, const TBox *box);
+extern Datum nad_tnumber_numspan(const Temporal *temp, const Span *s);
 extern Datum nad_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2);
 
 /*****************************************************************************/
