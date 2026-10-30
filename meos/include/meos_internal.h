@@ -1279,6 +1279,7 @@ extern TInstant *tinstant_shift_time(const TInstant *inst, const Interval *inter
 extern TSequence *tinstant_as_tsequence(const TInstant *inst, interpType interp);
 extern TSequence *tinstant_to_tsequence_free(TInstant *inst, interpType interp);
 extern TSequenceSet *tinstant_as_tsequenceset(const TInstant *inst, interpType interp);
+extern Temporal *temporal_shift_scale_time_intl(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern TInstant *tnumberinst_shift_value(const TInstant *inst, Datum shift);
 extern TSequence *tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width, bool hasshift, bool haswidth);
