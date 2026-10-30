@@ -2803,27 +2803,51 @@ def _dist_ops(fam: dict) -> str:
     groups = []
     for v, s in fam["pairs"]:
         groups.append("\n".join(
-            f"CREATE OPERATOR <-> (\n"
-            f"  PROCEDURE = {proc},\n"
-            f"  LEFTARG = {l.format(v=v, s=s)}, "
-            f"RIGHTARG = {r.format(v=v, s=s)},\n"
-            f"  COMMUTATOR = <->\n"
-            f");"
+            _dist_op("<->", proc, l.format(v=v, s=s), r.format(v=v, s=s))
             for l, r, _ in _DIST_DIRS))
     return "\n\n".join(groups) + "\n"
 
 
+def _dist_op(op: str, proc: str, left: str, right: str) -> str:
+    """One commutative distance operator over its procedure, the operator
+    #_dist_ops writes for a set family"""
+    return (f"CREATE OPERATOR {op} (\n"
+            f"  PROCEDURE = {proc},\n"
+            f"  LEFTARG = {left}, RIGHTARG = {right},\n"
+            f"  COMMUTATOR = {op}\n"
+            f");")
+
+
+def _dist_fnops(st: dict) -> str:
+    """A `fnops` stanza: the functions `proc` names over the rows, packed, then
+    the operator `op` over the same rows, as #_dist_fns and #_dist_ops write a
+    set family's pairs. A row is (left, right, symbol) with the stanza's `ret`,
+    or (left, right, symbol, ret)."""
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
+    proc, op = st["proc"], st["op"]
+    fns, ops = [], []
+    for row in st["rows"]:
+        left, right, sym = row[:3]
+        ret = row[3] if len(row) > 3 else st["ret"]
+        fns.append(tmpl.replace("{SIG}", f"{proc}({left}, {right})")
+                       .replace("{RET}", ret).replace("{SYM}", sym))
+        ops.append(_dist_op(op, proc, left, right))
+    return "\n".join(fns) + "\n\n" + "\n".join(ops) + "\n"
+
+
 def render_distance(fam: dict) -> str:
     """Render one family's distance block from its `blocks` sequence: verbatim
-    `lit` blocks plus the `distfns` / `distops` stanzas. Blocks concatenate with
-    no automatic separator, so the rendered text is byte-identical to the
-    committed region."""
+    `lit` blocks plus the `distfns` / `distops` / `fnops` stanzas. Blocks
+    concatenate with no automatic separator, so the rendered text is
+    byte-identical to the committed region."""
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
         elif "distfns" in blk:
             out += _dist_fns(fam)
+        elif "fnops" in blk:
+            out += _dist_fnops(blk["fnops"])
         else:
             out += _dist_ops(fam)
     return out
