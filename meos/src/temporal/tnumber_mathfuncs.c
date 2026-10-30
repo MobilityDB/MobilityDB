@@ -532,8 +532,12 @@ float_angular_difference(double degrees1, double degrees2)
 {
   if (! ensure_not_nan(degrees1) || ! ensure_not_nan(degrees2))
     return DBL_MAX;
-  return DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
+  double result = DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
+  /* An infinite angle has no difference with another one */
+  if (! ensure_not_nan_result(result))
+    return DBL_MAX;
+  return result;
 }
 
 /**

@@ -206,6 +206,9 @@ float_get_bin(double value, double vsize, double vorigin)
    * that integer division truncates toward 0 in C99 */
   double result = floor(value / vsize) * vsize;
   result += vorigin;
+  /* An infinite value or size has no bin */
+  if (! ensure_not_nan_result(result))
+    return DBL_MAX;
   return result;
 }
 
