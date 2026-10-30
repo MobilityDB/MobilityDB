@@ -72,6 +72,9 @@ SELECT jsonbsetInsert(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20}", "{\"speed
 
 SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
 SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{\"speed\": 20, \"units\": \"km/h\"}", "{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY[text 'speed']);
+-- The text extraction answers a text set
+SELECT pg_typeof(jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'])),
+  pg_typeof(jsonbset '{"{\"speed\": 10}"}' #>> ARRAY['speed']);
 -- A path holding a NULL element extracts no value, as jsonbExtractPath answers NULL
 SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed', NULL]) IS NULL;
 

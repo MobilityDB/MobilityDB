@@ -138,6 +138,13 @@ SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}", "{
  {10, 20}
 (1 row)
 
+SELECT pg_typeof(jsonbsetExtractPathText(jsonbset '{"{\"speed\": 10}"}', ARRAY['speed'])),
+  pg_typeof(jsonbset '{"{\"speed\": 10}"}' #>> ARRAY['speed']);
+ pg_typeof | pg_typeof 
+-----------+-----------
+ textset   | textset
+(1 row)
+
 SELECT jsonbsetExtractPath(jsonbset '{"{\"speed\": 10, \"units\": \"km/h\"}"}', ARRAY['speed', NULL]) IS NULL;
  ?column? 
 ----------

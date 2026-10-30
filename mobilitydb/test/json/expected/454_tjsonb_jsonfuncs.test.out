@@ -251,6 +251,13 @@ SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "unit
  {["10"@Mon Jan 01 00:00:00 2001 PST, "20"@Tue Jan 02 00:00:00 2001 PST, "10"@Wed Jan 03 00:00:00 2001 PST], ["null"@Thu Jan 04 00:00:00 2001 PST, "30"@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT pg_typeof(tjsonbExtractPathText(tjsonb '{{"speed": 10}@2001-01-01}', ARRAY['speed'])),
+  pg_typeof(tjsonb '{{"speed": 10}@2001-01-01}' #>> ARRAY['speed']);
+ pg_typeof | pg_typeof 
+-----------+-----------
+ ttext     | ttext
+(1 row)
+
 SELECT tjsonbExtractPath(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02}', ARRAY['speed', NULL]);
  tjsonbextractpath 
 -------------------
