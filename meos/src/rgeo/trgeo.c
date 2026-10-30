@@ -1201,6 +1201,9 @@ trgeometry_translate(const Temporal *temp, double deltax, double deltay,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(deltaz))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return trgeometry_motion_free(temp, pose_motion_translate(deltax, deltay,
@@ -1221,6 +1224,8 @@ trgeometry_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return trgeometry_motion_free(temp, pose_motion_rotate(angle, x0, y0,
@@ -1240,6 +1245,8 @@ trgeometry_rotate_x(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return trgeometry_motion_free(temp, pose_motion_rotate_x(angle,
@@ -1259,6 +1266,8 @@ trgeometry_rotate_y(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return trgeometry_motion_free(temp, pose_motion_rotate_y(angle,
@@ -1276,6 +1285,8 @@ trgeometry_rotate_y(const Temporal *temp, double angle)
 Temporal *
 trgeometry_rotate_z(const Temporal *temp, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   return trgeometry_rotate(temp, angle, 0.0, 0.0);
 }
 
@@ -1807,6 +1818,8 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_TRGEOMETRY(inst, NULL);
+  if (! ensure_not_nan(maxdist))
+    return NULL;
   /* The instant is the same body, as #trgeometry_merge requires of its two
    * arguments, since the answer carries a single reference geometry */
   if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||

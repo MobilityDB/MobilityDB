@@ -580,6 +580,9 @@ tposechain_translate(const Temporal *temp, double deltax, double deltay,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(deltaz))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return tposechain_motion_free(temp, pose_motion_translate(deltax, deltay,
@@ -600,6 +603,8 @@ tposechain_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return tposechain_motion_free(temp, pose_motion_rotate(angle, x0, y0,
@@ -619,6 +624,8 @@ tposechain_rotate_x(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return tposechain_motion_free(temp, pose_motion_rotate_x(angle,
@@ -638,6 +645,8 @@ tposechain_rotate_y(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSECHAIN(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   return tposechain_motion_free(temp, pose_motion_rotate_y(angle,
@@ -655,6 +664,8 @@ tposechain_rotate_y(const Temporal *temp, double angle)
 Temporal *
 tposechain_rotate_z(const Temporal *temp, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   return tposechain_rotate(temp, angle, 0.0, 0.0);
 }
 

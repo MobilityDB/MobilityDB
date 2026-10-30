@@ -1532,6 +1532,8 @@ double
 float_round(double d, int maxdd)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return DBL_MAX;
   if (! ensure_not_negative(maxdd))
     return DBL_MAX;
   return float8_round(d, maxdd);
@@ -1614,11 +1616,14 @@ tfloat_ceil(const Temporal *temp)
  * @brief Return a float converted from radians to degrees
  * @param[in] value Value
  * @param[in] normalize True when the result is normalized
+ * @errval DBL_MAX
  * @csqlfn #Float_degrees()
  */
 double
 float_degrees(double value, bool normalize)
 {
+  if (! ensure_not_nan(value))
+    return DBL_MAX;
   double result = float8_div(value, RADIANS_PER_DEGREE);
   if (normalize)
   {
@@ -3547,6 +3552,8 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(minduration, NULL);
+  if (! ensure_not_nan(maxdist))
+    return NULL;
   if (! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;
 

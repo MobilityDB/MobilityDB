@@ -2441,6 +2441,8 @@ temporal_append_tinstant(Temporal *temp, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt, bool expand)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(maxdist))
+    return NULL;
   if (! ensure_valid_temporal_temporal(temp, (Temporal *) inst) ||
       ! ensure_spatial_validity(temp, (const Temporal *) inst) ||
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT))

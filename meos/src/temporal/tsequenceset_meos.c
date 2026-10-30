@@ -120,6 +120,8 @@ tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPANSET(ss, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tsequenceset_from_base_tstzspanset(Float8GetDatum(d), T_TFLOAT, ss,
     interp);
 }

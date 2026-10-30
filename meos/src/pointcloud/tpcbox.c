@@ -620,6 +620,10 @@ tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic, uint32_t pcid,
   double zmax, const Span *period)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+    return NULL;
   if (! hasx && ! hast)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

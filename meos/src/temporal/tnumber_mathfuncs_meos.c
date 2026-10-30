@@ -89,6 +89,8 @@ add_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT);
 }
@@ -137,6 +139,8 @@ add_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT_NO);
 }
@@ -204,6 +208,8 @@ sub_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT);
 }
@@ -252,6 +258,8 @@ sub_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT_NO);
 }
@@ -320,6 +328,8 @@ mul_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT);
 }
@@ -369,6 +379,8 @@ mul_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT_NO);
 }
@@ -439,6 +451,8 @@ div_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT);
 }
@@ -487,6 +501,8 @@ div_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT_NO);
 }

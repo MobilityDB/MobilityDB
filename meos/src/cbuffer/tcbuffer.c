@@ -1450,6 +1450,8 @@ tcbuffer_expand(const Temporal *temp, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
+  if (! ensure_not_nan(dist))
+    return NULL;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
@@ -1502,6 +1504,8 @@ tcbuffer_translate(const Temporal *temp, double deltax, double deltay)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   const double frame[3] = {deltax, deltay, 0.0};
@@ -1524,6 +1528,8 @@ tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
+  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   double s = sin(angle), c = cos(angle);
@@ -1543,6 +1549,8 @@ tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0)
 Temporal *
 tcbuffer_rotate_z(const Temporal *temp, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   return tcbuffer_rotate(temp, angle, 0.0, 0.0);
 }
 

@@ -102,7 +102,7 @@ SELECT round(degrees(yaw(pose(ST_PointZ(0,0,0), radians(30), radians(45),
 SELECT asText(pose(ST_Point(1,1), 0, 0, 0));
 ERROR:  The geometry must have Z dimension
 SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
-ERROR:  The yaw, pitch and roll angles must be finite
+ERROR:  The value cannot be NaN
 SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
  st_astext  
 ------------

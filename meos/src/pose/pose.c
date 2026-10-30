@@ -1148,6 +1148,8 @@ pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
   /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
    * one in its centre and radius, since the range test of the rotation lets
    * a NaN through */
+  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(theta))
+    return NULL;
   if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(theta) ||
       ! ensure_valid_rotation(theta))
     return NULL;
@@ -1181,6 +1183,8 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(theta))
+    return NULL;
   if (! ensure_valid_rotation(theta) || ! ensure_not_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
@@ -1219,6 +1223,10 @@ pose_make_3d(double x, double y, double z, double W, double X, double Y,
   /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
    * one in its centre and radius, since the norm test of the quaternion lets
    * a NaN through */
+  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(z) ||
+      ! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
+      ! ensure_not_nan(Z))
+    return NULL;
   if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(z) ||
       ! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
       ! ensure_not_nan(Z) || ! ensure_unit_norm(W, X, Y, Z))
@@ -1280,6 +1288,9 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
+      ! ensure_not_nan(Z))
+    return NULL;
   if (! ensure_unit_norm(W, X, Y, Z) || ! ensure_not_empty(gs) ||
       ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
     return NULL;
@@ -1314,6 +1325,9 @@ pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pitch,
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(yaw) || ! ensure_not_nan(pitch) ||
+      ! ensure_not_nan(roll))
+    return NULL;
   if (! ensure_not_empty(gs) || ! ensure_has_Z_geo(gs) ||
       ! ensure_has_not_M_geo(gs))
     return NULL;

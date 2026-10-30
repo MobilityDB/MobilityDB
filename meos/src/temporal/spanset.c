@@ -1740,6 +1740,8 @@ floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return numspanset_shift_scale(ss, Float8GetDatum(shift),
     Float8GetDatum(width), hasshift, haswidth);
 }

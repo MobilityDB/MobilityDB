@@ -2153,6 +2153,8 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tcbuffer_geo(temp, gs, dist, EVER, INVERT_NO);
 }
 
@@ -2168,6 +2170,8 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tcbuffer_geo(temp, gs, dist, ALWAYS, INVERT_NO);
 }
 
@@ -2183,6 +2187,8 @@ adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 int
 edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return edwithin_tcbuffer_geo(temp, gs, dist);
 }
 
@@ -2198,6 +2204,8 @@ edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
 int
 adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return adwithin_tcbuffer_geo(temp, gs, dist);
 }
 
@@ -2217,6 +2225,8 @@ edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   double dist)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(dist))
+    return -1;
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
@@ -2244,6 +2254,8 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   double dist)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(dist))
+    return -1;
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
@@ -2270,6 +2282,8 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
 int
 edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return edwithin_tcbuffer_cbuffer(temp, cb, dist);
 }
 
@@ -2285,6 +2299,8 @@ edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
 int
 adwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return adwithin_tcbuffer_cbuffer(temp, cb, dist);
 }
 
@@ -2636,6 +2652,8 @@ int
 edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tcbuffer_tcbuffer(temp1, temp2, dist, EVER);
 }
 
@@ -2651,6 +2669,8 @@ int
 adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tcbuffer_tcbuffer(temp1, temp2, dist, ALWAYS);
 }
 

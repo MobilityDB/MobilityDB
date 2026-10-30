@@ -2198,6 +2198,8 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return numspan_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
 }

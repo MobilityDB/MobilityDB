@@ -702,6 +702,8 @@ ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
 int
 edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_trgeo_geo(temp, gs, dist, EVER);
 }
 
@@ -717,6 +719,8 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 int
 adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_trgeo_geo(temp, gs, dist, ALWAYS);
 }
 
@@ -754,6 +758,8 @@ ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
 int
 edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, EVER);
 }
 
@@ -768,6 +774,8 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 int
 adwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, double dist)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, ALWAYS);
 }
 
