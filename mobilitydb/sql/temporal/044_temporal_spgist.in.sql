@@ -368,6 +368,7 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tstzspan),
@@ -440,6 +441,7 @@ CREATE OPERATOR CLASS tint_kdtree_ops
   OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
   OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tstzspan),
@@ -512,6 +514,7 @@ CREATE OPERATOR CLASS tbigint_quadtree_ops
   OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
   OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbigint, tstzspan),
@@ -584,6 +587,7 @@ CREATE OPERATOR CLASS tbigint_kdtree_ops
   OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
   OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbigint, tstzspan),
@@ -656,6 +660,7 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tstzspan),
@@ -728,6 +733,7 @@ CREATE OPERATOR CLASS tfloat_kdtree_ops
   OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
   OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tstzspan),

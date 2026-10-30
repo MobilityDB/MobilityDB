@@ -575,6 +575,10 @@ SELECT
   count(*) FILTER (WHERE asEWKB(geom, 'XDR') IS DISTINCT FROM ST_AsEWKB(geom, 'XDR')) AS asewkbxdr,
   count(*) FILTER (WHERE asEWKB(geom, 'NDR') IS DISTINCT FROM ST_AsEWKB(geom, 'NDR')) AS asewkbndr
 FROM g;
+/* The byte order is read from the whole text, in either case; any other text is refused */
+SELECT asEWKB(geometry 'Point(1 2)', 'xdr') = ST_AsEWKB(geometry 'Point(1 2)', 'XDR'),
+  asEWKB(geography 'Point(1 2)', 'ndr') = ST_AsEWKB(geometry 'SRID=4326;Point(1 2)', 'NDR');
+SELECT asEWKB(geometry 'Point(1 2)', 'big');
 /* The GeoJSON of the same geometries but the arc, which GeoJSON cannot state */
 WITH g(id, geom) AS (VALUES
   (1, geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))'),
