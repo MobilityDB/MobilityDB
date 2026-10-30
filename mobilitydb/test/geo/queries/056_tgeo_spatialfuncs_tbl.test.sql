@@ -91,10 +91,16 @@ SELECT DISTINCT SRID(minusStbox(temp, setSRID(b, 3812))) FROM tbl_tgeometry t1, 
 
 -------------------------------------------------------------------------------
 -- Modulo used to reduce time needed for the tests
--- The following tests give different values depending on the GEOS version, 
--- they were tested with GEOS 3.8.0-CAPI-1.13.1 and GEOS 3.13.0-CAPI-1.19.0
--- For this reason COUNT(*) was replaced by COUNT(*) > 0
-SELECT COUNT(*) > 0 FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 2 = 0 AND temp != merge(atGeometry(temp, g), minusGeometry(temp, g));
-SELECT COUNT(*) > 0 FROM tbl_tgeometry t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, setSRID(b, 3812)), minusStbox(temp, setSRID(b, 3812)));
+-- The restriction of a temporal geometry to a geometry clips each value to the
+-- geometry and its complement clips it to the outside, so an instant whose
+-- value the geometry splits belongs to both: together they cover the time of
+-- the value, and their merge is the value only for a value never split
+WITH r AS (SELECT temp, atGeometry(temp, g) AS a, minusGeometry(temp, g) AS m
+  FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 2 = 0)
+SELECT COUNT(*) FROM r WHERE getTime(temp) != CASE WHEN a IS NULL THEN getTime(m)
+  WHEN m IS NULL THEN getTime(a) ELSE getTime(a) + getTime(m) END;
+-- A restriction to a box keeps whole values, so it and its complement
+-- partition the time and their merge is the value
+SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_stbox t2 WHERE temp != merge(atStbox(temp, setSRID(b, 3812)), minusStbox(temp, setSRID(b, 3812)));
 
 -------------------------------------------------------------------------------
