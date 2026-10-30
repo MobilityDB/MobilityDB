@@ -36,15 +36,14 @@
  * Distance functions
  *****************************************************************************/
 
--- The function is not strict
 CREATE FUNCTION distance(geometry, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_cbuffer'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, geometry)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_geo'
-  LANGUAGE C IMMUTABLE PARALLEL SAFE;
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(cbuffer, cbuffer)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_cbuffer_cbuffer'

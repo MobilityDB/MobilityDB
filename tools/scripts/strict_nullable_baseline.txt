@@ -8,12 +8,6 @@ mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	shiftScaleTime(tcbuffer, interval, in
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeq(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSet(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSetGaps(tcbuffer[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	arg 0 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	arg 1 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	not strict
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	arg 0 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	arg 1 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	not strict
 mobilitydb/sql/geo/051_stbox.in.sql	scaleTime(stbox, interval)	arg 1 strict stbox_shift_scale_time.duration
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 1 strict stbox_shift_scale_time.shift
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 2 strict stbox_shift_scale_time.duration

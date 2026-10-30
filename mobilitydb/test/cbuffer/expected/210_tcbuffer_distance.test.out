@@ -93,6 +93,42 @@ SELECT round(geometry 'Point empty' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
       
 (1 row)
 
+SELECT distance(NULL::geometry, cbuffer 'Cbuffer(Point(4 0),0.5)');
+ distance 
+----------
+         
+(1 row)
+
+SELECT distance(geometry 'Point(1 0)', NULL::cbuffer);
+ distance 
+----------
+         
+(1 row)
+
+SELECT distance(NULL::cbuffer, geometry 'Point(1 0)');
+ distance 
+----------
+         
+(1 row)
+
+SELECT distance(cbuffer 'Cbuffer(Point(4 0),0.5)', NULL::geometry);
+ distance 
+----------
+         
+(1 row)
+
+SELECT NULL::geometry <-> cbuffer 'Cbuffer(Point(4 0),0.5)';
+ ?column? 
+----------
+         
+(1 row)
+
+SELECT cbuffer 'Cbuffer(Point(4 0),0.5)' <-> NULL::geometry;
+ ?column? 
+----------
+         
+(1 row)
+
 SELECT round(geometry 'Point(1 1)' <-> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01', 6);
              round              
 --------------------------------
