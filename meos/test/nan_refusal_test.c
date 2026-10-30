@@ -288,6 +288,17 @@ tcbuffer_mfjson(void)
   return r;
 }
 
+static int
+trgeo_mfjson(void)
+{
+  Temporal *t = trgeometry_in("Polygon((1 1,1234.5 2,3 1,1 1));Pose(Point(1 1), 0.5)@2001-01-01");
+  char *doc = temporal_as_mfjson(t, 0, 0, 15, NULL);
+  free(t);
+  int r = patch_json(doc) ? result(trgeometry_from_mfjson(doc)) : 3;
+  free(doc);
+  return r;
+}
+
 /* Public functions taking a NaN double */
 static int
 teq_nan(void)
@@ -465,6 +476,7 @@ int main(void)
   printf("MF-JSON readers:\n");
   check("tpose_from_mfjson", tpose_mfjson);
   check("tcbuffer_from_mfjson", tcbuffer_mfjson);
+  check("trgeometry_from_mfjson", trgeo_mfjson);
   printf("Functions taking a NaN:\n");
   check("teq_tfloat_float", teq_nan);
   check("tdwithin_tgeo_geo", tdwithin_nan);
