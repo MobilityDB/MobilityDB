@@ -54,13 +54,21 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   as the owner decided on 2026-10-27, so no prose note of `stable-1.3` is read.
   A SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument, as the
   owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
-  MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time.
+  MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time:
+  178 after G86 to G89, with no unchecked read left; G90 and G91 carry the rest.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
   follow-ons are G72 (validation, in flight), G73 (the error value -1), G74 (`tdistance_tbigint_bigint`)
   and G75 (the manual). G76–G78 bring the distance, box and comparison operators under
   `tools/codegen/inherited`, as the owner decided on 2026-10-30.
+- **The JSONB functions of pgtypes answer as PostgreSQL answers, and MEOS frees what it holds**
+  (G79–G85): MobilityDB #3249, #3252, #3256, #3262, #3268, #3270 and #3276 are merged.
+- **Every SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument**
+  (G86–G91): MobilityDB #3283, #3284, #3285 and #3288 are merged, leaving no unchecked read; G90,
+  the time shifts and scales in the sibling shape the owner ruled on 2026-10-30, is in flight for
+  temporal and tstzset, with tstzspan, tstzspanset, tbox and stbox to follow; G91, the jsonpath
+  `vars`, follows G90.
 - **How close each answer is to the exact one** is the exactness plan of MobilityDB #3287
   (`doc/contributing/exactness/`), with its own pull requests.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
@@ -513,6 +521,19 @@ numbers finds no function once MobilityDuck loads.
 | G76 | Generate the distance operators of every box type and family | DECIDED BY THE OWNER: "please make that distance operators is also automatically generated as any operator on boxes", "go as you suggested". `tools/codegen/inherited` governs no distance file of a temporal family: `036_tnumber_distance`, `064_tgeo_distance`, `064_tpoint_distance`, `210_tcbuffer_distance`, `312_tnpoint_distance`, `438_tpc_distance`, `447_tpcpoint_distance` and `164_trgeo_distance` are in `coverage_exceptions.txt`, and their 79 `NAD_*` wrappers are hand-written in 8 C files. The box-type axis gains the nearest approach distance in the directions of the box operators (box-first, temporal-first, box by box, and the value-span sub-block of tbox, one wrapper per number type), and the distance axis gains the SQL; `036_tnumber_distance` first, then one PR per family, each proven by `--validate` byte for byte and striking its file from the ratchet. |
 | G77 | Generate the topological and position operators of the boxes | DECIDED BY THE OWNER: "after that we need to also automatically generate topological and position operators for bboxes". The generator renders the temporal-by-box directions only (`GENERATED-BOXOPS`, `GENERATED-POSOPS`); the box-by-box and span-by-box wrappers of `tbox.c` (49), `stbox.c` (21) and `span_ops.c` (12) and the SQL of `021_tbox` and `051_stbox` are hand-written, and 13 boxops/topops and 6 posops files of the families are in the ratchet. After G76. |
 | G78 | Generate the ever, always and temporal comparisons of the remaining families | DECIDED BY THE OWNER: "and for temporal the ever/always/temporal comparators". `compops_families` governs temporal, tgeo and tpoint; `204_tcbuffer_compops` and `458_tjsonb_compops` are in the ratchet. |
+| G79 | Read a NULL element of a JSONB path or key array as PostgreSQL reads it | MERGED as MobilityDB #3249 (`7f10866754`), branch pruned. The pgtypes path walkers of `jsonfuncs.c` and `jsonb_op.c` read a NULL element as PostgreSQL does; witness `meos/test/jsonb_null_path_test.c`. |
+| G80 | End a JSONB path modification at an error raised below its first element | MERGED as MobilityDB #3252 (`43ba0e7d0b`), branch pruned. `setPathObject` and `setPathArray` return whether the walk raised, `setPath` answers NULL and frees its iterator chain when one did; witness `meos/test/jsonb_set_path_error_test.c`, valgrind clean. |
+| G81 | Free the table of time zone abbreviations at the finalization of the last thread holding it | MERGED as MobilityDB #3256 (`2261ff3b15`), branch pruned. `tznames_default.c` counts the threads holding the table and `meos_finalize_timezone` releases it through `UninstallTimeZoneAbbrevs`. |
+| G82 | Answer NULL in MEOS for a JSON path holding a NULL element | MERGED as MobilityDB #3262 (`303902dad3`), branch pruned. `path_contains_nulls` (`json/tjsonb.h`) is tested by the temporal, set and scalar path extractions, and the SQL wrappers stop testing the array themselves. |
+| G83 | Write the EWKB of a geometry or a geography through MEOS | MERGED as MobilityDB #3268 (`985d05be27`), branch pruned. `asEWKB(geometry|geography)` calls `Geo_as_ewkb` over `geo_as_ewkb`, which reads the endian name as MEOS reads it, `'big'` raising. |
+| G84 | Declare the text path extractions with the type they answer | MERGED as MobilityDB #3270 (`7fb8e5bd65`), branch pruned. `jsonbsetExtractPathText` returns `textset` and `tjsonbExtractPathText` `ttext`, each checked by `pg_typeof`. |
+| G85 | Keep the setPath walk and its operation flags in the file that defines them | MERGED as MobilityDB #3276 (`3fc612e8f7`), branch pruned. `json/tjsonb.h` drops its copy of the eight `JB_PATH_*` flags and the `setPath` prototypes, static in `jsonfuncs.c`. |
+| G86 | Answer NULL for a NULL argument of the distance between a circular buffer and a geometry | MERGED as MobilityDB #3283 (`841a8972ef`), branch pruned. Both signatures are STRICT, as the pose and posechain siblings are; the non-STRICT form terminates the server on a NULL geometry. |
+| G87 | Answer NULL for a NULL argument of the temporal dwithin of a temporal geometry and a geometry | MERGED as MobilityDB #3284 (`51adacdd24`), branch pruned. The inherited generator emits it STRICT: `tempspatialrel_families.yaml` drops its `strict: false` override and the native template states STRICT. |
+| G88 | Read every null test of a wrapper in the strict nullable check | MERGED as MobilityDB #3285 (`bcb3ced86c`), branch pruned. `check_strict_nullable.py` follows the helpers a wrapper hands `fcinfo` to and resolves an index computed from the number of arguments or a loop; the 17 unchecked reads of `raster()`, `valueCount()` and `valuePercent()` drop, NULL cases in `500_raster` showing them safe, and `jsonbPathQuery(Tz)` joins the baseline. No unchecked read remains. |
+| G89 | Report a stale line of the strict nullable baseline as a notice | MERGED as MobilityDB #3288 (`530aed1f25`), branch pruned. A baselined finding absent from the tree prints a notice and exits 0, as `check_error_sentinels.py` reports it; a new finding still fails. |
+| G90 | Take every interval a time shift or scale names | DECIDED BY THE OWNER 2026-10-30: "solved in siblings, 3 strict external MEOS functions with ensure_ that call the same internal function with assert", the shape of `tint_shift_value`, `tint_scale_value` and `tint_shift_scale_value` over `tnumber_shift_scale_value`; no external parameter stays `@nullable`, and the 60 findings of the checker on the time shifts and scales leave its baseline. One PR per family: temporal, branch `meos/temporal-shift-scale-time-externals-ensure` (`6e614ad87b` on master `530aed1f25`, 40 findings, `temporal_shift_scale_time_intl`, `temporal_validity_test` gains 7 cases), receipts running; tstzset, branch `meos/tstzset-shift-scale-externals-ensure` (`a3692bbcdb`, 4 findings, public `tstzset_shift` and `tstzset_scale` beside `tstzset_shift_scale`, witness `meos/test/time_shift_scale_validity_test.c`), receipts next; then tstzspan, tstzspanset, tbox and stbox, 4 findings each. |
+| G91 | Take the variables of a JSON path query in MEOS as the siblings take an argument | After G90: the jsonpath `vars` family, STRICT in SQL while `vars` reaches a `@nullable` MEOS argument, in the shape G90 states. |
 
 ### MEOS-API
 
