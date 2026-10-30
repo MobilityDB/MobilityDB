@@ -756,12 +756,14 @@ pose_parse(const char **str, bool end)
   int kwlen = geodetic ? 8 : 4;
 
   /* Determine whether the pose has a geometry */
-  int32_t srid_geo;
+  int32_t srid_geo = SRID_UNKNOWN;
   GSERIALIZED *geo = NULL;
   if (pg_strncasecmp(*str, kw, kwlen) != 0)
   {
     if (! geo_parse(str, T_GEOMETRY, ',', &srid_geo, &geo))
       return NULL;
+    /* The value is read past and not kept */
+    pfree(geo);
   }
 
   if (pg_strncasecmp(*str, kw, kwlen) == 0)
@@ -800,7 +802,10 @@ pose_parse(const char **str, bool end)
     double theta;
     p_whitespace(str); p_comma(str); p_whitespace(str);
     if (! double_parse(str, &theta) || ! ensure_valid_rotation(theta))
+    {
+      pfree(point);
       return NULL;
+    }
     const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
     result = pose_make_2d(p->x, p->y, theta, geodetic, srid);
   }
@@ -808,19 +813,27 @@ pose_parse(const char **str, bool end)
   {
     double W, X, Y, Z;
     p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &W)) 
+    bool ok = double_parse(str, &W);
+    if (ok)
+    {
+      p_whitespace(str); p_comma(str); p_whitespace(str);
+      ok = double_parse(str, &X);
+    }
+    if (ok)
+    {
+      p_whitespace(str); p_comma(str); p_whitespace(str);
+      ok = double_parse(str, &Y);
+    }
+    if (ok)
+    {
+      p_whitespace(str); p_comma(str); p_whitespace(str);
+      ok = double_parse(str, &Z);
+    }
+    if (! ok || ! ensure_unit_norm(W, X, Y, Z))
+    {
+      pfree(point);
       return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &X)) 
-      return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &Y)) 
-      return NULL;
-    p_whitespace(str); p_comma(str); p_whitespace(str);
-    if (! double_parse(str, &Z)) 
-      return NULL;
-    if (! ensure_unit_norm(W, X, Y, Z))
-      return NULL;
+    }
     const POINT4D *p = (const POINT4D *) GS_POINT_PTR(point);
     result = pose_make_3d(p->x, p->y, p->z, W, X, Y, Z, geodetic, srid);
   }
@@ -830,7 +843,10 @@ pose_parse(const char **str, bool end)
   p_whitespace(str);
   if (! ensure_cparen(str, type_str) ||
         (end && ! ensure_end_input(str, type_str)))
+  {
+    pfree(result);
     return NULL;
+  }
 
   return result;
 }

@@ -686,7 +686,7 @@ spanset_parse(const char **str, MeosType spansettype)
     meos_array_add(array, &s);
   }
   if (! ensure_cbrace(str, type_str) || ! ensure_end_input(str, type_str))
-    return NULL;
+    goto error;
 
   SpanSet *result = spanset_make_exp((Span *) array->elems, array->count,
     array->count, true, true);
