@@ -1385,6 +1385,52 @@ extern bool overleft_tbox_tbox(const TBox *box1, const TBox *box2);
 extern bool overright_tbox_tbox(const TBox *box1, const TBox *box2);
 extern bool right_tbox_tbox(const TBox *box1, const TBox *box2);
 
+/*****************************************************************************/
+
+/* Topological functions for a span and a temporal box */
+
+extern bool adjacent_numspan_tbox(const Span *s, const TBox *box);
+extern bool adjacent_tbox_numspan(const TBox *box, const Span *s);
+extern bool adjacent_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool adjacent_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool contained_numspan_tbox(const Span *s, const TBox *box);
+extern bool contained_tbox_numspan(const TBox *box, const Span *s);
+extern bool contained_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool contained_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool contains_numspan_tbox(const Span *s, const TBox *box);
+extern bool contains_tbox_numspan(const TBox *box, const Span *s);
+extern bool contains_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool contains_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool overlaps_numspan_tbox(const Span *s, const TBox *box);
+extern bool overlaps_tbox_numspan(const TBox *box, const Span *s);
+extern bool overlaps_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool overlaps_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool same_numspan_tbox(const Span *s, const TBox *box);
+extern bool same_tbox_numspan(const TBox *box, const Span *s);
+extern bool same_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool same_tstzspan_tbox(const Span *s, const TBox *box);
+
+/*****************************************************************************/
+
+/* Position functions for a span and a temporal box */
+
+extern bool after_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool after_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool before_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool before_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool left_numspan_tbox(const Span *s, const TBox *box);
+extern bool left_tbox_numspan(const TBox *box, const Span *s);
+extern bool overafter_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool overafter_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool overbefore_tbox_tstzspan(const TBox *box, const Span *s);
+extern bool overbefore_tstzspan_tbox(const Span *s, const TBox *box);
+extern bool overleft_numspan_tbox(const Span *s, const TBox *box);
+extern bool overleft_tbox_numspan(const TBox *box, const Span *s);
+extern bool overright_numspan_tbox(const Span *s, const TBox *box);
+extern bool overright_tbox_numspan(const TBox *box, const Span *s);
+extern bool right_numspan_tbox(const Span *s, const TBox *box);
+extern bool right_tbox_numspan(const TBox *box, const Span *s);
+
 /*****************************************************************************
  * Comparison functions for box types
  *****************************************************************************/

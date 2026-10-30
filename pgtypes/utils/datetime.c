@@ -4897,6 +4897,35 @@ InstallTimeZoneAbbrevs(TimeZoneAbbrevTable *tbl)
   memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
 }
 
+#if MEOS
+/*
+ * MEOS: Uninstall the active TimeZoneAbbrevTable and free it, with the zone
+ * each dynamic abbreviation keeps a copy of once looked up.
+ *
+ * The release #InstallTimeZoneAbbrevs leaves to its caller; the caller is
+ * responsible that no thread still reads the table.
+ */
+void
+UninstallTimeZoneAbbrevs(void)
+{
+  TimeZoneAbbrevTable *tbl = zoneabbrevtbl;
+  if (! tbl)
+    return;
+  zoneabbrevtbl = NULL;
+  for (int32 i = 0; i < tbl->numabbrevs; i++)
+  {
+    if (tbl->abbrevs[i].type != DYNTZ)
+      continue;
+    DynamicZoneAbbrev *dtza =
+      (DynamicZoneAbbrev *) ((char *) tbl + tbl->abbrevs[i].value);
+    if (dtza->tz)
+      pfree(dtza->tz);
+  }
+  free(tbl);
+  memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
+}
+#endif /* MEOS */
+
 /*
  * Helper subroutine to locate pg_tz timezone for a dynamic abbreviation.
  *

@@ -817,6 +817,13 @@ SELECT stbox 'STBOX ZT(((1,1,1),(3,3,3)),
 		<sect2>
 			<title>Topological Operations</title>
 			<para>There are five topological operators: overlaps (<varname>&amp;&amp;</varname>), contains (<varname>@&gt;</varname>), contained (<varname>&lt;@</varname>), same (<varname>~=</varname>), and adjacent (<varname>-|-</varname>). The operators verify the topological relationship between the bounding boxes taking into account the value and/or the time dimension for as many dimensions that are present on both arguments.</para>
+			<para>A <varname>numspan</varname> or a <varname>tstzspan</varname> is an operand of these operators against a <varname>tbox</varname>, in either order: the operator answers on the box of the span, which has the value dimension alone or the time dimension alone.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT intspan '[1,5)' &amp;&amp; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+-- true
+SELECT tstzspan '[2001-01-01,2001-01-03]' @&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+-- true
+</programlisting>
 
 			<itemizedlist>
 				<listitem xml:id="box_overlap">
@@ -908,6 +915,13 @@ SELECT stbox 'STBOX XT(((1,1),(3,3)),
 		<sect2>
 			<title>Position Operations</title>
 			<para>The position operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the X value for the <varname>tbox</varname> type and the X coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>stbox</varname> type, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>stbox</varname> type, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for the <varname>tbox</varname> and <varname>stbox</varname> types. The operators raise an error if both boxes do not have the required dimension.</para>
+			<para>A <varname>numspan</varname> is an operand of the operators on the value dimension against a <varname>tbox</varname>, and a <varname>tstzspan</varname> of those on the time dimension, in either order, answered on the box of the span.</para>
+			<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT intspan '[1,5)' &amp;&lt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+-- true
+SELECT tstzspan '[2001-01-05,2001-01-06]' #&gt;&gt; tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+-- true
+</programlisting>
 
 			<para>The operators for the numeric dimension of the <varname>tbox</varname> type are given next.</para>
 

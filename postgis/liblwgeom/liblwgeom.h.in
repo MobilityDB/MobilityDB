@@ -228,6 +228,16 @@ typedef enum LWORD_T {
 # define __attribute__(x)
 #endif
 
+/* Archetype of the format attribute of the message functions, the choice
+ * lwgeom_log.h states and explains. MEOS */
+#ifndef LW_PRINTF_ATTRIBUTE
+#if defined(__GNUC__) && ! defined(__clang__)
+#define LW_PRINTF_ATTRIBUTE gnu_printf
+#else
+#define LW_PRINTF_ATTRIBUTE printf
+#endif
+#endif
+
 /**
 * Return a valid SRID from an arbitrary integer
 * Raises a notice if what comes out is different from
@@ -243,9 +253,9 @@ typedef void* (*lwallocator)(size_t size);
 typedef void* (*lwreallocator)(void *mem, size_t size);
 typedef void (*lwfreeor)(void* mem);
 typedef void (*lwreporter)(const char* fmt, va_list ap)
-  __attribute__ (( format(printf, 1, 0) ));
+  __attribute__ (( format(LW_PRINTF_ATTRIBUTE, 1, 0) ));
 typedef void (*lwdebuglogger)(int level, const char* fmt, va_list ap)
-  __attribute__ (( format(printf, 2,0) ));
+  __attribute__ (( format(LW_PRINTF_ATTRIBUTE, 2,0) ));
 
 /**
 * Install custom memory management and error handling functions you want your

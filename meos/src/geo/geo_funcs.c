@@ -6857,6 +6857,66 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
 }
 
 /**
+ * @brief Return the sign of the distance of a point to an arc less a radius,
+ * computed exactly, as #point_segment_offset_sign reads it for a segment
+ * @details The arc runs from S through M to E, the three input points that
+ * fix its circle. A point of the arc lies strictly inside the disk of centre
+ * @p p and radius @p r where one of the three does, which
+ * #point_distance_offset_side_sign decides, or where the circle of the disk
+ * crosses the arc between its ends, which #arcarc_meet_exact decides with the
+ * circle of the disk as a centred arc (#edges_add_circle); the sign is then
+ * -1. Otherwise no point of the open arc crosses the circle of the disk, so
+ * the open arc lies in the disk or out of it as a whole, and M decides which.
+ * The sign is then 0 where the arc touches the circle, at a tangency between
+ * its ends, a double root that is no crossing, or at an end, and 1 otherwise.
+ * Where S, M and E all lie on the circle of the disk the two circles are one
+ * and the sign is 0
+ * @param[in] p Centre of the disk, two coordinates
+ * @param[in] e Arc of three input points
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1, or 2 for an arc this function does not decide: a half
+ * circle on a diameter or a centred arc, which hold no middle input point, or
+ * a radius of 0
+ */
+int
+point_arc_offset_sign(const double *p, const Edge *e, double r)
+{
+  assert(r >= 0.0);
+  if (e->diameter || e->centred || r == 0.0)
+    return 2;
+  const double s[2] = {e->sx, e->sy}, m[2] = {e->mx, e->my},
+    t[2] = {e->ex, e->ey};
+  int ss = point_distance_offset_side_sign(p, s, 2, r, 0.0, 0.0);
+  int sm = point_distance_offset_side_sign(p, m, 2, r, 0.0, 0.0);
+  int st = point_distance_offset_side_sign(p, t, 2, r, 0.0, 0.0);
+  if (ss < 0 || sm < 0 || st < 0)
+    return -1;
+  if (ss == 0 && sm == 0 && st == 0)
+    return 0;
+  /* The circle of the disk as a centred arc, as #edges_add_circle builds it */
+  Edge c;
+  memset(&c, 0, sizeof(Edge));
+  c.etype = EDGE_POLYARC;
+  c.cx = p[0]; c.cy = p[1]; c.radius = r;
+  c.centred = true;
+  c.ccw = true;
+  c.x1 = c.x2 = p[0] - r;
+  c.y1 = c.y2 = p[1];
+  c.theta0 = c.theta1 = M_PI;
+  c.xmin = p[0] - r; c.xmax = p[0] + r;
+  c.ymin = p[1] - r; c.ymax = p[1] + r;
+  int meet, within[2][2];
+  arcarc_meet_exact(e, &c, &meet, within);
+  /* A meeting within the arc lies strictly between its ends */
+  bool between = within[0][0] || within[1][0];
+  if (meet > 0 && between)
+    return -1;
+  if ((meet == 0 && between) || ss == 0 || st == 0)
+    return 0;
+  return 1;
+}
+
+/**
  * @brief The square of the distance of a point to a segment as a quotient of
  * polynomials in exact sums, `num / den` (#segment_distance_square)
  */

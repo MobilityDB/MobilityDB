@@ -372,6 +372,133 @@ SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b #>> t2.b;
 SELECT COUNT(*) FROM tbl_tboxfloat t1, tbl_tboxfloat t2 WHERE t1.b #&> t2.b;
 
 -------------------------------------------------------------------------------
+-- Operators of a span and a temporal box
+-------------------------------------------------------------------------------
+
+-- A span answers the operators of a temporal box as its own box does: a number
+-- span on the value dimension, a timestamptz span on the time dimension
+SELECT intspan '[1,5)' && tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' && intspan '[1,5)';
+SELECT intspan '[1,5)' @> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT intspan '[3,8)' @> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' <@ intspan '[3,8)';
+SELECT intspan '[3,8)' ~= tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT intspan '[8,9)' -|- tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT intspan '[1,5)' &< tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT intspan '[1,5)' &> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' &> intspan '[1,5)';
+SELECT intspan '[8,9)' >> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' << intspan '[8,9)';
+SELECT bigintspan '[1,5)' && tbox 'TBOXBIGINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT floatspan '[1,5)' && tbox 'TBOXFLOAT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tstzspan '[2001-01-01,2001-01-03]' && tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tstzspan '[2001-01-01,2001-01-03]' @> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' <@ tstzspan '[2001-01-01,2001-01-03]';
+SELECT tstzspan '[2001-01-01,2001-01-03]' &<# tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tstzspan '[2001-01-01,2001-01-03]' #&> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])' &<# tstzspan '[2001-01-01,2001-01-03]';
+SELECT tstzspan '[2001-01-05,2001-01-06]' #>> tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT tstzspan '(2001-01-02,2001-01-03]' -|- tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT floatspan '[8,9)' -|- tbox 'TBOXFLOAT XT([3,8),[2001-01-01,2001-01-02])';
+-- The portable spelling of each operator answers the same
+SELECT tboxOverlaps(intspan '[1,5)', tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])');
+SELECT tboxOverbefore(tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])', tstzspan '[2001-01-01,2001-01-03]');
+-- A span of another number than the box, or a box without the span's
+-- dimension, is refused as two such boxes are
+SELECT floatspan '[1,5)' && tbox 'TBOXINT XT([3,8),[2001-01-01,2001-01-02])';
+SELECT intspan '[1,5)' && tbox 'TBOX T([2001-01-01,2001-01-02])';
+SELECT intspan '[1,5)' << tbox 'TBOX T([2001-01-01,2001-01-02])';
+SELECT tstzspan '[2001-01-01,2001-01-03]' <<# tbox 'TBOXINT X([3,8))';
+-- Over the tables, each operator answers what it answers on the box of the
+-- span, for pairs answering true and pairs answering false
+SELECT COUNT(*) FILTER (WHERE (t1.i && t2.b) <> (t1.i::tbox && t2.b)),
+  COUNT(*) FILTER (WHERE t1.i && t2.b), COUNT(*) FILTER (WHERE NOT (t1.i && t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i @> t2.b) <> (t1.i::tbox @> t2.b)),
+  COUNT(*) FILTER (WHERE t1.i @> t2.b), COUNT(*) FILTER (WHERE NOT (t1.i @> t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i <@ t2.b) <> (t1.i::tbox <@ t2.b)),
+  COUNT(*) FILTER (WHERE t1.i <@ t2.b), COUNT(*) FILTER (WHERE NOT (t1.i <@ t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i ~= t2.b) <> (t1.i::tbox ~= t2.b)),
+  COUNT(*) FILTER (WHERE t1.i ~= t2.b), COUNT(*) FILTER (WHERE NOT (t1.i ~= t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i -|- t2.b) <> (t1.i::tbox -|- t2.b)),
+  COUNT(*) FILTER (WHERE t1.i -|- t2.b), COUNT(*) FILTER (WHERE NOT (t1.i -|- t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i << t2.b) <> (t1.i::tbox << t2.b)),
+  COUNT(*) FILTER (WHERE t1.i << t2.b), COUNT(*) FILTER (WHERE NOT (t1.i << t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i &< t2.b) <> (t1.i::tbox &< t2.b)),
+  COUNT(*) FILTER (WHERE t1.i &< t2.b), COUNT(*) FILTER (WHERE NOT (t1.i &< t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i >> t2.b) <> (t1.i::tbox >> t2.b)),
+  COUNT(*) FILTER (WHERE t1.i >> t2.b), COUNT(*) FILTER (WHERE NOT (t1.i >> t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.i &> t2.b) <> (t1.i::tbox &> t2.b)),
+  COUNT(*) FILTER (WHERE t1.i &> t2.b), COUNT(*) FILTER (WHERE NOT (t1.i &> t2.b))
+FROM tbl_intspan t1, tbl_tboxint t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b && t2.f) <> (t1.b && t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b && t2.f), COUNT(*) FILTER (WHERE NOT (t1.b && t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b @> t2.f) <> (t1.b @> t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b @> t2.f), COUNT(*) FILTER (WHERE NOT (t1.b @> t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b <@ t2.f) <> (t1.b <@ t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b <@ t2.f), COUNT(*) FILTER (WHERE NOT (t1.b <@ t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b ~= t2.f) <> (t1.b ~= t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b ~= t2.f), COUNT(*) FILTER (WHERE NOT (t1.b ~= t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b -|- t2.f) <> (t1.b -|- t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b -|- t2.f), COUNT(*) FILTER (WHERE NOT (t1.b -|- t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b << t2.f) <> (t1.b << t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b << t2.f), COUNT(*) FILTER (WHERE NOT (t1.b << t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b &< t2.f) <> (t1.b &< t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b &< t2.f), COUNT(*) FILTER (WHERE NOT (t1.b &< t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b >> t2.f) <> (t1.b >> t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b >> t2.f), COUNT(*) FILTER (WHERE NOT (t1.b >> t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b &> t2.f) <> (t1.b &> t2.f::tbox)),
+  COUNT(*) FILTER (WHERE t1.b &> t2.f), COUNT(*) FILTER (WHERE NOT (t1.b &> t2.f))
+FROM tbl_tboxfloat t1, tbl_floatspan t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan && t2.b) <> (t1.b::tstzspan::tbox && t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan && t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan && t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan @> t2.b) <> (t1.b::tstzspan::tbox @> t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan @> t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan @> t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan <@ t2.b) <> (t1.b::tstzspan::tbox <@ t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan <@ t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan <@ t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan ~= t2.b) <> (t1.b::tstzspan::tbox ~= t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan ~= t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan ~= t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan -|- t2.b) <> (t1.b::tstzspan::tbox -|- t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan -|- t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan -|- t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan <<# t2.b) <> (t1.b::tstzspan::tbox <<# t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan <<# t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan <<# t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan &<# t2.b) <> (t1.b::tstzspan::tbox &<# t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan &<# t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan &<# t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan #>> t2.b) <> (t1.b::tstzspan::tbox #>> t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan #>> t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan #>> t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+SELECT COUNT(*) FILTER (WHERE (t1.b::tstzspan #&> t2.b) <> (t1.b::tstzspan::tbox #&> t2.b)),
+  COUNT(*) FILTER (WHERE t1.b::tstzspan #&> t2.b), COUNT(*) FILTER (WHERE NOT (t1.b::tstzspan #&> t2.b))
+FROM tbl_tboxfloat t1, tbl_tboxfloat t2;
+-- ... and the planner estimates them over a span column and a box column
+SELECT COUNT(*) FROM tbl_intspan WHERE i && tbox 'TBOXINT X([10,20))';
+SELECT COUNT(*) FROM tbl_tboxint WHERE b && intspan '[10,20)';
+SELECT COUNT(*) FROM tbl_tstzspan WHERE t <<# tbox 'TBOX T([2001-06-01,2001-06-02])';
+SELECT COUNT(*) FROM tbl_intspan t1, tbl_tboxint t2 WHERE t1.i && t2.b;
+
+-------------------------------------------------------------------------------
 -- Set operators
 -------------------------------------------------------------------------------
 

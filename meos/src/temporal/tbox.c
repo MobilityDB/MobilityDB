@@ -2112,6 +2112,673 @@ overafter_tbox_tbox(const TBox *box1, const TBox *box2)
 
 
 /*****************************************************************************
+ * Bounding box functions for a span and a temporal box
+ *****************************************************************************/
+
+/**
+ * @brief Generic bounding box function for a span and a temporal box, which
+ * applies a function on temporal boxes to the box of the span, as
+ * #boxop_tnumber_numspan applies a function on spans to the value span of a
+ * temporal number
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @param[in] func Bounding box function on temporal boxes
+ * @param[in] invert True if the temporal box is the first argument of the
+ * function
+ */
+static bool
+boxop_span_tbox(const Span *s, const TBox *box,
+  bool (*func)(const TBox *, const TBox *), bool invert)
+{
+  assert(s); assert(box); assert(func); assert(span_tbox_type(s->spantype));
+  TBox box1;
+  if (s->spantype == T_TSTZSPAN)
+    tstzspan_set_tbox(s, &box1);
+  else
+    numspan_set_tbox(s, &box1);
+  return invert ? func(box, &box1) : func(&box1, box);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a number span and a temporal box are
+ * adjacent
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Adjacent_numspan_tbox()
+ */
+bool
+adjacent_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &adjacent_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a number span are
+ * adjacent
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Adjacent_tbox_numspan()
+ */
+bool
+adjacent_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &adjacent_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a number span is contained in a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Contained_numspan_tbox()
+ */
+bool
+contained_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &contained_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box is contained in the box of a number span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Contained_tbox_numspan()
+ */
+bool
+contained_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &contained_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a number span contains a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Contains_numspan_tbox()
+ */
+bool
+contains_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &contains_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box contains the box of a number span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Contains_tbox_numspan()
+ */
+bool
+contains_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &contains_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a number span and a temporal box overlap
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overlaps_numspan_tbox()
+ */
+bool
+overlaps_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overlaps_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a number span overlap
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overlaps_tbox_numspan()
+ */
+bool
+overlaps_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overlaps_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a number span and a temporal box are equal
+ * in the common dimensions
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Same_numspan_tbox()
+ */
+bool
+same_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &same_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a number span are equal
+ * in the common dimensions
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Same_tbox_numspan()
+ */
+bool
+same_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &same_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box are
+ * adjacent
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Adjacent_tstzspan_tbox()
+ */
+bool
+adjacent_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &adjacent_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span are
+ * adjacent
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Adjacent_tbox_tstzspan()
+ */
+bool
+adjacent_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &adjacent_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a timestamptz span is contained in a
+ * temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Contained_tstzspan_tbox()
+ */
+bool
+contained_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &contained_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box is contained in the box of a timestamptz
+ * span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Contained_tbox_tstzspan()
+ */
+bool
+contained_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &contained_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a timestamptz span contains a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Contains_tstzspan_tbox()
+ */
+bool
+contains_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &contains_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box contains the box of a timestamptz span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Contains_tbox_tstzspan()
+ */
+bool
+contains_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &contains_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box
+ * overlap
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overlaps_tstzspan_tbox()
+ */
+bool
+overlaps_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overlaps_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span
+ * overlap
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overlaps_tbox_tstzspan()
+ */
+bool
+overlaps_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overlaps_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if the box of a timestamptz span and a temporal box are
+ * equal in the common dimensions
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Same_tstzspan_tbox()
+ */
+bool
+same_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &same_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_topo
+ * @brief Return true if a temporal box and the box of a timestamptz span are
+ * equal in the common dimensions
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Same_tbox_tstzspan()
+ */
+bool
+same_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &same_tbox_tbox, INVERT);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a number span is to the left of a temporal
+ * box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Left_numspan_tbox()
+ */
+bool
+left_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &left_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is to the left of the box of a number
+ * span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Left_tbox_numspan()
+ */
+bool
+left_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &left_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a number span does not extend to the right
+ * of a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overleft_numspan_tbox()
+ */
+bool
+overleft_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overleft_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box does not extend to the right of the box
+ * of a number span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overleft_tbox_numspan()
+ */
+bool
+overleft_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overleft_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a number span does not extend to the left of
+ * a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overright_numspan_tbox()
+ */
+bool
+overright_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overright_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box does not extend to the left of the box
+ * of a number span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overright_tbox_numspan()
+ */
+bool
+overright_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &overright_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a number span is to the right of a temporal
+ * box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Right_numspan_tbox()
+ */
+bool
+right_numspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &right_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is to the right of the box of a number
+ * span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Right_tbox_numspan()
+ */
+bool
+right_tbox_numspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_numspan_type(s->spantype))
+    return false;
+  return boxop_span_tbox(s, box, &right_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a timestamptz span is after a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #After_tstzspan_tbox()
+ */
+bool
+after_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &after_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is after the box of a timestamptz span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #After_tbox_tstzspan()
+ */
+bool
+after_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &after_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a timestamptz span is before a temporal box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Before_tstzspan_tbox()
+ */
+bool
+before_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &before_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is before the box of a timestamptz span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Before_tbox_tstzspan()
+ */
+bool
+before_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &before_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a timestamptz span is not before a temporal
+ * box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overafter_tstzspan_tbox()
+ */
+bool
+overafter_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overafter_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is not before the box of a timestamptz
+ * span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overafter_tbox_tstzspan()
+ */
+bool
+overafter_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overafter_tbox_tbox, INVERT);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if the box of a timestamptz span is not after a temporal
+ * box
+ * @param[in] s Span
+ * @param[in] box Temporal box
+ * @csqlfn #Overbefore_tstzspan_tbox()
+ */
+bool
+overbefore_tstzspan_tbox(const Span *s, const TBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overbefore_tbox_tbox, INVERT_NO);
+}
+
+/**
+ * @ingroup meos_box_bbox_pos
+ * @brief Return true if a temporal box is not after the box of a timestamptz
+ * span
+ * @param[in] box Temporal box
+ * @param[in] s Span
+ * @csqlfn #Overbefore_tbox_tstzspan()
+ */
+bool
+overbefore_tbox_tstzspan(const TBox *box, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(s, false); VALIDATE_NOT_NULL(box, false);
+  if (! ensure_span_isof_type(s, T_TSTZSPAN))
+    return false;
+  return boxop_span_tbox(s, box, &overbefore_tbox_tbox, INVERT);
+}
+
+
+/*****************************************************************************
  * Set operators
  *****************************************************************************/
 

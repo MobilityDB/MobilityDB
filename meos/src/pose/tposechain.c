@@ -462,6 +462,29 @@ tposechain_end_value(const Temporal *temp)
 
 /**
  * @ingroup meos_posechain_accessor
+ * @brief Return the value of a temporal pose chain at a timestamptz
+ * @param[in] temp Temporal value
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] result Resulting value
+ * @csqlfn #Temporal_value_at_timestamptz()
+ */
+bool
+tposechain_value_at_timestamptz(const Temporal *temp, TimestampTz t,
+  bool strict, PoseChain **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_at_timestamptz(temp, t, strict, &dresult))
+    return false;
+  *result = DatumGetPoseChainP(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_posechain_accessor
  * @brief Return a copy of the n-th value of a temporal pose chain
  * @param[in] temp Temporal value
  * @param[in] n Number

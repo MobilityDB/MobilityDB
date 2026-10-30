@@ -279,6 +279,7 @@ extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, int ndims, double r);
 extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, double r);
+extern int point_arc_offset_sign(const double *p, const Edge *e, double r);
 extern double point_seg_dist2(double px, double py, double x1, double y1,
   double x2, double y2);
 extern double point_arc_dist2(double px, double py, const Edge *e);

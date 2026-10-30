@@ -1600,6 +1600,24 @@ tjsonb_delete_path(const Temporal *temp, text **path_elems, int path_len)
 /*****************************************************************************/
 
 /**
+ * @brief Return true when a path holds a NULL element
+ * @details A NULL element is the NULL of the SQL array the path comes from,
+ * and a path holding one extracts no value, as in #pg_jsonb_get_element
+ * @param[in] path_elems Path elements
+ * @param[in] path_len Number of elements in the input array
+ */
+bool
+path_contains_nulls(text **path_elems, int path_len)
+{
+  for (int i = 0; i < path_len; i++)
+  {
+    if (! path_elems[i])
+      return true;
+  }
+  return false;
+}
+
+/**
  * @ingroup meos_json_json
  * @brief Extract an item specified by a path from a temporal JSON value
  * @param[in] temp Temporal JSON value
@@ -1615,6 +1633,9 @@ tjson_extract_path(const Temporal *temp, text **path_elems, int path_len,
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
   if (! ensure_positive(path_len))
+    return NULL;
+  /* A path holding a NULL element extracts no value */
+  if (path_contains_nulls(path_elems, path_len))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
@@ -1646,6 +1667,9 @@ tjsonb_extract_path_common(const Temporal *temp, text **path_elems,
 {
   assert(temp); assert(path_elems); assert(path_len > 0);
   assert(temp->temptype == T_TJSONB);
+  /* A path holding a NULL element extracts no value */
+  if (path_contains_nulls(path_elems, path_len))
+    return NULL;
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

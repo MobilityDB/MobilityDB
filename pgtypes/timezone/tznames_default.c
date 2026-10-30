@@ -36,8 +36,9 @@
  * Standalone MEOS has neither that setting nor a share directory, so it carries
  * PostgreSQL's Default set inside the library and installs it, as the server
  * does, through #ConvertTimeZoneAbbrevs and #InstallTimeZoneAbbrevs. The table
- * is shared by every thread and installed once, by the first thread that
- * initializes its time zone.
+ * is shared by every thread: the first thread that initializes its time zone
+ * installs it, and the last thread that finalizes its time zone frees it,
+ * through #UninstallTimeZoneAbbrevs.
  */
 
 #include "postgres.h"
@@ -45,39 +46,77 @@
 #include "utils/datetime.h"
 #include "utils/tzparser.h"
 #include "pgtz.h"
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 #include "data/tznames_default.inc"
 
-/* 0: not installed, 1: being installed, 2: installed */
-static int tznames_state = 0;
+/* Lock over the count below and the table, held for an installation or a
+ * release, both short-lived */
+static int32 tznames_lock = 0;
+/* Number of threads holding the table */
+static int32 tznames_users = 0;
+/* Whether this thread holds the table, so that initializing or finalizing
+ * its time zone twice counts once */
+static MEOS_TLS bool tznames_held = false;
+
+static void
+tznames_lock_acquire(void)
+{
+  int32 expected = 0;
+  while (! __atomic_compare_exchange_n(&tznames_lock, &expected, 1, false,
+      __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+    expected = 0;
+}
+
+static void
+tznames_lock_release(void)
+{
+  __atomic_store_n(&tznames_lock, 0, __ATOMIC_RELEASE);
+}
 
 /**
- * @brief Install PostgreSQL's Default time zone abbreviations, once per process
+ * @brief Install PostgreSQL's Default time zone abbreviations for this thread,
+ * the first thread installing the table every thread shares
  * @return False when the table cannot be allocated
  */
 bool
 pg_tznames_install_default(void)
 {
-  if (__atomic_load_n(&tznames_state, __ATOMIC_ACQUIRE) == 2)
+  if (tznames_held)
     return true;
-  int expected = 0;
-  if (__atomic_compare_exchange_n(&tznames_state, &expected, 1, false,
-        __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE))
+  tznames_lock_acquire();
+  if (tznames_users == 0)
   {
-    /* This thread installs the table; concurrent threads wait below */
     TimeZoneAbbrevTable *tbl = ConvertTimeZoneAbbrevs(tznames_default,
       (int) lengthof(tznames_default));
     if (! tbl)
     {
-      __atomic_store_n(&tznames_state, 0, __ATOMIC_RELEASE);
+      tznames_lock_release();
       return false;
     }
     InstallTimeZoneAbbrevs(tbl);
-    __atomic_store_n(&tznames_state, 2, __ATOMIC_RELEASE);
-    return true;
   }
-  /* Another thread is installing; the installation is short-lived */
-  while ((expected = __atomic_load_n(&tznames_state, __ATOMIC_ACQUIRE)) == 1)
-    ;
-  return expected == 2;
+  tznames_users++;
+  tznames_lock_release();
+  tznames_held = true;
+  return true;
+}
+
+/**
+ * @brief Release the time zone abbreviations this thread holds, the last
+ * thread freeing the table every thread shares
+ */
+void
+pg_tznames_release_default(void)
+{
+  if (! tznames_held)
+    return;
+  /* This thread's cache of abbreviations points into the table */
+  ClearTimeZoneAbbrevCache();
+  tznames_lock_acquire();
+  if (--tznames_users == 0)
+    UninstallTimeZoneAbbrevs();
+  tznames_lock_release();
+  tznames_held = false;
+  return;
 }

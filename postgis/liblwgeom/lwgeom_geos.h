@@ -50,7 +50,7 @@ int union_dbscan(LWGEOM **geoms, uint32_t num_geoms, UNIONFIND *uf, double eps, 
 POINTARRAY* ptarray_from_GEOSCoordSeq(const GEOSCoordSequence* cs, uint8_t want3d);
 
 /* MEOS */ extern __thread char lwgeom_geos_errmsg[];
-extern void lwgeom_geos_error(const char* fmt, ...) __attribute__ ((format (printf, 1, 2)));
+extern void lwgeom_geos_error(const char* fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
 
 /* MEOS: per-thread GEOS context.  Every liblwgeom GEOS helper retrieves the
  * thread-local handle via lwgeom_geos_context() and uses the reentrant

@@ -188,8 +188,8 @@ ensure_valid_cell(Datum value, MeosType temptype)
     if (h3index_is_valid_input((H3Index) DatumGetInt64(value)))
       return true;
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value %" PRId64 " does not encode a valid H3 cell, directed edge "
-      "or vertex", DatumGetInt64(value));
+      "The value " INT64_FORMAT " does not encode a valid H3 cell, "
+      "directed edge or vertex", DatumGetInt64(value));
     return false;
   }
 #endif
@@ -199,7 +199,7 @@ ensure_valid_cell(Datum value, MeosType temptype)
     if (quadbin_is_valid_index((Quadbin) DatumGetInt64(value)))
       return true;
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value %" PRId64 " does not encode a valid quadbin index",
+      "The value " INT64_FORMAT " does not encode a valid quadbin index",
       DatumGetInt64(value));
     return false;
   }
@@ -210,7 +210,7 @@ ensure_valid_cell(Datum value, MeosType temptype)
   if (DatumGetBool(ops->is_valid_cell(value)))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The value %" PRId64 " does not encode a valid %s",
+    "The value " INT64_FORMAT " does not encode a valid %s",
     DatumGetInt64(value), meostype_name(ops->celltype));
   return false;
 }
@@ -2758,7 +2758,8 @@ dggs_quadtree_uncompact_cells(const Set *cells, int32 resolution,
     if (res > resolution)
     {
       meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The cell %" PRIu64 " of resolution %d is finer than the resolution %d",
+        "The cell " UINT64_FORMAT " of resolution %d is finer than the "
+        "resolution %d",
         cell, res, resolution);
       return NULL;
     }
