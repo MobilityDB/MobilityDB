@@ -283,12 +283,16 @@ cbuffer_parse(const char **str, bool end)
   p_whitespace(str);
   Datum d;
   if (! basetype_parse(str, T_FLOAT8, ')', &d))
+  {
+    pfree(gs);
     return NULL;
+  }
   double radius = DatumGetFloat8(d);
   if (radius < 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The radius must be a real number greater than or equal to 0");
+    pfree(gs);
     return NULL;
   }
 
@@ -296,7 +300,10 @@ cbuffer_parse(const char **str, bool end)
   p_whitespace(str);
   if (! ensure_cparen(str, type_str) ||
         (end && ! ensure_end_input(str, type_str)))
+  {
+    pfree(gs);
     return NULL;
+  }
 
   Cbuffer *result = cbuffer_make(gs, radius);
   pfree(gs);
