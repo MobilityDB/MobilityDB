@@ -46,12 +46,15 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 
 ## Where things stand
 
-- **Every distance answers the double nearest the exact distance**: the rows ED1 to ED18 of
-  [Exact distance](EXACT-DISTANCE.md) are merged, ED15 last as MobilityDB #3269 (`d06cb0d010`) and
-  #3272 (`0c6883d4e7`). The work that starts after it, [Exact crossings](EXACT-CROSSINGS.md)
-  steps 2–4, [Any number of turning points](N-TURNING-POINTS.md) and
+- **Exact distance is merged but for three relate items of ED17**: every row of
+  [Exact distance](EXACT-DISTANCE.md) is merged, ED15 last as MobilityDB #3269 (`d06cb0d010`) and
+  #3272 (`0c6883d4e7`), except ED17's (4) to (6): the clearance of relate read in squared
+  distances, relate on a collection whose members overlap (86 of 129 cells wrong on 43 natural
+  areas against a member), and the union read only where asked, whose branches are not on GitHub.
+  The work that starts after exact distance, [Exact crossings](EXACT-CROSSINGS.md) steps 2–4,
+  [Any number of turning points](N-TURNING-POINTS.md) and
   [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md), interleaved as those
-  notes order it, is open to start.
+  notes order it, follows those three.
 - **The smallest circle enclosing a geometry is exact**: MobilityDB #3105 (`adbb2ebad1`) searches
   the double nearest its radius by a polynomial of degree six, a term of an exact polynomial
   multiplying up to six exact sums (`POLY_TERM_MAXDEG` of `meos/include/geo/geo_funcs.h`).
