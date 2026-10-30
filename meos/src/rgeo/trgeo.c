@@ -410,7 +410,8 @@ geometry_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs))
+  if (! ensure_not_empty(gs) || ! ensure_has_not_M_geo(gs) ||
+      ! ensure_not_nan_geo(gs))
     return NULL;
 
   /* Reconcile the SRID of the reference geometry and the temporal pose: copy the
