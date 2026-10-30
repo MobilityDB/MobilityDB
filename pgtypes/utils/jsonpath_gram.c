@@ -1095,7 +1095,61 @@ yydestruct (const char *yymsg,
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YY_USE (yykind);
+  /* MEOS: free the value of a symbol the parse discards when the grammar
+   * refuses the path, which the memory context of PostgreSQL reclaims and
+   * MEOS has no such context for. The value of each symbol is the member of
+   * its %type in jsonpath_gram.y: every token from TO_P to TIMESTAMP_TZ_P and
+   * key_name a string the scanner allocated for it, and the parse items and
+   * the lists of parse items a tree freeJsonPathParseItem frees; result, the
+   * start symbol, assigns the parse result to the caller and no value of its
+   * own, so nothing of it is freed here */
+  if (yykind >= YYSYMBOL_TO_P && yykind <= YYSYMBOL_TIMESTAMP_TZ_P)
+  {
+    if (yyvaluep->str.val)
+      pfree(yyvaluep->str.val);
+  }
+  else switch (yykind)
+  {
+    case YYSYMBOL_key_name:
+      if (yyvaluep->str.val)
+        pfree(yyvaluep->str.val);
+      break;
+    case YYSYMBOL_scalar_value:
+    case YYSYMBOL_path_primary:
+    case YYSYMBOL_expr:
+    case YYSYMBOL_array_accessor:
+    case YYSYMBOL_any_path:
+    case YYSYMBOL_accessor_op:
+    case YYSYMBOL_key:
+    case YYSYMBOL_predicate:
+    case YYSYMBOL_delimited_predicate:
+    case YYSYMBOL_index_elem:
+    case YYSYMBOL_starts_with_initial:
+    case YYSYMBOL_expr_or_predicate:
+    case YYSYMBOL_datetime_template:
+    case YYSYMBOL_opt_datetime_template:
+    case YYSYMBOL_csv_elem:
+    case YYSYMBOL_datetime_precision:
+    case YYSYMBOL_opt_datetime_precision:
+      freeJsonPathParseItem(yyvaluep->value);
+      break;
+    case YYSYMBOL_accessor_expr:
+    case YYSYMBOL_csv_list:
+    case YYSYMBOL_opt_csv_list:
+    case YYSYMBOL_index_list:
+    {
+      /* The elements of index_list are parse items too, index_elem being
+       * one, whatever the comment of its member in %union says */
+      List *list = yykind == YYSYMBOL_index_list ? yyvaluep->indexs :
+        yyvaluep->elems;
+      for (int i = 0; i < list_length(list); i++)
+        freeJsonPathParseItem((JsonPathParseItem *) list_nth(list, i));
+      list_free(list);
+      break;
+    }
+    default:
+      break;
+  }
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
