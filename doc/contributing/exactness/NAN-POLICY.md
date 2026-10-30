@@ -60,36 +60,65 @@ readers whose types have no literal in the regression queries.
 ## 3. The fixes, one PR
 
 **Owner, 2026-10-30:** all the NaN work goes in a single PR, with one commit per step. Branch
-`fix/meos-refuses-nan` (`estebanzimanyi/MobilityDB`), test `meos/test/nan_refusal_test.c`
-(39 cases, each in a child process; 35 fail on master, 0 on the branch).
+`fix/meos-refuses-nan` (`estebanzimanyi/MobilityDB`), on master `4b5f1d6d84`, seven commits, not
+yet on GitHub: its five receipts (strict-ci, Windows, cppcheck, valgrind, speed) are green on the
+same commits over master `51adacdd24`, and are earned again over `4b5f1d6d84`, whose move of the
+set functions into `set.c` the rebase carries. Test `meos/test/nan_refusal_test.c`: 39 cases, each
+in a child process; 35 fail on master, 0 on the branch, valgrind clean in every child.
 
-Two choices of the branch for the owner to confirm:
+The commits, in order:
+
+1. `Test that no MEOS value holds a NaN`: `nan_refusal_test.c`, readers, functions taking a NaN and
+   results over infinite floats;
+2. `Refuse a NaN in the readers of poses and circular buffers`: `cbuffer_make`, `pose_make_2d`,
+   `pose_make_3d`, the WKB reader (`type_from_wkb` drops a value whose reading raised an error)
+   and the plural MF-JSON parsers;
+3. `Refuse a NaN in the readers of geometries and in the box constructors`: every public geometry
+   reader ends with `geo_read_result`, and `gbox_make`, `box3d_make`; `nan_input_test.c` and
+   `distance_point_test.c` read a NaN geometry as refused;
+4. `Refuse a NaN in each double a public MEOS function takes`: `ensure_not_nan` at entry, by shape,
+   in 53 files (the census: 290 calls, 290 refused);
+5. `Raise an error where a float operation would give a NaN`: `ensure_not_nan_result`, the
+   linear temporal float refusing infinity, and the shift, scale and expansion of float sets,
+   spans, span sets and boxes tested in `numset_shift_scale`, `numspan_shift_scale`,
+   `numspan_expand`, `numspanset_shift_scale` and `tbox_shift_scale_value`, which the SQL
+   functions call directly (the census: 384 calls, no NaN);
+6. `Refuse a NaN in the reference geometry of a temporal rigid geometry`;
+7. `Check that every public MEOS function tests each double it takes for NaN`:
+   `tools/scripts/check_nan_guards.py` and its job in `check-code.yml` (409 untested doubles on
+   master, none on the branch).
+
+Two choices of the branch for the owner to confirm, each with the recommendation:
 
 - **A linear temporal float holds no infinite value.** Its interpolation adds infinities of
-  opposite signs or multiplies one by zero, so it has a NaN at every interior instant;
-  `ensure_valid_tinstarr` refuses it, and a step or discrete temporal float keeps infinity. This
-  one check removes the NaN of the integral, `twavg`, `avg_value`, Frechet, DTW, the shift and
-  scale and the `tfloat_exp` crash.
-- **Two kinds of double keep NaN, pending the owner:** a raster pixel value (nodata, map algebra constant),
-  which GDAL writes as NaN for a float band with no data, and the float8 functions of `pgtypes`,
-  which keep PostgreSQL's order (NaN above infinity) since they run inside sort comparators.
+  opposite signs or multiplies one by zero, so it has a NaN at every interior instant, even
+  between two equal infinities; `ensure_valid_tinstarr` refuses it, and a step or discrete
+  temporal float keeps infinity. This one check removes the NaN of the integral, `twavg`,
+  `avg_value`, Frechet, DTW, the shift and scale and the `tfloat_exp` crash. Recommended: keep
+  the refusal, the error being raised where the value is built rather than in each function
+  reading it; a set, span, box, step or discrete value still states an unbounded value. A linear
+  temporal point with an infinite coordinate has the same interpolation and is outside the branch.
+- **Two kinds of double keep NaN, pending the owner:** a raster pixel value (nodata, map algebra
+  constant), which GDAL writes as NaN for a float band with no data, and the float8 functions of
+  `pgtypes`, which keep PostgreSQL's order (NaN above infinity) since they run inside sort
+  comparators. Recommended: keep both. A raster holds a NaN pixel as no data, and no MEOS value
+  read from it holds one, a NaN pixel read as no value (to verify on every path from a raster to
+  a value); the float8 functions are PostgreSQL's `double precision`, and every MEOS entry point
+  refuses the NaN they can return.
 
-Found by the census and not caused by NaN, so left to PRs of their own: `jsonpath_in` aborts on 3
-invalid paths; `tbox_from_hexwkb` aborts on the hex "1"; `floatspan_in` of `(1234.5, 10)` returns
-a value together with its error and `floatspanset_in` of it aborts in `datum_cmp`;
-`nad_tpcpoint_geo` given a temporal point aborts on an assertion.
+Found by the census and not caused by NaN, each a PR of its own on master `4b5f1d6d84`, each with
+a test that fails on the file of master and passes on the fix, none yet on GitHub:
 
-In the order of the commits, each measured by the harness of its row before and after:
+| Branch | Defect | Test |
+|---|---|---|
+| `fix/tbox-from-hexwkb-short` | a HexWKB string of an odd length, with a character that is not a hexadecimal digit, or empty, is parsed from the bytes it does not encode: `tbox_from_hexwkb("1")` and `("")` abort | `hexwkb_input_error_test.c`, nine readers |
+| `fix/span-text-refuses-invalid-bounds` | `span_parse` ignores the refusal of `span_set`: `floatspan_in("(1234.5, 10)")` returns a value with its error, `floatspanset_in` of it aborts | `text_input_error_test.c` |
+| `fix/tpcpoint-geo-validates-its-temporal` | `nad_tpcpoint_geo` and `eintersects_tpcpoint_geo` test only for null: a temporal point aborts, a sequence is read as an instant | `tpointcloud_test.c` |
+| `fix/jsonpath-syntax-error-returns-no-value` | `parsejsonpath` returns its uninitialized result after a syntax error: `free(): invalid pointer` | `json_inout_validity_test.c` |
 
-1. the pose and circular buffer readers (text, WKB, MF-JSON) and `box3d_in`, `gbox_make`, the
-   float `tbox` and span set WKB readers: `ensure_not_nan_geo` and `ensure_not_nan` where the
-   value is read;
-2. the public functions taking a `double`: `ensure_not_nan` at entry, by shape;
-3. the float results: a NaN result raises an error;
-4. the crashes of the census, each refused with an error;
-5. `tools/scripts/check_nan_guards.py`, which refuses a public function whose `double` parameter
-   is not tested, and a catalog-driven test refusing a NaN through every entry point.
+A JSON path the grammar refuses still leaves the grammar's partial lists unfreed, which
+PostgreSQL reclaims with its memory context and MEOS does not.
 
-The work in flight that depends on this: the pose sort keys (D9.13, `meos/sortkey-pose`) and the
-box order of NaN bounds (`fix/stbox-order-nan-bounds`), which the rule makes unnecessary, since no
-box holds a NaN.
+The work in flight that depends on this: the pose sort keys (D9.13, `meos/sortkey-pose`), rebased
+on master once the branch merges, and the box order of NaN bounds (`fix/stbox-order-nan-bounds`),
+set aside, since no box holds a NaN.
