@@ -1975,24 +1975,21 @@ tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_temporal_transf
+ * @ingroup meos_internal_temporal_transf
  * @brief Return a temporal value shifted and/or scaled by two intervals
  * @param[in] temp Temporal value
- * @param[in] shift Interval for shift @nullable
- * @param[in] duration Interval for scale @nullable
- * @pre The duration is greater than 0 if is not NULL
- * @csqlfn #Temporal_shift_scale_time()
+ * @param[in] shift Interval for shift, NULL for none
+ * @param[in] duration Interval for scale, NULL for none
+ * @pre At least one of the two intervals is given
+ * @csqlfn #Temporal_shift_time(), #Temporal_scale_time(),
+ *   #Temporal_shift_scale_time()
  */
 Temporal *
-temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
+temporal_shift_scale_time_intl(const Temporal *temp, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(temp); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
@@ -2019,7 +2016,9 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
 Temporal *
 temporal_shift_time(const Temporal *temp, const Interval *shift)
 {
-  return temporal_shift_scale_time(temp, shift, NULL);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return temporal_shift_scale_time_intl(temp, shift, NULL);
 }
 
 /**
@@ -2032,7 +2031,31 @@ temporal_shift_time(const Temporal *temp, const Interval *shift)
 Temporal *
 temporal_scale_time(const Temporal *temp, const Interval *duration)
 {
-  return temporal_shift_scale_time(temp, NULL, duration);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return temporal_shift_scale_time_intl(temp, NULL, duration);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal value shifted and scaled by two intervals
+ * @param[in] temp Temporal value
+ * @param[in] shift Interval for shift
+ * @param[in] duration Interval for scale
+ * @csqlfn #Temporal_shift_scale_time()
+ */
+Temporal *
+temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return temporal_shift_scale_time_intl(temp, shift, duration);
 }
 
 /*****************************************************************************

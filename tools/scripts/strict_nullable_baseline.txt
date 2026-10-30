@@ -3,8 +3,6 @@
 # declarations, so that an edit above a finding does not read as a
 # new one. The list only shrinks: a new finding fails the check.
 # Regenerate with --rebaseline after a fix.
-mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	shiftScaleTime(tcbuffer, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	shiftScaleTime(tcbuffer, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeq(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSet(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSetGaps(tcbuffer[], maxt interval, maxdist float, text)	not strict
@@ -12,20 +10,12 @@ mobilitydb/sql/geo/051_stbox.in.sql	scaleTime(stbox, interval)	arg 1 strict stbo
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 1 strict stbox_shift_scale_time.shift
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 2 strict stbox_shift_scale_time.duration
 mobilitydb/sql/geo/051_stbox.in.sql	shiftTime(stbox, interval)	arg 1 strict stbox_shift_scale_time.shift
-mobilitydb/sql/geo/052_tgeo.in.sql	shiftScaleTime(tgeography, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/geo/052_tgeo.in.sql	shiftScaleTime(tgeography, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/geo/052_tgeo.in.sql	shiftScaleTime(tgeometry, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/geo/052_tgeo.in.sql	shiftScaleTime(tgeometry, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeographySeq(tgeography, text)	not strict
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeographySeqSet(tgeography, text)	not strict
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeographySeqSetGaps(tgeography[], maxt interval, maxdist float, text)	not strict
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeometrySeq(tgeometry, text)	not strict
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeometrySeqSet(tgeometry, text)	not strict
 mobilitydb/sql/geo/052_tgeo.in.sql	tgeometrySeqSetGaps(tgeometry[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/geo/052_tpoint.in.sql	shiftScaleTime(tgeogpoint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/geo/052_tpoint.in.sql	shiftScaleTime(tgeogpoint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/geo/052_tpoint.in.sql	shiftScaleTime(tgeompoint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/geo/052_tpoint.in.sql	shiftScaleTime(tgeompoint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeogpointSeq(tgeogpoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeogpointSeqSet(tgeogpoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeogpointSeqSetGaps(tgeogpoint[], maxt interval, maxdist float, text)	not strict
@@ -38,8 +28,6 @@ mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeogpoint, tfloat, bo
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeompoint, tfloat, boolean)	arg 1 strict tpoint_tfloat_to_geomeas.meas
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	scale(geometry, geometry, origin geometry)	arg 2 strict geo_scale_geo.sorigin
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	scale(tgeompoint, geometry, origin geometry)	arg 2 strict tgeo_scale_geo.sorigin
-mobilitydb/sql/h3/253_th3index.in.sql	shiftScaleTime(th3index, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/h3/253_th3index.in.sql	shiftScaleTime(th3index, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeq(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSet(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSetGaps(th3index[], maxt interval)	not strict
@@ -53,8 +41,6 @@ mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryFirst(jsonbse
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryFirstTz(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_query_first.vars
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetSetLax(jsonbset, path text[], val jsonb, create_missing boolean, handle_null text)	arg 2 untagged jsonbset_set.newjb
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetSetLax(jsonbset, path text[], val jsonb, create_missing boolean, handle_null text)	not strict
-mobilitydb/sql/json/452_tjsonb.in.sql	shiftScaleTime(tjsonb, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/json/452_tjsonb.in.sql	shiftScaleTime(tjsonb, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeq(tjsonb, text)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSet(tjsonb)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSetGaps(tjsonb[], maxt interval)	not strict
@@ -71,36 +57,24 @@ mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryArrayTz(tjsonb, j
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryFirst(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_first.vars
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryFirstTz(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_first.vars
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbSet(tjsonb, path text[], val jsonb, create_missing boolean)	arg 2 strict tjsonb_set.newjb
-mobilitydb/sql/npoint/302_tnpoint.in.sql	shiftScaleTime(tnpoint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/npoint/302_tnpoint.in.sql	shiftScaleTime(tnpoint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/npoint/302_tnpoint.in.sql	tnpointSeq(tnpoint, text)	not strict
 mobilitydb/sql/npoint/302_tnpoint.in.sql	tnpointSeqSet(tnpoint, text)	not strict
 mobilitydb/sql/npoint/302_tnpoint.in.sql	tnpointSeqSetGaps(tnpoint[], maxt interval, maxdist float, text)	not strict
 mobilitydb/sql/pointcloud/410_tpcbox.in.sql	tpcboxT(period tstzspan, pcid integer)	arg 0 strict tpcbox_make.period
 mobilitydb/sql/pointcloud/410_tpcbox.in.sql	tpcboxXT(xmin float, ymin float, xmax float, ymax float, period tstzspan, pcid integer)	arg 4 strict tpcbox_make.period
 mobilitydb/sql/pointcloud/410_tpcbox.in.sql	tpcboxZT(xmin float, ymin float, zmin float, xmax float, ymax float, zmax float, period tstzspan, pcid integer)	arg 6 strict tpcbox_make.period
-mobilitydb/sql/pointcloud/420_tpcpoint.in.sql	shiftScaleTime(tpcpoint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/pointcloud/420_tpcpoint.in.sql	shiftScaleTime(tpcpoint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/pointcloud/420_tpcpoint.in.sql	tpcpointSeq(tpcpoint, text)	not strict
 mobilitydb/sql/pointcloud/420_tpcpoint.in.sql	tpcpointSeqSet(tpcpoint)	not strict
-mobilitydb/sql/pointcloud/430_tpcpatch.in.sql	shiftScaleTime(tpcpatch, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/pointcloud/430_tpcpatch.in.sql	shiftScaleTime(tpcpatch, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/pointcloud/430_tpcpatch.in.sql	tpcpatchSeq(tpcpatch, text)	not strict
 mobilitydb/sql/pointcloud/430_tpcpatch.in.sql	tpcpatchSeqSet(tpcpatch)	not strict
 mobilitydb/sql/pointcloud/441_tpc_aggfuncs.in.sql	tdensityTransition(internal, tpcpatch)	arg 0 untagged temporal_skiplist_splice.list
 mobilitydb/sql/pointcloud/441_tpc_aggfuncs.in.sql	tnpointsTransition(internal, tpcpatch)	arg 0 untagged temporal_skiplist_splice.list
-mobilitydb/sql/pose/102_tpose.in.sql	shiftScaleTime(tpose, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/pose/102_tpose.in.sql	shiftScaleTime(tpose, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/pose/102_tpose.in.sql	tposeSeq(tpose, text)	not strict
 mobilitydb/sql/pose/102_tpose.in.sql	tposeSeqSet(tpose, text)	not strict
 mobilitydb/sql/pose/102_tpose.in.sql	tposeSeqSetGaps(tpose[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/posechain/552_tposechain.in.sql	shiftScaleTime(tposechain, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/posechain/552_tposechain.in.sql	shiftScaleTime(tposechain, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/posechain/552_tposechain.in.sql	tposechainSeq(tposechain, text)	not strict
 mobilitydb/sql/posechain/552_tposechain.in.sql	tposechainSeqSet(tposechain, text)	not strict
 mobilitydb/sql/posechain/552_tposechain.in.sql	tposechainSeqSetGaps(tposechain[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/quadbin/353_tquadbin.in.sql	shiftScaleTime(tquadbin, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/quadbin/353_tquadbin.in.sql	shiftScaleTime(tquadbin, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/quadbin/353_tquadbin.in.sql	tquadbinSeq(tquadbin, text)	not strict
 mobilitydb/sql/quadbin/353_tquadbin.in.sql	tquadbinSeqSet(tquadbin, text)	not strict
 mobilitydb/sql/quadbin/353_tquadbin.in.sql	tquadbinSeqSetGaps(tquadbin[], maxt interval)	not strict
@@ -130,13 +104,9 @@ mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, searchvalues flo
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, exclude_nodata_value boolean, searchvalues float[], roundto float)	not strict
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, searchvalues float[], roundto float)	not strict
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/rgeo/150_trgeo.in.sql	shiftScaleTime(trgeometry, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/rgeo/150_trgeo.in.sql	shiftScaleTime(trgeometry, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/rgeo/150_trgeo.in.sql	trgeometrySeq(trgeometry, text)	not strict
 mobilitydb/sql/rgeo/150_trgeo.in.sql	trgeometrySeqSet(trgeometry, text)	not strict
 mobilitydb/sql/rgeo/150_trgeo.in.sql	trgeometrySeqSetGaps(trgeometry[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/s2cell/603_ts2cell.in.sql	shiftScaleTime(ts2cell, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/s2cell/603_ts2cell.in.sql	shiftScaleTime(ts2cell, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeq(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSet(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSetGaps(ts2cell[], maxt interval)	not strict
@@ -156,16 +126,6 @@ mobilitydb/sql/temporal/021_tbox.in.sql	scaleTime(tbox, interval)	arg 1 strict t
 mobilitydb/sql/temporal/021_tbox.in.sql	shiftScaleTime(tbox, interval, interval)	arg 1 strict tbox_shift_scale_time.shift
 mobilitydb/sql/temporal/021_tbox.in.sql	shiftScaleTime(tbox, interval, interval)	arg 2 strict tbox_shift_scale_time.duration
 mobilitydb/sql/temporal/021_tbox.in.sql	shiftTime(tbox, interval)	arg 1 strict tbox_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tbigint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tbigint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tbool, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tbool, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tfloat, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tfloat, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tint, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(tint, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(ttext, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
-mobilitydb/sql/temporal/022_temporal.in.sql	shiftScaleTime(ttext, interval, interval)	arg 2 strict temporal_shift_scale_time.duration
 mobilitydb/sql/temporal/022_temporal.in.sql	tbigintSeq(tbigint, text)	not strict
 mobilitydb/sql/temporal/022_temporal.in.sql	tbigintSeqSet(tbigint)	not strict
 mobilitydb/sql/temporal/022_temporal.in.sql	tbigintSeqSetGaps(tbigint[], maxt interval, maxdist float)	not strict

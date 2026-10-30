@@ -54,8 +54,10 @@
  * and answers the timestamp of an instant, and that #tint_value_boxes and
  * #tfloat_time_boxes report a null value, a null count and a value of the
  * other temporal number type, and answer the boxes of a value of their own.
- * It verifies last that #interptype_from_string reports a null name and an
- * unknown one, and reads a name in any case.
+ * It verifies that #interptype_from_string reports a null name and an unknown
+ * one, and reads a name in any case, and last that #temporal_shift_time,
+ * #temporal_scale_time and #temporal_shift_scale_time report each null
+ * interval they take and answer the shifted and scaled value.
  *
  * The program can be build as follows
  * @code
@@ -229,6 +231,51 @@ int main(void)
     meos_errno());
   assert(interp == STEP);
   assert(meos_errno() == 0);
+
+  /* Shifting and scaling the time of a temporal value takes each interval it
+   * names: a null interval is reported, and the intervals answer a value */
+  Interval *shift = interval_in("1 day", -1);
+  Interval *duration = interval_in("4 days", -1);
+  res = temporal_shift_time(temp, NULL);
+  printf("temporal_shift_time(NULL): %s, errno %d\n", res ? "a value" : "NULL",
+    meos_errno());
+  assert(res == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  res = temporal_scale_time(temp, NULL);
+  printf("temporal_scale_time(NULL): %s, errno %d\n", res ? "a value" : "NULL",
+    meos_errno());
+  assert(res == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  res = temporal_shift_scale_time(temp, shift, NULL);
+  printf("temporal_shift_scale_time(1 day, NULL): %s, errno %d\n",
+    res ? "a value" : "NULL", meos_errno());
+  assert(res == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  res = temporal_shift_scale_time(temp, NULL, duration);
+  printf("temporal_shift_scale_time(NULL, 4 days): %s, errno %d\n",
+    res ? "a value" : "NULL", meos_errno());
+  assert(res == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  res = temporal_shift_scale_time(temp, shift, duration);
+  char *out = tint_out(res);
+  printf("temporal_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(meos_errno() == 0);
+  free(out); free(res);
+  res = temporal_shift_time(temp, shift);
+  out = tint_out(res);
+  printf("temporal_shift_time(1 day): %s, errno %d\n", out, meos_errno());
+  assert(meos_errno() == 0);
+  free(out); free(res);
+  res = temporal_scale_time(temp, duration);
+  out = tint_out(res);
+  printf("temporal_scale_time(4 days): %s, errno %d\n", out, meos_errno());
+  assert(meos_errno() == 0);
+  free(out); free(res); free(shift); free(duration);
 
   free(temp);
 
