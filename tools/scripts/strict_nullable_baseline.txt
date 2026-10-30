@@ -58,6 +58,8 @@ mobilitydb/sql/json/452_tjsonb.in.sql	shiftScaleTime(tjsonb, interval, interval)
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeq(tjsonb, text)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSet(tjsonb)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSetGaps(tjsonb[], maxt interval)	not strict
+mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbPathQuery(jsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonb_path_query_all.vars
+mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbPathQueryTz(jsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonb_path_query_all.vars
 mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbSetLax(jsonb, path text[], val jsonb, create_missing boolean, handle_null text)	arg 2 untagged pg_jsonb_set_lax.newjb
 mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbSetLax(jsonb, path text[], val jsonb, create_missing boolean, handle_null text)	not strict
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathExists(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_exists.vars
@@ -111,17 +113,6 @@ mobilitydb/sql/raster/500_raster.in.sql	mapAlgebra(rast raster, nband integer, s
 mobilitydb/sql/raster/500_raster.in.sql	raquet(pixels bytea, width integer, height integer, quadbin quadbin, pixtype text, nodata float)	not strict
 mobilitydb/sql/raster/500_raster.in.sql	raquetRead(path text, quadbin quadbin)	not strict
 mobilitydb/sql/raster/500_raster.in.sql	raquetRead(rasterfile bytea, quadbin quadbin)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 0 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 1 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 10 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 2 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 3 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 4 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 5 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 6 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 7 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 8 unchecked
-mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	arg 9 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	raster(pixels bytea, width integer, height integer, upperleftx float, upperlefty float, scalex float, scaley float, skewx float, skewy float, srid integer, pixeltype text, nodataval float)	not strict
 mobilitydb/sql/raster/500_raster.in.sql	rasterUnionTransition(internal, raster, text)	arg 2 untagged text_to_cstring.txt
 mobilitydb/sql/raster/500_raster.in.sql	rasterValue(traj tgeompoint, rast raster, band integer, exclude_nodata_value boolean, resample text)	arg 4 strict raster_value.resample
@@ -133,17 +124,11 @@ mobilitydb/sql/raster/500_raster.in.sql	transform(rast raster, alignto raster, a
 mobilitydb/sql/raster/500_raster.in.sql	transform(rast raster, srid integer, algorithm text, maxerr float, scalex float, scaley float)	arg 2 strict raster_transform.algorithm
 mobilitydb/sql/raster/500_raster.in.sql	transformPipeline(rast raster, pipeline text, srid integer, is_forward boolean, algorithm text, maxerr float, scalex float, scaley float)	arg 4 strict raster_transform_pipeline.algorithm
 mobilitydb/sql/raster/500_raster.in.sql	tri(rast raster, nband integer, customextent raster, pixeltype text, interpolate_nodata boolean)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, nband integer, exclude_nodata_value boolean, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, nband integer, exclude_nodata_value boolean, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, nband integer, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, nband integer, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valueCount(rast raster, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, exclude_nodata_value boolean, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, exclude_nodata_value boolean, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, nband integer, searchvalues float[], roundto float)	not strict
-mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, searchvalues float[], roundto float)	arg 0 unchecked
 mobilitydb/sql/raster/500_raster.in.sql	valuePercent(rast raster, searchvalues float[], roundto float)	not strict
 mobilitydb/sql/rgeo/150_trgeo.in.sql	shiftScaleTime(trgeometry, interval, interval)	arg 1 strict temporal_shift_scale_time.shift
 mobilitydb/sql/rgeo/150_trgeo.in.sql	shiftScaleTime(trgeometry, interval, interval)	arg 2 strict temporal_shift_scale_time.duration

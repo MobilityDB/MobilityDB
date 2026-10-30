@@ -3123,6 +3123,26 @@ SELECT raster(NULL, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857, '8BUI') IS NULL,
  t        | t
 (1 row)
 
+SELECT raster('\x0102'::bytea, NULL, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  '8BUI') IS NULL,
+  raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  NULL) IS NULL;
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
+SELECT (SELECT count(*) FROM valueCount(NULL::raster)),
+  (SELECT count(*) FROM valueCount(NULL::raster, 1, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valueCount(NULL::raster, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valuePercent(NULL::raster)),
+  (SELECT count(*) FROM valuePercent(NULL::raster, 1, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valuePercent(NULL::raster, ARRAY[1.0]::float[]));
+ count | count | count | count | count | count 
+-------+-------+-------+-------+-------+-------
+     0 |     0 |     0 |     0 |     0 |     0
+(1 row)
+
 SELECT raster('\x010203'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
   '8BUI');
 ERROR:  A 2 x 1 raster band of type 8BUI has 2 bytes, not 3
