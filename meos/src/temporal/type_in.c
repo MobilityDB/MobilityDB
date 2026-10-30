@@ -3427,6 +3427,9 @@ type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
   s.wkb_size = size;
   /* Fail when handed incorrect starting byte */
   uint8_t wkb_little_endian = byte_from_wkb_state(&s);
+  /* An empty string has no starting byte, which raised the error */
+  if (s.error)
+    return 0;
   if (wkb_little_endian != 1 && wkb_little_endian != 0)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
@@ -3558,6 +3561,10 @@ Datum
 type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
+  /* A string of an odd length, or one carrying a character that is not a
+   * hexadecimal digit, encodes nothing */
+  if (! wkb)
+    return (Datum) 0;
   Datum result = type_from_wkb(wkb, size / 2, type);
   pfree(wkb);
   return result;
@@ -3574,8 +3581,8 @@ type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
  * header, so they are not supported by this function.
  * @param[in] hexwkb HexWKB string
  * @return The concrete @p MeosType, or @p T_UNKNOWN when @p hexwkb is null,
- * shorter than a header, has an invalid endian flag, or encodes a value out of
- * the known type range
+ * shorter than a header, not a string of hexadecimal digit pairs, has an
+ * invalid endian flag, or encodes a value out of the known type range
  */
 MeosType
 meos_typeof_hexwkb(const char *hexwkb)
@@ -3587,9 +3594,12 @@ meos_typeof_hexwkb(const char *hexwkb)
   size_t size = strlen(hexwkb);
   /* A header needs at least the endian flag (1 byte = 2 hex digits) and the
    * 16-bit type tag (2 bytes = 4 hex digits) */
-  if (size < 6)
+  if (size < 6 || size % 2)
     return T_UNKNOWN;
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
+  /* A character that is not a hexadecimal digit encodes nothing */
+  if (! wkb)
+    return T_UNKNOWN;
   meos_wkb_parse_state s;
   memset(&s, 0, sizeof(meos_wkb_parse_state));
   s.wkb = s.pos = wkb;
