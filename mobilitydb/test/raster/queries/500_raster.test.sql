@@ -2864,6 +2864,17 @@ SELECT asHexWKB(raster('\x0505'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0,
   1.0, -1.0, 0.0, 0.0, 3857), '8BUI'::text, 5, 5));
 SELECT raster(NULL, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857, '8BUI') IS NULL,
   addBand(NULL::raster, 1, '8BUI') IS NULL;
+SELECT raster('\x0102'::bytea, NULL, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  '8BUI') IS NULL,
+  raster('\x0102'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
+  NULL) IS NULL;
+-- A null raster counts no value, in every form
+SELECT (SELECT count(*) FROM valueCount(NULL::raster)),
+  (SELECT count(*) FROM valueCount(NULL::raster, 1, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valueCount(NULL::raster, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valuePercent(NULL::raster)),
+  (SELECT count(*) FROM valuePercent(NULL::raster, 1, ARRAY[1.0]::float[])),
+  (SELECT count(*) FROM valuePercent(NULL::raster, ARRAY[1.0]::float[]));
 
 -- What no raster states is refused.
 SELECT raster('\x010203'::bytea, 2, 1, 0.0, 1.0, 1.0, -1.0, 0.0, 0.0, 3857,
