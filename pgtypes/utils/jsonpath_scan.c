@@ -6089,7 +6089,7 @@ addchar(bool init, char c, yyscan_t yyscanner)
 JsonPathParseResult *
 parsejsonpath(const char *str, int len, struct Node *escontext)
 {
-  JsonPathParseResult *parseresult;
+  JsonPathParseResult *parseresult = NULL; /* MEOS */
   yyscan_t  scanner;
   struct jsonpath_yy_extra_type yyext;
 
@@ -6108,7 +6108,16 @@ parsejsonpath(const char *str, int len, struct Node *escontext)
   jsonpath_yy_scan_bytes(str, len, scanner);
 
   if (jsonpath_yyparse(&parseresult, escontext, scanner) != 0)
+  {
     jsonpath_yyerror(NULL, escontext, scanner, "invalid input");  /* shouldn't happen */
+    /* MEOS: the error of a syntax error returns under the noexit handler,
+     * and the parse assigns no result then; the values it discards are freed
+     * by yydestruct, and the token strings its actions consumed are on the
+     * free list */
+    jsonpath_yylex_destroy(scanner);
+    json_reset_tofree();
+    return NULL;
+  }
 
   jsonpath_yylex_destroy(scanner);
 

@@ -89,7 +89,6 @@ static bool flattenJsonPathParseItem(StringInfo buf, int *result,
   bool insideArraySubscript);
 static void alignStringInfoInt(StringInfo buf);
 static int32 reserveSpaceForItemPointer(StringInfo buf);
-static void freeJsonPathParseItem(JsonPathParseItem *item);
 static void printJsonPathItem(StringInfo buf, JsonPathItem *v, bool inKey,
   bool printBracketes);
 static int  operationPriority(JsonPathItemType op);
@@ -212,7 +211,7 @@ jsonpath_mem_size(const JsonPath *jp)
  * the scanner/parser (see resizeString() and the makeItem* helpers), so they
  * are owned and must be freed too.
  */
-static void
+void
 freeJsonPathParseItem(JsonPathParseItem *item)
 {
   if (item == NULL)
@@ -244,6 +243,9 @@ freeJsonPathParseItem(JsonPathParseItem *item)
     case jpiMod:
     case jpiStartsWith:
     case jpiDecimal:
+    /* A subscript reaches here only from a parse the grammar refuses:
+     * makeIndexArray takes the subscripts of an accepted one apart */
+    case jpiSubscript:
       freeJsonPathParseItem(item->value.args.left);
       freeJsonPathParseItem(item->value.args.right);
       break;
