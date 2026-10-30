@@ -39,7 +39,8 @@
  * crash, nor a value returned together with an error. Each case runs in a child process, so a case that crashes is
  * reported as such and the others still run. The cases are drawn from the
  * census of `doc/contributing/open_questions/NAN-POLICY.md`:
- * - the text readers of the pose and circular buffer families;
+ * - the text readers of the pose and circular buffer families, of box3d and
+ *   of geometries;
  * - their binary readers, and those of float boxes and span sets, a value
  *   holding the sentinel 1234.5 being written as hex WKB and its eight bytes
  *   overwritten with a NaN;
@@ -160,7 +161,22 @@ static int cbuffer_text(void) { return result(cbuffer_in("Cbuffer(Point(NaN 1), 
 static int tcbuffer_text(void) { return result(tcbuffer_in("Cbuffer(Point(1 NaN), 0.5)@2001-01-01")); }
 static int box3d_text(void) { return result(box3d_in("BOX3D(NaN 1 1,5 5 5)")); }
 
+static int geom_text(void) { return result(geom_in("Linestring(1 1, NaN 2)", -1)); }
+static int geog_text(void) { return result(geog_in("Point(4 NaN)", -1)); }
+static int geo_wkt(void) { return result(geo_from_text("Point(NaN 1)", 0)); }
+
 /* Binary readers */
+static int
+geom_wkb(void)
+{
+  GSERIALIZED *gs = geom_in("Linestring(1 1, 1234.5 2)", -1);
+  char *hex = geo_as_hexewkb(gs, "NDR");
+  free(gs);
+  int r = patch_hex(hex) ? result(geom_from_hexewkb(hex)) : 3;
+  free(hex);
+  return r;
+}
+
 static int
 cbuffer_wkb(void)
 {
@@ -358,7 +374,11 @@ int main(void)
   check("cbuffer_in", cbuffer_text);
   check("tcbuffer_in", tcbuffer_text);
   check("box3d_in", box3d_text);
+  check("geom_in", geom_text);
+  check("geog_in", geog_text);
+  check("geo_from_text", geo_wkt);
   printf("Binary readers:\n");
+  check("geom_from_hexewkb", geom_wkb);
   check("cbuffer_from_hexwkb", cbuffer_wkb);
   check("pose_from_hexwkb", pose_wkb);
   check("tbox_from_hexwkb", tbox_wkb);

@@ -94,8 +94,8 @@
  * distance through the synchronous walk.
  *
  * Exactness is defined for finite coordinates. The last part asks geometries
- * holding a NaN or an infinite coordinate, invalid as GEOS reports them,
- * whose distance is unspecified, and checks only that it is answered.
+ * holding an infinite coordinate, invalid as GEOS reports them, whose
+ * distance is unspecified, and checks only that it is answered.
  *
  * The program can be build as follows
  * @code
@@ -764,13 +764,12 @@ int main(void)
     "LINESTRING Z(0 -1 2,0 1 2)", 2.0);
   printf("%d distances in 3D answered as the nearest double\n", threed);
 
-  /* Outside the domain of exact computation, a coordinate that is NaN or
-   * infinite, invalid as GEOS reports it: the distance is unspecified, and it
-   * is answered, in 3D, where the walk reads the boxes the geometries carry,
-   * and in 2D, in both orders */
-  const char *nonfinite[] = {"LINESTRING Z(0 0 0,NaN 1 1,2 2 2)",
-    "LINESTRING Z(0 0 0,1e400 1 1,2 2 2)",
-    "LINESTRING Z(NaN NaN NaN,1 1 1,2 2 2)"};
+  /* Outside the domain of exact computation, a coordinate that is infinite,
+   * invalid as GEOS reports it: the distance is unspecified, and it is
+   * answered, in 3D, where the walk reads the boxes the geometries carry, and
+   * in 2D, in both orders */
+  const char *nonfinite[] = {"LINESTRING Z(0 0 0,1e400 1 1,2 2 2)",
+    "LINESTRING Z(1e400 -1e400 1e400,1 1 1,2 2 2)"};
   int controls = (int) (sizeof(nonfinite) / sizeof(nonfinite[0]));
   GSERIALIZED *finite = geom_in("LINESTRING Z(0 5 0,1 5 1,2 5 2)", -1);
   for (int i = 0; i < controls; i++)
@@ -784,8 +783,8 @@ int main(void)
     free(gs);
   }
   free(finite);
-  printf("%d geometries holding a NaN or an infinite coordinate answered "
-    "without fault\n", controls);
+  printf("%d geometries holding an infinite coordinate answered without "
+    "fault\n", controls);
 
   /* Finalize MEOS */
   meos_finalize();

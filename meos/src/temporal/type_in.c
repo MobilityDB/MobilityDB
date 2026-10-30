@@ -2271,6 +2271,14 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   GSERIALIZED *result = s->geodetic ?
     geog_serialize(geo) : geom_serialize(geo);
   lwgeom_free(geo);
+  /* A NaN coordinate is refused, as #geo_from_ewkb refuses it, so that the
+   * reference geometry of a temporal rigid geometry holds none */
+  if (! ensure_not_nan_geo(result))
+  {
+    s->error = true;
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 

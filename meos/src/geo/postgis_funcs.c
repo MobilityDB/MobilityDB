@@ -101,6 +101,15 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax)
 {
+  /* Ensure the validity of the arguments: no NaN, which has no place among
+   * the bounds, as #box3d_make; the bounds of a dimension the box lacks are
+   * not read */
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))) ||
+      (hasm && (! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))))
+    return NULL;
+
   GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
   /* Process X min/max */
   result->xmin = Min(xmin, xmax);
@@ -178,8 +187,12 @@ BOX3D *
 box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, int32_t srid)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  /* Ensure the validity of the arguments: no NaN, which has no place among
+   * the bounds, as #stbox_make refuses one */
+  if (! ensure_srid_valid(srid) ||
+      ! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
     return NULL;
 
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -7215,6 +7228,22 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 }
 
 /**
+ * @brief Return the geometry a reader built, or NULL when one of its
+ * coordinates is NaN
+ * @details A NaN coordinate has no position, so no reader returns a geometry
+ * holding one, as #tinstant_make refuses it in a temporal point
+ * (#ensure_not_nan_geo). A geometry refused is freed
+ */
+static GSERIALIZED *
+geo_read_result(GSERIALIZED *gs)
+{
+  if (! gs || ensure_not_nan_geo(gs))
+    return gs;
+  pfree(gs);
+  return NULL;
+}
+
+/**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry from its Well-Known Text (WKT), Well-Known Binary
  * (WKB) or GeoJSON representation
@@ -7354,7 +7383,7 @@ geom_in(const char *str, int32 typmod)
 
   /* Don't free the parser result (and hence lwgeom) until we have done */
   /* the typemod check with lwgeom */
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7421,7 +7450,7 @@ geo_from_text(const char *wkt, int32_t srid)
   geo_result = geo_serialize(lwgeom);
   /* Clean up */
   lwgeom_parser_result_free(&lwg_parser_result);
-  return geo_result;
+  return geo_read_result(geo_result);
 }
 
 /**
@@ -7575,7 +7604,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
 
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7648,7 +7677,7 @@ geo_from_geojson(const char *geojson)
   lwgeom_set_srid(geom, srid);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7889,7 +7918,7 @@ geog_in(const char *str, int32 typmod)
 
   /* Clean up and return */
   lwgeom_free(lwgeom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
