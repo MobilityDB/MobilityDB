@@ -255,6 +255,31 @@ Geog_from_hexewkb(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
+PGDLLEXPORT Datum Geo_as_ewkb(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_as_ewkb);
+/**
+ * @ingroup mobilitydb_geo_base_inout
+ * @brief Return the Extended Well-Known Binary (EWKB) representation of a
+ * geometry or a geography
+ * @details Written through the public MEOS writer, which reads the byte order
+ * from the whole text as #Geo_as_hexewkb reads it
+ * @sqlfn asEWKB()
+ */
+Datum
+Geo_as_ewkb(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  text *endian_text = PG_GETARG_TEXT_P(1);
+  char *endian = text_to_cstring(endian_text);
+  size_t wkb_size;
+  uint8_t *wkb = geo_as_ewkb(gs, endian, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(endian); pfree(wkb);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(endian_text, 1);
+  PG_RETURN_BYTEA_P(result);
+}
+
 PGDLLEXPORT Datum Geo_as_hexewkb(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_as_hexewkb);
 /**
