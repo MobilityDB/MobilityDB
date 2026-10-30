@@ -81,3 +81,114 @@ distance_families:
   - lit: "\n"
   - distops: true
   - lit: "\n/*****************************************************************************/\n"
+- family: tnumber
+  file: mobilitydb/sql/temporal/036_tnumber_distance.in.sql
+  begin: "/*****************************************************************************\n * Temporal distance\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Temporal distance\n *****************************************************************************/\n\n/* integer <-> <TYPE> */\n\n"
+  - fnops:
+      proc: tDistance
+      op: "<->"
+      rows:
+      - [bigint, tbigint, Tdistance_number_tnumber, tbigint]
+      - [integer, tint, Tdistance_number_tnumber, tint]
+  - lit: "\n/*****************************************************************************/\n\n/* float <-> <TYPE> */\n\n"
+  - fnops:
+      proc: tDistance
+      op: "<->"
+      rows:
+      - [float, tfloat, Tdistance_number_tnumber, tfloat]
+  - lit: "\n/*****************************************************************************/\n/* tint <-> <TYPE> */\n\n"
+  - fnops:
+      proc: tDistance
+      op: "<->"
+      rows:
+      - [tbigint, bigint, Tdistance_tnumber_number, tbigint]
+      - [tbigint, tbigint, Tdistance_tnumber_tnumber, tbigint]
+  - lit: "\n"
+  - fnops:
+      proc: tDistance
+      op: "<->"
+      rows:
+      - [tint, integer, Tdistance_tnumber_number, tint]
+      - [tint, tint, Tdistance_tnumber_tnumber, tint]
+  - lit: "\n/*****************************************************************************/\n/* tfloat <-> <TYPE> */\n\n"
+  - fnops:
+      proc: tDistance
+      op: "<->"
+      rows:
+      - [tfloat, float, Tdistance_tnumber_number, tfloat]
+      - [tfloat, tfloat, Tdistance_tnumber_tnumber, tfloat]
+  - lit: "\n/*****************************************************************************\n * Nearest approach distance\n *****************************************************************************/\n\n/* integer |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [integer, tint, NAD_number_tnumber]
+      - [bigint, tbigint, NAD_number_tnumber]
+  - lit: "\n/*****************************************************************************/\n\n/* float |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [float, tfloat, NAD_number_tnumber]
+  - lit: "\n/*****************************************************************************/\n\n/* tbox |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [tbox, tbox, NAD_tbox_tbox]
+      - [tbox, tint, NAD_tbox_tnumber]
+      - [tbox, tbigint, NAD_tbox_tnumber]
+      - [tbox, tfloat, NAD_tbox_tnumber]
+  - lit: "\n/*****************************************************************************/\n\n/* <number span> |=| <TYPE> and <TYPE> |=| <number span> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [intspan, tbox, NAD_intspan_tbox]
+      - [tbox, intspan, NAD_tbox_intspan]
+      - [intspan, tint, NAD_intspan_tint]
+      - [tint, intspan, NAD_tint_intspan]
+      - [bigintspan, tbox, NAD_bigintspan_tbox]
+      - [tbox, bigintspan, NAD_tbox_bigintspan]
+      - [bigintspan, tbigint, NAD_bigintspan_tbigint]
+      - [tbigint, bigintspan, NAD_tbigint_bigintspan]
+      - [floatspan, tbox, NAD_floatspan_tbox]
+      - [tbox, floatspan, NAD_tbox_floatspan]
+      - [floatspan, tfloat, NAD_floatspan_tfloat]
+      - [tfloat, floatspan, NAD_tfloat_floatspan]
+  - lit: "\n/*****************************************************************************/\n/* tint |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [tint, integer, NAD_tnumber_number]
+      - [tint, tbox, NAD_tnumber_tbox]
+      - [tint, tint, NAD_tnumber_tnumber]
+  - lit: "\n/*****************************************************************************/\n/* tbigint |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [tbigint, bigint, NAD_tnumber_number]
+      - [tbigint, tbox, NAD_tnumber_tbox]
+      - [tbigint, tbigint, NAD_tnumber_tnumber]
+  - lit: "\n/*****************************************************************************/\n/* tfloat |=| <TYPE> */\n\n"
+  - fnops:
+      proc: nearestApproachDistance
+      op: "|=|"
+      ret: float
+      rows:
+      - [tfloat, float, NAD_tnumber_number]
+      - [tfloat, tbox, NAD_tnumber_tbox]
+      - [tfloat, tfloat, NAD_tnumber_tnumber]
+  - lit: "\n/*****************************************************************************/\n"
