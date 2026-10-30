@@ -50,6 +50,13 @@ SELECT round(cbuffer 'Cbuffer(Point(0 0),0)' <-> cbuffer 'Cbuffer(Point(0 0),0)'
 SELECT round(cbuffer 'SRID=5676;Cbuffer(Point(0 0),0.5)' <->
   cbuffer 'SRID=5676;Cbuffer(Point(3 4),0.5)', 6);
 SELECT round(geometry 'Point empty' <-> cbuffer 'Cbuffer(Point(4 0),0.5)', 6);
+-- A null argument answers null
+SELECT distance(NULL::geometry, cbuffer 'Cbuffer(Point(4 0),0.5)');
+SELECT distance(geometry 'Point(1 0)', NULL::cbuffer);
+SELECT distance(NULL::cbuffer, geometry 'Point(1 0)');
+SELECT distance(cbuffer 'Cbuffer(Point(4 0),0.5)', NULL::geometry);
+SELECT NULL::geometry <-> cbuffer 'Cbuffer(Point(4 0),0.5)';
+SELECT cbuffer 'Cbuffer(Point(4 0),0.5)' <-> NULL::geometry;
 
 -------------------------------------------------------------------------------
 -- tDistance
