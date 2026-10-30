@@ -149,6 +149,10 @@
  * @defgroup meos_pose_set_setops Set operations
  * @ingroup meos_pose_set
  * @brief Set operations for pose sets
+ *
+ * @defgroup meos_pose_set_dist Distance functions
+ * @ingroup meos_pose_set
+ * @brief Distance functions for pose sets
  */
 
 /*****************************************************************************/
@@ -273,6 +277,10 @@
  * @defgroup meos_posechain_set_setops Set operations
  * @ingroup meos_posechain_set
  * @brief Set operations for pose chain sets
+ *
+ * @defgroup meos_posechain_set_dist Distance functions
+ * @ingroup meos_posechain_set
+ * @brief Distance functions for pose chain sets
  */
 
 /*****************************************************************************/

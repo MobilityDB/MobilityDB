@@ -57,6 +57,7 @@
 #include "geo/tspatial_parser.h"
 #include "pose/pose.h"
 #include "pose/tpose_spatialfuncs.h"
+#include "geo/geo_funcs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -358,6 +359,29 @@ pose_union_transfn(Set *state, const Pose *pose)
   if (state && ! ensure_set_isof_type(state, T_POSESET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(pose), T_POSE);
+}
+
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_pose_set_dist
+ * @brief Return the distance between two pose sets, as
+ * #distance_geoset_geoset does for two geo sets
+ * @param[in] s1,s2 Sets
+ * @errval DBL_MAX
+ * @csqlfn #Distance_set_set()
+ */
+double
+distance_poseset_poseset(const Set *s1, const Set *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_POSESET(s1, DBL_MAX); VALIDATE_POSESET(s2, DBL_MAX);
+  if (! ensure_valid_set_set(s1, s2) ||
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
 /*****************************************************************************/

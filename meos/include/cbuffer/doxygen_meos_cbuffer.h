@@ -151,6 +151,10 @@
  * @defgroup meos_cbuffer_set_setops Set operations
  * @ingroup meos_cbuffer_set
  * @brief Set operations for circular buffer sets
+ *
+ * @defgroup meos_cbuffer_set_dist Distance functions
+ * @ingroup meos_cbuffer_set
+ * @brief Distance functions for circular buffer sets
  */
 
 /*****************************************************************************/
