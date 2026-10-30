@@ -35,6 +35,7 @@
 
 /* C */
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -523,11 +524,14 @@ angular_difference(Datum degrees1, Datum degrees2)
  * @brief Return the angular difference, i.e., the smaller angle between the
  * two degree values
  * @param[in] degrees1,degrees2 Values
+ * @errval DBL_MAX
  * @csqlfn #Float_angular_difference()
  */
 double
 float_angular_difference(double degrees1, double degrees2)
 {
+  if (! ensure_not_nan(degrees1) || ! ensure_not_nan(degrees2))
+    return DBL_MAX;
   return DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
 }

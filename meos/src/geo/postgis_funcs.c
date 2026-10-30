@@ -106,6 +106,11 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
    * not read */
   if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
       ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax) ||
+      ! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))
+    return NULL;
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
       (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))) ||
       (hasm && (! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))))
     return NULL;
@@ -189,6 +194,10 @@ box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
 {
   /* Ensure the validity of the arguments: no NaN, which has no place among
    * the bounds, as #stbox_make refuses one */
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+    return NULL;
   if (! ensure_srid_valid(srid) ||
       ! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
       ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
@@ -2870,6 +2879,8 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
       ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
@@ -2920,6 +2931,8 @@ geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  if (! ensure_not_nan(tolerance))
+    return false;
   return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
 }
@@ -2939,6 +2952,8 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
       ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
@@ -3025,6 +3040,8 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(max_seg_length))
+    return NULL;
 
   uint32_t type = gserialized_get_type(gs);
   if (FLAGS_GET_GEODETIC(gs->gflags))
@@ -6971,6 +6988,8 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
     return false;
 
@@ -8035,6 +8054,8 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(fraction))
+    return NULL;
   if (fraction < 0 || fraction > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -8072,6 +8093,8 @@ line_substring(const GSERIALIZED *gs, double from, double to)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(from) || ! ensure_not_nan(to))
+    return NULL;
   if (from < 0 || from > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

@@ -2128,6 +2128,8 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * same way as in #Tdistance_tgeo_geo. A temporal geography point against
    * a geography other than a point is rejected; non-point geometries are
    * routed through the polygonal buffer below. */
+  if (! ensure_not_nan(dist))
+    return NULL;
   if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
       (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE &&
         ! ensure_not_geodetic_geo(gs)) ||
@@ -2215,6 +2217,8 @@ Temporal *
 tdwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return NULL;
   return tdwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
@@ -2301,6 +2305,8 @@ tdwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool spheroid)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(dist))
+    return NULL;
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;

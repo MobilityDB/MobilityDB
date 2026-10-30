@@ -806,6 +806,9 @@ floatset_make(const double *values, int count)
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+  for (int i = 0; i < count; i++)
+    if (! ensure_not_nan(values[i]))
+      return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
@@ -1003,6 +1006,8 @@ bigint_to_set(int64 i)
 Set *
 float_to_set(double d)
 {
+  if (! ensure_not_nan(d))
+    return NULL;
   Datum v = Float8GetDatum(d);
   return set_make_exp(&v, 1, 1, T_FLOAT8, ORDER_NO);
 }
@@ -1984,6 +1989,8 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
 }

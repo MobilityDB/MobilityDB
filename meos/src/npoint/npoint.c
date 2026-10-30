@@ -825,6 +825,8 @@ Npoint *
 npoint_make(int64 rid, double pos)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(pos))
+    return NULL;
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos))
     return NULL;
 
@@ -866,6 +868,8 @@ Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(pos1) || ! ensure_not_nan(pos2))
+    return NULL;
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos1) ||
       ! ensure_valid_position(pos2))
     return NULL;

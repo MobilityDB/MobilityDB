@@ -1354,6 +1354,8 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
   VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
 

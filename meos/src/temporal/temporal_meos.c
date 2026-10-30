@@ -274,6 +274,8 @@ tfloat_from_base_temp(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); 
+  if (! ensure_not_nan(d))
+    return NULL;
   return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
 }
 
@@ -339,6 +341,8 @@ tfloat_shift_value(const Temporal *temp, double shift)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(shift))
+    return NULL;
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
 }
 
@@ -385,6 +389,8 @@ tfloat_scale_value(const Temporal *temp, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(width))
+    return NULL;
   return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
 }
 
@@ -438,6 +444,8 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
     Float8GetDatum(width), true, true);
 }
