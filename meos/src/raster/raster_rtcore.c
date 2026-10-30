@@ -3041,6 +3041,8 @@ raster_value_count(const Raster *rast, int band, bool exclude_nodata,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
+  if (! ensure_not_nan(roundto))
+    return NULL;
   if (nsearch < 0 || (nsearch > 0 && ! searchvalues))
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
