@@ -376,11 +376,18 @@ def main() -> int:
         print(f"\n{len(new)} new finding(s); fix them, or, for a fix of a "
               f"baselined one, run with --rebaseline")
         return 1
-    stale = baseline - {k for k, _ in findings}
+    # A baseline that lists findings the tree no longer has is out of date,
+    # not broken: the invariant this check enforces is that no NEW finding
+    # appears. Reporting it as a failure would redden every pull request
+    # whose branch predates the last shrink, for housekeeping it did not do,
+    # so it is a notice and the shrink happens with the next --rebaseline,
+    # as check_error_sentinels.py reports it.
+    stale = sorted(baseline - {k for k, _ in findings})
     if stale:
-        print(f"{len(stale)} baselined finding(s) no longer occur; run with "
-              f"--rebaseline to drop them")
-        return 1
+        print(f"{len(stale)} baselined finding(s) no longer occur. "
+              f"Run --rebaseline after a fix to shrink the baseline:\n")
+        for line in stale:
+            print(f"  {line}")
     print(f"Every SQL function agrees with the @nullable tags it reaches "
           f"({len(baseline)} baselined)")
     return 0
