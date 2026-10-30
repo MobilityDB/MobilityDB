@@ -85,6 +85,37 @@ items).
 | 23 | Points, inputs with circular arcs, and collections of mixed dimension | Each by CGAL, arcs by CGAL's circular-arc support |
 | 24 | The older buffer path is deleted, and polygons narrower than an ulp of the output decline as lines do | No input reaches the older path; the corpora of steps 17 to 23 read the same |
 
+### Where these steps stand
+
+- **The written answer keeps the exact topology.** The arrangement is exact and its answer is
+  written in doubles; a rounding certificate decides, by exact signs alone, that the written rings
+  keep the exact topology: non-neighbouring written pieces lie apart by more than the bounds of
+  their rounding, with every written piece read and the edges paired by boxes grown by the largest
+  margin a test of theirs reads; two neighbouring segments turn apart; a round join, segment and
+  arc, and two neighbouring arcs meet only at their shared vertex; the input lies inside, every
+  written piece lying within its bound of an exact piece at the distance r; every ring keeps its
+  sense; a place a bound cannot clear is decided by the exact meeting tests on the written pieces.
+  It is a diagnostic branch, `probe/rounding-certificate`, not on GitHub. CGAL's circle-segment
+  traits judge the written answers: 1 199 of 1 199 natural areas right and certified; on the
+  polygons narrower than an ulp, 16 of 16 wrong answers the certificate reads fail it and 8 right
+  ones are certified, while 28 wrong and 2 right answers come from the older path, which
+  `geom_buffer` takes where the arrangement declines and no certificate reads (step 24). No answer
+  CGAL finds wrong is certified. **Owed: speed.** With the round-join tests, natural areas at
+  distance 1 read 594.1 million instructions against 568.4 million for GEOS called directly (1.045).
+- **MobilityDB #3259** (draft, `a6d4c6852a` on master `73f44ac1fe`) places the meetings of the
+  offsets in plain doubles, the same bits as the filters, and writes the tangent and circle edges
+  in their place: native over GEOS called directly reads 0.935, 0.895 and 0.560 at distances 1, 50
+  and 500 and 0.776 on the joints, CGAL agreeing on 1 313 of 1 313 natural areas; its 49 checks
+  pass. Its margin at distance 1 is what the certificate spends.
+- **Step 17** is branch `fix/buffer-a-line-exactly` at `b80d96ccbb`, seven commits on master
+  `cdfa50524d`, not on GitHub. On its second commit (`f7b71efde4`): of the 1 576 AIS line queries
+  1 093 agree with CGAL, 0 wrong, 452 decline, 31 time out; 36 960 of 36 960 straight queries
+  agree; the far-vertex lines read 238 agree, 0 wrong, 98 decline. Owed: its decline floor (of the
+  121 AIS queries the older path answers right, 55 decline), the speed cells, a rebase on master.
+- **Step 20** is branch `geo/buffer-exact-mitre-bevel` at `07a8b90b61`, blocked on speed as its
+  row states. **Step 16** is branch `fix/relate-areas-on-the-noded-arrangement` at `236793af75`,
+  one commit on master `d043de2e04`. Neither is on GitHub.
+
 Step 18 is built on step 17, since on the older line path the frame moves lines the older path
 declines into the range where it answers them wrong; alone, the frame loses seven real polygons
 that answer without it (note 6 §6.6). Step 20 renames the round-join functions of `geo_buffer.c`
