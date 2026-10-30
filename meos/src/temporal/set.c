@@ -1874,23 +1874,20 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
 }
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz set shifted and/or scaled by two intervals
  * @param[in] s Set
- * @param[in] shift Interval to shift the elements @nullable
- * @param[in] duration Duation of the result @nullable
+ * @param[in] shift Interval to shift the elements, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre At least one of the two intervals is given
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *
-tstzset_shift_scale(const Set *s, const Interval *shift,
+tstzset_shift_scale_intl(const Set *s, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSET(s, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(s); assert(s->settype == T_TSTZSET); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   Set *result = set_copy(s);
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
@@ -1918,6 +1915,58 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
     }
   }
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set shifted by an interval
+ * @param[in] s Set
+ * @param[in] shift Interval to shift the elements
+ * @csqlfn #Tstzset_shift()
+ */
+Set *
+tstzset_shift(const Set *s, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return tstzset_shift_scale_intl(s, shift, NULL);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set scaled by an interval
+ * @param[in] s Set
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzset_scale()
+ */
+Set *
+tstzset_scale(const Set *s, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzset_shift_scale_intl(s, NULL, duration);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set shifted and scaled by two intervals
+ * @param[in] s Set
+ * @param[in] shift Interval to shift the elements
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzset_shift_scale()
+ */
+Set *
+tstzset_shift_scale(const Set *s, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzset_shift_scale_intl(s, shift, duration);
 }
 
 /**
