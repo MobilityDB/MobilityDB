@@ -158,21 +158,9 @@ them through, where each binding stands against it, and the pull requests that b
 What the generated Flink and Spark surfaces carry of the 168 set-returning functions, and the gaps
 behind it by repository: [Set-returning functions](10-SET-RETURNING.md).
 
-The operations that read a geodetic box as something other than the longitude/latitude rectangle
-the manual defines, measured, and the pull requests that correct them, deferred while the target is
-the Spark and Flink surfaces: [Geodetic boxes](GEODETIC-BOXES.md).
-
-The rules that decide which operations a temporal geography supports and how exactly, the places
-where MobilityDB departs from them, measured against PostGIS geography, and the branches that
-correct them: [Geodetic operations](GEODETIC-OPERATIONS.md).
-
-Every distance MEOS computes, measured against the double nearest the exact distance, the oracle
-that judges it, and the pull requests that make each one answer that double:
-[Exact distance](EXACT-DISTANCE.md).
-
-The pull requests that make the buffer exact on every input and the relationship of two areas
-exact, in order, what each must prove, and the decisions and open items they leave:
-[Exact buffer](EXACT-BUFFER.md).
+How close each answer of MEOS is to the exact one, the distances, the buffer, the relationships,
+the geodetic operations and boxes and the lifting, and the pull requests that make it exact, is the
+exactness plan of MobilityDB #3287 (`doc/contributing/exactness/`).
 
 MEOS's raster in every engine with its whole algebra, how it is told apart from the host's raster,
 the conversions between the two, and the pull requests that deliver them in MEOS, MobilityDB and

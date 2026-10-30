@@ -42,11 +42,6 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tpcbox` read and write their text form (G14, #2901), and every type reads its text through
   `<type>FromText` (G13, #2908). The
   catalog's `typeEncodings` states, class by class, the reader and writer of each SQL type (A6).
-- **A term of an exact polynomial multiplies up to six exact sums** (`POLY_TERM_MAXDEG` of
-  `meos/include/geo/geo_funcs.h`), outside the plan: the smallest enclosing circle searches the
-  double nearest its radius by a polynomial of degree six, and every term of degree up to four
-  reads as before. Branch `fix/enclosing-circle-is-the-exact-minimum` rewrites `34247bccf3` there,
-  as the owner approved on 2026-10-19.
 - **A MEOS parameter that accepts `NULL` says so with the `@nullable` token of its own `@param`
   entry**, outside the plan: the free-text notes reading "may be `NULL`" become the tag, the
   Doxygen alias expands it, and `tools/scripts/check_nullable_params.py` with its baseline checks
@@ -60,53 +55,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   A SQL function is STRICT exactly where no argument reaches a `@nullable` MEOS argument, as the
   owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
   MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time.
-- **Every random draw of MEOS is taken from the `pg_prng` generators of PostgreSQL**, outside the
-  plan: the shuffle of the smallest enclosing circle (`mec_shuffle` of
-  `meos/src/geo/postgis_funcs.c`) draws from a generator of its own call instead of the C
-  library's `rand()`. Branch `fix/enclosing-circle-shuffle-own-generator` rewrites `adbb2ebad1`
-  there, the one line calling `rand()`, as the owner approved on 2026-10-19.
-- **The buffer drops a hole by the exact radius of the smallest circle enclosing it**, outside
-  the plan: `mec_radius_cmp` of `meos/src/geo/postgis_funcs.c` compares that radius with the
-  distance from the points defining the circle, which it never constructs, and shares with the
-  construction of the circle the eleven terms of the radius polynomial (`MEC_RADIUS_TERMS`), the
-  exact sums of three points (`mec_exact_set`), the support Welzl's loop finds
-  (`mec_welzl_support`) and the shuffle (`mec_shuffle`). MobilityDB
-  #3205 (`geo/buffer-exact-join-arc`, in master as `ddb9be7089`) rewrites `adbb2ebad1` there, its 26 lines moved unchanged into
-  those four, as the owner approved on 2026-10-27. It buffers a polygon with round joins
-  by its exact offset curves (five commits, last `3ee90815ff`): CGAL's
-  circle-segment traits agree on 3979820 of 3979820 sharp queries and 1313 of 1313 natural
-  areas, and its callgrind cost beside GEOS 3.14.1 called directly is 0.9955 at distance 1,
-  0.9167 at 50, 0.5725 at 500 and 0.8140 on the joints. Left: lines, points, mitre and bevel
-  joins, caps, curves, erosion and collections, each moved onto the arrangement in its own
-  pull request; lines on branch `fix/buffer-a-line-exactly`.
-- **A tower question stops computing in expansions once they leave their exact range**, outside
-  the plan: MERGED as MobilityDB #3211 (`30f7513014`).
-  `tx_add` and `tx_mul` of `meos/src/geo/geo_funcs.c` return their first operand once the arena
-  is unsafe, the run's answer being discarded for the one in WideDyadic. The buffer of a rhombus
-  whose coordinates span 2^1000 answers in 0.016 s against 7 s; CGAL agrees on
-  1328512 of 1328512 sharp queries and 1313 of 1313 natural areas, and the buffer cells cost
-  0.9955, 0.9167, 0.5725 and 0.8140 times GEOS 3.14.1 called directly. Left from the same
-  report: the order of a segment and an arc leaving one tangent point alike (ARR_TURN), and the
-  winding numbers about a node of a ring whose spike revisits its own coordinates (ARR_DEPTH).
-- **The buffer at extreme coordinates waits for the buffer to be exact on every input**, as the
-  owner decided on 2026-10-27: a shape whose tower needs more than 160 limbs keeps declining; a
-  distance below the rounding of the coordinates, where the written offsets fall onto the input,
-  is declined once the old pipeline is removed and the arrangement is the only path; the sign of
-  a cross product whose terms overflow (`cross_product_sign`) is its own pull request. Next is
-  mitre and bevel joins on the arrangement.
-- **The buffer places three meetings of its offsets in plain doubles**, outside the plan:
-  MobilityDB #3259, branch `perf/place-the-corner-crossing-in-doubles` (`a6d4c6852a` on master
-  `73f44ac1fe`), computes the crossing of two offsets sharing a centre (every concave corner), of
-  two offsets sharing none and the meeting of an offset with a circle in the order their filters
-  do, so the coordinates are the same bits, under one bound written out from the filters' rules,
-  the filters placing what that bound leaves; both ends of a tangent segment come from one offset,
-  and the tangent and circle edges are written in their place in the edge array. CGAL agrees on
-  1313 of 1313 natural areas, and the buffer cells cost 0.935 at distance 1, 0.895 at 50, 0.560 at
-  500 and 0.776 on the joints beside GEOS 3.14 called directly; the margin it opens on the cell at
-  distance 1 pays for the check that the written rings keep the shape of the exact buffer.
-- **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes) and #3200 (the box of a
-  temporal point cloud instant, by its author); #785, #777 and #677 touch none of these names or
-  functions; MEOS-API has none.
+- **How close each answer is to the exact one** is the exactness plan of MobilityDB #3287
+  (`doc/contributing/exactness/`), with its own pull requests.
+- **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
+  plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
+  author); #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
 
 ## Rules every PR follows
 
