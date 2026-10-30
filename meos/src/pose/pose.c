@@ -2792,6 +2792,12 @@ pose_ne(const Pose *pose1, const Pose *pose2)
  * @ingroup meos_pose_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose
  * is less than, equal to, or greater than the second one
+ * @details The poses are ordered by their dimension, planar first, then by
+ * whether they are geodetic, then by their SRID, then by their position and
+ * their orientation, value by value as they are stored, -0.0 and 0.0 being
+ * equal. A pose holds no NaN, which every input of MEOS refuses, so the order
+ * is total and holds two poses equal exactly when #pose_eq does, which their
+ * sort key (#pose_sortkey_put) requires
  * @param[in] pose1,pose2 Poses
  * @errval INT_MAX
  * @csqlfn #Pose_cmp()
@@ -2829,6 +2835,64 @@ pose_cmp(const Pose *pose1, const Pose *pose2)
       return 1;
   }
   return 0;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a pose
+ * @param[in] pose Pose
+ */
+size_t
+pose_sortkey_size(const Pose *pose)
+{
+  assert(pose);
+  int count = MEOS_FLAGS_GET_Z(pose->flags) ? 7 : 3;
+  return 2 * datum_sortkey_size(T_BOOL) + datum_sortkey_size(T_INT4) +
+    count * datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a pose
+ * @details A sort key is a string of bytes computed from a value so that
+ * comparing the keys of two values byte by byte, as unsigned bytes and with a
+ * key that is a prefix of a longer one coming first, gives the order of
+ * #pose_cmp, and two keys are identical exactly when #pose_eq holds. An
+ * engine that sorts, groups or joins values by comparing their bytes, as the
+ * collation of MobilityDuck does and as MobilitySpark and MobilityFlink do,
+ * then answers as MobilityDB does without calling MEOS for each comparison.
+ * The key is computed for such an operation and never stored: a pose is
+ * stored and exchanged in its well-known binary form.
+ *
+ * The key holds the fields in the order #pose_cmp compares them: whether the
+ * pose is spatial and whether it is geodetic as one byte each, the SRID as a
+ * 4-byte integer, then the 3 values of a planar pose (x, y and the angle) or
+ * the 7 values of a spatial one (x, y, z and the quaternion) as 8-byte
+ * doubles, each written as #datum_sortkey_put writes a Boolean, an integer
+ * or a double: big endian with the sign bit flipped, -0.0 written as 0.0 and
+ * every NaN as one NaN placed above infinity. Its length, which depends on
+ * the dimension, is #pose_sortkey_size
+ * @param[in] pose Pose
+ * @param[out] out Buffer of #pose_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+pose_sortkey_put(const Pose *pose, uint8_t *out)
+{
+  assert(pose); assert(out);
+  bool hasz = MEOS_FLAGS_GET_Z(pose->flags);
+  datum_sortkey_put(BoolGetDatum(hasz), T_BOOL, out);
+  out += datum_sortkey_size(T_BOOL);
+  datum_sortkey_put(BoolGetDatum(MEOS_FLAGS_GET_GEODETIC(pose->flags)),
+    T_BOOL, out);
+  out += datum_sortkey_size(T_BOOL);
+  datum_sortkey_put(Int32GetDatum(pose_srid(pose)), T_INT4, out);
+  out += datum_sortkey_size(T_INT4);
+  size_t n = datum_sortkey_size(T_FLOAT8);
+  for (int i = 0; i < (hasz ? 7 : 3); i++)
+  {
+    datum_sortkey_put(Float8GetDatum(pose->data[i]), T_FLOAT8, out);
+    out += n;
+  }
+  return out;
 }
 
 /**

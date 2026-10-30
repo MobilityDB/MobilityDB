@@ -79,6 +79,8 @@ struct Pose
 extern bool ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs);
 extern bool ensure_valid_pose_stbox(const Pose *pose, const STBox *box);
 extern bool ensure_valid_pose_pose(const Pose *pose1, const Pose *pose2);
+extern size_t pose_sortkey_size(const Pose *pose);
+extern uint8_t *pose_sortkey_put(const Pose *pose, uint8_t *out);
 extern bool ensure_valid_poseset_pose(const Set *s, const Pose *pose);
 
 /* Composition functions */
