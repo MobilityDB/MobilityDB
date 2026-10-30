@@ -209,7 +209,9 @@ bool
 eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, false); VALIDATE_NOT_NULL(gs, false);
+  VALIDATE_TPCPOINT(temp, false); VALIDATE_NOT_NULL(gs, false);
+  if (! ensure_temporal_isof_subtype(temp, TINSTANT))
+    return false;
   GSERIALIZED *probe = pcpoint_to_geompoint2d(tpointcloudinst_pcpoint(temp));
   if (!probe)
     return false;
@@ -230,7 +232,9 @@ double
 nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  VALIDATE_TPCPOINT(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  if (! ensure_temporal_isof_subtype(temp, TINSTANT))
+    return DBL_MAX;
   GSERIALIZED *probe = pcpoint_to_geompoint2d(tpointcloudinst_pcpoint(temp));
   if (!probe)
     return DBL_MAX;
