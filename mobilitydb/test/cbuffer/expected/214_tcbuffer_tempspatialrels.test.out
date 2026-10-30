@@ -1460,6 +1460,42 @@ SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0)
  {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 14:46:09.230769 2001 PST], (f@Mon Jan 01 14:46:09.230769 2001 PST, t@Tue Jan 02 10:54:32.727273 2001 PST], (f@Tue Jan 02 10:54:32.727273 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tTouches(tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+                             ttouches                             
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}');
+                             tcovers                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}');
+                            tcontains                             
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tCovers(geometry 'CurvePolygon(CircularString(-5 0,0 5,5 0,0 -5,-5 0))', tcbuffer '{Cbuffer(Point(3 4),0)@2001-01-01, Cbuffer(Point(0 9),1)@2001-01-02}');
+                             tcovers                              
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tTouches(tcbuffer '{Cbuffer(Point(0 0),0)@2001-01-01, Cbuffer(Point(0 5),1)@2001-01-02}', geometry 'Linestring(-1 0,1 0)');
+                             ttouches                             
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tTouches(tcbuffer '{Cbuffer(Point(-1 0),0)@2001-01-01, Cbuffer(Point(0 5),1)@2001-01-02}', geometry 'Linestring(-1 0,1 0)');
+                             ttouches                             
+------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
 SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),3.2)@2001-01-01', geometry 'Linestring(3 0,3 1)');
             tcovers             
 --------------------------------

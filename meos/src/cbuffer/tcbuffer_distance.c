@@ -44,6 +44,7 @@
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
 #include "geo/geo_funcs.h"
+#include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo.h"
 #include "geo/tgeo_distance.h"
@@ -1148,6 +1149,8 @@ shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 typedef struct
 {
   int kind;             /**< Always #TCBUF_CTX_GEO */
+  const GSERIALIZED *gs; /**< The geometry, which the caller frees after the
+                             context */
   DistGeom g;
   bool hasbox;          /**< Whether @p box is set */
   GBOX box;             /**< Box of the geometry as PostGIS keeps it, rounded
@@ -1218,6 +1221,7 @@ tcbuffer_geo_ctx_make(const GSERIALIZED *gs, bool boundary)
   }
   TcbufferGeoCtx *ctx = palloc(sizeof(TcbufferGeoCtx));
   ctx->kind = TCBUF_CTX_GEO;
+  ctx->gs = gs;
   g.rtree = dist_geom_build_rtree(g.segs, g.n);
   ctx->g = g;
   ctx->hasbox = (gserialized_get_gbox_p(gs, &ctx->box) == LW_SUCCESS);
@@ -1598,10 +1602,10 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 
 /**
  * @brief Tolerance on the signed boundary distance at a contact instant the
- * walk constructs, or against an arc #point_arc_offset_sign does not decide
- * @details A disc of a positive radius against straight edges, arcs of three
- * input points and halves of a circle on a diameter is decided exactly
- * (#tcbuffer_disc_boundary_sign) and reads no tolerance.
+ * walk constructs
+ * @details A disc at an input instant is decided exactly: one of a positive
+ * radius by #tcbuffer_disc_boundary_sign, one of a zero radius as its centre
+ * (#tcbuffer_disc_point_rel).
  */
 #define TCBUFFER_TOUCH_EPS 1e-9
 
@@ -1708,13 +1712,14 @@ tcbuffer_disc_signed_boundary(double cx, double cy, double r,
  * grown by the rounding of a point of that size (#coordinate_tolerance),
  * which only admits candidates. The function also sets @p inside to whether
  * the centre lies strictly inside a polygon of the geometry.
- * @return -1, 0 or 1, or 2 where an arc #point_arc_offset_sign does not
- * decide lies within reach
+ * @pre The radius is positive
+ * @return -1, 0 or 1
  */
 static int
 tcbuffer_disc_boundary_sign(double cx, double cy, double r,
   const DistGeom *g, bool *inside)
 {
+  assert(r > 0.0);
   *inside = g->has_poly && dist_geom_point_inside(cx, cy, g);
   double reach = r + coordinate_tolerance(fmax(fabs(cx), fabs(cy)), r);
   STBox query;
@@ -1732,9 +1737,12 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
     const double c[2] = {cx, cy};
     if (ed->etype == EDGE_LINEARC || ed->etype == EDGE_POLYARC)
     {
+      /* A positive radius against an arc of a geometry, which is never
+       * centred (#geom_extract_edges), is decided */
       int s = point_arc_offset_sign(c, ed, r);
-      if (s == 2 || s < 0)
-        return s;
+      assert(s != 2);
+      if (s < 0)
+        return -1;
       if (s == 0)
         sign = 0;
       continue;
@@ -1758,10 +1766,30 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
 }
 
 /**
+ * @brief Return true if the geometry of a context and the centre of a disc of
+ * a zero radius satisfy a spatial relationship
+ * @details The disc is its centre, related as the geometry relationships
+ * relate a point (#geom_spatialrel), as a temporal circular buffer whose discs
+ * all have a zero radius is related as a temporal point
+ * (#tcbuffer_is_tpoint)
+ */
+static bool
+tcbuffer_disc_point_rel(const Cbuffer *cb, const TcbufferGeoCtx *ctx,
+  spatialRel rel)
+{
+  assert(cb->radius == 0.0);
+  GSERIALIZED *pt = cbuffer_point(cb);
+  bool result = geom_spatialrel(ctx->gs, pt, rel);
+  pfree(pt);
+  return result;
+}
+
+/**
  * @brief Return true if a stationary circular buffer touches the geometry
  * @details The circular buffer touches the geometry when its boundary meets
  * the geometry boundary with disjoint interiors, i.e., the signed boundary
- * distance vanishes and the centre is not inside a polygon.
+ * distance vanishes and the centre is not inside a polygon. A disc of a zero
+ * radius touches it as its centre does (#tcbuffer_disc_point_rel).
  */
 bool
 tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
@@ -1770,18 +1798,14 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
   if (tcbufferseg_clear_of_box_ctx(cb, cb, ctxv))
     return false;
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
+  if (cb->radius == 0.0)
+    return tcbuffer_disc_point_rel(cb, ctx, TOUCHES);
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
-  /* Tangent exactly (#tcbuffer_disc_boundary_sign); a boundary with an arc it
-   * does not decide within reach keeps the signed distance against the
-   * contact band */
+  /* Tangent exactly (#tcbuffer_disc_boundary_sign) */
   int sign = tcbuffer_disc_boundary_sign(p->x, p->y, cb->radius, &ctx->g,
     &inside);
-  if (sign != 2)
-    return (! inside) && sign == 0;
-  double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
-    &inside);
-  return (! inside) && fabs(sg) <= TCBUFFER_TOUCH_EPS;
+  return (! inside) && sign == 0;
 }
 
 /**
@@ -1793,10 +1817,10 @@ tcbuffer_disc_touch_ctx(const Cbuffer *cb, const void *ctxv)
  * strictly positive radius is the open disk, which lies in the interior of
  * any closed region holding the disk, so the covering settles the
  * containment, tangency to the boundary included, as #cbuffer_contains reads
- * two disks; the interior of a disk of a zero radius is its centre, contained
- * where it lies strictly inside. For a disk of centre @p c and radius @p r:
- *   c is strictly inside a polygon of the geometry  AND  sg(c, r) >= 0
- *   (covers, and contains for r > 0), resp. sg(c, r) > 0 (contains, r = 0),
+ * two disks; a disk of a zero radius is its centre, which the geometry
+ * contains or covers as it does a point (#tcbuffer_disc_point_rel). For a disk
+ * of centre @p c and radius @p r > 0:
+ *   c is strictly inside a polygon of the geometry  AND  sg(c, r) >= 0,
  * where @p sg is the signed nearest boundary distance min_edge[dist(c, edge)-r]:
  * strictly positive means the whole disk clears the boundary, zero means it is
  * tangent to it, negative means it crosses to the exterior. The point-in-polygon
@@ -1822,21 +1846,15 @@ tcbuffer_disc_contains_ctx(const Cbuffer *cb, const void *ctxv, bool strict)
   if (tcbufferseg_clear_of_box_ctx(cb, cb, ctxv))
     return false;
   const TcbufferGeoCtx *ctx = (const TcbufferGeoCtx *) ctxv;
+  if (cb->radius == 0.0)
+    return tcbuffer_disc_point_rel(cb, ctx, strict ? CONTAINS : COVERS);
   const POINT2D *p = cbuffer_point2d_p(cb);
   bool inside;
-  /* Clearance of the boundary is asked only of a disk of a zero radius */
-  bool clear = strict && cb->radius == 0.0;
   /* Clear of the boundary or tangent to it, exactly
-   * (#tcbuffer_disc_boundary_sign); a boundary with an arc it does not decide
-   * within reach keeps the signed distance against the contact band */
+   * (#tcbuffer_disc_boundary_sign) */
   int sign = tcbuffer_disc_boundary_sign(p->x, p->y, cb->radius, &ctx->g,
     &inside);
-  if (sign != 2)
-    return inside && (clear ? sign > 0 : sign >= 0);
-  double sg = tcbuffer_disc_signed_boundary(p->x, p->y, cb->radius, &ctx->g,
-    &inside);
-  return inside &&
-    (clear ? sg > TCBUFFER_TOUCH_EPS : sg >= - TCBUFFER_TOUCH_EPS);
+  return inside && sign >= 0;
 }
 
 /**
