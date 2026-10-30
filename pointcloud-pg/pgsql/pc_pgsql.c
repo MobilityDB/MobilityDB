@@ -182,7 +182,7 @@ static void *pgsql_realloc(void *mem, size_t size)
 static void pgsql_free(void *ptr) { pfree(ptr); }
 
 static void pgsql_msg_handler(int sig, const char *fmt, va_list ap)
-    __attribute__((format(printf, 2, 0)));
+    pg_attribute_printf(2, 0); /* MEOS */
 
 static void pgsql_msg_handler(int sig, const char *fmt, va_list ap)
 {
@@ -194,7 +194,7 @@ static void pgsql_msg_handler(int sig, const char *fmt, va_list ap)
 }
 
 static void pgsql_error(const char *fmt, va_list ap)
-    __attribute__((format(printf, 1, 0)));
+    pg_attribute_printf(1, 0); /* MEOS */
 
 static void pgsql_error(const char *fmt, va_list ap)
 {
@@ -202,7 +202,7 @@ static void pgsql_error(const char *fmt, va_list ap)
 }
 
 static void pgsql_warn(const char *fmt, va_list ap)
-    __attribute__((format(printf, 1, 0)));
+    pg_attribute_printf(1, 0); /* MEOS */
 
 static void pgsql_warn(const char *fmt, va_list ap)
 {
@@ -210,7 +210,7 @@ static void pgsql_warn(const char *fmt, va_list ap)
 }
 
 static void pgsql_info(const char *fmt, va_list ap)
-    __attribute__((format(printf, 1, 0)));
+    pg_attribute_printf(1, 0); /* MEOS */
 
 static void pgsql_info(const char *fmt, va_list ap)
 {
