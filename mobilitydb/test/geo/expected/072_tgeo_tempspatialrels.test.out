@@ -731,6 +731,24 @@ SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
  
 (1 row)
 
+SELECT tDwithin(NULL::tgeometry, geometry 'Point(1 1)', 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', NULL::geometry, 2);
+ tdwithin 
+----------
+ 
+(1 row)
+
+SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)', NULL);
+ tdwithin 
+----------
+ 
+(1 row)
+
 SELECT tDwithin(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01', 2);
             tdwithin            
 --------------------------------

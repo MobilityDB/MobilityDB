@@ -873,7 +873,7 @@ _NATIVE_TSR_FN = (
     "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
     "  RETURNS tbool\n"
     "  AS 'MODULE_PATHNAME', '{SYMBOL}'\n"
-    "  LANGUAGE C IMMUTABLE {STRICT} PARALLEL SAFE;")
+    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
 
 _CAST_TSR_FN = (
     "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
@@ -973,7 +973,6 @@ def render_tempspatialrels(fam: dict) -> str:
                             if d.get("spheroid") else "")
             lines.append(_NATIVE_TSR_FN.format(
                 PRED=name, LEFT=d["l"], RIGHT=d["r"], DIST=ddist,
-                STRICT="STRICT" if d.get("strict", True) else "",
                 SYMBOL=f"{stem}_{_native_tsr_token(d['l'])}_{_native_tsr_token(d['r'])}"))
         units.append(banner.replace("{PRED}", name) + "\n\n" + "\n".join(lines))
     body = "\n\n".join(units)

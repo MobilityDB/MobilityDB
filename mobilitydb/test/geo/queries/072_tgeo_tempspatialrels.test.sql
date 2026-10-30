@@ -244,6 +244,11 @@ SELECT tDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(
 SELECT tDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty', 2);
 SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty', 2);
 
+-- A null argument answers null
+SELECT tDwithin(NULL::tgeometry, geometry 'Point(1 1)', 2);
+SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', NULL::geometry, 2);
+SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)', NULL);
+
 --3D
 SELECT tDwithin(geometry 'Point(1 1 1)', tgeometry 'Point(1 1 1)@2001-01-01', 2);
 SELECT tDwithin(geometry 'Point(1 1 1)', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);

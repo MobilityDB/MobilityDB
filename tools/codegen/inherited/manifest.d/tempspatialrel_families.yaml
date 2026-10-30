@@ -51,7 +51,6 @@ tempspatialrel_families:
   # temporal geographies, while tContains, tCovers and tTouches, which need the
   # planar DE-9IM matrix, have none. A temporal geography has step
   # interpolation, so each of them is answered exactly at every instant.
-  # tDwithin's tgeometry-vs-geometry direction is not strict.
   - family:  tgeo
     impl:    native
     file:    mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql
@@ -85,8 +84,7 @@ tempspatialrel_families:
       - name: tDwithin
         directions:
           - {l: geometry,  r: tgeometry}
-          - {l: tgeometry, r: geometry, strict: false,
-             comment: "The function is not strict"}
+          - {l: tgeometry, r: geometry}
           - {l: tgeometry, r: tgeometry}
           - {l: geography,  r: tgeography, spheroid: true}
           - {l: tgeography, r: geography,  spheroid: true}
@@ -96,9 +94,8 @@ tempspatialrel_families:
   # temporalizes the same tgeo_* kernel — see _NATIVE_TSR_SUPERCLASS), but its
   # predicate matrix is narrower than tgeo's: tContains/tCovers expose only the
   # geo-vs-t direction (a point containing/covering is degenerate the other way),
-  # tTouches has no t-vs-t or geodetic direction, and tDwithin's t-vs-geo
-  # direction is strict here (unlike tgeo's). Every predicate overrides the
-  # (absent) family default explicitly.
+  # and tTouches has no t-vs-t or geodetic direction. Every predicate overrides
+  # the (absent) family default explicitly.
   - family:  tpoint
     impl:    native
     file:    mobilitydb/sql/geo/072_tpoint_tempspatialrels.in.sql
