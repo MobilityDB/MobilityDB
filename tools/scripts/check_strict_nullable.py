@@ -187,11 +187,21 @@ def wrapper_bodies(root: Path) -> dict[str, str]:
             if not b:
                 continue
             body = b.group(1)
-            for h in HELPER_CALL.findall(body):
+            # A helper hands fcinfo on to its own helpers, as
+            # Raster_value_count_rows does to value_count_args, so the helpers
+            # are followed until none is left
+            seen = {name}
+            pending = HELPER_CALL.findall(body)
+            while pending:
+                h = pending.pop()
+                if h in seen:
+                    continue
+                seen.add(h)
                 hb = re.search(r"^{0}\s*\([^)]*\)\s*\n\{{(.*?)^\}}".format(re.escape(h)),
                                src, re.S | re.M)
-                if hb and h != name:
+                if hb:
                     body += "\n" + hb.group(1)
+                    pending += HELPER_CALL.findall(hb.group(1))
             out[name] = expand(body, defs)
     return out
 
@@ -208,12 +218,51 @@ def guarded(body: str, pos: int, var: str) -> bool:
                           % (v, v), head) or re.search(r"\b%s\s*\?" % v, head))
 
 
-def argument_flow(body: str, k: int, meos: dict) -> dict:
-    """How the wrapper treats argument k: whether it reads and tests it, the
-    values it puts in place of a NULL, and the MEOS arguments it reaches, each
-    as (function, argument, accepts NULL)."""
+def tested_indexes(body: str, nargs: int) -> set[int]:
+    """The arguments the wrapper tests with PG_ARGISNULL under an index that is
+    an expression, for a call with nargs arguments, beside #guarded, which reads
+    the test of a local: the number of arguments (PG_NARGS() or a local holding
+    it), the integer locals computed from it, as `int s = nargs - 2;` of
+    value_count_args, and the variable of a loop over a range, as
+    `for (int i = 0; i < 11; i++)` of Raster_make."""
+    env = {}
+    text = body.replace("PG_NARGS()", str(nargs))
+
+    def value(expr):
+        expr = re.sub(r"\b[A-Za-z_]\w*\b",
+                      lambda m: str(env[m.group(0)]) if m.group(0) in env else "?", expr)
+        if not re.fullmatch(r"[\d\s+\-*()]+", expr):
+            return None
+        return eval(expr)  # only digits and + - * ( ) reach here
+
+    for m in re.finditer(r"\bint\s+(\w+)\s*=\s*([^;,]+)[;,]", text):
+        v = value(m.group(2))
+        if v is not None:
+            env[m.group(1)] = v
+    out = set()
+    for m in re.finditer(r"\bPG_ARGISNULL\s*\(([^()]*)\)", text):
+        v = value(m.group(1))
+        if v is not None:
+            out.add(v)
+    for m in re.finditer(r"\bfor\s*\(\s*int\s+(\w+)\s*=\s*([^;]+);\s*\1\s*<\s*([^;]+);",
+                         text):
+        lo, hi = value(m.group(2)), value(m.group(3))
+        if lo is None or hi is None:
+            continue
+        if re.match(r"[^{;]*\)\s*(\{\s*)?if\s*\(\s*PG_ARGISNULL\s*\(\s*%s\s*\)"
+                    % m.group(1), text[m.end():]):
+            out.update(range(lo, hi))
+    return out
+
+
+def argument_flow(body: str, k: int, meos: dict, nargs: int) -> dict:
+    """How the wrapper treats argument k of a call with nargs arguments:
+    whether it reads and tests it, the values it puts in place of a NULL, and
+    the MEOS arguments it reaches, each as (function, argument, accepts
+    NULL)."""
     read = bool(re.search(GETARG.format(k), body))
-    tested = bool(re.search(ISNULL.format(k), body))
+    tested = bool(re.search(ISNULL.format(k), body)) or \
+        k in tested_indexes(body, nargs)
     values = [v.group("value").strip()
               for v in re.finditer(NULL_BRANCH.format(k), body)]
     # the locals carrying the argument
@@ -256,7 +305,7 @@ def collect(root: Path) -> list[tuple[str, str]]:
         key = f'{f["rel"]}\t{f["sig"]}'
         accepts = False
         for k in range(len(f["args"])):
-            flow = argument_flow(body, k, meos)
+            flow = argument_flow(body, k, meos, len(f["args"]))
             nullable = [(fn, p) for fn, p, tagged in flow["reached"] if tagged]
             if f["strict"]:
                 for fn, p in nullable:
