@@ -58,9 +58,11 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 - **The smallest circle enclosing a geometry is exact**: MobilityDB #3105 (`adbb2ebad1`) searches
   the double nearest its radius by a polynomial of degree six, a term of an exact polynomial
   multiplying up to six exact sums (`POLY_TERM_MAXDEG` of `meos/include/geo/geo_funcs.h`).
-  Its shuffle (`mec_shuffle` of `meos/src/geo/postgis_funcs.c`) still draws from the C library's
-  `rand()`; branch `fix/enclosing-circle-shuffle-own-generator` draws from a `pg_prng` generator
-  of its own call, and is not yet on GitHub.
+  Its shuffle (`mec_shuffle` of `meos/src/geo/postgis_funcs.c`) draws from the C library's
+  `rand()` on master; MobilityDB #3292 (branch `fix/enclosing-circle-shuffle-own-generator`,
+  `e7ecbb2163`) draws from a `pg_prng` generator of its own call. CGAL agrees with every circle of
+  its head over the 1400 geometries of the corpus, and the circle cells cost 0.42, 0.90, 0.79 and
+  0.27 of GEOS called directly.
 - **The buffer drops a hole by the exact radius of the smallest circle enclosing it**:
   `mec_radius_cmp` of `meos/src/geo/postgis_funcs.c` compares that radius with the distance from the
   points defining the circle, which it never constructs.
