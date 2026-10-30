@@ -104,9 +104,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   1313 of 1313 natural areas, and the buffer cells cost 0.935 at distance 1, 0.895 at 50, 0.560 at
   500 and 0.776 on the joints beside GEOS 3.14 called directly; the margin it opens on the cell at
   distance 1 pays for the check that the written rings keep the shape of the exact buffer.
-- **Open pull requests** on 2026-10-29: MobilityDB #2861 (these notes), #2945 (the notes of the
-  GEOS opt-out campaign) and #3200 (the box of a temporal point cloud instant, by its author);
-  #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
+- **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes) and #3200 (the box of a
+  temporal point cloud instant, by its author); #785, #777 and #677 touch none of these names or
+  functions; MEOS-API has none.
 
 ## Rules every PR follows
 

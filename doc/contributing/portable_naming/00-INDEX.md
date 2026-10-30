@@ -170,6 +170,10 @@ Every distance MEOS computes, measured against the double nearest the exact dist
 that judges it, and the pull requests that make each one answer that double:
 [Exact distance](EXACT-DISTANCE.md).
 
+The pull requests that make the buffer exact on every input and the relationship of two areas
+exact, in order, what each must prove, and the decisions and open items they leave:
+[Exact buffer](EXACT-BUFFER.md).
+
 MEOS's raster in every engine with its whole algebra, how it is told apart from the host's raster,
 the conversions between the two, and the pull requests that deliver them in MEOS, MobilityDB and
 the bindings: [The raster in every engine and its host bridges](RASTER-HOST-BRIDGES.md).
