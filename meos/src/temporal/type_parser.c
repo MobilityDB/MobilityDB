@@ -655,7 +655,15 @@ span_parse(const char **str, MeosType spantype, bool end, Span *span)
     return false;
 
   if (span)
+  {
+    /* The span is zero-filled so that a span #span_set refuses to fill, its
+     * lower bound above its upper one or its bounds equal and not both
+     * inclusive, keeps no span type */
+    memset(span, 0, sizeof(Span));
     span_set(lower, upper, lower_inc, upper_inc, basetype, spantype, span);
+    if (span->spantype != spantype)
+      return false;
+  }
   return true;
 }
 

@@ -29,8 +29,9 @@
 
 /**
  * @file
- * @brief A program that tests that the text input of circular buffers, poses
- * and span sets refuses a malformed value and keeps nothing it allocated
+ * @brief A program that tests that the text input of circular buffers, poses,
+ * spans, span sets and boxes refuses a malformed value and keeps nothing it
+ * allocated
  * @details A text parser that reads a part of a value into an allocation,
  * such as the centre of a circular buffer or of a pose, and then finds the
  * rest malformed returns an error, and must free what it read before. Under
@@ -38,9 +39,10 @@
  * part left behind is memory lost for each malformed value it reads.
  *
  * The program reads one malformed value for each error return that follows
- * an allocation in #cbuffer_in, #pose_in and #intspanset_in, verifies that
- * each is refused with #meos_errno set, and reads well-formed values that
- * must be accepted. Run under valgrind with `--leak-check=full`, it reports
+ * an allocation in #cbuffer_in, #pose_in and #intspanset_in, and spans whose
+ * bounds a span refuses, alone, in a span set and in a box, verifies that each
+ * is refused with #meos_errno set and no value, and reads well-formed values
+ * that must be accepted. Run under valgrind with `--leak-check=full`, it reports
  * no block definitely lost.
  *
  * The program can be build as follows
@@ -74,6 +76,31 @@ static void *
 intspanset_in_v(const char *str)
 {
   return intspanset_in(str);
+}
+
+/* The span and box readers as an #input_fn, as #intspanset_in_v */
+static void *
+intspan_in_v(const char *str)
+{
+  return intspan_in(str);
+}
+
+static void *
+floatspan_in_v(const char *str)
+{
+  return floatspan_in(str);
+}
+
+static void *
+floatspanset_in_v(const char *str)
+{
+  return floatspanset_in(str);
+}
+
+static void *
+tbox_in_v(const char *str)
+{
+  return tbox_in(str);
 }
 
 static int failures = 0;
@@ -143,6 +170,22 @@ int main(void)
   check(intspanset_in_v, "{[1, 2]", false);
   check(intspanset_in_v, "{[1, 2]} x", false);
   check(intspanset_in_v, "{[1, 2], [4, 5]}", true);
+
+  /* A span whose bounds the span refuses: the lower bound above the upper
+   * one, the bounds equal and not both inclusive; read alone, in a span set
+   * and in a box */
+  check(intspan_in_v, "[5, 1]", false);
+  check(intspan_in_v, "[1, 1)", false);
+  check(intspan_in_v, "[1, 1]", true);
+  check(floatspan_in_v, "(1234.5, 10)", false);
+  check(floatspan_in_v, "(1, 1]", false);
+  check(floatspan_in_v, "(10, 1234.5)", true);
+  check(floatspanset_in_v, "{(1234.5, 10)}", false);
+  check(floatspanset_in_v, "{[1, 2], (5, 3)}", false);
+  check(floatspanset_in_v, "{[1, 2], (3, 5)}", true);
+  check(tbox_in_v, "TBOXFLOAT X([3, 1])", false);
+  check(tbox_in_v, "TBOXFLOAT T([2001-01-02, 2001-01-01])", false);
+  check(tbox_in_v, "TBOXFLOAT XT([1, 3],[2001-01-01, 2001-01-02])", true);
 
   printf("%d check(s) failed\n", failures);
   meos_finalize();
