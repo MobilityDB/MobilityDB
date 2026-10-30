@@ -49,6 +49,7 @@
  */
 
 #include <assert.h>
+#include <float.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -116,6 +117,31 @@ int main(void)
   printf("tpcpatch: %s\n", tpcpatch_out);
   Temporal *tpcpatch2 = temporal_in(tpcpatch_out, T_TPCPATCH);
   assert(tpcpatch2 != NULL && temporal_eq(tpcpatch, tpcpatch2));
+
+  /* The position of a temporal point cloud point instant is compared with a
+   * geometry, and a value of another temporal type, or a temporal point
+   * cloud point that is not an instant, is refused with an error */
+  GSERIALIZED *line = geom_in("Linestring(0 0, 3 3)", -1);
+  Temporal *tgp = tgeompoint_in("[Point(1 1)@2001-01-01, "
+    "Point(2 2)@2001-01-02]");
+  Temporal *pcseq = temporal_in("{" TPCPOINT_IN ", "
+    "010100000064000000C80000002C010000@2024-01-02}", T_TPCPOINT);
+  assert(line != NULL && tgp != NULL && pcseq != NULL);
+  double nad = nad_tpcpoint_geo(tpcpoint, line);
+  bool inter = eintersects_tpcpoint_geo(tpcpoint, line);
+  printf("nad_tpcpoint_geo: %g, eintersects_tpcpoint_geo: %d\n", nad, inter);
+  assert(nad != DBL_MAX && meos_errno() == 0);
+  const Temporal *refused[3] = { tgp, tpcpatch, pcseq };
+  for (int i = 0; i < 3; i++)
+  {
+    assert(nad_tpcpoint_geo(refused[i], line) == DBL_MAX);
+    assert(meos_errno() != 0);
+    meos_errno_reset();
+    assert(! eintersects_tpcpoint_geo(refused[i], line));
+    assert(meos_errno() != 0);
+    meos_errno_reset();
+  }
+  free(line); free(tgp); free(pcseq);
 
   /* The point (1,2,3) is to the left of, below, in front of and before a box
    * spanning 5 to 6 on each axis at a later time, the box answers the
