@@ -3625,6 +3625,268 @@ meos_typeof_hexwkb(const char *hexwkb)
   return (MeosType) wkb_type;
 }
 
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tboolinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tbigintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tfloatinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+ttextinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tboolseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tbigintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @param[in] interp Interpolation
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+ttextseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tboolseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tbigintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float sequence set from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @param[in] interp Interpolation
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text sequence set from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+ttextseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal boolean from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tbool_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal big integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tbigint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal float from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tfloat_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal text from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+ttext_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TTEXT);
+}
+
 /*****************************************************************************
  * WKB and HexWKB input functions for set and span types
  *****************************************************************************/
