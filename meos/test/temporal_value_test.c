@@ -362,6 +362,21 @@ int main(void)
     meos_errno() == 0);
   assert(! tposechain_value_n(seq, 3, &none) && none == NULL &&
     meos_errno() == 0);
+  /* The value at a timestamp of the sequence is the chain it holds there, and
+   * a timestamp between the instants of a discrete sequence answers no value
+   * and no error */
+  PoseChain *at1 = NULL, *at2 = NULL;
+  assert(tposechain_value_at_timestamptz(seq,
+      timestamptz_in("2001-01-01", -1), true, &at1) &&
+    tposechain_value_at_timestamptz(seq,
+      timestamptz_in("2001-01-02", -1), true, &at2));
+  printf("tposechain_value_at_timestamptz: errno %d\n", meos_errno());
+  assert(posechain_eq(at1, first) && posechain_eq(at2, last) &&
+    meos_errno() == 0);
+  assert(! tposechain_value_at_timestamptz(seq,
+      timestamptz_in("2001-01-01 12:00", -1), true, &none) &&
+    meos_errno() == 0);
+  free(at1); free(at2);
   free(first); free(last); free(start); free(end); free(nth1); free(nth2);
   REFUSED("tposechain_value_n(0)", ! tposechain_value_n(seq, 0, &none),
     MEOS_ERR_INVALID_ARG_VALUE);
@@ -371,6 +386,16 @@ int main(void)
     MEOS_ERR_INVALID_ARG_TYPE);
   REFUSED("tposechain_value_n(NULL result)",
     ! tposechain_value_n(seq, 1, NULL), MEOS_ERR_INVALID_ARG);
+  REFUSED("tposechain_value_at_timestamptz(NULL)",
+    ! tposechain_value_at_timestamptz(NULL, timestamptz_in("2001-01-01", -1),
+      true, &none), MEOS_ERR_INVALID_ARG);
+  REFUSED("tposechain_value_at_timestamptz(tfloat)",
+    ! tposechain_value_at_timestamptz(other,
+      timestamptz_in("2001-01-01", -1), true, &none),
+    MEOS_ERR_INVALID_ARG_TYPE);
+  REFUSED("tposechain_value_at_timestamptz(NULL result)",
+    ! tposechain_value_at_timestamptz(seq, timestamptz_in("2001-01-01", -1),
+      true, NULL), MEOS_ERR_INVALID_ARG);
   REFUSED("tposechain_value(sequence)", tposechain_value(seq) == NULL,
     MEOS_ERR_INVALID_ARG_TYPE);
   REFUSED("tposechain_value(NULL)", tposechain_value(NULL) == NULL,
