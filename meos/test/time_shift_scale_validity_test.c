@@ -38,8 +38,9 @@
  * against with no check at all.
  *
  * The program verifies that #tstzset_shift, #tstzset_scale and
- * #tstzset_shift_scale report each null interval they take by returning NULL
- * and setting #meos_errno, and that each answers the shifted and scaled set
+ * #tstzset_shift_scale, and #tstzspan_shift, #tstzspan_scale and
+ * #tstzspan_shift_scale, report each null interval they take by returning NULL
+ * and setting #meos_errno, and that each answers the shifted and scaled value
  * with no error left behind.
  *
  * The program can be build as follows
@@ -113,7 +114,53 @@ int main(void)
   assert(res && meos_errno() == 0);
   free(out); free(res);
 
-  free(s); free(shift); free(duration);
+  /* A null interval given to a timestamptz span is reported */
+  Span *sp = tstzspan_in("[2001-01-01, 2001-01-03]");
+  assert(sp);
+  Span *spres = tstzspan_shift(sp, NULL);
+  printf("tstzspan_shift(NULL): %s, errno %d\n", spres ? "a value" : "NULL",
+    meos_errno());
+  assert(spres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  spres = tstzspan_scale(sp, NULL);
+  printf("tstzspan_scale(NULL): %s, errno %d\n", spres ? "a value" : "NULL",
+    meos_errno());
+  assert(spres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  spres = tstzspan_shift_scale(sp, shift, NULL);
+  printf("tstzspan_shift_scale(1 day, NULL): %s, errno %d\n",
+    spres ? "a value" : "NULL", meos_errno());
+  assert(spres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  spres = tstzspan_shift_scale(sp, NULL, duration);
+  printf("tstzspan_shift_scale(NULL, 4 days): %s, errno %d\n",
+    spres ? "a value" : "NULL", meos_errno());
+  assert(spres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* The intervals answer the shifted and scaled span */
+  spres = tstzspan_shift(sp, shift);
+  out = tstzspan_out(spres);
+  printf("tstzspan_shift(1 day): %s, errno %d\n", out, meos_errno());
+  assert(spres && meos_errno() == 0);
+  free(out); free(spres);
+  spres = tstzspan_scale(sp, duration);
+  out = tstzspan_out(spres);
+  printf("tstzspan_scale(4 days): %s, errno %d\n", out, meos_errno());
+  assert(spres && meos_errno() == 0);
+  free(out); free(spres);
+  spres = tstzspan_shift_scale(sp, shift, duration);
+  out = tstzspan_out(spres);
+  printf("tstzspan_shift_scale(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(spres && meos_errno() == 0);
+  free(out); free(spres);
+
+  free(sp); free(s); free(shift); free(duration);
 
   /* Finalize MEOS */
   meos_finalize();

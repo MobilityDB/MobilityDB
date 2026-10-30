@@ -2114,23 +2114,20 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
 }
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
- * @param[in] shift Interval to shift the bounds @nullable
- * @param[in] duration Duation of the result @nullable
+ * @param[in] shift Interval to shift the bounds, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre At least one of the two intervals is given
  * @csqlfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *
-tstzspan_shift_scale(const Span *s, const Interval *shift,
+tstzspan_shift_scale_intl(const Span *s, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(s); assert(s->spantype == T_TSTZSPAN); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   /* Copy the input period to the result */
   Span *result = span_copy(s);
   /* Shift and/or scale the resulting period */
@@ -2140,6 +2137,58 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   result->lower = TimestampTzGetDatum(lower);
   result->upper = TimestampTzGetDatum(upper);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span shifted by an interval
+ * @param[in] s Span
+ * @param[in] shift Interval to shift the bounds
+ * @csqlfn #Tstzspan_shift()
+ */
+Span *
+tstzspan_shift(const Span *s, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return tstzspan_shift_scale_intl(s, shift, NULL);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span scaled by an interval
+ * @param[in] s Span
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzspan_scale()
+ */
+Span *
+tstzspan_scale(const Span *s, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspan_shift_scale_intl(s, NULL, duration);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span shifted and scaled by two intervals
+ * @param[in] s Span
+ * @param[in] shift Interval to shift the bounds
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzspan_shift_scale()
+ */
+Span *
+tstzspan_shift_scale(const Span *s, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspan_shift_scale_intl(s, shift, duration);
 }
 
 /**
