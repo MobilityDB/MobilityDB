@@ -47,6 +47,10 @@
  * - a disc clear inside by 2^-40 is contained and covered, and one out of
  *   it by 2^-40 is neither;
  * - a disc of radius 0 on a side is covered and not contained;
+ * - a disc of radius 0 at an instant of a sequence whose other discs have a
+ *   positive radius is its centre: on the boundary of a polygon it is
+ *   covered, not contained, and touches it, and on a line or an arc it
+ *   touches it at an end only;
  * - against a circle, given as arcs of three points or as the two halves on
  *   a diameter, the same holds at a point of the circle no input point
  *   holds;
@@ -113,6 +117,25 @@ relate_geo(const char *wkt, double x, double y, double r, bool *contains,
   char buf[256];
   snprintf(buf, sizeof(buf), "Cbuffer(Point(%.17g %.17g),%.17g)@2001-01-01",
     x, y, r);
+  Temporal *temp = tcbuffer_in(buf);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  assert(temp != NULL && gs != NULL);
+  *contains = at_instant(tcontains_geo_tcbuffer(gs, temp));
+  *covers = at_instant(tcovers_geo_tcbuffer(gs, temp));
+  *touches = at_instant(ttouches_tcbuffer_geo(temp, gs));
+  free(gs); free(temp);
+}
+
+/* Contains, covers and touches of a disc of radius 0 against the geometry of
+ * @p wkt, as #relate_geo reads them, at the first instant of a sequence whose
+ * second disc has radius 1, so that the value is not a temporal point */
+static void
+relate_zero(const char *wkt, double x, double y, bool *contains, bool *covers,
+  bool *touches)
+{
+  char buf[256];
+  snprintf(buf, sizeof(buf), "{Cbuffer(Point(%.17g %.17g),0)@2001-01-01, "
+    "Cbuffer(Point(%.17g %.17g),1)@2001-01-02}", x, y, x, y);
   Temporal *temp = tcbuffer_in(buf);
   GSERIALIZED *gs = geom_in(wkt, -1);
   assert(temp != NULL && gs != NULL);
@@ -189,6 +212,31 @@ main(void)
   assert(c && v && ! t);
   relate_geo(FULL, 0.0, -200.0, 300.0 + 0x1p-40, &c, &v, &t);
   assert(! c && ! v && ! t);
+
+  /* A disc of radius 0 beside discs of radius 1 is its centre: on the
+   * boundary of the square, of the circle of three points and of the halves
+   * on a diameter it is covered, not contained, and touches; 2^-40 inside
+   * it is contained, 2^-40 outside it is none of them */
+  relate_zero(SQUARE, 500.0, 0.0, &c, &v, &t);
+  assert(! c && v && t);
+  relate_zero(SQUARE, 500.0, 0x1p-40, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_zero(CIRCLE, 300.0, 400.0, &c, &v, &t);
+  assert(! c && v && t);
+  relate_zero(CIRCLE, 300.0, 400.0 - 0x1p-40, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_zero(CIRCLE, 300.0, 400.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  relate_zero(FULL, 300.0, -400.0, &c, &v, &t);
+  assert(! c && v && t);
+  /* Against a line it touches at an end only, its interior meeting the
+   * interior of the line elsewhere */
+  relate_zero("LINESTRING(0 0,10 0)", 0.0, 0.0, &c, &v, &t);
+  assert(t);
+  relate_zero("LINESTRING(0 0,10 0)", 5.0, 0.0, &c, &v, &t);
+  assert(! t);
+  relate_zero("CIRCULARSTRING(500 0,0 500,-500 0)", 300.0, 400.0, &c, &v, &t);
+  assert(! t);
 
   /* Disc (2 0) of radius 3 in the static disc (0 0) of radius 5, tangent
    * from inside at (5 0) */
