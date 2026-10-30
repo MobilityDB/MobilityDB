@@ -59,6 +59,26 @@ readers whose types have no literal in the regression queries.
 
 ## 3. The fixes, one PR
 
+**Owner, 2026-10-30:** all the NaN work goes in a single PR, with one commit per step. Branch
+`fix/meos-refuses-nan` (`estebanzimanyi/MobilityDB`), test `meos/test/nan_refusal_test.c`
+(39 cases, each in a child process; 35 fail on master, 0 on the branch).
+
+Two choices of the branch for the owner to confirm:
+
+- **A linear temporal float holds no infinite value.** Its interpolation adds infinities of
+  opposite signs or multiplies one by zero, so it has a NaN at every interior instant;
+  `ensure_valid_tinstarr` refuses it, and a step or discrete temporal float keeps infinity. This
+  one check removes the NaN of the integral, `twavg`, `avg_value`, Frechet, DTW, the shift and
+  scale and the `tfloat_exp` crash.
+- **Two kinds of double keep NaN for now:** a raster pixel value (nodata, map algebra constant),
+  which GDAL writes as NaN for a float band with no data, and the float8 functions of `pgtypes`,
+  which keep PostgreSQL's order (NaN above infinity) since they run inside sort comparators.
+
+Found by the census and not caused by NaN, so left to PRs of their own: `jsonpath_in` aborts on 3
+invalid paths; `tbox_from_hexwkb` aborts on the hex "1"; `floatspan_in` of `(1234.5, 10)` returns
+a value together with its error and `floatspanset_in` of it aborts in `datum_cmp`;
+`nad_tpcpoint_geo` given a temporal point aborts on an assertion.
+
 In the order of the commits, each measured by the harness of its row before and after:
 
 1. the pose and circular buffer readers (text, WKB, MF-JSON) and `box3d_in`, `gbox_make`, the
