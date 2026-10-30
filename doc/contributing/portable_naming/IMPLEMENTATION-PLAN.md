@@ -95,14 +95,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   a cross product whose terms overflow (`cross_product_sign`) is its own pull request. Next is
   mitre and bevel joins on the arrangement.
 - **The buffer places three meetings of its offsets in plain doubles**, outside the plan:
-  branch `perf/place-the-corner-crossing-in-doubles` (`c56b877ce5` on master `c8b28a8b52`)
-  computes the crossing of two offsets sharing a centre (every concave corner), of two offsets
-  sharing none and the meeting of an offset with a circle in the order their filters do, so the
-  coordinates are the same bits, under one bound written out from the filters' rules, the
-  filters placing what that bound leaves. CGAL agrees on 1313 of 1313 natural areas, and the
-  buffer cells cost 0.959 at distance 1, 0.907 at 50, 0.564 at 500 and 0.787 on the joints
-  beside GEOS 3.14 called directly; the margin it opens on the cell at distance 1 pays for the
-  check that the written rings keep the shape of the exact buffer.
+  MobilityDB #3259, branch `perf/place-the-corner-crossing-in-doubles` (`9a24a9d6e7` on master
+  `985d05be27`), computes the crossing of two offsets sharing a centre (every concave corner), of
+  two offsets sharing none and the meeting of an offset with a circle in the order their filters
+  do, so the coordinates are the same bits, under one bound written out from the filters' rules,
+  the filters placing what that bound leaves; both ends of a tangent segment come from one offset,
+  and the tangent and circle edges are written in their place in the edge array. CGAL agrees on
+  1313 of 1313 natural areas, and the buffer cells cost 0.935 at distance 1, 0.895 at 50, 0.560 at
+  500 and 0.776 on the joints beside GEOS 3.14 called directly; the margin it opens on the cell at
+  distance 1 pays for the check that the written rings keep the shape of the exact buffer.
 - **Open pull requests** on 2026-10-29: MobilityDB #2861 (these notes), #2945 (the notes of the
   GEOS opt-out campaign) and #3200 (the box of a temporal point cloud instant, by its author);
   #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
