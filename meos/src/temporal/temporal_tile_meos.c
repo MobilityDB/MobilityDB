@@ -1248,7 +1248,8 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
-  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
+  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin) ||
+      ! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return NULL;
 
   Datum *datum_bins;
@@ -1385,7 +1386,8 @@ tfloat_value_time_split(const Temporal *temp, double vsize,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
+  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin) ||
+      ! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_positive_duration(duration))
     return NULL;
 
