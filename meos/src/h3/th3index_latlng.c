@@ -209,17 +209,17 @@ h3index_cell_to_geog(H3Index cell)
  * but-not-sampled cells never appear in the result and any prefilter
  * built on the result misses them as false negatives.
  *
- * The walker below mirrors the static-side `linestring_to_cells_into`:
- * for each consecutive instant pair (p_a@t_a, p_b@t_b) it walks the
- * segment in lat/lon at Nyquist step (cell-edge / 2) and emits a new
- * th3index instant every time the sampled cell changes. The timestamp
- * of each emitted instant is the linear interpolation of t_a and t_b
- * at the segment parameter where the cell changed.
+ * The walker below traverses, for each consecutive instant pair
+ * (p_a@t_a, p_b@t_b), the cells the segment crosses one by one
+ * (`h3_segment_cells`), following the great circle of a geodetic segment
+ * and the straight line in longitude and latitude of a planar one, and
+ * emits a th3index instant for every cell it enters. The timestamp of each
+ * emitted instant is the linear interpolation of t_a and t_b at the
+ * segment parameter where the segment reaches that cell.
  *
  * Result is a STEP-interpolation th3index TSequence whose cardinality
  * is data-dependent (one instant per cell entry along the trajectory).
- * For very short / static segments the walker degenerates to one
- * instant per input instant — i.e. the previous per-instant behaviour.
+ * A segment that stays within the cell it starts in emits no instant.
  *
  * Discrete-interpolation input is left at one-instant-per-input
  * (no segment to densify across).

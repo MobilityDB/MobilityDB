@@ -429,8 +429,8 @@ if(CMAKE_COMPILER_IS_GNUCC)
   add_compile_options(-Wall -Wextra -Wunused-parameter -Wno-strict-aliasing)
   # The following flags are C-only: the C++ compiler rejects -std=gnu1x and an
   # implicit function declaration is a C-specific construct. Gating them to the
-  # C language keeps the C++ translation units (PostGIS/GEOS wrappers and the
-  # linked shared module) free of cc1plus command-line option warnings.
+  # C language keeps a C++ translation unit free of cc1plus command-line option
+  # warnings.
   # Treating an implicit function declaration as an error matters because it
   # silently assumes an int return, truncating any 64-bit pointer the callee
   # actually returns and producing a hard-to-trace crash at runtime rather than

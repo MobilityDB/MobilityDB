@@ -109,8 +109,8 @@ extern int trgeo_geom_clip_lwpoly(
  *
  * 3D pose input (Z-flag set) is rejected with -1; M2 is 2D only, matching
  * the design constraint that the trgeometry / cbuffer surfaces use
- * 2D-only kernels (PostGIS curve arithmetic and GEOS topology operate
- * in 2D).
+ * 2D-only kernels (PostGIS curve arithmetic and the native relationships
+ * and overlay of MEOS operate in 2D).
  *****************************************************************************/
 
 struct Pose; /* forward declaration; full type in pose/pose.h */

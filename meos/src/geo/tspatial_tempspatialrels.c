@@ -489,8 +489,9 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
   }
 
   /* Native fast path for a temporal geometry point with linear interpolation
-   * over a geometry the clip engine supports, avoiding the GEOS
-   * ST_Intersection call. Instantaneous values and geometries with types the
+   * over a geometry the clip engine supports, avoiding the intersection of the
+   * trajectory with the geometry (#geom_intersection2d) done by the general
+   * path below. Instantaneous values and geometries with types the
    * clip does not handle fall through to the general path below. */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
       MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR)

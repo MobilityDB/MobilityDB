@@ -311,8 +311,8 @@ CREATE FUNCTION eDwithin(tgeography, tgeography, dist float, spheroid boolean DE
 
 /*****************************************************************************/
 
--- NOTE: aDWithin for geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 
 CREATE FUNCTION aDwithin(geometry, tgeometry, dist float)
   RETURNS boolean

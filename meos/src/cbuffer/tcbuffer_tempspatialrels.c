@@ -654,7 +654,8 @@ tinterrel_tcbufferseqset_geom(const TSequenceSet *ss, const GSERIALIZED *gs,
  *
  * These mirror the traversed-area functions above but discover the
  * intersecting sub-periods from the exact swept-capsule distance kernel
- * instead of linearizing the circular buffer through GEOS. The boundary is
+ * instead of intersecting the traversed area with the geometry
+ * (#geom_intersection2d_coll). The boundary is
  * decomposed into straight and circular-arc edges, so they are used for curved
  * input (circular strings, compound curves, curve polygons, and the multi
  * types grouping them) as well; the traversed-area functions remain the
@@ -1663,7 +1664,7 @@ tintersects_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * set and false elsewhere, the moving-disk analogue of the temporal-point
  * boundary approach ttouches(tpoint, geo) = tintersects(tpoint, boundary(geo)).
  * A geometry that has no edge decomposition (no context) keeps the
- * traversed-area GEOS path.
+ * traversed-area path.
  *****************************************************************************/
 
 /**

@@ -41,7 +41,7 @@
  * accepts anything.
  *
  * The engine under test is the native one, reached through #geom_relate, so
- * the answers are its own whether or not the library carries GEOS. The corpus
+ * the answers are its own. The corpus
  * of expected matrices comes from the GEOS suite through
  * `relate_harvest_geos.py`, so the two answer the same question about the
  * same records.

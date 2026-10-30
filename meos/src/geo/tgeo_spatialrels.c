@@ -638,9 +638,9 @@ spatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] func PostGIS function to be called
  * @param[in] numparam Number of parameters of the function
  * @errval -1
- * @note Since some GEOS versions do not support geometry collections, the
- * function iterates for each geometry of the collection and returns when the
- * function is true for one of them.
+ * @note When the traversed area of the first argument is a geometry
+ * collection, the function iterates for each geometry of the collection and
+ * returns when the function is true for one of them.
  */
 int
 spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
@@ -661,7 +661,7 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   Datum dtrav2 = PointerGetDatum(trav2);
   Datum result;
 
-  /* Call the GEOS function if the traversed area is not a collection */
+  /* Call the function on the whole traversed area if it is not a collection */
   if (gserialized_get_type(trav1) != COLLECTIONTYPE)
   {
     dtrav1 = PointerGetDatum(trav1);
@@ -680,7 +680,7 @@ spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     return result ? 1 : 0;
   }
 
-  /* Call the GEOS function for each trapezoid in the collection */
+  /* Call the function for each trapezoid in the collection */
   LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(trav1));
   bool found = false;
   for (uint32_t i = 0; i < coll->ngeoms && ! found; i++)
@@ -1566,9 +1566,9 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 
   /* Native fast path for a temporal geometry point with linear interpolation
    * against a 2D geometry the clip engine supports. The path below builds the
-   * trajectory of the whole temporal point and hands that geometry to GEOS,
-   * which costs more than the clip engine spends on the temporal Boolean this
-   * projects: the same #tpoint_linear_inter_geom serves #tinterrel_tgeo_geo,
+   * trajectory of the whole temporal point and asks the relationship of that
+   * geometry (#spatialrel_datum_geo_geo), which costs more than the clip
+   * engine spends on the temporal Boolean this projects: the same #tpoint_linear_inter_geom serves #tinterrel_tgeo_geo,
    * so the projection agrees with the temporal result by construction.
    * Reducing to the nearest approach instead, as #ea_dwithin_tgeo_geo does for
    * a strictly positive distance, measures slower here: that reduction earns

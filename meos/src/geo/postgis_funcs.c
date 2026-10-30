@@ -3743,8 +3743,6 @@ geo_unsupported_type(const LWGEOM *geom1, const LWGEOM *geom2)
 
 /**
  * @brief Report that an operation has no answer for a geometry type
- * @details The report does not depend on the build carrying GEOS, because a
- * type the edges decline is not handed to GEOS in either build.
  * @param[in] what Noun naming the operation
  * @param[in] type Type the operation has no answer for
  */
@@ -6011,9 +6009,9 @@ geom_is_simple(const GSERIALIZED *gs)
  * @ingroup meos_geo_base_spatial
  * @brief Call function #geom_intersection2d for each element of the collection
  * if the arguments are collections
- * @details Some GEOS operations, e.g., intersects or intersection do not
- * support collections. In this cases, we need to extract the elements of the
- * collection and iterate over the elements
+ * @details The function extracts the elements of the collections, computes
+ * the intersection of every pair of elements, and collects the non-empty
+ * results
  */
 GSERIALIZED *
 geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -6617,7 +6615,8 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
   }
   lwgeom_out = lwpoint_as_lwgeom(lwpoint_out);
   g_out = geo_serialize(lwgeom_out);
-  /* MEOS: GEOS DOES NOT SET THE GEODETIC FLAG */
+  /* MEOS: the centroid point is built without the geodetic flag, which is
+   * copied from the input */
   FLAGS_SET_GEODETIC(g_out->gflags, FLAGS_GET_GEODETIC(gs->gflags));
   lwgeom_free(lwgeom_out); lwgeom_free(lwgeom);
   return g_out;
