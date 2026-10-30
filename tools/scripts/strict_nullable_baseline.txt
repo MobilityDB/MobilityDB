@@ -8,12 +8,6 @@ mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	shiftScaleTime(tcbuffer, interval, in
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeq(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSet(tcbuffer, text)	not strict
 mobilitydb/sql/cbuffer/202_tcbuffer.in.sql	tcbufferSeqSetGaps(tcbuffer[], maxt interval, maxdist float, text)	not strict
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	arg 0 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	arg 1 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(cbuffer, geometry)	not strict
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	arg 0 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	arg 1 unchecked
-mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql	distance(geometry, cbuffer)	not strict
 mobilitydb/sql/geo/051_stbox.in.sql	scaleTime(stbox, interval)	arg 1 strict stbox_shift_scale_time.duration
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 1 strict stbox_shift_scale_time.shift
 mobilitydb/sql/geo/051_stbox.in.sql	shiftScaleTime(stbox, interval, interval)	arg 2 strict stbox_shift_scale_time.duration
@@ -39,10 +33,6 @@ mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeq(tgeompoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeqSet(tgeompoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeqSetGaps(tgeompoint[], maxt interval, maxdist float, text)	not strict
 mobilitydb/sql/geo/058_tpoint_tile.in.sql	timeTiles(bounds stbox, duration interval, torigin timestamptz, borderInc boolean)	arg 1 strict stbox_space_time_tile_init.duration
-mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql	tDwithin(tgeometry, geometry, dist float)	arg 0 unchecked
-mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql	tDwithin(tgeometry, geometry, dist float)	arg 1 unchecked
-mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql	tDwithin(tgeometry, geometry, dist float)	arg 2 unchecked
-mobilitydb/sql/geo/072_tgeo_tempspatialrels.in.sql	tDwithin(tgeometry, geometry, dist float)	not strict
 mobilitydb/sql/geo/076_tgeo_analytics.in.sql	scale(tgeometry, geometry, origin geometry)	arg 2 strict tgeo_scale_geo.sorigin
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeogpoint, tfloat, boolean)	arg 1 strict tpoint_tfloat_to_geomeas.meas
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeompoint, tfloat, boolean)	arg 1 strict tpoint_tfloat_to_geomeas.meas
