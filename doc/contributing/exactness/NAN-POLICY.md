@@ -59,11 +59,10 @@ readers whose types have no literal in the regression queries.
 
 ## 3. The fixes, one PR
 
-**Owner, 2026-10-30:** all the NaN work goes in a single PR, with one commit per step. Branch
-`fix/meos-refuses-nan` (`estebanzimanyi/MobilityDB`), on master `4b5f1d6d84`, seven commits, not
-yet on GitHub: its five receipts (strict-ci, Windows, cppcheck, valgrind, speed) are green on the
-same commits over master `51adacdd24`, and are earned again over `4b5f1d6d84`, whose move of the
-set functions into `set.c` the rebase carries. Test `meos/test/nan_refusal_test.c`: 39 cases, each
+**Owner, 2026-10-30:** all the NaN work goes in a single PR, with one commit per step: MobilityDB
+#3291, branch `fix/meos-refuses-nan` (`estebanzimanyi/MobilityDB`), on master `530aed1f25`, seven
+commits, its receipts on the head (strict-ci, Windows, cppcheck, valgrind, speed, and the CGAL
+oracle: 8375 of 8375 circular buffer distances and 2100 of 2100 buffers of geometries). Test `meos/test/nan_refusal_test.c`: 39 cases, each
 in a child process; 35 fail on master, 0 on the branch, valgrind clean in every child.
 
 The commits, in order:
