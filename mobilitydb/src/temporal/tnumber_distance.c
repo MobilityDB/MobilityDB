@@ -33,6 +33,7 @@
  */
 
 /* C */
+#include <assert.h>
 #include <float.h>
 /* PostgreSQL */
 #include <postgres.h>
@@ -225,6 +226,268 @@ NAD_tnumber_tbox(PG_FUNCTION_ARGS)
   if (datum_eq(result, distance_sentinel(basetype), basetype))
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+/**
+ * @brief Return the nearest approach distance between a number span and a
+ * temporal box, the distance of the box of the span to the box, as
+ * #NAD_tbox_tbox answers for two boxes
+ */
+static Datum
+NAD_numspan_tbox_common(FunctionCallInfo fcinfo, const Span *s,
+  const TBox *box)
+{
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between; the SQL signature states the span a number
+   * span, and the box states which number it has */
+  assert(numspan_type(s->spantype));
+  if (! ensure_has_X(T_TBOX, box->flags) ||
+      ! ensure_same_span_type(s, &box->span))
+    PG_RETURN_NULL();
+  TBox box1;
+  numspan_set_tbox(s, &box1);
+  MeosType basetype = s->basetype;
+  Datum result = nad_tbox_tbox(&box1, box);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+/**
+ * @brief Return the nearest approach distance between a temporal number and a
+ * number span, the distance of the temporal number to the box of the span, as
+ * #NAD_tnumber_tbox answers for a temporal box
+ */
+static Datum
+NAD_tnumber_numspan_common(FunctionCallInfo fcinfo, const Temporal *temp,
+  const Span *s)
+{
+  /* The SQL signatures pair each temporal number with the span of its number */
+  assert(temptype_basetype(temp->temptype) == s->basetype);
+  TBox box;
+  numspan_set_tbox(s, &box);
+  MeosType basetype = s->basetype;
+  Datum result = nad_tnumber_tbox(temp, &box);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+PGDLLEXPORT Datum NAD_intspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_intspan_tbox);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between an integer span and
+ * a temporal box
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_intspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_tbox_intspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tbox_intspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal box and
+ * an integer span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tbox_intspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_bigintspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_bigintspan_tbox);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a big integer span and
+ * a temporal box
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_bigintspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_tbox_bigintspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tbox_bigintspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal box and
+ * a big integer span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tbox_bigintspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_floatspan_tbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_floatspan_tbox);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a float span and
+ * a temporal box
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_floatspan_tbox(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  TBox *box = PG_GETARG_TBOX_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_tbox_floatspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tbox_floatspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal box and
+ * a float span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tbox_floatspan(PG_FUNCTION_ARGS)
+{
+  TBox *box = PG_GETARG_TBOX_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  return NAD_numspan_tbox_common(fcinfo, s, box);
+}
+
+PGDLLEXPORT Datum NAD_tint_intspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tint_intspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal integer and
+ * an integer span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tint_intspan(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  return result;
+}
+
+PGDLLEXPORT Datum NAD_intspan_tint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_intspan_tint);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between an integer span and
+ * a temporal integer
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_intspan_tint(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 1);
+  return result;
+}
+
+PGDLLEXPORT Datum NAD_tbigint_bigintspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tbigint_bigintspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal big integer
+ * and a big integer span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tbigint_bigintspan(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  return result;
+}
+
+PGDLLEXPORT Datum NAD_bigintspan_tbigint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_bigintspan_tbigint);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a big integer span and
+ * a temporal big integer
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_bigintspan_tbigint(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 1);
+  return result;
+}
+
+PGDLLEXPORT Datum NAD_tfloat_floatspan(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_tfloat_floatspan);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a temporal float and
+ * a float span
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_tfloat_floatspan(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  return result;
+}
+
+PGDLLEXPORT Datum NAD_floatspan_tfloat(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_floatspan_tfloat);
+/**
+ * @ingroup mobilitydb_temporal_dist
+ * @brief Return the nearest approach distance between a float span and
+ * a temporal float
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_floatspan_tfloat(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  Datum result = NAD_tnumber_numspan_common(fcinfo, temp, s);
+  PG_FREE_IF_COPY(temp, 1);
+  return result;
 }
 
 PGDLLEXPORT Datum NAD_tnumber_tnumber(PG_FUNCTION_ARGS);
