@@ -162,3 +162,39 @@ FROM tbl_tfloat t1, (SELECT tbox(shiftValue(b, -200.0)::floatspan) AS b FROM tbl
      0 |     0 | 23516
 (1 row)
 
+SELECT COUNT(*) FILTER (WHERE (t1.i |=| t2.b) IS DISTINCT FROM (t1.i::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.i) IS DISTINCT FROM (t1.i |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.i |=| t2.b) > 0)
+FROM tbl_intspan t1, tbl_tboxint t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |  9269
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t2.temp |=| t1.i) IS DISTINCT FROM (t2.temp |=| t1.i::tbox)),
+  COUNT(*) FILTER (WHERE (t1.i |=| t2.temp) IS DISTINCT FROM (t2.temp |=| t1.i)),
+  COUNT(*) FILTER (WHERE (t2.temp |=| t1.i) > 0)
+FROM tbl_intspan t1, tbl_tint t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |  4607
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t1.f |=| t2.b) IS DISTINCT FROM (t1.f::tbox |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t2.b |=| t1.f) IS DISTINCT FROM (t1.f |=| t2.b)),
+  COUNT(*) FILTER (WHERE (t1.f |=| t2.b) > 0)
+FROM tbl_floatspan t1, tbl_tboxfloat t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |  8808
+(1 row)
+
+SELECT COUNT(*) FILTER (WHERE (t2.temp |=| t1.f) IS DISTINCT FROM (t2.temp |=| t1.f::tbox)),
+  COUNT(*) FILTER (WHERE (t1.f |=| t2.temp) IS DISTINCT FROM (t2.temp |=| t1.f)),
+  COUNT(*) FILTER (WHERE (t2.temp |=| t1.f) > 0)
+FROM tbl_floatspan t1, tbl_tfloat t2;
+ count | count | count 
+-------+-------+-------
+     0 |     0 |  4363
+(1 row)
+

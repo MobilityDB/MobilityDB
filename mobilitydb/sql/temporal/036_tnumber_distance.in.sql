@@ -224,6 +224,120 @@ CREATE OPERATOR |=| (
 );
 
 /*****************************************************************************/
+
+/* <number span> |=| <TYPE> and <TYPE> |=| <number span> */
+
+CREATE FUNCTION nearestApproachDistance(intspan, tbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_intspan_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tbox, intspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tbox_intspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(intspan, tint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_intspan_tint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tint, intspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tint_intspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(bigintspan, tbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_bigintspan_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tbox, bigintspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tbox_bigintspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(bigintspan, tbigint)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_bigintspan_tbigint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tbigint, bigintspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tbigint_bigintspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(floatspan, tbox)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_floatspan_tbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tbox, floatspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tbox_floatspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(floatspan, tfloat)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_floatspan_tfloat'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tfloat, floatspan)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tfloat_floatspan'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = intspan, RIGHTARG = tbox,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tbox, RIGHTARG = intspan,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = intspan, RIGHTARG = tint,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tint, RIGHTARG = intspan,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = bigintspan, RIGHTARG = tbox,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tbox, RIGHTARG = bigintspan,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = bigintspan, RIGHTARG = tbigint,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tbigint, RIGHTARG = bigintspan,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = floatspan, RIGHTARG = tbox,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tbox, RIGHTARG = floatspan,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = floatspan, RIGHTARG = tfloat,
+  COMMUTATOR = |=|
+);
+CREATE OPERATOR |=| (
+  PROCEDURE = nearestApproachDistance,
+  LEFTARG = tfloat, RIGHTARG = floatspan,
+  COMMUTATOR = |=|
+);
+
+/*****************************************************************************/
 /* tint |=| <TYPE> */
 
 CREATE FUNCTION nearestApproachDistance(tint, integer)

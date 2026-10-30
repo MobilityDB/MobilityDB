@@ -634,6 +634,58 @@ SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXINT XT([-5,-4),[2001-01
         5
 (1 row)
 
+SELECT intspan '[-5,-4)' |=| tbox 'TBOXINT XT([0,6),[2001-01-01,2001-01-03])';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT tbox 'TBOXINT XT([0,6),[2001-01-01,2001-01-03])' |=| intspan '[10,12)';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT floatspan '[-5,-4]' |=| tbox 'TBOXFLOAT X([0,5])';
+ ?column? 
+----------
+        4
+(1 row)
+
+SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| intspan '[-5,-4)';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT intspan '[10,12)' |=| tint '[0@2001-01-01, 5@2001-01-03]';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT bigintspan '[10,12)' |=| tbigint '[0@2001-01-01, 5@2001-01-03]';
+ ?column? 
+----------
+        5
+(1 row)
+
+SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| floatspan '[-5,-4]';
+ ?column? 
+----------
+        4
+(1 row)
+
+SELECT nearestApproachDistance(intspan '[1,3)', tbox 'TBOXINT X([2,6))');
+ nearestapproachdistance 
+-------------------------
+                       0
+(1 row)
+
+SELECT floatspan '[1,2]' |=| tbox 'TBOXINT X([0,6))';
+ERROR:  Operation on mixed span types: floatspan and intspan
+SELECT intspan '[1,2)' |=| tbox 'TBOX T([2001-01-01,2001-01-02])';
+ERROR:  The tbox must have X dimension
 SELECT tint '1@2001-01-01' |=| tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  ?column? 
 ----------

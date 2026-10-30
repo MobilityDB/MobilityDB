@@ -159,6 +159,19 @@ SELECT tbox 'TBOXINT X([-5,-4))' |=| tint '[0@2001-01-01, 5@2001-01-03]';
 SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXFLOAT X([-5,-4])';
 SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXFLOAT X([10,12])';
 SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXINT XT([-5,-4),[2001-01-02,2001-01-04])';
+
+-- A number span against a box and against a temporal number, on either side
+SELECT intspan '[-5,-4)' |=| tbox 'TBOXINT XT([0,6),[2001-01-01,2001-01-03])';
+SELECT tbox 'TBOXINT XT([0,6),[2001-01-01,2001-01-03])' |=| intspan '[10,12)';
+SELECT floatspan '[-5,-4]' |=| tbox 'TBOXFLOAT X([0,5])';
+SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| intspan '[-5,-4)';
+SELECT intspan '[10,12)' |=| tint '[0@2001-01-01, 5@2001-01-03]';
+SELECT bigintspan '[10,12)' |=| tbigint '[0@2001-01-01, 5@2001-01-03]';
+SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| floatspan '[-5,-4]';
+SELECT nearestApproachDistance(intspan '[1,3)', tbox 'TBOXINT X([2,6))');
+-- A span of another number than the box, or a box without a value dimension
+SELECT floatspan '[1,2]' |=| tbox 'TBOXINT X([0,6))';
+SELECT intspan '[1,2)' |=| tbox 'TBOX T([2001-01-01,2001-01-02])';
 SELECT tint '1@2001-01-01' |=| tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
 SELECT tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}' |=| tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
 SELECT tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03]' |=| tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
