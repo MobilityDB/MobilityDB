@@ -1,0 +1,207 @@
+PGDLLEXPORT Datum NAD_{BOX}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{BOX}_{BOX});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between two {BOXDESCPL}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{BOX}_{BOX}(PG_FUNCTION_ARGS)
+{
+  {BOXC} *box1 = {GETARG}(0);
+  {BOXC} *box2 = {GETARG}(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_valid_{BOX}_{BOX}(box1, box2) ||
+      ! ensure_has_X({BOXTYPE}, box1->flags) ||
+      ! ensure_has_X({BOXTYPE}, box2->flags))
+    PG_RETURN_NULL();
+  MeosType basetype = box1->span.basetype;
+  Datum result = nad_{BOX}_{BOX}(box1, box2);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+PGDLLEXPORT Datum NAD_{BOX}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{BOX}_{TSIDE});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between a {BOXDESC} and a {VALDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{BOX}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  {BOXC} *box = {GETARG}(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_valid_{TSIDE}_{BOX}(temp, box) ||
+      ! ensure_has_X({BOXTYPE}, box->flags))
+  {
+    PG_FREE_IF_COPY(temp, 1);
+    PG_RETURN_NULL();
+  }
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_{TSIDE}_{BOX}(temp, box);
+  PG_FREE_IF_COPY(temp, 1);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+PGDLLEXPORT Datum NAD_{TSIDE}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{TSIDE}_{BOX});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between a {VALDESC} and a {BOXDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{TSIDE}_{BOX}(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  {BOXC} *box = {GETARG}(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_valid_{TSIDE}_{BOX}(temp, box) ||
+      ! ensure_has_X({BOXTYPE}, box->flags))
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_{TSIDE}_{BOX}(temp, box);
+  PG_FREE_IF_COPY(temp, 0);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+/**
+ * @brief Return the SQL answer of a nearest approach distance of a number span:
+ * NULL for the sentinel of the base type, else the distance as a float, as
+ * #NAD_{BOX}_{BOX} answers
+ */
+static Datum
+NAD_{VSBOX}_result(FunctionCallInfo fcinfo, Datum result, MeosType basetype)
+{
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+PGDLLEXPORT Datum NAD_{SPAN}_{BOX}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{SPAN}_{BOX});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between {ASPANDESC} and a {BOXDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{SPAN}_{BOX}(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  {BOXC} *box = {GETARG}(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_has_X({BOXTYPE}, box->flags) ||
+      ! ensure_same_span_type(s, &box->span))
+    PG_RETURN_NULL();
+  Datum result = nad_{VSBOX}_{BOX}(s, box);
+  return NAD_{VSBOX}_result(fcinfo, result, s->basetype);
+}
+
+PGDLLEXPORT Datum NAD_{BOX}_{SPAN}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{BOX}_{SPAN});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between a {BOXDESC} and {ASPANDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{BOX}_{SPAN}(PG_FUNCTION_ARGS)
+{
+  {BOXC} *box = {GETARG}(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_has_X({BOXTYPE}, box->flags) ||
+      ! ensure_same_span_type(s, &box->span))
+    PG_RETURN_NULL();
+  Datum result = nad_{VSBOX}_{BOX}(s, box);
+  return NAD_{VSBOX}_result(fcinfo, result, s->basetype);
+}
+
+PGDLLEXPORT Datum NAD_{TNUM}_{SPAN}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{TNUM}_{SPAN});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between {ATNUMDESC} and {ASPANDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{TNUM}_{SPAN}(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Span *s = PG_GETARG_SPAN_P(1);
+  /* The SQL signatures pair each temporal number with the span of its number */
+  assert(temptype_basetype(temp->temptype) == s->basetype);
+  Datum result = nad_{TSIDE}_{VSBOX}(temp, s);
+  PG_FREE_IF_COPY(temp, 0);
+  return NAD_{VSBOX}_result(fcinfo, result, s->basetype);
+}
+
+PGDLLEXPORT Datum NAD_{SPAN}_{TNUM}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{SPAN}_{TNUM});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between {ASPANDESC} and {ATNUMDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{SPAN}_{TNUM}(PG_FUNCTION_ARGS)
+{
+  Span *s = PG_GETARG_SPAN_P(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* The SQL signatures pair each temporal number with the span of its number */
+  assert(temptype_basetype(temp->temptype) == s->basetype);
+  Datum result = nad_{TSIDE}_{VSBOX}(temp, s);
+  PG_FREE_IF_COPY(temp, 1);
+  return NAD_{VSBOX}_result(fcinfo, result, s->basetype);
+}
+
+PGDLLEXPORT Datum NAD_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{TSIDE}_{TSIDE});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between two {VALDESC}s
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{TSIDE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
+  Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
+  MeosType basetype = temptype_basetype(temp1->temptype);
+  Datum result = nad_{TSIDE}_{TSIDE}(temp1, temp2);
+  PG_FREE_IF_COPY(temp1, 0);
+  PG_FREE_IF_COPY(temp2, 1);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}

@@ -179,10 +179,15 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
 - **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.d/positions.yaml`):
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
 - **region-in-file** for C: emits the block between
-  `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END` and
-  `GENERATED-SPATIALRELS-BEGIN/END` markers. A box type's position wrappers
-  (`templates/posops.c.tmpl`) carry the operations of the axes it lists in
-  `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its axis).
+  `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END`,
+  `GENERATED-NADOPS-BEGIN/END` and `GENERATED-SPATIALRELS-BEGIN/END` markers. A box
+  type's position wrappers (`templates/posops.c.tmpl`) carry the operations of the
+  axes it lists in `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its
+  axis). A box type naming a `nadfile:` has its nearest approach distance wrappers
+  there (`templates/nadops.c.tmpl`), in the directions of its box operators and, for
+  each number type its value span lists in `nadtypes:`, the span directions: `tbox`
+  writes the 16 wrappers of `tnumber_distance.c` from `NAD_tbox_tbox` through
+  `NAD_tnumber_tnumber`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
