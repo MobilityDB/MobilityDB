@@ -81,4 +81,8 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   offsets sharing a centre (every concave corner), of two offsets sharing none and the meeting of an
   offset with a circle in the order their filters do, so the coordinates are the same bits, under
   one bound written out from the filters' rules, the filters placing what that bound leaves.
+- **The written buffer keeps the exact topology where a rounding certificate says so**: every one
+  of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
+  natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
+  [Exact buffer](EXACT-BUFFER.md), where these steps stand.
 - **Open pull requests** on 2026-10-30: this one and MobilityDB #3259.
