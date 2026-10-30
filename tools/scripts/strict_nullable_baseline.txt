@@ -110,10 +110,6 @@ mobilitydb/sql/rgeo/150_trgeo.in.sql	trgeometrySeqSetGaps(trgeometry[], maxt int
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeq(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSet(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSetGaps(ts2cell[], maxt interval)	not strict
-mobilitydb/sql/temporal/003_span.in.sql	scale(tstzspan, interval)	arg 1 strict tstzspan_shift_scale.duration
-mobilitydb/sql/temporal/003_span.in.sql	shift(tstzspan, interval)	arg 1 strict tstzspan_shift_scale.shift
-mobilitydb/sql/temporal/003_span.in.sql	shiftScale(tstzspan, interval, interval)	arg 1 strict tstzspan_shift_scale.shift
-mobilitydb/sql/temporal/003_span.in.sql	shiftScale(tstzspan, interval, interval)	arg 2 strict tstzspan_shift_scale.duration
 mobilitydb/sql/temporal/007_spanset.in.sql	scale(tstzspanset, interval)	arg 1 strict tstzspanset_shift_scale.duration
 mobilitydb/sql/temporal/007_spanset.in.sql	shift(tstzspanset, interval)	arg 1 strict tstzspanset_shift_scale.shift
 mobilitydb/sql/temporal/007_spanset.in.sql	shiftScale(tstzspanset, interval, interval)	arg 1 strict tstzspanset_shift_scale.shift

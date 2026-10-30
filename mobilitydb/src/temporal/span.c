@@ -696,7 +696,7 @@ Tstzspan_shift(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_SPAN_P(tstzspan_shift_scale(s, shift, NULL));
+  PG_RETURN_SPAN_P(tstzspan_shift(s, shift));
 }
 
 PGDLLEXPORT Datum Numspan_scale(PG_FUNCTION_ARGS);
@@ -727,7 +727,7 @@ Tstzspan_scale(PG_FUNCTION_ARGS)
 {
   Span *s = PG_GETARG_SPAN_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_SPAN_P(tstzspan_shift_scale(s, NULL, duration));
+  PG_RETURN_SPAN_P(tstzspan_scale(s, duration));
 }
 
 PGDLLEXPORT Datum Numspan_shift_scale(PG_FUNCTION_ARGS);
