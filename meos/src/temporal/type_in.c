@@ -218,9 +218,17 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     }
     case T_FLOAT8:
     {
+      /* The largest double is a value of the domain, as the type maximum of
+       * an integer is, so a failed parse is told by the error number */
+#if MEOS
+      int last_errno = meos_errno_reset();
+#endif /* MEOS */
       double d = float8_in(str);
-      if (d == DBL_MAX || ! ensure_not_nan(d))
+      if (meos_errno() || ! ensure_not_nan(d))
         return false;
+#if MEOS
+      meos_errno_restore(last_errno);
+#endif /* MEOS */
       *result = Float8GetDatum(d);
       return true;
     }

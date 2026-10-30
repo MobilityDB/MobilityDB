@@ -1347,7 +1347,7 @@ set_sortkey_intl(const Set *s, size_t *size)
  * @brief Return the sort key of a set, the bytes whose unsigned byte order is
  * the order of #set_cmp and whose byte equality is #set_eq
  * @details The sets of integers, big integers, floats, dates, timestamps,
- * texts and cells have a sort key
+ * texts, cells, circular buffers and network points have a sort key
  * @param[in] s Set
  * @param[out] size Number of bytes of the key
  * @errval NULL
