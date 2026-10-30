@@ -258,10 +258,13 @@ WHERE minusTime(temp, t) IS NOT NULL;
 -- Stops function
 -------------------------------------------------------------------------------
 
--- We cannot execute the following tests due to a bug in GEOS
--- https://trac.osgeo.org/postgis/ticket/5163
--- SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
--- SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
+SELECT MAX(numInstants(stops(seq, 50.0))) FROM tbl_tnpoint_seq;
+SELECT MAX(numInstants(stops(seq, 50.0, '5 min'))) FROM tbl_tnpoint_seq;
+-- The path of a network point follows its route between two instants, so a
+-- stop holds every point of the path within the distance, not only its instants
+SELECT COUNT(*) FROM (SELECT unnest(sequences(stops(seq, 50.0))) AS st
+  FROM tbl_tnpoint_seq) s
+WHERE ST_MaxDistance(trajectory(st::tgeompoint), trajectory(st::tgeompoint)) > 50.0;
 
 -------------------------------------------------------------------------------
 -- Modification functions
