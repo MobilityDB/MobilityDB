@@ -106,6 +106,8 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a0a1bc6b8417a7358e723c954f31dd078"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__contact__test_8c_a0a1bc6b8417a7358e723c954f31dd078.html#a0a1bc6b8417a7358e723c954f31dd078">CIRCLE</a></td></tr>
 <tr class="separator:a0a1bc6b8417a7358e723c954f31dd078"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaddd1b551d1806bf74f800b4aae2c155"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__contact__test_8c_aaddd1b551d1806bf74f800b4aae2c155.html#aaddd1b551d1806bf74f800b4aae2c155">FULL</a> = &quot;CURVEPOLYGON(<a class="el" href="relate__corpus_8txt_af67fd386b2e179fc9b624799c3b12428.html#af67fd386b2e179fc9b624799c3b12428">CIRCULARSTRING</a>(500 0,-500 0,500 0))&quot;</td></tr>
+<tr class="separator:aaddd1b551d1806bf74f800b4aae2c155"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a197c2dedafb7adafb1d8e4a4180c1291"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__contact__test_8c_a197c2dedafb7adafb1d8e4a4180c1291.html#a197c2dedafb7adafb1d8e4a4180c1291">SQUARE</a> = &quot;POLYGON((0 0,1000 0,1000 1000,0 1000,0 0))&quot;</td></tr>
 <tr class="separator:a197c2dedafb7adafb1d8e4a4180c1291"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -116,6 +118,7 @@ Variables</h2></td></tr>
 <li>a disc tangent to the square from inside is contained and covered, its open interior lying inside the square;</li>
 <li>a disc clear inside by 2^-40 is contained and covered, and one out of it by 2^-40 is neither;</li>
 <li>a disc of radius 0 on a side is covered and not contained;</li>
+<li>against a circle, given as arcs of three points or as the two halves on a diameter, the same holds at a point of the circle no input point holds;</li>
 <li>a disc tangent from inside to a static disc is contained and covered, as <a class="el" href="group__meos__internal__cbuffer__base__rel_ga66a0c3d6435f8215b5051e77fe2054b9.html#ga66a0c3d6435f8215b5051e77fe2054b9" title="Return true if the first circular buffer contains the second one.">cbuffer_contains</a> answers for the two discs at rest.</li>
 </ul>
 <p >To compile and run: </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o tcbuffer_contact_test \</div>
