@@ -12891,6 +12891,50 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   const TangentPoint *to)
 {
   assert(edges); assert(from); assert(to);
+  /* The two ends of a tangent of one pair of circles of one radius are
+   * its centres plus the one offset f rot(d), f = side r / |d|
+   * (#tangent_point_bounds): read once, the same doubles, the edge written
+   * in its place in the array */
+  if (from->r1 == from->r2 && to->r1 == to->r2 && from->r1 == to->r1 &&
+      from->side == to->side && from->k != to->k &&
+      from->c1x == to->c1x && from->c1y == to->c1y &&
+      from->c2x == to->c2x && from->c2y == to->c2y)
+  {
+    double dx = from->c2x - from->c1x, dy = from->c2y - from->c1y;
+    double d2 = dx * dx + dy * dy;
+    if (d2 > 0x1p-900 && d2 < 0x1p900)
+    {
+      double f = from->side * from->r1 / sqrt(d2);
+      double ox = - f * dy, oy = f * dx;
+      double eo = 48.0 * DBL_EPSILON;
+      double fx = from->k ? from->c2x : from->c1x;
+      double fy = from->k ? from->c2y : from->c1y;
+      double tx = to->k ? to->c2x : to->c1x, ty = to->k ? to->c2y : to->c1y;
+      double x1 = fx + ox, y1 = fy + oy, x2 = tx + ox, y2 = ty + oy;
+      double eox = eo * fabs(ox), eoy = eo * fabs(oy);
+      double ex1 = eox + 2.0 * DBL_EPSILON * fabs(x1) + 4.0 * DBL_MIN;
+      double ey1 = eoy + 2.0 * DBL_EPSILON * fabs(y1) + 4.0 * DBL_MIN;
+      double ex2 = eox + 2.0 * DBL_EPSILON * fabs(x2) + 4.0 * DBL_MIN;
+      double ey2 = eoy + 2.0 * DBL_EPSILON * fabs(y2) + 4.0 * DBL_MIN;
+      if (isfinite(x1) && isfinite(y1) && isfinite(x2) && isfinite(y2) &&
+          isfinite(ex1) && isfinite(ey1) && isfinite(ex2) && isfinite(ey2))
+      {
+        if (edges->count >= edges->capacity)
+          edge_array_reserve(edges, 1);
+        Edge *e = &((Edge *) edges->elems)[edges->count];
+        memset(e, 0, sizeof(Edge));
+        e->etype = EDGE_POLYSEG;
+        e->from = from; e->to = to;
+        e->x1 = x1; e->y1 = y1; e->x2 = x2; e->y2 = y2;
+        e->xmin = Min(x1 - ex1, x2 - ex2); e->xmax = Max(x1 + ex1, x2 + ex2);
+        e->ymin = Min(y1 - ey1, y2 - ey2); e->ymax = Max(y1 + ey1, y2 + ey2);
+        e->dx = x2 - x1; e->dy = y2 - y1;
+        e->length = e->dx * e->dx + e->dy * e->dy;
+        edges->count++;
+        return;
+      }
+    }
+  }
   Edge e;
   memset(&e, 0, sizeof(Edge));
   e.etype = EDGE_POLYSEG;
