@@ -139,7 +139,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the traversed area of the instants of a temporal circular buffer as the region their circular buffers sweep, decided exactly (<a class="el" href="geo__funcs_8h_ad26f039bd5fca640afad39150f1ac506.html#ad26f039bd5fca640afad39150f1ac506" title="Return the region a sequence of discs sweeps, as the union of the discs and of the convex hull of eac...">meos_disc_sweep_union</a>), each sequence with linear interpolation sweeping from each instant to the next. </p>
-<p >No other route answers it: the union of the pieces of the segments reads their arcs within tolerances, or as the chains of segments GEOS takes in their place, which is not the region swept. Where the exact arrangement leaves the region undecided, the error says so </p><dl class="params"><dt>Parameters</dt><dd>
+<p >No other route answers it: the union of the pieces of the segments reads their arcs within tolerances, or as the chains of segments a linearization puts in their place, which is not the region swept. Where the exact arrangement leaves the region undecided, the error says so </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">seqs,count</td><td>Sequences of the temporal circular buffer </td></tr>
   </table>

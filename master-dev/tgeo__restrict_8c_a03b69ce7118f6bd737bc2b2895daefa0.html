@@ -197,7 +197,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return the timestamp at which a segment of a geodetic temporal point is equal to a 2D point, using planar (lon/lat-as-Cartesian) arithmetic. </p>
-<p >GEOS intersection is computed in 2D planar space; the resulting point lies on the planar straight line but deviates from the geodetic great-circle arc by up to a few microradians, which exceeds MEOS_EPSILON when using spherical distance. This function uses 2D Cartesian arithmetic matching GEOS's computation, so the residual distance is essentially zero. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >The intersection the point comes from is computed in 2D planar space; the resulting point lies on the planar straight line but deviates from the geodetic great-circle arc by up to a few microradians, which exceeds MEOS_EPSILON when using spherical distance. This function uses 2D Cartesian arithmetic matching that planar computation, so the residual distance is essentially zero. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">inst1,inst2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> values </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Intersection point (<a class="el" href="structGSERIALIZED.html">GSERIALIZED</a>, may be geodetic or planar) </td></tr>
