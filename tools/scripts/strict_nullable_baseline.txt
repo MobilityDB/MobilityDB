@@ -140,10 +140,6 @@ mobilitydb/sql/s2cell/603_ts2cell.in.sql	shiftScaleTime(ts2cell, interval, inter
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeq(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSet(ts2cell, text)	not strict
 mobilitydb/sql/s2cell/603_ts2cell.in.sql	ts2cellSeqSetGaps(ts2cell[], maxt interval)	not strict
-mobilitydb/sql/temporal/001_set.in.sql	scale(tstzset, interval)	arg 1 strict tstzset_shift_scale.duration
-mobilitydb/sql/temporal/001_set.in.sql	shift(tstzset, interval)	arg 1 strict tstzset_shift_scale.shift
-mobilitydb/sql/temporal/001_set.in.sql	shiftScale(tstzset, interval, interval)	arg 1 strict tstzset_shift_scale.shift
-mobilitydb/sql/temporal/001_set.in.sql	shiftScale(tstzset, interval, interval)	arg 2 strict tstzset_shift_scale.duration
 mobilitydb/sql/temporal/003_span.in.sql	scale(tstzspan, interval)	arg 1 strict tstzspan_shift_scale.duration
 mobilitydb/sql/temporal/003_span.in.sql	shift(tstzspan, interval)	arg 1 strict tstzspan_shift_scale.shift
 mobilitydb/sql/temporal/003_span.in.sql	shiftScale(tstzspan, interval, interval)	arg 1 strict tstzspan_shift_scale.shift

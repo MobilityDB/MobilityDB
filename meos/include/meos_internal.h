@@ -892,6 +892,7 @@ extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_bigintspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Set *tstzset_shift_scale_intl(const Set *s, const Interval *shift, const Interval *duration);
 extern Span *numspan_expand(const Span *s, Datum value);
 extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
