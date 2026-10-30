@@ -113,6 +113,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a05d51bd67da1b4389a17f8b9ee6b0baf.html#a05d51bd67da1b4389a17f8b9ee6b0baf">tcbuffer_disc_contains_ctx</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a43cd90c5acaca8757fe7199606c87bb5.html#a43cd90c5acaca8757fe7199606c87bb5">tcbuffer_disc_ctx_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a65acf4c4ea8ab3d06ee8716b905cedbe.html#a65acf4c4ea8ab3d06ee8716b905cedbe">tcbuffer_disc_ctx_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0ffc877b216ad35e24b98fb2c6dd0477.html#a0ffc877b216ad35e24b98fb2c6dd0477">tcbuffer_disc_point_rel</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a5fa397ab276adbe576588ece222d463b.html#a5fa397ab276adbe576588ece222d463b">tcbuffer_disc_seg_roots</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a8020365cdc9641c89150ed09d7d2d407.html#a8020365cdc9641c89150ed09d7d2d407">tcbuffer_disc_signed_boundary</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a275499d8904ee6b51f7b0201c762b0dd.html#a275499d8904ee6b51f7b0201c762b0dd">tcbuffer_disc_touch_ctx</a></td></tr>
@@ -176,7 +177,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return true if a stationary circular buffer touches the geometry. </p>
-<p >The circular buffer touches the geometry when its boundary meets the geometry boundary with disjoint interiors, i.e., the signed boundary distance vanishes and the centre is not inside a polygon. </p>
+<p >The circular buffer touches the geometry when its boundary meets the geometry boundary with disjoint interiors, i.e., the signed boundary distance vanishes and the centre is not inside a polygon. A disc of a zero radius touches it as its centre does (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__distance_8c_a0ffc877b216ad35e24b98fb2c6dd0477.html#a0ffc877b216ad35e24b98fb2c6dd0477" title="Return true if the geometry of a context and the centre of a disc of a zero radius satisfy a spatial ...">tcbuffer_disc_point_rel</a>). </p>
 
 </div>
 </div>

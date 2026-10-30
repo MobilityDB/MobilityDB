@@ -101,6 +101,8 @@ Functions</h2></td></tr>
 <tr class="separator:add7c219a6fd0251f86951b7c2306dd02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a08a4bf29c85c7dc60440857c9be0a9b9"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__contact__test_8c_a08a4bf29c85c7dc60440857c9be0a9b9.html#a08a4bf29c85c7dc60440857c9be0a9b9">relate_geo</a> (const char *wkt, double x, double y, double r, bool *<a class="el" href="postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988.html#a0cfa09cd454140cb1bf1e61d5f055988">contains</a>, bool *<a class="el" href="postgis_8h_a2e9cd37ada0bd04261cd2e5b69e626bd.html#a2e9cd37ada0bd04261cd2e5b69e626bd">covers</a>, bool *<a class="el" href="postgis_8h_a4a4ffc86be2289771ac3875476508449.html#a4a4ffc86be2289771ac3875476508449">touches</a>)</td></tr>
 <tr class="separator:a08a4bf29c85c7dc60440857c9be0a9b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f22d1ea5b9142f158d51d2bf2e7c058"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tcbuffer__contact__test_8c_a4f22d1ea5b9142f158d51d2bf2e7c058.html#a4f22d1ea5b9142f158d51d2bf2e7c058">relate_zero</a> (const char *wkt, double x, double y, bool *<a class="el" href="postgis_8h_a0cfa09cd454140cb1bf1e61d5f055988.html#a0cfa09cd454140cb1bf1e61d5f055988">contains</a>, bool *<a class="el" href="postgis_8h_a2e9cd37ada0bd04261cd2e5b69e626bd.html#a2e9cd37ada0bd04261cd2e5b69e626bd">covers</a>, bool *<a class="el" href="postgis_8h_a4a4ffc86be2289771ac3875476508449.html#a4a4ffc86be2289771ac3875476508449">touches</a>)</td></tr>
+<tr class="separator:a4f22d1ea5b9142f158d51d2bf2e7c058"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -118,6 +120,7 @@ Variables</h2></td></tr>
 <li>a disc tangent to the square from inside is contained and covered, its open interior lying inside the square;</li>
 <li>a disc clear inside by 2^-40 is contained and covered, and one out of it by 2^-40 is neither;</li>
 <li>a disc of radius 0 on a side is covered and not contained;</li>
+<li>a disc of radius 0 at an instant of a sequence whose other discs have a positive radius is its centre: on the boundary of a polygon it is covered, not contained, and touches it, and on a line or an arc it touches it at an end only;</li>
 <li>against a circle, given as arcs of three points or as the two halves on a diameter, the same holds at a point of the circle no input point holds;</li>
 <li>a disc tangent from inside to a static disc is contained and covered, as <a class="el" href="group__meos__internal__cbuffer__base__rel_ga66a0c3d6435f8215b5051e77fe2054b9.html#ga66a0c3d6435f8215b5051e77fe2054b9" title="Return true if the first circular buffer contains the second one.">cbuffer_contains</a> answers for the two discs at rest.</li>
 </ul>
