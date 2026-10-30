@@ -570,7 +570,7 @@ ERROR:  Rotation quaternion must be of unit norm (within 0.001). Received |q|=2.
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0));
 ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::float, 0::float, 0));
-ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
+ERROR:  The value cannot be NaN
 SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' = pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS wkt_canonical;
  wkt_canonical 
 ---------------

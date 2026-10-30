@@ -647,6 +647,13 @@ parse_mfjson_points(json_object *mfjson, int32_t srid, bool geodetic, int *count
   {
     json_object *coords = json_object_array_get_idx(coordinates, i);
     values[i] = parse_mfjson_coord(coords, srid, geodetic);
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = npoints;
   return values;
@@ -778,6 +785,13 @@ parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *cb = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_cbuffer(cb, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nvalues;
   return values;
@@ -856,6 +870,13 @@ parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *np = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nnpoints;
   return values;
@@ -1205,6 +1226,13 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *pose = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_pose(pose, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nposes;
   return values;
@@ -1278,6 +1306,13 @@ parse_mfjson_posechains(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *chain = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_posechain(chain, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nchains;
   return values;
@@ -1447,6 +1482,9 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
       return NULL;
     }
   }
+  /* The parser of the values raised the error */
+  if (! values)
+    return NULL;
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != 1 || ndates != 1)
   {
@@ -1529,6 +1567,9 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
       return NULL;
     }
   }
+  /* The parser of the values raised the error */
+  if (! values)
+    return NULL;
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != ndates)
   {
@@ -3362,10 +3403,14 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Return a value from its Well-Known Binary (WKB) representation
+ * @brief Read a value from its Well-Known Binary (WKB) representation
+ * @details The reader of each type goes on past an error it raises, as
+ * #double_from_wkb_state refuses a NaN and #wkb_parse_state_check a short
+ * buffer, so the value it returns may hold what it refused; #type_from_wkb
+ * drops that value
  */
-Datum
-type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
+static Datum
+type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
 {
   /* Initialize the state appropriately */
   meos_wkb_parse_state s;
@@ -3470,6 +3515,32 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   meos_error(ERROR, MEOS_ERR_WKB_INPUT,
     "Unknown type in WKB string: %s", meostype_name(type));
   return 0;
+}
+
+/**
+ * @brief Return a value from its Well-Known Binary (WKB) representation
+ * @details A value whose reading raised an error, such as a NaN refused by
+ * #double_from_wkb_state, is dropped, so that the caller receives no value
+ * holding what the reader refused: the rule the span arm of
+ * #type_from_wkb_read applies, applied to every type
+ */
+Datum
+type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
+  Datum result = type_from_wkb_read(wkb, size, type);
+  if (meos_errno())
+  {
+    if (result && ! basetype_byvalue(type))
+      pfree(DatumGetPointer(result));
+    return 0;
+  }
+#if MEOS
+  meos_errno_restore(last_errno);
+#endif /* MEOS */
+  return result;
 }
 
 /**

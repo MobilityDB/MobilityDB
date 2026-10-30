@@ -1145,7 +1145,11 @@ pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out)
 Pose *
 pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
 {
-  if (! ensure_valid_rotation(theta))
+  /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
+   * one in its centre and radius, since the range test of the rotation lets
+   * a NaN through */
+  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(theta) ||
+      ! ensure_valid_rotation(theta))
     return NULL;
 
   /* Ensure a unique representation for theta */
@@ -1212,8 +1216,13 @@ Pose *
 pose_make_3d(double x, double y, double z, double W, double X, double Y,
   double Z, bool geodetic, int32_t srid)
 {
-  if (! ensure_unit_norm(W, X, Y, Z))
-      return NULL;
+  /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
+   * one in its centre and radius, since the norm test of the quaternion lets
+   * a NaN through */
+  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(z) ||
+      ! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
+      ! ensure_not_nan(Z) || ! ensure_unit_norm(W, X, Y, Z))
+    return NULL;
 
   /* Renormalize to absorb the small input drift permitted by
    * POSE_QUATERNION_NORM_TOLERANCE. After this step |q|=1 to machine
