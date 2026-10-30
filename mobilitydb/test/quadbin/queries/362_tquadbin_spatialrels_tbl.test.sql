@@ -30,10 +30,7 @@
 -----------------------------------------------------------------------------
 -- Bulk spatial-relationship tests over temporal QUADBIN cells (tquadbin/tquadbin).
 -- The geometry-operand overloads are covered by the scalar test
--- 362_tquadbin_spatialrels. The always-variant aContains/aCovers are
--- omitted here: on a global random cell whose planar boundary wraps the
--- antimeridian GEOS is not robust for those two predicates (tracked for
--- the cast-only spatial-rel rework); they are exercised in the scalar test.
+-- 362_tquadbin_spatialrels.
 -----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------
@@ -41,6 +38,7 @@
 -----------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eContains(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aContains(t1.temp, t2.temp);
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tContains(t1.temp, t2.temp) IS NOT NULL;
 
 -----------------------------------------------------------------------------
@@ -48,6 +46,7 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tContains(t1.temp, t
 -----------------------------------------------------------------------------
 
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eCovers(t1.temp, t2.temp);
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aCovers(t1.temp, t2.temp);
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tCovers(t1.temp, t2.temp) IS NOT NULL;
 
 -----------------------------------------------------------------------------

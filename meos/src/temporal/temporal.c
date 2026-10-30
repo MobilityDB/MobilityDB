@@ -3569,7 +3569,30 @@ temporal_stops(const Temporal *temp, double maxdist,
       "Input must be a temporal sequence (set) with linear interpolation");
     return NULL;
   }
-  else if (temp->subtype == TSEQUENCE)
+#if NPOINT
+  /* A network point moves along its route between two instants, so its path
+   * can leave the area its instants span: its stops are those of its
+   * geometry, whose instants include the vertices of the route it passes,
+   * restricted to the network point */
+  if (temp->temptype == T_TNPOINT)
+  {
+    Temporal *geom = tnpoint_to_tgeompoint(temp);
+    if (! geom)
+      return NULL;
+    TSequenceSet *stops = temporal_stops(geom, maxdist, minduration);
+    pfree(geom);
+    if (! stops)
+      return NULL;
+    SpanSet *times = temporal_time((Temporal *) stops);
+    pfree(stops);
+    /* The restriction of a continuous value to a span set is a sequence set */
+    TSequenceSet *result = (TSequenceSet *) temporal_restrict_tstzspanset(temp,
+      times, REST_AT);
+    pfree(times);
+    return result;
+  }
+#endif
+  if (temp->subtype == TSEQUENCE)
     return tsequence_stops((TSequence *) temp, maxdist, mintunits);
   else /* temp->subtype == TSEQUENCESET */
     return tsequenceset_stops((TSequenceSet *) temp, maxdist, mintunits);

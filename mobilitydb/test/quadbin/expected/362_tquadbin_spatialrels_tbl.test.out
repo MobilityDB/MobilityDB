@@ -4,6 +4,12 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eContains(t1.temp, t
    100
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aContains(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tContains(t1.temp, t2.temp) IS NOT NULL;
  count 
 -------
@@ -11,6 +17,12 @@ SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE tContains(t1.temp, t
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE eCovers(t1.temp, t2.temp);
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tquadbin t1, tbl_tquadbin t2 WHERE aCovers(t1.temp, t2.temp);
  count 
 -------
    100
