@@ -2,7 +2,7 @@ var searchData=
 [
   ['r2_0',['R2',['../trgeo__distwalk__degen__unit_8c_a7a255a2815b9453060f51c6eb22cfed8.html#a7a255a2815b9453060f51c6eb22cfed8',1,'trgeo_distwalk_degen_unit.c']]],
   ['raquetpgetdatum_1',['RaquetPGetDatum',['../raquet_8h_a9f45464d5fb3077e353d6fc30bb9a14c.html#a9f45464d5fb3077e353d6fc30bb9a14c',1,'raquet.h']]],
-  ['refused_2',['REFUSED',['../temporal__value__test_8c_abe7996245a89dc1d6e3ddf2a5d283fcb.html#abe7996245a89dc1d6e3ddf2a5d283fcb',1,'temporal_value_test.c']]],
+  ['refused_2',['REFUSED',['../spatialset__distance__test_8c_abe7996245a89dc1d6e3ddf2a5d283fcb.html#abe7996245a89dc1d6e3ddf2a5d283fcb',1,'REFUSED():&#160;spatialset_distance_test.c'],['../temporal__value__test_8c_abe7996245a89dc1d6e3ddf2a5d283fcb.html#abe7996245a89dc1d6e3ddf2a5d283fcb',1,'REFUSED():&#160;temporal_value_test.c']]],
   ['relate_5fctx_5fcache_5fsize_3',['RELATE_CTX_CACHE_SIZE',['../meos_2src_2geo_2geo__funcs_8c_a903a381362313cb8cceb7dd3f7804a16.html#a903a381362313cb8cceb7dd3f7804a16',1,'geo_funcs.c']]],
   ['relate_5fctx_5fseen_4',['RELATE_CTX_SEEN',['../meos_2src_2geo_2geo__funcs_8c_a2bfd9a4ac1ff8721b844c841490e2c0a.html#a2bfd9a4ac1ff8721b844c841490e2c0a',1,'geo_funcs.c']]],
   ['relate_5findex_5fmin_5fpairs_5',['RELATE_INDEX_MIN_PAIRS',['../geo__funcs_8h_a9bcd7836cc71981b91646e3f65adef33.html#a9bcd7836cc71981b91646e3f65adef33',1,'geo_funcs.h']]],

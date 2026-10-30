@@ -88,10 +88,13 @@ $(function() {
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
+<code>#include &lt;float.h&gt;</code><br />
+<code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
 <code>#include &quot;<a class="el" href="set_8h_source.html">temporal/set.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="type__parser_8h_source.html">temporal/type_parser.h</a>&quot;</code><br />
 <code>#include &quot;temporal/type_util.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="posechain_8h_source.html">pose/posechain.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="geo__funcs_8h_source.html">geo/geo_funcs.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -101,6 +104,9 @@ Functions</h2></td></tr>
 <tr class="memitem:ga3cf24d512a0af44c301356a1af1ac14c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__posechain__set__setops_ga3cf24d512a0af44c301356a1af1ac14c.html#ga3cf24d512a0af44c301356a1af1ac14c">contains_set_posechain</a> (const <a class="el" href="structSet.html">Set</a> *<a class="el" href="trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f">s</a>, <a class="el" href="structPoseChain.html">PoseChain</a> *pc)</td></tr>
 <tr class="memdesc:ga3cf24d512a0af44c301356a1af1ac14c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if a set contains a pose chain.  <a href="group__meos__posechain__set__setops_ga3cf24d512a0af44c301356a1af1ac14c.html#ga3cf24d512a0af44c301356a1af1ac14c">More...</a><br /></td></tr>
 <tr class="separator:ga3cf24d512a0af44c301356a1af1ac14c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga51b381a1c5ccbbc8833e017768538bb6"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__posechain__set__dist_ga51b381a1c5ccbbc8833e017768538bb6.html#ga51b381a1c5ccbbc8833e017768538bb6">distance_posechainset_posechainset</a> (const <a class="el" href="structSet.html">Set</a> *s1, const <a class="el" href="structSet.html">Set</a> *s2)</td></tr>
+<tr class="memdesc:ga51b381a1c5ccbbc8833e017768538bb6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the distance between two pose chain sets, as <a class="el" href="group__meos__geo__set__dist_ga7928e04ec5a939b14cf8970e22b40fb1.html#ga7928e04ec5a939b14cf8970e22b40fb1" title="Return the distance between two geo sets, as distance_floatset_floatset does for two float sets.">distance_geoset_geoset</a> does for two geo sets.  <a href="group__meos__posechain__set__dist_ga51b381a1c5ccbbc8833e017768538bb6.html#ga51b381a1c5ccbbc8833e017768538bb6">More...</a><br /></td></tr>
+<tr class="separator:ga51b381a1c5ccbbc8833e017768538bb6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga25fae60ac2adeb070a41ce45473ade25"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structSet.html">Set</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__posechain__set__setops_ga25fae60ac2adeb070a41ce45473ade25.html#ga25fae60ac2adeb070a41ce45473ade25">intersection_posechain_set</a> (const <a class="el" href="structPoseChain.html">PoseChain</a> *pc, const <a class="el" href="structSet.html">Set</a> *<a class="el" href="trgeo__distance_8txt_aecec5f89f84697bbde18ce670a13748f.html#aecec5f89f84697bbde18ce670a13748f">s</a>)</td></tr>
 <tr class="memdesc:ga25fae60ac2adeb070a41ce45473ade25"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the intersection of a pose chain and a set.  <a href="group__meos__posechain__set__setops_ga25fae60ac2adeb070a41ce45473ade25.html#ga25fae60ac2adeb070a41ce45473ade25">More...</a><br /></td></tr>
 <tr class="separator:ga25fae60ac2adeb070a41ce45473ade25"><td class="memSeparator" colspan="2">&#160;</td></tr>
