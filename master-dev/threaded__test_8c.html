@@ -90,6 +90,7 @@ $(function() {
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__geo_8h_source.html">meos_geo.h</a>&gt;</code><br />
+<code>#include &lt;pg_timestamp.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -112,6 +113,7 @@ Functions</h2></td></tr>
 <li>coordinate transforms (tspatial_transform) work concurrently because each thread drives PROJ through its own per-thread PJ_CONTEXT, never the shared global PJ_DEFAULT_CTX;</li>
 <li>float parsing (tfloat_in, through meos_strtod) works concurrently, the C-locale handle it shares being made once per process;</li>
 <li>meos_errno reads/writes remain isolated per thread;</li>
+<li>the table of time zone abbreviations every thread shares is read concurrently, installed by the first thread and freed by the last;</li>
 <li>the GMT timezone bootstrap (postgres/timezone/localtime.c) is no longer racy under concurrent first-use.</li>
 </ul>
 <p >Build (Linux, after <code>cmake --install</code> to a prefix): </p><div class="fragment"><div class="line">gcc -Wall -g -O2 -I&lt;prefix&gt;/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -pthread \</div>
