@@ -119,7 +119,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return -1, 0, or 1 depending on whether the first buffer is less than, equal to, or greater than the second one. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The buffers are ordered by their SRID, then by the x and the y coordinates of their centre, then by their radius. The coordinates and the radius are compared as #float8_lt and #float8_gt compare doubles, the order <a class="el" href="group__meos__cbuffer__base__comp_gac93d58688c4b4491a190b0490a4fe68c.html#gac93d58688c4b4491a190b0490a4fe68c" title="Return true if the first buffer is equal to the second one.">cbuffer_eq</a> agrees with: -0.0 and 0.0 are equal, and NaN, which the input of a buffer accepts as a coordinate, is equal to NaN and greater than every other value. The order is thus total and holds two buffers equal exactly when <a class="el" href="group__meos__cbuffer__base__comp_gac93d58688c4b4491a190b0490a4fe68c.html#gac93d58688c4b4491a190b0490a4fe68c" title="Return true if the first buffer is equal to the second one.">cbuffer_eq</a> does, which their sort key (<a class="el" href="meos_2src_2cbuffer_2cbuffer_8c_a4bb7afeb2178ca6e213eef4ccf8052f4.html#a4bb7afeb2178ca6e213eef4ccf8052f4" title="Write the sort key of a circular buffer.">cbuffer_sortkey_put</a>) requires </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">cb1,cb2</td><td>Circular buffers </td></tr>
   </table>
