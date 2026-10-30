@@ -79,7 +79,7 @@ CREATE FUNCTION jsonbsetExtractPath(jsonbset, path text[],
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetExtractPathText(jsonbset, path text[],
     null_handle text DEFAULT 'use_json_null')
-  RETURNS jsonbset
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_text'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -88,7 +88,7 @@ CREATE FUNCTION jsonbsetExtractPathOpr(jsonbset, path text[])
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION jsonbsetExtractPathTextOpr(jsonbset, path text[])
-  RETURNS jsonbset
+  RETURNS textset
   AS 'MODULE_PATHNAME', 'Jsonbset_extract_path_text_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
