@@ -460,6 +460,15 @@ SELECT tCovers(tcbuffer 'Cbuffer(Point(0 0),2)@2001-01-01', tcbuffer 'Cbuffer(Po
 SELECT tIntersects(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]', geometry 'Point(0 0)');
 SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]');
 SELECT tTouches(tcbuffer '[Cbuffer(Point(-3 0),0)@2001-01-01, Cbuffer(Point(3 0),0.5)@2001-01-03]', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+-- A disc of radius 0 beside discs of a positive radius is its centre: on the
+-- boundary of a polygon it touches it and is covered, not contained, and
+-- against a line it touches at an end only
+SELECT tTouches(tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}', geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
+SELECT tCovers(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}');
+SELECT tContains(geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))', tcbuffer '{Cbuffer(Point(0 -1),0)@2001-01-01, Cbuffer(Point(0 -5),1)@2001-01-02}');
+SELECT tCovers(geometry 'CurvePolygon(CircularString(-5 0,0 5,5 0,0 -5,-5 0))', tcbuffer '{Cbuffer(Point(3 4),0)@2001-01-01, Cbuffer(Point(0 9),1)@2001-01-02}');
+SELECT tTouches(tcbuffer '{Cbuffer(Point(0 0),0)@2001-01-01, Cbuffer(Point(0 5),1)@2001-01-02}', geometry 'Linestring(-1 0,1 0)');
+SELECT tTouches(tcbuffer '{Cbuffer(Point(-1 0),0)@2001-01-01, Cbuffer(Point(0 5),1)@2001-01-02}', geometry 'Linestring(-1 0,1 0)');
 
 -------------------------------------------------------------------------------
 -- The relationship holds against the geometry, not against a circle enclosing
