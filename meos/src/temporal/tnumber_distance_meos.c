@@ -282,9 +282,7 @@ nad_intspan_tbox(const Span *s, const TBox *box)
   if (! ensure_has_X(T_TBOX, box->flags) ||
       ! ensure_span_isof_type(&box->span, T_INTSPAN))
     return -1;
-  TBox box1;
-  numspan_set_tbox(s, &box1);
-  return DatumGetInt32(nad_tbox_tbox(&box1, box));
+  return DatumGetInt32(nad_numspan_tbox(s, box));
 }
 
 /**
@@ -306,9 +304,7 @@ nad_bigintspan_tbox(const Span *s, const TBox *box)
   if (! ensure_has_X(T_TBOX, box->flags) ||
       ! ensure_span_isof_type(&box->span, T_BIGINTSPAN))
     return -1;
-  TBox box1;
-  numspan_set_tbox(s, &box1);
-  return DatumGetInt64(nad_tbox_tbox(&box1, box));
+  return DatumGetInt64(nad_numspan_tbox(s, box));
 }
 
 /**
@@ -330,9 +326,7 @@ nad_floatspan_tbox(const Span *s, const TBox *box)
   if (! ensure_has_X(T_TBOX, box->flags) ||
       ! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return -1.0;
-  TBox box1;
-  numspan_set_tbox(s, &box1);
-  return DatumGetFloat8(nad_tbox_tbox(&box1, box));
+  return DatumGetFloat8(nad_numspan_tbox(s, box));
 }
 
 /**
@@ -351,9 +345,7 @@ nad_tint_intspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, -1); VALIDATE_INTSPAN(s, -1);
-  TBox box;
-  numspan_set_tbox(s, &box);
-  return DatumGetInt32(nad_tnumber_tbox(temp, &box));
+  return DatumGetInt32(nad_tnumber_numspan(temp, s));
 }
 
 /**
@@ -372,9 +364,7 @@ nad_tbigint_bigintspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, -1); VALIDATE_BIGINTSPAN(s, -1);
-  TBox box;
-  numspan_set_tbox(s, &box);
-  return DatumGetInt64(nad_tnumber_tbox(temp, &box));
+  return DatumGetInt64(nad_tnumber_numspan(temp, s));
 }
 
 /**
@@ -393,9 +383,7 @@ nad_tfloat_floatspan(const Temporal *temp, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1.0); VALIDATE_FLOATSPAN(s, -1.0);
-  TBox box;
-  numspan_set_tbox(s, &box);
-  return DatumGetFloat8(nad_tnumber_tbox(temp, &box));
+  return DatumGetFloat8(nad_tnumber_numspan(temp, s));
 }
 
 /**
