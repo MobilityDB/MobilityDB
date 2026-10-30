@@ -1672,23 +1672,21 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
 }
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz span set shifted and/or scaled by two intervals
  * @param[in] ss Span set
- * @param[in] shift Interval to shift the span set @nullable
- * @param[in] duration Interval for the duration of the result @nullable
+ * @param[in] shift Interval to shift the span set, NULL for none
+ * @param[in] duration Interval for the duration of the result, NULL for none
+ * @pre At least one of the two intervals is given
  * @csqlfn #Tstzspanset_shift(), #Tstzspanset_scale(), #Tstzspanset_shift_scale()
  */
 SpanSet *
-tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
+tstzspanset_shift_scale_intl(const SpanSet *ss, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPANSET(ss, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(ss); assert(ss->spansettype == T_TSTZSPANSET);
+  assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   /* Copy the input span set to the output span set */
   SpanSet *result = spanset_copy(ss);
 
@@ -1701,6 +1699,58 @@ tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
   for (int i = 0; i < ss->count; i++)
     tstzspan_delta_scale_iter(&result->elems[i], origin, delta, scale);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span set shifted by an interval
+ * @param[in] ss Span set
+ * @param[in] shift Interval to shift the span set
+ * @csqlfn #Tstzspanset_shift()
+ */
+SpanSet *
+tstzspanset_shift(const SpanSet *ss, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return tstzspanset_shift_scale_intl(ss, shift, NULL);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span set scaled by an interval
+ * @param[in] ss Span set
+ * @param[in] duration Interval for the duration of the result
+ * @csqlfn #Tstzspanset_scale()
+ */
+SpanSet *
+tstzspanset_scale(const SpanSet *ss, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspanset_shift_scale_intl(ss, NULL, duration);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span set shifted and scaled by two intervals
+ * @param[in] ss Span set
+ * @param[in] shift Interval to shift the span set
+ * @param[in] duration Interval for the duration of the result
+ * @csqlfn #Tstzspanset_shift_scale()
+ */
+SpanSet *
+tstzspanset_shift_scale(const SpanSet *ss, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspanset_shift_scale_intl(ss, shift, duration);
 }
 
 /**

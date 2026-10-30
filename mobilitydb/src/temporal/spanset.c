@@ -886,7 +886,7 @@ Tstzspanset_shift(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  SpanSet *result = tstzspanset_shift_scale(ss, shift, NULL);
+  SpanSet *result = tstzspanset_shift(ss, shift);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
@@ -921,7 +921,7 @@ Tstzspanset_scale(PG_FUNCTION_ARGS)
 {
   SpanSet *ss = PG_GETARG_SPANSET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  SpanSet *result = tstzspanset_shift_scale(ss, NULL, duration);
+  SpanSet *result = tstzspanset_scale(ss, duration);
   PG_FREE_IF_COPY(ss, 0);
   PG_RETURN_SPANSET_P(result);
 }
