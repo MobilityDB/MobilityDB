@@ -93,6 +93,11 @@ boxtypes:
     posgroup:  mobilitydb_temporal_bbox_pos
     posfile:   mobilitydb/src/temporal/temporal_posops.c
     posreference: true
+    # nearest approach distance wrappers (templates/nadops.c.tmpl): the box's
+    # directions and, per number type of the value span, its span directions
+    boxtype:   T_TBOX
+    nadgroup:  mobilitydb_temporal_dist
+    nadfile:   mobilitydb/src/temporal/tnumber_distance.c
     valspan:
       box:       numspan
       prim:      span
@@ -102,3 +107,7 @@ boxtypes:
       boxdesc:   number span
       boxdescpl: number spans
       posaxes:   [x]
+      nadtypes:
+        - {span: intspan, spandesc: integer span, temp: tint, tempdesc: temporal integer}
+        - {span: bigintspan, spandesc: big integer span, temp: tbigint, tempdesc: temporal big integer}
+        - {span: floatspan, spandesc: float span, temp: tfloat, tempdesc: temporal float}
