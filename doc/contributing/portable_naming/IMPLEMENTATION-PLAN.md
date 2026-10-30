@@ -95,8 +95,8 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   a cross product whose terms overflow (`cross_product_sign`) is its own pull request. Next is
   mitre and bevel joins on the arrangement.
 - **The buffer places three meetings of its offsets in plain doubles**, outside the plan:
-  MobilityDB #3259, branch `perf/place-the-corner-crossing-in-doubles` (`9a24a9d6e7` on master
-  `985d05be27`), computes the crossing of two offsets sharing a centre (every concave corner), of
+  MobilityDB #3259, branch `perf/place-the-corner-crossing-in-doubles` (`3b0764a7b3` on master
+  `73f44ac1fe`), computes the crossing of two offsets sharing a centre (every concave corner), of
   two offsets sharing none and the meeting of an offset with a circle in the order their filters
   do, so the coordinates are the same bits, under one bound written out from the filters' rules,
   the filters placing what that bound leaves; both ends of a tangent segment come from one offset,
