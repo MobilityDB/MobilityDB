@@ -44,30 +44,9 @@
 #include <meos_json.h>
 #include "temporal/temporal.h"
 
-/* Operations available for setPath */
-#define JB_PATH_CREATE               0x0001
-#define JB_PATH_DELETE               0x0002
-#define JB_PATH_REPLACE              0x0004
-#define JB_PATH_INSERT_BEFORE        0x0008
-#define JB_PATH_INSERT_AFTER         0x0010
-#define JB_PATH_FILL_GAPS            0x0020
-#define JB_PATH_CONSISTENT_POSITION  0x0040
-#define JB_PATH_CREATE_OR_INSERT \
-  (JB_PATH_INSERT_BEFORE | JB_PATH_INSERT_AFTER | JB_PATH_CREATE)
-
 /*****************************************************************************
  * JSONB internal operations
  *****************************************************************************/
-
-extern JsonbValue *setPath(JsonbIterator **it, Datum *path_elems,
-  bool *path_nulls, int path_len, JsonbParseState **st, int level,
-  JsonbValue *newval, int op_type);
-extern void setPathObject(JsonbIterator **it, Datum *path_elems,
-  bool *path_nulls, int path_len, JsonbParseState **st, int level,
-  JsonbValue *newval, uint32_t npairs, int op_type);
-extern void setPathArray(JsonbIterator **it, Datum *path_elems,
-  bool *path_nulls, int path_len, JsonbParseState **st, int level,
-  JsonbValue *newval, uint32_t nelems, int op_type);
 
 extern bool path_contains_nulls(text **path_elems, int path_len);
 
