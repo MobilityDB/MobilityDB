@@ -1606,6 +1606,49 @@ npoint_cmp(const Npoint *np1, const Npoint *np2)
 }
 
 /**
+ * @brief Return the number of bytes of the sort key of a network point
+ */
+size_t
+npoint_sortkey_size(void)
+{
+  return datum_sortkey_size(T_INT8) + datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a network point
+ * @details A sort key is a string of bytes computed from a value so that
+ * comparing the keys of two values byte by byte, as unsigned bytes and with a
+ * key that is a prefix of a longer one coming first, gives the order of
+ * #npoint_cmp, and two keys are identical exactly when #npoint_eq holds. An
+ * engine that sorts, groups or joins values by comparing their bytes, as the
+ * collation of MobilityDuck does and as MobilitySpark and MobilityFlink do,
+ * then answers as MobilityDB does without calling MEOS for each comparison.
+ * The key is computed for such an operation and never stored: a network
+ * point is stored and exchanged in its well-known binary form.
+ *
+ * The key holds the fields in the order #npoint_cmp compares them: the route
+ * identifier as an 8-byte integer, then the position as an 8-byte double,
+ * each written as #datum_sortkey_put writes an integer or a double: big
+ * endian with the sign bit flipped, and -0.0 written as 0.0. The SRID is not
+ * part of the key since every network point takes the one of the `ways`
+ * table. The position is in [0, 1] and never NaN, which the input refuses,
+ * so #npoint_cmp, which compares it with < and >, is a total order holding
+ * two points equal exactly when #npoint_eq does, as the key requires
+ * @param[in] np Network point
+ * @param[out] out Buffer of #npoint_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+npoint_sortkey_put(const Npoint *np, uint8_t *out)
+{
+  assert(np); assert(out);
+  datum_sortkey_put(Int64GetDatum(np->rid), T_INT8, out);
+  out += datum_sortkey_size(T_INT8);
+  datum_sortkey_put(Float8GetDatum(np->pos), T_FLOAT8, out);
+  return out + datum_sortkey_size(T_FLOAT8);
+}
+
+/**
  * @ingroup meos_npoint_base_comp
  * @brief Return true if the first network point is less than the second one
  * @param[in] np1,np2 Network points

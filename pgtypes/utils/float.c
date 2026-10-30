@@ -267,6 +267,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
         errnumber[endptr - num] = '\0';
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "\"%s\" is out of range for type real", errnumber);
+        pfree(errnumber); /* MEOS */
         return FLT_MAX;
       }
     }
@@ -548,6 +549,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
         meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
           "\"%s\" is out of range for type double precision",
           errnumber);
+        pfree(errnumber); /* MEOS */
         return DBL_MAX;
       }
     }

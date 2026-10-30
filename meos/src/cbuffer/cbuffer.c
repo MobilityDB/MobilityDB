@@ -283,12 +283,16 @@ cbuffer_parse(const char **str, bool end)
   p_whitespace(str);
   Datum d;
   if (! basetype_parse(str, T_FLOAT8, ')', &d))
+  {
+    pfree(gs);
     return NULL;
+  }
   double radius = DatumGetFloat8(d);
   if (radius < 0)
   {
     meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "The radius must be a real number greater than or equal to 0");
+    pfree(gs);
     return NULL;
   }
 
@@ -296,7 +300,10 @@ cbuffer_parse(const char **str, bool end)
   p_whitespace(str);
   if (! ensure_cparen(str, type_str) ||
         (end && ! ensure_end_input(str, type_str)))
+  {
+    pfree(gs);
     return NULL;
+  }
 
   Cbuffer *result = cbuffer_make(gs, radius);
   pfree(gs);
@@ -1584,6 +1591,13 @@ cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2)
  * @ingroup meos_cbuffer_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first buffer
  * is less than, equal to, or greater than the second one
+ * @details The buffers are ordered by their SRID, then by the x and the y
+ * coordinates of their centre, then by their radius. The coordinates and the
+ * radius are compared as #float8_lt and #float8_gt compare doubles, the order
+ * #cbuffer_eq agrees with: -0.0 and 0.0 are equal, and NaN, which the input
+ * of a buffer accepts as a coordinate, is equal to NaN and greater than every
+ * other value. The order is thus total and holds two buffers equal exactly
+ * when #cbuffer_eq does, which their sort key (#cbuffer_sortkey_put) requires
  * @param[in] cb1,cb2 Circular buffers
  * @errval INT_MAX
  * @csqlfn #Cbuffer_cmp()
@@ -1602,20 +1616,67 @@ cbuffer_cmp(const Cbuffer *cb1, const Cbuffer *cb2)
   /* Compare coordinates */
   const POINT2D *pt1 = cbuffer_point2d_p(cb1);
   const POINT2D *pt2 = cbuffer_point2d_p(cb2);
-  if (pt1->x < pt2->x)
+  if (float8_lt(pt1->x, pt2->x))
     return -1;
-  if (pt1->x > pt2->x)
+  if (float8_gt(pt1->x, pt2->x))
     return 1;
-  if (pt1->y < pt2->y)
+  if (float8_lt(pt1->y, pt2->y))
     return -1;
-  if (pt1->y > pt2->y)
+  if (float8_gt(pt1->y, pt2->y))
     return 1;
   /* Compare radius */
-  if(cb1->radius < cb2->radius)
+  if (float8_lt(cb1->radius, cb2->radius))
     return -1;
-  if (cb1->radius > cb2->radius)
+  if (float8_gt(cb1->radius, cb2->radius))
     return 1;
   return 0;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a circular buffer
+ */
+size_t
+cbuffer_sortkey_size(void)
+{
+  return datum_sortkey_size(T_INT4) + 3 * datum_sortkey_size(T_FLOAT8);
+}
+
+/**
+ * @brief Write the sort key of a circular buffer
+ * @details A sort key is a string of bytes computed from a value so that
+ * comparing the keys of two values byte by byte, as unsigned bytes and with a
+ * key that is a prefix of a longer one coming first, gives the order of
+ * #cbuffer_cmp, and two keys are identical exactly when #cbuffer_eq holds. An
+ * engine that sorts, groups or joins values by comparing their bytes, as the
+ * collation of MobilityDuck does and as MobilitySpark and MobilityFlink do,
+ * then answers as MobilityDB does without calling MEOS for each comparison.
+ * The key is computed for such an operation and never stored: a buffer is
+ * stored and exchanged in its well-known binary form.
+ *
+ * The key holds the fields in the order #cbuffer_cmp compares them: the SRID
+ * as a 4-byte integer, then the x and the y coordinates of the centre and the
+ * radius as 8-byte doubles, each written as #datum_sortkey_put writes an
+ * integer or a double: big endian with the sign bit flipped, -0.0 written as
+ * 0.0 and every NaN as one NaN placed above infinity
+ * @param[in] cb Circular buffer
+ * @param[out] out Buffer of #cbuffer_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+cbuffer_sortkey_put(const Cbuffer *cb, uint8_t *out)
+{
+  assert(cb); assert(out);
+  datum_sortkey_put(Int32GetDatum(cb->srid), T_INT4, out);
+  out += datum_sortkey_size(T_INT4);
+  const POINT2D *pt = cbuffer_point2d_p(cb);
+  double fields[3] = {pt->x, pt->y, cb->radius};
+  size_t n = datum_sortkey_size(T_FLOAT8);
+  for (int i = 0; i < 3; i++)
+  {
+    datum_sortkey_put(Float8GetDatum(fields[i]), T_FLOAT8, out);
+    out += n;
+  }
+  return out;
 }
 
 /**
