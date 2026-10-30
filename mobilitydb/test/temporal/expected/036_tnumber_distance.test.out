@@ -686,6 +686,14 @@ SELECT floatspan '[1,2]' |=| tbox 'TBOXINT X([0,6))';
 ERROR:  Operation on mixed span types: floatspan and intspan
 SELECT intspan '[1,2)' |=| tbox 'TBOX T([2001-01-01,2001-01-02])';
 ERROR:  The tbox must have X dimension
+SELECT tint '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOXFLOAT X([10,12])';
+ERROR:  Operation on mixed temporal number and box span types: tint, floatspan
+SELECT tbox 'TBOXFLOAT X([10,12])' |=| tint '[0@2001-01-01, 5@2001-01-03]';
+ERROR:  Operation on mixed temporal number and box span types: tint, floatspan
+SELECT tfloat '[0@2001-01-01, 5@2001-01-03]' |=| tbox 'TBOX T([2001-01-01,2001-01-02])';
+ERROR:  The tbox must have X dimension
+SELECT tbox 'TBOX T([2001-01-01,2001-01-02])' |=| tfloat '[0@2001-01-01, 5@2001-01-03]';
+ERROR:  The tbox must have X dimension
 SELECT tint '1@2001-01-01' |=| tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}';
  ?column? 
 ----------
