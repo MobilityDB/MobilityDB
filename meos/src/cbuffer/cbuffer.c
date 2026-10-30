@@ -539,7 +539,8 @@ cbuffer_make(const GSERIALIZED *point, double radius)
   VALIDATE_NOT_NULL(point, NULL);
   if (! ensure_point_type(point) || ! ensure_not_empty(point) ||
       ! ensure_has_not_Z_geo(point) || ! ensure_has_not_M_geo(point) ||
-      ! ensure_not_geodetic_geo(point) ||
+      ! ensure_not_geodetic_geo(point) || ! ensure_not_nan_geo(point) ||
+      ! ensure_not_nan(radius) ||
       ! ensure_not_negative_datum(Float8GetDatum(radius), T_FLOAT8))
     return NULL;
 
