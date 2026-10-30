@@ -7,7 +7,7 @@ SELECT getValues(tquadbin(traj, 8));
 SELECT rasterTileValueQuadbin(traj, band_1, 256, 256, block::quadbin, 'float32', 0,
   false) FROM elevation_raquet
 WHERE block IN (SELECT unnest(getValues(tquadbin(traj, 8)))::bigint);
-</pre><p>Los operadores de restricción y predicado que cierran la sección componen <code class="varname">rasterValue</code> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <code class="varname">band</code> (por defecto 1) e invocan <code class="varname">rasterValue</code> exactamente una vez por invocación.</p><p>Una función de ráster toma el nombre de su homóloga del ráster de PostGIS sin el prefijo <code class="varname">ST_</code>, y los nombres y los valores por defecto de sus argumentos. Una sola signatura responde a cada operación, de modo que una forma de PostGIS que solo fija un argumento de otra se escribe mediante esa otra forma. Un nombre que el estándar SQL reserva toma el tipo como prefijo, de modo que <code class="varname">ST_Value</code> es <code class="varname">rasterValue</code>, y las funciones de Well-Known Binary toman los nombres que toma todo tipo de MobilityDB.</p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col><col></colgroup><thead><tr><th align="left">Ráster de PostGIS</th><th align="left">MobilityDB</th></tr></thead><tbody><tr><td align="left"><code class="varname">ST_Value</code></td><td align="left"><code class="varname">rasterValue</code></td></tr><tr><td align="left"><code class="varname">ST_Clip</code></td><td align="left"><code class="varname">clip</code></td></tr><tr><td align="left"><code class="varname">ST_Transform</code></td><td align="left"><code class="varname">transform</code></td></tr><tr><td align="left"><code class="varname">ST_Rescale</code></td><td align="left"><code class="varname">rescale</code></td></tr><tr><td align="left"><code class="varname">ST_Reclass</code></td><td align="left"><code class="varname">reclass</code></td></tr><tr><td align="left"><code class="varname">ST_SummaryStats</code></td><td align="left"><code class="varname">summaryStats</code></td></tr><tr><td align="left"><code class="varname">ST_DumpAsPolygons</code></td><td align="left"><code class="varname">dumpAsPolygons</code></td></tr><tr><td align="left"><code class="varname">ST_NumBands</code>, <code class="varname">ST_Width</code>, <code class="varname">ST_Height</code>, <code class="varname">ST_SRID</code></td><td align="left"><code class="varname">numBands</code>, <code class="varname">width</code>, <code class="varname">height</code>, <code class="varname">SRID</code></td></tr><tr><td align="left"><code class="varname">ST_UpperLeftX</code>, <code class="varname">ST_UpperLeftY</code>, <code class="varname">ST_ScaleX</code>, <code class="varname">ST_ScaleY</code>, <code class="varname">ST_SkewX</code>, <code class="varname">ST_SkewY</code></td><td align="left"><code class="varname">upperLeftX</code>, <code class="varname">upperLeftY</code>, <code class="varname">scaleX</code>, <code class="varname">scaleY</code>, <code class="varname">skewX</code>, <code class="varname">skewY</code></td></tr><tr><td align="left"><code class="varname">ST_BandPixelType</code>, <code class="varname">ST_BandNoDataValue</code></td><td align="left"><code class="varname">bandPixelType</code>, <code class="varname">bandNoDataValue</code></td></tr><tr><td align="left"><code class="varname">ST_MakeEmptyRaster</code>, <code class="varname">ST_AddBand</code>, <code class="varname">ST_SetValues</code></td><td align="left"><code class="varname">makeEmptyRaster</code>, <code class="varname">addBand</code>, <code class="varname">setValues</code></td></tr><tr><td align="left"><code class="varname">ST_AsBinary</code>, <code class="varname">ST_AsHexWKB</code></td><td align="left"><code class="varname">asBinary</code>, <code class="varname">asHexWKB</code></td></tr><tr><td align="left"><code class="varname">ST_RastFromWKB</code>, <code class="varname">ST_RastFromHexWKB</code></td><td align="left"><code class="varname">rasterFromBinary</code>, <code class="varname">rasterFromHexWKB</code></td></tr></tbody></table></div><p><code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> toman un orden de bytes donde PostGIS toma <code class="varname">outasin</code>, y sin él devuelven los bytes de <code class="varname">ST_AsBinary</code> y <code class="varname">ST_AsHexWKB</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14952"></a><p>Lee una banda de ráster a lo largo de una trayectoria</p><pre class="programlisting">
+</pre><p>Los operadores de restricción y predicado que cierran la sección componen <code class="varname">rasterValue</code> con las funciones estándar de restricción temporal y predicado de MobilityDB. Aceptan un argumento opcional <code class="varname">band</code> (por defecto 1) e invocan <code class="varname">rasterValue</code> exactamente una vez por invocación.</p><p>Una función de ráster toma el nombre de su homóloga del ráster de PostGIS sin el prefijo <code class="varname">ST_</code>, y los nombres y los valores por defecto de sus argumentos. Una sola signatura responde a cada operación, de modo que una forma de PostGIS que solo fija un argumento de otra se escribe mediante esa otra forma. Un nombre que el estándar SQL reserva toma el tipo como prefijo, de modo que <code class="varname">ST_Value</code> es <code class="varname">rasterValue</code>, y las funciones de Well-Known Binary toman los nombres que toma todo tipo de MobilityDB.</p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col><col></colgroup><thead><tr><th align="left">Ráster de PostGIS</th><th align="left">MobilityDB</th></tr></thead><tbody><tr><td align="left"><code class="varname">ST_Value</code></td><td align="left"><code class="varname">rasterValue</code></td></tr><tr><td align="left"><code class="varname">ST_Clip</code></td><td align="left"><code class="varname">clip</code></td></tr><tr><td align="left"><code class="varname">ST_Transform</code></td><td align="left"><code class="varname">transform</code></td></tr><tr><td align="left"><code class="varname">ST_Rescale</code></td><td align="left"><code class="varname">rescale</code></td></tr><tr><td align="left"><code class="varname">ST_Reclass</code></td><td align="left"><code class="varname">reclass</code></td></tr><tr><td align="left"><code class="varname">ST_SummaryStats</code></td><td align="left"><code class="varname">summaryStats</code></td></tr><tr><td align="left"><code class="varname">ST_DumpAsPolygons</code></td><td align="left"><code class="varname">dumpAsPolygons</code></td></tr><tr><td align="left"><code class="varname">ST_NumBands</code>, <code class="varname">ST_Width</code>, <code class="varname">ST_Height</code>, <code class="varname">ST_SRID</code></td><td align="left"><code class="varname">numBands</code>, <code class="varname">width</code>, <code class="varname">height</code>, <code class="varname">SRID</code></td></tr><tr><td align="left"><code class="varname">ST_UpperLeftX</code>, <code class="varname">ST_UpperLeftY</code>, <code class="varname">ST_ScaleX</code>, <code class="varname">ST_ScaleY</code>, <code class="varname">ST_SkewX</code>, <code class="varname">ST_SkewY</code></td><td align="left"><code class="varname">upperLeftX</code>, <code class="varname">upperLeftY</code>, <code class="varname">scaleX</code>, <code class="varname">scaleY</code>, <code class="varname">skewX</code>, <code class="varname">skewY</code></td></tr><tr><td align="left"><code class="varname">ST_BandPixelType</code>, <code class="varname">ST_BandNoDataValue</code></td><td align="left"><code class="varname">bandPixelType</code>, <code class="varname">bandNoDataValue</code></td></tr><tr><td align="left"><code class="varname">ST_MakeEmptyRaster</code>, <code class="varname">ST_AddBand</code>, <code class="varname">ST_SetValues</code></td><td align="left"><code class="varname">makeEmptyRaster</code>, <code class="varname">addBand</code>, <code class="varname">setValues</code></td></tr><tr><td align="left"><code class="varname">ST_AsBinary</code>, <code class="varname">ST_AsHexWKB</code></td><td align="left"><code class="varname">asBinary</code>, <code class="varname">asHexWKB</code></td></tr><tr><td align="left"><code class="varname">ST_RastFromWKB</code>, <code class="varname">ST_RastFromHexWKB</code></td><td align="left"><code class="varname">rasterFromBinary</code>, <code class="varname">rasterFromHexWKB</code></td></tr></tbody></table></div><p><code class="varname">asBinary</code> y <code class="varname">asHexWKB</code> toman un orden de bytes donde PostGIS toma <code class="varname">outasin</code>, y sin él devuelven los bytes de <code class="varname">ST_AsBinary</code> y <code class="varname">ST_AsHexWKB</code>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="raster_rasterValue"></a><a class="indexterm" name="id14962"></a><p>Lee una banda de ráster a lo largo de una trayectoria</p><pre class="programlisting">
 rasterValue(tgeompoint,rast raster,band integer=1,exclude_nodata_value boolean=true,
   resample text='nearest') → tfloat
 rasterValue(tgeompoint,path text,band integer=1) → tfloat
@@ -55,7 +55,7 @@ t AS (
 SELECT merge(rasterValue(trip, tile)) = (SELECT rasterValue(trip, rast) FROM t, r)
 FROM t, r, ST_Tile(rast, 2, 2) AS tile;
 -- true
-</pre></li><li class="listitem"><a name="raster_valueCount"></a><a class="indexterm" name="id14983"></a><p>Devuelve el número de píxeles de una banda de un ráster que contienen cada valor</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_valueCount"></a><a class="indexterm" name="id14993"></a><p>Devuelve el número de píxeles de una banda de un ráster que contienen cada valor</p><pre class="programlisting">
 valueCount(rast raster,nband integer=1,exclude_nodata_value boolean=true,
   searchvalues float[]=NULL,roundto float=0) → setof (value float,count integer)
 valueCount(rast raster,nband integer,searchvalues float[],roundto float=0)
@@ -77,7 +77,7 @@ FROM rast, valueCount(r, 1, true, NULL::float[], 0.1) ORDER BY 1;
 -- 1.30 | 1
 -- 2.00 | 4
 -- 3.00 | 1
-</pre></li><li class="listitem"><a name="raster_valuePercent"></a><a class="indexterm" name="id14995"></a><p>Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_valuePercent"></a><a class="indexterm" name="id15005"></a><p>Devuelve la proporción de los píxeles de una banda de un ráster que contienen cada valor</p><pre class="programlisting">
 valuePercent(rast raster,nband integer=1,exclude_nodata_value boolean=true,
   searchvalues float[]=NULL,roundto float=0) → setof (value float,percent float)
 valuePercent(rast raster,nband integer,searchvalues float[],roundto float=0)
@@ -95,7 +95,7 @@ WITH rast AS (
     ARRAY[[1.24, 1.26, -9999], [2, 2, 2], [3, 1.24, 2]]::double precision[][]) AS r )
 SELECT valuePercent(r, 2::float), valuePercent(r, 3::float) FROM rast;
 -- 0.5 | 0.125
-</pre></li><li class="listitem"><a name="raster_sameAlignment"></a><a class="indexterm" name="id15007"></a><p>Devuelve verdadero si los rásteres están sobre la misma rejilla</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_sameAlignment"></a><a class="indexterm" name="id15017"></a><p>Devuelve verdadero si los rásteres están sobre la misma rejilla</p><pre class="programlisting">
 sameAlignment(rast1 raster,rast2 raster) → boolean
 sameAlignment(raster) → boolean
 sameAlignment(raster) → boolean
@@ -108,7 +108,7 @@ SELECT sameAlignment(base, east1), sameAlignment(base, easthalf),
   (SELECT sameAlignment(x) FROM (VALUES (base), (east1), (easthalf)) t(x))
 FROM r;
 -- t | f | f
-</pre></li><li class="listitem"><a name="raster_notSameAlignmentReason"></a><a class="indexterm" name="id15021"></a><p>Devuelve por qué dos rásteres no están sobre la misma rejilla</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_notSameAlignmentReason"></a><a class="indexterm" name="id15031"></a><p>Devuelve por qué dos rásteres no están sobre la misma rejilla</p><pre class="programlisting">
 notSameAlignmentReason(rast1 raster,rast2 raster) → text
 </pre><p>La razón de <code class="varname">ST_NotSameAlignmentReason</code> de PostGIS, en sus palabras: la primera propiedad en la que difieren las rejillas, o que los rásteres están alineados.</p><pre class="programlisting">
 WITH r AS (SELECT
@@ -119,7 +119,7 @@ SELECT notSameAlignmentReason(base, easthalf), notSameAlignmentReason(base, scal
 FROM r;
 -- The rasters (pixel corner coordinates) are not aligned |
 --   The rasters have different scales on the X axis
-</pre></li><li class="listitem"><a name="raster_rasterUnion"></a><a class="indexterm" name="id15030"></a><p>Devuelve la unión de los rásteres de una columna</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterUnion"></a><a class="indexterm" name="id15040"></a><p>Devuelve la unión de los rásteres de una columna</p><pre class="programlisting">
 rasterUnion(raster) → raster
 rasterUnion(raster,nband integer) → raster
 rasterUnion(raster,uniontype text) → raster
@@ -133,7 +133,7 @@ WITH tiles AS (
     '32BF'::text, 3.0::float8, -9999.0::float8) )
 SELECT ST_DumpValues(rasterUnion(r, 'MEAN' ORDER BY id), 1) FROM tiles;
 -- {{1,1,NULL},{1,2,3},{NULL,3,3}}
-</pre></li><li class="listitem"><a name="raster_reclass"></a><a class="indexterm" name="id15057"></a><p>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_reclass"></a><a class="indexterm" name="id15067"></a><p>Devuelve un ráster cuya banda contiene las clases a las que una expresión asigna sus valores</p><pre class="programlisting">
 reclass(raster,nband integer,reclassexpr text,pixeltype text,nodataval float=NULL)
   → raster
 </pre><p>La expresión sigue la gramática de <code class="varname">ST_Reclass</code> de PostGIS: una lista de asignaciones separadas por comas, cada una un rango de origen y un destino separados por dos puntos, siendo un rango un valor o dos separados por un guion. Un rango escrito sin corchetes incluye su extremo inferior y excluye el superior, mientras que <code class="varname">(</code> excluye el extremo inferior y <code class="varname">]</code> incluye el superior, de modo que <code class="varname">0-50</code> deja 50 sin asignar mientras que <code class="varname">[50-100]</code> lo toma. Un píxel que ningún rango toma contiene el valor nodata de la banda resultante, o cero cuando la banda no declara ninguno. Esa banda tiene el tipo de píxel <code class="varname">pixeltype</code>, con el nombre que le da PostGIS raster, como <code class="varname">8BUI</code>, y no declara valor nodata cuando se omite <code class="varname">nodataval</code>. El ráster conserva su malla y sus demás bandas, de modo que las clases pueden leerse a lo largo de una trayectoria con <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
@@ -159,7 +159,7 @@ SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(0.5 2.5)@2001-01-01,
   POINT(1.5 1.5)@2001-01-02, POINT(2.5 0.5)@2001-01-03}',
   reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))::text FROM rast;
 -- {1@2001-01-01, 2@2001-01-02, 2@2001-01-03}
-</pre></li><li class="listitem"><a name="raster_rasterAdd"></a><a class="indexterm" name="id15075"></a><a class="indexterm" name="id15078"></a><a class="indexterm" name="id15081"></a><a class="indexterm" name="id15084"></a><p>Adición, resta, multiplicación y división de rásteres, píxel a píxel</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterAdd"></a><a class="indexterm" name="id15085"></a><a class="indexterm" name="id15088"></a><a class="indexterm" name="id15091"></a><a class="indexterm" name="id15094"></a><p>Adición, resta, multiplicación y división de rásteres, píxel a píxel</p><pre class="programlisting">
 {float,raster} {+, -, *, /} {float,raster} → raster
 </pre><p>Un ráster tiene los operadores aritméticos de un número temporal, de modo que un ráster derivado se escribe como la expresión que es, como <code class="varname">(nir - red) / (nir + red)</code> o <code class="varname">depth - 8.5</code>, donde PostGIS lo escribe como la expresión de <code class="varname">ST_MapAlgebra</code>. Toda banda del resultado tiene el tipo de píxel <code class="varname">64BF</code>, cualesquiera que sean los tipos de píxel de los operandos, de modo que un píxel contiene la aritmética tal como se calcula: una diferencia negativa de dos bandas sin signo, un producto más allá de su rango y una razón entre cero y uno se conservan en lugar de recortarse o truncarse, y <a class="link" href="ch16s24.html#raster_reclass"><code class="varname">reclass</code></a> reduce el resultado donde se necesita un tipo de píxel menor. Dos rásteres se operan banda a banda sobre los píxeles que comparten, como dos números temporales sobre el tiempo que comparten: deben tener el mismo sistema de referencia, la misma malla y el mismo número de bandas, y dos rásteres que no comparten ningún píxel no tienen resultado. Un píxel sin datos en cualquiera de los operandos no tiene datos en el resultado, que toma el valor sin datos del primer operando que declara uno y no declara ninguno cuando ninguno lo hace, de modo que un resultado igual a cero es un valor. Una división por cero produce un error, sea el divisor un número o un píxel. Las funciones detrás de los operadores son <code class="varname">rasterAdd</code>, <code class="varname">rasterSub</code>, <code class="varname">rasterMul</code> y <code class="varname">rasterDiv</code>.</p><pre class="programlisting">
 -- The normalized difference of two unsigned 16-bit bands
@@ -190,7 +190,7 @@ FROM rast;
 -- Interp=Step;[1.5@2001-01-01 00:00:00+00, 11.5@2001-01-01 06:00:00+00,
 --   21.5@2001-01-01 18:00:00+00, 41.5@2001-01-02 06:00:00+00,
 --   61.5@2001-01-02 18:00:00+00, 61.5@2001-01-03 00:00:00+00]
-</pre></li><li class="listitem"><a name="raster_slope"></a><a class="indexterm" name="id15102"></a><p>Devuelve la pendiente de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_slope"></a><a class="indexterm" name="id15112"></a><p>Devuelve la pendiente de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
 slope(rast raster,nband integer=1,pixeltype text='32BF',units text='DEGREES',
   scale float=1.0,interpolate_nodata boolean=false) → raster
 slope(rast raster,nband integer,customextent raster,pixeltype text='32BF',
@@ -204,7 +204,7 @@ WITH plane AS (
 SELECT ST_Value(slope(r), 2, 2), ST_Value(slope(r, units =&gt; 'PERCENT'), 2, 2)
 FROM plane;
 -- 45 | 100
-</pre></li><li class="listitem"><a name="raster_tri"></a><a class="indexterm" name="id15117"></a><p>Devuelve el índice de rugosidad del terreno de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_tri"></a><a class="indexterm" name="id15127"></a><p>Devuelve el índice de rugosidad del terreno de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
 tri(rast raster,nband integer=1,pixeltype text='32BF',interpolate_nodata boolean=false)
   → raster
 tri(rast raster,nband integer,customextent raster,pixeltype text='32BF',
@@ -217,7 +217,7 @@ WITH dem AS (
     [25, 35, 45, 55]]::double precision[][]) AS r )
 SELECT ST_DumpValues(tri(r), 1) FROM dem;
 -- {{3.75,3.75,5,1.875},{5,7.5,NULL,3.75},{5,8.125,8.125,3.125},{2.5,5.625,5.625,3.75}}
-</pre></li><li class="listitem"><a name="raster_tpi"></a><a class="indexterm" name="id15128"></a><p>Devuelve el índice de posición topográfica de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_tpi"></a><a class="indexterm" name="id15138"></a><p>Devuelve el índice de posición topográfica de una banda de un ráster, píxel a píxel</p><pre class="programlisting">
 tpi(rast raster,nband integer=1,pixeltype text='32BF',interpolate_nodata boolean=false)
   → raster
 tpi(rast raster,nband integer,customextent raster,pixeltype text='32BF',
@@ -230,7 +230,7 @@ WITH dem AS (
     [25, 35, 45, 55]]::double precision[][]) AS r )
 SELECT ST_DumpValues(tpi(r, interpolate_nodata =&gt; true), 1) FROM dem;
 -- {{-3.75,-1.875,-1.875,1.25},{-3.75,0,0,3.75},{-3.75,0,0,3.75},{-1.25,1.875,1.875,3.75}}
-</pre></li><li class="listitem"><a name="raster_mapAlgebra"></a><a class="indexterm" name="id15139"></a><p>Devuelve una estadística del vecindario de cada píxel de una banda de un ráster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_mapAlgebra"></a><a class="indexterm" name="id15149"></a><p>Devuelve una estadística del vecindario de cada píxel de una banda de un ráster</p><pre class="programlisting">
 mapAlgebra(rast raster,nband integer,stat text,pixeltype text=NULL,
   extenttype text='FIRST',customextent raster=NULL,distancex integer=0,
   distancey integer=0) → raster
@@ -244,7 +244,7 @@ SELECT ST_DumpValues(mapAlgebra(r, 1, 'MEAN', '64BF', distancex =&gt; 1, distanc
 FROM dem;
 -- {{17.5,20,32,38.333333333333336},{20,23.75,35,41},{25,29.375,40.625,47},
 --  {27.5,32.5,42.5,47.5}}
-</pre></li><li class="listitem"><a name="raster_clip"></a><a class="indexterm" name="id15167"></a><p>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_clip"></a><a class="indexterm" name="id15177"></a><p>Devuelve un ráster que conserva los píxeles de otro que una geometría cubre</p><pre class="programlisting">
 clip(raster,geom geometry,crop boolean=true,touched boolean=false) → raster
 clip(raster,nband integer[],geom geometry,nodataval float[]=NULL,crop boolean=true,
   touched boolean=false) → raster
@@ -262,7 +262,7 @@ SELECT ST_DumpValues(clip(r, geometry 'SRID=4326;POLYGON((0 1,2 1,2 3,0 3,0 1))'
   AS kept_extent
 FROM rast;
 -- {{10,20},{40,50}} | {{10,20,NULL},{40,50,NULL},{NULL,NULL,NULL}}
-</pre></li><li class="listitem"><a name="raster_transform"></a><a class="indexterm" name="id15180"></a><a class="indexterm" name="id15183"></a><p>Devuelve un ráster expresado en otro sistema de referencia espacial</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_transform"></a><a class="indexterm" name="id15190"></a><a class="indexterm" name="id15193"></a><p>Devuelve un ráster expresado en otro sistema de referencia espacial</p><pre class="programlisting">
 transform(raster,srid integer,algorithm text='NearestNeighbour',maxerr float=0.125,
   scalex float=0,scaley float=0) → raster
 transform(raster,alignto raster,algorithm text='NearestNeighbour',
@@ -294,7 +294,7 @@ SELECT SRID(transformPipeline(r, '+proj=utm +zone=31 +ellps=WGS84', 32631)) AS s
   height(transformPipeline(r, '+proj=utm +zone=31 +ellps=WGS84', 32631)) AS height
 FROM rast;
 -- 32631 | 3 | 3
-</pre></li><li class="listitem"><a name="raster_rescale"></a><a class="indexterm" name="id15211"></a><p>Devuelve un ráster remuestreado a otro tamaño de píxel</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rescale"></a><a class="indexterm" name="id15221"></a><p>Devuelve un ráster remuestreado a otro tamaño de píxel</p><pre class="programlisting">
 rescale(raster,scalex float,scaley float,algorithm text='NearestNeighbour',
   maxerr float=0.125) → raster
 </pre><p>El resultado conserva el sistema de referencia y la esquina superior izquierda del ráster y expresa su cobertura sobre una malla del tamaño de píxel pedido, mediante la misma deformación de GDAL que <code class="varname">ST_Rescale</code> de PostGIS, de modo que una escala más gruesa lee menos píxeles sobre el mismo terreno. Las escalas están en las unidades del sistema de referencia del ráster, y el algoritmo y el error son los de <a class="link" href="ch16s24.html#raster_transform"><code class="varname">transform</code></a>.</p><pre class="programlisting">
@@ -310,7 +310,7 @@ SELECT width(rescale(r, 0.5, -0.5)) AS width,
   scaleX(rescale(r, 0.5, -0.5)) AS scalex
 FROM rast;
 -- 6 | 6 | 0.5
-</pre></li><li class="listitem"><a name="raster_summaryStats"></a><a class="indexterm" name="id15222"></a><p>Devuelve las estadísticas de los píxeles de una banda de ráster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_summaryStats"></a><a class="indexterm" name="id15232"></a><p>Devuelve las estadísticas de los píxeles de una banda de ráster</p><pre class="programlisting">
 summaryStats(raster,nband integer=1,exclude_nodata_value boolean=true) → summarystats
 </pre><p>La banda se lee una sola vez y devuelve el registro <code class="varname">summarystats</code> de PostGIS que devuelve <code class="varname">ST_SummaryStats</code>: el número de píxeles contados, y la suma, la media, la desviación estándar, el mínimo y el máximo de sus valores. Se leen todos los píxeles, por lo que la respuesta es exacta y no muestreada; los píxeles que la banda declara como nodata quedan fuera salvo que <code class="varname">exclude_nodata_value</code> sea falso, y una banda sin ningún píxel que contar devuelve un recuento de cero y ninguna estadística.</p><pre class="programlisting">
 -- Build a 3x3 synthetic elevation raster (SRID 4326, 1 degree pixels)
@@ -322,7 +322,7 @@ WITH rast AS (
     [70.0::float4, 80.0::float4, 90.0::float4]]) AS r )
 SELECT (summaryStats(r)).* FROM rast;
 -- 9 | 450 | 50 | 25.81988897471611 | 10 | 90
-</pre></li><li class="listitem"><a name="raster_summaryStatsAgg"></a><a class="indexterm" name="id15233"></a><p>Devuelve las estadísticas de los píxeles de una banda sobre los rásteres de una columna</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_summaryStatsAgg"></a><a class="indexterm" name="id15243"></a><p>Devuelve las estadísticas de los píxeles de una banda sobre los rásteres de una columna</p><pre class="programlisting">
 summaryStatsAgg(raster,nband integer,exclude_nodata_value boolean) → summarystats
 summaryStatsAgg(raster,exclude_nodata_value boolean) → summarystats
 </pre><p>El agregado <code class="varname">ST_SummaryStatsAgg</code> de PostGIS, que devuelve el registro <code class="varname">summarystats</code> que <a class="link" href="ch16s24.html#raster_summaryStats"><code class="varname">summaryStats</code></a> devuelve para un ráster sobre todos los píxeles de la banda de los rásteres, la banda 1 cuando se omite <code class="varname">nband</code>. Se leen todos los píxeles, como en <code class="varname">summaryStats</code>, por lo que las formas no toman ningún porcentaje de muestreo y la desviación estándar es la de todos los píxeles y no la de una muestra. Un ráster <code class="varname">NULL</code> se omite, sobre ningún ráster el agregado devuelve <code class="varname">NULL</code>, y unos rásteres sin ningún píxel que contar devuelven un recuento de cero y ninguna estadística. El agregado se ejecuta en paralelo, combinando las estadísticas de los procesos, mientras que el de PostGIS no tiene función de combinación. Una banda que un ráster no tiene genera un error, mientras que PostGIS omite el ráster.</p><pre class="programlisting">
@@ -334,7 +334,7 @@ WITH tiles AS (
     '32BF'::text, 3.0::float8, -9999.0::float8) )
 SELECT (summaryStatsAgg(r, 1, true)).* FROM tiles;
 -- 8 | 16 | 2 | 1 | 1 | 3
-</pre></li><li class="listitem"><a name="raster_summarystatsCount"></a><a class="indexterm" name="id15249"></a><a class="indexterm" name="id15252"></a><a class="indexterm" name="id15255"></a><a class="indexterm" name="id15258"></a><a class="indexterm" name="id15261"></a><a class="indexterm" name="id15264"></a><p>Devuelve el número de píxeles, la suma, la media, la desviación estándar, el mínimo o el máximo de las estadísticas de una banda de ráster</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_summarystatsCount"></a><a class="indexterm" name="id15259"></a><a class="indexterm" name="id15262"></a><a class="indexterm" name="id15265"></a><a class="indexterm" name="id15268"></a><a class="indexterm" name="id15271"></a><a class="indexterm" name="id15274"></a><p>Devuelve el número de píxeles, la suma, la media, la desviación estándar, el mínimo o el máximo de las estadísticas de una banda de ráster</p><pre class="programlisting">
 summarystatsCount(summarystats) → bigint
 summarystatsSum(summarystats) → float
 summarystatsMean(summarystats) → float
@@ -352,7 +352,7 @@ WITH rast AS (
 SELECT summarystatsCount(summaryStats(r)), summarystatsMean(summaryStats(r)),
   summarystatsStddev(summaryStats(r)) FROM rast;
 -- 9 | 50 | 25.81988897471611
-</pre></li><li class="listitem"><a name="raster_dumpAsPolygons"></a><a class="indexterm" name="id15280"></a><p>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="raster_dumpAsPolygons"></a><a class="indexterm" name="id15290"></a><p>Devuelve los polígonos de una banda de ráster, uno por cada grupo de píxeles que comparten un valor <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 dumpAsPolygons(raster,band integer=1,exclude_nodata_value boolean=true) → {geomval}
@@ -369,7 +369,7 @@ FROM rast, dumpAsPolygons(reclass(r, 1, '0-50:1, [50-100]:2', '8BUI', 0))
 ORDER BY val;
 -- 1 | POLYGON((0 3,0 1,1 1,1 2,3 2,3 3,0 3))
 -- 2 | POLYGON((1 2,1 1,0 1,0 0,3 0,3 2,1 2))
-</pre></li><li class="listitem"><a name="raster_pixelAsPoints"></a><a class="indexterm" name="id15299"></a><p>Devuelve los píxeles de una banda de ráster como puntos <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="raster_pixelAsPoints"></a><a class="indexterm" name="id15309"></a><p>Devuelve los píxeles de una banda de ráster como puntos <span class="inlinemediaobject"><img src="../images/srf.svg" width="13"></span>
 
 </p><pre class="programlisting">
 pixelAsPoints(rast raster,band integer=1,exclude_nodata_value boolean=true)
@@ -382,7 +382,7 @@ WITH rast AS (
 SELECT ST_AsText(geom), val, x, y FROM rast, pixelAsPoints(r) LIMIT 2;
 -- POINT(10 20) | 1.5 | 1 | 1
 -- POINT(14 20) |   3 | 3 | 1
-</pre></li><li class="listitem"><a name="raster_dumpValues"></a><a class="indexterm" name="id15316"></a><p>Devuelve los valores de las bandas de un ráster como arreglos</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_dumpValues"></a><a class="indexterm" name="id15326"></a><p>Devuelve los valores de las bandas de un ráster como arreglos</p><pre class="programlisting">
 dumpValues(rast raster,nband integer[]=NULL,exclude_nodata_value boolean=true)
   → setof (nband integer,valarray float[])
 dumpValues(rast raster,nband integer,exclude_nodata_value boolean=true) → float[]
@@ -393,21 +393,21 @@ WITH rast AS (
     ARRAY[[1.5, -9999, 3], [4, 5, 6]]::double precision[][]) AS r )
 SELECT dumpValues(r, 1), dumpValues(r, 1, false) FROM rast;
 -- {{1.5,NULL,3},{4,5,6}} | {{1.5,-9999,3},{4,5,6}}
-</pre></li><li class="listitem"><a name="raster_rasterTileValue"></a><a class="indexterm" name="id15330"></a><p>Muestrea una tesela ráster <code class="varname">raquet</code> a lo largo de una trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValue"></a><a class="indexterm" name="id15340"></a><p>Muestrea una tesela ráster <code class="varname">raquet</code> a lo largo de una trayectoria</p><pre class="programlisting">
 rasterTileValue(tgeompoint,rast raquet) → tfloat
 </pre><p>Lee la tesela a lo largo de <code class="varname">traj</code> (SRID 4326) como <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> lee un ráster, devolviendo los valores de píxel como un <code class="varname">tfloat</code>. Es el equivalente tipado de <a class="link" href="ch16s24.html#raster_rasterTileValueQuadbin"><code class="varname">rasterTileValueQuadbin</code></a>: las dimensiones, la celda QUADBIN, el tipo de píxel y el tratamiento de nodata se toman del valor <code class="varname">raquet</code> en lugar de argumentos separados. Devuelve <code class="varname">NULL</code> cuando el trayecto nunca encuentra un píxel de la tesela con datos.</p><pre class="programlisting">
 -- Sample pre-packaged raquet tiles along ship trajectories
 SELECT t.tripid, rasterTileValue(t.trip, r.tile)
 FROM trips t JOIN elevation_tiles r
   ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))));
-</pre></li><li class="listitem"><a name="raster_rasterTileValueArray"></a><a class="indexterm" name="id15347"></a><p>Muestrea un arreglo de teselas ráster <code class="varname">raquet</code> a lo largo de una trayectoria</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValueArray"></a><a class="indexterm" name="id15357"></a><p>Muestrea un arreglo de teselas ráster <code class="varname">raquet</code> a lo largo de una trayectoria</p><pre class="programlisting">
 rasterTileValue(tgeompoint,rast raquet[]) → tfloat
 </pre><p>Lee cada tesela de <code class="varname">rast</code> a lo largo de <code class="varname">traj</code> (SRID 4326) y devuelve los valores de píxel como un único <code class="varname">tfloat</code>. Una trayectoria que sale de una tesela queda cubierta por varias, y cada una responde la parte del trayecto que está sobre ella. Las teselas de un mismo nivel de zoom particionan el plano, de modo que responden tiempos disjuntos. Las teselas de niveles de zoom distintos se solapan, y cuando dos de ellas responden el mismo tiempo se conserva el valor de la tesela de mayor zoom, que es la que tiene la resolución más fina. Devuelve <code class="varname">NULL</code> cuando el trayecto nunca encuentra un píxel de una tesela con datos.</p><pre class="programlisting">
 -- Sample a trajectory across every tile it crosses, in one value
 SELECT t.tripid, rasterTileValue(t.trip, array_agg(r.tile)) FROM trips t
 JOIN elevation_tiles r ON r.quadbin IN (SELECT unnest(getValues(tquadbin(t.trip, 8))))
 GROUP BY t.tripid, t.trip;
-</pre></li><li class="listitem"><a name="raster_rasterTileValueQuadbin"></a><a class="indexterm" name="id15360"></a><p>Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_rasterTileValueQuadbin"></a><a class="indexterm" name="id15370"></a><p>Muestrea un chip ráster de Raquet a lo largo de una trayectoria usando una celda QUADBIN para la georreferenciación</p><pre class="programlisting">
 rasterTileValueQuadbin(tgeompoint,pixels bytea,width integer,height integer,
   quadbin,pixtype text,nodata float,has_nodata boolean) → tfloat
 </pre><p>Lee un arreglo de píxeles de banda única en orden de fila mayor a lo largo de <code class="varname">traj</code> (SRID 4326), como <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a> lee un ráster. La georreferenciación de la tesela (rectángulo delimitador, mapeo de píxel a coordenadas) se deriva únicamente de <code class="varname">quadbin</code> mediante la transformada de tesela deslizante Web-Mercator. El argumento <code class="varname">pixtype</code> debe ser uno de <code class="varname">uint8</code>, <code class="varname">int8</code>, <code class="varname">uint16</code>, <code class="varname">int16</code>, <code class="varname">uint32</code>, <code class="varname">int32</code>, <code class="varname">uint64</code>, <code class="varname">int64</code>, <code class="varname">float16</code>, <code class="varname">float32</code> o <code class="varname">float64</code>. Cuando <code class="varname">has_nodata</code> es verdadero, un píxel igual a <code class="varname">nodata</code> no lleva valor. Devuelve <code class="varname">NULL</code> cuando el trayecto nunca encuentra un píxel con datos.</p><pre class="programlisting">
@@ -421,7 +421,7 @@ JOIN elevation_raquet r
 SELECT t.tripid, avgValue(rasterTileValueQuadbin(t.trip, 
   r.band_1, 256, 256, r.block::quadbin, 'int16', -9999, true)) AS mean_sst FROM trips t
 JOIN sst_raquet r ON r.block IN (SELECT unnest(getValues(tquadbin(t.trip, 6)))::bigint);
-</pre></li><li class="listitem"><a name="raster_atRasterValue"></a><a class="indexterm" name="id15387"></a><p>Devuelve la parte de una trayectoria donde el valor ráster que lee cae dentro de un rango de flotante</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_atRasterValue"></a><a class="indexterm" name="id15397"></a><p>Devuelve la parte de una trayectoria donde el valor ráster que lee cae dentro de un rango de flotante</p><pre class="programlisting">
 atRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 atRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </pre><p>Lee <code class="varname">rasterValue</code> a lo largo de <code class="varname">traj</code> y devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está dentro de <code class="varname">vspan</code>. Devuelve <code class="varname">NULL</code> cuando ningún tiempo satisface la condición. La forma que recibe <code class="varname">path</code> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
@@ -436,21 +436,21 @@ SELECT asText(atRasterValue(tgeompoint 'SRID=4326;
   floatspan '[40, 90]')) FROM rast;
 /* {[POINT(1 2)@2001-01-01 12:00:00, POINT(1.5 1.5)@2001-01-02,
    POINT(0.5 0.5)@2001-01-03]} */
-</pre></li><li class="listitem"><a name="raster_minusRasterValue"></a><a class="indexterm" name="id15402"></a><p>Devuelve la parte de una trayectoria donde el valor ráster que lee cae fuera de un rango de flotante</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_minusRasterValue"></a><a class="indexterm" name="id15412"></a><p>Devuelve la parte de una trayectoria donde el valor ráster que lee cae fuera de un rango de flotante</p><pre class="programlisting">
 minusRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → tgeompoint
 minusRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → tgeompoint
 </pre><p>El complemento de <code class="varname">atRasterValue</code>: devuelve la sub-trayectoria restringida a los tiempos en que el valor del píxel está fuera de <code class="varname">vspan</code>. Devuelve <code class="varname">NULL</code> cuando el valor del píxel está dentro de <code class="varname">vspan</code> en todo momento. La forma que recibe <code class="varname">path</code> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
 -- Keep only the instant whose raster value (10) is below 40
 SELECT asText(minusRasterValue(traj, elev_raster, floatspan '[40, 9999]')) FROM trips,
   elevation_raster;
-</pre></li><li class="listitem"><a name="raster_eRasterValue"></a><a class="indexterm" name="id15417"></a><p>Devuelve verdadero si la trayectoria alguna vez lee un valor de píxel ráster dentro de un rango de flotante</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_eRasterValue"></a><a class="indexterm" name="id15427"></a><p>Devuelve verdadero si la trayectoria alguna vez lee un valor de píxel ráster dentro de un rango de flotante</p><pre class="programlisting">
 eRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 eRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </pre><p>Devuelve <code class="varname">true</code> cuando <code class="varname">traj</code> lee alguna vez un valor de píxel dentro de <code class="varname">vspan</code>, <code class="varname">false</code> en caso contrario. Devuelve <code class="varname">NULL</code> únicamente cuando la entrada es <code class="varname">NULL</code>. La forma que recibe <code class="varname">path</code> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
 -- Trips that ever crossed terrain above 200 m
 SELECT tripid FROM trips,
   elevation_raster WHERE eRasterValue(trip, elev_raster, floatspan '[200, 9999]');
-</pre></li><li class="listitem"><a name="raster_aRasterValue"></a><a class="indexterm" name="id15434"></a><p>Devuelve verdadero si cada valor de píxel que la trayectoria lee sobre el ráster está dentro de un rango de flotante</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="raster_aRasterValue"></a><a class="indexterm" name="id15444"></a><p>Devuelve verdadero si cada valor de píxel que la trayectoria lee sobre el ráster está dentro de un rango de flotante</p><pre class="programlisting">
 aRasterValue(tgeompoint,rast raster,vspan floatspan,band integer=1) → boolean
 aRasterValue(tgeompoint,path text,vspan floatspan,band integer=1) → boolean
 </pre><p>Devuelve <code class="varname">true</code> cuando cada valor de píxel que <code class="varname">traj</code> lee sobre el ráster está dentro de <code class="varname">vspan</code>, <code class="varname">false</code> cuando al menos uno no lo está. Devuelve <code class="varname">NULL</code> únicamente cuando la entrada es <code class="varname">NULL</code>. La forma que recibe <code class="varname">path</code> lee un archivo ráster del servidor, como lo hace la forma correspondiente de <a class="link" href="ch16s24.html#raster_rasterValue"><code class="varname">rasterValue</code></a>.</p><pre class="programlisting">
