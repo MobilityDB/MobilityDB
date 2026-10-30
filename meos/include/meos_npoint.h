@@ -238,6 +238,10 @@ extern Set *npoint_union_transfn(Set *state, const Npoint *np);
 extern Set *union_npoint_set(const Npoint *np, const Set *s);
 extern Set *union_set_npoint(const Set *s, const Npoint *np);
 
+/* Distance functions */
+
+extern double distance_npointset_npointset(const Set *s1, const Set *s2);
+
 /*===========================================================================*
  * Functions for temporal network points
  *===========================================================================*/

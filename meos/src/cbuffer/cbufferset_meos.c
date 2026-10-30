@@ -42,10 +42,13 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "cbuffer/cbuffer.h"
+#include "geo/geo_funcs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -348,6 +351,29 @@ cbuffer_union_transfn(Set *state, const Cbuffer *cb)
   if (state && ! ensure_set_isof_type(state, T_CBUFFERSET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(cb), T_CBUFFER);
+}
+
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_cbuffer_set_dist
+ * @brief Return the distance between two circular buffer sets, as
+ * #distance_geoset_geoset does for two geo sets
+ * @param[in] s1,s2 Sets
+ * @errval DBL_MAX
+ * @csqlfn #Distance_set_set()
+ */
+double
+distance_cbufferset_cbufferset(const Set *s1, const Set *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_CBUFFERSET(s1, DBL_MAX); VALIDATE_CBUFFERSET(s2, DBL_MAX);
+  if (! ensure_valid_set_set(s1, s2) ||
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
 /*****************************************************************************/
