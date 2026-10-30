@@ -67,6 +67,9 @@
 #include <meos_cbuffer.h>
 
 static const char *SQUARE = "POLYGON((0 0,1000 0,1000 1000,0 1000,0 0))";
+/* The circle of centre (0 0) and radius 500 as two arcs of three points */
+static const char *CIRCLE =
+  "CURVEPOLYGON(CIRCULARSTRING(500 0,0 500,-500 0,0 -500,500 0))";
 
 /* The value at its instant of a temporal boolean, freed */
 static bool
@@ -88,6 +91,24 @@ relate(double x, double y, double r, bool *contains, bool *covers,
     x, y, r);
   Temporal *temp = tcbuffer_in(buf);
   GSERIALIZED *gs = geom_in(SQUARE, -1);
+  assert(temp != NULL && gs != NULL);
+  *contains = at_instant(tcontains_geo_tcbuffer(gs, temp));
+  *covers = at_instant(tcovers_geo_tcbuffer(gs, temp));
+  *touches = at_instant(ttouches_tcbuffer_geo(temp, gs));
+  free(gs); free(temp);
+}
+
+/* Contains, covers and touches of a disc at rest against the geometry of
+ * @p wkt, as #relate reads them against the square */
+static void
+relate_geo(const char *wkt, double x, double y, double r, bool *contains,
+  bool *covers, bool *touches)
+{
+  char buf[256];
+  snprintf(buf, sizeof(buf), "Cbuffer(Point(%.17g %.17g),%.17g)@2001-01-01",
+    x, y, r);
+  Temporal *temp = tcbuffer_in(buf);
+  GSERIALIZED *gs = geom_in(wkt, -1);
   assert(temp != NULL && gs != NULL);
   *contains = at_instant(tcontains_geo_tcbuffer(gs, temp));
   *covers = at_instant(tcovers_geo_tcbuffer(gs, temp));
@@ -123,6 +144,23 @@ main(void)
   /* Radius 0 on the side y = 0: covered, not contained */
   relate(500.0, 0.0, 0.0, &c, &v, &t);
   assert(! c && v);
+
+  /* Against the circle of radius 500, tangent at (300 400), a point of an
+   * arc between its input points: from outside, the centre (480 640) at
+   * distance 800 from the centre of the circle */
+  relate_geo(CIRCLE, 480.0, 640.0, 300.0, &c, &v, &t);
+  assert(! c && ! v && t);
+  relate_geo(CIRCLE, 480.0, 640.0, 300.0 - 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  relate_geo(CIRCLE, 480.0, 640.0, 300.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  /* From inside, the centre (120 160) at distance 200 */
+  relate_geo(CIRCLE, 120.0, 160.0, 300.0, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_geo(CIRCLE, 120.0, 160.0, 300.0 - 0x1p-40, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_geo(CIRCLE, 120.0, 160.0, 300.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
 
   /* Disc (2 0) of radius 3 in the static disc (0 0) of radius 5, tangent
    * from inside at (5 0) */

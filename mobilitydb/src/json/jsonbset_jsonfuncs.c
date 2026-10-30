@@ -558,17 +558,8 @@ Jsonbset_extract_path_common(FunctionCallInfo fcinfo, bool isjsonb UNUSED,
     &path_len);
   if (path_len == 0)
     PG_RETURN_SET_P(set);
-  /*
-   * If the array contains any null elements, return NULL, on the grounds
-   * that you'd have gotten NULL if any RHS value were NULL in a nested
-   * series of applications of the -> operator.  (Note: because we also
-   * return NULL for error cases such as no-such-field, this is true
-   * regardless of the contents of the rest of the array.)
-   */
-  if (array_contains_nulls(path))
-    PG_RETURN_NULL();
-  
-  /* Compute the result */
+
+  /* Compute the result, NULL for a path holding a NULL element */
   Set *result = // isjsonb ?
     jsonbset_extract_path_common(set, (text **) path_elems, path_len, astext,
       null_handle); // :

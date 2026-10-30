@@ -233,7 +233,7 @@ typedef void* (*rt_allocator)(size_t size);
 typedef void* (*rt_reallocator)(void *mem, size_t size);
 typedef void  (*rt_deallocator)(void *mem);
 typedef void  (*rt_message_handler)(const char* string, va_list ap)
-  __attribute__ (( format(printf,1,0) ));
+  __attribute__ (( format(LW_PRINTF_ATTRIBUTE,1,0) ));
 
 /*******************************************************************
  * Functions that may be used by the raster core function's caller
@@ -258,9 +258,9 @@ extern void rtdealloc(void* mem);
 /**
  * Wrappers used for reporting errors and info.
  **/
-void rterror(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-void rtinfo(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
-void rtwarn(const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
+void rterror(const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
+void rtinfo(const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
+void rtwarn(const char *fmt, ...) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 2)));
 
 /**
  * Wrappers used for options
@@ -274,9 +274,9 @@ char* rtstrdup(const char *str);
 void * default_rt_allocator(size_t size);
 void * default_rt_reallocator(void * mem, size_t size);
 void default_rt_deallocator(void * mem);
-void default_rt_error_handler(const char * fmt, va_list ap) __attribute__ ((format (printf, 1, 0)));
-void default_rt_warning_handler(const char * fmt, va_list ap) __attribute__ ((format (printf, 1, 0)));
-void default_rt_info_handler(const char * fmt, va_list ap) __attribute__ ((format (printf, 1, 0)));
+void default_rt_error_handler(const char * fmt, va_list ap) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 0)));
+void default_rt_warning_handler(const char * fmt, va_list ap) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 0)));
+void default_rt_info_handler(const char * fmt, va_list ap) __attribute__ ((format(LW_PRINTF_ATTRIBUTE, 1, 0)));
 char * default_rt_options(const char* varname);
 
 /* Debugging macros */

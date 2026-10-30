@@ -359,6 +359,9 @@ extern bool CheckDateTokenTables(void);
 extern TimeZoneAbbrevTable *ConvertTimeZoneAbbrevs(struct tzEntry *abbrevs,
                            int n);
 extern void InstallTimeZoneAbbrevs(TimeZoneAbbrevTable *tbl);
+#if MEOS
+extern void UninstallTimeZoneAbbrevs(void);
+#endif
 
 extern bool AdjustTimestampForTypmod(Timestamp *time, int32 typmod,
   Node *escontext);

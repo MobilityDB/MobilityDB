@@ -574,6 +574,10 @@ meos_finalize_timezone(void)
     tzcache_my_destroy(timezone_cache);
     timezone_cache = NULL;
   }
+#if MEOS
+  /* The abbreviations this thread holds, the last thread freeing them */
+  pg_tznames_release_default();
+#endif
   return;
 }
 
