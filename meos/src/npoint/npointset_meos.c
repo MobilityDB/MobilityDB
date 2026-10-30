@@ -43,9 +43,12 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_geo.h>
+#include <meos_internal.h>
 #include "temporal/set.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 
 /*****************************************************************************
  * Input/output functions
@@ -368,6 +371,29 @@ npoint_union_transfn(Set *state, const Npoint *np)
   if (state && ! ensure_set_isof_type(state, T_NPOINTSET))
     return NULL;
   return value_union_transfn(state, PointerGetDatum(np), T_NPOINT);
+}
+
+/*****************************************************************************
+ * Distance functions
+ *****************************************************************************/
+
+/**
+ * @ingroup meos_npoint_set_dist
+ * @brief Return the distance between two network point sets, as
+ * #distance_geoset_geoset does for two geo sets
+ * @param[in] s1,s2 Sets
+ * @errval DBL_MAX
+ * @csqlfn #Distance_set_set()
+ */
+double
+distance_npointset_npointset(const Set *s1, const Set *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NPOINTSET(s1, DBL_MAX); VALIDATE_NPOINTSET(s2, DBL_MAX);
+  if (! ensure_valid_set_set(s1, s2) ||
+      ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
 /*****************************************************************************/

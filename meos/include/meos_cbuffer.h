@@ -218,6 +218,10 @@ extern Set *minus_set_cbuffer(const Set *s, const Cbuffer *cb);
 extern Set *union_cbuffer_set(const Cbuffer *cb, const Set *s);
 extern Set *union_set_cbuffer(const Set *s, const Cbuffer *cb);
 
+/* Distance functions */
+
+extern double distance_cbufferset_cbufferset(const Set *s1, const Set *s2);
+
 /*===========================================================================*
  * Functions for temporal types
  *===========================================================================*/

@@ -139,6 +139,10 @@
  * @defgroup meos_npoint_set_setops Set operations
  * @ingroup meos_npoint_set
  * @brief Set operations for network point sets
+ *
+ * @defgroup meos_npoint_set_dist Distance functions
+ * @ingroup meos_npoint_set
+ * @brief Distance functions for network point sets
  */
 
 /*****************************************************************************/

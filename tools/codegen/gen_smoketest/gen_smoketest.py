@@ -935,8 +935,9 @@ TPOSE_CONFIG = dict(
         "tposechain_value":           {0: "tposechain_geod1"},
         "tposechainarr_as_geopose":   {0: "tposechainarr1", 1: "2"},
     },
-    # A Set * argument to the pose set operations must be a poseset, not the
-    # default tstzset; and the pose chain functions are a second family in this
+    # A Set * argument to the pose set operations and to the distance of two
+    # pose sets must be a poseset, not the default tstzset; and the pose chain
+    # functions are a second family in this
     # header, whose Set * is a posechainset and whose Temporal * is a
     # tposechain. The chain rule matches the name anywhere, so it covers the
     # set operations spelled with the operand on either side
@@ -944,7 +945,7 @@ TPOSE_CONFIG = dict(
     # A Set * that must be a tstzset (tposechainseq_from_base_tstzset) is
     # matched last, so it wins over the chain rule, as in the cbuffer config.
     name_arg_map={
-        r"_pose_set$|_set_pose$|^poseset": {"Set *": "poseset1"},
+        r"_pose_set$|_set_pose$|^poseset|_poseset_poseset$": {"Set *": "poseset1"},
         r"posechain": {"Set *": "posechainset1", "Temporal *": "tposechain1"},
         r"tstzset": {"Set *": "tstzset1"},
     },

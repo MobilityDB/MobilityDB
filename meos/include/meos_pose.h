@@ -253,6 +253,10 @@ extern Set *pose_union_transfn(Set *state, const Pose *pose);
 extern Set *union_pose_set(const Pose *pose, const Set *s);
 extern Set *union_set_pose(const Set *s, const Pose *pose);
 
+/* Distance functions */
+
+extern double distance_poseset_poseset(const Set *s1, const Set *s2);
+
 /*===========================================================================*
  * Functions for temporal poses
  *===========================================================================*/
@@ -539,6 +543,10 @@ extern Set *minus_set_posechain(const Set *s, const PoseChain *pc);
 extern Set *posechain_union_transfn(Set *state, const PoseChain *pc);
 extern Set *union_posechain_set(const PoseChain *pc, const Set *s);
 extern Set *union_set_posechain(const Set *s, const PoseChain *pc);
+
+/* Distance functions */
+
+extern double distance_posechainset_posechainset(const Set *s1, const Set *s2);
 
 /******************************************************************************
  * Functions for temporal pose chains
