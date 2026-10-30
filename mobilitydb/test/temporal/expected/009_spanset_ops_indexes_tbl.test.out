@@ -7,8 +7,8 @@ DROP INDEX
 DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
 NOTICE:  index "tbl_floatspanset_rtree_idx" does not exist, skipping
 DROP INDEX
-DROP INDEX IF EXISTS tbl_datezspanset_rtree_idx;
-NOTICE:  index "tbl_datezspanset_rtree_idx" does not exist, skipping
+DROP INDEX IF EXISTS tbl_datespanset_rtree_idx;
+NOTICE:  index "tbl_datespanset_rtree_idx" does not exist, skipping
 DROP INDEX
 DROP INDEX IF EXISTS tbl_tstzspanset_rtree_idx;
 NOTICE:  index "tbl_tstzspanset_rtree_idx" does not exist, skipping

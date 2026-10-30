@@ -34,7 +34,7 @@
 DROP INDEX IF EXISTS tbl_intspanset_rtree_idx;
 DROP INDEX IF EXISTS tbl_bigintspanset_rtree_idx;
 DROP INDEX IF EXISTS tbl_floatspanset_rtree_idx;
-DROP INDEX IF EXISTS tbl_datezspanset_rtree_idx;
+DROP INDEX IF EXISTS tbl_datespanset_rtree_idx;
 DROP INDEX IF EXISTS tbl_tstzspanset_rtree_idx;
 
 DROP INDEX IF EXISTS tbl_intspanset_quadtree_idx;
