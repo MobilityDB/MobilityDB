@@ -96,6 +96,10 @@ COUNT_DOC = re.compile(r"@(?:brief|return)\s+[^\n]*\bnumber of\b", re.I)
 # negative. That is what the rule actually asks for, exactly as it asks it of
 # the predicates and the locators above.
 BOX_DISTANCE = re.compile(r"^nad_tbox")
+# A distance states that domain in its own contract as readily as by its name:
+# the note "A distance is never negative" is the domain the -1 lies outside,
+# read as the predicates and the counts are read from their doc
+DISTANCE_DOC = re.compile(r"A distance is never negative")
 # A comparator answers -1, 0 or 1, so its domain is those three values and the
 # maximum lies outside it. That is the same domain rule the counts, the
 # predicates and the box distance follow, landing on INT_MAX here precisely
@@ -223,7 +227,7 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             want = "-1"
         if want == "DBL_MAX" and LOCATOR.search(name):
             want = "-1.0"
-        if BOX_DISTANCE.match(name):
+        if BOX_DISTANCE.match(name) or DISTANCE_DOC.search("\n".join(doc)):
             want = "-1.0" if want == "DBL_MAX" else "-1"
 
         if (documented is None and want == "INT_MAX" and CMP.search(name) and
