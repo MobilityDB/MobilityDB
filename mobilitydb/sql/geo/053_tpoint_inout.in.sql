@@ -223,12 +223,12 @@ CREATE FUNCTION asEWKB(tgeogpoint, endian text DEFAULT '')
 
 CREATE FUNCTION asEWKB(geometry, endian text DEFAULT '')
   RETURNS bytea
-  AS 'SELECT @extschema@.ST_AsEWKB($1, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION asEWKB(geography, endian text DEFAULT '')
   RETURNS bytea
-  AS 'SELECT @extschema@.ST_AsEWKB($1::geometry, $2)'
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;
+  AS 'MODULE_PATHNAME', 'Geo_as_ewkb'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asGeoJSON(geometry, maxdecimaldigits integer DEFAULT 9,
     options integer DEFAULT 8)
