@@ -166,8 +166,7 @@ int main(void)
     errno_ok);
   assert(rel_ok == true);
   assert(errno_ok == 0);
-  /* A TIN decomposes into the triangles it collects, so the edges answer it
-   * and neither build consults GEOS for it */
+  /* A TIN decomposes into the triangles it collects, so the edges answer it */
   GSERIALIZED *tin = geom_in(
     "Tin(((0 0,0 1,1 1,0 0)),((0 0,1 0,1 1,0 0)))", -1);
   assert(tin != NULL);
@@ -178,10 +177,8 @@ int main(void)
     errno_tin);
   assert(rel_tin == true);
   assert(errno_tin == 0);
-  /* A polyhedral surface decomposes into its faces the same way, and it is the
-   * one type GEOS cannot be asked about at all -- LWGEOM2GEOS reaches an
-   * lwerror that ends the process rather than returning -- so the edges are
-   * what answer it in either build */
+  /* A polyhedral surface decomposes into its faces the same way, so the edges
+   * answer it */
   GSERIALIZED *phs = geom_in(
     "PolyhedralSurface Z (((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0)),"
     "((0 0 0,0 1 0,0 1 1,0 0 1,0 0 0)))", -1);
@@ -1230,11 +1227,7 @@ int main(void)
   /* A subject drawing NOTHING has nothing for a clip to take, whatever the
    * clip draws. The rule above answers a region unchanged where the clip is of
    * lower dimension, and an empty subject reaches it the same way: it keeps
-   * the answer it already gives, without the overlay library being asked.
-   * The assertion holds on the previous code too, since the library answers
-   * the same empty geometry -- what it guards is that the answer stays that
-   * one once nothing is asked. Without GEOS the two separate: the previous
-   * route declines, this one answers */
+   * the answer it already gives, without the overlay being asked */
   const char *mtsub[] = { "POLYGON EMPTY", "MULTIPOLYGON EMPTY" };
   const char *mtclip[] = { "LINESTRING(0 0,5 5)", "POINT(1 1)" };
   for (int i = 0; i < 2; i++)
@@ -2128,8 +2121,8 @@ int main(void)
   meos_errno_reset();
 
   /* The clustering seeds itself from the CENTROID of every input that is not a
-   * point, so an array carrying a line reaches an answer a build with no GEOS
-   * has to hold on its own. The two clusters here are the pair at the origin
+   * point, so an array carrying a line reaches the native centroid. The two
+   * clusters here are the pair at the origin
    * and the point far from it */
   int nkmeans = 0;
   int *kmeans = geo_cluster_kmeans(cl, 4, 2, &nkmeans);
@@ -2187,8 +2180,7 @@ int main(void)
   meos_errno_reset();
 
   /* A TIN is a set of triangles, so it covers what the same triangles cover
-   * written any other way. GEOS carries no TIN at all, so what answers for it
-   * is that identity rather than a foreign answer */
+   * written any other way */
   GSERIALIZED *adjtin = geom_in("TIN Z (((0 0 0,0 1 0,1 1 0,0 0 0)),"
     "((0 0 0,1 1 0,1 0 0,0 0 0)))", -1);
   assert(geom_relate_pattern(adjtin, diag, "1********") == true);
@@ -2928,7 +2920,7 @@ int main(void)
     meos_errno_reset();
   }
 
-  /* An overlay of a geometry the GEOS library cannot read answers NOTHING
+  /* An overlay of a geometry the native overlay cannot read answers NOTHING
    * rather than an empty geometry, and serializing what is absent reads a null
    * pointer. A polyhedral surface is the type it refuses, and the error the
    * refusal raises is what a caller reads the absence by. Under the handler
@@ -3099,7 +3091,7 @@ int main(void)
     "TRIANGLE((0 0,4 0,2 4,0 0))",
     "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))",
     /* A surface of one flat face bounds a region as much as a polygon does,
-     * and it is the region the GEOS overlay refuses to read at all, so here
+     * and it is the region the overlay refuses to read at all, so here
      * the rule answers where reaching the overlay has nothing to answer */
     "POLYHEDRALSURFACE(((0 0,4 0,4 4,0 4,0 0)))",
   };
@@ -3209,8 +3201,8 @@ int main(void)
   /* An areal pair is overlaid on the circles its operands carry. The two
    * discs of radius 2 about (2,2) and (4,2) cross where both circles pass,
    * at x = 3 and y = 2 +- sqrt(3), and the answer names those points and
-   * keeps the two arcs between them -- where reaching the GEOS overlay
-   * strokes both circles first and answers the chords */
+   * keeps the two arcs between them rather than the chords a linearization
+   * of both circles puts in their place */
   const char *d1w = "CURVEPOLYGON(CIRCULARSTRING(0 2,2 4,4 2,2 0,0 2))";
   const char *d2w = "CURVEPOLYGON(CIRCULARSTRING(2 2,4 4,6 2,4 0,2 2))";
   const char *inw = "CURVEPOLYGON(CIRCULARSTRING(1 2,2 3,3 2,2 1,1 2))";

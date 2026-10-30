@@ -32,7 +32,7 @@
  * @brief GDAL-backed ingest of a raster file into a Raquet raster chip
  * @details This is the one place in the RASTER family that depends on GDAL:
  * MEOS owns
- * the raster-format decode (as it owns geometry decode via PostGIS/GEOS),
+ * the raster-format decode (as it owns geometry decode via PostGIS),
  * rather than delegating it to an external tool. GDAL opens any of its
  * supported raster formats, and the first band is packed row-major into the
  * ::T_RAQUET value identified by a CARTO QUADBIN cell. The rest of the family

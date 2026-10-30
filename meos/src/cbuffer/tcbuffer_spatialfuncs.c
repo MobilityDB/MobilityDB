@@ -462,7 +462,7 @@ tcbufferseq_linear_traversed_area(const TSequence *seq, GSERIALIZED **result)
  * from each instant to the next
  * @details No other route answers it: the union of the pieces of the
  * segments reads their arcs within tolerances, or as the chains of segments
- * GEOS takes in their place, which is not the region swept. Where the exact
+ * a linearization puts in their place, which is not the region swept. Where the exact
  * arrangement leaves the region undecided, the error says so
  * @param[in] seqs,count Sequences of the temporal circular buffer
  * @return The region, or @p NULL with an error where it is not decided

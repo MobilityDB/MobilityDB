@@ -2242,8 +2242,9 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
   for (i = 0; i < ngeoms; i++)
     lwgeoms[i] = lwgeom_from_gserialized(geoms[i]);
 
-  /* The clustering of liblwgeom reaches GEOS only for the index narrowing
-   * the pairs whose distance it computes, which the bounding boxes answer */
+  /* The pairs whose distance is computed are narrowed by their bounding
+   * boxes (#geo_union_dbscan), where the clustering of liblwgeom narrows them
+   * with a GEOS index */
   bool success = geo_union_dbscan(lwgeoms, ngeoms, uf, tolerance,
     (uint32_t) minpoints, minpoints > 1 ? &is_in_cluster : NULL);
 
@@ -2296,10 +2297,10 @@ geo_cluster_intersecting(const GSERIALIZED **geoms, uint32_t ngeoms,
 
   /* TODO short-circuit for one element? */
 
-  /* The clustering of liblwgeom reaches GEOS for the index narrowing the pairs
-   * whose intersection it asks about, and for the predicate itself. The
-   * bounding boxes answer the narrowing and the native engine answers the
-   * predicate */
+  /* The pairs whose intersection is asked about are narrowed by their
+   * bounding boxes and the native engine answers the predicate
+   * (#geo_cluster_intersecting_geoms), where the clustering of liblwgeom asks
+   * GEOS for both */
   if (! ensure_same_srid_geoarr(geoms, (int) ngeoms))
     return NULL;
 

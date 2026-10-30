@@ -126,7 +126,7 @@ SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(1 1,2 2))');
 SELECT isSimple(geometry 'Geometrycollection(Point(0 0),Linestring(0 0,10 10,10 0,0 10))');
 
 -- An arc meets itself along an arc rather than at a point, and a geometry
--- carrying one is answered by GEOS, as PostGIS answers it
+-- carrying one is answered natively, as PostGIS answers it
 SELECT isSimple(geometry 'Circularstring(0 0,2 2,4 0)') =
   ST_IsSimple(geometry 'Circularstring(0 0,2 2,4 0)');
 SELECT isSimple(geometry 'Curvepolygon(Circularstring(0 0,2 2,4 0,2 -2,0 0))') =

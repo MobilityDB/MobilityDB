@@ -188,11 +188,12 @@ tpoint_force2d(const Temporal *temp)
 /**
  * @brief Return the timestamp at which a segment of a geodetic temporal point
  * is equal to a 2D point, using planar (lon/lat-as-Cartesian) arithmetic
- * @details GEOS intersection is computed in 2D planar space; the resulting
- * point lies on the planar straight line but deviates from the geodetic
- * great-circle arc by up to a few microradians, which exceeds MEOS_EPSILON
- * when using spherical distance. This function uses 2D Cartesian arithmetic
- * matching GEOS's computation, so the residual distance is essentially zero.
+ * @details The intersection the point comes from is computed in 2D planar
+ * space; the resulting point lies on the planar straight line but deviates
+ * from the geodetic great-circle arc by up to a few microradians, which
+ * exceeds MEOS_EPSILON when using spherical distance. This function uses 2D
+ * Cartesian arithmetic matching that planar computation, so the residual
+ * distance is essentially zero.
  * @param[in] inst1,inst2 Temporal values
  * @param[in] gs Intersection point (GSERIALIZED, may be geodetic or planar)
  * @param[out] t Timestamp
@@ -2373,11 +2374,11 @@ tpoint_geog_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 /**
  * @brief Return a temporal point sequence with linear interpolation
  * restricted to a geometry
- * @details The computation is based on the PostGIS function @p ST_Intersection
- * which delegates the computation to GEOS. The geometry must be in 2D.
- * When computing the intersection the Z values of the temporal point must
- * be dropped since the Z values "are copied, averaged or interpolated"
- * as stated in https://postgis.net/docs/ST_Intersection.html
+ * @details The computation is based on the native intersection
+ * #geom_intersection2d of the trajectory and the geometry, which is computed
+ * on the plane. The geometry must be in 2D. The Z values of the temporal point
+ * are dropped before computing the intersection, since the intersection reads
+ * the Z values of its answer back from its operands (#geo_overlay_lifted).
  * After this computation, the Z values are recovered by restricting the
  * original sequence to the time span of the 2D result.
  * @pre The arguments have the same SRID, the geometry is 2D and is not empty.
@@ -2672,8 +2673,9 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
     return atfunc ? NULL : temporal_copy(temp);
 
   /* Native fast path for a temporal geometry point with linear interpolation
-   * over a geometry the clip engine supports, avoiding the GEOS call done by
-   * ST_Intersection. Instantaneous values, step/discrete interpolation,
+   * over a geometry the clip engine supports, avoiding the intersection of the
+   * trajectory with the geometry (#geom_intersection2d) done by the general
+   * path below. Instantaneous values, step/discrete interpolation,
    * geodetic points, non-point temporal geos, and geometries with types the
    * clip does not handle fall through to the general path below. */
   if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
