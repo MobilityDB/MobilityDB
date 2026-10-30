@@ -1599,8 +1599,9 @@ tcbufferseg_within_ctx(const Cbuffer *cb1, const Cbuffer *cb2, double dist,
 /**
  * @brief Tolerance on the signed boundary distance at a contact instant the
  * walk constructs, or against an arc #point_arc_offset_sign does not decide
- * @details A disc against straight edges and arcs of three input points is
- * decided exactly (#tcbuffer_disc_boundary_sign) and reads no tolerance.
+ * @details A disc of a positive radius against straight edges, arcs of three
+ * input points and halves of a circle on a diameter is decided exactly
+ * (#tcbuffer_disc_boundary_sign) and reads no tolerance.
  */
 #define TCBUFFER_TOUCH_EPS 1e-9
 

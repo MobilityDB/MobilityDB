@@ -6857,6 +6857,26 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
 }
 
 /**
+ * @brief Set an edge to the circle of a disk as a centred arc, as
+ * #edges_add_circle builds it
+ */
+static void
+edge_disk_circle(const double *p, double r, Edge *c)
+{
+  memset(c, 0, sizeof(Edge));
+  c->etype = EDGE_POLYARC;
+  c->cx = p[0]; c->cy = p[1]; c->radius = r;
+  c->centred = true;
+  c->ccw = true;
+  c->x1 = c->x2 = p[0] - r;
+  c->y1 = c->y2 = p[1];
+  c->theta0 = c->theta1 = M_PI;
+  c->xmin = p[0] - r; c->xmax = p[0] + r;
+  c->ymin = p[1] - r; c->ymax = p[1] + r;
+  return;
+}
+
+/**
  * @brief Return the sign of the distance of a point to an arc less a radius,
  * computed exactly, as #point_segment_offset_sign reads it for a segment
  * @details The arc runs from S through M to E, the three input points that
@@ -6870,20 +6890,50 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
  * The sign is then 0 where the arc touches the circle, at a tangency between
  * its ends, a double root that is no crossing, or at an end, and 1 otherwise.
  * Where S, M and E all lie on the circle of the disk the two circles are one
- * and the sign is 0
+ * and the sign is 0.
+ *
+ * A half circle on a diameter runs between its ends A and B on the side of
+ * the line AB it turns to, its right from A to B where it turns
+ * counterclockwise. Where neither end lies inside the disk and @p p lies
+ * strictly on that side, the point of the circle nearest @p p lies on the
+ * open half, so the half crosses the circle of the disk, touches it or clears
+ * it as the two circles cross, touch or keep apart, the sign of their meeting
+ * (#arcarc_meet_exact); @p p off the line AB is not the centre of the half,
+ * so the circles are distinct. Otherwise the distance to @p p along the half
+ * grows from one end to the furthest point of the circle and falls to the
+ * other end, so the ends decide
  * @param[in] p Centre of the disk, two coordinates
- * @param[in] e Arc of three input points
+ * @param[in] e Arc of three input points or half circle on a diameter
  * @param[in] r Radius, not negative
- * @return -1, 0 or 1, or 2 for an arc this function does not decide: a half
- * circle on a diameter or a centred arc, which hold no middle input point, or
- * a radius of 0
+ * @return -1, 0 or 1, or 2 for an arc this function does not decide: a
+ * centred arc, whose circle no input point fixes, or a radius of 0
  */
 int
 point_arc_offset_sign(const double *p, const Edge *e, double r)
 {
   assert(r >= 0.0);
-  if (e->diameter || e->centred || r == 0.0)
+  if (e->centred || r == 0.0)
     return 2;
+  if (e->diameter)
+  {
+    const double a[2] = {e->x1, e->y1}, b[2] = {e->x2, e->y2};
+    int sa = point_distance_offset_side_sign(p, a, 2, r, 0.0, 0.0);
+    int sb = point_distance_offset_side_sign(p, b, 2, r, 0.0, 0.0);
+    if (sa < 0 || sb < 0)
+      return -1;
+    /* The side of the line A B the half lies on, and the one @p p lies on */
+    int side = e->ccw ? -1 : 1;
+    if (cross_product_sign(a[0], a[1], b[0], b[1], a[0], a[1], p[0],
+        p[1]) == side)
+    {
+      Edge c;
+      edge_disk_circle(p, r, &c);
+      int meet, within[2][2];
+      arcarc_meet_exact(e, &c, &meet, within);
+      return (meet > 0) ? -1 : ((meet == 0) ? 0 : 1);
+    }
+    return (sa == 0 || sb == 0) ? 0 : 1;
+  }
   const double s[2] = {e->sx, e->sy}, m[2] = {e->mx, e->my},
     t[2] = {e->ex, e->ey};
   int ss = point_distance_offset_side_sign(p, s, 2, r, 0.0, 0.0);
@@ -6893,18 +6943,8 @@ point_arc_offset_sign(const double *p, const Edge *e, double r)
     return -1;
   if (ss == 0 && sm == 0 && st == 0)
     return 0;
-  /* The circle of the disk as a centred arc, as #edges_add_circle builds it */
   Edge c;
-  memset(&c, 0, sizeof(Edge));
-  c.etype = EDGE_POLYARC;
-  c.cx = p[0]; c.cy = p[1]; c.radius = r;
-  c.centred = true;
-  c.ccw = true;
-  c.x1 = c.x2 = p[0] - r;
-  c.y1 = c.y2 = p[1];
-  c.theta0 = c.theta1 = M_PI;
-  c.xmin = p[0] - r; c.xmax = p[0] + r;
-  c.ymin = p[1] - r; c.ymax = p[1] + r;
+  edge_disk_circle(p, r, &c);
   int meet, within[2][2];
   arcarc_meet_exact(e, &c, &meet, within);
   /* A meeting within the arc lies strictly between its ends */

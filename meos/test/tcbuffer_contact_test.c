@@ -47,6 +47,9 @@
  * - a disc clear inside by 2^-40 is contained and covered, and one out of
  *   it by 2^-40 is neither;
  * - a disc of radius 0 on a side is covered and not contained;
+ * - against a circle, given as arcs of three points or as the two halves on
+ *   a diameter, the same holds at a point of the circle no input point
+ *   holds;
  * - a disc tangent from inside to a static disc is contained and covered,
  *   as #cbuffer_contains answers for the two discs at rest.
  *
@@ -70,6 +73,9 @@ static const char *SQUARE = "POLYGON((0 0,1000 0,1000 1000,0 1000,0 0))";
 /* The circle of centre (0 0) and radius 500 as two arcs of three points */
 static const char *CIRCLE =
   "CURVEPOLYGON(CIRCULARSTRING(500 0,0 500,-500 0,0 -500,500 0))";
+/* The same circle as its two halves on the diameter from (500 0) to
+ * (-500 0) */
+static const char *FULL = "CURVEPOLYGON(CIRCULARSTRING(500 0,-500 0,500 0))";
 
 /* The value at its instant of a temporal boolean, freed */
 static bool
@@ -160,6 +166,28 @@ main(void)
   relate_geo(CIRCLE, 120.0, 160.0, 300.0 - 0x1p-40, &c, &v, &t);
   assert(c && v && ! t);
   relate_geo(CIRCLE, 120.0, 160.0, 300.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+
+  /* Against the halves of the circle on a diameter, tangent at (300 400) on
+   * one half and at (300 -400) on the other, from outside */
+  relate_geo(FULL, 480.0, 640.0, 300.0, &c, &v, &t);
+  assert(! c && ! v && t);
+  relate_geo(FULL, 480.0, -640.0, 300.0, &c, &v, &t);
+  assert(! c && ! v && t);
+  relate_geo(FULL, 480.0, -640.0, 300.0 - 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  relate_geo(FULL, 480.0, -640.0, 300.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  /* From inside, at (300 -400), and at (0 -500), the middle of a half */
+  relate_geo(FULL, 120.0, -160.0, 300.0, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_geo(FULL, 120.0, -160.0, 300.0 + 0x1p-40, &c, &v, &t);
+  assert(! c && ! v && ! t);
+  relate_geo(FULL, 0.0, -200.0, 300.0, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_geo(FULL, 0.0, -200.0, 300.0 - 0x1p-40, &c, &v, &t);
+  assert(c && v && ! t);
+  relate_geo(FULL, 0.0, -200.0, 300.0 + 0x1p-40, &c, &v, &t);
   assert(! c && ! v && ! t);
 
   /* Disc (2 0) of radius 3 in the static disc (0 0) of radius 5, tangent
