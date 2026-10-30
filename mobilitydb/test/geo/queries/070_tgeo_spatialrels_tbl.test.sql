@@ -168,8 +168,8 @@ SELECT COUNT(*) FROM tbl_tgeography3D t1, tbl_tgeography3D t2 WHERE eDwithin(t1.
 
 -------------------------------------------------------------------------------
 -- Modulo used to reduce time needed for the tests
--- NOTE: aDWithin for 3D or geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for 3D or geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 
 SELECT COUNT(*) FROM tbl_geometry t1, tbl_tgeometry t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeometry t1, tbl_geometry t2 WHERE t1.k % 3 = 0 AND t2.k % 3 = 0 AND aDwithin(temp, g, 10);
@@ -246,8 +246,8 @@ SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, geography 'SRID=7844;Li
 SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(geography 'SRID=7844;Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
--- NOTE: aDWithin for geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 SELECT COUNT(*) FROM tbl_tgeography WHERE aDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeometry_rtree_idx;
@@ -313,8 +313,8 @@ SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, geography 'SRID=7844;Li
 SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(geography 'SRID=7844;Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeography WHERE eDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
--- NOTE: aDWithin for geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 SELECT COUNT(*) FROM tbl_tgeography WHERE aDwithin(temp, tgeography 'SRID=7844;[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeometry_quadtree_idx;

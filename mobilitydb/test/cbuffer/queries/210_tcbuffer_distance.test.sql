@@ -112,7 +112,7 @@ SELECT round(tcbuffer '[Cbuffer(Point(0 0), 0.1)@2001-01-01, Cbuffer(Point(2 0),
 -- Temporal distance to a non-point geometry: the full geometry is decomposed
 -- into its boundary edges, not collapsed to its minimum bounding circle. Every
 -- assertion cross-checks the kernel against an INDEPENDENT oracle -- either
--- GEOS ST_Distance from the sampled centre to the geometry minus the sampled
+-- PostGIS ST_Distance from the sampled centre to the geometry minus the sampled
 -- radius, or the already-native nearestApproachDistance/minDistance kernel.
 -------------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01' |=| geometry 'Polygon(
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01' |=| geometry 'Linestring(4 -3,4 6)', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(0 0), 1)@2001-01-01' |=| geometry 'Circularstring(5 0,7 2,9 0)', 6);
 -- Circular-arc input: on-span bulge, non-vertex arc interior (discriminates native
--- arc-exact from GEOS stroking), off-span endpoint, inside-circle, and moving
+-- arc-exact from a stroked linearization), off-span endpoint, inside-circle, and moving
 SELECT round(tcbuffer 'Cbuffer(Point(0 8), 1)@2001-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2001-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(0 -10), 1)@2001-01-01' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
@@ -218,7 +218,7 @@ SELECT round(tcbuffer 'Cbuffer(Point(0 0), 5)@2001-01-01' |=| geometry 'Circular
 SELECT round(tcbuffer '[Cbuffer(Point(0 8), 1)@2001-01-01, Cbuffer(Point(0 5), 1)@2001-01-02]' |=| geometry 'CircularString(5 0, 0 5, -5 0)', 6);
 -- Compound curve (arc chained to a line) and multi curve: the arc components are
 -- decomposed arc-exactly (a value matching the arc-only case proves native, not
--- GEOS stroking), and the line components are walked too (line nearer than arc)
+-- a stroked linearization), and the line components are walked too (line nearer than arc)
 SELECT round(tcbuffer 'Cbuffer(Point(3 8), 1)@2001-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(-8 -4), 1)@2001-01-01' |=| geometry 'CompoundCurve(CircularString(5 0, 0 5, -5 0),(-5 0, -5 -8))', 6);
 SELECT round(tcbuffer 'Cbuffer(Point(8 6), 1)@2001-01-01' |=| geometry 'MultiCurve((6 6, 10 10),CircularString(5 0, 0 5, -5 0))', 6);

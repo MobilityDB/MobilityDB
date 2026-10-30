@@ -2324,8 +2324,9 @@ geo_is_poly(const GSERIALIZED *gs)
  * triangles, circular strings, curve polygons, and collections of these.
  * The dispatch mirrors #geom_spatialrel: an empty operand and a (multi)polygon
  * covering a (multi)point are handled by the same native
- * #meos_point_in_polygon short-circuit, so only the general case replaces the
- * GEOS covers call.
+ * #meos_point_in_polygon short-circuit, so only the general case differs:
+ * it reads the edges of the two geometries here, where #geom_spatialrel reads
+ * them through #meos_spatialrel_ctx.
  * @pre The arguments have the same SRID
  */
 bool
@@ -2347,7 +2348,7 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     return true;
   /* Bounding-box reject: covering requires the 2D boxes to overlap. Covers is a
    * planar (2D) predicate, so the reject must ignore Z; use the same canonical
-   * 2D box overlap #geom_spatialrel applies before delegating to GEOS, rather
+   * 2D box overlap #geom_spatialrel applies before reading the edges, rather
    * than #overlaps_stbox_stbox which compares Z for a 3D/3D pair and would
    * wrongly reject geometries whose X/Y overlap but whose Z ranges are disjoint */
   GBOX box1, box2;
@@ -2357,8 +2358,8 @@ geo_covers2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       gbox_overlaps_2d(&box1, &box2) == LW_FALSE)
     return false;
   /* A (multi)polygon covering a (multi)point is resolved by the native
-   * point-in-polygon test, exactly as #geom_spatialrel does before delegating
-   * to GEOS. That test answers in the direction of the polygon, so the reverse
+   * point-in-polygon test, exactly as #geom_spatialrel does before reading
+   * the edges. That test answers in the direction of the polygon, so the reverse
    * pair, a (multi)point asked to cover a (multi)polygon, keeps the general
    * path below */
   if (geo_is_poly(gs1) && geo_is_point(gs2))

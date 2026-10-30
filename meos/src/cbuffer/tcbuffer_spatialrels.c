@@ -65,25 +65,10 @@
 #include <meos_cbuffer.h>
 
 /*****************************************************************************
- * Some GEOS versions cannot handle spatial relationships where one of the
- * arguments is a collection. For example, the calls to the `eIntersects`
- * function below translate to calls to the GEOSIntersects function with the
- * traversed areas and GEOS returns an error when the traversed area is a
- * collection.
- * @code
-  SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer
-    '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02,
-      Cbuffer(Point(1 1),0.5)@2000-01-03]');
-  ERROR:  GEOS returned error
-  SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer
-    '[Cbuffer(Point(1 1),0.5)@2000-01-01, Cbuffer(Point(2 2),0.5)@2000-01-02]');
-  -- t
-  SELECT eIntersects(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer
-    '[Cbuffer(Point(2 2),0.5)@2000-01-02, Cbuffer(Point(1 1),0.5)@2000-01-03]');
-  -- t
- * @endcode
- * Therefore, we need to iterate and apply the spatial relationship to each
- * element of the collection(s)
+ * A spatial relationship between two geometries is applied to each member of
+ * the collection(s) they are, with the quantifier each argument of the
+ * relationship carries over its members (#spatialrel_quantifiers), and each
+ * pair of members is answered by the native relationship of #geom_spatialrel
  *****************************************************************************/
 
 /**
@@ -99,8 +84,8 @@
 static int
 spatialrel_geo_geo_simple(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   Datum param, varfunc func, int numparam, bool invert)
-{  /* Call the GEOS function when the geometries are not collections. An empty
-    * geometry has no members to iterate, so it reaches here as it is */
+{  /* Call the relationship function when the geometries are not collections.
+    * An empty geometry has no members to iterate, so it reaches here as it is */
   assert(geo_is_unitary(gs1) || gserialized_is_empty(gs1));
   assert(geo_is_unitary(gs2) || gserialized_is_empty(gs2));
   Datum geo1 = PointerGetDatum(gs1);
@@ -1500,8 +1485,8 @@ adisjoint_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
  * distance: eIntersects(temp, gs) ⟺ min_t dist(disk(t), gs) ≤ 0. The always
  * semantics are the complement of ever disjoint: aIntersects(temp, gs) ⟺
  * ¬eDisjoint(temp, gs), computed from the native coverage of the intersecting
- * sub-periods. Both avoid linearizing the round buffer through GEOS; a
- * geometry that has no edge decomposition falls back to the exact
+ * sub-periods. Both read the round buffer as a disk, without linearizing it;
+ * a geometry that has no edge decomposition falls back to the exact
  * traversed-area path.
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
@@ -2136,8 +2121,8 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
     return 0;
 
   /* The ever semantics reduce exactly to the native nearest-approach
-   * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d. This
-   * avoids linearizing the round buffer through GEOS. */
+   * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d, which
+   * reads the round buffer as a disk, without linearizing it. */
   if (ever)
     return nad_tcbuffer_geo(temp, gs) <= dist ? 1 : 0;
   /* The always semantics reduce to native coverage: being within d of the

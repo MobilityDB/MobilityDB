@@ -49,8 +49,8 @@
  *****************************************************************************/
 
 /**
- * @brief Enumeration that defines the spatial relationships for which a call
- * to GEOS is made.
+ * @brief Enumeration that defines the spatial relationships answered by
+ * #geom_spatialrel
  */
 typedef enum
 {

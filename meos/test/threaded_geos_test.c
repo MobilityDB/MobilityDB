@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Stress the GEOS-backed functions of MEOS from concurrent threads
- * @details Concurrent stress test combining the GEOS spatial-relationship
+ * @brief Stress the native spatial functions of MEOS from concurrent threads
+ * @details Concurrent stress test combining the native spatial-relationship
  * surface, WKT parsing of temporal points, WKB roundtrip, temporal
  * accessors, and per-thread geometry distance calls.
  *
@@ -39,16 +39,16 @@
  * parse a unique polygon + point pair and a unique tgeompoint trajectory →
  * hot loop:
  * geom_intersects2d / geom_contains / geom_covers / geom_distance2d
- * on the polygon/point pair (per-thread GEOS context handle),
+ * on the polygon/point pair (per-thread relationship context cache),
  * tgeompoint_in WKT parse (lwgeom flex/bison TLS state),
  * temporal_as_wkb + temporal_from_wkb roundtrip (binary IO path),
  * temporal_num_instants / temporal_start_instant accessors,
  * tpoint_trajectory extracts the polyline (exercises the temporal →
- * GEOS conversion path),
+ * geometry conversion path),
  * meos_errno round-trip (thread-local errno) →
  * meos_finalize()
  *
- * Verifies that the per-thread GEOS context handle, lwgeom WKT/parser
+ * Verifies that the per-thread relationship context cache, lwgeom WKT/parser
  * state, GMT bootstrap, and meos_errno are all isolated:
  * any sharing between worker threads would produce inconsistent results
  * or a SIGSEGV.
@@ -109,8 +109,8 @@ worker(void *arg)
 
   for (int i = 0; i < w->iters; i++)
   {
-    /* GEOS spatial-rel surface: every call dispatches through the
-     * per-thread GEOSContextHandle_t. */
+    /* Native spatial-rel surface: every call reads the edges of the
+     * geometries through the per-thread relationship context cache. */
     if (! geom_intersects2d(poly, pt))
       atomic_fetch_add(&w->errors, 1);
     if (! geom_intersects2d(pt, poly))
@@ -152,9 +152,8 @@ worker(void *arg)
       free(wkb);
     }
 
-    /* Temporal → GEOS conversion path: tpoint_trajectory builds a
-     * GEOSGeometry from the temporal value, then converts back to
-     * GSERIALIZED. */
+    /* Temporal → geometry conversion path: tpoint_trajectory builds the
+     * polyline of the temporal value and serializes it to GSERIALIZED. */
     GSERIALIZED *traj = tpoint_trajectory(t, false);
     if (! traj)
       atomic_fetch_add(&w->errors, 1);

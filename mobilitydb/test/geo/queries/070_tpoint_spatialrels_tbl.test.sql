@@ -153,8 +153,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint3D t1, tbl_tgeogpoint3D t2 WHERE eDwithin(t1.
 
 -------------------------------------------------------------------------------
 
--- NOTE: aDWithin for 3D or geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for 3D or geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint WHERE aDwithin(g, temp, 10);
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point WHERE aDwithin(temp, g, 10);
@@ -231,8 +231,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(temp, geography 'Linestring(0
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(geography 'Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
--- NOTE: aDWithin for geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE aDwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeompoint_rtree_idx;
@@ -298,8 +298,8 @@ SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(temp, geography 'Linestring(0
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(geography 'Linestring(0 0,5 5)', temp, 5);
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE eDwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
--- NOTE: aDWithin for geograhies is not provided since it is based on the
--- PostGIS ST_Buffer() function which is performed by GEOS
+-- NOTE: aDWithin for geographies is not provided since it is based on the
+-- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
 SELECT COUNT(*) FROM tbl_tgeogpoint WHERE aDwithin(temp, tgeogpoint '[Point(0 0)@2001-01-01, Point(5 5)@2001-02-01]', 5);
 
 DROP INDEX tbl_tgeompoint_quadtree_idx;
