@@ -97,6 +97,9 @@ SELECT tjsonbExtractPath(tjsonb '"{\"speed\": 10, \"units\": \"km/h\"}"@2001-01-
 SELECT tjsonbExtractPath(tjsonb '{{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03}', ARRAY['speed']);
 SELECT tjsonbExtractPath(tjsonb '[{"speed": 10, "units": "km/h"}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03]', ARRAY['speed']);
 SELECT tjsonbExtractPath(tjsonb '{[{"speed": 10}@2001-01-01, {"speed": 20, "units": "km/h"}@2001-01-02, {"speed": 10, "units": "km/h"}@2001-01-03],[{"geom": "Point(1 1)", "units": "km/h"}@2001-01-04, {"speed": 30, "units": "km/h"}@2001-01-05]}', ARRAY['speed']);
+-- The text extraction answers a temporal text
+SELECT pg_typeof(tjsonbExtractPathText(tjsonb '{{"speed": 10}@2001-01-01}', ARRAY['speed'])),
+  pg_typeof(tjsonb '{{"speed": 10}@2001-01-01}' #>> ARRAY['speed']);
 -- A path holding a NULL element extracts no value, as jsonbExtractPath answers NULL
 SELECT tjsonbExtractPath(tjsonb '{{"speed": 10}@2001-01-01, {"speed": 20}@2001-01-02}', ARRAY['speed', NULL]);
 

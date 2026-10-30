@@ -101,7 +101,7 @@ CREATE FUNCTION tjsonbExtractPath(tjsonb, path text[],
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tjsonbExtractPathText(tjsonb, path text[],
     null_handle text DEFAULT 'use_json_null')
-  RETURNS tjsonb
+  RETURNS ttext
   AS 'MODULE_PATHNAME', 'Tjsonb_extract_path_text'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
