@@ -1054,11 +1054,23 @@ geopose_anchor_position(const GeoPoseAnchor *anchor, double e, double n,
  * against the *outer* frame's basis. The two differ by the convergence of
  * the two tangent planes, which is this rotation. Ignoring it would place
  * every pose but the first at a subtly wrong attitude.
+ *
+ * At the tangent point the two bases coincide and the rotation is the
+ * identity. It is returned exactly, since the product of the two quaternions
+ * leaves a residual of up to 4.4e-16 in its components. Its sibling
+ * #geopose_anchor_translation needs no such case, since it subtracts the
+ * same ECEF point from itself, which is exactly zero.
  */
 static void
 geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
   double lon_rad, double *W, double *X, double *Y, double *Z)
 {
+  if (lat_rad == anchor->lat_rad && lon_rad == anchor->lon_rad)
+  {
+    *W = 1.0;
+    *X = *Y = *Z = 0.0;
+    return;
+  }
   double lw, lx, ly, lz;
   pose_enu_to_ecef_quaternion(lat_rad, lon_rad, &lw, &lx, &ly, &lz);
   /* q(R_anchorENU<-ECEF) * q(R_ECEF<-localENU), which are what the anchor
