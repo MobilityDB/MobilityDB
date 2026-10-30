@@ -1580,6 +1580,14 @@ floatspanset_degrees(const SpanSet *ss, bool normalize)
     Span *s = &(result->elems[i]);
     s->lower = datum_degrees(s->lower, normalize);
     s->upper = datum_degrees(s->upper, normalize);
+    /* An infinite bound has no normalized angle, see
+     * #ensure_not_nan_result */
+    if (! ensure_not_nan_result(DatumGetFloat8(s->lower)) ||
+        ! ensure_not_nan_result(DatumGetFloat8(s->upper)))
+    {
+      pfree(result);
+      return NULL;
+    }
   }
   return result;
 }
@@ -1642,6 +1650,17 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
   for (int i = 0; i < ss->count; i++)
     numspan_delta_scale_iter(&copy->elems[i], origin, delta, hasshift,
       scale);
+  /* An infinite bound of a float span set can give a bound with no value,
+   * see #ensure_not_nan_result */
+  for (int i = 0; ss->basetype == T_FLOAT8 && i < ss->count; i++)
+  {
+    if (! ensure_not_nan_result(DatumGetFloat8(copy->elems[i].lower)) ||
+        ! ensure_not_nan_result(DatumGetFloat8(copy->elems[i].upper)))
+    {
+      pfree(copy);
+      return NULL;
+    }
+  }
 
   /* Normalization is required after scaling */
   Span *spans = palloc(sizeof(Span) * ss->count);

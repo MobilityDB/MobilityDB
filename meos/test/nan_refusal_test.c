@@ -70,7 +70,9 @@
 static int failures = 0, cases = 0;
 
 /* The outcome of a case: 0 an error, 1 a value, 2 a NaN, 3 a setup that
- * produced no sentinel to overwrite, so that the case would test nothing */
+ * produced no sentinel to overwrite, so that the case would test nothing, 4 a
+ * value returned with an error, 5 a result holding no NaN, which a case over
+ * infinite values accepts, since infinity is a value of the floats */
 typedef int (*case_fn)(void);
 
 static void
@@ -88,6 +90,8 @@ check(const char *what, case_fn fn)
       _exit(3);
     if (r == 4)
       _exit(err ? 4 : 1);
+    if (r == 5)
+      _exit(0);
     /* An outcome without an error is a value or a NaN */
     _exit(err ? 0 : (r == 2 ? 2 : 1));
   }
@@ -148,8 +152,20 @@ result(void *v)
 static int
 dresult(double d)
 {
-  return isnan(d) ? 2 : 1;
+  return isnan(d) ? 2 : 5;
 }
+
+/* The outcome of a result case read in the text MEOS writes of the value */
+static int
+tresult(void *v, char *str)
+{
+  int r = ! v ? 0 : (str && strstr(str, "NaN")) ? 2 : 5;
+  free(v); free(str);
+  return r;
+}
+#define TEXT_RESULT(r, v, out) \
+  do { __typeof__(v) _v = (v); \
+    r = tresult(_v, _v ? out(_v, 15) : NULL); } while (0)
 
 /* Text readers */
 static int pose_text(void) { return result(pose_in("Pose(Point(NaN 1), 0.5)")); }
@@ -356,6 +372,67 @@ shift_scale_inf(void)
   return r;
 }
 
+static int
+linear_inf(void)
+{
+  return result(tfloat_in("[1@2001-01-01, Infinity@2001-01-02]"));
+}
+
+static int
+step_degrees_inf(void)
+{
+  Temporal *t = tfloat_in("Interp=Step;[Infinity@2001-01-01, 1@2001-01-02]");
+  int r;
+  TEXT_RESULT(r, tfloat_degrees(t, true), temporal_out);
+  free(t);
+  return r;
+}
+
+static int
+span_degrees_inf(void)
+{
+  Span *s = floatspan_in("[-Infinity, Infinity]");
+  int r;
+  TEXT_RESULT(r, floatspan_degrees(s, true), span_out);
+  free(s);
+  return r;
+}
+
+static int
+set_degrees_inf(void)
+{
+  Set *s = floatset_in("{0, Infinity}");
+  int r;
+  TEXT_RESULT(r, floatset_degrees(s, true), set_out);
+  free(s);
+  return r;
+}
+
+static int degrees_inf(void) { return dresult(float_degrees(INFINITY, true)); }
+static int bin_inf(void) { return dresult(float_get_bin(INFINITY, INFINITY, INFINITY)); }
+static int angdiff_inf(void) { return dresult(float_angular_difference(INFINITY, INFINITY)); }
+
+static int
+expand_inf(void)
+{
+  Span *s = floatspan_in("[-Infinity, Infinity]");
+  int r;
+  TEXT_RESULT(r, floatspan_expand(s, -INFINITY), span_out);
+  free(s);
+  return r;
+}
+
+static int
+box_shift_scale_inf(void)
+{
+  TBox *box = tbox_in("TBOXFLOAT XT([-Infinity, Infinity],[2001-01-01, 2001-01-02])");
+  int r;
+  TEXT_RESULT(r, tfloatbox_shift_scale(box, INFINITY, INFINITY, true, true),
+    tbox_out);
+  free(box);
+  return r;
+}
+
 /* Main program */
 int main(void)
 {
@@ -399,6 +476,15 @@ int main(void)
   check("tnumber_integral", integral_inf);
   check("temporal_frechet_distance", frechet_inf);
   check("floatspan_shift_scale", shift_scale_inf);
+  check("tfloat_in, linear, infinite", linear_inf);
+  check("tfloat_degrees, step, infinite", step_degrees_inf);
+  check("floatspan_degrees", span_degrees_inf);
+  check("floatset_degrees", set_degrees_inf);
+  check("float_degrees", degrees_inf);
+  check("float_get_bin", bin_inf);
+  check("float_angular_difference", angdiff_inf);
+  check("floatspan_expand", expand_inf);
+  check("tfloatbox_shift_scale", box_shift_scale_inf);
 
   printf("%d of %d case(s) failed\n", failures, cases);
   meos_finalize();

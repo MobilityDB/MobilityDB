@@ -1707,7 +1707,16 @@ floatset_degrees(const Set *s, bool normalize)
   VALIDATE_FLOATSET(s, NULL);
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
+  {
     (SET_OFFSETS_PTR(result))[i] = datum_degrees(SET_VAL_N(s, i), normalize);
+    /* An infinite value has no normalized angle, see
+     * #ensure_not_nan_result */
+    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+    {
+      pfree(result);
+      return NULL;
+    }
+  }
   return result;
 }
 
@@ -1849,6 +1858,16 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
         (SET_OFFSETS_PTR(result))[i] = datum_add(lower1, double_datum(
           datum_double(datum_sub(SET_VAL_N(result, i), lower1, type), type) *
           scale, type), type);
+    }
+  }
+  /* An infinite value of a float set can give a result with no value, see
+   * #ensure_not_nan_result */
+  for (int i = 0; type == T_FLOAT8 && i < s->count; i++)
+  {
+    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+    {
+      pfree(result);
+      return NULL;
     }
   }
   return result;

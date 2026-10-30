@@ -498,6 +498,23 @@ ensure_not_nan(double d)
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "The value cannot be NaN");
   return false;
 }
+/**
+ * @brief Ensure that the result of an operation is not NaN
+ * @details An operation can have no value on infinite operands, as the
+ * difference of two infinities of the same sign, the product of an infinity
+ * by zero, or the remainder of an infinity, which give a NaN. No MEOS value
+ * holds one (#ensure_not_nan), so the operation raises an error, as
+ * PostgreSQL does for a result out of the range of its type
+ */
+static inline bool
+ensure_not_nan_result(double d)
+{
+  if (! isnan(d))
+    return true;
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+    "The operation has no value for infinite operands");
+  return false;
+}
 extern bool not_negative_datum(Datum size, MeosType basetype);
 extern bool ensure_not_negative_datum(Datum size, MeosType basetype);
 extern bool positive_datum(Datum size, MeosType basetype);

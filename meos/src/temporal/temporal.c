@@ -1624,25 +1624,31 @@ float_degrees(double value, bool normalize)
 {
   if (! ensure_not_nan(value))
     return DBL_MAX;
-  double result = float8_div(value, RADIANS_PER_DEGREE);
-  if (normalize)
+  double result = DatumGetFloat8(datum_degrees(Float8GetDatum(value),
+    BoolGetDatum(normalize)));
+  /* An infinite value has no normalized angle */
+  if (! ensure_not_nan_result(result))
+    return DBL_MAX;
+  return result;
+}
+
+/**
+ * @brief Return a double converted from radians to degrees
+ * @note The normalized angle of an infinite value is NaN, which the public
+ * functions calling this one test
+ */
+Datum
+datum_degrees(Datum value, Datum normalize)
+{
+  double result = float8_div(DatumGetFloat8(value), RADIANS_PER_DEGREE);
+  if (DatumGetBool(normalize))
   {
     /* The value would be in the range (-360, 360) */
     result = fmod(result, 360.0);
     if (result < 0)
       result += 360.0; /* The value would be in the range [0, 360) */
   }
-  return result;
-}
-
-/**
- * @brief Return a double converted from radians to degrees
- */
-Datum
-datum_degrees(Datum value, Datum normalize)
-{
-  return Float8GetDatum(float_degrees(DatumGetFloat8(value),
-    DatumGetBool(normalize)));
+  return Float8GetDatum(result);
 }
 
 /**

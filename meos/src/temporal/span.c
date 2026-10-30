@@ -1670,6 +1670,22 @@ floatspan_ceil(const Span *s)
 }
 
 /**
+ * @brief Return true when no bound of a span computed from another one is a
+ * NaN, raising an error otherwise
+ * @details An infinite bound of a float span can give a bound with no value,
+ * see #ensure_not_nan_result
+ * @param[in] s Span
+ */
+static bool
+span_bounds_not_nan(const Span *s)
+{
+  if (s->basetype != T_FLOAT8)
+    return true;
+  return ensure_not_nan_result(DatumGetFloat8(s->lower)) &&
+    ensure_not_nan_result(DatumGetFloat8(s->upper));
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a float span with the values converted to degrees
  * @param[in] s Span
@@ -1684,6 +1700,11 @@ floatspan_degrees(const Span *s, bool normalize)
   Span *result = span_copy(s);
   result->lower = datum_degrees(s->lower, normalize);
   result->upper = datum_degrees(s->upper, normalize);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -1758,6 +1779,11 @@ numspan_expand(const Span *s, Datum value)
   Span *result = span_copy(s);
   result->lower = datum_sub(s->lower, value, s->basetype);
   result->upper = datum_add(s->upper, value, s->basetype);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2094,6 +2120,11 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
   /* Shift and/or scale the resulting span */
   span_bounds_shift_scale_value(shift, width, s->basetype, hasshift, haswidth,
     &result->lower, &result->upper);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
