@@ -70,7 +70,7 @@ Two choices of the branch for the owner to confirm:
   `ensure_valid_tinstarr` refuses it, and a step or discrete temporal float keeps infinity. This
   one check removes the NaN of the integral, `twavg`, `avg_value`, Frechet, DTW, the shift and
   scale and the `tfloat_exp` crash.
-- **Two kinds of double keep NaN for now:** a raster pixel value (nodata, map algebra constant),
+- **Two kinds of double keep NaN, pending the owner:** a raster pixel value (nodata, map algebra constant),
   which GDAL writes as NaN for a float band with no data, and the float8 functions of `pgtypes`,
   which keep PostgreSQL's order (NaN above infinity) since they run inside sort comparators.
 
