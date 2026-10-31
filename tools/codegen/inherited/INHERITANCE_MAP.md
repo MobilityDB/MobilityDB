@@ -184,20 +184,28 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   type's position wrappers (`templates/posops.c.tmpl`) carry the operations of the
   axes it lists in `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its
   axis). A box type naming a `nadfile:` has its nearest approach distance wrappers
-  there (`templates/nadops.c.tmpl`), in the directions of its box operators and, for
-  each number type its value span lists in `nadtypes:`, the span directions: `tbox`
-  writes the 16 wrappers of `tnumber_distance.c` from `NAD_tbox_tbox` through
-  `NAD_tnumber_tnumber`.
+  there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
+  temporal value both ways, whose `Datum` kernel answers the sentinel of the base
+  type, the directions of its box operators and, for each number type its value
+  span lists in `nadtypes:`, the span directions: `tbox` writes the 18 wrappers of
+  `tnumber_distance.c` from `NAD_number_tnumber` through `NAD_tnumber_tnumber`.
   A box type listing `nadpairs:` takes `templates/nadpairs.c.tmpl` instead, one
   wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, the
   kernel taking the sides in the order its name gives them and releasing those
   marked `free`; under `nadearth:` each wrapper reads the optional earth model and
-  the procedure of its operator follows it: `stbox` writes the 10 wrappers of
-  `tgeo_distance.c` from `NAD_geo_stbox` through `NAD_tgeo_stbox_opr`. Each family
+  the procedure of its operator follows it: `stbox` writes the 16 wrappers of
+  `tgeo_distance.c` from `NAD_geo_tgeo` through `NAD_tgeo_tgeo_opr`. Each family
   of its `nadfamilies:` is a region of the family's own file over the same box:
   `tcbuffer` writes the 9 wrappers of `tcbuffer_distance.c` from
-  `NAD_cbuffer_stbox` through `NAD_tcbuffer_tcbuffer`, and `tpose` the 9 of
-  `tpose_distance.c` from `NAD_pose_stbox` through `NAD_tpose_tpose`.
+  `NAD_cbuffer_stbox` through `NAD_tcbuffer_tcbuffer`, `tpose` the 9 of
+  `tpose_distance.c` from `NAD_pose_stbox` through `NAD_tpose_tpose`,
+  `tposechain` the 9 of `tposechain_distance.c` from `NAD_posechain_stbox`
+  through `NAD_tposechain_tposechain`, `tnpoint` the 7 of
+  `tnpoint_distance.c` from `NAD_geo_tnpoint` through `NAD_tnpoint_tnpoint`,
+  and `trgeometry` the 7 of `trgeo_distance.c` from `NAD_trgeometry_geo`
+  through `NAD_trgeometry_trgeometry`, each storing `fcinfo` under `nadfcinfo:`.
+  `tpcbox` writes the 4 wrappers of `tpc_boxops.c` from `NAD_tpcbox_tpcbox`
+  through `NAD_tpointcloud_tpointcloud` over its one side `tpointcloud`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner

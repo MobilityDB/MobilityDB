@@ -329,6 +329,8 @@ NAI_tposechain_tposechain(PG_FUNCTION_ARGS)
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tposechain — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_posechain_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_posechain_stbox);
 /**
@@ -405,8 +407,8 @@ PG_FUNCTION_INFO_V1(NAD_tposechain_geo);
 Datum
 NAD_tposechain_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double result = nad_tposechain_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -420,7 +422,7 @@ NAD_tposechain_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tposechain_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tposechain_stbox);
 /**
- * @ingroup mobilitydb_cbuffer_dist
+ * @ingroup mobilitydb_posechain_dist
  * @brief Return the nearest approach distance between a temporal pose chain and
  * a spatiotemporal box
  * @sqlfn nearestApproachDistance()
@@ -441,7 +443,7 @@ NAD_tposechain_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_tposechain(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tposechain);
 /**
- * @ingroup mobilitydb_cbuffer_dist
+ * @ingroup mobilitydb_posechain_dist
  * @brief Return the nearest approach distance between a spatiotemporal box and
  * a temporal pose chain
  * @sqlfn nearestApproachDistance()
@@ -525,6 +527,7 @@ NAD_tposechain_tposechain(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+/* GENERATED-NADOPS-END tposechain */
 
 /*****************************************************************************
  * ShortestLine

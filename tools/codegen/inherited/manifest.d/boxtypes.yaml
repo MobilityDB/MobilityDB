@@ -34,13 +34,16 @@ boxtypes:
     nadearth:  true
     nadsides:
       geo:  {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
-      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo, free: true}
+      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo, descpl: temporal geos, free: true}
     nadpairs:
+      - [geo, tgeo, nad_tgeo_geo]
+      - [tgeo, geo, nad_tgeo_geo]
       - [geo, stbox, nad_stbox_geo]
       - [stbox, geo, nad_stbox_geo]
       - [stbox, stbox, nad_stbox_stbox]
       - [stbox, tgeo, nad_tgeo_stbox]
       - [tgeo, stbox, nad_tgeo_stbox]
+      - [tgeo, tgeo, nad_tgeo_tgeo]
     nadfamilies:
       - family:   tcbuffer
         nadgroup: mobilitydb_cbuffer_dist
@@ -84,6 +87,58 @@ boxtypes:
           - [tpose, pose, nad_tpose_pose]
           - sep
           - [tpose, tpose, nad_tpose_tpose]
+      - family:   tposechain
+        nadgroup: mobilitydb_posechain_dist
+        nadfile:  mobilitydb/src/pose/tposechain_distance.c
+        nadsides:
+          posechain:  {c: PoseChain, var: pc, getarg: PG_GETARG_POSECHAIN_P, desc: pose chain}
+          geo:        {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tposechain: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal pose chain, descpl: temporal pose chains, free: true}
+        nadpairs:
+          - [posechain, stbox, distance_posechain_stbox]
+          - [stbox, posechain, distance_posechain_stbox]
+          - sep
+          - [geo, tposechain, nad_tposechain_geo]
+          - [tposechain, geo, nad_tposechain_geo]
+          - sep
+          - [tposechain, stbox, nad_tposechain_stbox]
+          - [stbox, tposechain, nad_tposechain_stbox]
+          - sep
+          - [posechain, tposechain, nad_tposechain_posechain]
+          - [tposechain, posechain, nad_tposechain_posechain]
+          - sep
+          - [tposechain, tposechain, nad_tposechain_tposechain]
+      - family:   tnpoint
+        nadgroup: mobilitydb_npoint_dist
+        nadfile:  mobilitydb/src/npoint/tnpoint_distance.c
+        nadsides:
+          npoint:  {c: Npoint, var: np, getarg: PG_GETARG_NPOINT_P, desc: network point}
+          geo:     {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tnpoint: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal network point, descpl: temporal network points, free: true}
+        nadpairs:
+          - [geo, tnpoint, nad_tnpoint_geo]
+          - [tnpoint, geo, nad_tnpoint_geo]
+          - [stbox, tnpoint, nad_tnpoint_stbox]
+          - [tnpoint, stbox, nad_tnpoint_stbox]
+          - [npoint, tnpoint, nad_tnpoint_npoint]
+          - [tnpoint, npoint, nad_tnpoint_npoint]
+          - [tnpoint, tnpoint, nad_tnpoint_tnpoint]
+      - family:    trgeometry
+        nadgroup:  mobilitydb_rgeo_dist
+        nadfile:   mobilitydb/src/rgeo/trgeo_distance.c
+        nadfcinfo: true
+        nadsides:
+          geo:        {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tpoint:     {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal point, free: true}
+          trgeometry: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal rigid geometry, descpl: temporal rigid geometries, free: true}
+        nadpairs:
+          - [trgeometry, geo, nad_trgeometry_geo]
+          - [geo, trgeometry, nad_trgeometry_geo]
+          - [trgeometry, stbox, nad_trgeometry_stbox]
+          - [stbox, trgeometry, nad_trgeometry_stbox]
+          - [trgeometry, tpoint, nad_trgeometry_tpoint]
+          - [tpoint, trgeometry, nad_trgeometry_tpoint]
+          - [trgeometry, trgeometry, nad_trgeometry_trgeometry]
 
   - box:       tpcbox
     tside:     tpointcloud
@@ -101,6 +156,16 @@ boxtypes:
     posaxes:   [x, y, z, t]
     posgroup:  mobilitydb_pointcloud_box_pos
     posreference: true
+    # nearest approach distance wrappers (templates/nadpairs.c.tmpl)
+    nadgroup:  mobilitydb_pointcloud_temp
+    nadfile:   mobilitydb/src/pointcloud/tpc_boxops.c
+    nadsides:
+      tpointcloud: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal point cloud, descpl: temporal point clouds, free: true}
+    nadpairs:
+      - [tpcbox, tpcbox, nad_tpcbox_tpcbox]
+      - [tpointcloud, tpcbox, nad_tpointcloud_tpcbox]
+      - [tpcbox, tpointcloud, nad_tpointcloud_tpcbox]
+      - [tpointcloud, tpointcloud, nad_tpointcloud_tpointcloud]
 
   # tstzspan: the box IS a span<timestamptz>, so the primitives are the generic
   # span operators (overlaps_span_span, ...) via prim: span. Serves every
@@ -153,11 +218,13 @@ boxtypes:
     posgroup:  mobilitydb_temporal_bbox_pos
     posfile:   mobilitydb/src/temporal/temporal_posops.c
     posreference: true
-    # nearest approach distance wrappers (templates/nadops.c.tmpl): the box's
-    # directions and, per number type of the value span, its span directions
+    # nearest approach distance wrappers (templates/nadops.c.tmpl): the base value
+    # by the temporal value both ways (nadbase), the box's directions and, per
+    # number type of the value span, its span directions
     boxtype:   T_TBOX
     nadgroup:  mobilitydb_temporal_dist
     nadfile:   mobilitydb/src/temporal/tnumber_distance.c
+    nadbase:   {side: number, desc: number}
     valspan:
       box:       numspan
       prim:      span
