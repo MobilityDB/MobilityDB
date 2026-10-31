@@ -102,18 +102,17 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax)
 {
-  /* Ensure the validity of the arguments: no NaN, which has no place among
-   * the bounds, as #box3d_make; the bounds of a dimension the box lacks are
-   * not read */
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax) ||
-      ! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))
+  /* Ensure the validity of the arguments: finite bounds, as #box3d_make
+   * reads them; the bounds of a dimension the box lacks are not read */
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax) ||
+      ! ensure_finite(mmin) || ! ensure_finite(mmax))
     return NULL;
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))) ||
-      (hasm && (! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))))
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      (hasz && (! ensure_finite(zmin) || ! ensure_finite(zmax))) ||
+      (hasm && (! ensure_finite(mmin) || ! ensure_finite(mmax))))
     return NULL;
 
   GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
@@ -193,16 +192,16 @@ BOX3D *
 box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, int32_t srid)
 {
-  /* Ensure the validity of the arguments: no NaN, which has no place among
-   * the bounds, as #stbox_make refuses one */
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+  /* Ensure the validity of the arguments: finite bounds, as #stbox_make
+   * reads them */
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax))
     return NULL;
   if (! ensure_srid_valid(srid) ||
-      ! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+      ! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax))
     return NULL;
 
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -529,7 +528,7 @@ GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -546,7 +545,7 @@ GSERIALIZED *
 geogpoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -564,8 +563,8 @@ GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
-      ! ensure_not_nan(z))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y) ||
+      ! ensure_finite(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -582,8 +581,8 @@ GSERIALIZED *
 geogpoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
-      ! ensure_not_nan(z))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y) ||
+      ! ensure_finite(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -2276,9 +2275,7 @@ geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       arrs[i][k] = &pas[i][k];
   }
   /* The boxes the serialized geometries carry, rounded outward to floats,
-   * bound every finite coordinate: exactness is defined for finite
-   * coordinates, and a geometry holding NaN, invalid as GEOS reports it, has
-   * an unspecified distance. A float holds 24 bits and no magnitude below
+   * bound every coordinate, each finite (#ensure_finite_geo). A float holds 24 bits and no magnitude below
    * 2^-149, so the boxes are read only where they are tight: their largest
    * magnitude within 2^100 of 1 and their extent at least 2^-20 of it, the
    * rounding of a float then at most an eighth of the extent. Elsewhere, or
@@ -2591,9 +2588,7 @@ geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
- * @note The answer is the double nearest the exact distance for finite
- * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
- * it, leaves the distance unspecified
+ * @note The answer is the double nearest the exact distance
  * @errval DBL_MAX
  */
 double
@@ -2746,9 +2741,7 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
- * @note The answer is the double nearest the exact distance for finite
- * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
- * it, leaves the distance unspecified
+ * @note The answer is the double nearest the exact distance
  * @errval DBL_MAX
  */
 double
@@ -2880,7 +2873,7 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
@@ -2932,7 +2925,7 @@ geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
@@ -2953,7 +2946,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
@@ -3041,7 +3034,7 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(max_seg_length))
+  if (! ensure_finite(max_seg_length))
     return NULL;
 
   uint32_t type = gserialized_get_type(gs);
@@ -6989,7 +6982,7 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
     return false;
@@ -7249,15 +7242,16 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 
 /**
  * @brief Return the geometry a reader built, or NULL when one of its
- * coordinates is NaN
- * @details A NaN coordinate has no position, so no reader returns a geometry
+ * coordinates is not finite
+ * @details A NaN or an infinite coordinate has no position, so no reader
+ * returns a geometry
  * holding one, as #tinstant_make refuses it in a temporal point
- * (#ensure_not_nan_geo). A geometry refused is freed
+ * (#ensure_finite_geo). A geometry refused is freed
  */
 static GSERIALIZED *
 geo_read_result(GSERIALIZED *gs)
 {
-  if (! gs || ensure_not_nan_geo(gs))
+  if (! gs || ensure_finite_geo(gs))
     return gs;
   pfree(gs);
   return NULL;
@@ -8055,7 +8049,7 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(fraction))
+  if (! ensure_finite(fraction))
     return NULL;
   if (fraction < 0 || fraction > 1)
   {
@@ -8094,7 +8088,7 @@ line_substring(const GSERIALIZED *gs, double from, double to)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(from) || ! ensure_not_nan(to))
+  if (! ensure_finite(from) || ! ensure_finite(to))
     return NULL;
   if (from < 0 || from > 1)
   {

@@ -776,7 +776,7 @@ tfloat_at_value(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return temporal_restrict_value(temp, Float8GetDatum(d), REST_AT);
 }
@@ -856,7 +856,7 @@ tfloat_minus_value(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return temporal_restrict_value(temp, Float8GetDatum(d), REST_MINUS);
 }

@@ -1070,8 +1070,8 @@ stbox_space_time_tiles(const STBox *bounds, double xsize, double ysize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   /* The out parameter is defined even when a later check fails */
   *count = 0;
@@ -1099,8 +1099,8 @@ stbox_space_tiles(const STBox *bounds, double xsize, double ysize, double zsize,
   const GSERIALIZED *sorigin,  bool border_inc, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
     return NULL;
@@ -1218,8 +1218,8 @@ stbox_get_space_time_tile(const GSERIALIZED *point, TimestampTz t,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_valid_geo_grid(point, xsize, ysize, zsize, duration, sorigin))
@@ -1247,8 +1247,8 @@ stbox_get_space_tile(const GSERIALIZED *point, double xsize, double ysize,
   double zsize, const GSERIALIZED *sorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8) ||
       ! ensure_valid_geo_grid(point, xsize, ysize, zsize, NULL, sorigin))
@@ -1388,8 +1388,8 @@ tgeo_space_time_boxes(const Temporal *temp, double xsize, double ysize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   /* The out parameter is defined even when a later check fails */
   *count = 0;
@@ -1421,8 +1421,8 @@ tgeo_space_boxes(const Temporal *temp, double xsize, double ysize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   /* The out parameter is defined even when a later check fails */
   *count = 0;
@@ -1931,8 +1931,8 @@ tgeo_space_time_split(const Temporal *temp, double xsize, double ysize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   /* The out parameter is defined even when a later check fails */
   *count = 0;
@@ -1965,8 +1965,8 @@ tgeo_space_split(const Temporal *temp, double xsize, double ysize,
   GSERIALIZED ***space_bins, int *count)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(xsize), T_FLOAT8))
     return NULL;

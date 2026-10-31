@@ -208,7 +208,7 @@ tdistance_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tdistance_tnumber_number(temp, Float8GetDatum(d));
 }
@@ -439,7 +439,7 @@ nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, DBL_MAX);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return DBL_MAX;
   return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
 }

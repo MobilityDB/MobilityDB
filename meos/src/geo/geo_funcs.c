@@ -17293,7 +17293,7 @@ ensure_not_empty(const GSERIALIZED *gs)
  * it uses on every call, which the test of a point never needs
  */
 static pg_noinline bool
-geo_walk_has_nan(const GSERIALIZED *gs)
+geo_walk_has_non_finite(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   bool hasz = lwgeom_has_z(geom), hasm = lwgeom_has_m(geom);
@@ -17318,7 +17318,7 @@ geo_walk_has_nan(const GSERIALIZED *gs)
  * #lwgeom_isfinite also refuses it
  */
 bool
-ensure_not_nan_geo(const GSERIALIZED *gs)
+ensure_finite_geo(const GSERIALIZED *gs)
 {
   /* A point, the value of every temporal point instant, is read in place: a
    * temporal instant is made by every operation that produces one, so the
@@ -17326,19 +17326,19 @@ ensure_not_nan_geo(const GSERIALIZED *gs)
    * the number of points of a serialized geometry are the two words before
    * the coordinates of its first point, and an empty point has none */
   const uint32_t *words = (const uint32_t *) (GS_POINT_PTR(gs) - 8);
-  bool nan;
+  bool nonfinite;
   if (words[0] == POINTTYPE)
   {
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     bool z = FLAGS_GET_Z(gs->gflags), m = FLAGS_GET_M(gs->gflags);
-    nan = words[1] != 0 && (! isfinite(pt->x) || ! isfinite(pt->y) ||
+    nonfinite = words[1] != 0 && (! isfinite(pt->x) || ! isfinite(pt->y) ||
       (z && ! isfinite(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
       (m && ! isfinite(z ? GSERIALIZED_POINT4D_P(gs)->m :
         GSERIALIZED_POINT3DM_P(gs)->m)));
   }
   else
-    nan = geo_walk_has_nan(gs);
-  if (! nan)
+    nonfinite = geo_walk_has_non_finite(gs);
+  if (! nonfinite)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The coordinates of a geometry must be finite");

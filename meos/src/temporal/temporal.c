@@ -1254,7 +1254,7 @@ tfloat_from_base_temp(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); 
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
 }
@@ -1759,7 +1759,7 @@ double
 float_round(double d, int maxdd)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return DBL_MAX;
   if (! ensure_not_negative(maxdd))
     return DBL_MAX;
@@ -1849,20 +1849,20 @@ tfloat_ceil(const Temporal *temp)
 double
 float_degrees(double value, bool normalize)
 {
-  if (! ensure_not_nan(value))
+  if (! ensure_finite(value))
     return DBL_MAX;
   double result = DatumGetFloat8(datum_degrees(Float8GetDatum(value),
     BoolGetDatum(normalize)));
   /* An infinite value has no normalized angle */
-  if (! ensure_not_nan_result(result))
+  if (! ensure_finite_result(result))
     return DBL_MAX;
   return result;
 }
 
 /**
  * @brief Return a double converted from radians to degrees
- * @note The normalized angle of an infinite value is NaN, which the public
- * functions calling this one test
+ * @note A value beyond the largest double divided by the degrees of a
+ * radian raises an error (#float8_div)
  */
 Datum
 datum_degrees(Datum value, Datum normalize)
@@ -2339,7 +2339,7 @@ tfloat_shift_value(const Temporal *temp, double shift)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
-  if (! ensure_not_nan(shift))
+  if (! ensure_finite(shift))
     return NULL;
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
 }
@@ -2387,7 +2387,7 @@ tfloat_scale_value(const Temporal *temp, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
-  if (! ensure_not_nan(width))
+  if (! ensure_finite(width))
     return NULL;
   return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
 }
@@ -2442,7 +2442,7 @@ tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); 
-  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+  if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
     Float8GetDatum(width), true, true);
@@ -4599,7 +4599,7 @@ temporal_stops(const Temporal *temp, double maxdist,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL); VALIDATE_NOT_NULL(minduration, NULL);
-  if (! ensure_not_nan(maxdist))
+  if (! ensure_finite(maxdist))
     return NULL;
   if (! ensure_not_negative_datum(Float8GetDatum(maxdist), T_FLOAT8))
     return NULL;

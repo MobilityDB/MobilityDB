@@ -273,7 +273,7 @@ contains_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return contains_set_value(s, Float8GetDatum(d));
 }
@@ -394,7 +394,7 @@ contained_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return contained_value_set(Float8GetDatum(d), s);
 }
@@ -568,7 +568,7 @@ left_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_value_set(Float8GetDatum(d), s);
 }
@@ -663,7 +663,7 @@ left_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_set_value(s, Float8GetDatum(d));
 }
@@ -796,7 +796,7 @@ right_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_set_value(s, Float8GetDatum(d));
 }
@@ -890,7 +890,7 @@ right_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_value_set(Float8GetDatum(d), s);
 }
@@ -1030,7 +1030,7 @@ overleft_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overleft_value_set(Float8GetDatum(d), s);
 }
@@ -1125,7 +1125,7 @@ overleft_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overleft_set_value(s, Float8GetDatum(d));
 }
@@ -1264,7 +1264,7 @@ overright_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overright_value_set(Float8GetDatum(d), s);
 }
@@ -1359,7 +1359,7 @@ overright_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overright_set_value(s, Float8GetDatum(d));
 }
@@ -1516,7 +1516,7 @@ union_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return union_set_value(s, Float8GetDatum(d));
 }
@@ -1605,7 +1605,7 @@ union_bigint_set(int64 i, const Set *s)
 Set *
 union_float_set(double d, const Set *s)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return union_set_float(s, d);
 }
@@ -1797,7 +1797,7 @@ intersection_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return intersection_set_value(s, Float8GetDatum(d));
 }
@@ -1885,7 +1885,7 @@ intersection_bigint_set(int64 i, const Set *s)
 Set *
 intersection_float_set(double d, const Set *s)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return intersection_set_float(s, d);
 }
@@ -1976,7 +1976,7 @@ minus_float_set(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return minus_value_set(Float8GetDatum(d), s);
 }
@@ -2071,7 +2071,7 @@ minus_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return minus_set_value(s, Float8GetDatum(d));
 }
@@ -2210,7 +2210,7 @@ distance_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, DBL_MAX);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return DBL_MAX;
   return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d)));
 }

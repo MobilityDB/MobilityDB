@@ -677,8 +677,8 @@ tpose_translate(const Temporal *temp, double deltax, double deltay,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
-      ! ensure_not_nan(deltaz))
+  if (! ensure_finite(deltax) || ! ensure_finite(deltay) ||
+      ! ensure_finite(deltaz))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -700,7 +700,7 @@ tpose_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+  if (! ensure_finite(angle) || ! ensure_finite(x0) || ! ensure_finite(y0))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -723,7 +723,7 @@ tpose_rotate_x(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  if (! ensure_not_nan(angle))
+  if (! ensure_finite(angle))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -746,7 +746,7 @@ tpose_rotate_y(const Temporal *temp, double angle)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPOSE(temp, NULL);
-  if (! ensure_not_nan(angle))
+  if (! ensure_finite(angle))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -765,7 +765,7 @@ tpose_rotate_y(const Temporal *temp, double angle)
 Temporal *
 tpose_rotate_z(const Temporal *temp, double angle)
 {
-  if (! ensure_not_nan(angle))
+  if (! ensure_finite(angle))
     return NULL;
   return tpose_rotate(temp, angle, 0.0, 0.0);
 }

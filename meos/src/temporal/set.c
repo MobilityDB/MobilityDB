@@ -503,17 +503,18 @@ set_make_exp(const Datum *values, int count, int maxcount, MeosType basetype,
   bool order)
 {
   assert(values); assert(count > 0); assert(count <= maxcount);
-  /* Ensure that no float value, and no coordinate of a geometry, is NaN */
+  /* Ensure that every float value and every coordinate of a geometry is
+   * finite */
   if (basetype == T_FLOAT8)
   {
     for (int i = 0; i < count; i++)
-      if (! ensure_not_nan(DatumGetFloat8(values[i])))
+      if (! ensure_finite(DatumGetFloat8(values[i])))
         return NULL;
   }
   else if (geo_basetype(basetype))
   {
     for (int i = 0; i < count; i++)
-      if (! ensure_not_nan_geo(DatumGetGserializedP(values[i])))
+      if (! ensure_finite_geo(DatumGetGserializedP(values[i])))
         return NULL;
   }
   bool hasz = false;
@@ -807,7 +808,7 @@ floatset_make(const double *values, int count)
   if (! ensure_not_empty_array(count))
     return NULL;
   for (int i = 0; i < count; i++)
-    if (! ensure_not_nan(values[i]))
+    if (! ensure_finite(values[i]))
       return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
@@ -1006,7 +1007,7 @@ bigint_to_set(int64 i)
 Set *
 float_to_set(double d)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   Datum v = Float8GetDatum(d);
   return set_make_exp(&v, 1, 1, T_FLOAT8, ORDER_NO);
@@ -1711,8 +1712,8 @@ floatset_degrees(const Set *s, bool normalize)
   {
     (SET_OFFSETS_PTR(result))[i] = datum_degrees(SET_VAL_N(s, i), normalize);
     /* An infinite value has no normalized angle, see
-     * #ensure_not_nan_result */
-    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+     * #ensure_finite_result */
+    if (! ensure_finite_result(DatumGetFloat8(SET_VAL_N(result, i))))
     {
       pfree(result);
       return NULL;
@@ -1862,10 +1863,10 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
     }
   }
   /* An infinite value of a float set can give a result with no value, see
-   * #ensure_not_nan_result */
+   * #ensure_finite_result */
   for (int i = 0; type == T_FLOAT8 && i < s->count; i++)
   {
-    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+    if (! ensure_finite_result(DatumGetFloat8(SET_VAL_N(result, i))))
     {
       pfree(result);
       return NULL;
@@ -2058,7 +2059,7 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
-  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+  if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
