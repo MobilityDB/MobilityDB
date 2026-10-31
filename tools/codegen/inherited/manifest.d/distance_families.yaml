@@ -444,3 +444,80 @@ distance_families:
       - [tgeogpoint, geography, Shortestline_tgeo_geo]
       - [tgeogpoint, tgeogpoint, Shortestline_tgeo_tgeo]
   - lit: "\n/*****************************************************************************/\n"
+- family: trgeo
+  file: mobilitydb/sql/rgeo/164_trgeo_distance.in.sql
+  begin: "/*****************************************************************************\n * Distance functions\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Distance functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      rows:
+      - [trgeometry, geometry, Tdistance_trgeometry_geo]
+      - [geometry, trgeometry, Tdistance_geo_trgeometry]
+      - [trgeometry, tgeompoint, Tdistance_trgeometry_tpoint]
+      - [tgeompoint, trgeometry, Tdistance_tpoint_trgeometry]
+      - [trgeometry, trgeometry, Tdistance_trgeometry_trgeometry]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistance
+      rows:
+      - [trgeometry, geometry]
+      - [geometry, trgeometry]
+      - [trgeometry, tgeompoint]
+      - [tgeompoint, trgeometry]
+      - [trgeometry, trgeometry]
+  - lit: "\n/*****************************************************************************\n * Nearest approach instant/distance and shortest line functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: trgeometry
+      rows:
+      - [trgeometry, geometry, NAI_trgeometry_geo]
+      - [geometry, trgeometry, NAI_geo_trgeometry]
+      - [trgeometry, tgeompoint, NAI_trgeometry_tpoint]
+  - lit: "/* TODO: Maybe change output type here.\n * Currently we return a trgeometry instant\n * even if the left argument is a tgeompoint */\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: trgeometry
+      rows:
+      - [tgeompoint, trgeometry, NAI_tpoint_trgeometry]
+      - [trgeometry, trgeometry, NAI_trgeometry_trgeometry]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      rows:
+      - [trgeometry, geometry, NAD_trgeometry_geo]
+      - [geometry, trgeometry, NAD_geo_trgeometry]
+      - [trgeometry, stbox, NAD_trgeometry_stbox]
+      - [stbox, trgeometry, NAD_stbox_trgeometry]
+      - [trgeometry, tgeompoint, NAD_trgeometry_tpoint]
+      - [tgeompoint, trgeometry, NAD_tpoint_trgeometry]
+      - [trgeometry, trgeometry, NAD_trgeometry_trgeometry]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistance
+      style: argsfirst
+      rows:
+      - [trgeometry, geometry]
+      - [geometry, trgeometry]
+      - [trgeometry, stbox]
+      - [stbox, trgeometry]
+      - [trgeometry, tgeompoint]
+      - [tgeompoint, trgeometry]
+      - [trgeometry, trgeometry]
+  - lit: "\n"
+  - fns:
+      proc: shortestLine
+      ret: geometry
+      rows:
+      - [trgeometry, geometry, Shortestline_trgeometry_geo]
+      - [geometry, trgeometry, Shortestline_geo_trgeometry]
+      - [trgeometry, tgeompoint, Shortestline_trgeometry_tpoint]
+      - [tgeompoint, trgeometry, Shortestline_tpoint_trgeometry]
+      - [trgeometry, trgeometry, Shortestline_trgeometry_trgeometry]
+  - lit: "\n/*****************************************************************************/\n"
