@@ -360,3 +360,109 @@ setstate_deserialize(const uint8_t *bytes, size_t size)
 }
 
 /*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of integers
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] i Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+int_union_transfn(Set *state, int32 i)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_INTSET))
+    return NULL;
+  return value_union_transfn(state, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of big integers
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] i Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+bigint_union_transfn(Set *state, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_BIGINTSET))
+    return NULL;
+  return value_union_transfn(state, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of floats
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] d Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+float_union_transfn(Set *state, double d)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
+  if (state && ! ensure_set_isof_type(state, T_FLOATSET))
+    return NULL;
+  return value_union_transfn(state, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of dates
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] d Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+date_union_transfn(Set *state, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_DATESET))
+    return NULL;
+  return value_union_transfn(state, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of timestamptz
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] t Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+timestamptz_union_transfn(Set *state, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_set_isof_type(state, T_TSTZSET))
+    return NULL;
+  return value_union_transfn(state, TimestampTzGetDatum(t), T_TIMESTAMPTZ);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for set union aggregate of texts
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] txt Value
+ * @csqlfn #Value_union_transfn()
+ * @csqlaggfn #setUnionTransition()
+ */
+Set *
+text_union_transfn(Set *state, const text *txt)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt, NULL);
+  if (state && ! ensure_set_isof_type(state, T_TEXTSET))
+    return NULL;
+  return value_union_transfn(state, PointerGetDatum(txt), T_TEXT);
+}
+
