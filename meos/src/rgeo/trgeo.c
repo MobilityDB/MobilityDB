@@ -657,6 +657,31 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   return found;
 }
 
+/**
+ * @ingroup meos_rgeo_accessor
+ * @brief Return the value of a temporal rigid geometry at a timestamptz
+ * @details The typed twin of #tpose_value_at_timestamptz for a temporal rigid
+ * geometry: its value is the reference geometry placed by the pose
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] t Timestamp
+ * @param[in] strict True if the timestamp must belong to the temporal value,
+ * false when it may be at an exclusive bound
+ * @param[out] result Resulting geometry
+ * @csqlfn #Trgeometry_value_at_timestamptz()
+ */
+bool
+trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t,
+  bool strict, GSERIALIZED **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(result, false); VALIDATE_TRGEOMETRY(temp, false);
+
+  Datum res;
+  bool found = trgeo_value_at_timestamptz(temp, t, strict, &res);
+  *result = found ? DatumGetGserializedP(res) : NULL;
+  return found;
+}
+
 /*****************************************************************************/
 
 /**
