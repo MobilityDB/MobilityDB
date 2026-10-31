@@ -63,6 +63,27 @@ boxtypes:
           - [tcbuffer, cbuffer, nad_tcbuffer_cbuffer]
           - sep
           - [tcbuffer, tcbuffer, nad_tcbuffer_tcbuffer]
+      - family:   tpose
+        nadgroup: mobilitydb_pose_dist
+        nadfile:  mobilitydb/src/pose/tpose_distance.c
+        nadsides:
+          pose:  {c: Pose, var: pose, getarg: PG_GETARG_POSE_P, desc: pose}
+          geo:   {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tpose: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal pose, descpl: temporal poses, free: true}
+        nadpairs:
+          - [pose, stbox, distance_pose_stbox]
+          - [stbox, pose, distance_pose_stbox]
+          - sep
+          - [geo, tpose, nad_tpose_geo]
+          - [tpose, geo, nad_tpose_geo]
+          - sep
+          - [tpose, stbox, nad_tpose_stbox]
+          - [stbox, tpose, nad_tpose_stbox]
+          - sep
+          - [pose, tpose, nad_tpose_pose]
+          - [tpose, pose, nad_tpose_pose]
+          - sep
+          - [tpose, tpose, nad_tpose_tpose]
 
   - box:       tpcbox
     tside:     tpointcloud

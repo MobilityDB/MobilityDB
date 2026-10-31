@@ -327,6 +327,8 @@ NAI_tpose_tpose(PG_FUNCTION_ARGS)
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tpose — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_pose_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_pose_stbox);
 /**
@@ -373,8 +375,8 @@ PGDLLEXPORT Datum NAD_geo_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
- * @brief Return the nearest approach distance between a geometry and a
- * temporal pose
+ * @brief Return the nearest approach distance between a geometry and a temporal
+ * pose
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -403,8 +405,8 @@ PG_FUNCTION_INFO_V1(NAD_tpose_geo);
 Datum
 NAD_tpose_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double result = nad_tpose_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -418,7 +420,7 @@ NAD_tpose_geo(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_tpose_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpose_stbox);
 /**
- * @ingroup mobilitydb_cbuffer_dist
+ * @ingroup mobilitydb_pose_dist
  * @brief Return the nearest approach distance between a temporal pose and a
  * spatiotemporal box
  * @sqlfn nearestApproachDistance()
@@ -439,9 +441,9 @@ NAD_tpose_stbox(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum NAD_stbox_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tpose);
 /**
- * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a temporal pose 
+ * @ingroup mobilitydb_pose_dist
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal pose
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -523,6 +525,7 @@ NAD_tpose_tpose(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+/* GENERATED-NADOPS-END tpose */
 
 /*****************************************************************************
  * ShortestLine
