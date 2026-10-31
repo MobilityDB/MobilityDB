@@ -112,14 +112,14 @@ a test that fails on the file of master and passes on the fix:
 | MobilityDB #3301, MERGED as `e0f9f95714` | a HexWKB string of an odd length, with a character that is not a hexadecimal digit, or empty, is parsed from the bytes it does not encode: `tbox_from_hexwkb("1")` and `("")` abort | `hexwkb_input_error_test.c`, nine readers |
 | MobilityDB #3298, MERGED as `00b566cedb` | `span_parse` ignores the refusal of `span_set`: `floatspan_in("(1234.5, 10)")` returns a value with its error, `floatspanset_in` of it aborts | `text_input_error_test.c` |
 | MobilityDB #3303, MERGED as `939e78ded4` | `nad_tpcpoint_geo` and `eintersects_tpcpoint_geo` test only for null: a temporal point aborts, a sequence is read as an instant | `tpointcloud_test.c` |
-| MobilityDB #3324, `fix/jsonpath-syntax-error-returns-no-value` | `parsejsonpath` returns its uninitialized result after a syntax error: `free(): invalid pointer` | `json_inout_validity_test.c` |
+| MobilityDB #3324, MERGED as `3680bfbd1d` | `parsejsonpath` returns its uninitialized result after a syntax error: `free(): invalid pointer` | `json_inout_validity_test.c` |
 
 A JSON path the grammar refuses leaves no parse behind in #3324: `yydestruct` frees the value of each symbol the grammar discards by its `%type` in `jsonpath_gram.y`, `parsejsonpath` drains the free list, and `freeJsonPathParseItem` frees a subscript; valgrind finds no block lost over nine refused paths.
 
-A pixel holding NaN reads as no value in MobilityDB #3322 (`fix/raster-nan-pixel-reads-no-value`): both pixel readers skipped only a pixel equal to the nodata value, which a NaN never is, and the NaN, refused by `tinstant_make` since #3291, left a missing instant that `raster_run_close` read, a segmentation fault. The vendored map algebra of `raster_rtcore.c` keeps its pixel values as they are.
+A pixel holding NaN reads as no value in MobilityDB #3322 (MERGED as `8d62a25e15`): both pixel readers skipped only a pixel equal to the nodata value, which a NaN never is, and the NaN, refused by `tinstant_make` since #3291, left a missing instant that `raster_run_close` read, a segmentation fault. The vendored map algebra of `raster_rtcore.c` keeps its pixel values as they are.
 
-The work that depends on this: the pose sort keys (D9.13, `meos/sortkey-pose`), rebased on master
-`cde4a92732` with `pose_cmp` and `posechain_cmp` keeping `<` and `>`, and the box order of NaN
+The work that depends on this: the pose sort keys (D9.13), MobilityDB #3332 MERGED as
+`7de78631f5`, with `pose_cmp` and `posechain_cmp` keeping `<` and `>`, and the box order of NaN
 bounds (`fix/stbox-order-nan-bounds`, on the fork), set aside, since no box holds a NaN.
 
 ## 4. Next: every MEOS value is a finite number, and the double sentinel
