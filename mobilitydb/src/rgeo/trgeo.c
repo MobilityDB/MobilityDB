@@ -52,7 +52,6 @@
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
-#include "rgeo/trgeo.h"
 #include "rgeo/trgeo_parser.h"
 #include "rgeo/trgeo_all.h"
 /* MobilityDB */

@@ -55,7 +55,6 @@
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/span_selfuncs.h"
-#include "pg_temporal/temporal_selfuncs.h"
 #include "pg_geo/tspatial_selfuncs.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>

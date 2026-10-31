@@ -57,7 +57,6 @@
 #include "temporal/bbox_index.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
-#include "temporal/type_util.h"
 #include "geo/tspatial_boxops.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>

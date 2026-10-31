@@ -47,7 +47,6 @@
 #include "temporal/span.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
-#include "geo/stbox_index.h"
 
 /*****************************************************************************
  * GiST consistent methods

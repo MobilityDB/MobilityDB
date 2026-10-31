@@ -45,7 +45,6 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/posechain.h"
 #include "pose/tposechain.h"
-#include "pose/tposechain.h"
 
 /*****************************************************************************
  * Ever/always comparisons
