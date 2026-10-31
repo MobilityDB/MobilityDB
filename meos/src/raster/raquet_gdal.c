@@ -481,10 +481,10 @@ raster_value_gdal_pixel(void *ctxp, int col, int row, double *value)
     ctx->unreadable = true;
     return false;
   }
-  /* A pixel holding NaN carries no value, as a pixel equal to the nodata
-   * value does: GDAL writes NaN as the nodata value of a float band, which no
-   * comparison matches, and no MEOS value holds a NaN */
-  if (isnan(val) || (ctx->has_nodata && val == ctx->nodata))
+  /* A pixel holding NaN or an infinity carries no value, as a pixel equal
+   * to the nodata value does: GDAL writes NaN as the nodata value of a float
+   * band, which no comparison matches, and every MEOS value is finite */
+  if (! isfinite(val) || (ctx->has_nodata && val == ctx->nodata))
     return false;
   *value = val;
   return true;

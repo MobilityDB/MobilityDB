@@ -102,7 +102,7 @@ SELECT round(degrees(yaw(pose(ST_PointZ(0,0,0), radians(30), radians(45),
 SELECT asText(pose(ST_Point(1,1), 0, 0, 0));
 ERROR:  The geometry must have Z dimension
 SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT ST_AsText(point(pose 'Pose(Point(1 1),0.5)'));
  st_astext  
 ------------
@@ -570,7 +570,7 @@ ERROR:  Rotation quaternion must be of unit norm (within 0.001). Received |q|=2.
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0));
 ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::float, 0::float, 0));
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' = pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)' AS wkt_canonical;
  wkt_canonical 
 ---------------

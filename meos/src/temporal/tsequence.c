@@ -1124,20 +1124,6 @@ ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
     if (tpoint_type(instants[i]->temptype) &&
         ! ensure_point_type(DatumGetGserializedP(tinstant_value_p(instants[i]))))
       return false;
-    /* A linear segment of a temporal float with an infinite value has no
-     * value at its interior instants: the interpolation adds infinities of
-     * opposite signs, from minus to plus infinity or from an infinity to
-     * itself, or multiplies one by zero, from a finite value, and each gives
-     * a NaN. An infinite value is thus a value of a step or discrete temporal
-     * float only */
-    if (interp == LINEAR && temptype == T_TFLOAT &&
-        isinf(DatumGetFloat8(tinstant_value_p(instants[i]))))
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The values of a temporal float with linear interpolation must be "
-        "finite");
-      return false;
-    }
     if (i > 0)
     {
       if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
