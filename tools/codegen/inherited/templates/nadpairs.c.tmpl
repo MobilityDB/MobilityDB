@@ -1,0 +1,38 @@
+PGDLLEXPORT Datum NAD_{A}_{B}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{A}_{B});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between {BETWEEN}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{A}_{B}(PG_FUNCTION_ARGS)
+{
+{DECLS}
+  bool spheroid = true;
+  if (PG_NARGS() > 2)
+    spheroid = PG_GETARG_BOOL(2);
+  double result = nad_{KERNEL}({KARGS}, spheroid);
+{FREES}  if (result == DBL_MAX)
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(result);
+}
+
+PGDLLEXPORT Datum NAD_{A}_{B}_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{A}_{B}_opr);
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between {BETWEEN}
+ * @details The procedure of the operator, which answers #NAD_{A}_{B}()
+ * with the default model of the earth, the one the nearest-neighbour search
+ * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
+ * beside jsonb_path_exists
+ * @sqlfn nearestApproachDistanceOpr()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{A}_{B}_opr(PG_FUNCTION_ARGS)
+{
+  return NAD_{A}_{B}(fcinfo);
+}
