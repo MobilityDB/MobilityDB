@@ -679,3 +679,16 @@ SELECT extentCombine(stbox 'STBOX X((0,0),(1,1))', NULL::stbox);
 SELECT extentCombine(NULL::stbox, NULL::stbox);
 
 -------------------------------------------------------------------------------
+-- An extent beyond the largest double whose area or volume is within it
+SELECT round((area(stbox 'STBOX X((-1e308,0),(1e308,1e-10))') / 1e298)::numeric, 6);
+SELECT round((volume(stbox 'STBOX Z((-1e308,0,0),(1e308,1e-10,1e-10))') / 1e288)::numeric, 6);
+SELECT perimeter(stbox 'STBOX X((-1e307,0),(1e307,1))');
+SELECT perimeter(stbox 'STBOX X((-1e308,-1e308),(1e308,1e308))');
+SELECT perimeter(stbox 'STBOX X((0,0),(5e-324,1e-323))') = 3e-323;
+SELECT perimeter(stbox 'STBOX X((1e-150,1e-150),(1.0000000000000002e-150,1.0000000000000002e-150))') > 0;
+-- An area, a volume or a perimeter beyond the largest double raises an error
+SELECT area(stbox 'STBOX X((-1e308,-1e308),(1e308,1e308))');
+SELECT volume(stbox 'STBOX Z((-1e308,-1e308,0),(1e308,1e308,1))');
+SELECT perimeter(stbox 'STBOX X((-1e308,0),(1e308,1))');
+
+-------------------------------------------------------------------------------
