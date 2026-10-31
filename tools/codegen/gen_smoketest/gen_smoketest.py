@@ -715,7 +715,7 @@ TRGEO_CONFIG = dict(
     # the cleanup block below calls the function and frees the result. It is
     # listed here rather than in `skip` because the function IS exercised, and
     # a SKIP line naming it would read as one nothing calls.
-    manual=["trgeometry_value_n"],
+    manual=["trgeometry_value_n", "trgeometry_value_at_timestamptz"],
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -776,6 +776,13 @@ TRGEO_CONFIG = dict(
     GSERIALIZED *out_geom = NULL;
     bool ok = trgeometry_value_n(trgeo_seq1, 1, &out_geom);
     printf("trgeometry_value_n: ok=%d ptr=%s\\n", (int) ok, out_geom ? "OK" : "NULL");
+    if (out_geom) free(out_geom);
+  }
+  /* Manually exercise trgeometry_value_at_timestamptz (out-param GSERIALIZED **). */
+  {
+    GSERIALIZED *out_geom = NULL;
+    bool ok = trgeometry_value_at_timestamptz(trgeo_seq1, tstz1, true, &out_geom);
+    printf("trgeometry_value_at_timestamptz: ok=%d ptr=%s\\n", (int) ok, out_geom ? "OK" : "NULL");
     if (out_geom) free(out_geom);
   }
 
