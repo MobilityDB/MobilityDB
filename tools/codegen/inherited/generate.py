@@ -2956,7 +2956,8 @@ def _dist_ops_st(st: dict) -> str:
     (left, right) row, packed, as #_dist_op writes one; the `argsfirst` style
     states the arguments before the procedure and quotes the commutator, the
     `split` style states each argument on its own line, and the `compact`
-    style states the procedure on the first line and the rest on the second."""
+    style states the procedure on the first line and the rest on the second;
+    `quote` quotes the commutator of the default style."""
     op = st["op"]
     if st.get("style") == "compact":
         ops = [(f"CREATE OPERATOR {op} (PROCEDURE = {st['proc']},\n"
@@ -2978,13 +2979,44 @@ def _dist_ops_st(st: dict) -> str:
     else:
         ops = [_dist_op(st["op"], st["proc"], left, right)
                for left, right in st["rows"]]
+        if st.get("quote"):
+            ops = [o.replace(f"COMMUTATOR = {op}\n", f"COMMUTATOR = '{op}'\n")
+                   for o in ops]
     return "\n".join(ops) + "\n"
+
+
+def _dist_delegfns_st(st: dict) -> str:
+    """A `delegfns` stanza: the functions `proc` names over the (left, right)
+    rows, packed as #_dist_fns_st packs them, each a SQL body calling the
+    function of the `via` type, the argument of the `src` type cast to it, as
+    a point-valued family reaches the spatial functions of its cast target.
+    With `atinstant` the body restricts the `src` argument to the timestamp of
+    the instant the call answers."""
+    proc, src, via = st["proc"], st["src"], st["via"]
+    fns = []
+    for left, right in st["rows"]:
+        args = [f"${i}::@extschema@.{via}" if t == src else f"${i}"
+                for i, t in enumerate((left, right), 1)]
+        call = f"@extschema@.{proc}({', '.join(args)})"
+        if st.get("atinstant"):
+            k = 1 if left == src else 2
+            body = (f"    SELECT @extschema@.atTime(${k},\n"
+                    f"      @extschema@.getTimestamp(\n"
+                    f"        {call}))")
+        else:
+            body = f"    SELECT {call}"
+        fns.append(f"CREATE FUNCTION {proc}({left}, {right})\n"
+                   f"  RETURNS {st['ret']}\n"
+                   f"  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS $$\n"
+                   f"{body}\n"
+                   f"  $$;")
+    return "\n".join(fns) + "\n"
 
 
 def render_distance(fam: dict) -> str:
     """Render one family's distance block from its `blocks` sequence: verbatim
-    `lit` blocks plus the `distfns` / `distops` / `fnops` / `fns` / `ops`
-    stanzas. Blocks
+    `lit` blocks plus the `distfns` / `distops` / `fnops` / `fns` /
+    `delegfns` / `ops` stanzas. Blocks
     concatenate with no automatic separator, so the rendered text is
     byte-identical to the committed region."""
     out = ""
@@ -2997,6 +3029,8 @@ def render_distance(fam: dict) -> str:
             out += _dist_fnops(blk["fnops"])
         elif "fns" in blk:
             out += _dist_fns_st(blk["fns"])
+        elif "delegfns" in blk:
+            out += _dist_delegfns_st(blk["delegfns"])
         elif "ops" in blk:
             out += _dist_ops_st(blk["ops"])
         else:
