@@ -24,6 +24,19 @@ boxtypes:
     posgroup:  mobilitydb_geo_bbox_pos
     posfile:   mobilitydb/src/geo/tspatial_posops.c
     posreference: true
+    # nearest approach distance wrappers (templates/nadpairs.c.tmpl): one per
+    # pair [left, right, kernel], the kernel naming the order of its arguments
+    nadgroup:  mobilitydb_geo_dist
+    nadfile:   mobilitydb/src/geo/tgeo_distance.c
+    nadsides:
+      geo:  {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry}
+      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo}
+    nadpairs:
+      - [geo, stbox, stbox_geo]
+      - [stbox, geo, stbox_geo]
+      - [stbox, stbox, stbox_stbox]
+      - [stbox, tgeo, tgeo_stbox]
+      - [tgeo, stbox, tgeo_stbox]
 
   - box:       tpcbox
     tside:     tpointcloud

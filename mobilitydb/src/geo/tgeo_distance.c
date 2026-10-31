@@ -351,12 +351,14 @@ NAD_tgeo_geo_opr(PG_FUNCTION_ARGS)
   return NAD_tgeo_geo(fcinfo);
 }
 
+/* GENERATED-NADOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_geo_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_stbox);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a geometry and
- * a spatiotemporal box
+ * @brief Return the nearest approach distance between a geometry and a
+ * spatiotemporal box
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -379,8 +381,8 @@ PGDLLEXPORT Datum NAD_geo_stbox_opr(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_stbox_opr);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a geometry and
- * a spatiotemporal box
+ * @brief Return the nearest approach distance between a geometry and a
+ * spatiotemporal box
  * @details The procedure of the operator, which answers #NAD_geo_stbox()
  * with the default model of the earth, the one the nearest-neighbour search
  * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
@@ -398,8 +400,8 @@ PGDLLEXPORT Datum NAD_stbox_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_geo);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a geometry
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a geometry
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -422,8 +424,8 @@ PGDLLEXPORT Datum NAD_stbox_geo_opr(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_geo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a geometry
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a geometry
  * @details The procedure of the operator, which answers #NAD_stbox_geo()
  * with the default model of the earth, the one the nearest-neighbour search
  * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
@@ -443,6 +445,7 @@ PG_FUNCTION_INFO_V1(NAD_stbox_stbox);
  * @ingroup mobilitydb_geo_dist
  * @brief Return the nearest approach distance between two spatiotemporal boxes
  * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
  */
 Datum
 NAD_stbox_stbox(PG_FUNCTION_ARGS)
@@ -480,8 +483,8 @@ PGDLLEXPORT Datum NAD_stbox_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a temporal geo
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal geo
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -504,8 +507,8 @@ PGDLLEXPORT Datum NAD_stbox_tgeo_opr(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a temporal geo
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal geo
  * @details The procedure of the operator, which answers #NAD_stbox_tgeo()
  * with the default model of the earth, the one the nearest-neighbour search
  * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
@@ -561,6 +564,7 @@ NAD_tgeo_stbox_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_stbox(fcinfo);
 }
+/* GENERATED-NADOPS-END stbox */
 
 PGDLLEXPORT Datum NAD_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo);
