@@ -89,7 +89,6 @@ if(MEOS)
     tinstant_meos.c
     tnumber_distance_meos.c
     tnumber_mathfuncs_meos.c
-    tsequence_meos.c
     tsequenceset_meos.c
     ttext_funcs_meos.c
 )
