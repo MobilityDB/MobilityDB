@@ -44,6 +44,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/lifting.h"
+#include "temporal/temporal.h"
 #include "temporal/tinstant.h"
 #include "temporal/tnumber_mathfuncs.h"
 #include "temporal/tsequence.h"
@@ -208,6 +209,474 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
   lfinfo.tpfn_temp = (oper == MUL || oper == DIV) && linear1 && linear2 ?
     tpfunc : NULL;
   return tfunc_temporal_temporal(temp1, temp2, &lfinfo);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the division of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Div_number_tnumber()
+ */
+Temporal *
+div_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), DIV, &datum_div,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal division of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Div_number_tnumber()
+ */
+Temporal *
+div_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal division of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Div_number_tnumber()
+ */
+Temporal *
+div_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the division of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Div_tnumber_number()
+ */
+Temporal *
+div_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), DIV, &datum_div,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal division of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Div_tnumber_number()
+ */
+Temporal *
+div_tint_int(const Temporal *temp, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), DIV, &datum_div,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal division of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
+ * @csqlfn #Div_tnumber_number()
+ */
+Temporal *
+div_tfloat_float(const Temporal *temp, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal division of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Div_tnumber_tnumber()
+ */
+Temporal *
+div_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
+    return NULL;
+  MeosType basetype = temptype_basetype(temp1->temptype);
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
+  return arithop_tnumber_tnumber(temp1, temp2, DIV, &datum_div,
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the multiplication of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Mul_number_tnumber()
+ */
+Temporal *
+mul_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), MUL, &datum_mul,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of an integer and a temporal
+ * integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Mul_number_tnumber()
+ */
+Temporal *
+mul_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MUL, &datum_mul,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Mul_number_tnumber()
+ */
+Temporal *
+mul_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the multiplication of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Mul_tnumber_number()
+ */
+Temporal *
+mul_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), MUL, &datum_mul,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of a temporal integer and an
+ * integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Mul_tnumber_number()
+ */
+Temporal *
+mul_tint_int(const Temporal *temp, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), MUL, &datum_mul,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
+ * @csqlfn #Mul_tnumber_number()
+ */
+Temporal *
+mul_tfloat_float(const Temporal *temp, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal multiplication of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Mul_tnumber_tnumber()
+ */
+Temporal *
+mul_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
+    return NULL;
+  MeosType basetype = temptype_basetype(temp1->temptype);
+  assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
+  return arithop_tnumber_tnumber(temp1, temp2, MUL, &datum_mul,
+    (basetype == T_INT4) ? NULL : &tfloat_arithop_turnpt);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the subtraction of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Sub_number_tnumber()
+ */
+Temporal *
+sub_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), SUB, &datum_sub,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal subtraction of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Sub_number_tnumber()
+ */
+Temporal *
+sub_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal subtraction of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Sub_number_tnumber()
+ */
+Temporal *
+sub_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the subtraction of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Sub_tnumber_number()
+ */
+Temporal *
+sub_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), SUB, &datum_sub,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal subtraction of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Sub_tnumber_number()
+ */
+Temporal *
+sub_tint_int(const Temporal *temp, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), SUB, &datum_sub,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal subtraction of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
+ * @csqlfn #Sub_tnumber_number()
+ */
+Temporal *
+sub_tfloat_float(const Temporal *temp, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal subtraction of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Sub_tnumber_tnumber()
+ */
+Temporal *
+sub_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tnumber_tnumber(temp1, temp2))
+    return NULL;
+  return arithop_tnumber_tnumber(temp1, temp2, SUB, &datum_sub, NULL);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the addition of a big integer and a temporal big integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Add_number_tnumber()
+ */
+Temporal *
+add_bigint_tbigint(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), ADD, &datum_add,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal addition of an integer and a temporal integer
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Add_number_tnumber()
+ */
+Temporal *
+add_int_tint(int i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal addition of a float and a temporal float
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ * @csqlfn #Add_number_tnumber()
+ */
+Temporal *
+add_float_tfloat(double d, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
+    INVERT);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the addition of a temporal big integer and a big integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Add_tnumber_number()
+ */
+Temporal *
+add_tbigint_bigint(const Temporal *temp, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int64GetDatum(i), ADD, &datum_add,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal addition of a temporal integer and an integer
+ * @param[in] temp Temporal value
+ * @param[in] i Value
+ * @csqlfn #Add_tnumber_number()
+ */
+Temporal *
+add_tint_int(const Temporal *temp, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL);
+  return arithop_tnumber_number(temp, Int32GetDatum(i), ADD, &datum_add,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal addition of a temporal float and a float
+ * @param[in] temp Temporal value
+ * @param[in] d Value
+ * @csqlfn #Add_tnumber_number()
+ */
+Temporal *
+add_tfloat_float(const Temporal *temp, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
+    INVERT_NO);
+}
+
+/**
+ * @ingroup meos_temporal_math
+ * @brief Return the temporal addition of the temporal numbers
+ * @param[in] temp1,temp2 Temporal values
+ * @csqlfn #Add_tnumber_tnumber()
+ */
+Temporal *
+add_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_temporal_temporal(temp1, temp2))
+    return NULL;
+  return arithop_tnumber_tnumber(temp1, temp2, ADD, &datum_add, NULL);
 }
 
 /*****************************************************************************
