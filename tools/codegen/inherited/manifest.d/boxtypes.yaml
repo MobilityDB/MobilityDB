@@ -25,18 +25,44 @@ boxtypes:
     posfile:   mobilitydb/src/geo/tspatial_posops.c
     posreference: true
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl): one per
-    # pair [left, right, kernel], the kernel naming the order of its arguments
+    # pair [left, right, kernel], the kernel naming the order of its arguments,
+    # a side marked `free` released after the call; `nadearth` adds the earth
+    # model argument and the procedure of the operator; `sep` writes a row of
+    # asterisks. Each family of `nadfamilies` is a region of its own file.
     nadgroup:  mobilitydb_geo_dist
     nadfile:   mobilitydb/src/geo/tgeo_distance.c
+    nadearth:  true
     nadsides:
-      geo:  {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry}
-      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo}
+      geo:  {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo, free: true}
     nadpairs:
-      - [geo, stbox, stbox_geo]
-      - [stbox, geo, stbox_geo]
-      - [stbox, stbox, stbox_stbox]
-      - [stbox, tgeo, tgeo_stbox]
-      - [tgeo, stbox, tgeo_stbox]
+      - [geo, stbox, nad_stbox_geo]
+      - [stbox, geo, nad_stbox_geo]
+      - [stbox, stbox, nad_stbox_stbox]
+      - [stbox, tgeo, nad_tgeo_stbox]
+      - [tgeo, stbox, nad_tgeo_stbox]
+    nadfamilies:
+      - family:   tcbuffer
+        nadgroup: mobilitydb_cbuffer_dist
+        nadfile:  mobilitydb/src/cbuffer/tcbuffer_distance.c
+        nadsides:
+          cbuffer:  {c: Cbuffer, var: cb, getarg: PG_GETARG_CBUFFER_P, desc: circular buffer}
+          geo:      {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tcbuffer: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal circular buffer, descpl: temporal circular buffers, free: true}
+        nadpairs:
+          - [cbuffer, stbox, nad_cbuffer_stbox]
+          - [stbox, cbuffer, nad_cbuffer_stbox]
+          - sep
+          - [tcbuffer, stbox, nad_tcbuffer_stbox]
+          - [stbox, tcbuffer, nad_tcbuffer_stbox]
+          - sep
+          - [geo, tcbuffer, nad_tcbuffer_geo]
+          - [tcbuffer, geo, nad_tcbuffer_geo]
+          - sep
+          - [cbuffer, tcbuffer, nad_tcbuffer_cbuffer]
+          - [tcbuffer, cbuffer, nad_tcbuffer_cbuffer]
+          - sep
+          - [tcbuffer, tcbuffer, nad_tcbuffer_tcbuffer]
 
   - box:       tpcbox
     tside:     tpointcloud
