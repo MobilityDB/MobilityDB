@@ -1,3 +1,45 @@
+PGDLLEXPORT Datum NAD_{BASE}_{TSIDE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{BASE}_{TSIDE});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between a {BASEDESC} and a {VALDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{BASE}_{TSIDE}(PG_FUNCTION_ARGS)
+{
+  Datum value = PG_GETARG_DATUM(0);
+  Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_{TSIDE}_{BASE}(temp, value);
+  PG_FREE_IF_COPY(temp, 1);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
+PGDLLEXPORT Datum NAD_{TSIDE}_{BASE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(NAD_{TSIDE}_{BASE});
+/**
+ * @ingroup {NADGROUP}
+ * @brief Return the nearest approach distance between a {VALDESC} and a {BASEDESC}
+ * @sqlfn nearestApproachDistance()
+ * @sqlop @p |=|
+ */
+Datum
+NAD_{TSIDE}_{BASE}(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Datum value = PG_GETARG_DATUM(1);
+  MeosType basetype = temptype_basetype(temp->temptype);
+  Datum result = nad_{TSIDE}_{BASE}(temp, value);
+  PG_FREE_IF_COPY(temp, 0);
+  if (datum_eq(result, distance_sentinel(basetype), basetype))
+    PG_RETURN_NULL();
+  PG_RETURN_FLOAT8(distance_double(result, basetype));
+}
+
 PGDLLEXPORT Datum NAD_{BOX}_{BOX}(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_{BOX}_{BOX});
 /**

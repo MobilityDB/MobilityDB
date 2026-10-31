@@ -184,10 +184,11 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   type's position wrappers (`templates/posops.c.tmpl`) carry the operations of the
   axes it lists in `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its
   axis). A box type naming a `nadfile:` has its nearest approach distance wrappers
-  there (`templates/nadops.c.tmpl`), in the directions of its box operators and, for
-  each number type its value span lists in `nadtypes:`, the span directions: `tbox`
-  writes the 16 wrappers of `tnumber_distance.c` from `NAD_tbox_tbox` through
-  `NAD_tnumber_tnumber`.
+  there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
+  temporal value both ways, whose `Datum` kernel answers the sentinel of the base
+  type, the directions of its box operators and, for each number type its value
+  span lists in `nadtypes:`, the span directions: `tbox` writes the 18 wrappers of
+  `tnumber_distance.c` from `NAD_number_tnumber` through `NAD_tnumber_tnumber`.
   A box type listing `nadpairs:` takes `templates/nadpairs.c.tmpl` instead, one
   wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, the
   kernel taking the sides in the order its name gives them and releasing those
