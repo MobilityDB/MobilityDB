@@ -12626,17 +12626,70 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   return filter_point_bounds(m->q->cx, m->q->cy, fx, fy, x, y, box);
 }
 
+/* The crossing of #equal_circles_bounds, the same values in plain doubles,
+ * each computed as its filter computes it, and a bound on each coordinate
+ * that bounds the one the filters carry from their rules: with both
+ * differences and the radius zero or within 2^-300 and 2^300 of their
+ * size, to first order in eps, D is off by 4 eps D, h = 4 r^2 - D by
+ * eps (4 r^2 + |h|) and D's, its root sqrt(h) by at most that over
+ * sqrt(h) and 2 eps sqrt(h), the root of D by 4.5 eps sqrt(D), and the
+ * coordinate offset d / 2 - f rot(d) by eps |d| / 2, 2 eps |f| |d| and |d|
+ * times the bound of f, plus eps of its size; 5, 5 and the factor
+ * 1 + 16 eps cover the second order, 8 DBL_MIN a product below the normal
+ * doubles. The quotient and the point take them as #tower_f_div and
+ * #filter_point_bounds take theirs. False where the bound is wider than
+ * the filters allow, which the filters then place */
+static bool
+equal_circles_plain(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  double dx = m->q->cx - m->p->cx, dy = m->q->cy - m->p->cy;
+  double r = m->p->radius;
+  if (! offset_term_in_range(dx) || ! offset_term_in_range(dy) ||
+      r == 0.0 || ! offset_term_in_range(r))
+    return false;
+  double dd = dx * dx + dy * dy;
+  if (! (dd > 0.0))
+    return false;
+  double dde = 5.0 * DBL_EPSILON * dd;
+  double r4 = (r * r) * 4.0;
+  double h = r4 - dd;
+  double he = (DBL_EPSILON * (r4 + fabs(h)) + dde) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  if (! (h - he > 0.0))
+    return false;
+  double sh = sqrt(h), sd = sqrt(dd);
+  ArcsegFilter num = {sh,
+    (he / sh) * (1.0 + 4.0 * DBL_EPSILON) + 2.0 * DBL_EPSILON * sh};
+  ArcsegFilter den = {sd * 2.0, 10.0 * DBL_EPSILON * sd};
+  ArcsegFilter f, fx, fy;
+  if (! tower_f_div(num, den, &f.v, &f.e))
+    return false;
+  f.v = f.v * (double) m->sigma;
+  double af = fabs(f.v), ax = fabs(dx), ay = fabs(dy);
+  fx.v = dx * 0.5 - f.v * dy;
+  fy.v = dy * 0.5 + f.v * dx;
+  fx.e = (DBL_EPSILON * (0.5 * ax + 2.0 * af * ay + fabs(fx.v)) +
+    ay * f.e) * (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  fy.e = (DBL_EPSILON * (0.5 * ay + 2.0 * af * ax + fabs(fy.v)) +
+    ax * f.e) * (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  return filter_point_bounds(m->p->cx, m->p->cy, fx, fy, x, y, box);
+}
+
 /* The crossing sigma of the circles of two centred arcs of one radius, as
  * #tower_point_circles places it, read off the doubles with a bound on
  * their error: with d = C2 - C1 and D = |d|^2 it is
- * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)). False where a
- * bound is wide, as where the circles nearly touch */
-static bool
+ * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)), in plain
+ * doubles first (#equal_circles_plain), kept out of #meet_point_bounds,
+ * which places the far more frequent meetings. False where a bound is wide,
+ * as where the circles nearly touch */
+static pg_noinline bool
 equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
       m->p->radius != m->q->radius)
     return false;
+  if (equal_circles_plain(m, x, y, box))
+    return true;
   ArcsegFilter dx = arcseg_f_diff(m->q->cx, m->p->cx);
   ArcsegFilter dy = arcseg_f_diff(m->q->cy, m->p->cy);
   ArcsegFilter r = {m->p->radius, 0.0};
