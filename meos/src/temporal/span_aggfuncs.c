@@ -42,6 +42,7 @@
 #include <meos_internal.h>
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * Extent
@@ -157,6 +158,94 @@ spanset_extent_transfn(Span *state, const SpanSet *ss)
 
   span_expand(&ss->span, state);
   return state;
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of integers
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] i Value to aggregate
+ * @csqlfn #Spanbase_extent_transfn()
+ * @csqlaggfn #extentTransition()
+ */
+Span *
+int_extent_transfn(Span *state, int i)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_INTSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Int32GetDatum(i), T_INT4);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of big integers
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] i Value to aggregate
+ * @csqlfn #Spanbase_extent_transfn()
+ * @csqlaggfn #extentTransition()
+ */
+Span *
+bigint_extent_transfn(Span *state, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_BIGINTSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Int64GetDatum(i), T_INT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of floats
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] d Value to aggregate
+ * @csqlfn #Spanbase_extent_transfn()
+ * @csqlaggfn #extentTransition()
+ */
+Span *
+float_extent_transfn(Span *state, double d)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
+  if (state && ! ensure_span_isof_type(state, T_FLOATSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, Float8GetDatum(d), T_FLOAT8);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of dates
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] d Value to aggregate
+ * @csqlfn #Spanbase_extent_transfn()
+ * @csqlaggfn #extentTransition()
+ */
+Span *
+date_extent_transfn(Span *state, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_DATESPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, DateADTGetDatum(d), T_DATE);
+}
+
+/**
+ * @ingroup meos_setspan_agg
+ * @brief Transition function for span extent aggregate of timestamptz
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] t Value to aggregate
+ * @csqlfn #Spanbase_extent_transfn()
+ * @csqlaggfn #extentTransition()
+ */
+Span *
+timestamptz_extent_transfn(Span *state, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  if (state && ! ensure_span_isof_type(state, T_TSTZSPAN))
+    return NULL;
+  return spanbase_extent_transfn(state, TimestampTzGetDatum(t),
+    T_TIMESTAMPTZ);
 }
 
 /*****************************************************************************
