@@ -1597,6 +1597,9 @@ tgeo_scale(const Temporal *temp, double xfactor, double yfactor,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(xfactor) || ! ensure_not_nan(yfactor) ||
+      ! ensure_not_nan(zfactor))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   /* The factors of a 3D point, as scale(temp, ST_MakePoint(x, y, z)) reads
@@ -1645,6 +1648,12 @@ tgeo_affine(const Temporal *temp, double a, double b, double c,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(a) || ! ensure_not_nan(b) || ! ensure_not_nan(c) ||
+      ! ensure_not_nan(d) || ! ensure_not_nan(e) || ! ensure_not_nan(f) ||
+      ! ensure_not_nan(g) || ! ensure_not_nan(h) || ! ensure_not_nan(i) ||
+      ! ensure_not_nan(xoff) || ! ensure_not_nan(yoff) ||
+      ! ensure_not_nan(zoff))
+    return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
   AFFINE aff;
@@ -1664,6 +1673,9 @@ tgeo_translate(const Temporal *temp, double deltax, double deltay,
   double deltaz)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(deltaz))
+    return NULL;
   return tgeo_affine_coefs(temp, deltaz != 0.0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
     deltax, deltay, deltaz);
 }
@@ -1680,6 +1692,8 @@ Temporal *
 tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return tgeo_affine_coefs(temp, false, c, -s, 0, s, c, 0, 0, 0, 1,
     x0 - c * x0 + s * y0, y0 - s * x0 - c * y0, 0);
@@ -1702,6 +1716,8 @@ tgeo_rotate_geo(const Temporal *temp, double angle, const GSERIALIZED *origin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(origin, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_point_type(origin) || ! ensure_not_empty(origin))
     return NULL;
   int32_t srid = gserialized_get_srid(origin);
@@ -1723,6 +1739,8 @@ Temporal *
 tgeo_rotate_x(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return tgeo_affine_coefs(temp, true, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
 }
@@ -1738,6 +1756,8 @@ Temporal *
 tgeo_rotate_y(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return tgeo_affine_coefs(temp, true, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
 }
@@ -1753,6 +1773,8 @@ Temporal *
 tgeo_rotate_z(const Temporal *temp, double angle)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return tgeo_affine_coefs(temp, false, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
 }
@@ -1770,6 +1792,9 @@ tgeo_transscale(const Temporal *temp, double deltax, double deltay,
   double xfactor, double yfactor)
 {
   VALIDATE_TGEO(temp, NULL);
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(xfactor) || ! ensure_not_nan(yfactor))
+    return NULL;
   return tgeo_affine_coefs(temp, false, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
     deltax * xfactor, deltay * yfactor, 0);
 }
@@ -1823,6 +1848,12 @@ geo_affine(const GSERIALIZED *gs, double a, double b, double c,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(a) || ! ensure_not_nan(b) || ! ensure_not_nan(c) ||
+      ! ensure_not_nan(d) || ! ensure_not_nan(e) || ! ensure_not_nan(f) ||
+      ! ensure_not_nan(g) || ! ensure_not_nan(h) || ! ensure_not_nan(i) ||
+      ! ensure_not_nan(xoff) || ! ensure_not_nan(yoff) ||
+      ! ensure_not_nan(zoff))
+    return NULL;
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
   AFFINE aff;
@@ -1841,6 +1872,9 @@ GSERIALIZED *
 geo_translate(const GSERIALIZED *gs, double deltax, double deltay,
   double deltaz)
 {
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(deltaz))
+    return NULL;
   return geo_affine_coefs(gs, deltaz != 0.0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
     deltax, deltay, deltaz);
 }
@@ -1856,6 +1890,8 @@ geo_translate(const GSERIALIZED *gs, double deltax, double deltay,
 GSERIALIZED *
 geo_rotate(const GSERIALIZED *gs, double angle, double x0, double y0)
 {
+  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return geo_affine_coefs(gs, false, c, -s, 0, s, c, 0, 0, 0, 1,
     x0 - c * x0 + s * y0, y0 - s * x0 - c * y0, 0);
@@ -1877,6 +1913,8 @@ geo_rotate_geo(const GSERIALIZED *gs, double angle, const GSERIALIZED *origin)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(origin, NULL);
+  if (! ensure_not_nan(angle))
+    return NULL;
   if (! ensure_point_type(origin) || ! ensure_not_empty(origin))
     return NULL;
   int32_t srid = gserialized_get_srid(origin);
@@ -1898,6 +1936,8 @@ geo_rotate_geo(const GSERIALIZED *gs, double angle, const GSERIALIZED *origin)
 GSERIALIZED *
 geo_rotate_x(const GSERIALIZED *gs, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return geo_affine_coefs(gs, true, 1, 0, 0, 0, c, -s, 0, s, c, 0, 0, 0);
 }
@@ -1912,6 +1952,8 @@ geo_rotate_x(const GSERIALIZED *gs, double angle)
 GSERIALIZED *
 geo_rotate_y(const GSERIALIZED *gs, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return geo_affine_coefs(gs, true, c, 0, s, 0, 1, 0, -s, 0, c, 0, 0, 0);
 }
@@ -1926,6 +1968,8 @@ geo_rotate_y(const GSERIALIZED *gs, double angle)
 GSERIALIZED *
 geo_rotate_z(const GSERIALIZED *gs, double angle)
 {
+  if (! ensure_not_nan(angle))
+    return NULL;
   double c = cos(angle), s = sin(angle);
   return geo_affine_coefs(gs, false, c, -s, 0, s, c, 0, 0, 0, 1, 0, 0, 0);
 }
@@ -1989,6 +2033,9 @@ geo_scale(const GSERIALIZED *gs, double xfactor, double yfactor,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(xfactor) || ! ensure_not_nan(yfactor) ||
+      ! ensure_not_nan(zfactor))
+    return NULL;
   if (! ensure_not_geodetic_geo(gs))
     return NULL;
   POINT4D factors = { .x = xfactor, .y = yfactor, .z = zfactor, .m = 1.0 };
@@ -2007,6 +2054,9 @@ GSERIALIZED *
 geo_transscale(const GSERIALIZED *gs, double deltax, double deltay,
   double xfactor, double yfactor)
 {
+  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay) ||
+      ! ensure_not_nan(xfactor) || ! ensure_not_nan(yfactor))
+    return NULL;
   return geo_affine_coefs(gs, false, xfactor, 0, 0, 0, yfactor, 0, 0, 0, 1,
     deltax * xfactor, deltay * yfactor, 0);
 }
@@ -2213,6 +2263,8 @@ geo_cluster_dbscan(const GSERIALIZED **geoms, uint32_t ngeoms,
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL); 
+  if (! ensure_not_nan(tolerance))
+    return NULL;
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geoms, NULL);
@@ -2348,6 +2400,8 @@ geo_cluster_within(const GSERIALIZED **geoms, uint32_t ngeoms,
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL); 
+  if (! ensure_not_nan(tolerance))
+    return NULL;
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geoms, NULL);

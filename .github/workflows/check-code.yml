@@ -64,6 +64,15 @@ jobs:
       - name: Reject a public function no installed header declares
         run: python3 tools/scripts/check_public_declared.py
 
+  nan_guards_check:
+    name: Every public function tests each double it takes for NaN
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Reject a public function leaving a double untested for NaN
+        run: python3 tools/scripts/check_nan_guards.py
+
   param_direction_check:
     name: Every @param[in] names a parameter only read
     runs-on: ubuntu-latest

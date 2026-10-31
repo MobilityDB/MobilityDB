@@ -879,7 +879,7 @@ value_span(Datum value, MeosType basetype)
  * @param[in] s Set
  * @param[in] fromidx,toidx From and to indexes of the values used for the span
  * bounds
- * @param[in] result Span
+ * @param[out] result Span
  */
 void
 set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
@@ -895,7 +895,7 @@ set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
  * @ingroup meos_internal_setspan_conversion
  * @brief Return in the last argument the bounding span of a set
  * @param[in] s Set
- * @param[in] result Span
+ * @param[out] result Span
  */
 void
 set_set_span(const Set *s, Span *result)
@@ -1670,6 +1670,22 @@ floatspan_ceil(const Span *s)
 }
 
 /**
+ * @brief Return true when no bound of a span computed from another one is a
+ * NaN, raising an error otherwise
+ * @details An infinite bound of a float span can give a bound with no value,
+ * see #ensure_not_nan_result
+ * @param[in] s Span
+ */
+static bool
+span_bounds_not_nan(const Span *s)
+{
+  if (s->basetype != T_FLOAT8)
+    return true;
+  return ensure_not_nan_result(DatumGetFloat8(s->lower)) &&
+    ensure_not_nan_result(DatumGetFloat8(s->upper));
+}
+
+/**
  * @ingroup meos_setspan_transf
  * @brief Return a float span with the values converted to degrees
  * @param[in] s Span
@@ -1684,6 +1700,11 @@ floatspan_degrees(const Span *s, bool normalize)
   Span *result = span_copy(s);
   result->lower = datum_degrees(s->lower, normalize);
   result->upper = datum_degrees(s->upper, normalize);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -1758,6 +1779,11 @@ numspan_expand(const Span *s, Datum value)
   Span *result = span_copy(s);
   result->lower = datum_sub(s->lower, value, s->basetype);
   result->upper = datum_add(s->upper, value, s->basetype);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2094,6 +2120,11 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
   /* Shift and/or scale the resulting span */
   span_bounds_shift_scale_value(shift, width, s->basetype, hasshift, haswidth,
     &result->lower, &result->upper);
+  if (! span_bounds_not_nan(result))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -2114,23 +2145,20 @@ timestamptz_shift(TimestampTz t, const Interval *interv)
 }
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz span shifted and/or scaled by two intervals
  * @param[in] s Span
- * @param[in] shift Interval to shift the bounds @nullable
- * @param[in] duration Duation of the result @nullable
+ * @param[in] shift Interval to shift the bounds, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre At least one of the two intervals is given
  * @csqlfn #Tstzspan_shift(), #Tstzspan_scale(), #Tstzspan_shift_scale()
  */
 Span *
-tstzspan_shift_scale(const Span *s, const Interval *shift,
+tstzspan_shift_scale_intl(const Span *s, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(s); assert(s->spantype == T_TSTZSPAN); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   /* Copy the input period to the result */
   Span *result = span_copy(s);
   /* Shift and/or scale the resulting period */
@@ -2140,6 +2168,58 @@ tstzspan_shift_scale(const Span *s, const Interval *shift,
   result->lower = TimestampTzGetDatum(lower);
   result->upper = TimestampTzGetDatum(upper);
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span shifted by an interval
+ * @param[in] s Span
+ * @param[in] shift Interval to shift the bounds
+ * @csqlfn #Tstzspan_shift()
+ */
+Span *
+tstzspan_shift(const Span *s, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return tstzspan_shift_scale_intl(s, shift, NULL);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span scaled by an interval
+ * @param[in] s Span
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzspan_scale()
+ */
+Span *
+tstzspan_scale(const Span *s, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspan_shift_scale_intl(s, NULL, duration);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz span shifted and scaled by two intervals
+ * @param[in] s Span
+ * @param[in] shift Interval to shift the bounds
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzspan_shift_scale()
+ */
+Span *
+tstzspan_shift_scale(const Span *s, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzspan_shift_scale_intl(s, shift, duration);
 }
 
 /**
@@ -2198,6 +2278,8 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return numspan_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
 }

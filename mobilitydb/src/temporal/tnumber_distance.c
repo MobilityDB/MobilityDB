@@ -157,6 +157,8 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
+/* GENERATED-NADOPS-BEGIN tbox — tools/codegen/inherited/generate.py from templates/nadops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
 /**
@@ -198,6 +200,15 @@ NAD_tbox_tnumber(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_valid_tnumber_tbox(temp, box) ||
+      ! ensure_has_X(T_TBOX, box->flags))
+  {
+    PG_FREE_IF_COPY(temp, 1);
+    PG_RETURN_NULL();
+  }
   MeosType basetype = temptype_basetype(temp->temptype);
   Datum result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 1);
@@ -220,6 +231,15 @@ NAD_tnumber_tbox(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TBox *box = PG_GETARG_TBOX_P(1);
+  /* Ensure the validity of the arguments: the kernel states these as
+   * assertions, and this wrapper is an external entry that reaches it with no
+   * MEOS function in between */
+  if (! ensure_valid_tnumber_tbox(temp, box) ||
+      ! ensure_has_X(T_TBOX, box->flags))
+  {
+    PG_FREE_IF_COPY(temp, 0);
+    PG_RETURN_NULL();
+  }
   MeosType basetype = temptype_basetype(temp->temptype);
   Datum result = nad_tnumber_tbox(temp, box);
   PG_FREE_IF_COPY(temp, 0);
@@ -532,5 +552,6 @@ NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
+/* GENERATED-NADOPS-END tbox */
 
 /*****************************************************************************/

@@ -568,6 +568,8 @@ s2cell_xyz_to_lonlat(const double xyz[3], double *longitude, double *latitude)
 S2CellId
 s2cell_point_to_cell(double longitude, double latitude, uint32_t level)
 {
+  if (! ensure_not_nan(longitude) || ! ensure_not_nan(latitude))
+    return (S2CellId) 0;
   if (level > S2_MAX_LEVEL)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

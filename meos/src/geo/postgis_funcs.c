@@ -44,6 +44,7 @@
 #include <geos_c.h>
 /* PostgreSQL */
 #include <postgres.h>
+#include <common/pg_prng.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
 #include <varatt.h>
 #include <pgtypes.h>
@@ -101,6 +102,20 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax)
 {
+  /* Ensure the validity of the arguments: no NaN, which has no place among
+   * the bounds, as #box3d_make; the bounds of a dimension the box lacks are
+   * not read */
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax) ||
+      ! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))
+    return NULL;
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))) ||
+      (hasm && (! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))))
+    return NULL;
+
   GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
   /* Process X min/max */
   result->xmin = Min(xmin, xmax);
@@ -178,8 +193,16 @@ BOX3D *
 box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, int32_t srid)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid))
+  /* Ensure the validity of the arguments: no NaN, which has no place among
+   * the bounds, as #stbox_make refuses one */
+  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+    return NULL;
+  if (! ensure_srid_valid(srid) ||
+      ! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
+      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
+      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
     return NULL;
 
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -2857,6 +2880,8 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
       ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
@@ -2907,6 +2932,8 @@ geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
+  if (! ensure_not_nan(tolerance))
+    return false;
   return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
 }
@@ -2926,6 +2953,8 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
       ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
@@ -3012,6 +3041,8 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(max_seg_length))
+    return NULL;
 
   uint32_t type = gserialized_get_type(gs);
   if (FLAGS_GET_GEODETIC(gs->gflags))
@@ -6958,6 +6989,8 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(tolerance))
+    return false;
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
     return false;
 
@@ -7215,6 +7248,22 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 }
 
 /**
+ * @brief Return the geometry a reader built, or NULL when one of its
+ * coordinates is NaN
+ * @details A NaN coordinate has no position, so no reader returns a geometry
+ * holding one, as #tinstant_make refuses it in a temporal point
+ * (#ensure_not_nan_geo). A geometry refused is freed
+ */
+static GSERIALIZED *
+geo_read_result(GSERIALIZED *gs)
+{
+  if (! gs || ensure_not_nan_geo(gs))
+    return gs;
+  pfree(gs);
+  return NULL;
+}
+
+/**
  * @ingroup meos_geo_base_inout
  * @brief Return a geometry from its Well-Known Text (WKT), Well-Known Binary
  * (WKB) or GeoJSON representation
@@ -7354,7 +7403,7 @@ geom_in(const char *str, int32 typmod)
 
   /* Don't free the parser result (and hence lwgeom) until we have done */
   /* the typemod check with lwgeom */
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7421,7 +7470,7 @@ geo_from_text(const char *wkt, int32_t srid)
   geo_result = geo_serialize(lwgeom);
   /* Clean up */
   lwgeom_parser_result_free(&lwg_parser_result);
-  return geo_result;
+  return geo_read_result(geo_result);
 }
 
 /**
@@ -7575,7 +7624,7 @@ geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid)
 
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7648,7 +7697,7 @@ geo_from_geojson(const char *geojson)
   lwgeom_set_srid(geom, srid);
   GSERIALIZED *result = geo_serialize(geom);
   lwgeom_free(geom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -7889,7 +7938,7 @@ geog_in(const char *str, int32 typmod)
 
   /* Clean up and return */
   lwgeom_free(lwgeom);
-  return result;
+  return geo_read_result(result);
 }
 
 /**
@@ -8006,6 +8055,8 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(fraction))
+    return NULL;
   if (fraction < 0 || fraction > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -8043,6 +8094,8 @@ line_substring(const GSERIALIZED *gs, double from, double to)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
+  if (! ensure_not_nan(from) || ! ensure_not_nan(to))
+    return NULL;
   if (from < 0 || from > 1)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
@@ -8585,9 +8638,14 @@ lwgeom_collect_points(const LWGEOM *geom, MeosArray *array)
 static void
 mec_shuffle(POINT2D *pts, int count)
 {
+  /* The order is drawn from a generator of this call: no state is shared
+   * with any other caller or thread, and the same geometry is visited in the
+   * same order at every call */
+  pg_prng_state rng;
+  pg_prng_seed(&rng, 0);
   for (int i = count - 1; i > 0; i--)
   {
-    int j = rand() % (i + 1);
+    int j = (int) pg_prng_uint64_range(&rng, 0, (uint64) i);
     POINT2D tmp = pts[i];
     pts[i] = pts[j];
     pts[j] = tmp;

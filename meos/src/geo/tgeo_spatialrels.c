@@ -2219,6 +2219,8 @@ int
 edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tgeo_geo(temp, gs, dist, spheroid, EVER);
 }
 
@@ -2237,6 +2239,8 @@ int
 adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tgeo_geo(temp, gs, dist, spheroid, ALWAYS);
 }
 
@@ -2257,6 +2261,8 @@ int
 edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return edwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
@@ -2275,6 +2281,8 @@ int
 adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return adwithin_tgeo_geo(temp, gs, dist, spheroid);
 }
 
@@ -2614,6 +2622,8 @@ int
 edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, EVER);
 }
 
@@ -2631,6 +2641,8 @@ int
 adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
   bool spheroid)
 {
+  if (! ensure_not_nan(dist))
+    return -1;
   return ea_dwithin_tgeo_tgeo(temp1, temp2, dist, spheroid, ALWAYS);
 }
 
@@ -3085,6 +3097,8 @@ edwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_not_nan(dist))
+    return NULL;
   return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
     SS_EDWITHIN, count);
 }
@@ -3109,6 +3123,8 @@ adwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_not_nan(dist))
+    return NULL;
   return setset_ea_pairs(arr1, count1, arr2, count2, dist, spheroid,
     SS_ADWITHIN, count);
 }
@@ -3262,6 +3278,8 @@ tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 {
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  if (! ensure_not_nan(dist))
+    return NULL;
   return setset_t_pairs(arr1, count1, arr2, count2, dist, spheroid,
     SS_TDWITHIN, count, periods);
 }

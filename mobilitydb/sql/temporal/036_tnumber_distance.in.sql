@@ -32,6 +32,8 @@
  * @brief Distance functions for temporal numbers
  */
 
+-- GENERATED-DISTANCE-BEGIN tnumber — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 /*****************************************************************************
  * Temporal distance
  *****************************************************************************/
@@ -149,7 +151,6 @@ CREATE FUNCTION nearestApproachDistance(integer, tint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
 CREATE FUNCTION nearestApproachDistance(bigint, tbigint)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_number_tnumber'
@@ -434,3 +435,4 @@ CREATE OPERATOR |=| (
 );
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END tnumber

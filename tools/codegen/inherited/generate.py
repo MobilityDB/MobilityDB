@@ -639,6 +639,88 @@ def bootstrap_posops_c(filetext: str, bt: dict, rendered: str) -> str:
             + filetext[stop:].lstrip("\n"))
 
 
+# --- C nadops (box-type axis) --------------------------------------------
+# The nearest approach distance wrappers of a box type are generated into the
+# region between these markers in `nadfile`, over the directions of its boxops
+# region: box by box, box first, temporal first, then the value-span sub-block of a
+# composite box (span by box and box by span, then temporal by span and span by
+# temporal, one wrapper per number type `nadtypes` lists, after the helper giving
+# their SQL answer), and last temporal by temporal.
+def _nadops_c_markers(box: str):
+    """BEGIN/END markers of a box type's nearest approach distance wrappers, as
+    #_posops_c_markers marks its position wrappers."""
+    begin = (f"/* GENERATED-NADOPS-BEGIN {box} — tools/codegen/inherited/generate.py "
+             "from templates/nadops.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxtypes.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-NADOPS-END {box} */\n"
+
+
+def _article(noun: str) -> str:
+    """A noun phrase with its indefinite article"""
+    return ("an " if noun[0] in "aeiou" else "a ") + noun
+
+
+def render_nadops_c(bt: dict) -> str:
+    """The nearest approach distance wrappers of a box type, the nadops.c.tmpl
+    blocks split on blank lines as #_posops_c_blocks splits its template: box by
+    box, box first, temporal first, the span result helper, span by box, box by
+    span, temporal by span, span by temporal, temporal by temporal."""
+    blocks = read_template("nadops.c.tmpl").rstrip("\n").split("\n\n")
+    vs = bt["valspan"]
+    vals = {"BOX": bt["box"], "BOXC": bt["boxc"], "GETARG": bt["getarg"],
+            "BOXTYPE": bt["boxtype"], "TSIDE": bt["tside"], "VSBOX": vs["box"],
+            "BOXDESC": bt["boxdesc"], "BOXDESCPL": bt["boxdescpl"],
+            "VALDESC": bt["valdesc"], "NADGROUP": bt["nadgroup"]}
+
+    def sub(fragment: str, extra: dict = None) -> str:
+        for k, v in {**vals, **(extra or {})}.items():
+            fragment = fragment.replace("{" + k + "}", v)
+        return _wrap_doc(fragment)
+
+    types = [{"SPAN": t["span"], "TNUM": t["temp"],
+              "ASPANDESC": _article(t["spandesc"]),
+              "ATNUMDESC": _article(t["tempdesc"])} for t in vs["nadtypes"]]
+    out = [sub(b) for b in blocks[0:4]]
+    out += [sub(b, t) for t in types for b in blocks[4:6]]
+    out += [sub(b, t) for t in types for b in blocks[6:8]]
+    out.append(sub(blocks[8]))
+    return "\n\n".join(out) + "\n"
+
+
+def splice_nadops_c(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's NAD markers with `rendered`."""
+    begin, end = _nadops_c_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+def extract_nadops_c(filetext: str, box: str) -> str:
+    """Return the current text between the box's NAD markers (for --validate)."""
+    begin, end = _nadops_c_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[b:e]
+
+
+def bootstrap_nadops_c(filetext: str, bt: dict, rendered: str) -> str:
+    """Wrap the hand-written wrappers, from the box by box one through the temporal
+    by temporal one (#_posops_c_block slices each), in the box's NAD markers,
+    refusing unless they read as the region renders them."""
+    box, tside = bt["box"], bt["tside"]
+    first = _posops_c_block(filetext, f"NAD_{box}_{box}")
+    last = _posops_c_block(filetext, f"NAD_{tside}_{tside}")
+    if not first or not last:
+        raise SystemExit(f"bootstrap nadops {box}: {bt['nadfile']} does not hold "
+                         f"NAD_{box}_{box} and NAD_{tside}_{tside} once each")
+    start, stop = first[0], last[1]
+    if filetext[start:stop] != rendered:
+        raise SystemExit(f"bootstrap nadops {box}: the wrappers of {bt['nadfile']} "
+                         "differ from the region the template renders")
+    begin, end = _nadops_c_markers(box)
+    return filetext[:start] + begin + rendered + end + filetext[stop:]
+
+
 # --- C spatialrels (predicate axis) --------------------------------------
 # The ever/always PG wrapper surface (E<Rel>/A<Rel>_<dir> + @sqlfn) is generated
 # per FAMILY into the region between the GENERATED-SPATIALRELS markers of a
@@ -2803,27 +2885,51 @@ def _dist_ops(fam: dict) -> str:
     groups = []
     for v, s in fam["pairs"]:
         groups.append("\n".join(
-            f"CREATE OPERATOR <-> (\n"
-            f"  PROCEDURE = {proc},\n"
-            f"  LEFTARG = {l.format(v=v, s=s)}, "
-            f"RIGHTARG = {r.format(v=v, s=s)},\n"
-            f"  COMMUTATOR = <->\n"
-            f");"
+            _dist_op("<->", proc, l.format(v=v, s=s), r.format(v=v, s=s))
             for l, r, _ in _DIST_DIRS))
     return "\n\n".join(groups) + "\n"
 
 
+def _dist_op(op: str, proc: str, left: str, right: str) -> str:
+    """One commutative distance operator over its procedure, the operator
+    #_dist_ops writes for a set family"""
+    return (f"CREATE OPERATOR {op} (\n"
+            f"  PROCEDURE = {proc},\n"
+            f"  LEFTARG = {left}, RIGHTARG = {right},\n"
+            f"  COMMUTATOR = {op}\n"
+            f");")
+
+
+def _dist_fnops(st: dict) -> str:
+    """A `fnops` stanza: the functions `proc` names over the rows, packed, then
+    the operator `op` over the same rows, as #_dist_fns and #_dist_ops write a
+    set family's pairs. A row is (left, right, symbol) with the stanza's `ret`,
+    or (left, right, symbol, ret)."""
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
+    proc, op = st["proc"], st["op"]
+    fns, ops = [], []
+    for row in st["rows"]:
+        left, right, sym = row[:3]
+        ret = row[3] if len(row) > 3 else st["ret"]
+        fns.append(tmpl.replace("{SIG}", f"{proc}({left}, {right})")
+                       .replace("{RET}", ret).replace("{SYM}", sym))
+        ops.append(_dist_op(op, proc, left, right))
+    return "\n".join(fns) + "\n\n" + "\n".join(ops) + "\n"
+
+
 def render_distance(fam: dict) -> str:
     """Render one family's distance block from its `blocks` sequence: verbatim
-    `lit` blocks plus the `distfns` / `distops` stanzas. Blocks concatenate with
-    no automatic separator, so the rendered text is byte-identical to the
-    committed region."""
+    `lit` blocks plus the `distfns` / `distops` / `fnops` stanzas. Blocks
+    concatenate with no automatic separator, so the rendered text is
+    byte-identical to the committed region."""
     out = ""
     for blk in fam["blocks"]:
         if "lit" in blk:
             out += blk["lit"]
         elif "distfns" in blk:
             out += _dist_fns(fam)
+        elif "fnops" in blk:
+            out += _dist_fnops(blk["fnops"])
         else:
             out += _dist_ops(fam)
     return out
@@ -5000,6 +5106,22 @@ def main() -> int:
         else:
             p.write_text(bootstrap_posops_c(text, bt, rendered))
             print(f"bootstrapped posops {bt['box']} -> {posfile(bt)}")
+
+    for bt in mf.get("boxtypes", []):
+        if not bt.get("nadfile"):
+            continue
+        p = ROOT / bt["nadfile"]
+        if args.check:
+            print(f"would splice nadops {bt['box']} -> {bt['nadfile']}")
+            continue
+        rendered = render_nadops_c(bt)
+        text = p.read_text()
+        if _nadops_c_markers(bt["box"])[0] in text:
+            p.write_text(splice_nadops_c(text, bt["box"], rendered))
+            print(f"spliced nadops {bt['box']} -> {bt['nadfile']}")
+        else:
+            p.write_text(bootstrap_nadops_c(text, bt, rendered))
+            print(f"bootstrapped nadops {bt['box']} -> {bt['nadfile']}")
 
     for fam in mf.get("spatialrel_families", []):
         if fam.get("reference"):

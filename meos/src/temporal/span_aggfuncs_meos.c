@@ -93,6 +93,8 @@ Span *
 float_extent_transfn(Span *state, double d)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(d))
+    return NULL;
   if (state && ! ensure_span_isof_type(state, T_FLOATSPAN))
     return NULL;
   return spanbase_extent_transfn(state, Float8GetDatum(d), T_FLOAT8);

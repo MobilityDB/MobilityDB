@@ -1290,6 +1290,15 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
     haswidth, &lower, &upper);
   result->span.lower = lower;
   result->span.upper = upper;
+  /* An infinite bound of a float span can give a bound with no value, see
+   * #ensure_not_nan_result */
+  if (box->span.basetype == T_FLOAT8 &&
+      (! ensure_not_nan_result(DatumGetFloat8(lower)) ||
+       ! ensure_not_nan_result(DatumGetFloat8(upper))))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -1354,6 +1363,8 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
   VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
 

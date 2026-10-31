@@ -892,8 +892,10 @@ extern void floatspan_set_intspan(const Span *s1, Span *s2);
 extern void intspan_set_bigintspan(const Span *s1, Span *s2);
 extern void intspan_set_floatspan(const Span *s1, Span *s2);
 extern Set *numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Set *tstzset_shift_scale_intl(const Set *s, const Interval *shift, const Interval *duration);
 extern Span *numspan_expand(const Span *s, Datum value);
 extern Span *numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift, bool haswidth);
+extern Span *tstzspan_shift_scale_intl(const Span *s, const Interval *shift, const Interval *duration);
 extern SpanSet *numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern Set *set_compact(const Set *s);
 extern void span_expand(const Span *s1, Span *s2);
@@ -1279,6 +1281,7 @@ extern TInstant *tinstant_shift_time(const TInstant *inst, const Interval *inter
 extern TSequence *tinstant_as_tsequence(const TInstant *inst, interpType interp);
 extern TSequence *tinstant_to_tsequence_free(TInstant *inst, interpType interp);
 extern TSequenceSet *tinstant_as_tsequenceset(const TInstant *inst, interpType interp);
+extern Temporal *temporal_shift_scale_time_intl(const Temporal *temp, const Interval *shift, const Interval *duration);
 extern Temporal *tnumber_shift_scale_value(const Temporal *temp, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern TInstant *tnumberinst_shift_value(const TInstant *inst, Datum shift);
 extern TSequence *tnumberseq_shift_scale_value(const TSequence *seq, Datum shift, Datum width, bool hasshift, bool haswidth);

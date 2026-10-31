@@ -609,6 +609,8 @@ tsequenceset_make_gaps(TInstant **instants, int count, interpType interp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(instants, NULL);
+  if (! ensure_not_nan(maxdist))
+    return NULL;
   if (! ensure_not_empty_array(count))
     return NULL;
 #if RGEO
