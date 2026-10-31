@@ -32,7 +32,7 @@
  * @brief A program that tests that MEOS refuses a NaN where a number enters
  * it: through text, through the generic constructors every temporal value, set
  * and span is built by, through the typed constructors that bypass them, and
- * as a coordinate of a point or a box.
+ * as a coordinate of a point, a geometry or a box.
  *
  * A NaN has no position among the numbers, so a value, a bound or a coordinate
  * holding one cannot be compared, bounded or indexed. Every input below must
@@ -132,31 +132,20 @@ main(void)
   refused("geompoint_make2d", geompoint_make2d(0, NAN, 1));
   accepted("geompoint_make2d", geompoint_make2d(0, 0, 1));
 
-  /* A geometry holding a NaN coordinate */
-  GSERIALIZED *nanpoint = geom_in("POINT(NaN 1)", -1);
-  refused("tpointinst_make", tpointinst_make(nanpoint, 0));
-  refused("geo_to_stbox", geo_to_stbox(nanpoint));
-  free(nanpoint);
-
-  /* Every coordinate of a point, read in place, and the points of any other
-   * geometry, walked */
-  static const char *nangeos[] = {"POINT(1 NaN)", "POINT Z(1 2 NaN)",
-    "POINT M(1 2 NaN)", "POINT ZM(1 2 3 NaN)", "LINESTRING(0 0,1 NaN)"};
-  static const char *geos[] = {"POINT(1 2)", "POINT Z(1 2 3)",
+  /* A geometry holding a NaN coordinate, refused when read: every coordinate
+   * of a point, and the points of any other geometry */
+  static const char *nangeos[] = {"POINT(NaN 1)", "POINT(1 NaN)",
+    "POINT Z(1 2 NaN)", "POINT M(1 2 NaN)", "POINT ZM(1 2 3 NaN)",
+    "LINESTRING(0 0,1 NaN)"};
+  static const char *geos[] = {"POINT(0 1)", "POINT(1 2)", "POINT Z(1 2 3)",
     "POINT M(1 2 3)", "POINT ZM(1 2 3 4)", "LINESTRING(0 0,1 1)"};
-  for (int i = 0; i < 5; i++)
+  for (int i = 0; i < 6; i++)
   {
-    GSERIALIZED *nangeo = geom_in(nangeos[i], -1);
+    refused(nangeos[i], geom_in(nangeos[i], -1));
     GSERIALIZED *geo = geom_in(geos[i], -1);
-    refused(nangeos[i], geo_to_stbox(nangeo));
     accepted(geos[i], geo_to_stbox(geo));
-    free(nangeo); free(geo);
+    free(geo);
   }
-  GSERIALIZED *nanpoint3d = geom_in("POINT Z(1 2 NaN)", -1);
-  GSERIALIZED *point3d = geom_in("POINT Z(1 2 3)", -1);
-  refused("tpointinst_make Z", tpointinst_make(nanpoint3d, 0));
-  accepted("tpointinst_make Z", tpointinst_make(point3d, 0));
-  free(nanpoint3d); free(point3d);
 
   if (failures == 0)
     printf("NaN input test: all tests passed\n");

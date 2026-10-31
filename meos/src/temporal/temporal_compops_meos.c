@@ -101,6 +101,8 @@ ever_eq_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_eq_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -178,6 +180,8 @@ ever_eq_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_eq_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -255,6 +259,8 @@ always_eq_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_eq_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -332,6 +338,8 @@ always_eq_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_eq_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -410,6 +418,8 @@ ever_ne_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_ne_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -488,6 +498,8 @@ ever_ne_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_ne_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -566,6 +578,8 @@ always_ne_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_ne_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -644,6 +658,8 @@ always_ne_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_ne_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -706,6 +722,8 @@ ever_lt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_lt_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -768,6 +786,8 @@ ever_lt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_lt_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -831,6 +851,8 @@ always_lt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_lt_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -893,6 +915,8 @@ always_lt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_lt_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -957,6 +981,8 @@ ever_le_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_le_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1021,6 +1047,8 @@ ever_le_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_le_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1086,6 +1114,8 @@ always_le_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_le_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1151,6 +1181,8 @@ always_le_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_le_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1213,6 +1245,8 @@ ever_gt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_gt_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1275,6 +1309,8 @@ ever_gt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_gt_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1338,6 +1374,8 @@ always_gt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_gt_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1400,6 +1438,8 @@ always_gt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_gt_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1464,6 +1504,8 @@ ever_ge_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_ge_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1528,6 +1570,8 @@ ever_ge_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return ever_ge_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1593,6 +1637,8 @@ always_ge_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_ge_base_temporal(Float8GetDatum(d), temp);
 }
 
@@ -1658,6 +1704,8 @@ always_ge_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, -1);
+  if (! ensure_not_nan(d))
+    return -1;
   return always_ge_temporal_base(temp, Float8GetDatum(d));
 }
 
@@ -1737,6 +1785,8 @@ teq_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_eq);
 }
 
@@ -1814,6 +1864,8 @@ teq_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_eq);
 }
 
@@ -1893,6 +1945,8 @@ tne_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_ne);
 }
 
@@ -1970,6 +2024,8 @@ tne_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ne);
 }
 
@@ -2034,6 +2090,8 @@ tlt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_lt);
 }
 
@@ -2096,6 +2154,8 @@ tlt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_lt);
 }
 
@@ -2164,6 +2224,8 @@ tle_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_le);
 }
 
@@ -2229,6 +2291,8 @@ tle_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_le);
 }
 
@@ -2296,6 +2360,8 @@ tgt_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_gt);
 }
 
@@ -2358,6 +2424,8 @@ tgt_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_gt);
 }
 
@@ -2426,6 +2494,8 @@ tge_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_base_temporal(Float8GetDatum(d), temp, &datum2_ge);
 }
 
@@ -2491,6 +2561,8 @@ tge_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tcomp_temporal_base(temp, Float8GetDatum(d), &datum2_ge);
 }
 

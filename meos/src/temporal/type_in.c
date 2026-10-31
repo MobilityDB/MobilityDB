@@ -647,6 +647,13 @@ parse_mfjson_points(json_object *mfjson, int32_t srid, bool geodetic, int *count
   {
     json_object *coords = json_object_array_get_idx(coordinates, i);
     values[i] = parse_mfjson_coord(coords, srid, geodetic);
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = npoints;
   return values;
@@ -778,6 +785,13 @@ parse_mfjson_cbuffers(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *cb = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_cbuffer(cb, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nvalues;
   return values;
@@ -856,6 +870,13 @@ parse_mfjson_npoints(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *np = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_npoint(np, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nnpoints;
   return values;
@@ -1205,6 +1226,13 @@ parse_mfjson_poses(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *pose = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_pose(pose, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nposes;
   return values;
@@ -1278,6 +1306,13 @@ parse_mfjson_posechains(json_object *mfjson, int32_t srid, int *count)
   {
     json_object *chain = json_object_array_get_idx(values_json, i);
     values[i] = PointerGetDatum(parse_mfjson_posechain(chain, srid));
+    /* A value its constructor refuses, such as one holding a NaN, ends the
+     * parse, as in #parse_mfjson_pcpoints */
+    if (! values[i])
+    {
+      pfree_array((void **) values, i);
+      return NULL;
+    }
   }
   *count = nchains;
   return values;
@@ -1447,6 +1482,9 @@ tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid,
       return NULL;
     }
   }
+  /* The parser of the values raised the error */
+  if (! values)
+    return NULL;
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != 1 || ndates != 1)
   {
@@ -1529,6 +1567,9 @@ tinstarr_from_mfjson(json_object *mfjson, bool isgeo, int32_t srid,
       return NULL;
     }
   }
+  /* The parser of the values raised the error */
+  if (! values)
+    return NULL;
   TimestampTz *times = parse_mfjson_datetimes(mfjson, &ndates);
   if (nvalues != ndates)
   {
@@ -2230,6 +2271,14 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   GSERIALIZED *result = s->geodetic ?
     geog_serialize(geo) : geom_serialize(geo);
   lwgeom_free(geo);
+  /* A NaN coordinate is refused, as #geo_from_ewkb refuses it, so that the
+   * reference geometry of a temporal rigid geometry holds none */
+  if (! ensure_not_nan_geo(result))
+  {
+    s->error = true;
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 
@@ -3362,10 +3411,14 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
 /*****************************************************************************/
 
 /**
- * @brief Return a value from its Well-Known Binary (WKB) representation
+ * @brief Read a value from its Well-Known Binary (WKB) representation
+ * @details The reader of each type goes on past an error it raises, as
+ * #double_from_wkb_state refuses a NaN and #wkb_parse_state_check a short
+ * buffer, so the value it returns may hold what it refused; #type_from_wkb
+ * drops that value
  */
-Datum
-type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
+static Datum
+type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
 {
   /* Initialize the state appropriately */
   meos_wkb_parse_state s;
@@ -3374,6 +3427,9 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
   s.wkb_size = size;
   /* Fail when handed incorrect starting byte */
   uint8_t wkb_little_endian = byte_from_wkb_state(&s);
+  /* An empty string has no starting byte, which raised the error */
+  if (s.error)
+    return 0;
   if (wkb_little_endian != 1 && wkb_little_endian != 0)
   {
     meos_error(ERROR, MEOS_ERR_WKB_INPUT,
@@ -3473,12 +3529,42 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
 }
 
 /**
+ * @brief Return a value from its Well-Known Binary (WKB) representation
+ * @details A value whose reading raised an error, such as a NaN refused by
+ * #double_from_wkb_state, is dropped, so that the caller receives no value
+ * holding what the reader refused: the rule the span arm of
+ * #type_from_wkb_read applies, applied to every type
+ */
+Datum
+type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
+{
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
+  Datum result = type_from_wkb_read(wkb, size, type);
+  if (meos_errno())
+  {
+    if (result && ! basetype_byvalue(type))
+      pfree(DatumGetPointer(result));
+    return 0;
+  }
+#if MEOS
+  meos_errno_restore(last_errno);
+#endif /* MEOS */
+  return result;
+}
+
+/**
  * @brief Return a value from its HexEWKB representation
  */
 Datum
 type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
 {
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
+  /* A string of an odd length, or one carrying a character that is not a
+   * hexadecimal digit, encodes nothing */
+  if (! wkb)
+    return (Datum) 0;
   Datum result = type_from_wkb(wkb, size / 2, type);
   pfree(wkb);
   return result;
@@ -3495,8 +3581,8 @@ type_from_hexwkb(const char *hexwkb, size_t size, MeosType type)
  * header, so they are not supported by this function.
  * @param[in] hexwkb HexWKB string
  * @return The concrete @p MeosType, or @p T_UNKNOWN when @p hexwkb is null,
- * shorter than a header, has an invalid endian flag, or encodes a value out of
- * the known type range
+ * shorter than a header, not a string of hexadecimal digit pairs, has an
+ * invalid endian flag, or encodes a value out of the known type range
  */
 MeosType
 meos_typeof_hexwkb(const char *hexwkb)
@@ -3508,9 +3594,12 @@ meos_typeof_hexwkb(const char *hexwkb)
   size_t size = strlen(hexwkb);
   /* A header needs at least the endian flag (1 byte = 2 hex digits) and the
    * 16-bit type tag (2 bytes = 4 hex digits) */
-  if (size < 6)
+  if (size < 6 || size % 2)
     return T_UNKNOWN;
   uint8_t *wkb = bytes_from_hexbytes(hexwkb, size);
+  /* A character that is not a hexadecimal digit encodes nothing */
+  if (! wkb)
+    return T_UNKNOWN;
   meos_wkb_parse_state s;
   memset(&s, 0, sizeof(meos_wkb_parse_state));
   s.wkb = s.pos = wkb;
@@ -3534,6 +3623,268 @@ meos_typeof_hexwkb(const char *hexwkb)
   if (wkb_type == T_UNKNOWN || wkb_type >= NUM_MEOS_TYPES)
     return T_UNKNOWN;
   return (MeosType) wkb_type;
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tboolinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tbigintinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+tfloatinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text instant from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TInstant *
+ttextinst_from_mfjson(json_object *mfjson)
+{
+  return tinstant_from_mfjson(mfjson, false, 0, T_TTEXT);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tboolseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tbigintseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @param[in] interp Interpolation
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+tfloatseq_from_mfjson(json_object *mfjson, interpType interp)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text sequence from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequence *
+ttextseq_from_mfjson(json_object *mfjson)
+{
+  return tsequence_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tboolseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBOOL, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence set from its MF-JSON
+ * representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tbigintseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TBIGINT, STEP);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float sequence set from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @param[in] interp Interpolation
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+tfloatseqset_from_mfjson(json_object *mfjson, interpType interp)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TFLOAT, interp);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text sequence set from its MF-JSON representation
+ * @param[in] mfjson MFJSON object
+ * @csqlfn #Temporal_from_mfjson()
+ */
+inline TSequenceSet *
+ttextseqset_from_mfjson(json_object *mfjson)
+{
+  return tsequenceset_from_mfjson(mfjson, false, 0, T_TTEXT, STEP);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal boolean from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tbool_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal big integer from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tbigint_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal float from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+tfloat_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal text from its MF-JSON representation
+ * @param[in] mfjson MFJSON string
+ * @errval NULL
+ * @csqlfn #Temporal_from_mfjson()
+ * @see #temporal_from_mfjson()
+ */
+Temporal *
+ttext_from_mfjson(const char *mfjson)
+{
+  return temporal_from_mfjson(mfjson, T_TTEXT);
 }
 
 /*****************************************************************************

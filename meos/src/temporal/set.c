@@ -806,6 +806,9 @@ floatset_make(const double *values, int count)
   VALIDATE_NOT_NULL(values, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
+  for (int i = 0; i < count; i++)
+    if (! ensure_not_nan(values[i]))
+      return NULL;
 
   Datum *datums = palloc(sizeof(Datum) * count);
   for (int i = 0; i < count; ++i)
@@ -1003,6 +1006,8 @@ bigint_to_set(int64 i)
 Set *
 float_to_set(double d)
 {
+  if (! ensure_not_nan(d))
+    return NULL;
   Datum v = Float8GetDatum(d);
   return set_make_exp(&v, 1, 1, T_FLOAT8, ORDER_NO);
 }
@@ -1151,6 +1156,7 @@ set_vals(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the array of (copies of) values of a set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Set_values(), #Set_unnest()
  */
 Datum *
@@ -1702,7 +1708,16 @@ floatset_degrees(const Set *s, bool normalize)
   VALIDATE_FLOATSET(s, NULL);
   Set *result = set_copy(s);
   for (int i = 0; i < s->count; i++)
+  {
     (SET_OFFSETS_PTR(result))[i] = datum_degrees(SET_VAL_N(s, i), normalize);
+    /* An infinite value has no normalized angle, see
+     * #ensure_not_nan_result */
+    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+    {
+      pfree(result);
+      return NULL;
+    }
+  }
   return result;
 }
 
@@ -1846,27 +1861,34 @@ numset_shift_scale(const Set *s, Datum shift, Datum width, bool hasshift,
           scale, type), type);
     }
   }
+  /* An infinite value of a float set can give a result with no value, see
+   * #ensure_not_nan_result */
+  for (int i = 0; type == T_FLOAT8 && i < s->count; i++)
+  {
+    if (! ensure_not_nan_result(DatumGetFloat8(SET_VAL_N(result, i))))
+    {
+      pfree(result);
+      return NULL;
+    }
+  }
   return result;
 }
 
 /**
- * @ingroup meos_setspan_transf
+ * @ingroup meos_internal_setspan_transf
  * @brief Return a timestamptz set shifted and/or scaled by two intervals
  * @param[in] s Set
- * @param[in] shift Interval to shift the elements @nullable
- * @param[in] duration Duation of the result @nullable
+ * @param[in] shift Interval to shift the elements, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre At least one of the two intervals is given
  * @csqlfn #Tstzset_shift(), #Tstzset_scale(), #Tstzset_shift_scale()
  */
 Set *
-tstzset_shift_scale(const Set *s, const Interval *shift,
+tstzset_shift_scale_intl(const Set *s, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TSTZSET(s, NULL);
-  if (! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(s); assert(s->settype == T_TSTZSET); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   Set *result = set_copy(s);
   /* Set the first and last instants */
   TimestampTz lower, lower1, upper, upper1;
@@ -1894,6 +1916,58 @@ tstzset_shift_scale(const Set *s, const Interval *shift,
     }
   }
   return result;
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set shifted by an interval
+ * @param[in] s Set
+ * @param[in] shift Interval to shift the elements
+ * @csqlfn #Tstzset_shift()
+ */
+Set *
+tstzset_shift(const Set *s, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  return tstzset_shift_scale_intl(s, shift, NULL);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set scaled by an interval
+ * @param[in] s Set
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzset_scale()
+ */
+Set *
+tstzset_scale(const Set *s, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzset_shift_scale_intl(s, NULL, duration);
+}
+
+/**
+ * @ingroup meos_setspan_transf
+ * @brief Return a timestamptz set shifted and scaled by two intervals
+ * @param[in] s Set
+ * @param[in] shift Interval to shift the elements
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tstzset_shift_scale()
+ */
+Set *
+tstzset_shift_scale(const Set *s, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSET(s, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_positive_duration(duration))
+    return NULL;
+  return tstzset_shift_scale_intl(s, shift, duration);
 }
 
 /**
@@ -1984,6 +2058,8 @@ floatset_shift_scale(const Set *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSET(s, NULL);
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
   return numset_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);
 }

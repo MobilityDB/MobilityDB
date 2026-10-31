@@ -150,7 +150,7 @@ bool_in(const char *str)
   if (parse_bool_with_len(str1, len, &result))
     return result;
 
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type boolean: \"%s\"", str);
   return false;
 }

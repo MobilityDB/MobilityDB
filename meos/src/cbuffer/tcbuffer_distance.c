@@ -2639,6 +2639,8 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double threshold)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(threshold))
+    return DBL_MAX;
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return DBL_MAX;
 

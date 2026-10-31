@@ -310,6 +310,8 @@ trgeometryseqset_make_gaps(const GSERIALIZED *geom, TInstant **instants,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(geom, NULL); VALIDATE_NOT_NULL(instants, NULL);
+  if (! ensure_not_nan(maxdist))
+    return NULL;
   if (! ensure_not_empty_array(count))
     return NULL;
 

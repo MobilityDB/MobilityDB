@@ -82,6 +82,8 @@ tdistance_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
   return tdistance_tnumber_number(temp, Float8GetDatum(d));
 }
 
@@ -137,6 +139,8 @@ nad_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, DBL_MAX);
+  if (! ensure_not_nan(d))
+    return DBL_MAX;
   return DatumGetFloat8(nad_tnumber_number(temp, Float8GetDatum(d)));
 }
 
@@ -153,7 +157,9 @@ int
 nad_tint_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tnumber_numspan(temp, &box->span))
+  VALIDATE_TINT(temp, INT_MAX);
+  if (! ensure_valid_tnumber_tbox(temp, box) ||
+      ! ensure_has_X(T_TBOX, box->flags))
     return INT_MAX;
   return DatumGetInt32(nad_tnumber_tbox(temp, box));
 }
@@ -171,7 +177,9 @@ int64
 nad_tbigint_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tnumber_numspan(temp, &box->span))
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  if (! ensure_valid_tnumber_tbox(temp, box) ||
+      ! ensure_has_X(T_TBOX, box->flags))
     return INT64_MAX;
   return DatumGetInt64(nad_tnumber_tbox(temp, box));
 }
@@ -189,7 +197,9 @@ double
 nad_tfloat_tbox(const Temporal *temp, const TBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tnumber_numspan(temp, &box->span))
+  VALIDATE_TFLOAT(temp, DBL_MAX);
+  if (! ensure_valid_tnumber_tbox(temp, box) ||
+      ! ensure_has_X(T_TBOX, box->flags))
     return DBL_MAX;
   return DatumGetFloat8(nad_tnumber_tbox(temp, box));
 }

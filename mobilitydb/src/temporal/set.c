@@ -500,7 +500,7 @@ Tstzset_shift(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  Set *result = tstzset_shift_scale(s, shift, NULL);
+  Set *result = tstzset_shift(s, shift);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }
@@ -534,7 +534,7 @@ Tstzset_scale(PG_FUNCTION_ARGS)
 {
   Set *s = PG_GETARG_SET_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  Set *result = tstzset_shift_scale(s, NULL, duration);
+  Set *result = tstzset_scale(s, duration);
   PG_FREE_IF_COPY(s, 0);
   PG_RETURN_SET_P(result);
 }

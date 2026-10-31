@@ -537,9 +537,12 @@ cbuffer_make(const GSERIALIZED *point, double radius)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(point, NULL);
+  if (! ensure_not_nan(radius))
+    return NULL;
   if (! ensure_point_type(point) || ! ensure_not_empty(point) ||
       ! ensure_has_not_Z_geo(point) || ! ensure_has_not_M_geo(point) ||
-      ! ensure_not_geodetic_geo(point) ||
+      ! ensure_not_geodetic_geo(point) || ! ensure_not_nan_geo(point) ||
+      ! ensure_not_nan(radius) ||
       ! ensure_not_negative_datum(Float8GetDatum(radius), T_FLOAT8))
     return NULL;
 
@@ -1436,6 +1439,8 @@ int
 dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
 {
   /* Ensure the validity of the arguments */
+  if (! ensure_not_nan(dist))
+    return -1;
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
     return -1;
   return cbuffer_dwithin(cb1, cb2, dist);
