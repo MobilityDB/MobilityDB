@@ -71,7 +71,7 @@ binds before and after, so that no function leaves unseen.
 | B5 | MobilityDuck | `tools/codegen_duck_udfs.py` loses `TU_C_HEADERS` and `header_symbols` and follows rules 1, 3 and 4 | open |
 | B6 | PyMEOS-CFFI | `builder/build_header.py` loses `get_installed_headers`; the cdef declares every function rule 1 selects | open |
 | B7 | meos-rs | #6 regenerated from the catalog of MobilityDB master, the 1.4 the ecosystem targets | open |
-| B8 | PyMEOS, MEOS.js, MobilityNebula | each read against the rule, a pull request where one departs from it; the MEOS.js `Dockerfile`, which builds MobilityDB master, builds a GSL stage (`gsl-2.8`) MEOS 1.4 does not call | open |
+| B8 | PyMEOS, MEOS.js, MobilityNebula | each read against the rule, a pull request where one departs from it; the GSL and GEOS stages of the MEOS.js `Dockerfile` are B17 | open |
 | B9 | every binding generator | a CI step that fails on a hand-written header list or a read of a `.h` file in the generator | after B2 to B7 |
 
 ## GEOS and GSL, which MEOS does not call
@@ -94,6 +94,8 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
 | B14 | JMEOS | its Dockerfile and README install no `libgsl-dev` and no `libgeos-dev`, and the Spark generator names no GEOS macro | branch `build/no-gsl-geos` (`2c24e96e` on main `0855f282`, which carries JMEOS #199: the Spark gaps ledger lists the sort keys of master) |
 | B15 | MobilityDuck | `CMakeLists.txt` finds and links no GSL, and no comment names a GEOS or GSL context | MERGED as MobilityDuck #520 (`080c3ad87`) |
 | B16 | meos-rs | no `gsl` submodule, and its workflow installs no `libgsl-dev` and no `libgeos-dev` | after the bundled source moves to 1.4: `sys/meos-src/source` tracks `stable-1.3`, whose MEOS calls GSL, and `sys/build.rs` links it |
+| B17 | MEOS.js | its `Dockerfile` builds no GEOS and no GSL stage, passes neither to the CMake of MobilityDB and links neither into the wasm module; GDAL keeps `-DGDAL_USE_GEOS=OFF` | MEOS.js #22, branch `build/no-gsl-geos`; its wasm build compiles with MEOS.js #23 (`gen/project-todays-surface`), which projects master's surface |
+| B18 | MEOS.NET | the binding of master's catalog declares no `geos_get_context`; the generator reads an array return's length from a by-value count and writes text with `OUT_DEFAULT_DECIMAL_DIGITS` where the type has no generic text encoder | MEOS.NET #46, branch `build/no-gsl-geos`: 66 of 66 tests with libmeos from master `3c5baef2b3` |
 
 ## Decisions this plan rests on
 
