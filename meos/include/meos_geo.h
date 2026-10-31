@@ -600,7 +600,9 @@ extern STBox *stbox_expand_time(const STBox *box, const Interval *interv);
 extern STBox *stbox_get_space(const STBox *box);
 extern STBox *stbox_quad_split(const STBox *box, int *count);
 extern STBox *stbox_round(const STBox *box, int maxdd);
+extern STBox *stbox_scale_time(const STBox *box, const Interval *duration);
 extern STBox *stbox_shift_scale_time(const STBox *box, const Interval *shift, const Interval *duration);
+extern STBox *stbox_shift_time(const STBox *box, const Interval *shift);
 extern STBox *stboxarr_round(const STBox *boxarr, int count, int maxdd);
 
 /* SRID functions */
