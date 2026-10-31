@@ -1156,6 +1156,7 @@ set_vals(const Set *s)
  * @ingroup meos_internal_setspan_accessor
  * @brief Return the array of (copies of) values of a set
  * @param[in] s Set
+ * @param[out] count Number of elements in the output array
  * @csqlfn #Set_values(), #Set_unnest()
  */
 Datum *

@@ -879,7 +879,7 @@ value_span(Datum value, MeosType basetype)
  * @param[in] s Set
  * @param[in] fromidx,toidx From and to indexes of the values used for the span
  * bounds
- * @param[in] result Span
+ * @param[out] result Span
  */
 void
 set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
@@ -895,7 +895,7 @@ set_set_subspan(const Set *s, int fromidx, int toidx, Span *result)
  * @ingroup meos_internal_setspan_conversion
  * @brief Return in the last argument the bounding span of a set
  * @param[in] s Set
- * @param[in] result Span
+ * @param[out] result Span
  */
 void
 set_set_span(const Set *s, Span *result)

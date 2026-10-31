@@ -99,7 +99,7 @@ extern int edge_calculate_gbox(const POINT3D *A1, const POINT3D *A2, GBOX *gbox)
  * @brief Return in the last argument the spatiotemporal box of a temporal geo
  * instant
  * @param[in] inst Temporal instant
- * @param[in] box Spatiotemporal box
+ * @param[out] box Spatiotemporal box
  */
 void
 tgeoinst_set_stbox(const TInstant *inst, STBox *box)
@@ -170,7 +170,7 @@ tspatialinst_set_stbox(const TInstant *inst, STBox *box)
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence
  * @param[in] seq Temporal sequence
- * @param[in] box Spatiotemporal box
+ * @param[out] box Spatiotemporal box
  * @note The function copes with both temporal points and temporal network
  * points
  */
@@ -187,7 +187,7 @@ tspatialseq_set_stbox(const TSequence *seq, STBox *box)
  * @brief Return in the last argument the spatiotemporal box of a temporal
  * spatial sequence set
  * @param[in] ss Temporal sequence set
- * @param[in] box Spatiotemporal box
+ * @param[out] box Spatiotemporal box
  * @note The function copes with both temporal points and temporal network
  * points
  */
