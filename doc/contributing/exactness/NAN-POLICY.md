@@ -106,12 +106,12 @@ Two choices of the branch for the owner to confirm, each with the recommendation
   refuses the NaN they can return.
 
 Found by the census and not caused by NaN, each a PR of its own on master `4b5f1d6d84`, each with
-a test that fails on the file of master and passes on the fix, none yet on GitHub:
+a test that fails on the file of master and passes on the fix:
 
 | Branch | Defect | Test |
 |---|---|---|
-| `fix/tbox-from-hexwkb-short` | a HexWKB string of an odd length, with a character that is not a hexadecimal digit, or empty, is parsed from the bytes it does not encode: `tbox_from_hexwkb("1")` and `("")` abort | `hexwkb_input_error_test.c`, nine readers |
-| `fix/span-text-refuses-invalid-bounds` | `span_parse` ignores the refusal of `span_set`: `floatspan_in("(1234.5, 10)")` returns a value with its error, `floatspanset_in` of it aborts | `text_input_error_test.c` |
+| MobilityDB #3301, `fix/tbox-from-hexwkb-short` | a HexWKB string of an odd length, with a character that is not a hexadecimal digit, or empty, is parsed from the bytes it does not encode: `tbox_from_hexwkb("1")` and `("")` abort | `hexwkb_input_error_test.c`, nine readers |
+| MobilityDB #3298, `fix/span-text-refuses-invalid-bounds` | `span_parse` ignores the refusal of `span_set`: `floatspan_in("(1234.5, 10)")` returns a value with its error, `floatspanset_in` of it aborts | `text_input_error_test.c` |
 | `fix/tpcpoint-geo-validates-its-temporal` | `nad_tpcpoint_geo` and `eintersects_tpcpoint_geo` test only for null: a temporal point aborts, a sequence is read as an instant | `tpointcloud_test.c` |
 | `fix/jsonpath-syntax-error-returns-no-value` | `parsejsonpath` returns its uninitialized result after a syntax error: `free(): invalid pointer` | `json_inout_validity_test.c` |
 
