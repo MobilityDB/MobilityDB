@@ -32,6 +32,8 @@
  * @brief Distance functions for temporal rigid geometries
  */
 
+-- GENERATED-DISTANCE-BEGIN trgeo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 /*****************************************************************************
  * Distance functions
  *****************************************************************************/
@@ -198,3 +200,4 @@ CREATE FUNCTION shortestLine(trgeometry, trgeometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END trgeo
