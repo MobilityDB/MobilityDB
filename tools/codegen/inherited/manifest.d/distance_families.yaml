@@ -726,3 +726,62 @@ distance_families:
       - [tpcpatch, tpcbox]
       - [tpcpatch, tpcpatch]
   - lit: "\n/*****************************************************************************\n * GiST distance — the support function the operator classes of the family\n * register at strategy 25, declared here so the classes that follow name it\n *****************************************************************************/\n\nCREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Tpcbox_gist_distance'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n"
+- family: tpcpoint
+  file: mobilitydb/sql/pointcloud/447_tpcpoint_distance.in.sql
+  begin: "/******************************************************************************\n * tDistance — temporal distance\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/******************************************************************************\n * tDistance — temporal distance\n ******************************************************************************/\n\n"
+  - delegfns:
+      proc: tDistance
+      ret: tfloat
+      src: tpcpoint
+      via: tgeompoint
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistance
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n/******************************************************************************\n * nearestApproachDistance — geometry/tpcpoint cross-type\n *\n * The tpcpoint × tpcpoint functions and |=| operators are in\n * 438_tpc_distance.in.sql.\n ******************************************************************************/\n\n"
+  - delegfns:
+      proc: nearestApproachDistance
+      ret: float
+      src: tpcpoint
+      via: tgeompoint
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistance
+      quote: true
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n/******************************************************************************\n * nearestApproachInstant\n *\n * Returns the tpcpoint instant (with all sensor channels) at the timestamp\n * when the XY trajectory is closest to the argument geometry.\n ******************************************************************************/\n\n"
+  - delegfns:
+      proc: nearestApproachInstant
+      ret: tpcpoint
+      src: tpcpoint
+      via: tgeompoint
+      atinstant: true
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n/******************************************************************************\n * shortestLine\n ******************************************************************************/\n\n"
+  - delegfns:
+      proc: shortestLine
+      ret: geometry
+      src: tpcpoint
+      via: tgeompoint
+      rows:
+      - [geometry, tpcpoint]
+      - [tpcpoint, geometry]
+  - lit: "\n/*****************************************************************************/\n"

@@ -30,17 +30,17 @@
 /**
  * @file
  * @brief Distance functions for temporal point cloud points
- * @details They cover the pairs of a geometry and a tpcpoint.
- * Delegates to the corresponding tgeompoint overloads via the
- * XY-projection
- * cast. The nearestApproachInstant overloads return `tpcpoint` by restricting
- * the original (with all sensor channels) to the NAI timestamp.
+ * @details They cover the pairs of a geometry and a tpcpoint, each delegating
+ * to the corresponding tgeompoint function through the XY-projection cast.
+ * The nearestApproachInstant functions return `tpcpoint` by restricting the
+ * original (with all sensor channels) to the NAI timestamp.
  *
- * The tpcpoint × tpcpoint nearestApproachDistance |=| operator is already
- * registered in 439_tpc_distance.in.sql. This file adds the geometry/tpcpoint
- * cross-type surface (Cat 6 parity gap).
+ * The tpcpoint × tpcpoint nearestApproachDistance functions and |=|
+ * operators are in 438_tpc_distance.in.sql.
  */
 
+-- GENERATED-DISTANCE-BEGIN tpcpoint — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 /******************************************************************************
  * tDistance — temporal distance
  ******************************************************************************/
@@ -70,8 +70,8 @@ CREATE OPERATOR <-> (
 /******************************************************************************
  * nearestApproachDistance — geometry/tpcpoint cross-type
  *
- * The tpcpoint × tpcpoint overloads and |=| operators are already registered
- * in 439_tpc_distance.in.sql.
+ * The tpcpoint × tpcpoint functions and |=| operators are in
+ * 438_tpc_distance.in.sql.
  ******************************************************************************/
 
 CREATE FUNCTION nearestApproachDistance(geometry, tpcpoint)
@@ -134,3 +134,4 @@ CREATE FUNCTION shortestLine(tpcpoint, geometry)
   $$;
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END tpcpoint
