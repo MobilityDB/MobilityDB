@@ -321,10 +321,11 @@ DECIDED BY THE OWNER 2026-10-31: DuckDB behaves as every binding, holding a valu
 memory image and exchanging it as its WKB (rule 3); MobilityDuck's `BLOB` of the memory image
 stands, and D9.13 states it.
 
-Open for the owner:
-
-1. `asBinary` and `asHexWKB` write plain WKB in the typed SQL layer of Spark and Flink and EWKB in
-   JMEOS and the Spark UDF layer; rule 2 of the dialect states plain WKB beside `asEWKB`.
+DECIDED BY THE OWNER 2026-10-31: `asBinary` and `asHexWKB` write plain WKB in every binding, and
+`asEWKB` and `asHexEWKB` write the SRID, exactly as in PostgreSQL (rule 2 of the dialect, G40). A
+binding's `as_wkb`, `as_hexwkb`, `asHexWKB` writing variant 4 (JMEOS, the Spark UDF layer) or every
+flag (MEOS.js `temporal_as_hexwkb_w`) writes plain WKB instead, and the binding gains the `E` forms
+where it lacks them (IO-B8, IO-B10, IO-B11).
 
 ## Acceptance
 
