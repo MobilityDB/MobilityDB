@@ -281,7 +281,8 @@ operands tokenized to their superclass as the temporal relationships tokenize th
 predicate overrides the family's `directions`, its `support` (the quantifiers whose cells
 carry `SUPPORT tspatial_supportfn`; disjoint carries none, an index cannot prune it) or a
 type's `symbol` token; a direction marked `gap` opens a group, `ever_only` has no always
-cell, `spheroid` reads the earth model. Native families: `tgeo`, `tpoint`, `cbuffer`.
+cell, `spheroid` reads the earth model. Native families: `tgeo`, `tpoint`, `cbuffer`,
+`rgeo`.
 
 ⛔ **`geodetic_target` makes an H3 or S2 cell a temporal geography.** An H3 or S2 cell is a
 region of the sphere bounded by great-circle arcs, so its one exact reading is the
@@ -639,7 +640,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | Spatial Reference System | `tspatial_` (`spatialfuncs`) | ✗ HAND | reserved position, no template |
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ◐ PARTIAL | tDistance/nad/nai/shortestLine — `distance.sql.tmpl` via the `subtypes:` track (§3) writes the files of `tpose` and `tposechain`, the `distance_families` axis (§7) `064_tgeo_distance`, `064_tpoint_distance`, `164_trgeo_distance`, `210_tcbuffer_distance`, `312_tnpoint_distance`, `438_tpc_distance` and `447_tpcpoint_distance`; every other family's is hand-written |
-| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ◐ PARTIAL | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tpose, tposechain — `spatialrels.sql.tmpl`) and `spatialrel_families`-generated for the native families tgeo, tpoint and cbuffer (`impl: native`, `spatialrels_native.sql.tmpl`); the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3) while the SQL wrapper file of rgeo (170) stays hand |
+| Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ✓ **GEN** (SQL) | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tpose, tposechain — `spatialrels.sql.tmpl`) and `spatialrel_families`-generated for the native families tgeo, tpoint, cbuffer and rgeo (`impl: native`, `spatialrels_native.sql.tmpl`) — `--gaps`: `spatialrel_families` 14/14; the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3). Not generated: the C wrappers outside the `GENERATED-SPATIALRELS` regions, the touches of geo, tpoint, cbuffer and rgeo and the array pairs (`*_tgeoarr_tgeoarr`) of geo |
 | Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
