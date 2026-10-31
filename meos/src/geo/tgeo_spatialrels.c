@@ -1987,9 +1987,9 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       /* The validity function ensures that both have the same geodetic flag */
-      ! ensure_not_geodetic(temp1->temptype) ||
+      ! ensure_not_geodetic(temp1->flags) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp1->temptype, temp2->flags))
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return -1;
 
   /* Common-time gate, before the box test: the box carries time as a dimension, so two
