@@ -442,9 +442,15 @@ from the `tpose::tgeompoint` conversion, the file having been hand-written as ex
 the template emits under `index_support`, with its 26 signatures, bodies and 6 C symbols unchanged
 (branch `gen/tpose-spatialrels-template`, which rewrites `1fa64600db` and rewrites `7303e1a47b`, merged as MobilityDB #3238, `d39972281c`: the `tpose` entry of `subtypes.yaml` gains
 `spatialrels`, `112` leaves `coverage_exceptions.txt`, and `INHERITANCE_MAP.md` states pose
-generated). MobilityDuck's
-`TRTREE` and `TSPTREE` are the two trees and take the 47 types from the catalog rather than from
-the 15 their modules list on main; the tests run each index over each type in both hosts.
+generated). MobilityDuck's k-d tree comes first, its own pull request before the catalog
+generates the types of the indexes (DECIDED BY THE OWNER 2026-10-31): `TSPTREE` with
+`kind = 'kdtree'` reaches `sptree_create_*(SPTREE_KDTREE)` for each of the 15 types
+`sptree_module.cpp` lists on main `c688dcd023`, yet its tests (077c, 078, 080, 084, 085) index
+one column each beside a quad-tree twin, so the k-d tree is answered over the 15 types by a test
+that finds, for each type and operator, the rows `TRTREE` and the quad-tree find. MobilityDuck's
+`TRTREE` and `TSPTREE` are then the two trees and take the 47 types from the catalog rather than
+from the 15 their modules list on main, the k-d tree with them; the tests run each index, and
+each kind of `TSPTREE`, over each type in both hosts.
 A set or span set is keyed by the extent of its elements, which its predicates do not compare, so
 both hosts recheck a candidate the index returns for one: PostgreSQL through the classes' recheck,
 MobilityDuck by keeping the matched filter above the index scan.
