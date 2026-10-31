@@ -315,6 +315,7 @@ generates ([the bindings plan](BINDINGS-PLAN.md)), the catalog's first:
 | IO-B12 | MobilityKafka | the portable names over the facades | after IO-B11 |
 | IO-B13 | MobilityNebula | `asText`, `asBinary`, `asHexWKB`, `asMFJSON` and their readers for the types it carries; the temporal sequence aggregation returning the value | PAUSED BY THE OWNER 2026-10-31: MobilityNebula lags a large queue of open pull requests (#194 to #197 among them) |
 | IO-B14 | MobilityAPI | its Spark dialect names `asMFJSON` and `<type>FromMFJSON` | after IO-B11 |
+| IO-B16 | MobilityDB | the input and output test of the campaign, `mobilitydb/test/io/queries/*.test.sql`, generated per type and format from the catalog's encodings and the types' regression fixtures, its expected output harvested from PostgreSQL; each binding replays it through its own surface | after IO-B1 |
 | IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds this document's two tables, the SQL one from `mobilitydb/sql` and the catalog, the bindings' one from each binding's generated surface | open |
 
 DECIDED BY THE OWNER 2026-10-31: DuckDB behaves as every binding, holding a value as its MEOS
@@ -328,6 +329,19 @@ flag (MEOS.js `temporal_as_hexwkb_w`) writes plain WKB instead, and the binding 
 where it lacks them (IO-B8, IO-B10, IO-B11).
 
 ## Acceptance
+
+DECIDED BY THE OWNER 2026-10-31: the input and output tests of MobilityDB are the oracle of every
+binding. Every query of `mobilitydb/test/*/queries/*.test.sql` that calls a reader or a writer, the
+`_inout` files (`053_tgeo_inout`, `053_tpoint_inout`, `151_trgeo_inout`, `023_temporal_inout_tbl`
+and their `_tbl` twins) and the input and output queries of each type's own file
+(`001_set.test.sql` and its siblings), answers in each binding exactly the text its
+`expected/*.test.out` holds: the same value, the same digits, the same WKB bytes. A binding runs
+those queries through its own surface, its default string included, and a difference is a defect of
+the binding or, where every binding agrees against PostgreSQL, of MEOS. Where it is the more
+efficient carrier, the oracle is one input and output test generated for the campaign (IO-B16): for
+every type and every format it supports, a value of the type's regression fixtures read through
+`<type>From<Format>` and written through `as<Format>`, and the typed literal written through its
+default string, its expected output harvested from PostgreSQL, never written by hand.
 
 For every type and every format it supports, in PostgreSQL and through each binding,
 `<type>From<Format>(as<Format>(v))` returns `v` over the regression fixtures of the type, and
