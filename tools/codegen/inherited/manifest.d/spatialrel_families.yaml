@@ -296,3 +296,52 @@ spatialrel_families:
         args:
           - {type: "Temporal *", var: temp1, pos: 0}
           - {type: "Temporal *", var: temp2, pos: 1}
+
+# ---------------------------------------------------------------------------
+# The SQL of the ever/always relationships of a family answering them with C
+# kernels of its own (generate.py's render_native_spatialrels, templates/
+# spatialrels_native.sql.tmpl): `impl: native` and the whole `.in.sql` file. Per
+# predicate, its ever cells then its always cells, one per direction, over the
+# symbol E<Rel>/A<Rel>_<left>_<right>; a predicate overrides the family's
+# `directions`, `support` (the quantifiers whose cells carry the support function
+# of the index) or `symbol` (a type's token in the symbol). A family casting to
+# its target takes the cast template through subtypes.yaml instead.
+  - family:  tgeo
+    impl:    native
+    file:    mobilitydb/sql/geo/070_tgeo_spatialrels.in.sql
+    brief:   "temporal geometries/geographies"
+    details: "Index support is enabled for every relationship but disjoint."
+    directions:
+      - {l: geometry,  r: tgeometry}
+      - {l: tgeometry, r: geometry}
+      - {l: tgeometry, r: tgeometry}
+    predicates:
+      - Contains
+      - Covers
+      - name: Disjoint
+        support: []
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry}
+          - {l: tgeometry, r: tgeometry}
+          - {l: geography,  r: tgeography, gap: true}
+          - {l: tgeography, r: geography}
+          - {l: tgeography, r: tgeography}
+      - name: Intersects
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry}
+          - {l: tgeometry, r: tgeometry}
+          - {l: geography,  r: tgeography, gap: true}
+          - {l: tgeography, r: geography}
+          - {l: tgeography, r: tgeography}
+      - Touches
+      - name: Dwithin
+        note: "NOTE: aDWithin for geographies is not provided since it is based on the\nbuffer of the geometry, which MEOS computes on the plane only (geom_buffer)"
+        directions:
+          - {l: geometry,  r: tgeometry}
+          - {l: tgeometry, r: geometry}
+          - {l: tgeometry, r: tgeometry}
+          - {l: geography,  r: tgeography, gap: true, spheroid: true, ever_only: true}
+          - {l: tgeography, r: geography, spheroid: true, ever_only: true}
+          - {l: tgeography, r: tgeography, spheroid: true}
