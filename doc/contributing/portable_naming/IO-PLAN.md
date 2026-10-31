@@ -215,6 +215,26 @@ MobilityDB's types each carry their own name (`floatset_in`, `tfloat_in`); the 2
 PostgreSQL's, PostGIS's and pgPointCloud's types (`bool_in`, `geom_in`, `pcpatch_hex_in`) and
 carry none.
 
+## In the bindings
+
+MEOS is a closed algebra: a binding's object layer holds every value as its MEOS type, and a host
+type (shapely in Python, JTS in Java, a GeoJSON object in JavaScript) is reached only through an
+explicit cast. Its input and output follow from that (the owner, 2026-10-31):
+
+1. **Every type has the readers and writers of the portable functions**, named in the binding's
+   own case (`as_text`, `as_ewkt`, `as_wkb`, `as_hexwkb`, `as_ewkb`, `as_hexewkb`, `as_mfjson`,
+   and `from_*` for each in Python; `asText`, `fromHexWKB` ... in Java, JavaScript and C#;
+   `AsText`, `FromHexWKB` ... in Go), each calling the MEOS function the SQL function of the same
+   portable name reaches: `asText(cbuffer)` is `Cbuffer_as_text`, so a binding's `as_text` of a
+   circular buffer calls `cbuffer_as_text`.
+2. **The default string conversion is `asText`** (Python `str`, Java `toString`, Go `String`, C#
+   `ToString`, Rust `Display`, JavaScript `toString`): the `*_as_text` function, which writes a
+   spatial value's points as WKT, never the `*_out` function, which writes them as hex WKB as
+   PostGIS's `geometry_out` does. `pose_out` writes `POSE (0101000000000000000000F03F000000000000F03F, 0.5)`
+   where `pose_as_text` writes `Pose(POINT(1 1),0.5)`, the form a temporal pose's instants print in.
+3. **A value crosses between an engine and MEOS as its WKB**, rule 6 of the dialect; the text forms
+   are what a user reads and writes.
+
 ## The plan
 
 | Gap | Pull request |

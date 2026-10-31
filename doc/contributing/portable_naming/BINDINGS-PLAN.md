@@ -106,3 +106,10 @@ MEOS loads no GDAL at all: it is `-DRASTER=OFF`, without PROJ.
   GEOS (the owner, 2026-10-27).
 - The catalog is the one source of every binding, its FFI layer included, and only MEOS-API parses
   headers (the owner, 2026-07-10).
+- An object-layer method whose value is the second operand of a relationship is named by the
+  relationship read from its side: `is_ever_contained_in` for `econtains_geo_tgeo`, and
+  `is_ever_coveredby` and `is_always_coveredby` for `ecovers_geo_trgeometry`,
+  `ecovers_geo_tcbuffer` and `ecovers_cbuffer_tcbuffer` and their always twins. `coveredby` is
+  spelled as PostGIS spells it (`coveredby` behind `ST_CoveredBy`, `geography_coveredby`,
+  `rt_raster_coveredby`, GEOS `GEOSCoveredBy`) and computed as `geography_coveredby` computes it,
+  the covers kernel with the container first (the owner, 2026-10-31).
