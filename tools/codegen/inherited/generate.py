@@ -2917,9 +2917,54 @@ def _dist_fnops(st: dict) -> str:
     return "\n".join(fns) + "\n\n" + "\n".join(ops) + "\n"
 
 
+_SPHEROID_ARG = ", spheroid boolean DEFAULT true"
+
+
+def _dist_fns_st(st: dict) -> str:
+    """A `fns` stanza: the functions `proc` names over the rows, packed, as
+    #_dist_fnops writes them. A row is (left, right, symbol), optionally
+    followed by its return type (null takes the stanza's `ret`) and its
+    spheroid flag (default the stanza's `spheroid`); a flagged function takes
+    the earth model argument the geodetic families read, as #_dist_fns writes
+    it. With `opr` each function is followed by its operator procedure
+    `<proc>Opr` over `<symbol>_opr`, which takes no earth model."""
+    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
+    proc = st["proc"]
+    fns = []
+    for row in st["rows"]:
+        left, right, sym = row[:3]
+        ret = row[3] if len(row) > 3 and row[3] else st["ret"]
+        sph = row[4] if len(row) > 4 else st.get("spheroid", False)
+        extra = _SPHEROID_ARG if sph else ""
+        fns.append(tmpl.replace("{SIG}", f"{proc}({left}, {right}{extra})")
+                       .replace("{RET}", ret).replace("{SYM}", sym))
+        if st.get("opr"):
+            fns.append(tmpl.replace("{SIG}", f"{proc}Opr({left}, {right})")
+                           .replace("{RET}", ret).replace("{SYM}", f"{sym}_opr"))
+    return "\n".join(fns) + "\n"
+
+
+def _dist_ops_st(st: dict) -> str:
+    """An `ops` stanza: the commutative operator `op` over `proc` for every
+    (left, right) row, packed, as #_dist_op writes one; the `argsfirst` style
+    states the arguments before the procedure and quotes the commutator."""
+    if st.get("style") == "argsfirst":
+        op = st["op"]
+        ops = [(f"CREATE OPERATOR {op} (\n"
+                f"  LEFTARG = {left}, RIGHTARG = {right},\n"
+                f"  PROCEDURE = {st['proc']},\n"
+                f"  COMMUTATOR = '{op}'\n"
+                f");") for left, right in st["rows"]]
+    else:
+        ops = [_dist_op(st["op"], st["proc"], left, right)
+               for left, right in st["rows"]]
+    return "\n".join(ops) + "\n"
+
+
 def render_distance(fam: dict) -> str:
     """Render one family's distance block from its `blocks` sequence: verbatim
-    `lit` blocks plus the `distfns` / `distops` / `fnops` stanzas. Blocks
+    `lit` blocks plus the `distfns` / `distops` / `fnops` / `fns` / `ops`
+    stanzas. Blocks
     concatenate with no automatic separator, so the rendered text is
     byte-identical to the committed region."""
     out = ""
@@ -2930,6 +2975,10 @@ def render_distance(fam: dict) -> str:
             out += _dist_fns(fam)
         elif "fnops" in blk:
             out += _dist_fnops(blk["fnops"])
+        elif "fns" in blk:
+            out += _dist_fns_st(blk["fns"])
+        elif "ops" in blk:
+            out += _dist_ops_st(blk["ops"])
         else:
             out += _dist_ops(fam)
     return out

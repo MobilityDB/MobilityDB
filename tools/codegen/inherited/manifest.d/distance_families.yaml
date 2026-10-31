@@ -192,3 +192,124 @@ distance_families:
       - [tfloat, tbox, NAD_tnumber_tbox]
       - [tfloat, tfloat, NAD_tnumber_tnumber]
   - lit: "\n/*****************************************************************************/\n"
+- family: tgeo
+  file: mobilitydb/sql/geo/064_tgeo_distance.in.sql
+  begin: "/*****************************************************************************\n * Distance functions\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Distance functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      opr: true
+      rows:
+      - [geometry, tgeometry, Tdistance_geo_tgeo]
+      - [tgeometry, geometry, Tdistance_tgeo_geo]
+      - [tgeometry, tgeometry, Tdistance_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistanceOpr
+      rows:
+      - [geometry, tgeometry]
+      - [tgeometry, geometry]
+      - [tgeometry, tgeometry]
+  - lit: "\n/*****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      spheroid: true
+      opr: true
+      rows:
+      - [geography, tgeography, Tdistance_geo_tgeo]
+      - [tgeography, geography, Tdistance_tgeo_geo]
+      - [tgeography, tgeography, Tdistance_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistanceOpr
+      rows:
+      - [geography, tgeography]
+      - [tgeography, geography]
+      - [tgeography, tgeography]
+  - lit: "\n/*****************************************************************************\n * Nearest approach instant/distance and shortest line functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tgeometry
+      rows:
+      - [geometry, tgeometry, NAI_geo_tgeo]
+      - [tgeometry, geometry, NAI_tgeo_geo]
+      - [tgeometry, tgeometry, NAI_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tgeography
+      spheroid: true
+      rows:
+      - [geography, tgeography, NAI_geo_tgeo]
+      - [tgeography, geography, NAI_tgeo_geo]
+      - [tgeography, tgeography, NAI_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      opr: true
+      rows:
+      - [geometry, tgeometry, NAD_geo_tgeo]
+      - [tgeometry, geometry, NAD_tgeo_geo]
+      - [stbox, tgeometry, NAD_stbox_tgeo]
+      - [tgeometry, stbox, NAD_tgeo_stbox]
+      - [tgeometry, tgeometry, NAD_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      spheroid: true
+      opr: true
+      rows:
+      - [geography, tgeography, NAD_geo_tgeo]
+      - [tgeography, geography, NAD_tgeo_geo]
+      - [stbox, tgeography, NAD_stbox_tgeo]
+      - [tgeography, stbox, NAD_tgeo_stbox]
+      - [tgeography, tgeography, NAD_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistanceOpr
+      style: argsfirst
+      rows:
+      - [geometry, tgeometry]
+      - [tgeometry, geometry]
+      - [stbox, tgeometry]
+      - [tgeometry, stbox]
+      - [tgeometry, tgeometry]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistanceOpr
+      style: argsfirst
+      rows:
+      - [geography, tgeography]
+      - [tgeography, geography]
+      - [stbox, tgeography]
+      - [tgeography, stbox]
+      - [tgeography, tgeography]
+  - lit: "\n"
+  - fns:
+      proc: shortestLine
+      ret: geometry
+      rows:
+      - [geometry, tgeometry, Shortestline_geo_tgeo]
+      - [tgeometry, geometry, Shortestline_tgeo_geo]
+      - [tgeometry, tgeometry, Shortestline_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: shortestLine
+      ret: geography
+      spheroid: true
+      rows:
+      - [geography, tgeography, Shortestline_geo_tgeo]
+      - [tgeography, geography, Shortestline_tgeo_geo]
+      - [tgeography, tgeography, Shortestline_tgeo_tgeo]
+  - lit: "\n/*****************************************************************************/\n"
