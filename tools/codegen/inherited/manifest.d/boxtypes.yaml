@@ -120,6 +120,22 @@ boxtypes:
           - [npoint, tnpoint, nad_tnpoint_npoint]
           - [tnpoint, npoint, nad_tnpoint_npoint]
           - [tnpoint, tnpoint, nad_tnpoint_tnpoint]
+      - family:    trgeometry
+        nadgroup:  mobilitydb_rgeo_dist
+        nadfile:   mobilitydb/src/rgeo/trgeo_distance.c
+        nadfcinfo: true
+        nadsides:
+          geo:        {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tpoint:     {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal point, free: true}
+          trgeometry: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal rigid geometry, descpl: temporal rigid geometries, free: true}
+        nadpairs:
+          - [trgeometry, geo, nad_trgeometry_geo]
+          - [geo, trgeometry, nad_trgeometry_geo]
+          - [trgeometry, stbox, nad_trgeometry_stbox]
+          - [stbox, trgeometry, nad_trgeometry_stbox]
+          - [trgeometry, tpoint, nad_trgeometry_tpoint]
+          - [tpoint, trgeometry, nad_trgeometry_tpoint]
+          - [trgeometry, trgeometry, nad_trgeometry_trgeometry]
 
   - box:       tpcbox
     tside:     tpointcloud
