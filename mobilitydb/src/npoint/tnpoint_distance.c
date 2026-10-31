@@ -259,12 +259,14 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tnpoint — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the nearest approach distance between a geometry and a
- * temporal network point
+ * @brief Return the nearest approach distance between a geometry and a temporal
+ * network point
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -408,6 +410,7 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+/* GENERATED-NADOPS-END tnpoint */
 
 /*****************************************************************************
  * ShortestLine

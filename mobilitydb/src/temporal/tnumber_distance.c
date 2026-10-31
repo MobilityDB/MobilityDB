@@ -113,6 +113,8 @@ Tdistance_tnumber_tnumber(PG_FUNCTION_ARGS)
  * Nearest approach distance
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tbox — tools/codegen/inherited/generate.py from templates/nadops.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_number_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_number_tnumber);
 /**
@@ -157,8 +159,6 @@ NAD_tnumber_number(PG_FUNCTION_ARGS)
   PG_RETURN_FLOAT8(distance_double(result, basetype));
 }
 
-/* GENERATED-NADOPS-BEGIN tbox — tools/codegen/inherited/generate.py from templates/nadops.c.tmpl; DO NOT EDIT BY HAND;
- * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_tbox_tbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tbox_tbox);
 /**
