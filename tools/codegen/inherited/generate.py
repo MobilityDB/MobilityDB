@@ -2947,13 +2947,21 @@ def _dist_fns_st(st: dict) -> str:
 def _dist_ops_st(st: dict) -> str:
     """An `ops` stanza: the commutative operator `op` over `proc` for every
     (left, right) row, packed, as #_dist_op writes one; the `argsfirst` style
-    states the arguments before the procedure and quotes the commutator."""
+    states the arguments before the procedure and quotes the commutator, the
+    `split` style states each argument on its own line."""
+    op = st["op"]
     if st.get("style") == "argsfirst":
-        op = st["op"]
         ops = [(f"CREATE OPERATOR {op} (\n"
                 f"  LEFTARG = {left}, RIGHTARG = {right},\n"
                 f"  PROCEDURE = {st['proc']},\n"
                 f"  COMMUTATOR = '{op}'\n"
+                f");") for left, right in st["rows"]]
+    elif st.get("style") == "split":
+        ops = [(f"CREATE OPERATOR {op} (\n"
+                f"  PROCEDURE = {st['proc']},\n"
+                f"  LEFTARG = {left},\n"
+                f"  RIGHTARG = {right},\n"
+                f"  COMMUTATOR = {op}\n"
                 f");") for left, right in st["rows"]]
     else:
         ops = [_dist_op(st["op"], st["proc"], left, right)

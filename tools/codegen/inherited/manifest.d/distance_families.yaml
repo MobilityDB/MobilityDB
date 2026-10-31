@@ -521,3 +521,103 @@ distance_families:
       - [tgeompoint, trgeometry, Shortestline_tpoint_trgeometry]
       - [trgeometry, trgeometry, Shortestline_trgeometry_trgeometry]
   - lit: "\n/*****************************************************************************/\n"
+- family: tcbuffer
+  file: mobilitydb/sql/cbuffer/210_tcbuffer_distance.in.sql
+  begin: "/*****************************************************************************\n * Distance functions\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Distance functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: distance
+      ret: float
+      rows:
+      - [geometry, cbuffer, Distance_geo_cbuffer]
+      - [cbuffer, geometry, Distance_cbuffer_geo]
+      - [cbuffer, cbuffer, Distance_cbuffer_cbuffer]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: distance
+      style: split
+      rows:
+      - [geometry, cbuffer]
+      - [cbuffer, geometry]
+      - [cbuffer, cbuffer]
+  - lit: "\n/*****************************************************************************\n * Temporal distance functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      rows:
+      - ["geometry(Point)", tcbuffer, Tdistance_geo_tcbuffer]
+      - [cbuffer, tcbuffer, Tdistance_cbuffer_tcbuffer]
+      - [tcbuffer, "geometry(Point)", Tdistance_tcbuffer_geo]
+      - [tcbuffer, cbuffer, Tdistance_tcbuffer_cbuffer]
+      - [tcbuffer, tcbuffer, Tdistance_tcbuffer_tcbuffer]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistance
+      style: split
+      rows:
+      - [geometry, tcbuffer]
+      - [cbuffer, tcbuffer]
+      - [tcbuffer, geometry]
+      - [tcbuffer, cbuffer]
+      - [tcbuffer, tcbuffer]
+  - lit: "\n/*****************************************************************************\n * Nearest approach instant/distance and shortest line functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tcbuffer
+      rows:
+      - [geometry, tcbuffer, NAI_geo_tcbuffer]
+      - [cbuffer, tcbuffer, NAI_cbuffer_tcbuffer]
+      - [tcbuffer, geometry, NAI_tcbuffer_geo]
+      - [tcbuffer, cbuffer, NAI_tcbuffer_cbuffer]
+      - [tcbuffer, tcbuffer, NAI_tcbuffer_tcbuffer]
+  - lit: "\n/*****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      rows:
+      - [cbuffer, stbox, NAD_cbuffer_stbox]
+      - [stbox, cbuffer, NAD_stbox_cbuffer]
+      - [geometry, tcbuffer, NAD_geo_tcbuffer]
+      - [stbox, tcbuffer, NAD_stbox_tcbuffer]
+      - [cbuffer, tcbuffer, NAD_cbuffer_tcbuffer]
+      - [tcbuffer, geometry, NAD_tcbuffer_geo]
+      - [tcbuffer, stbox, NAD_tcbuffer_stbox]
+      - [tcbuffer, cbuffer, NAD_tcbuffer_cbuffer]
+      - [tcbuffer, tcbuffer, NAD_tcbuffer_tcbuffer]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistance
+      style: argsfirst
+      rows:
+      - [cbuffer, stbox]
+      - [stbox, cbuffer]
+      - [geometry, tcbuffer]
+      - [tcbuffer, geometry]
+      - [stbox, tcbuffer]
+      - [tcbuffer, stbox]
+      - [cbuffer, tcbuffer]
+      - [tcbuffer, cbuffer]
+      - [tcbuffer, tcbuffer]
+  - lit: "\n/*****************************************************************************/\n\n"
+  - fns:
+      proc: shortestLine
+      ret: geometry
+      rows:
+      - [geometry, tcbuffer, Shortestline_geo_tcbuffer]
+      - [cbuffer, tcbuffer, Shortestline_cbuffer_tcbuffer]
+      - [tcbuffer, geometry, Shortestline_tcbuffer_geo]
+      - [tcbuffer, cbuffer, Shortestline_tcbuffer_cbuffer]
+      - [tcbuffer, tcbuffer, Shortestline_tcbuffer_tcbuffer]
+  - lit: "\n/*****************************************************************************/\n\n"
+  - fns:
+      proc: minDistance
+      ret: float
+      rows:
+      - ["tcbuffer[]", "tcbuffer[]", Mindistance_tcbufferarr_tcbufferarr]
+  - lit: "\n/*****************************************************************************/\n"

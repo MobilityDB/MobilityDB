@@ -32,6 +32,8 @@
  * @brief Distance functions for temporal circular buffers
  */
 
+-- GENERATED-DISTANCE-BEGIN tcbuffer — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 /*****************************************************************************
  * Distance functions
  *****************************************************************************/
@@ -265,3 +267,4 @@ CREATE FUNCTION minDistance(tcbuffer[], tcbuffer[])
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END tcbuffer
