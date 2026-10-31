@@ -992,7 +992,7 @@ Stbox_shift_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_STBOX_P(stbox_shift_scale_time(box, shift, NULL));
+  PG_RETURN_STBOX_P(stbox_shift_time(box, shift));
 }
 
 PGDLLEXPORT Datum Stbox_scale_time(PG_FUNCTION_ARGS);
@@ -1007,7 +1007,7 @@ Stbox_scale_time(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_STBOX_P(stbox_shift_scale_time(box, NULL, duration));
+  PG_RETURN_STBOX_P(stbox_scale_time(box, duration));
 }
 
 PGDLLEXPORT Datum Stbox_shift_scale_time(PG_FUNCTION_ARGS);

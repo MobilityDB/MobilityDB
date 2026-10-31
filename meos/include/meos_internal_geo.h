@@ -143,6 +143,7 @@ extern void tstzspanset_set_stbox(const SpanSet *s, STBox *result);
 
 extern void stbox_expand(const STBox *box1, STBox *box2);
 extern bool stbox_expand_space_set(const STBox *box, double d, STBox *result);
+extern STBox *stbox_shift_scale_time_intl(const STBox *box, const Interval *shift, const Interval *duration);
 
 /*****************************************************************************/
 
