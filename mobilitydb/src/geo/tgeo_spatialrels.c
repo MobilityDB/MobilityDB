@@ -513,16 +513,14 @@ Aintersects_tgeo_tgeo(PG_FUNCTION_ARGS)
 /* GENERATED-SPATIALRELS-END geo_ea_disjoint_intersects */
 
 /*****************************************************************************
- * Ever/always touches
- * The function does not accept geography since it is based on the PostGIS
- * ST_Boundary function
+ * Dispatchers of the ever/always touches of a temporal geometry or point
  *****************************************************************************/
 
 /**
  * @brief Return true if a geometry and a temporal geometry ever/always touch
  * @sqlfn eTouches(), aTouches()
  */
-Datum
+static Datum
 EA_touches_geo_tgeo(FunctionCallInfo fcinfo, bool ever, bool tpoint)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
@@ -535,6 +533,32 @@ EA_touches_geo_tgeo(FunctionCallInfo fcinfo, bool ever, bool tpoint)
     PG_RETURN_NULL();
   PG_RETURN_BOOL(result);
 }
+
+/**
+ * @brief Return true if a temporal geometry and a geometry ever/always touch
+ * @sqlfn eTouches(), aTouches()
+ */
+static Datum
+EA_touches_tgeo_geo(FunctionCallInfo fcinfo, bool ever, bool tpoint)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  int result = tpoint ? ea_touches_tpoint_geo(temp, gs, ever) :
+    ea_touches_tgeo_geo(temp, gs, ever);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(gs, 1);
+  if (result < 0)
+    PG_RETURN_NULL();
+  PG_RETURN_BOOL(result);
+}
+
+/* GENERATED-SPATIALRELS-BEGIN geo_ea_touches — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
+/*****************************************************************************
+ * Ever/always touches
+ * The function does not accept geography since it is based on the PostGIS
+ * ST_Boundary function
+ *****************************************************************************/
 
 PGDLLEXPORT Datum Etouches_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_geo_tgeo);
@@ -553,7 +577,7 @@ PGDLLEXPORT Datum Atouches_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal geometry ever touch
+ * @brief Return true if a geometry and a temporal geometry always touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -566,7 +590,7 @@ PGDLLEXPORT Datum Etouches_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal point ever touch each other
+ * @brief Return true if a geometry and a temporal point ever touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -579,33 +603,13 @@ PGDLLEXPORT Datum Atouches_geo_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_geo_tpoint);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal point ever touch each other
+ * @brief Return true if a geometry and a temporal point always touch
  * @sqlfn aTouches()
  */
 inline Datum
 Atouches_geo_tpoint(PG_FUNCTION_ARGS)
 {
   return EA_touches_geo_tgeo(fcinfo, ALWAYS, TPOINT);
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return true if a temporal geometry and a geometry ever/always touch
- * @sqlfn eTouches(), aTouches()
- */
-Datum
-EA_touches_tgeo_geo(FunctionCallInfo fcinfo, bool ever, bool tpoint)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  int result = tpoint ? ea_touches_tpoint_geo(temp, gs, ever) :
-    ea_touches_tgeo_geo(temp, gs, ever);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(gs, 1);
-  if (result < 0)
-    PG_RETURN_NULL();
-  PG_RETURN_BOOL(result);
 }
 
 PGDLLEXPORT Datum Etouches_tgeo_geo(PG_FUNCTION_ARGS);
@@ -638,7 +642,7 @@ PGDLLEXPORT Datum Etouches_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal geometry and a geometry ever touch
+ * @brief Return true if a temporal point and a geometry ever touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -651,7 +655,7 @@ PGDLLEXPORT Datum Atouches_tpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_tpoint_geo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a temporal geometry and a geometry always touch
+ * @brief Return true if a temporal point and a geometry always touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -660,13 +664,11 @@ Atouches_tpoint_geo(PG_FUNCTION_ARGS)
   return EA_touches_tgeo_geo(fcinfo, ALWAYS, TPOINT);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Etouches_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if two temporal geometries ever touch each other
+ * @brief Return true if two temporal geometries ever touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -679,7 +681,7 @@ PGDLLEXPORT Datum Atouches_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if two temporal geometries always touch each other
+ * @brief Return true if two temporal geometries always touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -687,6 +689,7 @@ Atouches_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tgeo_tgeo, ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END geo_ea_touches */
 
 /* GENERATED-SPATIALRELS-BEGIN geo_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
  * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
