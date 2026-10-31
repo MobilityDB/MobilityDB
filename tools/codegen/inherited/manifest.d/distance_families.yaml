@@ -694,3 +694,35 @@ distance_families:
       - [tnpoint, npoint]
       - [tnpoint, tnpoint]
   - lit: "\n/*****************************************************************************/\n"
+- family: tpc
+  file: mobilitydb/sql/pointcloud/438_tpc_distance.in.sql
+  begin: "CREATE FUNCTION nearestApproachDistance(tpcbox, tpcbox) RETURNS float\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - fns:
+      proc: nearestApproachDistance
+      style: compact
+      ret: float
+      rows:
+      - [tpcbox, tpcbox, NAD_tpcbox_tpcbox]
+      - [tpcbox, tpcpoint, NAD_tpcbox_tpointcloud]
+      - [tpcpoint, tpcbox, NAD_tpointcloud_tpcbox]
+      - [tpcpoint, tpcpoint, NAD_tpointcloud_tpointcloud]
+      - [tpcbox, tpcpatch, NAD_tpcbox_tpointcloud]
+      - [tpcpatch, tpcbox, NAD_tpointcloud_tpcbox]
+      - [tpcpatch, tpcpatch, NAD_tpointcloud_tpointcloud]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistance
+      style: compact
+      rows:
+      - [tpcbox, tpcbox]
+      - [tpcbox, tpcpoint]
+      - [tpcpoint, tpcbox]
+      - [tpcpoint, tpcpoint]
+      - [tpcbox, tpcpatch]
+      - [tpcpatch, tpcbox]
+      - [tpcpatch, tpcpatch]
+  - lit: "\n/*****************************************************************************\n * GiST distance — the support function the operator classes of the family\n * register at strategy 25, declared here so the classes that follow name it\n *****************************************************************************/\n\nCREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)\n  RETURNS float\n  AS 'MODULE_PATHNAME', 'Tpcbox_gist_distance'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n/*****************************************************************************/\n"

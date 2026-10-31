@@ -5,7 +5,7 @@
 # land unnoticed. The list is a ratchet: it may only shrink. Bring a file
 # under the manifest, then delete its line here.
 #
-# 87 of 221 files remain.
+# 86 of 221 files remain.
 
 mobilitydb/sql/cbuffer/204_tcbuffer_compops.in.sql
 mobilitydb/sql/cbuffer/205_tcbuffer_spatialfuncs.in.sql
@@ -62,7 +62,6 @@ mobilitydb/sql/npoint/311_tnpoint_gin.in.sql
 mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql
 mobilitydb/sql/pointcloud/436_tpc_topops.in.sql
 mobilitydb/sql/pointcloud/437_tpc_posops.in.sql
-mobilitydb/sql/pointcloud/438_tpc_distance.in.sql
 mobilitydb/sql/pointcloud/439_tpc_gist.in.sql
 mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql
 mobilitydb/sql/pointcloud/442_tpcpoint_spatialfuncs.in.sql

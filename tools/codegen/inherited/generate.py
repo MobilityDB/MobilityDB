@@ -2927,8 +2927,15 @@ def _dist_fns_st(st: dict) -> str:
     spheroid flag (default the stanza's `spheroid`); a flagged function takes
     the earth model argument the geodetic families read, as #_dist_fns writes
     it. With `opr` each function is followed by its operator procedure
-    `<proc>Opr` over `<symbol>_opr`, which takes no earth model."""
-    tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
+    `<proc>Opr` over `<symbol>_opr`, which takes no earth model. The `compact`
+    style states the return type on the signature line and the language on
+    the symbol line."""
+    if st.get("style") == "compact":
+        tmpl = ("CREATE FUNCTION {SIG} RETURNS {RET}\n"
+                "  AS 'MODULE_PATHNAME', '{SYM}' "
+                "LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
+    else:
+        tmpl = read_template("comparisons.sql.tmpl").rstrip("\n")
     proc = st["proc"]
     fns = []
     for row in st["rows"]:
@@ -2948,9 +2955,14 @@ def _dist_ops_st(st: dict) -> str:
     """An `ops` stanza: the commutative operator `op` over `proc` for every
     (left, right) row, packed, as #_dist_op writes one; the `argsfirst` style
     states the arguments before the procedure and quotes the commutator, the
-    `split` style states each argument on its own line."""
+    `split` style states each argument on its own line, and the `compact`
+    style states the procedure on the first line and the rest on the second."""
     op = st["op"]
-    if st.get("style") == "argsfirst":
+    if st.get("style") == "compact":
+        ops = [(f"CREATE OPERATOR {op} (PROCEDURE = {st['proc']},\n"
+                f"  LEFTARG = {left}, RIGHTARG = {right}, COMMUTATOR = '{op}');")
+               for left, right in st["rows"]]
+    elif st.get("style") == "argsfirst":
         ops = [(f"CREATE OPERATOR {op} (\n"
                 f"  LEFTARG = {left}, RIGHTARG = {right},\n"
                 f"  PROCEDURE = {st['proc']},\n"
