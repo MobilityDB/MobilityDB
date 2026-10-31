@@ -343,8 +343,7 @@ PGDLLEXPORT Datum Tgeo_scale_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_scale_geo);
 /**
  * @ingroup mobilitydb_geo_transf
- * @brief Return a temporal geo scaled by the factors a point states, about an
- * optional origin
+ * @brief Return a temporal geo scaled by the factors a point states
  * @sqlfn scale()
  * @altsqlfn geoScale()
  */
@@ -353,14 +352,35 @@ Tgeo_scale_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *sorigin = NULL;
-  /* Do we have the optional false origin? */
-  if (PG_NARGS() > 2 && !PG_ARGISNULL(2))
-    sorigin = PG_GETARG_GSERIALIZED_P(2);
-  Temporal *result = tgeo_scale_geo(temp, scale, sorigin);
+  Temporal *result = tgeo_scale_geo(temp, scale);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(scale, 1);
   if (! result)
     PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_scale_geo_origin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_scale_geo_origin);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo scaled by the factors a point states, about a
+ * point geometry
+ * @sqlfn scale()
+ * @altsqlfn geoScale()
+ */
+Datum
+Tgeo_scale_geo_origin(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(2);
+  Temporal *result = tgeo_scale_geo_origin(temp, scale, sorigin);
   PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(scale, 1);
+  PG_FREE_IF_COPY(sorigin, 2);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -704,8 +724,7 @@ PGDLLEXPORT Datum Geo_scale_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geo_scale_geo);
 /**
  * @ingroup mobilitydb_geo_base_transf
- * @brief Return a geometry scaled by the factors a point states, about an
- * optional origin
+ * @brief Return a geometry scaled by the factors a point states
  * @sqlfn scale()
  * @altsqlfn geoScale()
  */
@@ -714,12 +733,33 @@ Geo_scale_geo(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
-  GSERIALIZED *sorigin = NULL;
-  if (PG_NARGS() > 2 && ! PG_ARGISNULL(2))
-    sorigin = PG_GETARG_GSERIALIZED_P(2);
-  GSERIALIZED *result = geo_scale_geo(gs, scale, sorigin);
+  GSERIALIZED *result = geo_scale_geo(gs, scale);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(scale, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
+PGDLLEXPORT Datum Geo_scale_geo_origin(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geo_scale_geo_origin);
+/**
+ * @ingroup mobilitydb_geo_base_transf
+ * @brief Return a geometry scaled by the factors a point states, about a
+ * point geometry
+ * @sqlfn scale()
+ * @altsqlfn geoScale()
+ */
+Datum
+Geo_scale_geo_origin(PG_FUNCTION_ARGS)
+{
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
+  GSERIALIZED *scale = PG_GETARG_GSERIALIZED_P(1);
+  GSERIALIZED *sorigin = PG_GETARG_GSERIALIZED_P(2);
+  GSERIALIZED *result = geo_scale_geo_origin(gs, scale, sorigin);
+  PG_FREE_IF_COPY(gs, 0);
+  PG_FREE_IF_COPY(scale, 1);
+  PG_FREE_IF_COPY(sorigin, 2);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);

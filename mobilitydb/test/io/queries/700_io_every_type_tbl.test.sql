@@ -3735,6 +3735,7 @@ SELECT asEWKT(scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'SRID=5676;Point(1 1)'));
 SELECT asEWKT(scale(tgeometry 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));
@@ -3788,6 +3789,7 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-0
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(2 2)', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'SRID=5676;Point(1 1)'));
 SELECT asEWKT(scale(tgeompoint 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Linestring(1 1,2 2)'));

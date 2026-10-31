@@ -67,9 +67,11 @@ SELECT scale(tgeometry '[Point(1 2 3)@2001-01-01, Point(1 1 1)@2001-01-02]', 0.5
 /* Errors */
 SELECT rotate(tgeometry '[Point(50 160)@2001-01-01, Point(50 50)@2001-01-02]', pi()/6, geometry 'Point Empty');
 
--- Empty geometry
+-- An empty factor point or origin and an origin of another SRID are refused,
+-- as the center of a rotation is
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
 SELECT asEWKT(scale(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
+SELECT asEWKT(scale(tgeometry 'SRID=3812;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'SRID=5676;Point(1 1)'));
 -- Coverage
 SELECT asEWKT(scale(tgeometry 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
 SELECT asEWKT(scale(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],[Point(3 3)@2001-01-03]}', geometry 'POINT(1 1)'));

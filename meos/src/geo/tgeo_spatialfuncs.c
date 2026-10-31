@@ -1480,7 +1480,7 @@ tgeoseqset_scale(const TSequenceSet *ss, const POINT4D *factors)
 
 /**
  * @brief Return a temporal geo scaled by given factors, the scaling
- * #tgeo_scale_geo and #tgeo_scale share
+ * #tgeo_scale_geo_intl and #tgeo_scale share
  * @param[in] temp Temporal geo
  * @param[in] factors Scale factors
  */
@@ -1500,25 +1500,20 @@ tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
 }
 
 /**
- * @ingroup meos_geo_transf
- * @brief Scale a temporal geo by given factors
+ * @ingroup meos_internal_geo_transf
+ * @brief Return a temporal geo scaled by the factors a point states, about an
+ * origin or none
+ * @details The factor of a point without Z is 1 along z
  * @param[in] temp Temporal geo
- * @param[in] scale Geometry for the scale factors
- * @param[in] sorigin Point geometry for the origin @nullable
- * @csqlfn #Tgeo_scale_geo()
+ * @param[in] scale Point geometry stating the scale factors
+ * @param[in] sorigin Point geometry for the origin, NULL for none
+ * @csqlfn #Tgeo_scale_geo(), #Tgeo_scale_geo_origin()
  */
 Temporal *
-tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale,
+tgeo_scale_geo_intl(const Temporal *temp, const GSERIALIZED *scale,
   const GSERIALIZED *sorigin)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(scale, NULL);
-  if (! ensure_not_geodetic(temp->flags) ||
-      ! ensure_point_type(scale) || gserialized_is_empty(scale) ||
-      (sorigin && 
-        (gserialized_is_empty(sorigin) || ! ensure_point_type(sorigin))))
-    return NULL;
-
+  assert(temp); assert(tgeo_type_all(temp->temptype)); assert(scale);
   bool translate = false;
   AFFINE aff;
 
@@ -1541,7 +1536,7 @@ tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale,
   /* A two-dimensional value scaled about an origin off its plane leaves
    * the plane when the vertical factor moves it, so it is read in three
    * dimensions, as #geo_affine_lift reads it */
-  bool lift = translate && FLAGS_GET_Z(sorigin->gflags) && factors.z != 1.0;
+  bool lift = sorigin && FLAGS_GET_Z(sorigin->gflags) && factors.z != 1.0;
 
   /* If we have false origin, translate to it before scaling */
   Temporal *temp1;
@@ -1582,6 +1577,54 @@ tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale,
     pfree(temp2);
   }
   return temp3;
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo scaled by the factors a point states
+ * @details The factor of a point without Z is 1 along z
+ * @param[in] temp Temporal geo
+ * @param[in] scale Point geometry stating the scale factors
+ * @csqlfn #Tgeo_scale_geo()
+ */
+Temporal *
+tgeo_scale_geo(const Temporal *temp, const GSERIALIZED *scale)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(scale, NULL);
+  if (! ensure_not_geodetic(temp->flags) || ! ensure_point_type(scale) ||
+      ! ensure_not_empty(scale))
+    return NULL;
+  return tgeo_scale_geo_intl(temp, scale, NULL);
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo scaled by the factors a point states, about a
+ * point geometry
+ * @details The scaling of #tgeo_scale_geo about the coordinates of the
+ * origin, read as #tgeo_rotate_geo reads its center: the point is not empty,
+ * and it states the SRID of the value or none
+ * @param[in] temp Temporal geo
+ * @param[in] scale Point geometry stating the scale factors
+ * @param[in] sorigin Point geometry for the origin
+ * @csqlfn #Tgeo_scale_geo_origin()
+ */
+Temporal *
+tgeo_scale_geo_origin(const Temporal *temp, const GSERIALIZED *scale,
+  const GSERIALIZED *sorigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(scale, NULL);
+  VALIDATE_NOT_NULL(sorigin, NULL);
+  if (! ensure_not_geodetic(temp->flags) || ! ensure_point_type(scale) ||
+      ! ensure_not_empty(scale) || ! ensure_point_type(sorigin) ||
+      ! ensure_not_empty(sorigin))
+    return NULL;
+  int32_t srid = gserialized_get_srid(sorigin);
+  if (srid != SRID_UNKNOWN && ! ensure_same_srid(tspatial_srid(temp), srid))
+    return NULL;
+  return tgeo_scale_geo_intl(temp, scale, sorigin);
 }
 
 /**
@@ -1704,8 +1747,7 @@ tgeo_rotate(const Temporal *temp, double angle, double x0, double y0)
  * @brief Return a temporal geo rotated counter-clockwise around a point
  * geometry
  * @details The rotation of #tgeo_rotate about the coordinates of the point,
- * whose origin #tgeo_scale_geo reads the same way: the point is not empty, and it
- * states the SRID of the value or none
+ * which is not empty and states the SRID of the value or none
  * @param[in] temp Temporal geo
  * @param[in] angle Rotation angle in radians
  * @param[in] origin Center of the rotation
@@ -1975,29 +2017,22 @@ geo_rotate_z(const GSERIALIZED *gs, double angle)
 }
 
 /**
- * @ingroup meos_geo_base_transf
- * @brief Scale a geometry by the factors a point states, about an origin
- * @details The scaling of #tgeo_scale_geo: the factors and the origin are
- * non-empty points, the factor of a point without Z is 1 along z, and a
- * two-dimensional geometry scaled about an origin off its plane leaves the
- * plane when the vertical factor moves it
+ * @ingroup meos_internal_geo_base_transf
+ * @brief Return a geometry scaled by the factors a point states, about an
+ * origin or none
+ * @details The scaling of #tgeo_scale_geo_intl: the factor of a point without
+ * Z is 1 along z, and a two-dimensional geometry scaled about an origin off
+ * its plane leaves the plane when the vertical factor moves it
  * @param[in] gs Geometry
  * @param[in] scale Point geometry stating the scale factors
- * @param[in] sorigin Point geometry for the origin @nullable
- * @csqlfn #Geo_scale_geo()
+ * @param[in] sorigin Point geometry for the origin, NULL for none
+ * @csqlfn #Geo_scale_geo(), #Geo_scale_geo_origin()
  */
 GSERIALIZED *
-geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale,
+geo_scale_geo_intl(const GSERIALIZED *gs, const GSERIALIZED *scale,
   const GSERIALIZED *sorigin)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(scale, NULL);
-  if (! ensure_not_geodetic_geo(gs) ||
-      ! ensure_point_type(scale) || gserialized_is_empty(scale) ||
-      (sorigin &&
-        (gserialized_is_empty(sorigin) || ! ensure_point_type(sorigin))))
-    return NULL;
-
+  assert(gs); assert(scale);
   POINT4D factors;
   datum_point4d(PointerGetDatum(scale), &factors);
   if (! FLAGS_GET_Z(scale->gflags))
@@ -2018,6 +2053,55 @@ geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale,
   GSERIALIZED *result = geo_affine_lift(gs2, &aff, lift);
   pfree(gs1); pfree(gs2);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry scaled by the factors a point states
+ * @details The factor of a point without Z is 1 along z
+ * @param[in] gs Geometry
+ * @param[in] scale Point geometry stating the scale factors
+ * @csqlfn #Geo_scale_geo()
+ */
+GSERIALIZED *
+geo_scale_geo(const GSERIALIZED *gs, const GSERIALIZED *scale)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(scale, NULL);
+  if (! ensure_not_geodetic_geo(gs) || ! ensure_point_type(scale) ||
+      ! ensure_not_empty(scale))
+    return NULL;
+  return geo_scale_geo_intl(gs, scale, NULL);
+}
+
+/**
+ * @ingroup meos_geo_base_transf
+ * @brief Return a geometry scaled by the factors a point states, about a
+ * point geometry
+ * @details The scaling of #geo_scale_geo about the coordinates of the origin,
+ * read as #geo_rotate_geo reads its center: the point is not empty, and it
+ * states the SRID of the geometry or none
+ * @param[in] gs Geometry
+ * @param[in] scale Point geometry stating the scale factors
+ * @param[in] sorigin Point geometry for the origin
+ * @csqlfn #Geo_scale_geo_origin()
+ */
+GSERIALIZED *
+geo_scale_geo_origin(const GSERIALIZED *gs, const GSERIALIZED *scale,
+  const GSERIALIZED *sorigin)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(scale, NULL);
+  VALIDATE_NOT_NULL(sorigin, NULL);
+  if (! ensure_not_geodetic_geo(gs) || ! ensure_point_type(scale) ||
+      ! ensure_not_empty(scale) || ! ensure_point_type(sorigin) ||
+      ! ensure_not_empty(sorigin))
+    return NULL;
+  int32_t srid = gserialized_get_srid(sorigin);
+  if (srid != SRID_UNKNOWN &&
+      ! ensure_same_srid(gserialized_get_srid(gs), srid))
+    return NULL;
+  return geo_scale_geo_intl(gs, scale, sorigin);
 }
 
 /**

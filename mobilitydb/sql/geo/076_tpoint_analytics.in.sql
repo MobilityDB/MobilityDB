@@ -149,7 +149,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION scale(geometry,geometry,origin geometry)
 RETURNS geometry
-AS 'MODULE_PATHNAME', 'Geo_scale_geo'
+AS 'MODULE_PATHNAME', 'Geo_scale_geo_origin'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION scale(geometry,float,float,float)
@@ -227,7 +227,7 @@ LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,geometry,origin geometry)
 RETURNS tgeompoint
-AS 'MODULE_PATHNAME', 'Tgeo_scale_geo'
+AS 'MODULE_PATHNAME', 'Tgeo_scale_geo_origin'
 LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OR REPLACE FUNCTION scale(tgeompoint,float,float,float)
