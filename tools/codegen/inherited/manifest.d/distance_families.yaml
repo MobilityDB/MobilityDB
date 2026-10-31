@@ -621,3 +621,76 @@ distance_families:
       rows:
       - ["tcbuffer[]", "tcbuffer[]", Mindistance_tcbufferarr_tcbufferarr]
   - lit: "\n/*****************************************************************************/\n"
+- family: tnpoint
+  file: mobilitydb/sql/npoint/312_tnpoint_distance.in.sql
+  begin: "/*****************************************************************************\n * Temporal distance\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Temporal distance\n *****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      rows:
+      - ["geometry(Point)", tnpoint, Tdistance_point_tnpoint]
+      - [npoint, tnpoint, Tdistance_npoint_tnpoint]
+      - [tnpoint, "geometry(Point)", Tdistance_tnpoint_geo]
+      - [tnpoint, npoint, Tdistance_tnpoint_npoint]
+      - [tnpoint, tnpoint, Tdistance_tnpoint_tnpoint]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistance
+      style: split
+      rows:
+      - [geometry, tnpoint]
+      - [npoint, tnpoint]
+      - [tnpoint, geometry]
+      - [tnpoint, npoint]
+      - [tnpoint, tnpoint]
+  - lit: "\n/*****************************************************************************\n * Nearest approach instant\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tnpoint
+      rows:
+      - [geometry, tnpoint, NAI_geo_tnpoint]
+      - [tnpoint, geometry, NAI_tnpoint_geo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tnpoint
+      rows:
+      - [npoint, tnpoint, NAI_npoint_tnpoint]
+      - [tnpoint, npoint, NAI_tnpoint_npoint]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tnpoint
+      rows:
+      - [tnpoint, tnpoint, NAI_tnpoint_tnpoint]
+  - lit: "\n/*****************************************************************************\n * Nearest approach distance\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      rows:
+      - [geometry, tnpoint, NAD_geo_tnpoint]
+      - [tnpoint, geometry, NAD_tnpoint_geo]
+      - [stbox, tnpoint, NAD_stbox_tnpoint]
+      - [tnpoint, stbox, NAD_tnpoint_stbox]
+      - [npoint, tnpoint, NAD_npoint_tnpoint]
+      - [tnpoint, npoint, NAD_tnpoint_npoint]
+      - [tnpoint, tnpoint, NAD_tnpoint_tnpoint]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistance
+      style: argsfirst
+      rows:
+      - [geometry, tnpoint]
+      - [tnpoint, geometry]
+      - [stbox, tnpoint]
+      - [tnpoint, stbox]
+      - [npoint, tnpoint]
+      - [tnpoint, npoint]
+      - [tnpoint, tnpoint]
+  - lit: "\n/*****************************************************************************/\n"
