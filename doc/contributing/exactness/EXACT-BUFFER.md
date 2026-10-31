@@ -102,11 +102,13 @@ items).
   `geom_buffer` takes where the arrangement declines and no certificate reads (step 24). No answer
   CGAL finds wrong is certified. **Owed: speed.** With the round-join tests, natural areas at
   distance 1 read 594.1 million instructions against 568.4 million for GEOS called directly (1.045).
-- **MobilityDB #3259** (draft, `a6d4c6852a` on master `73f44ac1fe`) places the meetings of the
-  offsets in plain doubles, the same bits as the filters, and writes the tangent and circle edges
-  in their place: native over GEOS called directly reads 0.935, 0.895 and 0.560 at distances 1, 50
-  and 500 and 0.776 on the joints, CGAL agreeing on 1 313 of 1 313 natural areas; its 49 checks
-  pass. Its margin at distance 1 is what the certificate spends.
+- **MobilityDB #3259** (draft, `5b7ed0e97a` on master `221a594ab3`) places the four meetings of
+  the offsets and circles in plain doubles (two offsets sharing a centre, two sharing none, an
+  offset and a circle, two circles of one radius), the same bits as the filters under a bound that
+  holds theirs, and writes the tangent and circle edges in their place: native over GEOS called
+  directly reads 0.944, 0.893 and 0.562 at distances 1, 50 and 500 and 0.756 on the joints, CGAL
+  agreeing on 1 313 of 1 313 natural areas, whose 11 998 crossings of two circles all take the
+  plain doubles. Its margin at distance 1 is what the certificate spends.
 - **Step 17** is branch `fix/buffer-a-line-exactly` at `b80d96ccbb`, seven commits on master
   `cdfa50524d`, not on GitHub. On its second commit (`f7b71efde4`): of the 1 576 AIS line queries
   1 093 agree with CGAL, 0 wrong, 452 decline, 31 time out; 36 960 of 36 960 straight queries
