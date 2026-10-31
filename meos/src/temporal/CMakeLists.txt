@@ -77,7 +77,6 @@ if(MEOS)
     set_aggfuncs_meos.c
     span_tile_meos.c
     span_aggfuncs_meos.c
-    spanset_ops_meos.c
     tbool_ops_meos.c
     temporal_aggfuncs_meos.c
     temporal_boxops_meos.c
