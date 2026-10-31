@@ -346,7 +346,7 @@ out_of_range:
   return SHRT_MAX;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type smallint: \"%s\"", s);
   return SHRT_MAX;
 }
@@ -612,7 +612,7 @@ out_of_range:
   return INT_MAX;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type integer: \"%s\"", s);
   return INT_MAX;
 }
@@ -865,7 +865,7 @@ out_of_range:
   return LONG_MAX;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type bigint: \"%s\"", s);
   return LONG_MAX;
 }
@@ -903,7 +903,7 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
    */
   if ((errno && errno != ERANGE) || endptr == s)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"", typname, s);
     return UINT_MAX;
   }
@@ -927,7 +927,7 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
       endptr++;
     if (*endptr)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "invalid input syntax for type %s: \"%s\"", typname, s);
       return UINT_MAX ;
     }
@@ -987,7 +987,7 @@ uint64in_subr(const char *s, char **endloc, const char *typname,
    */
   if ((errno && errno != ERANGE) || endptr == s)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"", typname, s);
     return ULONG_MAX;
   }
@@ -1011,7 +1011,7 @@ uint64in_subr(const char *s, char **endloc, const char *typname,
       endptr++;
     if (*endptr)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "invalid input syntax for type %s: \"%s\"", typname, s);
       return ULONG_MAX;
     }

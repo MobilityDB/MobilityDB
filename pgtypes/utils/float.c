@@ -186,7 +186,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
    */
   if (*num == '\0')
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
     return FLT_MAX;
@@ -273,7 +273,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "invalid input syntax for type %s: \"%s\"",
         type_name, orig_string);
       return FLT_MAX;
@@ -289,7 +289,7 @@ pg_float4in_internal(char *num, char **endptr_p, const char *type_name,
     *endptr_p = endptr;
   else if (*endptr != '\0')
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
     return FLT_MAX;
@@ -469,7 +469,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
    */
   if (*num == '\0')
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
     return DBL_MAX;
@@ -555,7 +555,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "invalid input syntax for type %s: \"%s\"",
         type_name, orig_string);
       return DBL_MAX;
@@ -571,7 +571,7 @@ pg_float8in_internal(char *num, char **endptr_p, const char *type_name,
     *endptr_p = endptr;
   else if (*endptr != '\0')
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type %s: \"%s\"",
       type_name, orig_string);
     return DBL_MAX;

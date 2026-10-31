@@ -690,7 +690,7 @@ pg_numeric_in(const char *str, int32 typmod)
   return res;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type numeric: \"%s\"", str);
   return NULL; // TODO
 }
@@ -4057,7 +4057,7 @@ out_of_range:
   return false;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type numeric: \"%s\"", str);
   return false;
 }
@@ -4258,7 +4258,7 @@ out_of_range:
   return false;
 
 invalid_syntax:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
     "invalid input syntax for type numeric: \"%s\"", str);
   return false;
 }
@@ -4993,7 +4993,7 @@ numericvar_to_double_no_overflow(const NumericVar *var)
   if (*endptr != '\0')
   {
     /* shouldn't happen ... */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "invalid input syntax for type double precision: \"%s\"", tmp);
     return get_float8_infinity();
   }
