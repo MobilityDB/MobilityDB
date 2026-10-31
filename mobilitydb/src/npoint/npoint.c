@@ -57,7 +57,6 @@
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
-#include "npoint/tnpoint.h"
 #include "npoint/tnpoint_parser.h"
 /* MobilityDB */
 #include "pg_temporal/temporal.h"

@@ -675,8 +675,8 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
 
 /**
  * @ingroup meos_json_set_json
- * @brief Extract the items specified by a JSON path expression from a temporal
- * JSONB value
+ * @brief Extract the items specified by a JSON path expression from a JSONB
+ * set
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
  * @param[in] vars JSON variables @nullable
@@ -698,7 +698,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_query_array;
   lfinfo.argtype[0] = T_JSONBSET;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
@@ -735,7 +735,7 @@ jsonbset_path_query_first(const Set *set, const JsonPath *jp,
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   lfinfo.func = (varfunc) &datum_jsonb_path_query_first;
   lfinfo.argtype[0] = T_JSONBSET;
-  lfinfo.numparam = 3;
+  lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
   lfinfo.param[1] = PointerGetDatum(vars);
   lfinfo.param[2] = BoolGetDatum(silent);
