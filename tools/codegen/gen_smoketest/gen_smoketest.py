@@ -1602,7 +1602,9 @@ TGEOMETRY_CONFIG = dict(
         # These box accessors need the Z / T dimension.
         "stbox_volume":           {0: "stbox_zt1"},
         "stbox_to_tstzspan":      {0: "stbox_zt1"},
+        "stbox_scale_time":       {0: "stbox_zt1"},
         "stbox_shift_scale_time": {0: "stbox_zt1"},
+        "stbox_shift_time":       {0: "stbox_zt1"},
         "stbox_expand_time":      {0: "stbox_zt1"},
         # A measure-to-temporal-point conversion reads the timestamps off the
         # geometry's M coordinate.

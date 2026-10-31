@@ -38,10 +38,13 @@
  * against with no check at all.
  *
  * The program verifies that #tstzset_shift, #tstzset_scale and
- * #tstzset_shift_scale, and #tstzspan_shift, #tstzspan_scale and
- * #tstzspan_shift_scale, report each null interval they take by returning NULL
- * and setting #meos_errno, and that each answers the shifted and scaled value
- * with no error left behind.
+ * #tstzset_shift_scale, #tstzspan_shift, #tstzspan_scale and
+ * #tstzspan_shift_scale, #tstzspanset_shift, #tstzspanset_scale,
+ * #tstzspanset_shift_scale, #tbox_shift_time, #tbox_scale_time and
+ * #tbox_shift_scale_time, and #stbox_shift_time, #stbox_scale_time and
+ * #stbox_shift_scale_time, report each null interval they take by returning
+ * NULL and setting #meos_errno, and that each answers the shifted and scaled
+ * value with no error left behind.
  *
  * The program can be build as follows
  * @code
@@ -54,6 +57,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <meos.h>
+#include <meos_geo.h>
 
 /* Main program */
 int main(void)
@@ -160,7 +164,147 @@ int main(void)
   assert(spres && meos_errno() == 0);
   free(out); free(spres);
 
-  free(sp); free(s); free(shift); free(duration);
+  /* A null interval given to a timestamptz span set is reported */
+  SpanSet *ss = tstzspanset_in(
+    "{[2001-01-01, 2001-01-01 12:00], [2001-01-02, 2001-01-03]}");
+  assert(ss);
+  SpanSet *ssres = tstzspanset_shift(ss, NULL);
+  printf("tstzspanset_shift(NULL): %s, errno %d\n", ssres ? "a value" : "NULL",
+    meos_errno());
+  assert(ssres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  ssres = tstzspanset_scale(ss, NULL);
+  printf("tstzspanset_scale(NULL): %s, errno %d\n", ssres ? "a value" : "NULL",
+    meos_errno());
+  assert(ssres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  ssres = tstzspanset_shift_scale(ss, shift, NULL);
+  printf("tstzspanset_shift_scale(1 day, NULL): %s, errno %d\n",
+    ssres ? "a value" : "NULL", meos_errno());
+  assert(ssres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  ssres = tstzspanset_shift_scale(ss, NULL, duration);
+  printf("tstzspanset_shift_scale(NULL, 4 days): %s, errno %d\n",
+    ssres ? "a value" : "NULL", meos_errno());
+  assert(ssres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* The intervals answer the shifted and scaled span set */
+  ssres = tstzspanset_shift(ss, shift);
+  out = tstzspanset_out(ssres);
+  printf("tstzspanset_shift(1 day): %s, errno %d\n", out, meos_errno());
+  assert(ssres && meos_errno() == 0);
+  free(out); free(ssres);
+  ssres = tstzspanset_scale(ss, duration);
+  out = tstzspanset_out(ssres);
+  printf("tstzspanset_scale(4 days): %s, errno %d\n", out, meos_errno());
+  assert(ssres && meos_errno() == 0);
+  free(out); free(ssres);
+  ssres = tstzspanset_shift_scale(ss, shift, duration);
+  out = tstzspanset_out(ssres);
+  printf("tstzspanset_shift_scale(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(ssres && meos_errno() == 0);
+  free(out); free(ssres);
+
+  /* A null interval given to a temporal box is reported */
+  TBox *box = tbox_in("TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])");
+  assert(box);
+  TBox *boxres = tbox_shift_time(box, NULL);
+  printf("tbox_shift_time(NULL): %s, errno %d\n", boxres ? "a value" : "NULL",
+    meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_scale_time(box, NULL);
+  printf("tbox_scale_time(NULL): %s, errno %d\n", boxres ? "a value" : "NULL",
+    meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_shift_scale_time(box, shift, NULL);
+  printf("tbox_shift_scale_time(1 day, NULL): %s, errno %d\n",
+    boxres ? "a value" : "NULL", meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_shift_scale_time(box, NULL, duration);
+  printf("tbox_shift_scale_time(NULL, 4 days): %s, errno %d\n",
+    boxres ? "a value" : "NULL", meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* The intervals answer the shifted and scaled temporal box */
+  boxres = tbox_shift_time(box, shift);
+  out = tbox_out(boxres, 6);
+  printf("tbox_shift_time(1 day): %s, errno %d\n", out, meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+  boxres = tbox_scale_time(box, duration);
+  out = tbox_out(boxres, 6);
+  printf("tbox_scale_time(4 days): %s, errno %d\n", out, meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+  boxres = tbox_shift_scale_time(box, shift, duration);
+  out = tbox_out(boxres, 6);
+  printf("tbox_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+
+  /* A null interval given to a spatiotemporal box is reported */
+  STBox *stbox = stbox_in("STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-03])");
+  assert(stbox);
+  STBox *stboxres = stbox_shift_time(stbox, NULL);
+  printf("stbox_shift_time(NULL): %s, errno %d\n",
+    stboxres ? "a value" : "NULL", meos_errno());
+  assert(stboxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  stboxres = stbox_scale_time(stbox, NULL);
+  printf("stbox_scale_time(NULL): %s, errno %d\n",
+    stboxres ? "a value" : "NULL", meos_errno());
+  assert(stboxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  stboxres = stbox_shift_scale_time(stbox, shift, NULL);
+  printf("stbox_shift_scale_time(1 day, NULL): %s, errno %d\n",
+    stboxres ? "a value" : "NULL", meos_errno());
+  assert(stboxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  stboxres = stbox_shift_scale_time(stbox, NULL, duration);
+  printf("stbox_shift_scale_time(NULL, 4 days): %s, errno %d\n",
+    stboxres ? "a value" : "NULL", meos_errno());
+  assert(stboxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* The intervals answer the shifted and scaled spatiotemporal box */
+  stboxres = stbox_shift_time(stbox, shift);
+  out = stbox_out(stboxres, 6);
+  printf("stbox_shift_time(1 day): %s, errno %d\n", out, meos_errno());
+  assert(stboxres && meos_errno() == 0);
+  free(out); free(stboxres);
+  stboxres = stbox_scale_time(stbox, duration);
+  out = stbox_out(stboxres, 6);
+  printf("stbox_scale_time(4 days): %s, errno %d\n", out, meos_errno());
+  assert(stboxres && meos_errno() == 0);
+  free(out); free(stboxres);
+  stboxres = stbox_shift_scale_time(stbox, shift, duration);
+  out = stbox_out(stboxres, 6);
+  printf("stbox_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(stboxres && meos_errno() == 0);
+  free(out); free(stboxres);
+
+  free(stbox); free(box); free(ss); free(sp); free(s); free(shift);
+  free(duration);
 
   /* Finalize MEOS */
   meos_finalize();

@@ -43,6 +43,9 @@
 #include <postgres.h>
 #include <varatt.h>
 #include <utils/float.h>
+#include <utils/jsonb.h>
+#include <utils/numeric.h>
+#include <utils/varlena.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
@@ -942,6 +945,155 @@ temparr_out(const Temporal **temparr, int count, int maxdd)
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal boolean from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
+ */
+Temporal *
+tbool_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL); 
+  return temporal_parse(&str, T_TBOOL);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal integer from its Well-Known Text (WKT) 
+ * representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
+ */
+Temporal *
+tint_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL); 
+  return temporal_parse(&str, T_TINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal big integer from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
+ */
+Temporal *
+tbigint_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL);
+  return temporal_parse(&str, T_TBIGINT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal float from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
+ */
+Temporal *
+tfloat_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL); 
+  return temporal_parse(&str, T_TFLOAT);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return a temporal text from its Well-Known Text (WKT) representation
+ * @param[in] str String
+ * @csqlfn #Temporal_in(), #Temporal_from_text()
+ */
+Temporal *
+ttext_in(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, NULL); 
+  return temporal_parse(&str, T_TTEXT);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal boolean
+ * @param[in] temp Temporal boolean
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tbool_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, NULL); 
+  return temporal_out(temp, 0);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal integer
+ * @param[in] temp Temporal integer
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tint_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); 
+  return temporal_out(temp, 0);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal big
+ * integer
+ * @param[in] temp Temporal big integer
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tbigint_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return temporal_out(temp, 0);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal float
+ * @param[in] temp Temporal float
+ * @param[in] maxdd Maximum number of decimal digits
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+tfloat_out(const Temporal *temp, int maxdd)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+  return temporal_out(temp, maxdd);
+}
+
+/**
+ * @ingroup meos_temporal_inout
+ * @brief Return the Well-Known Text (WKT) representation of a temporal text
+ * @param[in] temp Temporal text
+ * @csqlfn #Temporal_out(), #Temporal_as_text()
+ */
+char *
+ttext_out(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL); 
+  return temporal_out(temp, 0);
+}
+
 /*****************************************************************************
  * Constructor functions
  ****************************************************************************/
@@ -1043,6 +1195,83 @@ temporal_from_base_temp(Datum value, MeosType temptype, const Temporal *temp)
       return (Temporal *) tsequenceset_from_base_temp(value, temptype,
         (TSequenceSet *) temp);
   }
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal boolean from a boolean and the time frame of
+ * another temporal value
+ * @param[in] b Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tbool_from_base_temp(bool b, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); 
+  return temporal_from_base_temp(BoolGetDatum(b), T_TBOOL, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal integer from an integer and the time frame of
+ * another temporal value
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tint_from_base_temp(int i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); 
+  return temporal_from_base_temp(Int32GetDatum(i), T_TINT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer from an big integer and the time frame
+ * of another temporal value
+ * @param[in] i Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tbigint_from_base_temp(int64 i, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL);
+  return temporal_from_base_temp(Int64GetDatum(i), T_TBIGINT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal float from a float and the time frame of
+ * another temporal value
+ * @param[in] d Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+tfloat_from_base_temp(double d, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(temp, NULL); 
+  if (! ensure_not_nan(d))
+    return NULL;
+  return temporal_from_base_temp(Float8GetDatum(d), T_TFLOAT, temp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal text from a text and the time frame of
+ * another temporal value
+ * @param[in] txt Value
+ * @param[in] temp Temporal value
+ */
+Temporal *
+ttext_from_base_temp(const text *txt, const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt, NULL); VALIDATE_NOT_NULL(temp, NULL); 
+  return temporal_from_base_temp(PointerGetDatum(txt), T_TTEXT, temp);
 }
 
 /*****************************************************************************
@@ -2065,6 +2294,158 @@ temporal_shift_scale_time(const Temporal *temp, const Interval *shift,
   if (! ensure_positive_duration(duration))
     return NULL;
   return temporal_shift_scale_time_intl(temp, shift, duration);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value
+ * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ */
+Temporal *
+tint_shift_value(const Temporal *temp, int shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); 
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is shifted by a
+ * value
+ * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ */
+Temporal *
+tbigint_shift_value(const Temporal *temp, int64 shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, Int64GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted by a value
+ * @csqlfn #Tnumber_shift_value()
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ */
+Temporal *
+tfloat_shift_value(const Temporal *temp, double shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(shift))
+    return NULL;
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift), 0, true, false);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is scaled by a value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tint_scale_value(const Temporal *temp, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); 
+  return tnumber_shift_scale_value(temp, 0, Int32GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is scaled by a
+ * value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tbigint_scale_value(const Temporal *temp, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, 0, Int64GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal float whose value dimension is scaled by a value
+ * @param[in] temp Temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_scale_value()
+ */
+Temporal *
+tfloat_scale_value(const Temporal *temp, double width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(width))
+    return NULL;
+  return tnumber_shift_scale_value(temp, 0, Float8GetDatum(width), false, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal integer whose value dimension is shifted and scaled
+ * by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tint_shift_scale_value(const Temporal *temp, int shift, int width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); 
+  return tnumber_shift_scale_value(temp, Int32GetDatum(shift),
+    Int32GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal big integer whose value dimension is shifted and
+ * scaled by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tbigint_shift_scale_value(const Temporal *temp, int64 shift, int64 width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL);
+  return tnumber_shift_scale_value(temp, Int64GetDatum(shift),
+    Int64GetDatum(width), true, true);
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return a temporal number whose value dimension is shifted and scaled
+ * by two values
+ * @param[in] temp Temporal value
+ * @param[in] shift Value for shifting the temporal value
+ * @param[in] width Width of the result
+ * @csqlfn #Tnumber_shift_scale_value()
+ */
+Temporal *
+tfloat_shift_scale_value(const Temporal *temp, double shift, double width)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); 
+  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+    return NULL;
+  return tnumber_shift_scale_value(temp, Float8GetDatum(shift),
+    Float8GetDatum(width), true, true);
 }
 
 /*****************************************************************************
@@ -3205,6 +3586,645 @@ temporal_timestamps(const Temporal *temp, int *count)
     default: /* TSEQUENCESET */
       return tsequenceset_timestamps((TSequenceSet *) temp, count);
   }
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal boolean
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Tbool_values()
+ */
+bool *
+tbool_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  Datum *datumarr = temporal_values_p(temp, count);
+  bool *result = palloc(sizeof(bool) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetBool(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal boolean, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tbool_unnest(const Temporal *temp, bool **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  bool *vals = palloc(sizeof(bool) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetBool(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal integer
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ */
+int *
+tint_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  Datum *datumarr = temporal_values_p(temp, count);
+  int *result = palloc(sizeof(int) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetInt32(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal integer, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tint_unnest(const Temporal *temp, int **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  int *vals = palloc(sizeof(int) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetInt32(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal big integer
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ */
+int64 *
+tbigint_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  Datum *datumarr = temporal_values_p(temp, count);
+  int64 *result = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetInt64(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal big integer, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tbigint_unnest(const Temporal *temp, int64 **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  int64 *vals = palloc(sizeof(int64) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetInt64(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of base values of a temporal float
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ */
+double *
+tfloat_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  Datum *datumarr = temporal_values_p(temp, count);
+  double *result = palloc(sizeof(double) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = DatumGetFloat8(datumarr[i]);
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal float, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+tfloat_unnest(const Temporal *temp, double **values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  double *vals = palloc(sizeof(double) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetFloat8(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the array of copies of base values of a temporal text
+ * @param[in] temp Temporal value
+ * @param[out] count Number of values in the output array
+ */
+text **
+ttext_values(const Temporal *temp, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(count, NULL); 
+  Datum *datumarr = temporal_values_p(temp, count);
+  text **result = palloc(sizeof(text *) * *count);
+  for (int i = 0; i < *count; i++)
+    result[i] = text_copy(DatumGetTextP(datumarr[i]));
+  pfree(datumarr);
+  return result;
+}
+
+/**
+ * @ingroup meos_temporal_transf
+ * @brief Return the distinct values of a temporal text, each with the span set on
+ * which it is taken
+ * @param[in] temp Temporal value
+ * @param[out] values Array of the distinct values
+ * @param[out] count Number of values in the output arrays
+ * @return Array of span sets, the i-th one the time on which @p temp takes
+ * the i-th value
+ * @csqlfn #Temporal_unnest()
+ */
+SpanSet **
+ttext_unnest(const Temporal *temp, text ***values, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(values, NULL);
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+
+  Datum *datums;
+  SpanSet **result = temporal_unnest(temp, &datums, count);
+  /* The datums are copies, so the values take them over */
+  text **vals = palloc(sizeof(text *) * *count);
+  for (int i = 0; i < *count; i++)
+    vals[i] = DatumGetTextP(datums[i]);
+  *values = vals;
+  pfree(datums);
+  return result;
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal boolean
+ * @param[in] temp Temporal value
+ * @csqlfn #Temporal_start_value()
+ */
+bool
+tbool_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, false);
+  return DatumGetBool(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal integer
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Temporal_start_value()
+ */
+int
+tint_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, INT_MAX);
+  return DatumGetInt32(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @errval INT64_MAX
+ * @csqlfn #Temporal_start_value()
+ */
+int64
+tbigint_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the start value of a temporal float
+ * @param[in] temp Temporal value
+ * @errval DBL_MAX
+ * @csqlfn #Temporal_start_value()
+ */
+double
+tfloat_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, DBL_MAX);
+  return DatumGetFloat8(temporal_start_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the start value of a temporal text
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_start_value()
+ */
+text *
+ttext_start_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL);
+  return DatumGetTextP(temporal_start_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal boolean
+ * @param[in] temp Temporal value
+ * @csqlfn #Temporal_end_value()
+ */
+bool
+tbool_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, false);
+  return DatumGetBool(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal integer
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Temporal_end_value()
+ */
+int
+tint_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, INT_MAX);
+  return DatumGetInt32(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @errval INT64_MAX
+ * @csqlfn #Temporal_end_value()
+ */
+int64
+tbigint_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the end value of a temporal float
+ * @param[in] temp Temporal value
+ * @errval DBL_MAX
+ * @csqlfn #Temporal_end_value()
+ */
+double
+tfloat_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, DBL_MAX);
+  return DatumGetFloat8(temporal_end_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the end value of a temporal text
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_end_value()
+ */
+text *
+ttext_end_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL);
+  return DatumGetTextP(temporal_end_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal integer
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Temporal_min_value()
+ */
+int
+tint_min_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, INT_MAX);
+  return DatumGetInt32(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @errval INT64_MAX
+ * @csqlfn #Temporal_min_value()
+ */
+int64
+tbigint_min_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the minimum value of a temporal float
+ * @param[in] temp Temporal value
+ * @errval DBL_MAX
+ * @csqlfn #Temporal_min_value()
+ */
+double
+tfloat_min_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, DBL_MAX);
+  return DatumGetFloat8(temporal_min_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the minimum value of a temporal text
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_min_value()
+ */
+text *
+ttext_min_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL);
+  return DatumGetTextP(temporal_min_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal integer
+ * @param[in] temp Temporal value
+ * @errval INT_MAX
+ * @csqlfn #Temporal_max_value()
+ */
+int
+tint_max_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, INT_MAX);
+  return DatumGetInt32(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @errval INT64_MAX
+ * @csqlfn #Temporal_max_value()
+ */
+int64
+tbigint_max_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, INT64_MAX);
+  return DatumGetInt64(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the maximum value of a temporal float
+ * @param[in] temp Temporal value
+ * @errval DBL_MAX
+ * @csqlfn #Temporal_max_value()
+ */
+double
+tfloat_max_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, DBL_MAX);
+  return DatumGetFloat8(temporal_max_value(temp));
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the maximum value of a temporal text
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Temporal_max_value()
+ */
+text *
+ttext_max_value(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL);
+  return DatumGetTextP(temporal_max_value(temp));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal boolean
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tbool_value_n(const Temporal *temp, int n, bool *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBOOL(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetBool(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal integer
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tint_value_n(const Temporal *temp, int n, int *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetInt32(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal big integer
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tbigint_value_n(const Temporal *temp, int64 n, int64 *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetInt64(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return the n-th value of a temporal float
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+tfloat_value_n(const Temporal *temp, int n, double *result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetFloat8(dresult);
+  return true;
+}
+
+/**
+ * @ingroup meos_temporal_accessor
+ * @brief Return a copy of the n-th value of a temporal text
+ * @param[in] temp Temporal value
+ * @param[in] n Number
+ * @param[out] result Value
+ * @csqlfn #Temporal_value_n()
+ */
+bool
+ttext_value_n(const Temporal *temp, int n, text **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, false); VALIDATE_NOT_NULL(result, false);
+  Datum dresult;
+  if (! temporal_value_n(temp, n, &dresult))
+    return false;
+  *result = DatumGetTextP(dresult);
+  return true;
 }
 
 /*****************************************************************************
