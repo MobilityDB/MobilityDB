@@ -272,6 +272,9 @@ typedef struct JsonPathParseResult
 
 extern JsonPathParseResult *parsejsonpath(const char *str, int len,
   struct Node *escontext);
+/* MEOS: the parse tree has no memory context to reclaim it, so a parse
+ * frees what it builds, on success and when the grammar refuses the path */
+extern void freeJsonPathParseItem(JsonPathParseItem *item);
 
 extern bool jspConvertRegexFlags(uint32 xflags, int *result,
   struct Node *escontext UNUSED);

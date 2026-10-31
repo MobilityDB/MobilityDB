@@ -188,6 +188,11 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   each number type its value span lists in `nadtypes:`, the span directions: `tbox`
   writes the 16 wrappers of `tnumber_distance.c` from `NAD_tbox_tbox` through
   `NAD_tnumber_tnumber`.
+  A box type listing `nadpairs:` takes `templates/nadpairs.c.tmpl` instead, one
+  wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, each
+  reading the optional earth model and followed by the procedure of its operator:
+  `stbox` writes the 10 wrappers of `tgeo_distance.c` from `NAD_geo_stbox` through
+  `NAD_tgeo_stbox_opr`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
