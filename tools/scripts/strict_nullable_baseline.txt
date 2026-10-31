@@ -27,31 +27,13 @@ mobilitydb/sql/geo/076_tpoint_analytics.in.sql	scale(tgeompoint, geometry, origi
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeq(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSet(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSetGaps(th3index[], maxt interval)	not strict
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathExists(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_exists.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathExistsTz(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_exists.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathMatch(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_match.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathMatchTz(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_match.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryArray(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_query_array.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryArrayTz(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_query_array.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryFirst(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_query_first.vars
-mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetPathQueryFirstTz(jsonbset, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonbset_path_query_first.vars
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetSetLax(jsonbset, path text[], val jsonb, create_missing boolean, handle_null text)	arg 2 untagged jsonbset_set.newjb
 mobilitydb/sql/json/451_jsonbset_jsonfuncs.in.sql	jsonbsetSetLax(jsonbset, path text[], val jsonb, create_missing boolean, handle_null text)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeq(tjsonb, text)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSet(tjsonb)	not strict
 mobilitydb/sql/json/452_tjsonb.in.sql	tjsonbSeqSetGaps(tjsonb[], maxt interval)	not strict
-mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbPathQuery(jsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonb_path_query_all.vars
-mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbPathQueryTz(jsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict jsonb_path_query_all.vars
 mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbSetLax(jsonb, path text[], val jsonb, create_missing boolean, handle_null text)	arg 2 untagged pg_jsonb_set_lax.newjb
 mobilitydb/sql/json/453_jsonb_jsonfuncs.in.sql	jsonbSetLax(jsonb, path text[], val jsonb, create_missing boolean, handle_null text)	not strict
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathExists(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_exists.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathExistsTz(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_exists.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathMatch(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_match.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathMatchTz(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_match.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryArray(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_array.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryArrayTz(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_array.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryFirst(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_first.vars
-mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbPathQueryFirstTz(tjsonb, jsonpath, vars jsonb, silent boolean)	arg 2 strict tjsonb_path_query_first.vars
 mobilitydb/sql/json/454_tjsonb_jsonfuncs.in.sql	tjsonbSet(tjsonb, path text[], val jsonb, create_missing boolean)	arg 2 strict tjsonb_set.newjb
 mobilitydb/sql/npoint/302_tnpoint.in.sql	tnpointSeq(tnpoint, text)	not strict
 mobilitydb/sql/npoint/302_tnpoint.in.sql	tnpointSeqSet(tnpoint, text)	not strict

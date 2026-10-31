@@ -600,12 +600,46 @@ jsonbset_insert(const Set *set, text **path_elems, int path_len,
 /*****************************************************************************/
 
 /**
+ * @ingroup meos_internal_json_set_json
+ * @brief Return for every value of a JSONB set whether a JSON path expression
+ * returns at least one item for it
+ * @param[in] set JSONB set
+ * @param[in] jp JSON path expression
+ * @param[in] vars JSON variables, NULL for none
+ * @param[in] silent When true, the following errors are suppressed: missing
+ * object field or array element, unexpected JSON item type, datetime and
+ * numeric errors, when false, no errors are suppressed
+ * @param[in] tz When true, support comparisons of date/time values that
+ * require timezone-aware conversions, false otherwise
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Jsonbset_path_exists(), #Jsonbset_path_exists_tz()
+ */
+bool *
+jsonbset_path_exists_intl(const Set *set, const JsonPath *jp,
+  const Jsonb *vars, bool silent, bool tz, int *count)
+{
+  assert(set); assert(set->settype == T_JSONBSET); assert(jp);
+  assert(count);
+
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_jsonb_path_exists;
+  lfinfo.argtype[0] = T_JSONBSET;
+  lfinfo.numparam = 4;
+  lfinfo.param[0] = PointerGetDatum(jp);
+  lfinfo.param[1] = PointerGetDatum(vars);
+  lfinfo.param[2] = BoolGetDatum(silent);
+  lfinfo.param[3] = BoolGetDatum(tz);
+  return lfunc_set_bool(set, &lfinfo, count);
+}
+
+/**
  * @ingroup meos_json_set_json
  * @brief Return for every value of a JSONB set whether a JSON path expression
  * returns at least one item for it
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -620,11 +654,37 @@ jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
+  VALIDATE_NOT_NULL(vars, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return jsonbset_path_exists_intl(set, jp, vars, silent, tz, count);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_internal_json_set_json
+ * @brief Return for every value of a JSONB set the result of a JSON path
+ * predicate check
+ * @param[in] set JSONB set
+ * @param[in] jp JSON path expression
+ * @param[in] vars JSON variables, NULL for none
+ * @param[in] silent When true, the following errors are suppressed: missing
+ * object field or array element, unexpected JSON item type, datetime and
+ * numeric errors, when false, no errors are suppressed
+ * @param[in] tz When true, support comparisons of date/time values that
+ * require timezone-aware conversions, false otherwise
+ * @param[out] count Number of values in the output array
+ * @csqlfn #Jsonbset_path_match(), #Jsonbset_path_match_tz()
+ */
+bool *
+jsonbset_path_match_intl(const Set *set, const JsonPath *jp,
+  const Jsonb *vars, bool silent, bool tz, int *count)
+{
+  assert(set); assert(set->settype == T_JSONBSET); assert(jp);
+  assert(count);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_jsonb_path_exists;
+  lfinfo.func = (varfunc) &datum_jsonb_path_match;
   lfinfo.argtype[0] = T_JSONBSET;
   lfinfo.numparam = 4;
   lfinfo.param[0] = PointerGetDatum(jp);
@@ -634,15 +694,13 @@ jsonbset_path_exists(const Set *set, const JsonPath *jp, const Jsonb *vars,
   return lfunc_set_bool(set, &lfinfo, count);
 }
 
-/*****************************************************************************/
-
 /**
  * @ingroup meos_json_set_json
  * @brief Return for every value of a JSONB set the result of a JSON path
  * predicate check
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -657,18 +715,8 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
-  VALIDATE_NOT_NULL(count, NULL);
-
-  LiftedFunctionInfo lfinfo;
-  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  lfinfo.func = (varfunc) &datum_jsonb_path_match;
-  lfinfo.argtype[0] = T_JSONBSET;
-  lfinfo.numparam = 4;
-  lfinfo.param[0] = PointerGetDatum(jp);
-  lfinfo.param[1] = PointerGetDatum(vars);
-  lfinfo.param[2] = BoolGetDatum(silent);
-  lfinfo.param[3] = BoolGetDatum(tz);
-  return lfunc_set_bool(set, &lfinfo, count);
+  VALIDATE_NOT_NULL(vars, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return jsonbset_path_match_intl(set, jp, vars, silent, tz, count);
 }
 
 /*****************************************************************************/
@@ -679,7 +727,7 @@ jsonbset_path_match(const Set *set, const JsonPath *jp, const Jsonb *vars,
  * set
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -693,6 +741,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -716,7 +765,7 @@ jsonbset_path_query_array(const Set *set, const JsonPath *jp,
  * @details If there are no items, return NULL.
  * @param[in] set JSONB set
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -730,6 +779,7 @@ jsonbset_path_query_first(const Set *set, const JsonPath *jp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

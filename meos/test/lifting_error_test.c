@@ -116,13 +116,14 @@ int main(void)
 
   /* A predicate applied to each element of a set */
   JsonPath *root = jsonpath_in("$");
+  Jsonb *novars = jsonb_in("{}");
   Set *mixed = jsonbset_in("{\"true\", \"3\"}");
   Set *booleans = jsonbset_in("{\"true\", \"false\"}");
   int count = 0;
   liftcheck_report("path match of a set holding a number",
-    jsonbset_path_match(mixed, root, NULL, false, false, &count), true);
+    jsonbset_path_match(mixed, root, novars, false, false, &count), true);
   liftcheck_report("path match of a set of Booleans",
-    jsonbset_path_match(booleans, root, NULL, false, false, &count), false);
+    jsonbset_path_match(booleans, root, novars, false, false, &count), false);
 
   /* The error reported is the one the function raised: an integer sum
    * overflowing in a sequence, in a step sequence whose exclusive upper bound
@@ -159,8 +160,8 @@ int main(void)
   meos_errno_reset();
 
   free(expbig); free(expsmall); free(floatbig); free(floatsmall);
-  free(scalar); free(arrays); free(root); free(mixed); free(booleans);
-  free(intsmall);
+  free(scalar); free(arrays); free(root); free(novars); free(mixed);
+  free(booleans); free(intsmall);
 
   printf("%d unexpected answers\n", failures);
   meos_finalize();

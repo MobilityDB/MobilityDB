@@ -898,7 +898,10 @@ Jsonbset_path_exists_common(FunctionCallInfo fcinfo, bool tz)
   }
   /* Compute the result */
   int count;
-  bool *result = jsonbset_path_exists(set, jp, vars, silent, tz, &count);
+  /* The operators take no variables */
+  bool *result = vars ?
+    jsonbset_path_exists(set, jp, vars, silent, tz, &count) :
+    jsonbset_path_exists_intl(set, jp, NULL, silent, tz, &count);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(jp, 1);
@@ -973,7 +976,10 @@ Jsonbset_path_match_common(FunctionCallInfo fcinfo, bool tz)
   }
   /* Compute the result */
   int count;
-  bool *result = jsonbset_path_match(set, jp, vars, silent, tz, &count);
+  /* The operators take no variables */
+  bool *result = vars ?
+    jsonbset_path_match(set, jp, vars, silent, tz, &count) :
+    jsonbset_path_match_intl(set, jp, NULL, silent, tz, &count);
   /* Clean up and return */
   PG_FREE_IF_COPY(set, 0);
   PG_FREE_IF_COPY(jp, 1);

@@ -1734,12 +1734,12 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_json
+ * @ingroup meos_internal_json_json
  * @brief Return true if a JSON path expression returns at least one item for a
  * temporal JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables, NULL for none
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1748,11 +1748,10 @@ tjsonb_insert(const Temporal *temp, text **path_elems, int path_len,
  * @csqlfn #Tjsonb_path_exists(), #Tjsonb_path_exists_tz()
  */
 Temporal *
-tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
-  bool silent, bool tz)
+tjsonb_path_exists_intl(const Temporal *temp, const JsonPath *jp,
+  const Jsonb *vars, bool silent, bool tz)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  assert(temp); assert(temp->temptype == T_TJSONB); assert(jp);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1767,15 +1766,39 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_json_json
+ * @brief Return true if a JSON path expression returns at least one item for a
+ * temporal JSONB value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] jp JSON path expression
+ * @param[in] vars JSON variables
+ * @param[in] silent When true, the following errors are suppressed: missing
+ * object field or array element, unexpected JSON item type, datetime and
+ * numeric errors, when false, no errors are suppressed
+ * @param[in] tz When true, support comparisons of date/time values that
+ * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_exists(), #Tjsonb_path_exists_tz()
+ */
+Temporal *
+tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
+  bool silent, bool tz)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
+  return tjsonb_path_exists_intl(temp, jp, vars, silent, tz);
+}
+
 /*****************************************************************************/
 
 /**
- * @ingroup meos_json_json
+ * @ingroup meos_internal_json_json
  * @brief Return the result of a JSON path predicate check of a temporal JSONB
  * value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables, NULL for none
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1784,11 +1807,10 @@ tjsonb_path_exists(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * @csqlfn #Tjsonb_path_match(), #Tjsonb_path_match_tz()
  */
 Temporal *
-tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
-  bool silent, bool tz)
+tjsonb_path_match_intl(const Temporal *temp, const JsonPath *jp,
+  const Jsonb *vars, bool silent, bool tz)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  assert(temp); assert(temp->temptype == T_TJSONB); assert(jp);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1803,6 +1825,30 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_json_json
+ * @brief Return the result of a JSON path predicate check of a temporal JSONB
+ * value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] jp JSON path expression
+ * @param[in] vars JSON variables
+ * @param[in] silent When true, the following errors are suppressed: missing
+ * object field or array element, unexpected JSON item type, datetime and
+ * numeric errors, when false, no errors are suppressed
+ * @param[in] tz When true, support comparisons of date/time values that
+ * require timezone-aware conversions, false otherwise
+ * @csqlfn #Tjsonb_path_match(), #Tjsonb_path_match_tz()
+ */
+Temporal *
+tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
+  bool silent, bool tz)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
+  return tjsonb_path_match_intl(temp, jp, vars, silent, tz);
+}
+
 /*****************************************************************************/
 
 /**
@@ -1811,7 +1857,7 @@ tjsonb_path_match(const Temporal *temp, const JsonPath *jp, const Jsonb *vars,
  * JSONB value
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1825,6 +1871,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -1849,7 +1896,7 @@ tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp,
  * @details If there are no items, return NULL.
  * @param[in] temp Temporal JSONB value
  * @param[in] jp JSON path expression
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -1863,6 +1910,7 @@ tjsonb_path_query_first(const Temporal *temp, const JsonPath *jp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(jp, NULL);
+  VALIDATE_NOT_NULL(vars, NULL);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));

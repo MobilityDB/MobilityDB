@@ -401,7 +401,7 @@ static void checkTimezoneIsUsedForCast(bool useTz, const char *type1,
  * on our own.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -415,6 +415,22 @@ int
 jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return -1;
+  }
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return -1;
+  }
+  if (! vars)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return -1;
+  }
   return pg_jsonb_path_exists(jb, jp, vars, silent, tz);
 }
 #endif /* MEOS */
@@ -440,7 +456,7 @@ pg_jsonb_path_exists(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * handling
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -454,6 +470,22 @@ bool
 jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return false;
+  }
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return false;
+  }
+  if (! vars)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return false;
+  }
   return pg_jsonb_path_match(jb, jp, vars, silent, tz);
 }
 #endif /* MEOS */
@@ -491,7 +523,7 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
  * JSONB array
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -505,6 +537,22 @@ Jsonb *
 jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! vars)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_path_query_array(jb, jp, vars, silent, tz);
 }
 #endif /* MEOS */
@@ -527,7 +575,7 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
  * item. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -541,6 +589,22 @@ Jsonb *
 jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! vars)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_path_query_first(jb, jp, vars, silent, tz);
 }
 #endif /* MEOS */
@@ -564,7 +628,7 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
  * a C array. If there are no items, return NULL.
  * @param[in] jb JSONB value
  * @param[in] jp JSON path
- * @param[in] vars JSON variables @nullable
+ * @param[in] vars JSON variables
  * @param[in] silent When true, the following errors are suppressed: missing
  * object field or array element, unexpected JSON item type, datetime and
  * numeric errors, when false, no errors are suppressed
@@ -579,6 +643,27 @@ Jsonb **
 jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz, int *count)
 {
+  /* Ensure the validity of the arguments */
+  if (! jb)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! jp)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! vars)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  if (! count)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   return pg_jsonb_path_query_all(jb, jp, vars, silent, tz, count);
 }
 Jsonb **
@@ -2992,9 +3077,10 @@ getJsonPathVariable(JsonPathExecContext *cxt, JsonPathItem *variable,
       (v = cxt->getVar(cxt->vars, varName, varNameLength, &baseObject,
         &baseObjectId)) == NULL)
   {
+    char *name = pnstrdup(varName, varNameLength);
     meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
-      "could not find jsonpath variable \"%s\"",
-      pnstrdup(varName, varNameLength));
+      "could not find jsonpath variable \"%s\"", name);
+    pfree(name);
     return;
   }
   if (baseObjectId > 0)
@@ -3002,6 +3088,8 @@ getJsonPathVariable(JsonPathExecContext *cxt, JsonPathItem *variable,
     *value = *v;
     setBaseObject(cxt, &baseObject, baseObjectId);
   }
+  /* The item holds a copy of the value the callback allocates */
+  pfree(v);
   return;
 }
 
