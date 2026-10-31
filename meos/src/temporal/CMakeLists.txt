@@ -74,12 +74,8 @@ set(TEMPORAL_SOURCES
 if(MEOS)
   list(APPEND TEMPORAL_SOURCES
     lifting_meos.c
-    set_aggfuncs_meos.c
-    set_ops_meos.c
     span_tile_meos.c
     span_aggfuncs_meos.c
-    span_ops_meos.c
-    spanset_ops_meos.c
     tbool_ops_meos.c
     temporal_aggfuncs_meos.c
     temporal_boxops_meos.c
@@ -89,9 +85,7 @@ if(MEOS)
     temporal_restrict_meos.c
     temporal_tile_meos.c
     tinstant_meos.c
-    tnumber_distance_meos.c
     tnumber_mathfuncs_meos.c
-    tsequence_meos.c
     tsequenceset_meos.c
     ttext_funcs_meos.c
 )

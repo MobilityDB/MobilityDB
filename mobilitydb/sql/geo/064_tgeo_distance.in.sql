@@ -32,6 +32,8 @@
  * @brief Distance functions for temporal geometries/geographies
  */
 
+-- GENERATED-DISTANCE-BEGIN tgeo — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 /*****************************************************************************
  * Distance functions
  *****************************************************************************/
@@ -311,3 +313,4 @@ CREATE FUNCTION shortestLine(tgeography, tgeography, spheroid boolean DEFAULT tr
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END tgeo
