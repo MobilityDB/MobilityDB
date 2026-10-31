@@ -116,6 +116,47 @@ a test that fails on the file of master and passes on the fix:
 
 A JSON path the grammar refuses leaves the parse's partial items, lists and scanner strings unfreed, which PostgreSQL reclaims with its memory context and MEOS does not: valgrind finds 3 blocks lost by the four refused paths of `json_inout_validity_test`, so the JSON path branch carries the freeing of a refused parse with its fix (12 item constructors and 8 list sites in `jsonpath_gram.c`, the string buffer of `jsonpath_scan.c`).
 
-The work in flight that depends on this: the pose sort keys (D9.13, `meos/sortkey-pose`), rebased
-on master once the branch merges, and the box order of NaN bounds (`fix/stbox-order-nan-bounds`),
-set aside, since no box holds a NaN.
+The work that depends on this: the pose sort keys (D9.13, `meos/sortkey-pose`), rebased on master
+`cde4a92732` with `pose_cmp` and `posechain_cmp` keeping `<` and `>`, and the box order of NaN
+bounds (`fix/stbox-order-nan-bounds`, on the fork), set aside, since no box holds a NaN.
+
+## 4. Next: every MEOS value is a finite number, and the double sentinel
+
+**State:** planned, to start once the NaN work of section 3 is closed (owner, 2026-10-31). Two PRs,
+in this order.
+
+**PR 1, the finite rule.** Every input refuses a NaN and ±Infinity; an operation whose result
+leaves the doubles from finite operands raises "value out of range", as PostgreSQL's float8
+arithmetic does (`float8_pl` already raises it for `datum_add`). Measured on master `089206e021`,
+the inputs disagree today: float spans, sets, `tbox` value spans and temporal float values accept
+Infinity; `tstzspan`, `tstzset` and a temporal value at `infinity` refuse it; `POINT(Infinity 1)` is
+refused while `POINT(1e400 1)` and `geompoint_make2d` with an infinite coordinate are accepted;
+`STBOX X((1,1),(Infinity,2))` and a circular buffer of radius Infinity are accepted; a pose refuses
+an infinite position and infinite angles. The rule closes these, and it is the domain of the CGAL
+oracle, which reads every double as the rational it holds. The work extends what section 3 built:
+`ensure_not_nan` (352 calls in 57 files) tests `isfinite` and is named `ensure_finite`;
+`ensure_not_nan_geo` (8 calls) and its coordinate walk likewise; `ensure_not_nan_result` (13
+calls) becomes the overflow test; `check_nan_guards.py` reads the new name; `nan_refusal_test.c`
+and the census gain ±Infinity in every input class. Left to measure: the results that overflow
+from finite operands outside the generic arithmetic (about 10 raw double sites in the temporal code
+and the distance kernels for coordinates near ±1e308). Unaffected: the 68 `INFINITY`/`HUGE_VAL`
+uses of the geometry kernels (interval bounds, `nextafter` directions) and the index-internal
+"no distance" keys and unbounded node boxes, none of which crosses a public entry. Three SQL test
+files name infinity, each as an error case whose message changes, harvested from strict-ci. The
+manual names infinity in 4 lines. Receipts: strict-ci, Windows, cppcheck, valgrind, the CGAL
+oracle and the speed probe. Owner to decide: an unbounded float span, `[0, Infinity)`, is then
+written with a large finite bound, or spans gain an unbounded flag as PostgreSQL ranges have.
+
+**PR 2, the double sentinel.** The rule that an error sentinel lies outside the value domain of
+its function (decided by the owner, 2026-09-09) is met by `INT_MAX` and `INT64_MAX` (comparators
+answer -1, 0 or 1, and a temporal integer refuses the maximum of its type since #3210), and is not
+met by `DBL_MAX`, which 107 functions document as their error value although it is a value they
+can answer: `float_round(DBL_MAX, 0)` answers `DBL_MAX`. Once PR 1 refuses ±Infinity as a value
+and raises on overflow, +Infinity is the one double no function answers, so it is the sentinel the
+rule derives; it sorts after every distance, strictly, and lies in the return type, as the typed
+bindings require. Two commits: the double sentinel is named once, beside `distance_sentinel`, and
+the 88 `result == DBL_MAX` tests of the PostgreSQL wrappers (18 files) and the 12 of MEOS call it,
+no answer changing; then its value moves to +Infinity with the 107 `@errval` tags, the `EXPECTED`
+and `ALIASES` maps of `check_error_sentinels.py` and `distance_sentinel(T_FLOAT8)`, the bindings
+regenerating from the catalog. Owner to approve: the change of the documented error value of the
+107 functions.
