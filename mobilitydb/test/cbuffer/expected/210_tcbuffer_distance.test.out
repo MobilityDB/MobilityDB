@@ -1015,3 +1015,39 @@ SELECT minDistance(ARRAY[]::tcbuffer[], ARRAY[tcbuffer 'Cbuffer(Point(0 0),1)@20
             
 (1 row)
 
+SELECT distance(cbuffer 'Cbuffer(Point(-1e308 0),1)', geometry 'Point(1e308 0)');
+ERROR:  value out of range: overflow
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1)@2001-01-01, Cbuffer(Point(-1e308 4),1)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+ERROR:  value out of range: overflow
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1)@2001-01-01, Cbuffer(Point(-1e308 4),1)@2001-01-02]' <-> geometry 'Linestring(1e308 -1,1e308 1)';
+ERROR:  value out of range: overflow
+SELECT distance(cbuffer 'Cbuffer(Point(-1e308 0),1.5e308)', geometry 'Point(1e308 0)');
+ distance 
+----------
+   5e+307
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+ ?column? 
+----------
+   5e+307
+(1 row)
+
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]' <-> geometry 'Linestring(1e308 -1,1e308 1)';
+                                  ?column?                                  
+----------------------------------------------------------------------------
+ [5e+307@Mon Jan 01 00:00:00 2001 PST, 5e+307@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]', geometry 'Linestring(1e308 -1,1e308 1)'));
+           st_astext           
+-------------------------------
+ LINESTRING(5e+307 0,1e+308 0)
+(1 row)
+
+SELECT getTimestamp(nearestApproachInstant(tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]', geometry 'Linestring(1e308 -1,1e308 1)'));
+         gettimestamp         
+------------------------------
+ Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

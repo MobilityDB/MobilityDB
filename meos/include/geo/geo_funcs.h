@@ -648,6 +648,14 @@ extern bool ensure_point_type(const GSERIALIZED *gs);
 extern bool ensure_mline_type(const GSERIALIZED *gs);
 extern bool ensure_not_empty(const GSERIALIZED *gs);
 extern bool ensure_finite_geo(const GSERIALIZED *gs);
+/** @brief Magnitude of a coordinate from which a difference of two can
+ * leave the safe range of the distance kernels (#geom_distance2d) */
+#define GEO_FAR_MAGNITUDE 0x1p1019
+/** @brief Power of two by which a distance reads geometries reaching
+ * #GEO_FAR_MAGNITUDE */
+#define GEO_FAR_SCALE 0x1p-5
+extern double geo_magnitude(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_scale_pow2(const GSERIALIZED *gs, double scale);
 extern long double closest_point2d_on_segment_ratio(const POINT2D *p,
   const POINT2D *A, const POINT2D *B, POINT2D *closest);
 extern long double closest_point3dz_on_segment_ratio(const POINT3DZ *p,
@@ -696,29 +704,33 @@ extern bool *pointarr_find_splits(const POINT2D **points, int npoints,
  * an exact rational, so the sign has one answer. A filter gives it where the
  * double evaluation carries it: Shewchuk's bound on the rounding of a
  * difference of two products of rounded differences, computed from the
- * operands. Two products both zero need no more: a rounded difference is zero
- * only where the two coordinates are equal, so each product has a zero
- * factor. Where the filter cannot tell otherwise, #cross_product_sign_exact
- * decides the same cross product exactly. With C = A the sign is the side of
- * the line AB that D lies on
- * @note Exact where no product of coordinate differences overflows or
- * underflows
+ * operands. The bound is relative, so it holds where the products lie clear
+ * of the subnormal range, whose rounding is absolute; a product of two
+ * nonzero differences can also underflow to zero. Two products each with a
+ * zero difference need no more: a rounded difference is zero only where the
+ * two coordinates are equal. Where the filter cannot tell otherwise,
+ * #cross_product_sign_exact decides the same cross product exactly, for any
+ * finite coordinates. With C = A the sign is the side of the line AB that D
+ * lies on
  * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
  */
 static inline int
 cross_product_sign(double ax, double ay, double bx, double by, double cx,
   double cy, double dx, double dy)
 {
-  double left = (bx - ax) * (dy - cy);
-  double right = (by - ay) * (dx - cx);
+  double l1 = bx - ax, l2 = dy - cy, r1 = by - ay, r2 = dx - cx;
+  double left = l1 * l2, right = r1 * r2;
   double det = left - right;
-  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON *
-    (fabs(left) + fabs(right));
-  if (det > bound)
-    return 1;
-  if (det < - bound)
-    return -1;
-  if (left == 0.0 && right == 0.0)
+  double mag = fabs(left) + fabs(right);
+  double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
+  if (mag >= 0x1p-969)
+  {
+    if (det > bound)
+      return 1;
+    if (det < - bound)
+      return -1;
+  }
+  if ((l1 == 0.0 || l2 == 0.0) && (r1 == 0.0 || r2 == 0.0))
     return 0;
   return cross_product_sign_exact(ax, ay, bx, by, cx, cy, dx, dy);
 }
