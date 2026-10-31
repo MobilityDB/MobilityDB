@@ -901,8 +901,12 @@ def render_spatialrels(fam: dict) -> str:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
         disp_over = pred.get("disp", {})
         meos_fixed = pred.get("meos_fixed")
+        # A direction listed in `flags` calls a dispatcher choosing its kernel
+        # itself, which takes the quantifier and that flag (the geo touches,
+        # whose dispatcher picks the point or the geometry kernel)
+        flags = pred.get("flags", {})
         for direc in pred.get("directions", order):
-            disp = disp_over.get(direc, disp_map[direc])
+            disp = disp_over[direc] if direc in disp_over else disp_map[direc]
             meos = meos_fixed or f"ea_{pred['rel']}_{kernel_dir.get(direc, direc)}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
@@ -911,7 +915,10 @@ def render_spatialrels(fam: dict) -> str:
                 # dispatcher + kernel names are long (the cbuffer base-value
                 # directions); the geo directions stay on one line unchanged.
                 eaq = "EVER" if ea == "E" else "ALWAYS"
-                ret = f"  return {disp}(fcinfo, &{meos}, {eaq});"
+                if direc in flags:
+                    ret = f"  return {disp}(fcinfo, {eaq}, {flags[direc]});"
+                else:
+                    ret = f"  return {disp}(fcinfo, &{meos}, {eaq});"
                 if len(ret) > 80:
                     ret = f"  return {disp}(fcinfo, &{meos},\n    {eaq});"
                 sub = {
