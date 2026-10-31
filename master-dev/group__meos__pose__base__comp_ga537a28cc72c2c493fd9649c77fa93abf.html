@@ -119,7 +119,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Return -1, 0, or 1 depending on whether the first pose is less than, equal to, or greater than the second one. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The poses are ordered by their dimension, planar first, then by whether they are geodetic, then by their SRID, then by their position and their orientation, value by value as they are stored, -0.0 and 0.0 being equal. A pose holds no NaN, which every input of MEOS refuses, so the order is total and holds two poses equal exactly when <a class="el" href="group__meos__pose__base__comp_ga0fe8fdbd64815816a0e7c5fc49f2850d.html#ga0fe8fdbd64815816a0e7c5fc49f2850d" title="Return true if the first pose is equal to the second one.">pose_eq</a> does, which their sort key (<a class="el" href="meos_2src_2pose_2pose_8c_ae1be03d9f969d4b9744862e7a7f5e459.html#ae1be03d9f969d4b9744862e7a7f5e459" title="Write the sort key of a pose.">pose_sortkey_put</a>) requires </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">pose1,pose2</td><td>Poses </td></tr>
   </table>
