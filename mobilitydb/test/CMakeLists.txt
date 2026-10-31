@@ -59,3 +59,7 @@ endif()
 if(S2CELL)
   add_subdirectory(s2cell)
 endif()
+if(CBUFFER AND H3 AND JSON AND NPOINT AND POINTCLOUD AND POSE AND QUADBIN AND
+    RASTER AND RGEO AND S2CELL)
+  add_subdirectory(io)
+endif()
