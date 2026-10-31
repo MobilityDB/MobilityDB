@@ -4141,7 +4141,7 @@ pg_DateTimeParseError(int dterr, DateTimeErrorExtra *extra, const char *str,
       break;
     case DTERR_BAD_FORMAT:
     default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "invalid input syntax for type %s: \"%s\"", datatype, str);
       break;
   }
