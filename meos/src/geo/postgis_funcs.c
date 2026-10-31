@@ -993,9 +993,48 @@ ring_signed_area(const double *c, uint32_t npoints, uint32_t ndims)
 }
 
 /**
+ * @brief Return the length of a segment whose largest difference of
+ * coordinates lies outside 2^-500 to 2^500
+ * @details The differences are scaled by the power of two that brings the
+ * largest into [1, 2), which is exact but where a difference far below the
+ * largest underflows, below the rounding of the length, so the squares
+ * neither overflow nor underflow, and the length is scaled back. A difference
+ * of two coordinates exceeding the largest double is taken from their halves,
+ * which are exact, and the length doubled. A length exceeding the largest
+ * double is infinite, which the measure tests (#geom_measure)
+ * @param[in] frm, to Coordinates of the ends
+ * @param[in] hasz True when the Z coordinates are measured
+ */
+static pg_noinline double
+segment_length_far(const double *frm, const double *to, bool hasz)
+{
+  double dx = to[0] - frm[0], dy = to[1] - frm[1];
+  double dz = hasz ? to[2] - frm[2] : 0.0;
+  int half = 0;
+  if (! isfinite(dx) || ! isfinite(dy) || ! isfinite(dz))
+  {
+    dx = to[0] / 2 - frm[0] / 2;
+    dy = to[1] / 2 - frm[1] / 2;
+    dz = hasz ? to[2] / 2 - frm[2] / 2 : 0.0;
+    half = 1;
+  }
+  double m = Max(Max(fabs(dx), fabs(dy)), fabs(dz));
+  if (m == 0.0)
+    return 0.0;
+  int k = ilogb(m);
+  dx = ldexp(dx, - k);
+  dy = ldexp(dy, - k);
+  dz = ldexp(dz, - k);
+  return ldexp(sqrt((dx * dx) + (dy * dy) + (dz * dz)), k + half);
+}
+
+/**
  * @brief Return the 2D length of a ring or a line of serialized coordinates
  * @details Mirrors #ptarray_length_2d term by term, in the same order, on the
- * coordinates read in place rather than through a point array
+ * coordinates read in place rather than through a point array, for a segment
+ * whose largest difference of coordinates lies within 2^-500 to 2^500 or is
+ * 0, where the squares neither overflow nor underflow; any other segment is
+ * measured scaled (#segment_length_far)
  * @param[in] c Coordinates of the ring or the line
  * @param[in] npoints Number of points
  * @param[in] ndims Number of coordinates of a point
@@ -1008,8 +1047,39 @@ ring_length_2d(const double *c, uint32_t npoints, uint32_t ndims)
   double dist = 0.0;
   const double *end = c + (size_t) npoints * ndims;
   for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
-    dist += sqrt(((frm[0] - to[0]) * (frm[0] - to[0])) +
-                 ((frm[1] - to[1]) * (frm[1] - to[1])));
+  {
+    double dx = frm[0] - to[0], dy = frm[1] - to[1];
+    double m = Max(fabs(dx), fabs(dy));
+    dist += (m <= 0x1p500 && (m >= 0x1p-500 || m == 0.0)) ?
+      sqrt((dx * dx) + (dy * dy)) : segment_length_far(frm, to, false);
+  }
+  return dist;
+}
+
+/**
+ * @brief Return the 3D length of a line of serialized coordinates
+ * @details Mirrors #ptarray_length term by term, in the same order, on the
+ * coordinates read in place rather than through a point array, measuring a
+ * segment as #ring_length_2d measures it
+ * @param[in] c Coordinates of the line
+ * @param[in] npoints Number of points
+ * @param[in] ndims Number of coordinates of a point
+ */
+static double
+line_length_3d(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 2)
+    return 0.0;
+  double dist = 0.0;
+  const double *end = c + (size_t) npoints * ndims;
+  for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
+  {
+    double dx = frm[0] - to[0], dy = frm[1] - to[1], dz = frm[2] - to[2];
+    double m = Max(Max(fabs(dx), fabs(dy)), fabs(dz));
+    dist += (m <= 0x1p500 && (m >= 0x1p-500 || m == 0.0)) ?
+      sqrt((dx * dx) + (dy * dy) + (dz * dz)) :
+      segment_length_far(frm, to, true);
+  }
   return dist;
 }
 
@@ -1096,10 +1166,14 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
     case LINETYPE:
       if (measure == WALK_LENGTH && num)
       {
-        /* The length as #lwline_length computes it, in 3D for a line with Z */
-        pa.npoints = pa.maxpoints = num;
-        pa.serialized_pointlist = (uint8_t *) (p + 8);
-        *result = ptarray_length(&pa);
+        /* The length as #lwline_length computes it, in 3D for a line with Z;
+         * the serialized form stores the coordinates as doubles aligned on 8
+         * bytes, as #poly_walk_measure reads them */
+        const void *coords = p + 8;
+        const double *c = coords;
+        uint32_t ndims = (uint32_t) FLAGS_NDIMS(flags);
+        *result = FLAGS_GET_Z(flags) ? line_length_3d(c, num, ndims) :
+          ring_length_2d(c, num, ndims);
       }
       *size = 8 + num * ptsize;
       return WALK_DONE;
@@ -1108,7 +1182,10 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
       pa.npoints = pa.maxpoints = num;
       pa.serialized_pointlist = (uint8_t *) (p + 8);
       if (measure == WALK_PERIMETER)
-        *result = ptarray_length_2d(&pa);
+      {
+        const void *coords = p + 8;
+        *result = ring_length_2d(coords, num, (uint32_t) FLAGS_NDIMS(flags));
+      }
       else if (measure == WALK_AREA && num)
       {
         /* The area as #lwtriangle_area computes it */
@@ -1274,6 +1351,49 @@ geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
 }
 
 /**
+ * @brief Return the area, the length or the perimeter of a geometry
+ * @details A length or a perimeter is walked as it is, each segment measured
+ * scaled where its squares would overflow or underflow (#ring_length_2d), and
+ * raises an error where it exceeds the largest double (#ensure_finite_result).
+ * An area multiplies differences of coordinates, which overflows beyond 2^511
+ * and underflows below 2^-511, so a geometry whose largest coordinate lies
+ * outside 2^-500 to 2^500 is read scaled by the power of two that brings it
+ * to 2^500, exactly or with an error (#geo_scale_pow2), as the analytic
+ * distances read far operands (#nad_tpoint_geo_analytic): the products of its
+ * differences stay below the largest double, and its smallest differences
+ * stay as far above the denormals as they can. A power is at most 2^1022, the
+ * largest whose inverse is a normal double, which brings a denormal largest
+ * coordinate above 2^-52. The area scales back by the square of that power
+ * and raises an error where it exceeds the largest double. Every other
+ * geometry is measured as it is
+ * @errval DBL_MAX
+ */
+static double
+geom_measure(const GSERIALIZED *gs, WalkMeasure measure)
+{
+  if (measure != WALK_AREA)
+  {
+    double length = geom_walk_measure(gs, measure);
+    if (length == DBL_MAX)
+      return DBL_MAX;
+    return ensure_finite_result(length) ? length : DBL_MAX;
+  }
+  double mag = geo_magnitude(gs);
+  if (mag == 0.0 || (mag >= 0x1p-500 && mag <= 0x1p500))
+    return geom_walk_measure(gs, measure);
+  int shift = Min(500 - ilogb(mag), DBL_MAX_EXP - 2);
+  GSERIALIZED *scaled = geo_scale_pow2(gs, ldexp(1.0, shift));
+  if (! scaled)
+    return DBL_MAX;
+  double r = geom_walk_measure(scaled, measure);
+  pfree(scaled);
+  if (r == DBL_MAX)
+    return DBL_MAX;
+  double result = ldexp(r, -2 * shift);
+  return ensure_finite_result(result) ? result : DBL_MAX;
+}
+
+/**
  * @ingroup meos_geo_base_accessor
  * @brief Return the area of a geometry
  * @details Defined by
@@ -1297,7 +1417,7 @@ geom_area(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_AREA);
+  return geom_measure(gs, WALK_AREA);
 }
 
 /**
@@ -1323,7 +1443,7 @@ geom_length(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_LENGTH);
+  return geom_measure(gs, WALK_LENGTH);
 }
 
 /**
@@ -1348,7 +1468,7 @@ geom_perimeter(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_PERIMETER);
+  return geom_measure(gs, WALK_PERIMETER);
 }
 
 /**
@@ -1852,15 +1972,19 @@ geom_distance_visit(const double *a, const double *b, const double *c,
   GeomDistanceCand **cand, const GeomDistanceCand *candstack, int *ncand,
   int *maxcand, double *minhi, double *best)
 {
-  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
-      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
-    return false;
+  /* Outside the range of the filter the pair is answered exactly by the
+   * kernel, which scales the coordinates before it tests whether the
+   * segments meet: the orientations #linesegm_intersect computes on them
+   * overflow beyond 2^512 */
   if (! filter)
   {
     double v = segment_distance_exact_bounded(a, b, c, d, ndims, big);
     *best = geom_distance_fmin(*best, v);
     return v > 0.0;
   }
+  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
+      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
+    return false;
   double lo = 0.0, hi = 0.0;
   int side = -1;
   if (ndims == 3)
@@ -1930,7 +2054,8 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * @param[in] bounds Where not NULL, a bound on the magnitude of every
  * coordinate and a bound on every difference of two of them, which spare the
  * walk its pass over the coordinates (#geom_distance3d_exact)
- * @return DBL_MAX where a list holds no point
+ * @return DBL_MAX where a list holds no point, an infinity where the distance
+ * exceeds the largest double
  */
 static pg_attribute_always_inline double
 geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
@@ -2037,10 +2162,12 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   GeomDistanceCand candstack[GEOM_DISTANCE_CANDS], *cand = candstack;
   int ncand = 0, maxcand = GEOM_DISTANCE_CANDS;
   double minhi = INFINITY, best = INFINITY;
-  bool overlap, meet = false;
+  bool overlap, meet = false, pairs = false;
   for (uint32_t k1 = 0; k1 < n1 && ! meet; k1++)
     for (uint32_t k2 = 0; k2 < n2 && ! meet; k2++)
     {
+      if (arr1[k1]->npoints > 0 && arr2[k2]->npoints > 0)
+        pairs = true;
       /* Two point arrays whose boxes lie beyond the least found hold no
        * nearer pair */
       if (boxes[0])
@@ -2104,8 +2231,9 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   for (int g = 0; g < 2; g++)
     if (boxes[g] && boxes[g] != &boxstack[g][0][0])
       pfree(boxes[g]);
-  /* A list holding no point leaves no pair */
-  return isinf(best) ? DBL_MAX : best;
+  /* A list holding no point leaves no pair, while a pair whose distance
+   * exceeds the largest double answers an infinity */
+  return pairs ? best : DBL_MAX;
 }
 
 /** Point arrays the distance walks hold on the stack, the rings and members
@@ -2608,14 +2736,23 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geom_distance_straight_type(stype1) &&
       geom_distance_straight_type(stype2))
   {
+    double result;
     if (stype1 == POINTTYPE && stype2 == POINTTYPE)
-      return point_distance_exact((const double *) GSERIALIZED_POINT2D_P(gs1),
+      result = point_distance_exact(
+        (const double *) GSERIALIZED_POINT2D_P(gs1),
         (const double *) GSERIALIZED_POINT2D_P(gs2), 2);
-    LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
-    LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
-    double result = geom_distance2d_exact(sgeom1, sgeom2);
-    lwgeom_free(sgeom1);
-    lwgeom_free(sgeom2);
+    else
+    {
+      LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
+      LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
+      result = geom_distance2d_exact(sgeom1, sgeom2);
+      lwgeom_free(sgeom1);
+      lwgeom_free(sgeom2);
+    }
+    /* The double nearest a distance of finite coordinates is infinite where
+     * the distance leaves the doubles (#ensure_finite_result) */
+    if (! ensure_finite_result(result))
+      return DBL_MAX;
     return result;
   }
 
@@ -2763,10 +2900,15 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       geom_distance3d_straight_type(ztype1) &&
       geom_distance3d_straight_type(ztype2))
   {
-    if (ztype1 == POINTTYPE && ztype2 == POINTTYPE)
-      return point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
-        (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3);
-    return geom_distance3d_exact(gs1, gs2);
+    double result = (ztype1 == POINTTYPE && ztype2 == POINTTYPE) ?
+      point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
+        (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3) :
+      geom_distance3d_exact(gs1, gs2);
+    /* The double nearest a distance of finite coordinates is infinite where
+     * the distance leaves the doubles, as #geom_distance2d raises it */
+    if (! ensure_finite_result(result))
+      return DBL_MAX;
+    return result;
   }
 
   /* Fast path: the distance between two points with Z is computed from their

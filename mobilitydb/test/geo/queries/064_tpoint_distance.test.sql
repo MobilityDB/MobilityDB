@@ -925,3 +925,20 @@ SELECT ST_AsText(shortestLine(tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)
 SELECT ST_AsText(shortestLine(tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false), 6);
 SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}'), 6);
 SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeogpoint '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', false), 6);
+
+-------------------------------------------------------------------------------
+-- Coordinates near the largest double
+
+-- A distance beyond the largest double raises an error
+SELECT tgeompoint '[Point(-1e308 0)@2001-01-01, Point(-1e308 4)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+-- The difference of two coordinates beyond the doubles, a distance within them
+SELECT round(((tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point(1.6e308 0.75)@2001-01-02]' |=| geometry 'Linestring(1.7e308 0,1.7e308 1)') / 1e306)::numeric, 6);
+SELECT ST_AsText(shortestLine(tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point(1.6e308 0.75)@2001-01-02]', geometry 'Linestring(1.7e308 0,1.7e308 1)'));
+-- A path 2e200 from an edge of length 2
+SELECT ST_AsText(shortestLine(tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]', geometry 'Linestring(1e200 -1,1e200 1)'));
+SELECT tgeompoint '[Point(-1e153 0)@2001-01-01, Point(-1e153 4)@2001-01-02]' <-> geometry 'Linestring(1e153 -1,1e153 1)';
+SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <-> geometry 'Linestring(1e200 -1,1e200 1)';
+-- Coordinates beyond 2^1021 and below 2^-1021 in one pair of segments in 3D
+SELECT round((tgeompoint '[Point(1e308 0 1e-310)@2001-01-01, Point(-1e308 1 2e-310)@2001-01-02]' |=| geometry 'Point(0 3e-310 5)')::numeric, 6);
+
+-------------------------------------------------------------------------------

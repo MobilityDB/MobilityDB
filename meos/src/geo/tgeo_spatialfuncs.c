@@ -1500,6 +1500,52 @@ tgeo_scale_factors(const Temporal *temp, const POINT4D *factors)
 }
 
 /**
+ * @brief Return the largest magnitude of the X, Y and Z coordinates of a
+ * temporal spatial value, read from its box, as #geo_magnitude reads the box
+ * of a geometry
+ * @param[in] temp Temporal spatial value
+ */
+double
+tspatial_magnitude(const Temporal *temp)
+{
+  assert(temp);
+  STBox box;
+  tspatial_set_stbox(temp, &box);
+  double result = Max(Max(fabs(box.xmin), fabs(box.xmax)),
+    Max(fabs(box.ymin), fabs(box.ymax)));
+  if (MEOS_FLAGS_GET_Z(box.flags))
+    result = Max(result, Max(fabs(box.zmin), fabs(box.zmax)));
+  return result;
+}
+
+/**
+ * @brief Return a temporal geo whose coordinates are scaled by a power of
+ * two, or NULL with an error where the scaling is not exact, as
+ * #geo_scale_pow2 tests it
+ * @param[in] temp Temporal geo
+ * @param[in] scale Power of two
+ */
+Temporal *
+tgeo_scale_pow2(const Temporal *temp, double scale)
+{
+  assert(temp); assert(scale > 0.0);
+  POINT4D f = {.x = scale, .y = scale, .z = scale, .m = 1.0};
+  POINT4D b = {.x = 1.0 / scale, .y = 1.0 / scale, .z = 1.0 / scale,
+    .m = 1.0};
+  Temporal *result = tgeo_scale_factors(temp, &f);
+  Temporal *back = tgeo_scale_factors(result, &b);
+  bool exact = temporal_eq(temp, back);
+  pfree(back);
+  if (exact)
+    return result;
+  pfree(result);
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "A temporal value with coordinates near the largest and the smallest "
+    "doubles cannot be measured exactly");
+  return NULL;
+}
+
+/**
  * @ingroup meos_internal_geo_transf
  * @brief Return a temporal geo scaled by the factors a point states, about an
  * origin or none

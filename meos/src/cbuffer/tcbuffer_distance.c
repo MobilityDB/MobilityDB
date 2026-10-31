@@ -43,6 +43,8 @@
 #include "temporal/tinstant.h"
 #include "temporal/tsequence.h"
 #include "temporal/tsequenceset.h"
+#include "temporal/tnumber_mathfuncs.h"
+#include "temporal/type_util.h"
 #include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
@@ -545,6 +547,31 @@ tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, as #nad_tcbuffer_geo_analytic reads them, and the distances are
+   * scaled back, which raises an error where one exceeds the largest double
+   * (#ensure_finite_result) */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tcbuffer_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    Temporal *dist = g2 ? tdistance_tcbuffer_geo(t2, g2) : NULL;
+    if (t2)
+      pfree(t2);
+    if (g2)
+      pfree(g2);
+    if (! dist)
+      return NULL;
+    Temporal *result = NULL;
+    if (ensure_finite_result(DatumGetFloat8(temporal_max_value(dist)) /
+        GEO_FAR_SCALE))
+      result = arithop_tnumber_number(dist,
+        Float8GetDatum(1.0 / GEO_FAR_SCALE), MUL, &datum_mul, false);
+    pfree(dist);
+    return result;
+  }
+
   DistGeom g;
   if (dist_geom_build(gs, &g))
   {
@@ -653,6 +680,25 @@ static bool
 nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   TimestampTz *result)
 {
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, as #nai_tpoint_geo_analytic reads them */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tcbuffer_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      return false;
+    }
+    /* The instant does not depend on the scale */
+    bool found = nai_tcbuffer_geo_analytic(t2, g2, result);
+    pfree(t2); pfree(g2);
+    return found;
+  }
+
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return false;
@@ -951,6 +997,24 @@ tcbufferseq_nad(const TSequence *seq, const DistGeom *g, DistNad *n)
 static double
 nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, as #nad_tpoint_geo_analytic reads them */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tcbuffer_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      return DBL_MAX;
+    }
+    double result = nad_tcbuffer_geo_analytic(t2, g2);
+    pfree(t2); pfree(g2);
+    return result / GEO_FAR_SCALE;
+  }
+
   /* A geometry that has no edge decomposition, or no segments: fall back to
    * the exact traversed-area distance so the result is never wrong */
   DistGeom g;
@@ -1069,6 +1133,30 @@ tcbuffer_at_rest(const Temporal *temp, double *c, double *r)
 static GSERIALIZED *
 shortestline_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, as #shortestline_tpoint_geo_analytic reads them */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tcbuffer_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      return NULL;
+    }
+    GSERIALIZED *line = shortestline_tcbuffer_geo_analytic(t2, g2);
+    pfree(t2); pfree(g2);
+    if (! line)
+      return NULL;
+    /* The ends of the line are points of the operands or of their discs,
+     * constructed in doubles, so the scaling back is exact */
+    GSERIALIZED *result = geo_scale_pow2(line, 1.0 / GEO_FAR_SCALE);
+    pfree(line);
+    return result;
+  }
+
   /* A disc at rest reads the geometry in place, as a point at rest does in
    * #shortestline_tpoint_geo_analytic */
   double centre[2] = {0.0, 0.0}, r = 0.0;
@@ -2064,7 +2152,12 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  return nad_tcbuffer_geo_analytic(temp, gs);
+  double result = nad_tcbuffer_geo_analytic(temp, gs);
+  /* A distance of finite operands can exceed the largest double
+   * (#ensure_finite_result) */
+  if (! ensure_finite_result(result))
+    return DBL_MAX;
+  return result;
 }
 
 /**

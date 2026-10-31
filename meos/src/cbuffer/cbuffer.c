@@ -1123,6 +1123,71 @@ datum_cbuffer_distance(Datum cb1, Datum cb2)
 /*****************************************************************************/
 
 /**
+ * @brief Return a circular buffer whose centre and radius are scaled by a
+ * power of two, or NULL with an error where the scaling is not exact, as
+ * #tcbuffer_scale_pow2 tests it
+ * @param[in] cb Circular buffer
+ * @param[in] scale Power of two
+ */
+static Cbuffer *
+cbuffer_scale_pow2(const Cbuffer *cb, double scale)
+{
+  assert(cb); assert(scale > 0.0);
+  const POINT2D *p = cbuffer_point2d_p(cb);
+  double x = p->x * scale, y = p->y * scale, r = cb->radius * scale;
+  if (x / scale == p->x && y / scale == p->y && r / scale == cb->radius)
+    return cbuffer_make_coords(cbuffer_srid(cb), x, y, r);
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "A circular buffer with coordinates near the largest and the smallest "
+    "doubles cannot be measured exactly");
+  return NULL;
+}
+
+/**
+ * @brief Return the distance between a circular buffer and a geometry,
+ * infinity where it exceeds the largest double
+ */
+static double
+cbuffer_geo_distance(const Cbuffer *cb, const GSERIALIZED *gs)
+{
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, as #nad_tcbuffer_geo reads them */
+  const POINT2D *c = cbuffer_point2d_p(cb);
+  double mag = Max(Max(fabs(c->x), fabs(c->y)), cb->radius);
+  if (Max(mag, geo_magnitude(gs)) >= GEO_FAR_MAGNITUDE)
+  {
+    Cbuffer *cb2 = cbuffer_scale_pow2(cb, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = cb2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (cb2)
+        pfree(cb2);
+      return DBL_MAX;
+    }
+    double result = cbuffer_geo_distance(cb2, g2);
+    pfree(cb2); pfree(g2);
+    return result / GEO_FAR_SCALE;
+  }
+
+  double d = geom_distance2d_disc((const double *) c, cb->radius, gs);
+  if (d >= 0.0)
+    return d;
+  DistGeom g;
+  if (dist_geom_build(gs, &g))
+  {
+    DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
+    dist_segm_nad(c->x, c->y, cb->radius, c->x, c->y, cb->radius, &g, &n);
+    double best = dist_nad_exact(&n);
+    dist_geom_free(&g);
+    return best < 0.0 ? 0.0 : best;
+  }
+  GSERIALIZED *geo = cbuffer_to_geom(cb);
+  double result = geom_distance2d(geo, gs);
+  pfree(geo);
+  return result;
+}
+
+/**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a geometry
  * @details The double nearest the distance of the geometry to the disc, the
@@ -1142,23 +1207,11 @@ distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
   if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
     return DBL_MAX;
 
-  const POINT2D *c = cbuffer_point2d_p(cb);
-  double d = geom_distance2d_disc((const double *) c, cb->radius, gs);
-  if (d >= 0.0)
-    return d;
-  DistGeom g;
-  if (dist_geom_build(gs, &g))
-  {
-    const POINT2D *p = cbuffer_point2d_p(cb);
-    DistNad n = {.best = DBL_MAX, .exact = DBL_MAX};
-    dist_segm_nad(p->x, p->y, cb->radius, p->x, p->y, cb->radius, &g, &n);
-    double best = dist_nad_exact(&n);
-    dist_geom_free(&g);
-    return best < 0.0 ? 0.0 : best;
-  }
-  GSERIALIZED *geo = cbuffer_to_geom(cb);
-  double result = geom_distance2d(geo, gs);
-  pfree(geo);
+  double result = cbuffer_geo_distance(cb, gs);
+  /* A distance of finite operands can exceed the largest double
+   * (#ensure_finite_result) */
+  if (! ensure_finite_result(result))
+    return DBL_MAX;
   return result;
 }
 
