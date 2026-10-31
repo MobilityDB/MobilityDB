@@ -235,9 +235,9 @@ SELECT tbox(bigintspan '[1,2]');
 
 /* Errors */
 SELECT tbox(float 'NaN', timestamptz '2001-01-01');
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT tbox(float 'NaN', tstzspan '[2001-01-01,2001-01-02]');
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT tbox 'TBOXFLOAT XT([1.0,2.0],[2001-01-01,2001-01-02])'::floatspan;
  floatspan 
 -----------
@@ -354,9 +354,9 @@ SELECT tstzspanset '{[2001-01-01,2001-01-02]}'::tbox;
 
 /* Errors */
 SELECT float 'NaN'::tbox;
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT numeric 'NaN'::tbox;
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT tbox 'TBOX T((2001-01-01,2001-01-02))'::floatspan;
 ERROR:  The tbox must have X dimension
 SELECT tbox 'TBOXFLOAT X([1.0, 2.0])'::tstzspan;
@@ -2105,3 +2105,5 @@ SELECT round(distance, 6) FROM test;
 
 DROP INDEX tbl_tboxfloat_kdtree_idx;
 DROP INDEX
+SELECT expandValue(tbox 'TBOXFLOAT XT([-1.7e308,1.7e308],[2001-01-01,2001-01-02])', 1.7976931348623157e308);
+ERROR:  value out of range: overflow

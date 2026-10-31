@@ -106,14 +106,39 @@ double2_set(double a, double b, double2 *result)
 
 /**
  * @brief Return the addition of the double2 values
+ * @details A value holds the sum of the values aggregated and their count, or,
+ * where that sum would exceed the largest double, their average and the
+ * count negated. Two sums are added while their sum is finite; otherwise the
+ * two averages are weighted by their shares of the count, which never
+ * exceeds the largest of the values aggregated.
  */
 double2 *
 double2_add(const double2 *d1, const double2 *d2)
 {
   double2 *result = palloc0(sizeof(double2));
-  result->a = d1->a + d2->a;
-  result->b = d1->b + d2->b;
+  if (d1->b > 0 && d2->b > 0)
+  {
+    result->a = d1->a + d2->a;
+    result->b = d1->b + d2->b;
+    if (isfinite(result->a))
+      return result;
+  }
+  double n1 = fabs(d1->b), n2 = fabs(d2->b), n = n1 + n2;
+  double w1 = n1 / n, w2 = n2 / n;
+  double m1 = d1->b > 0 ? d1->a / n1 : d1->a;
+  double m2 = d2->b > 0 ? d2->a / n2 : d2->a;
+  result->a = m1 * w1 + m2 * w2;
+  result->b = -n;
   return result;
+}
+
+/**
+ * @brief Return the average held by a double2 value of #double2_add
+ */
+double
+double2_avg(const double2 *d)
+{
+  return d->b > 0 ? d->a / d->b : d->a;
 }
 
 /**
@@ -176,14 +201,26 @@ double3_set(double a, double b, double c, double3 *result)
 
 /**
  * @brief Return the addition of the double3 values
+ * @details As #double2_add, with the count in @p c
  */
 double3 *
 double3_add(const double3 *d1, const double3 *d2)
 {
   double3 *result = palloc0(sizeof(double3));
-  result->a = d1->a + d2->a;
-  result->b = d1->b + d2->b;
-  result->c = d1->c + d2->c;
+  if (d1->c > 0 && d2->c > 0)
+  {
+    result->a = d1->a + d2->a;
+    result->b = d1->b + d2->b;
+    result->c = d1->c + d2->c;
+    if (isfinite(result->a) && isfinite(result->b))
+      return result;
+  }
+  double n1 = fabs(d1->c), n2 = fabs(d2->c), n = n1 + n2;
+  double w1 = n1 / n, w2 = n2 / n;
+  double s1 = d1->c > 0 ? n1 : 1.0, s2 = d2->c > 0 ? n2 : 1.0;
+  result->a = (d1->a / s1) * w1 + (d2->a / s2) * w2;
+  result->b = (d1->b / s1) * w1 + (d2->b / s2) * w2;
+  result->c = -n;
   return result;
 }
 
@@ -249,15 +286,28 @@ double4_set(double a, double b, double c, double d, double4 *result)
 
 /**
  * @brief Return the addition of the double4 values
+ * @details As #double2_add, with the count in @p d
  */
 double4 *
 double4_add(const double4 *d1, const double4 *d2)
 {
   double4 *result = palloc0(sizeof(double4));
-  result->a = d1->a + d2->a;
-  result->b = d1->b + d2->b;
-  result->c = d1->c + d2->c;
-  result->d = d1->d + d2->d;
+  if (d1->d > 0 && d2->d > 0)
+  {
+    result->a = d1->a + d2->a;
+    result->b = d1->b + d2->b;
+    result->c = d1->c + d2->c;
+    result->d = d1->d + d2->d;
+    if (isfinite(result->a) && isfinite(result->b) && isfinite(result->c))
+      return result;
+  }
+  double n1 = fabs(d1->d), n2 = fabs(d2->d), n = n1 + n2;
+  double w1 = n1 / n, w2 = n2 / n;
+  double s1 = d1->d > 0 ? n1 : 1.0, s2 = d2->d > 0 ? n2 : 1.0;
+  result->a = (d1->a / s1) * w1 + (d2->a / s2) * w2;
+  result->b = (d1->b / s1) * w1 + (d2->b / s2) * w2;
+  result->c = (d1->c / s1) * w1 + (d2->c / s2) * w2;
+  result->d = -n;
   return result;
 }
 
@@ -341,7 +391,9 @@ double4_collinear(const double4 *x1, const double4 *x2, const double4 *x3,
  * @param[in] start,end Values defining the segment
  * @param[in] ratio Value between 0 and 1 representing the fraction of the
  * total length of the segment where the value must be located
- * @note Function used for determining the value of a segment at a timestamp
+ * @note Function used for determining the value of a segment at a timestamp.
+ * The count is the same along a segment, so where one end holds a sum and the
+ * other an average (#double2_add), both are interpolated as averages.
  */
 double2 *
 double2segm_interpolate(const double2 *start, const double2 *end,
@@ -349,8 +401,15 @@ double2segm_interpolate(const double2 *start, const double2 *end,
 {
   assert(ratio >= 0.0 && ratio <= 1.0);
   double2 *result = palloc(sizeof(double2));
-  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
+  if ((start->b > 0) == (end->b > 0))
+  {
+    result->a = floatsegm_interpolate(start->a, end->a, ratio);
+    result->b = floatsegm_interpolate(start->b, end->b, ratio);
+    return result;
+  }
+  result->a = floatsegm_interpolate(double2_avg(start), double2_avg(end),
+    ratio);
+  result->b = - fabs(start->b);
   return result;
 }
 
@@ -360,7 +419,8 @@ double2segm_interpolate(const double2 *start, const double2 *end,
  * @param[in] start,end Values defining the segment
  * @param[in] ratio Value between 0 and 1 representing the fraction of the
  * total length of the segment where the value must be located
- * @note Function used for determining the value of a segment at a timestamp
+ * @note Function used for determining the value of a segment at a timestamp,
+ * as #double2segm_interpolate
  */
 double3 *
 double3segm_interpolate(const double3 *start, const double3 *end,
@@ -368,9 +428,17 @@ double3segm_interpolate(const double3 *start, const double3 *end,
 {
   assert(ratio >= 0.0 && ratio <= 1.0);
   double3 *result = palloc(sizeof(double3));
-  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
+  if ((start->c > 0) == (end->c > 0))
+  {
+    result->a = floatsegm_interpolate(start->a, end->a, ratio);
+    result->b = floatsegm_interpolate(start->b, end->b, ratio);
+    result->c = floatsegm_interpolate(start->c, end->c, ratio);
+    return result;
+  }
+  double s1 = start->c > 0 ? start->c : 1.0, s2 = end->c > 0 ? end->c : 1.0;
+  result->a = floatsegm_interpolate(start->a / s1, end->a / s2, ratio);
+  result->b = floatsegm_interpolate(start->b / s1, end->b / s2, ratio);
+  result->c = - fabs(start->c);
   return result;
 }
 
@@ -380,7 +448,8 @@ double3segm_interpolate(const double3 *start, const double3 *end,
  * @param[in] start,end Values defining the segment
  * @param[in] ratio Value between 0 and 1 representing the fraction of the
  * total length of the segment where the value must be located
- * @note Function used for determining the value of a segment at a timestamp
+ * @note Function used for determining the value of a segment at a timestamp,
+ * as #double2segm_interpolate
  */
 double4 *
 double4segm_interpolate(const double4 *start, const double4 *end,
@@ -388,10 +457,19 @@ double4segm_interpolate(const double4 *start, const double4 *end,
 {
   assert(ratio >= 0.0 && ratio <= 1.0);
   double4 *result = palloc(sizeof(double4));
-  result->a = start->a + (double) ((long double)(end->a - start->a) * ratio);
-  result->b = start->b + (double) ((long double)(end->b - start->b) * ratio);
-  result->c = start->c + (double) ((long double)(end->c - start->c) * ratio);
-  result->d = start->d + (double) ((long double)(end->d - start->d) * ratio);
+  if ((start->d > 0) == (end->d > 0))
+  {
+    result->a = floatsegm_interpolate(start->a, end->a, ratio);
+    result->b = floatsegm_interpolate(start->b, end->b, ratio);
+    result->c = floatsegm_interpolate(start->c, end->c, ratio);
+    result->d = floatsegm_interpolate(start->d, end->d, ratio);
+    return result;
+  }
+  double s1 = start->d > 0 ? start->d : 1.0, s2 = end->d > 0 ? end->d : 1.0;
+  result->a = floatsegm_interpolate(start->a / s1, end->a / s2, ratio);
+  result->b = floatsegm_interpolate(start->b / s1, end->b / s2, ratio);
+  result->c = floatsegm_interpolate(start->c / s1, end->c / s2, ratio);
+  result->d = - fabs(start->d);
   return result;
 }
 

@@ -602,3 +602,9 @@ SELECT tbigint '9223372036854775806@2001-01-01' * 2;
 SELECT tfloat '1e300@2001-01-01' * 1e300;
 
 -------------------------------------------------------------------------------
+-- The exponential beyond the largest double raises an error
+SELECT exp(tfloat '[1@2001-01-01, 1000@2001-01-02]');
+-- The turning point where e^d - 1 exceeds the largest double, d = 720
+SELECT round(exp(tfloat '[-740@2001-01-01, -20@2001-01-02]') * 1e12, 6);
+
+-------------------------------------------------------------------------------

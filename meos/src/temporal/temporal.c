@@ -4670,16 +4670,20 @@ tnumber_integral(const Temporal *temp)
   VALIDATE_TNUMBER(temp, DBL_MAX);
 
   assert(temptype_subtype(temp->subtype));
-   switch (temp->subtype)
+  double result;
+  switch (temp->subtype)
   {
     case TINSTANT:
       return 0.0;
     case TSEQUENCE:
-      return MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ? 0.0 :
-        tnumberseq_integral((TSequence *) temp);
+      if (MEOS_FLAGS_DISCRETE_INTERP(temp->flags))
+        return 0.0;
+      result = tnumberseq_integral((TSequence *) temp);
+      break;
     default: /* TSEQUENCESET */
-      return tnumberseqset_integral((TSequenceSet *) temp);
+      result = tnumberseqset_integral((TSequenceSet *) temp);
   }
+  return ensure_finite_result(result) ? result : DBL_MAX;
 }
 
 /**

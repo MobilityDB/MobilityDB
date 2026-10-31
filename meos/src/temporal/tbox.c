@@ -1556,6 +1556,13 @@ tfloatbox_expand(const TBox *box, const double d)
   TBox *result = tbox_copy(box);
   result->span.lower = Float8GetDatum(DatumGetFloat8(result->span.lower) - d);
   result->span.upper = Float8GetDatum(DatumGetFloat8(result->span.upper) + d);
+  /* A bound beyond the largest double raises an error, as #numspan_expand
+   * raises it */
+  if (! ensure_finite_span_bounds(&result->span))
+  {
+    pfree(result);
+    return NULL;
+  }
   return result;
 }
 

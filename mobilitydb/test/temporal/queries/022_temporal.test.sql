@@ -2435,6 +2435,7 @@ SELECT valueAtTimestamp(tbigint '{[1@2001-01-01, 2@2001-01-02, 1@2001-01-03],[3@
 SELECT valueAtTimestamp(tfloat '1.5@2001-01-01', timestamptz '2001-01-01');
 SELECT valueAtTimestamp(tfloat '{1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03}', timestamptz '2001-01-01');
 SELECT valueAtTimestamp(tfloat '[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05]', timestamptz '2001-01-02');
+SELECT valueAtTimestamp(tfloat '[1e308@2001-01-01, -1e308@2001-01-03]', timestamptz '2001-01-02');
 SELECT valueAtTimestamp(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05]', timestamptz '2001-01-02');
 SELECT valueAtTimestamp(tfloat '{[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05],[3.5@2001-01-06, 3.5@2001-01-07]}', timestamptz '2001-01-02');
 SELECT valueAtTimestamp(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05],[3.5@2001-01-06, 3.5@2001-01-07]}', timestamptz '2001-01-02');
@@ -3602,6 +3603,9 @@ SELECT integral(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]');
 SELECT integral(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]');
 SELECT integral(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}');
 SELECT integral(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}');
+SELECT integral(tfloat '{[1e308@2001-01-01, 1e308@2001-01-02],[-1e308@2001-01-03, -1e308@2001-01-04]}');
+/* Errors */
+SELECT integral(tfloat '[1e308@2001-01-01, 1e308@2001-01-02]');
 
 SELECT round(twAvg(tint '1@2001-01-01'), 6);
 SELECT round(twAvg(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03}'), 6);
@@ -3626,6 +3630,9 @@ SELECT round(twAvg(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]'), 6
 SELECT round(twAvg(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]'), 6);
 SELECT round(twAvg(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}'), 6);
 SELECT round(twAvg(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}'), 6);
+SELECT round(twAvg(tfloat '{1e308@2001-01-01, 1e308@2001-01-02}') / 1e308, 6);
+SELECT round(twAvg(tfloat '[1e308@2001-01-01, 1e308@2001-01-02]') / 1e308, 6);
+SELECT round(twAvg(tfloat '{[1e308@2001-01-01, 1e308@2001-01-02],[-1e308@2001-01-03, -1e308@2001-01-04]}'), 6);
 
 -------------------------------------------------------------------------------
 -- Comparison functions and B-tree indexing

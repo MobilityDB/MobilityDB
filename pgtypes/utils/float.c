@@ -1288,6 +1288,13 @@ float8_rint(float8 num)
 /**
  * @ingroup meos_internal_float
  * @brief Return a float number rounded to a given number of decimal places
+ * @details Where `num * 10^maxdd` exceeds the largest double, `10^-maxdd` is
+ * below `num / DBL_MAX`, far below half a unit in the last place of `num`,
+ * so `num` is the double nearest the rounded value; an intermediate beyond
+ * the doubles is read in its place as #floatsegm_interpolate reads one. A
+ * power of ten beyond the doubles is applied as `10^308` times
+ * `10^(maxdd - 308)`, and from `maxdd` 617 the product exceeds the largest
+ * double for every nonzero double
  * @note MEOS function
  */
 float8
@@ -1296,14 +1303,23 @@ float8_round(float8 num, int maxdd)
   assert(maxdd >= 0);
   float8 inf = get_float8_infinity();
   float8 result = num;
-  if (num != -1 * inf && num != inf)
+  if (num != -1 * inf && num != inf && num != 0.0)
   {
     if (maxdd == 0)
       result = round(num);
-    else
+    else if (maxdd <= 308)
     {
       float8 power10 = pow(10.0, maxdd);
-      result = round(num * power10) / power10;
+      float8 scaled = num * power10;
+      if (isfinite(scaled))
+        result = round(scaled) / power10;
+    }
+    else if (maxdd <= 616)
+    {
+      float8 p1 = pow(10.0, 308), p2 = pow(10.0, maxdd - 308);
+      float8 scaled = num * p1 * p2;
+      if (isfinite(scaled))
+        result = round(scaled) / p1 / p2;
     }
   }
   return result;
