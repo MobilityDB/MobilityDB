@@ -696,36 +696,54 @@ def render_nadops_c(bt: dict) -> str:
 
 
 def render_nadpairs_c(bt: dict) -> str:
-    """The nearest approach distance wrappers of a box type listing `nadpairs`,
-    the two nadpairs.c.tmpl blocks (the wrapper, then the procedure of its
-    operator) over each (left, right, kernel) pair, as #render_nadops_c renders
-    its directions. A side is the box type itself or one of its `nadsides`; the
-    kernel takes the sides in the order its name gives them, and a side other
-    than the box is released after the call."""
+    """The nearest approach distance wrappers of a region listing `nadpairs`, the
+    nadpairs.c.tmpl wrapper over each (left, right, kernel) pair, followed by the
+    procedure of its operator when the region takes the earth model (`nadearth`),
+    as #render_nadops_c renders its directions; a `sep` row writes a row of
+    asterisks. A side is the box type itself or one of the region's `nadsides`;
+    the kernel takes the sides in the order its name gives them, two sides of one
+    variable are numbered, and a side marked `free` is released after the call."""
     blocks = read_template("nadpairs.c.tmpl").rstrip("\n").split("\n\n")
+    if not bt.get("nadearth"):
+        blocks = blocks[:1]
     box = bt["box"]
     sides = {box: {"c": bt["boxc"], "var": "box", "getarg": bt["getarg"],
-                   "desc": bt["boxdesc"]}, **bt["nadsides"]}
+                   "desc": bt["boxdesc"], "descpl": bt["boxdescpl"]},
+             **bt["nadsides"]}
+    earth = ("  bool spheroid = true;\n  if (PG_NARGS() > 2)\n"
+             "    spheroid = PG_GETARG_BOOL(2);\n") if bt.get("nadearth") else ""
+    fcinfo = ("  /* Store fcinfo into a global variable */\n"
+              "  store_fcinfo(fcinfo);\n") if bt.get("nadfcinfo") else ""
     out = []
-    for left, right, kernel in bt["nadpairs"]:
+    for row in bt["nadpairs"]:
+        if row == "sep":
+            out.append("/" + "*" * 77 + "/")
+            continue
+        left, right, kernel = row
         names = [sides[left]["var"], sides[right]["var"]]
-        if left == right:
+        if names[0] == names[1]:
             names = [f"{names[0]}1", f"{names[0]}2"]
-            between = f"two {bt['boxdescpl']}"
+        if left == right:
+            between = f"two {sides[left]['descpl']}"
         else:
             between = (f"{_article(sides[left]['desc'])} and "
                        f"{_article(sides[right]['desc'])}")
         decls = "\n".join(f"  {sides[s]['c']} *{v} = {sides[s]['getarg']}({i});"
                           for i, (s, v) in enumerate(zip((left, right), names)))
-        byside = dict(zip((left, right), names)) if left != right else None
-        kargs = ", ".join(names if byside is None else
-                          [byside[k] for k in kernel.split("_")])
+        if left == right:
+            kargs = names
+        else:
+            byside = dict(zip((left, right), names))
+            kargs = [byside[k] for k in kernel.split("_") if k in byside]
+        if bt.get("nadearth"):
+            kargs = kargs + ["spheroid"]
         frees = "".join(f"  PG_FREE_IF_COPY({v}, {i});\n"
                         for i, (s, v) in enumerate(zip((left, right), names))
-                        if s != box)
+                        if sides[s].get("free"))
         vals = {"A": left, "B": right, "NADGROUP": bt["nadgroup"],
-                "BETWEEN": between, "DECLS": decls, "KERNEL": kernel,
-                "KARGS": kargs, "FREES": frees}
+                "BETWEEN": between, "DECLS": decls, "EARTH": earth,
+                "FCINFO": fcinfo, "KERNEL": kernel, "KARGS": ", ".join(kargs),
+                "FREES": frees}
         for b in blocks:
             for k, v in vals.items():
                 b = b.replace("{" + k + "}", v)
@@ -769,23 +787,41 @@ def bootstrap_nadops_c(filetext: str, bt: dict, rendered: str) -> str:
 
 
 def bootstrap_nadpairs_c(filetext: str, bt: dict, rendered: str) -> str:
-    """Wrap the hand-written wrappers of a box type listing `nadpairs`, from the
-    first pair's wrapper through the last pair's operator procedure (#_posops_c_block
-    slices each), in the box's NAD markers, refusing unless they read as
-    #render_nadpairs_c renders them, as #bootstrap_nadops_c refuses."""
-    box = bt["box"]
-    (a0, b0, _), (a1, b1, _) = bt["nadpairs"][0], bt["nadpairs"][-1]
+    """Wrap the hand-written wrappers of a region listing `nadpairs`, from the
+    first pair's wrapper through the last pair's (its operator procedure under
+    `nadearth`), which #_posops_c_block slices, in the region's NAD markers,
+    refusing unless they read as #render_nadpairs_c renders them, as
+    #bootstrap_nadops_c refuses."""
+    region = bt["region"]
+    pairs = [r for r in bt["nadpairs"] if r != "sep"]
+    (a0, b0, _), (a1, b1, _) = pairs[0], pairs[-1]
+    lastname = f"NAD_{a1}_{b1}" + ("_opr" if bt.get("nadearth") else "")
     first = _posops_c_block(filetext, f"NAD_{a0}_{b0}")
-    last = _posops_c_block(filetext, f"NAD_{a1}_{b1}_opr")
+    last = _posops_c_block(filetext, lastname)
     if not first or not last:
-        raise SystemExit(f"bootstrap nadops {box}: {bt['nadfile']} does not hold "
-                         f"NAD_{a0}_{b0} and NAD_{a1}_{b1}_opr once each")
+        raise SystemExit(f"bootstrap nadops {region}: {bt['nadfile']} does not hold "
+                         f"NAD_{a0}_{b0} and {lastname} once each")
     start, stop = first[0], last[1]
     if filetext[start:stop] != rendered:
-        raise SystemExit(f"bootstrap nadops {box}: the wrappers of {bt['nadfile']} "
+        raise SystemExit(f"bootstrap nadops {region}: the wrappers of {bt['nadfile']} "
                          "differ from the region the template renders")
-    begin, end = _nadops_c_markers(box, _nadtmpl(bt))
+    begin, end = _nadops_c_markers(region, _nadtmpl(bt))
     return filetext[:start] + begin + rendered + end + filetext[stop:]
+
+
+def nadregions(mf: dict) -> list:
+    """The regions of nearest approach distance wrappers: each box type naming a
+    `nadfile`, then each family its entry lists in `nadfamilies`, which takes the
+    box's own keys and names its region after the family"""
+    out = []
+    for bt in mf.get("boxtypes", []):
+        if bt.get("nadfile"):
+            out.append({**bt, "region": bt["box"]})
+        for fam in bt.get("nadfamilies", []):
+            out.append({**{k: bt[k] for k in
+                           ("box", "boxc", "getarg", "boxdesc", "boxdescpl")},
+                        **fam, "region": fam["family"]})
+    return out
 
 
 # --- C spatialrels (predicate axis) --------------------------------------
@@ -4836,16 +4872,14 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
-        for bt in mf.get("boxtypes", []):
-            if not bt.get("nadfile"):
-                continue
+        for bt in nadregions(mf):
             p = ROOT / bt["nadfile"]
             tmpl = _nadtmpl(bt)
             gen = render_nadpairs_c(bt) if bt.get("nadpairs") else render_nadops_c(bt)
-            cur = extract_nadops_c(p.read_text(), bt["box"], tmpl) if p.exists() else ""
+            cur = extract_nadops_c(p.read_text(), bt["region"], tmpl) if p.exists() else ""
             same = gen == cur
             ok = ok and same
-            print(f"[{'OK ' if same else 'DIFF'}] self-regen nadops {bt['box']} "
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen nadops {bt['region']} "
                   f"-> {pathlib.Path(bt['nadfile'])}")
             if not same:
                 g, c = gen.splitlines(), cur.splitlines()
@@ -5297,24 +5331,22 @@ def main() -> int:
             p.write_text(bootstrap_posops_c(text, bt, rendered))
             print(f"bootstrapped posops {bt['box']} -> {posfile(bt)}")
 
-    for bt in mf.get("boxtypes", []):
-        if not bt.get("nadfile"):
-            continue
+    for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]
         if args.check:
-            print(f"would splice nadops {bt['box']} -> {bt['nadfile']}")
+            print(f"would splice nadops {bt['region']} -> {bt['nadfile']}")
             continue
         tmpl = _nadtmpl(bt)
         pairs = bool(bt.get("nadpairs"))
         rendered = render_nadpairs_c(bt) if pairs else render_nadops_c(bt)
         text = p.read_text()
-        if _nadops_c_markers(bt["box"], tmpl)[0] in text:
-            p.write_text(splice_nadops_c(text, bt["box"], rendered, tmpl))
-            print(f"spliced nadops {bt['box']} -> {bt['nadfile']}")
+        if _nadops_c_markers(bt["region"], tmpl)[0] in text:
+            p.write_text(splice_nadops_c(text, bt["region"], rendered, tmpl))
+            print(f"spliced nadops {bt['region']} -> {bt['nadfile']}")
         else:
             boot = bootstrap_nadpairs_c if pairs else bootstrap_nadops_c
             p.write_text(boot(text, bt, rendered))
-            print(f"bootstrapped nadops {bt['box']} -> {bt['nadfile']}")
+            print(f"bootstrapped nadops {bt['region']} -> {bt['nadfile']}")
 
     for fam in mf.get("spatialrel_families", []):
         if fam.get("reference"):

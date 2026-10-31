@@ -189,10 +189,14 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   writes the 16 wrappers of `tnumber_distance.c` from `NAD_tbox_tbox` through
   `NAD_tnumber_tnumber`.
   A box type listing `nadpairs:` takes `templates/nadpairs.c.tmpl` instead, one
-  wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, each
-  reading the optional earth model and followed by the procedure of its operator:
-  `stbox` writes the 10 wrappers of `tgeo_distance.c` from `NAD_geo_stbox` through
-  `NAD_tgeo_stbox_opr`.
+  wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, the
+  kernel taking the sides in the order its name gives them and releasing those
+  marked `free`; under `nadearth:` each wrapper reads the optional earth model and
+  the procedure of its operator follows it: `stbox` writes the 10 wrappers of
+  `tgeo_distance.c` from `NAD_geo_stbox` through `NAD_tgeo_stbox_opr`. Each family
+  of its `nadfamilies:` is a region of the family's own file over the same box:
+  `tcbuffer` writes the 9 wrappers of `tcbuffer_distance.c` from
+  `NAD_cbuffer_stbox` through `NAD_tcbuffer_tcbuffer`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
