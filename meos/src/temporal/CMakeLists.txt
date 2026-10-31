@@ -80,7 +80,6 @@ if(MEOS)
     temporal_aggfuncs_meos.c
     temporal_boxops_meos.c
     temporal_compops_meos.c
-    temporal_meos.c
     temporal_posops_meos.c
     temporal_restrict_meos.c
     temporal_tile_meos.c
