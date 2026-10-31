@@ -428,7 +428,7 @@ SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
 
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Ever and Always Relationships</title>
-		<para>Each relationship of this section has two forms. The scalar form compares two values, a geometry or a temporal geometry on each side, and returns whether the relationship holds at some instant (prefix <varname>e</varname>, ever) or at every instant (prefix <varname>a</varname>, always) of the time they share. The array form, whose name ends in <varname>Pairs</varname>, compares every element of an array of temporal geometries with every element of another and returns, one row per pair, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pairs for which the scalar form returns true. A pair sharing no instant, for which the scalar form returns null, is not returned. The array form states in a single call the spatial join of two sets of moving objects, which the scalar form states by comparing every pair of their cross product: the spatiotemporal box of each element settles the pairs whose boxes alone decide the relationship, and the relationship is computed exactly on the others. The indexes are positions in the arrays, and an <varname>array_agg</varname> of the identifiers in the order of the array of values maps them back to the objects. The array form is defined for temporal points and temporal geometries, planar and geodetic, where the scalar form is, except touches, whose array form takes temporal geometries. Contains and covers have the scalar form only.</para>
+		<para>Each relationship of this section has two forms. The scalar form compares two values, a geometry or a temporal geometry on each side, and returns whether the relationship holds at some instant (prefix <varname>e</varname>, ever) or at every instant (prefix <varname>a</varname>, always) of the time they share. The array form, whose name ends in <varname>Pairs</varname>, compares every element of an array of temporal geometries with every element of another and returns, one row per pair, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pairs for which the scalar form returns true. A pair sharing no instant, for which the scalar form returns null, is not returned. The array form states in a single call the spatial join of two sets of moving objects, which the scalar form states by comparing every pair of their cross product: the spatiotemporal box of each element settles the pairs whose boxes alone decide the relationship, and the relationship is computed exactly on the others. The indexes are positions in the arrays, and an <varname>array_agg</varname> of the identifiers in the order of the array of values maps them back to the objects. The array form is defined for temporal points and temporal geometries, planar and geodetic, where the scalar form is, except touches, contains and covers, whose array forms take temporal geometries. In the array form of contains and covers, the element of the first array is the one that contains or covers the element of the second.</para>
 		<para>The following example returns, for each pair of ships, whether they ever come within a distance of 2 of each other, first with the scalar form on two of them, then with the array form on all of them, mapping the indexes back to the identifiers.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
@@ -449,10 +449,14 @@ WHERE i &lt; j;
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eContainsPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aContainsPairs</varname></primary></indexterm>
 					<para>Ever or always contains</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
+eContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 					<para>This function returns true if the temporal geometry and the geometry ever or always intersect at their interior. Recall that a geometry does not contain things in its boundary and thus, polygons and lines do not contain lines and points lying in their boundary. Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> function in PostGIS.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -469,14 +473,38 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
 </programlisting>
+					<para>The array form returns the pairs whose first element ever or always contains the second. In the following examples, the first point of the second array leaves the square on 2001-01-02, and the third one is never inside it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 2
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eCovers">
 					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eCoversPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aCoversPairs</varname></primary></indexterm>
 					<para>Ever or always covers</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
+eCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 					<para>Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> and the <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> function in PostGIS for detailed explanations about the difference between the two functions.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -492,6 +520,24 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
+</programlisting>
+					<para>The array form returns the pairs whose first element ever or always covers the second. In the following examples, the first point of the second array lies on the boundary of the square, which covers it without containing it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eDisjoint">
@@ -655,13 +701,16 @@ SELECT i, j FROM aTouchesPairs(
 
 	<sect1 xml:id="tgeo_spatiotemp_rel">
 		<title>Spatiotemporal Relationships</title>
-		<para>The disjoint, distance within, intersects and touches relationships also have an array form, whose name ends in <varname>Pairs</varname>, as the ever and always relationships of <xref linkend="tgeo_everalways_rels"/> do. It compares every element of an array of temporal geometries with every element of another and returns, one row per pair whose temporal relationship is ever true, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pair and the periods <varname>periods</varname> during which the relationship is true.</para>
+		<para>Each relationship of this section also has an array form, whose name ends in <varname>Pairs</varname>, as the ever and always relationships of <xref linkend="tgeo_everalways_rels"/> do. It compares every element of an array of temporal geometries with every element of another and returns, one row per pair whose temporal relationship is ever true, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pair and the periods <varname>periods</varname> during which the relationship is true.</para>
 		<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tContainsPairs</varname></primary></indexterm>
 					<para>Temporal contains</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tContains(geometry,tgeom) → tbool
+tContains(tgeometry,{geometry,tgeometry}) → tbool
+tContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
@@ -676,6 +725,44 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
+</programlisting>
+					<para>The array form returns the pairs whose first element contains the second at some instant, with the periods during which it contains it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
+</programlisting>
+				</listitem>
+				<listitem xml:id="tgeo_tCovers">
+					<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tCoversPairs</varname></primary></indexterm>
+					<para>Temporal covers</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tCovers(geometry,tgeom) → tbool
+tCovers(tgeometry,{geometry,tgeometry}) → tbool
+tCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
+</programlisting>
+					<para>A geometry covers a moving point when the point lies in the geometry or on its boundary, which is the temporal intersects of the two. Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> function in PostGIS for the difference between covers and contains.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-05]');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, f@2001-01-05]}
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(2 2,4 4)@2001-01-03]');
+-- [t@2001-01-01, f@2001-01-03]
+</programlisting>
+					<para>The array form returns the pairs whose first element covers the second at some instant, with the periods during which it covers it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
+    Point(4 2)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-02, 2001-01-03]}
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tDisjoint">

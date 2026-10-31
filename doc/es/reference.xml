@@ -1203,10 +1203,10 @@
 			<title>Relaciones siempre y alguna vez</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname></link>: Contiene alguna vez o siempre</para>
+					<para><link linkend="tgeo_eContains"><varname>eContains</varname>, <varname>aContains</varname>, <varname>eContainsPairs</varname>, <varname>aContainsPairs</varname></link>: Contiene alguna vez o siempre</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_eCovers"><varname>eCovers</varname>, <varname>aCovers</varname></link>: Cubre alguna vez o siempre</para>
+					<para><link linkend="tgeo_eCovers"><varname>eCovers</varname>, <varname>aCovers</varname>, <varname>eCoversPairs</varname>, <varname>aCoversPairs</varname></link>: Cubre alguna vez o siempre</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDisjointPairs</varname>, <varname>aDisjointPairs</varname></link>: Está disjunto alguna vez o siempre &Z_support; &geography_support;</para>
@@ -1226,7 +1226,10 @@
 			<title>Relaciones espaciotemporales</title>
 			<itemizedlist>
 				<listitem>
-					<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Contiene temporal</para>
+					<para><link linkend="tgeo_tContains"><varname>tContains</varname>, <varname>tContainsPairs</varname></link>: Contiene temporal</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tgeo_tCovers"><varname>tCovers</varname>, <varname>tCoversPairs</varname></link>: Cubre temporal</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname>, <varname>tDisjointPairs</varname></link>: Disjunto temporal &Z_support; &geography_support;</para>

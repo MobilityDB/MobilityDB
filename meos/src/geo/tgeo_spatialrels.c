@@ -2796,6 +2796,8 @@ typedef enum
   SS_EDWITHIN, SS_ADWITHIN,
   SS_EINTERSECTS, SS_AINTERSECTS,
   SS_ETOUCHES, SS_ATOUCHES,
+  SS_ECONTAINS, SS_ACONTAINS,
+  SS_ECOVERS, SS_ACOVERS,
   SS_EDISJOINT, SS_ADISJOINT,
 } SetSetEAPred;
 
@@ -2834,6 +2836,14 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
       return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
     case SS_ATOUCHES:
       return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_ECONTAINS:
+      return ea_contains_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_ACONTAINS:
+      return ea_contains_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_ECOVERS:
+      return ea_covers_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_ACOVERS:
+      return ea_covers_tgeo_tgeo(temp1, temp2, ALWAYS);
     case SS_EDISJOINT:
       /* Ever disjoint is the negation of always intersects */
       return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS));
@@ -2850,8 +2860,9 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
  * - the within-distance relationships need the pairs whose boxes are closer
  *   than the distance, which is the overlap of the boxes of the first side
  *   grown by it;
- * - intersects and touches need the pairs whose boxes overlap, since boxes
- *   apart can neither intersect nor touch;
+ * - intersects, touches, contains and covers need the pairs whose boxes
+ *   overlap, since boxes apart can neither intersect, touch, contain nor
+ *   cover;
  * - the disjoint relationships report every pair sharing time whose boxes are
  *   apart in space without an exact test, and test only the pairs whose boxes
  *   overlap, so they need the pairs overlapping in time and the pairs
@@ -2931,8 +2942,9 @@ setset_ea_pairs_indexed(const Temporal **arr1, int count1,
  * spatial bounding-box prefilter (planar case only):
  * - within-distance predicates skip pairs whose boxes are farther than the
  *   distance apart;
- * - intersects and touches predicates skip pairs whose boxes are spatially
- *   disjoint (they can never intersect or touch);
+ * - intersects, touches, contains and covers predicates skip pairs whose
+ *   boxes are spatially disjoint (they can never intersect, touch, contain
+ *   or cover);
  * - disjoint predicates return pairs whose boxes are spatially disjoint
  *   without the exact test (they are always disjoint) and run the exact test
  *   only on the pairs whose boxes overlap in space.
@@ -2949,6 +2961,17 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Contains and covers are planar and two-dimensional, as their scalar
+   * forms are; every element shares the flags of the first, so one test
+   * answers for every pair */
+  if ((pred == SS_ECONTAINS || pred == SS_ACONTAINS ||
+       pred == SS_ECOVERS || pred == SS_ACOVERS) &&
+      (! ensure_not_geodetic(arr1[0]->flags) ||
+       ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags)))
+  {
+    pfree(bb1); pfree(bb2);
+    return NULL;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   bool is_dwithin = (pred == SS_EDWITHIN || pred == SS_ADWITHIN);
   bool is_disjoint = (pred == SS_EDISJOINT || pred == SS_ADISJOINT);
@@ -3006,7 +3029,8 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
 /* The temporal set-set predicates supported by the generic driver below */
 typedef enum
 {
-  SS_TDWITHIN, SS_TINTERSECTS, SS_TTOUCHES, SS_TDISJOINT,
+  SS_TDWITHIN, SS_TINTERSECTS, SS_TTOUCHES, SS_TCONTAINS, SS_TCOVERS,
+  SS_TDISJOINT,
 } SetSetTPred;
 
 /**
@@ -3029,6 +3053,16 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Contains and covers are planar and two-dimensional, as their scalar
+   * forms are; every element shares the flags of the first, so one test
+   * answers for every pair */
+  if ((pred == SS_TCONTAINS || pred == SS_TCOVERS) &&
+      (! ensure_not_geodetic(arr1[0]->flags) ||
+       ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags)))
+  {
+    pfree(bb1); pfree(bb2);
+    return NULL;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
   SpanSet **ss = palloc((size_t) count1 * count2 * sizeof(SpanSet *));
@@ -3043,7 +3077,8 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
         if (pred == SS_TDWITHIN &&
             ! stbox_within_dist_space(&bb1[i], &bb2[j], dist))
           continue;
-        else if ((pred == SS_TINTERSECTS || pred == SS_TTOUCHES) &&
+        else if ((pred == SS_TINTERSECTS || pred == SS_TTOUCHES ||
+            pred == SS_TCONTAINS || pred == SS_TCOVERS) &&
           ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
@@ -3056,6 +3091,10 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
           t = tintersects_tgeo_tgeo(arr1[i], arr2[j]); break;
         case SS_TTOUCHES:
           t = ttouches_tgeo_tgeo(arr1[i], arr2[j]); break;
+        case SS_TCONTAINS:
+          t = tcontains_tgeo_tgeo(arr1[i], arr2[j]); break;
+        case SS_TCOVERS:
+          t = tcovers_tgeo_tgeo(arr1[i], arr2[j]); break;
         default: /* SS_TDISJOINT */
           t = tdisjoint_tgeo_tgeo(arr1[i], arr2[j]); break;
       }
@@ -3214,6 +3253,98 @@ atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 
 /**
  * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one
+ * @details The array form of #econtains_tgeo_tgeo, as
+ * #etouches_tgeoarr_tgeoarr is that of #etouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Econtains_tgeoarr_tgeoarr()
+ */
+int *
+econtains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECONTAINS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always contains the second one
+ * @details The array form of #acontains_tgeo_tgeo, as
+ * #atouches_tgeoarr_tgeoarr is that of #atouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Acontains_tgeoarr_tgeoarr()
+ */
+int *
+acontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACONTAINS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one
+ * @details The array form of #ecovers_tgeo_tgeo, as
+ * #etouches_tgeoarr_tgeoarr is that of #etouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Ecovers_tgeoarr_tgeoarr()
+ */
+int *
+ecovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECOVERS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always covers the second one
+ * @details The array form of #acovers_tgeo_tgeo, as
+ * #atouches_tgeoarr_tgeoarr is that of #atouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Acovers_tgeoarr_tgeoarr()
+ */
+int *
+acovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACOVERS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
  * @brief Return the index pairs of two arrays of temporal geos that are ever
  * disjoint
  * @param[in] arr1,arr2 Arrays of temporal geos
@@ -3325,6 +3456,56 @@ ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TTOUCHES,
+    count, periods);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one together with the
+ * periods during which it does
+ * @details The array form of #tcontains_tgeo_tgeo, as
+ * #ttouches_tgeoarr_tgeoarr is that of #ttouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @param[out] periods Spansets of the times when each resulting pair holds
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Tcontains_tgeoarr_tgeoarr()
+ */
+int *
+tcontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count, SpanSet ***periods)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCONTAINS,
+    count, periods);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one together with the
+ * periods during which it does
+ * @details The array form of #tcovers_tgeo_tgeo, as
+ * #ttouches_tgeoarr_tgeoarr is that of #ttouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @param[out] periods Spansets of the times when each resulting pair holds
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Tcovers_tgeoarr_tgeoarr()
+ */
+int *
+tcovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count, SpanSet ***periods)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCOVERS,
     count, periods);
 }
 

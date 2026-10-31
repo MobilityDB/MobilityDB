@@ -429,7 +429,7 @@ SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
 
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Relaciones siempre y alguna vez</title>
-		<para>Cada relación de esta sección tiene dos formas. La forma escalar compara dos valores, una geometría o una geometría temporal a cada lado, y devuelve si la relación se cumple en algún instante (prefijo <varname>e</varname>, alguna vez) o en todos los instantes (prefijo <varname>a</varname>, siempre) del tiempo que comparten. La forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par, los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares para los que la forma escalar devuelve verdadero. Un par que no comparte ningún instante, para el que la forma escalar devuelve nulo, no se devuelve. La forma de arreglo expresa en una sola llamada la unión espacial de dos conjuntos de objetos móviles, que la forma escalar expresa comparando cada par de su producto cruzado: la caja espaciotemporal de cada elemento resuelve los pares cuyas cajas bastan para decidir la relación, y la relación se calcula de forma exacta sobre los demás. Los índices son posiciones en los arreglos, y un <varname>array_agg</varname> de los identificadores en el orden del arreglo de valores los relaciona con los objetos. La forma de arreglo está definida para puntos temporales y geometrías temporales, planares y geodésicos, donde lo está la forma escalar, excepto toca, cuya forma de arreglo recibe geometrías temporales. Contiene y cubre solo tienen la forma escalar.</para>
+		<para>Cada relación de esta sección tiene dos formas. La forma escalar compara dos valores, una geometría o una geometría temporal a cada lado, y devuelve si la relación se cumple en algún instante (prefijo <varname>e</varname>, alguna vez) o en todos los instantes (prefijo <varname>a</varname>, siempre) del tiempo que comparten. La forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par, los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares para los que la forma escalar devuelve verdadero. Un par que no comparte ningún instante, para el que la forma escalar devuelve nulo, no se devuelve. La forma de arreglo expresa en una sola llamada la unión espacial de dos conjuntos de objetos móviles, que la forma escalar expresa comparando cada par de su producto cruzado: la caja espaciotemporal de cada elemento resuelve los pares cuyas cajas bastan para decidir la relación, y la relación se calcula de forma exacta sobre los demás. Los índices son posiciones en los arreglos, y un <varname>array_agg</varname> de los identificadores en el orden del arreglo de valores los relaciona con los objetos. La forma de arreglo está definida para puntos temporales y geometrías temporales, planares y geodésicos, donde lo está la forma escalar, excepto toca, contiene y cubre, cuyas formas de arreglo reciben geometrías temporales. En la forma de arreglo de contiene y cubre, el elemento del primer arreglo es el que contiene o cubre al elemento del segundo.</para>
 		<para>El siguiente ejemplo devuelve, para cada par de barcos, si alguna vez están a una distancia de 2 o menos uno del otro, primero con la forma escalar sobre dos de ellos y luego con la forma de arreglo sobre todos, relacionando los índices con los identificadores.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
@@ -450,10 +450,14 @@ WHERE i &lt; j;
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eContainsPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aContainsPairs</varname></primary></indexterm>
 					<para>Contiene alguna vez o siempre</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
+eContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 					<para>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -470,14 +474,38 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
 </programlisting>
+					<para>La forma de arreglo devuelve los pares cuyo primer elemento contiene al segundo alguna vez o siempre. En los siguientes ejemplos, el primer punto del segundo arreglo sale del cuadrado el 2001-01-02, y el tercero nunca está dentro de él.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 2
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eCovers">
 					<indexterm significance="normal"><primary><varname>eCovers</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eCoversPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aCoversPairs</varname></primary></indexterm>
 					<para>Cubre alguna vez o siempre</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
+eCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 					<para>Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> and the <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> function in PostGIS for detailed explanations about the difference between the two functions.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -493,6 +521,24 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
+</programlisting>
+					<para>La forma de arreglo devuelve los pares cuyo primer elemento cubre al segundo alguna vez o siempre. En los siguientes ejemplos, el primer punto del segundo arreglo está en el borde del cuadrado, que lo cubre sin contenerlo.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']);
+-- 1 | 1
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eDisjoint">
@@ -656,13 +702,16 @@ SELECT i, j FROM aTouchesPairs(
 
 	<sect1 xml:id="tgeo_spatiotemp_rel">
 		<title>Relaciones espaciotemporales</title>
-		<para>Las relaciones disjunto, a distancia de, intersecta y toca también tienen una forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, como las relaciones siempre y alguna vez de <xref linkend="tgeo_everalways_rels"/>. Compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par cuya relación temporal es verdadera alguna vez, los índices basados en uno <varname>i</varname> y <varname>j</varname> del par y los períodos <varname>periods</varname> durante los cuales la relación es verdadera.</para>
+		<para>Cada relación de esta sección también tiene una forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, como las relaciones siempre y alguna vez de <xref linkend="tgeo_everalways_rels"/>. Compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par cuya relación temporal es verdadera alguna vez, los índices basados en uno <varname>i</varname> y <varname>j</varname> del par y los períodos <varname>periods</varname> durante los cuales la relación es verdadera.</para>
 		<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tContainsPairs</varname></primary></indexterm>
 					<para>Contiene temporal</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tContains(geometry,tgeom) → tbool
+tContains(tgeometry,{geometry,tgeometry}) → tbool
+tContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tContains(geometry 'Linestring(1 1,3 3)',
@@ -677,6 +726,44 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeompoint '[Point(1 4)@2001-01-01, Point(4 1)@2001-01-04]');
 -- {[f@2001-01-01, f@2001-01-02], (t@2001-01-02, f@2001-01-03, f@2001-01-04]}
+</programlisting>
+					<para>La forma de arreglo devuelve los pares cuyo primer elemento contiene al segundo en algún instante, con los períodos durante los cuales lo contiene.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
+</programlisting>
+				</listitem>
+				<listitem xml:id="tgeo_tCovers">
+					<indexterm significance="normal"><primary><varname>tCovers</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tCoversPairs</varname></primary></indexterm>
+					<para>Cubre temporal</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tCovers(geometry,tgeom) → tbool
+tCovers(tgeometry,{geometry,tgeometry}) → tbool
+tCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
+</programlisting>
+					<para>Una geometría cubre un punto móvil cuando el punto está en la geometría o en su borde, lo que es la intersección temporal de ambos. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> de PostGIS para la diferencia entre cubre y contiene.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeompoint '[Point(0 1)@2001-01-01, Point(4 1)@2001-01-05]');
+-- {[f@2001-01-01, t@2001-01-02, t@2001-01-04], (f@2001-01-04, f@2001-01-05]}
+SELECT tCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
+  tgeometry '[Linestring(1 1,2 2)@2001-01-01, Linestring(2 2,4 4)@2001-01-03]');
+-- [t@2001-01-01, f@2001-01-03]
+</programlisting>
+					<para>La forma de arreglo devuelve los pares cuyo primer elemento cubre al segundo en algún instante, con los períodos durante los cuales lo cubre.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
+    Point(4 2)@2001-01-03]']);
+-- 1 | 1 | {[2001-01-02, 2001-01-03]}
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tDisjoint">
