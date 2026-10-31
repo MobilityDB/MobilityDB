@@ -1165,6 +1165,8 @@ union_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2, bool strict)
 /**
  * @ingroup meos_internal_pointcloud_box_setops
  * @brief Write the intersection of two TPCBoxes into @p result
+ * @param[in] box1,box2 Point cloud boxes
+ * @param[out] result Result
  * @return true if the boxes intersect (result is valid); false otherwise.
  * @csqlfn #Intersection_tpcbox_tpcbox()
  */

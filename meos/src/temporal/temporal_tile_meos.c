@@ -1070,9 +1070,17 @@ tnumber_value_split(const Temporal *temp, Datum vsize, Datum vorigin,
 /**
  * @brief Return a temporal value split according to a base value and possibly
  * a temporal grid
-  * @param[in] border_inc True when the grid contains the upper border of the
+ * @param[in] temp Temporal value
+ * @param[in] vsize Size of the value bins
+ * @param[in] duration Size of the time bins
+ * @param[in] vorigin Value origin of the bins
+ * @param[in] torigin Time origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
  * extent
-*/
+ * @param[out] value_bins Array of value bins @nullable
+ * @param[out] time_bins Array of time bins
+ * @param[out] count Number of values in the output array
+ */
 Temporal **
 tnumber_value_time_split(const Temporal *temp, Datum vsize,
   const Interval *duration, Datum vorigin, TimestampTz torigin,
@@ -1265,7 +1273,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] duration Size of the time bins
- * @param[in] vorigin Time origin of the bins
+ * @param[in] vorigin Value origin of the bins
  * @param[in] torigin Time origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
@@ -1360,7 +1368,7 @@ tbigint_value_time_split(const Temporal *temp, int64 vsize,
  * @param[in] temp Temporal value
  * @param[in] vsize Size of the value bins
  * @param[in] duration Size of the time bins
- * @param[in] vorigin Time origin of the bins
+ * @param[in] vorigin Value origin of the bins
  * @param[in] torigin Time origin of the bins
  * @param[in] border_inc True when the grid contains the upper border of the
  * extent
