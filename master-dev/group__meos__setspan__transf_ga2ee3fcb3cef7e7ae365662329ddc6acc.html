@@ -115,9 +115,13 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_gacc7c2623dff72603e8a78e0b1cb9c407.html#gacc7c2623dff72603e8a78e0b1cb9c407">textset_lower</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga61c181969999850d80b4fd9211a20243.html#ga61c181969999850d80b4fd9211a20243">textset_upper</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga9c12d6367f9081d021179051ee71f59a.html#ga9c12d6367f9081d021179051ee71f59a">timestamptz_tprecision</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_gadd31eaf67b045ad9987948d718f1a4f6.html#gadd31eaf67b045ad9987948d718f1a4f6">tstzset_scale</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_gafce3193eb8da8f33b7584f5218c98c56.html#gafce3193eb8da8f33b7584f5218c98c56">tstzset_shift</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_gac7b247564827ede2906ffb987afe0815.html#gac7b247564827ede2906ffb987afe0815">tstzset_shift_scale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga1c13f59fc9a947bb4dde787affcd06f4.html#ga1c13f59fc9a947bb4dde787affcd06f4">tstzset_tprecision</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga142cc485bc9369e36e022d803fe7d2a6.html#ga142cc485bc9369e36e022d803fe7d2a6">tstzspan_expand</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga553df366825e052fec80ae50bfcdbfb7.html#ga553df366825e052fec80ae50bfcdbfb7">tstzspan_scale</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga945bdea8428616a502b680f7c40ffee9.html#ga945bdea8428616a502b680f7c40ffee9">tstzspan_shift</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__setspan__transf_ga2ee3fcb3cef7e7ae365662329ddc6acc.html#ga2ee3fcb3cef7e7ae365662329ddc6acc">tstzspan_shift_scale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_gae6c3ef4b24c6c2e1ff7dcdd4948fc808.html#gae6c3ef4b24c6c2e1ff7dcdd4948fc808">tstzspan_tprecision</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setspan__transf_ga93c115df26a290edd51a6c16e8ec3917.html#ga93c115df26a290edd51a6c16e8ec3917">tstzspanset_shift_scale</a></td></tr>
@@ -158,12 +162,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a timestamptz span shifted and/or scaled by two intervals. </p>
+<p>Return a timestamptz span shifted and scaled by two intervals. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">s</td><td><a class="el" href="structSpan.html" title="Structure to represent spans (a.k.a.">Span</a> </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">shift</td><td><a class="el" href="structInterval.html">Interval</a> to shift the bounds (accepts <code>NULL</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Duation of the result (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__setspan__transf_ga2745186e4259945e9a710b8972f8531f.html#ga2745186e4259945e9a710b8972f8531f" title="Return a timestamptz span shifted by an interval @sqlfn shift()">Tstzspan_shift()</a>, <a class="el" href="group__mobilitydb__setspan__transf_ga55d1cc562d61208d3977c7e83555b787.html#ga55d1cc562d61208d3977c7e83555b787" title="Return a timestamptz span scaled by an interval @sqlfn scale()">Tstzspan_scale()</a>, <a class="el" href="group__mobilitydb__setspan__transf_gae95e845d59b9bceeacc5dd36f8372f35.html#gae95e845d59b9bceeacc5dd36f8372f35" title="Return a timestamptz span shifted and scaled by two intervals @sqlfn shiftScale()">Tstzspan_shift_scale()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">shift</td><td><a class="el" href="structInterval.html">Interval</a> to shift the bounds </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Duration of the result @csqlfn <a class="el" href="group__mobilitydb__setspan__transf_gae95e845d59b9bceeacc5dd36f8372f35.html#gae95e845d59b9bceeacc5dd36f8372f35" title="Return a timestamptz span shifted and scaled by two intervals @sqlfn shiftScale()">Tstzspan_shift_scale()</a> </td></tr>
   </table>
   </dd>
 </dl>
