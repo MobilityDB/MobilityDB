@@ -1355,7 +1355,9 @@ extern TBox *tbox_expand_time(const TBox *box, const Interval *interv);
 extern TBox *tbox_round(const TBox *box, int maxdd);
 extern TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth);
 extern TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth);
+extern TBox *tbox_scale_time(const TBox *box, const Interval *duration);
 extern TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration);
+extern TBox *tbox_shift_time(const TBox *box, const Interval *shift);
 extern TBox *tbigintbox_expand(const TBox *box, int64 i);
 extern TBox *tbigintbox_shift_scale(const TBox *box, int64 shift, int64 width, bool hasshift, bool haswidth);
 
