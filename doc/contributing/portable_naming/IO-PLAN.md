@@ -234,6 +234,54 @@ explicit cast. Its input and output follow from that (the owner, 2026-10-31):
    where `pose_as_text` writes `Pose(POINT(1 1),0.5)`, the form a temporal pose's instants print in.
 3. **A value crosses between an engine and MEOS as its WKB**, rule 6 of the dialect; the text forms
    are what a user reads and writes.
+4. **A reader is a function of the format alone**: `<type>FromHexWKB(text)` takes the string,
+   `<type>FromBinary(bytea)` the bytes, whose length is their own; it needs no value to be called
+   on and no length beside the buffer. A writer returns the language's own string or byte type,
+   owning its memory.
+
+### The catalog every binding reads
+
+The bindings that generate their surface read a type's text, WKB and MF-JSON codecs from the
+catalog's `typeEncodings`, so its choices reach all of them. Measured over MEOS-API `1c9a7aa20`
+and a catalog derived from MobilityDB master `7de78631f5`:
+
+- **Three encodings, `text`, `wkb` and `mfjson`.** EWKT is filed under `text` and EWKB and hex EWKB
+  under `wkb` (`parser/enrich.py`, `_ENCODERS` and `_DECODERS`), so no class states its E forms.
+- **`*_out` outranks `*_as_text`** where a class has both (`parser/codecs.py`, `keyed`). The text
+  writer of `Cbuffer`, `Pose` and `PoseChain` is therefore `cbuffer_out`, `pose_out` and
+  `posechain_out`, which write the point as hex WKB (`basetype_out` with `T_GEOMETRY`, `geo_out`),
+  and the spatial sets' is `spatialset_out`, `cbufferset_out` and `poseset_out`, through `set_out`.
+  The spatial temporal types read `tspatial_as_text`, `tspatial_out` having no SQL signature.
+- `TInstant` reads through `tbigintinst_in`, an internal reader of one type; `TSequence` has no
+  reader; a `Datum` class carries the internal `cbuffer_wkt_out`.
+- The OpenAPI and MCP surfaces generated from the catalog write a temporal value as MF-JSON and read
+  it as hex WKB, so one does not read what the other writes; the MovFeat `createItem` route calls
+  `temporal_from_mfjson`, an internal function. The OpenAPI artifact the CI publishes exposes no
+  path (run 41207016338) and passes its validation.
+
+### Where each binding stands
+
+Measured at each repository's default branch: JMEOS `d749ad05e7`, MobilitySpark `b0eb3d0fd0`,
+MobilityFlink `7eaef88198`, MobilityKafka `94a52cd989` (their generated surfaces rebuilt from the
+same catalog), GoMEOS `0083281985`, MEOS.NET `85913570ac`, meos-rs `af6dd5e6df`, MEOS.js
+`40920ac598`, MobilityDuck `c688dcd023`, MobilityNebula `a7dd28b54c`, PyMEOS `cfed5e3360` with open
+PyMEOS #88, PyMEOS-CFFI `fd63bcce68`, MobilityAPI `cea483a57e`.
+
+| Binding | Readers and writers | Default string | Value in the engine | Departs from the rules |
+|---|---|---|---|---|
+| JMEOS | text, WKB, hex WKB and MF-JSON for sets, spans, span sets and the temporal alphanumeric and point types; boxes text and a hex reader; `as_ewkt` writer for points | `toString` on `TBool`, the sets, spans and boxes only; the other temporal types print `Class@hash`, WKT only through `to_string` | JNR pointer | no class for `tgeometry`, the circular buffer, network point, pose and rigid geometry families, the cells or `tbigint`; `GeoSet.toString`, `as_text` and `as_ewkt` call `tspatial_*` on a set; `as_wkb` and `as_hexwkb` pass variant 4 and write EWKB; readers are instance methods; no EWKB; `IntSpan.from_wkb(Byte)` takes one byte |
+| Spark, Flink (typed SQL layer) | the seven formats, readers and writers alike, for every family; text through `*_as_text`, `tspatial_as_text`, `spatialset_as_text` (WKT), `*_out` for the cells | the UDT's and RAW type's `toString` writes hex EWKB (`*_as_wkb`, variant 4) | the MEOS memory image (`MeosSqlRuntime.image`), not WKB | rule 2 and rule 3; Flink's `GENERATION.md` states WKB; the raster and `raquet` read hex WKB and write none |
+| Spark (UDF layer) | `asText`, `asEWKT`, `asHexWKB`, `asHexEWKB`, the `From*` readers of text and hex | as above | EWKB bytes | `asText` sends every span to `bigintspan_out`, every span set to `bigintspanset_out` and every set to `spatialset_as_text`; no `asText` or `asEWKT` for boxes, circular buffers, network points or poses; `asHexWKB` writes variant 4, as `asHexEWKB`; `asBinary`, `asEWKB`, `FromBinary`, `FromEWKB` unregistered |
+| Kafka | the C-named `MeosOps*` facades | none | a codec the user supplies | no portable name; `pose_out` and `pose_as_text` both exposed |
+| GoMEOS (`types/`, generated) | `In`/`Out`, `AsText`, WKB, hex WKB for sets, spans, span sets, boxes, temporal and base types; MF-JSON for temporal types; EWKT and EWKB writers | no `String()` in `types/`; the hand-written root package's `String()` on six temporal types, the root `TPointOut` calling `tspatial_out` (hex) | cgo pointer | `GeomSet` and `GeogSet` read and do not write; no EWKT or EWKB reader; geometry arguments typed `*TRGeometrySeqSet` (252 sites, `tools/objectgen.py`); WKB readers take `unsafe.Pointer` and a size, writers return `unsafe.Pointer` with a caller's `size_out`; no cell type |
+| MEOS.NET (generated) | as GoMEOS, WKB as `byte[]` | `ToString` is `Out`: `tspatial_out`, `pose_out`, `cbuffer_out`, `geo_out`, hex WKB for every spatial value; none on `GeomSet`, `GeogSet`, `Set`, `Span`, `SpanSet`, `Temporal` | P/Invoke pointer | rule 2; `GeomSet` and `GeogSet` write nothing; no EWKT or EWKB reader; `AsHEXWKB` beside `AsHexewkb` in one class; no cell class |
+| meos-rs | `FromStr`, WKB, hex WKB for spans, span sets, boxes and the temporal alphanumeric and geometric types; MF-JSON; `as_ewkt`, `as_geojson` | no `Display`; `Debug` writes `*_out`, WKT for the spatial types | pointer | rule 4: `as_wkb` and `as_hexwkb` return `&[u8]` over memory MEOS allocates and nothing frees; hex as `&[u8]`; no sets, extended families or cells |
+| MEOS.js | text, hex WKB, MF-JSON for the exported classes (sets, spans, span sets, boxes, `tbool`, `tint`, `tfloat`, `ttext`, `tgeompoint`, `tgeogpoint`); `asEWKT` for points | `toString`: `tspatial_as_text` for points, `*_out` otherwise | WASM heap pointer | no raw WKB; no EWKB; `fromHexWKB` missing on `tbool`, `tint`, `tfloat`, `ttext`, `tgeogpoint`; the extended families, spatial sets and `tgeometry` unexported though their wrappers are generated; `temporal_as_hexwkb_w` passes variant `-1` |
+| MobilityDuck | the seven formats for sets, spans, span sets, boxes and the temporal types (`src/generated`), EWKB and hex EWKB writers | the `VARCHAR` cast is `*_out`: `0101000000000000000000F03F…@2012-01-01` for a `tgeompoint` (`test/sql/tgeompoint.test`), hex for every spatial value | a `BLOB` holding the MEOS memory image; cells `BIGINT` | rules 2 and 3; no `FromText`, `FromEWKT` or `FromMFJSON` for `tcbuffer`, `tnpoint`, `tpose`, `tposechain`, `trgeometry`, `th3index`, `tquadbin`, `ts2cell`; no binary or hex I/O for `cbuffer`, `npoint`, `pose`, `posechain`; `nsegment` a cast only; E forms registered for the cells, which carry no SRID; `tgeogpoint` registered twice |
+| MobilityNebula | none for the user; internal readers `tgeompoint_in`, `tgeometry_in`, `geom_in`, `stbox_in` | none | strings built from the stream's fields | the one writer, `temporal_as_wkb(…, 0x08)`, is commented "extended WKB" while `0x08` is `WKB_NDR`; the temporal sequence aggregation returns the string `BINARY(<size>)`; its ledger holds the 205 I/O functions apart |
+| PyMEOS | text, WKB, hex WKB for every class; MF-JSON for temporal types; `as_ewkt` for the spatial ones | `tspatial_as_text` for the temporal spatial classes, `*_out` for the others; `Pose` and `Cbuffer` `pose_out` and `cbuffer_out` (hex) | CFFI pointer | no `from_ewkt`, `from_ewkb`, `from_hexewkb`, `as_ewkb`, `as_hexewkb`; `as_text` only on the spatial base types and sets; no `TRgeometry` string constructor, `trgeometry_out` its string |
+| PyMEOS-CFFI | readers take `bytes` and `str` alone (`geo_from_ewkb` also the SRID); every byte buffer returns `bytes` | n/a | n/a | rule 4: `*_as_hexwkb` and `*_as_hexewkb` return `(str, size)`, but for `geo_as_hexewkb`, `pcpoint_as_hexwkb`, `pcpatch_as_hexwkb` |
+| MobilityAPI | MobilityDB SQL: `asMFJSON`, `tgeompointFromMFJSON`, `asBinary`, `ST_AsGeoJSON` | n/a | SQL | its Spark dialect names `temporalAsMfjson` and `tgeompointFromMfjson` |
 
 ## The plan
 
@@ -245,6 +293,33 @@ explicit cast. Its input and output follow from that (the owner, 2026-10-31):
 | `FromHexWKB` for the 12 spatial types; the `@csqlfn` naming `Trgeometry_send`/`_recv` | G8 |
 | MEOS `*_from_mfjson` for `th3index`, `tquadbin`, `ts2cell`, `tpcpoint`, `tpcpatch`; SQL `FromMFJSON` for `tpcpoint`, `tpcpatch`; one spelling of `asMFJSON`'s argument | G9 |
 | the readers and writers per SQL type, the hex-WKB writers, `Nsegment`, `TPCBox`, `Raster` and the cell classes in `typeEncodings`; the readers' `@sqlfn` names | MEOS-API A6, merged as #157 and #159 |
+
+The bindings, one pull request per repository, each generated from the catalog where the binding
+generates ([the bindings plan](BINDINGS-PLAN.md)), the catalog's first:
+
+| Task | Repository | Change | State |
+|---|---|---|---|
+| IO-B1 | MEOS-API | `typeEncodings` states `text` (`*_as_text`, `tspatial_as_text`, `spatialset_as_text` for a spatial class, `*_out` for the others), `ewkt`, `wkb`, `hexwkb`, `ewkb`, `hexewkb` and `mfjson` as encodings of their own; the readers of `TInstant`, `TSequence` and `TSequenceSet` through the public `temporal_in`-family readers; the OpenAPI and MCP surfaces read and write a temporal value in one format; MovFeat `createItem` through a public reader; the CI's OpenAPI artifact exposes the catalog's paths | open |
+| IO-B2 | MEOS-API | `meta/object-model.json` attaches the spatial set readers and writers (`spatialset_as_text`, `spatialset_as_ewkt`, `set_as_wkb`, `set_as_hexwkb`) to `GeomSet` and `GeogSet` | after IO-B1 |
+| IO-B3 | PyMEOS | `str` is `as_text` for every class; `as_text` and `as_ewkt` on every spatial class and set; `from_ewkt`, `from_ewkb`, `from_hexewkb`, `as_ewkb`, `as_hexewkb` where the type carries an SRID; the `TRgeometry` string constructor (`trgeometry_in`) and its `str` through `trgeometry_as_text` | after PyMEOS #88 |
+| IO-B4 | PyMEOS-CFFI | `*_as_hexwkb` and `*_as_hexewkb` return the `str` alone | open |
+| IO-B5 | GoMEOS | `String()` is `AsText` on every generated type; WKB readers take `[]byte` and writers return `[]byte`; `FromEWKT`, `FromEWKB`, `FromHexEWKB`; the `GSERIALIZED` arguments typed as the geometry type (`tools/objectgen.py`); the cell types | after IO-B2 |
+| IO-B6 | MEOS.NET | `ToString` is `AsText`; `FromEWKT`, `FromEWKB`, `FromHexEWKB`; one casing (`AsHexWKB`, `AsHexEWKB`); the cell classes | after IO-B2 |
+| IO-B7 | meos-rs | `Display` is `asText`; `as_wkb` returns an owned `Vec<u8>` and `as_hexwkb` a `String`, MEOS's buffer freed; the sets and the extended families | after B7 of the bindings plan |
+| IO-B8 | MEOS.js | the extended families, spatial sets and `tgeometry` exported; `fromBinary`/`asBinary`; `fromHexWKB` on every temporal type; `asHexWKB` writing the variant its documentation states | open |
+| IO-B9 | MobilityDuck | the `VARCHAR` cast is `asText`; `FromText`, `FromEWKT`, `FromMFJSON` for the extended temporal families and the cell temporal types; binary and hex I/O for `cbuffer`, `npoint`, `pose`, `posechain`; `nsegment`'s functions; no E form for a cell; one `tgeogpoint` registration | open |
+| IO-B10 | JMEOS | `toString` is `asText` on every class; `GeoSet` through `spatialset_*`; static readers; `as_wkb` plain WKB beside `as_ewkb`; the box writers; the classes of the extended families, the cells and `tbigint`; `IntSpan.from_wkb(byte[])` | open |
+| IO-B11 | JMEOS (Spark, Flink generators) | the UDT and RAW `toString` is `asText`; the UDF layer's `asText` and `asEWKT` dispatch by the argument's type; `asHexWKB` plain WKB; `asBinary`, `asEWKB`, `FromBinary`, `FromEWKB` registered; the raster and `raquet` hex writers | open |
+| IO-B12 | MobilityKafka | the portable names over the facades | after IO-B11 |
+| IO-B13 | MobilityNebula | `asText`, `asBinary`, `asHexWKB`, `asMFJSON` and their readers for the types it carries; the temporal sequence aggregation returning the value | open |
+| IO-B14 | MobilityAPI | its Spark dialect names `asMFJSON` and `<type>FromMFJSON` | after IO-B11 |
+| IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds this document's two tables, the SQL one from `mobilitydb/sql` and the catalog, the bindings' one from each binding's generated surface | open |
+
+Open for the owner, asked one at a time:
+
+1. DuckDB, Spark and Flink hold a value as the MEOS memory image, which rule 3 writes as WKB.
+2. `asBinary` and `asHexWKB` write plain WKB in the typed SQL layer of Spark and Flink and EWKB in
+   JMEOS and the Spark UDF layer; rule 2 of the dialect states plain WKB beside `asEWKB`.
 
 ## Acceptance
 
