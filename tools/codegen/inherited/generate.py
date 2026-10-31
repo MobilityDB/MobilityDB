@@ -4836,6 +4836,26 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for bt in mf.get("boxtypes", []):
+            if not bt.get("nadfile"):
+                continue
+            p = ROOT / bt["nadfile"]
+            tmpl = _nadtmpl(bt)
+            gen = render_nadpairs_c(bt) if bt.get("nadpairs") else render_nadops_c(bt)
+            cur = extract_nadops_c(p.read_text(), bt["box"], tmpl) if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen nadops {bt['box']} "
+                  f"-> {pathlib.Path(bt['nadfile'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("spatialrel_families", []):
             if not fam.get("reference"):
                 continue
