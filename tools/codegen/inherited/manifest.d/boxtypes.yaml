@@ -34,13 +34,16 @@ boxtypes:
     nadearth:  true
     nadsides:
       geo:  {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
-      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo, free: true}
+      tgeo: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal geo, descpl: temporal geos, free: true}
     nadpairs:
+      - [geo, tgeo, nad_tgeo_geo]
+      - [tgeo, geo, nad_tgeo_geo]
       - [geo, stbox, nad_stbox_geo]
       - [stbox, geo, nad_stbox_geo]
       - [stbox, stbox, nad_stbox_stbox]
       - [stbox, tgeo, nad_tgeo_stbox]
       - [tgeo, stbox, nad_tgeo_stbox]
+      - [tgeo, tgeo, nad_tgeo_tgeo]
     nadfamilies:
       - family:   tcbuffer
         nadgroup: mobilitydb_cbuffer_dist
