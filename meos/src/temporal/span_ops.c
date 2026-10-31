@@ -109,6 +109,68 @@ span_max_value(Datum l, Datum r, MeosType type)
   }
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span contains an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Contains_span_value()
+ */
+bool
+contains_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return contains_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span contains a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Contains_span_value()
+ */
+bool
+contains_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return contains_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span contains a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Contains_span_value()
+ */
+bool
+contains_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return contains_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span contains a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Contains_span_value()
+ */
+bool
+contains_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return contains_span_value(s, DateADTGetDatum(d));
+}
+
 /*****************************************************************************
  * Contains
  *****************************************************************************/
@@ -228,6 +290,82 @@ contained_span_span(const Span *s1, const Span *s2)
   return span_contained(s1, s2);
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer is contained in a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Contained_value_span()
+ */
+bool
+contained_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return contains_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer is contained in a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Contained_value_span()
+ */
+bool
+contained_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return contains_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float is contained in a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Contained_value_span()
+ */
+bool
+contained_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return contains_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date is contained in a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Contained_value_span()
+ */
+bool
+contained_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return contains_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamp is contained in a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Contained_value_span()
+ */
+bool
+contained_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return contains_span_value(s, TimestampTzGetDatum(t));
+}
 
 /*****************************************************************************
  * Overlaps
@@ -350,6 +488,159 @@ adjacent_span_span(const Span *s1, const Span *s2)
   return span_adjacent(s1, s2);
 }
 
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span and an integer are adjacent
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Adjacent_span_value()
+ */
+bool
+adjacent_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return adjacent_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span and a big integer are adjacent
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Adjacent_span_value()
+ */
+bool
+adjacent_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return adjacent_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span and a float are adjacent
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Adjacent_span_value()
+ */
+bool
+adjacent_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return adjacent_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span and a date are adjacent
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Adjacent_span_value()
+ */
+bool
+adjacent_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return adjacent_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a span and a timestamptz are adjacent
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Adjacent_span_value()
+ */
+bool
+adjacent_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return adjacent_span_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if an integer is adjacent to a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return adjacent_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a big integer is adjacent to a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return adjacent_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a float is adjacent to a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return adjacent_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a date is adjacent to a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return adjacent_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_topo
+ * @brief Return true if a timestamp is adjacent to a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Adjacent_value_span()
+ */
+bool
+adjacent_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return adjacent_span_value(s, TimestampTzGetDatum(t));
+}
 
 /*****************************************************************************
  * Same
@@ -465,6 +756,161 @@ lfnadj_span_span(const Span *s1, const Span *s2)
   return (cmp < 0 || (cmp == 0 && ! s1->upper_inc && ! s2->lower_inc));
 }
 
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if an integer is to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Left_value_span()
+ */
+bool
+left_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return left_value_span(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a big integer is to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Left_value_span()
+ */
+bool
+left_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return left_value_span(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a float is to the left of a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Left_value_span()
+ */
+bool
+left_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return left_value_span(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a date is before a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Before_value_span()
+ */
+bool
+before_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return left_value_span(DateADTGetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a timestamptz is before a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Before_value_span()
+ */
+bool
+before_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return left_value_span(TimestampTzGetDatum(t), s);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the left of an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Left_span_value()
+ */
+bool
+left_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return left_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the left of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Left_span_value()
+ */
+bool
+left_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return left_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the left of a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Left_span_value()
+ */
+bool
+left_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return left_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is before a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Before_span_value()
+ */
+bool
+before_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return left_span_value(s, DateADTGetDatum(d));
+}
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is before a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Before_span_value()
+ */
+bool
+before_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return left_span_value(s, TimestampTzGetDatum(t));
+}
+
 /*****************************************************************************
  * Right of
  *****************************************************************************/
@@ -521,6 +967,161 @@ right_span_span(const Span *s1, const Span *s2)
   return span_right(s1, s2);
 }
 
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if an integer is to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Right_value_span()
+ */
+bool
+right_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return left_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a big integer is to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Right_value_span()
+ */
+bool
+right_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return left_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a float is to the right of a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Right_value_span()
+ */
+bool
+right_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return left_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a date is after a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #After_value_span()
+ */
+bool
+after_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return left_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a timestamptz is after a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #After_value_span()
+ */
+bool
+after_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return left_span_value(s, TimestampTzGetDatum(t));
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the right of an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Right_span_value()
+ */
+bool
+right_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return left_value_span(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the right of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Right_span_value()
+ */
+bool
+right_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return left_value_span(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is to the right of a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Right_span_value()
+ */
+bool
+right_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return left_value_span(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is after a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #After_span_value()
+ */
+bool
+after_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return left_value_span(DateADTGetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is after a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #After_span_value()
+ */
+bool
+after_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return left_value_span(TimestampTzGetDatum(t), s);
+}
 
 /*****************************************************************************
  * Does not extend to right of
@@ -588,6 +1189,161 @@ overleft_span_span(const Span *s1, const Span *s2)
   return span_overleft(s1, s2);
 }
 
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if an integer does not extend to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overleft_value_span()
+ */
+bool
+overleft_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return overleft_value_span(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a big integer does not extend to the right of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overleft_value_span()
+ */
+bool
+overleft_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return overleft_value_span(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a float does not extend to the right of a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overleft_value_span()
+ */
+bool
+overleft_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return overleft_value_span(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a date is not after a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overbefore_value_span()
+ */
+bool
+overbefore_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return overleft_value_span(DateADTGetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a timestamptz is not after a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Overbefore_value_span()
+ */
+bool
+overbefore_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return overleft_value_span(TimestampTzGetDatum(t), s);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the right of an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overleft_span_value()
+ */
+bool
+overleft_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return overleft_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the right of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overleft_span_value()
+ */
+bool
+overleft_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return overleft_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the right of a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overleft_span_value()
+ */
+bool
+overleft_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return overleft_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is not after a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overbefore_span_value()
+ */
+bool
+overbefore_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return overleft_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is not after a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Overbefore_span_value()
+ */
+bool
+overbefore_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return overleft_span_value(s, TimestampTzGetDatum(t));
+}
 
 /*****************************************************************************
  * Does not extend to left of
@@ -651,6 +1407,161 @@ overright_span_span(const Span *s1, const Span *s2)
   return span_overright(s1, s2);
 }
 
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if an integer does not extend to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overright_value_span()
+ */
+bool
+overright_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return overright_value_span(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a big integer does not extend to the left of a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Overright_value_span()
+ */
+bool
+overright_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return overright_value_span(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a float does not extend to the left of a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overright_value_span()
+ */
+bool
+overright_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return overright_value_span(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a date is not before a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Overafter_value_span()
+ */
+bool
+overafter_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return overright_value_span(DateADTGetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a timestamptz is not before a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Overafter_value_span()
+ */
+bool
+overafter_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return overright_value_span(TimestampTzGetDatum(t), s);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the left of an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overright_span_value()
+ */
+bool
+overright_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, false);
+  return overright_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the left of a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Overright_span_value()
+ */
+bool
+overright_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, false);
+  return overright_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span does not extend to the left of a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overright_span_value()
+ */
+bool
+overright_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, false);
+  if (! ensure_not_nan(d))
+    return false;
+  return overright_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is not before a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Overafter_span_value()
+ */
+bool
+overafter_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, false);
+  return overright_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_pos
+ * @brief Return true if a span is not before a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Overafter_span_value()
+ */
+bool
+overafter_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, false);
+  return overright_span_value(s, TimestampTzGetDatum(t));
+}
 
 /*****************************************************************************
  * Set union
@@ -755,6 +1666,150 @@ union_span_span(const Span *s1, const Span *s2)
   return spanset_make_exp(spans, 2, 2, NORMALIZE_NO, ORDER_NO);
 }
 
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Union_span_value()
+ */
+SpanSet *
+union_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return union_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_int_span(int i, const Span *s)
+{
+  return union_span_int(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Union_span_value()
+ */
+SpanSet *
+union_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return union_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_bigint_span(int64 i, const Span *s)
+{
+  return union_span_bigint(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Union_span_value()
+ */
+SpanSet *
+union_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return union_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_float_span(double d, const Span *s)
+{
+  if (! ensure_not_nan(d))
+    return NULL;
+  return union_span_float(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Union_span_value()
+ */
+SpanSet *
+union_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return union_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_date_span(DateADT d, const Span *s)
+{
+  return union_span_date(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Union_span_value()
+ */
+SpanSet *
+union_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return union_span_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the union of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Union_value_span()
+ */
+SpanSet *
+union_timestamptz_span(TimestampTz t, const Span *s)
+{
+  return union_span_timestamptz(s, t);
+}
+
 /*****************************************************************************
  * Set intersection
  *****************************************************************************/
@@ -829,6 +1884,150 @@ intersection_span_span(const Span *s1, const Span *s2)
   if (! inter_span_span(s1, s2, &result))
     return NULL;
   return span_copy(&result);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Intersection_span_value()
+ */
+Span *
+intersection_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return intersection_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_int_span(int i, const Span *s)
+{
+  return intersection_span_int(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Intersection_span_value()
+ */
+Span *
+intersection_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return intersection_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_bigint_span(int64 i, const Span *s)
+{
+  return intersection_span_bigint(s, i);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Intersection_span_value()
+ */
+Span *
+intersection_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return intersection_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_float_span(double d, const Span *s)
+{
+  if (! ensure_not_nan(d))
+    return NULL;
+  return intersection_span_float(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Intersection_span_value()
+ */
+Span *
+intersection_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return intersection_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_date_span(DateADT d, const Span *s)
+{
+  return intersection_span_date(s, d);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Intersection_span_value()
+ */
+Span *
+intersection_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return intersection_span_value(s, TimestampTzGetDatum(t));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the intersection of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Intersection_value_span()
+ */
+Span *
+intersection_timestamptz_span(TimestampTz t, const Span *s)
+{
+  return intersection_span_timestamptz(s, t);
 }
 
 /*****************************************************************************
@@ -1001,6 +2200,162 @@ minus_span_span(const Span *s1, const Span *s2)
   if (count == 0)
     return NULL;
   return spanset_make_exp(spans, count, count, NORMALIZE_NO, ORDER_NO);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of an integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Minus_value_span()
+ */
+SpanSet *
+minus_int_span(int i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return minus_value_span(Int32GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a big integer and a span
+ * @param[in] i Value
+ * @param[in] s Span
+ * @csqlfn #Minus_value_span()
+ */
+SpanSet *
+minus_bigint_span(int64 i, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return minus_value_span(Int64GetDatum(i), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a float and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Minus_value_span()
+ */
+SpanSet *
+minus_float_span(double d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return minus_value_span(Float8GetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a date and a span
+ * @param[in] d Value
+ * @param[in] s Span
+ * @csqlfn #Minus_value_span()
+ */
+SpanSet *
+minus_date_span(DateADT d, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return minus_value_span(DateADTGetDatum(d), s);
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a timestamptz and a span
+ * @param[in] t Value
+ * @param[in] s Span
+ * @csqlfn #Minus_value_span()
+ */
+SpanSet *
+minus_timestamptz_span(TimestampTz t, const Span *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return minus_value_span(TimestampTzGetDatum(t), s);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a span and an integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Minus_span_value()
+ */
+SpanSet *
+minus_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, NULL);
+  return minus_span_value(s, Int32GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a span and a big integer
+ * @param[in] s Span
+ * @param[in] i Value
+ * @csqlfn #Minus_span_value()
+ */
+SpanSet *
+minus_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, NULL);
+  return minus_span_value(s, Int64GetDatum(i));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Minus_span_value()
+ */
+SpanSet *
+minus_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return minus_span_value(s, Float8GetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a span and a date
+ * @param[in] s Span
+ * @param[in] d Value
+ * @csqlfn #Minus_span_value()
+ */
+SpanSet *
+minus_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, NULL);
+  return minus_span_value(s, DateADTGetDatum(d));
+}
+
+/**
+ * @ingroup meos_setspan_set
+ * @brief Return the difference of a span and a timestamptz
+ * @param[in] s Span
+ * @param[in] t Value
+ * @csqlfn #Minus_span_value()
+ */
+SpanSet *
+minus_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return minus_span_value(s, TimestampTzGetDatum(t));
 }
 
 /******************************************************************************
@@ -1283,3 +2638,164 @@ distance_span_span_double(const Span *s1, const Span *s2)
 }
 
 /******************************************************************************/
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between a span and an integer as a double
+ * @param[in] s Span
+ * @param[in] i Value
+ * @errval INT_MAX
+ * @csqlfn #Distance_span_value() #Distance_value_span()
+ */
+int
+distance_span_int(const Span *s, int i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s, INT_MAX);
+  return DatumGetInt32(distance_span_value(s, Int32GetDatum(i)));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between a span and a big integer as a double
+ * @param[in] s Span
+ * @param[in] i Value
+ * @errval INT64_MAX
+ * @csqlfn #Distance_span_value() #Distance_value_span()
+ */
+int64
+distance_span_bigint(const Span *s, int64 i)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s, INT64_MAX);
+  return DatumGetInt64(distance_span_value(s, Int64GetDatum(i)));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between a span and a float
+ * @param[in] s Span
+ * @param[in] d Value
+ * @errval DBL_MAX
+ * @csqlfn #Distance_span_value() #Distance_value_span()
+ */
+double
+distance_span_float(const Span *s, double d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s, DBL_MAX);
+  if (! ensure_not_nan(d))
+    return DBL_MAX;
+  return DatumGetFloat8(distance_span_value(s, Float8GetDatum(d)));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance in days between a span and a date as a double
+ * @param[in] s Span
+ * @param[in] d Value
+ * @errval INT_MAX
+ * @csqlfn #Distance_span_value() #Distance_value_span()
+ */
+int
+distance_span_date(const Span *s, DateADT d)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s, INT_MAX);
+  return DatumGetInt32(distance_span_value(s, DateADTGetDatum(d)));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between a span and a timestamptz as an
+ * interval
+ * @param[in] s Span
+ * @param[in] t Value
+ * @errval NULL
+ * @csqlfn #Distance_span_value() #Distance_value_span()
+ */
+Interval *
+distance_span_timestamptz(const Span *s, TimestampTz t)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s, NULL);
+  return DatumGetIntervalP(distance_span_value(s, TimestampTzGetDatum(t)));
+}
+
+/******************************************************************************/
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between two integer spans
+ * @param[in] s1,s2 Spans
+ * @errval INT_MAX
+ * @csqlfn #Distance_span_span()
+ */
+int
+distance_intspan_intspan(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_INTSPAN(s1, INT_MAX); VALIDATE_INTSPAN(s2, INT_MAX);
+  return DatumGetInt32(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between two big integer spans
+ * @param[in] s1,s2 Spans
+ * @errval INT64_MAX
+ * @csqlfn #Distance_span_span()
+ */
+int64
+distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_BIGINTSPAN(s1, INT64_MAX); VALIDATE_BIGINTSPAN(s2, INT64_MAX);
+  return DatumGetInt64(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between two float spans
+ * @param[in] s1,s2 Spans
+ * @errval DBL_MAX
+ * @csqlfn #Distance_span_span()
+ */
+double
+distance_floatspan_floatspan(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_FLOATSPAN(s1, DBL_MAX); VALIDATE_FLOATSPAN(s2, DBL_MAX);
+  return DatumGetFloat8(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between two date spans
+ * @param[in] s1,s2 Spans
+ * @errval INT_MAX
+ * @csqlfn #Distance_span_span()
+ */
+int
+distance_datespan_datespan(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_DATESPAN(s1, INT_MAX); VALIDATE_DATESPAN(s2, INT_MAX);
+  return DatumGetInt32(distance_span_span(s1, s2));
+}
+
+/**
+ * @ingroup meos_setspan_dist
+ * @brief Return the distance between two timestamptz spans
+ * @param[in] s1,s2 Spans
+ * @errval NULL
+ * @csqlfn #Distance_span_span()
+ */
+Interval *
+distance_tstzspan_tstzspan(const Span *s1, const Span *s2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPAN(s1, NULL); VALIDATE_TSTZSPAN(s2, NULL);
+  return DatumGetIntervalP(distance_span_span(s1, s2));
+}
+
