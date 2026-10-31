@@ -153,6 +153,16 @@ boxtypes:
     posaxes:   [x, y, z, t]
     posgroup:  mobilitydb_pointcloud_box_pos
     posreference: true
+    # nearest approach distance wrappers (templates/nadpairs.c.tmpl)
+    nadgroup:  mobilitydb_pointcloud_temp
+    nadfile:   mobilitydb/src/pointcloud/tpc_boxops.c
+    nadsides:
+      tpointcloud: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal point cloud, descpl: temporal point clouds, free: true}
+    nadpairs:
+      - [tpcbox, tpcbox, nad_tpcbox_tpcbox]
+      - [tpointcloud, tpcbox, nad_tpointcloud_tpcbox]
+      - [tpcbox, tpointcloud, nad_tpointcloud_tpcbox]
+      - [tpointcloud, tpointcloud, nad_tpointcloud_tpointcloud]
 
   # tstzspan: the box IS a span<timestamptz>, so the primitives are the generic
   # span operators (overlaps_span_span, ...) via prim: span. Serves every
