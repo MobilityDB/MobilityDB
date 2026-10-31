@@ -891,7 +891,7 @@ Jsonb_path_query_common(FunctionCallInfo fcinfo, bool tz)
     bool silent;
     jsonb_path_args(fcinfo, &vars, &silent);
     int count = 0;
-    Jsonb **values = jsonb_path_query_all(jb, jp, vars, silent, tz,
+    Jsonb **values = pg_jsonb_path_query_all(jb, jp, vars, silent, tz,
       &count);
     funcctx->user_fctx = jsonb_srf_state(funcctx, (void **) values, NULL,
       values ? count : 0);
