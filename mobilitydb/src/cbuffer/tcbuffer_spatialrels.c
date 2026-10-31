@@ -688,6 +688,8 @@ Aintersects_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END cbuffer_ea_disjoint_intersects */
 
+/* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_touches — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always touches
  *****************************************************************************/
@@ -744,14 +746,12 @@ Atouches_tcbuffer_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_tcbuffer_geo, ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Etouches_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a circular buffer and a temporal
- * circular buffer ever touch
+ * @brief Return true if a circular buffer and a temporal circular buffer ever
+ * touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -765,8 +765,8 @@ PGDLLEXPORT Datum Atouches_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a circular buffer and a temporal
- * circular buffer always touch
+ * @brief Return true if a circular buffer and a temporal circular buffer always
+ * touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -780,8 +780,8 @@ PGDLLEXPORT Datum Etouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * ever touch
+ * @brief Return true if a temporal circular buffer and a circular buffer ever
+ * touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -795,8 +795,8 @@ PGDLLEXPORT Datum Atouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * always touch
+ * @brief Return true if a temporal circular buffer and a circular buffer always
+ * touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -806,14 +806,11 @@ Atouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
     ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Etouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * ever touch
+ * @brief Return true if two temporal circular buffers ever touch
  * @sqlfn eTouches()
  */
 inline Datum
@@ -827,8 +824,7 @@ PGDLLEXPORT Datum Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_ever
- * @brief Return true if a temporal circular buffer and a circular buffer 
- * always touch
+ * @brief Return true if two temporal circular buffers always touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -837,6 +833,7 @@ Atouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_tcbuffer_tcbuffer,
     ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END cbuffer_ea_touches */
 
 /* GENERATED-SPATIALRELS-BEGIN cbuffer_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
  * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
