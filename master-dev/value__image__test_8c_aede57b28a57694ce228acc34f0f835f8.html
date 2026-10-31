@@ -142,16 +142,16 @@ $(function() {
 <div class="line">    assert(size &gt; 0 &amp;&amp; size != INT_MAX);                                     \</div>
 <div class="line">    TYPE *image = malloc((<span class="keywordtype">size_t</span>) size);                                     \</div>
 <div class="line">    memcpy(image, value, (<span class="keywordtype">size_t</span>) size);                                     \</div>
-<div class="line">    TYPE *result = copy(image);                                              \</div>
+<div class="line">    TYPE *<a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a> = copy(image);                                              \</div>
 <div class="line">    printf(<span class="stringliteral">&quot;%s: %d bytes, image equal %s, copy equal %s\n&quot;</span>, NAME, size,      \</div>
 <div class="line">      eq(value, image) ? <span class="stringliteral">&quot;true&quot;</span> : <span class="stringliteral">&quot;false&quot;</span>,                                   \</div>
-<div class="line">      eq(value, result) ? <span class="stringliteral">&quot;true&quot;</span> : <span class="stringliteral">&quot;false&quot;</span>);                                 \</div>
+<div class="line">      eq(value, <a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>) ? <span class="stringliteral">&quot;true&quot;</span> : <span class="stringliteral">&quot;false&quot;</span>);                                 \</div>
 <div class="line">    assert(eq(value, image));                                                \</div>
-<div class="line">    assert(eq(value, result));                                               \</div>
-<div class="line">    assert(memcmp(result, value, (<span class="keywordtype">size_t</span>) size) == 0);                       \</div>
-<div class="line">    assert(mem_size(result) == size);                                        \</div>
+<div class="line">    assert(eq(value, <a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>));                                               \</div>
+<div class="line">    assert(memcmp(<a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>, value, (<span class="keywordtype">size_t</span>) size) == 0);                       \</div>
+<div class="line">    assert(mem_size(<a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>) == size);                                        \</div>
 <div class="line">    assert(<a class="code hl_function" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">meos_errno</a>() == 0);                                               \</div>
-<div class="line">    free(image); free(result);                                               \</div>
+<div class="line">    free(image); free(<a class="code hl_function" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>);                                               \</div>
 <div class="line">    assert(mem_size(NULL) == INT_MAX);                                       \</div>
 <div class="line">    assert(<a class="code hl_function" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">meos_errno</a>() == <a class="code hl_enumvalue" href="meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056ae198a59d35e6419f8a661c15d884733f">MEOS_ERR_INVALID_ARG</a>);                            \</div>
 <div class="line">    meos_errno_reset();                                                      \</div>
@@ -161,6 +161,7 @@ $(function() {
 <div class="line">  } <span class="keywordflow">while</span> (0)</div>
 <div class="ttc" id="agroup__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3_html_gada390bc9c4a7a12ae8d2393a9dc3bee3"><div class="ttname"><a href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3">meos_errno</a></div><div class="ttdeci">int meos_errno(void)</div><div class="ttdoc">Read an error number.</div><div class="ttdef"><b>Definition:</b> meos_error.c:107</div></div>
 <div class="ttc" id="ameos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056_html_ab19a8e0fe3ea0ea5c7259400cb389056ae198a59d35e6419f8a661c15d884733f"><div class="ttname"><a href="meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056ae198a59d35e6419f8a661c15d884733f">MEOS_ERR_INVALID_ARG</a></div><div class="ttdeci">@ MEOS_ERR_INVALID_ARG</div><div class="ttdef"><b>Definition:</b> meos_error.h:47</div></div>
+<div class="ttc" id="anan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b_html_a9c75e20020f82fd14cc4fba83e0b403b"><div class="ttname"><a href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a></div><div class="ttdeci">static int result(void *v)</div><div class="ttdef"><b>Definition:</b> nan_refusal_test.c:146</div></div>
 </div><!-- fragment -->
 <p>Check the image of a value of a variable-length type. </p>
 <p >The image of the size the value states is copied out into a buffer as a binding writes it, and the buffer is read back with the copy function as a binding reads it. Both the buffer and its copy answer equal to the value, the copy holds the bytes of the value and states the same size, and a null argument answers INT_MAX and NULL with <a class="el" href="group__meos__misc_gada390bc9c4a7a12ae8d2393a9dc3bee3.html#gada390bc9c4a7a12ae8d2393a9dc3bee3" title="Read an error number.">meos_errno</a> set </p>
