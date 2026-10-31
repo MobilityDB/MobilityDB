@@ -321,54 +321,6 @@ SELECT round(minDistance(
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeo_setset_join">
-				<indexterm significance="normal"><primary><varname>eDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eTouchesPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aTouchesPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tTouchesPairs</varname></primary></indexterm>
-				<para>Devuelve los pares de índices que cumplen la relación entre dos arreglos de geometrías temporales, generalizando las relaciones espaciales escalares a una unión espacial conjunto-conjunto</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-aDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer,periods tstzspanset)
-tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
-eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-</programlisting>
-				<para>Cada función resuelve el producto cruzado podado de los dos arreglos de entrada en una sola llamada y devuelve los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares que cumplen la relación. Las funciones con prefijo <varname>e</varname> devuelven los pares para los que la relación se cumple alguna vez, las funciones con prefijo <varname>a</varname> los pares para los que se cumple siempre, y las funciones con prefijo <varname>t</varname> devuelven además los períodos durante los cuales se cumple. La caja espaciotemporal de cada entrada se usa como prefiltro de caja envolvente, de modo que la relación exacta se calcula solo sobre los pares candidatos que sobreviven, y los pares cuyas extensiones temporales no se solapan se excluyen, igual que en las relaciones escalares. Las funciones están definidas para puntos temporales y geometrías temporales tanto en el caso planar como en el geodésico, excepto la relación de toca, que está definida solo para geometrías planares. Los índices se relacionan con las identidades originales mediante un <varname>array_agg(identidad ORDER BY ...)</varname> paralelo. Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT i, j FROM eDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
-        tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- 1 | 1
-SELECT i, j, periods FROM tDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- one pair, with the period during which it is within the distance
-SELECT i, j FROM aDisjointPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
--- 1 | 1
-</programlisting>
-			</listitem>
-
 			<listitem xml:id="tgeo_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Devuelve la línea que conecta el punto de aproximación más cercano &Z_support; &geography_support;</para>
@@ -477,6 +429,23 @@ SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
 
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Relaciones siempre y alguna vez</title>
+		<para>Cada relación de esta sección tiene dos formas. La forma escalar compara dos valores, una geometría o una geometría temporal a cada lado, y devuelve si la relación se cumple en algún instante (prefijo <varname>e</varname>, alguna vez) o en todos los instantes (prefijo <varname>a</varname>, siempre) del tiempo que comparten. La forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par, los índices basados en uno <varname>i</varname> y <varname>j</varname> de los pares para los que la forma escalar devuelve verdadero. Un par que no comparte ningún instante, para el que la forma escalar devuelve nulo, no se devuelve. La forma de arreglo expresa en una sola llamada la unión espacial de dos conjuntos de objetos móviles, que la forma escalar expresa comparando cada par de su producto cruzado: la caja espaciotemporal de cada elemento resuelve los pares cuyas cajas bastan para decidir la relación, y la relación se calcula de forma exacta sobre los demás. Los índices son posiciones en los arreglos, y un <varname>array_agg</varname> de los identificadores en el orden del arreglo de valores los relaciona con los objetos. La forma de arreglo está definida para puntos temporales y geometrías temporales, planares y geodésicos, donde lo está la forma escalar, excepto toca, cuya forma de arreglo recibe geometrías temporales. Contiene y cubre solo tienen la forma escalar.</para>
+		<para>El siguiente ejemplo devuelve, para cada par de barcos, si alguna vez están a una distancia de 2 o menos uno del otro, primero con la forma escalar sobre dos de ellos y luego con la forma de arreglo sobre todos, relacionando los índices con los identificadores.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+  tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]', 2);
+-- true
+WITH ships(id, trip) AS (VALUES
+  ('A', tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'),
+  ('B', tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'),
+  ('C', tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]')),
+fleet AS (SELECT array_agg(id ORDER BY id) AS ids,
+  array_agg(trip ORDER BY id) AS trips FROM ships)
+SELECT ids[i] AS ship1, ids[j] AS ship2
+FROM fleet, eDwithinPairs(trips, trips, 2)
+WHERE i &lt; j;
+-- A | C
+</programlisting>
 		<itemizedlist>
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
@@ -529,10 +498,14 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				<listitem xml:id="tgeo_eDisjoint">
 					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDisjointPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjointPairs</varname></primary></indexterm>
 					<para>Está disjunto alguna vez o siempre &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
+eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </programlisting>
 						<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -542,16 +515,35 @@ SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
 -- true
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que son disjuntos alguna vez o siempre. En los siguientes ejemplos, el primer viaje del segundo arreglo cruza el viaje del primer arreglo, del que es disjunto alguna vez pero no siempre.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]']);
+-- 1 | 1
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
+-- 1 | 2
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eDwithin">
 					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDwithinPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithinPairs</varname></primary></indexterm>
 					<para>Está alguna vez o siempre a distancia de &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
 aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
+eDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+aDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
+aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
 </programlisting>
 					<para>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -568,14 +560,34 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
   geography 'Point(0 0)', 110800, false);
 -- false
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que están alguna vez o siempre a la distancia dada o menos. Para geografías, como en la forma escalar, la distancia se mide en el esferoide WGS 84 por defecto y en la esfera si el último argumento es falso.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM aDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]',
+    tgeompoint '[Point(1 0)@2001-01-01, Point(5 10)@2001-01-02]'], 2);
+-- 1 | 1
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800);
+-- 1 | 1
+SELECT count(*) FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false);
+-- 0
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eIntersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eIntersectsPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersectsPairs</varname></primary></indexterm>
 					<para>Intersecta alguna vez o siempre &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
 aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
+eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
@@ -585,26 +597,66 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que se intersectan alguna vez o siempre. Dos puntos temporales se intersectan siempre cuando son iguales en todos los instantes que comparten.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eTouches">
 					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eTouchesPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aTouchesPairs</varname></primary></indexterm>
 					<para>Toca alguna vez o siempre</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
+eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 						<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
 </programlisting>
-			</listitem>
+					<para>La forma de arreglo devuelve los pares de geometrías temporales que se tocan alguna vez o siempre. En los siguientes ejemplos, la primera geometría del segundo arreglo toca la geometría del primer arreglo hasta que se aleja el 2001-01-02.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
+SELECT i, j FROM aTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
+</programlisting>
+				</listitem>
 		</itemizedlist>
 	</sect1>
 
 	<sect1 xml:id="tgeo_spatiotemp_rel">
 		<title>Relaciones espaciotemporales</title>
+		<para>Las relaciones disjunto, a distancia de, intersecta y toca también tienen una forma de arreglo, cuyo nombre termina en <varname>Pairs</varname>, como las relaciones siempre y alguna vez de <xref linkend="tgeo_everalways_rels"/>. Compara cada elemento de un arreglo de geometrías temporales con cada elemento de otro y devuelve, una fila por par cuya relación temporal es verdadera alguna vez, los índices basados en uno <varname>i</varname> y <varname>j</varname> del par y los períodos <varname>periods</varname> durante los cuales la relación es verdadera.</para>
 		<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
@@ -629,9 +681,11 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				</listitem>
 				<listitem xml:id="tgeo_tDisjoint">
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDisjointPairs</varname></primary></indexterm>
 					<para>Disjunto temporal &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
+tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>La función es la negación de <varname>tIntersects</varname>. Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -642,13 +696,22 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que son disjuntos en algún instante, con los períodos durante los cuales lo son.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tDwithin">
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithinPairs</varname></primary></indexterm>
 					<para>Está a distancia de temporal &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
 tDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → tbool
+tDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>: para un punto geográfico temporal con interpolación lineal, el otro argumento es un punto geográfico o un punto geográfico temporal. La distancia se mide en el esferoide WGS 84 por defecto. Si el último argumento es falso, se mide en la esfera. Un segmento de un punto geográfico temporal se desplaza a lo largo de un círculo máximo, y el resultado cambia de valor en cada instante en que la distancia geodésica cruza la distancia dada, que un segmento puede cruzar varias veces.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -671,12 +734,24 @@ SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   geography 'Point(1 1)', 200000);
 -- [t@2001-01-01, f@2001-01-02, t@2001-01-03]
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que están a la distancia dada o menos en algún instante, con los períodos durante los cuales lo están.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-03]',
+    tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-03]',
+    tgeompoint '[Point(4 0)@2001-01-01, Point(0 10)@2001-01-03]'], 2);
+-- 1 | 1 | {[2001-01-01, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02, 2001-01-03]}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tIntersects">
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tIntersectsPairs</varname></primary></indexterm>
 					<para>Intersección temporal &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
+tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>Dos puntos temporales se intersecan en los instantes en que son iguales. Dos geometrías o geografías temporales, cuyos valores son constantes entre sus instantes, se intersecan en los instantes en que sus valores se intersecan, y dos geografías se intersecan donde su distancia es cero. Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -695,17 +770,37 @@ SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   geography 'Point(1 1)');
 -- [t@2001-01-01, f@2001-01-02, f@2001-01-03]
 </programlisting>
+					<para>La forma de arreglo devuelve los pares que se intersectan en algún instante, con los períodos durante los cuales se intersectan.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)',
+    tgeompoint '[Point(0 1)@2001-01-01, Point(3 4)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-03, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02 08:00:00, 2001-01-02 08:00:00]}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tTouches">
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tTouchesPairs</varname></primary></indexterm>
 					<para>Toca temporal</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
+tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+</programlisting>
+					<para>La forma de arreglo devuelve los pares de geometrías temporales que se tocan en algún instante, con los períodos durante los cuales se tocan.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
 </programlisting>
 				</listitem>
 		</itemizedlist>

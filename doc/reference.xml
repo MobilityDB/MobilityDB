@@ -1192,9 +1192,6 @@
 					<para><link linkend="tgeo_minDistance"><varname>minDistance</varname></link>: Return the minimum spatial distance between two sets of temporal geometries, ignoring time</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_setset_join"><varname>eDwithinPairs</varname>, <varname>aDwithinPairs</varname>, <varname>tDwithinPairs</varname>, <varname>eIntersectsPairs</varname>, <varname>aIntersectsPairs</varname>, <varname>tIntersectsPairs</varname>, <varname>eDisjointPairs</varname>, <varname>aDisjointPairs</varname>, <varname>tDisjointPairs</varname>, <varname>eTouchesPairs</varname>, <varname>aTouchesPairs</varname>, <varname>tTouchesPairs</varname></link>: Return the qualifying index pairs of two arrays of temporal geometries, generalising the scalar spatial relationships to a set-set spatial join</para>
-				</listitem>
-				<listitem>
 					<para><link linkend="tgeo_shortestLine"><varname>shortestLine</varname></link>: Return the line connecting the nearest approach point &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
@@ -1212,16 +1209,16 @@
 					<para><link linkend="tgeo_eCovers"><varname>eCovers</varname>, <varname>aCovers</varname></link>: Ever or always covers</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname></link>: Is ever or always disjoint &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_eDisjoint"><varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eDisjointPairs</varname>, <varname>aDisjointPairs</varname></link>: Is ever or always disjoint &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname></link>: Is ever or always at distance within &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_eDwithin"><varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>eDwithinPairs</varname>, <varname>aDwithinPairs</varname></link>: Is ever or always at distance within &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname></link>: Ever or always intersects &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_eIntersects"><varname>eIntersects</varname>, <varname>aIntersects</varname>, <varname>eIntersectsPairs</varname>, <varname>aIntersectsPairs</varname></link>: Ever or always intersects &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname></link>: Ever or always touches</para>
+					<para><link linkend="tgeo_eTouches"><varname>eTouches</varname>, <varname>aTouches</varname>, <varname>eTouchesPairs</varname>, <varname>aTouchesPairs</varname></link>: Ever or always touches</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -1232,16 +1229,16 @@
 					<para><link linkend="tgeo_tContains"><varname>tContains</varname></link>: Temporal contains</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname></link>: Temporal disjoint &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_tDisjoint"><varname>tDisjoint</varname>, <varname>tDisjointPairs</varname></link>: Temporal disjoint &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname></link>: Temporal distance within &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_tDwithin"><varname>tDwithin</varname>, <varname>tDwithinPairs</varname></link>: Temporal distance within &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname></link>: Temporal intersects &Z_support; &geography_support;</para>
+					<para><link linkend="tgeo_tIntersects"><varname>tIntersects</varname>, <varname>tIntersectsPairs</varname></link>: Temporal intersects &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="tgeo_tTouches"><varname>tTouches</varname></link>: Temporal touches</para>
+					<para><link linkend="tgeo_tTouches"><varname>tTouches</varname>, <varname>tTouchesPairs</varname></link>: Temporal touches</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

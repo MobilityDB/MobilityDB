@@ -320,54 +320,6 @@ SELECT round(minDistance(
 </programlisting>
 			</listitem>
 
-			<listitem xml:id="tgeo_setset_join">
-				<indexterm significance="normal"><primary><varname>eDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDwithinPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tIntersectsPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tDisjointPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>eTouchesPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>aTouchesPairs</varname></primary></indexterm>
-				<indexterm significance="normal"><primary><varname>tTouchesPairs</varname></primary></indexterm>
-				<para>Return the qualifying index pairs of two arrays of temporal geometries, generalising the scalar spatial relationships to a set-set spatial join</para>
-				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-eDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-aDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer)
-eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
-eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
-tDwithinPairs(tgeo[],tgeo[],float) → setof(i integer,j integer,periods tstzspanset)
-tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
-tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
-eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
-</programlisting>
-				<para>Each function resolves the pruned cross product of the two input arrays inside a single call and returns the one-based indexes <varname>i</varname> and <varname>j</varname> of the qualifying pairs. The <varname>e</varname>-prefixed functions return the pairs for which the relationship ever holds, the <varname>a</varname>-prefixed functions the pairs for which it always holds, and the <varname>t</varname>-prefixed functions additionally return the periods during which it holds. Each input's spatiotemporal box is used as a bounding-box prefilter so that the exact relationship is computed only on the surviving candidate pairs, and pairs whose temporal extents do not overlap are excluded, matching the scalar relationships. The functions are defined for temporal points and temporal geometries in both the planar and geodetic cases, except the touches relationship, which is defined for planar geometries only. The indexes map back to the original identities through a parallel <varname>array_agg(identity ORDER BY ...)</varname>. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
-				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT i, j FROM eDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
-        tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- 1 | 1
-SELECT i, j, periods FROM tDwithinPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]'], 2.0);
--- one pair, with the period during which it is within the distance
-SELECT i, j FROM aDisjointPairs(
-  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
-  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
--- 1 | 1
-</programlisting>
-			</listitem>
-
 			<listitem xml:id="tgeo_shortestLine">
 				<indexterm significance="normal"><primary><varname>shortestLine</varname></primary></indexterm>
 				<para>Return the line connecting the nearest approach point &Z_support; &geography_support;</para>
@@ -476,6 +428,23 @@ SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
 
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Ever and Always Relationships</title>
+		<para>Each relationship of this section has two forms. The scalar form compares two values, a geometry or a temporal geometry on each side, and returns whether the relationship holds at some instant (prefix <varname>e</varname>, ever) or at every instant (prefix <varname>a</varname>, always) of the time they share. The array form, whose name ends in <varname>Pairs</varname>, compares every element of an array of temporal geometries with every element of another and returns, one row per pair, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pairs for which the scalar form returns true. A pair sharing no instant, for which the scalar form returns null, is not returned. The array form states in a single call the spatial join of two sets of moving objects, which the scalar form states by comparing every pair of their cross product: the spatiotemporal box of each element settles the pairs whose boxes alone decide the relationship, and the relationship is computed exactly on the others. The indexes are positions in the arrays, and an <varname>array_agg</varname> of the identifiers in the order of the array of values maps them back to the objects. The array form is defined for temporal points and temporal geometries, planar and geodetic, where the scalar form is, except touches, whose array form takes temporal geometries. Contains and covers have the scalar form only.</para>
+		<para>The following example returns, for each pair of ships, whether they ever come within a distance of 2 of each other, first with the scalar form on two of them, then with the array form on all of them, mapping the indexes back to the identifiers.</para>
+		<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT eDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]',
+  tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]', 2);
+-- true
+WITH ships(id, trip) AS (VALUES
+  ('A', tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'),
+  ('B', tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-02]'),
+  ('C', tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]')),
+fleet AS (SELECT array_agg(id ORDER BY id) AS ids,
+  array_agg(trip ORDER BY id) AS trips FROM ships)
+SELECT ids[i] AS ship1, ids[j] AS ship2
+FROM fleet, eDwithinPairs(trips, trips, 2)
+WHERE i &lt; j;
+-- A | C
+</programlisting>
 		<itemizedlist>
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>
@@ -528,10 +497,14 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				<listitem xml:id="tgeo_eDisjoint">
 					<indexterm significance="normal"><primary><varname>eDisjoint</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDisjointPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDisjointPairs</varname></primary></indexterm>
 					<para>Is ever or always disjoint &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
 aDisjoint({geo,tgeo},{geo,tgeo}) → boolean
+eDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </programlisting>
 						<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
@@ -541,16 +514,35 @@ SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
 -- true
 </programlisting>
+					<para>The array form returns the pairs that are ever or always disjoint. In the following examples, the first trip of the second array crosses the trip of the first array, which is ever but not always disjoint from it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]']);
+-- 1 | 1
+SELECT i, j FROM aDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(5 0)@2001-01-01, Point(-5 10)@2001-01-02]',
+    tgeompoint '[Point(5 0)@2001-01-01, Point(5 10)@2001-01-02]']);
+-- 1 | 2
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eDwithin">
 					<indexterm significance="normal"><primary><varname>eDwithin</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eDwithinPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aDwithinPairs</varname></primary></indexterm>
 					<para>Is ever or always at distance within &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
 aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
+eDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+aDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer)
+eDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
+aDwithinPairs(tgeog[],tgeog[],float,spheroid boolean=true) → setof(i integer,j integer)
 </programlisting>
 					<para>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -567,14 +559,34 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
   geography 'Point(0 0)', 110800, false);
 -- false
 </programlisting>
+					<para>The array form returns the pairs that are ever or always within the distance. For geographies, as for the scalar form, the distance is measured on the WGS 84 spheroid by default and on the sphere if the last argument is false.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM aDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-02]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-02]',
+    tgeompoint '[Point(1 0)@2001-01-01, Point(5 10)@2001-01-02]'], 2);
+-- 1 | 1
+SELECT i, j FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800);
+-- 1 | 1
+SELECT count(*) FROM eDwithinPairs(
+  ARRAY[tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'],
+  ARRAY[tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'], 110800, false);
+-- 0
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eIntersects">
 					<indexterm significance="normal"><primary><varname>eIntersects</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eIntersectsPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aIntersectsPairs</varname></primary></indexterm>
 					<para>Ever or always intersects &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
 aIntersects({geometry,tgeom},{geometry,tgeom}) → boolean
+eIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
+aIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
@@ -584,19 +596,58 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
 </programlisting>
+					<para>The array form returns the pairs that ever or always intersect. Two temporal points always intersect when they are equal at every instant they share.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+-- 1 | 2
+SELECT i, j FROM aIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeompoint '[Point(0 2)@2001-01-01, Point(2 0)@2001-01-03]',
+    tgeompoint '[Point(5 5)@2001-01-01, Point(6 6)@2001-01-03]']);
+-- 1 | 1
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eTouches">
 					<indexterm significance="normal"><primary><varname>eTouches</varname></primary></indexterm>
 					<indexterm significance="normal"><primary><varname>aTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>eTouchesPairs</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>aTouchesPairs</varname></primary></indexterm>
 					<para>Ever or always touches</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
+eTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
+aTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-03)');
 -- true
+</programlisting>
+					<para>The array form returns the pairs of temporal geometries that ever or always touch. In the following examples, the first geometry of the second array touches the geometry of the first array until it moves away on 2001-01-02.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j FROM eTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
+SELECT i, j FROM aTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-03]',
+    tgeometry '[Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1
 </programlisting>
 				</listitem>
 		</itemizedlist>
@@ -604,6 +655,7 @@ SELECT eTouches(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 
 	<sect1 xml:id="tgeo_spatiotemp_rel">
 		<title>Spatiotemporal Relationships</title>
+		<para>The disjoint, distance within, intersects and touches relationships also have an array form, whose name ends in <varname>Pairs</varname>, as the ever and always relationships of <xref linkend="tgeo_everalways_rels"/> do. It compares every element of an array of temporal geometries with every element of another and returns, one row per pair whose temporal relationship is ever true, the one-based indexes <varname>i</varname> and <varname>j</varname> of the pair and the periods <varname>periods</varname> during which the relationship is true.</para>
 		<itemizedlist>
 				<listitem xml:id="tgeo_tContains">
 					<indexterm significance="normal"><primary><varname>tContains</varname></primary></indexterm>
@@ -628,9 +680,11 @@ SELECT tContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 				</listitem>
 				<listitem xml:id="tgeo_tDisjoint">
 					<indexterm significance="normal"><primary><varname>tDisjoint</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDisjointPairs</varname></primary></indexterm>
 					<para>Temporal disjoint &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDisjoint({geo,tgeo},{geo,tgeo}) → tbool
+tDisjointPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>The function is the negation of <varname>tIntersects</varname>. Geographies are supported as stated in <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -641,13 +695,22 @@ SELECT tDisjoint(tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)');
 -- {[t@2001-01-01, f@2001-01-03], (t@2001-01-03, t@2001-01-05)}
 </programlisting>
+					<para>The array form returns the pairs that are disjoint at some instant, with the periods during which they are disjoint.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tDisjointPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-01, 2001-01-03), (2001-01-03, 2001-01-05)}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tDwithin">
 					<indexterm significance="normal"><primary><varname>tDwithin</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tDwithinPairs</varname></primary></indexterm>
 					<para>Temporal distance within &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tDwithin({geo,tgeo},{geo,tgeo},float) → tbool
 tDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → tbool
+tDwithinPairs(tgeom[],tgeom[],float) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>Geographies are supported as stated in <xref linkend="tgeo_geodetic"/>: for a temporal geography point with linear interpolation, the other argument is a geography point or a temporal geography point. The distance is measured on the WGS 84 spheroid by default. If the last argument is false, it is measured on the sphere. A segment of a temporal geography point moves along a great circle, and the result changes its value at every instant at which the geodetic distance crosses the given distance, which a segment may cross several times.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -670,12 +733,24 @@ SELECT tDwithin(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   geography 'Point(1 1)', 200000);
 -- [t@2001-01-01, f@2001-01-02, t@2001-01-03]
 </programlisting>
+					<para>The array form returns the pairs that are within the distance at some instant, with the periods during which they are within it.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tDwithinPairs(
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(0 10)@2001-01-03]',
+    tgeompoint '[Point(50 50)@2001-01-01, Point(50 60)@2001-01-03]'],
+  ARRAY[tgeompoint '[Point(1 0)@2001-01-01, Point(1 10)@2001-01-03]',
+    tgeompoint '[Point(4 0)@2001-01-01, Point(0 10)@2001-01-03]'], 2);
+-- 1 | 1 | {[2001-01-01, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02, 2001-01-03]}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tIntersects">
 					<indexterm significance="normal"><primary><varname>tIntersects</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tIntersectsPairs</varname></primary></indexterm>
 					<para>Temporal intersects &Z_support; &geography_support;</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tIntersects({geo,tgeo},{geo,tgeo}) → tbool
+tIntersectsPairs(tgeo[],tgeo[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<para>Two temporal points intersect at the instants at which they are equal. Two temporal geometries or geographies, whose values are constant between their instants, intersect at the instants at which their values intersect, and two geographies intersect where their distance is zero. Geographies are supported as stated in <xref linkend="tgeo_geodetic"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -694,17 +769,37 @@ SELECT tIntersects(tgeography '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
   geography 'Point(1 1)');
 -- [t@2001-01-01, f@2001-01-02, f@2001-01-03]
 </programlisting>
+					<para>The array form returns the pairs that intersect at some instant, with the periods during which they intersect.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tIntersectsPairs(
+  ARRAY[tgeompoint '[Point(0 3)@2001-01-01, Point(3 0)@2001-01-05)'],
+  ARRAY[tgeompoint '[Point(0 0)@2001-01-01, Point(3 3)@2001-01-05)',
+    tgeompoint '[Point(0 1)@2001-01-01, Point(3 4)@2001-01-05)']);
+-- 1 | 1 | {[2001-01-03, 2001-01-03]}
+-- 1 | 2 | {[2001-01-02 08:00:00, 2001-01-02 08:00:00]}
+</programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_tTouches">
 					<indexterm significance="normal"><primary><varname>tTouches</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>tTouchesPairs</varname></primary></indexterm>
 					<para>Temporal touches</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tTouches({geometry,tgeom},{geometry,tgeom}) → tbool
+tTouchesPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer,periods tstzspanset)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tTouches(geometry 'Polygon((1 0,1 2,2 2,2 0,1 0))',
   tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-04)');
 -- {[f@2001-01-01, t@2001-01-02, t@2001-01-03], (f@2001-01-03, f@2001-01-04]}
+</programlisting>
+					<para>The array form returns the pairs of temporal geometries that touch at some instant, with the periods during which they touch.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT i, j, periods FROM tTouchesPairs(
+  ARRAY[tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01,
+    Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01,
+    Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-03]']);
+-- 1 | 1 | {[2001-01-01, 2001-01-02)}
 </programlisting>
 				</listitem>
 		</itemizedlist>
