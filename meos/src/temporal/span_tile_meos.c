@@ -117,7 +117,7 @@ tfloat_value_bins(const Temporal *temp, double vsize, double vorigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return tnumber_value_bins(temp, Float8GetDatum(vsize),
     Float8GetDatum(vorigin), border_inc, count);

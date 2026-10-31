@@ -1256,8 +1256,8 @@ posechain_ne(const PoseChain *pc1, const PoseChain *pc2)
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is less
  * than, equal to, or greater than the second one
  * @details The values of the links are compared value by value, -0.0 and 0.0
- * being equal. A pose chain holds no NaN, which every input of MEOS refuses,
- * so the order is total and holds two chains equal exactly when
+ * being equal. A pose chain holds finite numbers, as every input of MEOS
+ * requires, so the order is total and holds two chains equal exactly when
  * #posechain_eq does, which their sort key (#posechain_sortkey_put)
  * requires
  * @param[in] pc1,pc2 Pose chains

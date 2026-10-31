@@ -10293,7 +10293,7 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(params, NULL);
-  if (! ensure_not_nan(size))
+  if (! ensure_finite(size))
     return NULL;
   if (! ensure_not_geodetic_geo(gs))
     return NULL;

@@ -347,8 +347,8 @@ tcbufferdist_cand_cmp(const void *a, const void *b)
  * tspatial_tempspatialrels.c rewrite the instants they keep. The caller makes
  * the timestamps strictly increasing, so the sequence is built by
  * #tsequence_make_exp1, the constructor that reads no validity it already
- * holds, and normalized as #tsequence_make normalizes it; a NaN distance is
- * refused as #tinstant_make refuses it.
+ * holds, and normalized as #tsequence_make normalizes it; a distance that is
+ * not finite is refused as #tinstant_make refuses it.
  */
 static TSequence *
 tcbufferdist_seq_make(const double *vals, const TimestampTz *ts, int n,
@@ -367,7 +367,7 @@ tcbufferdist_seq_make(const double *vals, const TimestampTz *ts, int n,
     memcpy(inst, first, size);
     if (i > 0)
     {
-      if (! ensure_not_nan(vals[i]))
+      if (! ensure_finite(vals[i]))
       {
         pfree(first); pfree(block); pfree(instants);
         return NULL;
@@ -2639,7 +2639,7 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double threshold)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(threshold))
+  if (! ensure_finite(threshold))
     return DBL_MAX;
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
     return DBL_MAX;

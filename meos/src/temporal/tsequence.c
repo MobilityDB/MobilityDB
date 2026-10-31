@@ -1275,8 +1275,8 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   if (! ensure_positive(count))
     return NULL;
   for (int i = 0; i < count; i++)
-    if (! ensure_not_nan(xcoords[i]) || ! ensure_not_nan(ycoords[i]) ||
-        (zcoords && ! ensure_not_nan(zcoords[i])))
+    if (! ensure_finite(xcoords[i]) || ! ensure_finite(ycoords[i]) ||
+        (zcoords && ! ensure_finite(zcoords[i])))
       return NULL;
   bool hasz = (zcoords != NULL);
   MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
@@ -1488,7 +1488,7 @@ tfloatseq_from_base_tstzset(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tsequence_from_base_tstzset(Float8GetDatum(d), T_TFLOAT, s);
 }
@@ -1573,7 +1573,7 @@ tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tsequence_from_base_tstzspan(Float8GetDatum(d), T_TFLOAT, s, interp);
 }

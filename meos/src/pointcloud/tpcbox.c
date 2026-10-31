@@ -620,9 +620,9 @@ tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic, uint32_t pcid,
   double zmax, const Span *period)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax))
     return NULL;
   if (! hasx && ! hast)
   {

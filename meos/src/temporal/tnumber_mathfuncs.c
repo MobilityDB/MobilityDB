@@ -255,7 +255,7 @@ div_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT);
@@ -305,7 +305,7 @@ div_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT_NO);
@@ -374,7 +374,7 @@ mul_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT);
@@ -425,7 +425,7 @@ mul_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT_NO);
@@ -493,7 +493,7 @@ sub_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT);
@@ -543,7 +543,7 @@ sub_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT_NO);
@@ -608,7 +608,7 @@ add_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT);
@@ -658,7 +658,7 @@ add_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT_NO);
@@ -999,12 +999,12 @@ angular_difference(Datum degrees1, Datum degrees2)
 double
 float_angular_difference(double degrees1, double degrees2)
 {
-  if (! ensure_not_nan(degrees1) || ! ensure_not_nan(degrees2))
+  if (! ensure_finite(degrees1) || ! ensure_finite(degrees2))
     return DBL_MAX;
   double result = DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
   /* An infinite angle has no difference with another one */
-  if (! ensure_not_nan_result(result))
+  if (! ensure_finite_result(result))
     return DBL_MAX;
   return result;
 }

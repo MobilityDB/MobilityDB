@@ -712,7 +712,7 @@ SpanSet *
 float_to_spanset(double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return value_spanset(Float8GetDatum(d), T_FLOAT8);
 }
@@ -1581,9 +1581,9 @@ floatspanset_degrees(const SpanSet *ss, bool normalize)
     s->lower = datum_degrees(s->lower, normalize);
     s->upper = datum_degrees(s->upper, normalize);
     /* An infinite bound has no normalized angle, see
-     * #ensure_not_nan_result */
-    if (! ensure_not_nan_result(DatumGetFloat8(s->lower)) ||
-        ! ensure_not_nan_result(DatumGetFloat8(s->upper)))
+     * #ensure_finite_result */
+    if (! ensure_finite_result(DatumGetFloat8(s->lower)) ||
+        ! ensure_finite_result(DatumGetFloat8(s->upper)))
     {
       pfree(result);
       return NULL;
@@ -1651,11 +1651,11 @@ numspanset_shift_scale(const SpanSet *ss, Datum shift, Datum width,
     numspan_delta_scale_iter(&copy->elems[i], origin, delta, hasshift,
       scale);
   /* An infinite bound of a float span set can give a bound with no value,
-   * see #ensure_not_nan_result */
+   * see #ensure_finite_result */
   for (int i = 0; ss->basetype == T_FLOAT8 && i < ss->count; i++)
   {
-    if (! ensure_not_nan_result(DatumGetFloat8(copy->elems[i].lower)) ||
-        ! ensure_not_nan_result(DatumGetFloat8(copy->elems[i].upper)))
+    if (! ensure_finite_result(DatumGetFloat8(copy->elems[i].lower)) ||
+        ! ensure_finite_result(DatumGetFloat8(copy->elems[i].upper)))
     {
       pfree(copy);
       return NULL;
@@ -1809,7 +1809,7 @@ floatspanset_shift_scale(const SpanSet *ss, double shift, double width,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+  if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numspanset_shift_scale(ss, Float8GetDatum(shift),
     Float8GetDatum(width), hasshift, haswidth);

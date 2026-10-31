@@ -250,15 +250,15 @@ tinstant_make(Datum value, MeosType temptype, TimestampTz t)
       if (srid != SRID_UNKNOWN && ! ensure_srid_is_latlong(srid))
         return NULL;
     }
-    /* Ensure that a geometry/geography is not empty and has no NaN
-     * coordinate */
+    /* Ensure that a geometry/geography is not empty and has finite
+     * coordinates */
     if (tgeo_type_all(temptype) &&
         (! ensure_not_empty(DatumGetGserializedP(value)) ||
-         ! ensure_not_nan_geo(DatumGetGserializedP(value))))
+         ! ensure_finite_geo(DatumGetGserializedP(value))))
       return NULL;
   }
-  /* Ensure that a float value is not NaN */
-  if (temptype == T_TFLOAT && ! ensure_not_nan(DatumGetFloat8(value)))
+  /* Ensure that a float value is finite */
+  if (temptype == T_TFLOAT && ! ensure_finite(DatumGetFloat8(value)))
     return NULL;
   /* Ensure that an integer value is not the maximum of its type, since the
    * value span of the bounding box, whose upper bound is the next value, has

@@ -179,8 +179,8 @@ double
 float_get_bin(double value, double vsize, double vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(value) || ! ensure_not_nan(vsize) ||
-      ! ensure_not_nan(vorigin))
+  if (! ensure_finite(value) || ! ensure_finite(vsize) ||
+      ! ensure_finite(vorigin))
     return DBL_MAX;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return DBL_MAX;
@@ -207,7 +207,7 @@ float_get_bin(double value, double vsize, double vorigin)
   double result = floor(value / vsize) * vsize;
   result += vorigin;
   /* An infinite value or size has no bin */
-  if (! ensure_not_nan_result(result))
+  if (! ensure_finite_result(result))
     return DBL_MAX;
   return result;
 }
@@ -405,8 +405,8 @@ Span *
 floatspan_get_bin(double value, double vsize, double vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(value) || ! ensure_not_nan(vsize) ||
-      ! ensure_not_nan(vorigin))
+  if (! ensure_finite(value) || ! ensure_finite(vsize) ||
+      ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return NULL;
@@ -771,7 +771,7 @@ floatspan_bins(const Span *s, double vsize, double vorigin, bool border_inc,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return span_bins(s, Float8GetDatum(vsize), Float8GetDatum(vorigin),
     border_inc, count);
@@ -882,7 +882,7 @@ floatspanset_bins(const SpanSet *ss, double vsize, double vorigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return spanset_bins(ss, Float8GetDatum(vsize), Float8GetDatum(vorigin),
     border_inc, count);
@@ -1294,8 +1294,8 @@ tbox_get_value_time_tile(double value, TimestampTz t, double vsize,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_not_nan(value) || ! ensure_not_nan(vsize) ||
-      ! ensure_not_nan(vorigin))
+  if (! ensure_finite(value) || ! ensure_finite(vsize) ||
+      ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_positive_duration(duration))
@@ -1316,8 +1316,8 @@ TBox *
 tbox_get_value_tile(double value, double vsize, double vorigin)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(value) || ! ensure_not_nan(vsize) ||
-      ! ensure_not_nan(vorigin))
+  if (! ensure_finite(value) || ! ensure_finite(vsize) ||
+      ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return NULL;
@@ -1644,7 +1644,7 @@ tfloat_value_time_boxes(const Temporal *temp, double vsize,
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_positive_duration(duration))

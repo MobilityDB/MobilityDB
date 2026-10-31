@@ -414,10 +414,10 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   if (! ensure_srid_valid(srid) ||
       (s && ! ensure_span_isof_type(s, T_TSTZSPAN)))
     return NULL;
-  /* A coordinate the box carries cannot be NaN */
-  if (hasx && (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax)))))
+  /* A coordinate the box carries is finite */
+  if (hasx && (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      (hasz && (! ensure_finite(zmin) || ! ensure_finite(zmax)))))
     return NULL;
 
   /* Note: zero-fill is done in function stbox_set */
@@ -931,7 +931,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (gserialized_is_empty(gs) || ! ensure_not_nan_geo(gs))
+  if (gserialized_is_empty(gs) || ! ensure_finite_geo(gs))
     return NULL;
   return geo_stbox(gs);
 }
@@ -1756,7 +1756,7 @@ stbox_expand_space(const STBox *box, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   if (! stbox_expand_space_set(box, d, result))

@@ -224,7 +224,7 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       int last_errno = meos_errno_reset();
 #endif /* MEOS */
       double d = float8_in(str);
-      if (meos_errno() || ! ensure_not_nan(d))
+      if (meos_errno() || ! ensure_finite(d))
         return false;
 #if MEOS
       meos_errno_restore(last_errno);
@@ -2119,9 +2119,9 @@ double_from_wkb_state(meos_wkb_parse_state *s)
 {
   double d = 0;
   read_wkb_value(s, &d, MEOS_WKB_DOUBLE_SIZE);
-  /* A NaN is refused as #wkb_parse_state_check refuses a short buffer: the
-   * error is raised and the reader goes on */
-  ensure_not_nan(d);
+  /* A number that is not finite is refused as #wkb_parse_state_check
+   * refuses a short buffer: the error is raised and the reader goes on */
+  ensure_finite(d);
   return d;
 }
 
@@ -2271,9 +2271,10 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
   GSERIALIZED *result = s->geodetic ?
     geog_serialize(geo) : geom_serialize(geo);
   lwgeom_free(geo);
-  /* A NaN coordinate is refused, as #geo_from_ewkb refuses it, so that the
-   * reference geometry of a temporal rigid geometry holds none */
-  if (! ensure_not_nan_geo(result))
+  /* A coordinate that is not finite is refused, as #geo_from_ewkb refuses
+   * it, so that the reference geometry of a temporal rigid geometry holds
+   * none */
+  if (! ensure_finite_geo(result))
   {
     s->error = true;
     pfree(result);

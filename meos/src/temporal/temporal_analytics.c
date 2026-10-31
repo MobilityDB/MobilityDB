@@ -360,8 +360,8 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
 {
   /* Validate input */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_not_nan(gate) || ! ensure_not_nan(q) ||
-      ! ensure_not_nan(variance))
+  if (! ensure_finite(gate) || ! ensure_finite(q) ||
+      ! ensure_finite(variance))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(gate), T_FLOAT8) ||
       ! ensure_positive_datum(Float8GetDatum(variance), T_FLOAT8) ||
@@ -2072,7 +2072,7 @@ temporal_simplify_min_dist(const Temporal *temp, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2529,7 +2529,7 @@ temporal_simplify_max_dist(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2691,7 +2691,7 @@ temporal_simplify_dp(const Temporal *temp, double dist, bool syncdist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_tsimplify_type(temp->temptype) ||
       ! ensure_positive_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2862,7 +2862,7 @@ temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2,
   double epsilon, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(epsilon))
+  if (! ensure_finite(epsilon))
     return DBL_MAX;
   if (epsilon < 0 || ! ensure_valid_temporal_temporal(temp1, temp2))
     return DBL_MAX;

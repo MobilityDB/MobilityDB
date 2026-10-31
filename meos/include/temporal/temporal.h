@@ -493,7 +493,7 @@ extern bool ensure_not_empty_array(int count);
  * called
  */
 static inline bool
-ensure_not_nan(double d)
+ensure_finite(double d)
 {
   if (isfinite(d))
     return true;
@@ -502,13 +502,13 @@ ensure_not_nan(double d)
 }
 /**
  * @brief Ensure that the result of an operation is finite
- * @details Every MEOS value is finite (#ensure_not_nan), and an operation on
+ * @details Every MEOS value is finite (#ensure_finite), and an operation on
  * finite operands can leave the doubles, as a sum or a product beyond
  * DBL_MAX, so the operation raises an error, as PostgreSQL does for a result
  * out of the range of its type
  */
 static inline bool
-ensure_not_nan_result(double d)
+ensure_finite_result(double d)
 {
   if (isfinite(d))
     return true;

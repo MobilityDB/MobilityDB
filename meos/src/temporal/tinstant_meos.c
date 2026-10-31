@@ -212,7 +212,7 @@ tbigintinst_make(int64 i, TimestampTz t)
 TInstant *
 tfloatinst_make(double d, TimestampTz t)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tinstant_make(Float8GetDatum(d), T_TFLOAT, t);
 }
