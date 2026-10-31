@@ -313,3 +313,134 @@ distance_families:
       - [tgeography, geography, Shortestline_tgeo_geo]
       - [tgeography, tgeography, Shortestline_tgeo_tgeo]
   - lit: "\n/*****************************************************************************/\n"
+- family: tpoint
+  file: mobilitydb/sql/geo/064_tpoint_distance.in.sql
+  begin: "/*****************************************************************************\n * Distance functions\n"
+  begin_exact: true
+  whole_file: true
+  blocks:
+  - lit: "/*****************************************************************************\n * Distance functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      opr: true
+      rows:
+      - ["geometry(Point)", tgeompoint, Tdistance_geo_tgeo]
+      - [tgeompoint, "geometry(Point)", Tdistance_tgeo_geo]
+      - [tgeompoint, tgeompoint, Tdistance_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistanceOpr
+      rows:
+      - [geometry, tgeompoint]
+      - [tgeompoint, geometry]
+      - [tgeompoint, tgeompoint]
+  - lit: "\n/*****************************************************************************/\n\n"
+  - fns:
+      proc: tDistance
+      ret: tfloat
+      spheroid: true
+      opr: true
+      rows:
+      - ["geography(Point)", tgeogpoint, Tdistance_geo_tgeo]
+      - [tgeogpoint, "geography(Point)", Tdistance_tgeo_geo]
+      - [tgeogpoint, tgeogpoint, Tdistance_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "<->"
+      proc: tDistanceOpr
+      rows:
+      - [geography, tgeogpoint]
+      - [tgeogpoint, geography]
+      - [tgeogpoint, tgeogpoint]
+  - lit: "\n/*****************************************************************************\n * Nearest approach instant/distance and shortest line functions\n *****************************************************************************/\n\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tgeompoint
+      rows:
+      - [geometry, tgeompoint, NAI_geo_tgeo]
+      - [tgeompoint, geometry, NAI_tgeo_geo]
+      - [tgeompoint, tgeompoint, NAI_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachInstant
+      ret: tgeogpoint
+      spheroid: true
+      rows:
+      - [geography, tgeogpoint, NAI_geo_tgeo]
+      - [tgeogpoint, geography, NAI_tgeo_geo]
+      - [tgeogpoint, tgeogpoint, NAI_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      opr: true
+      rows:
+      - [geometry, tgeompoint, NAD_geo_tgeo]
+      - [tgeompoint, geometry, NAD_tgeo_geo]
+      - [stbox, geometry, NAD_stbox_geo]
+      - [geometry, stbox, NAD_geo_stbox]
+      - [stbox, tgeompoint, NAD_stbox_tgeo]
+      - [tgeompoint, stbox, NAD_tgeo_stbox]
+      - [stbox, stbox, NAD_stbox_stbox, null, true]
+      - [tgeompoint, tgeompoint, NAD_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: nearestApproachDistance
+      ret: float
+      spheroid: true
+      opr: true
+      rows:
+      - [geography, tgeogpoint, NAD_geo_tgeo]
+      - [tgeogpoint, geography, NAD_tgeo_geo]
+      - [stbox, geography, NAD_stbox_geo]
+      - [geography, stbox, NAD_geo_stbox]
+      - [stbox, tgeogpoint, NAD_stbox_tgeo]
+      - [tgeogpoint, stbox, NAD_tgeo_stbox]
+      - [tgeogpoint, tgeogpoint, NAD_tgeo_tgeo]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistanceOpr
+      style: argsfirst
+      rows:
+      - [geometry, tgeompoint]
+      - [tgeompoint, geometry]
+      - [stbox, geometry]
+      - [geometry, stbox]
+      - [stbox, tgeompoint]
+      - [tgeompoint, stbox]
+      - [stbox, stbox]
+      - [tgeompoint, tgeompoint]
+  - lit: "\n"
+  - ops:
+      op: "|=|"
+      proc: nearestApproachDistanceOpr
+      style: argsfirst
+      rows:
+      - [geography, tgeogpoint]
+      - [tgeogpoint, geography]
+      - [stbox, geography]
+      - [geography, stbox]
+      - [stbox, tgeogpoint]
+      - [tgeogpoint, stbox]
+      - [tgeogpoint, tgeogpoint]
+  - lit: "\n"
+  - fns:
+      proc: shortestLine
+      ret: geometry
+      rows:
+      - [geometry, tgeompoint, Shortestline_geo_tgeo]
+      - [tgeompoint, geometry, Shortestline_tgeo_geo]
+      - [tgeompoint, tgeompoint, Shortestline_tgeo_tgeo]
+  - lit: "\n"
+  - fns:
+      proc: shortestLine
+      ret: geography
+      spheroid: true
+      rows:
+      - [geography, tgeogpoint, Shortestline_geo_tgeo]
+      - [tgeogpoint, geography, Shortestline_tgeo_geo]
+      - [tgeogpoint, tgeogpoint, Shortestline_tgeo_tgeo]
+  - lit: "\n/*****************************************************************************/\n"
