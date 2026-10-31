@@ -293,7 +293,6 @@ ensure_temporal_isof_subtype(const Temporal *temp, tempSubtype subtype)
   return false;
 }
 
-#if MEOS
 /**
  * @brief Ensure that a temporal number and a span have the same span type
  * @param[in] temp Temporal value
@@ -327,7 +326,6 @@ ensure_valid_tnumber_numspanset(const Temporal *temp, const SpanSet *ss)
     meostype_name(temp->temptype), meostype_name(ss->spantype));
   return false;
 }
-#endif /* MEOS */
 
 /**
  * @brief Ensure that a temporal number and a temporal box have the same span
