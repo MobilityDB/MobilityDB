@@ -84,6 +84,27 @@ boxtypes:
           - [tpose, pose, nad_tpose_pose]
           - sep
           - [tpose, tpose, nad_tpose_tpose]
+      - family:   tposechain
+        nadgroup: mobilitydb_posechain_dist
+        nadfile:  mobilitydb/src/pose/tposechain_distance.c
+        nadsides:
+          posechain:  {c: PoseChain, var: pc, getarg: PG_GETARG_POSECHAIN_P, desc: pose chain}
+          geo:        {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry, free: true}
+          tposechain: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal pose chain, descpl: temporal pose chains, free: true}
+        nadpairs:
+          - [posechain, stbox, distance_posechain_stbox]
+          - [stbox, posechain, distance_posechain_stbox]
+          - sep
+          - [geo, tposechain, nad_tposechain_geo]
+          - [tposechain, geo, nad_tposechain_geo]
+          - sep
+          - [tposechain, stbox, nad_tposechain_stbox]
+          - [stbox, tposechain, nad_tposechain_stbox]
+          - sep
+          - [posechain, tposechain, nad_tposechain_posechain]
+          - [tposechain, posechain, nad_tposechain_posechain]
+          - sep
+          - [tposechain, tposechain, nad_tposechain_tposechain]
 
   - box:       tpcbox
     tside:     tpointcloud
