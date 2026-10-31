@@ -44,7 +44,9 @@
  * It also verifies that an object whose key is followed by no colon, read by
  * #jsonb_in and by #tjsonb_in between valid values, is reported as an invalid
  * value and frees its key once, so that the values read after it still
- * answer. Run under valgrind, the program reports no invalid free.
+ * answer, and that a JSON path the grammar refuses is reported as an invalid
+ * value whatever the stack held before the call. Run under valgrind, the
+ * program reports no invalid free.
  *
  * The program can be build as follows
  * @code
@@ -56,6 +58,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_json.h>
 
@@ -81,6 +84,20 @@ expect_value(void *res, const char *call)
   assert(res != NULL);
   assert(meos_errno() == 0);
   free(res);
+}
+
+/**
+ * @brief Fill a region of the stack with a pattern that is no null pointer,
+ * so that a variable a later call reads before assigning it holds a value
+ * that cannot pass for an absent one
+ * @note No test of meos/test fills the stack; this one runs before
+ * #expect_error reads a call that may read such a variable
+ */
+static __attribute__((noinline)) void
+fill_stack(void)
+{
+  volatile unsigned char junk[16384];
+  memset((void *) junk, 0x5A, sizeof(junk));
 }
 
 /* Main program */
@@ -131,6 +148,18 @@ int main(void)
     MEOS_ERR_INVALID_ARG_VALUE, "tjsonb_in(\"{\\\"geom\\\"}\"@2012-01-01)");
   expect_value(tjsonb_in("{\"{\\\"geom\\\": \\\"Point(1 1)\\\"}\"@2012-01-01}"),
     "tjsonb_in({\"{\\\"geom\\\": \\\"Point(1 1)\\\"}\"@2012-01-01})");
+
+  /* A path the grammar refuses is reported whatever the stack held before
+   * the call, since the parse assigns no result to a refused path */
+  const char *badpaths[] = {"$[", "$.a[NaN]", "NaN", "$.a ? (@ > NaN)",
+    "$[1, 2", "$.a ? (@.b == ", "$.datetime(\"yyyy\"",
+    "$.a like_regex \"x\" flag", "strict $.a.b[1 to"};
+  for (int i = 0; i < 9; i++)
+  {
+    fill_stack();
+    expect_error(jsonpath_in(badpaths[i]), MEOS_ERR_INVALID_ARG_VALUE,
+      badpaths[i]);
+  }
 
   free(jb); free(jp); free(txt);
 

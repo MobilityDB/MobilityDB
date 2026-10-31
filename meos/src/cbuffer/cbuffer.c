@@ -51,7 +51,6 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal_geo.h>
-#include <pgtypes.h>
 #include "temporal/set.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_inout.h"
@@ -65,7 +64,6 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial.h"
 #include "geo/tspatial_parser.h"
-#include "cbuffer/cbuffer.h"
 
 /*****************************************************************************
  * Collinear and interpolation function

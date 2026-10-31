@@ -334,6 +334,8 @@ NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
  * Nearest approach distance (NAD)
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tcbuffer — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_cbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_cbuffer_stbox);
 /**
@@ -380,7 +382,7 @@ PGDLLEXPORT Datum NAD_tcbuffer_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tcbuffer_stbox);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the nearest approach distance between a temporal circular 
+ * @brief Return the nearest approach distance between a temporal circular
  * buffer and a spatiotemporal box
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
@@ -401,8 +403,8 @@ PGDLLEXPORT Datum NAD_stbox_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_stbox_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the nearest approach distance between a spatiotemporal box
- * and a temporal circular buffer 
+ * @brief Return the nearest approach distance between a spatiotemporal box and
+ * a temporal circular buffer
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -424,8 +426,8 @@ PGDLLEXPORT Datum NAD_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the nearest approach distance between a geometry and a
- * temporal circular buffer
+ * @brief Return the nearest approach distance between a geometry and a temporal
+ * circular buffer
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -454,8 +456,8 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_geo);
 Datum
 NAD_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   double result = nad_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -481,7 +483,6 @@ NAD_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tcbuffer_cbuffer(temp, cb);
-  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
@@ -500,11 +501,10 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_cbuffer);
 Datum
 NAD_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
-  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   double result = nad_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cb, 1);
   if (result == DBL_MAX)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
@@ -517,7 +517,7 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach distance between two temporal circular
- * points
+ * buffers
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -533,6 +533,7 @@ NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+/* GENERATED-NADOPS-END tcbuffer */
 
 /*****************************************************************************
  * ShortestLine

@@ -196,9 +196,17 @@ SELECT jsonbsetPathExists(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime(
 /* Each ISO format is tried in turn, so an input any of them describes parses */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"2003-01-01T12:00:00\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
 SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"12:30:45\"}"}', '$.d.datetime() > "10:00:00".datetime()');
+
+SELECT jsonbsetPathQueryArray(jsonbset '{"{\"a\": [1, 2, 3]}", "{\"a\": [4]}"}', '$.a[*] ? (@ >= 2)');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"a\": [1, 2, 3]}", "{\"a\": [4]}"}', '$.a[*] ? (@ >= 2)');
+/* A timestamp with a time zone compares with a date only in the Tz form */
+SELECT jsonbsetPathQueryArrayTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+SELECT jsonbsetPathQueryFirstTz(jsonbset '{"[\"2015-08-01 12:00:00-05\"]", "[\"2015-08-03 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 /* Errors */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"d\": \"not a date\"}"}', '$.d.datetime() > "2002-06-01".datetime()');
 SELECT jsonbsetPathQueryFirst(jsonbset '{"{\"d\": \"2003-01-01\"}"}', '$.d.datetime("HH24:MI:SS")');
+SELECT jsonbsetPathQueryArray(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
+SELECT jsonbsetPathQueryFirst(jsonbset '{"[\"2015-08-01 12:00:00-05\"]"}', '$[*] ? (@.datetime() < "2015-08-02".datetime())');
 
 /* A path matching nothing is unknown, that is, false, for every element */
 SELECT jsonbsetPathMatch(jsonbset '{"{\"speed\": 10}", "{\"speed\": 20, \"units\": \"km/h\"}"}', '$.xxx > 15', '{}', false);

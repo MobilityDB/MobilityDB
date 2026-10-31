@@ -5096,6 +5096,11 @@ temporal_gt(const Temporal *temp1, const Temporal *temp2)
 bool
 temporal_sortkey_type(MeosType temptype)
 {
+  /* A temporal rigid geometry has poses as its values, but #temporal_cmp
+   * reads none of its reference geometry, so two values that #temporal_eq
+   * holds different can compare equal and have no key that agrees with both */
+  if (temptype == T_TRGEOMETRY)
+    return false;
   return tpoint_type(temptype) ||
     datum_sortkey_type(temptype_basetype(temptype));
 }
@@ -5263,7 +5268,7 @@ temporal_sortkey_intl(const Temporal *temp, size_t *size)
  * @details The key is the bytes whose unsigned byte order is the order of
  * #temporal_cmp and whose byte equality is #temporal_eq. The temporal
  * Booleans, integers, big integers, floats, texts, points, cells, circular
- * buffers and network points have a sort key.
+ * buffers, network points, poses and pose chains have a sort key.
  * @param[in] temp Temporal value
  * @param[out] size Number of bytes of the key
  * @errval NULL

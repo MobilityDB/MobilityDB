@@ -1255,6 +1255,11 @@ posechain_ne(const PoseChain *pc1, const PoseChain *pc2)
  * @ingroup meos_posechain_base_comp
  * @brief Return -1, 0, or 1 depending on whether the first pose chain is less
  * than, equal to, or greater than the second one
+ * @details The values of the links are compared value by value, -0.0 and 0.0
+ * being equal. A pose chain holds no NaN, which every input of MEOS refuses,
+ * so the order is total and holds two chains equal exactly when
+ * #posechain_eq does, which their sort key (#posechain_sortkey_put)
+ * requires
  * @param[in] pc1,pc2 Pose chains
  * @errval INT_MAX
  * @csqlfn #Posechain_cmp()
@@ -1296,6 +1301,72 @@ posechain_cmp(const PoseChain *pc1, const PoseChain *pc2)
   if (pc1->count > pc2->count)
     return 1;
   return 0;
+}
+
+/**
+ * @brief Return the number of bytes of the sort key of a pose chain
+ * @param[in] pc Pose chain
+ */
+size_t
+posechain_sortkey_size(const PoseChain *pc)
+{
+  assert(pc);
+  /* The header, then a mark and the values of each link, then the end mark */
+  return 2 * datum_sortkey_size(T_BOOL) + datum_sortkey_size(T_INT4) +
+    (size_t) pc->count *
+      (1 + POSECHAIN_LINK_SIZE(pc) * datum_sortkey_size(T_FLOAT8)) + 1;
+}
+
+/**
+ * @brief Write the sort key of a pose chain
+ * @details A sort key is a string of bytes computed from a value so that
+ * comparing the keys of two values byte by byte, as unsigned bytes and with a
+ * key that is a prefix of a longer one coming first, gives the order of
+ * #posechain_cmp, and two keys are identical exactly when #posechain_eq holds.
+ * An engine that sorts, groups or joins values by comparing their bytes, as
+ * the collation of MobilityDuck does and as MobilitySpark and MobilityFlink
+ * do, then answers as MobilityDB does without calling MEOS for each
+ * comparison. The key is computed for such an operation and never stored: a
+ * pose chain is stored and exchanged in its well-known binary form.
+ *
+ * The key holds the fields in the order #posechain_cmp compares them: whether
+ * the chain is spatial and whether it is geodetic as one byte each and the
+ * SRID as a 4-byte integer, as #pose_sortkey_put writes them, then each link
+ * as the byte 1 followed by its 3 or 7 values as 8-byte doubles, then the
+ * byte 0. The byte 0 ending a chain sorts below the byte 1 starting another
+ * link, so a chain whose links begin another one comes first, as
+ * #posechain_cmp orders them by their number of links last, and the key of a
+ * chain followed by other keys, in the key of a set, still orders as the
+ * chain does. Its length is #posechain_sortkey_size
+ * @param[in] pc Pose chain
+ * @param[out] out Buffer of #posechain_sortkey_size bytes
+ * @return The first byte after the key
+ */
+uint8_t *
+posechain_sortkey_put(const PoseChain *pc, uint8_t *out)
+{
+  assert(pc); assert(out);
+  datum_sortkey_put(BoolGetDatum(MEOS_FLAGS_GET_Z(pc->flags)), T_BOOL, out);
+  out += datum_sortkey_size(T_BOOL);
+  datum_sortkey_put(BoolGetDatum(MEOS_FLAGS_GET_GEODETIC(pc->flags)), T_BOOL,
+    out);
+  out += datum_sortkey_size(T_BOOL);
+  datum_sortkey_put(Int32GetDatum(posechain_srid(pc)), T_INT4, out);
+  out += datum_sortkey_size(T_INT4);
+  int nvalues = POSECHAIN_LINK_SIZE(pc);
+  size_t n = datum_sortkey_size(T_FLOAT8);
+  for (int i = 0; i < pc->count; i++)
+  {
+    *out++ = 1;
+    for (int j = 0; j < nvalues; j++)
+    {
+      datum_sortkey_put(Float8GetDatum(pc->data[i * nvalues + j]), T_FLOAT8,
+        out);
+      out += n;
+    }
+  }
+  *out++ = 0;
+  return out;
 }
 
 /**

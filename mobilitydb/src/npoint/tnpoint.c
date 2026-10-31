@@ -45,7 +45,6 @@
 #include "temporal/temporal.h"
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
-#include "npoint/tnpoint.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 

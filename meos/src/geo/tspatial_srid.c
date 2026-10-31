@@ -72,14 +72,6 @@
 #if RGEO
   #include "rgeo/trgeo.h"
 #endif
-#if H3
-  #include <h3api.h>
-#endif
-#if POINTCLOUD
-  #include "pointcloud/pcpoint.h"
-  #include "pointcloud/pcpatch.h"
-  #include "pointcloud/meos_schema_hook.h"
-#endif
 
 /*
  * Maximum length of an ESPG string to lookup
