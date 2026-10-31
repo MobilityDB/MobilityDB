@@ -3291,7 +3291,10 @@ eafunc_tstepseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     /* Compute the function on the synchronized instants */
     res = DatumGetBool(tfunc_base_base(tinstant_value_p(inst1),
       tinstant_value_p(inst2), lfinfo));
-    if (res || i == seq1->count || j == seq2->count)
+    /* Stop at the first instant that decides the quantifier, one where the
+     * relationship holds for ever and one where it fails for always, as
+     * #eafunc_tdiscseq_tdiscseq does */
+    if (res == lfinfo->ever || i == seq1->count || j == seq2->count)
       break;
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);

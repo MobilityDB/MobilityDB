@@ -1079,6 +1079,24 @@ SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2
  t
 (1 row)
 
+SELECT aTouches(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+ atouches 
+----------
+ f
+(1 row)
+
+SELECT aIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((1 0,4 0,4 2,1 2,1 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT aDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+ adisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
  eintersects 
 -------------

@@ -305,6 +305,11 @@ SELECT eDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', tgeo
 -- A static operand carries no time of its own, takes the temporal one's, and is answered
 SELECT aContains(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(2 2)@2001-01-05, Point(2 2)@2001-01-06]');
 SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2)@2001-01-05, Point(4 2)@2001-01-06]');
+-- Two squares that touch at their first instant and part at their second: an always
+-- relationship reads every instant
+SELECT aTouches(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+SELECT aIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((1 0,4 0,4 2,1 2,1 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+SELECT aDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
