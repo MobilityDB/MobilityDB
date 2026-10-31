@@ -1601,25 +1601,22 @@ stboxarr_round(const STBox *boxarr, int count, int maxdd)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_box_transf
- * @brief Return a spatiotemporal box with the time span expanded and/or scaled
+ * @ingroup meos_internal_box_transf
+ * @brief Return a spatiotemporal box with the time span shifted and/or scaled
  * by two intervals
  * @param[in] box Spatiotemporal box
- * @param[in] shift Interval to shift the value span @nullable
- * @param[in] duration Duration of the result @nullable
+ * @param[in] shift Interval to shift the time span, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre The box has a time dimension and at least one of the two intervals is
+ * given
  * @csqlfn #Stbox_shift_time(), #Stbox_scale_time(), #Stbox_shift_scale_time()
  */
 STBox *
-stbox_shift_scale_time(const STBox *box, const Interval *shift,
+stbox_shift_scale_time_intl(const STBox *box, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_has_T(T_STBOX, box->flags) ||
-      ! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(box); assert(MEOS_FLAGS_GET_T(box->flags)); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   /* Copy the input period to the result */
   STBox *result = stbox_copy(box);
   /* Shift and/or scale the resulting period */
@@ -1629,6 +1626,63 @@ stbox_shift_scale_time(const STBox *box, const Interval *shift,
   result->period.lower = TimestampTzGetDatum(lower);
   result->period.upper = TimestampTzGetDatum(upper);
   return result;
+}
+
+/**
+ * @ingroup meos_geo_box_transf
+ * @brief Return a spatiotemporal box with the time span shifted by an interval
+ * @param[in] box Spatiotemporal box
+ * @param[in] shift Interval to shift the time span
+ * @csqlfn #Stbox_shift_time()
+ */
+STBox *
+stbox_shift_time(const STBox *box, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  if (! ensure_has_T(T_STBOX, box->flags))
+    return NULL;
+  return stbox_shift_scale_time_intl(box, shift, NULL);
+}
+
+/**
+ * @ingroup meos_geo_box_transf
+ * @brief Return a spatiotemporal box with the time span scaled by an interval
+ * @param[in] box Spatiotemporal box
+ * @param[in] duration Duration of the result
+ * @csqlfn #Stbox_scale_time()
+ */
+STBox *
+stbox_scale_time(const STBox *box, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_has_T(T_STBOX, box->flags) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return stbox_shift_scale_time_intl(box, NULL, duration);
+}
+
+/**
+ * @ingroup meos_geo_box_transf
+ * @brief Return a spatiotemporal box with the time span shifted and scaled by
+ * two intervals
+ * @param[in] box Spatiotemporal box
+ * @param[in] shift Interval to shift the time span
+ * @param[in] duration Duration of the result
+ * @csqlfn #Stbox_shift_scale_time()
+ */
+STBox *
+stbox_shift_scale_time(const STBox *box, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_has_T(T_STBOX, box->flags) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return stbox_shift_scale_time_intl(box, shift, duration);
 }
 
 /**
