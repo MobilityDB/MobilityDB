@@ -2801,7 +2801,7 @@ Temporal *
 tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2834,7 +2834,7 @@ tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
 Temporal *
 tdwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
 {
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   return tdwithin_tcbuffer_geo(temp, gs, dist);
 }
@@ -2854,7 +2854,7 @@ Temporal *
 tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
@@ -2884,7 +2884,7 @@ tdwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb, double dist)
 Temporal *
 tdwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
 {
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   return tdwithin_tcbuffer_cbuffer(temp, cb, dist);
 }
@@ -2904,7 +2904,7 @@ tdwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))

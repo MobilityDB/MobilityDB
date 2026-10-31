@@ -1252,7 +1252,7 @@ Temporal *
 tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist)
 {
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
@@ -1274,7 +1274,7 @@ Temporal *
 tdwithin_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   double dist)
 {
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   return tdwithin_trgeometry_geo(temp, gs, dist);
 }
@@ -1290,7 +1290,7 @@ Temporal *
 tdwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
   double dist)
 {
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
   if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;

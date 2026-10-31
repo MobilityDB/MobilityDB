@@ -31,7 +31,7 @@
  * @file
  * @brief A program that tests that no MEOS value holds a NaN
  * @details A NaN has no position among the numbers, so MEOS refuses it where
- * a number enters it (#ensure_not_nan, #ensure_not_nan_geo), and an operation
+ * a number enters it (#ensure_finite, #ensure_finite_geo), and an operation
  * whose result would be NaN raises an error. The program reads a NaN through
  * each kind of entry point and calls the operations that make one from
  * infinite values, the inputs a float accepts, and verifies that each case

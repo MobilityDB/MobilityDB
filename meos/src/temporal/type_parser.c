@@ -284,7 +284,7 @@ double_parse(const char **str, double *result)
       "Invalid input syntax for type double");
     return false;
   }
-  if (! ensure_not_nan(*result))
+  if (! ensure_finite(*result))
     return false;
   *str = nextstr;
   return true;

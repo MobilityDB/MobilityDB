@@ -2431,7 +2431,8 @@ bbox_split(MeosType bboxtype, void **boxes, int count,
     double lower, upper;
     bbox_split_project(bboxtype, &all, axes[a], &lower, &upper);
     context.range[axes[a]] = upper - lower;
-    /* MEOS refuses a NaN where a number enters it, so no bound is NaN */
+    /* MEOS refuses a non-finite number where one enters it, so no bound is
+     * NaN */
     assert(! isnan(context.range[axes[a]]));
   }
 

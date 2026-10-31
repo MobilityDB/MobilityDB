@@ -291,7 +291,7 @@ TBox *
 float_timestamptz_to_tbox(double d, TimestampTz t)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return number_timestamptz_to_tbox(Float8GetDatum(d), T_FLOAT8, t);
 }
@@ -356,7 +356,7 @@ float_tstzspan_to_tbox(double d, const Span *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return number_tstzspan_to_tbox(Float8GetDatum(d), T_FLOAT8, s);
 }
@@ -517,7 +517,7 @@ TBox *
 float_to_tbox(double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   TBox *result = palloc(sizeof(TBox));
   float_set_tbox(d, result);
@@ -1290,10 +1290,10 @@ tbox_shift_scale_value(const TBox *box, Datum shift, Datum width,
   result->span.lower = lower;
   result->span.upper = upper;
   /* An infinite bound of a float span can give a bound with no value, see
-   * #ensure_not_nan_result */
+   * #ensure_finite_result */
   if (box->span.basetype == T_FLOAT8 &&
-      (! ensure_not_nan_result(DatumGetFloat8(lower)) ||
-       ! ensure_not_nan_result(DatumGetFloat8(upper))))
+      (! ensure_finite_result(DatumGetFloat8(lower)) ||
+       ! ensure_finite_result(DatumGetFloat8(upper))))
   {
     pfree(result);
     return NULL;
@@ -1362,7 +1362,7 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
   bool hasshift, bool haswidth)
 {
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+  if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   if (! ensure_span_isof_type(&box->span, T_FLOATSPAN))
     return NULL;
@@ -1545,7 +1545,7 @@ tfloatbox_expand(const TBox *box, const double d)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_has_X(T_TBOX, box->flags) ||
-      ! ensure_span_isof_type(&box->span, T_FLOATSPAN) || ! ensure_not_nan(d))
+      ! ensure_span_isof_type(&box->span, T_FLOATSPAN) || ! ensure_finite(d))
     return NULL;
   /* When the value is negative, ensure that its absolute value is less than
    * the width of the span */ 
