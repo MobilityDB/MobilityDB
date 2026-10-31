@@ -207,7 +207,7 @@ meos/src/temporal/temporal_tile.c	tstzspanset_bins	count unstated
 meos/src/temporal/temporal_tile_meos.c	tbigint_value_time_split	time_bins unstated
 meos/src/temporal/temporal_tile_meos.c	tfloat_value_time_split	time_bins unstated
 meos/src/temporal/temporal_tile_meos.c	tint_value_time_split	time_bins unstated
-meos/src/temporal/tsequence_meos.c	ttextseq_from_base_tstzspan	txt unstated
+meos/src/temporal/tsequence.c	ttextseq_from_base_tstzspan	txt unstated
 meos/src/temporal/ttext_funcs.c	textcat_text_text	txt1 unstated
 meos/src/temporal/ttext_funcs.c	textcat_text_text	txt2 unstated
 pgtypes/access/hashfunc.c	text_hash	txt unstated

@@ -86,7 +86,6 @@ if(MEOS)
     temporal_tile_meos.c
     tinstant_meos.c
     tnumber_mathfuncs_meos.c
-    tsequence_meos.c
     tsequenceset_meos.c
     ttext_funcs_meos.c
 )
