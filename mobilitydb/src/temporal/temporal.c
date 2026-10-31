@@ -874,9 +874,8 @@ Tbool_values(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int count;
-  Datum *values = temporal_values_p(temp, &count);
-  ArrayType *result = datumarr_to_array(values, count, T_BOOL);
-  pfree(values);
+  bool *values = tbool_values(temp, &count);
+  ArrayType *result = boolarr_to_array(values, count);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_ARRAYTYPE_P(result);
 }
