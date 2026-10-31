@@ -19,11 +19,8 @@ mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeq(tgeompoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeqSet(tgeompoint, text)	not strict
 mobilitydb/sql/geo/052_tpoint.in.sql	tgeompointSeqSetGaps(tgeompoint[], maxt interval, maxdist float, text)	not strict
 mobilitydb/sql/geo/058_tpoint_tile.in.sql	timeTiles(bounds stbox, duration interval, torigin timestamptz, borderInc boolean)	arg 1 strict stbox_space_time_tile_init.duration
-mobilitydb/sql/geo/076_tgeo_analytics.in.sql	scale(tgeometry, geometry, origin geometry)	arg 2 strict tgeo_scale_geo.sorigin
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeogpoint, tfloat, boolean)	arg 1 strict tpoint_tfloat_to_geomeas.meas
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql	geoMeasure(tgeompoint, tfloat, boolean)	arg 1 strict tpoint_tfloat_to_geomeas.meas
-mobilitydb/sql/geo/076_tpoint_analytics.in.sql	scale(geometry, geometry, origin geometry)	arg 2 strict geo_scale_geo.sorigin
-mobilitydb/sql/geo/076_tpoint_analytics.in.sql	scale(tgeompoint, geometry, origin geometry)	arg 2 strict tgeo_scale_geo.sorigin
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeq(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSet(th3index, text)	not strict
 mobilitydb/sql/h3/253_th3index.in.sql	th3indexSeqSetGaps(th3index[], maxt interval)	not strict

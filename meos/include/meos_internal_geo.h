@@ -109,6 +109,12 @@ extern PJ_CONTEXT *meos_proj_get_context(void);
 extern Datum datum_geo_round(Datum value, Datum size);
 extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 
+/*****************************************************************************
+ * Transformation functions
+ *****************************************************************************/
+
+extern GSERIALIZED *geo_scale_geo_intl(const GSERIALIZED *gs, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
+
 /******************************************************************************
  * Functions for box types
  *****************************************************************************/
@@ -230,6 +236,8 @@ extern TSequenceSet *tgeometryseqset_in(const char *str);
 /*****************************************************************************/
 
 /* Transformation functions */
+
+extern Temporal *tgeo_scale_geo_intl(const Temporal *temp, const GSERIALIZED *scale, const GSERIALIZED *sorigin);
 
 /*****************************************************************************/
 
