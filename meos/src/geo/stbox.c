@@ -95,7 +95,6 @@
 
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
-#include <pgtypes.h>
 
 /* Buffer size for input and output of STBox */
 #define MAXSTBOXLEN    256

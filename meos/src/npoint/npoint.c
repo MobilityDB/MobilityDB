@@ -73,7 +73,6 @@
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
 #include "npoint/tnpoint_parser.h"
-#include "npoint/tnpoint.h"
 
 /** Buffer size for input and output of npoint and nsegment values */
 #define NPOINT_MAXLEN     128

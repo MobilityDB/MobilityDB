@@ -57,7 +57,6 @@
 /* MobilityDB */
 #include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
-#include "pg_geo/postgis.h"
 
 /*****************************************************************************
  * Input/output functions

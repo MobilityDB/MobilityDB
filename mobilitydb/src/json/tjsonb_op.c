@@ -38,7 +38,6 @@
 #include "utils/jsonpath.h"
 #include "executor/spi.h"
 
-#include "utils/jsonpath.h"
 
 /* MEOS */
 #include <meos.h>

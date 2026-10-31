@@ -49,7 +49,6 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include "temporal/set.h"
-#include "temporal/span.h"
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
 #include "temporal/type_util.h"
