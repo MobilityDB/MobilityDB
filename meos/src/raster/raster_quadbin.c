@@ -372,10 +372,10 @@ raquet_pixel(void *ctxp, int col, int row, double *value)
     state->undomainable = true;
     return false;
   }
-  /* A pixel holding NaN carries no value, as a pixel equal to the nodata
-   * value does: GDAL writes NaN as the nodata value of a float band, which no
-   * comparison matches, and no MEOS value holds a NaN */
-  if (isnan(pixval) || (state->has_nodata && pixval == state->nodata))
+  /* A pixel holding NaN or an infinity carries no value, as a pixel equal
+   * to the nodata value does: GDAL writes NaN as the nodata value of a float
+   * band, which no comparison matches, and every MEOS value is finite */
+  if (! isfinite(pixval) || (state->has_nodata && pixval == state->nodata))
     return false;
   *value = pixval;
   return true;

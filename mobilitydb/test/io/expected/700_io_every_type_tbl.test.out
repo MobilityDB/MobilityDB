@@ -20218,7 +20218,7 @@ SELECT asText(pose(ST_PointZ(1,1,1), radians(30), radians(45), radians(60)), 6);
 SELECT asText(pose(ST_Point(1,1), 0, 0, 0));
 ERROR:  The geometry must have Z dimension
 SELECT asText(pose(ST_PointZ(1,1,1), 'NaN', 0, 0));
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT asText(round(pose 'Pose(Point(1.123456789 1.123456789), 0.123456789)', 6));
                  astext                  
 -----------------------------------------
@@ -20312,7 +20312,7 @@ ERROR:  Rotation quaternion must be of unit norm (within 0.001). Received |q|=2.
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0::float, 0));
 ERROR:  Rotation quaternion must be a finite, non-zero unit quaternion
 SELECT asEWKT(pose(0::float, 0::float, 0::float, 'NaN'::float, 0::float, 0::float, 0::float, 0));
-ERROR:  The value cannot be NaN
+ERROR:  The value must be finite
 SELECT poseFromBinary(asBinary(pose 'Pose(Point(0 0 0), -0.5, -0.5, -0.5, -0.5)'))
      = pose 'Pose(Point(0 0 0), 0.5, 0.5, 0.5, 0.5)' AS wkb_canonical;
  wkb_canonical 
