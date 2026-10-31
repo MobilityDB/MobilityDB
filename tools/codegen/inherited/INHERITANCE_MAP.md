@@ -192,8 +192,8 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   wrapper per `[left, right, kernel]` pair over the box and its `nadsides:`, the
   kernel taking the sides in the order its name gives them and releasing those
   marked `free`; under `nadearth:` each wrapper reads the optional earth model and
-  the procedure of its operator follows it: `stbox` writes the 10 wrappers of
-  `tgeo_distance.c` from `NAD_geo_stbox` through `NAD_tgeo_stbox_opr`. Each family
+  the procedure of its operator follows it: `stbox` writes the 16 wrappers of
+  `tgeo_distance.c` from `NAD_geo_tgeo` through `NAD_tgeo_tgeo_opr`. Each family
   of its `nadfamilies:` is a region of the family's own file over the same box:
   `tcbuffer` writes the 9 wrappers of `tcbuffer_distance.c` from
   `NAD_cbuffer_stbox` through `NAD_tcbuffer_tcbuffer`, `tpose` the 9 of
