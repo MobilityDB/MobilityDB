@@ -17287,8 +17287,8 @@ ensure_not_empty(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return true if a coordinate of a geometry/geography is NaN, walking
- * its points as #lwgeom_isfinite walks them
+ * @brief Return true if a coordinate of a geometry/geography is not finite,
+ * walking its points as #lwgeom_isfinite walks them
  * @details Kept out of line: inlined, it makes the caller save the registers
  * it uses on every call, which the test of a point never needs
  */
@@ -17303,8 +17303,8 @@ geo_walk_has_nan(const GSERIALIZED *gs)
   {
     POINT4D p;
     lwpointiterator_next(it, &p);
-    nan = isnan(p.x) || isnan(p.y) || (hasz && isnan(p.z)) ||
-      (hasm && isnan(p.m));
+    nan = ! isfinite(p.x) || ! isfinite(p.y) || (hasz && ! isfinite(p.z)) ||
+      (hasm && ! isfinite(p.m));
   }
   lwpointiterator_destroy(it);
   lwgeom_free(geom);
@@ -17312,10 +17312,10 @@ geo_walk_has_nan(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Ensure that no coordinate of a geometry/geography is NaN
- * @details A NaN coordinate has no position, so the point holding it cannot
- * be bounded, compared or indexed. An infinite coordinate, which
- * #lwgeom_isfinite also refuses, is accepted
+ * @brief Ensure that every coordinate of a geometry/geography is finite
+ * @details A NaN or an infinite coordinate has no position, so the point
+ * holding it cannot be bounded, compared exactly or indexed, as
+ * #lwgeom_isfinite also refuses it
  */
 bool
 ensure_not_nan_geo(const GSERIALIZED *gs)
@@ -17331,9 +17331,9 @@ ensure_not_nan_geo(const GSERIALIZED *gs)
   {
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     bool z = FLAGS_GET_Z(gs->gflags), m = FLAGS_GET_M(gs->gflags);
-    nan = words[1] != 0 && (isnan(pt->x) || isnan(pt->y) ||
-      (z && isnan(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
-      (m && isnan(z ? GSERIALIZED_POINT4D_P(gs)->m :
+    nan = words[1] != 0 && (! isfinite(pt->x) || ! isfinite(pt->y) ||
+      (z && ! isfinite(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
+      (m && ! isfinite(z ? GSERIALIZED_POINT4D_P(gs)->m :
         GSERIALIZED_POINT3DM_P(gs)->m)));
   }
   else
@@ -17341,7 +17341,7 @@ ensure_not_nan_geo(const GSERIALIZED *gs)
   if (! nan)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The coordinates of a geometry cannot be NaN");
+    "The coordinates of a geometry must be finite");
   return false;
 }
 
