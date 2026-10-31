@@ -26,7 +26,6 @@ mobilitydb/sql/geo/061_tpoint_topops.in.sql
 mobilitydb/sql/geo/062_tgeo_posops.in.sql
 mobilitydb/sql/geo/062_tpoint_posops.in.sql
 mobilitydb/sql/geo/066_tpoint_similarity.in.sql
-mobilitydb/sql/geo/070_tgeo_spatialrels.in.sql
 mobilitydb/sql/geo/070_tpoint_spatialrels.in.sql
 mobilitydb/sql/geo/071_tgeo_setset.in.sql
 mobilitydb/sql/geo/071_tpoint_setset.in.sql
