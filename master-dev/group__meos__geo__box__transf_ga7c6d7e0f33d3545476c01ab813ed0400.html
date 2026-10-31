@@ -84,7 +84,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga4edcda24de6d44cc284ec86247cb3711.html#ga4edcda24de6d44cc284ec86247cb3711">stbox_get_space</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga17de3eae721998dbe6077beaf4c168f2.html#ga17de3eae721998dbe6077beaf4c168f2">stbox_quad_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga21310be2634cd16def155c6566f52fea.html#ga21310be2634cd16def155c6566f52fea">stbox_round</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_ga217d5c3b9795fca2d9902d27ed57f43a.html#ga217d5c3b9795fca2d9902d27ed57f43a">stbox_scale_time</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__box__transf_ga7c6d7e0f33d3545476c01ab813ed0400.html#ga7c6d7e0f33d3545476c01ab813ed0400">stbox_shift_scale_time</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_gab39b20020ad24296a631f13bcc3b0647.html#gab39b20020ad24296a631f13bcc3b0647">stbox_shift_time</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__transf_gac3d5ea16ee3630691ad30668a099ba41.html#gac3d5ea16ee3630691ad30668a099ba41">stboxarr_round</a></td></tr>
         </table>
       </div>
@@ -122,12 +124,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return a spatiotemporal box with the time span expanded and/or scaled by two intervals. </p>
+<p>Return a spatiotemporal box with the time span shifted and scaled by two intervals. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">shift</td><td><a class="el" href="structInterval.html">Interval</a> to shift the value span (accepts <code>NULL</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Duration of the result (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__geo__box__transf_ga32a5cf1392a9b6474dd9792cd4dc7cb7.html#ga32a5cf1392a9b6474dd9792cd4dc7cb7" title="Return a spatiotemporal box with the time span shifted by an interval @sqlfn shiftTime()">Stbox_shift_time()</a>, <a class="el" href="group__mobilitydb__geo__box__transf_ga92a27ccfcd0cad20118abe6b39263a56.html#ga92a27ccfcd0cad20118abe6b39263a56" title="Return a spatiotemporal box with the time span scaled by an interval @sqlfn scaleTime()">Stbox_scale_time()</a>, <a class="el" href="group__mobilitydb__geo__box__transf_gaa293a71920596ca5e45982fbb2b0847f.html#gaa293a71920596ca5e45982fbb2b0847f" title="Return a spatiotemporal box with the time span shifted and scaled by two intervals @sqlfn shiftScaleT...">Stbox_shift_scale_time()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">shift</td><td><a class="el" href="structInterval.html">Interval</a> to shift the time span </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Duration of the result @csqlfn <a class="el" href="group__mobilitydb__geo__box__transf_gaa293a71920596ca5e45982fbb2b0847f.html#gaa293a71920596ca5e45982fbb2b0847f" title="Return a spatiotemporal box with the time span shifted and scaled by two intervals @sqlfn shiftScaleT...">Stbox_shift_scale_time()</a> </td></tr>
   </table>
   </dd>
 </dl>
