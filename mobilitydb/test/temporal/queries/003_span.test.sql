@@ -296,3 +296,11 @@ SELECT datespan '[2001-01-03,2001-01-05)' -|- date '2001-01-05';
 SELECT date '2001-01-05' -|- datespan '[2001-01-03,2001-01-05)';
 
 -------------------------------------------------------------------------------
+-- Rounding the largest double, whose product with 10^15 exceeds it
+SELECT round(1.7976931348623157e308::float, 15);
+SELECT round(-1.7976931348623157e308::float, 15);
+-- A power of ten beyond the doubles
+SELECT round(1.5::float, 400);
+SELECT round(floatspan '[-1.7e308, 1.7e308]', 15);
+
+-------------------------------------------------------------------------------

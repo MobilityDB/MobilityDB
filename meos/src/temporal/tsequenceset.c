@@ -2309,10 +2309,11 @@ tnumberseqset_integral(const TSequenceSet *ss)
 {
   assert(ss);
   assert(tnumber_type(ss->temptype));
+  double scale = tnumber_integral_scale(TSEQUENCESET_BBOX_PTR(ss));
   double result = 0.0;
   for (int i = 0; i < ss->count; i++)
-    result += tnumberseq_integral(TSEQUENCESET_SEQ_N(ss, i));
-  return result;
+    result += tnumberseq_integral_scaled(TSEQUENCESET_SEQ_N(ss, i), scale);
+  return result / scale;
 }
 
 /**
@@ -2345,17 +2346,17 @@ tnumberseqset_twavg(const TSequenceSet *ss)
   assert(ss);
   assert(tnumber_type(ss->temptype));
   double duration = tsequenceset_interval_double(ss);
-  double result;
+  double scale = tnumber_integral_scale(TSEQUENCESET_BBOX_PTR(ss));
+  double result = 0.0;
   if (duration == 0.0)
   {
-    result = 0;
     for (int i = 0; i < ss->count; i++)
-      result += tnumberseq_cont_twavg(TSEQUENCESET_SEQ_N(ss, i));
-    return result / ss->count;
+      result += tnumberseq_cont_twavg(TSEQUENCESET_SEQ_N(ss, i)) * scale;
+    return result / ss->count / scale;
   }
-  else
-    result = tnumberseqset_integral(ss) / duration;
-  return result;
+  for (int i = 0; i < ss->count; i++)
+    result += tnumberseq_integral_scaled(TSEQUENCESET_SEQ_N(ss, i), scale);
+  return result / duration / scale;
 }
 
 /*****************************************************************************

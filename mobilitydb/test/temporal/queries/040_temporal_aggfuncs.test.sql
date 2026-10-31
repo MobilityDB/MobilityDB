@@ -143,6 +143,10 @@ SELECT tavg(temp) FROM (VALUES
 (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT tavg(temp) FROM (VALUES
 (NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
+SELECT tavg(temp) FROM (VALUES
+('1e308@2001-01-01'::tfloat),('1e308@2001-01-01'::tfloat)) t(temp);
+SELECT tavg(temp) FROM (VALUES
+('[1e308@2001-01-01, 1e308@2001-01-03]'::tfloat),('[1e308@2001-01-02, -1e308@2001-01-04]'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 

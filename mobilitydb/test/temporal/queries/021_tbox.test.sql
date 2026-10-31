@@ -675,3 +675,7 @@ SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tboxfloat_kdtree_idx;
 
 -------------------------------------------------------------------------------
+-- A bound beyond the largest double raises an error
+SELECT expandValue(tbox 'TBOXFLOAT XT([-1.7e308,1.7e308],[2001-01-01,2001-01-02])', 1.7976931348623157e308);
+
+-------------------------------------------------------------------------------

@@ -2437,7 +2437,7 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tdensity(tpcpatch) → tfloat
 </programlisting>
-				<para>Cada pcpatch lleva el <varname>PCBOUNDS</varname> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente, sin recálculo. Un parche de 1 punto o colineal produce <varname>+Infinity</varname> para ese instante; filtre con <varname>isfinite()</varname> en consultas posteriores si es necesario.</para>
+				<para>Cada pcpatch lleva el <varname>PCBOUNDS</varname> en línea (xmin / xmax / ymin / ymax) por lo que el término de área de la caja delimitadora se lee directamente, sin recálculo. Un parche cuyos límites XY no tienen área, un solo punto o puntos sobre una línea, no tiene densidad: la división por cero genera un error. Una consulta sobre parches que pueden no tener área lee aquellos cuya caja tiene un área, <varname>area(stbox(tpcbox(patch))) &gt; 0</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
 SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
