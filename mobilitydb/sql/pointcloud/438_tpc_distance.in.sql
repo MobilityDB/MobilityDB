@@ -34,6 +34,8 @@
  * @details It supports KNN ordering with GiST.
  */
 
+-- GENERATED-DISTANCE-BEGIN tpc — tools/codegen/inherited/generate.py from templates/comparisons.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/distance_families.yaml and re-run.
 CREATE FUNCTION nearestApproachDistance(tpcbox, tpcbox) RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpcbox_tpcbox' LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tpcbox, tpcpoint) RETURNS float
@@ -75,3 +77,4 @@ CREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+-- GENERATED-DISTANCE-END tpc
