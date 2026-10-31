@@ -93,9 +93,9 @@
  * Each part asks the nearest approach too, which reaches the same per-element
  * distance through the synchronous walk.
  *
- * Exactness is defined for finite coordinates. The last part asks geometries
- * holding an infinite coordinate, invalid as GEOS reports them, whose
- * distance is unspecified, and checks only that it is answered.
+ * Exactness is defined for finite coordinates, the only ones a geometry
+ * holds: the last part reads geometries with an infinite coordinate, each
+ * refused when read, so that no distance kernel receives one.
  *
  * The program can be build as follows
  * @code
@@ -112,6 +112,19 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_cbuffer.h>
+
+/* The number of errors raised since the last case */
+static int errors = 0;
+
+/**
+ * @brief Count an error raised by MEOS instead of exiting
+ */
+static void
+count_error(int level, int code, const char *msg)
+{
+  (void) level; (void) code; (void) msg;
+  errors++;
+}
 
 /**
  * @brief Return a temporal point that stays where it is over the period every
@@ -764,27 +777,26 @@ int main(void)
     "LINESTRING Z(0 -1 2,0 1 2)", 2.0);
   printf("%d distances in 3D answered as the nearest double\n", threed);
 
-  /* Outside the domain of exact computation, a coordinate that is infinite,
-   * invalid as GEOS reports it: the distance is unspecified, and it is
-   * answered, in 3D, where the walk reads the boxes the geometries carry, and
-   * in 2D, in both orders */
+  /* A coordinate that is infinite lies outside the domain of exact
+   * computation, and the geometry holding one is refused when read */
   const char *nonfinite[] = {"LINESTRING Z(0 0 0,1e400 1 1,2 2 2)",
     "LINESTRING Z(1e400 -1e400 1e400,1 1 1,2 2 2)"};
   int controls = (int) (sizeof(nonfinite) / sizeof(nonfinite[0]));
-  GSERIALIZED *finite = geom_in("LINESTRING Z(0 5 0,1 5 1,2 5 2)", -1);
+  meos_initialize_error_handler(count_error);
   for (int i = 0; i < controls; i++)
   {
+    errors = 0;
     GSERIALIZED *gs = geom_in(nonfinite[i], -1);
-    assert(gs != NULL);
-    (void) geom_distance3d(gs, finite);
-    (void) geom_distance3d(finite, gs);
-    (void) geom_distance2d(gs, finite);
-    (void) geom_distance2d(finite, gs);
-    free(gs);
+    if (gs || errors == 0)
+    {
+      printf("FAIL %s: expected the infinite coordinate to be refused\n",
+        nonfinite[i]);
+      return EXIT_FAILURE;
+    }
+    meos_errno_reset();
   }
-  free(finite);
-  printf("%d geometries holding an infinite coordinate answered without "
-    "fault\n", controls);
+  printf("%d geometries holding an infinite coordinate refused when read\n",
+    controls);
 
   /* Finalize MEOS */
   meos_finalize();
