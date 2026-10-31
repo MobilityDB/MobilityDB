@@ -1373,26 +1373,22 @@ tfloatbox_shift_scale(const TBox *box, double shift, double width,
 }
 
 /**
- * @ingroup meos_box_transf
- * @brief Return a temporal box with the value span shifted and/or scaled by
- * the values
+ * @ingroup meos_internal_box_transf
+ * @brief Return a temporal box with the time span shifted and/or scaled by
+ * two intervals
  * @param[in] box Temporal box
- * @param[in] shift Interval to shift the value span @nullable
- * @param[in] duration Duration of the result @nullable
+ * @param[in] shift Interval to shift the time span, NULL for none
+ * @param[in] duration Duration of the result, NULL for none
+ * @pre The box has a time dimension and at least one of the two intervals is
+ * given
  * @csqlfn #Tbox_shift_time(), #Tbox_scale_time(), #Tbox_shift_scale_time()
  */
 TBox *
-tbox_shift_scale_time(const TBox *box, const Interval *shift,
+tbox_shift_scale_time_intl(const TBox *box, const Interval *shift,
   const Interval *duration)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, NULL);
-  /* Ensure the validity of the arguments */
-  if (! ensure_has_T(T_TBOX, box->flags) ||
-      ! ensure_one_not_null((void *) shift, (void *) duration) ||
-      (duration && ! ensure_positive_duration(duration)))
-    return NULL;
-
+  assert(box); assert(MEOS_FLAGS_GET_T(box->flags)); assert(shift || duration);
+  assert(! duration || positive_duration(duration));
   /* Copy the input period to the result */
   TBox *result = tbox_copy(box);
   /* Shift and/or scale the resulting period */
@@ -1402,6 +1398,63 @@ tbox_shift_scale_time(const TBox *box, const Interval *shift,
   result->period.lower = TimestampTzGetDatum(lower);
   result->period.upper = TimestampTzGetDatum(upper);
   return result;
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal box with the time span shifted by an interval
+ * @param[in] box Temporal box
+ * @param[in] shift Interval to shift the time span
+ * @csqlfn #Tbox_shift_time()
+ */
+TBox *
+tbox_shift_time(const TBox *box, const Interval *shift)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  if (! ensure_has_T(T_TBOX, box->flags))
+    return NULL;
+  return tbox_shift_scale_time_intl(box, shift, NULL);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal box with the time span scaled by an interval
+ * @param[in] box Temporal box
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tbox_scale_time()
+ */
+TBox *
+tbox_scale_time(const TBox *box, const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_has_T(T_TBOX, box->flags) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tbox_shift_scale_time_intl(box, NULL, duration);
+}
+
+/**
+ * @ingroup meos_box_transf
+ * @brief Return a temporal box with the time span shifted and scaled by two
+ * intervals
+ * @param[in] box Temporal box
+ * @param[in] shift Interval to shift the time span
+ * @param[in] duration Duration of the result
+ * @csqlfn #Tbox_shift_scale_time()
+ */
+TBox *
+tbox_shift_scale_time(const TBox *box, const Interval *shift,
+  const Interval *duration)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(shift, NULL);
+  VALIDATE_NOT_NULL(duration, NULL);
+  if (! ensure_has_T(T_TBOX, box->flags) ||
+      ! ensure_positive_duration(duration))
+    return NULL;
+  return tbox_shift_scale_time_intl(box, shift, duration);
 }
 
 /**

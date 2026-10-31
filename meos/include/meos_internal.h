@@ -1074,6 +1074,7 @@ extern void tstzspan_set_tbox(const Span *s, TBox *box);
 
 /* Transformation functions for box types */
 
+extern TBox *tbox_shift_scale_time_intl(const TBox *box, const Interval *shift, const Interval *duration);
 extern TBox *tbox_shift_scale_value(const TBox *box, Datum shift, Datum width, bool hasshift, bool haswidth);
 extern void tbox_expand(const TBox *box1, TBox *box2);
 

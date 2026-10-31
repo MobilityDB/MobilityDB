@@ -39,8 +39,9 @@
  *
  * The program verifies that #tstzset_shift, #tstzset_scale and
  * #tstzset_shift_scale, #tstzspan_shift, #tstzspan_scale and
- * #tstzspan_shift_scale, and #tstzspanset_shift, #tstzspanset_scale and
- * #tstzspanset_shift_scale, report each null interval they take by returning NULL
+ * #tstzspan_shift_scale, #tstzspanset_shift, #tstzspanset_scale,
+ * #tstzspanset_shift_scale, and #tbox_shift_time, #tbox_scale_time and
+ * #tbox_shift_scale_time, report each null interval they take by returning NULL
  * and setting #meos_errno, and that each answers the shifted and scaled value
  * with no error left behind.
  *
@@ -208,7 +209,53 @@ int main(void)
   assert(ssres && meos_errno() == 0);
   free(out); free(ssres);
 
-  free(ss); free(sp); free(s); free(shift); free(duration);
+  /* A null interval given to a temporal box is reported */
+  TBox *box = tbox_in("TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])");
+  assert(box);
+  TBox *boxres = tbox_shift_time(box, NULL);
+  printf("tbox_shift_time(NULL): %s, errno %d\n", boxres ? "a value" : "NULL",
+    meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_scale_time(box, NULL);
+  printf("tbox_scale_time(NULL): %s, errno %d\n", boxres ? "a value" : "NULL",
+    meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_shift_scale_time(box, shift, NULL);
+  printf("tbox_shift_scale_time(1 day, NULL): %s, errno %d\n",
+    boxres ? "a value" : "NULL", meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  boxres = tbox_shift_scale_time(box, NULL, duration);
+  printf("tbox_shift_scale_time(NULL, 4 days): %s, errno %d\n",
+    boxres ? "a value" : "NULL", meos_errno());
+  assert(boxres == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+
+  /* The intervals answer the shifted and scaled temporal box */
+  boxres = tbox_shift_time(box, shift);
+  out = tbox_out(boxres, 6);
+  printf("tbox_shift_time(1 day): %s, errno %d\n", out, meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+  boxres = tbox_scale_time(box, duration);
+  out = tbox_out(boxres, 6);
+  printf("tbox_scale_time(4 days): %s, errno %d\n", out, meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+  boxres = tbox_shift_scale_time(box, shift, duration);
+  out = tbox_out(boxres, 6);
+  printf("tbox_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
+    meos_errno());
+  assert(boxres && meos_errno() == 0);
+  free(out); free(boxres);
+
+  free(box); free(ss); free(sp); free(s); free(shift); free(duration);
 
   /* Finalize MEOS */
   meos_finalize();

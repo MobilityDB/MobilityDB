@@ -702,7 +702,7 @@ Tbox_shift_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *shift = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_TBOX_P(tbox_shift_scale_time(box, shift, NULL));
+  PG_RETURN_TBOX_P(tbox_shift_time(box, shift));
 }
 
 PGDLLEXPORT Datum Tbox_scale_value(PG_FUNCTION_ARGS);
@@ -732,7 +732,7 @@ Tbox_scale_time(PG_FUNCTION_ARGS)
 {
   TBox *box = PG_GETARG_TBOX_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
-  PG_RETURN_TBOX_P(tbox_shift_scale_time(box, NULL, duration));
+  PG_RETURN_TBOX_P(tbox_scale_time(box, duration));
 }
 
 PGDLLEXPORT Datum Tbox_shift_scale_value(PG_FUNCTION_ARGS);
