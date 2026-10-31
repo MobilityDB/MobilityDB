@@ -153,6 +153,28 @@ spatialrel_families:
           tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer {word} intersect"
           tcbuffer_tcbuffer: "two temporal circular buffers {word} intersect"
 
+  - family:    cbuffer_ea_touches
+    file:      mobilitydb/src/cbuffer/tcbuffer_spatialrels.c
+    reference: true
+    ingroup:   mobilitydb_cbuffer_rel_ever
+    order:     [geo_tcbuffer, tcbuffer_geo, cbuffer_tcbuffer, tcbuffer_cbuffer, tcbuffer_tcbuffer]
+    disp:
+      geo_tcbuffer:      EA_spatialrel_geo_tspatial
+      tcbuffer_geo:      EA_spatialrel_tspatial_geo
+      cbuffer_tcbuffer:  EA_spatialrel_cbuffer_tcbuffer
+      tcbuffer_cbuffer:  EA_spatialrel_tcbuffer_cbuffer
+      tcbuffer_tcbuffer: EA_spatialrel_tspatial_tspatial
+    predicates:
+      - rel: touches
+        Rel: Touches
+        banner: "Ever/always touches"
+        briefs:
+          geo_tcbuffer:      "a geometry and a temporal circular buffer {word} touch"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry {word} touch"
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer {word} touch"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer {word} touch"
+          tcbuffer_tcbuffer: "two temporal circular buffers {word} touch"
+
   # dwithin uses a distinct shape (a per-direction static dispatcher that reads
   # the operands + the distance and calls the e/a kernel directly, with two thin
   # public wrappers), so `dwithin: true` selects render_dwithin. Each direction
@@ -263,6 +285,28 @@ spatialrel_families:
           geo_trgeometry:        "a geometry and a temporal rigid geometry {word} intersect"
           trgeometry_geo:        "a temporal rigid geometry and a geometry {word} intersect"
           trgeometry_trgeometry: "two temporal rigid geometries {word} intersect"
+
+  - family:    rgeo_ea_touches
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    ingroup:   mobilitydb_geo_rel_ever
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    disp:
+      geo_trgeometry:        EA_spatialrel_geo_tspatial
+      trgeometry_geo:        EA_spatialrel_tspatial_geo
+      trgeometry_trgeometry: EA_spatialrel_tspatial_tspatial
+    kernel_dir:
+      geo_trgeometry:        geo_trgeo
+      trgeometry_geo:        trgeo_geo
+      trgeometry_trgeometry: trgeo_trgeo
+    predicates:
+      - rel: touches
+        Rel: Touches
+        banner: "Ever/always touches"
+        briefs:
+          geo_trgeometry:        "a geometry and a temporal rigid geometry {word} touch"
+          trgeometry_geo:        "a temporal rigid geometry and a geometry {word} touch"
+          trgeometry_trgeometry: "two temporal rigid geometries {word} touch"
 
   # rgeo dwithin is a HYBRID (dwithin: true selects render_dwithin): the two mixed
   # directions reuse the family-wide EA_dwithin_* dispatchers with the single fixed
