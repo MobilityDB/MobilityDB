@@ -279,7 +279,7 @@ PyMEOS #88, PyMEOS-CFFI `fd63bcce68`, MobilityAPI `cea483a57e`.
 | MEOS.NET (generated) | as GoMEOS, WKB as `byte[]` | `ToString` is `Out`: `tspatial_out`, `pose_out`, `cbuffer_out`, `geo_out`, hex WKB for every spatial value; none on `GeomSet`, `GeogSet`, `Set`, `Span`, `SpanSet`, `Temporal` | P/Invoke pointer | rule 2; `GeomSet` and `GeogSet` write nothing; no EWKT or EWKB reader; `AsHEXWKB` beside `AsHexewkb` in one class; no cell class |
 | meos-rs | `FromStr`, WKB, hex WKB for spans, span sets, boxes and the temporal alphanumeric and geometric types; MF-JSON; `as_ewkt`, `as_geojson` | no `Display`; `Debug` writes `*_out`, WKT for the spatial types | pointer | rule 4: `as_wkb` and `as_hexwkb` return `&[u8]` over memory MEOS allocates and nothing frees; hex as `&[u8]`; no sets, extended families or cells |
 | MEOS.js | text, hex WKB, MF-JSON for the exported classes (sets, spans, span sets, boxes, `tbool`, `tint`, `tfloat`, `ttext`, `tgeompoint`, `tgeogpoint`); `asEWKT` for points | `toString`: `tspatial_as_text` for points, `*_out` otherwise | WASM heap pointer | no raw WKB; no EWKB; `fromHexWKB` missing on `tbool`, `tint`, `tfloat`, `ttext`, `tgeogpoint`; the extended families, spatial sets and `tgeometry` unexported though their wrappers are generated; `temporal_as_hexwkb_w` passes variant `-1` |
-| MobilityDuck | the seven formats for sets, spans, span sets, boxes and the temporal types (`src/generated`), EWKB and hex EWKB writers | the `VARCHAR` cast is `*_out`: `0101000000000000000000F03F…@2012-01-01` for a `tgeompoint` (`test/sql/tgeompoint.test`), hex for every spatial value | a `BLOB` holding the MEOS memory image (`Temporal_in` copies `temporal_mem_size` bytes); cells `BIGINT` | rule 2; D9.13 states WKB as the stored form; no `FromText`, `FromEWKT` or `FromMFJSON` for `tcbuffer`, `tnpoint`, `tpose`, `tposechain`, `trgeometry`, `th3index`, `tquadbin`, `ts2cell`; no binary or hex I/O for `cbuffer`, `npoint`, `pose`, `posechain`; `nsegment` a cast only; E forms registered for the cells, which carry no SRID; `tgeogpoint` registered twice |
+| MobilityDuck | the seven formats for sets, spans, span sets, boxes and the temporal types (`src/generated`), EWKB and hex EWKB writers | the `VARCHAR` cast is `*_out`: `0101000000000000000000F03F…@2012-01-01` for a `tgeompoint` (`test/sql/tgeompoint.test`), hex for every spatial value | a `BLOB` holding the MEOS memory image (`Temporal_in` copies `temporal_mem_size` bytes); cells `BIGINT` | rule 2; no `FromText`, `FromEWKT` or `FromMFJSON` for `tcbuffer`, `tnpoint`, `tpose`, `tposechain`, `trgeometry`, `th3index`, `tquadbin`, `ts2cell`; no binary or hex I/O for `cbuffer`, `npoint`, `pose`, `posechain`; `nsegment` a cast only; E forms registered for the cells, which carry no SRID; `tgeogpoint` registered twice |
 | MobilityNebula | none for the user; internal readers `tgeompoint_in`, `tgeometry_in`, `geom_in`, `stbox_in` | none | strings built from the stream's fields | the one writer, `temporal_as_wkb(…, 0x08)`, is commented "extended WKB" while `0x08` is `WKB_NDR`; the temporal sequence aggregation returns the string `BINARY(<size>)`; its ledger holds the 205 I/O functions apart |
 | PyMEOS | text, WKB, hex WKB for every class; MF-JSON for temporal types; `as_ewkt` for the spatial ones | `tspatial_as_text` for the temporal spatial classes, `*_out` for the others; `Pose` and `Cbuffer` `pose_out` and `cbuffer_out` (hex) | CFFI pointer | no `from_ewkt`, `from_ewkb`, `from_hexewkb`, `as_ewkb`, `as_hexewkb`; `as_text` only on the spatial base types and sets; no `TRgeometry` string constructor, `trgeometry_out` its string |
 | PyMEOS-CFFI | readers take `bytes` and `str` alone (`geo_from_ewkb` also the SRID); every byte buffer returns `bytes` | n/a | n/a | rule 4: `*_as_hexwkb` and `*_as_hexewkb` return `(str, size)`, but for `geo_as_hexewkb`, `pcpoint_as_hexwkb`, `pcpatch_as_hexwkb` |
@@ -317,11 +317,13 @@ generates ([the bindings plan](BINDINGS-PLAN.md)), the catalog's first:
 | IO-B14 | MobilityAPI | its Spark dialect names `asMFJSON` and `<type>FromMFJSON` | after IO-B11 |
 | IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds this document's two tables, the SQL one from `mobilitydb/sql` and the catalog, the bindings' one from each binding's generated surface | open |
 
-Open for the owner, asked one at a time:
+DECIDED BY THE OWNER 2026-10-31: DuckDB behaves as every binding, holding a value as its MEOS
+memory image and exchanging it as its WKB (rule 3); MobilityDuck's `BLOB` of the memory image
+stands, and D9.13 states it.
 
-1. MobilityDuck stores a value as its MEOS memory image, the form J41 gives Spark and Flink, while
-   D9.13 states WKB as the form a DuckDB value is stored in; a DuckDB file persists what it stores.
-2. `asBinary` and `asHexWKB` write plain WKB in the typed SQL layer of Spark and Flink and EWKB in
+Open for the owner:
+
+1. `asBinary` and `asHexWKB` write plain WKB in the typed SQL layer of Spark and Flink and EWKB in
    JMEOS and the Spark UDF layer; rule 2 of the dialect states plain WKB beside `asEWKB`.
 
 ## Acceptance
