@@ -199,8 +199,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `NAD_cbuffer_stbox` through `NAD_tcbuffer_tcbuffer`, `tpose` the 9 of
   `tpose_distance.c` from `NAD_pose_stbox` through `NAD_tpose_tpose`,
   `tposechain` the 9 of `tposechain_distance.c` from `NAD_posechain_stbox`
-  through `NAD_tposechain_tposechain`, and `tnpoint` the 7 of
-  `tnpoint_distance.c` from `NAD_geo_tnpoint` through `NAD_tnpoint_tnpoint`.
+  through `NAD_tposechain_tposechain`, `tnpoint` the 7 of
+  `tnpoint_distance.c` from `NAD_geo_tnpoint` through `NAD_tnpoint_tnpoint`,
+  and `trgeometry` the 7 of `trgeo_distance.c` from `NAD_trgeometry_geo`
+  through `NAD_trgeometry_trgeometry`, each storing `fcinfo` under `nadfcinfo:`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner

@@ -181,7 +181,7 @@ PG_FUNCTION_INFO_V1(Trgeometry_from_ewkt);
  * a 'text' input. First, unwrap the text into a cstring, then do as tgeometry_in
  * @sqlfn trgeometryFromEWKT()
  */
-PGDLLEXPORT Datum
+Datum
 Trgeometry_from_ewkt(PG_FUNCTION_ARGS)
 {
   text *wkt_text = PG_GETARG_TEXT_P(0);
