@@ -1091,11 +1091,13 @@ Overafter_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
  * Nearest-approach distance (|=|)
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_tpcbox_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpcbox_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Return the nearest-approach distance between two TPCBox values
+ * @brief Return the nearest approach distance between two tpcboxes
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1114,8 +1116,8 @@ PGDLLEXPORT Datum NAD_tpointcloud_tpcbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpointcloud_tpcbox);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Return the nearest-approach distance between a tpcpoint/tpcpatch and a
- * TPCBox
+ * @brief Return the nearest approach distance between a temporal point cloud
+ * and a tpcbox
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1135,8 +1137,8 @@ PGDLLEXPORT Datum NAD_tpcbox_tpointcloud(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpcbox_tpointcloud);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Return the nearest-approach distance between a TPCBox and a
- * tpcpoint/tpcpatch
+ * @brief Return the nearest approach distance between a tpcbox and a temporal
+ * point cloud
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1156,8 +1158,7 @@ PGDLLEXPORT Datum NAD_tpointcloud_tpointcloud(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tpointcloud_tpointcloud);
 /**
  * @ingroup mobilitydb_pointcloud_temp
- * @brief Return the nearest-approach distance between two temporal point cloud
- * values
+ * @brief Return the nearest approach distance between two temporal point clouds
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -1173,5 +1174,6 @@ NAD_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_FLOAT8(result);
 }
+/* GENERATED-NADOPS-END tpcbox */
 
 /*****************************************************************************/

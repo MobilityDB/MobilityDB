@@ -263,12 +263,14 @@ NAI_tgeo_tgeo(PG_FUNCTION_ARGS)
  * These functions are only available for geometries
  *****************************************************************************/
 
+/* GENERATED-NADOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a geometry and a
- * temporal geo
+ * @brief Return the nearest approach distance between a geometry and a temporal
+ * geo
  * @sqlfn nearestApproachDistance()
  * @sqlop @p |=|
  */
@@ -292,8 +294,8 @@ PGDLLEXPORT Datum NAD_geo_tgeo_opr(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_tgeo_opr);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach distance between a geometry and a
- * temporal geo
+ * @brief Return the nearest approach distance between a geometry and a temporal
+ * geo
  * @details The procedure of the operator, which answers #NAD_geo_tgeo()
  * with the default model of the earth, the one the nearest-neighbour search
  * of an index takes, as PostgreSQL backs @? by jsonb_path_exists_opr
@@ -351,8 +353,6 @@ NAD_tgeo_geo_opr(PG_FUNCTION_ARGS)
   return NAD_tgeo_geo(fcinfo);
 }
 
-/* GENERATED-NADOPS-BEGIN stbox — tools/codegen/inherited/generate.py from templates/nadpairs.c.tmpl; DO NOT EDIT BY HAND;
- * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAD_geo_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_geo_stbox);
 /**
@@ -564,7 +564,6 @@ NAD_tgeo_stbox_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_stbox(fcinfo);
 }
-/* GENERATED-NADOPS-END stbox */
 
 PGDLLEXPORT Datum NAD_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo);
@@ -607,6 +606,7 @@ NAD_tgeo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return NAD_tgeo_tgeo(fcinfo);
 }
+/* GENERATED-NADOPS-END stbox */
 
 /*****************************************************************************
  * ShortestLine
