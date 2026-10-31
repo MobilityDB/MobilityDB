@@ -315,7 +315,7 @@ generates ([the bindings plan](BINDINGS-PLAN.md)), the catalog's first:
 | IO-B12 | MobilityKafka | the portable names over the facades | after IO-B11 |
 | IO-B13 | MobilityNebula | `asText`, `asBinary`, `asHexWKB`, `asMFJSON` and their readers for the types it carries; the temporal sequence aggregation returning the value | PAUSED BY THE OWNER 2026-10-31: MobilityNebula lags a large queue of open pull requests (#194 to #197 among them) |
 | IO-B14 | MobilityAPI | its Spark dialect names `asMFJSON` and `<type>FromMFJSON` | after IO-B11 |
-| IO-B16 | MobilityDB | the input and output test of the campaign, `mobilitydb/test/io/queries/*.test.sql`, generated per type and format from the catalog's encodings and the types' regression fixtures, its expected output harvested from PostgreSQL; each binding replays it through its own surface | after IO-B1 |
+| IO-B16 | MobilityDB | one input and output test covering every type and every format it supports, which each binding replays through its own surface: the reader and writer queries of the `nnn_*.test.sql` files extracted with their expected lines, then a query for every type and format no extracted query covers, over the `tbl_<type>` fixtures, its expected output harvested from PostgreSQL; the generator states which queries are extracted and which added, and the coverage of each (DECIDED BY THE OWNER 2026-10-31) | open, branch `test/io-every-type` |
 | IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds this document's two tables, the SQL one from `mobilitydb/sql` and the catalog, the bindings' one from each binding's generated surface | open |
 
 DECIDED BY THE OWNER 2026-10-31: DuckDB behaves as every binding, holding a value as its MEOS
