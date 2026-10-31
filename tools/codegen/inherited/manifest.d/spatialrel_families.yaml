@@ -381,3 +381,25 @@ spatialrel_families:
           - {l: geography,  r: tgeogpoint, gap: true, spheroid: true, ever_only: true}
           - {l: tgeogpoint, r: geography, spheroid: true, ever_only: true}
           - {l: tgeogpoint, r: tgeogpoint, spheroid: true}
+  - family:  cbuffer
+    impl:    native
+    file:    mobilitydb/sql/cbuffer/212_tcbuffer_spatialrels.in.sql
+    brief:   "temporal circular buffers"
+    details: "These relationships are generalized to the temporal dimension with
+      the \"ever\" and \"always\" semantics, and return a Boolean. Every relationship
+      but disjoint performs a bounding box comparison that makes use of any
+      spatial, temporal, or spatiotemporal index available."
+    directions:
+      - {l: geometry, r: tcbuffer}
+      - {l: tcbuffer, r: geometry}
+      - {l: cbuffer,  r: tcbuffer}
+      - {l: tcbuffer, r: cbuffer}
+      - {l: tcbuffer, r: tcbuffer}
+    predicates:
+      - Contains
+      - Covers
+      - name: Disjoint
+        support: []
+      - Intersects
+      - Touches
+      - Dwithin
