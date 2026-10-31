@@ -345,3 +345,39 @@ spatialrel_families:
           - {l: geography,  r: tgeography, gap: true, spheroid: true, ever_only: true}
           - {l: tgeography, r: geography, spheroid: true, ever_only: true}
           - {l: tgeography, r: tgeography, spheroid: true}
+  - family:  tpoint
+    impl:    native
+    file:    mobilitydb/sql/geo/070_tpoint_spatialrels.in.sql
+    brief:   "temporal points"
+    details: "Index support is enabled for every relationship but disjoint."
+    directions:
+      - {l: geometry,   r: tgeompoint}
+      - {l: tgeompoint, r: geometry}
+      - {l: tgeompoint, r: tgeompoint}
+      - {l: geography,  r: tgeogpoint, gap: true}
+      - {l: tgeogpoint, r: geography}
+      - {l: tgeogpoint, r: tgeogpoint}
+    predicates:
+      - name: Contains
+        directions:
+          - {l: geometry, r: tgeompoint}
+      - name: Covers
+        directions:
+          - {l: geometry, r: tgeompoint}
+      - name: Disjoint
+        support: []
+      - Intersects
+      - name: Touches
+        symbol: {tgeompoint: tpoint}
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+      - name: Dwithin
+        note: "NOTE: aDWithin for geographies is not provided since it is based on the\nbuffer of the geometry, which MEOS computes on the plane only (geom_buffer)"
+        directions:
+          - {l: geometry,   r: tgeompoint}
+          - {l: tgeompoint, r: geometry}
+          - {l: tgeompoint, r: tgeompoint}
+          - {l: geography,  r: tgeogpoint, gap: true, spheroid: true, ever_only: true}
+          - {l: tgeogpoint, r: geography, spheroid: true, ever_only: true}
+          - {l: tgeogpoint, r: tgeogpoint, spheroid: true}
