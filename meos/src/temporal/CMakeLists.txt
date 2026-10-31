@@ -75,7 +75,6 @@ if(MEOS)
   list(APPEND TEMPORAL_SOURCES
     lifting_meos.c
     span_tile_meos.c
-    span_aggfuncs_meos.c
     temporal_aggfuncs_meos.c
     temporal_boxops_meos.c
     temporal_compops_meos.c
