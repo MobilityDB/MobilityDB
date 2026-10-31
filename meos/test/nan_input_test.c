@@ -147,6 +147,20 @@ main(void)
     free(geo);
   }
 
+  /* An infinite number or coordinate has no position either, and is refused
+   * wherever a NaN is */
+  refused("tfloat_in Infinity", tfloat_in("Infinity@2001-01-01"));
+  refused("tfloat_in step -Infinity",
+    tfloat_in("Interp=Step;[1@2001-01-01, -Infinity@2001-01-02]"));
+  refused("floatspan_in Infinity", floatspan_in("[0, Infinity)"));
+  refused("floatset_in Infinity", floatset_in("{1, Infinity}"));
+  refused("tbox_in Infinity", tbox_in("TBOXFLOAT X([0, Infinity])"));
+  refused("stbox_in Infinity", stbox_in("STBOX X((1,1),(Infinity,2))"));
+  refused("geom_in 1e400", geom_in("POINT(1e400 1)", -1));
+  refused("geompoint_make2d Infinity",
+    geompoint_make2d(0, (double) INFINITY, 1));
+  refused("tfloatinst_make -Infinity", tfloatinst_make(-INFINITY, 0));
+
   if (failures == 0)
     printf("NaN input test: all tests passed\n");
   meos_finalize();
