@@ -148,6 +148,8 @@ extern int tsequence_timestamps_iter(const TSequence *seq, TimestampTz *times);
 /* Local Aggregate Functions */
 
 extern double tnumberseq_cont_twavg(const TSequence *seq);
+extern double tnumber_integral_scale(const TBox *box);
+extern double tnumberseq_integral_scaled(const TSequence *seq, double scale);
 
 /*****************************************************************************/
 

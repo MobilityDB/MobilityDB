@@ -2443,3 +2443,11 @@ SELECT tbigint '9223372036854775806@2001-01-01' * 2;
 ERROR:  bigint out of range
 SELECT tfloat '1e300@2001-01-01' * 1e300;
 ERROR:  value out of range: overflow
+SELECT exp(tfloat '[1@2001-01-01, 1000@2001-01-02]');
+ERROR:  value out of range: overflow
+SELECT round(exp(tfloat '[-740@2001-01-01, -20@2001-01-02]') * 1e12, 6);
+                                                          round                                                           
+--------------------------------------------------------------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 2.862713@Mon Jan 01 23:46:50.489854 2001 PST, 2061.153622@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+

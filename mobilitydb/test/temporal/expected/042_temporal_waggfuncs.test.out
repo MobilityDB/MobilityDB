@@ -388,6 +388,12 @@ SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2001-01-
  {[1@Mon Jan 01 00:00:00 2001 PST, 1@Mon Jan 01 00:05:00 2001 PST]}
 (1 row)
 
+SELECT wavg(temp, interval '1 day') FROM (VALUES ('{1e308@2001-01-01, 1e308@2001-01-02}'::tfloat),('1e308@2001-01-01'::tfloat)) t(temp);
+                                     wavg                                     
+------------------------------------------------------------------------------
+ {[1e+308@Mon Jan 01 00:00:00 2001 PST, 1e+308@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
 SELECT wmax(temp, interval '1 day') FROM (VALUES (tfloat '[1@2001-01-01, 1@2001-01-02]'),('[1@2001-01-03, 1@2001-01-04]')) t(temp);
                                 wmax                                
 --------------------------------------------------------------------

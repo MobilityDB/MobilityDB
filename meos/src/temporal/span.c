@@ -1676,7 +1676,7 @@ floatspan_ceil(const Span *s)
  * see #ensure_finite_result
  * @param[in] s Span
  */
-static bool
+bool
 ensure_finite_span_bounds(const Span *s)
 {
   if (s->basetype != T_FLOAT8)

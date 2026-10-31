@@ -168,8 +168,8 @@ cbuffersegm_interpolate(const Cbuffer *start, const Cbuffer *end,
   assert(ratio >= 0.0 && ratio <= 1.0);
   /* Circular buffers are 2D and non-geodetic: replicate the linear
    * interpolation of #pointsegm_interpolate on the raw coordinates */
-  double x = start->x + (double) ((long double) (end->x - start->x) * ratio);
-  double y = start->y + (double) ((long double) (end->y - start->y) * ratio);
+  double x = floatsegm_interpolate(start->x, end->x, ratio);
+  double y = floatsegm_interpolate(start->y, end->y, ratio);
   double radius = floatsegm_interpolate(start->radius, end->radius, ratio);
   return cbuffer_make_coords(start->srid, x, y, radius);
 }
@@ -651,13 +651,14 @@ geom_to_cbuffer(const GSERIALIZED *gs)
     const POINT2D *p1 = getPoint2d_cp(ring->points, 0);
     const POINT2D *p2 = getPoint2d_cp(ring->points, 1);
     /* The two points are the ends of a diameter, so the centre is halfway
-     * between them and the radius is half of what separates them. We cannot
-     * call the PostGIS function
-     * interpolate_point4d(&p1, &p2, &p, ratio);
-     * since it uses a double and not a long double for the interpolation */
-    double x = p1->x + (double) ((long double) (p2->x - p1->x) * 0.5);
-    double y = p1->y + (double) ((long double) (p2->y - p1->y) * 0.5);
-    radius = hypot(p2->x - p1->x, p2->y - p1->y) / 2;
+     * between them and the radius is half of what separates them. Both are
+     * computed from the halves of the coordinates, which are exact: the
+     * centre is the sum of two halves, rounded once, and neither the centre
+     * nor the radius overflows where the diameter exceeds the largest
+     * double */
+    double x = p1->x * 0.5 + p2->x * 0.5;
+    double y = p1->y * 0.5 + p2->y * 0.5;
+    radius = hypot(p2->x * 0.5 - p1->x * 0.5, p2->y * 0.5 - p1->y * 0.5);
     LWGEOM *center = (LWGEOM *) lwpoint_make2d(srid, x, y);
     gscenter = geom_serialize(center);
     lwgeom_free((LWGEOM *) poly); lwgeom_free(center); 
@@ -1094,7 +1095,12 @@ distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
     return DBL_MAX;
   /* The following function assumes that all validity tests have been done */
-  return cbuffer_distance(cb1, cb2);
+  double result = cbuffer_distance(cb1, cb2);
+  /* The distance between two finite circular buffers can exceed the largest
+   * double (#ensure_finite_result) */
+  if (! ensure_finite_result(result))
+    return DBL_MAX;
+  return result;
 }
 
 /**
@@ -1106,7 +1112,12 @@ distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 Datum
 datum_cbuffer_distance(Datum cb1, Datum cb2)
 {
-  return Float8GetDatum(cbuffer_distance(DatumGetCbufferP(cb1), DatumGetCbufferP(cb2)));
+  double result = cbuffer_distance(DatumGetCbufferP(cb1),
+    DatumGetCbufferP(cb2));
+  /* The distance can exceed the largest double (#ensure_finite_result) */
+  if (! ensure_finite_result(result))
+    return Float8GetDatum(DBL_MAX);
+  return Float8GetDatum(result);
 }
 
 /*****************************************************************************/

@@ -96,14 +96,28 @@ SELECT pcid(merge(inst)) FROM tbl_tpcpatch_inst;
 -- tnpoints / tdensity — per-instant point counts and density.
 -- Both walk every instant of every tpcpatch row: tnpoints sums the
 -- pcpatch's npoints, tdensity returns npoints / xy-bbox-area. Verify
--- the result is a non-empty tint / tfloat.
+-- the result is a non-empty tint / tfloat. A patch whose XY bounds have no
+-- area, one point or points on a line, has no density: the division by
+-- zero raises an error, so the density reads the rows whose every patch has
+-- an area.
 -------------------------------------------------------------------------------
 
 SELECT numInstants(tnpoints(inst)) > 0 FROM tbl_tpcpatch_inst;
 SELECT numInstants(tnpoints(seq))  > 0 FROM tbl_tpcpatch_seq;
 
-SELECT numInstants(tdensity(inst)) > 0 FROM tbl_tpcpatch_inst;
-SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq;
+SELECT numInstants(tdensity(inst)) > 0 FROM tbl_tpcpatch_inst
+WHERE (SELECT bool_and(area(getValue(i)::tpcbox::stbox) > 0)
+  FROM unnest(instants(inst)) i);
+SELECT numInstants(tdensity(seq))  > 0 FROM tbl_tpcpatch_seq
+WHERE (SELECT bool_and(area(getValue(i)::tpcbox::stbox) > 0)
+  FROM unnest(instants(seq)) i);
+
+-- Two points over a 1x1 XY box, then one point: the second patch has no area
+SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz))) t(v);
+SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
+  (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3)), '2001-01-02'::timestamptz))) t(v);
 
 -------------------------------------------------------------------------------
 

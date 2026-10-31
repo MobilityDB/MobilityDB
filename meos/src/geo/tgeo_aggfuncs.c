@@ -364,17 +364,21 @@ doublen_to_point(const TInstant *inst, int32_t srid)
   {
     double3 *value3 = (double3 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value3->c != 0);
-    double valuea = value3->a / value3->c;
-    double valueb = value3->b / value3->c;
+    /* A negative count marks an average (#double3_add) */
+    double count = value3->c > 0 ? value3->c : 1.0;
+    double valuea = value3->a / count;
+    double valueb = value3->b / count;
     point = lwpoint_make2d(srid, valuea, valueb);
   }
   else /* inst->temptype == T_TDOUBLE4 */
   {
     double4 *value4 = (double4 *) DatumGetPointer(tinstant_value_p(inst));
     assert(value4->d != 0);
-    double valuea = value4->a / value4->d;
-    double valueb = value4->b / value4->d;
-    double valuec = value4->c / value4->d;
+    /* A negative count marks an average (#double4_add) */
+    double count = value4->d > 0 ? value4->d : 1.0;
+    double valuea = value4->a / count;
+    double valueb = value4->b / count;
+    double valuec = value4->c / count;
     point = lwpoint_make3dz(srid, valuea, valueb, valuec);
   }
   /* Notice that for the moment we do not aggregate temporal geography points */

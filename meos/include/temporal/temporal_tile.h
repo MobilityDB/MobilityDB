@@ -72,7 +72,7 @@ extern TboxGridState *tbox_tile_state_make(const Temporal *temp,
   const TBox *box, Datum vsize, const Interval *duration, Datum xorigin,
   TimestampTz torigin, bool border_inc);
 extern void tbox_tile_state_next(TboxGridState *state);
-extern void tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
+extern bool tbox_tile_state_set(Datum value, TimestampTz t, Datum vsize,
   int64 tunits, MeosType basetype, MeosType spantype, TBox *box);
 
 /*****************************************************************************/

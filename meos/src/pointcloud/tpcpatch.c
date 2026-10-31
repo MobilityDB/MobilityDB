@@ -557,6 +557,8 @@ tpcpatch_tdensity_transfn(SkipList *state, const Temporal *temp)
   VALIDATE_TPCPATCH(temp, NULL);
   int count;
   TInstant **instants = tpcpatch_transform_tdensity(temp, &count);
+  if (! instants)
+    return NULL;
   /* Null state: create a new state */
   if (! state)
     state = temporal_skiplist_make();

@@ -112,6 +112,7 @@ SELECT wavg(temp, NULL) FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT wavg(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
+SELECT wavg(temp, interval '1 day') FROM (VALUES ('{1e308@2001-01-01, 1e308@2001-01-02}'::tfloat),('1e308@2001-01-01'::tfloat)) t(temp);
 
 -------------------------------------------------------------------------------
 

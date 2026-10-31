@@ -2473,7 +2473,13 @@ distance_value_value(Datum l, Datum r, MeosType type)
       return Int64GetDatum(result);
     }
     case T_FLOAT8:
-      return Float8GetDatum(distance_value_value_double(l, r, type));
+    {
+      /* The distance between two finite floats can exceed the largest one */
+      double result = distance_value_value_double(l, r, type);
+      if (! ensure_finite_result(result))
+        return distance_sentinel(type);
+      return Float8GetDatum(result);
+    }
     case T_TIMESTAMPTZ:
     {
       /* The distance between timestamptz values is the interval PostgreSQL's
