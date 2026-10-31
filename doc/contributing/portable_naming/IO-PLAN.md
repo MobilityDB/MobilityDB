@@ -311,7 +311,7 @@ generates ([the bindings plan](BINDINGS-PLAN.md)), the catalog's first:
 | IO-B10 | JMEOS | `toString` is `asText` on every class; `GeoSet` through `spatialset_*`; static readers; `as_wkb` plain WKB beside `as_ewkb`; the box writers; the classes of the extended families, the cells and `tbigint`; `IntSpan.from_wkb(byte[])` | open |
 | IO-B11 | JMEOS (Spark, Flink generators) | the UDT and RAW `toString` is `asText`; the UDF layer's `asText` and `asEWKT` dispatch by the argument's type; `asHexWKB` plain WKB; `asBinary`, `asEWKB`, `FromBinary`, `FromEWKB` registered; the raster and `raquet` hex writers | open |
 | IO-B12 | MobilityKafka | the portable names over the facades | after IO-B11 |
-| IO-B13 | MobilityNebula | `asText`, `asBinary`, `asHexWKB`, `asMFJSON` and their readers for the types it carries; the temporal sequence aggregation returning the value | open |
+| IO-B13 | MobilityNebula | `asText`, `asBinary`, `asHexWKB`, `asMFJSON` and their readers for the types it carries; the temporal sequence aggregation returning the value | PAUSED BY THE OWNER 2026-10-31: MobilityNebula lags a large queue of open pull requests (#194 to #197 among them) |
 | IO-B14 | MobilityAPI | its Spark dialect names `asMFJSON` and `<type>FromMFJSON` | after IO-B11 |
 | IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds this document's two tables, the SQL one from `mobilitydb/sql` and the catalog, the bindings' one from each binding's generated surface | open |
 
