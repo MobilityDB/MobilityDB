@@ -48,12 +48,14 @@
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tnpoint_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_point_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_point_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the temporal distance between a geometry point and a
- * temporal network point
+ * @brief Return the temporal distance between a geometry point and a temporal
+ * network point
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -74,8 +76,8 @@ PGDLLEXPORT Datum Tdistance_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tnpoint_geo);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the temporal distance between a temporal network point and
- * a geometry point
+ * @brief Return the temporal distance between a temporal network point and a
+ * geometry point
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -96,8 +98,8 @@ PGDLLEXPORT Datum Tdistance_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the temporal distance between a network point and a
- * temporal network point
+ * @brief Return the temporal distance between a network point and a temporal
+ * network point
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -108,6 +110,8 @@ Tdistance_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -115,8 +119,8 @@ PGDLLEXPORT Datum Tdistance_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the temporal distance between a temporal network point and
- * a network point
+ * @brief Return the temporal distance between a temporal network point and a
+ * network point
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -127,6 +131,8 @@ Tdistance_tnpoint_npoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(1);
   Temporal *result = tdistance_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -134,8 +140,7 @@ PGDLLEXPORT Datum Tdistance_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the temporal distance between a temporal network point and
- * a network point
+ * @brief Return the temporal distance between two temporal network points
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -151,11 +156,14 @@ Tdistance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END tnpoint_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tnpoint_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tnpoint);
 /**
@@ -188,8 +196,8 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_geo);
 Datum
 NAI_tnpoint_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   TInstant *result = nai_tnpoint_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -213,6 +221,8 @@ NAI_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
 
@@ -231,6 +241,8 @@ NAI_tnpoint_npoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(1);
   TInstant *result = nai_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
 
@@ -254,6 +266,7 @@ NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END tnpoint_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -416,6 +429,8 @@ NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tnpoint_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_geo_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tnpoint);
 /**
@@ -441,8 +456,8 @@ PGDLLEXPORT Datum Shortestline_tnpoint_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_geo);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the line connecting the nearest approach point between a temporal
- * network point and a geometry
+ * @brief Return the line connecting the nearest approach point between a
+ * temporal network point and a geometry
  * @sqlfn shortestLine()
  */
 Datum
@@ -462,8 +477,8 @@ PGDLLEXPORT Datum Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_npoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the line connecting the nearest approach point between a network
- * point and a temporal network point
+ * @brief Return the line connecting the nearest approach point between a
+ * network point and a temporal network point
  * @sqlfn shortestLine()
  */
 Datum
@@ -473,6 +488,8 @@ Shortestline_npoint_tnpoint(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
 
@@ -480,8 +497,8 @@ PGDLLEXPORT Datum Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_npoint);
 /**
  * @ingroup mobilitydb_npoint_dist
- * @brief Return the line connecting the nearest approach point between a temporal
- * network point and a network point
+ * @brief Return the line connecting the nearest approach point between a
+ * temporal network point and a network point
  * @sqlfn shortestLine()
  */
 Datum
@@ -491,17 +508,17 @@ Shortestline_tnpoint_npoint(PG_FUNCTION_ARGS)
   Npoint *np = PG_GETARG_NPOINT_P(1);
   GSERIALIZED *result = shortestline_tnpoint_npoint(temp, np);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tnpoint_tnpoint);
 /**
  * @ingroup mobilitydb_npoint_dist
  * @brief Return the line connecting the nearest approach point between two
- * temporal networks
+ * temporal network points
  * @sqlfn shortestLine()
  */
 Datum
@@ -516,5 +533,6 @@ Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END tnpoint_shortestline */
 
 /*****************************************************************************/
