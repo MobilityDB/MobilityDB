@@ -34,6 +34,7 @@ set(GEO_SOURCES
   geo_funcs.c
   geo_lwgeom_none.c
   geo_round.c
+  geoset.c
   postgis_funcs.c
   stbox.c
   stbox_index.c
@@ -59,7 +60,6 @@ set(GEO_SOURCES
 
 if(MEOS)
   list(APPEND GEO_SOURCES
-  geoset_meos.c
   tspatial_transform_meos.c
   # tspatial_rtree.c
   tspatial_topops_meos.c
