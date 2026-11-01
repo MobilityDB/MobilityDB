@@ -85,8 +85,6 @@ SELECT eIntersects(:flat, NULL::geometry);
 -------------------------------------------------------------------------------
 
 SELECT eContains(:square, :flat) = eContains(:square, (:flat)::tgeometry) AS ec_geo_pp,
-       eContains(:flat, :square) = eContains((:flat)::tgeometry, :square) AS ec_pp_geo,
-       eContains(:flat, :flatfar) = eContains((:flat)::tgeometry, (:flatfar)::tgeometry) AS ec_pp_pp,
        eCovers(:square, :flat) = eCovers(:square, (:flat)::tgeometry) AS ecv_geo_pp,
        eDisjoint(:flat, :flatfar) = eDisjoint((:flat)::tgeometry, (:flatfar)::tgeometry) AS edj_pp_pp,
        eIntersects(:square, :flat) = eIntersects(:square, (:flat)::tgeometry) AS ei_geo_pp,
@@ -113,5 +111,11 @@ SELECT eDwithin(:flat, :flatfar, 1.0);
 
 /* Errors: a schema carrying Z in a planar relationship */
 SELECT eContains(:square, :zpatch);
+
+/* Errors: a patch is a set of points, so it neither contains nor covers a
+   geometry and two patches do not touch */
+SELECT eContains(:flat, :square);
+SELECT aCovers(:flat, :flatfar);
+SELECT eTouches(:flat, :flatfar);
 
 -------------------------------------------------------------------------------

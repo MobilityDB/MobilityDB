@@ -270,6 +270,8 @@ extern Set *jsonbset_path_query_first(const Set *set, const JsonPath *jp, const 
 extern Set *jsonbset_array_element_common(const Set *set, int idx, bool astext, nullHandleType null_handle);
 extern Set *jsonbset_extract_path_common(const Set *set, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
 extern Set *jsonbset_object_field_common(const Set *set, const text *key, bool astext, nullHandleType null_handle);
+extern bool *jsonbset_path_exists_intl(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
+extern bool *jsonbset_path_match_intl(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
 
 /* Set operations */
 
@@ -392,6 +394,8 @@ extern Temporal *tjson_object_field_common(const Temporal *temp, const text *key
 extern Temporal *tjsonb_array_element_common(const Temporal *temp, int idx, bool astext, nullHandleType null_handle);
 extern Temporal *tjsonb_extract_path_common(const Temporal *temp, text **path_elems, int path_len, bool astext, nullHandleType null_handle);
 extern Temporal *tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
+extern Temporal *tjsonb_path_exists_intl(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern Temporal *tjsonb_path_match_intl(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 
 /*****************************************************************************
  * Restriction functions

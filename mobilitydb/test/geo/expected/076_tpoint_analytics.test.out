@@ -498,17 +498,11 @@ SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',
 (1 row)
 
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT Empty'));
- asewkt 
---------
- 
-(1 row)
-
+ERROR:  Only non-empty geometries accepted
 SELECT asEWKT(scale(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'POINT Empty'));
- asewkt 
---------
- 
-(1 row)
-
+ERROR:  Only non-empty geometries accepted
+SELECT asEWKT(scale(tgeompoint 'SRID=3812;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'POINT(1 1)', geometry 'SRID=5676;Point(1 1)'));
+ERROR:  Operation on mixed SRID
 SELECT asEWKT(scale(tgeompoint 'Point(1 1)@2001-01-01', geometry 'POINT(1 1)'));
                  asewkt                  
 -----------------------------------------
@@ -785,6 +779,12 @@ SELECT rotate(geometry 'SRID=3812;Point(1 1)', pi()/6, geometry 'SRID=5676;Point
 ERROR:  Operation on mixed SRID
 SELECT scale(geometry 'Point(1 1)', geometry 'Linestring(1 1,2 2)');
 ERROR:  Only point geometries accepted
+SELECT scale(geometry 'Point(1 1)', geometry 'Point Empty');
+ERROR:  Only non-empty geometries accepted
+SELECT scale(geometry 'Point(1 1)', geometry 'Point(2 2)', geometry 'Point Empty');
+ERROR:  Only non-empty geometries accepted
+SELECT scale(geometry 'SRID=3812;Point(1 1)', geometry 'Point(2 2)', geometry 'SRID=5676;Point(0 0)');
+ERROR:  Operation on mixed SRID
 SELECT asText(minDistSimplify(tgeogpoint '[Point(1 1)@2001-01-01, Point(1.000001 1)@2001-01-02, Point(3 3)@2001-01-03]', 1), 6);
                                        astext                                       
 ------------------------------------------------------------------------------------

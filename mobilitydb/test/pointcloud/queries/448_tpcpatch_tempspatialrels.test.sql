@@ -118,15 +118,19 @@ SELECT asText(tContains(:square, :flatpatch));
 SELECT asText(tCovers(:square, :flatpatch));
 SELECT asText(tTouches(:square, :flatpatch));
 SELECT asText(tTouches(:flatpatch, :square));
-SELECT asText(tContains(:flatpatch, :square));
 
 -- Every new cell agrees with the cast written out by hand
 SELECT tContains(:square, :flatpatch) = tContains(:square, (:flatpatch)::tgeometry) AS tc_agrees,
        tCovers(:square, :flatpatch) = tCovers(:square, (:flatpatch)::tgeometry) AS tcv_agrees,
-       tTouches(:flatpatch, :square) = tTouches((:flatpatch)::tgeometry, :square) AS ttc_agrees,
-       tContains(:flatpatch, :square) = tContains((:flatpatch)::tgeometry, :square) AS tc_rev_agrees;
+       tTouches(:flatpatch, :square) = tTouches((:flatpatch)::tgeometry, :square) AS ttc_agrees;
 
 /* Errors: a schema carrying Z in a planar relationship */
 SELECT tContains(:square, :inside);
+
+/* Errors: a patch is a set of points, so it neither contains nor covers a
+   geometry and two patches do not touch */
+SELECT tContains(:flatpatch, :square);
+SELECT tCovers(:flatpatch, :flatpatch);
+SELECT tTouches(:flatpatch, :flatpatch);
 
 -------------------------------------------------------------------------------

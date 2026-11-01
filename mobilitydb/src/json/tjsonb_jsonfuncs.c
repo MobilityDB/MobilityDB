@@ -1224,7 +1224,10 @@ Tjsonb_path_exists_common(FunctionCallInfo fcinfo, bool tz)
     silent = PG_GETARG_BOOL(3);
   }
   /* Compute the result */
-  Temporal *result = tjsonb_path_exists(temp, jp, vars, silent, tz);
+  /* The operators take no variables */
+  Temporal *result = vars ?
+    tjsonb_path_exists(temp, jp, vars, silent, tz) :
+    tjsonb_path_exists_intl(temp, jp, NULL, silent, tz);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(jp, 1);
@@ -1298,7 +1301,10 @@ Tjsonb_path_match_common(FunctionCallInfo fcinfo, bool tz)
     silent = PG_GETARG_BOOL(3);
   }
   /* Compute the result */
-  Temporal *result = tjsonb_path_match(temp, jp, vars, silent, tz);
+  /* The operators take no variables */
+  Temporal *result = vars ?
+    tjsonb_path_match(temp, jp, vars, silent, tz) :
+    tjsonb_path_match_intl(temp, jp, NULL, silent, tz);
   /* Clean up and return */
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(jp, 1);
