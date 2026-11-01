@@ -653,16 +653,39 @@ def bootstrap_posops_c(filetext: str, bt: dict, rendered: str) -> str:
 def _nadops_c_markers(box: str, tmpl: str = "nadops.c.tmpl"):
     """BEGIN/END markers of a box type's nearest approach distance wrappers, as
     #_posops_c_markers marks its position wrappers, naming the template they come
-    from."""
-    begin = (f"/* GENERATED-NADOPS-BEGIN {box} — tools/codegen/inherited/generate.py "
+    from; the region of another distance function of the family (`distfns`) is a
+    GENERATED-DISTFNS one."""
+    kind = "DISTFNS" if tmpl == "distpairs.c.tmpl" else "NADOPS"
+    begin = (f"/* GENERATED-{kind}-BEGIN {box} — tools/codegen/inherited/generate.py "
              f"from templates/{tmpl}; DO NOT EDIT BY HAND;\n"
              " * edit the template + manifest.d/boxtypes.yaml and re-run. */\n")
-    return begin, f"/* GENERATED-NADOPS-END {box} */\n"
+    return begin, f"/* GENERATED-{kind}-END {box} */\n"
 
 
 def _nadtmpl(bt: dict) -> str:
     """The template of a box type's nearest approach distance wrappers"""
+    if bt.get("distfn"):
+        return "distpairs.c.tmpl"
     return "nadpairs.c.tmpl" if bt.get("nadpairs") else "nadops.c.tmpl"
+
+
+# The distance functions of a family beside its nearest approach distance, each
+# a region of templates/distpairs.c.tmpl over the pairs its `distfns` entry lists,
+# with the sides of its `nadsides`: the C prefix of the wrapper, the noun of its
+# brief, its SQL function and operator, the type of the kernel's result and the
+# macro returning it, and whether the earth model gives it an operator procedure.
+_DISTFNS = {
+    "tdistance": {"FN": "Tdistance", "WHAT": "temporal distance", "SQLFN": "tDistance",
+                  "SQLOP": " * @sqlop @p <->\n", "RTYPE": "Temporal",
+                  "RETURN": "PG_RETURN_TEMPORAL_P", "opr": True},
+    "nai": {"FN": "NAI", "WHAT": "nearest approach instant",
+            "SQLFN": "nearestApproachInstant", "SQLOP": "", "RTYPE": "TInstant",
+            "RETURN": "PG_RETURN_TINSTANT_P", "opr": False},
+    "shortestline": {"FN": "Shortestline",
+                     "WHAT": "line connecting the nearest approach point",
+                     "SQLFN": "shortestLine", "SQLOP": "", "RTYPE": "GSERIALIZED",
+                     "RETURN": "PG_RETURN_GSERIALIZED_P", "opr": False},
+}
 
 
 def _article(noun: str) -> str:
@@ -707,9 +730,13 @@ def render_nadpairs_c(bt: dict) -> str:
     as #render_nadops_c renders its directions; a `sep` row writes a row of
     asterisks. A side is the box type itself or one of the region's `nadsides`;
     the kernel takes the sides in the order its name gives them, two sides of one
-    variable are numbered, and a side marked `free` is released after the call."""
-    blocks = read_template("nadpairs.c.tmpl").rstrip("\n").split("\n\n")
-    if not bt.get("nadearth"):
+    variable are numbered, and a side marked `free` is released after the call.
+    A region of another distance function (`distfn`) takes templates/distpairs.c.tmpl
+    and the parts of its #_DISTFNS entry, its operator procedure only where that
+    entry has one; a side marked `byval` holds its value as a Datum."""
+    spec = _DISTFNS[bt["distfn"]] if bt.get("distfn") else {}
+    blocks = read_template(_nadtmpl(bt)).rstrip("\n").split("\n\n")
+    if not bt.get("nadearth") or (spec and not spec["opr"]):
         blocks = blocks[:1]
     box = bt["box"]
     sides = {box: {"c": bt["boxc"], "var": "box", "getarg": bt["getarg"],
@@ -733,12 +760,15 @@ def render_nadpairs_c(bt: dict) -> str:
         else:
             between = (f"{_article(sides[left]['desc'])} and "
                        f"{_article(sides[right]['desc'])}")
-        decls = "\n".join(f"  {sides[s]['c']} *{v} = {sides[s]['getarg']}({i});"
-                          for i, (s, v) in enumerate(zip((left, right), names)))
+        decls = "\n".join(
+            f"  {sides[s]['c']} {'' if sides[s].get('byval') else '*'}{v} = "
+            f"{sides[s]['getarg']}({i});"
+            for i, (s, v) in enumerate(zip((left, right), names)))
         if left == right:
             kargs = names
         else:
-            byside = dict(zip((left, right), names))
+            # A side the kernel names by another token (`token`) is found by it
+            byside = {sides[s].get("token", s): v for s, v in zip((left, right), names)}
             kargs = [byside[k] for k in kernel.split("_") if k in byside]
         if bt.get("nadearth"):
             kargs = kargs + ["spheroid"]
@@ -748,7 +778,8 @@ def render_nadpairs_c(bt: dict) -> str:
         vals = {"A": left, "B": right, "NADGROUP": bt["nadgroup"],
                 "BETWEEN": between, "DECLS": decls, "EARTH": earth,
                 "FCINFO": fcinfo, "KERNEL": kernel, "KARGS": ", ".join(kargs),
-                "FREES": frees}
+                "FREES": frees,
+                **{k: v for k, v in spec.items() if k != "opr"}}
         for b in blocks:
             for k, v in vals.items():
                 b = b.replace("{" + k + "}", v)
@@ -798,14 +829,16 @@ def bootstrap_nadpairs_c(filetext: str, bt: dict, rendered: str) -> str:
     refusing unless they read as #render_nadpairs_c renders them, as
     #bootstrap_nadops_c refuses."""
     region = bt["region"]
+    spec = _DISTFNS[bt["distfn"]] if bt.get("distfn") else {"FN": "NAD", "opr": True}
+    fn = spec["FN"]
     pairs = [r for r in bt["nadpairs"] if r != "sep"]
     (a0, b0, _), (a1, b1, _) = pairs[0], pairs[-1]
-    lastname = f"NAD_{a1}_{b1}" + ("_opr" if bt.get("nadearth") else "")
-    first = _posops_c_block(filetext, f"NAD_{a0}_{b0}")
+    lastname = f"{fn}_{a1}_{b1}" + ("_opr" if bt.get("nadearth") and spec["opr"] else "")
+    first = _posops_c_block(filetext, f"{fn}_{a0}_{b0}")
     last = _posops_c_block(filetext, lastname)
     if not first or not last:
         raise SystemExit(f"bootstrap nadops {region}: {bt['nadfile']} does not hold "
-                         f"NAD_{a0}_{b0} and {lastname} once each")
+                         f"{fn}_{a0}_{b0} and {lastname} once each")
     start, stop = first[0], last[1]
     if filetext[start:stop] != rendered:
         raise SystemExit(f"bootstrap nadops {region}: the wrappers of {bt['nadfile']} "
@@ -819,13 +852,29 @@ def nadregions(mf: dict) -> list:
     `nadfile`, then each family its entry lists in `nadfamilies`, which takes the
     box's own keys and names its region after the family"""
     out = []
+
+    def with_distfns(region: dict):
+        """A region, then one per distance function its `distfns` lists, named
+        <region>_<function> and listing that function's pairs in place of the
+        nearest approach distance ones, which #render_nadpairs_c renders"""
+        out.append(region)
+        for fn, entry in (region.get("distfns") or {}).items():
+            # An entry is its pairs, or its pairs and the side keys it overrides
+            rows = entry if isinstance(entry, list) else entry["pairs"]
+            over = {} if isinstance(entry, list) else entry.get("sides", {})
+            sides = {**region.get("nadsides", {})}
+            for side, keys in over.items():
+                sides[side] = {**sides.get(side, {}), **keys}
+            out.append({**region, "region": f"{region['region']}_{fn}",
+                        "nadpairs": rows, "distfn": fn, "nadsides": sides})
+
     for bt in mf.get("boxtypes", []):
         if bt.get("nadfile"):
-            out.append({**bt, "region": bt["box"]})
+            with_distfns({**bt, "region": bt["box"]})
         for fam in bt.get("nadfamilies", []):
-            out.append({**{k: bt[k] for k in
-                           ("box", "boxc", "getarg", "boxdesc", "boxdescpl")},
-                        **fam, "region": fam["family"]})
+            with_distfns({**{k: bt[k] for k in
+                             ("box", "boxc", "getarg", "boxdesc", "boxdescpl")},
+                          **fam, "region": fam["family"]})
     return out
 
 
