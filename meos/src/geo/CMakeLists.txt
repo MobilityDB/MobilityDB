@@ -62,7 +62,6 @@ if(MEOS)
   geoset_meos.c
   tspatial_transform_meos.c
   # tspatial_rtree.c
-  tspatial_topops_meos.c
 )
 endif()
 
