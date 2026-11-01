@@ -2376,8 +2376,9 @@ npoint_from_wkb_state(meos_wkb_parse_state *s)
   /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   npoint_flags_from_wkb_state(s, wkb_flags);
-  /* Read the SRID, if necessary */
-  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  /* Read the SRID, if necessary; a component takes the one of its container,
+   * as #cbuffer_from_wkb_state reads it */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : s->srid;
   int64 rid = int64_from_wkb_state(s);
   double pos = double_from_wkb_state(s);
   Npoint *result = palloc(sizeof(Npoint));
@@ -2410,8 +2411,9 @@ nsegment_from_wkb_state(meos_wkb_parse_state *s)
   /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   npoint_flags_from_wkb_state(s, wkb_flags);
-  /* Read the SRID, if necessary */
-  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  /* Read the SRID, if necessary; a component takes the one of its container,
+   * as #cbuffer_from_wkb_state reads it */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : s->srid;
   int64 rid = int64_from_wkb_state(s);
   double pos1 = double_from_wkb_state(s);
   double pos2 = double_from_wkb_state(s);
@@ -2465,8 +2467,9 @@ pose_from_wkb_state(meos_wkb_parse_state *s)
   /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   pose_flags_from_wkb_state(s, wkb_flags);
-  /* Read the SRID, if necessary */
-  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  /* Read the SRID, if necessary; a component takes the one of its container,
+   * as #cbuffer_from_wkb_state reads it */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : s->srid;
   Pose *result;
   if (s->hasz)
   {
@@ -2503,8 +2506,9 @@ posechain_from_wkb_state(meos_wkb_parse_state *s)
   /* Read the flags */
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   pose_flags_from_wkb_state(s, wkb_flags);
-  /* Read the SRID, if necessary */
-  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : SRID_UNKNOWN;
+  /* Read the SRID, if necessary; a component takes the one of its container,
+   * as #cbuffer_from_wkb_state reads it */
+  int32_t srid = s->has_srid ? int32_from_wkb_state(s) : s->srid;
   int count = int32_from_wkb_state(s);
   if (count < 1)
   {

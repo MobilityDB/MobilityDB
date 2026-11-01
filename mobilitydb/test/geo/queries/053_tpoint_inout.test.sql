@@ -223,6 +223,15 @@ SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2001-01
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2001-01-01');
 select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'NDR');
 select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'XDR');
+-- The container states the SRID once, for its components too
+SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
+SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
+-- A component that states the SRID of its container again reads back
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E6100000000000000000F03F000000000000F03F0060885EC91C0000'));
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E6100000000000000000F03F000000000000F03F'));
+-- A component that states an SRID other than the one of its container
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E0000000000000000F03F000000000000F03F'));
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
 /* Errors */
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 
