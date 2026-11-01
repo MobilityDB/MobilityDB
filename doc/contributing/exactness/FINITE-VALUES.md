@@ -116,8 +116,8 @@ fails on the file of master and passes on the fix:
 
 ## 4. PR 1, the finite rule
 
-Branch `fix/meos-refuses-non-finite`, on master `91f8d676e7`; its pull request opens once its
-receipts are earned. Six commits:
+MobilityDB #3361, branch `fix/meos-refuses-non-finite`, head `5ab1ba4d0d` on master
+`91f8d676e7`. Seven commits:
 
 1. `Refuse an infinite value where MEOS refuses a NaN`: the helpers test `isfinite`, the geometry
    walk refuses a non-finite coordinate, the raster pixel readers test `isfinite`; the interval
@@ -140,14 +140,23 @@ receipts are earned. Six commits:
    and reads an unscalable pair as it is; the analytic distances of temporal points and temporal
    circular buffers read operands from 2^1019 scaled by 2^-5; the foot of a shortest line scales
    its two vectors apart; the temporal distance of a temporal point to a geometry of segments,
-   whose kernel compares squares in doubles, raises "not supported" from 2^510.
+   whose kernel compares squares in doubles, raises "not supported" from 2^510. The magnitude
+   of a polygonal geometry reads every ring, since a liblwgeom polygon box covers its exterior
+   ring alone; the length and the perimeter measure each segment as its own vector, halving
+   where a difference leaves the doubles; the area alone scales the geometry, to 2^500 (at most
+   2^1022), and raises "not supported" where the scaling is not exact.
 6. `Test that every MEOS value is a finite number`: `nan_refusal_test.c` reads NaN and ±Infinity
    through every entry class and checks the results of finite operands near the largest double,
    95 cases.
+7. `State the rule of finite values for the users of MEOS`: `doc/specs/meos-finite-values.md`,
+   its examples run against the head.
 
 **The oracle.** Every corpus is judged by CGAL's exact rationals on the doubles the engine holds,
 on the branch's answers alone; an answer "error" is right exactly where the exact distance rounds
-to infinity.
+to infinity. Each corpus has an accept control, which agrees, and a refuse control, refused on
+every row it moves. The measures are judged within 1e-9 of their scale (a length of itself, an
+area of the sum of the magnitudes of its shoelace terms), "not supported" right exactly where the
+scaling of the area is not exact; the worst row is within 3.5e-16.
 
 | Corpus | Rows | Agree |
 |---|---|---|
@@ -162,6 +171,7 @@ to infinity.
 | the nearest approach of a temporal point to the census geometries | 4560 | 4560 |
 | the nearest approach of a moving circular buffer | 2100 | 2100 |
 | the 3D distance of points and segments | 2300 | 2300 |
+| the length, perimeter and area of geometries from subnormal to near the largest double | 3000 | 3000 |
 
 **SQL.** The regression tests gain the cases of each result: `003_span`, `021_tbox`,
 `022_temporal`, `025_temporal_tile`, `026_tnumber_mathfuncs`, `040_temporal_aggfuncs`,
@@ -172,7 +182,9 @@ refusals, and the `round` example of `doc/set_span_types.xml` takes a finite bou
 **The user document** `doc/specs/meos-finite-values.md` states the rule for the users of MEOS and
 of the bindings.
 
-**Receipts:** strict-ci, Windows, cppcheck, valgrind, the CGAL oracle and the speed probe.
+**Receipts** on the head: strict-ci, Windows, cppcheck, valgrind, the CGAL oracle (12 witnesses,
+24 controls) and the speed probe (26 cells, the distance of geometries at 0.435 of GEOS called
+directly). Its merged-lines approval is the row of #2861 naming its branch.
 
 ## 5. PR 2, the double error value
 
@@ -198,4 +210,5 @@ The user document gains its section on the error value of a failed call.
 | The exactness guards read the lowest set bit | `double_lowest_bit` answers the unit in the last place, not the lowest set bit, so the guards of the exact distance comparisons decline from a skew of about 2^128: `segment_distance_square` of the path (1e40, 0)–(1e40, 4) and the point (-1e40, 2) declines, and the nearest approach instant of a point passing a point at 1e50 is the start of the segment, not its middle |
 | The float overflow errors name their class | the 34 overflow and underflow errors of `pgtypes/utils/float.h` raise `MEOS_ERR_INTERNAL_ERROR`, not `MEOS_ERR_VALUE_OUT_OF_RANGE` |
 | The integer sums and deltas raise on overflow | the sum and the delta of a temporal integer and a temporal big integer overflow with no error |
+| The area of a geometry is exact at every magnitude | `geom_area` raises "not supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates near the largest double beside coordinates the scaling by 2^-523 rounds; the exact area sums the shoelace terms in expansions, then `WideDyadic` |
 | The temporal distance of a temporal point to a geometry of segments is exact | `tpoint_linear_distance_geom` takes the root of a square rounded in doubles behind an absolute tolerance of 1e-12; an entry of [Exact distance](EXACT-DISTANCE.md), MobilityDB #3287 |
