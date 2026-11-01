@@ -66,6 +66,27 @@ boxtypes:
           - [tcbuffer, cbuffer, nad_tcbuffer_cbuffer]
           - sep
           - [tcbuffer, tcbuffer, nad_tcbuffer_tcbuffer]
+        # the temporal distance, the nearest approach instant and the shortest line
+        # (templates/distpairs.c.tmpl), as the tpose entry states them
+        distfns:
+          tdistance:
+            - [geo, tcbuffer, tdistance_tcbuffer_geo]
+            - [tcbuffer, geo, tdistance_tcbuffer_geo]
+            - [cbuffer, tcbuffer, tdistance_tcbuffer_cbuffer]
+            - [tcbuffer, cbuffer, tdistance_tcbuffer_cbuffer]
+            - [tcbuffer, tcbuffer, tdistance_tcbuffer_tcbuffer]
+          nai:
+            - [geo, tcbuffer, nai_tcbuffer_geo]
+            - [tcbuffer, geo, nai_tcbuffer_geo]
+            - [cbuffer, tcbuffer, nai_tcbuffer_cbuffer]
+            - [tcbuffer, cbuffer, nai_tcbuffer_cbuffer]
+            - [tcbuffer, tcbuffer, nai_tcbuffer_tcbuffer]
+          shortestline:
+            - [geo, tcbuffer, shortestline_tcbuffer_geo]
+            - [tcbuffer, geo, shortestline_tcbuffer_geo]
+            - [cbuffer, tcbuffer, shortestline_tcbuffer_cbuffer]
+            - [tcbuffer, cbuffer, shortestline_tcbuffer_cbuffer]
+            - [tcbuffer, tcbuffer, shortestline_tcbuffer_tcbuffer]
       - family:   tpose
         nadgroup: mobilitydb_pose_dist
         nadfile:  mobilitydb/src/pose/tpose_distance.c
