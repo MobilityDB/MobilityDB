@@ -176,8 +176,8 @@ meos/src/temporal/temporal_compops.c	tlt_text_ttext	txt unstated
 meos/src/temporal/temporal_compops.c	tlt_ttext_text	txt unstated
 meos/src/temporal/temporal_compops.c	tne_text_ttext	txt unstated
 meos/src/temporal/temporal_compops.c	tne_ttext_text	txt unstated
-meos/src/temporal/temporal_restrict_meos.c	ttext_at_value	txt unstated
-meos/src/temporal/temporal_restrict_meos.c	ttext_minus_value	txt unstated
+meos/src/temporal/temporal_restrict.c	ttext_at_value	txt unstated
+meos/src/temporal/temporal_restrict.c	ttext_minus_value	txt unstated
 meos/src/temporal/temporal_rtree.c	rtree_free	rtree unstated
 meos/src/temporal/temporal_sptree.c	sptree_free	sptree unstated
 meos/src/temporal/temporal_tile.c	bigintspan_bins	count unstated
