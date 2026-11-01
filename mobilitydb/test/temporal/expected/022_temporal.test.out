@@ -7629,6 +7629,54 @@ SELECT timestamps(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@
  {"Mon Jan 01 00:00:00 2001 PST","Tue Jan 02 00:00:00 2001 PST","Wed Jan 03 00:00:00 2001 PST","Thu Jan 04 00:00:00 2001 PST","Fri Jan 05 00:00:00 2001 PST"}
 (1 row)
 
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+                                                         segmentminduration                                                         
+------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST, t@Thu Jan 04 00:00:00 2001 PST, t@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+                         segmentminduration                         
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+                         segmentmaxduration                         
+--------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+                                                         segmentmaxduration                                                         
+------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST, f@Thu Jan 04 00:00:00 2001 PST, f@Sat Jan 06 00:00:00 2001 PST]}
+(1 row)
+
+SELECT segmentMinDuration(tfloat '(1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06)', '1 day');
+                                                         segmentminduration                                                         
+------------------------------------------------------------------------------------------------------------------------------------
+ {(t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST, t@Thu Jan 04 00:00:00 2001 PST, t@Sat Jan 06 00:00:00 2001 PST)}
+(1 row)
+
+SELECT segmentMinDuration(tint '(1@2001-01-01, 2@2001-01-02]', '1 hour');
+                         segmentminduration                         
+--------------------------------------------------------------------
+ {(t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT segmentMaxDuration(tfloat 'Interp=Step;(1@2001-01-01, 2@2001-01-03, 2@2001-01-04)', '36 hours');
+                                         segmentmaxduration                                         
+----------------------------------------------------------------------------------------------------
+ {(f@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST, t@Thu Jan 04 00:00:00 2001 PST)}
+(1 row)
+
+SELECT segmentMinDuration(tfloat '{(1@2001-01-01, 2@2001-01-02, 3@2001-01-05), [4@2001-01-07, 5@2001-01-08]}', '1 day', false);
+                                                          segmentminduration                                                          
+--------------------------------------------------------------------------------------------------------------------------------------
+ {(t@Mon Jan 01 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST), [t@Sun Jan 07 00:00:00 2001 PST, t@Mon Jan 08 00:00:00 2001 PST]}
+(1 row)
+
 SELECT shiftValue(tfloat '{1@2001-01-01}', 1);
             shiftvalue            
 ----------------------------------
@@ -8228,25 +8276,25 @@ SELECT round(tprecision(tfloat '[1@2001-01-01 07:40:30, 2@2001-01-01 07:40:40,
 SELECT segmentMinDuration(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', '1 day');
                          segmentminduration                         
 --------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT segmentMinDuration(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', '1 day');
                                                           segmentminduration                                                          
 --------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST), [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT segmentMinDuration(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', '1 day');
                          segmentminduration                         
 --------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT segmentMinDuration(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', '1 day');
                                                           segmentminduration                                                          
 --------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST), [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 /* NULL */
@@ -8270,13 +8318,13 @@ ERROR:  Input must be a temporal sequence (set) with continuous interpolation
 SELECT segmentMaxDuration(tfloat '[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', '1 day');
                          segmentmaxduration                         
 --------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
 SELECT segmentMaxDuration(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', '1 day');
                                                           segmentmaxduration                                                          
 --------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST), [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT segmentMaxDuration(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03]', 2);
@@ -8284,7 +8332,7 @@ ERROR:  function segmentmaxduration(tfloat, integer) does not exist at character
 SELECT segmentMaxDuration(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@2001-01-04, 3.5@2001-01-05]}', '1 day');
                                                           segmentmaxduration                                                          
 --------------------------------------------------------------------------------------------------------------------------------------
- {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST), [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST)}
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 /* NULL */

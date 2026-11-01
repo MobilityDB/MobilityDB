@@ -1821,6 +1821,15 @@ SELECT timestamps(ttext '{AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03}');
 SELECT timestamps(ttext '[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03]');
 SELECT timestamps(ttext '{[AAA@2001-01-01, BBB@2001-01-02, AAA@2001-01-03],[CCC@2001-01-04, CCC@2001-01-05]}');
 
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day');
+SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06]', '1 day', false);
+SELECT segmentMinDuration(tfloat '(1@2001-01-01, 0@2001-01-03, -1@2001-01-04, -1@2001-01-06)', '1 day');
+SELECT segmentMinDuration(tint '(1@2001-01-01, 2@2001-01-02]', '1 hour');
+SELECT segmentMaxDuration(tfloat 'Interp=Step;(1@2001-01-01, 2@2001-01-03, 2@2001-01-04)', '36 hours');
+SELECT segmentMinDuration(tfloat '{(1@2001-01-01, 2@2001-01-02, 3@2001-01-05), [4@2001-01-07, 5@2001-01-08]}', '1 day', false);
+
 -------------------------------------------------------------------------------
 -- Shift and scale functions
 -------------------------------------------------------------------------------
