@@ -2354,14 +2354,14 @@ arr_offsets_trim(const Edge *p, const Edge *q)
     if (m1 > 0x1p-300 && m1 < 0x1p300 && m2 > 0x1p-300 && m2 < 0x1p300 &&
         pr > 0x1p-300 && pr < 0x1p300)
     {
-      double cr = - (e1x * e2y - e1y * e2x);
       double dn = m1 * m2 + (e1x * e2x + e1y * e2y);
-      double nd = 2.0 * pr * (dn + 2.0 * cr);
-      double t1 = m1 * dn - nd, t2 = m2 * dn - nd;
       double b1 = 64.0 * DBL_EPSILON * m1 * m2 * (m1 + pr);
       double b2 = 64.0 * DBL_EPSILON * m1 * m2 * (m2 + pr);
       if (dn > 16.0 * DBL_EPSILON * m1 * m2)
       {
+        double cr = - (e1x * e2y - e1y * e2x);
+        double nd = 2.0 * pr * (dn + 2.0 * cr);
+        double t1 = m1 * dn - nd, t2 = m2 * dn - nd;
         if (t1 > b1 && t2 > b2)
           return true;
         if (t1 < - b1 || t2 < - b2)

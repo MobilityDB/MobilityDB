@@ -443,8 +443,8 @@ ensure_has_T(MeosType type, int16 flags)
   return false;
 }
 extern bool ensure_has_not_Z(MeosType type, int16 flags);
-extern bool ensure_not_null(void *ptr);
-extern bool ensure_one_not_null(void *ptr1, void *ptr2);
+extern bool ensure_not_null(const void *ptr);
+extern bool ensure_one_not_null(const void *ptr1, const void *ptr2);
 extern bool ensure_one_true(bool hasshift, bool haswidth);
 extern bool ensure_valid_interp(MeosType temptype, interpType interp);
 extern bool ensure_continuous_interp(const Temporal *temp);

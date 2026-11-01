@@ -720,11 +720,11 @@ cross_product_sign(double ax, double ay, double bx, double by, double cx,
 {
   double l1 = bx - ax, l2 = dy - cy, r1 = by - ay, r2 = dx - cx;
   double left = l1 * l2, right = r1 * r2;
-  double det = left - right;
   double mag = fabs(left) + fabs(right);
   double bound = (3.0 + 16.0 * DBL_EPSILON) * DBL_EPSILON * mag;
   if (mag >= 0x1p-969)
   {
+    double det = left - right;
     if (det > bound)
       return 1;
     if (det < - bound)

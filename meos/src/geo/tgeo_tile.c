@@ -283,7 +283,8 @@ bitmatrix_print(const BitMatrix *bm)
  * @return Number of tiles set
  */
 static int
-fastvoxel_bm(int *coords1, const double *eps1, int *coords2, const double *eps2,
+fastvoxel_bm(const int *coords1, const double *eps1, const int *coords2,
+  const double *eps2,
   int ndims, BitMatrix *bm)
 {
   int i, k, coords[MAXDIMS], next[MAXDIMS], result = 0;

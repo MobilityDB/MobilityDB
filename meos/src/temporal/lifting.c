@@ -1048,13 +1048,12 @@ tfunc_tlinearseq_base_turnpt(const TSequence *seq, Datum value,
     if (lfinfo->tpfn_base && interp == LINEAR &&
       ! datum_eq(value1, value2, temptype_basetype(seq->temptype)))
     {
-      Datum tpvalue;
       TimestampTz tpt1, tpt2;
       int found = lfinfo->tpfn_base(value1, value2, value, inst1->t, inst2->t,
         &tpt1, &tpt2);
       if (found)
       {
-        tpvalue = tsegment_value_at_timestamptz(value1, value2, 
+        Datum tpvalue = tsegment_value_at_timestamptz(value1, value2, 
           inst1->temptype, inst1->t, inst2->t, tpt1);
         Datum res = tfunc_base_base(tpvalue, value, lfinfo);
         instants[ninsts++] = tinstant_make(res, lfinfo->restype, tpt1);
@@ -1123,7 +1122,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     const TInstant *end = TSEQUENCE_INST_N(seq, i);
     Datum endvalue = tinstant_value_p(end);
     Datum endresult = tfunc_base_base(endvalue, value, lfinfo);
-    Datum tpvalue1, tpresult;
+    Datum tpresult;
     bool lower_eq;
     TimestampTz tpt1, tpt2;
 
@@ -1168,7 +1167,7 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
     else if (midpoint)
     {
       tpt1 = start->t + ((end->t - start->t) / 2);
-      tpvalue1 = tsegment_value_at_timestamptz(startvalue, endvalue,
+      Datum tpvalue1 = tsegment_value_at_timestamptz(startvalue, endvalue,
         start->temptype, start->t, end->t, tpt1);
       tpresult = tfunc_base_base(tpvalue1, value, lfinfo);
       DATUM_FREE(tpvalue1, basetype);
@@ -1858,16 +1857,15 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     tofree[nfree++] = start2;
     j = tcontseq_find_timestamptz(seq2, inter->lower) + 1;
   }
-  Datum startvalue1, startvalue2, startresult;
   bool lower_inc = inter->lower_inc;
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant. Notice that we cannot reuse
      * the values from the previous iteration since one of the two sequences
      * may have step interpolation */
-    startvalue1 = tinstant_value_p(start1);
-    startvalue2 = tinstant_value_p(start2);
-    startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
+    Datum startvalue1 = tinstant_value_p(start1);
+    Datum startvalue2 = tinstant_value_p(start2);
+    Datum startresult = tfunc_base_base(startvalue1, startvalue2, lfinfo);
     /* Synchronize the two end instants */
     TInstant *end1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     TInstant *end2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);
@@ -2028,9 +2026,9 @@ tfunc_tcontseq_tcontseq_discfn(const TSequence *seq1, const TSequence *seq2,
     start1 = end1; start2 = end2;
   }
   /* Add the last instant */
-  startresult = tfunc_base_base(tinstant_value_p(start1),
+  Datum lastresult = tfunc_base_base(tinstant_value_p(start1),
     tinstant_value_p(start2), lfinfo);
-  instants[ninsts++] = tinstant_make_free(startresult, restype, start1->t);
+  instants[ninsts++] = tinstant_make_free(lastresult, restype, start1->t);
 
   /* The last two values of sequences with step interpolation and exclusive
      upper bound must be equal */
@@ -2624,13 +2622,12 @@ eafunc_tlinearseq_base(const TSequence *seq, Datum value,
   bool lower_inc = seq->period.lower_inc;
   MeosType basetype = temptype_basetype(seq->temptype);
   TInstant *start = (TInstant *) TSEQUENCE_INST_N(seq, 0);
-  Datum startvalue;
   int result;
   for (int i = 1; i < seq->count; i++)
   {
     /* Compute the function at the start instant, which the segment takes
      * only when its lower bound is inclusive */
-    startvalue = tinstant_value_p(start);
+    Datum startvalue = tinstant_value_p(start);
     if (lower_inc &&
         eafunc_value_decides(startvalue, value, lfinfo, &result))
       return result;
@@ -3115,14 +3112,13 @@ eafunc_tcontseq_tcontseq_discfn(const TSequence *seq1,
   bool lower_inc = inter->lower_inc;
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
   interpType interp2 = MEOS_FLAGS_GET_INTERP(seq2->flags);
-  Datum startvalue1, startvalue2;
   MeosType basetype = temptype_basetype(seq1->temptype);
   bool res;
   while (i < seq1->count && j < seq2->count)
   {
     /* Compute the function at the start instant */
-    startvalue1 = tinstant_value_p(start1);
-    startvalue2 = tinstant_value_p(start2);
+    Datum startvalue1 = tinstant_value_p(start1);
+    Datum startvalue2 = tinstant_value_p(start2);
     if (lower_inc)
     {
       res = DatumGetBool(tfunc_base_base(startvalue1, startvalue2, lfinfo));

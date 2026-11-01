@@ -17048,7 +17048,7 @@ geo_extract_elements(const GSERIALIZED *gs, int *count)
 {
   assert(gs); assert(count);
   /* Extract the elements of the arguments, if they are collections */
-  LWCOLLECTION *coll;
+  const LWCOLLECTION *coll;
   GSERIALIZED **result = NULL;
   /* An empty geometry holds no element, and it is neither unitary --
    * #geo_is_unitary refuses an empty one deliberately -- nor necessarily a
@@ -24537,9 +24537,6 @@ static bool
 relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
 {
   const RelateOperands ops = *opsp;
-  const LWGEOM *g1 = ops.op[0].geom;
-  const LWGEOM *g2 = ops.op[1].geom;
-
   bool covered = true;
 
   /* Sharing a point is settled by the first witness found, so it is answered
@@ -24580,7 +24577,8 @@ relate_spatialrel_ops(const RelateOperands *opsp, spatialRel rel, bool *result)
       else
         relate_query_init(&q, covers, 4);
       char m[10];
-      covered = relate_matrix(g1, g2, &ops, &q, true, m);
+      covered = relate_matrix(ops.op[0].geom, ops.op[1].geom, &ops, &q, true,
+        m);
       if (covered)
         switch (rel)
         {
@@ -24796,7 +24794,7 @@ relate_ctx_held(RelateCtxCache *cache, const GSERIALIZED *gs, uint64_t sig)
 {
   if (! cache)
     return NULL;
-  RelateCtxSeen *slot = &cache->seen[sig % RELATE_CTX_SEEN];
+  const RelateCtxSeen *slot = &cache->seen[sig % RELATE_CTX_SEEN];
   if (slot->sig != sig || slot->at < 0)
     return NULL;
   RelateCtxCacheEntry *e = &cache->entries[slot->at];
@@ -24856,7 +24854,7 @@ relate_ctx_victim(RelateCtxCache *cache)
  * @param[in] e Entry, which carries the signature of the value it holds
  */
 static void
-relate_ctx_hold(RelateCtxCache *cache, RelateCtxCacheEntry *e)
+relate_ctx_hold(RelateCtxCache *cache, const RelateCtxCacheEntry *e)
 {
   RelateCtxSeen *slot = &cache->seen[e->sig % RELATE_CTX_SEEN];
   slot->sig = e->sig;

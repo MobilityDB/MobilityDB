@@ -1301,7 +1301,7 @@ extern TBox *int_timestamptz_to_tbox(int i, TimestampTz t);
 extern TBox *bigint_timestamptz_to_tbox(int64 i, TimestampTz t);
 extern TBox *int_tstzspan_to_tbox(int i, const Span *s);
 extern TBox *bigint_tstzspan_to_tbox(int64 i, const Span *s);
-extern TBox *numspan_tstzspan_to_tbox(const Span *span, const Span *s);
+extern TBox *numspan_tstzspan_to_tbox(const Span *s, const Span *p);
 extern TBox *numspan_timestamptz_to_tbox(const Span *span, TimestampTz t);
 extern TBox *tbox_copy(const TBox *box);
 extern TBox *tbox_make(const Span *s, const Span *p);

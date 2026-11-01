@@ -2115,7 +2115,6 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
       {
         double ccx = cx1 + (cx2 - cx1) * t;
         double ccy = cy1 + (cy2 - cy1) * t;
-        double rr = r1 + (r2 - r1) * t;
         double qx, qy;
         if ((e->etype == EDGE_LINEARC || e->etype == EDGE_POLYARC))
           dist_geom_closest_on_arc(ccx, ccy, e, &qx, &qy);
@@ -2136,6 +2135,7 @@ dist_segm_shortestline(double cx1, double cy1, double r1, double cx2,
         }
         else
         {
+          double rr = r1 + (r2 - r1) * t;
           pxp = ccx + vx * (rr / vl);
           pyp = ccy + vy * (rr / vl);
         }
@@ -4797,12 +4797,12 @@ mindist_tpointseq_tpointseq_threshold(const TSequence *seq1,
     double s1_minx = fmin(p1->x, p2->x), s1_maxx = fmax(p1->x, p2->x);
     double s1_miny = fmin(p1->y, p2->y), s1_maxy = fmax(p1->y, p2->y);
     double thresh = dl.distance;
-    double hi_x = s1_maxx + thresh;
     double lo_x = s1_minx - thresh;
     /* Binary-search the first j with minx > hi_x (upper bound).  Walk
      * forward from j=0 to that bound; skip those whose maxx < lo_x. */
     int hi_idx;
     {
+      double hi_x = s1_maxx + thresh;
       int lo = 0, hi = n2;
       while (lo < hi)
       {

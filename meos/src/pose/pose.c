@@ -203,7 +203,6 @@ ecef_to_geodetic(const SPHEROID *s, double X, double Y, double Z,
   double *lon, double *lat, double *h)
 {
   double a = s->a, b = s->b, e2 = s->e_sq;
-  double ep2 = e2 / (1.0 - e2);
   double p = hypot(X, Y);
   double lam = atan2(Y, X);
   double phi;
@@ -214,6 +213,7 @@ ecef_to_geodetic(const SPHEROID *s, double X, double Y, double Z,
   {
     double theta = atan2(Z * a, p * b);
     double st = sin(theta), ct = cos(theta);
+    double ep2 = e2 / (1.0 - e2);
     phi = atan2(Z + ep2 * b * st * st * st, p - e2 * a * ct * ct * ct);
   }
   double sphi = sin(phi), cphi = cos(phi);

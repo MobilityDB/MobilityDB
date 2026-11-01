@@ -258,12 +258,10 @@ nad_tbox_tbox(const TBox *box1, const TBox *box2)
   assert(MEOS_FLAGS_GET_X(box1->flags));
   assert(MEOS_FLAGS_GET_X(box2->flags));
   assert(box1->span.spantype == box2->span.spantype);
-  MeosType basetype = box1->span.basetype;
-
   /* If the boxes do not intersect in the time dimension return the sentinel */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
   if (hast && ! overlaps_span_span(&box1->period, &box2->period))
-    return distance_sentinel(basetype);
+    return distance_sentinel(box1->span.basetype);
 
   return distance_span_span(&box1->span, &box2->span);
 }
