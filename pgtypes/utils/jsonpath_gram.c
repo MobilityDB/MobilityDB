@@ -72,7 +72,6 @@
 #define yynerrs         jsonpath_yynerrs
 
 /* First part of user prologue.  */
-#line 1 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
 
 /*-------------------------------------------------------------------------
  *
@@ -124,7 +123,6 @@ static bool makeItemLikeRegex(JsonPathParseItem *expr, JsonPathString *pattern,
 #define YYFREE   pfree
 
 
-#line 132 "jsonpath_gram.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -1418,424 +1416,289 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* result: mode expr_or_predicate  */
-#line 122 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 {
                     *result = palloc(sizeof(JsonPathParseResult));
                     (*result)->expr = (yyvsp[0].value);
                     (*result)->lax = (yyvsp[-1].boolean);
                     (void) yynerrs;
                   }
-#line 1378 "jsonpath_gram.c"
     break;
 
   case 3: /* result: %empty  */
-#line 128 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { *result = NULL; }
-#line 1384 "jsonpath_gram.c"
     break;
 
   case 4: /* expr_or_predicate: expr  */
-#line 132 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = (yyvsp[0].value); }
-#line 1390 "jsonpath_gram.c"
     break;
 
   case 5: /* expr_or_predicate: predicate  */
-#line 133 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = (yyvsp[0].value); }
-#line 1396 "jsonpath_gram.c"
     break;
 
   case 6: /* mode: STRICT_P  */
-#line 137 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.boolean) = false; }
-#line 1402 "jsonpath_gram.c"
     break;
 
   case 7: /* mode: LAX_P  */
-#line 138 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.boolean) = true; }
-#line 1408 "jsonpath_gram.c"
     break;
 
   case 8: /* mode: %empty  */
-#line 139 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.boolean) = true; }
-#line 1414 "jsonpath_gram.c"
     break;
 
   case 9: /* scalar_value: STRING_P  */
-#line 143 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemString(&(yyvsp[0].str)); }
-#line 1420 "jsonpath_gram.c"
     break;
 
   case 10: /* scalar_value: NULL_P  */
-#line 144 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.value) = makeItemString(NULL); }
-#line 1426 "jsonpath_gram.c"
     break;
 
   case 11: /* scalar_value: TRUE_P  */
-#line 145 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.value) = makeItemBool(true); }
-#line 1432 "jsonpath_gram.c"
     break;
 
   case 12: /* scalar_value: FALSE_P  */
-#line 146 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.value) = makeItemBool(false); }
-#line 1438 "jsonpath_gram.c"
     break;
 
   case 13: /* scalar_value: NUMERIC_P  */
-#line 147 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemNumeric(&(yyvsp[0].str)); }
-#line 1444 "jsonpath_gram.c"
     break;
 
   case 14: /* scalar_value: INT_P  */
-#line 148 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemNumeric(&(yyvsp[0].str)); }
-#line 1450 "jsonpath_gram.c"
     break;
 
   case 15: /* scalar_value: VARIABLE_P  */
-#line 149 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemVariable(&(yyvsp[0].str)); }
-#line 1456 "jsonpath_gram.c"
     break;
 
   case 16: /* comp_op: EQUAL_P  */
-#line 153 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.optype) = jpiEqual; }
-#line 1462 "jsonpath_gram.c"
     break;
 
   case 17: /* comp_op: NOTEQUAL_P  */
-#line 154 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.optype) = jpiNotEqual; }
-#line 1468 "jsonpath_gram.c"
     break;
 
   case 18: /* comp_op: LESS_P  */
-#line 155 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.optype) = jpiLess; }
-#line 1474 "jsonpath_gram.c"
     break;
 
   case 19: /* comp_op: GREATER_P  */
-#line 156 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.optype) = jpiGreater; }
-#line 1480 "jsonpath_gram.c"
     break;
 
   case 20: /* comp_op: LESSEQUAL_P  */
-#line 157 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.optype) = jpiLessOrEqual; }
-#line 1486 "jsonpath_gram.c"
     break;
 
   case 21: /* comp_op: GREATEREQUAL_P  */
-#line 158 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.optype) = jpiGreaterOrEqual; }
-#line 1492 "jsonpath_gram.c"
     break;
 
   case 22: /* delimited_predicate: '(' predicate ')'  */
-#line 162 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[-1].value); }
-#line 1498 "jsonpath_gram.c"
     break;
 
   case 23: /* delimited_predicate: EXISTS_P '(' expr ')'  */
-#line 163 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiExists, (yyvsp[-1].value)); }
-#line 1504 "jsonpath_gram.c"
     break;
 
   case 24: /* predicate: delimited_predicate  */
-#line 167 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1510 "jsonpath_gram.c"
     break;
 
   case 25: /* predicate: expr comp_op expr  */
-#line 168 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary((yyvsp[-1].optype), (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1516 "jsonpath_gram.c"
     break;
 
   case 26: /* predicate: predicate AND_P predicate  */
-#line 169 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemBinary(jpiAnd, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1522 "jsonpath_gram.c"
     break;
 
   case 27: /* predicate: predicate OR_P predicate  */
-#line 170 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemBinary(jpiOr, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1528 "jsonpath_gram.c"
     break;
 
   case 28: /* predicate: NOT_P delimited_predicate  */
-#line 171 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemUnary(jpiNot, (yyvsp[0].value)); }
-#line 1534 "jsonpath_gram.c"
     break;
 
   case 29: /* predicate: '(' predicate ')' IS_P UNKNOWN_P  */
-#line 173 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                         { json_add_tofree((yyvsp[-1].str).val); json_add_tofree((yyvsp[0].str).val); (yyval.value) = makeItemUnary(jpiIsUnknown, (yyvsp[-3].value)); }
-#line 1540 "jsonpath_gram.c"
     break;
 
   case 30: /* predicate: expr STARTS_P WITH_P starts_with_initial  */
-#line 175 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                         { json_add_tofree((yyvsp[-2].str).val); json_add_tofree((yyvsp[-1].str).val); (yyval.value) = makeItemBinary(jpiStartsWith, (yyvsp[-3].value), (yyvsp[0].value)); }
-#line 1546 "jsonpath_gram.c"
     break;
 
   case 31: /* predicate: expr LIKE_REGEX_P STRING_P  */
-#line 177 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
         { json_add_tofree((yyvsp[-1].str).val);
     JsonPathParseItem *jppitem;
     if (! makeItemLikeRegex((yyvsp[-2].value), &(yyvsp[0].str), NULL, &jppitem, escontext))
       YYABORT;
     (yyval.value) = jppitem;
   }
-#line 1557 "jsonpath_gram.c"
     break;
 
   case 32: /* predicate: expr LIKE_REGEX_P STRING_P FLAG_P STRING_P  */
-#line 184 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
         { json_add_tofree((yyvsp[-3].str).val); json_add_tofree((yyvsp[-1].str).val); json_add_tofree((yyvsp[0].str).val);
     JsonPathParseItem *jppitem;
     if (! makeItemLikeRegex((yyvsp[-4].value), &(yyvsp[-2].str), &(yyvsp[0].str), &jppitem, escontext))
       YYABORT;
     (yyval.value) = jppitem;
   }
-#line 1568 "jsonpath_gram.c"
     break;
 
   case 33: /* starts_with_initial: STRING_P  */
-#line 193 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemString(&(yyvsp[0].str)); }
-#line 1574 "jsonpath_gram.c"
     break;
 
   case 34: /* starts_with_initial: VARIABLE_P  */
-#line 194 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemVariable(&(yyvsp[0].str)); }
-#line 1580 "jsonpath_gram.c"
     break;
 
   case 35: /* path_primary: scalar_value  */
-#line 198 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1586 "jsonpath_gram.c"
     break;
 
   case 36: /* path_primary: '$'  */
-#line 199 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemType(jpiRoot); }
-#line 1592 "jsonpath_gram.c"
     break;
 
   case 37: /* path_primary: '@'  */
-#line 200 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemType(jpiCurrent); }
-#line 1598 "jsonpath_gram.c"
     break;
 
   case 38: /* path_primary: LAST_P  */
-#line 201 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.value) = makeItemType(jpiLast); }
-#line 1604 "jsonpath_gram.c"
     break;
 
   case 39: /* accessor_expr: path_primary  */
-#line 205 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.elems) = list_make1((yyvsp[0].value)); }
-#line 1610 "jsonpath_gram.c"
     break;
 
   case 40: /* accessor_expr: '(' expr ')' accessor_op  */
-#line 206 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.elems) = list_make2((yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1616 "jsonpath_gram.c"
     break;
 
   case 41: /* accessor_expr: '(' predicate ')' accessor_op  */
-#line 207 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                         { (yyval.elems) = list_make2((yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1622 "jsonpath_gram.c"
     break;
 
   case 42: /* accessor_expr: accessor_expr accessor_op  */
-#line 208 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.elems) = lappend((yyvsp[-1].elems), (yyvsp[0].value)); }
-#line 1628 "jsonpath_gram.c"
     break;
 
   case 43: /* expr: accessor_expr  */
-#line 212 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemList((yyvsp[0].elems)); }
-#line 1634 "jsonpath_gram.c"
     break;
 
   case 44: /* expr: '(' expr ')'  */
-#line 213 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[-1].value); }
-#line 1640 "jsonpath_gram.c"
     break;
 
   case 45: /* expr: '+' expr  */
-#line 214 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemUnary(jpiPlus, (yyvsp[0].value)); }
-#line 1646 "jsonpath_gram.c"
     break;
 
   case 46: /* expr: '-' expr  */
-#line 215 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemUnary(jpiMinus, (yyvsp[0].value)); }
-#line 1652 "jsonpath_gram.c"
     break;
 
   case 47: /* expr: expr '+' expr  */
-#line 216 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary(jpiAdd, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1658 "jsonpath_gram.c"
     break;
 
   case 48: /* expr: expr '-' expr  */
-#line 217 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary(jpiSub, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1664 "jsonpath_gram.c"
     break;
 
   case 49: /* expr: expr '*' expr  */
-#line 218 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary(jpiMul, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1670 "jsonpath_gram.c"
     break;
 
   case 50: /* expr: expr '/' expr  */
-#line 219 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary(jpiDiv, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1676 "jsonpath_gram.c"
     break;
 
   case 51: /* expr: expr '%' expr  */
-#line 220 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = makeItemBinary(jpiMod, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1682 "jsonpath_gram.c"
     break;
 
   case 52: /* index_elem: expr  */
-#line 224 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemBinary(jpiSubscript, (yyvsp[0].value), NULL); }
-#line 1688 "jsonpath_gram.c"
     break;
 
   case 53: /* index_elem: expr TO_P expr  */
-#line 225 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { json_add_tofree((yyvsp[-1].str).val); (yyval.value) = makeItemBinary(jpiSubscript, (yyvsp[-2].value), (yyvsp[0].value)); }
-#line 1694 "jsonpath_gram.c"
     break;
 
   case 54: /* index_list: index_elem  */
-#line 229 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.indexs) = list_make1((yyvsp[0].value)); }
-#line 1700 "jsonpath_gram.c"
     break;
 
   case 55: /* index_list: index_list ',' index_elem  */
-#line 230 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.indexs) = lappend((yyvsp[-2].indexs), (yyvsp[0].value)); }
-#line 1706 "jsonpath_gram.c"
     break;
 
   case 56: /* array_accessor: '[' '*' ']'  */
-#line 234 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemType(jpiAnyArray); }
-#line 1712 "jsonpath_gram.c"
     break;
 
   case 57: /* array_accessor: '[' index_list ']'  */
-#line 235 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeIndexArray((yyvsp[-1].indexs)); }
-#line 1718 "jsonpath_gram.c"
     break;
 
   case 58: /* any_level: INT_P  */
-#line 239 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.integer) = pg_strtoint32((yyvsp[0].str).val); }
-#line 1724 "jsonpath_gram.c"
     break;
 
   case 59: /* any_level: LAST_P  */
-#line 240 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.integer) = -1; }
-#line 1730 "jsonpath_gram.c"
     break;
 
   case 60: /* any_path: ANY_P  */
-#line 244 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeAny(0, -1); }
-#line 1736 "jsonpath_gram.c"
     break;
 
   case 61: /* any_path: ANY_P '{' any_level '}'  */
-#line 245 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeAny((yyvsp[-1].integer), (yyvsp[-1].integer)); }
-#line 1742 "jsonpath_gram.c"
     break;
 
   case 62: /* any_path: ANY_P '{' any_level TO_P any_level '}'  */
-#line 247 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                         { json_add_tofree((yyvsp[-2].str).val); (yyval.value) = makeAny((yyvsp[-3].integer), (yyvsp[-1].integer)); }
-#line 1748 "jsonpath_gram.c"
     break;
 
   case 63: /* accessor_op: '.' key  */
-#line 251 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = (yyvsp[0].value); }
-#line 1754 "jsonpath_gram.c"
     break;
 
   case 64: /* accessor_op: '.' '*'  */
-#line 252 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemType(jpiAnyKey); }
-#line 1760 "jsonpath_gram.c"
     break;
 
   case 65: /* accessor_op: array_accessor  */
-#line 253 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1766 "jsonpath_gram.c"
     break;
 
   case 66: /* accessor_op: '.' any_path  */
-#line 254 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1772 "jsonpath_gram.c"
     break;
 
   case 67: /* accessor_op: '.' method '(' ')'  */
-#line 255 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemType((yyvsp[-2].optype)); }
-#line 1778 "jsonpath_gram.c"
     break;
 
   case 68: /* accessor_op: '?' '(' predicate ')'  */
-#line 256 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.value) = makeItemUnary(jpiFilter, (yyvsp[-1].value)); }
-#line 1784 "jsonpath_gram.c"
     break;
 
   case 69: /* accessor_op: '.' DECIMAL_P '(' opt_csv_list ')'  */
-#line 258 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val);
       if (list_length((yyvsp[-1].elems)) == 0)
         (yyval.value) = makeItemBinary(jpiDecimal, NULL, NULL);
@@ -1850,203 +1713,137 @@ yyreduce:
         return false;
       }
     }
-#line 1802 "jsonpath_gram.c"
     break;
 
   case 70: /* accessor_op: '.' DATETIME_P '(' opt_datetime_template ')'  */
-#line 272 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiDatetime, (yyvsp[-1].value)); }
-#line 1808 "jsonpath_gram.c"
     break;
 
   case 71: /* accessor_op: '.' TIME_P '(' opt_datetime_precision ')'  */
-#line 274 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiTime, (yyvsp[-1].value)); }
-#line 1814 "jsonpath_gram.c"
     break;
 
   case 72: /* accessor_op: '.' TIME_TZ_P '(' opt_datetime_precision ')'  */
-#line 276 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiTimeTz, (yyvsp[-1].value)); }
-#line 1820 "jsonpath_gram.c"
     break;
 
   case 73: /* accessor_op: '.' TIMESTAMP_P '(' opt_datetime_precision ')'  */
-#line 278 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiTimestamp, (yyvsp[-1].value)); }
-#line 1826 "jsonpath_gram.c"
     break;
 
   case 74: /* accessor_op: '.' TIMESTAMP_TZ_P '(' opt_datetime_precision ')'  */
-#line 280 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { json_add_tofree((yyvsp[-3].str).val); (yyval.value) = makeItemUnary(jpiTimestampTz, (yyvsp[-1].value)); }
-#line 1832 "jsonpath_gram.c"
     break;
 
   case 75: /* csv_elem: INT_P  */
-#line 285 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { (yyval.value) = makeItemNumeric(&(yyvsp[0].str)); }
-#line 1838 "jsonpath_gram.c"
     break;
 
   case 76: /* csv_elem: '+' INT_P  */
-#line 287 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { (yyval.value) = makeItemUnary(jpiPlus, makeItemNumeric(&(yyvsp[0].str))); }
-#line 1844 "jsonpath_gram.c"
     break;
 
   case 77: /* csv_elem: '-' INT_P  */
-#line 289 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                 { (yyval.value) = makeItemUnary(jpiMinus, makeItemNumeric(&(yyvsp[0].str))); }
-#line 1850 "jsonpath_gram.c"
     break;
 
   case 78: /* csv_list: csv_elem  */
-#line 293 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.elems) = list_make1((yyvsp[0].value)); }
-#line 1856 "jsonpath_gram.c"
     break;
 
   case 79: /* csv_list: csv_list ',' csv_elem  */
-#line 294 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                 { (yyval.elems) = lappend((yyvsp[-2].elems), (yyvsp[0].value)); }
-#line 1862 "jsonpath_gram.c"
     break;
 
   case 80: /* opt_csv_list: csv_list  */
-#line 298 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.elems) = (yyvsp[0].elems); }
-#line 1868 "jsonpath_gram.c"
     break;
 
   case 81: /* opt_csv_list: %empty  */
-#line 299 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.elems) = NULL; }
-#line 1874 "jsonpath_gram.c"
     break;
 
   case 82: /* datetime_precision: INT_P  */
-#line 303 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemNumeric(&(yyvsp[0].str)); }
-#line 1880 "jsonpath_gram.c"
     break;
 
   case 83: /* opt_datetime_precision: datetime_precision  */
-#line 307 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1886 "jsonpath_gram.c"
     break;
 
   case 84: /* opt_datetime_precision: %empty  */
-#line 308 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = NULL; }
-#line 1892 "jsonpath_gram.c"
     break;
 
   case 85: /* datetime_template: STRING_P  */
-#line 312 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemString(&(yyvsp[0].str)); }
-#line 1898 "jsonpath_gram.c"
     break;
 
   case 86: /* opt_datetime_template: datetime_template  */
-#line 316 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = (yyvsp[0].value); }
-#line 1904 "jsonpath_gram.c"
     break;
 
   case 87: /* opt_datetime_template: %empty  */
-#line 317 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { (yyval.value) = NULL; }
-#line 1910 "jsonpath_gram.c"
     break;
 
   case 88: /* key: key_name  */
-#line 321 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { (yyval.value) = makeItemKey(&(yyvsp[0].str)); }
-#line 1916 "jsonpath_gram.c"
     break;
 
   case 124: /* method: ABS_P  */
-#line 363 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiAbs; }
-#line 1922 "jsonpath_gram.c"
     break;
 
   case 125: /* method: SIZE_P  */
-#line 364 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiSize; }
-#line 1928 "jsonpath_gram.c"
     break;
 
   case 126: /* method: TYPE_P  */
-#line 365 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiType; }
-#line 1934 "jsonpath_gram.c"
     break;
 
   case 127: /* method: FLOOR_P  */
-#line 366 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiFloor; }
-#line 1940 "jsonpath_gram.c"
     break;
 
   case 128: /* method: DOUBLE_P  */
-#line 367 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiDouble; }
-#line 1946 "jsonpath_gram.c"
     break;
 
   case 129: /* method: CEILING_P  */
-#line 368 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiCeiling; }
-#line 1952 "jsonpath_gram.c"
     break;
 
   case 130: /* method: KEYVALUE_P  */
-#line 369 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiKeyValue; }
-#line 1958 "jsonpath_gram.c"
     break;
 
   case 131: /* method: BIGINT_P  */
-#line 370 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiBigint; }
-#line 1964 "jsonpath_gram.c"
     break;
 
   case 132: /* method: BOOLEAN_P  */
-#line 371 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiBoolean; }
-#line 1970 "jsonpath_gram.c"
     break;
 
   case 133: /* method: DATE_P  */
-#line 372 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiDate; }
-#line 1976 "jsonpath_gram.c"
     break;
 
   case 134: /* method: INTEGER_P  */
-#line 373 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiInteger; }
-#line 1982 "jsonpath_gram.c"
     break;
 
   case 135: /* method: NUMBER_P  */
-#line 374 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                                 { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiNumber; }
-#line 1988 "jsonpath_gram.c"
     break;
 
   case 136: /* method: STRINGFUNC_P  */
-#line 375 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
                                                         { json_add_tofree((yyvsp[0].str).val); (yyval.optype) = jpiStringFunc; }
-#line 1994 "jsonpath_gram.c"
     break;
 
 
-#line 1998 "jsonpath_gram.c"
 
       default: break;
     }
@@ -2239,7 +2036,6 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 377 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_gram.y"
 
 
 /*

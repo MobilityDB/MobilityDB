@@ -1,6 +1,4 @@
-#line 2 "lwin_wkt_lex.c"
 
-#line 4 "lwin_wkt_lex.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -806,8 +804,6 @@ static const flex_int16_t yy_chk[444] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "lwin_wkt_lex.l"
-#line 2 "lwin_wkt_lex.l"
 
 /* The lexer */
 
@@ -857,7 +853,6 @@ static void wkt_lexer_unknown(YYLTYPE *llocp)
 #define NAN 0.0/0.0
 #endif
 
-#line 861 "lwin_wkt_lex.c"
 /* MEOS: reentrant scanner so concurrent WKT parses do not share lexer state.
  * bison-bridge/bison-locations pass yylval/yylloc through the scanner. */
 /* MEOS: the keyword rules are written in uppercase but WKT is
@@ -866,7 +861,6 @@ static void wkt_lexer_unknown(YYLTYPE *llocp)
  * silently produces a case-sensitive lexer that rejects mixed-case input. */
 #define YY_NO_INPUT 1
 /* Suppress the default implementations. */
-#line 870 "lwin_wkt_lex.c"
 
 #define INITIAL 0
 
@@ -1148,10 +1142,8 @@ YY_DECL
 		}
 
 	{
-#line 70 "lwin_wkt_lex.l"
 
 
-#line 1155 "lwin_wkt_lex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1207,7 +1199,6 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 72 "lwin_wkt_lex.l"
 {
 	LWDEBUG(5,"DOUBLE");
 	yylval->doublevalue = atof(yytext);
@@ -1218,7 +1209,6 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 79 "lwin_wkt_lex.l"
 {
 	LWDEBUG(5,"DOUBLE NAN");
 	yylval->doublevalue = NAN;
@@ -1228,7 +1218,6 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 86 "lwin_wkt_lex.l"
 {
 	LWDEBUG(5,"SRID");
 	yylval->integervalue = wkt_lexer_read_srid(yytext);
@@ -1237,87 +1226,70 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 92 "lwin_wkt_lex.l"
 { return COLLECTION_TOK; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 93 "lwin_wkt_lex.l"
 { return MSURFACE_TOK; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 94 "lwin_wkt_lex.l"
 { return MPOLYGON_TOK; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 95 "lwin_wkt_lex.l"
 { return MCURVE_TOK; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 96 "lwin_wkt_lex.l"
 { return MLINESTRING_TOK; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 97 "lwin_wkt_lex.l"
 { return MPOINT_TOK; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 98 "lwin_wkt_lex.l"
 { return CURVEPOLYGON_TOK; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 99 "lwin_wkt_lex.l"
 { return POLYGON_TOK; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 100 "lwin_wkt_lex.l"
 { return COMPOUNDCURVE_TOK; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 101 "lwin_wkt_lex.l"
 { return CIRCULARSTRING_TOK; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 102 "lwin_wkt_lex.l"
 { return LINESTRING_TOK; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 103 "lwin_wkt_lex.l"
 { return POLYHEDRALSURFACE_TOK; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 104 "lwin_wkt_lex.l"
 { return TRIANGLE_TOK; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 105 "lwin_wkt_lex.l"
 { return TIN_TOK; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 106 "lwin_wkt_lex.l"
 { return POINT_TOK; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 107 "lwin_wkt_lex.l"
 { return EMPTY_TOK; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 109 "lwin_wkt_lex.l"
 {
 	LWDEBUG(5,"DIMENSIONALITY");
 	yylval->stringvalue = yytext;
@@ -1326,33 +1298,27 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 115 "lwin_wkt_lex.l"
 { LWDEBUG(5,"LBRACKET"); return LBRACKET_TOK; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 116 "lwin_wkt_lex.l"
 { LWDEBUG(5,"RBRACKET"); return RBRACKET_TOK; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 117 "lwin_wkt_lex.l"
 { LWDEBUG(5,"COMMA"); return COMMA_TOK; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 118 "lwin_wkt_lex.l"
 { LWDEBUG(5,"SEMICOLON"); return SEMICOLON_TOK; }
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 120 "lwin_wkt_lex.l"
 { /* ignore whitespace */ LWDEBUG(5,"WHITESPACE"); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 122 "lwin_wkt_lex.l"
 { /* Error out and stop parsing on unknown/unexpected characters */
 	LWDEBUG(5,"UNKNOWN");
 	wkt_lexer_unknown(yylloc);
@@ -1361,10 +1327,8 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 128 "lwin_wkt_lex.l"
 ECHO;
 	YY_BREAK
-#line 1368 "lwin_wkt_lex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2491,7 +2455,6 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 128 "lwin_wkt_lex.l"
 
 
 /* MEOS: reentrant allocators receive the scanner handle. */
