@@ -38,6 +38,14 @@ SELECT round(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),(Point(
  * geometry point with linear interpolation */
 SELECT round(geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
 SELECT round(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
+/* A temporal point of any other interpolation has a value at its instants
+ * alone, the distance of each to the geometry */
+SELECT round(tgeompoint 'Point(25 40)@2001-01-01' <-> geometry 'Linestring(10 10,50 10,50 50)', 6);
+SELECT round(geometry 'Linestring(10 10,50 10,50 50)' <-> tgeompoint '{Point(25 40)@2001-01-01, Point(26 40)@2001-01-02}', 6);
+SELECT round(tgeompoint 'Interp=Step;[Point(25 40)@2001-01-01, Point(26 40)@2001-01-02]' <-> geometry 'Polygon((10 10,50 10,50 50,10 10))', 6);
+SELECT round(tgeompoint 'Interp=Step;{[Point(25 40)@2001-01-01, Point(26 40)@2001-01-02],[Point(40 20)@2001-01-03]}' <-> geometry 'Polygon((10 10,50 10,50 50,10 10))', 6);
+SELECT round(tgeompoint '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02}' <-> geometry 'Linestring(1 1 0,3 3 0)', 6);
+SELECT round(tgeogpoint '{Point(4.35 50.85)@2001-01-01, Point(4.40 50.85)@2001-01-02}' <-> geography 'Linestring(4.35 50.80,4.40 50.80)', 6);
 /* Errors */
 SELECT round(geometry 'srid=5676;Point(2 2)' <-> tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
 SELECT round(geometry 'Point(2 2 2)' <-> tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
