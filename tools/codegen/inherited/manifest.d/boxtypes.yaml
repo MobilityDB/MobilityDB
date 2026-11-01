@@ -366,6 +366,16 @@ boxtypes:
     nadgroup:  mobilitydb_temporal_dist
     nadfile:   mobilitydb/src/temporal/tnumber_distance.c
     nadbase:   {side: number, desc: number}
+    # the temporal distance (templates/distpairs.c.tmpl), over a number held as a
+    # Datum (`byval`) and a temporal number
+    nadsides:
+      number:  {c: Datum, var: value, getarg: PG_GETARG_DATUM, desc: number, byval: true}
+      tnumber: {c: Temporal, var: temp, getarg: PG_GETARG_TEMPORAL_P, desc: temporal number, descpl: temporal numbers, free: true}
+    distfns:
+      tdistance:
+        - [number, tnumber, tdistance_tnumber_number]
+        - [tnumber, number, tdistance_tnumber_number]
+        - [tnumber, tnumber, tdistance_tnumber_tnumber]
     valspan:
       box:       numspan
       prim:      span
