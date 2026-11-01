@@ -102,7 +102,7 @@ items).
   `geom_buffer` takes where the arrangement declines and no certificate reads (step 24). No answer
   CGAL finds wrong is certified. **Owed: speed.** With the round-join tests, natural areas at
   distance 1 read 594.1 million instructions against 568.4 million for GEOS called directly (1.045).
-- **MobilityDB #3259** (draft, `5b7ed0e97a` on master `221a594ab3`) places the four meetings of
+- **MobilityDB #3259** (draft, `43fa350c5b` on master `91f8d676e7`) places the four meetings of
   the offsets and circles in plain doubles (two offsets sharing a centre, two sharing none, an
   offset and a circle, two circles of one radius), the same bits as the filters under a bound that
   holds theirs, and writes the tangent and circle edges in their place: native over GEOS called
