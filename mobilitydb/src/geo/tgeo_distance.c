@@ -52,6 +52,8 @@
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN stbox_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_geo_tgeo);
 /**
@@ -181,18 +183,21 @@ Tdistance_tgeo_tgeo_opr(PG_FUNCTION_ARGS)
 {
   return Tdistance_tgeo_tgeo(fcinfo);
 }
+/* GENERATED-DISTFNS-END stbox_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  * These functions are only available for geometries
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN stbox_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach instant between a geometry and a temporal
- * geo
+ * @brief Return the nearest approach instant between a geometry/geography and a
+ * temporal geo
  * @sqlfn nearestApproachInstant()
  */
 Datum
@@ -215,15 +220,15 @@ PGDLLEXPORT Datum NAI_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_dist
- * @brief Return the nearest approach instant between a temporal geo
- * and a geometry
+ * @brief Return the nearest approach instant between a temporal geo and a
+ * geometry/geography
  * @sqlfn nearestApproachInstant()
  */
 Datum
 NAI_tgeo_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   bool spheroid = true;
   if (PG_NARGS() > 2)
     spheroid = PG_GETARG_BOOL(2);
@@ -257,6 +262,7 @@ NAI_tgeo_tgeo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END stbox_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -613,12 +619,14 @@ NAD_tgeo_tgeo_opr(PG_FUNCTION_ARGS)
  * These functions are only available for geometries
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN stbox_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_dist
  * @brief Return the line connecting the nearest approach point between a
- * geometry and a temporal geo
+ * geometry/geography and a temporal geo
  * @sqlfn shortestLine()
  */
 Datum
@@ -684,6 +692,7 @@ Shortestline_tgeo_tgeo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END stbox_shortestline */
 
 /*****************************************************************************
  * Set-set spatial minimum distance
