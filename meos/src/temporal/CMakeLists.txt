@@ -53,6 +53,7 @@ set(TEMPORAL_SOURCES
   temporal_boxops.c
   temporal_compops.c
   temporal_modif.c
+  temporal_posops.c
   temporal_restrict.c
   temporal_rtree.c
   temporal_sptree.c
@@ -76,7 +77,6 @@ if(MEOS)
     lifting_meos.c
     span_tile_meos.c
     temporal_boxops_meos.c
-    temporal_posops_meos.c
     temporal_tile_meos.c
 )
 endif()
