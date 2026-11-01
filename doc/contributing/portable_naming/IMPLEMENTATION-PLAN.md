@@ -73,6 +73,12 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   (`doc/contributing/exactness/`), with its own pull requests.
 - **Every type in every format and every engine** is the input and output plan of MobilityDB
   #3353 (`doc/contributing/io/`), with its own pull requests.
+- **Every MEOS value is a finite number** is the plan of MobilityDB #3352
+  (`doc/contributing/exactness/FINITE-VALUES.md`). Its test of a number refuses NaN and ±Infinity
+  and takes the name `ensure_finite`, its refusal reads "The value must be finite", and the
+  integral, the averages and the interpolation of temporal numbers answer the results near the
+  largest double, as the owner approved on 2026-11-01: branch `fix/meos-refuses-non-finite`
+  rewrites `089206e021`, rewrites `340785dc65`, rewrites `51fa7d058d`, rewrites `526ac77a42`, rewrites `5df4db1f9c`, rewrites `7102fd6de2`, rewrites `a0cedabe63`, rewrites `cce310aca2`, rewrites `cfdd06dcb4`, rewrites `d2ccbae61a`, rewrites `d2ecc4070f`, rewrites `db003d84f1` and rewrites `e9c8b8f600`, the lines of those tests, messages and computations.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
   plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
   author); #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
