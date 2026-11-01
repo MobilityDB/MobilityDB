@@ -81,13 +81,13 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga715dc2c4a231ae7927cb7630c21456aa.html#ga715dc2c4a231ae7927cb7630c21456aa">pcpoint_to_tpcbox</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__constructor_gadfe87b6c77e6dfe27e796f087a8d169b.html#gadfe87b6c77e6dfe27e796f087a8d169b">tpcbox_copy</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga70e71486a9ccc99cca277b9dddc3fd1d.html#ga70e71486a9ccc99cca277b9dddc3fd1d">tpcbox_make</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__pointcloud__box__constructor_ga1c784192b24a1be5be8288f1de1e3042.html#ga1c784192b24a1be5be8288f1de1e3042">tpcbox_make</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga70e71486a9ccc99cca277b9dddc3fd1d" name="ga70e71486a9ccc99cca277b9dddc3fd1d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga70e71486a9ccc99cca277b9dddc3fd1d">&#9670;&#160;</a></span>tpcbox_make()</h2>
+<a id="ga1c784192b24a1be5be8288f1de1e3042" name="ga1c784192b24a1be5be8288f1de1e3042"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1c784192b24a1be5be8288f1de1e3042">&#9670;&#160;</a></span>tpcbox_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -103,12 +103,6 @@ $(function() {
           <td></td>
           <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>hasz</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>hast</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -175,10 +169,10 @@ $(function() {
 <p>Return a fresh <a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a> from component values. </p>
 <p >The SRID of a box with a spatial dimension is the one the schema of its pcid states, as <a class="el" href="meos_2src_2pointcloud_2tpcbox_8c_ab05ea6618c0ebfab847a9bc51a4391ca.html#ab05ea6618c0ebfab847a9bc51a4391ca" title="Return the SRID the schema of a pcid states.">tpcbox_pcid_srid</a> reads it; a box with no spatial dimension states SRID 0 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">hasx,hasz,hast,geodetic</td><td>Dimensionality flags </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">hasx,hasz,geodetic</td><td>Dimensionality flags </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">pcid</td><td>pgpointcloud schema id (0 = unknown) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xmin,xmax,ymin,ymax,zmin,zmax</td><td>Spatial bounds (ignored unless <code>hasx</code>; <code>zmin/<code>zmax</code> ignored</code> unless <code>hasz</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">period</td><td>Time bounds (ignored unless <code>hast</code>) (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaf4f7c9fc09cbee3140be2724ad106dfb.html#gaf4f7c9fc09cbee3140be2724ad106dfb" title="2D constructor — tpcboxX(xmin, ymin, xmax, ymax, pcid) @sqlfn tpcboxX()">Tpcbox_constructor_2d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga8e752ca1f52b9d8da21667e031dff9f6.html#ga8e752ca1f52b9d8da21667e031dff9f6" title="3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid) @sqlfn tpcboxZ()">Tpcbox_constructor_3d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga584543a9f7c99f5395ca5377545d6ed6.html#ga584543a9f7c99f5395ca5377545d6ed6" title="Time-only constructor — tpcboxT(period, pcid) @sqlfn tpcboxT()">Tpcbox_constructor_t()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga412b98ab5ea425e0535889db749ff317.html#ga412b98ab5ea425e0535889db749ff317" title="XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid) @sqlfn tpcboxXT()">Tpcbox_constructor_xt()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gadbe3810115555a126cb64ef1a1f74ac3.html#gadbe3810115555a126cb64ef1a1f74ac3" title="XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid) @sqlfn tpcboxZT()">Tpcbox_constructor_zt()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">period</td><td>Time bounds, NULL for a box without time dimension, as the span of <a class="el" href="group__meos__geo__box__constructor_ga05b946e7a1f71d9a2f589a717fd324c0.html#ga05b946e7a1f71d9a2f589a717fd324c0" title="Return a spatiotemporal box from the arguments.">stbox_make</a> (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gaf4f7c9fc09cbee3140be2724ad106dfb.html#gaf4f7c9fc09cbee3140be2724ad106dfb" title="2D constructor — tpcboxX(xmin, ymin, xmax, ymax, pcid) @sqlfn tpcboxX()">Tpcbox_constructor_2d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga8e752ca1f52b9d8da21667e031dff9f6.html#ga8e752ca1f52b9d8da21667e031dff9f6" title="3D constructor — tpcboxZ(xmin, ymin, zmin, xmax, ymax, zmax, pcid) @sqlfn tpcboxZ()">Tpcbox_constructor_3d()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga584543a9f7c99f5395ca5377545d6ed6.html#ga584543a9f7c99f5395ca5377545d6ed6" title="Time-only constructor — tpcboxT(period, pcid) @sqlfn tpcboxT()">Tpcbox_constructor_t()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_ga412b98ab5ea425e0535889db749ff317.html#ga412b98ab5ea425e0535889db749ff317" title="XY+T constructor — tpcboxXT(xmin, ymin, xmax, ymax, period, pcid) @sqlfn tpcboxXT()">Tpcbox_constructor_xt()</a>, <a class="el" href="group__mobilitydb__pointcloud__box__constructor_gadbe3810115555a126cb64ef1a1f74ac3.html#gadbe3810115555a126cb64ef1a1f74ac3" title="XYZ+T constructor — tpcboxZT(xmin, ymin, zmin, xmax, ymax, zmax, period, pcid) @sqlfn tpcboxZT()">Tpcbox_constructor_zt()</a> </td></tr>
   </table>
   </dd>
 </dl>

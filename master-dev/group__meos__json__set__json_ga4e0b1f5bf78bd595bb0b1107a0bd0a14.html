@@ -104,7 +104,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_ga7a7bc7f3d103320bdbc9e4f092d988ec.html#ga7a7bc7f3d103320bdbc9e4f092d988ec">jsonbset_path_query_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_ga01794916ce882e95ab6b3a4bebb9ab9c.html#ga01794916ce882e95ab6b3a4bebb9ab9c">jsonbset_path_query_first</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_gac20219e3e622be2d18293e15eaf882b0.html#gac20219e3e622be2d18293e15eaf882b0">jsonbset_pretty</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__set__json_ga8f5d6ae2fa58b8f5575092148807a742.html#ga8f5d6ae2fa58b8f5575092148807a742">jsonbset_set</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__set__json_ga4e0b1f5bf78bd595bb0b1107a0bd0a14.html#ga4e0b1f5bf78bd595bb0b1107a0bd0a14">jsonbset_set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_gaddbb923c7e3b3e3cd31e3cf4452a4983.html#gaddbb923c7e3b3e3cd31e3cf4452a4983">jsonbset_set_lax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_ga65a9864a4028e1b05c17e0370e68aadb.html#ga65a9864a4028e1b05c17e0370e68aadb">jsonbset_strip_nulls</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_gaef69569af0ba6456826a9f427ab3f941.html#gaef69569af0ba6456826a9f427ab3f941">jsonbset_to_bigintset</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__set__json_gaf3a6d7e5d1138ac50322fb2d8ec307b1.html#gaf3a6d7e5d1138ac50322fb2d8ec307b1">jsonbset_to_floatset</a></td></tr>
@@ -118,8 +119,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga8f5d6ae2fa58b8f5575092148807a742" name="ga8f5d6ae2fa58b8f5575092148807a742"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga8f5d6ae2fa58b8f5575092148807a742">&#9670;&#160;</a></span>jsonbset_set()</h2>
+<a id="ga4e0b1f5bf78bd595bb0b1107a0bd0a14" name="ga4e0b1f5bf78bd595bb0b1107a0bd0a14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga4e0b1f5bf78bd595bb0b1107a0bd0a14">&#9670;&#160;</a></span>jsonbset_set()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -152,19 +153,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>create</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const text *&#160;</td>
-          <td class="paramname"><em>null_handle</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>lax</em>&#160;</td>
+          <td class="paramname"><em>create</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -175,15 +164,13 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Replace a value specified by a path with a new value in a JSONB set. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p >The value at the path of each JSONB value, as <a class="el" href="meos__json_8h_a9c778cffd1c256c7fa5464ecfc14d134.html#a9c778cffd1c256c7fa5464ecfc14d134">jsonb_set</a> replaces it in a JSONB value </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">set</td><td>JSONB set </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">keys</td><td>Keys </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the input array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">newjb</td><td>New value </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">create</td><td>When true, if the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">null_handle</td><td>States the null value treatment, which must be one of 'raise_exception', 'use_json_null', 'delete_key', or 'return_target' </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lax</td><td>True when the lax mode is used @csqlfn <a class="el" href="group__mobilitydb__json__json_ga4037cc8e33f86f6a6ab31d5d6de8ac39.html#ga4037cc8e33f86f6a6ab31d5d6de8ac39" title="Replace a value specified by a path with a new value in a temporal JSONB value @sqlfn jsonbsetSet()">Jsonbset_set()</a>, <a class="el" href="group__mobilitydb__json__json_gaee48e2d35504b3974be6ed43a2140519.html#gaee48e2d35504b3974be6ed43a2140519" title="Replace a value specified by a path with a new value in a temporal JSONB value using the lax mode @sq...">Jsonbset_set_lax()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">newjb</td><td>Value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">create</td><td>When true, if the last path step is an array index that is out of range, the value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive @csqlfn <a class="el" href="group__mobilitydb__json__json_ga4037cc8e33f86f6a6ab31d5d6de8ac39.html#ga4037cc8e33f86f6a6ab31d5d6de8ac39" title="Replace a value specified by a path with a new value in a JSONB set @sqlfn jsonbsetSet()">Jsonbset_set()</a> </td></tr>
   </table>
   </dd>
 </dl>

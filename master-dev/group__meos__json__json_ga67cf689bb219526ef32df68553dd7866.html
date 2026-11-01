@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: tjsonb_set</title>
+<title>MobilityDB: tjsonb_set_lax</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -110,7 +110,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gae131749cfe1ee82112da8fef7184e093.html#gae131749cfe1ee82112da8fef7184e093">tjsonb_path_query_array</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gab9e0ac67d16752d84a59053ca7562bb6.html#gab9e0ac67d16752d84a59053ca7562bb6">tjsonb_path_query_first</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gaaaaa13c38f6e6fa4685136dca8e59488.html#gaaaaa13c38f6e6fa4685136dca8e59488">tjsonb_pretty</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__json_ga5fbf02b1e72fa8398fcfa0610169be64.html#ga5fbf02b1e72fa8398fcfa0610169be64">tjsonb_set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gae75cbc04ac10588722ae0090749f8c5d.html#gae75cbc04ac10588722ae0090749f8c5d">tjsonb_set</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__json_ga67cf689bb219526ef32df68553dd7866.html#ga67cf689bb219526ef32df68553dd7866">tjsonb_set_lax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gaba23572115c90f4ac82f7f343014d332.html#gaba23572115c90f4ac82f7f343014d332">tjsonb_strip_nulls</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gacd678a33ebedbef43eb1770cc759502a.html#gacd678a33ebedbef43eb1770cc759502a">tjsonb_to_tbigint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga21bf8edafc075b976d579ca3ed597d04.html#ga21bf8edafc075b976d579ca3ed597d04">tjsonb_to_tbool</a></td></tr>
@@ -125,14 +126,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga5fbf02b1e72fa8398fcfa0610169be64" name="ga5fbf02b1e72fa8398fcfa0610169be64"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga5fbf02b1e72fa8398fcfa0610169be64">&#9670;&#160;</a></span>tjsonb_set()</h2>
+<a id="ga67cf689bb219526ef32df68553dd7866" name="ga67cf689bb219526ef32df68553dd7866"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga67cf689bb219526ef32df68553dd7866">&#9670;&#160;</a></span>tjsonb_set_lax()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tjsonb_set </td>
+          <td class="memname"><a class="el" href="structTemporal.html">Temporal</a> * tjsonb_set_lax </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structTemporal.html">Temporal</a> *&#160;</td>
           <td class="paramname"><em>temp</em>, </td>
@@ -165,13 +166,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const text *&#160;</td>
-          <td class="paramname"><em>null_handle</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>lax</em>&#160;</td>
+          <td class="paramname"><em>null_handle</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -181,16 +176,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Replace a value specified by a path with a new value in a temporal JSONB value. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Replace a value specified by a path with a new value in a temporal JSONB value using the lax mode. </p>
+<p >The value at the path of each JSONB value, as <a class="el" href="meos__json_8h_a31fe22c3e572d8c8adbdd3d608333e43.html#a31fe22c3e572d8c8adbdd3d608333e43">jsonb_set_lax</a> replaces it in a JSONB value </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> JSONB value </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">keys</td><td>Keys </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the input array </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">newjb</td><td>New value, <code>NULL</code> in the lax mode treated as <code>null_handle</code> states (accepts <code>NULL</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">create</td><td>When true, if the last path step is an array index that is out of range, the new value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">null_handle</td><td>States the null value treatment, which must be one of 'raise_exception', 'use_json_null', 'delete_key', or 'return_target' </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">lax</td><td>True when the lax mode is used @csqlfn <a class="el" href="group__mobilitydb__json__json_ga8a2a58968c09ca58f3362022f67fa2ab.html#ga8a2a58968c09ca58f3362022f67fa2ab" title="Replace a value specified by a path with a new value in a temporal JSONB value @sqlfn tjsonbSet()">Tjsonb_set()</a>, <a class="el" href="group__mobilitydb__json__json_ga07ab2268278f715a8b5789a12a94ffc6.html#ga07ab2268278f715a8b5789a12a94ffc6" title="Replace a value specified by a path with a new value in a temporal JSONB value using the lax mode @sq...">Tjsonb_set_lax()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">newjb</td><td>Value, <code>NULL</code> treated as <code>null_handle</code> states (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">create</td><td>When true, if the last path step is an array index that is out of range, the value is added at the beginning of the array if the index is negative, or at the end of the array if it is positive </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">null_handle</td><td>States the null value treatment, which must be one of 'raise_exception', 'use_json_null', 'delete_key', or 'return_target' @csqlfn <a class="el" href="group__mobilitydb__json__json_ga07ab2268278f715a8b5789a12a94ffc6.html#ga07ab2268278f715a8b5789a12a94ffc6" title="Replace a value specified by a path with a new value in a temporal JSONB value using the lax mode @sq...">Tjsonb_set_lax()</a> </td></tr>
   </table>
   </dd>
 </dl>

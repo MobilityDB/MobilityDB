@@ -215,6 +215,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Write into the buffer a geo value in the Well-Known Binary (WKB) representation. </p>
+<dl class="section note"><dt>Note</dt><dd>Since the geo is embedded in a container such as a set or a temporal value, the SRID value (if any) is only output for the container, as #cbuffer_to_wkb_buf leaves it out of a component circular buffer </dd></dl>
 
 </div>
 </div>

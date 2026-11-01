@@ -212,8 +212,8 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">bounds</td><td>Bounds </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">xsize,ysize,zsize</td><td>Size of the corresponding dimension; a <code>ysize</code> or <code>zsize</code> of 0 takes <code>xsize</code>, and <code>zsize</code> is read only for a box with Z </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval (accepts <code>NULL</code>) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">duration</td><td>Size of the time dimension as an interval, NULL when <code>hast</code> is false </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Origin for the space dimension, NULL when <code>hasx</code> is false </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">torigin</td><td>Origin for the time dimension </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">border_inc</td><td>True when the box contains the upper border </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">hasx</td><td>True when the grid lays the space dimension, which then takes a positive <code>xsize</code> </td></tr>

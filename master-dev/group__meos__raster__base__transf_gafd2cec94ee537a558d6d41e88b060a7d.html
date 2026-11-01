@@ -148,7 +148,7 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">rast</td><td>Raster to resample </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">scale_x,scale_y</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> size in the units of the raster's own reference system, the Y component being negative for a north-up grid as the geotransform states it </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, NULL for nearest neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">max_err</td><td>Error in input pixels the warp may commit, 0 for an exact calculation </td></tr>
   </table>
   </dd>

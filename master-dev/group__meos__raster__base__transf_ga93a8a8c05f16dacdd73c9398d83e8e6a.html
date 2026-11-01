@@ -168,7 +168,7 @@ $(function() {
     <tr><td class="paramdir">[in]</td><td class="paramname">pipelinestr</td><td>Coordinate operation, as a PROJ string, a WKT or an authority code </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">srid</td><td>Spatial reference system identifier of the result, 0 when the operation leaves it unstated </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">is_forward</td><td>True to apply the operation, false its inverse </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, NULL for nearest neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">algorithm</td><td>Name of the resampling algorithm, one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read without regard to case </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">max_err</td><td>Error in input pixels the warp may commit, 0 for an exact calculation </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">scale_x,scale_y</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> size of the result in the units of the target system, 0 to let the warp derive it </td></tr>
   </table>
