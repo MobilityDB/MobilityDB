@@ -37,13 +37,17 @@ CREATE FUNCTION spans(tnpoint)
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TILING-BEGIN npoint_splits — tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/tiling_families.yaml and re-run.
 CREATE FUNCTION splitNSpans(tnpoint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitEachNSpans(tnpoint, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-TILING-END npoint_splits
 
 /*****************************************************************************/

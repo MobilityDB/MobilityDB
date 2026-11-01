@@ -394,7 +394,7 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 ⚠️ **`tbigint` and `tjsonb` are full members** of `tnumber_type()` / `talpha_type()` but are **absent from the MEOS-API lattice** (§8) — a curation gap.
 
 **The generic base `Temporal<T>` reference files** (`032_temporal_boxops`
-(extraction: spans/tboxes/split*), `033_temporal_topops` (topological: spanOverlaps/
+(extraction: spans/tboxes, its split functions a `tiling_families` region), `033_temporal_topops` (topological: spanOverlaps/
 spanContains/spanContained/spanSame/spanAdjacent), `034_temporal_posops`, `040/042` aggfuncs,
 `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
 similarity/analytics) are likewise the hand reference; the generator re-emits their
@@ -424,7 +424,7 @@ Two more reference chapters carry inherited surface:
 | → Indexing | (index) | ✓ **GEN** | GiST/SP-GiST via `gist/spgist/indexes.sql.tmpl` |
 | → Statistics and Selectivity | (selectivity) | ✗ HAND | |
 | `temporal_types_analytics.xml` → Simplification / Reduction / Similarity / Extended Kalman Filter / Splitting | `temporal_`/`tgeo_` | ✗ HAND | analytics; no template |
-| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **23 entries** all `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops). The entry names sit at three granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), and per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) |
+| `temporal_types_analytics.xml` → Multidimensional Tiling | `temporal_`/`tgeo_` | ✓ **GEN** | `tiling.sql.tmpl` + `tiling_families`, **30 entries**: 23 `reference: true` (geo, tpoint, cbuffer, json, json_boxops, npoint, tpcpoint, tpcpatch, tpc_boxops, pose, posechain, rgeo, tgeo_tile, trgeo_tile, tpoint_tile, tpose_tile, tpcpoint_tile, temporal, th3index, th3index_boxops, quadbin, quadbin_boxops, s2cell_boxops) and seven writing the `GENERATED-TILING` split region of a boxops file (temporal_splits, geo_splits, tpoint_splits, pose_splits, rgeo_splits, cbuffer_splits, npoint_splits). The entry names sit at four granularities — family (`geo`, `npoint`), per-FILE tile split (`tgeo_tile`, `tpose_tile`), per-FILE boxops split (`json_boxops`, `tpc_boxops`, `th3index_boxops`, `quadbin_boxops`) and per-FILE split functions (`geo_splits`). Every `splitN<Box>`/`splitEachN<Box>` of a boxops file is a `splits` stanza: its types, its box kinds (`spans`, `tboxes`, `stboxes`) and, per kind, the C prefix of a type with kernels of its own (`Trgeometry`, `Geo`) |
 
 #### `tprecision` — which types carry a time-weighted average, and why the rest do not
 
@@ -799,8 +799,11 @@ Reading the table:
   **quadbin (357)** and **s2cell (607)** in this table — plus, outside the
   `subtypes:`-track family set
   above, for json/tjsonb (`459`) and pointcloud (`435`, one file covering both
-  tpcpoint and tpcpatch). cbuffer (207), npoint (307), pose (107) and rgeo (160)
-  stay hand.
+  tpcpoint and tpcpatch). The split functions of cbuffer (207), npoint (307),
+  pose (107), rgeo (160), geo (060) and the temporal base (032) are the
+  `GENERATED-TILING` regions of their `*_splits` entries; the other functions of
+  those files stay hand. The `splitNStboxes`/`splitEachNStboxes` of tpose (108),
+  tposechain (558) and tcbuffer (208) are those of `topops.sql.tmpl`.
 - **The point cloud index classes** live in the two files of the family:
   `439_tpc_gist` and `440_tpc_spgist` hold the classes of `tpcbox` beside those
   of `tpcpoint` and `tpcpatch`, as `073`/`074` hold the classes of `stbox`

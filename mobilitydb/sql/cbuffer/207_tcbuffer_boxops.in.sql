@@ -37,13 +37,17 @@ CREATE FUNCTION spans(tcbuffer)
   AS 'MODULE_PATHNAME', 'Temporal_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TILING-BEGIN cbuffer_splits — tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/tiling_families.yaml and re-run.
 CREATE FUNCTION splitNSpans(tcbuffer, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitEachNSpans(tcbuffer, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-TILING-END cbuffer_splits
 
 /*****************************************************************************/
