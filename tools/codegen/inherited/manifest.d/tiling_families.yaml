@@ -392,3 +392,66 @@ tiling_families:
   - lit: "/**\n * @file\n * @brief Bounding box operations for temporal S2 cells\n */\n\n-- spans()\nCREATE FUNCTION spans(ts2cell)\n  RETURNS tstzspan[]\n  AS 'MODULE_PATHNAME', 'Temporal_spans'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\n"
   - splits: {temps: [ts2cell], kinds: [spans], comment: true}
   - lit: "\n/*****************************************************************************/"
+# The split functions of the boxops files whose other functions are hand-written,
+# each a GENERATED-TILING region from its first splitNSpans to the divider closing
+# it.
+- family: temporal_splits
+  file: mobilitydb/sql/temporal/032_temporal_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tbool, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tbool, tint, tbigint, tfloat, ttext], kinds: [spans]}
+  - lit: "\n"
+  - splits: {temps: [tint, tbigint, tfloat], kinds: [tboxes]}
+- family: geo_splits
+  file: mobilitydb/sql/geo/060_tgeo_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tgeometry, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tgeometry, tgeography], kinds: [spans, stboxes]}
+- family: tpoint_splits
+  file: mobilitydb/sql/geo/060_tpoint_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tgeompoint, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tgeompoint, tgeogpoint], kinds: [spans, stboxes]}
+  - lit: "\n"
+  - splits: {temps: [geometry, geography], kinds: [stboxes], prefix: {stboxes: Geo}}
+- family: pose_splits
+  file: mobilitydb/sql/pose/107_tpose_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tpose, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tpose], kinds: [spans]}
+- family: rgeo_splits
+  file: mobilitydb/sql/rgeo/160_trgeo_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(trgeometry, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [trgeometry], kinds: [spans, stboxes], prefix: {stboxes: Trgeometry}}
+- family: cbuffer_splits
+  file: mobilitydb/sql/cbuffer/207_tcbuffer_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tcbuffer, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tcbuffer], kinds: [spans]}
+- family: npoint_splits
+  file: mobilitydb/sql/npoint/307_tnpoint_boxops.in.sql
+  begin: "CREATE FUNCTION splitNSpans(tnpoint, integer)"
+  begin_exact: true
+  end: "\n/*****************************************************************************/"
+  end_exact: true
+  blocks:
+  - splits: {temps: [tnpoint], kinds: [spans]}

@@ -4271,7 +4271,9 @@ def extract_tiling(filetext: str, fam: dict) -> str:
     whole-file family, or to the `/*` opening the next section (the family's `end`
     anchor), mirroring extract_representations. `begin_exact` (th3index/tquadbin,
     whose timeSplit material has no "Multidimensional tiling" banner to back up to)
-    anchors `begin` at its own index instead, mirroring the comparison/hash axes."""
+    anchors `begin` at its own index instead, mirroring the comparison/hash axes;
+    `end_exact` (the split functions of a boxops file) ends the block at the first
+    `end` past its start, mirroring #extract_distance."""
     begin, end = _tiling_markers(fam["family"])
     if begin in filetext:
         b = filetext.index(begin) + len(begin)
@@ -4281,6 +4283,8 @@ def extract_tiling(filetext: str, fam: dict) -> str:
     start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
     if fam.get("whole_file"):
         return filetext[start:len(filetext)]
+    if fam.get("end_exact"):
+        return filetext[start:filetext.index(fam["end"], start)]
     j = filetext.index(fam["end"])
     return filetext[start:filetext.rfind("/*", 0, j)]
 
@@ -4303,8 +4307,11 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
     begin_m, end_m = _tiling_markers(fam["family"])
     if fam.get("whole_file"):
         return filetext[:start] + begin_m + rendered + end_m
-    j = filetext.index(fam["end"])
-    end = filetext.rfind("/*", 0, j)
+    if fam.get("end_exact"):
+        end = filetext.index(fam["end"], start)
+    else:
+        j = filetext.index(fam["end"])
+        end = filetext.rfind("/*", 0, j)
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 
