@@ -695,7 +695,10 @@ TRGEO_CONFIG = dict(
         # type poseset").
         # The relationships answer a rigid geometry at its instants and refuse
         # linear interpolation, so they read the step sequence of the same two
-        # instants.
+        # instants. So do the temporal geometry and the temporal geography of a
+        # rigid geometry, which state step and discrete interpolation only.
+        "trgeometry_to_tgeometry": {0: "trgeo_stepseq1"},
+        "trgeometry_to_tgeography": {0: "trgeo_stepseq1"},
         "econtains_geo_trgeometry": {1: "trgeo_stepseq1"},
         "ecovers_trgeometry_geo": {0: "trgeo_stepseq1"},
         "ecovers_geo_trgeometry": {1: "trgeo_stepseq1"},
