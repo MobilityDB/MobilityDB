@@ -59,6 +59,16 @@ second, and a very small rotation is zero, as in the interpolation of the
 poses.  Thus the algorithm places a body at the same position as the
 database.
 
+The angles beta and alpha are never computed.  A term whose phase is an
+angle times a length is the vector with that angle and length:
+L * (cos(beta), sin(beta)) is u, rho * (cos(alpha), sin(alpha)) is b, and
+rho * L * (cos(beta - alpha), sin(beta - alpha)) is (dot(u, b),
+cross(b, u)).  The algorithm turns such a vector by the angle of a pose,
+and keeps it as it is when the angle is zero.  Thus an edge along an axis
+of a body that does not turn gives coefficients with exact zeros, which
+cos(atan2(y, x)) does not give: an edge in the direction pi has a sine of
+1.2e-16, and a contact that slides along it reads as an entry.
+
 The Function Family
 -------------------
 
@@ -312,6 +322,14 @@ features give the same distance.  Then fixed rules decide:
   * A point on the line of an edge is outside A - B.  Its distance is zero
     for the two choices.
 
+  * The region of an edge is the set of points that project on the edge
+    and are not inside its line.  An origin that leaves a vertex along one
+    of its two edges is on the boundary of A - B: it projects on both edges
+    and is inside the line of the other one.  The walk takes the edge whose
+    region has the origin, and takes an edge on which the origin projects
+    only if neither region has it, where the scan finds the origin inside
+    A - B.
+
 Thresholds
 ..........
 
@@ -375,11 +393,16 @@ instants are:
   * for the threshold functions, each crossing of the threshold d, with
     the value d.
 
-The value at each instant comes from the function of the feature at that
-time.  Thus the result is exact at its instants.  It has all the extrema,
-thus its minimum is the nearest approach distance, and its maximum is the
-largest distance.  Between two instants, the linear interpolation is not
-exact when a body rotates.
+At the start and the end of each segment, which are instants of the
+operands, the value is the distance between the bodies placed at that
+instant, the double nearest the exact distance of the placed geometries.
+Inside a segment, an event is at a time that is not a microsecond, and its
+value is the one at that time: zero at an entry into and an exit from an
+overlap, d at a crossing of the threshold d, and the function of the
+feature at an extremum or a change of feature.  The result has all the
+extrema, thus its minimum is the nearest approach distance, and its
+maximum is the largest distance.  Between two instants, the linear
+interpolation is not exact when a body rotates.
 
 A contact where the distance touches zero is an extremum, thus it is an
 instant of the result.  Two instants at the same timestamp become one

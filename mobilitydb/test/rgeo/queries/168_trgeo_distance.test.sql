@@ -309,4 +309,34 @@ SELECT round(valueAtTimestamp(tDistance(
   geometry 'Polygon((-1 2,1 2,1 3,-1 3,-1 2))'),
   '2001-01-01 23:59:00')::numeric, 6);
 
+-- At each instant of a moving body the distance is the one of the body placed
+-- there. The triangle at the pose (1 0) is at distance 1 from (0 3), at the
+-- pose (0.5 0.25) at distance 0.5, and at the pose (0 0) it has (0 3) on its
+-- edge.
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(1 0),0)@2001-01-01 00:00:10, Pose(Point(0 0),0)@2001-01-01 00:00:35, Pose(Point(0.5 0.25),0)@2001-01-01 00:00:45, Pose(Point(2 1),0)@2001-01-01 00:01:35]',
+  geometry 'Point(0 3)');
+
+-- A body at rest touching a point is at distance 0 all along
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(0 3)');
+
+-- A body that slides along a point: the 4 x 4 square has (3 4) on its top
+-- edge while it moves left, and in it afterwards, so the distance is 0 all
+-- along
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(3 0),0)@2001-01-01 00:00:05, Pose(Point(-1 0),0)@2001-01-01 00:00:20, Pose(Point(0 0),0)@2001-01-01 00:01:10, Pose(Point(2 1),0)@2001-01-01 00:01:25]',
+  geometry 'Point(3 4)');
+
+-- The same with an edge that is not along an axis: (-6 6) is the end of the
+-- top edge of the body, which moves left along it
+
+SELECT tDistance(
+  trgeometry 'Polygon((-4 4,2 -4,3 -3,3 0,1 4,-4 4));[Pose(Point(-2 2),0)@2001-01-01, Pose(Point(-4.5 2),0)@2001-01-02]',
+  geometry 'Point(-6 6)');
+
 -------------------------------------------------------------------------------

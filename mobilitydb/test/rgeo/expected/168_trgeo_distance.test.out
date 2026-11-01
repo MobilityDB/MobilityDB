@@ -464,3 +464,35 @@ SELECT round(valueAtTimestamp(tDistance(
  0.000694
 (1 row)
 
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(1 0),0)@2001-01-01 00:00:10, Pose(Point(0 0),0)@2001-01-01 00:00:35, Pose(Point(0.5 0.25),0)@2001-01-01 00:00:45, Pose(Point(2 1),0)@2001-01-01 00:01:35]',
+  geometry 'Point(0 3)');
+                                                             tdistance                                                              
+------------------------------------------------------------------------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:10 2001 PST, 0@Mon Jan 01 00:00:35 2001 PST, 0.5@Mon Jan 01 00:00:45 2001 PST, 2@Mon Jan 01 00:01:35 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(0 3)');
+                            tdistance                             
+------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(3 0),0)@2001-01-01 00:00:05, Pose(Point(-1 0),0)@2001-01-01 00:00:20, Pose(Point(0 0),0)@2001-01-01 00:01:10, Pose(Point(2 1),0)@2001-01-01 00:01:25]',
+  geometry 'Point(3 4)');
+                            tdistance                             
+------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:05 2001 PST, 0@Mon Jan 01 00:01:25 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((-4 4,2 -4,3 -3,3 0,1 4,-4 4));[Pose(Point(-2 2),0)@2001-01-01, Pose(Point(-4.5 2),0)@2001-01-02]',
+  geometry 'Point(-6 6)');
+                            tdistance                             
+------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
