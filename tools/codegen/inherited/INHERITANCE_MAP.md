@@ -206,6 +206,17 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   through `NAD_trgeometry_trgeometry`, each storing `fcinfo` under `nadfcinfo:`.
   `tpcbox` writes the 4 wrappers of `tpc_boxops.c` from `NAD_tpcbox_tpcbox`
   through `NAD_tpointcloud_tpointcloud` over its one side `tpointcloud`.
+  A box type or family listing `distfns:` has its other distance functions
+  generated in the same file, from `templates/distpairs.c.tmpl`: the temporal
+  distance (`Tdistance_*`, `tDistance()`), the nearest approach instant (`NAI_*`,
+  `nearestApproachInstant()`) and the shortest line (`Shortestline_*`,
+  `shortestLine()`), each a `GENERATED-DISTFNS` region named
+  `<region>_<function>` over the pairs that function lists and the sides of
+  `nadsides:`, each wrapper answering NULL for a NULL result. A function's entry
+  may override side keys (`sides:`); a side the kernel names by another token
+  says it in `token:`, a side holding a `Datum` is `byval:`, and under
+  `nadearth:` the temporal distance alone is followed by the procedure of its
+  operator.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner

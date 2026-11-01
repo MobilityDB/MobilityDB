@@ -87,6 +87,33 @@ boxtypes:
           - [tpose, pose, nad_tpose_pose]
           - sep
           - [tpose, tpose, nad_tpose_tpose]
+        # the temporal distance, the nearest approach instant and the shortest line
+        # (templates/distpairs.c.tmpl); a temporal distance reaches a geometry
+        # point alone, which its point side names as the kernel's geo
+        distfns:
+          tdistance:
+            sides:
+              point: {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry point, free: true, token: geo}
+              geo:   {desc: geometry point}
+            pairs:
+              - [point, tpose, tdistance_tpose_geo]
+              - [tpose, geo, tdistance_tpose_geo]
+              - [pose, tpose, tdistance_tpose_pose]
+              - [tpose, pose, tdistance_tpose_pose]
+              - [tpose, tpose, tdistance_tpose_tpose]
+          nai:
+            - [geo, tpose, nai_tpose_geo]
+            - [tpose, geo, nai_tpose_geo]
+            - [pose, tpose, nai_tpose_pose]
+            - [tpose, pose, nai_tpose_pose]
+            - [tpose, tpose, nai_tpose_tpose]
+          shortestline:
+            - [geo, tpose, shortestline_tpose_geo]
+            - [tpose, geo, shortestline_tpose_geo]
+            - [pose, tpose, shortestline_tpose_pose]
+            - [tpose, pose, shortestline_tpose_pose]
+            - sep
+            - [tpose, tpose, shortestline_tpose_tpose]
       - family:   tposechain
         nadgroup: mobilitydb_posechain_dist
         nadfile:  mobilitydb/src/pose/tposechain_distance.c
