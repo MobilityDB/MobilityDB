@@ -9,7 +9,7 @@
 # The relationships of a rigid geometry in linear motion
 
 **For discussion by the committers. Nothing here is merged.**
-Read on MobilityDB #3347 (`8e344638e3`, on master `91f8d676e7`). This note states which spatial
+Read on MobilityDB #3347 (`bddc38f771`, on master `9c0caecd72`). This note states which spatial
 relationships of a temporal rigid geometry are refused when the geometry moves linearly, why the
 constructions that look like answers are not, the algorithm that answers them exactly, what master
 already provides for it, its risks, and the pull request that delivers it. Every statement about
@@ -27,9 +27,11 @@ a contact that only grazes, events that coincide, and the cost on large static a
 
 ## 2. What #3347 refuses
 
-`trgeo_traced_tgeo` (`meos/src/rgeo/trgeo_spatialrels.c`) turns a step or discrete temporal rigid
-geometry into the temporal geometry it traces, and refuses a linear one through
-`ensure_nonlinear_interp`. Every ever and always relationship goes through it:
+`trgeometry_to_tgeometry` (`meos/src/rgeo/trgeo_spatialfuncs.c`) turns a step or discrete
+temporal rigid geometry into the temporal geometry that places its reference geometry at the pose
+of each instant, and refuses a linear one through `ensure_nonlinear_interp`, since a temporal
+geometry keeps its value from one instant to the next and states no motion between them. Every
+ever and always relationship of `meos/src/rgeo/trgeo_spatialrels.c` goes through it:
 
 | Relationship | Orders refused for linear motion |
 |---|---|
@@ -39,8 +41,23 @@ geometry into the temporal geometry it traces, and refuses a linear one through
 | intersects | rigid–geometry, geometry–rigid, rigid–rigid |
 | touches | rigid–geometry, geometry–rigid, rigid–rigid |
 
-Each in its ever (`e`) and always (`a`) form. The rigid geometries have no temporal (`t`) form of
-these relationships. `eDwithin` and `aDwithin` are not refused: they read the temporal distance.
+Each in its ever (`e`) and always (`a`) form. `eDwithin` and `aDwithin` are not refused: they read
+the temporal distance.
+
+The temporal (`t`) forms of the same five relationships in the same three orders are SQL
+functions (`mobilitydb/sql/rgeo/172_trgeo_tempspatialrels.in.sql`) that cast the rigid geometry to
+`tgeometry` and call the relationship of the temporal geometries, so the fifteen of them are
+refused for linear motion through the same cast. `tDwithin` is a C function on the temporal
+distance and is not one of them. On master the cast builds a step sequence from a linear one: over
+2,000 squares translating linearly between random poses against random points, `tIntersects`
+through the cast differs on 343 rows from `tDwithin` at 0, and on 199 of them answers false all day
+while the square passes over the point. The temporal forms are in the scope of the algorithm of
+section 4, which answers them with the stretches and events of section 4.3 as the pieces of the
+temporal Boolean.
+
+Chapter 4 of MobilityBook Vol. 2 builds its AIS vessels with linear interpolation ("the position
+is interpolated linearly and the heading along the shortest arc") and queries them with
+`eIntersects(s.Trip, z.Geom)` and `tIntersects(s.Trip, z.Geom)`, which are both refused.
 
 ## 3. The constructions that are not answers
 
@@ -57,13 +74,30 @@ A U-shaped polygon `Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0))` and a point 
 poses and come back in the same way, so a pose walk is the answer only for step and discrete
 interpolation.
 
-**The distance at zero.** `intersects` is `dwithin` at distance 0, but the rigid temporal distance
-answers `1.48e-16` at a contact whose exact distance is 0, so a contact that only grazes reads as
-apart. The distance also refuses a reference geometry that is not a convex polygon
-(`dist_ref_body`, "... a convex polygon without holes") and a static polygon that is not convex or
-has holes (`dist_parts_add`), which is the subject of
-[The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md). A relationship built on
-the distance would inherit both.
+**The distance at zero, today.** `intersects` and `disjoint` are `dwithin` at distance 0, but the
+rigid temporal distance is not the double nearest the exact distance, and a contact on the
+boundary reads as apart or fails:
+
+| Witness | Exact | `tDistance` |
+|---|---|---|
+| triangle `(0 0,6 0,0 6)` at pose `(1 0)`, point `(0 3)` | 1 | `0.9999999999999999` |
+| the same at pose `(0.5 0.25)` | 0.5 | `0.49999999999999983` |
+| the same at pose `(0 0)`, the point on an edge | 0 | `1.4802973661668753e-16` |
+| a 4x4 square at pose `(3 0)`, the point `(3 4)` on its top edge | 0 | error "failed at segment 0" |
+
+The distance also refuses a reference geometry that is not a convex polygon (`dist_ref_body`,
+"... a convex polygon without holes") and a static polygon that is not convex or has holes
+(`dist_parts_add`), which is the subject of
+[The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md). The rows of
+[Exact distance](EXACT-DISTANCE.md) do not cover the temporal distance of a rigid geometry.
+
+**The subset the distance answers.** `intersects`, `disjoint` and `dwithin` are the sublevel set
+of the distance at 0 or at the given distance, in every order and in their ever, always and
+temporal forms, so they are exact once the temporal distance is: a stretch where the two are
+apart or overlap is decided by a sign the solver proves, a contact during a pure translation is a
+root of a function linear in `t` with rational coefficients and is decided exactly, and only a
+contact that grazes while the body turns is left to refuse (section 6). `contains`, `covers` and
+`touches` read the boundaries and need the algorithm of section 4.
 
 ## 4. The algorithm
 
@@ -130,7 +164,9 @@ grazes and leaves), is where these rules can fail; section 6 treats it.
 ### 4.5 Ever and always
 
 An `e` relationship is true when it holds at an instant of the input, at an event or on a stretch;
-an `a` relationship is true when it holds at all of them. The instants of the input are decided on
+an `a` relationship is true when it holds at all of them. A `t` relationship is the temporal
+Boolean whose pieces are the stretches, each with its constant value, and whose instants are the
+events where the value there differs from both sides. The instants of the input are decided on
 their own poses, which #3347 already does exactly.
 
 ## 5. What master already provides
@@ -181,9 +217,17 @@ read edges and vertices only, so a non-convex body or a polygon with holes needs
 
 ## 8. Delivery
 
-One pull request, on the branch of #3347, in place of its refusal: the incidence functions, the stretch
-decision, the event rules, the five relationships in their three orders, the chapter and the
-manual, the judge and the tests. Its commits are those steps, in that order.
+In order, on the branch of #3347, each in place of the refusal it answers:
+
+1. **The exact temporal distance of a rigid geometry**: the double nearest the exact distance at
+   every instant, and a contact on the boundary read as 0, judged by CGAL on the poses that do not
+   turn and by the bounded search of section 6 on those that do.
+2. **`intersects`, `disjoint` and `dwithin`** for linear motion from that distance, in the three
+   orders and the ever, always and temporal forms.
+3. **`contains`, `covers` and `touches`**: the incidence functions, the stretch decision, the
+   event rules, the chapter and the manual, the judge and the tests.
+
+The steps are separate topics; the committers decide whether the first two travel together.
 
 ## 9. What is still to be measured
 
