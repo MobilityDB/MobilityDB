@@ -310,6 +310,11 @@ SELECT eTouches(geometry 'Polygon((0 0,0 4,4 4,4 0,0 0))', tgeometry '[Point(4 2
 SELECT aTouches(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
 SELECT aIntersects(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((1 0,4 0,4 2,1 2,1 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
 SELECT aDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]', tgeometry '[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, Polygon((3 0,5 0,5 2,3 2,3 0))@2001-01-02]');
+-- A square that moves away while a point moves to where it was: the square contains
+-- and covers the point at neither instant, ever nor always
+SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}' AS a, tgeometry '{Point(12 2)@2001-01-01, Point(2 2)@2001-01-02}' AS b) t;
+-- A point inside a square, then on its boundary: contained ever, covered always
+SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-02]' AS a, tgeometry '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]' AS b) t;
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
