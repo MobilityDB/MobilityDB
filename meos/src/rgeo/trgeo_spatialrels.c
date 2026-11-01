@@ -60,28 +60,10 @@
  *****************************************************************************/
 
 /**
- * @brief Return the temporal geometry that a temporal rigid geometry traces,
- * or NULL with an error if the rigid geometry has linear interpolation
- * @details A rigid geometry with step or discrete interpolation keeps its
- * pose from one of its instants to the next, so its value at an instant is
- * the value of the temporal geometry it traces. With linear interpolation the
- * body moves and turns between its instants, and the relationships are not
- * computed over that motion.
- * @param[in] temp Temporal rigid geometry
- */
-static Temporal *
-trgeo_traced_tgeo(const Temporal *temp)
-{
-  if (! ensure_nonlinear_interp(temp->flags))
-    return NULL;
-  return trgeometry_to_tgeometry(temp);
-}
-
-/**
  * @brief Return 1 if a temporal rigid geometry and a geometry ever/always
  * satisfy a spatial relationship, 0 if not, and -1 on error
  * @details The relationship is that of the temporal geometry the rigid
- * geometry traces (#trgeo_traced_tgeo) and the geometry
+ * geometry traces (#trgeometry_to_tgeometry) and the geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
  * @param[in] func Ever/always relationship of a temporal geometry and a
@@ -94,7 +76,7 @@ ea_spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   if (! ensure_valid_trgeo_geo(temp, gs))
     return -1;
-  Temporal *tgeo = trgeo_traced_tgeo(temp);
+  Temporal *tgeo = trgeometry_to_tgeometry(temp);
   if (! tgeo)
     return -1;
   int result = func(tgeo, gs, ever);
@@ -106,7 +88,7 @@ ea_spatialrel_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @brief Return 1 if a geometry and a temporal rigid geometry ever/always
  * satisfy a spatial relationship, 0 if not, and -1 on error
  * @details The relationship is that of the geometry and the temporal geometry
- * the rigid geometry traces (#trgeo_traced_tgeo)
+ * the rigid geometry traces (#trgeometry_to_tgeometry)
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] func Ever/always relationship of a geometry and a temporal
@@ -119,7 +101,7 @@ ea_spatialrel_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
 {
   if (! ensure_valid_trgeo_geo(temp, gs))
     return -1;
-  Temporal *tgeo = trgeo_traced_tgeo(temp);
+  Temporal *tgeo = trgeometry_to_tgeometry(temp);
   if (! tgeo)
     return -1;
   int result = func(gs, tgeo, ever);
@@ -131,7 +113,7 @@ ea_spatialrel_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
  * @brief Return 1 if two temporal rigid geometries ever/always satisfy a
  * spatial relationship, 0 if not, and -1 on error or if they share no instant
  * @details The relationship is that of the temporal geometries the rigid
- * geometries trace (#trgeo_traced_tgeo)
+ * geometries trace (#trgeometry_to_tgeometry)
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] func Ever/always relationship of two temporal geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -146,10 +128,10 @@ ea_spatialrel_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
    * nowhere, so the relationship has no answer */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
-  Temporal *tgeo1 = trgeo_traced_tgeo(temp1);
+  Temporal *tgeo1 = trgeometry_to_tgeometry(temp1);
   if (! tgeo1)
     return -1;
-  Temporal *tgeo2 = trgeo_traced_tgeo(temp2);
+  Temporal *tgeo2 = trgeometry_to_tgeometry(temp2);
   if (! tgeo2)
   {
     pfree(tgeo1);

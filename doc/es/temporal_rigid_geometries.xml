@@ -1003,9 +1003,9 @@ tDwithin({geometry,trgeometry},{geometry,trgeometry},float) → tbool
 tIntersects({geometry,trgeometry},{geometry,trgeometry}) → tbool
 tTouches({geometry,trgeometry},{geometry,trgeometry}) → tbool
 </programlisting>
-				<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una geometría rígida cubre un área, por lo que todas las relaciones se declaran en ambas direcciones y entre dos geometrías rígidas temporales.</para>
+				<para>Las relaciones <emphasis>temporales</emphasis> calculan la relación topológica o de distancia en cada instante y dan como resultado un <varname>tbool</varname>. Una geometría rígida cubre un área, por lo que todas las relaciones se declaran en ambas direcciones y entre dos geometrías rígidas temporales. Salvo <varname>tDwithin</varname>, calculan la relación de la geometría temporal que sitúa la geometría de referencia en la pose de cada instante y la mantiene hasta el siguiente. Una geometría rígida temporal con interpolación lineal se mueve y gira entre sus instantes, lo que ninguna geometría temporal expresa, por lo que estas relaciones, y la conversión a <varname>tgeometry</varname>, generan un error para ella.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-03]
