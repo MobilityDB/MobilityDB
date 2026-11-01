@@ -204,14 +204,14 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (const TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tinstant_extend(inst, interv, result);
       break;
     }
     case TSEQUENCE:
     {
-      TSequence *seq = (TSequence *) temp;
+      const TSequence *seq = (const TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
       *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
         tdiscseq_extend(seq, interv, result) :
@@ -220,7 +220,7 @@ temporal_extend(const Temporal *temp, const Interval *interv, bool min,
     }
     default: /* TSEQUENCESET */
     {
-      TSequenceSet *ss = (TSequenceSet *) temp;
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
       result = palloc(sizeof(TSequence *) * ss->totalcount);
       *count = tsequenceset_extend(ss, interv, min, result);
     }
@@ -347,14 +347,14 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interv,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (const TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tinstant_transform_wcount(inst, interv, result);
       break;
     }
     case TSEQUENCE:
     {
-      TSequence *seq = (TSequence *) temp;
+      const TSequence *seq = (const TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
       *count = MEOS_FLAGS_DISCRETE_INTERP(temp->flags) ?
         tdiscseq_transform_wcount(seq, interv, result) :
@@ -363,7 +363,7 @@ temporal_transform_wcount(const Temporal *temp, const Interval *interv,
     }
     default: /* TSEQUENCESET */
     {
-      TSequenceSet *ss = (TSequenceSet *) temp;
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
       result = palloc(sizeof(TSequence *) * ss->totalcount);
       *count = tsequenceset_transform_wcount(ss, interv, result);
     }
@@ -501,14 +501,14 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
   {
     case TINSTANT:
     {
-      TInstant *inst = (TInstant *) temp;
+      const TInstant *inst = (const TInstant *) temp;
       result = palloc(sizeof(TSequence *));
       *count = tnumberinst_transform_wavg(inst, interv, result);
       break;
     }
     case TSEQUENCE:
     {
-      TSequence *seq = (TSequence *) temp;
+      const TSequence *seq = (const TSequence *) temp;
       result = palloc(sizeof(TSequence *) * seq->count);
       *count = MEOS_FLAGS_DISCRETE_INTERP(seq->flags) ?
         tnumberseq_disc_transform_wavg(seq, interv, result) :
@@ -517,7 +517,7 @@ tnumber_transform_wavg(const Temporal *temp, const Interval *interv,
     }
     default: /* TSEQUENCESET */
     {
-      TSequenceSet *ss = (TSequenceSet *) temp;
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
       result = palloc(sizeof(TSequence *) * ss->totalcount);
       *count = tintseqset_transform_wavg(ss, interv, result);
     }

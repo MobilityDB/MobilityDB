@@ -589,7 +589,7 @@ pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
  *   Pcpoint is NOT copied.
  */
 static inline void
-pcpoint_as_pcpt(const Pcpoint *pt, PCSCHEMA *schema, PCPOINT *out)
+pcpoint_as_pcpt(const Pcpoint *pt, const PCSCHEMA *schema, PCPOINT *out)
 {
   out->readonly = 1;
   out->schema = schema;

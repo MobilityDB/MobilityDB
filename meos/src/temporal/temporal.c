@@ -102,7 +102,7 @@ ensure_has_not_Z(MeosType type, int16 flags)
  * @brief Ensure that the pointer is not null
  */
 bool
-ensure_not_null(void *ptr)
+ensure_not_null(const void *ptr)
 {
   if (ptr)
     return true;
@@ -114,7 +114,7 @@ ensure_not_null(void *ptr)
  * @brief Ensure that at least one of the pointers is not null
  */
 bool
-ensure_one_not_null(void *ptr1, void *ptr2)
+ensure_one_not_null(const void *ptr1, const void *ptr2)
 {
   if (ptr1 || ptr2)
     return true;
@@ -1600,7 +1600,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   }
   else
   {
-    TBox *box = (TBox *) temporal_bbox_ptr(temp);
+    const TBox *box = (const TBox *) temporal_bbox_ptr(temp);
     memcpy(s, &box->span, sizeof(Span));
   }
   return;

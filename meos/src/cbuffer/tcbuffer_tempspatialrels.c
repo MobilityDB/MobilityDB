@@ -468,7 +468,6 @@ tinterrel_tcbufferseq_linear_geom(const TSequence *seq, const GSERIALIZED *gs,
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
     TimestampTz mint = DT_NOEND, maxt = DT_NOBEGIN;
-    bool upper_inc = seq->period.upper_inc;
     /* Loop for each point in the intersection */
     const Cbuffer *cb1_start = DatumGetCbufferP(tinstant_value_p(inst1));
     const Cbuffer *cb1_end   = DatumGetCbufferP(tinstant_value_p(inst2));
@@ -530,7 +529,7 @@ tinterrel_tcbufferseq_linear_geom(const TSequence *seq, const GSERIALIZED *gs,
     if (mint != DT_NOEND && maxt != DT_NOBEGIN)
     {
       bool lower_inc1 = (mint == inst1->t) ? lower_inc : true;
-      bool upper_inc1 = (maxt == inst2->t) ? upper_inc : true;
+      bool upper_inc1 = (maxt == inst2->t) ? seq->period.upper_inc : true;
       Span *s = span_make(TimestampTzGetDatum(mint), TimestampTzGetDatum(maxt),
         lower_inc1, upper_inc1, T_TIMESTAMPTZ);
       if (! ss)

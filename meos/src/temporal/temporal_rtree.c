@@ -1620,6 +1620,7 @@ typedef struct
 typedef struct { const RTree *tree; int axis; } STRCtx;
 
 static int
+/* cppcheck-suppress constParameterCallback */
 str_cmp(const void *a, const void *b, void *arg)
 {
   const STRCtx *c = (const STRCtx *) arg;
@@ -1640,7 +1641,8 @@ str_cmp(const void *a, const void *b, void *arg)
  * union of its children, computed here whatever the ordering.
  */
 static RTreeNode **
-str_pack_level(RTree *rtree, STRItem *items, int count, bool leaf, int *nout)
+str_pack_level(const RTree *rtree, STRItem *items, int count, bool leaf,
+  int *nout)
 {
   int pages = (count + MAXITEMS - 1) / MAXITEMS;
   int slices = (int) ceil(sqrt((double) pages));

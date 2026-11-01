@@ -314,10 +314,12 @@ tcbuffersegm_arc_dist_turnpts(double cx1, double cy1, double cx2, double cy2,
   {
     double ex = ep == 0 ? e->x1 : e->x2, ey = ep == 0 ? e->y1 : e->y2;
     double ddx = ex - px, ddy = ey - py;
-    double wx = cx1 - px, wy = cy1 - py;
     double den = dcx * ddy - dcy * ddx;
     if (fabs(den) > 1e-18)
+    {
+      double wx = cx1 - px, wy = cy1 - py;
       tcbuffer_add_within01(-(wx * ddy - wy * ddx) / den, cand, nc);
+    }
   }
   /* Off-span regions are nearest to an arc endpoint */
   for (int ep = 0; ep < 2; ep++)
@@ -2454,7 +2456,6 @@ cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,
   double q = Ex * Vx + Ey * Vy;
   double dr1 = rB - rA;
   double dr2 = rD - rC;
-  double r0 = rA + rC;
   double best = best_so_far;
 
   /* 4 corners.  |B-C|^2 = e + u + 2p; |A-D|^2 = e - 2q + v;
@@ -2547,6 +2548,7 @@ cbuffersegm_segm_mindist(const POINT2D *A, double rA, const POINT2D *B,
       double t = gamma + delta * Dval;
       if (s <= 0.0 || s >= 1.0 || t <= 0.0 || t >= 1.0)
         continue;
+      double r0 = rA + rC;
       double f = Dval - r0 - s * dr1 - t * dr2;
       if (f < best)
         best = f;
@@ -2601,14 +2603,13 @@ mindist_tcbufferseq_tcbufferseq_threshold(const TSequence *seq1,
     const POINT2D *pb1 = cbuffer_point2d_p(cb_b1);
     double r_max1 = fmax(cb_a1->radius, cb_b1->radius);
     double s1_minx = fmin(pa1->x, pb1->x) - r_max1;
-    double s1_maxx = fmax(pa1->x, pb1->x) + r_max1;
     double s1_miny = fmin(pa1->y, pb1->y) - r_max1;
     double s1_maxy = fmax(pa1->y, pb1->y) + r_max1;
     double thresh = best;
-    double hi_x = s1_maxx + thresh;
     double lo_x = s1_minx - thresh;
     int hi_idx;
     {
+      double hi_x = fmax(pa1->x, pb1->x) + r_max1 + thresh;
       int lo = 0, hi = n2_segs;
       while (lo < hi)
       {

@@ -69,8 +69,15 @@ char *WAYS_CSV = MEOS_DATAROOTDIR "/ways1000.csv";
 void
 meos_set_ways_csv(const char *path)
 {
-  WAYS_CSV = malloc(strlen(path) + 1);
-  strcpy(WAYS_CSV, path);
+  char *copy = malloc(strlen(path) + 1);
+  if (! copy)
+  {
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the path of the ways file");
+    return;
+  }
+  strcpy(copy, path);
+  WAYS_CSV = copy;
 }
 
 /**
