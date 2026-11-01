@@ -459,7 +459,7 @@ aContains({geometry,tgeom},{geometry,tgeom}) → boolean
 eContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 aContainsPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
-					<para>Esta función devuelve verdadero si el punto temporal está alguna vez en el interior de la geometría. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
+					<para>Esta función devuelve verdadero si el primer argumento contiene al segundo en algún instante (alguna vez) o en todos los instantes (siempre) del tiempo que comparten, leyendo el valor que cada argumento toma en ese instante. Un punto temporal se mueve de forma continua, por lo que una geometría lo contiene en algún instante si su trayectoria corta el interior de la geometría, y en todos los instantes si su trayectoria está en ese interior; un punto contiene una geometría solo donde la geometría es ese punto. Recuerde que una geometría no contiene cosas en su borde y, por lo tanto, los polígonos y las líneas no contienen líneas y puntos que se encuentran en su borde. Consulte la documentación de la función <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> en PostGIS.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eContains(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
@@ -507,7 +507,7 @@ aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 eCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 aCoversPairs(tgeometry[],tgeometry[]) → setof(i integer,j integer)
 </programlisting>
-					<para>Please refer to the documentation of the <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> and the <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> function in PostGIS for detailed explanations about the difference between the two functions.</para>
+					<para>Esta función devuelve verdadero si el primer argumento cubre al segundo en algún instante (alguna vez) o en todos los instantes (siempre) del tiempo que comparten, leyendo el valor que cada argumento toma en ese instante. Un punto temporal se mueve de forma continua, por lo que una geometría lo cubre en todos los instantes si cubre su trayectoria. Consulte la documentación de las funciones <ulink url="https://postgis.net/docs/ST_Contains.html">ST_Contains</ulink> y <ulink url="https://postgis.net/docs/ST_Covers.html">ST_Covers</ulink> en PostGIS para una explicación detallada de la diferencia entre ambas funciones.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eCovers(geometry 'Linestring(1 1,3 3)',
   tgeompoint '[Point(4 2)@2001-01-01, Point(2 4)@2001-01-02]');
