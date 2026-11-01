@@ -323,12 +323,18 @@ not per family: `stbox` (tspatial), `tbox` (tnumber, composite value×time),
 `TSpatial<T>` family.
 
 **Spatialrel families (`spatialrel_families:`)** — the ever/always spatial-rel **C**
-kernel wiring (region-in-file inside `meos/src/<fam>/*_spatialrels.c`, not a whole
-SQL file): `geo_ea_contains_covers`/`geo_ea_disjoint_intersects`/`geo_ea_dwithin`
-(**geo**, `tgeo_spatialrels.c`), `cbuffer_ea_contains_covers`/
-`cbuffer_ea_disjoint_intersects`/`cbuffer_ea_dwithin` (**cbuffer**,
-`tcbuffer_spatialrels.c`), `rgeo_ea_contains_covers`/`rgeo_ea_disjoint_intersects`/
-`rgeo_ea_dwithin` (**rgeo**, `trgeo_spatialrels.c`). Because this axis renders C, not
+kernel wiring (region-in-file inside `mobilitydb/src/<fam>/*_spatialrels.c`, not a whole
+SQL file): `geo_ea_contains_covers`/`geo_ea_disjoint_intersects`/`geo_ea_touches`/
+`geo_ea_dwithin` (**geo**, `tgeo_spatialrels.c`), `cbuffer_ea_contains_covers`/
+`cbuffer_ea_disjoint_intersects`/`cbuffer_ea_touches`/`cbuffer_ea_dwithin`
+(**cbuffer**, `tcbuffer_spatialrels.c`), `rgeo_ea_contains_covers`/
+`rgeo_ea_disjoint_intersects`/`rgeo_ea_touches`/`rgeo_ea_dwithin` (**rgeo**,
+`trgeo_spatialrels.c`). An entry marked `temporal` renders the temporal
+relationships of the same predicates, one `T<Rel>_<dir>` wrapper per direction over
+the MEOS `t<rel>_<dir>` kernel: `geo_t_rels` (**geo**, `tspatial_tempspatialrels.c`),
+`cbuffer_t_rels` (**cbuffer**, `tcbuffer_tempspatialrels.c`) and `rgeo_t_dwithin`
+(**rgeo**, `trgeo_spatialrels.c`); the `tDwithin` bodies reading their distance
+themselves, three of geo and the two base-value ones of cbuffer, stay hand. Because this axis renders C, not
 SQL, `--gaps` cannot see it (its `CREATE FUNCTION`-matching regex finds nothing in
 C source) and under-reports its coverage — read the manifest itself, not the `--gaps`
 number, for this one axis. `pose`'s native C spatial-rel wrapper is still hand
@@ -641,7 +647,7 @@ Pattern: per-family typmod semantics (npoint ways-SRID, pointcloud `pcid`) are l
 | **Bounding Box Operations** | `tspatial_` | ✓ **GEN** | `topops`+`posops`+`boxops.c.tmpl` box type `stbox`, via the `subtypes:` track (§3) |
 | Distance Operations | `tspatial_`/`tgeo_` (`distance`) | ◐ PARTIAL | tDistance/nad/nai/shortestLine — `distance.sql.tmpl` via the `subtypes:` track (§3) writes the files of `tpose` and `tposechain`, the `distance_families` axis (§7) `064_tgeo_distance`, `064_tpoint_distance`, `164_trgeo_distance`, `210_tcbuffer_distance`, `312_tnpoint_distance`, `438_tpc_distance` and `447_tpcpoint_distance`; every other family's is hand-written |
 | Spatial Rel. → **Ever/Always** | `tspatial_`/`tgeo_` | ✓ **GEN** (SQL) | the SQL wrapper file is `subtypes:`-track-generated for the cast-delegated families (th3index, tquadbin, ts2cell, tnpoint, tpose, tposechain — `spatialrels.sql.tmpl`) and `spatialrel_families`-generated for the native families tgeo, tpoint, cbuffer and rgeo (`impl: native`, `spatialrels_native.sql.tmpl`) — `--gaps`: `spatialrel_families` 14/14; the underlying C ever/always kernel is separately generated for geo, cbuffer and rgeo via `spatialrel_families` (§3). Not generated: the C wrappers outside the `GENERATED-SPATIALRELS` regions, the array pairs (`*_tgeoarr_tgeoarr`) of geo |
-| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
+| Spatial Rel. → Spatiotemporal | `tspatial_` (`tempspatialrels`) | ✓ **GEN** | `tempspatialrels.sql.tmpl`/`tempspatialrels_native.sql.tmpl` + `tempspatialrel_families` (§3) — `--gaps`: `tempspatialrel_families` 14/14, full `tspatial`-class coverage. Native impl (own C kernel): cbuffer, tgeo, tpoint, their C wrappers generated for geo, cbuffer and rgeo via the `temporal` entries of `spatialrel_families` (§3) but five `tDwithin` bodies. Cast impl: a family whose values are positions converts to the temporal geometry point its geometry names (tpose, tposechain, tnpoint, tpcpoint), while an area-valued family converts its boundary to tgeometry (tquadbin, trgeometry, tpcpatch) and a geodetic cell family to the tgeography of its boundary, relating two cells by `tDisjoint`/`tIntersects` (th3index, ts2cell) |
 
 Index infra (`gist`/`spgist`/`indexes`) is generated but is not a doc `<sect1>`.
 
@@ -793,7 +799,9 @@ Reading the table:
 - The C ever/always spatial-rel **kernel** (`spatialrel_families` axis, §3) is
   generated in the **geo**, **cbuffer** and **rgeo** files (`tgeo_spatialrels.c`,
   `tcbuffer_spatialrels.c`, `trgeo_spatialrels.c`: contains/covers/disjoint/
-  intersects/dwithin); pose's native C spatial-rel wrapper is still hand (memory
+  intersects/touches/dwithin), and so is the C temporal one (`tspatial_tempspatialrels.c`,
+  `tcbuffer_tempspatialrels.c`, the tDwithin of `trgeo_spatialrels.c`) but five
+  tDwithin bodies; pose's native C spatial-rel wrapper is still hand (memory
   `spatialrel-wrapper-surface-is-inherited-generate-it`) — npoint needs no native
   kernel, its ever/always relationships cast-delegate to the temporal geometry
   point, `eIntersects`/`eDwithin` through C wrappers with index support and the
