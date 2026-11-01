@@ -528,16 +528,15 @@ ea_spatialrel_tcbufferseqset_geo(const TSequenceSet *ss, const GSERIALIZED *gs,
     return ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, 0), gs, 
       param, func, numparam, ever, invert);
 
-  int result;
   for (int i = 0; i < ss->count; i++)
   {
-    result = ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs,
+    int result = ea_spatialrel_tcbufferseq_geo(TSEQUENCESET_SEQ_N(ss, i), gs,
       param, func, numparam, ever, invert);
     if (result == 1 && ever)
       return 1;
     else if (result != 1 && ! ever)
       return 0;
-}
+  }
   return ever ? 0 : 1;
 }
 
@@ -566,15 +565,12 @@ ea_spatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * not overlap the temporal value is disjoint from the geometry at every
    * instant, so a non-disjoint relationship is always false and disjoint
    * is always true. */
-  if (func != (varfunc) &datum_geom_disjoint2d)
-  {
-    STBox box1, box2;
-    tspatial_set_stbox(temp, &box1);
-    /* An empty geometry has no bounding box, so the prefilter cannot decide
-     * and the relationship below answers it */
-    if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
-      return (func == (varfunc) (&datum_geom_disjoint2d)) ? 1 : 0;
-  }
+  STBox box1, box2;
+  tspatial_set_stbox(temp, &box1);
+  /* An empty geometry has no bounding box, so the prefilter cannot decide
+   * and the relationship below answers it */
+  if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
+    return (func == (varfunc) (&datum_geom_disjoint2d)) ? 1 : 0;
 
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)

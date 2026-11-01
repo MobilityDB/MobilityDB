@@ -287,7 +287,7 @@ static void
 split_to_stringlist(const char *s, const char *delim, _stringlist **listhead)
 {
   char *sc = pstrdup(s);
-  char *token = strtok(sc, delim);
+  const char *token = strtok(sc, delim);
 
   while (token)
   {

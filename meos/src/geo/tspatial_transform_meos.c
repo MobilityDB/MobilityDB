@@ -131,14 +131,6 @@ meos_set_spatial_ref_sys_csv(const char* path)
   SPATIAL_REF_SYS_CSV = malloc(strlen(path) + 1);
   strcpy(SPATIAL_REF_SYS_CSV, path);
 }
-
-typedef struct
-{
-  char auth_name[256];
-  int32_t auth_srid;
-  char proj4text[2048];
-  char srtext[2048];
-} spatial_ref_sys_record;
 #endif /* MEOS */
 
 /*****************************************************************************
@@ -727,12 +719,12 @@ AddToMEOSPROJSRSCache(MEOSPROJSRSCache *PROJCache, int32_t srid_from,
   {
     cache_position = 0;
     hits = PROJCache->MEOSPROJSRSCache[0].hits;
-    for (uint32_t i = 1; i < PROJ_CACHE_ITEMS; i++)
+    for (uint32_t k = 1; k < PROJ_CACHE_ITEMS; k++)
     {
-      if (PROJCache->MEOSPROJSRSCache[i].hits < hits)
+      if (PROJCache->MEOSPROJSRSCache[k].hits < hits)
       {
-        cache_position = i;
-        hits = PROJCache->MEOSPROJSRSCache[i].hits;
+        cache_position = k;
+        hits = PROJCache->MEOSPROJSRSCache[k].hits;
       }
     }
     DeleteFromMEOSPROJSRSCache(PROJCache, cache_position);

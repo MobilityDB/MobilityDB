@@ -172,12 +172,10 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
 
   /* If division test whether the denominator will ever be zero during
    * the common timespan */
-  SpanSet *ss;
-  Temporal * projtemp2;
   if (oper == DIV)
   {
-    ss = temporal_time(temp1);
-    projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
+    SpanSet *ss = temporal_time(temp1);
+    Temporal *projtemp2 = temporal_restrict_tstzspanset(temp2, ss, REST_AT);
     if (! projtemp2)
     {
       pfree(ss);
@@ -771,8 +769,7 @@ tnumberseq_linear_abs(const TSequence *seq)
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
   inst1 = TSEQUENCE_INST_N(seq, 0);
   instants[0] = tnumberinst_abs(inst1);
-  Datum value1 = tinstant_value_p(inst1);
-  double dvalue1 = datum_double(value1, basetype);
+  double dvalue1 = datum_double(tinstant_value_p(inst1), basetype);
   int ninsts = 1;
   Datum dzero = (basetype == T_INT4) ? Int32GetDatum(0) : Float8GetDatum(0);
   for (int i = 1; i < seq->count; i++)
@@ -791,7 +788,6 @@ tnumberseq_linear_abs(const TSequence *seq)
     }
     instants[ninsts++] = tnumberinst_abs(inst2);
     inst1 = inst2;
-    value1 = value2;
     dvalue1 = dvalue2;
   }
   /* We are sure that ninsts > 0 */
@@ -1033,7 +1029,6 @@ tnumberseq_angular_difference_iter(const TSequence *seq, TInstant **result)
     angdiff = angular_difference(value1, value2);
     if (i != seq->count - 1 || seq->period.upper_inc)
       result[ninsts++] = tinstant_make(angdiff, seq->temptype, inst2->t);
-    inst1 = inst2;
     value1 = value2;
   }
   return ninsts;
