@@ -86,7 +86,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gab0dd58a6a59a3b9b51028b97fb6864ef.html#gab0dd58a6a59a3b9b51028b97fb6864ef">tgeo_rotate_y</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gaa0aa60aee4eb553890d17fdb7d8fb54b.html#gaa0aa60aee4eb553890d17fdb7d8fb54b">tgeo_rotate_z</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga55b4b401d71f257180b07fe94019984d.html#ga55b4b401d71f257180b07fe94019984d">tgeo_scale</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_ga526195e866caca48d4303524318f5379.html#ga526195e866caca48d4303524318f5379">tgeo_scale_geo</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__geo__transf_ga74270d5ecf1fa3c7e1c2bcfa68c022cc.html#ga74270d5ecf1fa3c7e1c2bcfa68c022cc">tgeo_scale_geo</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga3662d956155bd1872b0f4e36288db32d.html#ga3662d956155bd1872b0f4e36288db32d">tgeo_scale_geo_origin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga90c6fb5547de23209a5d96069e3ef819.html#ga90c6fb5547de23209a5d96069e3ef819">tgeo_translate</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_ga507c93d53ce617be67efddef7de64884.html#ga507c93d53ce617be67efddef7de64884">tgeo_transscale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__transf_gadaca52beb5863526629e5006113b973d.html#gadaca52beb5863526629e5006113b973d">tgeo_unnest</a></td></tr>
@@ -95,8 +96,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga526195e866caca48d4303524318f5379" name="ga526195e866caca48d4303524318f5379"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga526195e866caca48d4303524318f5379">&#9670;&#160;</a></span>tgeo_scale_geo()</h2>
+<a id="ga74270d5ecf1fa3c7e1c2bcfa68c022cc" name="ga74270d5ecf1fa3c7e1c2bcfa68c022cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga74270d5ecf1fa3c7e1c2bcfa68c022cc">&#9670;&#160;</a></span>tgeo_scale_geo()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -111,13 +112,7 @@ $(function() {
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>scale</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>sorigin</em>&#160;</td>
+          <td class="paramname"><em>scale</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -127,12 +122,11 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Scale a temporal geo by given factors. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return a temporal geo scaled by the factors a point states. </p>
+<p >The factor of a point without Z is 1 along z </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geo </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Geometry for the scale factors </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">sorigin</td><td>Point geometry for the origin (accepts <code>NULL</code>) @csqlfn <a class="el" href="group__mobilitydb__geo__transf_gae23fef1b5e8ffcfcbfe5ed68b0f55e09.html#gae23fef1b5e8ffcfcbfe5ed68b0f55e09" title="Return a temporal geo scaled by the factors a point states, about an optional origin @sqlfn scale() @...">Tgeo_scale_geo()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">scale</td><td>Point geometry stating the scale factors @csqlfn <a class="el" href="group__mobilitydb__geo__transf_gae23fef1b5e8ffcfcbfe5ed68b0f55e09.html#gae23fef1b5e8ffcfcbfe5ed68b0f55e09" title="Return a temporal geo scaled by the factors a point states @sqlfn scale() @altsqlfn geoScale()">Tgeo_scale_geo()</a> </td></tr>
   </table>
   </dd>
 </dl>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: set</title>
+<title>MobilityDB: expect_text</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="meos_2src_2temporal_2CMakeLists_8txt.html">CMakeLists.txt</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_b0e6555625305bf6f77beb749e7698be.html">test</a></li><li class="navelem"><a class="el" href="scale__origin__validity__test_8c.html">scale_origin_validity_test.c</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,26 +79,54 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2CMakeLists_8txt_ae233fdbfcad55fc0b017e4f325c63233.html#ae233fdbfcad55fc0b017e4f325c63233">set</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="scale__origin__validity__test_8c_afad69aeb151833bbc2039eaeeae1e0a0.html#afad69aeb151833bbc2039eaeeae1e0a0">expect_error</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="scale__origin__validity__test_8c_ab8c45dfc4bbd911eecee1c91e782a818.html#ab8c45dfc4bbd911eecee1c91e782a818">expect_text</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="scale__origin__validity__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ae233fdbfcad55fc0b017e4f325c63233" name="ae233fdbfcad55fc0b017e4f325c63233"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae233fdbfcad55fc0b017e4f325c63233">&#9670;&#160;</a></span>set()</h2>
+<a id="ab8c45dfc4bbd911eecee1c91e782a818" name="ab8c45dfc4bbd911eecee1c91e782a818"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab8c45dfc4bbd911eecee1c91e782a818">&#9670;&#160;</a></span>expect_text()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">set </td>
+          <td class="memname">static void expect_text </td>
           <td>(</td>
-          <td class="paramtype">TEMPORAL_SOURCES doublen.c lifting.c meos.c meos_array.c meos_catalog.c meos_error.c skiplist.c set.c set_aggfuncs.c set_ops.c span.c span_aggfuncs.c span_index.c span_ops.c span_spgist.c spanset.c spanset_ops.c tbool_ops.c tbox.c tbox_index.c tcellindex.c temporal.c temporal_aggfuncs.c temporal_analytics.c temporal_boxops.c temporal_compops.c temporal_modif.c temporal_restrict.c temporal_rtree.c temporal_sptree.c temporal_tile.c temporal_waggfuncs.c tinstant.c tnumber_distance.c tnumber_mathfuncs.c tnumber_spgist.c tsequence.c tsequenceset.c ttext_funcs.c type_in.c type_out.c type_parser.c type_util.&#160;</td>
-          <td class="paramname"><em>c</em></td><td>)</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>res</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>expected</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>call</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Check that a call answered the expected text and left no error behind. </p>
 
 </div>
 </div>
