@@ -947,30 +947,29 @@ tjsonb_exists_all(const Temporal *temp, text **keys, int count)
 }
 
 /**
- * @ingroup meos_json_json
+ * @ingroup meos_internal_json_json
  * @brief Replace a value specified by a path with a new value in a temporal
- * JSONB value
+ * JSONB value,
+ * in the lax mode or not
  * @param[in] temp Temporal JSONB value
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
- * @param[in] newjb New value, `NULL` in the lax mode treated as @p null_handle
- * states @nullable
+ * @param[in] newjb Value, `NULL` in the lax mode treated as @p null_handle
+ * states
  * @param[in] create When true, if the last path step is an array index that
- * is out of range, the new value is added at the beginning of the array if
- * the index is negative, or at the end of the array if it is positive
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
  * @csqlfn #Tjsonb_set(), #Tjsonb_set_lax()
  */
 Temporal *
-tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
-  bool create, const text *null_handle, bool lax)
+tjsonb_set_intl(const Temporal *temp, text **keys, int count,
+  const Jsonb *newjb, bool create, const text *null_handle, bool lax)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(keys, NULL);
-  if (! ensure_positive(count))
-    return NULL;
+  assert(temp); assert(temp->temptype == T_TJSONB); assert(keys);
+  assert(count > 0); assert(lax || newjb); assert(! lax || null_handle);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -987,6 +986,64 @@ tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
   lfinfo.restype = T_TJSONB;
     lfinfo.resnull = NULL_RETURN; /* per-instant op may fail on an inapplicable value */
   return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Replace a value specified by a path with a new value in a temporal
+ * JSONB value
+ * @details The value at the path of each JSONB value, as #jsonb_set replaces
+ * it in a JSONB value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @param[in] newjb Value
+ * @param[in] create When true, if the last path step is an array index that
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
+ * @csqlfn #Tjsonb_set()
+ */
+Temporal *
+tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb,
+  bool create)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(keys, NULL);
+  VALIDATE_NOT_NULL(newjb, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  return tjsonb_set_intl(temp, keys, count, newjb, create, NULL, false);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Replace a value specified by a path with a new value in a temporal
+ * JSONB value
+ * using the lax mode
+ * @details The value at the path of each JSONB value, as #jsonb_set_lax
+ * replaces it in a JSONB value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @param[in] newjb Value, `NULL` treated as @p null_handle states @nullable
+ * @param[in] create When true, if the last path step is an array index that
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
+ * @param[in] null_handle States the null value treatment, which must be one of
+ * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
+ * @csqlfn #Tjsonb_set_lax()
+ */
+Temporal *
+tjsonb_set_lax(const Temporal *temp, text **keys, int count,
+  const Jsonb *newjb, bool create, const text *null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(keys, NULL);
+  VALIDATE_NOT_NULL(null_handle, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  return tjsonb_set_intl(temp, keys, count, newjb, create, null_handle,
+    true);
 }
 
 /*****************************************************************************/

@@ -61,6 +61,12 @@
  * PostgreSQL suite answers for the operator over the same input: the JSONB form
  * keeps a string quoted, the text form unquotes it.
  *
+ * It verifies that the replacements of the value at a path, two public
+ * functions per type as PostgreSQL's jsonb_set and jsonb_set_lax, report a
+ * null value given to #jsonbset_set and #tjsonb_set and a null treatment given
+ * to #jsonbset_set_lax and #tjsonb_set_lax, and that the lax form treats a null
+ * value as its treatment states.
+ *
  * The program can be build as follows
  * @code
  * gcc -Wall -g -I/usr/local/include -o json_validity_test json_validity_test.c -L/usr/local/lib -lmeos
@@ -412,6 +418,32 @@ int main(void)
   expect_text(ttext_out(t), "\"km/h\"@2001-01-01 00:00:00+00",
     "tjsonb_extract_path_text(tjsonb, {units})");
   free(t);
+
+  /* The replacements of the value at a path, one function taking a value and
+   * one treating a null value, as jsonb_set and jsonb_set_lax */
+  Jsonb *mph = jsonb_in("\"mph\"");
+  text *delete_key = text_in("delete_key");
+  assert(mph); assert(delete_key);
+  meos_errno_reset();
+  expect_error(jsonbset_set(sobj, path, 1, NULL, true), MEOS_ERR_INVALID_ARG,
+    "jsonbset_set(jsonbset, {units}, NULL)");
+  expect_error(tjsonb_set(tobj, path, 1, NULL, true), MEOS_ERR_INVALID_ARG,
+    "tjsonb_set(tjsonb, {units}, NULL)");
+  expect_error(jsonbset_set_lax(sobj, path, 1, NULL, true, NULL),
+    MEOS_ERR_INVALID_ARG, "jsonbset_set_lax(jsonbset, {units}, NULL, NULL)");
+  expect_error(tjsonb_set_lax(tobj, path, 1, NULL, true, NULL),
+    MEOS_ERR_INVALID_ARG, "tjsonb_set_lax(tjsonb, {units}, NULL, NULL)");
+  Set *ss = jsonbset_set(sobj, path, 1, mph, true);
+  expect_text(jsonbset_out(ss),
+    "{\"{\\\"speed\\\": 10, \\\"units\\\": \\\"mph\\\"}\"}",
+    "jsonbset_set(jsonbset, {units}, mph)");
+  free(ss);
+  t = tjsonb_set_lax(tobj, path, 1, NULL, true, delete_key);
+  expect_text(tjsonb_out(t),
+    "\"{\\\"speed\\\": 10}\"@2001-01-01 00:00:00+00",
+    "tjsonb_set_lax(tjsonb, {units}, NULL, delete_key)");
+  free(t);
+  free(mph); free(delete_key);
 
   free(tobj); free(tobjtxt); free(tarr); free(sobj); free(sarr); free(key);
   free(tjsonb); free(tjson); free(jsonbset); free(tjsonbb); free(tint);

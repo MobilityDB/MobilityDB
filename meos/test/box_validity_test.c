@@ -44,7 +44,10 @@
  *
  * The program verifies that a null operand, a temporal value of another type
  * and two values of different SRID are reported by setting #meos_errno, and
- * that a valid call still answers with no error left behind.
+ * that a valid call still answers with no error left behind. It also verifies
+ * that #tpcbox_make reads its time dimension from its period, as #stbox_make
+ * reads it from its span, refusing a box with neither dimension and a period
+ * that is not a timestamptz span.
  *
  * The program can be build as follows
  * @code
@@ -123,6 +126,22 @@ int main(void)
     overlaps_tspatial_tspatial(tpt, tpt), true, 0);
 
   free(tpt); free(tpt3857); free(tint); free(box);
+
+  /* A point cloud box states its time dimension by its period, as the span of
+   * stbox_make does */
+  Span *period = tstzspan_in("[2001-01-01, 2001-01-02]");
+  Span *ints = intspan_in("[1, 2]");
+  assert(period && ints);
+  meos_errno_reset();
+  TPCBox *pcbox = tpcbox_make(false, false, false, 0, 0, 0, 0, 0, 0, 0, NULL);
+  check("tpcbox_make(no dimension)", pcbox != NULL, false,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  pcbox = tpcbox_make(false, false, false, 0, 0, 0, 0, 0, 0, 0, ints);
+  check("tpcbox_make(intspan)", pcbox != NULL, false,
+    MEOS_ERR_INVALID_ARG_TYPE);
+  pcbox = tpcbox_make(false, false, false, 0, 0, 0, 0, 0, 0, 0, period);
+  check("tpcbox_make(period)", pcbox != NULL && tpcbox_hast(pcbox), true, 0);
+  free(pcbox); free(period); free(ints);
 
   /* Finalize MEOS */
   meos_finalize();

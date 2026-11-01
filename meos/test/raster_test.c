@@ -558,7 +558,7 @@ int main(void)
     " POINT(0.5 0.5)@2001-01-04}");
   assert(traj_values != NULL);
   meos_errno_reset();
-  Temporal *values = raster_value(traj_values, rast_values, 1, true, NULL);
+  Temporal *values = raster_value(traj_values, rast_values, 1, true, "nearest");
   assert(values != NULL);
   assert(meos_errno() == 0);
   char *values_str = tfloat_out(values, 0);
@@ -577,7 +577,7 @@ int main(void)
     " POINT(2.5 0.5)@2001-01-03]");
   assert(traj_linear != NULL);
   meos_errno_reset();
-  Temporal *along = raster_value(traj_linear, rast_values, 1, true, NULL);
+  Temporal *along = raster_value(traj_linear, rast_values, 1, true, "nearest");
   assert(along != NULL);
   assert(meos_errno() == 0);
   char *along_str = tfloat_out(along, 0);
@@ -597,7 +597,7 @@ int main(void)
   Temporal *traj_gap = tgeompoint_in("SRID=4326;[POINT(0.5 2.5)@2001-01-01,"
     " POINT(2.5 2.5)@2001-01-03]");
   assert(traj_gap != NULL);
-  Temporal *visits = raster_value(traj_gap, rast_values, 1, true, NULL);
+  Temporal *visits = raster_value(traj_gap, rast_values, 1, true, "nearest");
   assert(visits != NULL);
   char *visits_str = tfloat_out(visits, 0);
   printf("raster_value(trip across nodata): %s\n", visits_str);
@@ -627,7 +627,7 @@ int main(void)
   {
     meos_errno_reset();
     Temporal *none = raster_value(traj_values, rast_values,
-      bad_bands[i], true, NULL);
+      bad_bands[i], true, "nearest");
     printf("raster_value(band %d): %s, errno %d\n", bad_bands[i],
       none ? "non-NULL" : "NULL", meos_errno());
     assert(none == NULL);
@@ -639,18 +639,21 @@ int main(void)
   Temporal *traj_3857 = tgeompoint_in("SRID=3857;{POINT(0.5 2.5)@2001-01-01}");
   assert(traj_3857 != NULL);
   meos_errno_reset();
-  assert(raster_value(traj_3857, rast_values, 1, true, NULL) == NULL);
+  assert(raster_value(traj_3857, rast_values, 1, true, "nearest") == NULL);
   assert(meos_errno() != 0);
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_value(NULL, rast_values, 1, true, NULL) == NULL);
-  assert(raster_value(traj_values, NULL, 1, true, NULL) == NULL);
+  assert(raster_value(NULL, rast_values, 1, true, "nearest") == NULL);
+  assert(raster_value(traj_values, NULL, 1, true, "nearest") == NULL);
   assert(raster_at_value(traj_values, rast_values, 1, NULL) == NULL);
   assert(raster_minus_value(traj_values, rast_values, 1, NULL) == NULL);
   assert(eraster_value(traj_values, rast_values, 1, NULL) == -1);
   assert(araster_value(traj_values, rast_values, 1, NULL) == -1);
   assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_value(traj_values, rast_values, 1, true, NULL) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
 
   /* A position over a nodata pixel answers the nodata value when the caller
    * keeps it rather than leaving it out */
@@ -659,7 +662,7 @@ int main(void)
   assert(traj_nodata != NULL);
   meos_errno_reset();
   Temporal *kept_nodata = raster_value(traj_nodata, rast_values, 1, false,
-    NULL);
+    "nearest");
   assert(kept_nodata != NULL);
   assert(meos_errno() == 0);
   assert(tfloat_start_value(kept_nodata) == -9999.0);
@@ -730,7 +733,7 @@ int main(void)
     " POINT(1.5 1.5)@2001-01-02}");
   assert(traj_kept != NULL);
   meos_errno_reset();
-  Temporal *kept = raster_value(traj_kept, cropped, 1, true, NULL);
+  Temporal *kept = raster_value(traj_kept, cropped, 1, true, "nearest");
   assert(kept != NULL);
   assert(meos_errno() == 0);
   assert(temporal_num_instants(kept) == 2);
@@ -754,7 +757,7 @@ int main(void)
   assert(raster_upper_left_y(whole) == 3.0);
 
   meos_errno_reset();
-  Temporal *masked = raster_value(traj_values, whole, 1, true, NULL);
+  Temporal *masked = raster_value(traj_values, whole, 1, true, "nearest");
   assert(masked != NULL);
   assert(meos_errno() == 0);
   char *masked_str = tfloat_out(masked, 0);
@@ -835,7 +838,8 @@ int main(void)
    * metres, so the pixel of one degree becomes a pixel of some 10^5 metres,
    * and the meridian of longitude 0 stands at x = 0 in both systems. */
   meos_errno_reset();
-  Raster *merc = raster_transform(rast_values, 3857, NULL, 0.0, 0.0, 0.0);
+  Raster *merc = raster_transform(rast_values, 3857, "NearestNeighbour", 0.0,
+    0.0, 0.0);
   assert(merc != NULL);
   assert(meos_errno() == 0);
   printf("raster_transform(raster, 3857): srid %d, %dx%d, scale (%f, %f), "
@@ -863,7 +867,7 @@ int main(void)
   Temporal *traj_merc = tgeompoint_in(traj_merc_str);
   assert(traj_merc != NULL);
   meos_errno_reset();
-  Temporal *merc_val = raster_value(traj_merc, merc, 1, true, NULL);
+  Temporal *merc_val = raster_value(traj_merc, merc, 1, true, "nearest");
   assert(merc_val != NULL);
   assert(meos_errno() == 0);
   char *merc_val_str = tfloat_out(merc_val, 0);
@@ -881,7 +885,8 @@ int main(void)
    * result back to EPSG:4326 */
   meos_errno_reset();
   Raster *merc_pipe = raster_transform_pipeline(rast_values,
-    "+proj=webmerc +ellps=WGS84", 3857, true, NULL, 0.0, 0.0, 0.0);
+    "+proj=webmerc +ellps=WGS84", 3857, true, "NearestNeighbour", 0.0, 0.0,
+    0.0);
   assert(merc_pipe != NULL);
   assert(meos_errno() == 0);
   printf("raster_transform_pipeline(raster, webmerc, 3857): srid %d, %dx%d, "
@@ -897,17 +902,25 @@ int main(void)
   assert(raster_upper_left_x(merc_pipe) == raster_upper_left_x(merc));
   assert(raster_upper_left_y(merc_pipe) == raster_upper_left_y(merc));
   Raster *back = raster_transform_pipeline(merc_pipe,
-    "+proj=webmerc +ellps=WGS84", 4326, false, NULL, 0.0, 0.0, 0.0);
+    "+proj=webmerc +ellps=WGS84", 4326, false, "NearestNeighbour", 0.0, 0.0,
+    0.0);
   assert(back != NULL);
   assert(meos_errno() == 0);
   assert(raster_srid(back) == 4326);
   free(back); free(merc_pipe);
   /* A null argument is rejected rather than dereferenced */
   assert(raster_transform_pipeline(NULL, "+proj=webmerc +ellps=WGS84", 3857,
-    true, NULL, 0.0, 0.0, 0.0) == NULL);
-  assert(raster_transform_pipeline(rast_values, NULL, 3857, true, NULL, 0.0,
-    0.0, 0.0) == NULL);
+    true, "NearestNeighbour", 0.0, 0.0, 0.0) == NULL);
+  assert(raster_transform_pipeline(rast_values, NULL, 3857, true,
+    "NearestNeighbour", 0.0, 0.0, 0.0) == NULL);
   assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_transform_pipeline(rast_values, "+proj=webmerc +ellps=WGS84",
+    3857, true, NULL, 0.0, 0.0, 0.0) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  assert(raster_transform(rast_values, 3857, NULL, 0.0, 0.0, 0.0) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   free(merc);
 
   /* A pixel size stated for the result fixes its grid, and a raster to align
@@ -915,14 +928,15 @@ int main(void)
    * the upper left corner of the result lies a whole number of pixels from the
    * corner of the grid it aligns to */
   meos_errno_reset();
-  Raster *scaled = raster_transform(rast_values, 3857, NULL, 0.0, 150000.0,
-    -150000.0);
+  Raster *scaled = raster_transform(rast_values, 3857, "NearestNeighbour", 0.0,
+    150000.0, -150000.0);
   assert(scaled != NULL);
   assert(meos_errno() == 0);
   assert(raster_srid(scaled) == 3857);
   assert(raster_scale_x(scaled) == 150000.0);
   assert(raster_scale_y(scaled) == -150000.0);
-  Raster *aligned = raster_transform_raster(rast_values, scaled, NULL, 0.0);
+  Raster *aligned = raster_transform_raster(rast_values, scaled,
+    "NearestNeighbour", 0.0);
   assert(aligned != NULL);
   assert(meos_errno() == 0);
   assert(raster_srid(aligned) == 3857);
@@ -936,9 +950,17 @@ int main(void)
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_transform_raster(NULL, scaled, NULL, 0.0) == NULL);
-  assert(raster_transform_raster(rast_values, NULL, NULL, 0.0) == NULL);
+  assert(raster_transform_raster(NULL, scaled, "NearestNeighbour", 0.0) ==
+    NULL);
+  assert(raster_transform_raster(rast_values, NULL, "NearestNeighbour", 0.0) ==
+    NULL);
   assert(meos_errno() != 0);
+  meos_errno_reset();
+  assert(raster_transform_raster(rast_values, scaled, NULL, 0.0) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  assert(raster_rescale(rast_values, 0.5, -0.5, NULL, 0.0) == NULL);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   free(scaled);
 
   /* Rescaling states the same coverage on a grid of the pixel size asked for,
@@ -946,7 +968,8 @@ int main(void)
    * splits each of the nine into four, so the 3x3 of one degree becomes a 6x6
    * of half a degree over the same ground */
   meos_errno_reset();
-  Raster *finer = raster_rescale(rast_values, 0.5, -0.5, NULL, 0.0);
+  Raster *finer = raster_rescale(rast_values, 0.5, -0.5, "NearestNeighbour",
+    0.0);
   assert(finer != NULL);
   assert(meos_errno() == 0);
   printf("raster_rescale(raster, 0.5, -0.5): %dx%d, scale (%f, %f), "
@@ -969,7 +992,7 @@ int main(void)
     " POINT(0.75 2.25)@2001-01-04}");
   assert(traj_finer != NULL);
   meos_errno_reset();
-  Temporal *finer_val = raster_value(traj_finer, finer, 1, true, NULL);
+  Temporal *finer_val = raster_value(traj_finer, finer, 1, true, "nearest");
   assert(finer_val != NULL);
   assert(meos_errno() == 0);
   char *finer_str = tfloat_out(finer_val, 0);
@@ -998,16 +1021,21 @@ int main(void)
    * covers ground, and a warp commits no negative error */
   meos_errno_reset();
   /* 0 is the unknown SRID; the public surface publishes no name for it */
-  assert(raster_transform(rast_values, 0, NULL, 0.0, 0.0, 0.0) == NULL);
-  assert(raster_rescale(rast_values, 0.0, -0.5, NULL, 0.0) == NULL);
-  assert(raster_rescale(rast_values, 0.5, 0.0, NULL, 0.0) == NULL);
-  assert(raster_transform(rast_values, 3857, NULL, -1.0, 0.0, 0.0) == NULL);
+  assert(raster_transform(rast_values, 0, "NearestNeighbour", 0.0, 0.0, 0.0) ==
+    NULL);
+  assert(raster_rescale(rast_values, 0.0, -0.5, "NearestNeighbour", 0.0) ==
+    NULL);
+  assert(raster_rescale(rast_values, 0.5, 0.0, "NearestNeighbour", 0.0) ==
+    NULL);
+  assert(raster_transform(rast_values, 3857, "NearestNeighbour", -1.0, 0.0,
+    0.0) == NULL);
   assert(meos_errno() != 0);
 
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
-  assert(raster_transform(NULL, 3857, NULL, 0.0, 0.0, 0.0) == NULL);
-  assert(raster_rescale(NULL, 0.5, -0.5, NULL, 0.0) == NULL);
+  assert(raster_transform(NULL, 3857, "NearestNeighbour", 0.0, 0.0, 0.0) ==
+    NULL);
+  assert(raster_rescale(NULL, 0.5, -0.5, "NearestNeighbour", 0.0) == NULL);
   assert(meos_errno() != 0);
 
   /* Reading a band as polygons states the same band as the regions its values
@@ -1173,7 +1201,7 @@ int main(void)
   Temporal *traj_rc = tgeompoint_in("SRID=4326;{POINT(0.5 2.5)@2001-01-01,"
     " POINT(2.5 0.5)@2001-01-02}");
   assert(traj_rc != NULL);
-  Temporal *rc_val = raster_value(traj_rc, rc, 1, true, NULL);
+  Temporal *rc_val = raster_value(traj_rc, rc, 1, true, "nearest");
   assert(rc_val != NULL);
   char *rc_str = tfloat_out(rc_val, 0);
   printf("raster_reclass sampled at the 10 pixel and the 90 pixel: %s\n",
@@ -1201,7 +1229,7 @@ int main(void)
   free(rbst);
   Temporal *traj_50 = tgeompoint_in("SRID=4326;{POINT(1.5 1.5)@2001-01-01}");
   assert(traj_50 != NULL);
-  Temporal *v50 = raster_value(traj_50, rb, 1, true, NULL);
+  Temporal *v50 = raster_value(traj_50, rb, 1, true, "nearest");
   assert(v50 != NULL);
   printf("raster_reclass(\"[0-50):1, [50-100]:2\") at the 50 pixel: %f\n",
     tfloat_start_value(v50));
@@ -1213,7 +1241,7 @@ int main(void)
    * through to the second */
   Temporal *traj_40 = tgeompoint_in("SRID=4326;{POINT(0.5 1.5)@2001-01-01}");
   assert(traj_40 != NULL);
-  Temporal *v40 = raster_value(traj_40, rb, 1, true, NULL);
+  Temporal *v40 = raster_value(traj_40, rb, 1, true, "nearest");
   assert(v40 != NULL);
   assert(tfloat_start_value(v40) == 1.0);
   free(v40); free(traj_40); free(rb);
