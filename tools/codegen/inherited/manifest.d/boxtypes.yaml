@@ -175,6 +175,31 @@ boxtypes:
           - [npoint, tnpoint, nad_tnpoint_npoint]
           - [tnpoint, npoint, nad_tnpoint_npoint]
           - [tnpoint, tnpoint, nad_tnpoint_tnpoint]
+        # the temporal distance, the nearest approach instant and the shortest line
+        # (templates/distpairs.c.tmpl), as the tpose entry states them
+        distfns:
+          tdistance:
+            sides:
+              point: {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry point, free: true, token: geo}
+              geo:   {desc: geometry point}
+            pairs:
+              - [point, tnpoint, tdistance_tnpoint_geo]
+              - [tnpoint, geo, tdistance_tnpoint_geo]
+              - [npoint, tnpoint, tdistance_tnpoint_npoint]
+              - [tnpoint, npoint, tdistance_tnpoint_npoint]
+              - [tnpoint, tnpoint, tdistance_tnpoint_tnpoint]
+          nai:
+            - [geo, tnpoint, nai_tnpoint_geo]
+            - [tnpoint, geo, nai_tnpoint_geo]
+            - [npoint, tnpoint, nai_tnpoint_npoint]
+            - [tnpoint, npoint, nai_tnpoint_npoint]
+            - [tnpoint, tnpoint, nai_tnpoint_tnpoint]
+          shortestline:
+            - [geo, tnpoint, shortestline_tnpoint_geo]
+            - [tnpoint, geo, shortestline_tnpoint_geo]
+            - [npoint, tnpoint, shortestline_tnpoint_npoint]
+            - [tnpoint, npoint, shortestline_tnpoint_npoint]
+            - [tnpoint, tnpoint, shortestline_tnpoint_tnpoint]
       - family:    trgeometry
         nadgroup:  mobilitydb_rgeo_dist
         nadfile:   mobilitydb/src/rgeo/trgeo_distance.c
