@@ -119,7 +119,7 @@ static void
 pcpatch_fill_tpcbox_spatial(const Pcpatch *pa, TPCBox *box)
 {
   assert(pa); assert(box);
-  PCSCHEMA *schema = meos_pc_schema(pa->pcid);
+  const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
   /* The extent is in the patch's own header, but the reference system it is
    * expressed in is the schema's, so an unresolved schema leaves the box
    * without the spatial part rather than reading one through it */
@@ -261,7 +261,7 @@ tpointcloudseqarr_set_tpcbox(TSequence **sequences, int count, TPCBox *box)
   memcpy(box, TSEQUENCE_BBOX_PTR(sequences[0]), sizeof(TPCBox));
   for (int i = 1; i < count; i++)
   {
-    TPCBox *box1 = (TPCBox *) TSEQUENCE_BBOX_PTR(sequences[i]);
+    const TPCBox *box1 = (const TPCBox *) TSEQUENCE_BBOX_PTR(sequences[i]);
     tpcbox_expand(box1, box);
   }
 }

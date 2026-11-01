@@ -393,7 +393,7 @@ npoint_flags(void)
  * @brief Get the MEOS flags from a pose
  */
 static int16
-pose_flags(Pose *pose)
+pose_flags(const Pose *pose)
 {
   int16 result = 0; /* Set all flags to false */
   MEOS_FLAGS_SET_X(result, true);

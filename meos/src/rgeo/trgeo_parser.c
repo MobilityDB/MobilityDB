@@ -90,7 +90,7 @@ trgeoinst_parse(const char **str, MeosType temptype, bool end,
  */
 TSequence *
 trgeoseq_disc_parse(const char **str, MeosType temptype, int *temp_srid,
-  GSERIALIZED *geom)
+  const GSERIALIZED *geom)
 {
   MeosArray *array = meos_array_create(meostype_length(temptype));
   const char *type_str = meostype_name(temptype);
@@ -286,14 +286,14 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
   /* Reconcile the SRID of the geometry and the temporal rigid geometry: copy
    * the known SRID onto the one that is unknown, and error if both are known and
    * differ */
-  int32_t geo_srid = gserialized_get_srid(result);
+  int32_t geom_srid = gserialized_get_srid(result);
   int32_t srid;
-  if (! ensure_srid_reconcile(geo_srid, temp_srid, &srid))
+  if (! ensure_srid_reconcile(geom_srid, temp_srid, &srid))
   {
     pfree(result);
     return NULL;
   }
-  if (geo_srid == SRID_UNKNOWN && srid != SRID_UNKNOWN)
+  if (geom_srid == SRID_UNKNOWN && srid != SRID_UNKNOWN)
     gserialized_set_srid(result, srid);
   return result;
 }
@@ -327,7 +327,6 @@ trgeo_parse(const char **str, MeosType temptype)
 
   p_whitespace(str);
 
-  const char *bak = *str;
   Temporal *result = NULL; /* keep compiler quiet */
   /* Determine the subtype of the temporal rigid geometry and call the
    * function corresponding to the subtype passing the SRID */
@@ -339,7 +338,7 @@ trgeo_parse(const char **str, MeosType temptype)
       &temp_srid, geom);
   else if (**str == '{')
   {
-    bak = *str;
+    const char *bak = *str;
     p_obrace(str);
     p_whitespace(str);
     if (**str == '[' || **str == '(')

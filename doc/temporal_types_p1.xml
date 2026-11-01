@@ -1266,16 +1266,16 @@ segmentMaxDuration(ttype,interval,strict boolean=true) → tbool
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
--- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06]}
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
--- {[t@2001-01-01, t@2001-01-06)}
+-- {[t@2001-01-01, t@2001-01-06]}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
--- {[f@2001-01-01, f@2001-01-06)}
+-- {[f@2001-01-01, f@2001-01-06]}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
--- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06]}
 </programlisting>
 			</listitem>
 

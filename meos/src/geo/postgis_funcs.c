@@ -3429,7 +3429,7 @@ geo_num_geos(const GSERIALIZED *gs)
     result = 1;
   else
   {
-    LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
+    const LWCOLLECTION *col = lwgeom_as_lwcollection(lwgeom);
     result = col->ngeoms;
   }
   lwgeom_free(lwgeom);
@@ -6367,12 +6367,10 @@ geography_centroid_from_wpoints(const int32_t srid, const POINT3DM *points,
   double_t y_sum = 0;
   double_t z_sum = 0;
   double_t weight_sum = 0;
-  double_t weight = 1;
-  POINT3D* point;
   for (uint32_t i = 0; i < size; i++ )
   {
-    point = lonlat_to_cart(points[i].x, points[i].y);
-    weight = points[i].m;
+    POINT3D *point = lonlat_to_cart(points[i].x, points[i].y);
+    double_t weight = points[i].m;
     x_sum += point->x * weight;
     y_sum += point->y * weight;
     z_sum += point->z * weight;
@@ -6612,7 +6610,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
     }
     case MULTILINETYPE:
     {
-      LWMLINE* mline = lwgeom_as_lwmline(lwgeom);
+      const LWMLINE *mline = lwgeom_as_lwmline(lwgeom);
       lwpoint_out = geography_centroid_from_mline(mline, &s);
       break;
     }
@@ -6632,7 +6630,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
     }
     case MULTIPOLYGONTYPE:
     {
-      LWMPOLY* mpoly = lwgeom_as_lwmpoly(lwgeom);
+      const LWMPOLY *mpoly = lwgeom_as_lwmpoly(lwgeom);
       lwpoint_out = geography_centroid_from_mpoly(mpoly, use_spheroid, &s);
       break;
     }

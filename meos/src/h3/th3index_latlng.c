@@ -259,8 +259,6 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
   int maxcount = seq->count;
   TInstant **instants = palloc(sizeof(TInstant *) * (size_t) maxcount);
   int ninsts = 0;
-  H3Index last_cell = (H3Index) 0;
-  bool have_last = false;
   TimestampTz last_ts = 0;
   bool have_ts = false;
 
@@ -313,14 +311,10 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
      * whole sequence: SRID is a type-level property uniform across every
      * instant, so validating it here is sufficient and the interpolated
      * per-sample lookups below can use the cheaper raw-coordinate path. */
-    {
-      const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
-      const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value_p(inst0));
-      H3Index cell0 = geo_to_h3index_cell(gs0, resolution);
-      PUSH_INSTANT(cell0, inst0->t);
-      last_cell = cell0;
-      have_last = true;
-    }
+    const TInstant *inst0 = TSEQUENCE_INST_N(seq, 0);
+    const GSERIALIZED *gs0 = DatumGetGserializedP(tinstant_value_p(inst0));
+    H3Index last_cell = geo_to_h3index_cell(gs0, resolution);
+    PUSH_INSTANT(last_cell, inst0->t);
 
     /* A geodetic segment follows its great circle, a planar one its straight
      * line in longitude and latitude */
@@ -370,7 +364,7 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
       for (int k = 0; k < nx; k++)
       {
         H3Index cell = xcells[k];
-        if (have_last && cell == last_cell)
+        if (cell == last_cell)
           continue;
         /* A crossing the last microsecond of the segment holds is the end
          * of the segment at the resolution a timestamp states, so it enters
@@ -384,16 +378,14 @@ tpointseq_densify_to_th3index(const TSequence *seq, int32 resolution)
           ts = inst_b->t;
         PUSH_INSTANT(cell, ts);
         last_cell = cell;
-        have_last = true;
       }
       /* The endpoint's own cell closes the segment when the traversal
        * stopped inside it */
       H3Index endcell = h3_latlng_deg_to_cell(pb->y, pb->x, resolution);
-      if (endcell != (H3Index) 0 && ! (have_last && endcell == last_cell))
+      if (endcell != (H3Index) 0 && endcell != last_cell)
       {
         PUSH_INSTANT(endcell, inst_b->t);
         last_cell = endcell;
-        have_last = true;
       }
     }
     pfree(xcells); pfree(xenter);

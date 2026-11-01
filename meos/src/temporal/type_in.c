@@ -394,10 +394,6 @@ findMemberByName(json_object *poObj, const char *pszName)
   if (pszName == NULL || poObj == NULL)
     return NULL;
 
-  it.key = NULL;
-  it.val = NULL;
-  it.entry = NULL;
-
   if (json_object_get_object(poTmp))
   {
     if (! json_object_get_object(poTmp)->head)
@@ -1128,12 +1124,8 @@ parse_mfjson_pose(json_object *mfjson, int32_t srid)
       return NULL;
     }
     z = json_object_get_double(h);
-  }
-
-  /* Get rotation/quaternion */
-  if (hasZ)
-  {
-    /* The "quaternion" member has been already found when determining 2D/3D */
+    /* Get the quaternion, whose member has been already found when
+     * determining 2D/3D */
     json_object *x_mfjson = NULL;
     x_mfjson = findMemberByName(quaternion, "x");
     if (x_mfjson == NULL)
@@ -1894,7 +1886,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
     json_object *poObjSrs = findMemberByName(poObj, "crs");
     if (poObjSrs)
     {
-      json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
+      const json_object *poObjSrsType = findMemberByName(poObjSrs, "type");
       if (poObjSrsType)
       {
         json_object *poObjSrsProps = findMemberByName(poObjSrs, "properties");
@@ -1954,7 +1946,7 @@ temporal_from_mfjson(const char *mfjson, MeosType temptype)
       strcmp(pszInterp, "Linear") == 0)
     {
       interpType interp = (strcmp(pszInterp, "Linear") == 0) ? LINEAR : STEP;
-      json_object *poObjSeqs = findMemberByName(poObj, "sequences");
+      const json_object *poObjSeqs = findMemberByName(poObj, "sequences");
       if (poObjSeqs)
         result = (Temporal *) tsequenceset_from_mfjson(poObj, spatial, srid,
           temptype, interp);
@@ -2755,7 +2747,7 @@ base_from_wkb_state(meos_wkb_parse_state *s)
  * @brief Return the size of a span base value from its WKB representation
  */
 static size_t
-span_basevalue_from_wkb_size(meos_wkb_parse_state *s)
+span_basevalue_from_wkb_size(const meos_wkb_parse_state *s)
 {
   assert(span_basetype(s->basetype));
   switch (s->basetype)

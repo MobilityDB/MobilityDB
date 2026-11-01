@@ -107,6 +107,10 @@ jobs:
         run: |
           set -x
           cppcheck --version
+          # A flex or bison parser reports its lines under the name of the file
+          # it was generated from, a bare name or the path of the source tree
+          # that generated it, which the directory suppressions do not match,
+          # so the generated parsers are also suppressed by their names.
           cppcheck \
             --project=build/compile_commands.json \
             --enable=warning,style,performance,portability \
@@ -119,6 +123,10 @@ jobs:
             --suppress='*:pgtypes/*' \
             --suppress='*:*/pointcloud-pg/*' \
             --suppress='*:pointcloud-pg/*' \
+            --suppress='*:*lwin_wkt_lex*' \
+            --suppress='*:*lwin_wkt_parse*' \
+            --suppress='*:*jsonpath_gram*' \
+            --suppress='*:*jsonpath_scan*' \
             --suppress='missingIncludeSystem' \
             --suppress='unmatchedSuppression' \
             --library=cppcheck-mobilitydb.cfg \
@@ -253,6 +261,9 @@ jobs:
               # liblwgeom flex/bison-generated parsers
               "lwin_wkt_lex.c", "lwin_wkt_lex.l",
               "lwin_wkt_parse.c", "lwin_wkt_parse.y",
+              # PostgreSQL's JSON path parser, vendored under pgtypes/utils
+              "jsonpath_gram.c", "jsonpath_gram.y",
+              "jsonpath_scan.c", "jsonpath_scan.l",
           )
 
           root = ET.parse("cppcheck.xml").getroot()

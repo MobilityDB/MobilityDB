@@ -102,7 +102,7 @@ ensure_has_not_Z(MeosType type, int16 flags)
  * @brief Ensure that the pointer is not null
  */
 bool
-ensure_not_null(void *ptr)
+ensure_not_null(const void *ptr)
 {
   if (ptr)
     return true;
@@ -114,7 +114,7 @@ ensure_not_null(void *ptr)
  * @brief Ensure that at least one of the pointers is not null
  */
 bool
-ensure_one_not_null(void *ptr1, void *ptr2)
+ensure_one_not_null(const void *ptr1, const void *ptr2)
 {
   if (ptr1 || ptr2)
     return true;
@@ -1600,7 +1600,7 @@ tnumber_set_span(const Temporal *temp, Span *s)
   }
   else
   {
-    TBox *box = (TBox *) temporal_bbox_ptr(temp);
+    const TBox *box = (const TBox *) temporal_bbox_ptr(temp);
     memcpy(s, &box->span, sizeof(Span));
   }
   return;
@@ -4254,7 +4254,8 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    /* The last segment ends at the upper bound of the sequence */
+    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     int64_t length = (int64)(inst2->t - inst1->t);
     switch(oper)
     {
@@ -4270,6 +4271,8 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
       NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
+    /* Every segment after the first starts at an instant of the sequence */
+    lower_inc = true;
   }
   return nseqs;
 }
