@@ -2805,18 +2805,22 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
       return tpoint_linear_distance_geom(temp, gs);
   }
 
-  /* Only point geometries are accepted by the generic lifting path */
-  if (tpoint_type(temp->temptype) && ! ensure_point_type(gs))
+  /* The turning point function of the generic lifting path takes a pair of
+   * points, so a temporal point with linear interpolation accepts a point
+   * geometry alone. Any other temporal point has a value at its instants
+   * alone, and its distance is the distance to the geometry at each, as for a
+   * temporal geometry */
+  if (tpoint_type(temp->temptype) && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! ensure_point_type(gs))
     return NULL;
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  /* A temporal point carries a point at every instant and the geometry here is
-   * a point too, the test above returning on any other type, so the pair is a
-   * pair of points, whose distance #point_distance_exact answers as the double
+  /* A temporal point against a point geometry is a pair of points at every
+   * instant, whose distance #point_distance_exact answers as the double
    * nearest the exact distance. The generic entry reaches the same coordinates
    * through a recursive walk that ends in a rounded formula. */
-  if (tpoint_type(temp->temptype))
+  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) == POINTTYPE)
     pt_distance_lfinfo(temp->flags, spheroid, &lfinfo);
   else
     geo_distance_lfinfo(temp->flags, spheroid, &lfinfo);
