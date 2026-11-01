@@ -903,7 +903,8 @@ dist_segm_apart(const DistSegm *seg, const DistRefPoly *ra,
   if (vv > 0.0)
     t = fmin(fmax(-(seg->wx0 * seg->wx1 + seg->wy0 * seg->wy1) / vv, 0.0),
       1.0);
-  double near = hypot(seg->wx0 + t * seg->wx1, seg->wy0 + t * seg->wy1);
+  double nx = seg->wx0 + t * seg->wx1, ny = seg->wy0 + t * seg->wy1;
+  double near = sqrt(nx * nx + ny * ny);
   double bound = dist + ra->rmax + rb->rmax;
   double scale = fabs(seg->ma.cx) + fabs(seg->ma.cy) + fabs(seg->mb.cx) +
     fabs(seg->mb.cy) + sqrt(vv) + bound;

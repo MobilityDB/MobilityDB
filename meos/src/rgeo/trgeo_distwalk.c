@@ -148,7 +148,7 @@ distrefedge_set(DistRefEdge *e, double sx, double sy, double ex, double ey)
   e->sx = sx; e->sy = sy;
   e->ex = ex; e->ey = ey;
   e->ux = ux; e->uy = uy;
-  e->len = hypot(ux, uy);
+  e->len = sqrt(ux * ux + uy * uy);
   assert(e->len > 0.0);
   e->dots = sx * ux + sy * uy;
   e->crss = sx * uy - sy * ux;
@@ -163,7 +163,7 @@ distrefvert_set(DistRefVert *v, double x, double y)
   assert(v);
   v->x = x;
   v->y = y;
-  v->rho = hypot(x, y);
+  v->rho = sqrt(x * x + y * y);
 }
 
 /**
@@ -1153,9 +1153,10 @@ distwalk_ftol(const DistSegm *seg, const DistRefPoly *ra,
   const DistRefPoly *rb)
 {
   assert(seg); assert(ra); assert(rb);
-  double w0 = hypot(seg->wx0, seg->wy0);
-  double w1 = hypot(seg->wx0 + seg->wx1, seg->wy0 + seg->wy1);
-  double scale = ra->rmax + rb->rmax + fmax(w0, w1);
+  double x1 = seg->wx0 + seg->wx1, y1 = seg->wy0 + seg->wy1;
+  double w2 = fmax(seg->wx0 * seg->wx0 + seg->wy0 * seg->wy0,
+    x1 * x1 + y1 * y1);
+  double scale = ra->rmax + rb->rmax + sqrt(w2);
   return 1e-14 * scale * scale;
 }
 
@@ -1323,17 +1324,24 @@ refring_canonicalize(double *px, double *py, int n)
     if (py[i] < ymin) ymin = py[i];
     if (py[i] > ymax) ymax = py[i];
   }
-  double dtol = DISTREF_DUPTOL * hypot(xmax - xmin, ymax - ymin);
+  double dx = xmax - xmin, dy = ymax - ymin;
+  double dtol = DISTREF_DUPTOL * sqrt(dx * dx + dy * dy);
 
   /* Repeated vertices, also across the end of the ring */
   int m = 0;
   for (int i = 0; i < n; i++)
   {
-    if (m > 0 && hypot(px[i] - px[m - 1], py[i] - py[m - 1]) <= dtol)
-      continue;
+    if (m > 0)
+    {
+      double ex = px[i] - px[m - 1], ey = py[i] - py[m - 1];
+      if (ex * ex + ey * ey <= dtol * dtol)
+        continue;
+    }
     px[m] = px[i]; py[m] = py[i]; m++;
   }
-  while (m > 1 && hypot(px[m - 1] - px[0], py[m - 1] - py[0]) <= dtol)
+  while (m > 1 &&
+      (px[m - 1] - px[0]) * (px[m - 1] - px[0]) +
+      (py[m - 1] - py[0]) * (py[m - 1] - py[0]) <= dtol * dtol)
     m--;
 
   /* Vertices on the line between their neighbors.  The removal of a vertex
@@ -1349,7 +1357,7 @@ refring_canonicalize(double *px, double *py, int n)
       int p = (i + m - 1) % m, q = (i + 1) % m;
       double ux = px[i] - px[p], uy = py[i] - py[p];
       double vx = px[q] - px[i], vy = py[q] - py[i];
-      double lu = hypot(ux, uy), lv = hypot(vx, vy);
+      double lu = sqrt(ux * ux + uy * uy), lv = sqrt(vx * vx + vy * vy);
       if (lu > 0.0 && lv > 0.0 && ux * vx + uy * vy > 0.0 &&
           fabs(ux * vy - uy * vx) <= DISTREF_COLTOL * lu * lv)
         continue;
