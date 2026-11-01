@@ -85,6 +85,8 @@ extern Datum datum_geo_distance(Datum value1, Datum value2, int16 flags,
 extern Datum datum_pt_distance(Datum value1, Datum value2, int16 flags,
   bool spheroid);
 extern Datum datum_geom_distance2d(Datum geom1, Datum geom2);
+extern Temporal *tgeo_scale_pow2(const Temporal *temp, double scale);
+extern double tspatial_magnitude(const Temporal *temp);
 extern Datum datum_geom_distance3d(Datum geom1, Datum geom2);
 extern Datum datum_geog_distance(Datum geog1, Datum geog2, Datum spheroid);
 extern Datum datum_pt_distance2d(Datum geom1, Datum geom2);

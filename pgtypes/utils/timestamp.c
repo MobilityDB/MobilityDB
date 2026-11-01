@@ -2262,14 +2262,6 @@ interval_cmp_internal(const Interval *interv1, const Interval *interv2)
   return int128_compare(span1, span2);
 }
 
-static int
-interval_sign(const Interval *interv)
-{
-  INT128 span = interval_cmp_value(interv);
-  INT128 zero = int64_to_int128(0);
-  return int128_compare(span, zero);
-}
-
 /**
  * @ingroup meos_base_interval
  * @brief Return true if two intervals are equal
@@ -3466,10 +3458,12 @@ mul_interval_float8(const Interval *interv, float8 factor)
   /*
    * Handle NaN and infinities.
    *
-   * We treat "0 * infinity" and "infinity * 0" as errors, since the
-   * interval type has nothing equivalent to NaN.
+   * MEOS takes no infinite value as input, so a factor that is NaN or
+   * infinite is an error, as #div_interval_float8 refuses it. We treat
+   * "infinity * 0" as an error, since the interval type has nothing
+   * equivalent to NaN.
    */
-  if (isnan(factor))
+  if (! isfinite(factor))
     goto out_of_range;
   if (INTERVAL_NOT_FINITE(interv))
   {
@@ -3479,17 +3473,6 @@ mul_interval_float8(const Interval *interv, float8 factor)
       interval_um_internal(interv, result);
     else
       memcpy(result, interv, sizeof(Interval));
-    return result;
-  }
-  if (isinf(factor))
-  {
-    int isign = interval_sign(interv);
-    if (isign == 0)
-      goto out_of_range;
-    if (factor * isign < 0)
-      INTERVAL_NOBEGIN(result);
-    else
-      INTERVAL_NOEND(result);
     return result;
   }
 
@@ -3594,16 +3577,13 @@ div_interval_float8(const Interval *interv, float8 factor)
   /*
    * Handle NaN and infinities.
    *
-   * We treat "infinity / infinity" as an error, since the interval type has
-   * nothing equivalent to NaN.  Otherwise, dividing by infinity is handled
-   * by the regular division code, causing all fields to be set to zero.
+   * MEOS takes no infinite value as input, so a factor that is NaN or
+   * infinite is an error, as #mul_interval_float8 refuses it.
    */
-  if (isnan(factor))
+  if (! isfinite(factor))
     goto out_of_range;
   if (INTERVAL_NOT_FINITE(interv))
   {
-    if (isinf(factor))
-      goto out_of_range;
     if (factor < 0.0)
       interval_um_internal(interv, result);
     else

@@ -1323,10 +1323,13 @@ dist_segm_arc_dt(double cx1, double cy1, double cx2, double cy2, double r1,
  * parameter `((p - a) . u) / (u . u)` of the edge `u = b - a`, clamped to
  * [0, 1], a point the function constructs. A degenerate edge is a point,
  * exactly. The parameter is a ratio, so the differences are first scaled by a
- * quarter where one of them overflows, and then by the power of two that
- * brings the largest of them near one, both exact, so neither the dot product
- * nor the squared length leaves the range of a double; the point is
- * `(1 - s) a + s b` where the edge itself overflows
+ * quarter where one of them overflows, and then `u` and `w` each by the power
+ * of two that brings its largest component near one, all exact, so neither
+ * the dot product nor the squared length overflows or underflows however far
+ * apart the magnitudes of `u` and `w` are; the quotient is scaled back by the
+ * ratio of the two powers, which leaves it the same double wherever the
+ * unscaled products are in range. The point is `(1 - s) a + s b` where the
+ * edge itself overflows
  */
 static void
 dist_geom_closest_on_edge(double px, double py, const Edge *e,
@@ -1342,12 +1345,12 @@ dist_geom_closest_on_edge(double px, double py, const Edge *e,
     ux = bx / 4.0 - ax / 4.0; uy = by / 4.0 - ay / 4.0;
     wx = px / 4.0 - ax / 4.0; wy = py / 4.0 - ay / 4.0;
   }
-  double m = fmax(fmax(fabs(ux), fabs(uy)), fmax(fabs(wx), fabs(wy)));
-  int k;
-  (void) frexp(m, &k);
-  ux = ldexp(ux, - k); uy = ldexp(uy, - k);
-  wx = ldexp(wx, - k); wy = ldexp(wy, - k);
-  double s = (wx * ux + wy * uy) / (ux * ux + uy * uy);
+  int ku, kw;
+  (void) frexp(fmax(fabs(ux), fabs(uy)), &ku);
+  (void) frexp(fmax(fabs(wx), fabs(wy)), &kw);
+  ux = ldexp(ux, - ku); uy = ldexp(uy, - ku);
+  wx = ldexp(wx, - kw); wy = ldexp(wy, - kw);
+  double s = ldexp((wx * ux + wy * uy) / (ux * ux + uy * uy), kw - ku);
   if (s < 0.0) s = 0.0;
   if (s > 1.0) s = 1.0;
   if (overflow)
@@ -1697,6 +1700,14 @@ static bool
 dist_edge_radius_prune(double cx1, double cy1, double cx2, double cy2,
   const Edge *e, double thr2)
 {
+  /* A product of two differences of coordinates beyond 2^500 can overflow,
+   * which leaves no bound to prune by, as #cross_product_sign_exact scales
+   * such coordinates before it multiplies them */
+  double big = fmax(fmax(fmax(fabs(cx1), fabs(cy1)), fmax(fabs(cx2),
+    fabs(cy2))), fmax(fmax(fabs(e->x1), fabs(e->y1)), fmax(fabs(e->x2),
+    fabs(e->y2))));
+  if (big > 0x1p500)
+    return false;
   return dist_seg_seg_dist2(cx1, cy1, cx2, cy2, e->x1, e->y1, e->x2,
     e->y2) >= thr2;
 }
@@ -2802,7 +2813,19 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
     bool native = geom->type != POINTTYPE && geom_meos_coverage(geom) == 1;
     lwgeom_free(geom);
     if (native)
+    {
+      /* The kernel compares the squares of the coordinate differences in
+       * doubles (#point_edge_dist2), which leave the doubles where a
+       * coordinate reaches 2^510 */
+      if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >= 0x1p510)
+      {
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+          "The temporal distance of a temporal point to a geometry with a "
+          "coordinate of magnitude 2^510 or more is not supported");
+        return NULL;
+      }
       return tpoint_linear_distance_geom(temp, gs);
+    }
   }
 
   /* Only point geometries are accepted by the generic lifting path */
@@ -3464,6 +3487,28 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
 
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, since a difference of two of their coordinates can leave the
+   * doubles inside the kernels (#geom_distance2d) */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tgeo_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      *result = DBL_MAX;
+      return true;
+    }
+    bool found = nad_tpoint_geo_analytic(t2, g2, result);
+    pfree(t2); pfree(g2);
+    if (found)
+      *result /= GEO_FAR_SCALE;
+    return found;
+  }
+
   DistGeom g;
   if (! dist_geom_build(gs, &g))
     return false;
@@ -3565,6 +3610,31 @@ shortestline_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(tpoint_type(temp->temptype));
 
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, since a difference of two of their coordinates can leave the
+   * doubles inside the kernels (#geom_distance2d) */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tgeo_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      return NULL;
+    }
+    GSERIALIZED *line = shortestline_tpoint_geo_analytic(t2, g2);
+    pfree(t2); pfree(g2);
+    if (! line)
+      return NULL;
+    /* The ends of the line are points of the operands, so the scaling
+     * back is exact */
+    GSERIALIZED *result = geo_scale_pow2(line, 1.0 / GEO_FAR_SCALE);
+    pfree(line);
+    return result;
+  }
+
   /* A point at rest reads the geometry in place */
   double c[2] = {0.0, 0.0};
   if (tpoint_at_rest(temp, c))
@@ -3654,6 +3724,26 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
   /* Ensure the validity of the arguments */
   assert(temp); assert(gs); assert(result);
   assert(tpoint_type(temp->temptype));
+
+  /* Operands reaching #GEO_FAR_MAGNITUDE are read scaled by an exact power
+   * of two, since a difference of two of their coordinates can leave the
+   * doubles inside the kernels (#geom_distance2d) */
+  if (Max(tspatial_magnitude(temp), geo_magnitude(gs)) >=
+      GEO_FAR_MAGNITUDE)
+  {
+    Temporal *t2 = tgeo_scale_pow2(temp, GEO_FAR_SCALE);
+    GSERIALIZED *g2 = t2 ? geo_scale_pow2(gs, GEO_FAR_SCALE) : NULL;
+    if (! g2)
+    {
+      if (t2)
+        pfree(t2);
+      return false;
+    }
+    /* The instant does not depend on the scale */
+    bool found = nai_tpoint_geo_analytic(t2, g2, result);
+    pfree(t2); pfree(g2);
+    return found;
+  }
 
   DistGeom g;
   if (! dist_geom_build(gs, &g))
@@ -3845,7 +3935,13 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
   {
     double result;
     if (nad_tpoint_geo_analytic(temp, gs, &result))
+    {
+      /* A distance of finite operands can exceed the largest double
+       * (#ensure_finite_result) */
+      if (! ensure_finite_result(result))
+        return DBL_MAX;
       return result;
+    }
   }
 
   GSERIALIZED *traj = tpoint_type(temp->temptype) ?

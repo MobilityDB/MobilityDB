@@ -381,3 +381,19 @@ SELECT round(minDistance(
 SELECT minDistance(ARRAY[]::tcbuffer[], ARRAY[tcbuffer 'Cbuffer(Point(0 0),1)@2001-01-01']);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- Coordinates near the largest double
+
+-- A distance beyond the largest double raises an error
+SELECT distance(cbuffer 'Cbuffer(Point(-1e308 0),1)', geometry 'Point(1e308 0)');
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1)@2001-01-01, Cbuffer(Point(-1e308 4),1)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1)@2001-01-01, Cbuffer(Point(-1e308 4),1)@2001-01-02]' <-> geometry 'Linestring(1e308 -1,1e308 1)';
+-- A distance beyond the largest double less a radius within it
+SELECT distance(cbuffer 'Cbuffer(Point(-1e308 0),1.5e308)', geometry 'Point(1e308 0)');
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+SELECT tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]' <-> geometry 'Linestring(1e308 -1,1e308 1)';
+SELECT ST_AsText(shortestLine(tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]', geometry 'Linestring(1e308 -1,1e308 1)'));
+SELECT getTimestamp(nearestApproachInstant(tcbuffer '[Cbuffer(Point(-1e308 0),1.5e308)@2001-01-01, Cbuffer(Point(-1e308 4),1.5e308)@2001-01-02]', geometry 'Linestring(1e308 -1,1e308 1)'));
+
+-------------------------------------------------------------------------------

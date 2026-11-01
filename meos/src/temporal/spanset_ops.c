@@ -224,7 +224,7 @@ contains_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return contains_spanset_value(ss, Float8GetDatum(d));
 }
@@ -340,7 +340,7 @@ contained_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return contained_value_spanset(Float8GetDatum(d), ss);
 }
@@ -593,7 +593,7 @@ adjacent_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return adjacent_spanset_value(ss, Float8GetDatum(d));
 }
@@ -670,7 +670,7 @@ adjacent_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return adjacent_value_spanset(Float8GetDatum(d), ss);
 }
@@ -823,7 +823,7 @@ left_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_value_spanset(Float8GetDatum(d), ss);
 }
@@ -902,7 +902,7 @@ left_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_spanset_value(ss, Float8GetDatum(d));
 }
@@ -1039,7 +1039,7 @@ right_bigint_spanset(int64 i, const SpanSet *ss)
 bool
 right_float_spanset(double d, const SpanSet *ss)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_spanset_float(ss, d);
 }
@@ -1108,7 +1108,7 @@ right_spanset_bigint(const SpanSet *ss, int64 i)
 bool
 right_spanset_float(const SpanSet *ss, double d)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return left_float_spanset(d, ss);
 }
@@ -1261,7 +1261,7 @@ overleft_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overleft_spanset_value(ss, Float8GetDatum(d));
 }
@@ -1341,7 +1341,7 @@ overleft_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overleft_value_spanset(Float8GetDatum(d), ss);
 }
@@ -1496,7 +1496,7 @@ overright_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overright_value_spanset(Float8GetDatum(d), ss);
 }
@@ -1575,7 +1575,7 @@ overright_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, false);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return false;
   return overright_spanset_value(ss, Float8GetDatum(d));
 }
@@ -1858,7 +1858,7 @@ union_float_spanset(double d, SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return union_spanset_value(ss, Float8GetDatum(d));
 }
@@ -1935,7 +1935,7 @@ union_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return union_spanset_value(ss, Float8GetDatum(d));
 }
@@ -2386,7 +2386,7 @@ intersection_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return intersection_spanset_value(ss, Float8GetDatum(d));
 }
@@ -2401,7 +2401,7 @@ intersection_spanset_float(const SpanSet *ss, double d)
 SpanSet *
 intersection_float_spanset(double d, const SpanSet *ss)
 {
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return intersection_spanset_float(ss, d);
 }
@@ -2509,7 +2509,7 @@ minus_float_spanset(double d, const SpanSet *ss)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return minus_value_spanset(Float8GetDatum(d), ss);
 }
@@ -2588,7 +2588,7 @@ minus_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return minus_spanset_value(ss, Float8GetDatum(d));
 }
@@ -2720,7 +2720,7 @@ distance_spanset_float(const SpanSet *ss, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPANSET(ss, DBL_MAX);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return DBL_MAX;
   return DatumGetFloat8(distance_spanset_value(ss, Float8GetDatum(d)));
 }

@@ -325,12 +325,21 @@ datumsegm_locate(Datum value1, Datum value2, Datum value, MeosType basetype)
  * @param[in] start,end Values defining the segment
  * @param[in] ratio Value between 0 and 1 representing the fraction of the
  * total length of the segment where the value must be located
+ * @note The difference of two finite doubles of opposite signs can exceed the
+ * largest double while every value between them is finite, so such a segment
+ * is interpolated as the weighted average of its ends, which never exceeds
+ * them. The coordinates of #pointsegm_interpolate, #cbuffersegm_interpolate
+ * and #double2segm_interpolate are interpolated by this function.
  */
 double
 floatsegm_interpolate(double start, double end, long double ratio)
 {
   assert(ratio >= 0.0 && ratio <= 1.0);
-  return start + (double) ((long double) (end - start) * ratio);
+  double delta = end - start;
+  if (isfinite(delta))
+    return start + (double) ((long double) delta * ratio);
+  return (double) ((long double) start * (1.0L - ratio) +
+    (long double) end * ratio);
 }
 
 /*****************************************************************************/
@@ -1124,20 +1133,6 @@ ensure_valid_tinstarr(TInstant **instants, int count, bool merge,
     if (tpoint_type(instants[i]->temptype) &&
         ! ensure_point_type(DatumGetGserializedP(tinstant_value_p(instants[i]))))
       return false;
-    /* A linear segment of a temporal float with an infinite value has no
-     * value at its interior instants: the interpolation adds infinities of
-     * opposite signs, from minus to plus infinity or from an infinity to
-     * itself, or multiplies one by zero, from a finite value, and each gives
-     * a NaN. An infinite value is thus a value of a step or discrete temporal
-     * float only */
-    if (interp == LINEAR && temptype == T_TFLOAT &&
-        isinf(DatumGetFloat8(tinstant_value_p(instants[i]))))
-    {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-        "The values of a temporal float with linear interpolation must be "
-        "finite");
-      return false;
-    }
     if (i > 0)
     {
       if (! ensure_increasing_timestamps(instants[i - 1], instants[i], merge) ||
@@ -1289,8 +1284,8 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
   if (! ensure_positive(count))
     return NULL;
   for (int i = 0; i < count; i++)
-    if (! ensure_not_nan(xcoords[i]) || ! ensure_not_nan(ycoords[i]) ||
-        (zcoords && ! ensure_not_nan(zcoords[i])))
+    if (! ensure_finite(xcoords[i]) || ! ensure_finite(ycoords[i]) ||
+        (zcoords && ! ensure_finite(zcoords[i])))
       return NULL;
   bool hasz = (zcoords != NULL);
   MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
@@ -1502,7 +1497,7 @@ tfloatseq_from_base_tstzset(double d, const Set *s)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSET(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tsequence_from_base_tstzset(Float8GetDatum(d), T_TFLOAT, s);
 }
@@ -1587,7 +1582,7 @@ tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TSTZSPAN(s, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return tsequence_from_base_tstzspan(Float8GetDatum(d), T_TFLOAT, s, interp);
 }
@@ -2284,10 +2279,12 @@ tnumberseq_avg_val(const TSequence *seq)
   assert(seq); assert(tnumber_type(seq->temptype));
 
   MeosType basetype = temptype_basetype(seq->temptype);
+  double scale = tnumber_integral_scale(TSEQUENCE_BBOX_PTR(seq));
   double result = 0.0;
   for (int i = 0; i < seq->count; i++)
-    result += datum_double(tinstant_value_p(TSEQUENCE_INST_N(seq, i)), basetype);
-  return result / seq->count;
+    result += datum_double(tinstant_value_p(TSEQUENCE_INST_N(seq, i)),
+      basetype) * scale;
+  return result / seq->count / scale;
 }
 
 /**
@@ -3194,39 +3191,75 @@ intersection_tinstant_tsequence(const TInstant *inst, const TSequence *seq,
  *****************************************************************************/
 
 /**
+ * @brief Return the power of two by which the values of a temporal number are
+ * multiplied while it is integrated or averaged, so that no partial sum
+ * exceeds the largest double
+ * @details A partial sum is at most the largest absolute value times the
+ * duration, which is below 2^63 microseconds, so values below 2^957 are
+ * integrated as they are. Larger values are multiplied by the power of two
+ * bringing the largest one below 2^958, which changes no value that stays a
+ * normal double, and the answer is divided by it at the end, as
+ * #segment_distance_scale_exponent scales the coordinates of a distance.
+ * @param[in] box Bounding box of the temporal number
+ */
+double
+tnumber_integral_scale(const TBox *box)
+{
+  assert(box);
+  if (box->span.basetype != T_FLOAT8)
+    return 1.0;
+  double max = Max(fabs(DatumGetFloat8(box->span.lower)),
+    fabs(DatumGetFloat8(box->span.upper)));
+  if (max == 0.0)
+    return 1.0;
+  int e = ilogb(max);
+  return e < 957 ? 1.0 : ldexp(1.0, 957 - e);
+}
+
+/**
+ * @brief Return the integral of a temporal sequence number whose values are
+ * multiplied by a power of two
+ * @param[in] seq Temporal sequence
+ * @param[in] scale Power of two given by #tnumber_integral_scale()
+ */
+double
+tnumberseq_integral_scaled(const TSequence *seq, double scale)
+{
+  assert(seq);
+  assert(tnumber_type(seq->temptype));
+  MeosType basetype = temptype_basetype(seq->temptype);
+  double result = 0.0;
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  double value1 = datum_double(tinstant_value_p(inst1), basetype) * scale;
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    double value2 = datum_double(tinstant_value_p(inst2), basetype) * scale;
+    double duration = (double) (inst2->t - inst1->t);
+    result += MEOS_FLAGS_LINEAR_INTERP(seq->flags) ?
+      /* Linear interpolation */
+      (value1 + value2) * duration / 2.0 :
+      /* Step interpolation */
+      value1 * duration;
+    inst1 = inst2;
+    value1 = value2;
+  }
+  return result;
+}
+
+/**
  * @ingroup meos_internal_temporal_accessor
  * @brief Return the integral (area under the curve) of a temporal sequence
  * number
  * @param[in] seq Temporal sequence
+ * @return An infinity where the integral exceeds the largest double
  */
 double
 tnumberseq_integral(const TSequence *seq)
 {
   assert(seq);
-  assert(tnumber_type(seq->temptype));
-  double result = 0.0;
-  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
-  for (int i = 1; i < seq->count; i++)
-  {
-    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
-    if (MEOS_FLAGS_LINEAR_INTERP(seq->flags))
-    {
-      /* Linear interpolation */
-      double min = Min(DatumGetFloat8(tinstant_value_p(inst1)),
-        DatumGetFloat8(tinstant_value_p(inst2)));
-      double max = Max(DatumGetFloat8(tinstant_value_p(inst1)),
-        DatumGetFloat8(tinstant_value_p(inst2)));
-      result += (max + min) * (double) (inst2->t - inst1->t) / 2.0;
-    }
-    else
-    {
-      /* Step interpolation */
-      result += datum_double(tinstant_value_p(inst1),
-        temptype_basetype(inst1->temptype)) * (double) (inst2->t - inst1->t);
-    }
-    inst1 = inst2;
-  }
-  return result;
+  double scale = tnumber_integral_scale(TSEQUENCE_BBOX_PTR(seq));
+  return tnumberseq_integral_scaled(seq, scale) / scale;
 }
 
 /**
@@ -3244,8 +3277,8 @@ tnumberseq_cont_twavg(const TSequence *seq)
     /* Instantaneous sequence */
     return datum_double(tinstant_value_p(TSEQUENCE_INST_N(seq, 0)),
       temptype_basetype(seq->temptype));
-  else
-    return tnumberseq_integral(seq) / duration;
+  double scale = tnumber_integral_scale(TSEQUENCE_BBOX_PTR(seq));
+  return tnumberseq_integral_scaled(seq, scale) / duration / scale;
 }
 
 /**

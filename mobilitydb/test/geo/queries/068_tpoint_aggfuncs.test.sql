@@ -41,6 +41,9 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint '[Point(3 3 3)@2001-01-03, Point(4 4 4)@2001-01-04)'),
   (tgeompoint '[Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03)')) t(temp);
 
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1e308 1)@2001-01-01, Point(1e308 1)@2001-01-02]'),
+  ('[Point(1e308 3)@2001-01-01, Point(1e308 3)@2001-01-02]')) t(temp);
 /* Errors */
 SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2001-01-01'),

@@ -363,7 +363,7 @@ pcpoint_make(uint32_t pcid, const double *values, int count)
   if (! ensure_positive(count))
     return NULL;
   for (int i = 0; i < count; i++)
-    if (! ensure_not_nan(values[i]))
+    if (! ensure_finite(values[i]))
       return NULL;
   const PCSCHEMA *schema = meos_pc_schema(pcid);
   if (! schema)

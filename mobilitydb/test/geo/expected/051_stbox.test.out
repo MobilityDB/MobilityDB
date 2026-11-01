@@ -1193,29 +1193,21 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' &> stbox 'STBOX XT(((1.0,2.0),(1.0,2
 (1 row)
 
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' << stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- f
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' &< stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' >> stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- f
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' &> stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' <<| stbox 'STBOX XT(((1.0,2.0),(1.0,2.0)),[2001-01-03,2001-01-03])';
  ?column? 
 ----------
@@ -1241,29 +1233,21 @@ SELECT stbox 'STBOX X((1.0,1.0),(2.0,2.0))' |&> stbox 'STBOX XT(((1.0,2.0),(1.0,
 (1 row)
 
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' <<| stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- f
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' &<| stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' |>> stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- f
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])' |&> stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2001-01-02])';
- ?column? 
-----------
- t
-(1 row)
-
+ERROR:  The value must be finite
+LINE 1: SELECT stbox 'STBOX XT(((-inf,-inf),(inf,inf)),[2001-01-01,2...
+                     ^
 SELECT stbox 'STBOX Z((1.0,1.0,1.0),(2.0,2.0,2.0))' <</ stbox 'STBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
  ?column? 
 ----------
@@ -2206,3 +2190,41 @@ SELECT extentCombine(NULL::stbox, NULL::stbox);
  
 (1 row)
 
+SELECT round((area(stbox 'STBOX X((-1e308,0),(1e308,1e-10))') / 1e298)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT round((volume(stbox 'STBOX Z((-1e308,0,0),(1e308,1e-10,1e-10))') / 1e288)::numeric, 6);
+  round   
+----------
+ 2.000000
+(1 row)
+
+SELECT perimeter(stbox 'STBOX X((-1e307,0),(1e307,1))');
+ perimeter 
+-----------
+    4e+307
+(1 row)
+
+SELECT perimeter(stbox 'STBOX X((-1e308,-1e308),(1e308,1e308))');
+ERROR:  value out of range: overflow
+SELECT perimeter(stbox 'STBOX X((0,0),(5e-324,1e-323))') = 3e-323;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT perimeter(stbox 'STBOX X((1e-150,1e-150),(1.0000000000000002e-150,1.0000000000000002e-150))') > 0;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT area(stbox 'STBOX X((-1e308,-1e308),(1e308,1e308))');
+ERROR:  value out of range: overflow
+SELECT volume(stbox 'STBOX Z((-1e308,-1e308,0),(1e308,1e308,1))');
+ERROR:  value out of range: overflow
+SELECT perimeter(stbox 'STBOX X((-1e308,0),(1e308,1))');
+ERROR:  value out of range: overflow

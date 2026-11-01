@@ -364,9 +364,9 @@ pointsegm_interpolate(Datum start, Datum end, long double ratio)
     /* We cannot call the PostGIS function
      * interpolate_point4d(&p1, &p2, &p, ratio);
      * since it uses a double and not a long double for the interpolation */
-    p.x = p1.x + (double) ((long double) (p2.x - p1.x) * ratio);
-    p.y = p1.y + (double) ((long double) (p2.y - p1.y) * ratio);
-    p.z = p1.z + (double) ((long double) (p2.z - p1.z) * ratio);
+    p.x = floatsegm_interpolate(p1.x, p2.x, ratio);
+    p.y = floatsegm_interpolate(p1.y, p2.y, ratio);
+    p.z = floatsegm_interpolate(p1.z, p2.z, ratio);
     p.m = 0.0;
   }
 

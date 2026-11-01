@@ -74,7 +74,13 @@ tpcpatch_transform_tnpoints(const Temporal *temp, int *count)
 /**
  * @brief Return the instants of a temporal pgpointcloud patch carrying the
  * density of the patch at each instant, its number of points divided by the
- * area of its XY bounds, infinite for a patch whose bounds have no area
+ * area of its XY bounds, or NULL with an error where the bounds of a patch
+ * have no area
+ * @details A patch has no area exactly where two of its bounds are equal; the
+ * density is then a division by zero, which raises the error the division of
+ * a temporal number raises (#arithop_tnumber_number). The number of points is
+ * divided by the two extents in turn, so a product of extents beyond the
+ * largest double does not read a density of 0
  * @param[in] temp Temporal pgpointcloud patch
  * @param[out] count Number of instants
  */
@@ -88,10 +94,18 @@ tpcpatch_transform_tdensity(const Temporal *temp, int *count)
     const TInstant *inst = temporal_inst_n(temp, i + 1);
     const Pcpatch *pa = (const Pcpatch *) DatumGetPointer(
       tinstant_value_p(inst));
+    if (pa->bounds[1] == pa->bounds[0] || pa->bounds[3] == pa->bounds[2])
+    {
+      for (int j = 0; j < i; j++)
+        pfree(result[j]);
+      pfree(result);
+      meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
+      *count = 0;
+      return NULL;
+    }
     double xrange = pa->bounds[1] - pa->bounds[0];
     double yrange = pa->bounds[3] - pa->bounds[2];
-    double area = xrange * yrange;
-    double density = (area > 0.0) ? pa->npoints / area : pa->npoints / 0.0;
+    double density = (pa->npoints / xrange) / yrange;
     result[i] = tinstant_make(Float8GetDatum(density), T_TFLOAT, inst->t);
   }
   *count = n;

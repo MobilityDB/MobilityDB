@@ -1434,6 +1434,86 @@ tcbufferseqset_expand(const TSequenceSet *ss, double dist)
 }
 
 /**
+ * @brief Return a temporal circular buffer instant with its centre and radius
+ * scaled by a factor, as #tcbufferinst_expand rebuilds an instant
+ */
+static TInstant *
+tcbufferinst_scale(const TInstant *inst, double scale)
+{
+  assert(inst); assert(inst->temptype == T_TCBUFFER);
+  const Cbuffer *cb = DatumGetCbufferP(tinstant_value_p(inst));
+  const POINT2D *p = cbuffer_point2d_p(cb);
+  Cbuffer *result = cbuffer_make_coords(cbuffer_srid(cb), p->x * scale,
+    p->y * scale, cbuffer_radius(cb) * scale);
+  return tinstant_make_free(PointerGetDatum(result), T_TCBUFFER, inst->t);
+}
+
+/**
+ * @brief Return a temporal circular buffer sequence with its centres and
+ * radii scaled by a factor, as #tcbufferseq_expand
+ */
+static TSequence *
+tcbufferseq_scale(const TSequence *seq, double scale)
+{
+  assert(seq); assert(seq->temptype == T_TCBUFFER);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  for (int i = 0; i < seq->count; i++)
+    instants[i] = tcbufferinst_scale(TSEQUENCE_INST_N(seq, i), scale);
+  return tsequence_make_free(instants, seq->count, seq->period.lower_inc,
+    seq->period.upper_inc, MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
+}
+
+/**
+ * @brief Return a temporal circular buffer with its centres and radii scaled
+ * by a factor, as #tcbuffer_expand dispatches
+ */
+static Temporal *
+tcbuffer_scale(const Temporal *temp, double scale)
+{
+  assert(temptype_subtype(temp->subtype));
+  switch (temp->subtype)
+  {
+    case TINSTANT:
+      return (Temporal *) tcbufferinst_scale((TInstant *) temp, scale);
+    case TSEQUENCE:
+      return (Temporal *) tcbufferseq_scale((TSequence *) temp, scale);
+    default: /* TSEQUENCESET */
+    {
+      const TSequenceSet *ss = (const TSequenceSet *) temp;
+      TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+      for (int i = 0; i < ss->count; i++)
+        sequences[i] = tcbufferseq_scale(TSEQUENCESET_SEQ_N(ss, i), scale);
+      return (Temporal *) tsequenceset_make_free(sequences, ss->count,
+        NORMALIZE_NO);
+    }
+  }
+}
+
+/**
+ * @brief Return a temporal circular buffer whose centres and radii are scaled
+ * by a power of two, or NULL with an error where the scaling is not exact, as
+ * #tgeo_scale_pow2 tests it
+ * @param[in] temp Temporal circular buffer
+ * @param[in] scale Power of two
+ */
+Temporal *
+tcbuffer_scale_pow2(const Temporal *temp, double scale)
+{
+  assert(temp); assert(temp->temptype == T_TCBUFFER); assert(scale > 0.0);
+  Temporal *result = tcbuffer_scale(temp, scale);
+  Temporal *back = tcbuffer_scale(result, 1.0 / scale);
+  bool exact = temporal_eq(temp, back);
+  pfree(back);
+  if (exact)
+    return result;
+  pfree(result);
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "A temporal value with coordinates near the largest and the smallest "
+    "doubles cannot be measured exactly");
+  return NULL;
+}
+
+/**
  * @ingroup meos_cbuffer_transf
  * @brief Return a temporal circular buffer with the radius expanded by a
  * distance
@@ -1450,7 +1530,7 @@ tcbuffer_expand(const Temporal *temp, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
-  if (! ensure_not_nan(dist))
+  if (! ensure_finite(dist))
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
@@ -1504,7 +1584,7 @@ tcbuffer_translate(const Temporal *temp, double deltax, double deltay)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
-  if (! ensure_not_nan(deltax) || ! ensure_not_nan(deltay))
+  if (! ensure_finite(deltax) || ! ensure_finite(deltay))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -1528,7 +1608,7 @@ tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TCBUFFER(temp, NULL);
-  if (! ensure_not_nan(angle) || ! ensure_not_nan(x0) || ! ensure_not_nan(y0))
+  if (! ensure_finite(angle) || ! ensure_finite(x0) || ! ensure_finite(y0))
     return NULL;
   if (! ensure_not_geodetic(temp->flags))
     return NULL;
@@ -1549,7 +1629,7 @@ tcbuffer_rotate(const Temporal *temp, double angle, double x0, double y0)
 Temporal *
 tcbuffer_rotate_z(const Temporal *temp, double angle)
 {
-  if (! ensure_not_nan(angle))
+  if (! ensure_finite(angle))
     return NULL;
   return tcbuffer_rotate(temp, angle, 0.0, 0.0);
 }

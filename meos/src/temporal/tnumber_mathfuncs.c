@@ -187,7 +187,7 @@ arithop_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2,
     {
       pfree(projtemp2);
       pfree(ss);
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "Division by zero");
+      meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO, "Division by zero");
       return NULL;
     }
     pfree(ss);
@@ -255,7 +255,7 @@ div_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT);
@@ -305,7 +305,7 @@ div_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), DIV, &datum_div,
     INVERT_NO);
@@ -374,7 +374,7 @@ mul_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT);
@@ -425,7 +425,7 @@ mul_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), MUL, &datum_mul,
     INVERT_NO);
@@ -493,7 +493,7 @@ sub_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT);
@@ -543,7 +543,7 @@ sub_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), SUB, &datum_sub,
     INVERT_NO);
@@ -608,7 +608,7 @@ add_float_tfloat(double d, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT);
@@ -658,7 +658,7 @@ add_tfloat_float(const Temporal *temp, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return arithop_tnumber_number(temp, Float8GetDatum(d), ADD, &datum_add,
     INVERT_NO);
@@ -878,8 +878,11 @@ delta_value(Datum value1, Datum value2, MeosType basetype)
     return Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
   else if (basetype == T_INT8)
     return Int64GetDatum(DatumGetInt64(value2) - DatumGetInt64(value1));
-  else /* basetype == T_FLOAT8 */
-    return Float8GetDatum(DatumGetFloat8(value2) - DatumGetFloat8(value1));
+  /* basetype == T_FLOAT8: the difference of two finite floats can exceed the
+   * largest one */
+  double result = DatumGetFloat8(value2) - DatumGetFloat8(value1);
+  ensure_finite_result(result);
+  return Float8GetDatum(result);
 }
 
 /**
@@ -999,12 +1002,12 @@ angular_difference(Datum degrees1, Datum degrees2)
 double
 float_angular_difference(double degrees1, double degrees2)
 {
-  if (! ensure_not_nan(degrees1) || ! ensure_not_nan(degrees2))
+  if (! ensure_finite(degrees1) || ! ensure_finite(degrees2))
     return DBL_MAX;
   double result = DatumGetFloat8(angular_difference(Float8GetDatum(degrees1),
     Float8GetDatum(degrees2)));
   /* An infinite angle has no difference with another one */
-  if (! ensure_not_nan_result(result))
+  if (! ensure_finite_result(result))
     return DBL_MAX;
   return result;
 }
@@ -1240,8 +1243,18 @@ tfloat_exp_turnpt(Datum start, Datum end,
    * x86 but 128-bit on aarch64, so it makes the turning point platform-
    * dependent.  double is identical across platforms. */
   double duration = (double) (upper - lower);
-  double slope = (exp(b) - exp(a)) / (b - a);
-  double fraction = (log(slope) - a) / (b - a);
+  /* The slope is e^a * (e^d - 1) / d with d = b - a, so log(slope) - a is
+   * log((e^d - 1) / d), which stays finite where e^a nears the largest
+   * double. Where e^d - 1 exceeds the largest double it is
+   * d + log1p(-e^-d) - log(d). Where d itself exceeds it, the fraction,
+   * 1 - log(d) / d for d > 0 and log(-d) / -d for d < 0, lies within
+   * MEOS_EPSILON of an end of the segment */
+  double d = b - a;
+  if (! isfinite(d))
+    return 0;
+  double e = expm1(d);
+  double fraction = isfinite(e) ? log(e / d) / d :
+    1.0 + (log1p(- exp(- d)) - log(d)) / d;
   if (fraction <= MEOS_EPSILON || fraction >= 1.0 - MEOS_EPSILON)
     return 0;
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);

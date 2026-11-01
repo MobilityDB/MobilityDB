@@ -163,11 +163,15 @@ datum_sum_int64(Datum l, Datum r)
 
 /**
  * @brief Return the sum of the two arguments
+ * @details The sum of two finite floats can exceed the largest one, which
+ * raises an error (#ensure_finite_result)
  */
 Datum
 datum_sum_float8(Datum l, Datum r)
 {
-  return Float8GetDatum(DatumGetFloat8(l) + DatumGetFloat8(r));
+  double result = DatumGetFloat8(l) + DatumGetFloat8(r);
+  ensure_finite_result(result);
+  return Float8GetDatum(result);
 }
 
 /**
@@ -1797,7 +1801,7 @@ tinstant_tavg_finalfn(TInstant **instants, int count)
   {
     const TInstant *inst = instants[i];
     double2 *value = (double2 *) DatumGetPointer(tinstant_value_p(inst));
-    double tavg = value->a / value->b;
+    double tavg = double2_avg(value);
     newinstants[i] = tinstant_make(Float8GetDatum(tavg), T_TFLOAT, inst->t);
   }
   return tsequence_make_free(newinstants, count, true, true, DISCRETE,
@@ -1820,7 +1824,7 @@ tsequence_tavg_finalfn(TSequence **sequences, int count)
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       double2 *value2 = (double2 *) DatumGetPointer(tinstant_value_p(inst));
-      double value = value2->a / value2->b;
+      double value = double2_avg(value2);
       instants[j] = tinstant_make(Float8GetDatum(value), T_TFLOAT, inst->t);
     }
     newsequences[i] = tsequence_make_free(instants, seq->count,
@@ -1978,7 +1982,7 @@ Temporal *
 temporal_app_tinst_transfn(Temporal *state, const TInstant *inst,
   interpType interp, double maxdist, const Interval *maxt)
 {
-  if (! ensure_not_nan(maxdist))
+  if (! ensure_finite(maxdist))
     return NULL;
   /* Null state: create a new temporal sequence with the instant */
   if (! state)

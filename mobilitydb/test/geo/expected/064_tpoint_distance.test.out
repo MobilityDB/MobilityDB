@@ -4290,3 +4290,37 @@ SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeogpoint '{P
  LINESTRING(0.998 0,0 0)
 (1 row)
 
+SELECT tgeompoint '[Point(-1e308 0)@2001-01-01, Point(-1e308 4)@2001-01-02]' |=| geometry 'Linestring(1e308 -1,1e308 1)';
+ERROR:  value out of range: overflow
+SELECT round(((tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point(1.6e308 0.75)@2001-01-02]' |=| geometry 'Linestring(1.7e308 0,1.7e308 1)') / 1e306)::numeric, 6);
+   round   
+-----------
+ 10.000000
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeompoint '[Point(1.6e308 0.25)@2001-01-01, Point(1.6e308 0.75)@2001-01-02]', geometry 'Linestring(1.7e308 0,1.7e308 1)'));
+                st_astext                
+-----------------------------------------
+ LINESTRING(1.6e+308 0.25,1.7e+308 0.25)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]', geometry 'Linestring(1e200 -1,1e200 1)'));
+           st_astext            
+--------------------------------
+ LINESTRING(-1e+200 0,1e+200 0)
+(1 row)
+
+SELECT tgeompoint '[Point(-1e153 0)@2001-01-01, Point(-1e153 4)@2001-01-02]' <-> geometry 'Linestring(1e153 -1,1e153 1)';
+                                  ?column?                                  
+----------------------------------------------------------------------------
+ [2e+153@Mon Jan 01 00:00:00 2001 PST, 2e+153@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <-> geometry 'Linestring(1e200 -1,1e200 1)';
+ERROR:  The temporal distance of a temporal point to a geometry with a coordinate of magnitude 2^510 or more is not supported
+SELECT round((tgeompoint '[Point(1e308 0 1e-310)@2001-01-01, Point(-1e308 1 2e-310)@2001-01-02]' |=| geometry 'Point(0 3e-310 5)')::numeric, 6);
+  round   
+----------
+ 5.024938
+(1 row)
+

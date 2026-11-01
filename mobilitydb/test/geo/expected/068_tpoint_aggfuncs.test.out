@@ -23,6 +23,14 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
  {[POINT Z (1 1 1)@Mon Jan 01 00:00:00 2001 PST, POINT Z (4 4 4)@Thu Jan 04 00:00:00 2001 PST)}
 (1 row)
 
+SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1e308 1)@2001-01-01, Point(1e308 1)@2001-01-02]'),
+  ('[Point(1e308 3)@2001-01-01, Point(1e308 3)@2001-01-02]')) t(temp);
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ {[POINT(1e+308 2)@Mon Jan 01 00:00:00 2001 PST, POINT(1e+308 2)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
 /* Errors */
 SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2001-01-01'),

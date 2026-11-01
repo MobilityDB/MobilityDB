@@ -1270,8 +1270,8 @@ raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
   double max_err, double scale_x, double scale_y)
 {
   VALIDATE_NOT_NULL(rast, NULL);
-  if (! ensure_not_nan(max_err) || ! ensure_not_nan(scale_x) ||
-      ! ensure_not_nan(scale_y))
+  if (! ensure_finite(max_err) || ! ensure_finite(scale_x) ||
+      ! ensure_finite(scale_y))
     return NULL;
   if (srid == SRID_UNKNOWN)
   {
@@ -1484,8 +1484,8 @@ raster_transform_pipeline(const Raster *rast, const char *pipelinestr,
   double scale_x, double scale_y)
 {
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
-  if (! ensure_not_nan(max_err) || ! ensure_not_nan(scale_x) ||
-      ! ensure_not_nan(scale_y))
+  if (! ensure_finite(max_err) || ! ensure_finite(scale_x) ||
+      ! ensure_finite(scale_y))
     return NULL;
   char *coord_op = raster_coord_op(pipelinestr, is_forward, raster_srid(rast),
     srid);
@@ -1520,7 +1520,7 @@ raster_transform_raster(const Raster *rast, const Raster *alignto,
   const char *algorithm, double max_err)
 {
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(alignto, NULL);
-  if (! ensure_not_nan(max_err))
+  if (! ensure_finite(max_err))
     return NULL;
   int32_t srid = raster_srid(alignto);
   if (srid == SRID_UNKNOWN)
@@ -1564,8 +1564,8 @@ raster_rescale(const Raster *rast, double scale_x, double scale_y,
   const char *algorithm, double max_err)
 {
   VALIDATE_NOT_NULL(rast, NULL);
-  if (! ensure_not_nan(scale_x) || ! ensure_not_nan(scale_y) ||
-      ! ensure_not_nan(max_err))
+  if (! ensure_finite(scale_x) || ! ensure_finite(scale_y) ||
+      ! ensure_finite(max_err))
     return NULL;
   /* A pixel of no width or no height covers no ground, so the grid it would
    * state has no cell to carry a value */
@@ -2014,9 +2014,9 @@ raster_make_empty(int width, int height, double upperleftx,
   int32_t srid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(upperleftx) || ! ensure_not_nan(upperlefty) ||
-      ! ensure_not_nan(scalex) || ! ensure_not_nan(scaley) ||
-      ! ensure_not_nan(skewx) || ! ensure_not_nan(skewy))
+  if (! ensure_finite(upperleftx) || ! ensure_finite(upperlefty) ||
+      ! ensure_finite(scalex) || ! ensure_finite(scaley) ||
+      ! ensure_finite(skewx) || ! ensure_finite(skewy))
     return NULL;
   if (! ensure_valid_raster_dims(width, height, 0))
     return NULL;
@@ -2063,9 +2063,9 @@ raster_make(int width, int height, double upperleftx, double upperlefty,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pixeltype, NULL); VALIDATE_NOT_NULL(pixels, NULL);
-  if (! ensure_not_nan(upperleftx) || ! ensure_not_nan(upperlefty) ||
-      ! ensure_not_nan(scalex) || ! ensure_not_nan(scaley) ||
-      ! ensure_not_nan(skewx) || ! ensure_not_nan(skewy))
+  if (! ensure_finite(upperleftx) || ! ensure_finite(upperlefty) ||
+      ! ensure_finite(scalex) || ! ensure_finite(scaley) ||
+      ! ensure_finite(skewx) || ! ensure_finite(skewy))
     return NULL;
   if (! ensure_valid_raster_dims(width, height, 1))
     return NULL;
@@ -3041,7 +3041,7 @@ raster_value_count(const Raster *rast, int band, bool exclude_nodata,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(count, NULL);
   *count = 0;
-  if (! ensure_not_nan(roundto))
+  if (! ensure_finite(roundto))
     return NULL;
   if (nsearch < 0 || (nsearch > 0 && ! searchvalues))
   {
@@ -4252,7 +4252,7 @@ raster_slope(const Raster *rast, int band, const Raster *customextent,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pixeltype, NULL);
   VALIDATE_NOT_NULL(units, NULL);
-  if (! ensure_not_nan(scale))
+  if (! ensure_finite(scale))
     return NULL;
   if (scale == 0.0)
   {

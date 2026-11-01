@@ -33,7 +33,7 @@ Why
 No MEOS value holds a NaN: a NaN has no position among the numbers, so a
 value, a span bound or a coordinate holding one cannot be compared, bounded or
 indexed. A public function validates its arguments at entry, so each double it
-takes is tested with ensure_not_nan there, whatever the function does with it
+takes is tested with ensure_finite there, whatever the function does with it
 afterwards. A double left untested reaches code that cannot answer it, where
 the census of the public functions finds NaN values returned and assertions
 failing.
@@ -47,7 +47,7 @@ parenthesis of the signature and the body up to its closing brace, counting
 the braces, with the comments removed (#_strip_comments_for_scan of
 check_meos_error_returns.py), so that a test named in a comment is no test. A
 parameter declared `double <name>` is tested when the body calls
-ensure_not_nan(<name>).
+ensure_finite(<name>).
 
 An array of doubles, `const double *`, is tested element by element by the
 constructors that take one; an out-parameter, `double *`, carries no input.
@@ -127,10 +127,10 @@ def main() -> int:
                 if not m or (name, m.group(1)) in PIXEL_VALUES:
                     continue
                 tested += 1
-                if not re.search(r"\bensure_not_nan\s*\(\s*" + m.group(1) +
+                if not re.search(r"\bensure_finite\s*\(\s*" + m.group(1) +
                                  r"\s*\)", body):
                     print(f"{rel}:{line}: {name} does not test its double "
-                          f"{m.group(1)} with ensure_not_nan")
+                          f"{m.group(1)} with ensure_finite")
                     failures += 1
     if not public or not tested:
         print("ERROR: check_nan_guards read no public definition or no double "
@@ -140,12 +140,12 @@ def main() -> int:
         print(f"\nERROR: {failures} double parameter(s) untested over "
               f"{public} public definitions in {scanned} files.",
               file=sys.stderr)
-        print("Test the parameter with ensure_not_nan at entry, after the "
+        print("Test the parameter with ensure_finite at entry, after the "
               "validation the function already does and with the error value "
               "it returns.", file=sys.stderr)
         return 1
     print(f"OK: the {tested} double parameters of {public} public definitions "
-          f"in {scanned} files are tested with ensure_not_nan.")
+          f"in {scanned} files are tested with ensure_finite.")
     return 0
 
 

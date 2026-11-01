@@ -1822,7 +1822,9 @@ ERROR:  integer out of range
 SELECT tint(tfloat 'Interp=Step;[1@2001-01-01, 3e9@2001-01-02]');
 ERROR:  integer out of range
 SELECT tint(tfloat 'Infinity@2001-01-01');
-ERROR:  integer out of range
+ERROR:  The value must be finite
+LINE 1: SELECT tint(tfloat 'Infinity@2001-01-01');
+                           ^
 SELECT tbigint(tfloat '1.5@2001-01-01');
             tbigint             
 --------------------------------
@@ -1863,7 +1865,9 @@ ERROR:  bigint out of range
 SELECT tbigint(tfloat '{1@2001-01-01, -1e19@2001-01-02}');
 ERROR:  bigint out of range
 SELECT tbigint(tfloat '-Infinity@2001-01-01');
-ERROR:  bigint out of range
+ERROR:  The value must be finite
+LINE 1: SELECT tbigint(tfloat '-Infinity@2001-01-01');
+                              ^
 SELECT tboolInst(tbool 't@2001-01-01');
            tboolinst            
 --------------------------------
@@ -10626,6 +10630,12 @@ SELECT valueAtTimestamp(tfloat '[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05]
                 2
 (1 row)
 
+SELECT valueAtTimestamp(tfloat '[1e308@2001-01-01, -1e308@2001-01-03]', timestamptz '2001-01-02');
+ valueattimestamp 
+------------------
+                0
+(1 row)
+
 SELECT valueAtTimestamp(tfloat 'Interp=Step;[1.5@2001-01-01, 2.5@2001-01-03, 1.5@2001-01-05]', timestamptz '2001-01-02');
  valueattimestamp 
 ------------------
@@ -17086,6 +17096,15 @@ SELECT integral(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-0
  648000000000
 (1 row)
 
+SELECT integral(tfloat '{[1e308@2001-01-01, 1e308@2001-01-02],[-1e308@2001-01-03, -1e308@2001-01-04]}');
+ integral 
+----------
+        0
+(1 row)
+
+/* Errors */
+SELECT integral(tfloat '[1e308@2001-01-01, 1e308@2001-01-02]');
+ERROR:  value out of range: overflow
 SELECT round(twAvg(tint '1@2001-01-01'), 6);
  round 
 -------
@@ -17204,6 +17223,24 @@ SELECT round(twAvg(tfloat 'Interp=Step;{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@200
  round 
 -------
    2.5
+(1 row)
+
+SELECT round(twAvg(tfloat '{1e308@2001-01-01, 1e308@2001-01-02}') / 1e308, 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(twAvg(tfloat '[1e308@2001-01-01, 1e308@2001-01-02]') / 1e308, 6);
+ round 
+-------
+     1
+(1 row)
+
+SELECT round(twAvg(tfloat '{[1e308@2001-01-01, 1e308@2001-01-02],[-1e308@2001-01-03, -1e308@2001-01-04]}'), 6);
+ round 
+-------
+     0
 (1 row)
 
 SELECT cmp(tbool 't@2001-01-01', tbool 't@2001-01-01');

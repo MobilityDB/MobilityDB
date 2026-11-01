@@ -201,7 +201,7 @@ tfloatbox_value_time_tiles(const TBox *box, double vsize,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
   VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_valid_tbox_tiles(box, vsize, duration, T_FLOATSPAN))
@@ -275,7 +275,7 @@ tfloatbox_value_tiles(const TBox *box, double vsize, double vorigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   if (! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_valid_tbox_tiles(box, vsize, NULL, T_FLOATSPAN))
@@ -478,7 +478,7 @@ tfloat_value_boxes(const Temporal *temp, double vsize, double vorigin,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin))
     return NULL;
   return tnumber_value_time_boxes(temp, Float8GetDatum(vsize), NULL,
     Float8GetDatum(vorigin), 0, border_inc, count);
@@ -1256,7 +1256,7 @@ tfloat_value_split(const Temporal *temp, double vsize, double vorigin,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(bins, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin) ||
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin) ||
       ! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8))
     return NULL;
 
@@ -1394,7 +1394,7 @@ tfloat_value_time_split(const Temporal *temp, double vsize,
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
-  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin) ||
+  if (! ensure_finite(vsize) || ! ensure_finite(vorigin) ||
       ! ensure_positive_datum(Float8GetDatum(vsize), T_FLOAT8) ||
       ! ensure_positive_duration(duration))
     return NULL;

@@ -407,7 +407,7 @@ Set *
 float_union_transfn(Set *state, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   if (state && ! ensure_set_isof_type(state, T_FLOATSET))
     return NULL;

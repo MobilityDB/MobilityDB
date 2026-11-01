@@ -299,6 +299,20 @@ SELECT tavg(temp) FROM (VALUES
  {1@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+SELECT tavg(temp) FROM (VALUES
+('1e308@2001-01-01'::tfloat),('1e308@2001-01-01'::tfloat)) t(temp);
+                 tavg                  
+---------------------------------------
+ {1e+308@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT tavg(temp) FROM (VALUES
+('[1e308@2001-01-01, 1e308@2001-01-03]'::tfloat),('[1e308@2001-01-02, -1e308@2001-01-04]'::tfloat)) t(temp);
+                                                                                           tavg                                                                                            
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[1e+308@Mon Jan 01 00:00:00 2001 PST, 1e+308@Tue Jan 02 00:00:00 2001 PST, 5e+307@Wed Jan 03 00:00:00 2001 PST], (0@Wed Jan 03 00:00:00 2001 PST, -1e+308@Thu Jan 04 00:00:00 2001 PST]}
+(1 row)
+
 SELECT tmin(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
  tmin 

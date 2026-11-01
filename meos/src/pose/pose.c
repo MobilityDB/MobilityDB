@@ -1144,12 +1144,12 @@ pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out)
 Pose *
 pose_make_2d(double x, double y, double theta, bool geodetic, int32_t srid)
 {
-  /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
-   * one in its centre and radius, since the range test of the rotation lets
-   * a NaN through */
-  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(theta))
+  /* Ensure the validity of the arguments: finite numbers, as #cbuffer_make
+   * requires of its centre and radius, since the range test of the
+   * rotation lets a NaN through */
+  if (! ensure_finite(x) || ! ensure_finite(y) || ! ensure_finite(theta))
     return NULL;
-  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(theta) ||
+  if (! ensure_finite(x) || ! ensure_finite(y) || ! ensure_finite(theta) ||
       ! ensure_valid_rotation(theta))
     return NULL;
 
@@ -1182,7 +1182,7 @@ pose_make_point2d(const GSERIALIZED *gs, double theta)
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(theta))
+  if (! ensure_finite(theta))
     return NULL;
   if (! ensure_valid_rotation(theta) || ! ensure_not_empty(gs) ||
       ! ensure_has_not_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
@@ -1219,16 +1219,16 @@ Pose *
 pose_make_3d(double x, double y, double z, double W, double X, double Y,
   double Z, bool geodetic, int32_t srid)
 {
-  /* Ensure the validity of the arguments: no NaN, as #cbuffer_make refuses
-   * one in its centre and radius, since the norm test of the quaternion lets
-   * a NaN through */
-  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(z) ||
-      ! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
-      ! ensure_not_nan(Z))
+  /* Ensure the validity of the arguments: finite numbers, as #cbuffer_make
+   * requires of its centre and radius, since the norm test of the
+   * quaternion lets a NaN through */
+  if (! ensure_finite(x) || ! ensure_finite(y) || ! ensure_finite(z) ||
+      ! ensure_finite(W) || ! ensure_finite(X) || ! ensure_finite(Y) ||
+      ! ensure_finite(Z))
     return NULL;
-  if (! ensure_not_nan(x) || ! ensure_not_nan(y) || ! ensure_not_nan(z) ||
-      ! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
-      ! ensure_not_nan(Z) || ! ensure_unit_norm(W, X, Y, Z))
+  if (! ensure_finite(x) || ! ensure_finite(y) || ! ensure_finite(z) ||
+      ! ensure_finite(W) || ! ensure_finite(X) || ! ensure_finite(Y) ||
+      ! ensure_finite(Z) || ! ensure_unit_norm(W, X, Y, Z))
     return NULL;
 
   /* Renormalize to absorb the small input drift permitted by
@@ -1287,8 +1287,8 @@ pose_make_point3d(const GSERIALIZED *gs, double W, double X, double Y,
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(W) || ! ensure_not_nan(X) || ! ensure_not_nan(Y) ||
-      ! ensure_not_nan(Z))
+  if (! ensure_finite(W) || ! ensure_finite(X) || ! ensure_finite(Y) ||
+      ! ensure_finite(Z))
     return NULL;
   if (! ensure_unit_norm(W, X, Y, Z) || ! ensure_not_empty(gs) ||
       ! ensure_has_Z_geo(gs) || ! ensure_has_not_M_geo(gs))
@@ -1324,8 +1324,8 @@ pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pitch,
 {
   /* Ensure the validity of parameters */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(yaw) || ! ensure_not_nan(pitch) ||
-      ! ensure_not_nan(roll))
+  if (! ensure_finite(yaw) || ! ensure_finite(pitch) ||
+      ! ensure_finite(roll))
     return NULL;
   if (! ensure_not_empty(gs) || ! ensure_has_Z_geo(gs) ||
       ! ensure_has_not_M_geo(gs))
@@ -2795,8 +2795,8 @@ pose_ne(const Pose *pose1, const Pose *pose2)
  * @details The poses are ordered by their dimension, planar first, then by
  * whether they are geodetic, then by their SRID, then by their position and
  * their orientation, value by value as they are stored, -0.0 and 0.0 being
- * equal. A pose holds no NaN, which every input of MEOS refuses, so the order
- * is total and holds two poses equal exactly when #pose_eq does, which their
+ * equal. A pose holds finite numbers, as every input of MEOS requires, so
+ * the order is total and holds two poses equal exactly when #pose_eq does, which their
  * sort key (#pose_sortkey_put) requires
  * @param[in] pose1,pose2 Poses
  * @errval INT_MAX

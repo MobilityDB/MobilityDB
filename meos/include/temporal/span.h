@@ -81,6 +81,7 @@ typedef struct
 
 extern bool ensure_span_isof_type(const Span *s, MeosType spantype);
 extern bool ensure_span_isof_basetype(const Span *s, MeosType basetype);
+extern bool ensure_finite_span_bounds(const Span *s);
 /**
  * @brief Ensure that two spans have the same type
  */
