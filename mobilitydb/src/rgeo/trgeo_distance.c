@@ -66,6 +66,8 @@
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN trgeometry_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_trgeometry_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_trgeometry_geo);
 /**
@@ -87,7 +89,7 @@ Tdistance_trgeometry_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdistance_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -111,7 +113,7 @@ Tdistance_geo_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdistance_trgeometry_tpoint(PG_FUNCTION_ARGS);
@@ -135,7 +137,7 @@ Tdistance_trgeometry_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdistance_tpoint_trgeometry(PG_FUNCTION_ARGS);
@@ -159,7 +161,7 @@ Tdistance_tpoint_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
 
 PGDLLEXPORT Datum Tdistance_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -182,13 +184,16 @@ Tdistance_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END trgeometry_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN trgeometry_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_trgeometry_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_trgeometry_geo);
 /**
@@ -200,8 +205,8 @@ PG_FUNCTION_INFO_V1(NAI_trgeometry_geo);
 Datum
 NAI_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   /* Store fcinfo into a global variable */
   store_fcinfo(fcinfo);
   TInstant *result = nai_trgeometry_geo(temp, gs);
@@ -209,7 +214,7 @@ NAI_trgeometry_geo(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -232,15 +237,15 @@ NAI_geo_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_trgeometry_tpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_trgeometry_tpoint);
 /**
  * @ingroup mobilitydb_rgeo_dist
- * @brief Return the nearest approach instant between a temporal rigid
- * geometry and a temporal point
+ * @brief Return the nearest approach instant between a temporal rigid geometry
+ * and a temporal point
  * @sqlfn nearestApproachInstant()
  */
 Datum
@@ -255,7 +260,7 @@ NAI_trgeometry_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_tpoint_trgeometry(PG_FUNCTION_ARGS);
@@ -278,7 +283,7 @@ NAI_tpoint_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
 
 PGDLLEXPORT Datum NAI_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -301,8 +306,9 @@ NAI_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END trgeometry_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -481,6 +487,8 @@ NAD_trgeometry_trgeometry(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN trgeometry_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_trgeometry_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_trgeometry_geo);
 /**
@@ -494,12 +502,14 @@ Shortestline_trgeometry_geo(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   GSERIALIZED *result = shortestline_trgeometry_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -515,12 +525,14 @@ Shortestline_geo_trgeometry(PG_FUNCTION_ARGS)
 {
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
+  /* Store fcinfo into a global variable */
+  store_fcinfo(fcinfo);
   GSERIALIZED *result = shortestline_trgeometry_geo(temp, gs);
   PG_FREE_IF_COPY(gs, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_trgeometry_tpoint(PG_FUNCTION_ARGS);
@@ -543,7 +555,7 @@ Shortestline_trgeometry_tpoint(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_tpoint_trgeometry(PG_FUNCTION_ARGS);
@@ -566,7 +578,7 @@ Shortestline_tpoint_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Shortestline_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -589,7 +601,8 @@ Shortestline_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   PG_FREE_IF_COPY(temp2, 1);
   if (! result)
     PG_RETURN_NULL();
-  PG_RETURN_POINTER(result);
+  PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END trgeometry_shortestline */
 
 /*****************************************************************************/

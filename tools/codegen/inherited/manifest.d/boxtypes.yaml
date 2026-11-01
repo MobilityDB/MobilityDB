@@ -237,6 +237,27 @@ boxtypes:
           - [trgeometry, tpoint, nad_trgeometry_tpoint]
           - [tpoint, trgeometry, nad_trgeometry_tpoint]
           - [trgeometry, trgeometry, nad_trgeometry_trgeometry]
+        # the temporal distance, the nearest approach instant and the shortest line
+        # (templates/distpairs.c.tmpl), each storing fcinfo as the region does
+        distfns:
+          tdistance:
+            - [trgeometry, geo, tdistance_trgeometry_geo]
+            - [geo, trgeometry, tdistance_trgeometry_geo]
+            - [trgeometry, tpoint, tdistance_trgeometry_tpoint]
+            - [tpoint, trgeometry, tdistance_trgeometry_tpoint]
+            - [trgeometry, trgeometry, tdistance_trgeometry_trgeometry]
+          nai:
+            - [trgeometry, geo, nai_trgeometry_geo]
+            - [geo, trgeometry, nai_trgeometry_geo]
+            - [trgeometry, tpoint, nai_trgeometry_tpoint]
+            - [tpoint, trgeometry, nai_trgeometry_tpoint]
+            - [trgeometry, trgeometry, nai_trgeometry_trgeometry]
+          shortestline:
+            - [trgeometry, geo, shortestline_trgeometry_geo]
+            - [geo, trgeometry, shortestline_trgeometry_geo]
+            - [trgeometry, tpoint, shortestline_trgeometry_tpoint]
+            - [tpoint, trgeometry, shortestline_trgeometry_tpoint]
+            - [trgeometry, trgeometry, shortestline_trgeometry_trgeometry]
 
   - box:       tpcbox
     tside:     tpointcloud
