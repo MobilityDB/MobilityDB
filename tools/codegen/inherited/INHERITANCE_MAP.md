@@ -744,8 +744,10 @@ Reading the table:
   ⭐ A family declares the matrix of ITS target rather than a fixed six by three:
   `tpose`, `tposechain` and `tnpoint` declare the 13 cells the `tpoint` entry
   declares, since a moving point neither contains nor covers a geometry and two
-  moving points do not touch. `tpcpoint` declares that same matrix; `tpcpatch`,
-  whose target is `tgeometry`, declares every predicate in every direction.
+  moving points do not touch. `tpcpoint` declares that same matrix, and so does
+  `tpcpatch`: its target is `tgeometry`, but a patch is a set of points, so it
+  neither contains nor covers a geometry and two patches do not touch
+  (`point_target`).
   ⛔ A delegating family declares the matrix ITS TARGET declares, and a dimension a
   schema may or may not state is not a property of the type: a point cloud schema
   resolves X/Y/Z/M by NAME (`pc_schema_check_xyzm`), so one declaring X and Y alone

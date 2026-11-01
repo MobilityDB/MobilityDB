@@ -2266,7 +2266,7 @@ SELECT round(nearestApproachDistance(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eIntersects(tpcpatch,geometry) → boolean
 </programlisting>
-					<para>The ever and always relationships cover the same matrix: <varname>eContains</varname>, <varname>eCovers</varname>, <varname>eDisjoint</varname>, <varname>eIntersects</varname>, <varname>eTouches</varname> and <varname>eDwithin</varname>, each in the three argument orders, and their always twins. <varname>eIntersects(tpcpatch,geometry)</varname> is the one the type answers natively, walking the points of each instant and stopping at the first hit; the rest convert the patch to the temporal geometry of its multipoints.</para>
+					<para>A patch is a set of points, so it neither contains nor covers a geometry and two patches do not touch: <varname>eContains</varname>, <varname>eCovers</varname> and their always twins take the geometry first only, <varname>eTouches</varname> and <varname>aTouches</varname> read either order but not two patches, and <varname>eDisjoint</varname>, <varname>eIntersects</varname>, <varname>eDwithin</varname> and their always twins read the three argument orders. <varname>eIntersects(tpcpatch,geometry)</varname> is the one the type answers natively, walking the points of each instant and stopping at the first hit; the rest convert the patch to the temporal geometry of its multipoints.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
@@ -2294,11 +2294,12 @@ SELECT eIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
 tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) &#8594; tbool
 tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
-tContains({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
-tCovers({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
-tTouches({geometry,tpcpatch},{geometry,tpcpatch}) &#8594; tbool
+tContains(geometry,tpcpatch) &#8594; tbool
+tCovers(geometry,tpcpatch) &#8594; tbool
+tTouches(geometry,tpcpatch) &#8594; tbool
+tTouches(tpcpatch,geometry) &#8594; tbool
 </programlisting>
-					<para>A patch reaches the geometry engine as the multipoint of the positions its points occupy, so it declares the matrix that temporal geometry declares: every predicate in every direction. The planar ones answer for a schema whose dimensions do not include Z, and a schema carrying Z meets the refusal <varname>The tgeometry cannot have Z dimension</varname>.</para>
+					<para>A patch reaches the geometry engine as the multipoint of the positions its points occupy, and as a set of points it declares the matrix of a temporal point: <varname>tContains</varname> and <varname>tCovers</varname> take the geometry first only, <varname>tTouches</varname> reads either order but not two patches, and the others read the three argument orders. The planar ones answer for a schema whose dimensions do not include Z, and a schema carrying Z meets the refusal <varname>The tgeometry cannot have Z dimension</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)),
   '2001-01-01'::timestamptz), geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
