@@ -1109,6 +1109,36 @@ SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELE
  t         | f         | t       | t
 (1 row)
 
+SELECT aContains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]'), aCovers(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]');
+ acontains | acovers 
+-----------+---------
+ f         | t
+(1 row)
+
+SELECT eTouches(geometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0))', tgeompoint '[Point(0.5 2)@2001-01-01, Point(4.5 2)@2001-01-02]');
+ etouches 
+----------
+ t
+(1 row)
+
+SELECT eContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)'), aContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)');
+ econtains | acontains 
+-----------+-----------
+ t         | f
+(1 row)
+
+SELECT eContains(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)'), aCovers(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)');
+ econtains | acovers 
+-----------+---------
+ f         | t
+(1 row)
+
+SELECT eIntersects(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((2 0,6 0,6 4,2 4,2 0))@2001-01-02}', geometry 'Point(3 2)');
+ eintersects 
+-------------
+ t
+(1 row)
+
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');
  eintersects 
 -------------
