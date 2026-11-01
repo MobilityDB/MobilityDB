@@ -901,8 +901,12 @@ def render_spatialrels(fam: dict) -> str:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
         disp_over = pred.get("disp", {})
         meos_fixed = pred.get("meos_fixed")
+        # A direction listed in `flags` calls a dispatcher choosing its kernel
+        # itself, which takes the quantifier and that flag (the geo touches,
+        # whose dispatcher picks the point or the geometry kernel)
+        flags = pred.get("flags", {})
         for direc in pred.get("directions", order):
-            disp = disp_over.get(direc, disp_map[direc])
+            disp = disp_over[direc] if direc in disp_over else disp_map[direc]
             meos = meos_fixed or f"ea_{pred['rel']}_{kernel_dir.get(direc, direc)}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
@@ -911,7 +915,10 @@ def render_spatialrels(fam: dict) -> str:
                 # dispatcher + kernel names are long (the cbuffer base-value
                 # directions); the geo directions stay on one line unchanged.
                 eaq = "EVER" if ea == "E" else "ALWAYS"
-                ret = f"  return {disp}(fcinfo, &{meos}, {eaq});"
+                if direc in flags:
+                    ret = f"  return {disp}(fcinfo, {eaq}, {flags[direc]});"
+                else:
+                    ret = f"  return {disp}(fcinfo, &{meos}, {eaq});"
                 if len(ret) > 80:
                     ret = f"  return {disp}(fcinfo, &{meos},\n    {eaq});"
                 sub = {
@@ -1168,6 +1175,80 @@ def render_tempspatialrels(fam: dict) -> str:
     body = "\n\n".join(units)
     # The template carries the file comment: the family's `brief` and, when it
     # states one, its `details`.
+    return generated(tmpl.replace("{BRIEF}", fam["brief"])
+                         .replace("{DETAILS}\n", details_lines(fam.get("details")))
+                         .replace("{BODY}", body), tmpl_name)
+
+
+# --- Ever/always spatial relationships (SQL, whole-file, native) -----------
+# A family implementing the ever and always relationships as C kernels of its own
+# (cbuffer, tgeo, tpoint, rgeo) declares each (predicate, direction) cell twice,
+# the ever then the always one, over the C symbol E<rel>_<left>_<right> or
+# A<rel>_<left>_<right>, the operands tokenized to their superclass as the
+# temporal relationships tokenize them (`symbol`, of the family or of one
+# predicate, maps a type to another token).
+# A predicate reuses the family-wide `directions` unless it lists its own; a
+# direction marked `gap` opens a group of its own after a blank line, one marked
+# `ever_only` has no always cell, and one marked `spheroid` reads the earth model.
+# `support` names the quantifiers whose cells carry the support function of the
+# index, by default both and per predicate overridable; `note` is a comment
+# ahead of the always cells. A family casting to its target instead takes the
+# cast template, through `files: [spatialrels]` of subtypes.yaml.
+_NATIVE_SR_FN = (
+    "CREATE FUNCTION {PRED}({LEFT}, {RIGHT}{DIST})\n"
+    "  RETURNS boolean\n"
+    "  AS 'MODULE_PATHNAME', '{SYMBOL}'\n"
+    "{SUPPORT}"
+    "  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;")
+
+
+def render_native_spatialrels(fam: dict) -> str:
+    """Render one family's whole ever/always spatialrels SQL file, as
+    #render_tempspatialrels renders its native temporal twin: per predicate its
+    banner, the ever cell of each direction, a separator, then the always cells
+    (see the comment above)."""
+    tmpl_name = "spatialrels_native.sql.tmpl"
+    tmpl = read_template(tmpl_name)
+    rule = "/" + "*" * 77 + "/"
+    symtok = {**_NATIVE_TSR_SUPERCLASS, **(fam.get("symbol") or {})}
+    units = []
+    for pred in fam["predicates"]:
+        if isinstance(pred, dict):
+            name = pred["name"]
+            directions = pred.get("directions", fam["directions"])
+            support = pred.get("support", fam.get("support", ["e", "a"]))
+            note = pred.get("note")
+            tokens = {**symtok, **(pred.get("symbol") or {})}
+        else:
+            name, directions = pred, fam["directions"]
+            support, note = fam.get("support", ["e", "a"]), None
+            tokens = symtok
+        dist = ", dist float" if name == "Dwithin" else ""
+
+        def cells(q: str) -> str:
+            """The cells of one quantifier, as #_NATIVE_TSR_FN lays out a cell"""
+            out, gap = [], False
+            for d in directions:
+                # A group opens at its first cell this quantifier has
+                gap = gap or bool(d.get("gap"))
+                if q == "a" and d.get("ever_only"):
+                    continue
+                ddist = dist + (", spheroid boolean DEFAULT true"
+                                if d.get("spheroid") else "")
+                sym = (f"{q.upper()}{name.lower()}_{tokens.get(d['l'], d['l'])}_"
+                       f"{tokens.get(d['r'], d['r'])}")
+                fn = _NATIVE_SR_FN.format(
+                    PRED=f"{q}{name}", LEFT=d["l"], RIGHT=d["r"], DIST=ddist,
+                    SYMBOL=sym,
+                    SUPPORT="  SUPPORT tspatial_supportfn\n" if q in support else "")
+                out.append(("\n" if gap and out else "") + fn)
+                gap = False
+            return "\n".join(out)
+
+        banner = f"{rule[:-1]}\n * e{name}, a{name}\n {rule[1:]}"
+        always = "".join(f"-- {l}\n" for l in note.split("\n")) + "\n" if note else ""
+        units.append(f"{banner}\n\n{cells('e')}\n\n{rule}\n\n{always}{cells('a')}")
+    body = "\n\n".join(units) + f"\n\n{rule}"
     return generated(tmpl.replace("{BRIEF}", fam["brief"])
                          .replace("{DETAILS}\n", details_lines(fam.get("details")))
                          .replace("{BODY}", body), tmpl_name)
@@ -4545,7 +4626,9 @@ AXIS_RENDERERS = {
     "tempspatialrel_families": lambda f: render_tempspatialrels(f),
     "span_families": lambda f: render_spanfile(f),
     "spatialrel_families":
-        lambda f: render_dwithin(f) if f.get("dwithin") else render_spatialrels(f),
+        lambda f: (render_native_spatialrels(f) if f.get("impl") == "native"
+                   else render_dwithin(f) if f.get("dwithin")
+                   else render_spatialrels(f)),
 }
 
 
@@ -5247,6 +5330,25 @@ def main() -> int:
                         break
                 if len(g) != len(c):
                     print(f"     line count gen={len(g)} cur={len(c)}")
+        for fam in mf.get("spatialrel_families", []):
+            if fam.get("impl") != "native":
+                continue
+            p = ROOT / fam["file"]
+            gen = render_native_spatialrels(fam)
+            cur = p.read_text() if p.exists() else ""
+            same = gen == cur
+            ok = ok and same
+            print(f"[{'OK ' if same else 'DIFF'}] self-regen spatialrels "
+                  f"{fam['family']} -> {pathlib.Path(fam['file'])}")
+            if not same:
+                g, c = gen.splitlines(), cur.splitlines()
+                for n, (a, b) in enumerate(zip(g, c), 1):
+                    if a != b:
+                        print(f"     first diff line {n}:\n       gen: {a!r}\n"
+                              f"       cur: {b!r}")
+                        break
+                if len(g) != len(c):
+                    print(f"     line count gen={len(g)} cur={len(c)}")
         for fam in mf.get("tempspatialrel_families", []):
             p = ROOT / fam["file"]
             gen = render_tempspatialrels(fam)
@@ -5357,6 +5459,14 @@ def main() -> int:
         if fam.get("reference"):
             continue
         p = ROOT / fam["file"]
+        if fam.get("impl") == "native":
+            # A native SQL family owns its whole file, as a temporal one does
+            if args.check:
+                print(f"would write {p.relative_to(ROOT)}")
+                continue
+            p.write_text(render_native_spatialrels(fam))
+            print(f"wrote {p.relative_to(ROOT)}")
+            continue
         if args.check:
             print(f"would splice spatialrels {fam['family']} -> {fam['file']}")
             continue

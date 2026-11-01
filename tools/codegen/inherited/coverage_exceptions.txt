@@ -12,7 +12,6 @@ mobilitydb/sql/cbuffer/205_tcbuffer_spatialfuncs.in.sql
 mobilitydb/sql/cbuffer/207_tcbuffer_boxops.in.sql
 mobilitydb/sql/cbuffer/208_tcbuffer_topops.in.sql
 mobilitydb/sql/cbuffer/209_tcbuffer_posops.in.sql
-mobilitydb/sql/cbuffer/212_tcbuffer_spatialrels.in.sql
 mobilitydb/sql/cbuffer/216_tcbuffer_indexes.in.sql
 mobilitydb/sql/cbuffer/217_tcbuffer_analytics.in.sql
 mobilitydb/sql/geo/049_geo_funcs.in.sql
@@ -26,8 +25,6 @@ mobilitydb/sql/geo/061_tpoint_topops.in.sql
 mobilitydb/sql/geo/062_tgeo_posops.in.sql
 mobilitydb/sql/geo/062_tpoint_posops.in.sql
 mobilitydb/sql/geo/066_tpoint_similarity.in.sql
-mobilitydb/sql/geo/070_tgeo_spatialrels.in.sql
-mobilitydb/sql/geo/070_tpoint_spatialrels.in.sql
 mobilitydb/sql/geo/071_tgeo_setset.in.sql
 mobilitydb/sql/geo/071_tpoint_setset.in.sql
 mobilitydb/sql/geo/073_tgeo_gist.in.sql
@@ -75,7 +72,6 @@ mobilitydb/sql/quadbin/352_quadbin_ops.in.sql
 mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/156_trgeo_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/160_trgeo_boxops.in.sql
-mobilitydb/sql/rgeo/170_trgeo_spatialrels.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
 mobilitydb/sql/s2cell/602_s2cell_ops.in.sql
 mobilitydb/sql/s2cell/605_ts2cell_spatialfuncs.in.sql

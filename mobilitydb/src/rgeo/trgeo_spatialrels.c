@@ -403,10 +403,10 @@ Aintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_disjoint_intersects */
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_ea_touches — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Ever/always touches
- * The function does not accept geography since it is based on the PostGIS
- * ST_Boundary function
  *****************************************************************************/
 
 PGDLLEXPORT Datum Etouches_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -426,7 +426,7 @@ PGDLLEXPORT Datum Atouches_geo_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Atouches_geo_trgeometry);
 /**
  * @ingroup mobilitydb_geo_rel_ever
- * @brief Return true if a geometry and a temporal rigid geometry ever touch
+ * @brief Return true if a geometry and a temporal rigid geometry always touch
  * @sqlfn aTouches()
  */
 inline Datum
@@ -461,8 +461,6 @@ Atouches_trgeometry_geo(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeo_geo, ALWAYS);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Etouches_trgeometry_trgeometry(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Etouches_trgeometry_trgeometry);
 /**
@@ -473,8 +471,7 @@ PG_FUNCTION_INFO_V1(Etouches_trgeometry_trgeometry);
 inline Datum
 Etouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeo_trgeo,
-    EVER);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeo_trgeo, EVER);
 }
 
 PGDLLEXPORT Datum Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -490,6 +487,7 @@ Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
   return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeo_trgeo,
     ALWAYS);
 }
+/* GENERATED-SPATIALRELS-END rgeo_ea_touches */
 
 /* GENERATED-SPATIALRELS-BEGIN rgeo_ea_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
  * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
