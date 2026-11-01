@@ -43,6 +43,7 @@
 #include <math.h>
 /* MEOS */
 #include "temporal/temporal.h"
+#include "geo/geo_funcs.h"
 
 
 /*****************************************************************************
@@ -1296,19 +1297,25 @@ distwalk_segm(const DistSegm *seg, const DistRefPoly *ra,
  * Bodies
  *****************************************************************************/
 
-/** A vertex at a distance of at most this fraction of the size of the ring
- * from the previous vertex is the same vertex */
-#define DISTREF_DUPTOL     1e-12
-
-/** A vertex whose turn has a sine of at most this value, and that does not
- * go back, is on the line between its two neighbors */
-#define DISTREF_COLTOL     1e-12
+/**
+ * @brief Return true if @p b is strictly between @p a and @p c
+ */
+static bool
+refring_between(double a, double b, double c)
+{
+  return (a < b && b < c) || (a > b && b > c);
+}
 
 /**
  * @brief Remove the repeated vertices and the vertices on the line between
  * their neighbors, orient the ring counterclockwise, and return the number of
  * vertices
- * @details These changes do not change the distance to the ring.
+ * @details These changes do not change the distance to the ring.  Every
+ * question is decided exactly on the doubles of the ring: two vertices are
+ * the same vertex when their coordinates are equal, a vertex is on the line
+ * between its neighbors when the cross product of its two edges is zero
+ * (#cross_product_sign) and it lies strictly between them, and the turns of
+ * a convex ring all have one sign, which is its orientation.
  * @return Number of vertices, or 0 if the ring is not a convex polygon
  */
 static int
@@ -1316,32 +1323,16 @@ refring_canonicalize(double *px, double *py, int n)
 {
   if (n < 3)
     return 0;
-  double xmin = px[0], xmax = px[0], ymin = py[0], ymax = py[0];
-  for (int i = 1; i < n; i++)
-  {
-    if (px[i] < xmin) xmin = px[i];
-    if (px[i] > xmax) xmax = px[i];
-    if (py[i] < ymin) ymin = py[i];
-    if (py[i] > ymax) ymax = py[i];
-  }
-  double dx = xmax - xmin, dy = ymax - ymin;
-  double dtol = DISTREF_DUPTOL * sqrt(dx * dx + dy * dy);
 
   /* Repeated vertices, also across the end of the ring */
   int m = 0;
   for (int i = 0; i < n; i++)
   {
-    if (m > 0)
-    {
-      double ex = px[i] - px[m - 1], ey = py[i] - py[m - 1];
-      if (ex * ex + ey * ey <= dtol * dtol)
-        continue;
-    }
+    if (m > 0 && px[i] == px[m - 1] && py[i] == py[m - 1])
+      continue;
     px[m] = px[i]; py[m] = py[i]; m++;
   }
-  while (m > 1 &&
-      (px[m - 1] - px[0]) * (px[m - 1] - px[0]) +
-      (py[m - 1] - py[0]) * (py[m - 1] - py[0]) <= dtol * dtol)
+  while (m > 1 && px[m - 1] == px[0] && py[m - 1] == py[0])
     m--;
 
   /* Vertices on the line between their neighbors.  The removal of a vertex
@@ -1355,11 +1346,10 @@ refring_canonicalize(double *px, double *py, int n)
     for (int i = 0; i < m; i++)
     {
       int p = (i + m - 1) % m, q = (i + 1) % m;
-      double ux = px[i] - px[p], uy = py[i] - py[p];
-      double vx = px[q] - px[i], vy = py[q] - py[i];
-      double lu = sqrt(ux * ux + uy * uy), lv = sqrt(vx * vx + vy * vy);
-      if (lu > 0.0 && lv > 0.0 && ux * vx + uy * vy > 0.0 &&
-          fabs(ux * vy - uy * vx) <= DISTREF_COLTOL * lu * lv)
+      if (cross_product_sign(px[p], py[p], px[i], py[i], px[i], py[i],
+            px[q], py[q]) == 0 &&
+          (refring_between(px[p], px[i], px[q]) ||
+           refring_between(py[p], py[i], py[q])))
         continue;
       px[w] = px[i]; py[w] = py[i]; w++;
     }
@@ -1370,31 +1360,26 @@ refring_canonicalize(double *px, double *py, int n)
   if (m < 3)
     return 0;
 
-  /* Counterclockwise orientation */
-  double area2 = 0.0;
+  /* Convexity: every turn has the sign of the first one, which is not zero */
+  int orient = 0;
   for (int i = 0; i < m; i++)
   {
-    int j = (i + 1) % m;
-    area2 += px[i] * py[j] - px[j] * py[i];
+    int j = (i + 1) % m, l = (i + 2) % m;
+    int turn = cross_product_sign(px[i], py[i], px[j], py[j], px[j], py[j],
+      px[l], py[l]);
+    if (turn == 0 || (orient != 0 && turn != orient))
+      return 0;
+    orient = turn;
   }
-  if (area2 < 0.0)
+
+  /* Counterclockwise orientation */
+  if (orient < 0)
     for (int i = 0, j = m - 1; i < j; i++, j--)
     {
       double tx = px[i], ty = py[i];
       px[i] = px[j]; py[i] = py[j];
       px[j] = tx;    py[j] = ty;
     }
-  else if (area2 == 0.0)
-    return 0;
-
-  /* Convexity */
-  for (int i = 0; i < m; i++)
-  {
-    int j = (i + 1) % m, l = (i + 2) % m;
-    if ((px[j] - px[i]) * (py[l] - py[j]) -
-        (py[j] - py[i]) * (px[l] - px[j]) <= 0.0)
-      return 0;
-  }
   return m;
 }
 
@@ -1422,10 +1407,23 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
   for (int i = 0; i < nraw; i++)
   {
     const POINT2D *p = getPoint2d_cp(poly->rings[0], (uint32_t) i);
-    px[i] = p->x - ox;
-    py[i] = p->y - oy;
+    px[i] = p->x;
+    py[i] = p->y;
   }
+  /* The ring is cleaned on its input vertices, which decide whether it is
+   * convex.  The subtraction of a nonzero offset rounds, so the walk's ring
+   * is cleaned again on the doubles it uses: two vertices can become one and
+   * a turn can become flat */
   int n = refring_canonicalize(px, py, nraw);
+  if (n > 0 && (ox != 0.0 || oy != 0.0))
+  {
+    for (int i = 0; i < n; i++)
+    {
+      px[i] -= ox;
+      py[i] -= oy;
+    }
+    n = refring_canonicalize(px, py, n);
+  }
   if (n == 0)
   {
     pfree(px); pfree(py);

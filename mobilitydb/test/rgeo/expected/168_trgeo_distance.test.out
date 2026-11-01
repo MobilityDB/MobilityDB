@@ -496,3 +496,15 @@ SELECT tDistance(
  [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 00:00:00 2001 PST]
 (1 row)
 
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+                            tdistance                             
+------------------------------------------------------------------
+ [3@Mon Jan 01 00:00:00 2001 PST, 3@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 1.9999999999999,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+ERROR:  The distance of a temporal rigid geometry needs a reference geometry that is a convex polygon without holes

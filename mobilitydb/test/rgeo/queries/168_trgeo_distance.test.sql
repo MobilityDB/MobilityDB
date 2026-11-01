@@ -339,4 +339,16 @@ SELECT tDistance(
   trgeometry 'Polygon((-4 4,2 -4,3 -3,3 0,1 4,-4 4));[Pose(Point(-2 2),0)@2001-01-01, Pose(Point(-4.5 2),0)@2001-01-02]',
   geometry 'Point(-6 6)');
 
+-- A vertex on the line between its neighbors is not a corner of the body:
+-- (1 2) is on the top edge of the square, which is convex. A vertex 1e-13
+-- below that line is a corner turning inward, and a body that is not convex
+-- is refused
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 1.9999999999999,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+
 -------------------------------------------------------------------------------

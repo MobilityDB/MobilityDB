@@ -546,9 +546,14 @@ vertices are in the millions, and the terms of the functions would be the
 square of the millions for a question about meters.
 
 The walk cleans a reference ring before it uses it.  It removes a vertex
-at a distance of at most 1e-12 of the size of the ring from the previous
-vertex, and a vertex whose turn has a sine of at most 1e-12 and that does
-not go back.  These vertices do not change the distance.  Without them,
+equal to the previous one, and a vertex on the line between its two
+neighbors that lies strictly between them, decided by the exact sign of
+the cross product of its two edges.  These vertices do not change the
+distance.  The turns of the ring then all have one sign, which is its
+orientation, and the walk turns a clockwise ring around.  These questions
+are asked on the input vertices.  A static polygon is then taken relative
+to the mean of its vertices, a subtraction that rounds, and the walk asks
+them again on the doubles it uses.  Without them,
 each edge has a direction and each vertex has a turn.  A vertex where the
 ring goes back on the same line is the end of a spike.  It stays, because
 it changes the distance, and the ring is then not convex.  The walk
