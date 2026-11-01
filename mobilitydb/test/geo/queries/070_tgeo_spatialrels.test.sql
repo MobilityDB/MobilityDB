@@ -315,6 +315,16 @@ SELECT aDisjoint(tgeometry '[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, Polygon(
 SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}' AS a, tgeometry '{Point(12 2)@2001-01-01, Point(2 2)@2001-01-02}' AS b) t;
 -- A point inside a square, then on its boundary: contained ever, covered always
 SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-02]' AS a, tgeometry '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]' AS b) t;
+-- A geometry and a moving point: the point ends on the boundary, so it is covered always but
+-- not contained always; it crosses the gap of a U, so it touches the U
+SELECT aContains(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]'), aCovers(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', tgeompoint '[Point(2 2)@2001-01-01, Point(4 2)@2001-01-02]');
+SELECT eTouches(geometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0))', tgeompoint '[Point(0.5 2)@2001-01-01, Point(4.5 2)@2001-01-02]');
+-- A temporal geometry and a point: a square moving away from the point contains it ever, not
+-- always; a point on the shared edge of two placements is contained by neither
+SELECT eContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)'), aContains(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((10 0,14 0,14 4,10 4,10 0))@2001-01-02}', geometry 'Point(2 2)');
+SELECT eContains(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)'), aCovers(tgeometry 'Interp=Step;[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((4 0,8 0,8 4,4 4,4 0))@2001-01-02]', geometry 'Point(4 2)');
+-- Two placements that overlap: the point in the overlap is intersected ever
+SELECT eIntersects(tgeometry '{Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01, Polygon((2 0,6 0,6 4,2 4,2 0))@2001-01-02}', geometry 'Point(3 2)');
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeometry 'Point(1 1)@2001-01-01');

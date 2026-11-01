@@ -46,7 +46,26 @@
 #define TINTERSECTS true
 #define TDISJOINT   false
 
+/**
+ * @brief Spatial relationship of a temporal point and a temporal geometry
+ * computed on the stretches where the temporal geometry keeps its value
+ */
+typedef enum
+{
+  TGEOREL_INTERSECTS,
+  TGEOREL_DISJOINT,
+  TGEOREL_TOUCHES,
+  TGEOREL_CONTAINS,
+  TGEOREL_COVERS,
+} tgeoRel;
+
 /*****************************************************************************/
+
+extern bool geo_is_one_point(const GSERIALIZED *gs);
+extern bool tgeo_tgeo_moving_point(const Temporal *temp1,
+  const Temporal *temp2);
+extern Temporal *tspatialrel_tgeo_tpoint_stretch(const Temporal *temp1,
+  const Temporal *temp2, tgeoRel rel);
 
 extern Temporal *tspatialrel_tspatial_base(const Temporal *temp,
   Datum base, const Datum *param, varfunc func, int numparam, bool invert);
