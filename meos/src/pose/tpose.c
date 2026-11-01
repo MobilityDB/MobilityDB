@@ -1254,9 +1254,10 @@ tpose_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   VALIDATE_NOT_NULL(result, false); VALIDATE_TPOSE(temp, false);
 
   Datum res;
-  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *result = DatumGetPoseP(res);
-  return found;
+  return true;
 }
 
 /*****************************************************************************

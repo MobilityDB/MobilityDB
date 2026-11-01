@@ -374,9 +374,10 @@ tpcpoint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, false); VALIDATE_NOT_NULL(value, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetPcpointP(res);
-  return result;
+  return true;
 }
 
 /*****************************************************************************

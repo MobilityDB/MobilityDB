@@ -677,9 +677,10 @@ trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   VALIDATE_NOT_NULL(result, false); VALIDATE_TRGEOMETRY(temp, false);
 
   Datum res;
-  bool found = trgeo_value_at_timestamptz(temp, t, strict, &res);
-  *result = found ? DatumGetGserializedP(res) : NULL;
-  return found;
+  if (! trgeo_value_at_timestamptz(temp, t, strict, &res))
+    return false;
+  *result = DatumGetGserializedP(res);
+  return true;
 }
 
 /*****************************************************************************/
