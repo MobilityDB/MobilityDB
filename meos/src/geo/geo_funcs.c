@@ -527,18 +527,20 @@ edges_add_circle(MeosArray *edges, double cx, double cy, double radius,
   bool ccw)
 {
   assert(edges); assert(radius > 0.0);
-  Edge e;
-  memset(&e, 0, sizeof(Edge));
-  e.etype = EDGE_POLYARC;
-  e.cx = cx; e.cy = cy; e.radius = radius;
-  e.centred = true;
-  e.ccw = ccw;
-  e.x1 = e.x2 = cx - radius;
-  e.y1 = e.y2 = cy;
-  e.theta0 = e.theta1 = M_PI;
-  e.xmin = cx - radius; e.xmax = cx + radius;
-  e.ymin = cy - radius; e.ymax = cy + radius;
-  edge_array_add(edges, &e);
+  /* Written in its place in the array, as #edges_add_tangent_segment does */
+  if (edges->count >= edges->capacity)
+    edge_array_reserve(edges, 1);
+  Edge *e = &((Edge *) edges->elems)[edges->count++];
+  memset(e, 0, sizeof(Edge));
+  e->etype = EDGE_POLYARC;
+  e->cx = cx; e->cy = cy; e->radius = radius;
+  e->centred = true;
+  e->ccw = ccw;
+  e->x1 = e->x2 = cx - radius;
+  e->y1 = e->y2 = cy;
+  e->theta0 = e->theta1 = M_PI;
+  e->xmin = cx - radius; e->xmax = cx + radius;
+  e->ymin = cy - radius; e->ymax = cy + radius;
   return;
 }
 
@@ -12322,6 +12324,129 @@ filter_div(ArcsegFilter a, ArcsegFilter b, ArcsegFilter *r)
   return tower_f_div(a, b, &r->v, &r->e);
 }
 
+/* Whether a difference of the doubles placing an offset is zero or within
+ * 2^-300 and 2^300 of its size, where no product of up to three of them
+ * leaves the range of normal doubles */
+static inline bool
+offset_term_in_range(double d)
+{
+  double a = fabs(d);
+  return a == 0.0 || (a >= 0x1p-300 && a <= 0x1p300);
+}
+
+/* One coordinate o + num / den of a point placed in plain doubles, and the
+ * interval holding it exactly, from the bounds ne of the numerator and de
+ * of the denominator, as #tower_f_div bounds the quotient and
+ * #filter_point_bounds the point; false where the denominator's bound
+ * holds zero or the interval is wider than a few units in the last place */
+static inline bool
+plain_quotient_point(double o, double num, double ne, double den, double de,
+  double *val, double *lo, double *hi)
+{
+  double m = fabs(den) - de;
+  if (! (m > 0.0))
+    return false;
+  double v = num / den;
+  double e = ((ne + fabs(v) * de) / m) * (1.0 + 4.0 * DBL_EPSILON) +
+    2.0 * DBL_EPSILON * fabs(v) + DBL_MIN;
+  double c = o + v;
+  double ce = e + DBL_EPSILON * fabs(c) + DBL_MIN;
+  if (! isfinite(c) || ! isfinite(e) ||
+      ! (ce <= 8.0 * DBL_EPSILON * fabs(c) + DBL_MIN))
+    return false;
+  *lo = c - ce; *hi = c + ce; *val = c;
+  return true;
+}
+
+/* The crossing of two offsets sharing a centre V of #offset_lines_bounds,
+ * the same values in plain doubles, each computed as its filter computes
+ * it, and a bound on each coordinate that bounds the one the filters carry
+ * from their rules (#arcseg_f_mul, #arcseg_f_add, #tower_f_sqrt): with
+ * every difference zero or within 2^-300 and 2^300 of its size, no product
+ * falls below the normal doubles but r times a numerator, and to first
+ * order in eps the length lp is off by 4 eps lp, the numerator by
+ * 8 eps S with S = lq |dpy| + lp |dqy| (lq |dpx| + lp |dqx| for y), its
+ * product with r by 9 eps |r| S plus 4 DBL_MIN, the denominator by
+ * 17 eps lp lq, as |dp . dq| <= lp lq; 5, 11 and 18 cover the second order.
+ * The quotient and the point take them as #tower_f_div and
+ * #filter_point_bounds take theirs. False where the bound is wider than
+ * theirs allows, which the filters then place */
+static bool
+offset_lines_shared_bounds(const TangentPoint *p, const TangentPoint *q,
+  int sp, int sq, double vx, double vy, double *x, double *y, double box[4])
+{
+  double dpx = p->c2x - p->c1x, dpy = p->c2y - p->c1y;
+  double dqx = q->c2x - q->c1x, dqy = q->c2y - q->c1y;
+  double r = p->r1;
+  if (! offset_term_in_range(dpx) || ! offset_term_in_range(dpy) ||
+      ! offset_term_in_range(dqx) || ! offset_term_in_range(dqy) ||
+      r == 0.0 || ! offset_term_in_range(r))
+    return false;
+  double lp = sqrt(dpx * dpx + dpy * dpy), lq = sqrt(dqx * dqx + dqy * dqy);
+  if (lp == 0.0 || lq == 0.0)
+    return false;
+  /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
+   * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
+  double wp = lq * (double) sp, wq = lp * (double) sq;
+  const double num[2] = {r * ((wp * dpy + wq * dqy) * -1.0),
+    r * (wp * dpx + wq * dqx)};
+  const double sum[2] = {lq * fabs(dpy) + lp * fabs(dqy),
+    lq * fabs(dpx) + lp * fabs(dqx)};
+  double den = lp * lq + (dpx * dqx + dpy * dqy) * (double) (sp * sq);
+  double de = 18.0 * DBL_EPSILON * (lp * lq);
+  return plain_quotient_point(vx, num[0],
+      11.0 * DBL_EPSILON * fabs(r) * sum[0] + 4.0 * DBL_MIN, den, de, x,
+      &box[0], &box[1]) &&
+    plain_quotient_point(vy, num[1],
+      11.0 * DBL_EPSILON * fabs(r) * sum[1] + 4.0 * DBL_MIN, den, de, y,
+      &box[2], &box[3]);
+}
+
+/* The crossing of two offsets sharing no centre of #offset_lines_bounds,
+ * O + (hp dq - hq dp) / (dp x dq), the same values in plain doubles, each
+ * computed as its filter computes it, and a bound on each coordinate that
+ * bounds the one the filters carry from their rules: with every difference
+ * and both distances zero or within 2^-300 and 2^300 of their size, no
+ * product of up to three of them falls below the normal doubles, and to
+ * first order in eps, with P = |dpx dqy| + |dpy dqx| and
+ * C = |dqx ay| + |dqy ax|, the denominator is off by 4 eps P, hp by
+ * 6 eps |rp| lp, hq by 5 eps C + 7 eps |rq| lq, and the numerator of x by
+ * 10 eps |rp| lp |dqx| + |dpx| (9 eps C + 11 eps |rq| lq), that of y alike;
+ * 5, 11, 10 and 12 cover the second order, 8 DBL_MIN a product of a sum
+ * that cancels to below the normal doubles. False where the bound is wider
+ * than the filters allow, which the filters then place */
+static bool
+offset_lines_cross_bounds(const TangentPoint *p, const TangentPoint *q,
+  int sp, int sq, double *x, double *y, double box[4])
+{
+  double dpx = p->c2x - p->c1x, dpy = p->c2y - p->c1y;
+  double dqx = q->c2x - q->c1x, dqy = q->c2y - q->c1y;
+  double ox = p->c1x, oy = p->c1y;
+  double ax = q->c1x - ox, ay = q->c1y - oy;
+  double rp = p->r1, rq = q->r1;
+  if (! offset_term_in_range(dpx) || ! offset_term_in_range(dpy) ||
+      ! offset_term_in_range(dqx) || ! offset_term_in_range(dqy) ||
+      ! offset_term_in_range(ax) || ! offset_term_in_range(ay) ||
+      rp == 0.0 || ! offset_term_in_range(rp) || rq == 0.0 ||
+      ! offset_term_in_range(rq))
+    return false;
+  double lp = sqrt(dpx * dpx + dpy * dpy), lq = sqrt(dqx * dqx + dqy * dqy);
+  double hp = (rp * lp) * (double) sp;
+  double hq = (dqx * ay - dqy * ax) + (rq * lq) * (double) sq;
+  double den = dpx * dqy - dpy * dqx;
+  double de = 5.0 * DBL_EPSILON * (fabs(dpx * dqy) + fabs(dpy * dqx));
+  double hpl = fabs(rp) * lp, c = fabs(dqx * ay) + fabs(dqy * ax);
+  double hql = 10.0 * c + 12.0 * fabs(rq) * lq;
+  double nex = DBL_EPSILON * (11.0 * hpl * fabs(dqx) + fabs(dpx) * hql) +
+    8.0 * DBL_MIN;
+  double ney = DBL_EPSILON * (11.0 * hpl * fabs(dqy) + fabs(dpy) * hql) +
+    8.0 * DBL_MIN;
+  return plain_quotient_point(ox, hp * dqx - hq * dpx, nex, den, de, x,
+      &box[0], &box[1]) &&
+    plain_quotient_point(oy, hp * dqy - hq * dpy, ney, den, de, y,
+      &box[2], &box[3]);
+}
+
 /* The crossing of two segments between tangent points that are offsets of
  * the segments between the centres of pairs of circles of one radius
  * (#towerseg_offset), and a box holding it exactly, read off the doubles
@@ -12343,6 +12468,17 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
       ! towerseg_offset(m->q, &sq))
     return false;
   const TangentPoint *p = m->p->from, *q = m->q->from;
+  /* A centre both segments share, and one radius: in plain doubles first
+   * (#offset_lines_shared_bounds) */
+  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
+    (p->c1x == q->c2x && p->c1y == q->c2y);
+  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
+    (p->c2x == q->c2x && p->c2y == q->c2y);
+  bool shared = p->r1 == q->r1 && (vp || vq);
+  double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
+  if (shared ? offset_lines_shared_bounds(p, q, sp, sq, vx, vy, x, y, box) :
+      offset_lines_cross_bounds(p, q, sp, sq, x, y, box))
+    return true;
   ArcsegFilter dpx = arcseg_f_diff(p->c2x, p->c1x);
   ArcsegFilter dpy = arcseg_f_diff(p->c2y, p->c1y);
   ArcsegFilter dqx = arcseg_f_diff(q->c2x, q->c1x);
@@ -12352,14 +12488,8 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
     arcseg_f_mul(dpy, dpy)));
   ArcsegFilter lq = tower_f_sqrt(arcseg_f_add(arcseg_f_mul(dqx, dqx),
     arcseg_f_mul(dqy, dqy)));
-  /* A centre both segments share, and one radius */
-  bool vp = (p->c1x == q->c1x && p->c1y == q->c1y) ||
-    (p->c1x == q->c2x && p->c1y == q->c2y);
-  bool vq = (p->c2x == q->c1x && p->c2y == q->c1y) ||
-    (p->c2x == q->c2x && p->c2y == q->c2y);
-  if (p->r1 == q->r1 && (vp || vq))
+  if (shared)
   {
-    double vx = vp ? p->c1x : p->c2x, vy = vp ? p->c1y : p->c2y;
     /* With the unit normals s rot(d) / |d| multiplied through by |dp| |dq|:
      * r (sp |dq| rot(dp) + sq |dp| rot(dq)) / (|dp| |dq| + sp sq dp . dq) */
     ArcsegFilter wp = arcseg_f_scale(lq, (double) sp);
@@ -12394,6 +12524,65 @@ offset_lines_bounds(const MeetPoint *m, double *x, double *y, double box[4])
   return filter_point_bounds(ox, oy, fx, fy, x, y, box);
 }
 
+/* The meeting of #offset_line_circle_bounds, the same values in plain
+ * doubles, each computed as its filter computes it, and a bound on each
+ * coordinate that bounds the one the filters carry from their rules: with
+ * every difference and both radii zero or within 2^-300 and 2^300 of their
+ * size, to first order in eps, with Cc = |dx ay| + |dy ax|, the length l is
+ * off by 4 eps l, the cross product by 4 eps Cc, the quotient q by
+ * eps (4 Cc / l + 7 |q|) and delta by that and eps |delta|; h = R^2 -
+ * delta^2 carries its rules' bound he as they compute it, its root sqrt(h)
+ * moves by at most he / sqrt(h), and the numerator of x by
+ * |dy| (2 eps |delta| + delta's) + |dx| (2 eps sqrt(h) + the root's) plus
+ * eps of its size, that of y alike; 5, 8, 4 and the factor 1 + 16 eps
+ * cover the second order, 8 DBL_MIN a product below the normal doubles.
+ * False where the bound is wider than the filters allow, which the filters
+ * then place */
+static bool
+offset_line_circle_plain(const MeetPoint *m, int s, double *x, double *y,
+  double box[4])
+{
+  const TangentPoint *t = m->p->from;
+  double u = (m->p->to->k == 1) ? 1.0 : -1.0;
+  double dx = t->c2x - t->c1x, dy = t->c2y - t->c1y;
+  double ax = m->q->cx - t->c1x, ay = m->q->cy - t->c1y;
+  double r = t->r1, rr = m->q->radius;
+  if (! offset_term_in_range(dx) || ! offset_term_in_range(dy) ||
+      ! offset_term_in_range(ax) || ! offset_term_in_range(ay) ||
+      r == 0.0 || ! offset_term_in_range(r) || rr == 0.0 ||
+      ! offset_term_in_range(rr))
+    return false;
+  double l = sqrt(dx * dx + dy * dy);
+  if (l == 0.0)
+    return false;
+  double le = 5.0 * DBL_EPSILON * l;
+  double cc = fabs(dx * ay) + fabs(dy * ax);
+  double q = (dx * ay - dy * ax) / l;
+  double qe = DBL_EPSILON * (5.0 * (cc / l) + 8.0 * fabs(q)) + DBL_MIN;
+  double delta = r * (double) s - q;
+  double dle = qe * (1.0 + 16.0 * DBL_EPSILON) + DBL_EPSILON * fabs(delta);
+  double h = rr * rr - delta * delta;
+  double he = (DBL_EPSILON * (rr * rr + delta * delta + fabs(h)) +
+    2.0 * fabs(delta) * dle + dle * dle) * (1.0 + 16.0 * DBL_EPSILON) +
+    8.0 * DBL_MIN;
+  if (! (h - he > 0.0))
+    return false;
+  double sr = sqrt(h);
+  double se = (he / sr) * (1.0 + 4.0 * DBL_EPSILON) + 2.0 * DBL_EPSILON * sr;
+  double sg = sr * ((double) m->sigma * u);
+  double nx = (delta * dy) * -1.0 + sg * dx, ny = delta * dx + sg * dy;
+  double ad = fabs(delta);
+  double nex = (fabs(dy) * (2.0 * DBL_EPSILON * ad + dle) +
+    fabs(dx) * (2.0 * DBL_EPSILON * sr + se) + DBL_EPSILON * fabs(nx)) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  double ney = (fabs(dx) * (2.0 * DBL_EPSILON * ad + dle) +
+    fabs(dy) * (2.0 * DBL_EPSILON * sr + se) + DBL_EPSILON * fabs(ny)) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  return plain_quotient_point(m->q->cx, nx, nex, l, le, x, &box[0],
+      &box[1]) &&
+    plain_quotient_point(m->q->cy, ny, ney, l, le, y, &box[2], &box[3]);
+}
+
 /* The meeting of an offset of the segment between the centres of a pair of
  * circles of one radius (#towerseg_offset) with the circle of a centred
  * arc, the root sigma along the segment as #tower_point_line_circle places
@@ -12411,6 +12600,8 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   int s;
   if (! m->p || ! m->q || ! m->q->centred || ! towerseg_offset(m->p, &s))
     return false;
+  if (offset_line_circle_plain(m, s, x, y, box))
+    return true;
   const TangentPoint *t = m->p->from;
   double u = (m->p->to->k == 1) ? 1.0 : -1.0;
   ArcsegFilter dx = arcseg_f_diff(t->c2x, t->c1x);
@@ -12437,17 +12628,70 @@ offset_line_circle_bounds(const MeetPoint *m, double *x, double *y,
   return filter_point_bounds(m->q->cx, m->q->cy, fx, fy, x, y, box);
 }
 
+/* The crossing of #equal_circles_bounds, the same values in plain doubles,
+ * each computed as its filter computes it, and a bound on each coordinate
+ * that bounds the one the filters carry from their rules: with both
+ * differences and the radius zero or within 2^-300 and 2^300 of their
+ * size, to first order in eps, D is off by 4 eps D, h = 4 r^2 - D by
+ * eps (4 r^2 + |h|) and D's, its root sqrt(h) by at most that over
+ * sqrt(h) and 2 eps sqrt(h), the root of D by 4.5 eps sqrt(D), and the
+ * coordinate offset d / 2 - f rot(d) by eps |d| / 2, 2 eps |f| |d| and |d|
+ * times the bound of f, plus eps of its size; 5, 5 and the factor
+ * 1 + 16 eps cover the second order, 8 DBL_MIN a product below the normal
+ * doubles. The quotient and the point take them as #tower_f_div and
+ * #filter_point_bounds take theirs. False where the bound is wider than
+ * the filters allow, which the filters then place */
+static bool
+equal_circles_plain(const MeetPoint *m, double *x, double *y, double box[4])
+{
+  double dx = m->q->cx - m->p->cx, dy = m->q->cy - m->p->cy;
+  double r = m->p->radius;
+  if (! offset_term_in_range(dx) || ! offset_term_in_range(dy) ||
+      r == 0.0 || ! offset_term_in_range(r))
+    return false;
+  double dd = dx * dx + dy * dy;
+  if (! (dd > 0.0))
+    return false;
+  double dde = 5.0 * DBL_EPSILON * dd;
+  double r4 = (r * r) * 4.0;
+  double h = r4 - dd;
+  double he = (DBL_EPSILON * (r4 + fabs(h)) + dde) *
+    (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  if (! (h - he > 0.0))
+    return false;
+  double sh = sqrt(h), sd = sqrt(dd);
+  ArcsegFilter num = {sh,
+    (he / sh) * (1.0 + 4.0 * DBL_EPSILON) + 2.0 * DBL_EPSILON * sh};
+  ArcsegFilter den = {sd * 2.0, 10.0 * DBL_EPSILON * sd};
+  ArcsegFilter f, fx, fy;
+  if (! tower_f_div(num, den, &f.v, &f.e))
+    return false;
+  f.v = f.v * (double) m->sigma;
+  double af = fabs(f.v), ax = fabs(dx), ay = fabs(dy);
+  fx.v = dx * 0.5 - f.v * dy;
+  fy.v = dy * 0.5 + f.v * dx;
+  fx.e = (DBL_EPSILON * (0.5 * ax + 2.0 * af * ay + fabs(fx.v)) +
+    ay * f.e) * (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  fy.e = (DBL_EPSILON * (0.5 * ay + 2.0 * af * ax + fabs(fy.v)) +
+    ax * f.e) * (1.0 + 16.0 * DBL_EPSILON) + 8.0 * DBL_MIN;
+  return filter_point_bounds(m->p->cx, m->p->cy, fx, fy, x, y, box);
+}
+
 /* The crossing sigma of the circles of two centred arcs of one radius, as
  * #tower_point_circles places it, read off the doubles with a bound on
  * their error: with d = C2 - C1 and D = |d|^2 it is
- * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)). False where a
- * bound is wide, as where the circles nearly touch */
-static bool
+ * C1 + d / 2 + sigma sqrt(4 r^2 - D) rot(d) / (2 sqrt(D)), in plain
+ * doubles first (#equal_circles_plain), kept out of #meet_point_bounds,
+ * which places the far more frequent meetings. False where a bound is wide,
+ * as where the circles nearly touch */
+static pg_noinline bool
 equal_circles_bounds(const MeetPoint *m, double *x, double *y, double box[4])
 {
   if (! m->p || ! m->q || ! m->p->centred || ! m->q->centred ||
       m->p->radius != m->q->radius)
     return false;
+  if (equal_circles_plain(m, x, y, box))
+    return true;
   ArcsegFilter dx = arcseg_f_diff(m->q->cx, m->p->cx);
   ArcsegFilter dy = arcseg_f_diff(m->q->cy, m->p->cy);
   ArcsegFilter r = {m->p->radius, 0.0};
@@ -12702,6 +12946,50 @@ edges_add_tangent_segment(MeosArray *edges, const TangentPoint *from,
   const TangentPoint *to)
 {
   assert(edges); assert(from); assert(to);
+  /* The two ends of a tangent of one pair of circles of one radius are
+   * its centres plus the one offset f rot(d), f = side r / |d|
+   * (#tangent_point_bounds): read once, the same doubles, the edge written
+   * in its place in the array */
+  if (from->r1 == from->r2 && to->r1 == to->r2 && from->r1 == to->r1 &&
+      from->side == to->side && from->k != to->k &&
+      from->c1x == to->c1x && from->c1y == to->c1y &&
+      from->c2x == to->c2x && from->c2y == to->c2y)
+  {
+    double dx = from->c2x - from->c1x, dy = from->c2y - from->c1y;
+    double d2 = dx * dx + dy * dy;
+    if (d2 > 0x1p-900 && d2 < 0x1p900)
+    {
+      double f = from->side * from->r1 / sqrt(d2);
+      double ox = - f * dy, oy = f * dx;
+      double eo = 48.0 * DBL_EPSILON;
+      double fx = from->k ? from->c2x : from->c1x;
+      double fy = from->k ? from->c2y : from->c1y;
+      double tx = to->k ? to->c2x : to->c1x, ty = to->k ? to->c2y : to->c1y;
+      double x1 = fx + ox, y1 = fy + oy, x2 = tx + ox, y2 = ty + oy;
+      double eox = eo * fabs(ox), eoy = eo * fabs(oy);
+      double ex1 = eox + 2.0 * DBL_EPSILON * fabs(x1) + 4.0 * DBL_MIN;
+      double ey1 = eoy + 2.0 * DBL_EPSILON * fabs(y1) + 4.0 * DBL_MIN;
+      double ex2 = eox + 2.0 * DBL_EPSILON * fabs(x2) + 4.0 * DBL_MIN;
+      double ey2 = eoy + 2.0 * DBL_EPSILON * fabs(y2) + 4.0 * DBL_MIN;
+      if (isfinite(x1) && isfinite(y1) && isfinite(x2) && isfinite(y2) &&
+          isfinite(ex1) && isfinite(ey1) && isfinite(ex2) && isfinite(ey2))
+      {
+        if (edges->count >= edges->capacity)
+          edge_array_reserve(edges, 1);
+        Edge *e = &((Edge *) edges->elems)[edges->count];
+        memset(e, 0, sizeof(Edge));
+        e->etype = EDGE_POLYSEG;
+        e->from = from; e->to = to;
+        e->x1 = x1; e->y1 = y1; e->x2 = x2; e->y2 = y2;
+        e->xmin = Min(x1 - ex1, x2 - ex2); e->xmax = Max(x1 + ex1, x2 + ex2);
+        e->ymin = Min(y1 - ey1, y2 - ey2); e->ymax = Max(y1 + ey1, y2 + ey2);
+        e->dx = x2 - x1; e->dy = y2 - y1;
+        e->length = e->dx * e->dx + e->dy * e->dy;
+        edges->count++;
+        return;
+      }
+    }
+  }
   Edge e;
   memset(&e, 0, sizeof(Edge));
   e.etype = EDGE_POLYSEG;
