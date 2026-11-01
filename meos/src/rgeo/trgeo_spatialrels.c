@@ -60,45 +60,103 @@
  *****************************************************************************/
 
 /**
- * @brief Return 1 if the poses of a temporal rigid geometry and a geometry
- * ever/always satisfy a spatial relationship, 0 if not, and -1 on error
- * @details The placements are the reference geometry at each of the poses the
- * value takes, so the relationship is asked of each of them: the ever
- * semantics hold where one pose satisfies it, the always semantics where
- * every pose does. Asking it of the placements as a whole answers for the
- * union of the poses, which is a region the body occupies at no single instant
+ * @brief Return the temporal geometry that a temporal rigid geometry traces,
+ * or NULL with an error if the rigid geometry has linear interpolation
+ * @details A rigid geometry with step or discrete interpolation keeps its
+ * pose from one of its instants to the next, so its value at an instant is
+ * the value of the temporal geometry it traces. With linear interpolation the
+ * body moves and turns between its instants, and the relationships are not
+ * computed over that motion.
+ * @param[in] temp Temporal rigid geometry
+ */
+static Temporal *
+trgeometry_traced_tgeo(const Temporal *temp)
+{
+  if (! ensure_nonlinear_interp(temp->flags))
+    return NULL;
+  return trgeometry_to_tgeometry(temp);
+}
+
+/**
+ * @brief Return 1 if a temporal rigid geometry and a geometry ever/always
+ * satisfy a spatial relationship, 0 if not, and -1 on error
+ * @details The relationship is that of the temporal geometry the rigid
+ * geometry traces (#trgeometry_traced_tgeo) and the geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] gs Geometry
- * @param[in] func Spatial relationship function to be called
+ * @param[in] func Ever/always relationship of a temporal geometry and a
+ * geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @errval -1
  */
 static int
-ea_spatialrel_trgeometry_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
-  datum_func2 func, bool ever)
+ea_spatialrel_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
+  int (*func)(const Temporal *, const GSERIALIZED *, bool), bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs))
     return -1;
+  Temporal *tgeo = trgeometry_traced_tgeo(temp);
+  if (! tgeo)
+    return -1;
+  int result = func(tgeo, gs, ever);
+  pfree(tgeo);
+  return result;
+}
 
-  GSERIALIZED *places = trgeometry_placements(temp);
-  Datum geo = PointerGetDatum(gs);
-  int count;
-  GSERIALIZED **poses = geo_extract_elements(places, &count);
-  /* The vacuous default: false for the ever semantics, true for the always
-   * ones */
-  int result = ever ? 0 : 1;
-  for (int i = 0; i < count; i++)
+/**
+ * @brief Return 1 if a geometry and a temporal rigid geometry ever/always
+ * satisfy a spatial relationship, 0 if not, and -1 on error
+ * @details The relationship is that of the geometry and the temporal geometry
+ * the rigid geometry traces (#trgeometry_traced_tgeo)
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] func Ever/always relationship of a geometry and a temporal
+ * geometry
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+ea_spatialrel_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
+  int (*func)(const GSERIALIZED *, const Temporal *, bool), bool ever)
+{
+  if (! ensure_valid_trgeometry_geo(temp, gs))
+    return -1;
+  Temporal *tgeo = trgeometry_traced_tgeo(temp);
+  if (! tgeo)
+    return -1;
+  int result = func(gs, tgeo, ever);
+  pfree(tgeo);
+  return result;
+}
+
+/**
+ * @brief Return 1 if two temporal rigid geometries ever/always satisfy a
+ * spatial relationship, 0 if not, and -1 on error or if they share no instant
+ * @details The relationship is that of the temporal geometries the rigid
+ * geometries trace (#trgeometry_traced_tgeo)
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[in] func Ever/always relationship of two temporal geometries
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+ea_spatialrel_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
+  int (*func)(const Temporal *, const Temporal *, bool), bool ever)
+{
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
+    return -1;
+  /* Common-time gate: two rigid geometries sharing no instant are compared
+   * nowhere, so the relationship has no answer */
+  if (! temporal_time_overlaps(temp1, temp2))
+    return -1;
+  Temporal *tgeo1 = trgeometry_traced_tgeo(temp1);
+  if (! tgeo1)
+    return -1;
+  Temporal *tgeo2 = trgeometry_traced_tgeo(temp2);
+  if (! tgeo2)
   {
-    bool res = DatumGetBool(func(PointerGetDatum(poses[i]), geo));
-    if ((ever && res) || (! ever && ! res))
-    {
-      result = res ? 1 : 0;
-      break;
-    }
+    pfree(tgeo1);
+    return -1;
   }
-  pfree_array((void *) poses, count);
-  pfree(places);
+  int result = func(tgeo1, tgeo2, ever);
+  pfree(tgeo1); pfree(tgeo2);
   return result;
 }
 
@@ -114,23 +172,15 @@ ea_spatialrel_trgeometry_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the placements intersect the interior
- * of the geometry. Please refer to the documentation of the ST_Contains and
- * ST_Relate functions
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  */
 int
 ea_contains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) )
-    return -1;
-  GSERIALIZED *places = trgeometry_placements(temp);
-  bool result = ever ? geom_relate_pattern(gs, places, "T********") :
-    geom_contains(gs, places);
-  pfree(places);
-  return result ? 1 : 0;
+  return ea_spatialrel_geo_trgeometry(gs, temp, &ea_contains_geo_tgeo, ever);
 }
 
 /**
@@ -139,8 +189,8 @@ ea_contains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool eve
  * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the placements are contained in the
- * geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Econtains_geo_trgeometry()
@@ -157,8 +207,8 @@ econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
- * @note The function tests whether the placements are contained in the
- * geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acontains_geo_trgeometry()
@@ -170,27 +220,16 @@ acontains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 }
 
 /**
- * @brief Return 1 if the placements of a temporal rigid geometry ever
- * contain the placements of another, 0 if not, and -1 on error
+ * @brief Return 1 if a temporal rigid geometry ever/always contains
+ * another, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
 ea_contains_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
-    return -1;
-  /* Common-time gate: the placements below hold where each body passes and carry no time,
-   * so two rigid geometries sharing no instant would be related through positions they
-   * never hold together */
-  if (! temporal_time_overlaps(temp1, temp2))
-    return -1;
-  GSERIALIZED *places1 = trgeometry_placements(temp1);
-  GSERIALIZED *places2 = trgeometry_placements(temp2);
-  bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
-    geom_contains(places1, places2);
-  pfree(places1); pfree(places2);
-  return result ? 1 : 0;
+  return ea_spatialrel_trgeometry_trgeometry(temp1, temp2, &ea_contains_tgeo_tgeo,
+    ever);
 }
 
 /**
@@ -205,13 +244,7 @@ ea_contains_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, 
 int
 ea_contains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  if (! ensure_valid_trgeometry_geo(temp, gs) )
-    return -1;
-  GSERIALIZED *places = trgeometry_placements(temp);
-  bool result = ever ? geom_relate_pattern(places, gs, "T********") :
-    geom_contains(places, gs);
-  pfree(places);
-  return result ? 1 : 0;
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_contains_tgeo_geo, ever);
 }
 
 /*****************************************************************************
@@ -224,23 +257,15 @@ ea_contains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool eve
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the placements intersect the interior
- * of the geometry. Please refer to the documentation of the ST_Contains and
- * ST_Relate functions
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  */
 int
 ea_covers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) )
-    return -1;
-  GSERIALIZED *places = trgeometry_placements(temp);
-  bool result = ever ? geom_relate_pattern(gs, places, "T********") :
-    geom_covers(gs, places);
-  pfree(places);
-  return result ? 1 : 0;
+  return ea_spatialrel_geo_trgeometry(gs, temp, &ea_covers_geo_tgeo, ever);
 }
 
 /**
@@ -249,8 +274,8 @@ ea_covers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the placements are covered in the
- * geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Ecovers_geo_trgeometry()
@@ -267,8 +292,8 @@ ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * 0 if not, and -1 on error
  * @param[in] gs Geometry
  * @param[in] temp Temporal geometry
- * @note The function tests whether the placements are covered in the
- * geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acovers_geo_trgeometry()
@@ -287,16 +312,15 @@ acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note The function tests whether the placements intersect the interior
- * of the geometry. Please refer to the documentation of the ST_Contains and
- * ST_Relate functions
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  */
 int
 ea_covers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_covers, ever);
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_covers_tgeo_geo, ever);
 }
 
 /**
@@ -305,7 +329,8 @@ ea_covers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * and -1 on error
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
- * @note The function tests whether the placements cover the geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Ecovers_trgeometry_geo()
@@ -322,7 +347,8 @@ ecovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * and -1 on error
  * @param[in] temp Temporal geometry
  * @param[in] gs Geometry
- * @note The function tests whether the placements cover the geometry
+ * @note The relationship holds at an instant where it holds for the body
+ * placed at the pose of that instant
  * https://postgis.net/docs/ST_Relate.html
  * https://postgis.net/docs/ST_Contains.html
  * @csqlfn #Acovers_trgeometry_geo()
@@ -334,25 +360,16 @@ acovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return 1 if the placements of a temporal rigid geometry ever
- * cover the placements of another, 0 if not, and -1 on error
+ * @brief Return 1 if a temporal rigid geometry ever/always covers
+ * another, 0 if not, and -1 on error
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
 ea_covers_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
-    return -1;
-  /* Common-time gate, as in #ea_contains_trgeometry_trgeometry: the placements carry no time */
-  if (! temporal_time_overlaps(temp1, temp2))
-    return -1;
-  GSERIALIZED *places1 = trgeometry_placements(temp1);
-  GSERIALIZED *places2 = trgeometry_placements(temp2);
-  bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
-    geom_covers(places1, places2);
-  pfree(places1); pfree(places2);
-  return result ? 1 : 0;
+  return ea_spatialrel_trgeometry_trgeometry(temp1, temp2, &ea_covers_tgeo_tgeo,
+    ever);
 }
 
 /*****************************************************************************
@@ -372,16 +389,13 @@ ea_disjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool eve
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
-  if (ever)
-  {
-    /* A body in linear motion is ever disjoint unless it is always in contact */
-    if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
-      return INVERT_RESULT(ea_dwithin_trgeometry_geo(temp, gs, 0.0, ALWAYS));
-    return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_disjoint2d,
-      EVER);
-  }
-  /* aDisjoint(trgeo, geo) ≡ NOT eIntersects(trgeo, geo) */
-  return INVERT_RESULT(eintersects_trgeometry_geo(temp, gs));
+  /* A body in linear motion is ever disjoint unless it is always in contact,
+   * and always disjoint unless it is ever in contact; it is always disjoint
+   * from an empty geometry */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return gserialized_is_empty(gs) ? 1 :
+      INVERT_RESULT(ea_dwithin_trgeometry_geo(temp, gs, 0.0, ! ever));
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_disjoint_tgeo_geo, ever);
 }
 /**
  * @ingroup meos_rgeo_rel_ever
@@ -440,7 +454,8 @@ ea_disjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, 
       MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
     return INVERT_RESULT(ea_dwithin_trgeometry_trgeometry(temp1, temp2, 0.0,
       ! ever));
-  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, ever);
+  return ea_spatialrel_trgeometry_trgeometry(temp1, temp2, &ea_disjoint_tgeo_tgeo,
+    ever);
 }
 
 /**
@@ -489,11 +504,11 @@ ea_intersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool e
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
   /* A body in linear motion meets a geometry between its poses as well, where
-   * the temporal distance reaches zero */
-  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
-    return ea_dwithin_trgeometry_geo(temp, gs, 0.0, ever);
-  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_intersects2d,
-    ever);
+   * the temporal distance reaches zero, and never meets an empty one */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
+    return gserialized_is_empty(gs) ? 0 :
+      ea_dwithin_trgeometry_geo(temp, gs, 0.0, ever);
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_intersects_tgeo_geo, ever);
 }
 
 /**
@@ -554,7 +569,8 @@ ea_intersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2
   if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
       MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
     return ea_dwithin_trgeometry_trgeometry(temp1, temp2, 0.0, ever);
-  return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, ever);
+  return ea_spatialrel_trgeometry_trgeometry(temp1, temp2, &ea_intersects_tgeo_tgeo,
+    ever);
 }
 
 /**
@@ -598,7 +614,7 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_touches, EVER);
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_touches_tgeo_geo, EVER);
 }
 
 /**
@@ -612,7 +628,7 @@ etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_touches, ALWAYS);
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_touches_tgeo_geo, ALWAYS);
 }
 
 /**
@@ -625,7 +641,7 @@ atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_touches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ever ? etouches_trgeometry_geo(temp, gs) : atouches_trgeometry_geo(temp, gs);
+  return ea_spatialrel_trgeometry_geo(temp, gs, &ea_touches_tgeo_geo, ever);
 }
 
 /**
@@ -650,17 +666,8 @@ ea_touches_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever
 int
 ea_touches_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
-    return -1;
-  /* Common-time gate, as in #ea_contains_trgeometry_trgeometry: the placements carry no time */
-  if (! temporal_time_overlaps(temp1, temp2))
-    return -1;
-  GSERIALIZED *places1 = trgeometry_placements(temp1);
-  GSERIALIZED *places2 = trgeometry_placements(temp2);
-  bool result = geom_touches(places1, places2);
-  (void) ever;
-  pfree(places1); pfree(places2);
-  return result ? 1 : 0;
+  return ea_spatialrel_trgeometry_trgeometry(temp1, temp2, &ea_touches_tgeo_tgeo,
+    ever);
 }
 
 /*****************************************************************************
