@@ -135,6 +135,31 @@ boxtypes:
           - [tposechain, posechain, nad_tposechain_posechain]
           - sep
           - [tposechain, tposechain, nad_tposechain_tposechain]
+        # the temporal distance, the nearest approach instant and the shortest line
+        # (templates/distpairs.c.tmpl), as the tpose entry states them
+        distfns:
+          tdistance:
+            sides:
+              point: {c: GSERIALIZED, var: gs, getarg: PG_GETARG_GSERIALIZED_P, desc: geometry point, free: true, token: geo}
+              geo:   {desc: geometry point}
+            pairs:
+              - [point, tposechain, tdistance_tposechain_geo]
+              - [tposechain, geo, tdistance_tposechain_geo]
+              - [posechain, tposechain, tdistance_tposechain_posechain]
+              - [tposechain, posechain, tdistance_tposechain_posechain]
+              - [tposechain, tposechain, tdistance_tposechain_tposechain]
+          nai:
+            - [geo, tposechain, nai_tposechain_geo]
+            - [tposechain, geo, nai_tposechain_geo]
+            - [posechain, tposechain, nai_tposechain_posechain]
+            - [tposechain, posechain, nai_tposechain_posechain]
+            - [tposechain, tposechain, nai_tposechain_tposechain]
+          shortestline:
+            - [geo, tposechain, shortestline_tposechain_geo]
+            - [tposechain, geo, shortestline_tposechain_geo]
+            - [posechain, tposechain, shortestline_tposechain_posechain]
+            - [tposechain, posechain, shortestline_tposechain_posechain]
+            - [tposechain, tposechain, shortestline_tposechain_tposechain]
       - family:   tnpoint
         nadgroup: mobilitydb_npoint_dist
         nadfile:  mobilitydb/src/npoint/tnpoint_distance.c
