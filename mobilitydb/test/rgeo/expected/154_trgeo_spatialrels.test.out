@@ -1,6 +1,6 @@
 SELECT eContains(
   geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  econtains 
 -----------
  t
@@ -8,14 +8,14 @@ SELECT eContains(
 
 SELECT aContains(
   geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  acontains 
 -----------
  t
 (1 row)
 
 SELECT eContains(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(2 0.5)');
  econtains 
 -----------
@@ -23,7 +23,7 @@ SELECT eContains(
 (1 row)
 
 SELECT aContains(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(2 0.5)');
  acontains 
 -----------
@@ -31,16 +31,16 @@ SELECT aContains(
 (1 row)
 
 SELECT eContains(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  econtains 
 -----------
  t
 (1 row)
 
 SELECT aContains(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  acontains 
 -----------
  t
@@ -48,7 +48,7 @@ SELECT aContains(
 
 SELECT eCovers(
   geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  ecovers 
 ---------
  t
@@ -56,14 +56,14 @@ SELECT eCovers(
 
 SELECT aCovers(
   geometry 'Polygon((-1 -1,5 -1,5 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  acovers 
 ---------
  t
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(2 0.5)');
  ecovers 
 ---------
@@ -71,7 +71,7 @@ SELECT eCovers(
 (1 row)
 
 SELECT aCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(2 0.5)');
  acovers 
 ---------
@@ -79,23 +79,23 @@ SELECT aCovers(
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  ecovers 
 ---------
  t
 (1 row)
 
 SELECT aCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  acovers 
 ---------
  t
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
   geometry 'Point(0 0)');
  ecovers 
 ---------
@@ -103,7 +103,7 @@ SELECT eCovers(
 (1 row)
 
 SELECT aCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
   geometry 'Point(0 0)');
  acovers 
 ---------
@@ -111,7 +111,7 @@ SELECT aCovers(
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
  ecovers 
 ---------
@@ -119,7 +119,7 @@ SELECT eCovers(
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(4.5 0.5)');
  ecovers 
 ---------
@@ -127,38 +127,38 @@ SELECT eCovers(
 (1 row)
 
 SELECT aCovers(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(4.5 0.5)');
  acovers 
 ---------
  f
 (1 row)
 
-SELECT eDisjoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eDisjoint(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
  edisjoint 
 -----------
  t
 (1 row)
 
-SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eIntersects(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
  eintersects 
 -------------
  f
 (1 row)
 
-SELECT eCovers(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eCovers(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
  ecovers 
 ---------
  f
 (1 row)
 
-SELECT eTouches(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT eTouches(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
  etouches 
 ----------
  f
 (1 row)
 
-SELECT aDisjoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
+SELECT aDisjoint(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Polygon empty');
  adisjoint 
 -----------
  t
@@ -166,7 +166,7 @@ SELECT aDisjoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@
 
 SELECT eDisjoint(
   geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  edisjoint 
 -----------
  t
@@ -174,14 +174,14 @@ SELECT eDisjoint(
 
 SELECT aDisjoint(
   geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  adisjoint 
 -----------
  t
 (1 row)
 
 SELECT eDisjoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))');
  edisjoint 
 -----------
@@ -189,7 +189,7 @@ SELECT eDisjoint(
 (1 row)
 
 SELECT aDisjoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((10 10,11 10,11 11,10 11,10 10))');
  adisjoint 
 -----------
@@ -213,7 +213,7 @@ SELECT aDisjoint(
 (1 row)
 
 SELECT eDisjoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-05]',
   geometry 'Linestring(0 -5,0 5)');
  edisjoint 
 -----------
@@ -221,7 +221,7 @@ SELECT eDisjoint(
 (1 row)
 
 SELECT eDisjoint(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(-5 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(-5 0),0)@2001-01-01, Pose(Point(5 0),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,-1 1,1 1,1 -1,-1 -1))');
  edisjoint 
 -----------
@@ -230,7 +230,7 @@ SELECT eDisjoint(
 
 SELECT eIntersects(
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  eintersects 
 -------------
  t
@@ -238,14 +238,14 @@ SELECT eIntersects(
 
 SELECT aIntersects(
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  aintersects 
 -------------
  f
 (1 row)
 
 SELECT eIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
  eintersects 
 -------------
@@ -253,7 +253,7 @@ SELECT eIntersects(
 (1 row)
 
 SELECT aIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
  aintersects 
 -------------
@@ -261,23 +261,23 @@ SELECT aIntersects(
 (1 row)
 
 SELECT eIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  eintersects 
 -------------
  t
 (1 row)
 
 SELECT aIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  aintersects 
 -------------
  t
 (1 row)
 
 SELECT eIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
  eintersects 
 -------------
@@ -285,7 +285,7 @@ SELECT eIntersects(
 (1 row)
 
 SELECT aIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(20 20),0)@2001-01-01, Pose(Point(30 30),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,2 -1,2 2,-1 2,-1 -1))');
  aintersects 
 -------------
@@ -293,7 +293,7 @@ SELECT aIntersects(
 (1 row)
 
 SELECT aIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]',
   geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))');
  aintersects 
 -------------
@@ -302,14 +302,14 @@ SELECT aIntersects(
 
 SELECT aIntersects(
   geometry 'Polygon((-1 -1,4 -1,4 4,-1 4,-1 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(1 0),0)@2001-01-05]');
  aintersects 
 -------------
  t
 (1 row)
 
 SELECT eIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
  eintersects 
 -------------
@@ -317,7 +317,7 @@ SELECT eIntersects(
 (1 row)
 
 SELECT aIntersects(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((0.5 -1,20 -1,20 2,0.5 2,0.5 -1))');
  aintersects 
 -------------
@@ -326,7 +326,7 @@ SELECT aIntersects(
 
 SELECT eTouches(
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  etouches 
 ----------
  t
@@ -334,14 +334,14 @@ SELECT eTouches(
 
 SELECT aTouches(
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]');
  atouches 
 ----------
  f
 (1 row)
 
 SELECT eTouches(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))');
  etouches 
 ----------
@@ -349,7 +349,7 @@ SELECT eTouches(
 (1 row)
 
 SELECT aTouches(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Polygon((5 -1,6 -1,6 2,5 2,5 -1))');
  atouches 
 ----------
@@ -374,7 +374,7 @@ SELECT aTouches(
 
 SELECT eDwithin(
   geometry 'Point(6 0)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   2.0);
  edwithin 
 ----------
@@ -383,7 +383,7 @@ SELECT eDwithin(
 
 SELECT aDwithin(
   geometry 'Point(6 0)',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   2.0);
  adwithin 
 ----------
@@ -391,7 +391,7 @@ SELECT aDwithin(
 (1 row)
 
 SELECT eDwithin(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(6 0)',
   2.0);
  edwithin 
@@ -400,7 +400,7 @@ SELECT eDwithin(
 (1 row)
 
 SELECT aDwithin(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]',
   geometry 'Point(6 0)',
   2.0);
  adwithin 
@@ -427,48 +427,48 @@ SELECT aDwithin(
 (1 row)
 
 SELECT eContains(
-  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
  econtains 
 -----------
  
 (1 row)
 
 SELECT aContains(
-  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
  acontains 
 -----------
  
 (1 row)
 
 SELECT eCovers(
-  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
  ecovers 
 ---------
  
 (1 row)
 
 SELECT aCovers(
-  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((1 1,2 1,2 2,1 2,1 1));[Pose(Point(0 0),0)@2001-01-05, Pose(Point(0 0),0)@2001-01-06]');
  acovers 
 ---------
  
 (1 row)
 
 SELECT eTouches(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
  etouches 
 ----------
  
 (1 row)
 
 SELECT aTouches(
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
-  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(1 0),0)@2001-01-05, Pose(Point(1 0),0)@2001-01-06]');
  atouches 
 ----------
  
@@ -490,3 +490,31 @@ SELECT eTouches(
  
 (1 row)
 
+SELECT eContains(a, b), aContains(a, b), eCovers(a, b), aCovers(a, b) FROM (SELECT
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02}' AS a,
+  trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(11.5 1.5),0)@2001-01-01, Pose(Point(1.5 1.5),0)@2001-01-02}' AS b) t;
+ econtains | acontains | ecovers | acovers 
+-----------+-----------+---------+---------
+ f         | f         | f       | f
+(1 row)
+
+SELECT eIntersects(a, b), aDisjoint(a, b) FROM (SELECT
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));{Pose(Point(0 0),0)@2001-01-01}' AS a,
+  trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));{Pose(Point(1 1),0)@2001-01-01}' AS b) t;
+ eintersects | adisjoint 
+-------------+-----------
+ t           | f
+(1 row)
+
+SELECT eContains(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02}', geometry 'Point(2 2)'),
+  aContains(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02}', geometry 'Point(2 2)'),
+  eContains(geometry 'Point(2 2)', trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));{Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02}');
+ econtains | acontains | econtains 
+-----------+-----------+-----------
+ t         | f         | f
+(1 row)
+
+SELECT eIntersects(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(2 2)');
+ERROR:  Operation not supported for temporal values with linear interpolation
+SELECT aContains(trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(2 2)');
+ERROR:  Operation not supported for temporal values with linear interpolation

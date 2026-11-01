@@ -958,7 +958,7 @@ aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
 eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </programlisting>
-				<para>Las relaciones <emphasis>alguna vez</emphasis> determinan si la relación se cumple en algún instante, y las relaciones <emphasis>siempre</emphasis> si se cumple en todos los instantes. Una geometría rígida temporal las responde sobre el cuerpo que su geometría de referencia sitúa en cada instante, de modo que la relación leída es la del cuerpo situado y no la de la geometría de referencia en el origen.</para>
+				<para>Las relaciones <emphasis>alguna vez</emphasis> determinan si la relación se cumple en algún instante, y las relaciones <emphasis>siempre</emphasis> si se cumple en todos los instantes. Una geometría rígida temporal las responde sobre el cuerpo que su geometría de referencia sitúa en cada instante, de modo que la relación leída es la del cuerpo situado y no la de la geometría de referencia en el origen. Una geometría rígida temporal con interpolación lineal se mueve y gira entre sus instantes, y estas relaciones generan un error para ella.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',

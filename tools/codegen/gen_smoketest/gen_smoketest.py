@@ -684,6 +684,25 @@ TRGEO_CONFIG = dict(
         # The values of a trgeometry are poses, so the set it is restricted to
         # is a poseset; the default tstzset1 is refused ("The set must be of
         # type poseset").
+        # The relationships answer a rigid geometry at its instants and refuse
+        # linear interpolation, so they read the step sequence of the same two
+        # instants.
+        "econtains_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "ecovers_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "ecovers_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "edisjoint_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "edisjoint_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "eintersects_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "eintersects_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "etouches_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "acontains_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "acovers_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "acovers_geo_trgeometry": {1: "trgeo_stepseq1"},
+        "adisjoint_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "adisjoint_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "aintersects_trgeometry_geo": {0: "trgeo_stepseq1"},
+        "aintersects_trgeometry_trgeometry": {0: "trgeo_stepseq1", 1: "trgeo_stepseq1"},
+        "atouches_trgeometry_geo": {0: "trgeo_stepseq1"},
         "trgeometry_restrict_values":       {1: "poseset1"},
         # ... and so are the two entries that spell the same restriction as a
         # pair, which the line above did not reach.
@@ -748,6 +767,10 @@ TRGEO_CONFIG = dict(
     LINEAR, 0.0, NULL, false);
   TSequence    *trgeo_tseq1    = (TSequence *) trgeo_seq1;
   TSequenceSet *trgeo_tseqset1 = NULL;
+  /* The relationships answer a rigid geometry at its instants, so they take
+   * step interpolation and refuse the linear sequence above. */
+  Temporal *trgeo_stepseq1 = trgeometry_append_tinstant(
+    (Temporal *) trgeo_inst1, trgeo_inst2, STEP, 0.0, NULL, false);
   /* A later instant and a later sequence, so that the append surface performs
    * a real append instead of tripping the increasing-timestamps check. */
   TInstant *trgeo_inst3 = trgeometryinst_make(geom1, pose1,
@@ -792,6 +815,7 @@ TRGEO_CONFIG = dict(
   free(trgeo_inst4);
   if (trgeo_tseq2) free(trgeo_tseq2);
   if (trgeo_seq1) free(trgeo_seq1);
+  if (trgeo_stepseq1) free(trgeo_stepseq1);
   if (tpoint1) free(tpoint1);
   if (tpose1) free(tpose1);
   free(stbox1);
