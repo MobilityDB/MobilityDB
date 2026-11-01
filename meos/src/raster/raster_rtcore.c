@@ -1255,9 +1255,9 @@ raster_warp(const Raster *rast, int32_t srid, const char *coord_op,
  * stated for the result fixes its grid, as `ST_Transform` reads it
  * @param[in] rast Raster to reproject
  * @param[in] srid Target spatial reference system identifier
- * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
- * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case @nullable
+ * @param[in] algorithm Name of the resampling algorithm, one of
+ * NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read
+ * without regard to case
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @param[in] scale_x,scale_y Pixel size of the result in the units of the
@@ -1269,7 +1269,7 @@ Raster *
 raster_transform(const Raster *rast, int32_t srid, const char *algorithm,
   double max_err, double scale_x, double scale_y)
 {
-  VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(algorithm, NULL);
   if (! ensure_not_nan(max_err) || ! ensure_not_nan(scale_x) ||
       ! ensure_not_nan(scale_y))
     return NULL;
@@ -1468,9 +1468,9 @@ raster_coord_op(const char *pipelinestr, bool is_forward, int32_t src_srid,
  * @param[in] srid Spatial reference system identifier of the result, 0 when
  * the operation leaves it unstated
  * @param[in] is_forward True to apply the operation, false its inverse
- * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
- * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case @nullable
+ * @param[in] algorithm Name of the resampling algorithm, one of
+ * NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read
+ * without regard to case
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @param[in] scale_x,scale_y Pixel size of the result in the units of the
@@ -1484,6 +1484,7 @@ raster_transform_pipeline(const Raster *rast, const char *pipelinestr,
   double scale_x, double scale_y)
 {
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
+  VALIDATE_NOT_NULL(algorithm, NULL);
   if (! ensure_not_nan(max_err) || ! ensure_not_nan(scale_x) ||
       ! ensure_not_nan(scale_y))
     return NULL;
@@ -1507,9 +1508,9 @@ raster_transform_pipeline(const Raster *rast, const char *pipelinestr,
  * that grid
  * @param[in] rast Raster to reproject
  * @param[in] alignto Raster whose grid the result lies on
- * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
- * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case @nullable
+ * @param[in] algorithm Name of the resampling algorithm, one of
+ * NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read
+ * without regard to case
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
@@ -1520,6 +1521,7 @@ raster_transform_raster(const Raster *rast, const Raster *alignto,
   const char *algorithm, double max_err)
 {
   VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(alignto, NULL);
+  VALIDATE_NOT_NULL(algorithm, NULL);
   if (! ensure_not_nan(max_err))
     return NULL;
   int32_t srid = raster_srid(alignto);
@@ -1551,9 +1553,9 @@ raster_transform_raster(const Raster *rast, const Raster *alignto,
  * @param[in] scale_x,scale_y Pixel size in the units of the raster's own
  * reference system, the Y component being negative for a north-up grid as the
  * geotransform states it
- * @param[in] algorithm Name of the resampling algorithm, NULL for nearest
- * neighbour; one of NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos,
- * Max and Min, read without regard to case @nullable
+ * @param[in] algorithm Name of the resampling algorithm, one of
+ * NearestNeighbour, Bilinear, Cubic, CubicSpline, Lanczos, Max and Min, read
+ * without regard to case
  * @param[in] max_err Error in input pixels the warp may commit, 0 for an exact
  * calculation
  * @errval NULL
@@ -1563,7 +1565,7 @@ Raster *
 raster_rescale(const Raster *rast, double scale_x, double scale_y,
   const char *algorithm, double max_err)
 {
-  VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(rast, NULL); VALIDATE_NOT_NULL(algorithm, NULL);
   if (! ensure_not_nan(scale_x) || ! ensure_not_nan(scale_y) ||
       ! ensure_not_nan(max_err))
     return NULL;
@@ -6098,7 +6100,7 @@ raster_resample_bilinear(const char *resample, bool *bilinear)
  * @param[in] exclude_nodata True to leave out the positions over a nodata
  * pixel, false to answer the nodata value there
  * @param[in] resample Name of the read of a position, nearest or bilinear,
- * read without regard to case, NULL for nearest @nullable
+ * read without regard to case
  * @return A temporal float, or @p NULL when no instant of @p traj falls
  * inside the raster or survives nodata filtering
  * @errval NULL
@@ -6110,8 +6112,9 @@ raster_value(const Temporal *traj, const Raster *rast, int band,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEOMPOINT(traj, NULL); VALIDATE_NOT_NULL(rast, NULL);
+  VALIDATE_NOT_NULL(resample, NULL);
   bool bilinear = false;
-  if (resample && ! raster_resample_bilinear(resample, &bilinear))
+  if (! raster_resample_bilinear(resample, &bilinear))
     return NULL;
 
   RasterSampleState state;

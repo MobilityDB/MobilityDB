@@ -294,6 +294,12 @@ def collect(root: Path) -> list[tuple[str, str]]:
                        list(root.glob("pgtypes/**/*.c"))):
         for d in definitions(path, str(path.relative_to(root)))[0]:
             meos.setdefault(d["name"], d)
+    # A pgtypes body pg_<fn> states its arguments in the @param entries of
+    # the MEOS function <fn> that precedes it and calls it
+    for name, d in meos.items():
+        twin = meos.get(name[3:]) if name.startswith("pg_") else None
+        if twin and not d["entries"] and twin["rel"] == d["rel"]:
+            d["entries"] = twin["entries"]
     bodies = wrapper_bodies(root)
     support = aggregate_support(root)
     findings = []

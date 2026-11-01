@@ -267,8 +267,7 @@ Tpoint_to_geomeas(PG_FUNCTION_ARGS)
 {
   Temporal *tpoint = PG_GETARG_TEMPORAL_P(0);
   bool segmentize = (PG_NARGS() == 2) ? PG_GETARG_BOOL(1) : false;
-  GSERIALIZED *result;
-  tpoint_tfloat_to_geomeas(tpoint, NULL, segmentize, &result);
+  GSERIALIZED *result = tpoint_to_geomeas(tpoint, segmentize);
   PG_FREE_IF_COPY(tpoint, 0);
   PG_RETURN_GSERIALIZED_P(result);
 }

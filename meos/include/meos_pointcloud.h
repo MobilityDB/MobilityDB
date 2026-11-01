@@ -371,7 +371,7 @@ extern char *tpcbox_out(const TPCBox *box, int maxdd);
 
 /* Constructor */
 
-extern TPCBox *tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic,
+extern TPCBox *tpcbox_make(bool hasx, bool hasz, bool geodetic,
   uint32_t pcid, double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, const Span *period);
 extern TPCBox *tpcbox_copy(const TPCBox *box);

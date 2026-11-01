@@ -17,7 +17,6 @@ meos/src/geo/tgeo_tile.c	stbox_space_time_tiles	sorigin unstated
 meos/src/geo/tgeo_tile.c	tgeo_space_boxes	sorigin unstated
 meos/src/geo/tgeo_tile.c	tgeo_space_time_boxes	sorigin unstated
 meos/src/geo/tpoint_spatialfuncs.c	bearing_point_point	result unstated
-meos/src/geo/tpoint_spatialfuncs.c	tpoint_tfloat_to_geomeas	result unstated
 meos/src/geo/tspatial_posops_meos.c	above_stbox_tspatial	box unstated
 meos/src/geo/tspatial_posops_meos.c	above_tspatial_stbox	box unstated
 meos/src/geo/tspatial_posops_meos.c	after_stbox_tspatial	box unstated
@@ -63,8 +62,6 @@ meos/src/geo/tspatial_topops_meos.c	same_tspatial_stbox	box unstated
 meos/src/geo/tspatial_transform_meos.c	meos_set_spatial_ref_sys_csv	path unstated
 meos/src/h3/h3index_sets.c	h3indexset_values	count unstated
 meos/src/json/jsonbset_jsonfuncs.c	jsonbset_insert	newjb unstated
-meos/src/json/jsonbset_jsonfuncs.c	jsonbset_set	newjb unstated
-meos/src/json/jsonbset_jsonfuncs.c	jsonbset_set	null_handle unstated
 meos/src/json/tjsonb_compops.c	always_eq_tjsonb_tjsonb	temp1 unstated
 meos/src/json/tjsonb_compops.c	always_eq_tjsonb_tjsonb	temp2 unstated
 meos/src/json/tjsonb_compops.c	always_ne_tjsonb_tjsonb	temp1 unstated
@@ -74,7 +71,6 @@ meos/src/json/tjsonb_compops.c	ever_eq_tjsonb_tjsonb	temp2 unstated
 meos/src/json/tjsonb_compops.c	ever_ne_tjsonb_tjsonb	temp1 unstated
 meos/src/json/tjsonb_compops.c	ever_ne_tjsonb_tjsonb	temp2 unstated
 meos/src/json/tjsonb_jsonfuncs.c	tjsonb_insert	newjb unstated
-meos/src/json/tjsonb_jsonfuncs.c	tjsonb_set	null_handle unstated
 meos/src/npoint/npoint.c	npoint_srid	UNUSED unstated
 meos/src/npoint/npoint.c	nsegment_srid	UNUSED unstated
 meos/src/npoint/npointset_meos.c	npointset_values	count unstated

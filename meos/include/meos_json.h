@@ -249,7 +249,8 @@ extern Set *jsonbset_delete(const Set *set, const text *key);
 extern Set *jsonbset_delete_array(const Set *set, text **keys, int count);
 extern bool *jsonbset_exists(const Set *set, const text *key, int *count);
 extern bool *jsonbset_exists_array(const Set *set, text **keys, int count, bool any, int *rescount);
-extern Set *jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb, bool create, const text *null_handle, bool lax);
+extern Set *jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb, bool create);
+extern Set *jsonbset_set_lax(const Set *set, text **keys, int count, const Jsonb *newjb, bool create, const text *null_handle);
 extern Set *jsonbset_to_alphanumset(const Set *set, const char *key, MeosType settype, nullHandleType null_handle);
 extern Set *jsonbset_to_intset(const Set *set, const char *key, nullHandleType null_handle);
 extern Set *jsonbset_to_bigintset(const Set *set, const char *key, nullHandleType null_handle);
@@ -272,6 +273,7 @@ extern Set *jsonbset_extract_path_common(const Set *set, text **path_elems, int 
 extern Set *jsonbset_object_field_common(const Set *set, const text *key, bool astext, nullHandleType null_handle);
 extern bool *jsonbset_path_exists_intl(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
 extern bool *jsonbset_path_match_intl(const Set *set, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
+extern Set *jsonbset_set_intl(const Set *set, text **keys, int count, const Jsonb *newjb, bool create, const text *null_handle, bool lax);
 
 /* Set operations */
 
@@ -377,7 +379,8 @@ extern Temporal *tjsonb_path_match(const Temporal *temp, const JsonPath *jp, con
 extern Temporal *tjsonb_path_query_array(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Temporal *tjsonb_path_query_first(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Temporal *tjsonb_pretty(const Temporal *temp);
-extern Temporal *tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool create, const text *handle_null, bool lax);
+extern Temporal *tjsonb_set(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool create);
+extern Temporal *tjsonb_set_lax(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool create, const text *null_handle);
 extern Temporal *tjsonb_strip_nulls(const Temporal *temp, bool strip_in_arrays);
 extern Temporal *tjsonb_to_tbigint(const Temporal *temp, const char *key, nullHandleType null_handle);
 extern Temporal *tjsonb_to_tbool(const Temporal *temp, const char *key, nullHandleType null_handle);
@@ -396,6 +399,7 @@ extern Temporal *tjsonb_extract_path_common(const Temporal *temp, text **path_el
 extern Temporal *tjsonb_object_field_common(const Temporal *temp, const text *key, bool astext, nullHandleType null_handle);
 extern Temporal *tjsonb_path_exists_intl(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Temporal *tjsonb_path_match_intl(const Temporal *temp, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
+extern Temporal *tjsonb_set_intl(const Temporal *temp, text **keys, int count, const Jsonb *newjb, bool create, const text *null_handle, bool lax);
 
 /*****************************************************************************
  * Restriction functions

@@ -290,11 +290,11 @@ int main(void)
    * pcid 0 names no schema and states SRID 0, and a box with no spatial
    * dimension states SRID 0 whatever its pcid */
   Span *period = tstzspan_in("[2024-01-01, 2024-01-02]");
-  TPCBox *mkbox = tpcbox_make(true, false, false, false, 2, 1, 2, 1, 2, 0, 0,
+  TPCBox *mkbox = tpcbox_make(true, false, false, 2, 1, 2, 1, 2, 0, 0,
     NULL);
-  TPCBox *mkbox0 = tpcbox_make(true, false, false, false, 0, 1, 2, 1, 2, 0, 0,
+  TPCBox *mkbox0 = tpcbox_make(true, false, false, 0, 1, 2, 1, 2, 0, 0,
     NULL);
-  TPCBox *tbox7 = tpcbox_make(false, false, true, false, 7, 0, 0, 0, 0, 0, 0,
+  TPCBox *tbox7 = tpcbox_make(false, false, false, 7, 0, 0, 0, 0, 0, 0,
     period);
   assert(mkbox != NULL && mkbox0 != NULL && tbox7 != NULL);
   printf("tpcbox_make SRIDs: pcid 2 %d, pcid 0 %d, time only %d\n",
@@ -306,7 +306,7 @@ int main(void)
 
   /* A box with a spatial dimension built from a pcid naming no registered
    * schema is an error rather than a box with an assumed SRID */
-  TPCBox *unknown = tpcbox_make(true, false, false, false, 7, 1, 2, 1, 2, 0, 0,
+  TPCBox *unknown = tpcbox_make(true, false, false, 7, 1, 2, 1, 2, 0, 0,
     NULL);
   printf("errno building a box of a pcid with no schema: %d\n", meos_errno());
   assert(unknown == NULL && meos_errno() != 0);

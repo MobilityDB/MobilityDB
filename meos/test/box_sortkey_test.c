@@ -219,7 +219,7 @@ int main(void)
             if (! periods[p])
               continue;
             boxcorpus_add(pc ?
-              (void *) tpcbox_make(false, false, true, false,
+              (void *) tpcbox_make(false, false, false,
                 schemas[k].pcid, 0, 0, 0, 0, 0, 0, periods[p]) :
               (void *) stbox_make(false, false, false, srids[k], 0, 0, 0,
                 0, 0, 0, periods[p]));
@@ -230,7 +230,7 @@ int main(void)
             {
               double lo = coords[a], hi = coords[b];
               boxcorpus_add(pc ?
-                (void *) tpcbox_make(true, hasz, periods[p] != NULL,
+                (void *) tpcbox_make(true, hasz,
                   geodetic, schemas[k].pcid, lo, hi, -hi, -lo, lo, hi,
                   periods[p]) :
                 (void *) stbox_make(true, hasz, geodetic, srids[k], lo, hi,
@@ -249,7 +249,7 @@ int main(void)
   size_t size;
   TBox *tbox = tbox_make(NULL, periods[2]);
   STBox *stbox = stbox_make(true, false, false, 0, 0, 1, 0, 1, 0, 0, NULL);
-  TPCBox *tpcbox = tpcbox_make(true, false, false, false, 1, 0, 1, 0, 1, 0,
+  TPCBox *tpcbox = tpcbox_make(true, false, false, 1, 0, 1, 0, 1, 0,
     0, NULL);
   void *values[] = {tbox, stbox, tpcbox};
   boxcorpus_key keys[] = {(boxcorpus_key) tbox_sortkey,

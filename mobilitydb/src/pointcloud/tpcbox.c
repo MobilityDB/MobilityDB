@@ -287,7 +287,7 @@ Tpcbox_constructor_2d(PG_FUNCTION_ARGS)
   double xmax = PG_GETARG_FLOAT8(2);
   double ymax = PG_GETARG_FLOAT8(3);
   int32 pcid = PG_GETARG_INT32(4);
-  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false, false,
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false,
     (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, NULL));
 }
 
@@ -308,7 +308,7 @@ Tpcbox_constructor_3d(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(4);
   double zmax = PG_GETARG_FLOAT8(5);
   int32 pcid = PG_GETARG_INT32(6);
-  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false, false,
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false,
     (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, NULL));
 }
 
@@ -324,7 +324,7 @@ Tpcbox_constructor_t(PG_FUNCTION_ARGS)
 {
   Span *period = PG_GETARG_SPAN_P(0);
   int32 pcid = PG_GETARG_INT32(1);
-  PG_RETURN_TPCBOX_P(tpcbox_make(false, false, true, false,
+  PG_RETURN_TPCBOX_P(tpcbox_make(false, false, false,
     (uint32_t) pcid, 0, 0, 0, 0, 0, 0, period));
 }
 
@@ -344,7 +344,7 @@ Tpcbox_constructor_xt(PG_FUNCTION_ARGS)
   double ymax = PG_GETARG_FLOAT8(3);
   Span *period = PG_GETARG_SPAN_P(4);
   int32 pcid = PG_GETARG_INT32(5);
-  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, true, false,
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, false, false,
     (uint32_t) pcid, xmin, xmax, ymin, ymax, 0.0, 0.0, period));
 }
 
@@ -366,7 +366,7 @@ Tpcbox_constructor_zt(PG_FUNCTION_ARGS)
   double zmax = PG_GETARG_FLOAT8(5);
   Span *period = PG_GETARG_SPAN_P(6);
   int32 pcid = PG_GETARG_INT32(7);
-  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, true, false,
+  PG_RETURN_TPCBOX_P(tpcbox_make(true, true, false,
     (uint32_t) pcid, xmin, xmax, ymin, ymax, zmin, zmax, period));
 }
 

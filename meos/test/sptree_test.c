@@ -452,7 +452,7 @@ random_tpcbox(int sspan, int tspan)
   TimestampTz tlo = (TimestampTz) random_int(0, 1000000) * 1000000;
   Span *t = tstzspan_make(tlo, tlo + (TimestampTz) random_int(1, tspan) *
     1000000, true, false);
-  TPCBox *box = tpcbox_make(true, false, true, false, 1, xlo,
+  TPCBox *box = tpcbox_make(true, false, false, 1, xlo,
     xlo + random_int(1, sspan) / 10.0, ylo, ylo + random_int(1, sspan) / 10.0,
     0, 0, t);
   free(t);

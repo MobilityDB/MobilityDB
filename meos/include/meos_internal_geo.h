@@ -229,6 +229,8 @@ extern TSequenceSet *tgeometryseqset_in(const char *str);
 
 /* Conversion functions */
 
+extern bool tpoint_tfloat_to_geomeas_intl(const Temporal *tpoint, const Temporal *meas, bool segmentize, GSERIALIZED **result);
+
 /*****************************************************************************/
 
 /* Accessor functions */
