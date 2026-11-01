@@ -1316,6 +1316,418 @@ taggstate_deserialize(const uint8_t *bytes, size_t size)
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal and of temporal booleans
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tbool_tand_transfn()
+ * @csqlaggfn #tAndTransition()
+ */
+SkipList *
+tbool_tand_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_and, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal or of temporal booleans
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tbool_tor_transfn()
+ * @csqlaggfn #tOrTransition()
+ */
+SkipList *
+tbool_tor_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TBOOL))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_or, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tint_tmin_transfn()
+ * @csqlaggfn #tMinTransition()
+ */
+SkipList *
+tint_tmin_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_min_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tbigint_tmin_transfn()
+ * @csqlaggfn #tMinTransition()
+ */
+SkipList *
+tbigint_tmin_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TBIGINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_min_int64, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tfloat_tmin_transfn()
+ * @csqlaggfn #tMinTransition()
+ */
+SkipList *
+tfloat_tmin_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_min_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tint_tmax_transfn()
+ * @csqlaggfn #tMaxTransition()
+ */
+SkipList *
+tint_tmax_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_max_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tbigint_tmax_transfn()
+ * @csqlaggfn #tMaxTransition()
+ */
+SkipList *
+tbigint_tmax_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TBIGINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_max_int64, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tfloat_tmax_transfn()
+ * @csqlaggfn #tMaxTransition()
+ */
+SkipList *
+tfloat_tmax_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_max_float8, CROSSINGS);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tint_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
+ */
+SkipList *
+tint_tsum_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_sum_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tbigint_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
+ */
+SkipList *
+tbigint_tsum_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TBIGINT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_sum_int64, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal sum of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tfloat_tsum_transfn()
+ * @csqlaggfn #tSumTransition()
+ */
+SkipList *
+tfloat_tsum_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TFLOAT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_sum_float8, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal average of temporal numbers
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Tnumber_tavg_transfn()
+ * @csqlaggfn #tAvgTransition()
+ */
+SkipList *
+tnumber_tavg_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_tnumber_type(temp->temptype))
+    return NULL;
+  return temporal_tagg_transform_transfn(state, temp, &datum_sum_double2,
+    CROSSINGS_NO, &tnumberinst_transform_tavg);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal minimum of temporal text values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Ttext_tmin_transfn()
+ * @csqlaggfn #tMinTransition()
+ */
+SkipList *
+ttext_tmin_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_min_text, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for temporal maximum of temporal text values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Ttext_tmax_transfn()
+ * @csqlaggfn #tMaxTransition()
+ */
+SkipList *
+ttext_tmax_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  /* Ensure the validity of the arguments */
+  if (! ensure_temporal_isof_type(temp, T_TTEXT))
+    return NULL;
+  return temporal_tagg_transfn(state, temp, &datum_max_text, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Transition function for the merge aggregate of temporal values
+ * @param[in,out] state Current aggregate state @nullable
+ * @param[in] temp Temporal value to aggregate @nullable
+ * @csqlfn #Temporal_merge_transfn()
+ * @csqlaggfn #mergeTransition()
+ */
+SkipList *
+temporal_merge_transfn(SkipList *state, const Temporal *temp)
+{
+  /* Null temporal: return state */
+  if (! temp)
+    return state;
+  return temporal_tagg_transfn(state, temp, NULL, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the merge aggregate of temporal values
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Temporal_merge_combinefn()
+ */
+SkipList *
+temporal_merge_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, NULL, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal count aggregate of temporal values
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Temporal_tcount_combinefn()
+ */
+SkipList *
+temporal_tcount_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_int32, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal and aggregate of temporal booleans
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tbool_tand_combinefn()
+ */
+SkipList *
+tbool_tand_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_and, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal or aggregate of temporal booleans
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tbool_tor_combinefn()
+ */
+SkipList *
+tbool_tor_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_or, CROSSINGS_NO);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal minimum aggregate of temporal
+ * integers, big integers, floats and texts
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Temporal_tmin_combinefn()
+ */
+SkipList *
+temporal_tmin_combinefn(SkipList *state1, SkipList *state2)
+{
+  datum_func2 func;
+  bool crossings;
+  if (! tagg_combine_func(state1, state2, TAGG_MIN, &func, &crossings))
+    return NULL;
+  return temporal_tagg_combinefn(state1, state2, func, crossings);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal maximum aggregate of temporal
+ * integers, big integers, floats and texts
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Temporal_tmax_combinefn()
+ */
+SkipList *
+temporal_tmax_combinefn(SkipList *state1, SkipList *state2)
+{
+  datum_func2 func;
+  bool crossings;
+  if (! tagg_combine_func(state1, state2, TAGG_MAX, &func, &crossings))
+    return NULL;
+  return temporal_tagg_combinefn(state1, state2, func, crossings);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal sum aggregate of temporal
+ * integers, big integers and floats
+ * @details The states of the temporal count hold temporal integers whatever
+ * the type of the values counted, and are combined as theirs
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tnumber_tsum_combinefn()
+ */
+SkipList *
+tnumber_tsum_combinefn(SkipList *state1, SkipList *state2)
+{
+  datum_func2 func;
+  bool crossings;
+  if (! tagg_combine_func(state1, state2, TAGG_SUM, &func, &crossings))
+    return NULL;
+  return temporal_tagg_combinefn(state1, state2, func, crossings);
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Combine function for the temporal average aggregate of temporal
+ * numbers
+ * @param[in,out] state1, state2 Current aggregate states
+ * @csqlfn #Tnumber_tavg_combinefn()
+ */
+SkipList *
+tnumber_tavg_combinefn(SkipList *state1, SkipList *state2)
+{
+  return temporal_tagg_combinefn(state1, state2, &datum_sum_double2, CROSSINGS_NO);
+}
+
 /*****************************************************************************
  * Generic functions for aggregating temporal values that require a
  * transformation to be applied to each composing instant/sequence
