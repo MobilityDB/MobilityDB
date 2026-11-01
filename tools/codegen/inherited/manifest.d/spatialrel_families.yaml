@@ -498,6 +498,27 @@ spatialrel_families:
           tcbuffer_geo:      "a temporal circular buffer and a geometry are within a distance"
           tcbuffer_tcbuffer: "two temporal circular buffers are within a distance"
 
+  # The temporal dwithin of the temporal rigid geometries, whose three directions
+  # take the Tdwithin_* dispatchers of the temporal geos.
+  - family:    rgeo_t_dwithin
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    temporal:  true
+    ingroup:   mobilitydb_geo_rel_temp
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    disp:
+      geo_trgeometry:        Tdwithin_geo_tspatial
+      trgeometry_geo:        Tdwithin_tspatial_geo
+      trgeometry_trgeometry: Tdwithin_tspatial_tspatial
+    predicates:
+      - rel: dwithin
+        Rel: Dwithin
+        banner: "Temporal dwithin"
+        briefs:
+          geo_trgeometry:        "a geometry and a temporal rigid geometry are within a distance"
+          trgeometry_geo:        "a temporal rigid geometry and a geometry are within a distance"
+          trgeometry_trgeometry: "two temporal rigid geometries are within a distance"
+
 # ---------------------------------------------------------------------------
 # The SQL of the ever/always relationships of a family answering them with C
 # kernels of its own (generate.py's render_native_spatialrels, templates/

@@ -600,6 +600,8 @@ Adwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_dwithin */
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_t_dwithin — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Temporal dwithin
  *****************************************************************************/
@@ -612,7 +614,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_geo_trgeometry);
  * temporal rigid geometry are within a distance
  * @sqlfn tDwithin()
  */
-Datum
+inline Datum
 Tdwithin_geo_trgeometry(PG_FUNCTION_ARGS)
 {
   return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_trgeometry);
@@ -626,7 +628,7 @@ PG_FUNCTION_INFO_V1(Tdwithin_trgeometry_geo);
  * geometry and a geometry are within a distance
  * @sqlfn tDwithin()
  */
-Datum
+inline Datum
 Tdwithin_trgeometry_geo(PG_FUNCTION_ARGS)
 {
   return Tdwithin_tspatial_geo(fcinfo, &tdwithin_trgeometry_geo);
@@ -640,10 +642,11 @@ PG_FUNCTION_INFO_V1(Tdwithin_trgeometry_trgeometry);
  * geometries are within a distance
  * @sqlfn tDwithin()
  */
-Datum
+inline Datum
 Tdwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
   return Tdwithin_tspatial_tspatial(fcinfo, &tdwithin_trgeometry_trgeometry);
 }
+/* GENERATED-SPATIALRELS-END rgeo_t_dwithin */
 
 /*****************************************************************************/
