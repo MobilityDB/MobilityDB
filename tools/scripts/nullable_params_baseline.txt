@@ -184,12 +184,12 @@ meos/src/temporal/temporal_tile.c	floatspan_bins	count unstated
 meos/src/temporal/temporal_tile.c	floatspanset_bins	count unstated
 meos/src/temporal/temporal_tile.c	intspan_bins	count unstated
 meos/src/temporal/temporal_tile.c	intspanset_bins	count unstated
+meos/src/temporal/temporal_tile.c	tbigint_value_time_split	time_bins unstated
 meos/src/temporal/temporal_tile.c	temporal_time_split	bins unstated
+meos/src/temporal/temporal_tile.c	tfloat_value_time_split	time_bins unstated
+meos/src/temporal/temporal_tile.c	tint_value_time_split	time_bins unstated
 meos/src/temporal/temporal_tile.c	tstzspan_bins	count unstated
 meos/src/temporal/temporal_tile.c	tstzspanset_bins	count unstated
-meos/src/temporal/temporal_tile_meos.c	tbigint_value_time_split	time_bins unstated
-meos/src/temporal/temporal_tile_meos.c	tfloat_value_time_split	time_bins unstated
-meos/src/temporal/temporal_tile_meos.c	tint_value_time_split	time_bins unstated
 meos/src/temporal/temporal_waggfuncs.c	tbigint_wmax_transfn	interv unstated
 meos/src/temporal/temporal_waggfuncs.c	tbigint_wmin_transfn	interv unstated
 meos/src/temporal/temporal_waggfuncs.c	tbigint_wsum_transfn	interv unstated
