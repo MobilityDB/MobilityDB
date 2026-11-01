@@ -90,6 +90,11 @@ SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '{Pose(Point(1 1), 0.3)@2001-01-0
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]')));
+-- The container states the SRID once, for its components too
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+-- A component that states the SRID of its container again reads back
+SELECT asEWKT(tposeFromHexEWKB('01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }')));
 
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'NDR')));
