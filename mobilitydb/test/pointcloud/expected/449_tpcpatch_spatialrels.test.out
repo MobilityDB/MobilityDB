@@ -37,16 +37,14 @@ SELECT eIntersects(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::floa
 (1 row)
 
 SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS ec_geo_pp,
-       eContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = eContains((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS ec_pp_geo,
-       eContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz)) = eContains((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS ec_pp_pp,
        eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = eCovers(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS ecv_geo_pp,
        eDisjoint(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz)) = eDisjoint((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS edj_pp_pp,
        eIntersects(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = eIntersects(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS ei_geo_pp,
        eTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') = eTouches((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))') AS etc_pp_geo,
        eDwithin(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz), 1.0) = eDwithin((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, 1.0) AS edw_pp_pp;
- ec_geo_pp | ec_pp_geo | ec_pp_pp | ecv_geo_pp | edj_pp_pp | ei_geo_pp | etc_pp_geo | edw_pp_pp 
------------+-----------+----------+------------+-----------+-----------+------------+-----------
- t         | t         | t        | t          | t         | t         | t          | t
+ ec_geo_pp | ecv_geo_pp | edj_pp_pp | ei_geo_pp | etc_pp_geo | edw_pp_pp 
+-----------+------------+-----------+-----------+------------+-----------
+ t         | t          | t         | t         | t          | t
 (1 row)
 
 SELECT aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = aContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS ac_geo_pp,
@@ -100,3 +98,20 @@ SELECT eDwithin(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]
 SELECT eContains(geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "econtains" statement 1
+/* Errors: a patch is a set of points, so it neither contains nor covers a
+   geometry and two patches do not touch */
+SELECT eContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 4,4 4,4 0,0 0))');
+ERROR:  function econtains(tpcpatch, geometry) does not exist
+LINE 3: SELECT eContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARR...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT aCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz));
+ERROR:  function acovers(tpcpatch, tpcpatch) does not exist
+LINE 1: SELECT aCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT eTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[9.0, 9.0]::float[])]), '2001-01-01'::timestamptz));
+ERROR:  function etouches(tpcpatch, tpcpatch) does not exist
+LINE 1: SELECT eTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRA...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.

@@ -138,22 +138,32 @@ SELECT asText(tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::
  f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
-SELECT asText(tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))'));
-             astext             
---------------------------------
- f@Mon Jan 01 00:00:00 2001 PST
-(1 row)
-
 SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS tc_agrees,
        tCovers(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz)) = tCovers(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', (tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry) AS tcv_agrees,
-       tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') = tTouches((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') AS ttc_agrees,
-       tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') = tContains((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') AS tc_rev_agrees;
- tc_agrees | tcv_agrees | ttc_agrees | tc_rev_agrees 
------------+------------+------------+---------------
- t         | t          | t          | t
+       tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') = tTouches((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz))::tgeometry, geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))') AS ttc_agrees;
+ tc_agrees | tcv_agrees | ttc_agrees 
+-----------+------------+------------
+ t         | t          | t
 (1 row)
 
 /* Errors: a schema carrying Z in a planar relationship */
 SELECT tContains(geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))', tpcpatch(pcpatch(pcpoint(1, 1, 1, 1)), '2001-01-01'::timestamptz));
 ERROR:  The tgeometry cannot have Z dimension
 CONTEXT:  SQL function "tcontains" statement 1
+/* Errors: a patch is a set of points, so it neither contains nor covers a
+   geometry and two patches do not touch */
+SELECT tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), geometry 'SRID=0;Polygon((0 0,0 2,2 2,2 0,0 0))');
+ERROR:  function tcontains(tpcpatch, geometry) does not exist
+LINE 3: SELECT tContains(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARR...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz));
+ERROR:  function tcovers(tpcpatch, tpcpatch) does not exist
+LINE 1: SELECT tCovers(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+SELECT tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz), tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRAY[1.0, 1.0]::float[]), PC_MakePoint(8, ARRAY[2.0, 2.0]::float[])]), '2001-01-01'::timestamptz));
+ERROR:  function ttouches(tpcpatch, tpcpatch) does not exist
+LINE 1: SELECT tTouches(tpcpatch(PC_Patch(ARRAY[PC_MakePoint(8, ARRA...
+               ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.

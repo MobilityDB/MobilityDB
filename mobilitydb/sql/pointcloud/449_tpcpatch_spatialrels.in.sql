@@ -52,26 +52,6 @@ CREATE FUNCTION aContains(geometry, tpcpatch)
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aContains($1, $2::@extschema@.tgeometry) $$;
 
-CREATE FUNCTION eContains(tpcpatch, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains($1::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aContains(tpcpatch, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains($1::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eContains(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains($1::@extschema@.tgeometry,
-                          $2::@extschema@.tgeometry) $$;
-CREATE FUNCTION aContains(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains($1::@extschema@.tgeometry,
-                          $2::@extschema@.tgeometry) $$;
-
 /*****************************************************************************
  * Ever/always covers
  *****************************************************************************/
@@ -84,26 +64,6 @@ CREATE FUNCTION aCovers(geometry, tpcpatch)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aCovers($1, $2::@extschema@.tgeometry) $$;
-
-CREATE FUNCTION eCovers(tpcpatch, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers($1::@extschema@.tgeometry, $2) $$;
-CREATE FUNCTION aCovers(tpcpatch, geometry)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers($1::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eCovers(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers($1::@extschema@.tgeometry,
-                        $2::@extschema@.tgeometry) $$;
-CREATE FUNCTION aCovers(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers($1::@extschema@.tgeometry,
-                        $2::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always disjoint
@@ -192,17 +152,6 @@ CREATE FUNCTION aTouches(tpcpatch, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aTouches($1::@extschema@.tgeometry, $2) $$;
-
-CREATE FUNCTION eTouches(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches($1::@extschema@.tgeometry,
-                         $2::@extschema@.tgeometry) $$;
-CREATE FUNCTION aTouches(tpcpatch, tpcpatch)
-  RETURNS boolean
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches($1::@extschema@.tgeometry,
-                         $2::@extschema@.tgeometry) $$;
 
 /*****************************************************************************
  * Ever/always dwithin

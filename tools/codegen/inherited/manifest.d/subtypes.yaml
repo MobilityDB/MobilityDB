@@ -330,12 +330,14 @@ subtypes:
     brief: "temporal pgpointcloud patches"
     bin:   400
     category: tspatial
-    # A patch is a cluster of points, so its geometry is the multipoint of the
+    # A patch is a set of points, so its geometry is the multipoint of the
     # positions its points occupy and the temporal geometry is the cast target
-    # its geometry names. The family declares the matrix that target declares,
-    # every predicate in every direction; a schema carrying a Z dimension meets
-    # the engine's refusal of a Z value in a planar relationship.
+    # its geometry names. As a set of positions it declares the matrix of a
+    # temporal point: a patch neither contains nor covers a geometry, and two
+    # patches do not touch. A schema carrying a Z dimension meets the engine's
+    # refusal of a Z value in a planar relationship.
     convert: "@N@::@extschema@.tgeometry"
+    point_target: true
     # `eIntersects(tpcpatch, geometry)` is emitted as a C wrapper over
     # `Eintersects_tpcpatch_geo`, whose kernel walks the points of each instant
     # and short-circuits on the first hit instead of materializing a multipoint.

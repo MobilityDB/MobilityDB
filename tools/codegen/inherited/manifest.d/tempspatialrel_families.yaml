@@ -255,20 +255,41 @@ tempspatialrel_families:
     convert: "@N@::@extschema@.tgeompoint"
 
   # A tpcpatch reaches the geometry engine as the multipoint of the positions
-  # its points occupy, so the temporal geometry is its cast target and it
-  # declares the matrix that target declares: every predicate in every
-  # direction, an area-valued family keeping what a point-valued one narrows.
-  # A schema carrying a Z dimension meets the engine's refusal of a Z value in
-  # a planar relationship.
+  # its points occupy, so the temporal geometry is its cast target. As a set of
+  # positions it declares the matrix of a temporal point: a patch neither
+  # contains nor covers a geometry, and two patches do not touch. A schema
+  # carrying a Z dimension meets the engine's refusal of a Z value in a planar
+  # relationship.
   - family:  tpcpatch
     impl:    cast
     file:    mobilitydb/sql/pointcloud/448_tpcpatch_tempspatialrels.in.sql
     brief:   "temporal pgpointcloud patches"
-    predicates: [tContains, tCovers, tDisjoint, tIntersects, tTouches, tDwithin]
-    directions:
-      - {l: geometry, r: tpcpatch}
-      - {l: tpcpatch, r: geometry}
-      - {l: tpcpatch, r: tpcpatch}
+    predicates:
+      - name: tContains
+        directions:
+          - {l: geometry, r: tpcpatch}
+      - name: tCovers
+        directions:
+          - {l: geometry, r: tpcpatch}
+      - name: tDisjoint
+        directions:
+          - {l: geometry, r: tpcpatch}
+          - {l: tpcpatch, r: geometry}
+          - {l: tpcpatch, r: tpcpatch}
+      - name: tIntersects
+        directions:
+          - {l: geometry, r: tpcpatch}
+          - {l: tpcpatch, r: geometry}
+          - {l: tpcpatch, r: tpcpatch}
+      - name: tTouches
+        directions:
+          - {l: geometry, r: tpcpatch}
+          - {l: tpcpatch, r: geometry}
+      - name: tDwithin
+        directions:
+          - {l: geometry, r: tpcpatch}
+          - {l: tpcpatch, r: geometry}
+          - {l: tpcpatch, r: tpcpatch}
     convert: "@N@::@extschema@.tgeometry"
 
   - family:  tposechain
