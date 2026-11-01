@@ -815,14 +815,13 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
 
 /**
  * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if two temporal geometries ever/always contains satisfy a
- * spatial relationship, 0 if not, and -1 on error
+ * @brief Return 1 if two temporal geometries ever/always satisfy a spatial
+ * relationship, 0 if not, and -1 on error
  * @details
- * - A temporal geometry *ever* contains another one if there is an instant in
- *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* contains another one if the traversed area
- *   of the first temporal geometry contains the traversed area of the second
- *   one
+ * - Two temporal geometries *ever* satisfy the relationship if they satisfy
+ *   it at an instant of the time they share.
+ * - Two temporal geometries *always* satisfy the relationship if they satisfy
+ *   it at every instant of the time they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] func Spatial relationship function to apply
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -839,18 +838,11 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     return -1;
 
   /* Common-time gate: two temporal geometries sharing no instant are compared nowhere,
-   * so the relationship has no answer, as #ea_dwithin_tgeo_tgeo also states. The always
-   * branch below reads the traversed areas, which carry no time of their own */
+   * so the relationship has no answer, as #ea_dwithin_tgeo_tgeo also states */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
 
-  /* Ever */
-  if (ever)
-    return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, EVER);
-  /* Always */
-  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL,
-    (varfunc) func, 2);
-  return result ? 1 : 0;
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
 
 /*****************************************************************************
@@ -980,9 +972,8 @@ acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @details
  * - A temporal geometry *ever* contains another one if there is an instant in
  *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* contains another one if the traversed area
- *   of the first temporal geometry contains the traversed area of the second
- *   one
+ * - A temporal geometry *always* contains another one if the two temporal
+ *   geometries satisfy the relationship at every instant they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @note Please refer to the documentation of the `ST_Contains` and `ST_Covers`
@@ -1163,9 +1154,8 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @details
  * - A temporal geometry *ever* covers another one if there is an instant in
  *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* covers another one if the traversed
- *   area of the first temporal geometry covers the traversed area of the
- *   second one
+ * - A temporal geometry *always* covers another one if the two temporal
+ *   geometries satisfy the relationship at every instant they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @note Please refer to the documentation of the `ST_Covers` and `ST_Covers`
