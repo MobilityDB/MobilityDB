@@ -113,6 +113,8 @@ Distance_cbuffer_cbuffer(PG_FUNCTION_ARGS)
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tcbuffer_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_geo_tcbuffer);
 /**
@@ -139,8 +141,8 @@ PGDLLEXPORT Datum Tdistance_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a temporal circular buffer and
- * a geometry point
+ * @brief Return the temporal distance between a temporal circular buffer and a
+ * geometry
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -157,14 +159,12 @@ Tdistance_tcbuffer_geo(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Tdistance_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a circular buffer and a
- * temporal circular buffer
+ * @brief Return the temporal distance between a circular buffer and a temporal
+ * circular buffer
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -175,6 +175,8 @@ Tdistance_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -182,8 +184,8 @@ PGDLLEXPORT Datum Tdistance_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a temporal circular buffer and
- * the circular buffer
+ * @brief Return the temporal distance between a temporal circular buffer and a
+ * circular buffer
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -194,6 +196,8 @@ Tdistance_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   Temporal *result = tdistance_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -201,8 +205,7 @@ PGDLLEXPORT Datum Tdistance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the temporal distance between a temporal circular buffer and
- * the circular buffer
+ * @brief Return the temporal distance between two temporal circular buffers
  * @sqlfn tDistance()
  * @sqlop @p <->
  */
@@ -218,11 +221,14 @@ Tdistance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END tcbuffer_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tcbuffer_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tcbuffer);
 /**
@@ -255,8 +261,8 @@ PG_FUNCTION_INFO_V1(NAI_tcbuffer_geo);
 Datum
 NAI_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   TInstant *result = nai_tcbuffer_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -264,8 +270,6 @@ NAI_tcbuffer_geo(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum NAI_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_cbuffer_tcbuffer);
@@ -307,14 +311,12 @@ NAI_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   PG_RETURN_TINSTANT_P(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the nearest approach instant between two temporal circular
- * points
+ * buffers
  * @sqlfn nearestApproachInstant()
  */
 Datum
@@ -329,6 +331,7 @@ NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END tcbuffer_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -539,6 +542,8 @@ NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tcbuffer_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tcbuffer);
 /**
@@ -564,8 +569,8 @@ PGDLLEXPORT Datum Shortestline_tcbuffer_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the line connecting the nearest approach point between a temporal
- * circular buffer and a geometry
+ * @brief Return the line connecting the nearest approach point between a
+ * temporal circular buffer and a geometry
  * @sqlfn shortestLine()
  */
 Datum
@@ -581,14 +586,12 @@ Shortestline_tcbuffer_geo(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
  * @brief Return the line connecting the nearest approach point between a
- * geometry and a temporal circular buffer
+ * circular buffer and a temporal circular buffer
  * @sqlfn shortestLine()
  */
 Datum
@@ -597,7 +600,6 @@ Shortestline_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(0);
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cb);
-  PG_FREE_IF_COPY(cb, 0);
   PG_FREE_IF_COPY(temp, 1);
   if (! result)
     PG_RETURN_NULL();
@@ -608,8 +610,8 @@ PGDLLEXPORT Datum Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_dist
- * @brief Return the line connecting the nearest approach point between a temporal
- * circular buffer and a geometry
+ * @brief Return the line connecting the nearest approach point between a
+ * temporal circular buffer and a circular buffer
  * @sqlfn shortestLine()
  */
 Datum
@@ -619,13 +621,10 @@ Shortestline_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   Cbuffer *cb = PG_GETARG_CBUFFER_P(1);
   GSERIALIZED *result = shortestline_tcbuffer_cbuffer(temp, cb);
   PG_FREE_IF_COPY(temp, 0);
-  PG_FREE_IF_COPY(cb, 1);
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
-
-/*****************************************************************************/
 
 PGDLLEXPORT Datum Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_tcbuffer);
@@ -647,6 +646,7 @@ Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END tcbuffer_shortestline */
 
 
 /*****************************************************************************

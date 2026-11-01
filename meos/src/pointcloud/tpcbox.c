@@ -606,24 +606,28 @@ tpcbox_srid_make(bool hasx, bool hasz, bool hast, bool geodetic,
  * @details The SRID of a box with a spatial dimension is the one the schema of
  * its pcid states, as #tpcbox_pcid_srid reads it; a box with no spatial
  * dimension states SRID 0
- * @param[in] hasx,hasz,hast,geodetic Dimensionality flags
+ * @param[in] hasx,hasz,geodetic Dimensionality flags
  * @param[in] pcid pgpointcloud schema id (0 = unknown)
  * @param[in] xmin,xmax,ymin,ymax,zmin,zmax Spatial bounds (ignored unless
  *   @p hasx; @p zmin/@p zmax ignored unless @p hasz)
- * @param[in] period Time bounds (ignored unless @p hast) @nullable
+ * @param[in] period Time bounds, NULL for a box without time dimension, as
+ * the span of #stbox_make @nullable
  * @csqlfn #Tpcbox_constructor_2d(), #Tpcbox_constructor_3d(),
  *   #Tpcbox_constructor_t(), #Tpcbox_constructor_xt(), #Tpcbox_constructor_zt()
  */
 TPCBox *
-tpcbox_make(bool hasx, bool hasz, bool hast, bool geodetic, uint32_t pcid,
-  double xmin, double xmax, double ymin, double ymax, double zmin,
-  double zmax, const Span *period)
+tpcbox_make(bool hasx, bool hasz, bool geodetic, uint32_t pcid, double xmin,
+  double xmax, double ymin, double ymax, double zmin, double zmax,
+  const Span *period)
 {
   /* Ensure the validity of the arguments */
+  if (period && ! ensure_span_isof_type(period, T_TSTZSPAN))
+    return NULL;
   if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
       ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
       ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
     return NULL;
+  bool hast = (period != NULL);
   if (! hasx && ! hast)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

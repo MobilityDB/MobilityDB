@@ -99,6 +99,12 @@ SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
 -- network lacks
 SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
+-- The container states the SRID once, for its components too
+SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
+-- A component that states the SRID of its container again reads back
+SELECT npointsetFromHexEWKB('013100412C16000001000000412C1600000100000000000000000000000000E03F');
+-- A component that states an SRID other than the one of the network is refused
+SELECT npointsetFromHexEWKB('01310041E61000000100000041E61000000100000000000000000000000000E03F');
 
 SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
 SELECT asText(nsegment 'NSegment(1,0.123456,0.7)', 2);

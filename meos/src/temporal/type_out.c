@@ -1482,7 +1482,8 @@ spatial_wkb_needs_srid(int32_t srid, uint8_t variant)
 /**
  * @brief Return the size of the WKB representation of the geo value
  * @note Since the geo is embedded in a container such as a set or a temporal
- * value, the SRID value (if any) is only output for the container
+ * value, the SRID value (if any) is only output for the container, as
+ * #cbuffer_to_wkb_size leaves it out of a component circular buffer
  */
 static size_t
 geo_to_wkb_size(const GSERIALIZED *gs, uint8_t variant)
@@ -1491,6 +1492,8 @@ geo_to_wkb_size(const GSERIALIZED *gs, uint8_t variant)
    * without the SRID; the extended path already carries both. */
   uint8_t v = (variant & WKB_EXTENDED) ? variant : (variant | (uint8_t) WKB_ISO);
   LWGEOM *geo = lwgeom_from_gserialized(gs);
+  /* The container states the SRID, which the reader gives the geo back */
+  lwgeom_set_srid(geo, SRID_UNKNOWN);
   size_t result = lwgeom_to_wkb_size(geo, v);
   lwgeom_free(geo);
   return result;
@@ -1572,7 +1575,8 @@ npoint_to_wkb_size(const Npoint *np, uint8_t variant, bool component)
     size += MEOS_WKB_BYTE_SIZE;
   /* rid  + position */
   size += MEOS_WKB_BYTE_SIZE +  MEOS_WKB_INT8_SIZE + MEOS_WKB_DOUBLE_SIZE;
-  if (spatial_wkb_needs_srid(npoint_srid(np), variant))
+  /* A component leaves the SRID to its container, as #cbuffer_to_wkb_size */
+  if (! component && spatial_wkb_needs_srid(npoint_srid(np), variant))
     size += MEOS_WKB_INT4_SIZE;
   return size;
 }
@@ -1644,7 +1648,8 @@ pose_to_wkb_size(const Pose *pose, uint8_t variant, bool component)
   /* 2D: 3 double values, 3D: 7 double values */
   size +=  MEOS_FLAGS_GET_Z(pose->flags) ?
     MEOS_WKB_DOUBLE_SIZE * 7 : MEOS_WKB_DOUBLE_SIZE * 3;
-  if (spatial_wkb_needs_srid(pose_srid(pose), variant))
+  /* A component leaves the SRID to its container, as #cbuffer_to_wkb_size */
+  if (! component && spatial_wkb_needs_srid(pose_srid(pose), variant))
     size += MEOS_WKB_INT4_SIZE;
   return size;
 }
@@ -1663,7 +1668,8 @@ posechain_to_wkb_size(const PoseChain *pc, uint8_t variant, bool component)
   if (! component)
     /* Endian flag */
     size += MEOS_WKB_BYTE_SIZE;
-  if (spatial_wkb_needs_srid(posechain_srid(pc), variant))
+  /* A component leaves the SRID to its container, as #cbuffer_to_wkb_size */
+  if (! component && spatial_wkb_needs_srid(posechain_srid(pc), variant))
     size += MEOS_WKB_INT4_SIZE;
   /* Number of links */
   size += MEOS_WKB_INT4_SIZE;
@@ -2325,6 +2331,9 @@ text_to_wkb_buf(const text *txt, uint8_t *buf, uint8_t variant)
 /**
  * @brief Write into the buffer a geo value in the Well-Known Binary (WKB)
  * representation
+ * @note Since the geo is embedded in a container such as a set or a temporal
+ * value, the SRID value (if any) is only output for the container, as
+ * #cbuffer_to_wkb_buf leaves it out of a component circular buffer
  */
 static uint8_t *
 geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
@@ -2333,6 +2342,8 @@ geo_to_wkb_buf(const GSERIALIZED *gs, uint8_t *buf, uint8_t variant)
    * without the SRID; the extended path already carries both. */
   uint8_t v = (variant & WKB_EXTENDED) ? variant : (variant | (uint8_t) WKB_ISO);
   LWGEOM *geo = lwgeom_from_gserialized(gs);
+  /* The container states the SRID, which the reader gives the geo back */
+  lwgeom_set_srid(geo, SRID_UNKNOWN);
   buf = lwgeom_to_wkb_buf(geo, buf, v);
   lwgeom_free(geo);
   return buf;
@@ -2428,13 +2439,17 @@ jsonb_to_wkb_buf(const Jsonb *jb, uint8_t *buf, uint8_t variant)
  * xSGZxxTX
  * S = SRID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  * @endcode
+ * The SRID flag is set when the SRID follows, as #cbuffer_to_wkb_buf sets it
+ * @param[in] buf Buffer
+ * @param[in] variant Output variant
+ * @param[in] srid True when the SRID follows the flags
  */
 static uint8_t *
-npoint_flags_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
+npoint_flags_to_wkb_buf(uint8_t *buf, uint8_t variant, bool srid)
 {
   uint8_t wkb_flags = 0;
   wkb_flags |= MEOS_WKB_XFLAG;
-  if (spatial_wkb_needs_srid(npoint_srid(np), variant))
+  if (srid)
     wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
@@ -2443,6 +2458,7 @@ npoint_flags_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant)
 /**
  * @brief Write into the buffer a network point in the Well-Known Binary
  * (WKB) representation
+ * @note A component leaves the SRID to its container, as #cbuffer_to_wkb_buf
  */
 static uint8_t *
 npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
@@ -2451,11 +2467,12 @@ npoint_to_wkb_buf(const Npoint *np, uint8_t *buf, uint8_t variant,
   if (! component)
     /* Write the endian flag (byte) */
     buf = endian_to_wkb_buf(buf, variant);
-  /* Write the flags (byte) */
-  buf = npoint_flags_to_wkb_buf(np, buf, variant);
-  /* Write the SRID */
   int32_t srid = npoint_srid(np);
-  if (spatial_wkb_needs_srid(srid, variant))
+  bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
+  /* Write the flags (byte) */
+  buf = npoint_flags_to_wkb_buf(buf, variant, with_srid);
+  /* Write the SRID */
+  if (with_srid)
     buf = int32_to_wkb_buf(srid, buf, variant);
   /* Write the network point */
   buf = int64_to_wkb_buf(np->rid, buf, variant);
@@ -2501,9 +2518,16 @@ nsegment_to_wkb_buf(const Nsegment *ns, uint8_t *buf, uint8_t variant)
  * xSGZxxTX
  * S = SRID, G = Geodetic, Z = has Z, T = has T, X = has X, x = unused bit
  * @endcode
+ * The SRID flag is set when the SRID follows, as #npoint_flags_to_wkb_buf
+ * sets it
+ * @param[in] pose Pose
+ * @param[in] buf Buffer
+ * @param[in] variant Output variant
+ * @param[in] srid True when the SRID follows the flags
  */
 static uint8_t *
-pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant)
+pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
+  bool srid)
 {
   uint8_t wkb_flags = 0;
   wkb_flags |= MEOS_WKB_XFLAG;
@@ -2511,7 +2535,7 @@ pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant)
     wkb_flags |= MEOS_WKB_ZFLAG;
   if (MEOS_FLAGS_GET_GEODETIC(pose->flags))
     wkb_flags |= MEOS_WKB_GEODETICFLAG;
-  if (spatial_wkb_needs_srid(pose_srid(pose), variant))
+  if (srid)
     wkb_flags |= MEOS_WKB_SRIDFLAG;
   /* Write the flags */
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
@@ -2521,6 +2545,7 @@ pose_flags_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant)
  * @brief Write into the buffer a component pose in the Well-Known Binary (WKB)
  * representation
  * @details SRID (int32, if any), 2D: 3 doubles, 3D: 7 doubles
+ * @note A component leaves the SRID to its container, as #npoint_to_wkb_buf
  */
 static uint8_t *
 pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
@@ -2529,10 +2554,11 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
   if (! component)
     /* Write the endian flag (byte) */
     buf = endian_to_wkb_buf(buf, variant);
-  /* Write the flags (byte) */
-  buf = pose_flags_to_wkb_buf(pose, buf, variant);
   int32_t srid = pose_srid(pose);
-  if (spatial_wkb_needs_srid(srid, variant))
+  bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
+  /* Write the flags (byte) */
+  buf = pose_flags_to_wkb_buf(pose, buf, variant, with_srid);
+  if (with_srid)
     buf = int32_to_wkb_buf(srid, buf, variant);
   /* Write the pose */
   buf = double_to_wkb_buf(pose->data[0], buf, variant);
@@ -2553,16 +2579,23 @@ pose_to_wkb_buf(const Pose *pose, uint8_t *buf, uint8_t variant,
 /**
  * @brief Write into the buffer the flags of a pose chain in the Well-Known
  * Binary (WKB) representation
+ * @details The SRID flag is set when the SRID follows, as
+ * #pose_flags_to_wkb_buf sets it
+ * @param[in] pc Pose chain
+ * @param[in] buf Buffer
+ * @param[in] variant Output variant
+ * @param[in] srid True when the SRID follows the flags
  */
 static uint8_t *
-posechain_flags_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant)
+posechain_flags_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
+  bool srid)
 {
   uint8_t wkb_flags = MEOS_WKB_XFLAG;
   if (MEOS_FLAGS_GET_Z(pc->flags))
     wkb_flags |= MEOS_WKB_ZFLAG;
   if (MEOS_FLAGS_GET_GEODETIC(pc->flags))
     wkb_flags |= MEOS_WKB_GEODETICFLAG;
-  if (spatial_wkb_needs_srid(posechain_srid(pc), variant))
+  if (srid)
     wkb_flags |= MEOS_WKB_SRIDFLAG;
   return uint8_to_wkb_buf(wkb_flags, buf, variant);
 }
@@ -2580,10 +2613,12 @@ posechain_to_wkb_buf(const PoseChain *pc, uint8_t *buf, uint8_t variant,
   if (! component)
     /* Write the endian flag (byte) */
     buf = endian_to_wkb_buf(buf, variant);
-  /* Write the flags (byte) */
-  buf = posechain_flags_to_wkb_buf(pc, buf, variant);
+  /* A component leaves the SRID to its container, as #pose_to_wkb_buf */
   int32_t srid = posechain_srid(pc);
-  if (spatial_wkb_needs_srid(srid, variant))
+  bool with_srid = ! component && spatial_wkb_needs_srid(srid, variant);
+  /* Write the flags (byte) */
+  buf = posechain_flags_to_wkb_buf(pc, buf, variant, with_srid);
+  if (with_srid)
     buf = int32_to_wkb_buf(srid, buf, variant);
   int count = posechain_num_poses(pc);
   buf = int32_to_wkb_buf(count, buf, variant);

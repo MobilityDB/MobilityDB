@@ -944,8 +944,10 @@ grid_origin_point(const GSERIALIZED *sorigin, POINT3DZ *pt)
  * @param[in] bounds Bounds
  * @param[in] xsize,ysize,zsize Size of the corresponding dimension; a `ysize`
  * or `zsize` of 0 takes `xsize`, and `zsize` is read only for a box with Z
- * @param[in] duration Size of the time dimension as an interval @nullable
- * @param[in] sorigin Origin for the space dimension @nullable
+ * @param[in] duration Size of the time dimension as an interval, NULL when
+ * @p hast is false
+ * @param[in] sorigin Origin for the space dimension, NULL when @p hasx is
+ * false
  * @param[in] torigin Origin for the time dimension
  * @param[in] border_inc True when the box contains the upper border
  * @param[in] hasx True when the grid lays the space dimension, which then

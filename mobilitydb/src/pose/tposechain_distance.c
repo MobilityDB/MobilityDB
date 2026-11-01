@@ -112,6 +112,8 @@ Distance_posechain_posechain(PG_FUNCTION_ARGS)
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tposechain_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_point_tposechain(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_point_tposechain);
 /**
@@ -218,11 +220,14 @@ Tdistance_tposechain_tposechain(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END tposechain_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tposechain_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_geo_tposechain(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tposechain);
 /**
@@ -255,8 +260,8 @@ PG_FUNCTION_INFO_V1(NAI_tposechain_geo);
 Datum
 NAI_tposechain_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   TInstant *result = nai_tposechain_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -324,6 +329,7 @@ NAI_tposechain_tposechain(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END tposechain_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -533,6 +539,8 @@ NAD_tposechain_tposechain(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tposechain_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_geo_tposechain(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tposechain);
 /**
@@ -615,8 +623,6 @@ Shortestline_tposechain_posechain(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
-/*****************************************************************************/
-
 PGDLLEXPORT Datum Shortestline_tposechain_tposechain(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_tposechain_tposechain);
 /**
@@ -637,5 +643,6 @@ Shortestline_tposechain_tposechain(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END tposechain_shortestline */
 
 /*****************************************************************************/

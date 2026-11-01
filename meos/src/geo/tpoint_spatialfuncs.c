@@ -1246,7 +1246,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
 /*****************************************************************************/
 
 /**
- * @ingroup meos_geo_conversion
+ * @ingroup meos_internal_geo_conversion
  * @brief Return a geometry/geography with M measure from a temporal point and
  * optionally a temporal float
  * @details If a temporal float is given the M coordinates of the result encode
@@ -1254,7 +1254,7 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * of the temporal point in Unix time, that is, the number of seconds since
  * '1970-01-01'
  * @param[in] tpoint Temporal point
- * @param[in] meas Temporal float @nullable
+ * @param[in] meas Temporal float, NULL for none
  * @param[in] segmentize When true, in the general case the resulting geometry
  * will be a MultiLineString composed of one Linestring per segment of the
  * temporal sequence (set)
@@ -1262,14 +1262,11 @@ tpointseqset_to_geomeas_segm(const TSequenceSet *ss, const TSequenceSet *meas)
  * @csqlfn #Tpoint_to_geomeas(), #Tpoint_tfloat_to_geomeas()
  */
 bool
-tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
+tpoint_tfloat_to_geomeas_intl(const Temporal *tpoint, const Temporal *meas,
   bool segmentize, GSERIALIZED **result)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(tpoint, false);
-  if (meas)
-    VALIDATE_TFLOAT(meas, false);
-
+  assert(tpoint); assert(tpoint_type(tpoint->temptype)); assert(result);
+  assert(! meas || meas->temptype == T_TFLOAT);
   Temporal *sync1, *sync2;
   if (meas)
   {
@@ -1316,6 +1313,52 @@ tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
     pfree(sync1); pfree(sync2);
   }
   return true;
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a geometry/geography with M measure from a temporal point,
+ * the M coordinates encoding its time in Unix time, that is, the number of
+ * seconds since '1970-01-01'
+ * @param[in] tpoint Temporal point
+ * @param[in] segmentize When true, in the general case the resulting geometry
+ * will be a MultiLineString composed of one Linestring per segment of the
+ * temporal sequence (set)
+ * @csqlfn #Tpoint_to_geomeas()
+ */
+GSERIALIZED *
+tpoint_to_geomeas(const Temporal *tpoint, bool segmentize)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINT(tpoint, NULL);
+  GSERIALIZED *result;
+  tpoint_tfloat_to_geomeas_intl(tpoint, NULL, segmentize, &result);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_conversion
+ * @brief Return a geometry/geography with M measure from a temporal point and
+ * a temporal float
+ * @details The M coordinates of the result encode the float values, as
+ * #tpoint_to_geomeas encodes the time of the point
+ * @param[in] tpoint Temporal point
+ * @param[in] meas Temporal float
+ * @param[in] segmentize When true, in the general case the resulting geometry
+ * will be a MultiLineString composed of one Linestring per segment of the
+ * temporal sequence (set)
+ * @param[out] result Resulting geometry array
+ * @return False when the two values do not intersect in time
+ * @csqlfn #Tpoint_tfloat_to_geomeas()
+ */
+bool
+tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *meas,
+  bool segmentize, GSERIALIZED **result)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINT(tpoint, false); VALIDATE_TFLOAT(meas, false);
+  VALIDATE_NOT_NULL(result, false);
+  return tpoint_tfloat_to_geomeas_intl(tpoint, meas, segmentize, result);
 }
 
 /*****************************************************************************

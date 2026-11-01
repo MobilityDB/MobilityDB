@@ -705,6 +705,7 @@ extern Temporal *tgeometry_to_tgeompoint(const Temporal *temp);
 extern Temporal *tgeompoint_to_tgeometry(const Temporal *temp);
 extern bool tpoint_as_mvtgeom(const Temporal *temp, const STBox *bounds, int32_t extent, int32_t buffer, bool clip_geom, GSERIALIZED **gsarr, int64 **timesarr, int *count);
 extern bool tpoint_tfloat_to_geomeas(const Temporal *tpoint, const Temporal *measure, bool segmentize, GSERIALIZED **result);
+extern GSERIALIZED *tpoint_to_geomeas(const Temporal *tpoint, bool segmentize);
 extern STBox *tspatial_to_stbox(const Temporal *temp);
 
 /* Accessor functions */

@@ -47,6 +47,9 @@
  * verifies as well that the elevation restriction refuses a temporal geometry
  * whose values are not points and restricts a temporal point, and that a
  * geography refuses a curve, as the value or a member of a collection.
+ * Finally, it verifies that #tpoint_to_geomeas and #tpoint_tfloat_to_geomeas
+ * report a null point or measure and answer the geometry with M measure of a
+ * point, its M encoding the time or the measure.
  *
  * The program can be build as follows
  * @code
@@ -58,6 +61,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
 
@@ -254,6 +258,37 @@ int main(void)
     gcoll ? "a value" : "NULL", meos_errno());
   assert(gcoll != NULL && meos_errno() == 0);
   free(mcurve); free(gcoll);
+
+  /* The geometry with M measure of a temporal point, one function encoding
+   * its time and one encoding a temporal float */
+  Temporal *trip = tgeompoint_in("[Point(1 1)@2001-01-01, "
+    "Point(2 2)@2001-01-02]");
+  Temporal *meas = tfloat_in("[10@2001-01-01, 20@2001-01-02]");
+  assert(trip && meas);
+  meos_errno_reset();
+  GSERIALIZED *gm = tpoint_to_geomeas(NULL, false);
+  printf("tpoint_to_geomeas(NULL): %s, errno %d\n", gm ? "a value" : "NULL",
+    meos_errno());
+  assert(gm == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  bool found = tpoint_tfloat_to_geomeas(trip, NULL, false, &gm);
+  printf("tpoint_tfloat_to_geomeas(trip, NULL): %s, errno %d\n",
+    found ? "true" : "false", meos_errno());
+  assert(! found && meos_errno() == MEOS_ERR_INVALID_ARG);
+  meos_errno_reset();
+  gm = tpoint_to_geomeas(trip, false);
+  char *gm_text = geo_as_text(gm, 6);
+  printf("tpoint_to_geomeas(trip): %s, errno %d\n", gm_text, meos_errno());
+  assert(strcmp(gm_text, "LINESTRING M (1 1 978307200,2 2 978393600)") == 0 &&
+    meos_errno() == 0);
+  free(gm_text); free(gm);
+  found = tpoint_tfloat_to_geomeas(trip, meas, false, &gm);
+  gm_text = geo_as_text(gm, 6);
+  printf("tpoint_tfloat_to_geomeas(trip, meas): %s, errno %d\n", gm_text,
+    meos_errno());
+  assert(found && strcmp(gm_text, "LINESTRING M (1 1 10,2 2 20)") == 0 &&
+    meos_errno() == 0);
+  free(gm_text); free(gm); free(trip); free(meas);
 
   /* Finalize MEOS */
   meos_finalize();

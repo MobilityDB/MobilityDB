@@ -98,6 +98,8 @@ Tspatialrel_cbuffer_tcbuffer(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN cbuffer_t_rels — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -110,7 +112,7 @@ PG_FUNCTION_INFO_V1(Tcontains_cbuffer_tcbuffer);
  * contains a temporal circular buffer
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tcontains_cbuffer_tcbuffer);
@@ -124,7 +126,7 @@ PG_FUNCTION_INFO_V1(Tcontains_tcbuffer_cbuffer);
  * buffer contains a circular buffer
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tcontains_tcbuffer_cbuffer);
@@ -138,7 +140,7 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tcbuffer);
  * temporal circular buffer
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tcontains_geo_tcbuffer);
@@ -152,7 +154,7 @@ PG_FUNCTION_INFO_V1(Tcontains_tcbuffer_geo);
  * buffer contains a geometry
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tcontains_tcbuffer_geo);
@@ -166,7 +168,7 @@ PG_FUNCTION_INFO_V1(Tcontains_tcbuffer_tcbuffer);
  * buffer contains another one
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tcontains_tcbuffer_tcbuffer);
@@ -180,11 +182,11 @@ PGDLLEXPORT Datum Tcovers_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcovers_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a circular buffer
- * covers a temporal circular buffer
+ * @brief Return a temporal boolean that states whether a circular buffer covers
+ * a temporal circular buffer
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_cbuffer_tcbuffer(fcinfo, &tcovers_cbuffer_tcbuffer);
@@ -198,7 +200,7 @@ PG_FUNCTION_INFO_V1(Tcovers_tcbuffer_cbuffer);
  * buffer covers a circular buffer
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tcbuffer_cbuffer(fcinfo, &tcovers_tcbuffer_cbuffer);
@@ -212,7 +214,7 @@ PG_FUNCTION_INFO_V1(Tcovers_geo_tcbuffer);
  * temporal circular buffer
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tcovers_geo_tcbuffer);
@@ -226,7 +228,7 @@ PG_FUNCTION_INFO_V1(Tcovers_tcbuffer_geo);
  * buffer covers a geometry
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tcovers_tcbuffer_geo);
@@ -240,7 +242,7 @@ PG_FUNCTION_INFO_V1(Tcovers_tcbuffer_tcbuffer);
  * buffer covers another one
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tcovers_tcbuffer_tcbuffer);
@@ -254,8 +256,8 @@ PGDLLEXPORT Datum Tdisjoint_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a temporal circular
- * buffer is disjoint from a circular buffer
+ * @brief Return a temporal boolean that states whether a circular buffer and a
+ * temporal circular buffer are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -269,7 +271,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * bufffer is disjoint from a circular buffer
+ * buffer and a circular buffer are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -282,8 +284,8 @@ PGDLLEXPORT Datum Tdisjoint_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a geometry is disjoint
- * from a temporal circular buffer 
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal circular buffer are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -297,7 +299,7 @@ PG_FUNCTION_INFO_V1(Tdisjoint_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * buffer is disjoint from a geometry
+ * buffer and a geometry are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -328,8 +330,8 @@ PGDLLEXPORT Datum Tintersects_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a temporal circular
- * buffer intersects a circular buffer
+ * @brief Return a temporal boolean that states whether a circular buffer and a
+ * temporal circular buffer intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -343,7 +345,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * buffer intersects a circular buffer
+ * buffer and a circular buffer intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -356,8 +358,8 @@ PGDLLEXPORT Datum Tintersects_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a geometry intersects a
- * temporal circular buffer  
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal circular buffer intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -371,7 +373,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * buffer intersects a geometry
+ * buffer and a geometry intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -385,7 +387,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether two temporal circular
- * buffers are disjoint
+ * buffers intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -402,11 +404,11 @@ PGDLLEXPORT Datum Ttouches_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_cbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a circular buffer
- * touches a temporal circular buffer
+ * @brief Return a temporal boolean that states whether a circular buffer and a
+ * temporal circular buffer touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_cbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_cbuffer_tcbuffer(fcinfo, &ttouches_cbuffer_tcbuffer);
@@ -417,10 +419,10 @@ PG_FUNCTION_INFO_V1(Ttouches_tcbuffer_cbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * buffer touches a circular buffer
+ * buffer and a circular buffer touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tcbuffer_cbuffer(fcinfo, &ttouches_tcbuffer_cbuffer);
@@ -430,11 +432,11 @@ PGDLLEXPORT Datum Ttouches_geo_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_geo_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a geometry touches a
- * temporal circular buffer
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal circular buffer touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_geo_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &ttouches_geo_tcbuffer);
@@ -445,10 +447,10 @@ PG_FUNCTION_INFO_V1(Ttouches_tcbuffer_geo);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
  * @brief Return a temporal boolean that states whether a temporal circular
- * buffer touches a geometry
+ * buffer and a geometry touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_tcbuffer_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &ttouches_tcbuffer_geo);
@@ -458,11 +460,11 @@ PGDLLEXPORT Datum Ttouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tcbuffer_tcbuffer);
 /**
  * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a temporal circular
- * buffer touches another one
+ * @brief Return a temporal boolean that states whether two temporal circular
+ * buffers touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &ttouches_tcbuffer_tcbuffer);
@@ -470,6 +472,53 @@ Ttouches_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 
 /*****************************************************************************
  * Temporal dwithin
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_geo_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_temp
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal circular buffer are within a distance
+ * @sqlfn tDwithin()
+ */
+inline Datum
+Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_tcbuffer);
+}
+
+PGDLLEXPORT Datum Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_geo);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal circular
+ * buffer and a geometry are within a distance
+ * @sqlfn tDwithin()
+ */
+inline Datum
+Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_tspatial_geo(fcinfo, &tdwithin_tcbuffer_geo);
+}
+
+PGDLLEXPORT Datum Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_tcbuffer);
+/**
+ * @ingroup mobilitydb_cbuffer_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal circular
+ * buffers are within a distance
+ * @sqlfn tDwithin()
+ */
+inline Datum
+Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
+{
+  return Tdwithin_tspatial_tspatial(fcinfo, &tdwithin_tcbuffer_tcbuffer);
+}
+/* GENERATED-SPATIALRELS-END cbuffer_t_rels */
+
+/*****************************************************************************
+ * Temporal dwithin of a circular buffer
  *****************************************************************************/
 
 PGDLLEXPORT Datum Tdwithin_cbuffer_tcbuffer(PG_FUNCTION_ARGS);
@@ -518,50 +567,5 @@ Tdwithin_tcbuffer_cbuffer(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_geo_tcbuffer);
-/**
- * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a geometry and a
- * temporal circular buffer are within a distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_geo_tcbuffer(PG_FUNCTION_ARGS)
-{
-  return Tdwithin_geo_tspatial(fcinfo, &tdwithin_geo_tcbuffer);
-}
-
-PGDLLEXPORT Datum Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_geo);
-/**
- * @ingroup mobilitydb_cbuffer_rel_temp
- * @brief Return a temporal boolean that states whether a temporal circular
- * buffer and a geometry are within a distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_tcbuffer_geo(PG_FUNCTION_ARGS)
-{
-  return Tdwithin_tspatial_geo(fcinfo, &tdwithin_tcbuffer_geo);
-}
-
-/*****************************************************************************/
-
-PGDLLEXPORT Datum Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tdwithin_tcbuffer_tcbuffer);
-/**
- * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether two spatiotemporal
- * values are within a given distance
- * @sqlfn tDwithin()
- */
-Datum
-Tdwithin_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
-{
-  return Tdwithin_tspatial_tspatial(fcinfo, &tdwithin_tcbuffer_tcbuffer);
-}
 
 /*****************************************************************************/

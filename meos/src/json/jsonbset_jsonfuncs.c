@@ -302,28 +302,28 @@ jsonbset_exists_array(const Set *set, text **keys, int count, bool any,
 }
 
 /**
- * @ingroup meos_json_set_json
- * @brief Replace a value specified by a path with a new value in a JSONB set
+ * @ingroup meos_internal_json_set_json
+ * @brief Replace a value specified by a path with a new value in a JSONB set,
+ * in the lax mode or not
  * @param[in] set JSONB set
  * @param[in] keys Keys
  * @param[in] count Number of elements in the input array
- * @param[in] newjb New value
+ * @param[in] newjb Value, `NULL` in the lax mode treated as @p null_handle
+ * states
  * @param[in] create When true, if the last path step is an array index that
- * is out of range, the new value is added at the beginning of the array if
- * the index is negative, or at the end of the array if it is positive
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
  * @param[in] null_handle States the null value treatment, which must be one of
  * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
  * @param[in] lax True when the lax mode is used
  * @csqlfn #Jsonbset_set(), #Jsonbset_set_lax()
  */
 Set *
-jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
-  bool create, const text *null_handle, bool lax)
+jsonbset_set_intl(const Set *set, text **keys, int count,
+  const Jsonb *newjb, bool create, const text *null_handle, bool lax)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(keys, NULL);
-  if (! ensure_positive(count))
-    return NULL;
+  assert(set); assert(set->settype == T_JSONBSET); assert(keys);
+  assert(count > 0); assert(lax || newjb); assert(! lax || null_handle);
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -339,6 +339,62 @@ jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
     lfinfo.param[4] = PointerGetDatum(null_handle);
   lfinfo.restype = T_JSONBSET;
   return lfunc_set(set, &lfinfo);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Replace a value specified by a path with a new value in a JSONB set
+ * @details The value at the path of each JSONB value, as #jsonb_set replaces
+ * it in a JSONB value
+ * @param[in] set JSONB set
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @param[in] newjb Value
+ * @param[in] create When true, if the last path step is an array index that
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
+ * @csqlfn #Jsonbset_set()
+ */
+Set *
+jsonbset_set(const Set *set, text **keys, int count, const Jsonb *newjb,
+  bool create)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(keys, NULL);
+  VALIDATE_NOT_NULL(newjb, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  return jsonbset_set_intl(set, keys, count, newjb, create, NULL, false);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Replace a value specified by a path with a new value in a JSONB set
+ * using the lax mode
+ * @details The value at the path of each JSONB value, as #jsonb_set_lax
+ * replaces it in a JSONB value
+ * @param[in] set JSONB set
+ * @param[in] keys Keys
+ * @param[in] count Number of elements in the input array
+ * @param[in] newjb Value, `NULL` treated as @p null_handle states @nullable
+ * @param[in] create When true, if the last path step is an array index that
+ * is out of range, the value is added at the beginning of the array if the
+ * index is negative, or at the end of the array if it is positive
+ * @param[in] null_handle States the null value treatment, which must be one of
+ * 'raise_exception', 'use_json_null', 'delete_key', or 'return_target'
+ * @csqlfn #Jsonbset_set_lax()
+ */
+Set *
+jsonbset_set_lax(const Set *set, text **keys, int count,
+  const Jsonb *newjb, bool create, const text *null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(keys, NULL);
+  VALIDATE_NOT_NULL(null_handle, NULL);
+  if (! ensure_positive(count))
+    return NULL;
+  return jsonbset_set_intl(set, keys, count, newjb, create, null_handle,
+    true);
 }
 
 /*****************************************************************************/

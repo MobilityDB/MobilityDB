@@ -371,6 +371,154 @@ spatialrel_families:
           - {type: "Temporal *", var: temp1, pos: 0}
           - {type: "Temporal *", var: temp2, pos: 1}
 
+  # The temporal relationships of the temporal geos (`temporal: true`): per
+  # predicate one T<Rel>_<dir> wrapper per direction, answering a temporal
+  # boolean through the file's Tspatialrel_* dispatchers over the MEOS
+  # t<rel>_<dir> kernel. tDwithin reads its distance and earth model in a body
+  # of its own, outside the region.
+  - family:    geo_t_rels
+    file:      mobilitydb/src/geo/tspatial_tempspatialrels.c
+    reference: true
+    temporal:  true
+    ingroup:   mobilitydb_geo_rel_temp
+    disp:
+      geo_tgeo:  Tspatialrel_geo_tspatial
+      tgeo_geo:  Tspatialrel_tspatial_geo
+      tgeo_tgeo: Tspatialrel_tspatial_tspatial
+    predicates:
+      - rel: contains
+        Rel: Contains
+        banner: "Temporal contains"
+        briefs:
+          geo_tgeo:  "a geometry contains a temporal geo"
+          tgeo_geo:  "a temporal geo contains a geometry"
+          tgeo_tgeo: "a temporal geo contains another one"
+      - rel: covers
+        Rel: Covers
+        banner: "Temporal covers"
+        briefs:
+          geo_tgeo:  "a geometry covers a temporal geo"
+          tgeo_geo:  "a temporal geo covers a geometry"
+          tgeo_tgeo: "a temporal geo covers another one"
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Temporal disjoint"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geo are disjoint"
+          tgeo_geo:  "a temporal geo and a geometry/geography are disjoint"
+          tgeo_tgeo: "two temporal geos are disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Temporal intersects\n * Available for temporal geographies"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geo intersect"
+          tgeo_geo:  "a temporal geo and a geometry/geography intersect"
+          tgeo_tgeo: "two temporal geos intersect"
+      - rel: touches
+        Rel: Touches
+        banner: "Temporal touches"
+        briefs:
+          geo_tgeo:  "a geometry and a temporal geo touch"
+          tgeo_geo:  "a temporal geo and a geometry touch"
+          tgeo_tgeo: "two temporal geos touch"
+
+  # The temporal relationships of the temporal circular buffers, in the
+  # 5-direction shape of the family: the base-value directions take the file's
+  # own Tspatialrel_cbuffer_tcbuffer and Tspatialrel_tcbuffer_cbuffer, the
+  # others the dispatchers of the temporal geos. tDwithin stays outside the
+  # region, its base-value directions reading the distance in bodies of their own.
+  - family:    cbuffer_t_rels
+    file:      mobilitydb/src/cbuffer/tcbuffer_tempspatialrels.c
+    reference: true
+    temporal:  true
+    ingroup:   mobilitydb_cbuffer_rel_temp
+    order:     [cbuffer_tcbuffer, tcbuffer_cbuffer, geo_tcbuffer, tcbuffer_geo, tcbuffer_tcbuffer]
+    disp:
+      cbuffer_tcbuffer:  Tspatialrel_cbuffer_tcbuffer
+      tcbuffer_cbuffer:  Tspatialrel_tcbuffer_cbuffer
+      geo_tcbuffer:      Tspatialrel_geo_tspatial
+      tcbuffer_geo:      Tspatialrel_tspatial_geo
+      tcbuffer_tcbuffer: Tspatialrel_tspatial_tspatial
+    predicates:
+      - rel: contains
+        Rel: Contains
+        banner: "Temporal contains"
+        briefs:
+          cbuffer_tcbuffer:  "a circular buffer contains a temporal circular buffer"
+          tcbuffer_cbuffer:  "a temporal circular buffer contains a circular buffer"
+          geo_tcbuffer:      "a geometry contains a temporal circular buffer"
+          tcbuffer_geo:      "a temporal circular buffer contains a geometry"
+          tcbuffer_tcbuffer: "a temporal circular buffer contains another one"
+      - rel: covers
+        Rel: Covers
+        banner: "Temporal covers"
+        briefs:
+          cbuffer_tcbuffer:  "a circular buffer covers a temporal circular buffer"
+          tcbuffer_cbuffer:  "a temporal circular buffer covers a circular buffer"
+          geo_tcbuffer:      "a geometry covers a temporal circular buffer"
+          tcbuffer_geo:      "a temporal circular buffer covers a geometry"
+          tcbuffer_tcbuffer: "a temporal circular buffer covers another one"
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Temporal disjoint"
+        briefs:
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer are disjoint"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer are disjoint"
+          geo_tcbuffer:      "a geometry and a temporal circular buffer are disjoint"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry are disjoint"
+          tcbuffer_tcbuffer: "two temporal circular buffers are disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Temporal intersects"
+        briefs:
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer intersect"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer intersect"
+          geo_tcbuffer:      "a geometry and a temporal circular buffer intersect"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry intersect"
+          tcbuffer_tcbuffer: "two temporal circular buffers intersect"
+      - rel: touches
+        Rel: Touches
+        banner: "Temporal touches"
+        briefs:
+          cbuffer_tcbuffer:  "a circular buffer and a temporal circular buffer touch"
+          tcbuffer_cbuffer:  "a temporal circular buffer and a circular buffer touch"
+          geo_tcbuffer:      "a geometry and a temporal circular buffer touch"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry touch"
+          tcbuffer_tcbuffer: "two temporal circular buffers touch"
+      - rel: dwithin
+        Rel: Dwithin
+        banner: "Temporal dwithin"
+        directions: [geo_tcbuffer, tcbuffer_geo, tcbuffer_tcbuffer]
+        disp:
+          geo_tcbuffer:      Tdwithin_geo_tspatial
+          tcbuffer_geo:      Tdwithin_tspatial_geo
+          tcbuffer_tcbuffer: Tdwithin_tspatial_tspatial
+        briefs:
+          geo_tcbuffer:      "a geometry and a temporal circular buffer are within a distance"
+          tcbuffer_geo:      "a temporal circular buffer and a geometry are within a distance"
+          tcbuffer_tcbuffer: "two temporal circular buffers are within a distance"
+
+  # The temporal dwithin of the temporal rigid geometries, whose three directions
+  # take the Tdwithin_* dispatchers of the temporal geos.
+  - family:    rgeo_t_dwithin
+    file:      mobilitydb/src/rgeo/trgeo_spatialrels.c
+    reference: true
+    temporal:  true
+    ingroup:   mobilitydb_geo_rel_temp
+    order:     [geo_trgeometry, trgeometry_geo, trgeometry_trgeometry]
+    disp:
+      geo_trgeometry:        Tdwithin_geo_tspatial
+      trgeometry_geo:        Tdwithin_tspatial_geo
+      trgeometry_trgeometry: Tdwithin_tspatial_tspatial
+    predicates:
+      - rel: dwithin
+        Rel: Dwithin
+        banner: "Temporal dwithin"
+        briefs:
+          geo_trgeometry:        "a geometry and a temporal rigid geometry are within a distance"
+          trgeometry_geo:        "a temporal rigid geometry and a geometry are within a distance"
+          trgeometry_trgeometry: "two temporal rigid geometries are within a distance"
+
 # ---------------------------------------------------------------------------
 # The SQL of the ever/always relationships of a family answering them with C
 # kernels of its own (generate.py's render_native_spatialrels, templates/

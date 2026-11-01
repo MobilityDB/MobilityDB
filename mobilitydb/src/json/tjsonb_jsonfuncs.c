@@ -855,28 +855,23 @@ Tjsonb_extract_path_text_opr(PG_FUNCTION_ARGS)
 
 /*****************************************************************************/
 
+PGDLLEXPORT Datum Tjsonb_set(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tjsonb_set);
 /**
+ * @ingroup mobilitydb_json_json
  * @brief Replace a value specified by a path with a new value in a temporal
- * JSONB value 
- * @sqlfn tjsonbSet(), tjsonbSetLax()
+ * JSONB value
+ * @sqlfn tjsonbSet()
  */
 Datum
-Tjsonb_set_common(FunctionCallInfo fcinfo, bool lax)
+Tjsonb_set(PG_FUNCTION_ARGS)
 {
-  /* In the lax mode the value may be NULL, the other arguments make the
-   * result NULL, and a NULL treatment is refused by the MEOS function */
-  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(3))
-    PG_RETURN_NULL();
   /* Input arguments */
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   ArrayType *path = PG_GETARG_ARRAYTYPE_P(1);
-  Jsonb *newjsonb = PG_ARGISNULL(2) ? NULL : PG_GETARG_JSONB_P(2);
+  Jsonb *newjsonb = PG_GETARG_JSONB_P(2);
   bool create = PG_GETARG_BOOL(3);
-  text *null_handle = NULL;
-  if (lax && ! PG_ARGISNULL(4))
-    null_handle = PG_GETARG_TEXT_P(4);
- 
- if (ARR_NDIM(path) > 1)
+  if (ARR_NDIM(path) > 1)
     ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
       errmsg("wrong number of array subscripts")));
 
@@ -889,8 +884,8 @@ Tjsonb_set_common(FunctionCallInfo fcinfo, bool lax)
     PG_RETURN_TEMPORAL_P(temp);
 
   /* Compute the result */
-  Temporal *result = tjsonb_set(temp, (text **) path_elems, path_len, newjsonb,
-    create, null_handle, lax);
+  Temporal *result = tjsonb_set(temp, (text **) path_elems, path_len,
+    newjsonb, create);
 
   /* Clean up and return */
   pfree(path_elems); pfree(path_nulls);
@@ -899,20 +894,6 @@ Tjsonb_set_common(FunctionCallInfo fcinfo, bool lax)
   if (! result)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
-}
-
-PGDLLEXPORT Datum Tjsonb_set(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tjsonb_set);
-/**
- * @ingroup mobilitydb_json_json
- * @brief Replace a value specified by a path with a new value in a temporal
- * JSONB value
- * @sqlfn tjsonbSet()
- */
-Datum
-Tjsonb_set(PG_FUNCTION_ARGS)
-{
-  return Tjsonb_set_common(fcinfo, false);
 }
 
 PGDLLEXPORT Datum Tjsonb_set_lax(PG_FUNCTION_ARGS);
@@ -926,8 +907,42 @@ PG_FUNCTION_INFO_V1(Tjsonb_set_lax);
 Datum
 Tjsonb_set_lax(PG_FUNCTION_ARGS)
 {
-  return Tjsonb_set_common(fcinfo, true);
+  /* The value may be NULL, the other arguments make the result NULL */
+  if (PG_ARGISNULL(0) || PG_ARGISNULL(1) || PG_ARGISNULL(3) ||
+      PG_ARGISNULL(4))
+    PG_RETURN_NULL();
+  /* Input arguments */
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  ArrayType *path = PG_GETARG_ARRAYTYPE_P(1);
+  Jsonb *newjsonb = PG_ARGISNULL(2) ? NULL : PG_GETARG_JSONB_P(2);
+  bool create = PG_GETARG_BOOL(3);
+  text *null_handle = PG_GETARG_TEXT_P(4);
+  if (ARR_NDIM(path) > 1)
+    ereport(ERROR, (errcode(ERRCODE_ARRAY_SUBSCRIPT_ERROR),
+      errmsg("wrong number of array subscripts")));
+
+  Datum *path_elems;
+  bool *path_nulls;
+  int path_len;
+  deconstruct_array(path, TEXTOID, -1, false, 'i', &path_elems, &path_nulls,
+    &path_len);
+  if (path_len == 0)
+    PG_RETURN_TEMPORAL_P(temp);
+
+  /* Compute the result */
+  Temporal *result = tjsonb_set_lax(temp, (text **) path_elems, path_len,
+    newjsonb, create, null_handle);
+
+  /* Clean up and return */
+  pfree(path_elems); pfree(path_nulls);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_FREE_IF_COPY(path, 1);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
 }
+
+/*****************************************************************************/
 
 /*****************************************************************************/
 

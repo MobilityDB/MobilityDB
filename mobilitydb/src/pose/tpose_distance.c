@@ -112,6 +112,8 @@ Distance_pose_pose(PG_FUNCTION_ARGS)
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tpose_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_point_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_point_tpose);
 /**
@@ -216,11 +218,14 @@ Tdistance_tpose_tpose(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END tpose_tdistance */
 
 /*****************************************************************************
  * Nearest approach instant (NAI)
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tpose_nai — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum NAI_geo_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_geo_tpose);
 /**
@@ -253,8 +258,8 @@ PG_FUNCTION_INFO_V1(NAI_tpose_geo);
 Datum
 NAI_tpose_geo(PG_FUNCTION_ARGS)
 {
-  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
   TInstant *result = nai_tpose_geo(temp, gs);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
@@ -267,8 +272,7 @@ PGDLLEXPORT Datum NAI_pose_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_pose_tpose);
 /**
  * @ingroup mobilitydb_pose_dist
- * @brief Return the nearest approach instant between a pose and a temporal
- * pose
+ * @brief Return the nearest approach instant between a pose and a temporal pose
  * @sqlfn nearestApproachInstant()
  */
 Datum
@@ -287,8 +291,7 @@ PGDLLEXPORT Datum NAI_tpose_pose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(NAI_tpose_pose);
 /**
  * @ingroup mobilitydb_pose_dist
- * @brief Return the nearest approach instant between a temporal pose and a
- * pose
+ * @brief Return the nearest approach instant between a temporal pose and a pose
  * @sqlfn nearestApproachInstant()
  */
 Datum
@@ -322,6 +325,7 @@ NAI_tpose_tpose(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TINSTANT_P(result);
 }
+/* GENERATED-DISTFNS-END tpose_nai */
 
 /*****************************************************************************
  * Nearest approach distance (NAD)
@@ -531,6 +535,8 @@ NAD_tpose_tpose(PG_FUNCTION_ARGS)
  * ShortestLine
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tpose_shortestline — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Shortestline_geo_tpose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Shortestline_geo_tpose);
 /**
@@ -635,5 +641,6 @@ Shortestline_tpose_tpose(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_GSERIALIZED_P(result);
 }
+/* GENERATED-DISTFNS-END tpose_shortestline */
 
 /*****************************************************************************/
