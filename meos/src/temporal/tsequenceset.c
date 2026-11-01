@@ -761,6 +761,95 @@ tsequenceset_from_base_tstzspanset(Datum value, MeosType temptype,
   return tsequenceset_make_free(sequences, ss->count, NORMALIZE_NO);
 }
 
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal boolean sequence set from a boolean and a
+ * timestamptz span set
+ * @param[in] b Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(BoolGetDatum(b), T_TBOOL, ss,
+    STEP);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal integer sequence set from an integer and a
+ * timestamptz span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+tintseqset_from_base_tstzspanset(int i, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(Int32GetDatum(i), T_TINT, ss,
+    STEP);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal big integer sequence set from a big integer and a
+ * timestamptz span set
+ * @param[in] i Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+tbigintseqset_from_base_tstzspanset(int64 i, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(Int64GetDatum(i), T_TBIGINT, ss,
+    STEP);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal float sequence set from a float and a timestamptz
+ * span set
+ * @param[in] d Value
+ * @param[in] ss Span set
+ * @param[in] interp Interpolation
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss,
+  interpType interp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TSTZSPANSET(ss, NULL);
+  if (! ensure_not_nan(d))
+    return NULL;
+  return tsequenceset_from_base_tstzspanset(Float8GetDatum(d), T_TFLOAT, ss,
+    interp);
+}
+
+/**
+ * @ingroup meos_temporal_constructor
+ * @brief Return a temporal text sequence set from a text and a timestamptz
+ * span set
+ * @param[in] txt Value
+ * @param[in] ss Span set
+ * @csqlfn #Tsequenceset_from_base_tstzspanset()
+ */
+TSequenceSet *
+ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(txt, NULL); VALIDATE_TSTZSPANSET(ss, NULL);
+  return tsequenceset_from_base_tstzspanset(PointerGetDatum(txt), T_TTEXT, ss,
+    STEP);
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
@@ -2136,6 +2225,74 @@ tsequenceset_out(const TSequenceSet *ss, int maxdd)
 {
   assert(ss);
   return tsequenceset_to_string(ss, maxdd, &basetype_out);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal boolean sequence set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tboolseqset_in(const char *str)
+{
+  assert(str);
+  return tsequenceset_parse(&str, T_TBOOL, true);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal integer sequence set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tintseqset_in(const char *str)
+{
+  assert(str);
+  return tsequenceset_parse(&str, T_TINT, true);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal big integer sequence set from its Well-Known Text
+ * (WKT) representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tbigintseqset_in(const char *str)
+{
+  assert(str);
+  return tsequenceset_parse(&str, T_TBIGINT, true);
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal float sequence set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+TSequenceSet *
+tfloatseqset_in(const char *str)
+{
+  assert(str);
+  /* Call the superclass function to read the interpolation at the beginning (if any) */
+  Temporal *temp = temporal_parse(&str, T_TFLOAT);
+  assert(temp->subtype == TSEQUENCE);
+  return (TSequenceSet *) temp;
+}
+
+/**
+ * @ingroup meos_internal_temporal_inout
+ * @brief Return a temporal text sequence set from its Well-Known Text (WKT)
+ * representation
+ * @param[in] str String
+ */
+TSequenceSet *
+ttextseqset_in(const char *str)
+{
+  assert(str);
+  return tsequenceset_parse(&str, T_TTEXT, true);
 }
 
 /*****************************************************************************
