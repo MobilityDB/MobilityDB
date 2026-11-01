@@ -121,7 +121,7 @@ The rules the gist applied and where this brainstorm departs from them:
    a type whose text is its hex WKB, as `raquet`, whose input and output functions read
    and write it, takes its text through `raquetFromHexWKB` and `asHexWKB`, as the PostGIS
    raster, whose `raster_in` and `raster_out` read and write hex WKB, has `ST_AsHexWKB` and
-   `ST_RastFromHexWKB` and no `ST_AsText` ([I/O plan](IO-PLAN.md), measured).
+   `ST_RastFromHexWKB` and no `ST_AsText` (the I/O plan of MobilityDB #3353, measured).
 
 ## Families
 
@@ -140,7 +140,8 @@ The rules the gist applied and where this brainstorm departs from them:
 | 11 | PostgreSQL-typed results | `range` | 4 | out of scope: no engine has a range type |
 | 12 | [Native geometry operations](12-NATIVE-GEOMETRY.md) | `contains`, `covers`, `disjoint`, `intersects`, `touches`, `dwithin`, `equals`, `distance`, `area`, `points`, ... over geometry and geography; `geoX` in Flink and Spark | about 40 operations | decided (1–10), plan in the document |
 
-The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the function a query calls in their place in every engine, type by type: [I/O plan](IO-PLAN.md).
+The four PostgreSQL I/O functions (`_in`, `_out`, `_send`, `_recv`) and the function a query calls in their place in every engine, type by type, is the input and output plan of MobilityDB #3353
+(`doc/contributing/io/`).
 
 The aggregates in every engine, their names, the functions of their roles and the pull requests that finish them: [aggregates plan](AGGREGATES-PLAN.md).
 

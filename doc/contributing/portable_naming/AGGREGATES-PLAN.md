@@ -8,7 +8,7 @@
 
 # Aggregates in every engine
 
-[Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md) · [I/O plan](IO-PLAN.md)
+[Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md)
 
 An aggregate is what a user calls (`tCount(trip)`); PostgreSQL assembles it from up to five
 functions a `CREATE AGGREGATE` names: the transition, combine and final functions of chapter 18

@@ -8,7 +8,7 @@
 
 # The SQL functions MEOS answers
 
-[Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md) · [I/O plan](IO-PLAN.md)
+[Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md)
 
 A binding generated from the MEOS catalog reaches a MobilityDB SQL function only when the catalog
 states that function's signature. This document lists every SQL signature the catalog does not
