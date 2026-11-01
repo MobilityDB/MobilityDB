@@ -26,7 +26,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Rebuild the table "Every type, at the three layers" of IO-PLAN.md.
+"""Rebuild the table "Every type, at the three layers" of
+doc/contributing/io/ASSESSMENT.md.
 
 The table states, for every type MobilityDB declares, the MEOS functions a
 binding calls to read and write it, the class the MEOS-API catalog files it
@@ -72,8 +73,8 @@ the SQL sources, the public headers and the declared types.
 Usage:
   io_matrix.py [--root DIR] [--catalog FILE]
       print the table as Markdown
-  io_matrix.py [--root DIR] [--catalog FILE] --check IO-PLAN.md
-      compare the table with the one in IO-PLAN.md; print every cell that
+  io_matrix.py [--root DIR] [--catalog FILE] --check doc/contributing/io/ASSESSMENT.md
+      compare the table with the one in the assessment; print every cell that
       differs and exit non-zero when one does
 """
 
@@ -381,7 +382,7 @@ def check(rows, with_catalog, path):
 def main():
   parser = argparse.ArgumentParser(
     description='Rebuild the table "Every type, at the three layers" of '
-    'IO-PLAN.md from the SQL, the public MEOS headers and the catalog.')
+    'doc/contributing/io/ASSESSMENT.md from the SQL, the public MEOS headers and the catalog.')
   parser.add_argument('--root', default=ROOT,
     help='the MobilityDB tree to read (default: the one holding this tool)')
   parser.add_argument('--catalog',
