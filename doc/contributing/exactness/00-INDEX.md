@@ -79,12 +79,13 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   distance below the rounding of the coordinates, where the written offsets fall onto the input,
   is declined once the older path is removed; the sign of a cross product whose terms overflow
   (`cross_product_sign`) is its own pull request.
-- **The buffer places the four meetings of its offsets and circles in plain doubles**: MobilityDB
-  #3259 (draft), branch `perf/place-the-corner-crossing-in-doubles` (`5b7ed0e97a`), computes the
-  crossing of two offsets sharing a centre (every concave corner), of two offsets sharing none, the
-  meeting of an offset with a circle and the crossing of two circles of one radius in the order
-  their filters do, so the coordinates are the same bits, under one bound written out from the
-  filters' rules, the filters placing what that bound leaves.
+- **The buffer places the meetings and edges of its arrangement at less cost**: MobilityDB #3259
+  (draft), branch `perf/place-the-corner-crossing-in-doubles` (`43fa350c5b` on master
+  `91f8d676e7`), computes the crossing of two offsets sharing a centre (every concave corner), of
+  two offsets sharing none, the meeting of an offset with a circle and the crossing of two circles
+  of one radius in the order their filters do, so the coordinates are the same bits, under one
+  bound written out from the filters' rules, the filters placing what that bound leaves, and
+  writes the tangent and circle edges in their place.
 - **The written buffer keeps the exact topology where a rounding certificate says so**: every one
   of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
   natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
