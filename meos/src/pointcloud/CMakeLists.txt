@@ -120,7 +120,7 @@ if(POINTCLOUD)
     # the same answers through the Boxop_* dispatchers in the wrapper layer.
     list(APPEND POINTCLOUD_SRCS tpc_topops_meos.c)
     # Position bounding-box operators taking a temporal point cloud, mirroring
-    # meos/src/geo/tspatial_posops_meos.c.
+    # meos/src/geo/tspatial_posops.c.
     list(APPEND POINTCLOUD_SRCS tpc_posops_meos.c)
   endif()
 
