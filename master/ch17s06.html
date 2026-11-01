@@ -334,20 +334,21 @@ SELECT round(nearestApproachDistance(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 -- 8.4853
 </pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_spatialrels"></a>Ever and Always Relationships</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_eIntersects"></a><a class="indexterm" name="id17647"></a><a class="indexterm" name="id17650"></a><a class="indexterm" name="id17653"></a><a class="indexterm" name="id17656"></a><a class="indexterm" name="id17659"></a><a class="indexterm" name="id17662"></a><a class="indexterm" name="id17665"></a><a class="indexterm" name="id17668"></a><a class="indexterm" name="id17671"></a><a class="indexterm" name="id17674"></a><a class="indexterm" name="id17677"></a><a class="indexterm" name="id17680"></a><p>Return true iff at least one point in any of the tpcpatch's instants intersects the geometry (XY only)</p><pre class="programlisting">
 eIntersects(tpcpatch,geometry) → boolean
-</pre><p>The ever and always relationships cover the same matrix: <code class="varname">eContains</code>, <code class="varname">eCovers</code>, <code class="varname">eDisjoint</code>, <code class="varname">eIntersects</code>, <code class="varname">eTouches</code> and <code class="varname">eDwithin</code>, each in the three argument orders, and their always twins. <code class="varname">eIntersects(tpcpatch,geometry)</code> is the one the type answers natively, walking the points of each instant and stopping at the first hit; the rest convert the patch to the temporal geometry of its multipoints.</p><pre class="programlisting">
+</pre><p>A patch is a set of points, so it neither contains nor covers a geometry and two patches do not touch: <code class="varname">eContains</code>, <code class="varname">eCovers</code> and their always twins take the geometry first only, <code class="varname">eTouches</code> and <code class="varname">aTouches</code> read either order but not two patches, and <code class="varname">eDisjoint</code>, <code class="varname">eIntersects</code>, <code class="varname">eDwithin</code> and their always twins read the three argument orders. <code class="varname">eIntersects(tpcpatch,geometry)</code> is the one the type answers natively, walking the points of each instant and stopping at the first hit; the rest convert the patch to the temporal geometry of its multipoints.</p><pre class="programlisting">
 SELECT eIntersects(tpcpatchSeq(ARRAY[ tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz),
   tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz)]), geometry 'POINT(1 1)');
 -- t
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_spatiotemp_rels"></a>Spatiotemporal Relationships</h3></div></div></div><p>The <span class="emphasis"><em>temporal</em></span> relationships compute the topological or distance relationship at each instant and result in a <code class="varname">tbool</code>. A patch reaches the geometry engine through the <code class="varname">tgeometry</code> conversion above, so one point of a patch inside the argument is enough for the patch to intersect it. A tpcpatch carries the Z its schema declares, and <code class="varname">tContains</code>, <code class="varname">tCovers</code> and <code class="varname">tTouches</code> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tDisjoint"></a><a class="indexterm" name="id17705"></a><a class="indexterm" name="id17708"></a><a class="indexterm" name="id17711"></a><a class="indexterm" name="id17714"></a><a class="indexterm" name="id17717"></a><a class="indexterm" name="id17720"></a><p>Temporal spatial relationships</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_spatiotemp_rels"></a>Spatiotemporal Relationships</h3></div></div></div><p>The <span class="emphasis"><em>temporal</em></span> relationships compute the topological or distance relationship at each instant and result in a <code class="varname">tbool</code>. A patch reaches the geometry engine through the <code class="varname">tgeometry</code> conversion above, so one point of a patch inside the argument is enough for the patch to intersect it. A tpcpatch carries the Z its schema declares, and <code class="varname">tContains</code>, <code class="varname">tCovers</code> and <code class="varname">tTouches</code> are planar relationships that refuse a Z dimension, so the type answers the three that a Z-carrying value can.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_tDisjoint"></a><a class="indexterm" name="id17706"></a><a class="indexterm" name="id17709"></a><a class="indexterm" name="id17712"></a><a class="indexterm" name="id17715"></a><a class="indexterm" name="id17718"></a><a class="indexterm" name="id17721"></a><p>Temporal spatial relationships</p><pre class="programlisting">
 tDisjoint({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
 tDwithin({geometry,tpcpatch},{geometry,tpcpatch},float) → tbool
 tIntersects({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
-tContains({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
-tCovers({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
-tTouches({geometry,tpcpatch},{geometry,tpcpatch}) → tbool
-</pre><p>A patch reaches the geometry engine as the multipoint of the positions its points occupy, so it declares the matrix that temporal geometry declares: every predicate in every direction. The planar ones answer for a schema whose dimensions do not include Z, and a schema carrying Z meets the refusal <code class="varname">The tgeometry cannot have Z dimension</code>.</p><pre class="programlisting">
+tContains(geometry,tpcpatch) → tbool
+tCovers(geometry,tpcpatch) → tbool
+tTouches(geometry,tpcpatch) → tbool
+tTouches(tpcpatch,geometry) → tbool
+</pre><p>A patch reaches the geometry engine as the multipoint of the positions its points occupy, and as a set of points it declares the matrix of a temporal point: <code class="varname">tContains</code> and <code class="varname">tCovers</code> take the geometry first only, <code class="varname">tTouches</code> reads either order but not two patches, and the others read the three argument orders. The planar ones answer for a schema whose dimensions do not include Z, and a schema carrying Z meets the refusal <code class="varname">The tgeometry cannot have Z dimension</code>.</p><pre class="programlisting">
 SELECT tIntersects(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 9, 9, 9)),
   '2001-01-01'::timestamptz), geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- t@2001-01-01
@@ -362,7 +363,7 @@ SELECT tIntersects(tpcpatchSeq(ARRAY[
   tpcpatch(pcpatch(pcpoint(1, 9, 9, 9)), '2001-01-02'::timestamptz)]),
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-02]
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_comparisons"></a>Comparisons</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_ever_eq"></a><a class="indexterm" name="id17732"></a><a class="indexterm" name="id17735"></a><p>Ever and always comparisons</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="tpcpatch_comparisons"></a>Comparisons</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tpcpatch_ever_eq"></a><a class="indexterm" name="id17736"></a><a class="indexterm" name="id17739"></a><p>Ever and always comparisons</p><pre class="programlisting">
 {pcpatch,tpcpatch} {?=, %=, ?&lt;&gt;, %&lt;&gt;} {pcpatch,tpcpatch} → boolean
 </pre><pre class="programlisting">
 SELECT pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)) ?= tpcpatchSeq(ARRAY[
@@ -374,7 +375,7 @@ SELECT tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 
   '2001-01-01'::timestamptz), tpcpatch(pcpatch(pcpoint(1, 3, 3, 3), pcpoint(1, 4, 4, 4)),
   '2001-01-02'::timestamptz)]) %= pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2));
 -- f
-</pre></li><li class="listitem"><a name="tpcpatch_temporal_eq"></a><a class="indexterm" name="id17742"></a><p>Temporal comparisons</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpatch_temporal_eq"></a><a class="indexterm" name="id17746"></a><p>Temporal comparisons</p><pre class="programlisting">
 {pcpatch,tpcpatch} {#=, #&lt;&gt;} {pcpatch,tpcpatch} → tbool
 </pre><pre class="programlisting">
 SELECT tpcpatchSeq(ARRAY[tpcpatch(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2)),
