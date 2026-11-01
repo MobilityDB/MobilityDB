@@ -59,7 +59,6 @@ set(GEO_SOURCES
 if(MEOS)
   list(APPEND GEO_SOURCES
   geoset_meos.c
-  tgeo_meos.c
   tspatial_transform_meos.c
   tspatial_posops_meos.c
   # tspatial_rtree.c
