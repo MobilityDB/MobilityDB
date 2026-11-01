@@ -171,6 +171,8 @@ Tdwithin_tspatial_tspatial(FunctionCallInfo fcinfo,
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/* GENERATED-SPATIALRELS-BEGIN geo_t_rels — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
 /*****************************************************************************
  * Temporal contains
  *****************************************************************************/
@@ -183,7 +185,7 @@ PG_FUNCTION_INFO_V1(Tcontains_geo_tgeo);
  * temporal geo
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tcontains_geo_tgeo);
@@ -193,11 +195,11 @@ PGDLLEXPORT Datum Tcontains_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcontains_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geometry
- * contains a geometry
+ * @brief Return a temporal boolean that states whether a temporal geo contains
+ * a geometry
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tcontains_tgeo_geo);
@@ -207,11 +209,11 @@ PGDLLEXPORT Datum Tcontains_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcontains_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geometry
- * contains another temporal geometry
+ * @brief Return a temporal boolean that states whether a temporal geo contains
+ * another one
  * @sqlfn tContains()
  */
-Datum
+inline Datum
 Tcontains_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tcontains_tgeo_tgeo);
@@ -229,7 +231,7 @@ PG_FUNCTION_INFO_V1(Tcovers_geo_tgeo);
  * temporal geo
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &tcovers_geo_tgeo);
@@ -239,11 +241,11 @@ PGDLLEXPORT Datum Tcovers_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcovers_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geometry
- * covers a geometry
+ * @brief Return a temporal boolean that states whether a temporal geo covers a
+ * geometry
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &tcovers_tgeo_geo);
@@ -253,11 +255,11 @@ PGDLLEXPORT Datum Tcovers_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tcovers_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geometry
- * covers another temporal geometry
+ * @brief Return a temporal boolean that states whether a temporal geo covers
+ * another one
  * @sqlfn tCovers()
  */
-Datum
+inline Datum
 Tcovers_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &tcovers_tgeo_tgeo);
@@ -271,8 +273,8 @@ PGDLLEXPORT Datum Tdisjoint_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geo
- * is disjoint from a geometry
+ * @brief Return a temporal boolean that states whether a geometry/geography and
+ * a temporal geo are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -285,8 +287,8 @@ PGDLLEXPORT Datum Tdisjoint_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geo
- * is disjoint from a geometry
+ * @brief Return a temporal boolean that states whether a temporal geo and a
+ * geometry/geography are disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -299,8 +301,8 @@ PGDLLEXPORT Datum Tdisjoint_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdisjoint_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether two temporal geos
- * are disjoint
+ * @brief Return a temporal boolean that states whether two temporal geos are
+ * disjoint
  * @sqlfn tDisjoint()
  */
 inline Datum
@@ -318,8 +320,8 @@ PGDLLEXPORT Datum Tintersects_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geo
- * intersects a geometry
+ * @brief Return a temporal boolean that states whether a geometry/geography and
+ * a temporal geo intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -332,8 +334,8 @@ PGDLLEXPORT Datum Tintersects_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tintersects_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geo
- * intersects a geometry
+ * @brief Return a temporal boolean that states whether a temporal geo and a
+ * geometry/geography intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -347,7 +349,7 @@ PG_FUNCTION_INFO_V1(Tintersects_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
  * @brief Return a temporal boolean that states whether two temporal geos
- * are disjoint
+ * intersect
  * @sqlfn tIntersects()
  */
 inline Datum
@@ -364,13 +366,11 @@ PGDLLEXPORT Datum Ttouches_geo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_geo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a geometry touches a
- * temporal geo
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal geo touch
  * @sqlfn tTouches()
- * @note We cannot call Tspatialrel_geo_tspatial since the function
- * ttouches_geo_tspatial is not defined in MEOS because it is redundant
  */
-Datum
+inline Datum
 Ttouches_geo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_geo_tspatial(fcinfo, &ttouches_geo_tgeo);
@@ -380,11 +380,11 @@ PGDLLEXPORT Datum Ttouches_tgeo_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tgeo_geo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geo
- * touches a geometry
+ * @brief Return a temporal boolean that states whether a temporal geo and a
+ * geometry touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_tgeo_geo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_geo(fcinfo, &ttouches_tgeo_geo);
@@ -394,15 +394,15 @@ PGDLLEXPORT Datum Ttouches_tgeo_tgeo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ttouches_tgeo_tgeo);
 /**
  * @ingroup mobilitydb_geo_rel_temp
- * @brief Return a temporal boolean that states whether a temporal geometry
- * touches another temporal geometry
+ * @brief Return a temporal boolean that states whether two temporal geos touch
  * @sqlfn tTouches()
  */
-Datum
+inline Datum
 Ttouches_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
   return Tspatialrel_tspatial_tspatial(fcinfo, &ttouches_tgeo_tgeo);
 }
+/* GENERATED-SPATIALRELS-END geo_t_rels */
 
 /*****************************************************************************
  * Temporal dwithin

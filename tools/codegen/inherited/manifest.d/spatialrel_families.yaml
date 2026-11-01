@@ -371,6 +371,57 @@ spatialrel_families:
           - {type: "Temporal *", var: temp1, pos: 0}
           - {type: "Temporal *", var: temp2, pos: 1}
 
+  # The temporal relationships of the temporal geos (`temporal: true`): per
+  # predicate one T<Rel>_<dir> wrapper per direction, answering a temporal
+  # boolean through the file's Tspatialrel_* dispatchers over the MEOS
+  # t<rel>_<dir> kernel. tDwithin reads its distance and earth model in a body
+  # of its own, outside the region.
+  - family:    geo_t_rels
+    file:      mobilitydb/src/geo/tspatial_tempspatialrels.c
+    reference: true
+    temporal:  true
+    ingroup:   mobilitydb_geo_rel_temp
+    disp:
+      geo_tgeo:  Tspatialrel_geo_tspatial
+      tgeo_geo:  Tspatialrel_tspatial_geo
+      tgeo_tgeo: Tspatialrel_tspatial_tspatial
+    predicates:
+      - rel: contains
+        Rel: Contains
+        banner: "Temporal contains"
+        briefs:
+          geo_tgeo:  "a geometry contains a temporal geo"
+          tgeo_geo:  "a temporal geo contains a geometry"
+          tgeo_tgeo: "a temporal geo contains another one"
+      - rel: covers
+        Rel: Covers
+        banner: "Temporal covers"
+        briefs:
+          geo_tgeo:  "a geometry covers a temporal geo"
+          tgeo_geo:  "a temporal geo covers a geometry"
+          tgeo_tgeo: "a temporal geo covers another one"
+      - rel: disjoint
+        Rel: Disjoint
+        banner: "Temporal disjoint"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geo are disjoint"
+          tgeo_geo:  "a temporal geo and a geometry/geography are disjoint"
+          tgeo_tgeo: "two temporal geos are disjoint"
+      - rel: intersects
+        Rel: Intersects
+        banner: "Temporal intersects\n * Available for temporal geographies"
+        briefs:
+          geo_tgeo:  "a geometry/geography and a temporal geo intersect"
+          tgeo_geo:  "a temporal geo and a geometry/geography intersect"
+          tgeo_tgeo: "two temporal geos intersect"
+      - rel: touches
+        Rel: Touches
+        banner: "Temporal touches"
+        briefs:
+          geo_tgeo:  "a geometry and a temporal geo touch"
+          tgeo_geo:  "a temporal geo and a geometry touch"
+          tgeo_tgeo: "two temporal geos touch"
+
 # ---------------------------------------------------------------------------
 # The SQL of the ever/always relationships of a family answering them with C
 # kernels of its own (generate.py's render_native_spatialrels, templates/

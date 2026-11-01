@@ -880,7 +880,8 @@ def _wrap_brief(text: str, width: int = 80) -> str:
 
 def render_spatialrels(fam: dict) -> str:
     """Render the ever/always PG wrapper region for one family: per predicate a
-    banner + wrapper blocks (one per direction x ever/always). Roundtrips exactly."""
+    banner + wrapper blocks (one per direction x ever/always), or one per
+    direction for a temporal family. Roundtrips exactly."""
     banner_t, block_t = read_template("spatialrels.c.tmpl").split("\n\n")
     block_t = block_t.rstrip("\n")
     # A family whose type is not tgeo (e.g. tcbuffer) overrides the geo defaults:
@@ -896,6 +897,11 @@ def render_spatialrels(fam: dict) -> str:
     # `..._trgeometry` but their kernels are `ea_..._trgeo`). kernel_dir maps a
     # direction to its kernel token; absent, the direction is used unchanged.
     kernel_dir = fam.get("kernel_dir", {})
+    # A temporal family (`temporal: true`) renders the temporal relationships of
+    # the same predicates: one T<Rel>_<dir> wrapper per direction, answering a
+    # temporal boolean through the family dispatcher over the MEOS
+    # t<rel>_<dir> kernel, which takes no quantifier
+    temporal = fam.get("temporal", False)
     out = []
     for pred in fam["predicates"]:
         out.append(banner_t.replace("{BANNER}", pred["banner"]))
@@ -907,6 +913,24 @@ def render_spatialrels(fam: dict) -> str:
         flags = pred.get("flags", {})
         for direc in pred.get("directions", order):
             disp = disp_over[direc] if direc in disp_over else disp_map[direc]
+            if temporal:
+                meos = meos_fixed or f"t{pred['rel']}_{kernel_dir.get(direc, direc)}"
+                ret = f"  return {disp}(fcinfo, &{meos});"
+                if len(ret) > 80:
+                    ret = f"  return {disp}(fcinfo,\n    &{meos});"
+                sub = {
+                    "FN": f"T{pred['rel']}_{direc}",
+                    "BRIEF": _wrap_brief("Return a temporal boolean that states "
+                                         "whether " + pred["briefs"][direc]),
+                    "SQLFN": f"t{pred['Rel']}",
+                    "RETURN": ret,
+                    "INGROUP": ingroup,
+                }
+                frag = block_t
+                for k, v in sub.items():
+                    frag = frag.replace("{" + k + "}", v)
+                out.append(frag)
+                continue
             meos = meos_fixed or f"ea_{pred['rel']}_{kernel_dir.get(direc, direc)}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
