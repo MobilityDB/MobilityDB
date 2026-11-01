@@ -52,6 +52,8 @@
  * Temporal distance
  *****************************************************************************/
 
+/* GENERATED-DISTFNS-BEGIN tbox_tdistance — tools/codegen/inherited/generate.py from templates/distpairs.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 PGDLLEXPORT Datum Tdistance_number_tnumber(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tdistance_number_tnumber);
 /**
@@ -67,6 +69,8 @@ Tdistance_number_tnumber(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 1);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -85,6 +89,8 @@ Tdistance_tnumber_number(PG_FUNCTION_ARGS)
   Datum value = PG_GETARG_DATUM(1);
   Temporal *result = tdistance_tnumber_number(temp, value);
   PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
 
@@ -108,6 +114,7 @@ Tdistance_tnumber_tnumber(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
   PG_RETURN_TEMPORAL_P(result);
 }
+/* GENERATED-DISTFNS-END tbox_tdistance */
 
 /*****************************************************************************
  * Nearest approach distance
