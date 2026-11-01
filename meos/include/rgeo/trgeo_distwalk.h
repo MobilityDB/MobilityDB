@@ -84,8 +84,8 @@ typedef struct
 {
   double sx, sy;   /**< Start vertex */
   double ex, ey;   /**< End vertex */
+  double ux, uy;   /**< Direction, end - start */
   double len;      /**< Length */
-  double beta;     /**< Direction angle */
   double dots;     /**< dot(start, end - start) */
   double crss;     /**< cross(start, end - start) */
 } DistRefEdge;
@@ -97,7 +97,6 @@ typedef struct
 {
   double x, y;
   double rho;      /**< Distance to the rotation center */
-  double alpha;    /**< Angle about the rotation center */
 } DistRefVert;
 
 /**
