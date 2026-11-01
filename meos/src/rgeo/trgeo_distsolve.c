@@ -71,16 +71,16 @@
 /**
  * @brief Return the maximum of |(a1*t + a0)*cos(w*t) + (b1*t + b0)*sin(w*t)|
  * over [lo, hi]
- * @details The maximum is at most the amplitude hypot(a1*t + a0, b1*t + b0).
+ * @details The maximum is at most the amplitude |(a1*t + a0, b1*t + b0)|.
  * The amplitude is the distance from the origin to a point that moves on a
  * line, thus it is convex and its maximum is at an end of the interval.
  */
 static double
 term_absmax(const DistFunTerm *k, double lo, double hi)
 {
-  double vlo = hypot(k->a1 * lo + k->a0, k->b1 * lo + k->b0);
-  double vhi = hypot(k->a1 * hi + k->a0, k->b1 * hi + k->b0);
-  return (vlo > vhi) ? vlo : vhi;
+  double alo = k->a1 * lo + k->a0, blo = k->b1 * lo + k->b0;
+  double ahi = k->a1 * hi + k->a0, bhi = k->b1 * hi + k->b0;
+  return sqrt(fmax(alo * alo + blo * blo, ahi * ahi + bhi * bhi));
 }
 
 /**
@@ -230,7 +230,7 @@ quad_roots(double c2, double c1, double c0, double lo, double hi,
 
 /**
  * @brief Insert the roots of A*cos(w*t) + B*sin(w*t) + C in [lo, hi]
- * @details With R = hypot(A, B) and phi = atan2(B, A), the equation is
+ * @details With R = |(A, B)| and phi = atan2(B, A), the equation is
  * cos(w*t - phi) = -C/R, which has closed-form solutions.
  * @return 1 on success, 0 if the array of roots is full, and -1 if the
  * enumeration is too long, in which case the caller uses the general method
@@ -239,7 +239,7 @@ static int
 sinusoid_roots(double w, double A, double B, double C, double lo, double hi,
   double *roots, int *nroots, int maxroots, double xacc)
 {
-  double R = hypot(A, B);
+  double R = sqrt(A * A + B * B);
   if (R == 0.0)
     return -1;
   double ratio = -C / R;
