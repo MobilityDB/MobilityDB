@@ -78,7 +78,6 @@ if(MEOS)
     temporal_boxops_meos.c
     temporal_posops_meos.c
     temporal_tile_meos.c
-    tinstant_meos.c
 )
 endif()
 
