@@ -44,6 +44,28 @@ boxtypes:
       - [stbox, tgeo, nad_tgeo_stbox]
       - [tgeo, stbox, nad_tgeo_stbox]
       - [tgeo, tgeo, nad_tgeo_tgeo]
+    # the temporal distance, the nearest approach instant and the shortest line
+    # (templates/distpairs.c.tmpl), each kernel reading the earth model, so the
+    # static operand is a geometry or a geography
+    distfns:
+      tdistance:
+        sides: {geo: {desc: geometry/geography}}
+        pairs:
+          - [geo, tgeo, tdistance_tgeo_geo]
+          - [tgeo, geo, tdistance_tgeo_geo]
+          - [tgeo, tgeo, tdistance_tgeo_tgeo]
+      nai:
+        sides: {geo: {desc: geometry/geography}}
+        pairs:
+          - [geo, tgeo, nai_tgeo_geo]
+          - [tgeo, geo, nai_tgeo_geo]
+          - [tgeo, tgeo, nai_tgeo_tgeo]
+      shortestline:
+        sides: {geo: {desc: geometry/geography}}
+        pairs:
+          - [geo, tgeo, shortestline_tgeo_geo]
+          - [tgeo, geo, shortestline_tgeo_geo]
+          - [tgeo, tgeo, shortestline_tgeo_tgeo]
     nadfamilies:
       - family:   tcbuffer
         nadgroup: mobilitydb_cbuffer_dist
