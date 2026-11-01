@@ -1030,6 +1030,71 @@ tnumber_value_bins(const Temporal *temp, Datum vsize, Datum vorigin,
   return result;
 }
 
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the bins of an integer span
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
+ */
+Span *
+tint_value_bins(const Temporal *temp, int vsize, int vorigin, bool border_inc,
+  int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_bins(temp, Int32GetDatum(vsize),
+    Int32GetDatum(vorigin), border_inc, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the bins of a big integer span
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
+ */
+Span *
+tbigint_value_bins(const Temporal *temp, int64 vsize, int64 vorigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TBIGINT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  return tnumber_value_bins(temp, Int64GetDatum(vsize),
+    Int64GetDatum(vorigin), border_inc, count);
+}
+
+/**
+ * @ingroup meos_temporal_analytics_tile
+ * @brief Return the bins of a float span
+ * @param[in] temp Temporal number
+ * @param[in] vsize Size of the bins
+ * @param[in] vorigin Origin of the bins
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] count Number of elements in the output array
+ * @csqlfn #Tnumber_value_bins()
+ */
+Span *
+tfloat_value_bins(const Temporal *temp, double vsize, double vorigin,
+  bool border_inc, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TFLOAT(temp, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! ensure_not_nan(vsize) || ! ensure_not_nan(vorigin))
+    return NULL;
+  return tnumber_value_bins(temp, Float8GetDatum(vsize),
+    Float8GetDatum(vorigin), border_inc, count);
+}
+
 /*****************************************************************************
  * TBox tile functions
  *****************************************************************************/
