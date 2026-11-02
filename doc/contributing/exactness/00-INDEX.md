@@ -33,7 +33,7 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 
 | Note | What it states |
 |---|---|
-| [Exact distance](EXACT-DISTANCE.md) | Every distance MEOS computes, measured against the double nearest the exact distance, the oracle that judges it, and the pull requests that make each one answer that double (ED1–ED18) |
+| [Exact distance](EXACT-DISTANCE.md) | Every distance MEOS computes, measured against the double nearest the exact distance, the oracle that judges it, and the pull requests that make each one answer that double (ED1–ED19), and how an exact distance is computed |
 | [Exact buffer](EXACT-BUFFER.md) | The pull requests that make the buffer exact on every input and the relationship of two areas exact, in order, what each must prove, and the decisions and open items they leave |
 | [Geodetic operations](GEODETIC-OPERATIONS.md) | The rules that decide which operations a temporal geography supports and how exactly, the places where MobilityDB departs from them, measured against PostGIS geography, and the branches that correct them |
 | [Geodetic boxes](GEODETIC-BOXES.md) | The operations that read a geodetic box as something other than the longitude/latitude rectangle the manual defines, measured, and the pull requests that correct them |
@@ -48,8 +48,9 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 ## Where things stand
 
 - **Every distance answers the double nearest the exact distance**: every row of
-  [Exact distance](EXACT-DISTANCE.md) is merged, ED15 last as MobilityDB #3269 (`d06cb0d010`) and
-  #3272 (`0c6883d4e7`), and ED17's relate items (4) to (6) as #3226. The work that starts after it,
+  [Exact distance](EXACT-DISTANCE.md) to ED18 is merged, ED15 last as MobilityDB #3269
+  (`d06cb0d010`) and #3272 (`0c6883d4e7`), and ED17's relate items (4) to (6) as #3226. ED19, the
+  temporal distance of a rigid body, is on branch `fix/rigid-exact-distance`. The work that starts after it,
   [Exact crossings](EXACT-CROSSINGS.md) steps 2–4, [Any number of turning points](N-TURNING-POINTS.md)
   and [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md), interleaved as those
   notes order it, is open to start.
