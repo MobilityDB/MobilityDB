@@ -222,8 +222,17 @@ if(S2CELL)
 endif()
 
 if(MEOS AND BUILD_SHARED_LIBS)
-  # Build as SHARED library for standalone use
-  add_library(${MEOS_LIB_NAME} SHARED ${MEOS_OBJECTS})
+  # Build as SHARED library for standalone use. pgPointCloud's libpc objects are
+  # folded in whole, as the self-contained static library below folds them, so
+  # the shared library exports every function of the installed pc_api.h,
+  # pc_patch_sort and pc_patch_is_sorted of pc_sort.c included, which no MEOS
+  # function calls and which the libpc.a archive would leave out.
+  set(MEOS_SHARED_OBJECTS ${MEOS_OBJECTS})
+  if(POINTCLOUD)
+    set(MEOS_SHARED_OBJECTS ${MEOS_SHARED_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_objects>")
+    set(MEOS_SHARED_OBJECTS ${MEOS_SHARED_OBJECTS} "$<TARGET_OBJECTS:pointcloud_libpc_stringbuffer>")
+  endif()
+  add_library(${MEOS_LIB_NAME} SHARED ${MEOS_SHARED_OBJECTS})
   message(STATUS "Building MEOS as SHARED library")
 
   if(APPLE)
