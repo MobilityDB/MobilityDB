@@ -868,8 +868,11 @@ typedef enum
   PG_SS_EDWITHIN, PG_SS_ADWITHIN,
   PG_SS_EINTERSECTS, PG_SS_AINTERSECTS,
   PG_SS_ETOUCHES, PG_SS_ATOUCHES,
+  PG_SS_ECONTAINS, PG_SS_ACONTAINS,
+  PG_SS_ECOVERS, PG_SS_ACOVERS,
   PG_SS_EDISJOINT, PG_SS_ADISJOINT,
-  PG_SS_TDWITHIN, PG_SS_TINTERSECTS, PG_SS_TTOUCHES, PG_SS_TDISJOINT,
+  PG_SS_TDWITHIN, PG_SS_TINTERSECTS, PG_SS_TTOUCHES,
+  PG_SS_TCONTAINS, PG_SS_TCOVERS, PG_SS_TDISJOINT,
 } PgSetSetPred;
 
 /**
@@ -922,6 +925,18 @@ setset_join_srf(FunctionCallInfo fcinfo, PgSetSetPred pred)
       case PG_SS_ATOUCHES:
         state->pairs = atouches_tgeoarr_tgeoarr(a1, count1, a2, count2,
           &npairs); break;
+      case PG_SS_ECONTAINS:
+        state->pairs = econtains_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs); break;
+      case PG_SS_ACONTAINS:
+        state->pairs = acontains_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs); break;
+      case PG_SS_ECOVERS:
+        state->pairs = ecovers_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs); break;
+      case PG_SS_ACOVERS:
+        state->pairs = acovers_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs); break;
       case PG_SS_EDISJOINT:
         state->pairs = edisjoint_tgeoarr_tgeoarr(a1, count1, a2, count2,
           &npairs); break;
@@ -936,6 +951,12 @@ setset_join_srf(FunctionCallInfo fcinfo, PgSetSetPred pred)
           &npairs, &state->periods); break;
       case PG_SS_TTOUCHES:
         state->pairs = ttouches_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs, &state->periods); break;
+      case PG_SS_TCONTAINS:
+        state->pairs = tcontains_tgeoarr_tgeoarr(a1, count1, a2, count2,
+          &npairs, &state->periods); break;
+      case PG_SS_TCOVERS:
+        state->pairs = tcovers_tgeoarr_tgeoarr(a1, count1, a2, count2,
           &npairs, &state->periods); break;
       default: /* PG_SS_TDISJOINT */
         state->pairs = tdisjoint_tgeoarr_tgeoarr(a1, count1, a2, count2,
@@ -1049,6 +1070,70 @@ Atouches_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
   return setset_join_srf(fcinfo, PG_SS_ATOUCHES);
 }
 
+PGDLLEXPORT Datum Econtains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Econtains_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one
+ * @details The array form of #Econtains_tgeo_tgeo, as
+ * #Etouches_tgeoarr_tgeoarr is that of #Etouches_tgeo_tgeo
+ * @sqlfn eContainsPairs()
+ */
+Datum
+Econtains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_ECONTAINS);
+}
+
+PGDLLEXPORT Datum Acontains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acontains_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always contains the second one
+ * @details The array form of #Acontains_tgeo_tgeo, as
+ * #Atouches_tgeoarr_tgeoarr is that of #Atouches_tgeo_tgeo
+ * @sqlfn aContainsPairs()
+ */
+Datum
+Acontains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_ACONTAINS);
+}
+
+PGDLLEXPORT Datum Ecovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ecovers_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one
+ * @details The array form of #Ecovers_tgeo_tgeo, as
+ * #Etouches_tgeoarr_tgeoarr is that of #Etouches_tgeo_tgeo
+ * @sqlfn eCoversPairs()
+ */
+Datum
+Ecovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_ECOVERS);
+}
+
+PGDLLEXPORT Datum Acovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Acovers_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always covers the second one
+ * @details The array form of #Acovers_tgeo_tgeo, as
+ * #Atouches_tgeoarr_tgeoarr is that of #Atouches_tgeo_tgeo
+ * @sqlfn aCoversPairs()
+ */
+Datum
+Acovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_ACOVERS);
+}
+
 PGDLLEXPORT Datum Edisjoint_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Edisjoint_tgeoarr_tgeoarr);
 /**
@@ -1117,6 +1202,40 @@ Datum
 Ttouches_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
 {
   return setset_join_srf(fcinfo, PG_SS_TTOUCHES);
+}
+
+PGDLLEXPORT Datum Tcontains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcontains_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one together with the
+ * periods during which it does
+ * @details The array form of #Tcontains_tgeo_tgeo, as
+ * #Ttouches_tgeoarr_tgeoarr is that of #Ttouches_tgeo_tgeo
+ * @sqlfn tContainsPairs()
+ */
+Datum
+Tcontains_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_TCONTAINS);
+}
+
+PGDLLEXPORT Datum Tcovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tcovers_tgeoarr_tgeoarr);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one together with the
+ * periods during which it does
+ * @details The array form of #Tcovers_tgeo_tgeo, as
+ * #Ttouches_tgeoarr_tgeoarr is that of #Ttouches_tgeo_tgeo
+ * @sqlfn tCoversPairs()
+ */
+Datum
+Tcovers_tgeoarr_tgeoarr(PG_FUNCTION_ARGS)
+{
+  return setset_join_srf(fcinfo, PG_SS_TCOVERS);
 }
 
 PGDLLEXPORT Datum Tdisjoint_tgeoarr_tgeoarr(PG_FUNCTION_ARGS);

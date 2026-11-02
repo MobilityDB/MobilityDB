@@ -39,12 +39,17 @@
 -- trgeometry overload agrees with the equivalent manual cast chain
 -- (::tgeometry).
 --
--- The cast keeps the value the trgeometry holds at each instant, so a
--- sequence written with linear interpolation casts to the same temporal
--- geometry as the one written with step interpolation, and the operands
--- below carry step interpolation to state that granularity.
+-- A temporal geometry keeps its value from one instant to the next, so the
+-- cast states a trgeometry with step or discrete interpolation and raises an
+-- error for one with linear interpolation, which moves and turns between its
+-- instants. The relationships that go through the cast raise it too.
 --
 -------------------------------------------------------------------------------
+
+SELECT tgeometry(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]');
+SELECT tIntersects(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 0)');
+SELECT tContains(geometry 'Polygon((-5 -5,15 -5,15 5,-5 5,-5 -5))', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]');
+SELECT asText(tgeometry(trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]'));
 
 -- Test for NULL inputs since the functions are not STRICT
 SELECT tContains(NULL::geometry, trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');

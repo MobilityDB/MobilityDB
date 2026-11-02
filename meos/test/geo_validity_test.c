@@ -290,6 +290,29 @@ int main(void)
     meos_errno() == 0);
   free(gm_text); free(gm); free(trip); free(meas);
 
+  /* Touches is planar, so it refuses two temporal geographies as contains
+   * does, and answers two temporal geometries */
+  meos_errno_reset();
+  Temporal *tgg1 = tgeography_in("[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, "
+    "Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]");
+  Temporal *tgg2 = tgeography_in("[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, "
+    "Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-02]");
+  int rtouches = etouches_tgeo_tgeo(tgg1, tgg2);
+  int touches_errno = meos_errno();
+  printf("etouches_tgeo_tgeo(two temporal geographies): %d, errno %d\n",
+    rtouches, touches_errno);
+  assert(rtouches == -1 && touches_errno == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  Temporal *tgm1 = tgeometry_in("[Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-01, "
+    "Polygon((0 0,2 0,2 2,0 2,0 0))@2001-01-02]");
+  Temporal *tgm2 = tgeometry_in("[Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-01, "
+    "Polygon((2 0,4 0,4 2,2 2,2 0))@2001-01-02]");
+  rtouches = etouches_tgeo_tgeo(tgm1, tgm2);
+  printf("etouches_tgeo_tgeo(two temporal geometries): %d, errno %d\n",
+    rtouches, meos_errno());
+  assert(rtouches == 1 && meos_errno() == 0);
+  free(tgg1); free(tgg2); free(tgm1); free(tgm2);
+
   /* Finalize MEOS */
   meos_finalize();
   return EXIT_SUCCESS;

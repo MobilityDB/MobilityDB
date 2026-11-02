@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <math.h>
 /* PostgreSQL */
+#include <utils/timestamp.h>
 /* PostGIS */
 #include <liblwgeom.h>
 #include <lwgeodetic.h>
@@ -516,6 +517,250 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
   return tinterrel_tspatial_base(temp, PointerGetDatum(gs), tinter, func);
 }
 
+/*****************************************************************************
+ * Relationships of a temporal point and a temporal geometry
+ *****************************************************************************/
+
+/**
+ * @brief Return true if two temporal geos are a temporal point with linear
+ * interpolation and a planar temporal geometry with step interpolation that
+ * is not a point, in either order
+ * @details The geometry keeps its value from one of its instants to the next
+ * while the point moves, so the relationship changes at instants that
+ * neither value holds, which the lifting of the two values, applied at their
+ * instants, does not read
+ * @param[in] temp1,temp2 Temporal geos
+ */
+bool
+tgeo_tgeo_moving_point(const Temporal *temp1, const Temporal *temp2)
+{
+  assert(temp1); assert(temp2);
+  if (MEOS_FLAGS_GET_GEODETIC(temp1->flags) ||
+      MEOS_FLAGS_GET_GEODETIC(temp2->flags))
+    return false;
+  bool point1 = tpoint_type(temp1->temptype);
+  bool point2 = tpoint_type(temp2->temptype);
+  if (point1 == point2)
+    return false;
+  const Temporal *tpoint = point1 ? temp1 : temp2;
+  const Temporal *tgeo = point1 ? temp2 : temp1;
+  return MEOS_FLAGS_LINEAR_INTERP(tpoint->flags) &&
+    MEOS_FLAGS_GET_INTERP(tgeo->flags) == STEP;
+}
+
+/**
+ * @brief Return true if a geometry is one point, possibly repeated, which is
+ * the only geometry a point contains or covers
+ * @param[in] gs Geometry
+ */
+bool
+geo_is_one_point(const GSERIALIZED *gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool result = false;
+  if (! lwgeom_is_empty(geom))
+  {
+    if (geom->type == POINTTYPE)
+      result = true;
+    else if (geom->type == MULTIPOINTTYPE)
+    {
+      const LWMPOINT *mpoint = (LWMPOINT *) geom;
+      const POINT2D *p0 = getPoint2d_cp(mpoint->geoms[0]->point, 0);
+      result = true;
+      for (uint32_t i = 1; i < mpoint->ngeoms && result; i++)
+      {
+        const POINT2D *p = getPoint2d_cp(mpoint->geoms[i]->point, 0);
+        result = (p->x == p0->x && p->y == p0->y);
+      }
+    }
+  }
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal point and a
+ * geometry satisfy a spatial relationship
+ * @param[in] tpoint Temporal point
+ * @param[in] gs Geometry
+ * @param[in] rel Relationship
+ * @param[in] pointfirst True when the relationship is of the point and the
+ * geometry in this order, false when it is of the geometry and the point
+ */
+static Temporal *
+tpoint_geo_rel(const Temporal *tpoint, const GSERIALIZED *gs, tgeoRel rel,
+  bool pointfirst)
+{
+  switch (rel)
+  {
+    case TGEOREL_INTERSECTS:
+      return tintersects_tgeo_geo(tpoint, gs);
+    case TGEOREL_DISJOINT:
+      return tdisjoint_tgeo_geo(tpoint, gs);
+    case TGEOREL_TOUCHES:
+      return ttouches_tgeo_geo(tpoint, gs);
+    default: /* TGEOREL_CONTAINS, TGEOREL_COVERS */
+      if (! pointfirst)
+        return (rel == TGEOREL_CONTAINS) ? tcontains_geo_tgeo(gs, tpoint) :
+          tcovers_geo_tgeo(gs, tpoint);
+      /* A point contains and covers a geometry exactly where the geometry is
+       * that point */
+      return geo_is_one_point(gs) ? tintersects_tgeo_geo(tpoint, gs) :
+        tbool_from_base_temp(false, tpoint);
+  }
+}
+
+/**
+ * @brief Return the subsequence made of the whole input segments of a
+ * temporal sequence with linear interpolation that cover a span, from the
+ * last instant at or before its lower bound to the first instant at or after
+ * its upper bound, or NULL when these are the whole sequence
+ * @details The subsequence interpolates no instant, so its segments are the
+ * input segments of the sequence
+ * @param[in] seq Temporal sequence
+ * @param[in] s Span of timestamps
+ */
+static TSequence *
+tlinearseq_cover_span(const TSequence *seq, const Span *s)
+{
+  TimestampTz lower = DatumGetTimestampTz(s->lower);
+  TimestampTz upper = DatumGetTimestampTz(s->upper);
+  int from = 0, to = seq->count - 1, first = 0, last = seq->count - 1;
+  while (first <= last)
+  {
+    int middle = (first + last) / 2;
+    if (TSEQUENCE_INST_N(seq, middle)->t <= lower)
+    {
+      from = middle;
+      first = middle + 1;
+    }
+    else
+      last = middle - 1;
+  }
+  first = 0; last = seq->count - 1;
+  while (first <= last)
+  {
+    int middle = (first + last) / 2;
+    if (TSEQUENCE_INST_N(seq, middle)->t >= upper)
+    {
+      to = middle;
+      last = middle - 1;
+    }
+    else
+      first = middle + 1;
+  }
+  if (from == 0 && to == seq->count - 1)
+    return NULL;
+  bool lower_inc = (from == 0) ? seq->period.lower_inc : true;
+  bool upper_inc = (to == seq->count - 1) ? seq->period.upper_inc : true;
+  if (from == to)
+    lower_inc = upper_inc = true;
+  return tsequence_subseq(seq, from, to, lower_inc, upper_inc);
+}
+
+/**
+ * @brief Add to an array the relationship of the sequences of a temporal
+ * point and a geometry on a stretch of time
+ * @param[in] pseqs,npseqs Sequences of the temporal point
+ * @param[in] gs Geometry, the value of the temporal geometry on the stretch
+ * @param[in] s Stretch
+ * @param[in] rel Relationship
+ * @param[in] pointfirst True when the relationship is of the point first
+ * @param[out] pieces Array of the pieces of the result
+ * @param[in,out] npieces,maxpieces Number of pieces and size of the array
+ */
+static void
+tpointseqs_geo_stretch(const TSequence **pseqs, int npseqs,
+  const GSERIALIZED *gs, const Span *s, tgeoRel rel, bool pointfirst,
+  Temporal ***pieces, int *npieces, int *maxpieces)
+{
+  for (int j = 0; j < npseqs; j++)
+  {
+    if (! overlaps_span_span(&pseqs[j]->period, s))
+      continue;
+    TSequence *cover = tlinearseq_cover_span(pseqs[j], s);
+    Temporal *res = tpoint_geo_rel(cover ? (Temporal *) cover :
+      (Temporal *) pseqs[j], gs, rel, pointfirst);
+    if (cover)
+      pfree(cover);
+    if (! res)
+      continue;
+    Temporal *piece = temporal_restrict_tstzspan(res, s, REST_AT);
+    pfree(res);
+    if (! piece)
+      continue;
+    if (*npieces == *maxpieces)
+    {
+      *maxpieces *= 2;
+      *pieces = repalloc(*pieces, sizeof(Temporal *) * (*maxpieces));
+    }
+    (*pieces)[(*npieces)++] = piece;
+  }
+  return;
+}
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal point with
+ * linear interpolation and a temporal geometry with step interpolation
+ * satisfy a spatial relationship
+ * @details The temporal geometry keeps one value on each stretch from one of
+ * its instants to the next. On each stretch, the relationship of the point
+ * and that value is the relationship of a temporal point and a geometry,
+ * computed on the whole input segments of the point that cover the stretch,
+ * and the result is restricted to the stretch. The restriction cuts the time
+ * axis of the temporal Boolean only, so no position of the point is
+ * interpolated, and the instants where the relationship changes are those of
+ * the relationship of a temporal point and a geometry.
+ * @param[in] temp1,temp2 Temporal geos, one of them a temporal point and the
+ * other a temporal geometry (#tgeo_tgeo_moving_point)
+ * @param[in] rel Relationship of @p temp1 and @p temp2, in this order
+ * @return NULL when the two values share no instant
+ */
+Temporal *
+tspatialrel_tgeo_tpoint_stretch(const Temporal *temp1, const Temporal *temp2,
+  tgeoRel rel)
+{
+  assert(tgeo_tgeo_moving_point(temp1, temp2));
+  bool pointfirst = tpoint_type(temp1->temptype);
+  const Temporal *tpoint = pointfirst ? temp1 : temp2;
+  const Temporal *tgeo = pointfirst ? temp2 : temp1;
+  int npseqs, ngseqs;
+  const TSequence **pseqs = temporal_sequences_p(tpoint, &npseqs);
+  const TSequence **gseqs = temporal_sequences_p(tgeo, &ngseqs);
+  int npieces = 0, maxpieces = 16;
+  Temporal **pieces = palloc(sizeof(Temporal *) * maxpieces);
+  for (int i = 0; i < ngseqs; i++)
+  {
+    const TSequence *gseq = gseqs[i];
+    for (int k = 0; k < gseq->count; k++)
+    {
+      const TInstant *inst = TSEQUENCE_INST_N(gseq, k);
+      Span s;
+      if (k + 1 < gseq->count)
+        /* The value of the instant holds until the next instant */
+        span_set(TimestampTzGetDatum(inst->t),
+          TimestampTzGetDatum(TSEQUENCE_INST_N(gseq, k + 1)->t),
+          k == 0 ? gseq->period.lower_inc : true, false, T_TIMESTAMPTZ,
+          T_TSTZSPAN, &s);
+      else if (gseq->count == 1 || gseq->period.upper_inc)
+        /* The value of the last instant holds at that instant only */
+        span_set(TimestampTzGetDatum(inst->t), TimestampTzGetDatum(inst->t),
+          true, true, T_TIMESTAMPTZ, T_TSTZSPAN, &s);
+      else
+        continue;
+      tpointseqs_geo_stretch(pseqs, npseqs,
+        DatumGetGserializedP(tinstant_value_p(inst)), &s, rel, pointfirst,
+        &pieces, &npieces, &maxpieces);
+    }
+  }
+  pfree(pseqs); pfree(gseqs);
+  Temporal *result = NULL;
+  if (npieces > 0)
+    result = temporal_merge_array(pieces, npieces);
+  pfree_array((void **) pieces, npieces);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**
@@ -536,6 +781,11 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
     return tinter ?
       tcomp_temporal_temporal(temp1, temp2, &datum2_eq) :
       tcomp_temporal_temporal(temp1, temp2, &datum2_ne);
+  /* A temporal point that moves against a temporal geometry is related to
+   * each of its values on the stretch where the value holds */
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return tspatialrel_tgeo_tpoint_stretch(temp1, temp2,
+      tinter ? TGEOREL_INTERSECTS : TGEOREL_DISJOINT);
   /* The values of two temporal geometries or geographies are constant
    * between their instants, which have step or discrete interpolation, so
    * they intersect at an instant where their values intersect: in the plane,
@@ -657,10 +907,12 @@ tspatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
  * satisfy a spatial relationship
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] func Spatial relationship function
+ * @param[in] rel Relationship that @p func computes, applied on the stretches
+ * of a temporal point that moves against a temporal geometry
  */
 Temporal *
 tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
-  varfunc func)
+  varfunc func, tgeoRel rel)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
@@ -669,6 +921,8 @@ tspatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return tspatialrel_tgeo_tpoint_stretch(temp1, temp2, rel);
   return tspatialrel_tspatial_tspatial(temp1, temp2, NULL, func, 0,
     INVERT_NO);
 }
@@ -778,7 +1032,8 @@ tcontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_contains);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_contains,
+    TGEOREL_CONTAINS);
 }
 
 /*****************************************************************************
@@ -859,7 +1114,8 @@ tcovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tcovers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geo_covers2d);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geo_covers2d,
+    TGEOREL_COVERS);
 }
 
 /*****************************************************************************
@@ -1045,7 +1301,8 @@ ttouches_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 ttouches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
 {
-  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_touches);
+  return tspatialrel_tgeo_tgeo(temp1, temp2, (varfunc) &datum_geom_touches,
+    TGEOREL_TOUCHES);
 }
 
 /*****************************************************************************

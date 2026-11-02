@@ -1694,7 +1694,8 @@ tfunc_tcontseq_tcontseq_single(const TSequence *seq1, const TSequence *seq2,
   MeosType basetype_res = temptype_basetype(lfinfo->restype);
   TInstant *inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, 0);
   TInstant *inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, 0);
-  TInstant *prev1 = NULL, *prev2 = NULL; /* make compiler quiet */
+  TInstant *prev1 = NULL; /* make compiler quiet */
+  const TInstant *prev2 = NULL;
   TimestampTz lower = DatumGetTimestampTz(inter->lower);
   TimestampTz upper = DatumGetTimestampTz(inter->upper);
   interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
@@ -2418,7 +2419,7 @@ tfunc_temporal_temporal_dispatch(const Temporal *temp1, const Temporal *temp2,
     }
     case TSEQUENCE:
     {
-      TSequence *seq1 = (TSequence *) temp1;
+      const TSequence *seq1 = (const TSequence *) temp1;
       interpType interp1 = MEOS_FLAGS_GET_INTERP(seq1->flags);
       switch (subtype2)
       {
@@ -2430,7 +2431,7 @@ tfunc_temporal_temporal_dispatch(const Temporal *temp1, const Temporal *temp2,
               (TSequence *) temp1, (TInstant *) temp2, lfinfo);
         case TSEQUENCE:
         {
-          TSequence *seq2 = (TSequence *) temp2;
+          const TSequence *seq2 = (const TSequence *) temp2;
           interpType interp2 = MEOS_FLAGS_GET_INTERP(temp2->flags);
           if (interp1 == DISCRETE)
           {
@@ -3291,7 +3292,10 @@ eafunc_tstepseq_tstepseq(const TSequence *seq1, const TSequence *seq2,
     /* Compute the function on the synchronized instants */
     res = DatumGetBool(tfunc_base_base(tinstant_value_p(inst1),
       tinstant_value_p(inst2), lfinfo));
-    if (res || i == seq1->count || j == seq2->count)
+    /* Stop at the first instant that decides the quantifier, one where the
+     * relationship holds for ever and one where it fails for always, as
+     * #eafunc_tdiscseq_tdiscseq does */
+    if (res == lfinfo->ever || i == seq1->count || j == seq2->count)
       break;
     inst1 = (TInstant *) TSEQUENCE_INST_N(seq1, i);
     inst2 = (TInstant *) TSEQUENCE_INST_N(seq2, j);

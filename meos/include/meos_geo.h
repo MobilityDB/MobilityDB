@@ -945,11 +945,17 @@ extern int *eintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const
 extern int *aintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *etouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *econtains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *acontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *ecovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
+extern int *acovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *edisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *adisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count);
 extern int *tdwithin_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, double dist, bool spheroid, int *count, SpanSet ***periods);
 extern int *tintersects_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *tcontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
+extern int *tcovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 extern int *tdisjoint_tgeoarr_tgeoarr(const Temporal **arr1, int count1, const Temporal **arr2, int count2, int *count, SpanSet ***periods);
 
 /* Distance */

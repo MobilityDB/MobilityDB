@@ -1,3 +1,17 @@
+SELECT tgeometry(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]');
+ERROR:  Operation not supported for temporal values with linear interpolation
+SELECT tIntersects(trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 0)');
+ERROR:  Operation not supported for temporal values with linear interpolation
+CONTEXT:  SQL function "tintersects" statement 1
+SELECT tContains(geometry 'Polygon((-5 -5,15 -5,15 5,-5 5,-5 -5))', trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]');
+ERROR:  Operation not supported for temporal values with linear interpolation
+CONTEXT:  SQL function "tcontains" statement 1
+SELECT asText(tgeometry(trgeometry 'Interp=Step;Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(10 0),0)@2001-01-02]'));
+                                                                astext                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ [POLYGON((-1 -1,1 -1,1 1,-1 1,-1 -1))@Mon Jan 01 00:00:00 2001 PST, POLYGON((9 -1,11 -1,11 1,9 1,9 -1))@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
 SELECT tContains(NULL::geometry, trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));Pose(Point(0 0),0)@2001-01-01');
  tcontains 
 -----------

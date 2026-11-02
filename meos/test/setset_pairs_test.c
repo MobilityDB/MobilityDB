@@ -99,12 +99,12 @@ random_tgeo(void)
   return (Temporal *) tgeompoint_in(buf);
 }
 
-/* Return a temporal geometry holding a unit square of a grid over a random
- * hour of a random day. Squares of a grid share edges and corners, so the
+/* Return a temporal geometry holding a square of a grid, of the given side,
+ * over a random hour of a random day. Squares of a grid share edges and corners, so the
  * touches relationships hold for real pairs, which they never do for points:
  * touching needs boundaries to meet and a point has none. */
 static Temporal *
-random_tgeometry(void)
+random_tgeometry_sized(int size)
 {
   int gx = rand() % 12, gy = rand() % 12;
   int day = 1 + rand() % 5;
@@ -114,9 +114,19 @@ random_tgeometry(void)
     "Interp=Step;[Polygon((%d %d,%d %d,%d %d,%d %d,%d %d))"
     "@2000-01-%02d %02d:00:00+00, "
     "Polygon((%d %d,%d %d,%d %d,%d %d,%d %d))@2000-01-%02d %02d:00:00+00]",
-    gx, gy, gx + 1, gy, gx + 1, gy + 1, gx, gy + 1, gx, gy, day, h,
-    gx, gy, gx + 1, gy, gx + 1, gy + 1, gx, gy + 1, gx, gy, day, h + 3);
+    gx, gy, gx + size, gy, gx + size, gy + size, gx, gy + size, gx, gy,
+    day, h,
+    gx, gy, gx + size, gy, gx + size, gy + size, gx, gy + size, gx, gy,
+    day, h + 3);
   return (Temporal *) tgeometry_in(buf);
+}
+
+/* A unit square of the grid, the counterpart of #random_tgeo for the
+ * relationships that need an area */
+static Temporal *
+random_tgeometry(void)
+{
+  return random_tgeometry_sized(1);
 }
 
 /* The relationships under test, each with its array function and the scalar
@@ -125,11 +135,13 @@ typedef enum
 {
   P_EDWITHIN, P_ADWITHIN, P_EINTERSECTS, P_AINTERSECTS,
   P_ETOUCHES, P_ATOUCHES, P_EDISJOINT, P_ADISJOINT,
+  P_ECONTAINS, P_ACONTAINS, P_ECOVERS, P_ACOVERS,
 } Pred;
 
 static const char *PRED_NAME[] = {
   "eDwithin", "aDwithin", "eIntersects", "aIntersects",
   "eTouches", "aTouches", "eDisjoint", "aDisjoint",
+  "eContains", "aContains", "eCovers", "aCovers",
 };
 
 static int *
@@ -152,6 +164,14 @@ pred_array(Pred p, const Temporal **a1, int c1, const Temporal **a2, int c2,
       return atouches_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
     case P_EDISJOINT:
       return edisjoint_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
+    case P_ECONTAINS:
+      return econtains_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
+    case P_ACONTAINS:
+      return acontains_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
+    case P_ECOVERS:
+      return ecovers_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
+    case P_ACOVERS:
+      return acovers_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
     default:
       return adisjoint_tgeoarr_tgeoarr(a1, c1, a2, c2, count);
   }
@@ -169,6 +189,10 @@ pred_scalar(Pred p, const Temporal *t1, const Temporal *t2)
     case P_ETOUCHES:    return etouches_tgeo_tgeo(t1, t2);
     case P_ATOUCHES:    return atouches_tgeo_tgeo(t1, t2);
     case P_EDISJOINT:   return edisjoint_tgeo_tgeo(t1, t2);
+    case P_ECONTAINS:   return econtains_tgeo_tgeo(t1, t2);
+    case P_ACONTAINS:   return acontains_tgeo_tgeo(t1, t2);
+    case P_ECOVERS:     return ecovers_tgeo_tgeo(t1, t2);
+    case P_ACOVERS:     return acovers_tgeo_tgeo(t1, t2);
     default:            return adisjoint_tgeo_tgeo(t1, t2);
   }
 }
@@ -270,6 +294,21 @@ main(void)
     test_pred((Pred) p, large1, LARGE1, large2, LARGE2, "points indexed");
     test_pred((Pred) p, poly1, LARGE1, poly2, LARGE2, "squares indexed");
   }
+
+  /* Contains and covers are defined for temporal geometries: squares of the
+   * grid against squares, and squares twice as wide, which contain the
+   * squares inside them, against squares, both pairwise and indexed */
+  const Temporal **wide1 = malloc(LARGE1 * sizeof(Temporal *));
+  for (int i = 0; i < LARGE1; i++) wide1[i] = random_tgeometry_sized(2);
+  for (int p = P_ECONTAINS; p <= P_ACOVERS; p++)
+  {
+    test_pred((Pred) p, poly1, SMALL1, poly2, SMALL2, "squares pairwise");
+    test_pred((Pred) p, poly1, LARGE1, poly2, LARGE2, "squares indexed");
+    test_pred((Pred) p, wide1, SMALL1, poly2, SMALL2, "wide squares pairwise");
+    test_pred((Pred) p, wide1, LARGE1, poly2, LARGE2, "wide squares indexed");
+  }
+  for (int i = 0; i < LARGE1; i++) free((void *) wide1[i]);
+  free(wide1);
 
   for (int i = 0; i < LARGE1; i++) free((void *) poly1[i]);
   for (int j = 0; j < LARGE2; j++) free((void *) poly2[j]);
