@@ -41,6 +41,12 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #= tcbuffer '{Cbuffer(Point(1 1), 0.3)
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #= tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}';
 
+-- A segment passing through the circular buffer inside it
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-03)' #= cbuffer 'Cbuffer(Point(1 1), 0.3)';
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.3)' #= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-03)';
+SELECT tcbuffer '[Cbuffer(Point(0.1 1), 0.5)@2001-01-01, Cbuffer(Point(0.4 1), 0.5)@2001-01-04)' #= cbuffer 'Cbuffer(Point(0.3 1), 0.5)';
+SELECT tcbuffer '[Cbuffer(Point(0.2 0.2), 0.2)@2001-01-01, Cbuffer(Point(0.4 0.4), 0.4)@2001-01-03)' #= cbuffer 'Cbuffer(Point(0.3 0.3), 0.3)';
+
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' #= tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' #= tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}';
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' #= tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
@@ -74,6 +80,12 @@ SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #<> tcbuffer 'Cbuffer(Point(1 1), 0.5)
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #<> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}';
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #<> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]';
 SELECT cbuffer 'Cbuffer(Point(1 1), 0.5)' #<> tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}';
+
+-- A segment passing through the circular buffer inside it
+SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-03)' #<> cbuffer 'Cbuffer(Point(1 1), 0.3)';
+SELECT cbuffer 'Cbuffer(Point(1 1), 0.3)' #<> tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-03)';
+SELECT tcbuffer '[Cbuffer(Point(0.1 1), 0.5)@2001-01-01, Cbuffer(Point(0.4 1), 0.5)@2001-01-04)' #<> cbuffer 'Cbuffer(Point(0.3 1), 0.5)';
+SELECT tcbuffer '[Cbuffer(Point(0.2 0.2), 0.2)@2001-01-01, Cbuffer(Point(0.4 0.4), 0.4)@2001-01-03)' #<> cbuffer 'Cbuffer(Point(0.3 0.3), 0.3)';
 
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' #<> tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01';
 SELECT tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01' #<> tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03}';
