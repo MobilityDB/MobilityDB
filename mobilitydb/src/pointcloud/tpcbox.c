@@ -82,8 +82,9 @@ PG_FUNCTION_INFO_V1(Tpcbox_out);
 Datum
 Tpcbox_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
-  PG_RETURN_CSTRING(tpcbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_RETURN_CSTRING(tpcbox_out(box, OUT_DEFAULT_DECIMAL_DIGITS, &size_out));
 }
 
 PGDLLEXPORT Datum Tpcbox_as_text(PG_FUNCTION_ARGS);
@@ -96,11 +97,12 @@ PG_FUNCTION_INFO_V1(Tpcbox_as_text);
 Datum
 Tpcbox_as_text(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = tpcbox_out(box, dbl_dig_for_wkt);
+  char *str = tpcbox_out(box, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

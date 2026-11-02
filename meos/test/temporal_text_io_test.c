@@ -66,7 +66,7 @@
   "C8000000@2024-01-01"
 
 typedef Temporal *(*text_in_fn)(const char *);
-typedef char *(*text_out_fn)(const Temporal *);
+typedef char *(*text_out_fn)(const Temporal *, size_t *);
 
 /* Read a value, write it out, read the output back and write it again: the
  * two outputs agree, the first reading back what the input reads. Then the
@@ -77,21 +77,23 @@ check(const char *name, text_in_fn in, text_out_fn out, const char *text,
 {
   Temporal *temp = in(text);
   assert(temp && meos_errno() == 0);
-  char *str1 = out(temp);
+  size_t size;
+  char *str1 = out(temp, &size);
   Temporal *back = str1 ? in(str1) : NULL;
-  char *str2 = back ? out(back) : NULL;
+  char *str2 = back ? out(back, &size) : NULL;
   printf("%s: %s, errno %d\n", name, str1 ? str1 : "NULL", meos_errno());
   assert(str1 && str2 && strcmp(str1, str2) == 0);
+  assert(size == strlen(str2) + 1);
   assert(meos_errno() == 0);
   free(temp); free(back); free(str1); free(str2);
 
-  char *res = out(NULL);
+  char *res = out(NULL, &size);
   printf("%s(NULL): %s, errno %d\n", name, res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
 
-  res = out(other);
+  res = out(other, &size);
   printf("%s(tint): %s, errno %d\n", name, res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);

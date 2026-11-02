@@ -51,11 +51,18 @@ int64_in(const char *str)
 /**
  * @ingroup meos_base_int
  * @brief Return the string representation of an int64 number
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p int8out()
  */
 char *
-int64_out(int64 num)
+int64_out(int64 num, size_t *size_out)
 {
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   char buf[MAXINT8LEN + 1];
   char *result;
   int len = pg_lltoa(num, buf) + 1;
@@ -66,6 +73,8 @@ int64_out(int64 num)
    */
   result = palloc(len);
   memcpy(result, buf, len);
+  if (result)
+    *size_out = strlen(result) + 1;
   return result;
 }
 

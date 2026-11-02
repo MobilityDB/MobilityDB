@@ -61,7 +61,8 @@ extern const GSERIALIZED *trgeometry_geom_p(const Temporal *temp);
 
 /* Input/output functions */
 
-extern char *trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended);
+extern char *trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended,
+  size_t *size_out);
 
 /* Constructor functions */
 

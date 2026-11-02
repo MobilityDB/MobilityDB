@@ -154,14 +154,17 @@ tpcpatchseqset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal
  * pgpointcloud patch
  * @param[in] temp Temporal pgpointcloud patch
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-tpcpatch_out(const Temporal *temp)
+tpcpatch_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPCPATCH(temp, NULL);
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /*****************************************************************************

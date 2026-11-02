@@ -48,6 +48,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   char output_buffer[MAX_LEN_LINE];
 
   /* Initialize MEOS */
@@ -76,7 +77,7 @@ int main(void)
       &count);
 
   /* Print the input value to split */
-  char *tfloat_str = tfloat_out(tfloat, 3);
+  char *tfloat_str = tfloat_out(tfloat, 3, &size_out);
   printf("------------------\n");
   printf("| Value to split |\n");
   printf("------------------\n\n");
@@ -90,8 +91,8 @@ int main(void)
   int i;
   for (i = 0; i < count; i++)
   {
-    char *time_str = timesplit ? timestamptz_out(time_bins[i]) : "";
-    char *temp_str = tfloat_out(result[i], 3);
+    char *time_str = timesplit ? timestamptz_out(time_bins[i], &size_out) : "";
+    char *temp_str = tfloat_out(result[i], 3, &size_out);
     if (valuesplit)
       snprintf(output_buffer, sizeof(output_buffer), "%f, %s%s%s\n",
         value_bins[i], time_str, timesplit ? ", " : "", temp_str);

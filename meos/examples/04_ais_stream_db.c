@@ -281,7 +281,7 @@ main(int argc, char **argv)
     if (trips[j].trip && trips[j].trip->count == NUM_INSTS_KEEP)
     {
       /* Construct the query to be sent to the database */
-      char *temp_out = tsequence_out(trips[j].trip, 15);
+      char *temp_out = tsequence_out(trips[j].trip, 15, NULL);
       size_t len = sizeof(char) * (strlen(temp_out) + 256);
       char *query_buffer = malloc(len + 1);
       snprintf(query_buffer, len, "INSERT INTO public.AISTrips(MMSI, trip) "

@@ -69,8 +69,9 @@ extern char *basetype_out(Datum value, MeosType type, int maxdd);
 extern void pfree_array(void **array, int count);
 extern bool string_escape(const char *str, int quotes, char **result);
 extern size_t string_unescape(const char *str, char **result);
+extern char *cstring_size(char *str, size_t *size_out);
 extern char *stringarr_to_string(char **strings, int count, char *prefix,
-  char open, char close, int quotes, bool spaces);
+  char open, char close, int quotes, bool spaces, size_t *size_out);
 
 /* Sort functions */
 

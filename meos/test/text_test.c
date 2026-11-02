@@ -46,19 +46,20 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
 
   /* Create values to test the functions of the API */
   bool b1 = bool_in("true");
-  char *b1_out = bool_out(b1);
+  char *b1_out = bool_out(b1, &size_out);
   int32_t int32_in1 = 32;
   int64_t int64_in1 = 64;
   text *text1 = text_in("abcdef");
   text *text2 = text_in("ghijkl");
-  char *text1_out = text_out(text1);
-  char *text2_out = text_out(text2);
+  char *text1_out = text_out(text1, &size_out);
+  char *text2_out = text_out(text2, &size_out);
 
   /* Create the result types for the functions of the API */
   bool bool_result;
@@ -84,13 +85,13 @@ int main(void)
 
   /* text *cstring_to_text(const char *str); */
   text_result = cstring_to_text("azerty");
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("cstring_to_text(\"azerty\"): %s\n", char_result);
   free(text_result); free(char_result);
 
   /* text *icu_unicode_version(void); */
   text_result = icu_unicode_version();
-  char_result = text_result ? text_out(text_result) : "NULL";
+  char_result = text_result ? text_out(text_result, &size_out) : "NULL";
   printf("icu_unicode_version(): %s\n", char_result);
   if (text_result)
   {
@@ -99,37 +100,37 @@ int main(void)
 
   /* text *int32_to_bin(int32_t num); */
   text_result = int32_to_bin(int32_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int32_to_bin(%d): %s\n", int32_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int32_to_hex(int32_t num); */
   text_result = int32_to_hex(int32_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int32_to_hex(%d): %s\n", int32_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int32_to_oct(int32_t num); */
   text_result = int32_to_oct(int32_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int32_to_oct(%d): %s\n", int32_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int64_to_bin(int64_t num); */
   text_result = int64_to_bin(int64_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int64_to_bin(%ld): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int64_to_hex(int64_t num); */
   text_result = int64_to_hex(int64_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int64_to_hex(%ld): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
   /* text *int64_to_oct(int64_t num); */
   text_result = int64_to_oct(int64_in1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("int64_to_oct(%ld): %s\n", int64_in1, char_result);
   free(text_result); free(char_result);
 
@@ -140,7 +141,7 @@ int main(void)
 
   /* text *text_cat(const text *txt1, const text *txt2); */
   text_result = text_cat(text1, text2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_cat(%s, %s): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
@@ -152,7 +153,7 @@ int main(void)
   text *text_concat(text **textarr, int count);
   text *textarr[2] = {text1, text2};
   text_result = text_concat((text **) textarr, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_concat([%s, %s], 2): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
@@ -160,13 +161,13 @@ int main(void)
   text *text_concat_ws(text **textarr, int count, const text *sep);
   text *sep = text_in(", ");
   text_result = text_concat_ws(textarr, 2, sep);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_concat_ws([%s, %s], 2, \", \"): %s\n", text1_out, text2_out, char_result);
   free(sep); free(char_result); free(text_result);
 
   /* text *text_copy(const text *txt); */
   text_result = text_copy(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_copy(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result); 
 
@@ -192,19 +193,19 @@ int main(void)
 
   /* text *text_in(const char *str); */
   text_result = text_in("azerty");
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_in(\"azerty\"): %s\n", char_result);
   free(text_result); free(char_result);
 
   /* text *text_initcap(const text *txt); */
   text_result = text_initcap(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_initcap(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_larger(const text *txt1, const text *txt2); */
   text_result = text_larger(text1, text2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_larger(%s, %s): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
@@ -214,7 +215,7 @@ int main(void)
 
   /* text *text_left(const text *txt, int n); */
   text_result = text_left(text1, 3);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_left(%s, 3): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
@@ -224,7 +225,7 @@ int main(void)
 
   /* text *text_lower(const text *txt); */
   text_result = text_lower(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_lower(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
@@ -240,20 +241,20 @@ int main(void)
   int32_result = text_octetlen(text1);
   printf("text_octetlen(%s): %d\n", text1_out, int32_result);
 
-  /* char *text_out(const text *txt); */
-  char_result = text_out(text1);
+  /* char *text_out(const text *txt, size_t *size_out); */
+  char_result = text_out(text1, &size_out);
   printf("text_out(%s): %s\n", text1_out, char_result);
   free(char_result);
 
   /* text *text_overlay(const text *txt1, const text *txt2, int from, int count); */
   text_result = text_overlay(text1, text2, 2, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_overlay(%s, %s, 2, 2): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_overlay_no_len(const text *txt1, const text *txt2, int from); */
   text_result = text_overlay_no_len(text1, text2, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_overlay_no_len(%s, %s, 2): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
@@ -285,33 +286,33 @@ int main(void)
   char *from_out = text_to_cstring(from);
   char *to_out = text_to_cstring(to);
   text_result = text_replace(text1, from, to);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_replace(%s, %s, %s): %s\n", text1_out, from_out, to_out, char_result);
   free(from); free(from_out); free(to); free(to_out);
   free(text_result); free(char_result);
 
   /* text *text_reverse(const text *txt); */
   text_result = text_reverse(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_reverse(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_right(const text *txt, int n); */
   text_result = text_right(text1, 3);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_right(%s, 3): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_smaller(const text *txt1, const text *txt2); */
   text_result = text_smaller(text1, text2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_smaller(%s, %s): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_split_part(const text *txt, const text *sep, int fldnum); */
   text *text_sep = text_in(", ");
   text_result = text_split_part(text1, text_sep, 1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_split_part(%s, \", \", 1): %s\n", text1_out, char_result);
   free(text_sep); free(text_result); free(char_result);
 
@@ -321,25 +322,25 @@ int main(void)
 
   /* text *text_substr(const text *txt, int32_t start, int32_t length); */
   text_result = text_substr(text1, 3, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_substr(%s, 3, 2): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_substr_no_len(const text *txt, int32_t start); */
   text_result = text_substr_no_len(text1, 3);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_substr_no_len(%s, 3): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *text_upper(const text *txt); */
   text_result = text_upper(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("text_upper(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *textcat_text_text(const text *txt1, const text *txt2); */
   text_result = textcat_text_text(text1, text2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("textcat_text_text(%s, %s): %s\n", text1_out, text2_out, char_result);
   free(text_result); free(char_result);
 
@@ -360,13 +361,13 @@ int main(void)
 
   /* text *unicode_version(void); */
   text_result = unicode_version();
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("unicode_version(): %s\n", char_result);
   free(text_result); free(char_result);
 
   /* text *unistr(const text *txt); */
   text_result = unistr(text1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("unistr(%s): %s\n", text1_out, char_result);
   free(text_result); free(char_result);
 

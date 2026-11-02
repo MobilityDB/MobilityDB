@@ -44,23 +44,23 @@ typedef struct varlena
 /* The following functions have the same name as external PostgreSQL functions */
 
 extern bool bool_in(const char *str);
-extern char *bool_out(bool b);
-extern char *float8_out(double num, int maxdd);
+extern char *bool_out(bool b, size_t *size_out);
+extern char *float8_out(double num, int maxdd, size_t *size_out);
 extern DateADT date_in(const char *str);
-extern char *date_out(DateADT date);
+extern char *date_out(DateADT date, size_t *size_out);
 extern int interval_cmp(const Interval *interv1, const Interval *interv2);
 extern Interval *interval_in(const char *str, int32 typmod);
-extern char *interval_out(const Interval *interv);
+extern char *interval_out(const Interval *interv, size_t *size_out);
 extern TimeADT time_in(const char *str, int32 typmod);
-extern char *time_out(TimeADT time);
+extern char *time_out(TimeADT time, size_t *size_out);
 extern Timestamp timestamp_in(const char *str, int32 typmod);
-extern char *timestamp_out(Timestamp ts);
+extern char *timestamp_out(Timestamp ts, size_t *size_out);
 extern TimestampTz timestamptz_in(const char *str, int32 typmod);
-extern char *timestamptz_out(TimestampTz tstz);
+extern char *timestamptz_out(TimestampTz tstz, size_t *size_out);
 extern text *cstring_to_text(const char *str);
 extern char *text_to_cstring(const text *txt);
 extern text *text_in(const char *str);
-extern char *text_out(const text *txt);
+extern char *text_out(const text *txt, size_t *size_out);
 extern int text_cmp(const text *txt1, const text *txt2, Oid collid);
 extern text *text_copy(const text *txt);
 extern text *text_initcap(const text *txt);

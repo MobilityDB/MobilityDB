@@ -48,6 +48,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   char output_buffer[MAX_LEN_LINE];
 
   /* Set this parameter to enable/disable space split */
@@ -84,7 +85,7 @@ int main(void)
     spans = tstzspan_bins(&box->period, interv, torigin, true, &count);
 
   /* Print the input value to split */
-  char *box_str = stbox_out(box, 3);
+  char *box_str = stbox_out(box, 3, &size_out);
   printf("------------------\n");
   printf("| Value to split |\n");
   printf("------------------\n\n");
@@ -98,7 +99,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *tile_str = spacesplit ?
-      stbox_out(&boxes[i], 3) : tstzspan_out(&spans[i]);
+      stbox_out(&boxes[i], 3, &size_out) : tstzspan_out(&spans[i], &size_out);
     snprintf(output_buffer, MAX_LEN_LINE - 1, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);

@@ -106,7 +106,8 @@ extern bool ensure_valid_posechainset_posechain(const Set *s,
 extern PoseChain *posechain_parse(const char **str, bool end);
 extern size_t posechain_sortkey_size(const PoseChain *pc);
 extern uint8_t *posechain_sortkey_put(const PoseChain *pc, uint8_t *out);
-extern char *posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd);
+extern char *posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd,
+  size_t *size_out);
 
 /* Interpolation functions */
 

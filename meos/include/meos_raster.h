@@ -89,7 +89,7 @@ typedef struct Raquet Raquet;
 /* Input and output functions for Raquet tiles */
 
 extern Raquet *raquet_in(const char *str);
-extern char *raquet_out(const Raquet *rq);
+extern char *raquet_out(const Raquet *rq, size_t *size_out);
 extern Raquet *raquet_from_wkb(const uint8_t *wkb, size_t size);
 extern Raquet *raquet_from_hexwkb(const char *hexwkb);
 extern uint8_t *raquet_as_wkb(const Raquet *rq, uint8_t variant, size_t *size_out);
@@ -109,7 +109,7 @@ extern Raquet *raquet_read_bytes(const uint8_t *data, size_t size, Quadbin quadb
 extern Quadbin raquet_quadbin(const Raquet *rq);
 extern int raquet_width(const Raquet *rq);
 extern int raquet_height(const Raquet *rq);
-extern char *raquet_band_pixel_type(const Raquet *rq);
+extern char *raquet_band_pixel_type(const Raquet *rq, size_t *size_out);
 extern bool raquet_band_has_nodata_value(const Raquet *rq);
 extern bool raquet_band_nodata_value(const Raquet *rq, double *result);
 extern uint8_t *raquet_pixels(const Raquet *rq, size_t *size_out);
@@ -260,12 +260,11 @@ extern double raster_scale_x(const Raster *rast);
 extern double raster_scale_y(const Raster *rast);
 extern double raster_skew_x(const Raster *rast);
 extern double raster_skew_y(const Raster *rast);
-extern char *raster_band_pixel_type(const Raster *rast, int band);
+extern char *raster_band_pixel_type(const Raster *rast, int band, size_t *size_out);
 extern bool raster_band_has_nodata_value(const Raster *rast, int band);
 extern bool raster_band_nodata_value(const Raster *rast, int band,
   double *result);
-extern uint8_t *raster_band_pixels(const Raster *rast, int band,
-  size_t *size_out);
+extern uint8_t *raster_band_pixels(const Raster *rast, int band, size_t *size_out);
 extern int64 bandstats_count(const BandStats *stats);
 extern bool bandstats_sum(const BandStats *stats, double *result);
 extern bool bandstats_mean(const BandStats *stats, double *result);
@@ -336,7 +335,7 @@ extern Raster *sub_raster_raster(const Raster *rast1, const Raster *rast2);
 
 extern bool raster_same_alignment(const Raster *rast1, const Raster *rast2);
 extern char *raster_not_same_alignment_reason(const Raster *rast1,
-  const Raster *rast2);
+  const Raster *rast2, size_t *size_out);
 
 /* Aggregate functions for PostGIS rasters */
 
@@ -357,16 +356,13 @@ extern RasterUnionState *raster_union_transfn(RasterUnionState *state,
   const Raster *rast, int band, const char *uniontype);
 extern RasterAlignState *rasteralignstate_deserialize(const uint8_t *bytes,
   size_t size);
-extern uint8_t *rasteralignstate_serialize(const RasterAlignState *state,
-  size_t *size_out);
+extern uint8_t *rasteralignstate_serialize(const RasterAlignState *state, size_t *size_out);
 extern RasterStatsState *rasterstatsstate_deserialize(const uint8_t *bytes,
   size_t size);
-extern uint8_t *rasterstatsstate_serialize(const RasterStatsState *state,
-  size_t *size_out);
+extern uint8_t *rasterstatsstate_serialize(const RasterStatsState *state, size_t *size_out);
 extern RasterUnionState *rasterunionstate_deserialize(const uint8_t *bytes,
   size_t size);
-extern uint8_t *rasterunionstate_serialize(const RasterUnionState *state,
-  size_t *size_out);
+extern uint8_t *rasterunionstate_serialize(const RasterUnionState *state, size_t *size_out);
 
 /* Conversion functions for Raquet tiles */
 

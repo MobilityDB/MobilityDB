@@ -81,6 +81,7 @@ trip_record trip_rec;
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Variables to read the input CSV file */
   char header_buffer[MAX_LEN_HEADER];
   char date_buffer[MAX_LEN_DATE];
@@ -163,7 +164,7 @@ int main(void)
 
   printf("Extent\n");
   printf("------\n\n");
-  out_str = stbox_out(extent, 6);
+  out_str = stbox_out(extent, 6, &size_out);
   printf("\%s\n\n", out_str);
   free(out_str);
 
@@ -174,7 +175,7 @@ int main(void)
   Temporal **tcount_seqs = (Temporal **) temporal_sequences(tcount, &seqcount);
   for (i = 0; i < seqcount; i++)
   {
-    out_str = tint_out(tcount_seqs[i]);
+    out_str = tint_out(tcount_seqs[i], &size_out);
     printf("\%s\n", out_str);
     free(out_str);
   }

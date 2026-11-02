@@ -1388,6 +1388,25 @@ string_unescape(const char *str, char **result)
 }
 
 /**
+ * @brief Return a string, writing its size, the terminating null character
+ * included, for a text output whose builder states no length
+ * @details The text of a base value written by a PostgreSQL output function, of
+ * a box, of a name or of a version is short, so the size is measured once
+ * here, and the caller of the public function receives it with the string
+ * rather than scanning for the terminator itself; a builder that knows its
+ * length, as #stringarr_to_string does, writes it instead
+ * @param[in] str String, NULL when its builder raised an error
+ * @param[out] size_out Size of the string, untouched when it is NULL
+ */
+char *
+cstring_size(char *str, size_t *size_out)
+{
+  if (str && size_out)
+    *size_out = strlen(str) + 1;
+  return str;
+}
+
+/**
  * @brief Return the string resulting from assembling an array of strings
  * @param[in] strings Array of strings to ouput
  * @param[in] count Number of elements in the input array
@@ -1395,12 +1414,14 @@ string_unescape(const char *str, char **result)
  * @param[in] open, close Starting/ending character (e.g., '{' and '}')
  * @param[in] quotes True when elements should be enclosed into quotes
  * @param[in] spaces True when elements should be separated by spaces
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  * @note The function frees the memory of the input strings after finishing.
  * @note The functin is derived from the PostgreSQL array_out() function
  */
 char *
 stringarr_to_string(char **strings, int count, char *prefix, char open,
-  char close, int quotes, bool spaces)
+  char close, int quotes, bool spaces, size_t *size_out)
 {
   /* Count total space needed (including any overhead such as escaping
      backslashes), and detect whether each item needs double quotes */
@@ -1478,6 +1499,8 @@ stringarr_to_string(char **strings, int count, char *prefix, char open,
   }
   *p++ = close;
   *p = '\0';
+  if (size_out)
+    *size_out = (size_t) (p - result) + 1;
 
   /* Free the input strings (the contract documented above), not only the
    * arrays -- otherwise every set/spanset/tsequence(set) _out leaks the

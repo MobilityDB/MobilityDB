@@ -81,6 +81,7 @@ quiet_error_handler(int errlevel, int errcode, const char *errmsg)
 static void
 check_valid_geom(const char *wkt)
 {
+  size_t size_out;
   GSERIALIZED *g = geom_in(wkt, -1);
   if (! g)
   {
@@ -88,7 +89,7 @@ check_valid_geom(const char *wkt)
     failures++;
     return;
   }
-  char *out = geo_out(g);
+  char *out = geo_out(g, &size_out);
   CHECK(out != NULL && out[0] != '\0', wkt);
   free(out);
   free(g);

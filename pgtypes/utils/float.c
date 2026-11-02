@@ -618,6 +618,8 @@ float8out_internal(double num)
 /**
  * @ingroup meos_base_float
  * @brief Return the string representation of a float8 number
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details This function uses the PostGIS function lwprint_double to print an
  * ordinate value using at most **maxdd** number of decimal digits. The actual 
  * number of printed decimal digits may be less than the requested ones if out 
@@ -626,11 +628,18 @@ float8out_internal(double num)
  * terminating NULL.
  */
 char *
-float8_out(double num, int maxdd)
+float8_out(double num, int maxdd, size_t *size_out)
 {
   assert(maxdd >= 0);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   char *str = palloc(OUT_DOUBLE_BUFFER_SIZE);
   lwprint_double(num, maxdd, str);
+  if (str)
+    *size_out = strlen(str) + 1;
   return str;
 }
 

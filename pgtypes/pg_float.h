@@ -98,7 +98,7 @@ extern float8 float8_larger(float8 num1, float8 num2);
 extern float8 float8_lgamma(float8 num);
 extern float8 float8_ln(float8 num);
 extern float8 float8_log10(float8 num);
-extern char *float8_out(float8 num, int maxdd);
+extern char *float8_out(float8 num, int maxdd, size_t *size_out);
 extern float8 float8_pi(void);
 extern float8 float8_pow(float8 num1, float8 num2);
 extern float8 float8_radians(float8 num);

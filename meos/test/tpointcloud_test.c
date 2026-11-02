@@ -73,6 +73,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting, the handler every binding uses */
   meos_initialize();
@@ -104,7 +105,7 @@ int main(void)
   Temporal *tpcpoint = temporal_in(TPCPOINT_IN, T_TPCPOINT);
   assert(tpcpoint != NULL);
   assert(meos_errno() == 0);
-  char *tpcpoint_out = temporal_out(tpcpoint, 15);
+  char *tpcpoint_out = temporal_out(tpcpoint, 15, NULL);
   printf("tpcpoint: %s\n", tpcpoint_out);
   Temporal *tpcpoint2 = temporal_in(tpcpoint_out, T_TPCPOINT);
   assert(tpcpoint2 != NULL && temporal_eq(tpcpoint, tpcpoint2));
@@ -113,7 +114,7 @@ int main(void)
   Temporal *tpcpatch = temporal_in(TPCPATCH_IN, T_TPCPATCH);
   assert(tpcpatch != NULL);
   assert(meos_errno() == 0);
-  char *tpcpatch_out = temporal_out(tpcpatch, 15);
+  char *tpcpatch_out = temporal_out(tpcpatch, 15, NULL);
   printf("tpcpatch: %s\n", tpcpatch_out);
   Temporal *tpcpatch2 = temporal_in(tpcpatch_out, T_TPCPATCH);
   assert(tpcpatch2 != NULL && temporal_eq(tpcpatch, tpcpatch2));
@@ -236,8 +237,8 @@ int main(void)
   TPCBox *from_wkb = tpcbox_from_wkb(wkb, wkb_size);
   TPCBox *from_ewkb = tpcbox_from_wkb(ewkb, ewkb_size);
   assert(from_wkb != NULL && from_ewkb != NULL);
-  char *from_wkb_out = tpcbox_out(from_wkb, 6);
-  char *from_ewkb_out = tpcbox_out(from_ewkb, 6);
+  char *from_wkb_out = tpcbox_out(from_wkb, 6, &size_out);
+  char *from_ewkb_out = tpcbox_out(from_ewkb, 6, &size_out);
   printf("tpcbox_as_wkb read back with no schema: %s\n", from_wkb_out);
   printf("tpcbox_as_ewkb read back with no schema: %s\n", from_ewkb_out);
   assert(meos_errno() == 0);
@@ -249,7 +250,7 @@ int main(void)
   TPCBox *ext = tpcbox_extent_transfn(NULL, box);
   ext = tpcbox_extent_transfn(ext, box2);
   assert(ext != NULL);
-  char *ext_out = tpcbox_out(ext, 6);
+  char *ext_out = tpcbox_out(ext, 6, &size_out);
   printf("tpcbox_extent_transfn: %s\n", ext_out);
   assert(meos_errno() == 0);
   free(ext); free(ext_out); free(box2);
@@ -355,12 +356,12 @@ int main(void)
   npstate = tpcpatch_tnpoints_transfn(npstate, tpcpatch2);
   Temporal *np = temporal_tagg_finalfn(npstate);
   assert(np != NULL);
-  char *np_out = temporal_out(np, 6);
+  char *np_out = temporal_out(np, 6, NULL);
   printf("tpcpatch_tnpoints_transfn: %s\n", np_out);
   SkipList *dstate = tpcpatch_tdensity_transfn(NULL, tpcpatch);
   Temporal *dens = temporal_tagg_finalfn(dstate);
   assert(dens != NULL);
-  char *dens_out = temporal_out(dens, 6);
+  char *dens_out = temporal_out(dens, 6, NULL);
   printf("tpcpatch_tdensity_transfn: %s\n", dens_out);
   assert(meos_errno() == 0);
   free(np); free(np_out); free(dens); free(dens_out);

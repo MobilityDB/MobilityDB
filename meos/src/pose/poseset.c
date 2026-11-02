@@ -82,16 +82,19 @@ poseset_in(const char *str)
  * @brief Return the string representation of a pose set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Set_out()
  */
 char *
-poseset_out(const Set *s, int maxdd)
+poseset_out(const Set *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_POSESET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return set_out(s, maxdd);
+  return set_out(s, maxdd, size_out);
 }
 
 /*****************************************************************************

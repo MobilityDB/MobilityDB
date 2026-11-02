@@ -80,9 +80,10 @@ double2_make(double a, double b)
 char *
 double2_out(const double2 *d, int maxdd)
 {
+  size_t size_out;
   assert(d); assert(maxdd >= 0);
-  char *astr = float8_out(d->a, maxdd);
-  char *bstr = float8_out(d->b, maxdd);
+  char *astr = float8_out(d->a, maxdd, &size_out);
+  char *bstr = float8_out(d->b, maxdd, &size_out);
   size_t size = strlen(astr) + strlen(bstr) + 4;
   char *result = palloc(size);
   snprintf(result, size, "(%s,%s)", astr, bstr);
@@ -173,10 +174,11 @@ double3_make(double a, double b, double c)
 char *
 double3_out(const double3 *d, int maxdd)
 {
+  size_t size_out;
   assert(d); assert(maxdd >= 0);
-  char *astr = float8_out(d->a, maxdd);
-  char *bstr = float8_out(d->b, maxdd);
-  char *cstr = float8_out(d->c, maxdd);
+  char *astr = float8_out(d->a, maxdd, &size_out);
+  char *bstr = float8_out(d->b, maxdd, &size_out);
+  char *cstr = float8_out(d->c, maxdd, &size_out);
   size_t size = strlen(astr) + strlen(bstr) + strlen(cstr) + 5;
   char *result = palloc(size);
   snprintf(result, size, "(%s,%s,%s)", astr, bstr, cstr);
@@ -256,11 +258,12 @@ double4_make(double a, double b, double c, double d)
 char *
 double4_out(const double4 *d, int maxdd)
 {
+  size_t size_out;
   assert(d); assert(maxdd >= 0);
-  char *astr = float8_out(d->a, maxdd);
-  char *bstr = float8_out(d->b, maxdd);
-  char *cstr = float8_out(d->c, maxdd);
-  char *dstr = float8_out(d->d, maxdd);
+  char *astr = float8_out(d->a, maxdd, &size_out);
+  char *bstr = float8_out(d->b, maxdd, &size_out);
+  char *cstr = float8_out(d->c, maxdd, &size_out);
+  char *dstr = float8_out(d->d, maxdd, &size_out);
   size_t size = strlen(astr) + strlen(bstr) + strlen(cstr) + strlen(dstr) + 6;
   char *result = palloc(size);
   snprintf(result, size, "(%s,%s,%s,%s)", astr, bstr, cstr, dstr);

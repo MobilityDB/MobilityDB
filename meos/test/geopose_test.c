@@ -90,6 +90,7 @@ ensure_no_member(const char *what, const char *json, const char *member)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -113,7 +114,7 @@ int main(void)
   assert(quat != NULL);
   assert(meos_errno() == 0);
 
-  char *out = pose_as_geopose(quat, BASIC_QUATERNION, 6);
+  char *out = pose_as_geopose(quat, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   ensure_member("Basic-Quaternion", out, "\"quaternion\"");
   ensure_member("Basic-Quaternion", out, "\"position\"");
@@ -122,7 +123,7 @@ int main(void)
   free(out);
 
   /* The same pose seen as Basic-YPR carries the Euler angles instead */
-  out = pose_as_geopose(quat, BASIC_YPR, 6);
+  out = pose_as_geopose(quat, BASIC_YPR, 6, &size_out);
   assert(out != NULL);
   ensure_member("Basic-YPR view", out, "\"angles\"");
   ensure_member("Basic-YPR view", out, "\"yaw\"");
@@ -130,11 +131,11 @@ int main(void)
   free(out);
 
   /* The round trip preserves the pose */
-  out = pose_as_geopose(quat, BASIC_QUATERNION, 15);
+  out = pose_as_geopose(quat, BASIC_QUATERNION, 15, &size_out);
   Pose *quat_back = pose_from_geopose(out);
   assert(quat_back != NULL);
-  char *s1 = pose_out(quat, 6);
-  char *s2 = pose_out(quat_back, 6);
+  char *s1 = pose_out(quat, 6, &size_out);
+  char *s2 = pose_out(quat_back, 6, &size_out);
   printf("round trip: %s -> %s\n", s1, s2);
   assert(strcmp(s1, s2) == 0);
   free(s1); free(s2); free(out); free(quat_back); free(quat);
@@ -148,7 +149,7 @@ int main(void)
     "\"angles\":{\"yaw\":90,\"pitch\":0,\"roll\":0}}");
   assert(ypr != NULL);
   assert(meos_errno() == 0);
-  out = pose_as_geopose(ypr, BASIC_YPR, 6);
+  out = pose_as_geopose(ypr, BASIC_YPR, 6, &size_out);
   ensure_member("Basic-YPR", out, "\"angles\"");
   free(out); free(ypr);
 
@@ -159,7 +160,7 @@ int main(void)
     "\"angles\":{\"yaw\":90,\"pitch\":0,\"roll\":0}}");
   assert(flat != NULL);
   assert(meos_errno() == 0);
-  s1 = pose_out(flat, 6);
+  s1 = pose_out(flat, 6, &size_out);
   printf("two-dimensional pose: %s\n", s1);
   free(s1); free(flat);
 
@@ -169,7 +170,7 @@ int main(void)
     "\"quaternion\":{\"x\":0,\"y\":0,\"z\":0,\"w\":1}}");
   assert(ident != NULL);
   assert(meos_errno() == 0);
-  out = pose_as_geopose(ident, BASIC_QUATERNION, 6);
+  out = pose_as_geopose(ident, BASIC_QUATERNION, 6, &size_out);
   ensure_member("identity quaternion", out, "\"w\":1");
   free(out); free(ident);
 
@@ -182,7 +183,7 @@ int main(void)
   assert(adv != NULL);
   assert(meos_errno() == 0);
 
-  out = pose_as_geopose(adv, ADVANCED, 15);
+  out = pose_as_geopose(adv, ADVANCED, 15, &size_out);
   assert(out != NULL);
   ensure_member("Advanced", out, "\"frameSpecification\"");
   ensure_member("Advanced", out, "\"quaternion\"");
@@ -198,19 +199,19 @@ int main(void)
   Pose *adv_back = pose_from_geopose(out);
   assert(adv_back != NULL);
   assert(meos_errno() == 0);
-  s1 = pose_out(adv, 6);
-  s2 = pose_out(adv_back, 6);
+  s1 = pose_out(adv, 6, &size_out);
+  s2 = pose_out(adv_back, 6, &size_out);
   printf("Advanced round trip: %s -> %s\n", s1, s2);
   assert(strcmp(s1, s2) == 0);
   free(s1); free(s2); free(adv_back); free(out);
 
   /* The Basic and Advanced documents of one pose say the same thing, the
    * frame of the Advanced one standing where the position member stood */
-  out = pose_as_geopose(adv, BASIC_QUATERNION, 15);
+  out = pose_as_geopose(adv, BASIC_QUATERNION, 15, &size_out);
   Pose *basic_back = pose_from_geopose(out);
   assert(basic_back != NULL);
-  s1 = pose_out(adv, 6);
-  s2 = pose_out(basic_back, 6);
+  s1 = pose_out(adv, 6, &size_out);
+  s2 = pose_out(basic_back, 6, &size_out);
   printf("Basic and Advanced agree: %s == %s\n", s1, s2);
   assert(strcmp(s1, s2) == 0);
   free(s1); free(s2); free(basic_back); free(out); free(adv);
@@ -226,7 +227,7 @@ int main(void)
   Temporal *adv_inst = tpose_in("SRID=4326;"
     "Geodpose(Point(8 47 1500), 0.707107, 0, 0, 0.707107)@2026-01-01");
   assert(adv_inst != NULL);
-  out = tpose_as_geopose(adv_inst, ADVANCED, 6);
+  out = tpose_as_geopose(adv_inst, ADVANCED, 6, &size_out);
   assert(out != NULL);
   ensure_member("Advanced instant", out, "\"frameSpecification\"");
   ensure_member("Advanced instant", out, "\"validTime\"");
@@ -235,8 +236,8 @@ int main(void)
   /* and reads back as the instant it was written from */
   Temporal *adv_inst_back = tpose_from_geopose(out);
   assert(adv_inst_back != NULL);
-  s1 = temporal_out(adv_inst, 6);
-  s2 = temporal_out(adv_inst_back, 6);
+  s1 = temporal_out(adv_inst, 6, NULL);
+  s2 = temporal_out(adv_inst_back, 6, NULL);
   printf("Advanced instant round trip: %s -> %s\n", s1, s2);
   assert(strcmp(s1, s2) == 0);
   free(s1); free(s2); free(adv_inst_back); free(out); free(adv_inst);
@@ -249,7 +250,7 @@ int main(void)
   Temporal *inst = tpose_in("Geodpose(Point(8 47), 0)@2026-01-01");
   assert(inst != NULL);
   assert(meos_errno() == 0);
-  out = tpose_as_geopose(inst, BASIC_QUATERNION, 6);
+  out = tpose_as_geopose(inst, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   ensure_member("single instant", out, "\"quaternion\"");
   ensure_no_member("single instant", out, "\"header\"");
@@ -267,11 +268,11 @@ int main(void)
     "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-03]");
   assert(regular != NULL);
   assert(meos_errno() == 0);
-  s1 = temporal_out(regular, 6);
+  s1 = temporal_out(regular, 6, NULL);
   printf("Regular value: %s\n", s1);
   free(s1);
 
-  out = tpose_as_geopose(regular, BASIC_QUATERNION, 6);
+  out = tpose_as_geopose(regular, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   /* The four members the Series schema requires, and the duration that only
    * the Regular class carries */
@@ -302,13 +303,13 @@ int main(void)
    * metres from the tangent point rather than on degrees, and the conversion
    * through the geocentric frame and back leaves about a nanometre of
    * floating-point round-off, which a twelfth digit exposes. */
-  out = tpose_as_geopose(regular, BASIC_QUATERNION, 6);
+  out = tpose_as_geopose(regular, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   Temporal *regular_back = tpose_from_geopose(out);
   assert(regular_back != NULL);
   assert(meos_errno() == 0);
   assert(temporal_num_instants(regular_back) == 3);
-  char *again = tpose_as_geopose(regular_back, BASIC_QUATERNION, 6);
+  char *again = tpose_as_geopose(regular_back, BASIC_QUATERNION, 6, &size_out);
   assert(again != NULL);
   printf("Regular re-encoding is stable: %s\n",
     strcmp(out, again) == 0 ? "yes" : "no");
@@ -324,11 +325,11 @@ int main(void)
     "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-05]");
   assert(irregular != NULL);
   assert(meos_errno() == 0);
-  s1 = temporal_out(irregular, 6);
+  s1 = temporal_out(irregular, 6, NULL);
   printf("Irregular value: %s\n", s1);
   free(s1);
 
-  out = tpose_as_geopose(irregular, BASIC_QUATERNION, 6);
+  out = tpose_as_geopose(irregular, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   ensure_member("Irregular Series", out, "\"header\"");
   ensure_member("Irregular Series", out, "\"outerFrame\"");
@@ -340,19 +341,19 @@ int main(void)
 
   free(out);
 
-  out = tpose_as_geopose(irregular, BASIC_QUATERNION, 6);
+  out = tpose_as_geopose(irregular, BASIC_QUATERNION, 6, &size_out);
   assert(out != NULL);
   Temporal *irregular_back = tpose_from_geopose(out);
   assert(irregular_back != NULL);
   assert(meos_errno() == 0);
   assert(temporal_num_instants(irregular_back) == 3);
-  again = tpose_as_geopose(irregular_back, BASIC_QUATERNION, 6);
+  again = tpose_as_geopose(irregular_back, BASIC_QUATERNION, 6, &size_out);
   assert(again != NULL);
   printf("Irregular re-encoding is stable: %s\n",
     strcmp(out, again) == 0 ? "yes" : "no");
   assert(strcmp(out, again) == 0);
   /* The instants a Series times are the instants of the value it came from */
-  s1 = temporal_out(irregular_back, 6);
+  s1 = temporal_out(irregular_back, 6, NULL);
   printf("Irregular read back: %s\n", s1);
   assert(strstr(s1, "2026-01-05") != NULL);
   free(s1); free(again); free(out); free(irregular_back); free(irregular);
@@ -372,7 +373,7 @@ int main(void)
   assert(stream != NULL);
   assert(meos_errno() == 0);
 
-  char *sh = tpose_as_geopose_stream_header(stream, 6);
+  char *sh = tpose_as_geopose_stream_header(stream, 6, &size_out);
   assert(sh != NULL);
   ensure_member("Stream header", sh, "\"transitionModel\"");
   ensure_member("Stream header", sh, "\"outerFrame\"");
@@ -389,7 +390,7 @@ int main(void)
   {
     TInstant *inst = temporal_instant_n(stream, i + 1);
     assert(inst != NULL);
-    char *se = tpose_as_geopose_stream_element(stream, inst, 6);
+    char *se = tpose_as_geopose_stream_element(stream, inst, 6, &size_out);
     assert(se != NULL);
     ensure_member("Stream element", se, "\"streamElement\"");
     ensure_member("Stream element", se, "\"frame\"");
@@ -400,7 +401,7 @@ int main(void)
   /* The first element sits at the tangent point the header anchors, so its
    * frame is the identity translation */
   TInstant *first = temporal_instant_n(stream, 1);
-  char *se1 = tpose_as_geopose_stream_element(stream, first, 6);
+  char *se1 = tpose_as_geopose_stream_element(stream, first, 6, &size_out);
   printf("Stream first element: %s\n", se1);
   assert(strstr(se1, "translation=[0, 0, 0]") != NULL);
   free(se1); free(first);
@@ -408,7 +409,7 @@ int main(void)
   /* The same stream written whole: one document holding the header and every
    * element, which is what a reader already holding the value writes and what
    * a conformance submission carries. */
-  char *sw = tpose_as_geopose_stream(stream, 6);
+  char *sw = tpose_as_geopose_stream(stream, 6, &size_out);
   assert(sw != NULL);
   printf("Stream whole: %s\n", sw);
   ensure_member("Stream", sw, "\"header\"");
@@ -427,7 +428,7 @@ int main(void)
   /* An element is written for an instant, never for a sequence */
   meos_errno_reset();
   char *seq_se = tpose_as_geopose_stream_element(stream,
-    (const TInstant *) stream, 6);
+    (const TInstant *) stream, 6, &size_out);
   printf("stream element(sequence as instant): %s, errno %d\n",
     seq_se ? "non-NULL" : "NULL", meos_errno());
   assert(seq_se == NULL);
@@ -520,7 +521,7 @@ int main(void)
   Temporal *planar_s = tpose_in("[Pose(Point(0 0), 0)@2026-01-01, "
     "Pose(Point(1 0), 0)@2026-01-02]");
   assert(planar_s != NULL);
-  char *bad_sh = tpose_as_geopose_stream_header(planar_s, 6);
+  char *bad_sh = tpose_as_geopose_stream_header(planar_s, 6, &size_out);
   printf("stream header(planar value): %s, errno %d\n",
     bad_sh ? "non-NULL" : "NULL", meos_errno());
   assert(bad_sh == NULL);
@@ -528,13 +529,14 @@ int main(void)
 
   meos_errno_reset();
   TInstant *planar_i = temporal_instant_n(planar_s, 1);
-  char *bad_se = tpose_as_geopose_stream_element(planar_s, planar_i, 6);
+  char *bad_se = tpose_as_geopose_stream_element(planar_s, planar_i, 6,
+    &size_out);
   printf("stream element(planar value): %s, errno %d\n",
     bad_se ? "non-NULL" : "NULL", meos_errno());
   assert(bad_se == NULL);
 
   meos_errno_reset();
-  char *bad_sw = tpose_as_geopose_stream(planar_s, 6);
+  char *bad_sw = tpose_as_geopose_stream(planar_s, 6, &size_out);
   printf("stream whole(planar value): %s, errno %d\n",
     bad_sw ? "non-NULL" : "NULL", meos_errno());
   assert(bad_sw == NULL);
@@ -547,7 +549,7 @@ int main(void)
   meos_errno_reset();
   Pose *planar = pose_in("Pose(Point(1 1),0.5)");
   assert(planar != NULL);
-  char *flat_json = pose_as_geopose(planar, BASIC_QUATERNION, 6);
+  char *flat_json = pose_as_geopose(planar, BASIC_QUATERNION, 6, &size_out);
   printf("pose_as_geopose(planar pose): %s, errno %d\n",
     flat_json ? "non-NULL" : "NULL", meos_errno());
   assert(flat_json == NULL);
@@ -557,7 +559,7 @@ int main(void)
   meos_errno_reset();
   Temporal *planar_t = tpose_in("Pose(Point(8 47), 0)@2026-01-01");
   assert(planar_t != NULL);
-  flat_json = tpose_as_geopose(planar_t, BASIC_QUATERNION, 6);
+  flat_json = tpose_as_geopose(planar_t, BASIC_QUATERNION, 6, &size_out);
   printf("tpose_as_geopose(planar pose): %s, errno %d\n",
     flat_json ? "non-NULL" : "NULL", meos_errno());
   assert(flat_json == NULL);
@@ -568,7 +570,7 @@ int main(void)
   meos_errno_reset();
   Pose *good = pose_in("Geodpose(Point(1 1),0.5)");
   assert(good != NULL);
-  char *none = pose_as_geopose(good, 7, 6);
+  char *none = pose_as_geopose(good, 7, 6, &size_out);
   printf("pose_as_geopose(conformance 7): %s, errno %d\n",
     none ? "non-NULL" : "NULL", meos_errno());
   assert(none == NULL);
@@ -592,7 +594,7 @@ int main(void)
   Pose *ptext = pose_from_text("SRID=4326;Pose(Point(1 2),1)");
   assert(ptext != NULL);
   assert(meos_errno() == 0);
-  s1 = pose_as_ewkt(ptext, 6);
+  s1 = pose_as_ewkt(ptext, 6, &size_out);
   printf("pose_from_text: %s\n", s1);
   assert(strcmp(s1, "SRID=4326;Pose(POINT(1 2),1)") == 0);
   free(s1); free(ptext);

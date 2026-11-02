@@ -188,14 +188,24 @@ pg_date_in(const char *str)
 /**
  * @ingroup meos_base_date
  * @brief Return the string representation of a date
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return On error return INT_MAX
  * @note Derived from PostgreSQL function @p date_out()
  */
 #if MEOS
 char *
-date_out(DateADT date)
+date_out(DateADT date, size_t *size_out)
 {
-  return pg_date_out(date);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_date_out(date);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *
@@ -1458,13 +1468,23 @@ time2tm(TimeADT time, struct pg_tm *tm, fsec_t *fsec)
 /**
  * @ingroup meos_base_time
  * @brief Return the string representation of a time
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p time_out()
  */
 #if MEOS
 char *
-time_out(TimeADT time)
+time_out(TimeADT time, size_t *size_out)
 {
-  return pg_time_out(time);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_time_out(time);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *
@@ -2203,13 +2223,23 @@ pg_timetz_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_base_time
  * @brief Return the string representation of a time with time zone
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p timetz_out()
  */
 #if MEOS
 char *
-timetz_out(const TimeTzADT *timetz)
+timetz_out(const TimeTzADT *timetz, size_t *size_out)
 {
-  return pg_timetz_out(timetz);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_timetz_out(timetz);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *

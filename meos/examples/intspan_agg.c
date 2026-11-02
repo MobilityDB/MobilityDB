@@ -58,6 +58,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -111,7 +112,7 @@ int main(void)
     state = span_union_transfn(state, rec.span);
 
     /* Output the input span */
-    char *span_out = intspan_out(rec.span);
+    char *span_out = intspan_out(rec.span, &size_out);
     printf("k: %d, span: %s\n", rec.k, span_out);
     free(span_out);
     free(rec.span);
@@ -127,7 +128,7 @@ int main(void)
   SpanSet *final = spanset_union_finalfn(state);
 
   /* Print the accumulated span set */
-  char *spanset_out = intspanset_out(final);
+  char *spanset_out = intspanset_out(final, &size_out);
   printf("spanset: %s\n", spanset_out);
   free(spanset_out);
   free(final);

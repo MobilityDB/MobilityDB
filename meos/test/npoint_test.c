@@ -47,6 +47,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -63,74 +64,74 @@ int main(void)
 
   char *tstz1_in = "2001-01-01";
   TimestampTz tstz1 = timestamptz_in(tstz1_in, -1);
-  char *tstz1_out = timestamptz_out(tstz1);
+  char *tstz1_out = timestamptz_out(tstz1, &size_out);
   char *tstz2_in = "2001-01-03";
   TimestampTz tstz2 = timestamptz_in(tstz2_in, -1);
-  char *tstz2_out = timestamptz_out(tstz2);
+  char *tstz2_out = timestamptz_out(tstz2, &size_out);
   
   char *tstzset1_in = "{2001-01-01, 2001-01-03}";
   Set *tstzset1 = tstzset_in(tstzset1_in);
-  char *tstzset1_out = tstzset_out(tstzset1);
+  char *tstzset1_out = tstzset_out(tstzset1, &size_out);
 
   char *tstzspan1_in = "[2001-01-01, 2001-01-03]";
   Span *tstzspan1 = tstzspan_in(tstzspan1_in);
-  char *tstzspan1_out = tstzspan_out(tstzspan1);
+  char *tstzspan1_out = tstzspan_out(tstzspan1, &size_out);
 
   char *tstzspanset1_in = "{[2001-01-01, 2001-01-03],[2001-01-04, 2001-01-05]}";
   SpanSet *tstzspanset1 = tstzspanset_in(tstzspanset1_in);
-  char *tstzspanset1_out = tstzspanset_out(tstzspanset1);
+  char *tstzspanset1_out = tstzspanset_out(tstzspanset1, &size_out);
 
   char *tgeompt1_in = "SRID=5676;[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]";
   Temporal *tgeompt1 = tgeompoint_in(tgeompt1_in);
-  char *tgeompt1_out = tspatial_as_ewkt(tgeompt1, 6);
+  char *tgeompt1_out = tspatial_as_ewkt(tgeompt1, 6, &size_out);
 
   char *npoint1_in = "Npoint(1, 0.5)";
   Npoint *npoint1 = npoint_in(npoint1_in);
-  char *npoint1_out = npoint_out(npoint1, 6);
+  char *npoint1_out = npoint_out(npoint1, 6, &size_out);
   uint8_t *npoint1_wkb = npoint_as_wkb(npoint1, 1, &size);
   char *npoint1_hexwkb = npoint_as_hexwkb(npoint1, 1, &size);
 
   char *npoint2_in = "Npoint(2, 0.5)";
   Npoint *npoint2 = npoint_in(npoint2_in);
-  char *npoint2_out = npoint_out(npoint2, 6);
+  char *npoint2_out = npoint_out(npoint2, 6, &size_out);
 
   Npoint npointarray[2];
 
   char *npointset1_in = "{\"Npoint(2, 0.5)\", \"Npoint(2, 0.5)\"}";
   Set *npointset1 = npointset_in(npointset1_in);
-  char *npointset1_out = npointset_out(npointset1, 6);
+  char *npointset1_out = npointset_out(npointset1, 6, &size_out);
 
   char *nsegment1_in = "Nsegment(1, 0.3, 0.5)";
   Nsegment *nsegment1 = nsegment_in(nsegment1_in);
-  char *nsegment1_out = nsegment_out(nsegment1, 6);
+  char *nsegment1_out = nsegment_out(nsegment1, 6, &size_out);
 
   char *nsegment2_in = "Nsegment(2, 0.4, 0.6)";
   Nsegment *nsegment2 = nsegment_in(nsegment2_in);
-  char *nsegment2_out = nsegment_out(nsegment2, 6);
+  char *nsegment2_out = nsegment_out(nsegment2, 6, &size_out);
 
   char *geom1_in = "SRID=5676;Point(1 1)";
   GSERIALIZED *geom1 = geom_in(geom1_in, -1);
-  char *geom1_out = geo_as_text(geom1, 6);
+  char *geom1_out = geo_as_text(geom1, 6, &size_out);
   char *geom2_in = "SRID=5676;Polygon((1 1,1 20,20 20,20 1,1 1))";
   GSERIALIZED *geom2 = geom_in(geom2_in, -1);
-  char *geom2_out = geo_as_text(geom2, 6);
+  char *geom2_out = geo_as_text(geom2, 6, &size_out);
 
   char *stbox1_in = "SRID=5676;STBOX XT(((1,1),(3,3)),[2001-01-01, 2001-01-03])";
   STBox *stbox1 = stbox_in(stbox1_in);
-  char *stbox1_out = stbox_out(stbox1, 6);
+  char *stbox1_out = stbox_out(stbox1, 6, &size_out);
 
   char *tnpoint1_in = "[NPoint(1, 0.3)@2001-01-01, NPoint(1, 0.5)@2001-01-03]";
   Temporal *tnpoint1 = tnpoint_in(tnpoint1_in);
-  char *tnpoint1_out = tnpoint_out(tnpoint1, 6);
+  char *tnpoint1_out = tnpoint_out(tnpoint1, 6, &size_out);
 
   char *bigintset1_in = "{1, 2}";
   Set *bigintset1 = bigintset_in(bigintset1_in);
-  char *bigintset1_out = bigintset_out(bigintset1);
+  char *bigintset1_out = bigintset_out(bigintset1, &size_out);
   int route_errors = 0;
 
   char *tnpoint2_in = "[NPoint(2, 0.3)@2001-01-01, NPoint(2, 0.5)@2001-01-03]";
   Temporal *tnpoint2 = tnpoint_in(tnpoint2_in);
-  char *tnpoint2_out = tnpoint_out(tnpoint2, 6);
+  char *tnpoint2_out = tnpoint_out(tnpoint2, 6, &size_out);
 
   /* Create the result types for the functions of the API */
 
@@ -164,27 +165,29 @@ int main(void)
   /* Input and output functions */
   printf("****************************************************************\n");
 
-  /* char *npoint_as_ewkt(const Npoint *np, int maxdd); */
-  char_result = npoint_as_ewkt(npoint1, 6);
+  /* char *npoint_as_ewkt(const Npoint *np, int maxdd, size_t *size_out); */
+  char_result = npoint_as_ewkt(npoint1, 6, &size_out);
   printf("npoint_as_ewkt(%s, 6): %s\n", npoint1_out, char_result);
   free(char_result);
 
-  /* char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out); */
+  /* char *npoint_as_hexwkb(const Npoint *np, uint8_t variant,
+    size_t *size_out); */
   char_result = npoint_as_hexwkb(npoint1, 1, &size);
   printf("npoint_as_hexwkb(%s, 1, %ld): %s\n", npoint1_out, size, char_result);
   free(char_result);
 
-  /* char *npoint_as_text(const Npoint *np, int maxdd); */
-  char_result = npoint_as_text(npoint1, 6);
+  /* char *npoint_as_text(const Npoint *np, int maxdd, size_t *size_out); */
+  char_result = npoint_as_text(npoint1, 6, &size_out);
   printf("npoint_as_text(%s, 6): %s\n", npoint1_out, char_result);
   free(char_result);
 
-  /* uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out); */
+  /* uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant,
+    size_t *size_out); */
   // binchar_result = npoint_as_wkb(npoint1, 1, size_t *size_out);
 
   /* Npoint *npoint_from_hexwkb(const char *hexwkb); */
   npoint_result = npoint_from_hexwkb(npoint1_hexwkb);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npoint_from_hexwkb(%s): %s\n", npoint1_hexwkb, char_result);
   free(npoint_result); free(char_result);
 
@@ -196,23 +199,23 @@ int main(void)
 
   /* Npoint *npoint_in(const char *str); */
   npoint_result = npoint_in(npoint1_in);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npoint_in(%s): %s\n", npoint1_in, char_result);
   free(npoint_result); free(char_result);
 
-  /* char *npoint_out(const Npoint *np, int maxdd); */
-  char_result = npoint_out(npoint1, 6);
+  /* char *npoint_out(const Npoint *np, int maxdd, size_t *size_out); */
+  char_result = npoint_out(npoint1, 6, &size_out);
   printf("npoint_out(%s, 6): %s\n", npoint1_out, char_result);
   free(char_result);
 
   /* Nsegment *nsegment_in(const char *str); */
   nsegment_result = nsegment_in(nsegment1_in);
-  char_result = nsegment_out(nsegment_result, 6);
+  char_result = nsegment_out(nsegment_result, 6, &size_out);
   printf("nsegment_in(%s): %s\n", nsegment1_in, char_result);
   free(nsegment_result); free(char_result);
 
-  /* char *nsegment_out(const Nsegment *ns, int maxdd); */
-  char_result = nsegment_out(nsegment1, 6);
+  /* char *nsegment_out(const Nsegment *ns, int maxdd, size_t *size_out); */
+  char_result = nsegment_out(nsegment1, 6, &size_out);
   printf("nsegment_out(%s, 6): %s\n", nsegment1_out, char_result);
   free(char_result);
 
@@ -221,13 +224,13 @@ int main(void)
 
   /* Npoint *npoint_make(int64 rid, double pos); */
   npoint_result = npoint_make(int64_in1, float8_in1);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npoint_make(%ld, %lf): %s\n", int64_in1, float8_in1, char_result);
   free(npoint_result); free(char_result);
 
   /* Nsegment *nsegment_make(int64 rid, double pos1, double pos2); */
   nsegment_result = nsegment_make(int64_in1, float8_in1, float8_in2);
-  char_result = nsegment_out(nsegment_result, 6);
+  char_result = nsegment_out(nsegment_result, 6, &size_out);
   printf("nsegment_make(%ld, %lf, %lf): %s\n", int64_in1, float8_in1, float8_in2, char_result);
   free(nsegment_result); free(char_result);
 
@@ -236,43 +239,43 @@ int main(void)
 
   /* Npoint *geompoint_to_npoint(const GSERIALIZED *gs); */
   npoint_result = geompoint_to_npoint(geom1);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("geompoint_to_npoint(%s): %s\n", geom1_out, char_result);
   free(npoint_result); free(char_result);
 
   /* Nsegment *geom_to_nsegment(const GSERIALIZED *gs); */
   nsegment_result = geom_to_nsegment(geom1);
-  char_result = nsegment_out(nsegment_result, 6);
+  char_result = nsegment_out(nsegment_result, 6, &size_out);
   printf("geom_to_nsegment(%s): %s\n", geom1_out, char_result);
   free(nsegment_result); free(char_result);
 
   /* GSERIALIZED *npoint_to_geompoint(const Npoint *np); */
   geom_result = npoint_to_geompoint(npoint1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("npoint_to_geompoint(%s): %s\n", npoint1_out, char_result);
   free(geom_result); free(char_result);
 
   /* Nsegment *npoint_to_nsegment(const Npoint *np); */
   nsegment_result = npoint_to_nsegment(npoint1);
-  char_result = nsegment_out(nsegment_result, 6);
+  char_result = nsegment_out(nsegment_result, 6, &size_out);
   printf("npoint_to_nsegment(%s): %s\n", npoint1_out, char_result);
   free(nsegment_result); free(char_result);
 
   /* STBox *npoint_to_stbox(const Npoint *np); */
   stbox_result = npoint_to_stbox(npoint1);
-  char_result = stbox_out(stbox_result, 6);
+  char_result = stbox_out(stbox_result, 6, &size_out);
   printf("npoint_to_stbox(%s): %s\n", npoint1_out, char_result);
   free(stbox_result); free(char_result);
 
   /* GSERIALIZED *nsegment_to_geom(const Nsegment *ns); */
   geom_result = nsegment_to_geom(nsegment1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("nsegment_to_geom(%s): %s\n", nsegment1_out, char_result);
   free(geom_result); free(char_result);
 
   /* STBox *nsegment_to_stbox(const Nsegment *np); */
   stbox_result = nsegment_to_stbox(nsegment1);
-  char_result = stbox_out(stbox_result, 6);
+  char_result = stbox_out(stbox_result, 6, &size_out);
   printf("nsegment_to_stbox(%s, 6): %s\n", nsegment1_out, char_result);
   free(stbox_result); free(char_result);
 
@@ -316,7 +319,7 @@ int main(void)
 
   /* const GSERIALIZED *route_geom(int64 rid); */
   const GSERIALIZED *route = route_geom(int64_in1);
-  char_result = geo_as_text(route, 6);
+  char_result = geo_as_text(route, 6, &size_out);
   printf("route_geom(%lu): %s\n", int64_in1, char_result);
   free(char_result);
 
@@ -329,13 +332,13 @@ int main(void)
 
   /* Npoint *npoint_round(const Npoint *np, int maxdd); */
   npoint_result = npoint_round(npoint1, 6);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npoint_round(%s, 6): %s\n", npoint1_out, char_result);
   free(npoint_result); free(char_result);
 
   /* Nsegment *nsegment_round(const Nsegment *ns, int maxdd); */
   nsegment_result = nsegment_round(nsegment1, 6);
-  char_result = nsegment_out(nsegment_result, 6);
+  char_result = nsegment_out(nsegment_result, 6, &size_out);
   printf("nsegment_round(%s, 6): %s\n", nsegment1_out, char_result);
   free(nsegment_result); free(char_result);
 
@@ -359,13 +362,13 @@ int main(void)
 
   /* STBox *npoint_timestamptz_to_stbox(const Npoint *np, TimestampTz t); */
   stbox_result = npoint_timestamptz_to_stbox(npoint1, tstz1);
-  char_result = stbox_out(stbox_result, 6);
+  char_result = stbox_out(stbox_result, 6, &size_out);
   printf("npoint_timestamptz_to_stbox(%s, %s): %s\n", npoint1_out, tstz1_out, char_result);
   free(stbox_result); free(char_result);
 
   /* STBox *npoint_tstzspan_to_stbox(const Npoint *np, const Span *s); */
   stbox_result = npoint_tstzspan_to_stbox(npoint1, tstzspan1);
-  char_result = stbox_out(stbox_result, 6);
+  char_result = stbox_out(stbox_result, 6, &size_out);
   printf("npoint_tstzspan_to_stbox(%s, %s): %s\n", npoint1_out, tstzspan1_out, char_result);
   free(stbox_result); free(char_result);
 
@@ -437,12 +440,12 @@ int main(void)
 
   /* Set *npointset_in(const char *str); */
   npointset_result = npointset_in(npointset1_in);
-  char_result = spatialset_as_text(npointset_result, 6);
+  char_result = spatialset_as_text(npointset_result, 6, &size_out);
   printf("npointset_in(%s): %s\n", npointset1_in, char_result);
   free(npointset_result); free(char_result);
 
-  /* char *npointset_out(const Set *s, int maxdd); */
-  char_result = npointset_out(npointset1, 6);
+  /* char *npointset_out(const Set *s, int maxdd, size_t *size_out); */
+  char_result = npointset_out(npointset1, 6, &size_out);
   printf("npointset_out(%s, 6): %s\n", npointset1_in, char_result);
   free(char_result);
 
@@ -453,7 +456,7 @@ int main(void)
   npointarray[0] = *npoint1;
   npointarray[1] = *npoint2;
   npointset_result = npointset_make(npointarray, 2);
-  char_result = spatialset_as_text(npointset_result, 6);
+  char_result = spatialset_as_text(npointset_result, 6, &size_out);
   printf("npointset_make({%s, %s}, 2): %s\n", npoint1_out, npoint2_out, char_result);
   free(npointset_result); free(char_result);
 
@@ -462,7 +465,7 @@ int main(void)
 
   /* Set *npoint_to_set(const Npoint *np); */
   npointset_result = npoint_to_set(npoint1);
-  char_result = spatialset_as_text(npointset_result, 6);
+  char_result = spatialset_as_text(npointset_result, 6, &size_out);
   printf("npoint_to_set(%s): %s\n", npoint1_out, char_result);
   free(npointset_result); free(char_result);
 
@@ -471,25 +474,25 @@ int main(void)
 
   /* Npoint *npointset_end_value(const Set *s); */
   npoint_result = npointset_end_value(npointset1);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npointset_end_value(%s): %s\n", npointset1_out, char_result);
   free(npoint_result); free(char_result);
 
   /* Set *npointset_routes(const Set *s); */
   bigintset_result = npointset_routes(npointset1);
-  char_result = bigintset_out(bigintset_result);
+  char_result = bigintset_out(bigintset_result, &size_out);
   printf("npointset_routes(%s): %s\n", npointset1_out, char_result);
   free(bigintset_result); free(char_result);
 
   /* Npoint *npointset_start_value(const Set *s); */
   npoint_result = npointset_start_value(npointset1);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npointset_start_value(%s): %s\n", npointset1_out, char_result);
   free(npoint_result); free(char_result);
 
   /* bool npointset_value_n(const Set *s, int n, Npoint **result); */
   bool_result = npointset_value_n(npointset1, 1, &npoint_result);
-  char_result = npoint_out(npoint_result, 6);
+  char_result = npoint_out(npoint_result, 6, &size_out);
   printf("npointset_value_n(%s, %s): %c\n", npointset1_out, char_result, bool_result ? 't' : 'n');
   free(npoint_result); free(char_result);
 
@@ -498,7 +501,7 @@ int main(void)
   printf("npointset_values(%s): {", npointset1_out);
   for (int i = 0; i < npointset1->count; i++)
   {
-    char_result = npoint_as_text(npointarray_result[i], 6);
+    char_result = npoint_as_text(npointarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < npointset1->count - 1)
       printf(", ");
@@ -522,7 +525,7 @@ int main(void)
 
   /* Set *intersection_npoint_set(const Npoint *np, const Set *s); */
   npointset_result = intersection_npoint_set(npoint1, npointset1);
-  char_result = npointset_result ? spatialset_as_text(npointset_result, 6) : text_out(text_null);
+  char_result = npointset_result ? spatialset_as_text(npointset_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("intersection_npoint_set(%s, %s): %s\n", npoint1_out, npointset1_out, char_result);
   if (npointset_result)
     free(npointset_result);
@@ -530,7 +533,7 @@ int main(void)
 
   /* Set *intersection_set_npoint(const Set *s, const Npoint *np); */
   npointset_result = intersection_set_npoint(npointset1, npoint1);
-  char_result = npointset_result ? spatialset_as_text(npointset_result, 6) : text_out(text_null);
+  char_result = npointset_result ? spatialset_as_text(npointset_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("intersection_set_npoint(%s, %s): %s\n", npointset1_out, npoint1_out, char_result);
   if (npointset_result)
     free(npointset_result);
@@ -538,7 +541,7 @@ int main(void)
 
   /* Set *minus_npoint_set(const Npoint *np, const Set *s); */
   npointset_result = minus_npoint_set(npoint1, npointset1);
-  char_result = npointset_result ? spatialset_as_text(npointset_result, 6) : text_out(text_null);
+  char_result = npointset_result ? spatialset_as_text(npointset_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("minus_npoint_set(%s, %s): %s\n", npoint1_out, npointset1_out, char_result);
   if (npointset_result)
     free(npointset_result);
@@ -546,7 +549,7 @@ int main(void)
 
   /* Set *minus_set_npoint(const Set *s, const Npoint *np); */
   npointset_result = minus_set_npoint(npointset1, npoint1);
-  char_result = npointset_result ? spatialset_as_text(npointset_result, 6) : text_out(text_null);
+  char_result = npointset_result ? spatialset_as_text(npointset_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("minus_set_npoint(%s, %s): %s\n", npointset1_out, npoint1_out, char_result);
   if (npointset_result)
     free(npointset_result);
@@ -560,13 +563,13 @@ int main(void)
 
   /* Set *union_npoint_set(const Npoint *np, const Set *s); */
   npointset_result = union_npoint_set(npoint1, npointset1);
-  char_result = spatialset_as_text(npointset_result, 6);
+  char_result = spatialset_as_text(npointset_result, 6, &size_out);
   printf("union_npoint_set(%s, %s): %s\n", npoint1_out, npointset1_out, char_result);
   free(npointset_result); free(char_result);
 
   /* Set *union_set_npoint(const Set *s, const Npoint *np); */
   npointset_result = union_set_npoint(npointset1, npoint1);
-  char_result = spatialset_as_text(npointset_result, 6);
+  char_result = spatialset_as_text(npointset_result, 6, &size_out);
   printf("union_set_npoint(%s, %s): %s\n", npointset1_out, npoint1_out, char_result);
   free(npointset_result); free(char_result);
 
@@ -581,12 +584,12 @@ int main(void)
 
   /* Temporal *tnpoint_in(const char *str); */
   tnpoint_result = tnpoint_in(tnpoint1_in);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("tnpoint_in(%s): %s\n", tnpoint1_in, char_result);
   free(tnpoint_result); free(char_result);
 
-  /* char *tnpoint_out(const Temporal *temp, int maxdd); */
-  char_result = tnpoint_out(tnpoint1, 6);
+  /* char *tnpoint_out(const Temporal *temp, int maxdd, size_t *size_out); */
+  char_result = tnpoint_out(tnpoint1, 6, &size_out);
   printf("tnpoint_out(%s, 6): %s\n", tnpoint1_in, char_result);
   free(char_result);
 
@@ -597,7 +600,7 @@ int main(void)
 
   /* TInstant *tnpointinst_make(const Npoint *np, TimestampTz t); */
   tnpoint_result = (Temporal *) tnpointinst_make(npoint1, tstz1);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("tnpointinst_make(%s, %s): %s\n", npoint1_out, tstz1_out, char_result);
   free(tnpoint_result); free(char_result);
 
@@ -608,13 +611,13 @@ int main(void)
 
   /* Temporal *tgeompoint_to_tnpoint(const Temporal *temp); */
   tnpoint_result = tgeompoint_to_tnpoint(tgeompt1);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("tgeompoint_to_tnpoint(%s): %s\n", tgeompt1_out, char_result);
   free(tnpoint_result); free(char_result);
 
   /* Temporal *tnpoint_to_tgeompoint(const Temporal *temp); */
   tgeompt_result = tnpoint_to_tgeompoint(tnpoint1);
-  char_result = tspatial_as_ewkt(tgeompt_result, 6);
+  char_result = tspatial_as_ewkt(tgeompt_result, 6, &size_out);
   printf("tnpoint_to_tgeompoint(%s): %s\n", tnpoint1_out, char_result);
   free(tgeompt_result); free(char_result);
 
@@ -625,7 +628,7 @@ int main(void)
 
   /* Temporal *tnpoint_cumulative_length(const Temporal *temp); */
   tfloat_result = tnpoint_cumulative_length(tnpoint1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnpoint_cumulative_length(%s, 6): %s\n", tnpoint1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -638,7 +641,7 @@ int main(void)
   printf("tnpoint_positions(%s, %d): {", tnpoint1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = nsegment_out(nsegmentarray_result[i], 6);
+    char_result = nsegment_out(nsegmentarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -655,25 +658,25 @@ int main(void)
 
   /* Set *tnpoint_routes(const Temporal *temp); */
   bigintset_result = tnpoint_routes(tnpoint1);
-  char_result = bigintset_out(bigintset_result);
+  char_result = bigintset_out(bigintset_result, &size_out);
   printf("tnpoint_routes(%s, 6): %s\n", tnpoint1_out, char_result);
   free(bigintset_result); free(char_result);
 
   /* Temporal *tnpoint_speed(const Temporal *temp); */
   tfloat_result = tnpoint_speed(tnpoint1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnpoint_speed(%s, 6): %s\n", tnpoint1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* GSERIALIZED *tnpoint_trajectory(const Temporal *temp); */
   geom_result = tnpoint_trajectory(tnpoint1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("tnpoint_trajectory(%s): %s\n", tnpoint1_out, char_result);
   free(geom_result); free(char_result);
 
   /* GSERIALIZED *tnpoint_twcentroid(const Temporal *temp); */
   geom_result = tnpoint_twcentroid(tnpoint1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("tnpoint_twcentroid(%s): %s\n", tnpoint1_out, char_result);
   free(geom_result); free(char_result);
 
@@ -684,7 +687,7 @@ int main(void)
 
   /* Temporal *tnpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs); */
   tnpoint_result = tnpoint_at_geom(tnpoint1, geom2);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_at_geom(%s, %s): %s\n", tnpoint1_out, geom2_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -692,7 +695,7 @@ int main(void)
 
   /* Temporal *tnpoint_at_npoint(const Temporal *temp, const Npoint *np); */
   tnpoint_result = tnpoint_at_npoint(tnpoint1, npoint1);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_at_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -700,7 +703,7 @@ int main(void)
 
   /* Temporal *tnpoint_at_npointset(const Temporal *temp, const Set *s); */
   tnpoint_result = tnpoint_at_npointset(tnpoint1, npointset1);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_at_npointset(%s, %s): %s\n", tnpoint1_out, npointset1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -708,7 +711,7 @@ int main(void)
 
   /* Temporal *tnpoint_at_stbox(const Temporal *temp, const STBox *box, bool border_inc); */
   tnpoint_result = tnpoint_at_stbox(tnpoint1, stbox1, true);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_at_stbox(%s, %s, true): %s\n", tnpoint1_out, stbox1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -716,7 +719,7 @@ int main(void)
 
   /* Temporal *tnpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs); */
   tnpoint_result = tnpoint_minus_geom(tnpoint1, geom2);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_minus_geom(%s, %s): %s\n", tnpoint1_out, geom2_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -724,7 +727,7 @@ int main(void)
 
   /* Temporal *tnpoint_minus_npoint(const Temporal *temp, const Npoint *np); */
   tnpoint_result = tnpoint_minus_npoint(tnpoint1, npoint1);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_minus_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -732,7 +735,7 @@ int main(void)
 
   /* Temporal *tnpoint_minus_npointset(const Temporal *temp, const Set *s); */
   tnpoint_result = tnpoint_minus_npointset(tnpoint1, npointset1);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_minus_npointset(%s, %s): %s\n", tnpoint1_out, npointset1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -740,7 +743,7 @@ int main(void)
 
   /* Temporal *tnpoint_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc); */
   tnpoint_result = tnpoint_minus_stbox(tnpoint1, stbox1, true);
-  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6) : text_out(text_null);
+  char_result = tnpoint_result ? tnpoint_out(tnpoint_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnpoint_minus_stbox(%s, %s, true): %s\n", tnpoint1_out, stbox1_out, char_result);
   if (tnpoint_result)
     free(tnpoint_result);
@@ -753,19 +756,19 @@ int main(void)
 
   /* Temporal *tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
   tfloat_result = tdistance_tnpoint_npoint(tnpoint1, npoint1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tdistance_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tdistance_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs); */
   tfloat_result = tdistance_tnpoint_geo(tnpoint1, geom1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tdistance_tnpoint_geo(%s, %s): %s\n", tnpoint1_out, geom1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
   tfloat_result = tdistance_tnpoint_tnpoint(tnpoint1, tnpoint2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tdistance_tnpoint_tnpoint(%s, %s): %s\n", tnpoint1_out, tnpoint2_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -787,37 +790,37 @@ int main(void)
 
   /* TInstant *nai_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs); */
   tnpoint_result = (Temporal *) nai_tnpoint_geo(tnpoint1, geom1);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("nai_tnpoint_geo(%s, %s): %s\n", tnpoint1_out, geom1_out, char_result);
   free(tnpoint_result); free(char_result);
 
   /* TInstant *nai_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
   tnpoint_result = (Temporal *) nai_tnpoint_npoint(tnpoint1, npoint1);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("nai_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tnpoint_result); free(char_result);
 
   /* TInstant *nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
   tnpoint_result = (Temporal *) nai_tnpoint_tnpoint(tnpoint1, tnpoint2);
-  char_result = tnpoint_out(tnpoint_result, 6);
+  char_result = tnpoint_out(tnpoint_result, 6, &size_out);
   printf("nai_tnpoint_tnpoint(%s, %s): %s\n", tnpoint1_out, tnpoint2_out, char_result);
   free(tnpoint_result); free(char_result);
 
   /* GSERIALIZED *shortestline_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs); */
   geom_result = shortestline_tnpoint_geo(tnpoint1, geom1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("shortestline_tnpoint_geo(%s, %s): %s\n", tnpoint1_out, geom1_out, char_result);
   free(geom_result); free(char_result);
 
   /* GSERIALIZED *shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
   geom_result = shortestline_tnpoint_npoint(tnpoint1, npoint1);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("shortestline_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(geom_result); free(char_result);
 
   /* GSERIALIZED *shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2); */
   geom_result = shortestline_tnpoint_tnpoint(tnpoint1, tnpoint2);
-  char_result = geo_as_text(geom_result, 6);
+  char_result = geo_as_text(geom_result, 6, &size_out);
   printf("shortestline_tnpoint_tnpoint(%s, %s): %s\n", tnpoint1_out, tnpoint2_out, char_result);
   free(geom_result); free(char_result);
 
@@ -889,13 +892,13 @@ int main(void)
 
   /* Temporal *teq_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
   tbool_result = teq_tnpoint_npoint(tnpoint1, npoint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tnpoint_npoint(const Temporal *temp, const Npoint *np); */
   tbool_result = tne_tnpoint_npoint(tnpoint1, npoint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_tnpoint_npoint(%s, %s): %s\n", tnpoint1_out, npoint1_out, char_result);
   free(tbool_result); free(char_result);
 

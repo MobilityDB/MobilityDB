@@ -55,7 +55,8 @@
 static void
 assert_datestyle(const char *expected)
 {
-  char *s = meos_get_datestyle();
+  size_t size_out;
+  char *s = meos_get_datestyle(&size_out);
   assert(s && strcmp(s, expected) == 0);
   free(s);
 }

@@ -10288,6 +10288,7 @@ meos_buffer(const LWGEOM *geom, double radius, JoinStyle join_style,
 GSERIALIZED *
 geom_buffer(const GSERIALIZED *gs, double size, const char *params)
 {
+  size_t size_out;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL); VALIDATE_NOT_NULL(params, NULL);
   if (! ensure_finite(size))
@@ -10458,7 +10459,8 @@ geom_buffer(const GSERIALIZED *gs, double size, const char *params)
   if (! res)
   {
     meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
-      "The buffer of the geometry is not supported: %s", geo_out(gs));
+      "The buffer of the geometry is not supported: %s",
+      geo_out(gs, &size_out));
     lwgeom_free(lwg);
     return NULL;
   }

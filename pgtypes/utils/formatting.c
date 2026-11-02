@@ -6235,6 +6235,7 @@ numeric_to_char(Numeric value, text *fmt)
 text *
 int4_to_char(int32 value, text *fmt)
 {
+  size_t size_out;
   NUMDesc Num;
   FormatNode *format;
   text *result;
@@ -6267,12 +6268,12 @@ int4_to_char(int32 value, text *fmt)
     if (IS_MULTI(&Num))
     {
       orgnum = int32_out(value * ((int32) pow((double) 10, 
-        (double) Num.multi)));
+        (double) Num.multi)), &size_out);
       Num.pre += Num.multi;
     }
     else
     {
-      orgnum = int32_out(value);
+      orgnum = int32_out(value, &size_out);
     }
 
     if (*orgnum == '-')
@@ -6321,6 +6322,7 @@ int4_to_char(int32 value, text *fmt)
 text *
 int8_to_char(int64 value, text *fmt)
 {
+  size_t size_out;
   NUMDesc    Num;
   FormatNode *format;
   text     *result;
@@ -6378,7 +6380,7 @@ int8_to_char(int64 value, text *fmt)
       Num.pre += Num.multi;
     }
 
-    orgnum = int64_out(value);
+    orgnum = int64_out(value, &size_out);
     if (*orgnum == '-')
     {
       sign = '-';

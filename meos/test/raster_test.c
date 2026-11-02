@@ -192,6 +192,7 @@ static const char *raster_union3 =
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -282,7 +283,7 @@ int main(void)
   /* The band reports the pixel type under the name the RaQuet specification
    * writes, which is the name a raquet tile of the same type reports, and it
    * states no nodata value */
-  char *pixtype = raster_band_pixel_type(shape, 1);
+  char *pixtype = raster_band_pixel_type(shape, 1, &size_out);
   assert(pixtype != NULL);
   assert(strcmp(pixtype, "float32") == 0);
   assert(! raster_band_has_nodata_value(shape, 1));
@@ -297,7 +298,7 @@ int main(void)
   assert(stbox_xmin(box, &xmin) && stbox_xmax(box, &xmax));
   assert(xmin == 0.0 && xmax == 3.0);
   assert(stbox_srid(box) == 4326);
-  char *box_str = stbox_out(box, 6);
+  char *box_str = stbox_out(box, 6, &size_out);
   printf("raster_to_stbox(#1): %s\n", box_str);
   free(box_str); free(box);
 
@@ -315,10 +316,10 @@ int main(void)
   /* A band number outside the bands the raster holds is an error, on either
    * side, and the band numbering starts at one */
   meos_errno_reset();
-  assert(raster_band_pixel_type(shape, 0) == NULL);
+  assert(raster_band_pixel_type(shape, 0, &size_out) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_band_pixel_type(shape, 2) == NULL);
+  assert(raster_band_pixel_type(shape, 2, &size_out) == NULL);
   assert(meos_errno() != 0);
   /* A band stating no nodata value answers false with no error and leaves the
    * result where it stands, as a box without X answers its xmin */
@@ -372,7 +373,7 @@ int main(void)
   assert(raster_skew_y(NULL) == DBL_MAX);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_band_pixel_type(NULL, 1) == NULL);
+  assert(raster_band_pixel_type(NULL, 1, &size_out) == NULL);
   assert(meos_errno() != 0);
   meos_errno_reset();
   assert(! raster_band_has_nodata_value(NULL, 1));
@@ -561,7 +562,7 @@ int main(void)
   Temporal *values = raster_value(traj_values, rast_values, 1, true, "nearest");
   assert(values != NULL);
   assert(meos_errno() == 0);
-  char *values_str = tfloat_out(values, 0);
+  char *values_str = tfloat_out(values, 0, &size_out);
   printf("raster_value(traj, raster, 1): %s\n", values_str);
   assert(temporal_num_instants(values) == 2);
   assert(tfloat_start_value(values) == 10.0);
@@ -580,7 +581,7 @@ int main(void)
   Temporal *along = raster_value(traj_linear, rast_values, 1, true, "nearest");
   assert(along != NULL);
   assert(meos_errno() == 0);
-  char *along_str = tfloat_out(along, 0);
+  char *along_str = tfloat_out(along, 0, &size_out);
   printf("raster_value(linear trip, raster, 1): %s\n", along_str);
   assert(strcmp(temporal_interp(along), "Step") == 0);
   assert(temporal_num_instants(along) == 4);
@@ -599,7 +600,7 @@ int main(void)
   assert(traj_gap != NULL);
   Temporal *visits = raster_value(traj_gap, rast_values, 1, true, "nearest");
   assert(visits != NULL);
-  char *visits_str = tfloat_out(visits, 0);
+  char *visits_str = tfloat_out(visits, 0, &size_out);
   printf("raster_value(trip across nodata): %s\n", visits_str);
   assert(temporal_num_sequences(visits) == 2);
   free(visits_str); free(visits); free(traj_gap);
@@ -760,7 +761,7 @@ int main(void)
   Temporal *masked = raster_value(traj_values, whole, 1, true, "nearest");
   assert(masked != NULL);
   assert(meos_errno() == 0);
-  char *masked_str = tfloat_out(masked, 0);
+  char *masked_str = tfloat_out(masked, 0, &size_out);
   printf("raster_clip(raster, region, false) sampled: %s\n", masked_str);
   /* The unclipped raster answers this trajectory at two instants, 10 and 70;
    * the clip removes the second, so a single instant remains */
@@ -870,7 +871,7 @@ int main(void)
   Temporal *merc_val = raster_value(traj_merc, merc, 1, true, "nearest");
   assert(merc_val != NULL);
   assert(meos_errno() == 0);
-  char *merc_val_str = tfloat_out(merc_val, 0);
+  char *merc_val_str = tfloat_out(merc_val, 0, &size_out);
   printf("raster_transform(raster, 3857) sampled at the centre of its upper "
     "left pixel: %s\n", merc_val_str);
   assert(temporal_num_instants(merc_val) == 1);
@@ -995,7 +996,7 @@ int main(void)
   Temporal *finer_val = raster_value(traj_finer, finer, 1, true, "nearest");
   assert(finer_val != NULL);
   assert(meos_errno() == 0);
-  char *finer_str = tfloat_out(finer_val, 0);
+  char *finer_str = tfloat_out(finer_val, 0, &size_out);
   printf("raster_rescale(raster, 0.5, -0.5) sampled over the quarters of the "
     "pixel holding 10: %s\n", finer_str);
   assert(temporal_num_instants(finer_val) == 4);
@@ -1203,7 +1204,7 @@ int main(void)
   assert(traj_rc != NULL);
   Temporal *rc_val = raster_value(traj_rc, rc, 1, true, "nearest");
   assert(rc_val != NULL);
-  char *rc_str = tfloat_out(rc_val, 0);
+  char *rc_str = tfloat_out(rc_val, 0, &size_out);
   printf("raster_reclass sampled at the 10 pixel and the 90 pixel: %s\n",
     rc_str);
   assert(tfloat_start_value(rc_val) == 1.0);
@@ -1299,7 +1300,7 @@ int main(void)
   Raster *ndvi = div_raster_raster(nir_minus_red, nir_plus_red);
   assert(ndvi != NULL);
   assert(meos_errno() == 0);
-  char *ndvi_pixtype = raster_band_pixel_type(ndvi, 1);
+  char *ndvi_pixtype = raster_band_pixel_type(ndvi, 1, &size_out);
   assert(ndvi_pixtype != NULL);
   assert(strcmp(ndvi_pixtype, "float64") == 0);
   assert(! raster_band_has_nodata_value(ndvi, 1));
@@ -1482,7 +1483,7 @@ int main(void)
   assert(two_twice != NULL);
   assert(meos_errno() == 0);
   assert(raster_num_bands(two_twice) == 2);
-  char *band2_pixtype = raster_band_pixel_type(two_twice, 2);
+  char *band2_pixtype = raster_band_pixel_type(two_twice, 2, &size_out);
   assert(band2_pixtype != NULL);
   assert(strcmp(band2_pixtype, "float64") == 0);
   free(band2_pixtype); free(two_twice);
@@ -1521,7 +1522,7 @@ int main(void)
   double tnodata;
   assert(raster_band_nodata_value(slope_deg, 1, &tnodata));
   assert(tnodata == -9999.0);
-  char *tpixtype = raster_band_pixel_type(slope_deg, 1);
+  char *tpixtype = raster_band_pixel_type(slope_deg, 1, &size_out);
   assert(strcmp(tpixtype, "float64") == 0);
   free(tpixtype); free(terst); free(slope_deg);
 
@@ -1687,7 +1688,7 @@ int main(void)
     1, 1);
   assert(ma_union != NULL);
   assert(raster_width(ma_union) == 4 && raster_height(ma_union) == 4);
-  char *mapixtype = raster_band_pixel_type(ma_union, 1);
+  char *mapixtype = raster_band_pixel_type(ma_union, 1, &size_out);
   double manodata;
   assert(raster_band_nodata_value(ma_union, 1, &manodata));
   printf("raster_map_algebra(dem, MEAN, NULL, union): %s, nodata %g\n",
@@ -1852,8 +1853,10 @@ int main(void)
   assert(raster_same_alignment(al_base, al_east1));
   assert(! raster_same_alignment(al_base, al_easthalf));
   assert(meos_errno() == 0);
-  char *al_reason = raster_not_same_alignment_reason(al_base, al_east1);
-  char *al_reason2 = raster_not_same_alignment_reason(al_base, al_easthalf);
+  char *al_reason = raster_not_same_alignment_reason(al_base, al_east1,
+    &size_out);
+  char *al_reason2 = raster_not_same_alignment_reason(al_base, al_easthalf,
+    &size_out);
   printf("raster_not_same_alignment_reason: \"%s\", \"%s\"\n", al_reason,
     al_reason2);
   assert(strcmp(al_reason, "The rasters are aligned") == 0);
@@ -1866,7 +1869,7 @@ int main(void)
   assert(! raster_same_alignment(al_base, al_3857));
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(raster_not_same_alignment_reason(al_base, al_3857) == NULL);
+  assert(raster_not_same_alignment_reason(al_base, al_3857, &size_out) == NULL);
   assert(meos_errno() != 0);
 
   /* The aggregate keeps the grid of the first raster and whether every later
@@ -1911,7 +1914,7 @@ int main(void)
   /* A null argument is rejected rather than dereferenced */
   meos_errno_reset();
   assert(! raster_same_alignment(NULL, al_base));
-  assert(raster_not_same_alignment_reason(al_base, NULL) == NULL);
+  assert(raster_not_same_alignment_reason(al_base, NULL, &size_out) == NULL);
   assert(rasteralignstate_serialize(NULL, &al_size) == NULL);
   assert(rasteralignstate_deserialize(NULL, 4) == NULL);
   assert(meos_errno() != 0);
@@ -1929,7 +1932,7 @@ int main(void)
   printf("raster_pixel_as_points(pixels):");
   for (int i = 0; i < npx; i++)
   {
-    char *pxwkt = geo_as_text(pxarr[i].geom, 0);
+    char *pxwkt = geo_as_text(pxarr[i].geom, 0, &size_out);
     printf(" (%s, %g, %d, %d)", pxwkt, pxarr[i].value, pxarr[i].x,
       pxarr[i].y);
     free(pxwkt);
@@ -2181,7 +2184,7 @@ int main(void)
     pb_band1[3] == 0x3f && pb_band2[0] == 7 && pb_band2[5] == 7);
   double pb_nodata;
   assert(raster_band_nodata_value(pb, 1, &pb_nodata));
-  char *pb_type = raster_band_pixel_type(pb, 1);
+  char *pb_type = raster_band_pixel_type(pb, 1, &size_out);
   Raster *pb_one = raster_make(raster_width(pb), raster_height(pb),
     raster_upper_left_x(pb), raster_upper_left_y(pb), raster_scale_x(pb),
     raster_scale_y(pb), raster_skew_x(pb), raster_skew_y(pb), raster_srid(pb),
@@ -2214,7 +2217,7 @@ int main(void)
   /* A band put first, a value left as it is and the nodata pixels kept */
   Raster *pb_first = raster_add_band(pb_built, 1, "16BSI", -3.0, 0.0, false);
   assert(raster_num_bands(pb_first) == 3);
-  pb_type = raster_band_pixel_type(pb_first, 1);
+  pb_type = raster_band_pixel_type(pb_first, 1, &size_out);
   assert(strcmp(pb_type, "int16") == 0);
   free(pb_type);
   bool pb_noset[2] = {true, false};

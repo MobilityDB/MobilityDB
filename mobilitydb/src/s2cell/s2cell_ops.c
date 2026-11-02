@@ -465,8 +465,9 @@ PG_FUNCTION_INFO_V1(S2cell_cell_to_token);
 Datum
 S2cell_cell_to_token(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   S2CellId cell = PG_GETARG_S2CELL(0);
-  char *result = s2cell_cell_to_token(cell);
+  char *result = s2cell_cell_to_token(cell, &size_out);
   if (! result)
     PG_RETURN_NULL();
   text *out = cstring_to_text(result);

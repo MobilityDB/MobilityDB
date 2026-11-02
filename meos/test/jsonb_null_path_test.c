@@ -111,7 +111,8 @@ expect_null(void *res, const char *call)
 static void
 expect_jsonb(Jsonb *res, const char *want, const char *call)
 {
-  char *out = res ? jsonb_out(res) : NULL;
+  size_t size_out;
+  char *out = res ? jsonb_out(res, &size_out) : NULL;
   printf("%s: %s, errno %d\n", call, out ? out : "NULL", meos_errno());
   assert(out != NULL);
   assert(strcmp(out, want) == 0);

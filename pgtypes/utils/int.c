@@ -82,13 +82,22 @@ int32_in(const char *str)
 /**
  * @ingroup meos_base_int
  * @brief Return the string representation of an int32 number
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p int4out()
  */
 char *
-int32_out(int32 num)
+int32_out(int32 num, size_t *size_out)
 {
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   char *result = (char *) palloc(12);  /* sign, 10 digits, '\0' */
   pg_ltoa(num, result);
+  if (result)
+    *size_out = strlen(result) + 1;
   return result;
 }
 

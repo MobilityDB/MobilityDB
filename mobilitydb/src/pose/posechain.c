@@ -88,8 +88,9 @@ PG_FUNCTION_INFO_V1(Posechain_out);
 Datum
 Posechain_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
-  PG_RETURN_CSTRING(posechain_out(pc, OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_RETURN_CSTRING(posechain_out(pc, OUT_DEFAULT_DECIMAL_DIGITS, &size_out));
 }
 
 PGDLLEXPORT Datum Posechain_recv(PG_FUNCTION_ARGS);
@@ -174,11 +175,12 @@ PG_FUNCTION_INFO_V1(Posechain_as_text);
 Datum
 Posechain_as_text(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = posechain_as_text(pc, dbl_dig_for_wkt);
+  char *str = posechain_as_text(pc, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
@@ -195,11 +197,12 @@ PG_FUNCTION_INFO_V1(Posechain_as_ewkt);
 Datum
 Posechain_as_ewkt(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   PoseChain *pc = PG_GETARG_POSECHAIN_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = posechain_as_ewkt(pc, dbl_dig_for_wkt);
+  char *str = posechain_as_ewkt(pc, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

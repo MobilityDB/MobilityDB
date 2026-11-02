@@ -109,15 +109,15 @@ typedef struct Cbuffer
 /* Input and output functions */
 
 extern uint8_t *cbuffer_as_ewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
-extern char *cbuffer_as_ewkt(const Cbuffer *cb, int maxdd);
+extern char *cbuffer_as_ewkt(const Cbuffer *cb, int maxdd, size_t *size_out);
 extern char *cbuffer_as_hexewkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern char *cbuffer_as_hexwkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
-extern char *cbuffer_as_text(const Cbuffer *cb, int maxdd);
+extern char *cbuffer_as_text(const Cbuffer *cb, int maxdd, size_t *size_out);
 extern uint8_t *cbuffer_as_wkb(const Cbuffer *cb, uint8_t variant, size_t *size_out);
 extern Cbuffer *cbuffer_from_hexwkb(const char *hexwkb);
 extern Cbuffer *cbuffer_from_wkb(const uint8_t *wkb, size_t size);
 extern Cbuffer *cbuffer_in(const char *str);
-extern char *cbuffer_out(const Cbuffer *cb, int maxdd);
+extern char *cbuffer_out(const Cbuffer *cb, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -189,7 +189,7 @@ extern bool cbuffer_ne(const Cbuffer *cb1, const Cbuffer *cb2);
 /* Input and output functions */
 
 extern Set *cbufferset_in(const char *str);
-extern char *cbufferset_out(const Set *s, int maxdd);
+extern char *cbufferset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 

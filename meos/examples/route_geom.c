@@ -70,6 +70,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -154,7 +155,7 @@ int main(void)
   /* Construct the trips */
   if (found)
   {
-    char *str = geo_as_ewkt(rec.the_geom, 3);
+    char *str = geo_as_ewkt(rec.the_geom, 3, &size_out);
     printf("Route geometry: %s\n", str);
     free(str);
   }

@@ -335,22 +335,26 @@ npoint_in(const char *str)
  * @brief Return the string representation of a network point
  * @param[in] np Network point
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Npoint_out()
  */
 char *
-npoint_out(const Npoint *np, int maxdd)
+npoint_out(const Npoint *np, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(np, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(NPOINT_MAXLEN);
-  char *rid = int64_out(np->rid);
-  char *pos = float8_out(np->pos, maxdd);
+  char *rid = int64_out(np->rid, &part_size);
+  char *pos = float8_out(np->pos, maxdd, &part_size);
   snprintf(result, NPOINT_MAXLEN, "NPoint(%s,%s)", rid, pos);
   pfree(rid); pfree(pos);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************/
@@ -451,23 +455,27 @@ nsegment_in(const char *str)
  * @brief Return the string representation of a network segment
  * @param[in] ns Network segment
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Nsegment_out()
  */
 char *
-nsegment_out(const Nsegment *ns, int maxdd)
+nsegment_out(const Nsegment *ns, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(ns, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
   char *result = palloc(NSEGMENT_MAXLEN);
-  char *rid = int64_out(ns->rid);
-  char *pos1 = float8_out(ns->pos1, maxdd);
-  char *pos2 = float8_out(ns->pos2, maxdd);
+  char *rid = int64_out(ns->rid, &part_size);
+  char *pos1 = float8_out(ns->pos1, maxdd, &part_size);
+  char *pos2 = float8_out(ns->pos2, maxdd, &part_size);
   snprintf(result, NSEGMENT_MAXLEN, "NSegment(%s,%s,%s)", rid, pos1, pos2);
   pfree(rid); pfree(pos1); pfree(pos2);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************
@@ -477,17 +485,22 @@ nsegment_out(const Nsegment *ns, int maxdd)
 /**
  * @brief Output a network point in the Well-Known Text (WKT) representation
  * (internal function)
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-npoint_wkt_out(Datum value, int maxdd)
+npoint_wkt_out(Datum value, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   Npoint *np = DatumGetNpointP(value);
-  char *rid = int64_out(np->rid);
-  char *pos = float8_out(np->pos, maxdd);
+  char *rid = int64_out(np->rid, &part_size);
+  char *pos = float8_out(np->pos, maxdd, &part_size);
   size_t len = strlen(rid) + strlen(pos) + 10; // Npoint(,) + end NULL
   char *result = palloc(len);
-  snprintf(result, len, "NPoint(%s,%s)", rid, pos);
+  int n = snprintf(result, len, "NPoint(%s,%s)", rid, pos);
   pfree(rid); pfree(pos);
+  if (size_out)
+    *size_out = (size_t) n + 1;
   return result;
 }
 
@@ -498,17 +511,20 @@ npoint_wkt_out(Datum value, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a network point
  * @param[in] np Network point
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Npoint_as_text()
  */
 char *
-npoint_as_text(const Npoint *np, int maxdd)
+npoint_as_text(const Npoint *np, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(np, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  return npoint_wkt_out(PointerGetDatum(np), maxdd);
+  return npoint_wkt_out(PointerGetDatum(np), maxdd, size_out);
 }
 
 /**
@@ -517,12 +533,15 @@ npoint_as_text(const Npoint *np, int maxdd)
  * network point
  * @param[in] np Network point
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Npoint_as_ewkt()
  */
 char *
-npoint_as_ewkt(const Npoint *np, int maxdd)
+npoint_as_ewkt(const Npoint *np, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(np, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -534,11 +553,14 @@ npoint_as_ewkt(const Npoint *np, int maxdd)
     snprintf(str1, sizeof(str1), "SRID=%d;", srid);
   else
     str1[0] = '\0';
-  char *str2 = npoint_wkt_out(PointerGetDatum(np), maxdd);
-  char *result = palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
+  size_t part_size;
+  char *str2 = npoint_wkt_out(PointerGetDatum(np), maxdd, &part_size);
+  size_t len1 = strlen(str1);
+  char *result = palloc(len1 + part_size);
+  memcpy(result, str1, len1);
+  memcpy(result + len1, str2, part_size);
   pfree(str2);
+  *size_out = len1 + part_size;
   return result;
 }
 
@@ -547,12 +569,16 @@ npoint_as_ewkt(const Npoint *np, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a network segment
  * @param[in] ns Network segment
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Nsegment_as_text()
  */
 char *
-nsegment_as_text(const Nsegment *ns, int maxdd)
+nsegment_as_text(const Nsegment *ns, int maxdd, size_t *size_out)
 {
-  return nsegment_out(ns, maxdd);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return nsegment_out(ns, maxdd, size_out);
 }
 
 /**
@@ -561,12 +587,16 @@ nsegment_as_text(const Nsegment *ns, int maxdd)
  * network segment
  * @param[in] ns Network segment
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Nsegment_as_ewkt()
  */
 char *
-nsegment_as_ewkt(const Nsegment *ns, int maxdd)
+nsegment_as_ewkt(const Nsegment *ns, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(ns, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -578,11 +608,13 @@ nsegment_as_ewkt(const Nsegment *ns, int maxdd)
     snprintf(str1, sizeof(str1), "SRID=%d;", srid);
   else
     str1[0] = '\0';
-  char *str2 = nsegment_out(ns, maxdd);
-  char *result = palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
+  char *str2 = nsegment_out(ns, maxdd, &part_size);
+  size_t len1 = strlen(str1);
+  char *result = palloc(len1 + part_size);
+  memcpy(result, str1, len1);
+  memcpy(result + len1, str2, part_size);
   pfree(str2);
+  *size_out = len1 + part_size;
   return result;
 }
 

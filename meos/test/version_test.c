@@ -59,19 +59,20 @@ check_version(const char *fn, char *version)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   meos_initialize();
 
   /* Two calls answer two strings, so freeing the first leaves the second */
-  char *first = meos_version();
-  char *second = meos_version();
+  char *first = meos_version(&size_out);
+  char *second = meos_version(&size_out);
   assert(first != second);
   assert(strcmp(first, second) == 0);
   check_version("meos_version", first);
   check_version("meos_version", second);
 
-  check_version("meos_full_version", meos_full_version());
-  check_version("mobilitydb_version", mobilitydb_version());
-  check_version("mobilitydb_full_version", mobilitydb_full_version());
+  check_version("meos_full_version", meos_full_version(&size_out));
+  check_version("mobilitydb_version", mobilitydb_version(&size_out));
+  check_version("mobilitydb_full_version", mobilitydb_full_version(&size_out));
 
   meos_finalize();
   printf("version_test: OK\n");

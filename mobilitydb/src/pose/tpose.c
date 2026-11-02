@@ -460,10 +460,11 @@ PG_FUNCTION_INFO_V1(Tpose_as_geopose);
 Datum
 Tpose_as_geopose(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int conformance = PG_GETARG_INT32(1);
   int precision   = PG_GETARG_INT32(2);
-  char *result = tpose_as_geopose(temp, conformance, precision);
+  char *result = tpose_as_geopose(temp, conformance, precision, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL) PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
@@ -481,9 +482,10 @@ PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream);
 Datum
 Tpose_as_geopose_stream(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int precision = PG_GETARG_INT32(1);
-  char *result = tpose_as_geopose_stream(temp, precision);
+  char *result = tpose_as_geopose_stream(temp, precision, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL) PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
@@ -502,9 +504,10 @@ PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream_header);
 Datum
 Tpose_as_geopose_stream_header(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int precision = PG_GETARG_INT32(1);
-  char *result = tpose_as_geopose_stream_header(temp, precision);
+  char *result = tpose_as_geopose_stream_header(temp, precision, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL) PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
@@ -524,11 +527,12 @@ PG_FUNCTION_INFO_V1(Tpose_as_geopose_stream_element);
 Datum
 Tpose_as_geopose_stream_element(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Temporal *inst = PG_GETARG_TEMPORAL_P(1);
   int precision = PG_GETARG_INT32(2);
   char *result = tpose_as_geopose_stream_element(temp, (TInstant *) inst,
-    precision);
+    precision, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(inst, 1);
   if (result == NULL) PG_RETURN_NULL();

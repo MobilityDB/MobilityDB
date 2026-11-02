@@ -266,6 +266,7 @@ temporal_check(const char *name, Temporal **temps, int n)
 int
 main(void)
 {
+  size_t size_out;
   meos_initialize();
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
@@ -356,8 +357,9 @@ main(void)
   int ntemps = 0;
   for (int i = 0; i < ncbufs && ntemps < MAXV - 1; i += 5)
   {
-    char *v1 = cbuffer_out((Cbuffer *) cbufs[i], 17);
-    char *v2 = cbuffer_out((Cbuffer *) cbufs[(i * 7 + 5) % ncbufs], 17);
+    char *v1 = cbuffer_out((Cbuffer *) cbufs[i], 17, &size_out);
+    char *v2 = cbuffer_out((Cbuffer *) cbufs[(i * 7 + 5) % ncbufs], 17,
+      &size_out);
     snprintf(str, sizeof(str), "%s@2001-01-01", v1);
     Temporal *t = tcbuffer_in(str);
     if (t)
@@ -376,8 +378,9 @@ main(void)
   ntemps = 0;
   for (int i = 0; i < nnpoints && ntemps < MAXV - 1; i++)
   {
-    char *v1 = npoint_out((Npoint *) npoints[i], 17);
-    char *v2 = npoint_out((Npoint *) npoints[(i * 7 + 5) % nnpoints], 17);
+    char *v1 = npoint_out((Npoint *) npoints[i], 17, &size_out);
+    char *v2 = npoint_out((Npoint *) npoints[(i * 7 + 5) % nnpoints], 17,
+      &size_out);
     snprintf(str, sizeof(str), "%s@2001-01-01", v1);
     Temporal *t = tnpoint_in(str);
     if (t)

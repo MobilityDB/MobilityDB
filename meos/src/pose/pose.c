@@ -892,12 +892,16 @@ pose_from_text(const char *str)
  * @brief Return the string representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Pose_out()
  */
 char *
-pose_out(const Pose *pose, int maxdd)
+pose_out(const Pose *pose, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -909,22 +913,22 @@ pose_out(const Pose *pose, int maxdd)
     "GEODPOSE" : "POSE";
   if (!MEOS_FLAGS_GET_Z(pose->flags))
   {
-    char *theta = float8_out(pose->data[2], maxdd); /* theta if 2D*/
+    char *theta = float8_out(pose->data[2], maxdd, &part_size); /* theta if 2D*/
     snprintf(result, MAXPOSELEN - 1, "%s (%s, %s)", posetype, point, theta);
     pfree(theta);
   }
   else
   {
-    char *W = float8_out(pose->data[3], maxdd);
-    char *X = float8_out(pose->data[4], maxdd);
-    char *Y = float8_out(pose->data[5], maxdd);
-    char *Z = float8_out(pose->data[6], maxdd);
+    char *W = float8_out(pose->data[3], maxdd, &part_size);
+    char *X = float8_out(pose->data[4], maxdd, &part_size);
+    char *Y = float8_out(pose->data[5], maxdd, &part_size);
+    char *Z = float8_out(pose->data[6], maxdd, &part_size);
     snprintf(result, MAXPOSELEN - 1, "%s(%s, %s, %s, %s, %s)",
       posetype, point, W, X, Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   pfree(gs); pfree(point);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************
@@ -933,10 +937,13 @@ pose_out(const Pose *pose, int maxdd)
 
 /**
  * @brief Output a pose in the Well-Known Text (WKT) representation
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-pose_wkt_out(const Pose *pose, bool extended, int maxdd)
+pose_wkt_out(const Pose *pose, bool extended, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   assert(pose); assert(maxdd >= 0);
 
   /* Write the pose */
@@ -957,30 +964,34 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
   char *W, *X, *Y, *Z, *theta;
   if (hasz)
   {
-    W = float8_out(pose->data[3], maxdd);
-    X = float8_out(pose->data[4], maxdd);
-    Y = float8_out(pose->data[5], maxdd);
-    Z = float8_out(pose->data[6], maxdd);
+    W = float8_out(pose->data[3], maxdd, &part_size);
+    X = float8_out(pose->data[4], maxdd, &part_size);
+    Y = float8_out(pose->data[5], maxdd, &part_size);
+    Z = float8_out(pose->data[6], maxdd, &part_size);
     len += strlen(W) + strlen(X) + strlen(Y) + strlen(Z) + 4; // Four ','
   }
   else
   {
-    theta = float8_out(pose->data[2], maxdd);
+    theta = float8_out(pose->data[2], maxdd, &part_size);
     len += strlen(theta) + 1; // One ','
   }
   len += strlen(posetype) + 3; // Type() + '\0' at the end
   char *result = palloc(len);
+  int n;
   if (hasz)
   {
-    snprintf(result, len, "%s(%s,%s,%s,%s,%s)", posetype, wkt_point, W, X, Y, Z);
+    n = snprintf(result, len, "%s(%s,%s,%s,%s,%s)", posetype, wkt_point, W, X,
+      Y, Z);
     pfree(W); pfree(X); pfree(Y); pfree(Z);
   }
   else
   {
-    snprintf(result, len, "%s(%s,%s)", posetype, wkt_point, theta);
+    n = snprintf(result, len, "%s(%s,%s)", posetype, wkt_point, theta);
     pfree(theta);
   }
   lwgeom_free(geom); pfree(gs); pfree(wkt_point);
+  if (size_out)
+    *size_out = (size_t) n + 1;
   return result;
 }
 
@@ -991,16 +1002,19 @@ pose_wkt_out(const Pose *pose, bool extended, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Pose_as_text()
  */
 char *
-pose_as_text(const Pose *pose, int maxdd)
+pose_as_text(const Pose *pose, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return pose_wkt_out(pose, false, maxdd);
+  return pose_wkt_out(pose, false, maxdd, size_out);
 }
 
 /**
@@ -1008,16 +1022,19 @@ pose_as_text(const Pose *pose, int maxdd)
  * @brief Return the Extended Well-Known Text (EWKT) representation of a pose
  * @param[in] pose Pose
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Pose_as_ewkt()
  */
 char *
-pose_as_ewkt(const Pose *pose, int maxdd)
+pose_as_ewkt(const Pose *pose, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pose, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd);
+  return spatialbase_as_ewkt(PointerGetDatum(pose), T_POSE, maxdd, size_out);
 }
 
 /*****************************************************************************

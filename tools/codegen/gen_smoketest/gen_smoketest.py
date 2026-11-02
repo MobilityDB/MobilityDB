@@ -173,8 +173,10 @@ AGG_STATE_TYPES = ("SkipList *", "Set *", "Span *", "SpanSet *", "TBox *", "STBo
 # How to read back what a finalizer answers, so a combine can be compared
 # against the serial accumulation of the same values. A return type absent
 # here still gets its combine called and freed, just without the assertion.
+# The output function writes the size of its string into the `size` the
+# emitted block declares.
 AGG_RESULT_PRINTERS = {
-    "Temporal *": "temporal_out(%s, 6)",
+    "Temporal *": "temporal_out(%s, 6, &size)",
 }
 
 
@@ -298,6 +300,7 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
                     f"    if (st2 && st2 != m) {free_state(state_ty, 'st2')};\n"
                     f"    {fret}rc = m ? {finalfn}(m) : NULL;\n"
                     f"    {fret}rs = ser ? {finalfn}(ser) : NULL;\n"
+                    f"    size_t size;\n"
                     f"    char *sc = rc ? {printer % 'rc'} : NULL;\n"
                     f"    char *ss = rs ? {printer % 'rs'} : NULL;\n"
                     f'    printf("{fname}: %s\\n", (sc && ss) ?\n'
@@ -361,6 +364,7 @@ def emit_aggregate(fname, ret, args, eff_arg_map, sig_by_name,
             return (f"  {{ {state_ty}st = NULL;\n"
                     f"    st = {transfn}(st{tail});\n"
                     f"    {decl_ret}r = {fname}(st);\n"
+                    f"    size_t size;\n"
                     f"    char *s = r ? {printer % 'r'} : NULL;\n"
                     f'    printf("{fname}: %s\\n", s ? s : "no answer");\n'
                     f"    if (s) free(s);\n"

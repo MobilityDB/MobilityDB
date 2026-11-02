@@ -223,14 +223,24 @@ pg_timestamp_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_base_timestamp
  * @brief Return the string representation of a timestamp
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return On error return NULL
  * @note Derived from PostgreSQL function @p timestamp_out()
  */
 #if MEOS
 char *
-timestamp_out(Timestamp ts)
+timestamp_out(Timestamp ts, size_t *size_out)
 {
-  return pg_timestamp_out(ts);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_timestamp_out(ts);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *
@@ -685,14 +695,24 @@ float8_to_timestamptz(float8 secs)
 /**
  * @ingroup meos_base_timestamp
  * @brief Return the string representation of a timestamptz
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return On error return NULL
  * @note Derived from PostgreSQL function @p timestamptz_out()
  */
 #if MEOS
 char *
-timestamptz_out(TimestampTz ts)
+timestamptz_out(TimestampTz ts, size_t *size_out)
 {
-  return pg_timestamptz_out(ts);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_timestamptz_out(ts);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *
@@ -836,13 +856,23 @@ pg_interval_in(const char *str, int32 typmod)
 /**
  * @ingroup meos_base_interval
  * @brief Return the string representation of an interval
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p interval_out()
  */
 #if MEOS
 char *
-interval_out(const Interval *interv)
+interval_out(const Interval *interv, size_t *size_out)
 {
-  return pg_interval_out(interv);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_interval_out(interv);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif
 char *

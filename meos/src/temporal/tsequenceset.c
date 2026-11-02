@@ -2191,9 +2191,12 @@ tsequenceset_in(const char *str, MeosType temptype, interpType interp)
  * @param[in] ss Temporal sequence set
  * @param[in] maxdd Maximum number of decimal digits
  * @param[in] value_out Function called to output the base value
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
+tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out,
+  size_t *size_out)
 {
   assert(ss); assert(maxdd >= 0);
 
@@ -2207,10 +2210,10 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
   for (int i = 0; i < ss->count; i++)
   {
     strings[i] = tsequence_to_string(TSEQUENCESET_SEQ_N(ss, i), maxdd, true,
-      value_out);
+      value_out, NULL);
   }
   return stringarr_to_string(strings, ss->count, prefix, '{', '}',
-    QUOTES_NO, SPACES);
+    QUOTES_NO, SPACES, size_out);
 }
 
 /**
@@ -2219,12 +2222,14 @@ tsequenceset_to_string(const TSequenceSet *ss, int maxdd, outfunc value_out)
  * sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tsequenceset_out(const TSequenceSet *ss, int maxdd)
+tsequenceset_out(const TSequenceSet *ss, int maxdd, size_t *size_out)
 {
   assert(ss);
-  return tsequenceset_to_string(ss, maxdd, &basetype_out);
+  return tsequenceset_to_string(ss, maxdd, &basetype_out, size_out);
 }
 
 /**

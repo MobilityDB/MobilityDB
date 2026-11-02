@@ -22,7 +22,7 @@ meos/src/h3/h3index.c	h3index_in(const char *str)	file-scope conditional
 meos/src/h3/h3index.c	h3index_le(H3Index a, H3Index b)	file-scope conditional
 meos/src/h3/h3index.c	h3index_lt(H3Index a, H3Index b)	file-scope conditional
 meos/src/h3/h3index.c	h3index_ne(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_out(H3Index cell)	file-scope conditional
+meos/src/h3/h3index.c	h3index_out(H3Index cell, size_t *size_out)	file-scope conditional
 meos/src/h3/h3index_sets.c	h3_cell_to_children(H3Index origin, int childRes)	file-scope conditional
 meos/src/h3/h3index_sets.c	h3_cell_to_vertexes(H3Index cell)	file-scope conditional
 meos/src/h3/h3index_sets.c	h3_compact_cells(const Set *cells)	file-scope conditional

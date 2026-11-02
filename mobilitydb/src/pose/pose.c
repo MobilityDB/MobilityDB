@@ -90,8 +90,9 @@ PG_FUNCTION_INFO_V1(Pose_out);
 Datum
 Pose_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Pose *pose = PG_GETARG_POSE_P(0);
-  PG_RETURN_CSTRING(pose_out(pose, OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_RETURN_CSTRING(pose_out(pose, OUT_DEFAULT_DECIMAL_DIGITS, &size_out));
 }
 
 PGDLLEXPORT Datum Pose_recv(PG_FUNCTION_ARGS);
@@ -199,12 +200,13 @@ Pose_from_hexwkb(PG_FUNCTION_ARGS)
 static Datum
 Pose_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
+  size_t size_out;
   Pose *pose = PG_GETARG_POSE_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = extended ? pose_as_ewkt(pose, dbl_dig_for_wkt) : 
-    pose_as_text(pose, dbl_dig_for_wkt);
+  char *str = extended ? pose_as_ewkt(pose, dbl_dig_for_wkt, &size_out) : 
+    pose_as_text(pose, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(pose, 0);
@@ -416,8 +418,9 @@ PG_FUNCTION_INFO_V1(Geopose_frame_name);
 Datum
 Geopose_frame_name(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   int32 frame_id = PG_GETARG_INT32(0);
-  char *result = geopose_frame_name(frame_id);
+  char *result = geopose_frame_name(frame_id, &size_out);
   if (result == NULL)
     PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
@@ -455,10 +458,11 @@ PG_FUNCTION_INFO_V1(Pose_as_geopose);
 Datum
 Pose_as_geopose(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Pose *pose = PG_GETARG_POSE_P(0);
   int conformance = PG_GETARG_INT32(1);
   int precision   = PG_GETARG_INT32(2);
-  char *result = pose_as_geopose(pose, conformance, precision);
+  char *result = pose_as_geopose(pose, conformance, precision, &size_out);
   PG_FREE_IF_COPY(pose, 0);
   if (result == NULL)
     PG_RETURN_NULL();

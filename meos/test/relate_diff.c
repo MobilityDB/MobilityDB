@@ -79,6 +79,7 @@ matrix_matches(const char *matrix, const char *pattern)
 int
 main(int argc, char **argv)
 {
+  size_t size_out;
   (void) argc; (void) argv;
   meos_initialize();
   /* A record the engine cannot answer must not end the run, so the handler
@@ -115,7 +116,7 @@ main(int argc, char **argv)
       if (gs2) free(gs2);
       continue;
     }
-    char *matrix = geom_relate(gs1, gs2);
+    char *matrix = geom_relate(gs1, gs2, &size_out);
     bool covered = (matrix != NULL);
     free(gs1); free(gs2);
 

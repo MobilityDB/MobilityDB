@@ -631,10 +631,11 @@ PG_FUNCTION_INFO_V1(Raster_band_pixel_type);
 Datum
 Raster_band_pixel_type(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Datum rast_datum = PG_GETARG_DATUM(0);
   Raster *rast = (Raster *) PG_DETOAST_DATUM(rast_datum);
   int band = PG_GETARG_INT32(1);
-  char *str = raster_band_pixel_type(rast, band);
+  char *str = raster_band_pixel_type(rast, band, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
@@ -1838,8 +1839,9 @@ PG_FUNCTION_INFO_V1(Raquet_out);
 Datum
 Raquet_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Raquet *rq = PG_GETARG_RAQUET_P(0);
-  char *result = raquet_out(rq);
+  char *result = raquet_out(rq, &size_out);
   PG_FREE_IF_COPY(rq, 0);
   PG_RETURN_CSTRING(result);
 }
@@ -2159,8 +2161,9 @@ PG_FUNCTION_INFO_V1(Raquet_band_pixel_type);
 Datum
 Raquet_band_pixel_type(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Raquet *rq = PG_GETARG_RAQUET_P(0);
-  char *str = raquet_band_pixel_type(rq);
+  char *str = raquet_band_pixel_type(rq, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(rq, 0);
@@ -2899,9 +2902,10 @@ PG_FUNCTION_INFO_V1(Raster_not_same_alignment_reason);
 Datum
 Raster_not_same_alignment_reason(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Raster *rast1 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(0));
   Raster *rast2 = (Raster *) PG_DETOAST_DATUM(PG_GETARG_DATUM(1));
-  char *reason = raster_not_same_alignment_reason(rast1, rast2);
+  char *reason = raster_not_same_alignment_reason(rast1, rast2, &size_out);
   PG_FREE_IF_COPY(rast1, 0);
   PG_FREE_IF_COPY(rast2, 1);
   if (! reason)

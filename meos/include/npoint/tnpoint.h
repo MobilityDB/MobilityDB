@@ -105,7 +105,7 @@ extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);
 
 /* Input/output functions */
 
-extern char *npoint_wkt_out(Datum value, int maxdd);
+extern char *npoint_wkt_out(Datum value, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 

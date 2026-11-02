@@ -71,7 +71,8 @@ extern bool ensure_valid_geography(const LWGEOM *geom);
 
 extern GSERIALIZED *postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod);
 
-extern char *geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended);
+extern char *geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended,
+  size_t *size_out);
 
 /* Functions adapted from lwgeom_box.c */
 

@@ -73,7 +73,7 @@ extern text *text_lower(const text *txt);
 extern bool text_lt(const text *txt1, const text *txt2);
 extern bool text_ne(const text *txt1, const text *txt2);
 extern int32 text_octetlen(const text *txt);
-extern char *text_out(const text *txt);
+extern char *text_out(const text *txt, size_t *size_out);
 extern text *text_overlay(const text *txt1, const text *txt2, int from, int count);
 extern text *text_overlay_no_len(const text *txt1, const text *txt2, int from);
 extern bool text_pattern_ge(const text *txt1, const text *txt2);

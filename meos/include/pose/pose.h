@@ -106,7 +106,8 @@ extern long double posesegm_locate(const Pose *start, const Pose *end,
 
 /* Input/output functions */
 
-extern char *pose_wkt_out(const Pose *pose, bool extended, int maxdd);
+extern char *pose_wkt_out(const Pose *pose, bool extended, int maxdd,
+  size_t *size_out);
 
 extern Pose *pose_parse(const char **str, bool end);
 

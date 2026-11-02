@@ -46,6 +46,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -53,8 +54,8 @@ int main(void)
   /* Create input values to test the numeric functions of the API */
   Numeric num1_in = numeric_in("1.5", -1);
   Numeric num2_in = numeric_in("2.1", -1);
-  char *num1_out = numeric_out(num1_in);
-  char *num2_out = numeric_out(num2_in);
+  char *num1_out = numeric_out(num1_in, &size_out);
+  char *num2_out = numeric_out(num2_in, &size_out);
   int16_t int16_in = 16;
   int32_t int32_in = 32;
   int64_t int64_in = 64;
@@ -81,49 +82,49 @@ int main(void)
 
   /* Numeric float4_to_numeric(float num); */
   numeric_result = float4_to_numeric(float4_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("float4_to_numeric(%f): %s\n", float4_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric float8_to_numeric(double num); */
   numeric_result = float8_to_numeric(float8_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("float8_to_numeric(%lf): %s\n", float8_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric int16_to_numeric(int16_t num); */
   numeric_result = int16_to_numeric(int16_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("int16_to_numeric(%d): %s\n", int16_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric int64_to_numeric(int64_t num); */
   numeric_result = int64_to_numeric(int64_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("int64_to_numeric(%ld): %s\n", int64_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric(Numeric num, int32_t typmod); */
   numeric_result = numeric(num1_in, -1);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric(%s, -1): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_abs(Numeric num); */
   numeric_result = numeric_abs(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_abs(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_add(Numeric num1, Numeric num2); */
   numeric_result = numeric_add(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_add(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_ceil(Numeric num); */
   numeric_result = numeric_ceil(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_ceil(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -133,19 +134,19 @@ int main(void)
 
   /* Numeric numeric_copy(Numeric num); */
   numeric_result = numeric_copy(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_copy(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_div(Numeric num1, Numeric num2); */
   numeric_result = numeric_div(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_div(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_div_trunc(Numeric num1, Numeric num2); */
   numeric_result = numeric_div_trunc(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_div_trunc(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -155,25 +156,25 @@ int main(void)
 
   /* Numeric numeric_exp(Numeric num); */
   numeric_result = numeric_exp(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_exp(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_fac(int64_t num); */
   numeric_result = numeric_fac(int64_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_fac(%ld): %s\n", int64_in, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_floor(Numeric num); */
   numeric_result = numeric_floor(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_floor(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_gcd(Numeric num1, Numeric num2); */
   numeric_result = numeric_gcd(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_gcd(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -195,19 +196,19 @@ int main(void)
 
   /* Numeric numeric_inc(Numeric num); */
   numeric_result = numeric_inc(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_inc(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_larger(Numeric num1, Numeric num2); */
   numeric_result = numeric_larger(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_larger(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_lcm(Numeric num1, Numeric num2); */
   numeric_result = numeric_lcm(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_lcm(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -217,13 +218,13 @@ int main(void)
 
   /* Numeric numeric_ln(Numeric num); */
   numeric_result = numeric_ln(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_ln(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_log(Numeric num1, Numeric num2); */
   numeric_result = numeric_log(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_log(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -237,19 +238,19 @@ int main(void)
 
   /* Numeric numeric_minus(Numeric num1, Numeric num2); */
   numeric_result = numeric_minus(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_minus(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_mod(Numeric num1, Numeric num2); */
   numeric_result = numeric_mod(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_mod(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_mul(Numeric num1, Numeric num2); */
   numeric_result = numeric_mul(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_mul(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
   
@@ -259,13 +260,13 @@ int main(void)
 
   /* Numeric numeric_pow(Numeric num1, Numeric num2); */
   numeric_result = numeric_pow(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_pow(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_round(Numeric num, int32_t scale); */
   numeric_result = numeric_round(num1_in, 2);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_round(%s, 2): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -275,19 +276,19 @@ int main(void)
 
   /* Numeric numeric_sign(Numeric num); */
   numeric_result = numeric_sign(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_sign(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_smaller(Numeric num1, Numeric num2); */
   numeric_result = numeric_smaller(num1_in, num2_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_smaller(%s, %s): %s\n", num1_out, num2_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_sqrt(Numeric num); */
   numeric_result = numeric_sqrt(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_sqrt(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
@@ -313,33 +314,33 @@ int main(void)
 
   /* Numeric numeric_trim_scale(Numeric num); */
   numeric_result = numeric_trim_scale(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_trim_scale(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_trunc(Numeric num, int32_t scale); */
   numeric_result = numeric_trunc(num1_in, 2);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_trunc(%s, 2): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_uminus(Numeric num); */
   numeric_result = numeric_uminus(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_uminus(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* Numeric numeric_uplus(Numeric num); */
   numeric_result = numeric_uplus(num1_in);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("numeric_uplus(%s): %s\n", num1_out, char_result);
   free(numeric_result); free(char_result);
 
   /* int32_t numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2, int32_t count); */
   Numeric bound1 = numeric_in("1", -1);
   Numeric bound2 = numeric_in("10", -1);
-  char *bound1_out = numeric_out(bound1);
-  char *bound2_out = numeric_out(bound2);
+  char *bound1_out = numeric_out(bound1, &size_out);
+  char *bound2_out = numeric_out(bound2, &size_out);
   int32_result = numeric_width_bucket(num1_in, bound1, bound2, int32_in);
   printf("numeric_width_bucket(%s, %s, %s, %d): %u\n", num1_out, bound1_out, bound2_out, int32_in, int32_result);
   free(bound1); free(bound2);

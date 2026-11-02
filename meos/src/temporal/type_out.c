@@ -133,6 +133,7 @@ extern bool string_escape(const char *str, int quotes, char **result);
 char *
 basetype_out(Datum value, MeosType type, int maxdd)
 {
+  size_t size_out;
   assert(meos_basetype(type)); assert(maxdd >= 0);
 
   switch (type)
@@ -142,13 +143,13 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_DATE:
       return pg_date_out(DatumGetTimestampTz(value));
     case T_BOOL:
-      return bool_out(DatumGetBool(value));
+      return bool_out(DatumGetBool(value), &size_out);
     case T_INT4:
-      return int32_out(DatumGetInt32(value));
+      return int32_out(DatumGetInt32(value), &size_out);
     case T_INT8:
-      return int64_out(DatumGetInt64(value));
+      return int64_out(DatumGetInt64(value), &size_out);
     case T_FLOAT8:
-      return float8_out(DatumGetFloat8(value), maxdd);
+      return float8_out(DatumGetFloat8(value), maxdd, &size_out);
     case T_TEXT:
     {
       /* Text values are escaped and quoted (when needed) so that they
@@ -172,10 +173,10 @@ basetype_out(Datum value, MeosType type, int maxdd)
     case T_GEOMETRY:
     case T_GEOGRAPHY:
       /* Hex-encoded ASCII Well-Known Binary (HexWKB) representation */
-      return geo_out(DatumGetGserializedP(value));
+      return geo_out(DatumGetGserializedP(value), &size_out);
 #if CBUFFER
     case T_CBUFFER:
-      return cbuffer_out(DatumGetCbufferP(value), maxdd);
+      return cbuffer_out(DatumGetCbufferP(value), maxdd, &size_out);
 #endif
 #if H3
     case T_H3INDEX:
@@ -187,31 +188,33 @@ basetype_out(Datum value, MeosType type, int maxdd)
 #endif
 #if NPOINT
     case T_NPOINT:
-      return npoint_out(DatumGetNpointP(value), maxdd);
+      return npoint_out(DatumGetNpointP(value), maxdd, &size_out);
 #endif
 #if POINTCLOUD
     case T_PCPOINT:
-      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd,
+        &size_out);
     case T_PCPATCH:
-      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
+      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd,
+        &size_out);
 #endif
 #if POSE
     case T_POSE:
-      return pose_out(DatumGetPoseP(value), maxdd);
+      return pose_out(DatumGetPoseP(value), maxdd, &size_out);
     case T_POSECHAIN:
-      return posechain_out(DatumGetPoseChainP(value), maxdd);
+      return posechain_out(DatumGetPoseChainP(value), maxdd, &size_out);
 #endif
 #if QUADBIN
     case T_QUADBIN:
-      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+      return quadbin_index_to_string((Quadbin) DatumGetInt64(value), &size_out);
 #endif
 #if S2CELL
     case T_S2CELL:
-      return s2cell_out((S2CellId) DatumGetInt64(value));
+      return s2cell_out((S2CellId) DatumGetInt64(value), &size_out);
 #endif
 #if RASTER
     case T_RAQUET:
-      return raquet_out(DatumGetRaquetP(value));
+      return raquet_out(DatumGetRaquetP(value), &size_out);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -600,6 +603,7 @@ static bool
 temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
   int precision)
 {
+  size_t size_out;
   assert(temporal_type(temptype));
   switch (temptype)
   {
@@ -636,7 +640,7 @@ temporal_base_as_mfjson_sb(stringbuffer_t *sb, Datum value, MeosType temptype,
     case T_TGEOMETRY:
     {
       char *str = geo_as_geojson(DatumGetGserializedP(value), 0, precision,
-        NULL);
+        NULL, &size_out);
       stringbuffer_aprintf(sb, "%s,", str);
       break;
     }
@@ -991,6 +995,7 @@ static bool
 tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   const bboxunion *bbox, int precision, const char *srs)
 {
+  size_t size_out;
   bool success = temptype_as_mfjson_sb(sb, inst->temptype);
   /* Propagate errors up */
   if (! success)
@@ -1013,7 +1018,7 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
   {
     const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
     /* Do not repeat the crs for the composing geometries */
-    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
     stringbuffer_aprintf(sb, "\"values\":[%s", str);
     pfree(str);
   }
@@ -1058,7 +1063,7 @@ tinstant_as_mfjson_sb(stringbuffer_t *sb, const TInstant *inst,
     /* Do not repeat the crs for the composing geometries */
     stringbuffer_append_len(sb, "\"geometry\":", 11);
     const GSERIALIZED *gs = trgeoinst_geom_p(inst);
-    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
     stringbuffer_aprintf(sb, "%s,", str);
     pfree(str);
     stringbuffer_append_len(sb, "\"values\":[", 10);
@@ -1096,6 +1101,7 @@ static bool
 tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
   const bboxunion *box, int precision, const char *srs)
 {
+  size_t size_out;
   bool success = temptype_as_mfjson_sb(sb, seq->temptype);
   /* Propagate errors up */
   if (! success)
@@ -1120,7 +1126,7 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
     const GSERIALIZED *gs = trgeoseq_geom_p(seq);
-    char *str = geo_as_geojson(gs, 0, precision, NULL);
+    char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
     stringbuffer_aprintf(sb, "%s,\"values\":[", str);
     pfree(str);
   }
@@ -1139,7 +1145,7 @@ tsequence_as_mfjson_sb(stringbuffer_t *sb, const TSequence *seq,
     {
       const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
       /* Do not repeat the crs for the composing geometries */
-      char *str = geo_as_geojson(gs, 0, precision, NULL);
+      char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
       stringbuffer_aprintf(sb, "%s", str);
       pfree(str);
     }
@@ -1224,6 +1230,7 @@ static bool
 tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
   const bboxunion *box, int precision, const char *srs)
 {
+  size_t size_out;
   bool success = temptype_as_mfjson_sb(sb, ss->temptype);
   /* Propagate errors up */
   if (! success)
@@ -1242,7 +1249,8 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
   if (ss->temptype == T_TRGEOMETRY)
   {
     stringbuffer_append_len(sb, "\"geometry\":", 11);
-    char *str = geo_as_geojson(trgeoseqset_geom_p(ss), 0, precision, NULL);
+    char *str = geo_as_geojson(trgeoseqset_geom_p(ss), 0, precision, NULL,
+      &size_out);
     stringbuffer_aprintf(sb, "%s,", str);
     pfree(str);
   }
@@ -1274,7 +1282,7 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
       {
         const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
         /* Do not repeat the crs for the composing geometries */
-        char *str = geo_as_geojson(gs, 0, precision, NULL);
+        char *str = geo_as_geojson(gs, 0, precision, NULL, &size_out);
         stringbuffer_aprintf(sb, "%s", str);
         pfree(str);
       }
@@ -1371,14 +1379,17 @@ tsequenceset_as_mfjson_sb(stringbuffer_t *sb, const TSequenceSet *ss,
  * has floating point components, such as tfloat or tgeometry
  * @param[in] srs Name of the coordinate reference system, which the output
  * states in place of the one of the SRID @nullable
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Temporal_as_mfjson()
  */
 char *
 temporal_as_mfjson(const Temporal *temp, int option, int flags,
-  int precision, const char *srs)
+  int precision, const char *srs, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(temp, NULL);
   if (! ensure_not_negative(precision))
     return NULL;
@@ -1431,6 +1442,8 @@ temporal_as_mfjson(const Temporal *temp, int option, int flags,
   }
   /* Convert the string buffer to a C string */
   char *result = ! res ? NULL : stringbuffer_getstringcopy(sb);
+  if (result)
+    *size_out = (size_t) stringbuffer_getlength(sb) + 1;
 
   /* Destroy the string buffer */
   stringbuffer_destroy(sb);
@@ -1442,7 +1455,11 @@ temporal_as_mfjson(const Temporal *temp, int option, int flags,
   json_tokener *jstok = json_tokener_new();
   struct json_object *jobj = json_tokener_parse_ex(jstok, result, -1);
   pfree(result);
-  result = strdup(json_object_to_json_string_ext(jobj, flags));
+  size_t len;
+  const char *json = json_object_to_json_string_length(jobj, flags,
+    &len);
+  result = strndup(json, len);
+  *size_out = len + 1;
   json_tokener_free(jstok);
   json_object_put(jobj);
   return result;

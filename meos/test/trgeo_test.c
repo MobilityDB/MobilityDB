@@ -99,6 +99,7 @@ counting_free(void *ptr)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS, using the noexit error handler so a parse failure
    * returns NULL instead of exiting the process */
   meos_initialize();
@@ -121,8 +122,8 @@ int main(void)
   }
   else
   {
-    /* char *trgeometry_out(const Temporal *temp); */
-    char *trgeo1_out = trgeometry_out(trgeo1);
+    /* char *trgeometry_out(const Temporal *temp, size_t *size_out); */
+    char *trgeo1_out = trgeometry_out(trgeo1, &size_out);
     printf("trgeometry_in(%s): %s\n", trgeo1_in, trgeo1_out);
 
     /* Round-trip: parse the rendered representation again and check that
@@ -136,7 +137,7 @@ int main(void)
     }
     else
     {
-      char *trgeo2_out = trgeometry_out(trgeo2);
+      char *trgeo2_out = trgeometry_out(trgeo2, &size_out);
       if (strcmp(trgeo1_out, trgeo2_out) != 0)
       {
         printf("FAILED: round-trip mismatch: %s != %s\n", trgeo1_out,
@@ -181,7 +182,7 @@ int main(void)
     }
     else
     {
-      char *at_out = trgeometry_as_text(at, 6);
+      char *at_out = trgeometry_as_text(at, 6, &size_out);
       if (strcmp(at_out, at_expected) != 0)
       {
         printf("FAILED: trgeometry_at_values: %s != %s\n", at_out,
@@ -205,7 +206,7 @@ int main(void)
     }
     else
     {
-      char *minus_out = trgeometry_as_text(minus, 6);
+      char *minus_out = trgeometry_as_text(minus, 6, &size_out);
       printf("OK: trgeometry_minus_values(trgeometry, poseset): %s\n",
         minus_out);
       free(minus); free(minus_out);
@@ -239,7 +240,7 @@ int main(void)
     }
     else
     {
-      char *at_value_out = trgeometry_as_text(at_value, 6);
+      char *at_value_out = trgeometry_as_text(at_value, 6, &size_out);
       if (strcmp(at_value_out, at_expected) != 0)
       {
         printf("FAILED: trgeometry_at_value: %s != %s\n", at_value_out,
@@ -263,7 +264,7 @@ int main(void)
     }
     else
     {
-      char *minus_value_out = trgeometry_as_text(minus_value, 6);
+      char *minus_value_out = trgeometry_as_text(minus_value, 6, &size_out);
       printf("OK: trgeometry_minus_value(trgeometry, pose): %s\n",
         minus_value_out);
       free(minus_value); free(minus_value_out);
@@ -436,7 +437,7 @@ int main(void)
         /* Reading the body is what a caller does next, and it is what a
          * bodiless answer cannot serve */
         GSERIALIZED *geo = trgeometry_geom(merged);
-        char *wkt = geo ? geo_as_text(geo, 6) : NULL;
+        char *wkt = geo ? geo_as_text(geo, 6, &size_out) : NULL;
         if (! wkt || strcmp(wkt, body) != 0)
         {
           printf("FAILED: the merged rigid geometry answers body %s, wanted "
@@ -452,7 +453,7 @@ int main(void)
         meos_errno_reset();
         Temporal *marr = temporal_merge_array(arr, 2);
         GSERIALIZED *ageo = marr ? trgeometry_geom(marr) : NULL;
-        char *awkt = ageo ? geo_as_text(ageo, 6) : NULL;
+        char *awkt = ageo ? geo_as_text(ageo, 6, &size_out) : NULL;
         if (! awkt || strcmp(awkt, body) != 0)
         {
           printf("FAILED: merging an array of rigid geometries answers body "
@@ -491,7 +492,7 @@ int main(void)
       meos_errno_reset();
       Temporal *ins = temporal_insert(i1, i2, true);
       GSERIALIZED *igeo = ins ? trgeometry_geom(ins) : NULL;
-      char *iwkt = igeo ? geo_as_text(igeo, 6) : NULL;
+      char *iwkt = igeo ? geo_as_text(igeo, 6, &size_out) : NULL;
       if (! iwkt || strcmp(iwkt, body) != 0)
       {
         printf("FAILED: inserting a rigid geometry answers body %s, wanted "
@@ -505,7 +506,7 @@ int main(void)
       meos_errno_reset();
       Temporal *upd = temporal_update(i1, i2, true);
       GSERIALIZED *ugeo = upd ? trgeometry_geom(upd) : NULL;
-      char *uwkt = ugeo ? geo_as_text(ugeo, 6) : NULL;
+      char *uwkt = ugeo ? geo_as_text(ugeo, 6, &size_out) : NULL;
       if (! uwkt || strcmp(uwkt, body) != 0)
       {
         printf("FAILED: updating a rigid geometry answers body %s, wanted "

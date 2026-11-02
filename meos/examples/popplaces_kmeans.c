@@ -79,6 +79,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Get start time */
   clock_t t;
   t = clock();
@@ -186,7 +187,7 @@ int main(void)
   for (i = 0; i < count; i++)
   {
     /* Write record in output file */
-    char *point_str = geo_out(geom[i]);
+    char *point_str = geo_out(geom[i], &size_out);
     fprintf(output_file,"%s,%d,%s,%d\n", name[i], pop_max[i],
       point_str, cluster[i]);
     free(point_str);

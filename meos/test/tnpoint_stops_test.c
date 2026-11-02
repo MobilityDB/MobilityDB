@@ -84,12 +84,13 @@ stops_counts(const char *str, double maxdist, int *counts)
 int
 main(void)
 {
+  size_t size_out;
   meos_initialize();
 
   /* The network: route 0 from (0 0) to (100 0) and back to (0 1) */
   GSERIALIZED *route = geom_in("SRID=5676;LINESTRING(0 0,100 0,0 1)", -1);
   assert(route != NULL);
-  char *hex = geo_as_hexewkb(route, "NDR");
+  char *hex = geo_as_hexewkb(route, "NDR", &size_out);
   FILE *file = fopen(WAYS, "w");
   assert(file != NULL);
   fprintf(file, "0,%s\n", hex);

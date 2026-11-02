@@ -62,6 +62,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -120,13 +121,13 @@ int main(void)
     BOX3D *box = box3d_in(box3d_strs[i][0]);
     assert(box != NULL);
     assert(meos_errno() == 0);
-    char *str = box3d_out(box, 15);
+    char *str = box3d_out(box, 15, &size_out);
     printf("box3d_in(\"%s\") -> \"%s\"\n", box3d_strs[i][0], str);
     assert(strcmp(str, box3d_strs[i][1]) == 0);
     /* The output of box3d_out is read back by box3d_in */
     BOX3D *box1 = box3d_in(str);
     assert(box1 != NULL);
-    char *str1 = box3d_out(box1, 15);
+    char *str1 = box3d_out(box1, 15, &size_out);
     assert(strcmp(str, str1) == 0);
     free(str); free(str1); free(box); free(box1);
   }
@@ -135,7 +136,7 @@ int main(void)
   meos_errno_reset();
   BOX3D *box_srid = box3d_make(1, 5, 1, 5, 1, 5, 4326);
   assert(box_srid != NULL);
-  char *str_srid = box3d_out(box_srid, 15);
+  char *str_srid = box3d_out(box_srid, 15, &size_out);
   printf("box3d_out(box3d_make(..., 4326)): \"%s\"\n", str_srid);
   assert(strcmp(str_srid, "BOX3D(1 1 1,5 5 5)") == 0);
   free(str_srid); free(box_srid);
@@ -258,7 +259,7 @@ int main(void)
     GSERIALIZED *member = geom_in(member_wkt[i][1], -1);
     assert(members != NULL); assert(member != NULL);
     meos_errno_reset();
-    char *mm = geom_relate(members, member);
+    char *mm = geom_relate(members, member, &size_out);
     bool holds = geom_contains(members, member);
     printf("geom_relate(overlapping members, member %zu): %s, contains %d, "
       "errno %d\n", i, mm ? mm : "(NULL)", holds, meos_errno());
@@ -413,7 +414,7 @@ int main(void)
     assert(ga != NULL);
     assert(gb != NULL);
     meos_errno_reset();
-    char *gm = geom_relate(ga, gb);
+    char *gm = geom_relate(ga, gb, &size_out);
     bool gi = geom_intersects(ga, gb);
     printf("geom_relate(%s, %s): %s, intersects %d, errno %d\n",
       gpssteps[i].a, gpssteps[i].b, gm ? gm : "(NULL)", gi, meos_errno());
@@ -460,7 +461,7 @@ int main(void)
     assert(ga != NULL);
     assert(gb != NULL);
     meos_errno_reset();
-    char *gm = geom_relate(ga, gb);
+    char *gm = geom_relate(ga, gb, &size_out);
     printf("geom_relate(two lines meeting at one point, %zu): %s, errno %d\n",
       i, gm ? gm : "(NULL)", meos_errno());
     assert(gm != NULL);
@@ -490,7 +491,7 @@ int main(void)
     assert(ga != NULL);
     assert(gb != NULL);
     meos_errno_reset();
-    char *gm = geom_relate(ga, gb);
+    char *gm = geom_relate(ga, gb, &size_out);
     bool gi = geom_intersects2d(ga, gb);
     printf("geom_relate(%s, %s): %s, intersects %d, errno %d\n", tinypts[i].a,
       tinypts[i].b, gm ? gm : "(NULL)", gi, meos_errno());
@@ -689,12 +690,12 @@ int main(void)
   assert(pip_res != NULL);
   assert(meos_errno() == 0);
   /* The same pair in the unnamed frame answers the same points */
-  char *pip_res_wkt = geo_as_text(pip_res, 6);
+  char *pip_res_wkt = geo_as_text(pip_res, 6, &size_out);
   char *pip_plain_wkt = pip_wkt + strlen("SRID=3812;");
   GSERIALIZED *pip_poly0 = geom_in(pip_plain_wkt, -1);
   GSERIALIZED *pip_line0 = geom_in("CIRCULARSTRING(-200 0,0 20,200 0)", -1);
   GSERIALIZED *pip_res0 = geom_intersection2d(pip_line0, pip_poly0);
-  char *pip_res0_wkt = pip_res0 ? geo_as_text(pip_res0, 6) : NULL;
+  char *pip_res0_wkt = pip_res0 ? geo_as_text(pip_res0, 6, &size_out) : NULL;
   printf("  the same pair carrying no SRID answers the same points: %d\n",
     (pip_res_wkt && pip_res0_wkt && strcmp(pip_res_wkt, pip_res0_wkt) == 0));
   assert(pip_res_wkt && pip_res0_wkt);
@@ -853,8 +854,8 @@ int main(void)
     assert(circ != NULL); assert(sq != NULL);
     assert(geom_intersects2d(seg, arc));
     assert(geom_intersects2d(arc, seg));
-    char *self = geom_relate(circ, circ);
-    char *inside = geom_relate(circ, sq);
+    char *self = geom_relate(circ, circ, &size_out);
+    char *inside = geom_relate(circ, sq, &size_out);
     assert(self != NULL); assert(inside != NULL);
     assert(strcmp(self, "2FFF1FFF2") == 0);
     assert(strcmp(inside, "212FF1FF2") == 0);
@@ -898,8 +899,8 @@ int main(void)
     GSERIALIZED *side = geom_in(side_wkt, -1);
     assert(gap != NULL); assert(shared != NULL);
     assert(centre != NULL); assert(side != NULL);
-    char *apart = geom_relate(centre, gap);
-    char *joined = geom_relate(side, shared);
+    char *apart = geom_relate(centre, gap, &size_out);
+    char *joined = geom_relate(side, shared, &size_out);
     assert(apart != NULL); assert(joined != NULL);
     assert(strcmp(apart, "0FFFFF212") == 0);
     assert(strcmp(joined, "0FFFFF212") == 0);
@@ -974,8 +975,8 @@ int main(void)
     GSERIALIZED *top = geom_in(top_wkt, -1);
     GSERIALIZED *left = geom_in(left_wkt, -1);
     assert(top != NULL); assert(left != NULL);
-    char *m_top = geom_relate(top, top);
-    char *m_left = geom_relate(left, left);
+    char *m_top = geom_relate(top, top, &size_out);
+    char *m_left = geom_relate(left, left, &size_out);
     assert(m_top != NULL); assert(m_left != NULL);
     assert(strcmp(m_top, "2FFF1FFF2") == 0);
     assert(strcmp(m_left, "2FFF1FFF2") == 0);
@@ -1004,7 +1005,7 @@ int main(void)
     GSERIALIZED *tri = geom_in(tri_wkt, -1);
     GSERIALIZED *pt = geom_in(pt_wkt, -1);
     assert(tri != NULL); assert(pt != NULL);
-    char *m = geom_relate(tri, pt);
+    char *m = geom_relate(tri, pt, &size_out);
     assert(m != NULL);
     assert(strcmp(m, "0F2FF1FF2") == 0);
     sl_ok++;
@@ -1151,7 +1152,7 @@ int main(void)
     assert(ga != NULL); assert(gb != NULL);
     GSERIALIZED *sl = geom_shortestline2d(ga, gb);
     assert(sl != NULL);
-    char *wkt = geo_as_text(sl, 6);
+    char *wkt = geo_as_text(sl, 6, &size_out);
     assert(strcmp(wkt, curve_line[i].line) == 0);
     line_ok++;
     free(wkt); free(sl); free(ga); free(gb);
@@ -1211,8 +1212,8 @@ int main(void)
   GSERIALIZED *third_diff = geom_difference2d(third_sq, third_tr);
   assert(third_inter != NULL);
   assert(third_diff != NULL);
-  char *third_inter_wkt = geo_as_text(third_inter, 17);
-  char *third_diff_wkt = geo_as_text(third_diff, 17);
+  char *third_inter_wkt = geo_as_text(third_inter, 17, &size_out);
+  char *third_diff_wkt = geo_as_text(third_diff, 17, &size_out);
   printf("geom_intersection2d(the unit square, a triangle leaving it at "
     "(1, 1/3)): %s\n", third_inter_wkt);
   printf("geom_difference2d(the unit square, the same triangle): %s\n",
@@ -1452,7 +1453,7 @@ int main(void)
     GSERIALIZED *pt = geom_in(discpts[i].pt, -1);
     assert(disc != NULL); assert(pt != NULL);
     meos_errno_reset();
-    char *disc_matrix = geom_relate(disc, pt);
+    char *disc_matrix = geom_relate(disc, pt, &size_out);
     printf("a disc against %s: %s\n", discpts[i].pt, disc_matrix);
     assert(disc_matrix != NULL);
     assert(strcmp(disc_matrix, discpts[i].matrix) == 0);
@@ -1480,7 +1481,7 @@ int main(void)
   bool pair_covers = geom_relate_pattern(pair_buf, pair_geo, pair_covers_patt);
   printf("  it covers the geometry it is taken of: %d\n", pair_covers);
   assert(pair_covers == true);
-  char *pair_matrix = geom_relate(pair_buf, pair_geo);
+  char *pair_matrix = geom_relate(pair_buf, pair_geo, &size_out);
   printf("  its matrix against the two points: %s\n", pair_matrix);
   assert(pair_matrix != NULL);
   assert(strcmp(pair_matrix, "0F2FF1FF2") == 0);
@@ -1751,7 +1752,7 @@ int main(void)
     assert(b != NULL);
     assert(meos_errno() == 0);
     bool covers = geom_relate_pattern(b, g, thin_patt);
-    char *text = geo_as_text(b, 17);
+    char *text = geo_as_text(b, 17, &size_out);
     assert(text != NULL);
     int rings = 0;
     for (const char *s = strstr(text, "COMPOUNDCURVE("); s;
@@ -1842,15 +1843,15 @@ int main(void)
     GSERIALIZED *partner = geom_in(zl_partners[i], -1);
     assert(partner != NULL);
     meos_errno_reset();
-    char *want = geom_relate(zl_point, partner);
-    char *want_rev = geom_relate(partner, zl_point);
+    char *want = geom_relate(zl_point, partner, &size_out);
+    char *want_rev = geom_relate(partner, zl_point, &size_out);
     assert(want != NULL); assert(want_rev != NULL);
     for (size_t j = 0; j < sizeof(zl_spellings) / sizeof(zl_spellings[0]); j++)
     {
       GSERIALIZED *line = geom_in(zl_spellings[j], -1);
       assert(line != NULL);
-      char *got = geom_relate(line, partner);
-      char *got_rev = geom_relate(partner, line);
+      char *got = geom_relate(line, partner, &size_out);
+      char *got_rev = geom_relate(partner, line, &size_out);
       printf("geom_relate(%s, %s): %s, reversed %s, the point %s and %s, "
         "errno %d\n", zl_spellings[j], zl_partners[i], got, got_rev, want,
         want_rev, meos_errno());
@@ -1880,8 +1881,8 @@ int main(void)
     GSERIALIZED *line = geom_in(ib_lines[i], -1);
     assert(line != NULL);
     meos_errno_reset();
-    char *got = geom_relate(line, ib_area);
-    char *got_rev = geom_relate(ib_area, line);
+    char *got = geom_relate(line, ib_area, &size_out);
+    char *got_rev = geom_relate(ib_area, line, &size_out);
     printf("geom_relate(%s, %s): %s, reversed %s, errno %d\n", ib_lines[i],
       ib_poly, got, got_rev, meos_errno());
     assert(got != NULL); assert(got_rev != NULL);
@@ -2225,7 +2226,7 @@ int main(void)
   GSERIALIZED *uu = geom_unary_union(phsurf);
   assert(uu != NULL);
   assert(meos_errno() == 0);
-  char *uutext = geo_as_text(uu, 6);
+  char *uutext = geo_as_text(uu, 6, &size_out);
   printf("geom_unary_union of a polyhedral surface: %s\n", uutext);
   assert(strstr(uutext, " Z") == NULL);
   assert(fabs(geom_area(uu) - 1.0) < 1e-12);
@@ -2253,7 +2254,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *ggu = geog_array_union(ggarr, 2);
   assert(ggu != NULL);
-  char *ggwkt = geo_as_ewkt(ggu, 6);
+  char *ggwkt = geo_as_ewkt(ggu, 6, &size_out);
   printf("the union of two geography points: %s\n", ggwkt);
   assert(strcmp(ggwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
   free(ggu); free(ggwkt);
@@ -2315,7 +2316,7 @@ int main(void)
     GSERIALIZED *mxu = geom_array_union(mxarr, 2);
     assert(mxu != NULL);
     assert(meos_errno() == 0);
-    char *mxwkt = geo_as_text(mxu, 3);
+    char *mxwkt = geo_as_text(mxu, 3, &size_out);
     assert(mxwkt != NULL);
     printf("%s united with the square: %s\n", mixcases[i].piece, mxwkt);
     assert(strcmp(mxwkt, mixcases[i].result) == 0);
@@ -2369,7 +2370,7 @@ int main(void)
     GSERIALIZED *dmu = geom_array_union(dmarr, 2);
     assert(dmu != NULL);
     assert(meos_errno() == 0);
-    char *dmwkt = geo_as_text(dmu, 3);
+    char *dmwkt = geo_as_text(dmu, 3, &size_out);
     assert(dmwkt != NULL);
     printf("union of %s with %s: %s\n", dimcases[i][0], dimcases[i][1], dmwkt);
     assert(strcmp(dmwkt, dimcases[i][2]) == 0);
@@ -2385,7 +2386,7 @@ int main(void)
   GSERIALIZED *dmzu = geom_array_union(dmzarr, 2);
   assert(dmzu != NULL);
   assert(meos_errno() == 0);
-  char *dmzwkt = geo_as_text(dmzu, 3);
+  char *dmzwkt = geo_as_text(dmzu, 3, &size_out);
   printf("union of two elevated positions: %s\n", dmzwkt);
   assert(strcmp(dmzwkt, "MULTIPOINT Z ((0 0 1),(1 1 1))") == 0);
   free(dmz1); free(dmz2); free(dmzu); free(dmzwkt);
@@ -2445,7 +2446,7 @@ int main(void)
     GSERIALIZED *lfu = geom_array_union(lfarr, 2);
     assert(lfu != NULL);
     assert(meos_errno() == 0);
-    char *lfwkt = geo_as_text(lfu, 3);
+    char *lfwkt = geo_as_text(lfu, 3, &size_out);
     assert(lfwkt != NULL);
     printf("%s united with %s: %s\n", liftcases[i].first, liftcases[i].second,
       lfwkt);
@@ -2490,7 +2491,7 @@ int main(void)
     GSERIALIZED *slu = geom_array_union(slarr, 2);
     assert(slu != NULL);
     assert(meos_errno() == 0);
-    char *slwkt = geo_as_text(slu, 6);
+    char *slwkt = geo_as_text(slu, 6, &size_out);
     assert(slwkt != NULL);
     printf("%s with a far point: %s\n", shortcases[i].line, slwkt);
     assert(strcmp(slwkt, shortcases[i].result) == 0);
@@ -2525,7 +2526,7 @@ int main(void)
   GSERIALIZED *swu = geom_array_union(swarr, 2);
   assert(swu != NULL);
   assert(meos_errno() == 0);
-  char *swwkt = geo_as_text(swu, 15);
+  char *swwkt = geo_as_text(swu, 15, &size_out);
   assert(swwkt != NULL);
   printf("union of a line with two vertices 5e-13 apart: %s\n", swwkt);
   assert(strcmp(swwkt, "GEOMETRYCOLLECTION(POINT(-170 -80),LINESTRING(5e-13 0,"
@@ -2546,7 +2547,7 @@ int main(void)
   GSERIALIZED *fku = geom_array_union(fkarr, 2);
   assert(fku != NULL);
   assert(meos_errno() == 0);
-  char *fkwkt = geo_as_text(fku, 15);
+  char *fkwkt = geo_as_text(fku, 15, &size_out);
   assert(fkwkt != NULL);
   printf("union of the two halves of a trajectory that turns back: %s, "
     "length %.17g\n", fkwkt, geom_length(fku));
@@ -2574,7 +2575,7 @@ int main(void)
   GSERIALIZED *dscu = geom_array_union(dscarr, 2);
   assert(dscu != NULL);
   assert(meos_errno() == 0);
-  char *dscwkt = geo_as_text(dscu, 4);
+  char *dscwkt = geo_as_text(dscu, 4, &size_out);
   printf("two mirrored discs elevated by the angle: %s\n", dscwkt);
   assert(strcmp(dscwkt,
     "CURVEPOLYGON Z (COMPOUNDCURVE Z ("
@@ -2599,8 +2600,8 @@ int main(void)
   GSERIALIZED *uzu2 = geom_unary_union(uz2);
   assert(uzu1 != NULL); assert(uzu2 != NULL);
   assert(meos_errno() == 0);
-  char *uzwkt1 = geo_as_text(uzu1, 3);
-  char *uzwkt2 = geo_as_text(uzu2, 3);
+  char *uzwkt1 = geo_as_text(uzu1, 3, &size_out);
+  char *uzwkt2 = geo_as_text(uzu2, 3, &size_out);
   printf("the dissolve of two surfaces at one elevation: %s\n", uzwkt1);
   printf("the dissolve of two surfaces at two elevations: %s\n", uzwkt2);
   assert(strcmp(uzwkt1,
@@ -2634,7 +2635,7 @@ int main(void)
   GSERIALIZED *berthu = geom_unary_union(berth);
   assert(berthu != NULL);
   assert(meos_errno() == 0);
-  char *berthwkt = geo_as_text(berthu, 3);
+  char *berthwkt = geo_as_text(berthu, 3, &size_out);
   printf("the dissolve of three placements at a berth: %s\n", berthwkt);
   assert(strcmp(berthwkt,
     "POLYGON((593201.703 6367186.433,593214.505 6367188.691,"
@@ -2655,7 +2656,7 @@ int main(void)
   GSERIALIZED *ggdu = geog_array_union(ggdarr, 2);
   assert(ggdu != NULL);
   assert(meos_errno() == 0);
-  char *ggdwkt = geo_as_ewkt(ggdu, 6);
+  char *ggdwkt = geo_as_ewkt(ggdu, 6, &size_out);
   printf("the union of an elevated geography position with a flat one: %s\n",
     ggdwkt);
   assert(strcmp(ggdwkt, "SRID=4326;MULTIPOINT(1 1,2 2)") == 0);
@@ -2670,8 +2671,8 @@ int main(void)
   Temporal *cell = th3index_in("[831c02fffffffff@2001-01-01, "
     "880326b885fffff@2001-01-02]");
   assert(cell != NULL);
-  char *cell_text = tspatial_as_text(cell, 6);
-  char *cell_out = tspatial_out(cell, 6);
+  char *cell_text = tspatial_as_text(cell, 6, &size_out);
+  char *cell_out = tspatial_out(cell, 6, &size_out);
   assert(cell_text != NULL); assert(cell_out != NULL);
   assert(meos_errno() == 0);
   printf("the WKT of a temporal cell index: %s\n", cell_text);
@@ -2729,9 +2730,9 @@ int main(void)
   Set *qbs = quadbin_to_set((Quadbin) 5209574053332910079ULL);
   Set *s2s = s2cell_to_set((S2CellId) 0x47c3cULL);
   assert(h3s != NULL); assert(qbs != NULL); assert(s2s != NULL);
-  char *h3t = spatialset_as_text(h3s, 6);
-  char *qbt = spatialset_as_text(qbs, 6);
-  char *s2t = spatialset_as_text(s2s, 6);
+  char *h3t = spatialset_as_text(h3s, 6, &size_out);
+  char *qbt = spatialset_as_text(qbs, 6, &size_out);
+  char *s2t = spatialset_as_text(s2s, 6, &size_out);
   assert(h3t != NULL); assert(qbt != NULL); assert(s2t != NULL);
   assert(meos_errno() == 0);
   printf("the WKT of a cell set: %s %s %s\n", h3t, qbt, s2t);
@@ -2760,8 +2761,8 @@ int main(void)
     "448410.1 6180606.7,448400.3 6180616.1)))", -1);
   GSERIALIZED *ubp = geom_in("POINT(448330.5 6180616.5)", -1);
   assert(ubm != NULL); assert(ubu != NULL); assert(ubp != NULL);
-  char *ubmm = geom_relate(ubm, ubp);
-  char *ubum = geom_relate(ubu, ubp);
+  char *ubmm = geom_relate(ubm, ubp, &size_out);
+  char *ubum = geom_relate(ubu, ubp, &size_out);
   assert(ubmm != NULL); assert(ubum != NULL);
   assert(meos_errno() == 0);
   printf("a point interior to one surface, alone and in the union: %s %s\n",
@@ -2833,7 +2834,7 @@ int main(void)
     GSERIALIZED *ci = geom_intersection2d(ca, cb);
     assert(ci != NULL);
     assert(meos_errno() == 0);
-    char *cw = geo_as_text(ci, 6);
+    char *cw = geo_as_text(ci, 6, &size_out);
     printf("intersection: %s\n", cw);
     assert(strcmp(cw, clip_inter[i]) == 0);
     free(cw); free(ci);
@@ -2897,7 +2898,7 @@ int main(void)
     GSERIALIZED *ai = geom_intersection2d(aa, ab);
     assert(ai != NULL);
     assert(meos_errno() == 0);
-    char *aw = geo_as_text(ai, 6);
+    char *aw = geo_as_text(ai, 6, &size_out);
     printf("arc intersection: %s\n", aw);
     assert(strcmp(aw, arc_inter[i]) == 0);
     free(aw);
@@ -2905,7 +2906,7 @@ int main(void)
     GSERIALIZED *ad = geom_difference2d(aa, ab);
     assert(ad != NULL);
     assert(meos_errno() == 0);
-    aw = geo_as_text(ad, 6);
+    aw = geo_as_text(ad, 6, &size_out);
     printf("arc difference: %s\n", aw);
     assert(strcmp(aw, arc_diff[i]) == 0);
     free(aw);
@@ -2995,7 +2996,7 @@ int main(void)
   assert(fabs(tan_parts - tan_whole) < 1e-9);
   /* Each lobe the square keeps is a region of its own, and the arcs bounding
    * them are kept as arcs rather than as a drawing of them */
-  char *tan_gw = geo_as_text(tan_gk, 6);
+  char *tan_gw = geo_as_text(tan_gk, 6, &size_out);
   printf("a tangent pair keeps: %s\n", tan_gw);
   assert(strstr(tan_gw, "CIRCULARSTRING") != NULL);
   free(tan_gw);
@@ -3032,8 +3033,8 @@ int main(void)
   assert(fabs(insq_parts - insq_whole) < 1e-9);
   /* What the pair shares is the disc itself, so the meet keeps its arcs and
    * the four lobes kept around it keep theirs */
-  char *insq_wi = geo_as_text(insq_i, 6);
-  char *insq_wk = geo_as_text(insq_k, 6);
+  char *insq_wi = geo_as_text(insq_i, 6, &size_out);
+  char *insq_wk = geo_as_text(insq_k, 6, &size_out);
   printf("an inscribed disc shares: %s\n", insq_wi);
   printf("an inscribed disc leaves: %s\n", insq_wk);
   assert(strstr(insq_wi, "CIRCULARSTRING") != NULL);
@@ -3053,7 +3054,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *tdisc_i = geom_intersection2d(tdisc_a, tdisc_b);
   assert(tdisc_i != NULL);
-  char *tdisc_w = geo_as_text(tdisc_i, 6);
+  char *tdisc_w = geo_as_text(tdisc_i, 6, &size_out);
   printf("two discs touching share: %s\n", tdisc_w);
   assert(strcmp(tdisc_w, "POINT(2 1)") == 0);
   free(tdisc_w);
@@ -3104,7 +3105,7 @@ int main(void)
   {
     GSERIALIZED *as = geom_in(ar_subj[i], -1);
     assert(as != NULL);
-    char *aw = geo_as_text(as, 6);
+    char *aw = geo_as_text(as, 6, &size_out);
     for (int j = 0; j < 3; j++)
     {
       GSERIALIZED *ac = geom_in(ar_clip[j], -1);
@@ -3112,7 +3113,7 @@ int main(void)
       meos_errno_reset();
       GSERIALIZED *ad = geom_difference2d(as, ac);
       assert(ad != NULL);
-      char *dw = geo_as_text(ad, 6);
+      char *dw = geo_as_text(ad, 6, &size_out);
       printf("%.28s minus %.24s: %s\n", ar_subj[i], ar_clip[j],
         strcmp(dw, aw) == 0 ? "the subject" : dw);
       assert(strcmp(dw, aw) == 0);
@@ -3142,7 +3143,7 @@ int main(void)
     GSERIALIZED *pr = geom_difference2d(ps1, ps2);
     assert(pr != NULL);
     double pa_area = geom_area(pr);
-    char *pw = geo_as_text(pr, 6);
+    char *pw = geo_as_text(pr, 6, &size_out);
     printf("a subject carrying a part of no area, minus that part: %s\n", pw);
     /* The square alone: the part of no area is gone, and both spellings of
      * the same point set answer it the same way */
@@ -3192,7 +3193,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *fd = geom_difference2d(flat, along);
   assert(fd != NULL);
-  char *fw = geo_as_text(fd, 6);
+  char *fw = geo_as_text(fd, 6, &size_out);
   printf("a flat ring minus the line it lies along: %s\n", fw);
   assert(strstr(fw, "EMPTY") != NULL);
   free(fw); free(fd); free(flat); free(along);
@@ -3243,7 +3244,7 @@ int main(void)
     GSERIALIZED *ores = ov_op[i] ? geom_difference2d(oa, ob) :
       geom_intersection2d(oa, ob);
     assert(ores != NULL);
-    char *ow = geo_as_text(ores, 6);
+    char *ow = geo_as_text(ores, 6, &size_out);
     printf("areal overlay %d: %.60s\n", i, ow);
     assert(strcmp(ow, ov_exp[i]) == 0);
     free(ow); free(ores); free(oa); free(ob);
@@ -3270,7 +3271,7 @@ int main(void)
     GSERIALIZED *er = em_op[i] ? geom_difference2d(ea, eb) :
       geom_intersection2d(ea, eb);
     assert(er != NULL);
-    char *ew = geo_as_text(er, 6);
+    char *ew = geo_as_text(er, 6, &size_out);
     printf("an empty areal operand answers: %s\n", ew);
     assert(strcmp(ew, "POLYGON EMPTY") == 0);
     free(ew); free(er); free(ea); free(eb);
@@ -3290,7 +3291,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *tgi = geom_intersection2d(tg1, tg2);
   assert(tgi != NULL);
-  char *tgw = geo_as_text(tgi, 6);
+  char *tgw = geo_as_text(tgi, 6, &size_out);
   printf("two discs touching at one point share: %s\n", tgw);
   assert(strcmp(tgw, "POINT(2 0)") == 0);
   free(tgw); free(tgi);
@@ -3299,7 +3300,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *tgd = geom_difference2d(tg1, tg2);
   assert(tgd != NULL);
-  char *tgdw = geo_as_text(tgd, 6);
+  char *tgdw = geo_as_text(tgd, 6, &size_out);
   printf("the first of them less the second: %.44s\n", tgdw);
   assert(strstr(tgdw, "CIRCULARSTRING") != NULL);
   free(tgdw); free(tgd); free(tg1); free(tg2);
@@ -3321,7 +3322,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *rti = geom_intersection2d(rt1, rt2);
   assert(rti != NULL);
-  char *rtw = geo_as_text(rti, 6);
+  char *rtw = geo_as_text(rti, 6, &size_out);
   printf("two discs touching off the axes share: %s\n", rtw);
   assert(strcmp(rtw, "POINT(1.732051 1)") == 0);
   free(rtw); free(rti); free(rt1); free(rt2);
@@ -3340,7 +3341,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *hdi = geom_intersection2d(hd1, hd2);
   assert(hdi != NULL);
-  char *hdw = geo_as_text(hdi, 6);
+  char *hdw = geo_as_text(hdi, 6, &size_out);
   printf("two half discs sharing their diameter answer: %s\n", hdw);
   assert(strcmp(hdw, "LINESTRING(2 0,-2 0)") == 0);
   free(hdw); free(hdi); free(hd1); free(hd2);
@@ -3357,7 +3358,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *sai = geom_intersection2d(sa1, sa2);
   assert(sai != NULL);
-  char *saw = geo_as_text(sai, 6);
+  char *saw = geo_as_text(sai, 6, &size_out);
   printf("a disc and a lune sharing an arc answer: %s\n", saw);
   assert(strstr(saw, "CIRCULARSTRING") != NULL);
   assert(strstr(saw, "(-2 0,") != NULL);
@@ -3399,7 +3400,7 @@ int main(void)
     GSERIALIZED *cr = cw_op[i] ? geom_difference2d(ca, cb) :
       geom_intersection2d(ca, cb);
     assert(cr != NULL);
-    char *cwt = geo_as_text(cr, 6);
+    char *cwt = geo_as_text(cr, 6, &size_out);
     printf("a shared boundary %d: %.58s\n", i, cwt);
     assert(strcmp(cwt, cw_exp[i]) == 0);
     free(cwt); free(cr); free(ca); free(cb);
@@ -3458,7 +3459,7 @@ int main(void)
     meos_errno_reset();
     GSERIALIZED *pr2 = geom_intersection2d(pa, pb);
     assert(pr2 != NULL);
-    char *pmt = geo_as_text(pr2, 6);
+    char *pmt = geo_as_text(pr2, 6, &size_out);
     printf("two polygons meeting %d: %.52s\n", i, pmt);
     assert(strcmp(pmt, pm_exp[i]) == 0);
     free(pmt); free(pr2); free(pa); free(pb);
@@ -3474,7 +3475,7 @@ int main(void)
   meos_errno_reset();
   GSERIALIZED *pz = geom_difference2d(pz_a, pz_b);
   assert(pz != NULL);
-  char *pzw = geo_as_text(pz, 6);
+  char *pzw = geo_as_text(pz, 6, &size_out);
   printf("two regions touching at a point: %.46s\n", pzw);
   assert(strncmp(pzw, "MULTIPOLYGON", 12) == 0);
   assert(fabs(geom_area(pz) - 8.0) < 1e-12);
@@ -3512,7 +3513,7 @@ int main(void)
   printf("a curved pinch partitions its disc: %.9f against %.9f\n", cz_parts,
     cz_whole);
   assert(fabs(cz_parts - cz_whole) < 1e-4 * cz_whole);
-  char *cz_w = geo_as_text(cz_k, 6);
+  char *cz_w = geo_as_text(cz_k, 6, &size_out);
   printf("a curved pinch keeps: %.60s\n", cz_w);
   assert(strstr(cz_w, "CIRCULARSTRING") != NULL);
   free(cz_w);
@@ -3554,7 +3555,7 @@ int main(void)
     GSERIALIZED *ir = geom_difference2d(ia, ib);
     assert(ir != NULL);
     assert(meos_errno() == 0);
-    char *iw = geo_as_text(ir, 6);
+    char *iw = geo_as_text(ir, 6, &size_out);
     printf("a region inside another leaves: %s\n", iw);
     assert(strcmp(iw, "POLYGON EMPTY") == 0);
     free(iw); free(ir); free(ia); free(ib);
@@ -3589,7 +3590,7 @@ int main(void)
     meos_errno_reset();
     GSERIALIZED *tu = geom_array_union(ta, 2);
     assert(tu != NULL);
-    char *tuw = geo_as_text(tu, 6);
+    char *tuw = geo_as_text(tu, 6, &size_out);
     printf("surfaces that stay apart dissolve to: %.46s\n", tuw);
     /* Both parts are there, and every member is a polygon */
     assert(fabs(geom_area(tu) - tri_area[i]) < 1e-12);
@@ -3625,7 +3626,7 @@ int main(void)
     GSERIALIZED *fr = geom_intersection2d(fa, fb);
     assert(fr != NULL);
     assert(meos_errno() == 0);
-    char *fw = geo_as_text(fr, 6);
+    char *fw = geo_as_text(fr, 6, &size_out);
     printf("a geometry of faces meets a region: %.44s\n", fw);
     assert(fabs(geom_area(fr) - fc_area[i]) < 1e-12);
     /* ONE region, not the faces it is written as */
@@ -3726,7 +3727,7 @@ int main(void)
    * two boxes of different reference systems are refused */
   STBox *sbext = stbox_extent_transfn(NULL, sb1);
   sbext = stbox_extent_transfn(sbext, sb2);
-  char *sbext_txt = stbox_out(sbext, 6);
+  char *sbext_txt = stbox_out(sbext, 6, &size_out);
   printf("stbox_extent_transfn: %s\n", sbext_txt);
   assert(meos_errno() == 0);
   assert(stbox_extent_transfn(sbext, sb3) == NULL);
@@ -3741,8 +3742,8 @@ int main(void)
   assert(fwd != NULL);
   GSERIALIZED *rev = geo_reverse(fwd);
   assert(rev != NULL);
-  char *fwd_txt = geo_as_text(fwd, 6);
-  char *rev_txt = geo_as_text(rev, 6);
+  char *fwd_txt = geo_as_text(fwd, 6, &size_out);
+  char *rev_txt = geo_as_text(rev, 6, &size_out);
   printf("geo_reverse: %s, argument after the call %s\n", rev_txt, fwd_txt);
   assert(strcmp(rev_txt, "LINESTRING(3 5,2 2,1 1)") == 0);
   assert(strcmp(fwd_txt, "LINESTRING(1 1,2 2,3 5)") == 0);
@@ -3756,12 +3757,12 @@ int main(void)
   GSERIALIZED *sgpoint = geog_in("Point(4.35 50.85)", -1);
   assert(sline && sgline && sgpoint);
   GSERIALIZED *seg = geo_segmentize(sline, 1);
-  char *seg_txt = geo_as_text(seg, 6);
+  char *seg_txt = geo_as_text(seg, 6, &size_out);
   printf("geo_segmentize: %s\n", seg_txt);
   assert(strcmp(seg_txt, "LINESTRING(0 0,1 0,2 0,3 0)") == 0);
   free(seg); free(seg_txt);
   seg = geo_segmentize(sgline, 100000);
-  seg_txt = geo_as_text(seg, 4);
+  seg_txt = geo_as_text(seg, 4, &size_out);
   printf("geo_segmentize: %s\n", seg_txt);
   assert(strcmp(seg_txt, "LINESTRING(4.35 50.85,3.8343 50.3533,3.3293 49.8543,"
     "2.8347 49.3532,2.35 48.85)") == 0);
@@ -3806,7 +3807,7 @@ int main(void)
   {
     assert(aff[k].res != NULL);
     Temporal *rounded = temporal_round(aff[k].res, 6);
-    char *txt = tspatial_as_text(rounded, 6);
+    char *txt = tspatial_as_text(rounded, 6, &size_out);
     printf("%s: %s\n", aff[k].name, txt);
     assert(strcmp(txt, aff[k].expected) == 0);
     free(txt); free(rounded); free(aff[k].res);
@@ -3819,7 +3820,7 @@ int main(void)
   assert(affpt != NULL);
   GSERIALIZED *affres = geo_affine(affpt, 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 5);
   assert(affres != NULL);
-  char *affres_txt = geo_as_text(affres, 6);
+  char *affres_txt = geo_as_text(affres, 6, &size_out);
   printf("geo_affine: %s\n", affres_txt);
   assert(strcmp(affres_txt, "POINT Z (1 0 6)") == 0);
   free(affpt); free(affres); free(affres_txt);
@@ -3892,7 +3893,7 @@ int main(void)
   assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
   assert(geom_distance(dz1, dz2) == sqrt(26.0));
   GSERIALIZED *dline = geom_shortestline(dz1, dz2);
-  char *dline_wkt = geo_as_text(dline, 6);
+  char *dline_wkt = geo_as_text(dline, 6, &size_out);
   printf("shortest line in 3D: %s\n", dline_wkt);
   assert(strcmp(dline_wkt, "LINESTRING Z (0 0 0,0 1 5)") == 0);
   assert(meos_errno() == 0);

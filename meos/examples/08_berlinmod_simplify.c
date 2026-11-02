@@ -84,6 +84,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Variables to read the input CSV file */
   char trip_buffer[MAX_LEN_TRIP];
   char header_buffer[MAX_LEN_HEADER];
@@ -159,7 +160,7 @@ int main(void)
   {
     trips_dp[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, false);
     trips_sed[i] = temporal_simplify_dp(trips[i].trip, DELTA_DISTANCE, true);
-    char *day_str = date_out(trips[i].day);
+    char *day_str = date_out(trips[i].day, &size_out);
     printf("Vehicle: %d, Date: %s, Seq: %d, No. of instants: %d, "
       "No. of instants DP: %d, No. of instants SED: %d\n",
       trips[i].vehId, day_str, trips[i].seq,

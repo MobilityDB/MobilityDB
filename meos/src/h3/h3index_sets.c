@@ -126,14 +126,17 @@ h3indexset_in(const char *str)
  * @ingroup meos_h3_set_inout
  * @brief Return the string representation of an H3 cell set
  * @param[in] s Set
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Set_out(), #Set_as_text()
  */
 char *
-h3indexset_out(const Set *s)
+h3indexset_out(const Set *s, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_H3INDEXSET(s, NULL);
-  return set_out(s, 0);
+  return set_out(s, 0, size_out);
 }
 
 /*****************************************************************************
