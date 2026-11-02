@@ -107,8 +107,17 @@ The three kinds of result are wrong in different ways:
 The discontinuous walk against a static value, `tfunc_tlinearseq_base_discfn`, computed its
 result at a crossing on the value interpolated at the instant dating the crossing rather than on
 the static value, so `x #= v` read false at a crossing it had found, for tfloat, tcbuffer,
-tgeompoint and tnpoint alike. MobilityDB #3378 computes it on the static value, as the ever/always
+tgeompoint and tnpoint alike. MobilityDB #3378 (`2812882904`) computes it on the static value, as the ever/always
 walk does. The instant at which that result is stated stays master's, which this plan corrects.
+
+The locator of a circular buffer, `cbuffersegm_locate`, builds three serialized points from the
+centres of the segment's ends and of the value, only to call `pointsegm_locate` on them, for
+every segment it reads. On 10 000 pairs of a trip and a static disc, this conversion takes 28% of
+the time of `tcbuffer #= cbuffer`, and `?=` and `#=` cost 1.29 and 1.37 times their tgeompoint
+counterparts. Reading the centres' coordinates instead answers the same and takes 1.60 and 1.67
+times less time, but leaves the tolerance of `pointsegm_locate` in place, so it is not done
+separately: the exact locator of section 5, called on the coordinates, removes both the tolerance
+and the conversion.
 
 Two further facts from the inventory:
 
