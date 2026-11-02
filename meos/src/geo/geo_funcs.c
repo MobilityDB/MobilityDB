@@ -13391,7 +13391,8 @@ seg2d_intersection(const POINT2D *a, const POINT2D *b, const POINT2D *c,
 /**
  * @brief Initialize a GBOX with a point
  */
-static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
+static void
+gbox_init_point2d(const POINT2D *p, GBOX *gbox)
 {
   gbox->xmin = gbox->xmax = p->x;
   gbox->ymin = gbox->ymax = p->y;
@@ -13400,7 +13401,8 @@ static void gbox_init_point2d(const POINT2D *p, GBOX *gbox)
 /**
  * @brief Enlarge a GBOX with a point
  */
-static void gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
+static void
+gbox_merge_point2d(const POINT2D *p, GBOX *gbox)
 {
   if ( gbox->xmin > p->x ) gbox->xmin = p->x;
   if ( gbox->ymin > p->y ) gbox->ymin = p->y;

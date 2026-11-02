@@ -328,7 +328,8 @@ box3d_in(const char *str)
  * @details A multipoint must have at least one fully contained member and no
  * members outside the polygon to be contained.
  */
-bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -373,7 +374,8 @@ bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
  * @brief If any point in the point/multipoint is outside the polygon, then the
  * polygon does not cover the point/multipoint
  */
-bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -409,7 +411,8 @@ bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
  * without any member reaching their interior, that is, at least one member
  * lies on the boundary and none inside.
  */
-bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -454,7 +457,8 @@ bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
  * @brief A.intersects(B) implies if any member of the point/multipoint is not
  * outside, then they intersect
  */
-bool itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
