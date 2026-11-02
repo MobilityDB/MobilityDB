@@ -166,7 +166,7 @@ tiling_families:
     - {sig: "spaceBoxes(trgeometry, xsize float, ysize float,\n    sorigin geometry DEFAULT 'Point(0 0 0)', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_boxes"}
   - lit: "\n"
   - fns:
-    - {sig: "timeBoxes(trgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeo_time_boxes"}
+    - {sig: "timeBoxes(trgeometry, duration interval,\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_time_boxes"}
   - lit: "\n"
   - fns:
     - {sig: "spaceTimeBoxes(trgeometry, xsize float, ysize float,\n    zsize float, duration interval, sorigin geometry DEFAULT 'Point(0 0 0)',\n    torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,\n    borderInc boolean DEFAULT TRUE)", ret: "stbox[]", sym: "Trgeometry_space_time_boxes"}

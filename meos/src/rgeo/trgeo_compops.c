@@ -58,11 +58,11 @@
  * @param[in] func Comparison function
  */
 static bool
-eacomp_trgeo_geo_inst(const Temporal *temp, TimestampTz t,
+eacomp_trgeometry_geo_inst(const Temporal *temp, TimestampTz t,
   const GSERIALIZED *gs, Datum (*func)(Datum, Datum, MeosType))
 {
   Datum mat;
-  if (! trgeo_value_at_timestamptz(temp, t, false, &mat))
+  if (! trgeometry_value_at_timestamptz_intl(temp, t, false, &mat))
     return false;
   bool result = DatumGetBool(func(mat, PointerGetDatum(gs), T_GEOMETRY));
   pfree(DatumGetPointer(mat));
@@ -82,22 +82,22 @@ eacomp_trgeo_geo_inst(const Temporal *temp, TimestampTz t,
  * static geometry.
  */
 static int
-eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+eacomp_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
     return -1;
   assert(func);
 
   if (temp->subtype == TINSTANT)
-    return (int) eacomp_trgeo_geo_inst(temp, ((TInstant *) temp)->t, gs, func);
+    return (int) eacomp_trgeometry_geo_inst(temp, ((TInstant *) temp)->t, gs, func);
   if (temp->subtype == TSEQUENCE)
   {
     const TSequence *seq = (const TSequence *) temp;
     for (int i = 0; i < seq->count; i++)
     {
-      bool val = eacomp_trgeo_geo_inst(temp,
+      bool val = eacomp_trgeometry_geo_inst(temp,
         TSEQUENCE_INST_N(seq, i)->t, gs, func);
       if (ever && val) return 1;
       if (! ever && ! val) return 0;
@@ -111,7 +111,7 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
     const TSequence *seq = TSEQUENCESET_SEQ_N(ss, i);
     for (int j = 0; j < seq->count; j++)
     {
-      bool val = eacomp_trgeo_geo_inst(temp,
+      bool val = eacomp_trgeometry_geo_inst(temp,
         TSEQUENCE_INST_N(seq, j)->t, gs, func);
       if (ever && val) return 1;
       if (! ever && ! val) return 0;
@@ -128,11 +128,11 @@ eacomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] func Comparison function
  */
 static int
-eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
+eacomp_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
     return -1;
   assert(func);
   return eacomp_temporal_temporal(temp1, temp2, func, ever);
@@ -150,7 +150,7 @@ eacomp_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
 int
 ever_eq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_eq, EVER);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_eq, EVER);
 }
 
 /**
@@ -164,7 +164,7 @@ ever_eq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 ever_eq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_eq, EVER);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_eq, EVER);
 }
 
 /**
@@ -178,7 +178,7 @@ ever_eq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ever_ne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_ne, EVER);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_ne, EVER);
 }
 
 /**
@@ -192,7 +192,7 @@ ever_ne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 ever_ne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_ne, EVER);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_ne, EVER);
 }
 
 /**
@@ -206,7 +206,7 @@ ever_ne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 always_eq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_eq, ALWAYS);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_eq, ALWAYS);
 }
 
 /**
@@ -220,7 +220,7 @@ always_eq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 always_eq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_eq, ALWAYS);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_eq, ALWAYS);
 }
 
 /**
@@ -234,7 +234,7 @@ always_eq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 always_ne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_ne, ALWAYS);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_ne, ALWAYS);
 }
 
 /**
@@ -248,7 +248,7 @@ always_ne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 always_ne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return eacomp_trgeo_geo(temp, gs, &datum2_ne, ALWAYS);
+  return eacomp_trgeometry_geo(temp, gs, &datum2_ne, ALWAYS);
 }
 
 /*****************************************************************************/
@@ -262,7 +262,7 @@ always_ne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ever_eq_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return eacomp_trgeo_trgeo(temp1, temp2, &datum2_eq, EVER);
+  return eacomp_trgeometry_trgeometry(temp1, temp2, &datum2_eq, EVER);
 }
 
 /**
@@ -274,7 +274,7 @@ ever_eq_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 ever_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return eacomp_trgeo_trgeo(temp1, temp2, &datum2_ne, EVER);
+  return eacomp_trgeometry_trgeometry(temp1, temp2, &datum2_ne, EVER);
 }
 
 /**
@@ -286,7 +286,7 @@ ever_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 always_eq_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return eacomp_trgeo_trgeo(temp1, temp2, &datum2_eq, ALWAYS);
+  return eacomp_trgeometry_trgeometry(temp1, temp2, &datum2_eq, ALWAYS);
 }
 
 /**
@@ -298,7 +298,7 @@ always_eq_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 always_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return eacomp_trgeo_trgeo(temp1, temp2, &datum2_ne, ALWAYS);
+  return eacomp_trgeometry_trgeometry(temp1, temp2, &datum2_ne, ALWAYS);
 }
 
 /*****************************************************************************
@@ -313,11 +313,11 @@ always_ne_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @param[in] func Comparison function
  */
 static Temporal *
-tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+tcomp_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
   assert(func);
 
@@ -331,7 +331,7 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   {
     const TInstant *inst = (const TInstant *) temp;
     Datum mat;
-    trgeo_value_at_timestamptz(temp, inst->t, false, &mat);
+    trgeometry_value_at_timestamptz_intl(temp, inst->t, false, &mat);
     bool val = DatumGetBool(func(mat, gsdat, T_GEOMETRY));
     pfree(DatumGetPointer(mat));
     return (Temporal *) tinstant_make(BoolGetDatum(val), T_TBOOL, inst->t);
@@ -346,7 +346,7 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, i);
       Datum mat;
-      trgeo_value_at_timestamptz(temp, inst->t, false, &mat);
+      trgeometry_value_at_timestamptz_intl(temp, inst->t, false, &mat);
       bool val = DatumGetBool(func(mat, gsdat, T_GEOMETRY));
       pfree(DatumGetPointer(mat));
       instants[i] = tinstant_make(BoolGetDatum(val), T_TBOOL, inst->t);
@@ -376,7 +376,7 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
     {
       const TInstant *inst = TSEQUENCE_INST_N(seq, j);
       Datum mat;
-      trgeo_value_at_timestamptz(temp, inst->t, false, &mat);
+      trgeometry_value_at_timestamptz_intl(temp, inst->t, false, &mat);
       bool val = DatumGetBool(func(mat, gsdat, T_GEOMETRY));
       pfree(DatumGetPointer(mat));
       instants[j] = tinstant_make(BoolGetDatum(val), T_TBOOL, inst->t);
@@ -395,12 +395,12 @@ tcomp_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] func Comparison function
  */
 static Temporal *
-tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+tcomp_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   Datum (*func)(Datum, Datum, MeosType))
 {
   /* datum2_eq / datum2_ne are commutative, so the geometry-first comparison
    * reuses the trgeometry-first materialise-and-compare path. */
-  return tcomp_trgeo_geo(temp, gs, func);
+  return tcomp_trgeometry_geo(temp, gs, func);
 }
 
 /*****************************************************************************/
@@ -416,7 +416,7 @@ tcomp_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
 Temporal *
 teq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_geo_trgeo(gs, temp, &datum2_eq);
+  return tcomp_geo_trgeometry(gs, temp, &datum2_eq);
 }
 
 /**
@@ -430,7 +430,7 @@ teq_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 tne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return tcomp_geo_trgeo(gs, temp, &datum2_ne);
+  return tcomp_geo_trgeometry(gs, temp, &datum2_ne);
 }
 
 /*****************************************************************************/
@@ -446,7 +446,7 @@ tne_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 Temporal *
 teq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_trgeo_geo(temp, gs, &datum2_eq);
+  return tcomp_trgeometry_geo(temp, gs, &datum2_eq);
 }
 
 /**
@@ -460,7 +460,7 @@ teq_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tne_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return tcomp_trgeo_geo(temp, gs, &datum2_ne);
+  return tcomp_trgeometry_geo(temp, gs, &datum2_ne);
 }
 
 /*****************************************************************************/

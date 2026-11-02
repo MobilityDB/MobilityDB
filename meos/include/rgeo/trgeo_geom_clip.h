@@ -77,7 +77,7 @@
  * @return number of intervals appended, or -1 on input error
  *     (e.g. non-translation input)
  */
-extern int trgeo_geom_clip_polygon(
+extern int trgeometry_geom_clip_polygon(
   const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const POINTARRAY *pa,
@@ -92,7 +92,7 @@ extern int trgeo_geom_clip_polygon(
  * @param[out] intervals_out receives Span values
  * @return number of intervals appended, or -1 on input error
  */
-extern int trgeo_geom_clip_lwpoly(
+extern int trgeometry_geom_clip_lwpoly(
   const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const LWPOLY *poly,
@@ -127,13 +127,13 @@ struct Pose; /* forward declaration; full type in pose/pose.h */
  * @param[out] intervals_out receives Span values (t in [0, 1])
  * @return number of intervals appended, or -1 on input error
  */
-extern int trgeo_geom_clip_polygon_posed(
+extern int trgeometry_geom_clip_polygon_posed(
   const POINT2D *p_a_local, const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const POINTARRAY *pa, Span **intervals_out);
 
-/** @brief LWPOLY convenience wrapper around `trgeo_geom_clip_polygon_posed` */
-extern int trgeo_geom_clip_lwpoly_posed(
+/** @brief LWPOLY convenience wrapper around `trgeometry_geom_clip_polygon_posed` */
+extern int trgeometry_geom_clip_lwpoly_posed(
   const POINT2D *p_a_local, const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const LWPOLY *poly, Span **intervals_out);
@@ -158,7 +158,7 @@ extern int trgeo_geom_clip_lwpoly_posed(
  * @param[out] intervals_out receives Span values (t in [0, 1])
  * @return number of intervals appended (may be 0), or -1 on input error
  */
-extern int trgeo_geom_clip_lwgeom(
+extern int trgeometry_geom_clip_lwgeom(
   const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const LWGEOM *geom, Span **intervals_out);
@@ -174,7 +174,7 @@ extern int trgeo_geom_clip_lwgeom(
  * @param[out] intervals_out receives Span values (t in [0, 1])
  * @return number of intervals appended, or -1 on input error
  */
-extern int trgeo_geom_clip_lwgeom_posed(
+extern int trgeometry_geom_clip_lwgeom_posed(
   const POINT2D *p_a_local, const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const LWGEOM *geom, Span **intervals_out);

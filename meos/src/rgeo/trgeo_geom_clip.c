@@ -327,7 +327,7 @@ m1_intersects_at(double t_m, void *ctx_)
 }
 
 int
-trgeo_geom_clip_polygon(const POINT2D *a1, const POINT2D *b1,
+trgeometry_geom_clip_polygon(const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const POINTARRAY *pa, Span **intervals_out)
 {
@@ -390,13 +390,13 @@ trgeo_geom_clip_polygon(const POINT2D *a1, const POINT2D *b1,
 }
 
 int
-trgeo_geom_clip_lwpoly(const POINT2D *a1, const POINT2D *b1,
+trgeometry_geom_clip_lwpoly(const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const LWPOLY *poly, Span **intervals_out)
 {
   if (! poly || poly->nrings < 1)
     return -1;
-  return trgeo_geom_clip_polygon(a1, b1, a2, b2, poly->rings[0],
+  return trgeometry_geom_clip_polygon(a1, b1, a2, b2, poly->rings[0],
     intervals_out);
 }
 
@@ -618,7 +618,7 @@ m2_intersects_at(double t_m, void *ctx_)
 }
 
 int
-trgeo_geom_clip_polygon_posed(const POINT2D *p_a_local,
+trgeometry_geom_clip_polygon_posed(const POINT2D *p_a_local,
   const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const POINTARRAY *pa, Span **intervals_out)
@@ -645,7 +645,7 @@ trgeo_geom_clip_polygon_posed(const POINT2D *p_a_local,
     a2.y = y2 + p_a_local->x * si1 + p_a_local->y * c1;
     b2.x = x2 + p_b_local->x * c1 - p_b_local->y * si1;
     b2.y = y2 + p_b_local->x * si1 + p_b_local->y * c1;
-    return trgeo_geom_clip_polygon(&a1, &b1, &a2, &b2, pa, intervals_out);
+    return trgeometry_geom_clip_polygon(&a1, &b1, &a2, &b2, pa, intervals_out);
   }
 
   double dth = th2 - th1;
@@ -746,14 +746,14 @@ trgeo_geom_clip_polygon_posed(const POINT2D *p_a_local,
 }
 
 int
-trgeo_geom_clip_lwpoly_posed(const POINT2D *p_a_local,
+trgeometry_geom_clip_lwpoly_posed(const POINT2D *p_a_local,
   const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const LWPOLY *poly, Span **intervals_out)
 {
   if (! poly || poly->nrings < 1)
     return -1;
-  return trgeo_geom_clip_polygon_posed(p_a_local, p_b_local,
+  return trgeometry_geom_clip_polygon_posed(p_a_local, p_b_local,
     pose1, pose2, poly->rings[0], intervals_out);
 }
 
@@ -775,7 +775,7 @@ clip_lwgeom_m1_accum(const POINT2D *a1, const POINT2D *b1,
     case POLYGONTYPE:
     {
       Span *sub = NULL;
-      int k = trgeo_geom_clip_lwpoly(a1, b1, a2, b2,
+      int k = trgeometry_geom_clip_lwpoly(a1, b1, a2, b2,
         lwgeom_as_lwpoly((LWGEOM *) geom), &sub);
       if (k > 0)
       {
@@ -809,7 +809,7 @@ clip_lwgeom_m1_accum(const POINT2D *a1, const POINT2D *b1,
 }
 
 int
-trgeo_geom_clip_lwgeom(const POINT2D *a1, const POINT2D *b1,
+trgeometry_geom_clip_lwgeom(const POINT2D *a1, const POINT2D *b1,
   const POINT2D *a2, const POINT2D *b2,
   const LWGEOM *geom, Span **intervals_out)
 {
@@ -838,7 +838,7 @@ clip_lwgeom_m2_accum(const POINT2D *p_a_local, const POINT2D *p_b_local,
     case POLYGONTYPE:
     {
       Span *sub = NULL;
-      int k = trgeo_geom_clip_lwpoly_posed(p_a_local, p_b_local,
+      int k = trgeometry_geom_clip_lwpoly_posed(p_a_local, p_b_local,
         pose1, pose2, lwgeom_as_lwpoly((LWGEOM *) geom), &sub);
       if (k > 0)
       {
@@ -872,7 +872,7 @@ clip_lwgeom_m2_accum(const POINT2D *p_a_local, const POINT2D *p_b_local,
 }
 
 int
-trgeo_geom_clip_lwgeom_posed(const POINT2D *p_a_local,
+trgeometry_geom_clip_lwgeom_posed(const POINT2D *p_a_local,
   const POINT2D *p_b_local,
   const struct Pose *pose1, const struct Pose *pose2,
   const LWGEOM *geom, Span **intervals_out)

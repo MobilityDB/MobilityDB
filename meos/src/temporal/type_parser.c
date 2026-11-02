@@ -945,7 +945,7 @@ temporal_parse(const char **str, MeosType temptype)
    * parser owning that form answers for it. Without this a caller holding the
    * type rather than the name cannot read a value that trgeometry_in reads. */
   if (temptype == T_TRGEOMETRY)
-    return trgeo_parse(str, temptype);
+    return trgeometry_parse(str, temptype);
 #endif /* RGEO */
   /* A spatiotemporal value may state its SRID ahead of the value, the form its
    * extended text is written in, which the general shape below does not read,

@@ -80,7 +80,7 @@ ensure_has_geom(int16 flags)
  * @brief Ensure the validity of a temporal rigid geometry and a geometry
  */
 bool
-ensure_valid_trgeo_stbox(const Temporal *temp, const STBox *box)
+ensure_valid_trgeometry_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(box, false);
@@ -95,7 +95,7 @@ ensure_valid_trgeo_stbox(const Temporal *temp, const STBox *box)
  * @brief Ensure the validity of a temporal rigid geometry and a geometry
  */
 bool
-ensure_valid_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
+ensure_valid_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, false); VALIDATE_NOT_NULL(gs, false);
@@ -109,7 +109,7 @@ ensure_valid_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Ensure the validity of two temporal rigid geometries
  */
 bool
-ensure_valid_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
+ensure_valid_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TPOINT(temp2, false);
@@ -123,7 +123,7 @@ ensure_valid_trgeo_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @brief Ensure the validity of two temporal rigid geometries
  */
 bool
-ensure_valid_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2)
+ensure_valid_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp1, false); VALIDATE_TRGEOMETRY(temp2, false);
@@ -149,7 +149,7 @@ trgeometry_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL);
-  return trgeo_parse(&str, T_TRGEOMETRY);
+  return trgeometry_parse(&str, T_TRGEOMETRY);
 }
 
 /**
@@ -181,7 +181,7 @@ trgeometry_out(const Temporal *temp)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  char *geom = geo_out(trgeo_geom_p(temp));
+  char *geom = geo_out(trgeometry_geom_p(temp));
   char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(geom) + strlen(pose) + 2;
@@ -200,12 +200,12 @@ trgeometry_out(const Temporal *temp)
  * @param[in] extended True when the leading SRID string is output
  */
 char *
-trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended)
+trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended)
 {
   assert(temp); assert(temp->temptype == T_TRGEOMETRY); assert(maxdd >= 0);
 
   /* Write the geometry */
-  LWGEOM *geom = lwgeom_from_gserialized(trgeo_geom_p(temp));
+  LWGEOM *geom = lwgeom_from_gserialized(trgeometry_geom_p(temp));
   char *wkt_geom = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
     maxdd, NULL);
   lwgeom_free(geom);
@@ -234,7 +234,7 @@ trgeometry_as_text(const Temporal *temp, int maxdd)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return trgeo_wkt_out(temp, maxdd, false);
+  return trgeometry_wkt_out(temp, maxdd, false);
 }
 
 /**
@@ -252,7 +252,7 @@ trgeometry_as_ewkt(const Temporal *temp, int maxdd)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return trgeo_wkt_out(temp, maxdd, true);
+  return trgeometry_wkt_out(temp, maxdd, true);
 }
 
 /*****************************************************************************
@@ -313,7 +313,7 @@ trgeometry_to_tgeompoint(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  */
 const GSERIALIZED *
-trgeo_geom_p(const Temporal *temp)
+trgeometry_geom_p(const Temporal *temp)
 {
   assert(temp);
   const GSERIALIZED *result;
@@ -340,7 +340,7 @@ trgeometry_geom(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_has_geom(temp->flags))
     return NULL;
-  return geo_copy(trgeo_geom_p(temp));
+  return geo_copy(trgeometry_geom_p(temp));
 }
 
 /*****************************************************************************
@@ -355,7 +355,7 @@ trgeometry_geom(const Temporal *temp)
  * @param[in] inst Temporal pose
  */
 TInstant *
-geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
+geo_tposeinst_to_trgeometry(const GSERIALIZED *gs, const TInstant *inst)
 {
   assert(inst); assert(gs);
   return trgeometryinst_make(gs, DatumGetPoseP(tinstant_value_p(inst)), inst->t);
@@ -369,12 +369,12 @@ geo_tposeinst_to_trgeo(const GSERIALIZED *gs, const TInstant *inst)
  * @param[in] seq Temporal pose
  */
 TSequence *
-geo_tposeseq_to_trgeo(const GSERIALIZED *gs, const TSequence *seq)
+geo_tposeseq_to_trgeometry(const GSERIALIZED *gs, const TSequence *seq)
 {
   assert(seq); assert(gs);
   TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
   for (int i = 0; i < seq->count; i++)
-    instants[i] = geo_tposeinst_to_trgeo(gs, TSEQUENCE_INST_N(seq, i));
+    instants[i] = geo_tposeinst_to_trgeometry(gs, TSEQUENCE_INST_N(seq, i));
   return trgeoseq_make_free(gs, instants, seq->count,
     seq->period.lower_inc, seq->period.upper_inc,
     MEOS_FLAGS_GET_INTERP(seq->flags), NORMALIZE_NO);
@@ -388,12 +388,12 @@ geo_tposeseq_to_trgeo(const GSERIALIZED *gs, const TSequence *seq)
  * @param[in] ss Temporal pose
  */
 TSequenceSet *
-geo_tposeseqset_to_trgeo(const GSERIALIZED *gs, const TSequenceSet *ss)
+geo_tposeseqset_to_trgeometry(const GSERIALIZED *gs, const TSequenceSet *ss)
 {
   assert(ss); assert(gs);
   TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
   for (int i = 0; i < ss->count; i++)
-    sequences[i] = geo_tposeseq_to_trgeo(gs, TSEQUENCESET_SEQ_N(ss, i));
+    sequences[i] = geo_tposeseq_to_trgeometry(gs, TSEQUENCESET_SEQ_N(ss, i));
   return trgeoseqset_make_free(gs, sequences, ss->count, NORMALIZE_NO);
 }
 
@@ -416,7 +416,7 @@ geometry_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 
   /* Reconcile the SRID of the reference geometry and the temporal pose: copy the
    * known SRID onto the one that is unknown, and error if both are known and
-   * differ. This mirrors the text parser (trgeo_parse_geom) so that programmatic
+   * differ. This mirrors the text parser (trgeometry_parse_geom) so that programmatic
    * and parsed construction agree, and guarantees that the resulting value is
    * SRID-consistent across its reference geometry and its pose. */
   int32_t srid_geom = gserialized_get_srid(gs);
@@ -442,11 +442,11 @@ geometry_tpose_to_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
   Temporal *result;
   assert(temptype_subtype(temp1->subtype));
   if (temp1->subtype == TINSTANT)
-    result = (Temporal *) geo_tposeinst_to_trgeo(gs1, (TInstant *) temp1);
+    result = (Temporal *) geo_tposeinst_to_trgeometry(gs1, (TInstant *) temp1);
   else if (temp1->subtype == TSEQUENCE)
-    result = (Temporal *) geo_tposeseq_to_trgeo(gs1, (TSequence *) temp1);
+    result = (Temporal *) geo_tposeseq_to_trgeometry(gs1, (TSequence *) temp1);
   else /* temp1->subtype == TSEQUENCESET */
-    result = (Temporal *) geo_tposeseqset_to_trgeo(gs1, (TSequenceSet *) temp1);
+    result = (Temporal *) geo_tposeseqset_to_trgeometry(gs1, (TSequenceSet *) temp1);
 
   if (free_gs) pfree(gs1);
   if (free_temp) pfree(temp1);
@@ -485,7 +485,7 @@ trgeometry_start_value(const Temporal *temp)
   }
   /* pose is a borrowed pointer into temp (tinstant_value_p); pose_apply_geo
    * only reads it, so there is nothing to free here */
-  return pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
+  return pose_apply_geo(DatumGetPoseP(pose), trgeometry_geom_p(temp));
 }
 
 /**
@@ -537,7 +537,7 @@ trgeometry_unnest(const Temporal *temp, GSERIALIZED ***values, int *count)
 
   Datum *poses;
   SpanSet **result = temporal_unnest(temp, &poses, count);
-  const GSERIALIZED *geom = trgeo_geom_p(temp);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
   GSERIALIZED **vals = palloc(sizeof(GSERIALIZED *) * *count);
   for (int i = 0; i < *count; i++)
   {
@@ -583,7 +583,7 @@ trgeometry_end_value(const Temporal *temp)
   }
   /* pose is a borrowed pointer into temp (tinstant_value_p); pose_apply_geo
    * only reads it, so there is nothing to free here */
-  return pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
+  return pose_apply_geo(DatumGetPoseP(pose), trgeometry_geom_p(temp));
 }
 
 /**
@@ -628,7 +628,7 @@ trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result)
   }
   /* pose is a borrowed pointer into temp; pose_apply_geo only reads it, so
    * there is nothing to free here */
-  *result = pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
+  *result = pose_apply_geo(DatumGetPoseP(pose), trgeometry_geom_p(temp));
   return true;
 }
 
@@ -637,7 +637,7 @@ trgeometry_value_n(const Temporal *temp, int n, GSERIALIZED **result)
  * @brief Return the value of a temporal rigid geometry at a timestamptz
  */
 bool
-trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
+trgeometry_value_at_timestamptz_intl(const Temporal *temp, TimestampTz t, bool strict,
   Datum *result)
 {
   assert(temp); assert(result); assert(temp->temptype == T_TRGEOMETRY);
@@ -646,7 +646,7 @@ trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   if (found)
   {
     /* Apply pose to reference geometry */
-    GSERIALIZED *gs = pose_apply_geo(DatumGetPoseP(pose), trgeo_geom_p(temp));
+    GSERIALIZED *gs = pose_apply_geo(DatumGetPoseP(pose), trgeometry_geom_p(temp));
     *result = PointerGetDatum(gs);
     /* temporal_value_at_timestamptz returns a copy of the pose value (via
      * datum_copy); it is consumed by pose_apply_geo above and must be freed
@@ -677,7 +677,7 @@ trgeometry_value_at_timestamptz(const Temporal *temp, TimestampTz t,
   VALIDATE_NOT_NULL(result, false); VALIDATE_TRGEOMETRY(temp, false);
 
   Datum res;
-  if (! trgeo_value_at_timestamptz(temp, t, strict, &res))
+  if (! trgeometry_value_at_timestamptz_intl(temp, t, strict, &res))
     return false;
   *result = DatumGetGserializedP(res);
   return true;
@@ -700,7 +700,7 @@ trgeometry_start_instant(const Temporal *temp)
   /* A temporal rigid geometry always has a start instant */
   const TInstant *inst = temporal_start_inst(temp);
   TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeo(trgeo_geom_p(temp), res);
+  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -720,7 +720,7 @@ trgeometry_end_instant(const Temporal *temp)
   /* A temporal rigid geometry always has an end instant */
   const TInstant *inst = temporal_end_inst(temp);
   TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeo(trgeo_geom_p(temp), res);
+  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -763,7 +763,7 @@ trgeometry_instant_n(const Temporal *temp, int n)
   /* inst is borrowed from temp (TSEQUENCE_INST_N / tsequenceset_inst_n);
    * trgeoinst_tposeinst only reads it, so there is nothing to free here */
   TInstant *res = trgeoinst_tposeinst(inst);
-  TInstant *result = geo_tposeinst_to_trgeo(trgeo_geom_p(temp), res);
+  TInstant *result = geo_tposeinst_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -784,11 +784,11 @@ trgeometry_instants(const Temporal *temp, int *count)
 
   const TInstant **instants = temporal_insts_p(temp, count);
   TInstant **result = palloc(sizeof(TInstant *) * *count);
-  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  const GSERIALIZED *geo = trgeometry_geom_p(temp);
   for (int i = 0; i < *count; i ++)
   {
     TInstant *inst = trgeoinst_tposeinst(instants[i]);
-    result[i] = geo_tposeinst_to_trgeo(geo, inst);
+    result[i] = geo_tposeinst_to_trgeometry(geo, inst);
     pfree(inst);
   }
   pfree(instants);
@@ -816,7 +816,7 @@ trgeometry_start_sequence(const Temporal *temp)
   const TSequence *res_pose = (temp->subtype == TSEQUENCE) ?
     (TSequence *) temp : TSEQUENCESET_SEQ_N((TSequenceSet *) temp, 0);
   TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
+  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -840,7 +840,7 @@ trgeometry_end_sequence(const Temporal *temp)
     (TSequence *) temp : TSEQUENCESET_SEQ_N((TSequenceSet *) temp,
       ((TSequenceSet *) temp)->count - 1);
   TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
+  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -873,7 +873,7 @@ trgeometry_sequence_n(const Temporal *temp, int n)
   if (! res_pose)
     return NULL;
   TSequence *res = trgeoseq_tposeseq(res_pose);
-  TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
+  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -898,13 +898,13 @@ trgeometry_sequences(const Temporal *temp, int *count)
   if (! ensure_continuous_interp(temp))
     return NULL;
 
-  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  const GSERIALIZED *geo = trgeometry_geom_p(temp);
   const TSequence **sequences = temporal_sequences_p(temp, count);
   TSequence **result = palloc(sizeof(TSequence *) * *count);
   for (int i = 0; i < *count; i ++)
   {
     TSequence *seq = trgeoseq_tposeseq(sequences[i]);
-    result[i] = geo_tposeseq_to_trgeo(geo, seq);
+    result[i] = geo_tposeseq_to_trgeometry(geo, seq);
     pfree(seq);
   }
   pfree(sequences);
@@ -1016,7 +1016,7 @@ trgeometry_segments(const Temporal *temp, int *count)
   if (! ensure_continuous_interp(temp))
     return NULL;
 
-  const GSERIALIZED *geo = trgeo_geom_p(temp);
+  const GSERIALIZED *geo = trgeometry_geom_p(temp);
   Temporal *tpose = trgeometry_to_tpose(temp);
   if (! tpose)
     return NULL;
@@ -1027,7 +1027,7 @@ trgeometry_segments(const Temporal *temp, int *count)
   TSequence **result = palloc(sizeof(TSequence *) * (*count));
   for (int i = 0; i < *count; i++)
   {
-    result[i] = geo_tposeseq_to_trgeo(geo, segs[i]);
+    result[i] = geo_tposeseq_to_trgeometry(geo, segs[i]);
     pfree(segs[i]);
   }
   pfree(segs);
@@ -1045,18 +1045,18 @@ trgeometry_segments(const Temporal *temp, int *count)
  * @param[in] temp Temporal pose
  */
 Temporal *
-geo_tpose_to_trgeo(const GSERIALIZED *gs, const Temporal *temp)
+geometry_tpose_to_trgeometry_intl(const GSERIALIZED *gs, const Temporal *temp)
 {
   assert(gs); assert(temp);
   assert(temptype_subtype(temp->subtype));
   switch (temp->subtype)
   {
     case TINSTANT:
-      return (Temporal *) geo_tposeinst_to_trgeo(gs, (const TInstant *) temp);
+      return (Temporal *) geo_tposeinst_to_trgeometry(gs, (const TInstant *) temp);
     case TSEQUENCE:
-      return (Temporal *) geo_tposeseq_to_trgeo(gs, (const TSequence *) temp);
+      return (Temporal *) geo_tposeseq_to_trgeometry(gs, (const TSequence *) temp);
     default: /* TSEQUENCESET */
-      return (Temporal *) geo_tposeseqset_to_trgeo(gs,
+      return (Temporal *) geo_tposeseqset_to_trgeometry(gs,
         (const TSequenceSet *) temp);
   }
 }
@@ -1086,9 +1086,9 @@ trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp1, NULL);
   VALIDATE_TRGEOMETRY(temp2, NULL);
-  const GSERIALIZED *geo = trgeo_geom_p(temp1);
+  const GSERIALIZED *geo = trgeometry_geom_p(temp1);
   /* Two rigid geometries merge into one only where they are the same body */
-  if (! ensure_same_geom(geo, trgeo_geom_p(temp2)))
+  if (! ensure_same_geom(geo, trgeometry_geom_p(temp2)))
     return NULL;
 
   Temporal *tpose1 = trgeometry_to_tpose(temp1);
@@ -1103,7 +1103,7 @@ trgeometry_merge(const Temporal *temp1, const Temporal *temp2)
   pfree(tpose1); pfree(tpose2);
   if (! merged)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(geo, merged);
+  Temporal *result = geometry_tpose_to_trgeometry_intl(geo, merged);
   pfree(merged);
   return result;
 }
@@ -1125,10 +1125,10 @@ trgeometry_merge_array(Temporal **temparr, int count)
   for (int i = 0; i < count; i++)
     VALIDATE_TRGEOMETRY(temparr[i], NULL);
 
-  const GSERIALIZED *geo = trgeo_geom_p(temparr[0]);
+  const GSERIALIZED *geo = trgeometry_geom_p(temparr[0]);
   /* Every body merged into one is the same body */
   for (int i = 1; i < count; i++)
-    if (! ensure_same_geom(geo, trgeo_geom_p(temparr[i])))
+    if (! ensure_same_geom(geo, trgeometry_geom_p(temparr[i])))
       return NULL;
 
   Temporal **poses = palloc(sizeof(Temporal *) * count);
@@ -1149,7 +1149,7 @@ trgeometry_merge_array(Temporal **temparr, int count)
   pfree(poses);
   if (! merged)
     return NULL;
-  Temporal *result = geo_tpose_to_trgeo(geo, merged);
+  Temporal *result = geometry_tpose_to_trgeometry_intl(geo, merged);
   pfree(merged);
   return result;
 }
@@ -1174,7 +1174,7 @@ trgeometry_round(const Temporal *temp, int maxdd)
     return NULL;
 
   Temporal *tpose = trgeometry_to_tpose(temp);
-  GSERIALIZED *res_geo = geo_round(trgeo_geom_p(temp), maxdd);
+  GSERIALIZED *res_geo = geo_round(trgeometry_geom_p(temp), maxdd);
   Temporal *res_tpose = temporal_round(tpose, maxdd);
   Temporal *result = geometry_tpose_to_trgeometry(res_geo, res_tpose);
   pfree(tpose); pfree(res_geo); pfree(res_tpose);
@@ -1198,7 +1198,7 @@ trgeometry_motion_free(const Temporal *temp, Pose *frame)
 {
   Temporal *tpose = trgeometry_to_tpose(temp);
   Temporal *res_tpose = tpose_motion(tpose, frame);
-  const GSERIALIZED *gs = trgeo_geom_p(temp);
+  const GSERIALIZED *gs = trgeometry_geom_p(temp);
   GSERIALIZED *res_geo;
   if (MEOS_FLAGS_GET_Z(res_tpose->flags) && ! FLAGS_GET_Z(gs->gflags))
   {
@@ -1369,7 +1369,7 @@ trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
   }
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *res = temporal_tsequence(tpose, interp);
-  TSequence *result = geo_tposeseq_to_trgeo(trgeo_geom_p(temp), res);
+  TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res); pfree(tpose);
   return result;
 }
@@ -1399,7 +1399,7 @@ trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str)
   }
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequenceSet *res = temporal_tsequenceset(tpose, interp);
-  TSequenceSet *result = geo_tposeseqset_to_trgeo(trgeo_geom_p(temp), res);
+  TSequenceSet *result = geo_tposeseqset_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res); pfree(tpose);
   return result;
 }
@@ -1424,7 +1424,7 @@ trgeometry_set_interp(const Temporal *temp, interpType interp)
     return NULL;
   /* We need to explicitly set the temporal type to T_TPOSE */
   res->temptype = T_TPOSE;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res); pfree(tpose);
   return result;
 }
@@ -1457,7 +1457,7 @@ trgeometry_restrict_value(const Temporal *temp, Datum value, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1516,7 +1516,7 @@ trgeometry_restrict_values(const Temporal *temp, const Set *s, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1570,7 +1570,7 @@ trgeometry_restrict_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1623,7 +1623,7 @@ trgeometry_restrict_tstzset(const Temporal *temp, const Set *s, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1676,7 +1676,7 @@ trgeometry_restrict_tstzspan(const Temporal *temp, const Span *s, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1730,7 +1730,7 @@ trgeometry_restrict_tstzspanset(const Temporal *temp, const SpanSet *ss,
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1785,7 +1785,7 @@ trgeometry_before_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1811,7 +1811,7 @@ trgeometry_after_timestamptz(const Temporal *temp, TimestampTz t, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1851,8 +1851,8 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
    * arguments, since the answer carries a single reference geometry */
   if (! ensure_spatial_validity(temp, (const Temporal *) inst) ||
       ! ensure_temporal_isof_subtype((Temporal *) inst, TINSTANT) ||
-      ! ensure_same_geom(trgeo_geom_p(temp),
-          trgeo_geom_p((const Temporal *) inst)))
+      ! ensure_same_geom(trgeometry_geom_p(temp),
+          trgeometry_geom_p((const Temporal *) inst)))
     return NULL;
 
   Temporal *tpose = trgeometry_to_tpose(temp);
@@ -1866,7 +1866,7 @@ trgeometry_append_tinstant(Temporal *temp, const TInstant *inst,
     pfree(tpose); pfree(tpose_inst);
     return NULL;
   }
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_inst);
   return result;
 }
@@ -1898,8 +1898,8 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
       ! ensure_same_interp(temp, (Temporal *) seq)) ||
       ! ensure_spatial_validity(temp, (Temporal *) seq) ||
       ! ensure_temporal_isof_subtype((Temporal *) seq, TSEQUENCE) ||
-      ! ensure_same_geom(trgeo_geom_p(temp),
-          trgeo_geom_p((const Temporal *) seq)))
+      ! ensure_same_geom(trgeometry_geom_p(temp),
+          trgeometry_geom_p((const Temporal *) seq)))
     return NULL;
 
   Temporal *tpose = trgeometry_to_tpose(temp);
@@ -1912,7 +1912,7 @@ trgeometry_append_tsequence(Temporal *temp, const TSequence *seq,
     pfree(tpose); pfree(tpose_seq);
     return NULL;
   }
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res); pfree(tpose); pfree(tpose_seq);
   return result;
 }
@@ -1934,7 +1934,7 @@ trgeometry_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1959,7 +1959,7 @@ trgeometry_delete_tstzset(const Temporal *temp, const Set *s, bool connect)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -1983,7 +1983,7 @@ trgeometry_delete_tstzspan(const Temporal *temp, const Span *s, bool connect)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -2008,7 +2008,7 @@ trgeometry_delete_tstzspanset(const Temporal *temp, const SpanSet *ss,
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }

@@ -2002,7 +2002,7 @@ temporal_to_wkb_size(const Temporal *temp, uint8_t variant)
   size_t result = 0;
 #if RGEO
   if (temp->temptype == T_TRGEOMETRY)
-    result += geo_to_wkb_size(trgeo_geom_p(temp), variant);
+    result += geo_to_wkb_size(trgeometry_geom_p(temp), variant);
 #endif /* RGEO */
 #if POINTCLOUD
   result += pcschema_header_to_wkb_size(temp);

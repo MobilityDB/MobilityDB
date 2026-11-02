@@ -152,7 +152,7 @@ collect_edge_events_m1(const LWGEOM *body0, double dx, double dy,
         POINT2D a2 = { p0->x + dx, p0->y + dy };
         POINT2D b2 = { p1->x + dx, p1->y + dy };
         Span *iv = NULL;
-        int n = trgeo_geom_clip_lwgeom(&a1, &b1, &a2, &b2, target, &iv);
+        int n = trgeometry_geom_clip_lwgeom(&a1, &b1, &a2, &b2, target, &iv);
         for (int m = 0; m < n; m++)
         {
           if (*nevents + 2 > *cap)
@@ -485,11 +485,11 @@ instant_overlap_span(const GSERIALIZED *ref, const Pose *pose, TimestampTz t,
  * @errval NULL
  */
 static SpanSet *
-trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
+trgeometry_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
   const LWGEOM *lwgs, const STBox *excl, bool *err)
 {
   *err = false;
-  const GSERIALIZED *ref = trgeo_geom_p(temp);
+  const GSERIALIZED *ref = trgeometry_geom_p(temp);
   int spancap = 16, nspans = 0;
   Span *spans = palloc((size_t) spancap * sizeof(Span));
 
@@ -610,7 +610,7 @@ trgeo_overlap_spanset(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 static Temporal *
-trgeo_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
+trgeometry_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
 {
   if (! ss)
     /* No overlap: at -> empty, minus -> whole. */
@@ -622,7 +622,7 @@ trgeo_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
   pfree(tpose);
   if (! res)
     return NULL;
-  Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+  Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
   pfree(res);
   return result;
 }
@@ -643,10 +643,10 @@ trgeo_restrict_overlap(const Temporal *temp, const SpanSet *ss, bool atfunc)
  * @param[in] atfunc True if the restriction is `at`, false for `minus`
  */
 Temporal *
-trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
+trgeometry_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) || ! ensure_has_not_Z_geo(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) || ! ensure_has_not_Z_geo(gs))
     return NULL;
 
   if (gserialized_is_empty(gs))
@@ -666,12 +666,12 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
   bool err;
   /* A geometry is met as a closed region: only a box of a grid leaves its
    * upper borders out */
-  SpanSet *ss = trgeo_overlap_spanset(temp, gs, lwgs, NULL, &err);
+  SpanSet *ss = trgeometry_overlap_spanset(temp, gs, lwgs, NULL, &err);
   lwgeom_free(lwgs);
   if (err)
     return NULL;
 
-  Temporal *result = trgeo_restrict_overlap(temp, ss, atfunc);
+  Temporal *result = trgeometry_restrict_overlap(temp, ss, atfunc);
   if (ss)
     pfree(ss);
   return result;
@@ -687,7 +687,7 @@ trgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs, bool atfunc)
 Temporal *
 trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return trgeo_restrict_geom(temp, gs, REST_AT);
+  return trgeometry_restrict_geom(temp, gs, REST_AT);
 }
 
 /**
@@ -701,7 +701,7 @@ trgeometry_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return trgeo_restrict_geom(temp, gs, REST_MINUS);
+  return trgeometry_restrict_geom(temp, gs, REST_MINUS);
 }
 
 /*****************************************************************************
@@ -729,11 +729,11 @@ trgeometry_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
  * rather than twice.
  */
 Temporal *
-trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
+trgeometry_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   bool atfunc)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_stbox(temp, box))
+  if (! ensure_valid_trgeometry_stbox(temp, box))
     return NULL;
 
   bool hasx = MEOS_FLAGS_GET_X(box->flags);
@@ -751,7 +751,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
     GSERIALIZED *geo = stbox_geo(box);
     LWGEOM *lwgeo = lwgeom_from_gserialized(geo);
     bool err;
-    spatial = trgeo_overlap_spanset(temp, geo, lwgeo, excl, &err);
+    spatial = trgeometry_overlap_spanset(temp, geo, lwgeo, excl, &err);
     lwgeom_free(lwgeo);
     pfree(geo);
     if (err)
@@ -781,7 +781,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
   else
     atspans = spatial;
 
-  Temporal *result = trgeo_restrict_overlap(temp, atspans, atfunc);
+  Temporal *result = trgeometry_restrict_overlap(temp, atspans, atfunc);
   if (atspans)
     pfree(atspans);
   return result;
@@ -798,7 +798,7 @@ trgeo_restrict_stbox(const Temporal *temp, const STBox *box, bool border_inc,
 Temporal *
 trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  return trgeo_restrict_stbox(temp, box, border_inc, REST_AT);
+  return trgeometry_restrict_stbox(temp, box, border_inc, REST_AT);
 }
 
 /**
@@ -813,7 +813,7 @@ trgeometry_at_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 Temporal *
 trgeometry_minus_stbox(const Temporal *temp, const STBox *box, bool border_inc)
 {
-  return trgeo_restrict_stbox(temp, box, border_inc, REST_MINUS);
+  return trgeometry_restrict_stbox(temp, box, border_inc, REST_MINUS);
 }
 
 /**
@@ -854,7 +854,7 @@ trgeometry_centroid(const Temporal *temp)
   lfinfo.restype = T_TGEOMPOINT;
   lfinfo.reslinear = true;
   lfinfo.invert = INVERT_NO;
-  return tfunc_temporal_base(temp, PointerGetDatum(trgeo_geom_p(temp)), &lfinfo);
+  return tfunc_temporal_base(temp, PointerGetDatum(trgeometry_geom_p(temp)), &lfinfo);
 }
 
 /**
@@ -870,7 +870,7 @@ trgeometry_convex_hull(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, NULL);
 
   /* The hull of the placements is the hull of everything between them */
-  GSERIALIZED *places = trgeo_placements(temp);
+  GSERIALIZED *places = trgeometry_placements(temp);
   if (! places)
     return NULL;
   GSERIALIZED *result = geom_convex_hull(places);
@@ -1051,11 +1051,11 @@ trgeometry_twcentroid(const Temporal *temp)
  * array, growing it as needed
  */
 static void
-trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
+trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t,
   GSERIALIZED ***buf, int *buf_n, int *buf_cap)
 {
   Datum value;
-  if (! trgeo_value_at_timestamptz(temp, t, false, &value))
+  if (! trgeometry_value_at_timestamptz_intl(temp, t, false, &value))
     return;
   if (*buf_n == *buf_cap)
   {
@@ -1076,7 +1076,7 @@ trgeo_trav_emit_at(const Temporal *temp, TimestampTz t,
  * caller, as the previous segment's end or as the first instant.
  */
 static void
-trgeo_trav_segment(const Temporal *temp, const TInstant *inst_a,
+trgeometry_trav_segment(const Temporal *temp, const TInstant *inst_a,
   const TInstant *inst_b, GSERIALIZED ***buf, int *buf_n, int *buf_cap)
 {
   Pose *pose_a = DatumGetPoseP(tinstant_value_p((TInstant *) inst_a));
@@ -1094,10 +1094,10 @@ trgeo_trav_segment(const Temporal *temp, const TInstant *inst_a,
     TimestampTz span = inst_b->t - inst_a->t;
     if (span > n)
       for (int i = 1; i <= n; i++)
-        trgeo_trav_emit_at(temp, inst_a->t + (TimestampTz) (span * i / (n + 1)),
+        trgeometry_trav_emit_at(temp, inst_a->t + (TimestampTz) (span * i / (n + 1)),
           buf, buf_n, buf_cap);
   }
-  trgeo_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+  trgeometry_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
 }
 
 /**
@@ -1108,7 +1108,7 @@ trgeo_trav_segment(const Temporal *temp, const TInstant *inst_a,
  * A body carrying an inner ring is not convex.
  */
 static bool
-trgeo_ref_is_convex(const GSERIALIZED *gs)
+trgeometry_ref_is_convex(const GSERIALIZED *gs)
 {
   LWGEOM *lwgeom = lwgeom_from_gserialized(gs);
   bool result = false;
@@ -1126,7 +1126,7 @@ trgeo_ref_is_convex(const GSERIALIZED *gs)
  * placements it spans, so a sweep replaces them rather than joining them.
  */
 static GSERIALIZED *
-trgeo_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
+trgeometry_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
 {
   LWGEOM *lw_a = lwgeom_from_gserialized(a);
   LWGEOM *lw_b = lwgeom_from_gserialized(b);
@@ -1168,7 +1168,7 @@ trgeo_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
  * @errval NULL
  */
 static GSERIALIZED **
-trgeo_placement_array(const Temporal *temp, int *count)
+trgeometry_placement_array(const Temporal *temp, int *count)
 {
   int n_insts = 0;
   /* temporal_insts_p returns a pointer-to-array of in-place instants;
@@ -1184,12 +1184,12 @@ trgeo_placement_array(const Temporal *temp, int *count)
   int n_geoms = 0;
 
   /* Emit the first instant. */
-  trgeo_trav_emit_at(temp, insts[0]->t, &geoms, &n_geoms, &cap);
+  trgeometry_trav_emit_at(temp, insts[0]->t, &geoms, &n_geoms, &cap);
   /* Per inter-instant segment, recursively bisect. The recursion
    * appends samples on (t_m, t_b], reusing the t_a sample emitted by
    * the previous iteration. */
   for (int i = 0; i + 1 < n_insts; i++)
-    trgeo_trav_segment(temp, insts[i], insts[i + 1],
+    trgeometry_trav_segment(temp, insts[i], insts[i + 1],
       &geoms, &n_geoms, &cap);
 
   pfree(insts);
@@ -1207,7 +1207,7 @@ trgeo_placement_array(const Temporal *temp, int *count)
  * @param[in] unary_union True to dissolve the collection
  */
 static GSERIALIZED *
-trgeo_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
+trgeometry_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
 {
   GSERIALIZED *result;
   if (n_geoms == 1)
@@ -1242,14 +1242,14 @@ trgeo_geoms_merge(GSERIALIZED **geoms, int n_geoms, bool unary_union)
  * @errval NULL
  */
 GSERIALIZED *
-trgeo_placements(const Temporal *temp)
+trgeometry_placements(const Temporal *temp)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
   int n_geoms = 0;
-  GSERIALIZED **geoms = trgeo_placement_array(temp, &n_geoms);
+  GSERIALIZED **geoms = trgeometry_placement_array(temp, &n_geoms);
   if (! geoms)
     return NULL;
-  return trgeo_geoms_merge(geoms, n_geoms, UNARY_UNION_NO);
+  return trgeometry_geoms_merge(geoms, n_geoms, UNARY_UNION_NO);
 }
 
 /**
@@ -1263,7 +1263,7 @@ trgeo_placements(const Temporal *temp)
  *
  * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
  * for general temporal geometries. The placements the body passes through
- * come from #trgeo_placements(); a convex body then covers the hull of every
+ * come from #trgeometry_placements(); a convex body then covers the hull of every
  * consecutive pair, and the unary union dissolves the overlap the hulls share
  */
 GSERIALIZED *
@@ -1271,7 +1271,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
   int n_geoms = 0;
-  GSERIALIZED **geoms = trgeo_placement_array(temp, &n_geoms);
+  GSERIALIZED **geoms = trgeometry_placement_array(temp, &n_geoms);
   if (! geoms)
     return NULL;
 
@@ -1285,15 +1285,15 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
    * at the next, so the placements ARE the area it traverses and a hull
    * spanning two of them answers for ground the body never crosses.
    * Only the united form sweeps; the collection form answers the placements
-   * themselves, which #trgeo_placements() gives a caller directly. */
+   * themselves, which #trgeometry_placements() gives a caller directly. */
   if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
-      trgeo_ref_is_convex(trgeo_geom_p(temp)))
+      trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
   {
     GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * (n_geoms - 1));
     int n_swept = 0;
     for (int i = 0; i + 1 < n_geoms; i++)
     {
-      GSERIALIZED *hull = trgeo_convex_sweep(geoms[i], geoms[i + 1]);
+      GSERIALIZED *hull = trgeometry_convex_sweep(geoms[i], geoms[i + 1]);
       if (hull)
         swept[n_swept++] = hull;
     }
@@ -1309,7 +1309,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
       pfree(swept);
   }
 
-  return trgeo_geoms_merge(geoms, n_geoms, unary_union);
+  return trgeometry_geoms_merge(geoms, n_geoms, unary_union);
 }
 
 /*****************************************************************************
@@ -1336,7 +1336,7 @@ trgeometry_to_tgeometry(const Temporal *temp)
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_has_geom(temp->flags))
     return NULL;
-  const GSERIALIZED *ref = trgeo_geom_p(temp);
+  const GSERIALIZED *ref = trgeometry_geom_p(temp);
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
   {

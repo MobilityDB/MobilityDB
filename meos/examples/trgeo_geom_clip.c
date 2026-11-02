@@ -139,7 +139,7 @@ main(void)
     {
       int next_e = (e + 1) % nverts;
       Span *intervals = NULL;
-      int n = trgeo_geom_clip_polygon_posed(
+      int n = trgeometry_geom_clip_polygon_posed(
         &body[e], &body[next_e],
         segs[s], segs[s + 1],
         target, &intervals);

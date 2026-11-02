@@ -32,7 +32,7 @@
  * @brief Spatial and spatiotemporal grid tiling for temporal rigid geometries
  * @details A rigid geometry occupies the region its body covers, so the tiles
  * are the
- * ones that body reaches, which #trgeo_restrict_stbox answers by solving for
+ * ones that body reaches, which #trgeometry_restrict_stbox answers by solving for
  * the times the body meets a box. The grid itself is the `tgeo` one, reached
  * through #tspatial_space_time_boxes, so the two families lay values on the
  * same grid and differ only in how a value is read against one tile.
@@ -87,7 +87,7 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
     return NULL;
 
   return tspatial_space_time_boxes(temp, xsize, ysize, zsize, NULL, sorigin,
-    0, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
+    0, bitmatrix, border_inc, &trgeometry_restrict_stbox, count);
 }
 
 /**
@@ -101,7 +101,7 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
  * @param[in] bitmatrix True when using a bitmatrix to speed up the computation
  * @param[in] border_inc True when the box contains the upper border
  * @param[out] count Number of elements in the output array
- * @csqlfn #Trgeo_time_boxes()
+ * @csqlfn #Trgeometry_time_boxes()
  */
 STBox *
 trgeometry_time_boxes(const Temporal *temp, const Interval *duration,
@@ -113,7 +113,7 @@ trgeometry_time_boxes(const Temporal *temp, const Interval *duration,
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(duration, NULL);
   return tspatial_space_time_boxes(temp, 0.0, 0.0, 0.0, duration, NULL,
-    torigin, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
+    torigin, bitmatrix, border_inc, &trgeometry_restrict_stbox, count);
 }
 
 /**
@@ -150,7 +150,7 @@ trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize,
     return NULL;
 
   return tspatial_space_time_boxes(temp, xsize, ysize, zsize, duration,
-    sorigin, torigin, bitmatrix, border_inc, &trgeo_restrict_stbox, count);
+    sorigin, torigin, bitmatrix, border_inc, &trgeometry_restrict_stbox, count);
 }
 
 /*****************************************************************************/
