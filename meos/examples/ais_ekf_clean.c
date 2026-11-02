@@ -99,7 +99,7 @@ static bool parse_timestamp_eu(const char *s, TimestampTz *out)
     hh = mm = ss = 0;
   char iso[32];
   snprintf(iso, sizeof(iso), "%04d-%02d-%02d %02d:%02d:%02d", y, m, d, hh, mm, ss);
-  *out = pg_timestamptz_in(iso, -1);
+  *out = timestamptz_in(iso, -1);
   return true;
 }
 
@@ -391,7 +391,7 @@ int main(int argc, char **argv)
         }
         {
           /* Removed point: write row */
-          char *ts = pg_timestamptz_out(tr);
+          char *ts = timestamptz_out(tr);
           /* Get EWKT for the single instant and parse point coords */
           char *wkt = tspatial_as_ewkt((Temporal *) ir, 10); /* e.g., SRID=4326;POINT(x y)@time */
           double lon = 0.0, lat = 0.0;
