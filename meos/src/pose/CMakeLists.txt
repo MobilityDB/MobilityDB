@@ -29,6 +29,7 @@ set(POSE_SOURCES
   pose.c
   pose_geopose.c
   posechain.c
+  posechainset.c
   poseset.c
   tpose.c
   tpose_boxops.c
@@ -40,11 +41,5 @@ set(POSE_SOURCES
   tposechain_compops.c
   tposechain_distance.c
 )
-
-if(MEOS)
-  list(APPEND POSE_SOURCES
-  posechainset_meos.c
-)
-endif()
 
 add_library(pose OBJECT ${POSE_SOURCES})
