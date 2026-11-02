@@ -220,9 +220,12 @@ npointset_values(const Set *s, int *count)
  * operations
  * @param[in] s Set
  * @param[in] np Value
+ * @note The validation macros alone read the arguments, and they compile to
+ * nothing in a release build of the extension, hence the arguments are
+ * marked unused as in #npoint_srid
  */
 bool
-ensure_valid_set_npoint(const Set *s, const Npoint *np)
+ensure_valid_set_npoint(const Set *s UNUSED, const Npoint *np UNUSED)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NPOINTSET(s, false); VALIDATE_NOT_NULL(np, false);
