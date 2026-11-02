@@ -2842,7 +2842,7 @@ geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
  * @note The answer is the double nearest the exact distance
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -2850,8 +2850,11 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
-  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
 
   /* Two geometries of straight edges: the double nearest their distance, two
@@ -2877,7 +2880,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     /* The double nearest a distance of finite coordinates is infinite where
      * the distance leaves the doubles (#ensure_finite_result) */
     if (! ensure_finite_result(result))
-      return DBL_MAX;
+      return -1.0;
     return result;
   }
 
@@ -2923,14 +2926,17 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * underlying computation implements the maximum only for straight edges, so
  * the answer is DBL_MAX
  * @note An empty geometry has no farthest point, so the answer is DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
@@ -2953,14 +2959,17 @@ geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * underlying computation implements the maximum only for straight edges, so
  * the answer is DBL_MAX
  * @note An empty geometry has no farthest point, so the answer is DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
@@ -2982,16 +2991,16 @@ geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p ST_MaxDistance(PG_FUNCTION_ARGS),
  * @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Geom_max_distance()
  */
 double
 geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  VALIDATE_NOT_NULL(gs1, -1.0); VALIDATE_NOT_NULL(gs2, -1.0);
   if (! ensure_same_dimensionality_geo(gs1, gs2))
-    return DBL_MAX;
+    return -1.0;
   return FLAGS_GET_Z(gs1->gflags) ?
     geom_max_distance3d(gs1, gs2) : geom_max_distance2d(gs1, gs2);
 }
@@ -3004,7 +3013,7 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
  * @note The answer is the double nearest the exact distance
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
@@ -3013,8 +3022,11 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
-  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1) ||
-      gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
+  if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
 
   /* Two geometries with Z of points and segments: the double nearest their 3D
@@ -3032,7 +3044,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     /* The double nearest a distance of finite coordinates is infinite where
      * the distance leaves the doubles, as #geom_distance2d raises it */
     if (! ensure_finite_result(result))
-      return DBL_MAX;
+      return -1.0;
     return result;
   }
 
@@ -3072,15 +3084,15 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @p ST_3DDistance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs1, DBL_MAX); VALIDATE_NOT_NULL(gs2, DBL_MAX);
+  VALIDATE_NOT_NULL(gs1, -1.0); VALIDATE_NOT_NULL(gs2, -1.0);
   if (! ensure_same_dimensionality_geo(gs1, gs2))
-    return DBL_MAX;
+    return -1.0;
   return FLAGS_GET_Z(gs1->gflags) ?
     geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
 }
@@ -7286,7 +7298,7 @@ geo_centroid(const GSERIALIZED *gs, bool spheroid)
  * @param[in] gs1,gs2 Geometries or geographies
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Geo_distance()
  */
 double
@@ -7294,7 +7306,7 @@ geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geo_geo(gs1, gs2))
-    return DBL_MAX;
+    return -1.0;
   return FLAGS_GET_GEODETIC(gs1->gflags) ? geog_distance(gs1, gs2, spheroid) :
     geom_distance(gs1, gs2);
 }
@@ -7436,7 +7448,7 @@ geog_disjoint(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * of the SRID, as #geog_dwithin does
  * @note An empty geography has no point to measure from, so the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
@@ -7444,7 +7456,7 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
-    return DBL_MAX;
+    return -1.0;
 
   /* Return NULL on empty arguments. */
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2) )
@@ -7478,7 +7490,7 @@ geog_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
       "geography_distance returned distance < 0.0");
-    return DBL_MAX;
+    return -1.0;
   }
 
   return distance;

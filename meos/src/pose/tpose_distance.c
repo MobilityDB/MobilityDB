@@ -39,6 +39,7 @@
 #include <meos_pose.h>
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
+#include "temporal/lifting.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "pose/pose.h"
@@ -202,12 +203,17 @@ nai_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal pose
  * @param[in] gs Geometry
  * @csqlfn #NAD_tpose_geo() #NAD_geo_tpose()
+ * @errval -1.0
  */
 double
 nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tpose_geo(temp, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
   GSERIALIZED *traj = tpose_trajectory(temp);
@@ -223,13 +229,14 @@ nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal pose
  * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_tpose_stbox() #NAD_stbox_tpose()
+ * @errval -1.0
  */
 double
 nad_tpose_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_stbox(temp, box))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project the temporal value to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -263,13 +270,14 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
  * @param[in] temp Temporal pose
  * @param[in] pose Pose
  * @csqlfn #NAD_tpose_pose() #NAD_pose_tpose()
+ * @errval -1.0
  */
 double
 nad_tpose_pose(const Temporal *temp, const Pose *pose)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_pose(temp, pose))
-    return DBL_MAX;
+    return -1.0;
 
   GSERIALIZED *geom = pose_to_point(pose);
   GSERIALIZED *traj = tpose_trajectory(temp);
@@ -283,20 +291,32 @@ nad_tpose_pose(const Temporal *temp, const Pose *pose)
  * @brief Return the nearest approach distance of two temporal poses
  * @param[in] temp1,temp2 Temporal poses
  * @csqlfn #NAD_tpose_tpose()
+ * @errval -1.0
  */
 double
 nad_tpose_tpose(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpose_tpose(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_tpose_tpose(temp1, temp2);
-  if (dist == NULL)
-    return DBL_MAX;
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /*****************************************************************************

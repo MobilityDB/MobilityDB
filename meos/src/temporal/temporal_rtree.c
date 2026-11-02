@@ -2264,15 +2264,19 @@ rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
   if (rtree->bboxtype == T_TBOX)
     return distance_double(nad_tbox_tbox((const TBox *) query,
       (const TBox *) box), ((const TBox *) query)->span.basetype);
-  if (rtree->bboxtype == T_STBOX)
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
-      true);
+  /* An index orders a box whose distance raises an error last, as it orders
+   * a box sharing no time with the query, whose distance is DBL_MAX.
+   * TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
+  if (rtree->bboxtype == T_STBOX
 #if POINTCLOUD
-  if (rtree->bboxtype == T_TPCBOX)
-    /* TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
-      true);
+      || rtree->bboxtype == T_TPCBOX
 #endif
+     )
+  {
+    double d = nad_stbox_stbox((const STBox *) query, (const STBox *) box,
+      true);
+    return d < 0.0 ? DBL_MAX : d;
+  }
   /* Span types: the one-dimensional gap between the two spans, zero when they
    * overlap, read through the box's axis accessor */
   double qlo = rtree->get_axis(query, 0, false);

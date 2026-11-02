@@ -29,8 +29,8 @@
 
 /**
  * @file
- * @brief Reading of the error number by the lifting functions under an error
- * handler that does not exit
+ * @brief Reading of the error number by the lifting functions and the
+ * nearest approach distances under an error handler that does not exit
  */
 
 #include "temporal/lifting.h"
@@ -74,6 +74,25 @@ lifting_result_int(int result, int last_errno)
 {
   if (meos_errno())
     return -1;
+  meos_errno_restore(last_errno);
+  return result;
+}
+
+/**
+ * @brief Return a distance read from a temporal distance, or -1.0 when the
+ * temporal distance raised an error
+ * @details A temporal distance is NULL both where the operands share no time,
+ * which the caller answers with @p DBL_MAX, and where it raises an error,
+ * which the error number set since #meos_errno_reset tells apart
+ * @param[in] result Distance, @p DBL_MAX where the temporal distance is NULL
+ * @param[in] last_errno Error number found on entry, returned by
+ * #meos_errno_reset
+ */
+double
+distance_result(double result, int last_errno)
+{
+  if (meos_errno())
+    return -1.0;
   meos_errno_restore(last_errno);
   return result;
 }

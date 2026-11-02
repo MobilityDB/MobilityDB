@@ -2170,14 +2170,14 @@ distance_set_set(const Set *s1, const Set *s2)
  * @brief Return the distance between a set and an integer
  * @param[in] s Set
  * @param[in] i Value
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
 distance_set_int(const Set *s, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSET(s, INT_MAX);
+  VALIDATE_INTSET(s, -1);
   return DatumGetInt32(distance_set_value(s, Int32GetDatum(i)));
 }
 
@@ -2186,14 +2186,14 @@ distance_set_int(const Set *s, int i)
  * @brief Return the distance between a set and a big integer
  * @param[in] s Set
  * @param[in] i Value
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int64
 distance_set_bigint(const Set *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSET(s, INT64_MAX);
+  VALIDATE_BIGINTSET(s, -1);
   return DatumGetInt64(distance_set_value(s, Int64GetDatum(i)));
 }
 
@@ -2202,16 +2202,16 @@ distance_set_bigint(const Set *s, int64 i)
  * @brief Return the distance between a set and a float
  * @param[in] s Set
  * @param[in] d Value
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 double
 distance_set_float(const Set *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSET(s, DBL_MAX);
+  VALIDATE_FLOATSET(s, -1.0);
   if (! ensure_finite(d))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_set_value(s, Float8GetDatum(d)));
 }
 
@@ -2220,14 +2220,14 @@ distance_set_float(const Set *s, double d)
  * @brief Return the distance in days between a set and a date
  * @param[in] s Set
  * @param[in] d Value
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_set_value() #Distance_value_set()
  */
 int
 distance_set_date(const Set *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESET(s, INT_MAX);
+  VALIDATE_DATESET(s, -1);
   return DatumGetInt32(distance_set_value(s, DateADTGetDatum(d)));
 }
 
@@ -2254,7 +2254,7 @@ distance_set_timestamptz(const Set *s, TimestampTz t)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer sets
  * @param[in] s1,s2 Sets
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_set_set()
  */
 int
@@ -2262,7 +2262,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_INTSET))
-    return INT_MAX;
+    return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
 }
 
@@ -2270,7 +2270,7 @@ distance_intset_intset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer sets
  * @param[in] s1,s2 Sets
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Distance_set_set()
  */
 int64
@@ -2278,7 +2278,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_BIGINTSET))
-    return INT64_MAX;
+    return -1;
   return DatumGetInt64(distance_set_set(s1, s2));
 }
 
@@ -2286,7 +2286,7 @@ distance_bigintset_bigintset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float sets
  * @param[in] s1,s2 Sets
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_set_set()
  */
 double
@@ -2294,7 +2294,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_FLOATSET))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }
 
@@ -2302,7 +2302,7 @@ distance_floatset_floatset(const Set *s1, const Set *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance in days between two date sets
  * @param[in] s1,s2 Sets
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_set_set()
  */
 int
@@ -2310,7 +2310,7 @@ distance_dateset_dateset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_set_set(s1, s2) || ! ensure_set_isof_type(s1, T_DATESET))
-    return INT_MAX;
+    return -1;
   return DatumGetInt32(distance_set_set(s1, s2));
 }
 

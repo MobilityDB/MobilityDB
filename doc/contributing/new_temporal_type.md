@@ -394,7 +394,7 @@ A new temporal type is at *parity* when it exposes the same shape of surface as 
 | SRID accessor + setter | `tfoo_srid`, `tfoo_set_srid` | spatial types |
 | Value accessors | `tfoo_start_value`, `tfoo_end_value`, `tfoo_value_n`, `tfoo_values` | every type |
 | Restrictions | `at/minus_value`, `at/minus_values`, `at/minus_time`, `at/minus_geometry`, `at/minus_stbox` | every spatial type |
-| Distance | `tdistance_*`, `nad_*` (failure sentinel = `DBL_MAX`), `nai_*`, `shortestline_*` for every cross-type combo | every spatial type |
+| Distance | `tdistance_*`, `nad_*` (error value -1.0, `DBL_MAX` where the operands have no distance), `nai_*`, `shortestline_*` for every cross-type combo | every spatial type |
 | Comparison | `eq/ne/lt/le/gt/ge` (orderable types only — skip lt/gt for non-orderable like cbuffer / pose) | every type |
 | Spatial relationships | `contains/covers/disjoint/intersects/touches/dwithin` × `{ever, always, t}` for each cross-type | spatial types |
 | Aggregates | `extent` (returns the spatiotemporal `STBox`), `tCount`, `merge`, `appendInstant`, `appendSequence` (DuckDB, Spark and Flink call the last three `mergeAgg`, `appendInstantAgg`, `appendSequenceAgg`, from the `@altsqlfn` of their transitions) | every type |
@@ -427,7 +427,7 @@ Every spatial / spatiotemporal type has hazards in these families. List every ap
 - **Drift in invariants the value type assumes**: `|q| - 1` for unit quaternions, `det(R) = 1` for rotation matrices, monotone timestamps for temporal sequences.
 - **Catastrophic cancellation in interpolation kernels**: SLERP near antipode / identity, segment-segment distance turning-point timestamps.
 - **Ambiguity in inverse functions**: gimbal lock at `pitch = ±π/2`, atan2 branch cuts, quaternion double cover (`q` vs `−q`).
-- **Sentinel values for failure**: NAD / NAI return `DBL_MAX` on failure (not `−1.0` — the historical inconsistency was the source of issue [#846](https://github.com/MobilityDB/MobilityDB/pull/846); the wrapper layer expects `DBL_MAX`).
+- **Error and missing values of a distance**: a distance answers `DBL_MAX` where its operands have no distance (an empty geometry, values sharing no time), which the wrapper layer turns into `NULL` and an index sorts last, and `-1.0` where it raises an error, a value no distance has.
 - **Cross-frame / cross-SRID transformations**: position is well-defined under PROJ, but orientation needs a basis-change matrix at the point of transformation.
 - **Empty-collection edge cases on aggregates**: extent of zero rows, mean of zero values.
 - **Mixed-SRID inputs**: silent acceptance vs. explicit rejection.
@@ -456,7 +456,7 @@ This section tells you what to put in it.
 
 For each hazard identified in §5.1, the DocBook section gets one `<listitem>`:
 1. The hazard name and what physically goes wrong.
-2. The mitigation (the constructor renormalises; the kernel falls back to LERP near antipode; the failure sentinel is `DBL_MAX`; …).
+2. The mitigation (the constructor renormalises; the kernel falls back to LERP near antipode; the error value of a distance is `-1.0`; …).
 3. The commit that landed the mitigation (anchors the doc to the code).
 
 Tier-A and tier-B hazards always appear here — the mitigation is in the code. Tier-C and tier-D hazards get a DocBook caveat only; no code change is required.
@@ -498,7 +498,7 @@ This section matters because the next contributor *will* ask "why not extend to 
 These bite contributors who didn't read this doc. Worth reading even if you're not adding a new type.
 
 - **Spatial kernels are MEOS-native.** MEOS and MobilityDB build without GEOS: the top-level `CMakeLists.txt` sets `POSTGIS_GEOS_VERSION` to 0 and puts the stand-in `meos/include/geos-none/geos_c.h` first on the include path, and `meos/src/geo/geo_geos_none.c` and `meos/src/geo/geo_lwgeom_none.c` answer natively the GEOS names the vendored PostGIS calls. Areal Booleans route through the native overlay; spatial relationships are read from the edges of the geometries; trajectory distance kernels are hand-written in MEOS; the cbuffer / pose / trgeometry kernels are the reference. A new temporal type implements its spatial operations as MEOS-native kernels.
-- **NAD / NAI failure sentinel is `DBL_MAX`**, not `-1.0`. The PG-wrapper layer treats `DBL_MAX` as the "convert to NULL" signal. Historical drift in this convention was the source of issue [#846](https://github.com/MobilityDB/MobilityDB/pull/846).
+- **A distance errs with `-1.0` and answers `DBL_MAX` where its operands have no distance.** The PG-wrapper layer treats `DBL_MAX` as the "convert to NULL" signal, an index sorts it last, and `tools/scripts/check_error_sentinels.py` reads the `-1.0` from the `@errval` of every function of a `_dist` group.
 - **Coverage tests land in the same PR as the feature** — additional commits on the PR's head, not a separate follow-up. Pattern from PRs #802 / #813 / #789 / #807.
 - **Don't add `LCOV_EXCL_START/STOP/LINE` markers** to mask coverage drops on defensive code. Per [PR #824](https://github.com/MobilityDB/MobilityDB/pull/824) review, live with the coverage hit.
 - **Squash multi-commit fork branches** before opening / refreshing a PR. The reviewer sees one diff + one rationale. Skip rebases of others' PRs and large-history feature branches (>20 commits).

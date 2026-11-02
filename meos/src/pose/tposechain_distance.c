@@ -211,13 +211,14 @@ nai_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal pose chain
  * @param[in] gs Geometry
  * @csqlfn #NAD_tposechain_geo() #NAD_geo_tposechain()
+ * @errval -1.0
  */
 double
 nad_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tposechain_geo(temp, gs))
-    return DBL_MAX;
+    return -1.0;
   Temporal *tpose = tposechain_to_tpose(temp);
   double result = nad_tpose_geo(tpose, gs);
   pfree(tpose);
@@ -231,13 +232,14 @@ nad_tposechain_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal pose chain
  * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_tposechain_stbox() #NAD_stbox_tposechain()
+ * @errval -1.0
  */
 double
 nad_tposechain_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tposechain_stbox(temp, box))
-    return DBL_MAX;
+    return -1.0;
   Temporal *tpose = tposechain_to_tpose(temp);
   double result = nad_tpose_stbox(tpose, box);
   pfree(tpose);
@@ -251,13 +253,14 @@ nad_tposechain_stbox(const Temporal *temp, const STBox *box)
  * @param[in] temp Temporal pose chain
  * @param[in] pc Pose chain
  * @csqlfn #NAD_tposechain_posechain() #NAD_posechain_tposechain()
+ * @errval -1.0
  */
 double
 nad_tposechain_posechain(const Temporal *temp, const PoseChain *pc)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tposechain_posechain(temp, pc))
-    return DBL_MAX;
+    return -1.0;
   Temporal *tpose = tposechain_to_tpose(temp);
   Pose *pose = posechain_to_pose(pc);
   double result = nad_tpose_pose(tpose, pose);
@@ -271,13 +274,14 @@ nad_tposechain_posechain(const Temporal *temp, const PoseChain *pc)
  * #nad_tpose_tpose answers it for their composed poses
  * @param[in] temp1,temp2 Temporal pose chains
  * @csqlfn #NAD_tposechain_tposechain()
+ * @errval -1.0
  */
 double
 nad_tposechain_tposechain(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tposechain_tposechain(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
   Temporal *tpose1 = tposechain_to_tpose(temp1);
   Temporal *tpose2 = tposechain_to_tpose(temp2);
   double result = nad_tpose_tpose(tpose1, tpose2);

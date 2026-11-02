@@ -26,7 +26,8 @@
 # PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-"""Check that every MEOS error sentinel is the maximum of its return type."""
+"""Check that every MEOS error sentinel is the maximum of its return type, or a
+value outside the answers of the function where that maximum is one of them."""
 
 from __future__ import annotations
 
@@ -89,16 +90,18 @@ LOCATOR = re.compile(r"locate")
 # for an accessor and in the return line for a search, which collects into an
 # out-parameter and answers how many it collected.
 COUNT_DOC = re.compile(r"@(?:brief|return)\s+[^\n]*\bnumber of\b", re.I)
-# A nearest approach distance between two temporal boxes answers with the
-# maximum where the boxes share no time, which is an ANSWER and not a failure.
-# The maximum is therefore inside its value domain and cannot also mean error,
-# so the error takes -1 -- outside the domain of a distance, which is never
-# negative. That is what the rule actually asks for, exactly as it asks it of
-# the predicates and the locators above.
-BOX_DISTANCE = re.compile(r"^nad_tbox")
-# A distance states that domain in its own contract as readily as by its name:
-# the note "A distance is never negative" is the domain the -1 lies outside,
-# read as the predicates and the counts are read from their doc
+# A distance answers with the maximum where its operands have no distance, an
+# empty geometry or values that share no time, and a distance of finite
+# operands can itself be the largest value of its type. The maximum is
+# therefore inside the domain of a distance and cannot also mean error, so the
+# error takes -1 -- outside the domain of a distance, which is never negative.
+# That is what the rule actually asks for, exactly as it asks it of the
+# predicates and the locators above. A distance is read from the group that
+# documents it, every distance group being named after _dist,
+DISTANCE_GROUP = re.compile(r"@ingroup\s+meos_\w*_dist\b")
+# or, for a distance documented in another group, from its note stating the
+# domain the -1 lies outside, read as the predicates and the counts are read
+# from their doc
 DISTANCE_DOC = re.compile(r"A distance is never negative")
 # A comparator answers -1, 0 or 1, so its domain is those three values and the
 # maximum lies outside it. That is the same domain rule the counts, the
@@ -227,7 +230,9 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             want = "-1"
         if want == "DBL_MAX" and LOCATOR.search(name):
             want = "-1.0"
-        if BOX_DISTANCE.match(name) or DISTANCE_DOC.search("\n".join(doc)):
+        if want in ("DBL_MAX", "INT_MAX", "INT64_MAX") and (
+                DISTANCE_GROUP.search("\n".join(doc)) or
+                DISTANCE_DOC.search("\n".join(doc))):
             want = "-1.0" if want == "DBL_MAX" else "-1"
 
         if (documented is None and want == "INT_MAX" and CMP.search(name) and
@@ -261,6 +266,18 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
             findings.append((f"{rel}\t{name}\tdocuments {documented}",
                              f"{rel}:{i + 1}: {name}() returns {rettype} but "
                              f"documents {documented}, expected {want}"))
+        # An error value is a value the function never answers, so a contract
+        # naming it as an answer as well states two meanings for one value,
+        # which no caller can tell apart. A number always has a value outside
+        # its answers to take instead; a pointer and a bool have none, and
+        # their missing answer is told from an error by meos_errno() alone.
+        if (documented is not None and documented == want and
+                want not in ("NULL", "false") and
+                any(re.search(r"\b" + re.escape(documented) + r"\b", dl) and
+                    "@errval" not in dl for dl in doc)):
+            findings.append((f"{rel}\t{name}\tanswers {documented}",
+                             f"{rel}:{i + 1}: {name}() states {documented} as "
+                             f"its error value and as an answer"))
     return findings
 
 
@@ -307,7 +324,10 @@ def main() -> int:
     new = [text for key, text in findings if key not in baseline]
     if new:
         print("An error sentinel must be the maximum of the return type "
-              "(int INT_MAX, int64 INT64_MAX, double DBL_MAX, pointer NULL):\n")
+              "(int INT_MAX, int64 INT64_MAX, double DBL_MAX, pointer NULL), "
+              "or a value outside the answers where the maximum is one of "
+              "them (-1 for a distance, a count, an unknown relationship; "
+              "-1.0 for a double distance or a fraction):\n")
         for line in new:
             print(f"  {line}")
         return 1

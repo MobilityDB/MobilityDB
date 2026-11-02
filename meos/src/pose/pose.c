@@ -74,9 +74,7 @@ ensure_valid_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pose, false); VALIDATE_NOT_NULL(gs, false); 
-  if (gserialized_is_empty(gs) ||
-      ! ensure_same_srid(pose_srid(pose), gserialized_get_srid(gs)) ||
-      MEOS_FLAGS_GET_Z(pose->flags) != FLAGS_GET_Z(gs->gflags))
+  if (! ensure_same_srid(pose_srid(pose), gserialized_get_srid(gs)))
     return false;
   return true;
 }
@@ -1683,7 +1681,8 @@ pose_roll(const Pose *pose)
  * the small numeric drift @p |q| - 1 that long compositions can
  * introduce.
  * @param[in] pose1,pose2 Poses (must agree on dimension)
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  */
 double
 pose_angular_distance(const Pose *pose1, const Pose *pose2)
@@ -1694,7 +1693,7 @@ pose_angular_distance(const Pose *pose1, const Pose *pose2)
   {
     meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "Cannot compute the angular distance between a 2D and a 3D pose");
-    return DBL_MAX;
+    return -1.0;
   }
   if (! MEOS_FLAGS_GET_Z(pose1->flags))
   {
@@ -2688,7 +2687,7 @@ pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between two poses
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_pose_pose()
  */
 double
@@ -2696,7 +2695,7 @@ distance_pose_pose(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_pose(pose1, pose2))
-    return DBL_MAX;
+    return -1.0;
   /* The following function assumes that all validity tests have been done */
   return DatumGetFloat8(pose_distance(PointerGetDatum(pose1),
     PointerGetDatum(pose2)));
@@ -2721,14 +2720,20 @@ datum_pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a geometry
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_pose_geo() #Distance_geo_pose()
  */
 double
 distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pose_geo(pose, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_pose_geo(pose, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from and a geometry of another
+   * dimension is not measured here, so the operands have no distance, which
+   * is an answer */
+  if (gserialized_is_empty(gs) ||
+      MEOS_FLAGS_GET_Z(pose->flags) != FLAGS_GET_Z(gs->gflags))
     return DBL_MAX;
 
   GSERIALIZED *geo = pose_to_point(pose);
@@ -2740,7 +2745,7 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a spatiotemporal box
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_pose_stbox() #NAD_stbox_pose()
  */
 double
@@ -2748,7 +2753,7 @@ distance_pose_stbox(const Pose *pose, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_stbox(pose, box))
-    return DBL_MAX;
+    return -1.0;
 
   GSERIALIZED *geo1 = pose_to_point(pose);
   GSERIALIZED *geo2 = stbox_geo(box);

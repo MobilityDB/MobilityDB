@@ -41,6 +41,7 @@
 #include <meos_internal.h>
 #include <meos_internal_geo.h>
 #include <meos_npoint.h>
+#include "temporal/lifting.h"
 #include "npoint/tnpoint.h"
 #include "geo/tgeo_spatialfuncs.h"
 
@@ -236,12 +237,17 @@ nai_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @csqlfn #NAD_tnpoint_geo() #NAD_geo_tnpoint()
+ * @errval -1.0
  */
 double
 nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tnpoint_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tnpoint_geo(temp, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
   GSERIALIZED *traj = tnpoint_trajectory(temp);
@@ -257,6 +263,7 @@ nad_tnpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal point
  * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_tnpoint_stbox() #NAD_stbox_tnpoint()
+ * @errval -1.0
  */
 double
 nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
@@ -264,7 +271,7 @@ nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_stbox(temp, box) ||
       ! ensure_has_X(T_STBOX, box->flags))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project the temporal value to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -298,17 +305,18 @@ nad_tnpoint_stbox(const Temporal *temp, const STBox *box)
  * @param[in] temp Temporal point
  * @param[in] np Network point
  * @csqlfn #NAD_tnpoint_npoint() #NAD_npoint_tnpoint()
+ * @errval -1.0
  */
 double
 nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_npoint(temp, np))
-    return DBL_MAX;
+    return -1.0;
 
   GSERIALIZED *geom = npoint_to_geompoint(np);
   if (! geom)
-    return DBL_MAX;
+    return -1.0;
   GSERIALIZED *traj = tnpoint_trajectory(temp);
   double result = geom_distance2d(traj, geom);
   pfree(traj); pfree(geom);
@@ -320,20 +328,32 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @brief Return the nearest approach distance of two temporal network points
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #NAD_tnpoint_tnpoint()
+ * @errval -1.0
  */
 double
 nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
-  if (dist == NULL)
-    return DBL_MAX;
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /*****************************************************************************
