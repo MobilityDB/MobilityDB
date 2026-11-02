@@ -59,9 +59,10 @@ static int failures = 0;
 static void
 check(const char *zone, const char *expected)
 {
+  size_t size_out;
   meos_initialize_timezone(zone);
   TimestampTz t = timestamptz_in(INPUT, -1);
-  char *out = timestamptz_out(t);
+  char *out = timestamptz_out(t, &size_out);
   if (strcmp(out, expected) != 0)
   {
     printf("FAIL: %s in %s gives %s, expected %s\n", INPUT, zone, out,

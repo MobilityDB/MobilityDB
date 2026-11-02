@@ -224,8 +224,9 @@ static int tfloat_big_text(void) { return result(tfloat_in("-1e400@2001-01-01"))
 static int
 geom_wkb(const char *bytes)
 {
+  size_t size_out;
   GSERIALIZED *gs = geom_in("Linestring(1 1, 1234.5 2)", -1);
-  char *hex = geo_as_hexewkb(gs, "NDR");
+  char *hex = geo_as_hexewkb(gs, "NDR", &size_out);
   free(gs);
   int r = patch_hex(hex, bytes) ? result(geom_from_hexewkb(hex)) : 3;
   free(hex);
@@ -255,7 +256,8 @@ WKB_CASES(tfloat, tfloat_in("[1234.5@2001-01-01, 2@2001-01-02]"),
   static int name##_mfjson(const char *token) \
   { \
     Temporal *t = reader##_in(literal); \
-    char *doc = temporal_as_mfjson(t, 0, 0, 15, NULL); \
+    size_t size; \
+    char *doc = temporal_as_mfjson(t, 0, 0, 15, NULL, &size); \
     free(t); \
     int r = patch_json(&doc, token) ? result(reader##_from_mfjson(doc)) : 3; \
     free(doc); \

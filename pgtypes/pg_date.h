@@ -56,7 +56,7 @@ extern DateADT date_in(const char *str);
 extern bool date_is_finite(DateADT date);
 extern DateADT date_larger(DateADT date1, DateADT date2);
 extern DateADT date_make(int year, int mon, int mday);
-extern char *date_out(DateADT date);
+extern char *date_out(DateADT date, size_t *size_out);
 extern DateADT date_smaller(DateADT date1, DateADT date2);
 extern Timestamp date_time_to_timestamp(DateADT date, TimeADT time);
 extern Timestamp date_to_timestamp(DateADT date);

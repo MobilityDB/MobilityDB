@@ -74,6 +74,7 @@ errtest_record_handler(int errlevel, int errcode, const char *errmsg)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -100,7 +101,7 @@ int main(void)
   /* A succeeding call leaves the status clear */
   Temporal *good = tfloat_in("{77@2001-01-01}");
   assert(good != NULL);
-  char *good_out = tfloat_out(good, 6);
+  char *good_out = tfloat_out(good, 6, &size_out);
   printf("tfloat_in(\"{77@2001-01-01}\"): %s, errno %d\n", good_out,
     meos_errno());
   assert(meos_errno() == 0);
@@ -245,7 +246,7 @@ int main(void)
   GSERIALIZED *webmerc = geo_transform(wgs84, 3857);
   assert(webmerc != NULL);
   assert(meos_errno() == 0);
-  char *webmerc_ewkt = geo_as_ewkt(webmerc, 2);
+  char *webmerc_ewkt = geo_as_ewkt(webmerc, 2, &size_out);
   printf("geo_transform(4326 -> 3857): %s\n", webmerc_ewkt);
   free(webmerc_ewkt);
 
@@ -336,7 +337,7 @@ int main(void)
   assert(fset != NULL);
   Set *frounded = set_round(fset, 2);
   assert(frounded != NULL && meos_errno() == 0);
-  char *ftext = floatset_out(frounded, 6);
+  char *ftext = floatset_out(frounded, 6, &size_out);
   printf("set_round(floatset): answered %s\n", ftext);
   assert(strcmp(ftext, "{1.23, 2.35}") == 0);
   free(ftext); free(frounded); free(fset);

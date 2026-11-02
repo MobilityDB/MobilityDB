@@ -68,6 +68,7 @@
 #include "raster/raster_quadbin.h"
 #include "temporal/temporal.h"
 #include "temporal/tnumber_mathfuncs.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Input and output functions
@@ -726,6 +727,8 @@ raster_skew_y(const Raster *rast)
  * @brief Return the name of the pixel data type of a raster band
  * @param[in] rast Raster
  * @param[in] band Band number (1-based)
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @note The name returned is the one the RaQuet specification writes, which is
  * what #raquet_band_pixel_type() answers for a tile, so a band and a tile of
@@ -735,9 +738,10 @@ raster_skew_y(const Raster *rast)
  * @csqlfn #Raster_band_pixel_type()
  */
 char *
-raster_band_pixel_type(const Raster *rast, int band)
+raster_band_pixel_type(const Raster *rast, int band, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(rast, NULL);
   rt_raster raster;
   rt_band rtband = raster_band_of(rast, band, &raster);
@@ -753,7 +757,7 @@ raster_band_pixel_type(const Raster *rast, int band)
     return NULL;
   }
   const char *name = raquet_pixtype_name(raquet_pixtype_from_string(pgname));
-  return name ? pstrdup(name) : NULL;
+  return cstring_size(name ? pstrdup(name) : NULL, size_out);
 }
 
 /**
@@ -3318,19 +3322,23 @@ raster_same_alignment(const Raster *rast1, const Raster *rast2)
  * that the rasters are aligned where they are. Two rasters in different
  * reference systems raise an error, where PostGIS states it as the reason
  * @param[in] rast1,rast2 Rasters
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Raster_not_same_alignment_reason()
  */
 char *
-raster_not_same_alignment_reason(const Raster *rast1, const Raster *rast2)
+raster_not_same_alignment_reason(const Raster *rast1, const Raster *rast2,
+  size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(rast1, NULL); VALIDATE_NOT_NULL(rast2, NULL);
   bool aligned = false;
   const char *reason = NULL;
   if (! raster_alignment(rast1, rast2, &aligned, &reason))
     return NULL;
-  return pstrdup(reason);
+  return cstring_size(pstrdup(reason), size_out);
 }
 
 /**

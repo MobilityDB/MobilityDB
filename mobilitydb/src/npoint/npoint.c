@@ -152,8 +152,9 @@ PG_FUNCTION_INFO_V1(Npoint_out);
 Datum
 Npoint_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Npoint *np = PG_GETARG_NPOINT_P(0);
-  PG_RETURN_CSTRING(npoint_out(np, OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_RETURN_CSTRING(npoint_out(np, OUT_DEFAULT_DECIMAL_DIGITS, &size_out));
 }
 
 PGDLLEXPORT Datum Npoint_recv(PG_FUNCTION_ARGS);
@@ -261,12 +262,13 @@ Npoint_from_hexwkb(PG_FUNCTION_ARGS)
 static Datum
 Npoint_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
+  size_t size_out;
   Npoint *np = PG_GETARG_NPOINT_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = extended ? npoint_as_ewkt(np, dbl_dig_for_wkt) : 
-    npoint_as_text(np, dbl_dig_for_wkt);
+  char *str = extended ? npoint_as_ewkt(np, dbl_dig_for_wkt, &size_out) : 
+    npoint_as_text(np, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
@@ -397,8 +399,9 @@ PG_FUNCTION_INFO_V1(Nsegment_out);
 Datum
 Nsegment_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
-  PG_RETURN_CSTRING(nsegment_out(ns, OUT_DEFAULT_DECIMAL_DIGITS));
+  PG_RETURN_CSTRING(nsegment_out(ns, OUT_DEFAULT_DECIMAL_DIGITS, &size_out));
 }
 
 PGDLLEXPORT Datum Nsegment_from_ewkt(PG_FUNCTION_ARGS);
@@ -427,12 +430,13 @@ Nsegment_from_ewkt(PG_FUNCTION_ARGS)
 static Datum
 Nsegment_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
+  size_t size_out;
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = extended ? nsegment_as_ewkt(ns, dbl_dig_for_wkt) :
-    nsegment_as_text(ns, dbl_dig_for_wkt);
+  char *str = extended ? nsegment_as_ewkt(ns, dbl_dig_for_wkt, &size_out) :
+    nsegment_as_text(ns, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

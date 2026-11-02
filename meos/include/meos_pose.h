@@ -101,26 +101,26 @@ typedef struct Pose Pose;
 /* Input and output functions */
 
 extern uint8_t *pose_as_ewkb(const Pose *pose, uint8_t variant, size_t *size_out);
-extern char *pose_as_ewkt(const Pose *pose, int maxdd);
+extern char *pose_as_ewkt(const Pose *pose, int maxdd, size_t *size_out);
 extern char *pose_as_hexewkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern char *pose_as_hexwkb(const Pose *pose, uint8_t variant, size_t *size_out);
-extern char *pose_as_text(const Pose *pose, int maxdd);
+extern char *pose_as_text(const Pose *pose, int maxdd, size_t *size_out);
 extern uint8_t *pose_as_wkb(const Pose *pose, uint8_t variant, size_t *size_out);
 extern Pose *pose_from_wkb(const uint8_t *wkb, size_t size);
 extern Pose *pose_from_hexwkb(const char *hexwkb);
 extern Pose *pose_from_text(const char *str);
 extern Pose *pose_in(const char *str);
-extern char *pose_out(const Pose *pose, int maxdd);
+extern char *pose_out(const Pose *pose, int maxdd, size_t *size_out);
 
 /* OGC GeoPose JSON I/O — Basic-YPR + Basic-Quaternion conformance */
 
 extern Pose *pose_from_geopose(const char *json);
-extern char *pose_as_geopose(const Pose *pose, int conformance, int precision);
+extern char *pose_as_geopose(const Pose *pose, int conformance, int precision, size_t *size_out);
 extern Temporal *tpose_from_geopose(const char *json);
-extern char *tpose_as_geopose(const Temporal *temp, int conformance, int precision);
-extern char *tpose_as_geopose_stream_header(const Temporal *temp, int precision);
-extern char *tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst, int precision);
-extern char *tpose_as_geopose_stream(const Temporal *temp, int precision);
+extern char *tpose_as_geopose(const Temporal *temp, int conformance, int precision, size_t *size_out);
+extern char *tpose_as_geopose_stream_header(const Temporal *temp, int precision, size_t *size_out);
+extern char *tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst, int precision, size_t *size_out);
+extern char *tpose_as_geopose_stream(const Temporal *temp, int precision, size_t *size_out);
 
 /**
  * @brief One frame of the OGC GeoPose registry, as the standard names it
@@ -140,7 +140,7 @@ typedef struct
 
 extern const GeoPoseFrame *geopose_frames(int *count);
 extern const GeoPoseFrame *geopose_frame(int32_t frame_id);
-extern char *geopose_frame_name(int32_t frame_id);
+extern char *geopose_frame_name(int32_t frame_id, size_t *size_out);
 extern int32_t geopose_frame_srid(int32_t frame_id);
 extern bool geopose_frame_is_geographic(int32_t frame_id);
 extern GSERIALIZED *pose_apply_geo(const Pose *pose, const GSERIALIZED *body);
@@ -224,7 +224,7 @@ extern bool pose_ne(const Pose *pose1, const Pose *pose2);
 /* Input and output functions */
 
 extern Set *poseset_in(const char *str);
-extern char *poseset_out(const Set *s, int maxdd);
+extern char *poseset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -434,10 +434,10 @@ typedef struct PoseChain PoseChain;
 /* Input and output functions */
 
 extern PoseChain *posechain_in(const char *str);
-extern char *posechain_out(const PoseChain *pc, int maxdd);
-extern char *posechain_as_text(const PoseChain *pc, int maxdd);
+extern char *posechain_out(const PoseChain *pc, int maxdd, size_t *size_out);
+extern char *posechain_as_text(const PoseChain *pc, int maxdd, size_t *size_out);
 extern uint8_t *posechain_as_ewkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
-extern char *posechain_as_ewkt(const PoseChain *pc, int maxdd);
+extern char *posechain_as_ewkt(const PoseChain *pc, int maxdd, size_t *size_out);
 extern uint8_t *posechain_as_wkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
 extern char *posechain_as_hexewkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
 extern char *posechain_as_hexwkb(const PoseChain *pc, uint8_t variant, size_t *size_out);
@@ -489,8 +489,8 @@ extern PoseChain *posechain_transform_pipeline(const PoseChain *pc, const char *
 /* OGC GeoPose input/output functions for temporal pose chains */
 
 extern Temporal *tposechain_from_geopose(const char *json);
-extern char *tposechain_as_geopose(const Temporal *temp, int precision);
-extern char *tposechainarr_as_geopose(const Temporal **temparr, int count, int precision);
+extern char *tposechain_as_geopose(const Temporal *temp, int precision, size_t *size_out);
+extern char *tposechainarr_as_geopose(const Temporal **temparr, int count, int precision, size_t *size_out);
 
 /* Comparison functions */
 
@@ -515,7 +515,7 @@ extern double distance_posechain_stbox(const PoseChain *pc, const STBox *box);
 /* Input and output functions */
 
 extern Set *posechainset_in(const char *str);
-extern char *posechainset_out(const Set *s, int maxdd);
+extern char *posechainset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 

@@ -698,13 +698,23 @@ invalid_syntax:
 /**
  * @ingroup meos_base_numeric
  * @brief Return the string representation of a numeric value
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p numeric_out()
  */
 #if MEOS
 char *
-numeric_out(Numeric num)
+numeric_out(Numeric num, size_t *size_out)
 {
-  return pg_numeric_out(num);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_numeric_out(num);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif 
 char *

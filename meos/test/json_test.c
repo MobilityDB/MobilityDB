@@ -49,6 +49,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -58,17 +59,17 @@ int main(void)
   text *js2 = json_in("{\"a\":5, \"b\":[\"c\",3]}");
   Jsonb *jb1 = jsonb_in("{\"a\":1, \"b\":[1,2]}");
   Jsonb *jb2 = jsonb_in("{\"a\":5, \"b\":[\"c\",3]}");
-  char *js1_out = json_out(js1);
-  char *js2_out = json_out(js2);
-  char *jb1_out = jsonb_out(jb1);
-  char *jb2_out = jsonb_out(jb2);
+  char *js1_out = json_out(js1, &size_out);
+  char *js2_out = json_out(js2, &size_out);
+  char *jb1_out = jsonb_out(jb1, &size_out);
+  char *jb2_out = jsonb_out(jb2, &size_out);
 
   char *jp1_in = "$.b[1] == 2";
   char *jp2_in = "$.b[1] == \"c\"";
   JsonPath *jp1 = jsonpath_in(jp1_in);
   JsonPath *jp2 = jsonpath_in(jp2_in);
-  char *jp1_out = jsonpath_out(jp1);
-  char *jp2_out = jsonpath_out(jp2);
+  char *jp1_out = jsonpath_out(jp1, &size_out);
+  char *jp2_out = jsonpath_out(jp2, &size_out);
 
   // char *tjsonb1_in = "[{\"a\":1, \"b\":[1,2]}@2001-01-01, {\"a\":5, \"b\":[\"c\",3]}@2001-01-03]";
   // Temporal *tjsonb1 = tjsonb_in(tjsonb1_in);
@@ -106,7 +107,7 @@ int main(void)
   printf("json_array_elements([\"a\", \"b\", \"c\"]): {");
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -123,7 +124,7 @@ int main(void)
   printf("json_array_elements_text([\"a\", \"b\", \"c\"]): {");
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -140,10 +141,10 @@ int main(void)
   printf("json_each(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s:", char_result);
     free(char_result);
-    char_result = json_out(values[i]);
+    char_result = json_out(values[i], &size_out);
     printf("%s", char_result);
     free(char_result);
     if (i < count - 1)
@@ -160,10 +161,10 @@ int main(void)
   printf("json_each_text(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s:", char_result);
     free(char_result);
-    char_result = text_out(values[i]);
+    char_result = text_out(values[i], &size_out);
     printf("%s", char_result);
     free(char_result);
     if (i < count - 1)
@@ -181,7 +182,7 @@ int main(void)
   text *js5 = json_in("{\"a\":\"x\", \"b\":2, \"c\":[1], \"d\":{\"e\":3}, \"f\":4}");
   text **values5;
   text **keys5 = json_each(js5, &values5, &count);
-  char *first = text_out(values5[0]);
+  char *first = text_out(values5[0], &size_out);
   printf("json_each over 5 fields: %d fields, first value %s\n", count, first);
   if (count != 5 || strcmp(first, "\"x\"") != 0)
   {
@@ -195,7 +196,7 @@ int main(void)
   }
   free(keys5); free(values5);
   keys5 = json_each_text(js5, &values5, &count);
-  first = text_out(values5[0]);
+  first = text_out(values5[0], &size_out);
   printf("json_each_text over 5 fields: %d fields, first value %s\n", count,
     first);
   if (count != 5 || strcmp(first, "x") != 0)
@@ -212,7 +213,7 @@ int main(void)
 
   /* text *json_in(const char *str); */
   text_result = json_in("{\"a\":1, \"b\":[1,2]}");
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("json_in('{\"a\":1, \"b\":[1,2]}'): %s\n", char_result);
   free(text_result); free(char_result);
 
@@ -223,7 +224,7 @@ int main(void)
   keys_vals[2] = text_in("b");
   keys_vals[3] = text_in("X");
   text_result = json_make((text **) keys_vals, 4);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("json_make({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
   free(keys_vals[0]); free(keys_vals[1]);
   free(keys_vals[2]); free(keys_vals[3]);
@@ -234,7 +235,7 @@ int main(void)
   printf("json_object_keys(%s): {", js1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -253,26 +254,26 @@ int main(void)
   keys[1] = text_in("b");
   vals[1] = text_in("X");
   text_result = json_make_two_arg((text **) keys, (text **) vals, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("json_make_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
   free(keys[0]); free(keys[1]);
   free(vals[0]); free(vals[1]);
   free(text_result); free(char_result);
 
-  /* char *json_out(const text *js); */
-  char_result = json_out(js1);
+  /* char *json_out(const text *js, size_t *size_out); */
+  char_result = json_out(js1, &size_out);
   printf("json_out(%s): %s\n", js1_out, char_result);
   free(char_result);
 
   /* text *json_strip_nulls(const text *js, bool strip_in_arrays); */
   text_result = json_strip_nulls(js1, true);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("json_strip_nulls(%s, true): %s\n", js1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *json_typeof(const text *js); */
   text_result = json_typeof(js1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("json_typeof(%s): %s\n", js1_out, char_result);
   free(text_result); free(char_result);
 
@@ -280,7 +281,7 @@ int main(void)
    * allocates room for are read and written back whole */
   Jsonb *jbwide = jsonb_in(
     "{\"a\":1, \"b\":2, \"c\":3, \"d\":4, \"e\":5, \"f\":[1,2,3,4,5,6]}");
-  char_result = jsonb_out(jbwide);
+  char_result = jsonb_out(jbwide, &size_out);
   printf("jsonb_in of 6 pairs and 6 elements: %s\n", char_result);
   free(jbwide); free(char_result);
 
@@ -290,7 +291,7 @@ int main(void)
   printf("jsonb_array_elements([\"a\", \"b\", \"c\"]): {");
   for (int i = 0; i < count; i++)
   {
-    char_result = jsonb_out(jbarray_result[i]);
+    char_result = jsonb_out(jbarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -308,7 +309,7 @@ int main(void)
   printf("jsonb_array_elements_text([\"a\", \"b\", \"c\"]): {");
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -326,7 +327,7 @@ int main(void)
 
   /* Jsonb *jsonb_concat(const Jsonb *jb1, const Jsonb *jb2); */
   jsonb_result = jsonb_concat(jb1, jb2);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_concat(%s, %s): %s\n", jb1_out, jb2_out, char_result);
   free(jsonb_result); free(char_result);
 
@@ -340,14 +341,14 @@ int main(void)
 
   /* Jsonb *jsonb_copy(const Jsonb *jb); */
   jsonb_result = jsonb_copy(jb1);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_copy(%s): %s\n", jb1_out, char_result);
   free(jsonb_result); free(char_result);
 
   /* Jsonb *jsonb_delete(const Jsonb *jb, const text *key); */
   text *key = text_in("a");
   jsonb_result = jsonb_delete(jb1, key);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_delete(%s, \"a\"): %s\n", jb1_out, char_result);
   free(key); free(jsonb_result); free(char_result);
 
@@ -356,7 +357,7 @@ int main(void)
   keys_elems[0] = text_in("a");
   keys_elems[1] = text_in("b");
   jsonb_result = jsonb_delete_array(jb1, (text **) keys_elems, 2);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_delete_array(%s, {\"a\",\"b\"}, 2): %s\n", jb1_out, char_result);
   free(keys_elems[0]); free(keys_elems[1]);
   free(jsonb_result); free(char_result);
@@ -364,14 +365,14 @@ int main(void)
   /* Jsonb *jsonb_delete_index(const Jsonb *in, int idx); */
   jbarray = jsonb_in("[\"a\", \"b\", \"c\"]");
   jsonb_result = jsonb_delete_index(jbarray, 1);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_delete_index(%s, 1): %s\n", jb1_out, char_result);
   free(jbarray); free(jsonb_result); free(char_result);
 
   /* Jsonb *jsonb_delete_path(const Jsonb *jb, text **path_elems, int path_len); */
   text *path = text_in("a");
   jsonb_result = jsonb_delete_path(jb1, &path, 1);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_delete_path(%s, \"a\"): %s\n", jb1_out, char_result);
   free(path); free(jsonb_result); free(char_result);
 
@@ -381,10 +382,10 @@ int main(void)
   printf("jsonb_each(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s:", char_result);
     free(char_result);
-    char_result = jsonb_out(jsonbarr[i]);
+    char_result = jsonb_out(jsonbarr[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -401,10 +402,10 @@ int main(void)
   printf("jsonb_each_text(%s, values, count): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s:", char_result);
     free(char_result);
-    char_result = text_out(values[i]);
+    char_result = text_out(values[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -421,7 +422,7 @@ int main(void)
   Jsonb *jb5 = jsonb_in("{\"a\":\"x\", \"c\":[1], \"f\":4}");
   Jsonb **jvalues5;
   text **jkeys5 = jsonb_each(jb5, &jvalues5, &count);
-  char *jlast = jsonb_out(jvalues5[count - 1]);
+  char *jlast = jsonb_out(jvalues5[count - 1], &size_out);
   printf("jsonb_each over 3 fields: %d fields, last value %s\n", count, jlast);
   if (count != 3 || strcmp(jlast, "4") != 0)
   {
@@ -450,7 +451,7 @@ int main(void)
   path_elems[0] = text_in("b");
   path_elems[1] = text_in("1");
   jsonb_result = jsonb_extract_path(jb1, (text **) path_elems, 2);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_extract_path(%s, {\"b\",1}, 2): %s\n", jb1_out, char_result);
   free(path_elems[0]); free(path_elems[1]);
   free(jsonb_result); free(char_result);
@@ -459,14 +460,14 @@ int main(void)
   path_elems[0] = text_in("b");
   path_elems[1] = text_in("1");
   text_result = jsonb_extract_path_text(jb1, (text **) path_elems, 2);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("jsonb_extract_path_text(%s, {\"b\",1}, 2): %s\n", jb1_out, char_result);
   free(path_elems[0]); free(path_elems[1]);
   free(text_result); free(char_result);
 
   /* Jsonb *jsonb_from_text(text *txt, bool unique_keys); */
   jsonb_result = jsonb_from_text(js1, true);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_from_text(%s, true): %s\n", js1_out, char_result);
   free(jsonb_result); free(char_result);
 
@@ -480,7 +481,7 @@ int main(void)
 
   /* Jsonb *jsonb_in(const char *str); */
   jsonb_result = jsonb_in("{}");
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_in(\"{}\"): %s\n", char_result);
   free(jsonb_result); free(char_result);
 
@@ -497,7 +498,7 @@ int main(void)
   path_elems[1] = text_in("1");
   Jsonb *newjb = jsonb_in("\"X\"");
   jsonb_result = jsonb_insert(jb1, (text **) path_elems, 2, newjb, true);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_insert(%s, {\"b\",1}, 2, \"X\", true): %s\n", jb1_out, char_result);
   free(path_elems[0]); free(path_elems[1]);
   free(newjb); free(jsonb_result); free(char_result);
@@ -520,7 +521,7 @@ int main(void)
   keys_vals[2] = text_in("b");
   keys_vals[3] = text_in("X");
   jsonb_result = jsonb_make((text **) keys_vals, 4);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_make({\"a\",\"1\",\"b\",\"X\"}, 4): %s\n", char_result);
   free(keys_vals[0]); free(keys_vals[1]);
   free(keys_vals[2]); free(keys_vals[3]);
@@ -529,14 +530,14 @@ int main(void)
   /* Jsonb *jsonb_object_field(const Jsonb *jb, const text *key); */
   key = text_in("a");
   jsonb_result = jsonb_object_field(jb1, key);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_object_field(%s, \"a\"): %s\n", jb1_out, char_result);
   free(key); free(jsonb_result); free(char_result);
 
   /* text *jsonb_object_field_text(const Jsonb *jb, const text *key); */
   key = text_in("a");
   text_result = jsonb_object_field_text(jb1, key);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("jsonb_object_field_text(%s, \"a\"): %s\n", jb1_out, char_result);
   free(key); free(text_result); free(char_result);
 
@@ -545,7 +546,7 @@ int main(void)
   printf("jsonb_object_keys(%s): {", jb1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -562,21 +563,21 @@ int main(void)
   keys[1] = text_in("b");
   vals[1] = text_in("X");
   jsonb_result = jsonb_make_two_arg((text **) keys, (text **) vals, 2);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_make_two_arg({\"a\",\"b\"}, {\"1\",\"X\"}, 2): %s\n", char_result);
   free(keys[0]); free(keys[1]);
   free(vals[0]); free(vals[1]);
   free(jsonb_result); free(char_result);
 
-  /* char *jsonb_out(Jsonb *jb); */
+  /* char *jsonb_out(Jsonb *jb, size_t *size_out); */
   newjb = jsonb_in("{}");
-  char_result = jsonb_out(newjb);
+  char_result = jsonb_out(newjb, &size_out);
   printf("jsonb_out(\"{}\"): %s\n",  char_result);
   free(newjb); free(char_result);
   
   /* text *jsonb_pretty(const Jsonb *jb); */
   text_result = jsonb_pretty(jb1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("jsonb_pretty(%s): %s\n", jb1_out, char_result);
   free(text_result); free(char_result);
 
@@ -585,7 +586,7 @@ int main(void)
   path_elems[1] = text_in("2");
   newjb = jsonb_in("\"X\"");
   jsonb_result = jsonb_set(jb1, (text **) path_elems, 2, newjb, true);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_set(%s, {\"b\",2}, 2): %s\n", jb1_out, char_result);
   free(path_elems[0]); free(path_elems[1]);
   free(newjb); free(jsonb_result); free(char_result);
@@ -595,26 +596,26 @@ int main(void)
   path_elems[1] = text_in("1");
   text *handle_null = text_in("use_json_null");
   jsonb_result = jsonb_set_lax(jb1, (text **) path_elems, 2, NULL, true, handle_null);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("jsonb_set_lax(%s, {\"b\",1}, 2, NULL, true, \"use_json_null\"): %s\n", jb1_out, char_result);
   free(path_elems[0]); free(path_elems[1]);
   free(handle_null); free(jsonb_result); free(char_result);
   
   /* Jsonb *jsonb_strip_nulls(const Jsonb *jb, bool strip_in_arrays); */
   jsonb_result = jsonb_strip_nulls(jb1, true);
-  char_result = jsonb_out(jsonb_result);
+  char_result = jsonb_out(jsonb_result, &size_out);
   printf("json_strip_nulls(%s, true): %s\n", js1_out, char_result);
   free(jsonb_result); free(char_result);
 
   /* text *jsonb_to_text(const Jsonb *jb); */
   text_result = jsonb_to_text(jb1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("jsonb_to_text(%s): %s\n", jb1_out, char_result);
   free(text_result); free(char_result);
 
   /* JsonPath *jsonpath_in(const char *str); */
   jsonpath_result = jsonpath_in(jp1_in);
-  char_result = jsonpath_out(jsonpath_result);
+  char_result = jsonpath_out(jsonpath_result, &size_out);
   printf("jsonpath_in(\"%s\"): %s\n", jp1_in, char_result);
   free(jsonpath_result); free(char_result);
   

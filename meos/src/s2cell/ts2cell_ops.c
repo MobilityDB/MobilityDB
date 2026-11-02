@@ -132,7 +132,8 @@ datum_s2_cell_area(Datum d)
 static Datum
 datum_s2_cell_to_token(Datum d)
 {
-  char *str = s2cell_cell_to_token(DatumGetS2Cell(d));
+  size_t size_out;
+  char *str = s2cell_cell_to_token(DatumGetS2Cell(d), &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   return PointerGetDatum(result);

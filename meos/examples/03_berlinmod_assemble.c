@@ -89,6 +89,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Input variables for reading a record */
   int tripid;
   int vehid;
@@ -237,7 +238,7 @@ int main(void)
       trips[i].tripid, trips[i].num_instants, tpoint_length(trip, true));
 
     /* Write line in the CSV file */
-    char *date_str = date_out(trips[i].day);
+    char *date_str = date_out(trips[i].day, &size_out);
     size_t length;
     /* Encode using server machine endian */
     char *trip_str = temporal_as_hexwkb(trip, WKB_EXTENDED, &length);

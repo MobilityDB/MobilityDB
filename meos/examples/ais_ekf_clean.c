@@ -106,6 +106,7 @@ static bool parse_timestamp_eu(const char *s, TimestampTz *out)
 
 int main(int argc, char **argv)
 {
+  size_t size_out;
   if (argc < 2)
   {
     fprintf(stderr, "Usage: %s input.csv [output.csv] [drop|fill] [gate] [q=...] [r=...]\n", argv[0]);
@@ -356,7 +357,7 @@ int main(int argc, char **argv)
 
     /* Get EWKT of cleaned trajectory */
     GSERIALIZED *traj = tpoint_trajectory(clean ? clean : (Temporal *) seq, false);
-    char *ewkt = traj ? geo_as_ewkt(traj, 10) : NULL;
+    char *ewkt = traj ? geo_as_ewkt(traj, 10, &size_out) : NULL;
     if (fout)
       fprintf(fout, "%lld,\"%s\"\n", trips[i].MMSI, ewkt ? ewkt : "");
     if (ewkt) free(ewkt);
@@ -393,7 +394,8 @@ int main(int argc, char **argv)
           /* Removed point: write row */
           char *ts = timestamptz_out(tr);
           /* Get EWKT for the single instant and parse point coords */
-          char *wkt = tspatial_as_ewkt((Temporal *) ir, 10); /* e.g., SRID=4326;POINT(x y)@time */
+          char *wkt = tspatial_as_ewkt((Temporal *) ir, 10,
+            &size_out); /* e.g., SRID=4326;POINT(x y)@time */
           double lon = 0.0, lat = 0.0;
           if (wkt)
           {

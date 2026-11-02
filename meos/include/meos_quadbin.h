@@ -120,7 +120,7 @@ extern Quadbin quadbin_from_hexwkb(const char *hexwkb);
 extern Quadbin quadbin_from_wkb(const uint8_t *wkb, size_t size);
 extern Quadbin quadbin_in(const char *str);
 extern Quadbin bigint_to_quadbin(int64 i);
-extern char *quadbin_out(Quadbin cell);
+extern char *quadbin_out(Quadbin cell, size_t *size_out);
 
 /* Comparison functions */
 
@@ -194,12 +194,12 @@ extern double quadbin_cell_area(Quadbin cell);
 
 /* Serialization (lowercase hex of the 64-bit index) */
 
-extern char *quadbin_index_to_string(Quadbin index);
+extern char *quadbin_index_to_string(Quadbin index, size_t *size_out);
 extern Quadbin quadbin_string_to_index(const char *str);
 
 /* Quadkey (base-4 slippy-tile string) — NO H3 analogue (quadbin-specific) */
 
-extern char *quadbin_cell_to_quadkey(Quadbin cell);
+extern char *quadbin_cell_to_quadkey(Quadbin cell, size_t *size_out);
 
 /* Set-returning static helpers (square subset; return `quadbinset`) */
 extern Set *quadbin_grid_disk(Quadbin origin, int k);
@@ -214,7 +214,7 @@ extern Set *quadbinset_cover_cells(const Set *cells, int resolution);
 /* Input and output functions of `quadbinset` */
 
 extern Set *quadbinset_in(const char *str);
-extern char *quadbinset_out(const Set *s);
+extern char *quadbinset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions of `quadbinset` */
 
@@ -259,7 +259,7 @@ extern Temporal *tquadbin_in(const char *str);
 extern TInstant *tquadbininst_in(const char *str);
 extern TSequence *tquadbinseq_in(const char *str, interpType interp);
 extern TSequenceSet *tquadbinseqset_in(const char *str);
-extern char *tquadbin_out(const Temporal *temp);
+extern char *tquadbin_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tquadbin_from_mfjson(const char *mfjson);
 
 /* Constructors */

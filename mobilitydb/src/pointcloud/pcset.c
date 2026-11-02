@@ -103,8 +103,9 @@ PG_FUNCTION_INFO_V1(Pcpoint_as_hexwkb);
 Datum
 Pcpoint_as_hexwkb(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Pcpoint *pt = PG_GETARG_PCPOINT_P(0);
-  char *hexwkb = pcpoint_as_hexwkb(pt);
+  char *hexwkb = pcpoint_as_hexwkb(pt, &size_out);
   text *result = cstring_to_text(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(pt, 0);
@@ -143,8 +144,9 @@ PG_FUNCTION_INFO_V1(Pcpatch_as_hexwkb);
 Datum
 Pcpatch_as_hexwkb(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
-  char *hexwkb = pcpatch_as_hexwkb(pa);
+  char *hexwkb = pcpatch_as_hexwkb(pa, &size_out);
   text *result = cstring_to_text(hexwkb);
   pfree(hexwkb);
   PG_FREE_IF_COPY(pa, 0);

@@ -183,6 +183,7 @@ build_hull_wkt(trip_t *trip, int A, int B, int C, int D)
 static Pose *
 make_pose_from_ais(double lon, double lat, double heading_deg)
 {
+  size_t size_out;
   /* Project the antenna position to EPSG:25832 */
   char wgs_pt[80];
   snprintf(wgs_pt, sizeof(wgs_pt),
@@ -192,7 +193,7 @@ make_pose_from_ais(double lon, double lat, double heading_deg)
   GSERIALIZED *gs_utm = geo_transform(gs_wgs, 25832);
   free(gs_wgs);
   if (! gs_utm) return NULL;
-  char *gs_utm_wkt = geo_as_text(gs_utm, 3);
+  char *gs_utm_wkt = geo_as_text(gs_utm, 3, &size_out);
   free(gs_utm);
   double xm = 0, ym = 0;
   if (! gs_utm_wkt || sscanf(gs_utm_wkt, "POINT(%lf %lf)", &xm, &ym) != 2) {
@@ -223,6 +224,7 @@ make_pose_from_ais(double lon, double lat, double heading_deg)
 int
 main(int argc, char **argv)
 {
+  size_t size_out;
   int max_trips = (argc > 1) ? atoi(argv[1]) : 8;
   int max_inst  = (argc > 2) ? atoi(argv[2]) : 500;
   if (max_trips < 2 || max_trips > MAX_TRIPS_HARD) max_trips = 8;
@@ -363,7 +365,7 @@ main(int argc, char **argv)
       Temporal *dat_min = temporal_at_min(d);
       if (dat_min) {
         TimestampTz tmin = temporal_start_timestamptz(dat_min);
-        tmin_str = timestamptz_out(tmin);
+        tmin_str = timestamptz_out(tmin, &size_out);
         free(dat_min);
       }
     }

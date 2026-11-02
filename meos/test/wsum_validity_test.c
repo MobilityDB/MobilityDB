@@ -57,6 +57,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -94,7 +95,7 @@ int main(void)
     Temporal *temp = tfloat_in(answered[i]);
     SkipList *state = tfloat_wsum_transfn(NULL, temp, interv);
     Temporal *result = temporal_tagg_finalfn(state);
-    char *result_out = result ? tfloat_out(result, 6) : NULL;
+    char *result_out = result ? tfloat_out(result, 6, &size_out) : NULL;
     printf("tfloat_wsum_transfn(NULL, %s): %s, errno %d\n", answered[i],
       result_out ? result_out : "NULL", meos_errno());
     assert(result != NULL);

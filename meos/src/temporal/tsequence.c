@@ -793,10 +793,12 @@ tsequence_in(const char *str, MeosType temptype, interpType interp)
  * temporal sequence set and thus no interpolation string at the begining of
  * the string should be output
  * @param[in] value_out Function called to output the base value
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
 tsequence_to_string(const TSequence *seq, int maxdd, bool component,
-  outfunc value_out)
+  outfunc value_out, size_t *size_out)
 {
   assert(seq);
   assert(maxdd >= 0);
@@ -812,7 +814,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
   for (int i = 0; i < seq->count; i++)
   {
     strings[i] = tinstant_to_string(TSEQUENCE_INST_N(seq, i), maxdd,
-      value_out);
+      value_out, NULL);
   }
   char open, close;
   if (MEOS_FLAGS_DISCRETE_INTERP(seq->flags))
@@ -826,7 +828,7 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
     close = seq->period.upper_inc ? (char) ']' : (char) ')';
   }
   return stringarr_to_string(strings, seq->count, prefix, open, close,
-    QUOTES_NO, SPACES);
+    QUOTES_NO, SPACES, size_out);
 }
 
 /**
@@ -835,12 +837,14 @@ tsequence_to_string(const TSequence *seq, int maxdd, bool component,
  * sequence
  * @param[in] seq Temporal sequence
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tsequence_out(const TSequence *seq, int maxdd)
+tsequence_out(const TSequence *seq, int maxdd, size_t *size_out)
 {
   assert(seq);
-  return tsequence_to_string(seq, maxdd, false, &basetype_out);
+  return tsequence_to_string(seq, maxdd, false, &basetype_out, size_out);
 }
 
 /*****************************************************************************

@@ -127,20 +127,30 @@ pg_jsonpath_in(const char *str)
  * @ingroup meos_json_base_jsonpath
  * @brief Return the string representation of a JSON path
  * @param[in] jp JSON path
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p jsonpath_out()
  * @csqlfn #Jsonpath_as_text()
  */
 #if MEOS
 char *
-jsonpath_out(const JsonPath *jp)
+jsonpath_out(const JsonPath *jp, size_t *size_out)
 {
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   /* Ensure the validity of the arguments */
   if (! jp)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
   }
-  return pg_jsonpath_out(jp);
+  char *result = pg_jsonpath_out(jp);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif /* MEOS */
 char *

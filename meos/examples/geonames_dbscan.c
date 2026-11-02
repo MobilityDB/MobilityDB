@@ -153,6 +153,7 @@ get_admin1_no(char *admin1, char *admin1_list[])
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Get start time */
   clock_t t;
   t = clock();
@@ -277,7 +278,7 @@ int main(void)
   for (j = 0; j < count; j++)
   {
     /* Write record in output file */
-    char *point_str = geo_out(geom[j]);
+    char *point_str = geo_out(geom[j], &size_out);
     fprintf(output_file,"%d,%s,%s,%s,%d\n",
       geonameid[j], name[j], admin1[j], point_str, cluster[j]);
     free(point_str);

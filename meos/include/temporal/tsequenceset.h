@@ -81,7 +81,7 @@ extern bool intersection_tsequence_tsequenceset(const TSequence *seq,
 /* Input/output functions */
 
 extern char *tsequenceset_to_string(const TSequenceSet *ss, int maxdd,
-  outfunc value_out);
+  outfunc value_out, size_t *size_out);
 
 /*****************************************************************************/
 

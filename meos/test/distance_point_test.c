@@ -150,10 +150,11 @@ still(double x, double y)
 static bool
 point_at(const GSERIALIZED *gs, double x, double y)
 {
+  size_t size_out;
   char buffer[128];
   snprintf(buffer, sizeof(buffer), "POINT(%.17g %.17g)", x, y);
   GSERIALIZED *expected = geom_in(buffer, -1);
-  char *hex1 = geo_as_hexewkb(gs, "XDR"), *hex2 = geo_as_hexewkb(expected, "XDR");
+  char *hex1 = geo_as_hexewkb(gs, "XDR", &size_out), *hex2 = geo_as_hexewkb(expected, "XDR", &size_out);
   bool result = hex1 && hex2 && strcmp(hex1, hex2) == 0;
   free(hex1); free(hex2); free(expected);
   return result;

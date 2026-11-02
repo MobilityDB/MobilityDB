@@ -353,6 +353,8 @@ tpcbox_in(const char *str)
 /**
  * @ingroup meos_pointcloud_box_inout
  * @brief Return the text representation of a TPCBox
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details Examples (commas optional inside the parenthesised groups):
  * @code
  * TPCBOX(X((10, 20), (30, 40)), 1)
@@ -364,9 +366,11 @@ tpcbox_in(const char *str)
  * @csqlfn #Tpcbox_out(), #Tpcbox_as_text()
  */
 char *
-tpcbox_out(const TPCBox *box, int maxdd)
+tpcbox_out(const TPCBox *box, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPCBOX(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -388,7 +392,7 @@ tpcbox_out(const TPCBox *box, int maxdd)
   const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
   if (hast)
   {
-    period = span_out(&box->period, maxdd);
+    period = span_out(&box->period, maxdd, NULL);
     if (! period)
     {
       pfree(str);
@@ -398,14 +402,14 @@ tpcbox_out(const TPCBox *box, int maxdd)
 
   if (hasx && hast)
   {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
+    xmin = float8_out(box->xmin, maxdd, &part_size);
+    xmax = float8_out(box->xmax, maxdd, &part_size);
+    ymin = float8_out(box->ymin, maxdd, &part_size);
+    ymax = float8_out(box->ymax, maxdd, &part_size);
     if (hasz)
     {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
+      zmin = float8_out(box->zmin, maxdd, &part_size);
+      zmax = float8_out(box->zmax, maxdd, &part_size);
       snprintf(str, TPCBOX_MAXLEN,
         "%s%s(ZT(((%s,%s,%s),(%s,%s,%s)),%s), %u)",
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period, box->pcid);
@@ -416,14 +420,14 @@ tpcbox_out(const TPCBox *box, int maxdd)
   }
   else if (hasx)
   {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
+    xmin = float8_out(box->xmin, maxdd, &part_size);
+    xmax = float8_out(box->xmax, maxdd, &part_size);
+    ymin = float8_out(box->ymin, maxdd, &part_size);
+    ymax = float8_out(box->ymax, maxdd, &part_size);
     if (hasz)
     {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
+      zmin = float8_out(box->zmin, maxdd, &part_size);
+      zmax = float8_out(box->zmax, maxdd, &part_size);
       snprintf(str, TPCBOX_MAXLEN, "%s%s(Z((%s,%s,%s),(%s,%s,%s)), %u)",
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, box->pcid);
     }
@@ -445,7 +449,7 @@ tpcbox_out(const TPCBox *box, int maxdd)
   }
   if (hast)
     pfree(period);
-  return str;
+  return cstring_size(str, size_out);
 }
 
 /**

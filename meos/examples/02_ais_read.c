@@ -68,6 +68,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -121,10 +122,10 @@ int main(void)
       GSERIALIZED *gs = geogpoint_make2d(4326, rec.Longitude, rec.Latitude);
       TInstant *inst1 = tpointinst_make(gs, rec.T);
       free(gs);
-      char *inst1_out = tspatial_as_text((Temporal *) inst1, 2);
+      char *inst1_out = tspatial_as_text((Temporal *) inst1, 2, &size_out);
 
       TInstant *inst2 = tfloatinst_make(rec.SOG, rec.T);
-      char *inst2_out = tfloat_out((Temporal *) inst2, 2);
+      char *inst2_out = tfloat_out((Temporal *) inst2, 2, &size_out);
       printf("MMSI: %ld, Location: %s SOG : %s\n",
         rec.MMSI, inst1_out, inst2_out);
 

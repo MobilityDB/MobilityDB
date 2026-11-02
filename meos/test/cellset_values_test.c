@@ -107,6 +107,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -149,7 +150,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     Set *one = h3index_to_set(hv[i]);
-    char *str = h3indexset_out(one);
+    char *str = h3indexset_out(one, &size_out);
     printf("  value %d: %s\n", i, str);
     assert(str && strcmp(str, expected[i]) == 0);
     free(str); free(one);

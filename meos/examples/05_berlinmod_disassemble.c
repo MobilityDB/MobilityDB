@@ -91,6 +91,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Variables to read the input CSV file */
   char header_buffer[MAX_LEN_HEADER];
   char date_buffer[MAX_LEN_DATE];
@@ -207,9 +208,10 @@ int main(void)
     }
 
     /* Write line in the CSV file */
-    char *date_str = date_out(trips[min_trip].day);
-    char *geom_str = geo_as_ewkt((GSERIALIZED *) &min_inst->value, 6);
-    char *time_str = timestamptz_out(min_inst->t);
+    char *date_str = date_out(trips[min_trip].day, &size_out);
+    char *geom_str = geo_as_ewkt((GSERIALIZED *) &min_inst->value, 6,
+      &size_out);
+    char *time_str = timestamptz_out(min_inst->t, &size_out);
     fprintf(file,"%d,%d,%s,%d,%s,%s\n", trips[min_trip].vehid,
       trips[min_trip].vehid, date_str, trips[min_trip].seq, geom_str, time_str);
     free(date_str); free(geom_str); free(time_str); free(min_inst);

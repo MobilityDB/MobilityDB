@@ -46,6 +46,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -53,8 +54,8 @@ int main(void)
   /* Create values to test the functions of the API */
   bool b1 = bool_in("true");
   bool b2 = bool_in("false");
-  char *b1_out = bool_out(b1);
-  char *b2_out = bool_out(b2);
+  char *b1_out = bool_out(b1, &size_out);
+  char *b2_out = bool_out(b2, &size_out);
 
   /* Create the result types for the functions of the API */
   bool bool_result;
@@ -101,14 +102,14 @@ int main(void)
   bool_result = bool_ne(b1, b2);
   printf("bool_ne(%s, %s): %c\n", b1_out, b2_out, bool_result ? 't' : 'f');
 
-  /* char *bool_out(bool b); */
-  char_result = bool_out(b1);
+  /* char *bool_out(bool b, size_t *size_out); */
+  char_result = bool_out(b1, &size_out);
   printf("bool_out(%s): %s\n", b1_out, char_result);
   free(char_result);
 
   /* text *bool_to_text(bool b); */
   text_result = bool_to_text(b1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("bool_to_text(%s): %s\n", b1_out, char_result);
   free(text_result); free(char_result);
 

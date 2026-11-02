@@ -57,6 +57,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -130,7 +131,7 @@ int main(void)
   meos_errno_reset();
   Temporal *joined = temporal_merge(join1, join2);
   assert(joined);
-  char *joined_out = tfloat_out(joined, 6);
+  char *joined_out = tfloat_out(joined, 6, &size_out);
   printf("temporal_merge(%s, %s): %s\n", "[77@2001-01-01, 88@2001-01-03]",
     "[88@2001-01-03, 44@2001-01-05]", joined_out);
   assert(joined_out[0] == '[');
@@ -145,7 +146,7 @@ int main(void)
   Temporal *okarr[2] = {ok1, ok2};
   merged = temporal_merge_array(okarr, 2);
   assert(merged);
-  char *merged_out = tfloat_out(merged, 6);
+  char *merged_out = tfloat_out(merged, 6, &size_out);
   printf("temporal_merge_array({%s, %s}, 2): %s\n",
     "{77@2001-01-01}", "{88@2001-01-02}", merged_out);
   assert(strcmp(merged_out,
@@ -158,7 +159,7 @@ int main(void)
   Temporal *samearr[2] = {same1, same2};
   Temporal *sameres = temporal_merge_array(samearr, 2);
   assert(sameres);
-  char *sameres_out = tfloat_out(sameres, 6);
+  char *sameres_out = tfloat_out(sameres, 6, &size_out);
   printf("temporal_merge_array({%s, %s}, 2): %s\n",
     "{77@2001-01-01}", "{77@2001-01-01}", sameres_out);
   assert(strcmp(sameres_out, "77@2001-01-01 00:00:00+00") == 0);

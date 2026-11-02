@@ -72,6 +72,7 @@
 #include "temporal/type_inout.h"
 #include "h3/h3_generated.h"
 #include "h3/th3index_internal.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Validity predicates
@@ -735,15 +736,19 @@ meos_h3index_in(const char *str)
 /**
  * @ingroup meos_h3_base_inout
  * @brief Format an H3Index as its canonical hex string
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details The output matches h3-pg's `h3index_out` output: lowercase, no
  * "0x" prefix, no leading zeros.
  * @csqlfn #H3index_as_text()
  */
 #if MEOS
 char *
-h3index_out(H3Index cell)
+h3index_out(H3Index cell, size_t *size_out)
 {
-  return meos_h3index_out(cell);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return cstring_size(meos_h3index_out(cell), size_out);
 }
 #endif
 char *

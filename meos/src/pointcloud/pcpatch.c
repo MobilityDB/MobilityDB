@@ -330,11 +330,14 @@ pcpatch_hex_in(const char *str)
  * writes, in the compression of the patch and the byte order of the machine
  * @param[in] pa Patch
  * @param[in] maxdd Unused (kept for API uniformity with set_out)
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-pcpatch_hex_out(const Pcpatch *pa, int maxdd)
+pcpatch_hex_out(const Pcpatch *pa, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pa, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -360,6 +363,7 @@ pcpatch_hex_out(const Pcpatch *pa, int maxdd)
   for (size_t i = 0; i < size; i++)
     deparse_hex(wkb[i], result + 2 * i);
   result[2 * size] = '\0';
+  *size_out = 2 * size + 1;
   pcfree(wkb);
   return result;
 }
@@ -380,12 +384,16 @@ pcpatch_from_hexwkb(const char *hexwkb)
  * @ingroup meos_pointcloud_base_inout
  * @brief Return the hex-WKB representation of a pcpatch
  * @param[in] pa Patch
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Pcpatch_as_hexwkb()
  */
 char *
-pcpatch_as_hexwkb(const Pcpatch *pa)
+pcpatch_as_hexwkb(const Pcpatch *pa, size_t *size_out)
 {
-  return pcpatch_hex_out(pa, 0);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return pcpatch_hex_out(pa, 0, size_out);
 }
 
 /*****************************************************************************

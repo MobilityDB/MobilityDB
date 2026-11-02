@@ -245,15 +245,19 @@ geopose_frame_registered(int32_t frame_id)
  * @ingroup meos_pose_base_geopose
  * @brief Return the name of a frame of the OGC GeoPose registry
  * @param[in] frame_id Identifier of the frame
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A copy of the name, which the caller frees
  * @errval NULL
  * @csqlfn #Geopose_frame_name()
  */
 char *
-geopose_frame_name(int32_t frame_id)
+geopose_frame_name(int32_t frame_id, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   const GeoPoseFrame *frame = geopose_frame_registered(frame_id);
-  return frame ? pstrdup(frame->name) : NULL;
+  return cstring_size(frame ? pstrdup(frame->name) : NULL, size_out);
 }
 
 /**
@@ -352,6 +356,25 @@ geopose_get_number(json_object *obj, const char *name, double *out)
  * emitted authority strings read as the standard writes them. */
 #define GEOPOSE_JSON_FLAGS \
   (JSON_C_TO_STRING_PLAIN | JSON_C_TO_STRING_NOSLASHESCAPE)
+
+/**
+ * @brief Return a copy of the GeoPose JSON text of an object, writing its
+ * size, the terminating null character included, when the caller asks for it
+ * @param[in] obj JSON object
+ * @param[out] size_out If not NULL, the size of the result
+ * @note The length comes from json-c, which writes the text, rather than from
+ * a scan of the copy
+ */
+static char *
+geopose_json_string(json_object *obj, size_t *size_out)
+{
+  size_t len;
+  const char *json = json_object_to_json_string_length(obj, GEOPOSE_JSON_FLAGS,
+    &len);
+  if (size_out)
+    *size_out = len + 1;
+  return pnstrdup(json, len);
+}
 
 #define GEOPOSE_DEG2RAD(d) ((d) * (M_PI / 180.0))
 #define GEOPOSE_RAD2DEG(r) ((r) * (180.0 / M_PI))
@@ -862,6 +885,8 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
  * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Decimal places to keep in the JSON numbers; pass
  * a negative value to use json-c's default
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @details Every conformance class mandates a geographic outer
  * frame. Poses with SRID 0 are treated as geographic; poses with
@@ -875,16 +900,17 @@ pose_to_geopose_object(const Pose *pose, int conformance, int precision)
  * @csqlfn #Pose_as_geopose()
  */
 char *
-pose_as_geopose(const Pose *pose, int conformance, int precision)
+pose_as_geopose(const Pose *pose, int conformance, int precision,
+  size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pose, NULL);
   json_object *root = pose_to_geopose_object(pose, conformance, precision);
   if (root == NULL)
     return NULL;
 
-  int flags = GEOPOSE_JSON_FLAGS;
-  const char *raw = json_object_to_json_string_ext(root, flags);
-  char *out = pstrdup(raw);
+  char *out = geopose_json_string(root, size_out);
   json_object_put(root);
   return out;
 }
@@ -1695,10 +1721,13 @@ tpose_from_geopose_series(json_object *root, json_object *elements,
  * GeoPose_Instant, that is Unix time in integer milliseconds. Every time
  * this module writes is that same kind, whichever class the document
  * belongs to.
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  * @errval NULL
  */
 static char *
-tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
+tposeinst_as_geopose(const TInstant *inst, int conformance, int precision,
+  size_t *size_out)
 {
   const Pose *pose = DatumGetPoseP(tinstant_value_p(inst));
   json_object *root = pose_to_geopose_object(pose, conformance, precision);
@@ -1706,8 +1735,7 @@ tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
     return NULL;
   json_object_object_add(root, "validTime",
     json_object_new_int64(geopose_instant_out(inst->t)));
-  char *res = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *res = geopose_json_string(root, size_out);
   json_object_put(root);
   return res;
 }
@@ -1731,12 +1759,17 @@ tposeinst_as_geopose(const TInstant *inst, int conformance, int precision)
  * @param[in] conformance Class of a single-pose document
  * (0 = Basic-Quaternion, 1 = Basic-YPR, 2 = Advanced)
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tpose_as_geopose()
  */
 char *
-tpose_as_geopose(const Temporal *temp, int conformance, int precision)
+tpose_as_geopose(const Temporal *temp, int conformance, int precision,
+  size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPOSE(temp, NULL);
 
   /* The target class follows from the value. A single pose is a Basic
@@ -1745,7 +1778,7 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
    * otherwise. */
   if (temp->subtype == TINSTANT)
     return tposeinst_as_geopose((const TInstant *) temp, conformance,
-      precision);
+      precision, size_out);
 
   int count;
   const TInstant **instants = temporal_insts_p(temp, &count);
@@ -1756,8 +1789,7 @@ tpose_as_geopose(const Temporal *temp, int conformance, int precision)
   json_object *series = tpose_to_geopose_series(temp, regular, precision);
   if (series == NULL)
     return NULL;
-  char *res = pstrdup(json_object_to_json_string_ext(series,
-    GEOPOSE_JSON_FLAGS));
+  char *res = geopose_json_string(series, size_out);
   json_object_put(series);
   return res;
 }
@@ -1820,12 +1852,17 @@ geopose_stream_element_obj(const GeoPoseAnchor *anchor, const TInstant *inst,
  * of the same tangent point.
  * @param[in] temp Temporal pose
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tpose_as_geopose_stream_header()
  */
 char *
-tpose_as_geopose_stream_header(const Temporal *temp, int precision)
+tpose_as_geopose_stream_header(const Temporal *temp, int precision,
+  size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPOSE(temp, NULL);
 
   const TInstant *first = temporal_start_inst(temp);
@@ -1836,8 +1873,7 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
     return NULL;
 
   json_object *root = geopose_stream_header_obj(temp, &anchor, precision);
-  char *res = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *res = geopose_json_string(root, size_out);
   json_object_put(root);
   return res;
 }
@@ -1854,13 +1890,17 @@ tpose_as_geopose_stream_header(const Temporal *temp, int precision)
  * @param[in] temp Temporal pose the stream is written from
  * @param[in] inst Instant to write
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tpose_as_geopose_stream_element()
  */
 char *
 tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
-  int precision)
+  int precision, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPOSE(temp, NULL);
   VALIDATE_TPOSE((const Temporal *) inst, NULL);
   if (! ensure_temporal_isof_subtype((const Temporal *) inst, TINSTANT))
@@ -1876,8 +1916,7 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
   json_object *root = geopose_stream_element_obj(&anchor, inst, precision);
   if (root == NULL)
     return NULL;
-  char *res = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *res = geopose_json_string(root, size_out);
   json_object_put(root);
   return res;
 }
@@ -1898,12 +1937,16 @@ tpose_as_geopose_stream_element(const Temporal *temp, const TInstant *inst,
  * does.
  * @param[in] temp Temporal pose
  * @param[in] precision Significant digits in JSON numbers; -1 = lossless
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tpose_as_geopose_stream()
  */
 char *
-tpose_as_geopose_stream(const Temporal *temp, int precision)
+tpose_as_geopose_stream(const Temporal *temp, int precision, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPOSE(temp, NULL);
 
   int count;
@@ -1935,8 +1978,7 @@ tpose_as_geopose_stream(const Temporal *temp, int precision)
   json_object_object_add(root, "header",
     geopose_stream_header_obj(temp, &anchor, precision));
   json_object_object_add(root, "streamElements", arr);
-  char *res = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *res = geopose_json_string(root, size_out);
   json_object_put(root);
   pfree(instants);
   return res;
@@ -2240,12 +2282,16 @@ geopose_chain_link_frame(const Pose *pose, int precision)
  * parent.
  * @param[in] temp Temporal pose chain holding a single instant
  * @param[in] precision Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tposechain_as_geopose()
  */
 char *
-tposechain_as_geopose(const Temporal *temp, int precision)
+tposechain_as_geopose(const Temporal *temp, int precision, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TPOSECHAIN(temp, NULL);
   if (temp->subtype != TINSTANT)
   {
@@ -2298,8 +2344,7 @@ tposechain_as_geopose(const Temporal *temp, int precision)
     pfree(link);
   }
   json_object_object_add(root, "frameChain", chain);
-  char *result = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *result = geopose_json_string(root, size_out);
   json_object_put(root);
   return result;
 }
@@ -2317,12 +2362,17 @@ tposechain_as_geopose(const Temporal *temp, int precision)
  * @param[in] temparr Array of temporal pose chains, each of a single instant
  * @param[in] count Number of elements in the array
  * @param[in] precision Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tposechainarr_as_geopose()
  */
 char *
-tposechainarr_as_geopose(const Temporal **temparr, int count, int precision)
+tposechainarr_as_geopose(const Temporal **temparr, int count, int precision,
+  size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(temparr, NULL);
   if (! ensure_not_empty_array(count))
     return NULL;
@@ -2418,8 +2468,7 @@ tposechainarr_as_geopose(const Temporal **temparr, int count, int precision)
     json_object_new_int64(geopose_instant_out(t)));
   json_object_object_add(root, "frameList", frames);
   json_object_object_add(root, "transformList", transforms);
-  char *result = pstrdup(json_object_to_json_string_ext(root,
-    GEOPOSE_JSON_FLAGS));
+  char *result = geopose_json_string(root, size_out);
   json_object_put(root);
   return result;
 }

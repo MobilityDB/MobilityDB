@@ -115,25 +115,25 @@ typedef struct
 /* Input and output functions */
 
 extern uint8_t *npoint_as_ewkb(const Npoint *np, uint8_t variant, size_t *size_out);
-extern char *npoint_as_ewkt(const Npoint *np, int maxdd);
+extern char *npoint_as_ewkt(const Npoint *np, int maxdd, size_t *size_out);
 extern char *npoint_as_hexewkb(const Npoint *np, uint8_t variant, size_t *size_out);
 extern char *npoint_as_hexwkb(const Npoint *np, uint8_t variant, size_t *size_out);
-extern char *npoint_as_text(const Npoint *np, int maxdd);
+extern char *npoint_as_text(const Npoint *np, int maxdd, size_t *size_out);
 extern uint8_t *npoint_as_wkb(const Npoint *np, uint8_t variant, size_t *size_out);
 extern Npoint *npoint_from_hexwkb(const char *hexwkb);
 extern Npoint *npoint_from_wkb(const uint8_t *wkb, size_t size);
 extern Npoint *npoint_in(const char *str);
-extern char *npoint_out(const Npoint *np, int maxdd);
+extern char *npoint_out(const Npoint *np, int maxdd, size_t *size_out);
 extern char *nsegment_as_hexewkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
 extern char *nsegment_as_hexwkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
 extern uint8_t *nsegment_as_wkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
 extern Nsegment *nsegment_from_hexwkb(const char *hexwkb);
 extern Nsegment *nsegment_from_wkb(const uint8_t *wkb, size_t size);
 extern Nsegment *nsegment_in(const char *str);
-extern char *nsegment_out(const Nsegment *ns, int maxdd);
+extern char *nsegment_out(const Nsegment *ns, int maxdd, size_t *size_out);
 extern uint8_t *nsegment_as_ewkb(const Nsegment *ns, uint8_t variant, size_t *size_out);
-extern char *nsegment_as_ewkt(const Nsegment *ns, int maxdd);
-extern char *nsegment_as_text(const Nsegment *ns, int maxdd);
+extern char *nsegment_as_ewkt(const Nsegment *ns, int maxdd, size_t *size_out);
+extern char *nsegment_as_text(const Nsegment *ns, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -208,7 +208,7 @@ extern bool nsegment_ne(const Nsegment *ns1, const Nsegment *ns2);
 /* Input and output functions */
 
 extern Set *npointset_in(const char *str);
-extern char *npointset_out(const Set *s, int maxdd);
+extern char *npointset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -252,7 +252,7 @@ extern double distance_npointset_npointset(const Set *s1, const Set *s2);
 
 extern Temporal *tnpoint_in(const char *str);
 extern Temporal *tnpoint_from_mfjson(const char *mfjson);
-extern char *tnpoint_out(const Temporal *temp, int maxdd);
+extern char *tnpoint_out(const Temporal *temp, int maxdd, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions

@@ -159,15 +159,24 @@ bool_in(const char *str)
  * @ingroup meos_base_bool
  * @brief Return the string representation of a boolean
  * @param[in] b Boolean value
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details Convert 1 or 0 to @p "t" or @p "f"
  * @note PostgreSQL function: @p boolout()
  */
 char *
-bool_out(bool b)
+bool_out(bool b, size_t *size_out)
 {
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   char *result = (char *) palloc(2);
   result[0] = (b) ? 't' : 'f';
   result[1] = '\0';
+  if (result)
+    *size_out = strlen(result) + 1;
   return result;
 }
 

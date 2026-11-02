@@ -181,9 +181,10 @@ PG_FUNCTION_INFO_V1(Tposechain_as_geopose);
 Datum
 Tposechain_as_geopose(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int precision = PG_GETARG_INT32(1);
-  char *result = tposechain_as_geopose(temp, precision);
+  char *result = tposechain_as_geopose(temp, precision, &size_out);
   PG_FREE_IF_COPY(temp, 0);
   if (result == NULL) PG_RETURN_NULL();
   text *result_text = cstring_to_text(result);
@@ -202,12 +203,13 @@ PG_FUNCTION_INFO_V1(Tposechainarr_as_geopose);
 Datum
 Tposechainarr_as_geopose(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   ArrayType *array = PG_GETARG_ARRAYTYPE_P(0);
   int precision = PG_GETARG_INT32(1);
   int count;
   Temporal **temparr = temparr_extract(array, &count);
   char *result = tposechainarr_as_geopose((const Temporal **) temparr, count,
-    precision);
+    precision, &size_out);
   pfree(temparr);
   PG_FREE_IF_COPY(array, 0);
   if (result == NULL) PG_RETURN_NULL();

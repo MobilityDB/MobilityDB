@@ -60,6 +60,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -113,7 +114,7 @@ int main(void)
       spanset_union_transfn(state[rec.k%NUM_GROUPS], rec.ss);
 
     /* Output the float spanset value read */
-    char *spanset_out = floatspanset_out(rec.ss, 3);
+    char *spanset_out = floatspanset_out(rec.ss, 3, &size_out);
     printf("k: %d, spanset: %s\n", rec.k, spanset_out);
     free(spanset_out);
     free(rec.ss);
@@ -133,7 +134,7 @@ int main(void)
     printf("----------\n");
     printf("Group: %d\n", i + 1);
     printf("----------\n");
-    char *spanset_out = floatspanset_out(final, 3);
+    char *spanset_out = floatspanset_out(final, 3, &size_out);
     printf("spanset: %s\n", spanset_out);
     free(spanset_out);
     free(final);

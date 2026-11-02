@@ -52,6 +52,7 @@ static int
 run_case(const char *name, const char *traj_in, const char *poly_in,
   const char *expect_out)
 {
+  size_t size_out;
   Temporal *traj = (Temporal *) tgeompoint_in(traj_in);
   GSERIALIZED *poly = (GSERIALIZED *) geom_in(poly_in, -1);
   if (! traj || ! poly)
@@ -60,7 +61,7 @@ run_case(const char *name, const char *traj_in, const char *poly_in,
     return 1;
   }
   Temporal *clipped = tgeo_at_geom(traj, poly);
-  char *got = clipped ? tspatial_as_text(clipped, 6) : strdup("(empty)");
+  char *got = clipped ? tspatial_as_text(clipped, 6, &size_out) : strdup("(empty)");
   int pass = expect_out ? (strcmp(got, expect_out) == 0) : (clipped == NULL);
   printf("%s %s\n  in:       %s\n  poly:     %s\n  expected: %s\n  got:      %s\n",
     pass ? "[PASS]" : "[FAIL]", name, traj_in, poly_in,

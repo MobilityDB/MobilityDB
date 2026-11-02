@@ -51,10 +51,10 @@
 
 
 extern text *json_in(const char *str);
-extern char *json_out(const text *js);
+extern char *json_out(const text *js, size_t *size_out);
 extern Jsonb *jsonb_from_text(const text *txt, bool unique_keys);
 extern Jsonb *jsonb_in(const char *str);
-extern char *jsonb_out(const Jsonb *jb);
+extern char *jsonb_out(const Jsonb *jb, size_t *size_out);
 
 /* Constructor functions */
 
@@ -67,7 +67,7 @@ extern Jsonb *jsonb_make_two_arg(text **keys, text **values, int count);
 /* Conversion functions */
 
 extern bool jsonb_to_bool(const Jsonb *jb);
-extern char *jsonb_to_cstring(const Jsonb *jb);
+extern char *jsonb_to_cstring(const Jsonb *jb, size_t *size_out);
 extern float4 jsonb_to_float4(const Jsonb *jb);
 extern float8 jsonb_to_float8(const Jsonb *jb);
 extern int16 jsonb_to_int16(const Jsonb *jb);
@@ -147,7 +147,7 @@ extern Jsonb *jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const 
 extern JsonPath *jsonpath_in(const char *str);
 extern JsonPath *jsonpath_copy(const JsonPath *jp);
 extern int jsonpath_mem_size(const JsonPath *jp);
-extern char *jsonpath_out(const JsonPath *jp);
+extern char *jsonpath_out(const JsonPath *jp, size_t *size_out);
 
 /*****************************************************************************/
 
@@ -217,7 +217,7 @@ typedef enum
 /* Input and output functions */
 
 extern Set *jsonbset_in(const char *str);
-extern char *jsonbset_out(const Set *s);
+extern char *jsonbset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions */
 
@@ -297,7 +297,7 @@ extern Set *union_set_jsonb(const Set *s, const Jsonb *jb);
 
 extern Temporal *tjsonb_from_mfjson(const char *str);
 extern Temporal *tjsonb_in(const char *str);
-extern char *tjsonb_out(const Temporal *temp);
+extern char *tjsonb_out(const Temporal *temp, size_t *size_out);
 
 // Internal
 extern TInstant *tjsonbinst_in(const char *str);

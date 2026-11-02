@@ -68,6 +68,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -277,13 +278,13 @@ int main(void)
   assert(! found && meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
   gm = tpoint_to_geomeas(trip, false);
-  char *gm_text = geo_as_text(gm, 6);
+  char *gm_text = geo_as_text(gm, 6, &size_out);
   printf("tpoint_to_geomeas(trip): %s, errno %d\n", gm_text, meos_errno());
   assert(strcmp(gm_text, "LINESTRING M (1 1 978307200,2 2 978393600)") == 0 &&
     meos_errno() == 0);
   free(gm_text); free(gm);
   found = tpoint_tfloat_to_geomeas(trip, meas, false, &gm);
-  gm_text = geo_as_text(gm, 6);
+  gm_text = geo_as_text(gm, 6, &size_out);
   printf("tpoint_tfloat_to_geomeas(trip, meas): %s, errno %d\n", gm_text,
     meos_errno());
   assert(found && strcmp(gm_text, "LINESTRING M (1 1 10,2 2 20)") == 0 &&

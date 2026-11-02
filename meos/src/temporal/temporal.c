@@ -824,21 +824,29 @@ intersection_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
 /**
  * @ingroup meos_misc
  * @brief Return the version of the MEOS library
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A string the caller frees, as the one of #meos_full_version
  */
 char *
-meos_version(void)
+meos_version(size_t *size_out)
 {
-  return pstrdup(MOBILITYDB_VERSION_STRING);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return cstring_size(pstrdup(MOBILITYDB_VERSION_STRING), size_out);
 }
 
 /**
  * @ingroup meos_misc
  * @brief Return the versions of the MEOS library and its dependencies
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-meos_full_version(void)
+meos_full_version(size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   PJ_INFO pji = proj_info();
   const char *proj_vers = pji.version;
   const char *json_c_vers = json_c_version();
@@ -849,29 +857,37 @@ meos_full_version(void)
     MOBILITYDB_VERSION_STRING, POSTGRESQL_VERSION_STRING,
     POSTGIS_VERSION_STRING, proj_vers, json_c_vers);
   result[len] = '\0';
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
  * @ingroup meos_misc
  * @brief Return the version of the MobilityDB extension
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Mobilitydb_version()
  */
 char *
-mobilitydb_version(void)
+mobilitydb_version(size_t *size_out)
 {
-  return meos_version();
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return meos_version(size_out);
 }
 
 /**
  * @ingroup meos_misc
  * @brief Return the versions of the MobilityDB extension and its dependencies
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Mobilitydb_full_version()
  */
 char *
-mobilitydb_full_version(void)
+mobilitydb_full_version(size_t *size_out)
 {
-  return meos_full_version();
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return meos_full_version(size_out);
 }
 
 /*****************************************************************************
@@ -898,10 +914,12 @@ temporal_in(const char *str, MeosType temptype)
  * @brief Return the Well-Known Text (WKT) representation of a temporal value
  * @param[in] temp Temporal value
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-temporal_out(const Temporal *temp, int maxdd)
+temporal_out(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
@@ -912,11 +930,11 @@ temporal_out(const Temporal *temp, int maxdd)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tinstant_out((TInstant *) temp, maxdd);
+      return tinstant_out((TInstant *) temp, maxdd, size_out);
     case TSEQUENCE:
-      return tsequence_out((TSequence *) temp, maxdd);
+      return tsequence_out((TSequence *) temp, maxdd, size_out);
     default: /* TSEQUENCESET */
-      return tsequenceset_out((TSequenceSet *) temp, maxdd);
+      return tsequenceset_out((TSequenceSet *) temp, maxdd, size_out);
   }
 }
 
@@ -941,7 +959,7 @@ temparr_out(const Temporal **temparr, int count, int maxdd)
 
   char **result = palloc(sizeof(text *) * count);
   for (int i = 0; i < count; i++)
-    result[i] = temporal_out(temparr[i], maxdd);
+    result[i] = temporal_out(temparr[i], maxdd, NULL);
   return result;
 }
 
@@ -1024,28 +1042,34 @@ ttext_in(const char *str)
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal boolean
  * @param[in] temp Temporal boolean
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-tbool_out(const Temporal *temp)
+tbool_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TBOOL(temp, NULL); 
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal integer
  * @param[in] temp Temporal integer
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-tint_out(const Temporal *temp)
+tint_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TINT(temp, NULL); 
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /**
@@ -1053,14 +1077,17 @@ tint_out(const Temporal *temp)
  * @brief Return the Well-Known Text (WKT) representation of a temporal big
  * integer
  * @param[in] temp Temporal big integer
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-tbigint_out(const Temporal *temp)
+tbigint_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TBIGINT(temp, NULL);
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /**
@@ -1068,30 +1095,36 @@ tbigint_out(const Temporal *temp)
  * @brief Return the Well-Known Text (WKT) representation of a temporal float
  * @param[in] temp Temporal float
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-tfloat_out(const Temporal *temp, int maxdd)
+tfloat_out(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TFLOAT(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return temporal_out(temp, maxdd);
+  return temporal_out(temp, maxdd, size_out);
 }
 
 /**
  * @ingroup meos_temporal_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal text
  * @param[in] temp Temporal text
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-ttext_out(const Temporal *temp)
+ttext_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TTEXT(temp, NULL); 
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /*****************************************************************************

@@ -154,13 +154,23 @@ pg_json_in(const char *str)
  * @ingroup meos_json_base_inout
  * @brief Return the string representation of a JSON value
  * @param[in] js JSON value
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p json_out()
  */
 #if MEOS
 char *
-json_out(const text *js)
+json_out(const text *js, size_t *size_out)
 {
-  return pg_text_to_cstring(js);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_text_to_cstring(js);
+  if (result)
+    *size_out = VARSIZE_ANY_EXHDR(js) + 1;
+  return result;
 }
 #endif /* MEOS */
 char *

@@ -108,19 +108,29 @@ pg_jsonb_in(const char *str)
 /**
  * @ingroup meos_json_base_inout
  * @brief Return the string representation if a JSONB value
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p jsonb_out()
  */
 #if MEOS
 char *
-jsonb_out(const Jsonb *jb)
+jsonb_out(const Jsonb *jb, size_t *size_out)
 {
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
   /* Ensure the validity of the arguments */
   if (! jb)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
     return NULL;
   }
-  return pg_jsonb_out(jb);
+  char *result = pg_jsonb_out(jb);
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 #endif /* MEOS */
 char *
@@ -842,12 +852,22 @@ pg_jsonb_make_two_arg(text **keys, text **values, int count)
  * @ingroup meos_json_base_conversion
  * @brief Convert a JSONB value into a C string
  * @param[in] jb JSONB object
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-jsonb_to_cstring(const Jsonb *jb)
+jsonb_to_cstring(const Jsonb *jb, size_t *size_out)
 {
   assert(jb);
-  return JsonbToCString(NULL, &((Jsonb *) jb)->root, VARSIZE(jb));
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = JsonbToCString(NULL, &((Jsonb *) jb)->root, VARSIZE(jb));
+  if (result)
+    *size_out = strlen(result) + 1;
+  return result;
 }
 
 /*

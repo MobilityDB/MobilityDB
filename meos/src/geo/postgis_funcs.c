@@ -142,16 +142,19 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
  * @brief Return the string representation of a PostGIS GBOX
  * @param[in] box Box
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-gbox_out(const GBOX *box, int maxdd)
+gbox_out(const GBOX *box, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
-  return gbox_to_string(box);
+  return cstring_size(gbox_to_string(box), size_out);
 }
 
 /**
@@ -225,6 +228,8 @@ box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
  * @brief Return the string representation of a PostGIS BOX3D
  * @param[in] box Box
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details The format is `BOX3D(xmin ymin zmin,xmax ymax zmax)`, the one
  * PostGIS gives the @p box3d type it declares, so that a value printed here
  * is read back by a PostgreSQL session and the other way round. As PostGIS
@@ -234,9 +239,10 @@ box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
  * character for character
  */
 char *
-box3d_out(const BOX3D *box, int maxdd)
+box3d_out(const BOX3D *box, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -260,7 +266,7 @@ box3d_out(const BOX3D *box, int maxdd)
   len += lwprint_double(box->zmax, maxdd, buf + len);
   buf[len++] = ')';
   buf[len] = '\0';
-  return strdup(buf);
+  return cstring_size(strdup(buf), size_out);
 }
 
 /**
@@ -4369,6 +4375,8 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @ingroup meos_geo_base_rel
  * @brief Return the DE-9IM intersection matrix of two geometries
  * @param[in] gs1,gs2 Geometries
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @details The matrix is the native one, so a circular arc is met on its own
  * circle rather than on the chords a linearization would put in its place.
  * @ref geom_relate_pattern() answers whether a pattern matches it, which is
@@ -4380,9 +4388,10 @@ geom_disjoint2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @csqlfn #Geom_relate()
  */
 char *
-geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_not_geodetic_geo(gs1))
     return NULL;
 
@@ -4416,7 +4425,7 @@ geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   }
   char *result = palloc(10);
   strcpy(result, matrix);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
@@ -7679,18 +7688,21 @@ geom_in(const char *str, int32 typmod)
  * The WKB otput is in the machine endian.
  * If SRID=-1, the @p 'SRID=-1;' will probably not be present.
  * @param[in] gs Geometry/geography
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note PostGIS function: @p LWGEOM_out(PG_FUNCTION_ARGS)
  */
 char *
-geo_out(const GSERIALIZED *gs)
+geo_out(const GSERIALIZED *gs, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(gs, NULL);
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_hexwkb_buffer(geom, WKB_EXTENDED);
   lwgeom_free(geom);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
@@ -7746,15 +7758,18 @@ geo_from_text(const char *wkt, int32_t srid)
  * @param[in] extended True for the EWKT representation, false for the WKT one
  * @note This is a a stricter version of #geom_in, where we refuse to
  * accept (HEX)WKB or EWKT.
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
+geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended,
+  size_t *size_out)
 {
   assert(gs); assert(precision >= 0);
 
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO,
-    precision, NULL);
+    precision, size_out);
   lwgeom_free(geom);
   return result;
 }
@@ -7765,17 +7780,20 @@ geo_as_wkt(const GSERIALIZED *gs, int precision, bool extended)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] precision Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note PostGIS function: @p LWGEOM_asText(PG_FUNCTION_ARGS)
  * @sqlfn asText()
  */
 char *
-geo_as_text(const GSERIALIZED *gs, int precision)
+geo_as_text(const GSERIALIZED *gs, int precision, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_negative(precision))
     return NULL;
-  return geo_as_wkt(gs, precision, false);
+  return geo_as_wkt(gs, precision, false, size_out);
 }
 
 /**
@@ -7784,19 +7802,22 @@ geo_as_text(const GSERIALIZED *gs, int precision)
  * geometry/geography
  * @param[in] gs Geometry/geography
  * @param[in] precision Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note This is a a stricter version of #geom_in, where we refuse to
  * accept (HEX)WKB or EWKT.
  * @note PostGIS function: @p LWGEOM_asEWKT(PG_FUNCTION_ARGS)
  * @sqlfn asEWKT()
  */
 char *
-geo_as_ewkt(const GSERIALIZED *gs, int precision)
+geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_negative(precision))
     return NULL;
-  return geo_as_wkt(gs, precision, true);
+  return geo_as_wkt(gs, precision, true, size_out);
 }
 
 /**
@@ -7837,13 +7858,16 @@ geog_from_hexewkb(const char *hexwkb)
  * @param[in] endian Endian encoding: an empty string (machine endianness),
  * `"ndr"` (little-endian) or `"xdr"` (big-endian), as #wkb_variant_from_endian
  * reads it @nullable
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note PostGIS function: @p AsHEXEWKB(gs, string)
  * @csqlfn #Geo_as_hexewkb()
  */
 char *
-geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
+geo_as_hexewkb(const GSERIALIZED *gs, const char *endian, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(gs, NULL);
   uint8_t variant = wkb_variant_from_endian(endian);
   /* A non-empty order read as the machine's is one the decoder refused */
@@ -7853,7 +7877,7 @@ geo_as_hexewkb(const GSERIALIZED *gs, const char *endian)
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   char *result = lwgeom_to_hexwkb_buffer(geom, variant | WKB_EXTENDED);
   lwgeom_free(geom);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
@@ -7978,15 +8002,18 @@ geo_from_geojson(const char *geojson)
  * @param[in] precision Maximum number of decimal digits
  * @param[in] srs Name of the coordinate reference system, which the output
  * states in place of the one of the SRID @nullable
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @note PostGIS function: @p LWGEOM_asGeoJson(PG_FUNCTION_ARGS)
  * @sqlfn asGeoJSON()
  */
 char *
 geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
-  const char *srs)
+  const char *srs, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_not_negative(precision))
     return NULL;
@@ -8023,7 +8050,9 @@ geo_as_geojson(const GSERIALIZED *gs, int option, int precision,
   /* The result of lwgeom_to_geojson is a length-prefixed lwvarlena_t whose data
    * is not null-terminated; copy exactly its length so the string does not read
    * past the end into adjacent memory */
-  char *result = pnstrdup(VARDATA(txt), LWSIZE_GET(txt->size) - LWVARHDRSZ);
+  size_t len = LWSIZE_GET(txt->size) - LWVARHDRSZ;
+  char *result = pnstrdup(VARDATA(txt), len);
+  *size_out = len + 1;
   lwgeom_free(geom); pfree(txt);
   return result;
 }

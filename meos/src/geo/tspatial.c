@@ -105,16 +105,17 @@
 char *
 spatialbase_as_text(Datum value, MeosType type, int maxdd)
 {
+  size_t size_out;
   assert(spatial_basetype(type)); assert(maxdd >= 0);
 
   switch (type)
   {
     case T_GEOMETRY:
     case T_GEOGRAPHY:
-      return geo_as_text(DatumGetGserializedP(value), maxdd);
+      return geo_as_text(DatumGetGserializedP(value), maxdd, &size_out);
 #if CBUFFER
     case T_CBUFFER:
-      return cbuffer_as_text(DatumGetCbufferP(value), maxdd);
+      return cbuffer_as_text(DatumGetCbufferP(value), maxdd, &size_out);
 #endif
 #if H3
     case T_H3INDEX:
@@ -122,27 +123,29 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 #endif
 #if NPOINT
     case T_NPOINT:
-      return npoint_as_text(DatumGetNpointP(value), maxdd);
+      return npoint_as_text(DatumGetNpointP(value), maxdd, &size_out);
 #endif
 #if POINTCLOUD
     case T_PCPOINT:
-      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd);
+      return pcpoint_hex_out((const Pcpoint *) DatumGetPointer(value), maxdd,
+        &size_out);
     case T_PCPATCH:
-      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd);
+      return pcpatch_hex_out((const Pcpatch *) DatumGetPointer(value), maxdd,
+        &size_out);
 #endif
 #if POSE
     case T_POSE:
-      return pose_as_text(DatumGetPoseP(value), maxdd);
+      return pose_as_text(DatumGetPoseP(value), maxdd, &size_out);
     case T_POSECHAIN:
-      return posechain_as_text(DatumGetPoseChainP(value), maxdd);
+      return posechain_as_text(DatumGetPoseChainP(value), maxdd, &size_out);
 #endif
 #if QUADBIN
     case T_QUADBIN:
-      return quadbin_index_to_string((Quadbin) DatumGetInt64(value));
+      return quadbin_index_to_string((Quadbin) DatumGetInt64(value), &size_out);
 #endif
 #if S2CELL
     case T_S2CELL:
-      return s2cell_out((S2CellId) DatumGetInt64(value));
+      return s2cell_out((S2CellId) DatumGetInt64(value), &size_out);
 #endif
     default: /* Error! */
       meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,
@@ -155,9 +158,11 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 /**
  * @brief Return the string representation of a base value
  * @errval NULL
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
+spatialbase_as_ewkt(Datum value, MeosType type, int maxdd, size_t *size_out)
 {
   assert(spatial_basetype(type)); assert(maxdd >= 0);
   /* Get the text representation of the value */
@@ -166,15 +171,23 @@ spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
   char srid_str[18];
   srid_str[0] = '\0';
   int32_t srid = spatial_srid(value, type);
+  size_t base_len = strlen(base_str);
   if (srid <= 0)
+  {
+    if (size_out)
+      *size_out = base_len + 1;
     return base_str;
+  }
 
   /* SRID_MAXIMUM is defined by PostGIS as 999999 */
-  snprintf(srid_str, sizeof(srid_str), "SRID=%d;", srid);
-  char *result = palloc(strlen(srid_str) + strlen(base_str) + 1);
-  strcpy(result, srid_str);
-  strcat(result, base_str);
+  size_t srid_len = (size_t) snprintf(srid_str, sizeof(srid_str), "SRID=%d;",
+    srid);
+  char *result = palloc(srid_len + base_len + 1);
+  memcpy(result, srid_str, srid_len);
+  memcpy(result + srid_len, base_str, base_len + 1);
   pfree(base_str);
+  if (size_out)
+    *size_out = srid_len + base_len + 1;
   return result;
 }
 
@@ -187,13 +200,19 @@ spatialbase_as_ewkt(Datum value, MeosType type, int maxdd)
  * @param[in] wkt_out Well-Known Text (WKT) function to print the set elements
  * without leading SRID string
  * @param[in] extended True when the leading SRID string is output
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
+spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended,
+  size_t *size_out)
 {
   assert(s); assert(spatialset_type(s->settype)); assert(maxdd >= 0);
 
-  char *set_str = set_out_fn(s, maxdd, wkt_out);
+  size_t set_size;
+  char *set_str = set_out_fn(s, maxdd, wkt_out, &set_size);
+  if (size_out)
+    *size_out = set_size;
   if (! extended)
     return set_str;
 
@@ -205,11 +224,14 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
     return set_str;
 
   /* SRID_MAXIMUM is defined by PostGIS as 999999 */
-  snprintf(srid_str, sizeof(srid_str), "SRID=%d;", srid);
-  char *result = palloc(strlen(srid_str) + strlen(set_str) + 1);
-  strcpy(result, srid_str);
-  strcat(result, set_str);
+  size_t srid_len = (size_t) snprintf(srid_str, sizeof(srid_str), "SRID=%d;",
+    srid);
+  char *result = palloc(srid_len + set_size);
+  memcpy(result, srid_str, srid_len);
+  memcpy(result + srid_len, set_str, set_size);
   pfree(set_str);
+  if (size_out)
+    *size_out = srid_len + set_size;
   return result;
 }
 
@@ -218,16 +240,19 @@ spatialset_out_fn(const Set *s, int maxdd, outfunc wkt_out, bool extended)
 /**
  * @ingroup meos_geo_set_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatial set
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Spatialset_as_text()
  */
 char *
-spatialset_as_text(const Set *s, int maxdd)
+spatialset_as_text(const Set *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_SPATIALSET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false);
+  return spatialset_out_fn(s, maxdd, &spatialbase_as_text, false, size_out);
 }
 
 /**
@@ -235,17 +260,20 @@ spatialset_as_text(const Set *s, int maxdd)
  * @brief Return the Extended Well-Known Text (EWKT) representation of a geo set
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Spatialset_as_ewkt()
  */
 char *
-spatialset_as_ewkt(const Set *s, int maxdd)
+spatialset_as_ewkt(const Set *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_SPATIALSET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
   /* The SRID will be output as prefix, the elements will output the SRID */
-  return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true);
+  return spatialset_out_fn(s, maxdd, &spatialbase_as_text, true, size_out);
 }
 
 /**
@@ -294,12 +322,14 @@ spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out)
  * instant
  * @param[in] inst Temporal instant
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tspatialinst_as_text(const TInstant *inst, int maxdd)
+tspatialinst_as_text(const TInstant *inst, int maxdd, size_t *size_out)
 {
   assert(inst);
-  return tinstant_to_string(inst, maxdd, &spatialbase_as_text);
+  return tinstant_to_string(inst, maxdd, &spatialbase_as_text, size_out);
 }
 
 /**
@@ -308,12 +338,14 @@ tspatialinst_as_text(const TInstant *inst, int maxdd)
  * spatial sequence
  * @param[in] seq Temporal sequence
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tspatialseq_as_text(const TSequence *seq, int maxdd)
+tspatialseq_as_text(const TSequence *seq, int maxdd, size_t *size_out)
 {
   assert(seq);
-  return tsequence_to_string(seq, maxdd, false, &spatialbase_as_text);
+  return tsequence_to_string(seq, maxdd, false, &spatialbase_as_text, size_out);
 }
 
 /**
@@ -322,12 +354,14 @@ tspatialseq_as_text(const TSequence *seq, int maxdd)
  * spatial sequence set
  * @param[in] ss Temporal sequence set
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tspatialseqset_as_text(const TSequenceSet *ss, int maxdd)
+tspatialseqset_as_text(const TSequenceSet *ss, int maxdd, size_t *size_out)
 {
   assert(ss);
-  return tsequenceset_to_string(ss, maxdd, &spatialbase_as_text);
+  return tsequenceset_to_string(ss, maxdd, &spatialbase_as_text, size_out);
 }
 
 /**
@@ -336,12 +370,15 @@ tspatialseqset_as_text(const TSequenceSet *ss, int maxdd)
  * spatial value
  * @param[in] temp Spatiotemporal value
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Tspatial_as_text()
  */
 char *
-tspatial_as_text(const Temporal *temp, int maxdd)
+tspatial_as_text(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -350,11 +387,11 @@ tspatial_as_text(const Temporal *temp, int maxdd)
   switch (temp->subtype)
   {
     case TINSTANT:
-      return tspatialinst_as_text((TInstant *) temp, maxdd);
+      return tspatialinst_as_text((TInstant *) temp, maxdd, size_out);
     case TSEQUENCE:
-      return tspatialseq_as_text((TSequence *) temp, maxdd);
+      return tspatialseq_as_text((TSequence *) temp, maxdd, size_out);
     default: /* TSEQUENCESET */
-      return tspatialseqset_as_text((TSequenceSet *) temp, maxdd);
+      return tspatialseqset_as_text((TSequenceSet *) temp, maxdd, size_out);
   }
 }
 
@@ -366,12 +403,16 @@ tspatial_as_text(const Temporal *temp, int maxdd)
  * spatiotemporal value
  * @param[in] temp Spatiotemporal value
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Tspatial_as_ewkt()
  */
 char *
-tspatial_as_ewkt(const Temporal *temp, int maxdd)
+tspatial_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TSPATIAL(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -386,11 +427,13 @@ tspatial_as_ewkt(const Temporal *temp, int maxdd)
     snprintf(str1, sizeof(str1), "SRID=%d%c", srid, interp_prefix ? ',' : ';');
   else
     str1[0] = '\0';
-  char *str2 = tspatial_as_text(temp, maxdd);
-  char *result = palloc(strlen(str1) + strlen(str2) + 1);
-  strcpy(result, str1);
-  strcat(result, str2);
+  char *str2 = tspatial_as_text(temp, maxdd, &part_size);
+  size_t len1 = strlen(str1);
+  char *result = palloc(len1 + part_size);
+  memcpy(result, str1, len1);
+  memcpy(result + len1, str2, part_size);
   pfree(str2);
+  *size_out = len1 + part_size;
   return result;
 }
 
@@ -449,6 +492,7 @@ char **
 spatialarr_wkt_out(const Datum *spatialarr, MeosType elemtype, int count,
   int maxdd, bool extended)
 {
+  size_t size_out;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(spatialarr, NULL);
   if (! ensure_positive(count) || ! ensure_not_negative(maxdd))
@@ -459,11 +503,11 @@ spatialarr_wkt_out(const Datum *spatialarr, MeosType elemtype, int count,
   {
     if (temporal_type(elemtype))
       result[i] = extended ?
-        tspatial_as_ewkt(DatumGetTemporalP(spatialarr[i]), maxdd) :
-        tspatial_as_text(DatumGetTemporalP(spatialarr[i]), maxdd);
+        tspatial_as_ewkt(DatumGetTemporalP(spatialarr[i]), maxdd, &size_out) :
+        tspatial_as_text(DatumGetTemporalP(spatialarr[i]), maxdd, &size_out);
     else
       result[i] = extended ?
-        spatialbase_as_ewkt(spatialarr[i], elemtype, maxdd) :
+        spatialbase_as_ewkt(spatialarr[i], elemtype, maxdd, NULL) :
         spatialbase_as_text(spatialarr[i], elemtype, maxdd);
   }
   return result;

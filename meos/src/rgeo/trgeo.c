@@ -173,20 +173,24 @@ trgeometry_from_mfjson(const char *mfjson)
  * @brief Return the Well-Known Text (WKT) representation of a temporal rigid
  * geometry
  * @param[in] temp Temporal rigid geometry
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Trgeometry_out()
  */
 char *
-trgeometry_out(const Temporal *temp)
+trgeometry_out(const Temporal *temp, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  char *geom = geo_out(trgeometry_geom_p(temp));
-  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
+  char *geom = geo_out(trgeometry_geom_p(temp), &part_size);
+  char *pose = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, NULL);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(geom) + strlen(pose) + 2;
   char *result = palloc(len);
-  snprintf(result, len, "%s;%s", geom, pose);
+  *size_out = (size_t) snprintf(result, len, "%s;%s", geom, pose) + 1;
   pfree(geom); pfree(pose);
   return result;
 }
@@ -198,10 +202,14 @@ trgeometry_out(const Temporal *temp)
  * @param[in] temp Temporal rigid geometry
  * @param[in] maxdd Maximum number of decimal digits
  * @param[in] extended True when the leading SRID string is output
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended)
+trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended,
+  size_t *size_out)
 {
+  size_t part_size;
   assert(temp); assert(temp->temptype == T_TRGEOMETRY); assert(maxdd >= 0);
 
   /* Write the geometry */
@@ -210,12 +218,14 @@ trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended)
     maxdd, NULL);
   lwgeom_free(geom);
   /* Write the pose */
-  char *wkt_pose = tspatial_as_text(temp, maxdd);
+  char *wkt_pose = tspatial_as_text(temp, maxdd, &part_size);
   /* Write the representations with the ';' delimiter and the end '\0' */
   size_t len = strlen(wkt_geom) + strlen(wkt_pose) + 2;
   char *result = palloc(len);
-  snprintf(result, len, "%s;%s", wkt_geom, wkt_pose);
+  int n = snprintf(result, len, "%s;%s", wkt_geom, wkt_pose);
   pfree(wkt_geom); pfree(wkt_pose);
+  if (size_out)
+    *size_out = (size_t) n + 1;
   return result;
 }
 
@@ -225,16 +235,19 @@ trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended)
  * geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Trgeometry_as_text()
  */
 char *
-trgeometry_as_text(const Temporal *temp, int maxdd)
+trgeometry_as_text(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return trgeometry_wkt_out(temp, maxdd, false);
+  return trgeometry_wkt_out(temp, maxdd, false, size_out);
 }
 
 /**
@@ -243,16 +256,19 @@ trgeometry_as_text(const Temporal *temp, int maxdd)
  * temporal rigid geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Trgeometry_as_ewkt()
  */
 char *
-trgeometry_as_ewkt(const Temporal *temp, int maxdd)
+trgeometry_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TRGEOMETRY(temp, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return trgeometry_wkt_out(temp, maxdd, true);
+  return trgeometry_wkt_out(temp, maxdd, true, size_out);
 }
 
 /*****************************************************************************

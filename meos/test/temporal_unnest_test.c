@@ -58,6 +58,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -122,7 +123,7 @@ int main(void)
   assert(spanset_num_spans(rss[0]) + spanset_num_spans(rss[1]) == 3);
   for (int i = 0; i < count; i++)
   {
-    char *str = geo_as_text(rvals[i], 6);
+    char *str = geo_as_text(rvals[i], 6, &size_out);
     printf("  placement %d: %s, %d span(s)\n", i, str,
       spanset_num_spans(rss[i]));
     assert(str && strncmp(str, "POLYGON", 7) == 0);

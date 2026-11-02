@@ -508,8 +508,9 @@ PG_FUNCTION_INFO_V1(Quadbin_cell_to_quadkey);
 Datum
 Quadbin_cell_to_quadkey(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  char *str = quadbin_cell_to_quadkey(cell);
+  char *str = quadbin_cell_to_quadkey(cell, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

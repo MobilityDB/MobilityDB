@@ -110,13 +110,16 @@ tbox_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal box
  * @param[in] box Temporal box
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Tbox_out(), #Tbox_as_text()
  */
 char *
-tbox_out(const TBox *box, int maxdd)
+tbox_out(const TBox *box, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -130,10 +133,10 @@ tbox_out(const TBox *box, int maxdd)
 
   /* Generate the strings for the span and/or the period */
   if (hasx)
-    span = span_out(&box->span, maxdd);
+    span = span_out(&box->span, maxdd, NULL);
   if (hast)
     /* The second argument is not used for periods */
-    period = span_out(&box->period, maxdd);
+    period = span_out(&box->period, maxdd, NULL);
   if ((hasx && ! span) || (hast && ! period))
   {
     if (span)
@@ -161,7 +164,7 @@ tbox_out(const TBox *box, int maxdd)
     pfree(span);
   if (hast)
     pfree(period);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************

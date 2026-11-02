@@ -62,6 +62,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -130,7 +131,7 @@ int main(void)
   {
     Set *final = set_union_finalfn(state[i]);
     /* Print the accumulated set */
-    char *final_out = textset_out(final);
+    char *final_out = textset_out(final, &size_out);
     printf("-------------------------------\n");
     printf("Set: %d, Number of elements: %d\n", i, final->count);
     printf("-------------------------------\n");

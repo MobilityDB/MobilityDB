@@ -131,7 +131,7 @@ extern S2CellId s2cell_from_hexwkb(const char *hexwkb);
 extern S2CellId s2cell_from_wkb(const uint8_t *wkb, size_t size);
 extern S2CellId s2cell_in(const char *str);
 extern S2CellId bigint_to_s2cell(int64 i);
-extern char *s2cell_out(S2CellId cell);
+extern char *s2cell_out(S2CellId cell, size_t *size_out);
 
 /* Comparison functions */
 
@@ -159,7 +159,7 @@ extern bool s2cell_is_valid_cell(S2CellId cell);
 
 /* Token conversion — NO H3/quadbin analogue (S2-specific) */
 
-extern char *s2cell_cell_to_token(S2CellId cell);
+extern char *s2cell_cell_to_token(S2CellId cell, size_t *size_out);
 extern S2CellId s2cell_token_to_cell(const char *token);
 
 /* Inspection */
@@ -223,7 +223,7 @@ extern Set *s2cellset_cover_cells(const Set *cells, int resolution);
 /* Input and output functions of `s2cellset` */
 
 extern Set *s2cellset_in(const char *str);
-extern char *s2cellset_out(const Set *s);
+extern char *s2cellset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions of `s2cellset` */
 
@@ -261,7 +261,7 @@ extern Temporal *ts2cell_in(const char *str);
 extern TInstant *ts2cellinst_in(const char *str);
 extern TSequence *ts2cellseq_in(const char *str, interpType interp);
 extern TSequenceSet *ts2cellseqset_in(const char *str);
-extern char *ts2cell_out(const Temporal *temp);
+extern char *ts2cell_out(const Temporal *temp, size_t *size_out);
 extern Temporal *ts2cell_from_mfjson(const char *mfjson);
 
 /* Constructors */

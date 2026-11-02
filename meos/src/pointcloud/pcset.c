@@ -127,16 +127,19 @@ pcpointset_in(const char *str)
  * @param[in] s Set
  * @param[in] maxdd Maximum number of decimal digits (ignored — pcpoint
  *   serializes as opaque hex at the MEOS layer)
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Set_out()
  */
 char *
-pcpointset_out(const Set *s, int maxdd)
+pcpointset_out(const Set *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_PCPOINTSET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return set_out(s, maxdd);
+  return set_out(s, maxdd, size_out);
 }
 
 /*****************************************************************************
@@ -419,16 +422,19 @@ pcpatchset_in(const char *str)
 /**
  * @ingroup meos_pointcloud_set_inout
  * @brief Return the textual (hex-WKB) representation of a pcpatch set
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Set_out()
  */
 char *
-pcpatchset_out(const Set *s, int maxdd)
+pcpatchset_out(const Set *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_PCPATCHSET(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return set_out(s, maxdd);
+  return set_out(s, maxdd, size_out);
 }
 
 /*****************************************************************************

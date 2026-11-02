@@ -124,6 +124,7 @@ expect_text(char *out, const char *want, const char *call)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -245,7 +246,7 @@ int main(void)
     "tjsonb_to_ttext_key(tjsonb, a)");
   /* A JSONB set converted into text and back is the set it was */
   Set *textset = jsonbset_to_textset(jsonbset);
-  char *textset_str = textset_out(textset);
+  char *textset_str = textset_out(textset, &size_out);
   printf("jsonbset_to_textset(jsonbset): %s, errno %d\n", textset_str,
     meos_errno());
   assert(textset != NULL);
@@ -367,55 +368,55 @@ int main(void)
    * keeps the string quoted, the text form unquotes it */
   Set *s; Temporal *t;
   s = jsonbset_object_field(sobj, key, NULL_JSON_NULL);
-  expect_text(jsonbset_out(s), "{\"\\\"km/h\\\"\"}",
+  expect_text(jsonbset_out(s, &size_out), "{\"\\\"km/h\\\"\"}",
     "jsonbset_object_field(jsonbset, units)");
   free(s);
   s = jsonbset_object_field_text(sobj, key, NULL_JSON_NULL);
-  expect_text(textset_out(s), "{\"km/h\"}",
+  expect_text(textset_out(s, &size_out), "{\"km/h\"}",
     "jsonbset_object_field_text(jsonbset, units)");
   free(s);
   s = jsonbset_array_element(sarr, 1, NULL_JSON_NULL);
-  expect_text(jsonbset_out(s), "{\"\\\"La Bourse\\\"\"}",
+  expect_text(jsonbset_out(s, &size_out), "{\"\\\"La Bourse\\\"\"}",
     "jsonbset_array_element(jsonbset, 1)");
   free(s);
   s = jsonbset_array_element_text(sarr, 1, NULL_JSON_NULL);
-  expect_text(textset_out(s), "{\"La Bourse\"}",
+  expect_text(textset_out(s, &size_out), "{\"La Bourse\"}",
     "jsonbset_array_element_text(jsonbset, 1)");
   free(s);
   s = jsonbset_extract_path(sobj, path, 1, NULL_JSON_NULL);
-  expect_text(jsonbset_out(s), "{\"\\\"km/h\\\"\"}",
+  expect_text(jsonbset_out(s, &size_out), "{\"\\\"km/h\\\"\"}",
     "jsonbset_extract_path(jsonbset, {units})");
   free(s);
   s = jsonbset_extract_path_text(sobj, path, 1, NULL_JSON_NULL);
-  expect_text(textset_out(s), "{\"km/h\"}",
+  expect_text(textset_out(s, &size_out), "{\"km/h\"}",
     "jsonbset_extract_path_text(jsonbset, {units})");
   free(s);
   t = tjson_object_field(tobjtxt, key, NULL_JSON_NULL);
-  expect_text(ttext_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+  expect_text(ttext_out(t, &size_out), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
     "tjson_object_field(ttext, units)");
   free(t);
   t = tjsonb_object_field(tobj, key, NULL_JSON_NULL);
-  expect_text(tjsonb_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+  expect_text(tjsonb_out(t, &size_out), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
     "tjsonb_object_field(tjsonb, units)");
   free(t);
   t = tjsonb_object_field_text(tobj, key, NULL_JSON_NULL);
-  expect_text(ttext_out(t), "\"km/h\"@2001-01-01 00:00:00+00",
+  expect_text(ttext_out(t, &size_out), "\"km/h\"@2001-01-01 00:00:00+00",
     "tjsonb_object_field_text(tjsonb, units)");
   free(t);
   t = tjsonb_array_element(tarr, 1, NULL_JSON_NULL);
-  expect_text(tjsonb_out(t), "\"\\\"La Bourse\\\"\"@2001-01-01 00:00:00+00",
+  expect_text(tjsonb_out(t, &size_out), "\"\\\"La Bourse\\\"\"@2001-01-01 00:00:00+00",
     "tjsonb_array_element(tjsonb, 1)");
   free(t);
   t = tjsonb_array_element_text(tarr, 1, NULL_JSON_NULL);
-  expect_text(ttext_out(t), "\"La Bourse\"@2001-01-01 00:00:00+00",
+  expect_text(ttext_out(t, &size_out), "\"La Bourse\"@2001-01-01 00:00:00+00",
     "tjsonb_array_element_text(tjsonb, 1)");
   free(t);
   t = tjsonb_extract_path(tobj, path, 1, NULL_JSON_NULL);
-  expect_text(tjsonb_out(t), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
+  expect_text(tjsonb_out(t, &size_out), "\"\\\"km/h\\\"\"@2001-01-01 00:00:00+00",
     "tjsonb_extract_path(tjsonb, {units})");
   free(t);
   t = tjsonb_extract_path_text(tobj, path, 1, NULL_JSON_NULL);
-  expect_text(ttext_out(t), "\"km/h\"@2001-01-01 00:00:00+00",
+  expect_text(ttext_out(t, &size_out), "\"km/h\"@2001-01-01 00:00:00+00",
     "tjsonb_extract_path_text(tjsonb, {units})");
   free(t);
 
@@ -434,12 +435,12 @@ int main(void)
   expect_error(tjsonb_set_lax(tobj, path, 1, NULL, true, NULL),
     MEOS_ERR_INVALID_ARG, "tjsonb_set_lax(tjsonb, {units}, NULL, NULL)");
   Set *ss = jsonbset_set(sobj, path, 1, mph, true);
-  expect_text(jsonbset_out(ss),
+  expect_text(jsonbset_out(ss, &size_out),
     "{\"{\\\"speed\\\": 10, \\\"units\\\": \\\"mph\\\"}\"}",
     "jsonbset_set(jsonbset, {units}, mph)");
   free(ss);
   t = tjsonb_set_lax(tobj, path, 1, NULL, true, delete_key);
-  expect_text(tjsonb_out(t),
+  expect_text(tjsonb_out(t, &size_out),
     "\"{\\\"speed\\\": 10}\"@2001-01-01 00:00:00+00",
     "tjsonb_set_lax(tjsonb, {units}, NULL, delete_key)");
   free(t);

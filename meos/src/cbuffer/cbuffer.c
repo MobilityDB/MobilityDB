@@ -332,24 +332,28 @@ cbuffer_in(const char *str)
  * @brief Return the string representation of a circular buffer
  * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Cbuffer_out()
  */
 char *
-cbuffer_out(const Cbuffer *cb, int maxdd)
+cbuffer_out(const Cbuffer *cb, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
   GSERIALIZED *gs = cbuffer_point(cb);
   char *point = basetype_out(PointerGetDatum(gs), T_GEOMETRY, maxdd);
-  char *radius = float8_out(cb->radius, maxdd);
+  char *radius = float8_out(cb->radius, maxdd, &part_size);
   size_t size = strlen(point) + strlen(radius) + 11; // Cbuffer(,) + end NULL
   char *result = palloc(size);
   snprintf(result, size, "Cbuffer(%s,%s)", point, radius);
   pfree(point); pfree(radius); pfree(gs);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************
@@ -358,20 +362,25 @@ cbuffer_out(const Cbuffer *cb, int maxdd)
 
 /**
  * @brief Return the Well-Known Text (WKT) representation of a circular buffer
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-cbuffer_wkt_out(Datum value, int maxdd, bool extended)
+cbuffer_wkt_out(Datum value, int maxdd, bool extended, size_t *size_out)
 {
+  size_t part_size;
   Cbuffer *cb = DatumGetCbufferP(value);
   GSERIALIZED *gs = cbuffer_point(cb);
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   size_t len;
   char *wkt = lwgeom_to_wkt(geom, extended ? WKT_EXTENDED : WKT_ISO, maxdd,
     &len);
-  char *radius = float8_out(cb->radius, maxdd);
+  char *radius = float8_out(cb->radius, maxdd, &part_size);
   len += strlen(radius) + 11; // Cbuffer(,) + end NULL
   char *result = palloc(len);
-  snprintf(result, len, "Cbuffer(%s,%s)", wkt, radius);
+  int n = snprintf(result, len, "Cbuffer(%s,%s)", wkt, radius);
+  if (size_out)
+    *size_out = (size_t) n + 1;
   lwgeom_free(geom); pfree(wkt); pfree(radius); pfree(gs);
   return result;
 }
@@ -383,16 +392,19 @@ cbuffer_wkt_out(Datum value, int maxdd, bool extended)
  * @brief Return the Well-Known Text (WKT) representation of a circular buffer
  * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Cbuffer_as_text()
  */
 char *
-cbuffer_as_text(const Cbuffer *cb, int maxdd)
+cbuffer_as_text(const Cbuffer *cb, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return cbuffer_wkt_out(PointerGetDatum(cb), maxdd, false);
+  return cbuffer_wkt_out(PointerGetDatum(cb), maxdd, false, size_out);
 }
 
 /**
@@ -401,16 +413,19 @@ cbuffer_as_text(const Cbuffer *cb, int maxdd)
  * circular buffer
  * @param[in] cb Circular buffer
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Cbuffer_as_ewkt()
  */
 char *
-cbuffer_as_ewkt(const Cbuffer *cb, int maxdd)
+cbuffer_as_ewkt(const Cbuffer *cb, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(cb, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return spatialbase_as_ewkt(PointerGetDatum(cb), T_CBUFFER, maxdd);
+  return spatialbase_as_ewkt(PointerGetDatum(cb), T_CBUFFER, maxdd, size_out);
 }
 
 /*****************************************************************************

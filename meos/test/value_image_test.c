@@ -107,8 +107,9 @@ static const char *raster_one_band =
 static bool
 jsonpath_same(const JsonPath *jp1, const JsonPath *jp2)
 {
-  char *str1 = jsonpath_out(jp1);
-  char *str2 = jsonpath_out(jp2);
+  size_t size_out;
+  char *str1 = jsonpath_out(jp1, &size_out);
+  char *str2 = jsonpath_out(jp2, &size_out);
   bool result = strcmp(str1, str2) == 0;
   free(str1); free(str2);
   return result;

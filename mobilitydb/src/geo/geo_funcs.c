@@ -104,9 +104,10 @@ PG_FUNCTION_INFO_V1(Geom_relate);
 Datum
 Geom_relate(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   GSERIALIZED *gs1 = PG_GETARG_GSERIALIZED_P(0);
   GSERIALIZED *gs2 = PG_GETARG_GSERIALIZED_P(1);
-  char *str = geom_relate(gs1, gs2);
+  char *str = geom_relate(gs1, gs2, &size_out);
   PG_FREE_IF_COPY(gs1, 0);
   PG_FREE_IF_COPY(gs2, 1);
   if (! str)

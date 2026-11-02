@@ -828,11 +828,11 @@ extern void floatspan_round_set(const Span *s, int maxdd, Span *result);
 /* Input and output functions for set and span types */
 
 extern Set *set_in(const char *str, MeosType settype);
-extern char *set_out(const Set *s, int maxdd);
+extern char *set_out(const Set *s, int maxdd, size_t *size_out);
 extern Span *span_in(const char *str, MeosType spantype);
-extern char *span_out(const Span *s, int maxdd);
+extern char *span_out(const Span *s, int maxdd, size_t *size_out);
 extern SpanSet *spanset_in(const char *str, MeosType spantype);
-extern char *spanset_out(const SpanSet *ss, int maxdd);
+extern char *spanset_out(const SpanSet *ss, int maxdd, size_t *size_out);
 
 /*****************************************************************************/
 
@@ -1121,7 +1121,7 @@ extern TSequence *tboolseq_in(const char *str, interpType interp);
 extern TSequenceSet *tboolseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tboolseqset_in(const char *str);
 extern Temporal *temporal_in(const char *str, MeosType temptype);
-extern char *temporal_out(const Temporal *temp, int maxdd);
+extern char *temporal_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern char **temparr_out(const Temporal **temparr, int count, int maxdd);
 extern TInstant *tfloatinst_from_mfjson(json_object *mfjson);
 extern TInstant *tfloatinst_in(const char *str);
@@ -1131,7 +1131,7 @@ extern TSequenceSet *tfloatseqset_from_mfjson(json_object *mfjson, interpType in
 extern TSequenceSet *tfloatseqset_in(const char *str);
 extern TInstant *tinstant_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype);
 extern TInstant *tinstant_in(const char *str, MeosType temptype);
-extern char *tinstant_out(const TInstant *inst, int maxdd);
+extern char *tinstant_out(const TInstant *inst, int maxdd, size_t *size_out);
 extern TInstant *tbigintinst_from_mfjson(json_object *mfjson);
 extern TInstant *tbigintinst_in(const char *str);
 extern TSequence *tbigintseq_from_mfjson(json_object *mfjson);
@@ -1146,10 +1146,10 @@ extern TSequenceSet *tintseqset_from_mfjson(json_object *mfjson);
 extern TSequenceSet *tintseqset_in(const char *str);
 extern TSequence *tsequence_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype, interpType interp);
 extern TSequence *tsequence_in(const char *str, MeosType temptype, interpType interp);
-extern char *tsequence_out(const TSequence *seq, int maxdd);
+extern char *tsequence_out(const TSequence *seq, int maxdd, size_t *size_out);
 extern TSequenceSet *tsequenceset_from_mfjson(json_object *mfjson, bool spatial, int32_t srid, MeosType temptype, interpType interp);
 extern TSequenceSet *tsequenceset_in(const char *str, MeosType temptype, interpType interp);
-extern char *tsequenceset_out(const TSequenceSet *ss, int maxdd);
+extern char *tsequenceset_out(const TSequenceSet *ss, int maxdd, size_t *size_out);
 extern TInstant *ttextinst_from_mfjson(json_object *mfjson);
 extern TInstant *ttextinst_in(const char *str);
 extern TSequence *ttextseq_from_mfjson(json_object *mfjson);

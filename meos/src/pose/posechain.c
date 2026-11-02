@@ -385,8 +385,9 @@ posechain_in(const char *str)
 static char *
 posechain_link_out(const PoseChain *pc, int n, int maxdd)
 {
+  size_t size_out;
   Pose *pose = posechain_link_pose(pc, n, n == 0);
-  char *result = pose_out(pose, maxdd);
+  char *result = pose_out(pose, maxdd, &size_out);
   pfree(pose);
   return result;
 }
@@ -396,12 +397,15 @@ posechain_link_out(const PoseChain *pc, int n, int maxdd)
  * @brief Return the string representation of a pose chain
  * @param[in] pc Pose chain
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Posechain_out()
  */
 char *
-posechain_out(const PoseChain *pc, int maxdd)
+posechain_out(const PoseChain *pc, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pc, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -425,14 +429,17 @@ posechain_out(const PoseChain *pc, int maxdd)
   }
   snprintf(result + pos, len - pos, ")");
   pfree_array((void **) links, pc->count);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
  * @brief Output a pose chain in the Well-Known Text (WKT) representation
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
+posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd,
+  size_t *size_out)
 {
   assert(pc); assert(maxdd >= 0);
 
@@ -441,7 +448,7 @@ posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
   for (int i = 0; i < pc->count; i++)
   {
     Pose *pose = posechain_link_pose(pc, i, i == 0);
-    links[i] = pose_wkt_out(pose, false, maxdd);
+    links[i] = pose_wkt_out(pose, false, maxdd, NULL);
     pfree(pose);
     len += strlen(links[i]) + 1; /* One ',' */
   }
@@ -462,8 +469,10 @@ posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
       pos += (size_t) snprintf(result + pos, len - pos, ",");
     pos += (size_t) snprintf(result + pos, len - pos, "%s", links[i]);
   }
-  snprintf(result + pos, len - pos, ")");
+  pos += (size_t) snprintf(result + pos, len - pos, ")");
   pfree_array((void **) links, pc->count);
+  if (size_out)
+    *size_out = pos + 1;
   return result;
 }
 
@@ -472,16 +481,19 @@ posechain_wkt_out(const PoseChain *pc, bool extended, int maxdd)
  * @brief Return the Well-Known Text (WKT) representation of a pose chain
  * @param[in] pc Pose chain
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Posechain_as_text()
  */
 char *
-posechain_as_text(const PoseChain *pc, int maxdd)
+posechain_as_text(const PoseChain *pc, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pc, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return posechain_wkt_out(pc, false, maxdd);
+  return posechain_wkt_out(pc, false, maxdd, size_out);
 }
 
 /**
@@ -490,16 +502,19 @@ posechain_as_text(const PoseChain *pc, int maxdd)
  * chain
  * @param[in] pc Pose chain
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Posechain_as_ewkt()
  */
 char *
-posechain_as_ewkt(const PoseChain *pc, int maxdd)
+posechain_as_ewkt(const PoseChain *pc, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(pc, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return posechain_wkt_out(pc, true, maxdd);
+  return posechain_wkt_out(pc, true, maxdd, size_out);
 }
 
 /*****************************************************************************/
