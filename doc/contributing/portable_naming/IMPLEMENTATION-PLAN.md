@@ -73,6 +73,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   (`doc/contributing/exactness/`), with its own pull requests.
 - **Every type in every format and every engine** is the input and output plan of MobilityDB
   #3353 (`doc/contributing/io/`), with its own pull requests.
+  Its IO-S1, branch `meos/text-outputs-size`, gives the 118 public text outputs of MEOS a `size_t *size_out` as the owner decided on 2026-11-02, so the calls of those functions that merged tasks wrote take the new argument: it rewrites 0a6dfe3a8a, rewrites 0cbaf9817d, rewrites 19d1dc2200, rewrites 1b66a51c2f, rewrites 2128677238, rewrites 30bf2b1452, rewrites 453015304a, rewrites 456d45ba57, rewrites 4eef012a9f, rewrites 6685673243, rewrites 7f8831d8e6, rewrites 8655303ab6, rewrites 8a4f654996, rewrites 8f86793e42, rewrites 91f8d676e7, rewrites 96f69c08ce, rewrites aaeed31796, rewrites ac8feb51dc, rewrites c01906a090, rewrites c123cb1e00, rewrites c3a0ab4a54, rewrites cce310aca2, rewrites ccfab0f97e, rewrites cfdd06dcb4, rewrites e30ef41657, rewrites e464861d66, rewrites e63fc3f7d8 and rewrites ee2b35c35d, each a call given its size or a prototype given the argument, the owner approving the rewrite with the decision.
 - **Every MEOS value is a finite number** is the plan of MobilityDB #3352
   (`doc/contributing/exactness/FINITE-VALUES.md`). Its test of a number refuses NaN and ±Infinity
   and takes the name `ensure_finite`, its refusal reads "The value must be finite", and the
