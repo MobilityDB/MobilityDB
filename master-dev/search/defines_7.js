@@ -49,12 +49,14 @@ var searchData=
   ['ginoverlapstrategysetset_46',['GinOverlapStrategySetSet',['../set__gin_8c_ae3d5df0adb220f61a80187df4d0a394e.html#ae3d5df0adb220f61a80187df4d0a394e',1,'set_gin.c']]],
   ['ginoverlapstrategytnpointset_47',['GinOverlapStrategyTnpointSet',['../tnpoint__gin_8c_a62259fbb00a6000e608b0ac8480d7242.html#a62259fbb00a6000e608b0ac8480d7242',1,'tnpoint_gin.c']]],
   ['ginoverlapstrategytnpointtnpoint_48',['GinOverlapStrategyTnpointTnpoint',['../tnpoint__gin_8c_abcc62b6a38861c747ce770302c892547.html#abcc62b6a38861c747ce770302c892547',1,'tnpoint_gin.c']]],
-  ['gs_5fgeom_5foffset_49',['GS_GEOM_OFFSET',['../postgis__funcs_8c_a68e0470e6a9b775e8e70f5bc19619556.html#a68e0470e6a9b775e8e70f5bc19619556',1,'postgis_funcs.c']]],
-  ['gs_5fgeom_5foffset4_50',['GS_GEOM_OFFSET4',['../postgis__funcs_8c_aba00ae60d2ed3786ce351c77948b08fb.html#aba00ae60d2ed3786ce351c77948b08fb',1,'postgis_funcs.c']]],
-  ['gs_5fpoint_5fptr_51',['GS_POINT_PTR',['../meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d',1,'meos_internal_geo.h']]],
-  ['gserialized_5fpoint2d_5fp_52',['GSERIALIZED_POINT2D_P',['../meos__internal__geo_8h_abc7f996f4ff58f62a0c691998310fa02.html#abc7f996f4ff58f62a0c691998310fa02',1,'meos_internal_geo.h']]],
-  ['gserialized_5fpoint3dm_5fp_53',['GSERIALIZED_POINT3DM_P',['../meos__internal__geo_8h_ad6a289f52c6487a13f1490f748adb143.html#ad6a289f52c6487a13f1490f748adb143',1,'meos_internal_geo.h']]],
-  ['gserialized_5fpoint3dz_5fp_54',['GSERIALIZED_POINT3DZ_P',['../meos__internal__geo_8h_a16e70e0cc2ea02ea4776977b31e68225.html#a16e70e0cc2ea02ea4776977b31e68225',1,'meos_internal_geo.h']]],
-  ['gserialized_5fpoint4d_5fp_55',['GSERIALIZED_POINT4D_P',['../meos__internal__geo_8h_a7aa060074bcc1b9780a6c56daa4b3e88.html#a7aa060074bcc1b9780a6c56daa4b3e88',1,'meos_internal_geo.h']]],
-  ['gserializedpgetdatum_56',['GserializedPGetDatum',['../meos__internal__geo_8h_a1a90cb7bfee95c7f2ad6722bc5ad5483.html#a1a90cb7bfee95c7f2ad6722bc5ad5483',1,'meos_internal_geo.h']]]
+  ['grid_5fboxes_49',['GRID_BOXES',['../sptree__test_8c_abda77c763dadcce5e0eff1319a31a472.html#abda77c763dadcce5e0eff1319a31a472',1,'sptree_test.c']]],
+  ['grid_5fqueries_50',['GRID_QUERIES',['../sptree__test_8c_a671c4a449c91473f994ca5ef855bc90a.html#a671c4a449c91473f994ca5ef855bc90a',1,'sptree_test.c']]],
+  ['gs_5fgeom_5foffset_51',['GS_GEOM_OFFSET',['../postgis__funcs_8c_a68e0470e6a9b775e8e70f5bc19619556.html#a68e0470e6a9b775e8e70f5bc19619556',1,'postgis_funcs.c']]],
+  ['gs_5fgeom_5foffset4_52',['GS_GEOM_OFFSET4',['../postgis__funcs_8c_aba00ae60d2ed3786ce351c77948b08fb.html#aba00ae60d2ed3786ce351c77948b08fb',1,'postgis_funcs.c']]],
+  ['gs_5fpoint_5fptr_53',['GS_POINT_PTR',['../meos__internal__geo_8h_ab03427db3697727a1db6443bd70f411d.html#ab03427db3697727a1db6443bd70f411d',1,'meos_internal_geo.h']]],
+  ['gserialized_5fpoint2d_5fp_54',['GSERIALIZED_POINT2D_P',['../meos__internal__geo_8h_abc7f996f4ff58f62a0c691998310fa02.html#abc7f996f4ff58f62a0c691998310fa02',1,'meos_internal_geo.h']]],
+  ['gserialized_5fpoint3dm_5fp_55',['GSERIALIZED_POINT3DM_P',['../meos__internal__geo_8h_ad6a289f52c6487a13f1490f748adb143.html#ad6a289f52c6487a13f1490f748adb143',1,'meos_internal_geo.h']]],
+  ['gserialized_5fpoint3dz_5fp_56',['GSERIALIZED_POINT3DZ_P',['../meos__internal__geo_8h_a16e70e0cc2ea02ea4776977b31e68225.html#a16e70e0cc2ea02ea4776977b31e68225',1,'meos_internal_geo.h']]],
+  ['gserialized_5fpoint4d_5fp_57',['GSERIALIZED_POINT4D_P',['../meos__internal__geo_8h_a7aa060074bcc1b9780a6c56daa4b3e88.html#a7aa060074bcc1b9780a6c56daa4b3e88',1,'meos_internal_geo.h']]],
+  ['gserializedpgetdatum_58',['GserializedPGetDatum',['../meos__internal__geo_8h_a1a90cb7bfee95c7f2ad6722bc5ad5483.html#a1a90cb7bfee95c7f2ad6722bc5ad5483',1,'meos_internal_geo.h']]]
 ];
