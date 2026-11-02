@@ -104,6 +104,12 @@ The three kinds of result are wrong in different ways:
   it takes the value as reached if it lies strictly between the end values. It never needs to
   date the crossing, so the exact existence test alone fixes it.
 
+The discontinuous walk against a static value, `tfunc_tlinearseq_base_discfn`, computed its
+result at a crossing on the value interpolated at the instant dating the crossing rather than on
+the static value, so `x #= v` read false at a crossing it had found, for tfloat, tcbuffer,
+tgeompoint and tnpoint alike. MobilityDB #3378 computes it on the static value, as the ever/always
+walk does. The instant at which that result is stated stays master's, which this plan corrects.
+
 Two further facts from the inventory:
 
 - `cross_type` is read in `lifting.c` but set by no filling on master, so its branch never runs.
