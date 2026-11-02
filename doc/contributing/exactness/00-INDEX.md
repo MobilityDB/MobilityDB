@@ -93,4 +93,4 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
   natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
   [Exact buffer](EXACT-BUFFER.md), where these steps stand.
-- **Open pull requests** on 2026-11-02: this one, MobilityDB #3259, #3372 and #3375.
+- **Open pull requests** on 2026-11-02: this one, MobilityDB #3259, #3372, #3375 and #3378.
