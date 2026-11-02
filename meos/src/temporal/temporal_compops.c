@@ -453,6 +453,7 @@ always_ge_base_temporal(Datum value, const Temporal *temp)
  * @brief Return true if two temporal values are ever equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_eq_temporal_temporal()
+ * @errval -1
  */
 int
 ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -468,6 +469,7 @@ ever_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal values are ever different
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_ne_temporal_temporal()
+ * @errval -1
  */
 int
 ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -484,6 +486,7 @@ ever_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_lt_temporal_temporal()
+ * @errval -1
  */
 int
 ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -500,6 +503,7 @@ ever_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_le_temporal_temporal()
+ * @errval -1
  */
 int
 ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -516,6 +520,7 @@ ever_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_gt_temporal_temporal()
+ * @errval -1
  */
 int
 ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -532,6 +537,7 @@ ever_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Ever_ge_temporal_temporal()
+ * @errval -1
  */
 int
 ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -549,6 +555,7 @@ ever_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal values are always equal
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_eq_temporal_temporal()
+ * @errval -1
  */
 int
 always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -564,6 +571,7 @@ always_eq_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @brief Return true if two temporal values are always different
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_ne_temporal_temporal()
+ * @errval -1
  */
 int
 always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -580,6 +588,7 @@ always_ne_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_lt_temporal_temporal()
+ * @errval -1
  */
 int
 always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -596,6 +605,7 @@ always_lt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_le_temporal_temporal()
+ * @errval -1
  */
 int
 always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -612,6 +622,7 @@ always_le_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_gt_temporal_temporal()
+ * @errval -1
  */
 int
 always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -628,6 +639,7 @@ always_gt_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * equal to the second one
  * @param[in] temp1,temp2 Temporal values
  * @csqlfn #Always_ge_temporal_temporal()
+ * @errval -1
  */
 int
 always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
@@ -644,6 +656,7 @@ always_ge_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_base_temporal()
+ * @errval -1
  */
 int
 ever_eq_bigint_tbigint(int64 i, const Temporal *temp)
@@ -659,6 +672,7 @@ ever_eq_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] b Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_base_temporal()
+ * @errval -1
  */
 int
 ever_eq_bool_tbool(bool b, const Temporal *temp)
@@ -674,6 +688,7 @@ ever_eq_bool_tbool(bool b, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_base_temporal()
+ * @errval -1
  */
 int
 ever_eq_int_tint(int i, const Temporal *temp)
@@ -689,6 +704,7 @@ ever_eq_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_base_temporal()
+ * @errval -1
  */
 int
 ever_eq_float_tfloat(double d, const Temporal *temp)
@@ -706,6 +722,7 @@ ever_eq_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_eq_base_temporal()
+ * @errval -1
  */
 int
 ever_eq_text_ttext(const text *txt, const Temporal *temp)
@@ -723,6 +740,7 @@ ever_eq_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_eq_temporal_base()
+ * @errval -1
  */
 int
 ever_eq_tbigint_bigint(const Temporal *temp, int64 i)
@@ -738,6 +756,7 @@ ever_eq_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Ever_eq_temporal_base()
+ * @errval -1
  */
 int
 ever_eq_tbool_bool(const Temporal *temp, bool b)
@@ -753,6 +772,7 @@ ever_eq_tbool_bool(const Temporal *temp, bool b)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_eq_temporal_base()
+ * @errval -1
  */
 int
 ever_eq_tint_int(const Temporal *temp, int i)
@@ -768,6 +788,7 @@ ever_eq_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_eq_temporal_base()
+ * @errval -1
  */
 int
 ever_eq_tfloat_float(const Temporal *temp, double d)
@@ -785,6 +806,7 @@ ever_eq_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_eq_temporal_base()
+ * @errval -1
  */
 int
 ever_eq_ttext_text(const Temporal *temp, const text *txt)
@@ -802,6 +824,7 @@ ever_eq_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_base_temporal()
+ * @errval -1
  */
 int
 always_eq_bigint_tbigint(int64 i, const Temporal *temp)
@@ -817,6 +840,7 @@ always_eq_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] b Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_base_temporal()
+ * @errval -1
  */
 int
 always_eq_bool_tbool(bool b, const Temporal *temp)
@@ -832,6 +856,7 @@ always_eq_bool_tbool(bool b, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_base_temporal()
+ * @errval -1
  */
 int
 always_eq_int_tint(int i, const Temporal *temp)
@@ -847,6 +872,7 @@ always_eq_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_base_temporal()
+ * @errval -1
  */
 int
 always_eq_float_tfloat(double d, const Temporal *temp)
@@ -864,6 +890,7 @@ always_eq_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_eq_base_temporal()
+ * @errval -1
  */
 int
 always_eq_text_ttext(const text *txt, const Temporal *temp)
@@ -881,6 +908,7 @@ always_eq_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_eq_temporal_base()
+ * @errval -1
  */
 int
 always_eq_tbigint_bigint(const Temporal *temp, int64 i)
@@ -896,6 +924,7 @@ always_eq_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Always_eq_temporal_base()
+ * @errval -1
  */
 int
 always_eq_tbool_bool(const Temporal *temp, bool b)
@@ -911,6 +940,7 @@ always_eq_tbool_bool(const Temporal *temp, bool b)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_eq_temporal_base()
+ * @errval -1
  */
 int
 always_eq_tint_int(const Temporal *temp, int i)
@@ -926,6 +956,7 @@ always_eq_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_eq_temporal_base()
+ * @errval -1
  */
 int
 always_eq_tfloat_float(const Temporal *temp, double d)
@@ -943,6 +974,7 @@ always_eq_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_eq_temporal_base()
+ * @errval -1
  */
 int
 always_eq_ttext_text(const Temporal *temp, const text *txt)
@@ -961,6 +993,7 @@ always_eq_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
+ * @errval -1
  */
 int
 ever_ne_bigint_tbigint(int64 i, const Temporal *temp)
@@ -976,6 +1009,7 @@ ever_ne_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] b Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
+ * @errval -1
  */
 int
 ever_ne_bool_tbool(bool b, const Temporal *temp)
@@ -991,6 +1025,7 @@ ever_ne_bool_tbool(bool b, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
+ * @errval -1
  */
 int
 ever_ne_int_tint(int i, const Temporal *temp)
@@ -1006,6 +1041,7 @@ ever_ne_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
+ * @errval -1
  */
 int
 ever_ne_float_tfloat(double d, const Temporal *temp)
@@ -1023,6 +1059,7 @@ ever_ne_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ne_base_temporal()
+ * @errval -1
  */
 int
 ever_ne_text_ttext(const text *txt, const Temporal *temp)
@@ -1041,6 +1078,7 @@ ever_ne_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_ne_temporal_base()
+ * @errval -1
  */
 int
 ever_ne_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1056,6 +1094,7 @@ ever_ne_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Ever_ne_temporal_base()
+ * @errval -1
  */
 int
 ever_ne_tbool_bool(const Temporal *temp, bool b)
@@ -1071,6 +1110,7 @@ ever_ne_tbool_bool(const Temporal *temp, bool b)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_ne_temporal_base()
+ * @errval -1
  */
 int
 ever_ne_tint_int(const Temporal *temp, int i)
@@ -1086,6 +1126,7 @@ ever_ne_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_ne_temporal_base()
+ * @errval -1
  */
 int
 ever_ne_tfloat_float(const Temporal *temp, double d)
@@ -1103,6 +1144,7 @@ ever_ne_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_ne_temporal_base()
+ * @errval -1
  */
 int
 ever_ne_ttext_text(const Temporal *temp, const text *txt)
@@ -1121,6 +1163,7 @@ ever_ne_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
+ * @errval -1
  */
 int
 always_ne_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1136,6 +1179,7 @@ always_ne_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] b Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
+ * @errval -1
  */
 int
 always_ne_bool_tbool(bool b, const Temporal *temp)
@@ -1151,6 +1195,7 @@ always_ne_bool_tbool(bool b, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
+ * @errval -1
  */
 int
 always_ne_int_tint(int i, const Temporal *temp)
@@ -1166,6 +1211,7 @@ always_ne_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
+ * @errval -1
  */
 int
 always_ne_float_tfloat(double d, const Temporal *temp)
@@ -1183,6 +1229,7 @@ always_ne_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ne_base_temporal()
+ * @errval -1
  */
 int
 always_ne_text_ttext(const text *txt, const Temporal *temp)
@@ -1201,6 +1248,7 @@ always_ne_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_ne_temporal_base()
+ * @errval -1
  */
 int
 always_ne_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1216,6 +1264,7 @@ always_ne_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] b Value
  * @csqlfn #Always_ne_temporal_base()
+ * @errval -1
  */
 int
 always_ne_tbool_bool(const Temporal *temp, bool b)
@@ -1231,6 +1280,7 @@ always_ne_tbool_bool(const Temporal *temp, bool b)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_ne_temporal_base()
+ * @errval -1
  */
 int
 always_ne_tint_int(const Temporal *temp, int i)
@@ -1246,6 +1296,7 @@ always_ne_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_ne_temporal_base()
+ * @errval -1
  */
 int
 always_ne_tfloat_float(const Temporal *temp, double d)
@@ -1263,6 +1314,7 @@ always_ne_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_ne_temporal_base()
+ * @errval -1
  */
 int
 always_ne_ttext_text(const Temporal *temp, const text *txt)
@@ -1280,6 +1332,7 @@ always_ne_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_lt_base_temporal()
+ * @errval -1
  */
 int
 ever_lt_int_tint(int i, const Temporal *temp)
@@ -1295,6 +1348,7 @@ ever_lt_int_tint(int i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_lt_base_temporal()
+ * @errval -1
  */
 int
 ever_lt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1310,6 +1364,7 @@ ever_lt_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_lt_base_temporal()
+ * @errval -1
  */
 int
 ever_lt_float_tfloat(double d, const Temporal *temp)
@@ -1327,6 +1382,7 @@ ever_lt_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_lt_base_temporal()
+ * @errval -1
  */
 int
 ever_lt_text_ttext(const text *txt, const Temporal *temp)
@@ -1344,6 +1400,7 @@ ever_lt_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_lt_temporal_base()
+ * @errval -1
  */
 int
 ever_lt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1359,6 +1416,7 @@ ever_lt_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_lt_temporal_base()
+ * @errval -1
  */
 int
 ever_lt_tint_int(const Temporal *temp, int i)
@@ -1374,6 +1432,7 @@ ever_lt_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_lt_temporal_base()
+ * @errval -1
  */
 int
 ever_lt_tfloat_float(const Temporal *temp, double d)
@@ -1391,6 +1450,7 @@ ever_lt_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_lt_temporal_base()
+ * @errval -1
  */
 int
 ever_lt_ttext_text(const Temporal *temp, const text *txt)
@@ -1409,6 +1469,7 @@ ever_lt_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_lt_base_temporal()
+ * @errval -1
  */
 int
 always_lt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1424,6 +1485,7 @@ always_lt_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_lt_base_temporal()
+ * @errval -1
  */
 int
 always_lt_int_tint(int i, const Temporal *temp)
@@ -1439,6 +1501,7 @@ always_lt_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_lt_base_temporal()
+ * @errval -1
  */
 int
 always_lt_float_tfloat(double d, const Temporal *temp)
@@ -1456,6 +1519,7 @@ always_lt_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_lt_base_temporal()
+ * @errval -1
  */
 int
 always_lt_text_ttext(const text *txt, const Temporal *temp)
@@ -1473,6 +1537,7 @@ always_lt_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_lt_temporal_base()
+ * @errval -1
  */
 int
 always_lt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1488,6 +1553,7 @@ always_lt_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_lt_temporal_base()
+ * @errval -1
  */
 int
 always_lt_tint_int(const Temporal *temp, int i)
@@ -1503,6 +1569,7 @@ always_lt_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_lt_temporal_base()
+ * @errval -1
  */
 int
 always_lt_tfloat_float(const Temporal *temp, double d)
@@ -1520,6 +1587,7 @@ always_lt_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_lt_temporal_base()
+ * @errval -1
  */
 int
 always_lt_ttext_text(const Temporal *temp, const text *txt)
@@ -1538,6 +1606,7 @@ always_lt_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_le_base_temporal()
+ * @errval -1
  */
 int
 ever_le_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1554,6 +1623,7 @@ ever_le_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_le_base_temporal()
+ * @errval -1
  */
 int
 ever_le_int_tint(int i, const Temporal *temp)
@@ -1569,6 +1639,7 @@ ever_le_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_le_base_temporal()
+ * @errval -1
  */
 int
 ever_le_float_tfloat(double d, const Temporal *temp)
@@ -1586,6 +1657,7 @@ ever_le_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_le_base_temporal()
+ * @errval -1
  */
 int
 ever_le_text_ttext(const text *txt, const Temporal *temp)
@@ -1604,6 +1676,7 @@ ever_le_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_le_temporal_base()
+ * @errval -1
  */
 int
 ever_le_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1620,6 +1693,7 @@ ever_le_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_le_temporal_base()
+ * @errval -1
  */
 int
 ever_le_tint_int(const Temporal *temp, int i)
@@ -1635,6 +1709,7 @@ ever_le_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_le_temporal_base()
+ * @errval -1
  */
 int
 ever_le_tfloat_float(const Temporal *temp, double d)
@@ -1652,6 +1727,7 @@ ever_le_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_le_temporal_base()
+ * @errval -1
  */
 int
 ever_le_ttext_text(const Temporal *temp, const text *txt)
@@ -1670,6 +1746,7 @@ ever_le_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_le_base_temporal()
+ * @errval -1
  */
 int
 always_le_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1686,6 +1763,7 @@ always_le_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_le_base_temporal()
+ * @errval -1
  */
 int
 always_le_int_tint(int i, const Temporal *temp)
@@ -1702,6 +1780,7 @@ always_le_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_le_base_temporal()
+ * @errval -1
  */
 int
 always_le_float_tfloat(double d, const Temporal *temp)
@@ -1719,6 +1798,7 @@ always_le_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_le_base_temporal()
+ * @errval -1
  */
 int
 always_le_text_ttext(const text *txt, const Temporal *temp)
@@ -1737,6 +1817,7 @@ always_le_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_le_temporal_base()
+ * @errval -1
  */
 int
 always_le_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1753,6 +1834,7 @@ always_le_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_le_temporal_base()
+ * @errval -1
  */
 int
 always_le_tint_int(const Temporal *temp, int i)
@@ -1769,6 +1851,7 @@ always_le_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_le_temporal_base()
+ * @errval -1
  */
 int
 always_le_tfloat_float(const Temporal *temp, double d)
@@ -1786,6 +1869,7 @@ always_le_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_le_temporal_base()
+ * @errval -1
  */
 int
 always_le_ttext_text(const Temporal *temp, const text *txt)
@@ -1803,6 +1887,7 @@ always_le_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_gt_base_temporal()
+ * @errval -1
  */
 int
 ever_gt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1818,6 +1903,7 @@ ever_gt_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_gt_base_temporal()
+ * @errval -1
  */
 int
 ever_gt_int_tint(int i, const Temporal *temp)
@@ -1833,6 +1919,7 @@ ever_gt_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_gt_base_temporal()
+ * @errval -1
  */
 int
 ever_gt_float_tfloat(double d, const Temporal *temp)
@@ -1850,6 +1937,7 @@ ever_gt_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_gt_base_temporal()
+ * @errval -1
  */
 int
 ever_gt_text_ttext(const text *txt, const Temporal *temp)
@@ -1867,6 +1955,7 @@ ever_gt_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_gt_temporal_base()
+ * @errval -1
  */
 int
 ever_gt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -1882,6 +1971,7 @@ ever_gt_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_gt_temporal_base()
+ * @errval -1
  */
 int
 ever_gt_tint_int(const Temporal *temp, int i)
@@ -1897,6 +1987,7 @@ ever_gt_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_gt_temporal_base()
+ * @errval -1
  */
 int
 ever_gt_tfloat_float(const Temporal *temp, double d)
@@ -1914,6 +2005,7 @@ ever_gt_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_gt_temporal_base()
+ * @errval -1
  */
 int
 ever_gt_ttext_text(const Temporal *temp, const text *txt)
@@ -1932,6 +2024,7 @@ ever_gt_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_gt_base_temporal()
+ * @errval -1
  */
 int
 always_gt_bigint_tbigint(int64 i, const Temporal *temp)
@@ -1947,6 +2040,7 @@ always_gt_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_gt_base_temporal()
+ * @errval -1
  */
 int
 always_gt_int_tint(int i, const Temporal *temp)
@@ -1962,6 +2056,7 @@ always_gt_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_gt_base_temporal()
+ * @errval -1
  */
 int
 always_gt_float_tfloat(double d, const Temporal *temp)
@@ -1979,6 +2074,7 @@ always_gt_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_gt_base_temporal()
+ * @errval -1
  */
 int
 always_gt_text_ttext(const text *txt, const Temporal *temp)
@@ -1996,6 +2092,7 @@ always_gt_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_gt_temporal_base()
+ * @errval -1
  */
 int
 always_gt_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2011,6 +2108,7 @@ always_gt_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_gt_temporal_base()
+ * @errval -1
  */
 int
 always_gt_tint_int(const Temporal *temp, int i)
@@ -2026,6 +2124,7 @@ always_gt_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_gt_temporal_base()
+ * @errval -1
  */
 int
 always_gt_tfloat_float(const Temporal *temp, double d)
@@ -2043,6 +2142,7 @@ always_gt_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_gt_temporal_base()
+ * @errval -1
  */
 int
 always_gt_ttext_text(const Temporal *temp, const text *txt)
@@ -2061,6 +2161,7 @@ always_gt_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ge_base_temporal()
+ * @errval -1
  */
 int
 ever_ge_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2077,6 +2178,7 @@ ever_ge_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ge_base_temporal()
+ * @errval -1
  */
 int
 ever_ge_int_tint(int i, const Temporal *temp)
@@ -2092,6 +2194,7 @@ ever_ge_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ge_base_temporal()
+ * @errval -1
  */
 int
 ever_ge_float_tfloat(double d, const Temporal *temp)
@@ -2109,6 +2212,7 @@ ever_ge_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Ever_ge_base_temporal()
+ * @errval -1
  */
 int
 ever_ge_text_ttext(const text *txt, const Temporal *temp)
@@ -2127,6 +2231,7 @@ ever_ge_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_ge_temporal_base()
+ * @errval -1
  */
 int
 ever_ge_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2143,6 +2248,7 @@ ever_ge_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Ever_ge_temporal_base()
+ * @errval -1
  */
 int
 ever_ge_tint_int(const Temporal *temp, int i)
@@ -2158,6 +2264,7 @@ ever_ge_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Ever_ge_temporal_base()
+ * @errval -1
  */
 int
 ever_ge_tfloat_float(const Temporal *temp, double d)
@@ -2175,6 +2282,7 @@ ever_ge_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Ever_ge_temporal_base()
+ * @errval -1
  */
 int
 ever_ge_ttext_text(const Temporal *temp, const text *txt)
@@ -2193,6 +2301,7 @@ ever_ge_ttext_text(const Temporal *temp, const text *txt)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ge_base_temporal()
+ * @errval -1
  */
 int
 always_ge_bigint_tbigint(int64 i, const Temporal *temp)
@@ -2209,6 +2318,7 @@ always_ge_bigint_tbigint(int64 i, const Temporal *temp)
  * @param[in] i Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ge_base_temporal()
+ * @errval -1
  */
 int
 always_ge_int_tint(int i, const Temporal *temp)
@@ -2225,6 +2335,7 @@ always_ge_int_tint(int i, const Temporal *temp)
  * @param[in] d Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ge_base_temporal()
+ * @errval -1
  */
 int
 always_ge_float_tfloat(double d, const Temporal *temp)
@@ -2242,6 +2353,7 @@ always_ge_float_tfloat(double d, const Temporal *temp)
  * @param[in] txt Value
  * @param[in] temp Temporal value
  * @csqlfn #Always_ge_base_temporal()
+ * @errval -1
  */
 int
 always_ge_text_ttext(const text *txt, const Temporal *temp)
@@ -2260,6 +2372,7 @@ always_ge_text_ttext(const text *txt, const Temporal *temp)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_ge_temporal_base()
+ * @errval -1
  */
 int
 always_ge_tbigint_bigint(const Temporal *temp, int64 i)
@@ -2276,6 +2389,7 @@ always_ge_tbigint_bigint(const Temporal *temp, int64 i)
  * @param[in] temp Temporal value
  * @param[in] i Value
  * @csqlfn #Always_ge_temporal_base()
+ * @errval -1
  */
 int
 always_ge_tint_int(const Temporal *temp, int i)
@@ -2292,6 +2406,7 @@ always_ge_tint_int(const Temporal *temp, int i)
  * @param[in] temp Temporal value
  * @param[in] d Value
  * @csqlfn #Always_ge_temporal_base()
+ * @errval -1
  */
 int
 always_ge_tfloat_float(const Temporal *temp, double d)
@@ -2309,6 +2424,7 @@ always_ge_tfloat_float(const Temporal *temp, double d)
  * @param[in] temp Temporal value
  * @param[in] txt Value
  * @csqlfn #Always_ge_temporal_base()
+ * @errval -1
  */
 int
 always_ge_ttext_text(const Temporal *temp, const text *txt)

@@ -517,6 +517,7 @@ geo_to_s2cell_set(const GSERIALIZED *gs, int32 level)
  * @param[in] cells Set of S2 cells
  * @param[in] temp Temporal S2 cell
  * @csqlfn #Ever_eq_s2cellset_ts2cell()
+ * @errval -1
  */
 int
 ever_eq_s2cellset_ts2cell(const Set *cells, const Temporal *temp)
@@ -536,6 +537,7 @@ ever_eq_s2cellset_ts2cell(const Set *cells, const Temporal *temp)
  * @param[in] temp Temporal S2 cell
  * @param[in] cells Set of S2 cells
  * @csqlfn #Ever_eq_ts2cell_s2cellset()
+ * @errval -1
  */
 int
 ever_eq_ts2cell_s2cellset(const Temporal *temp, const Set *cells)

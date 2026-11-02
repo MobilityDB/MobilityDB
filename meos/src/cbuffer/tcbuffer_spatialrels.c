@@ -2141,6 +2141,7 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_geo()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -2158,6 +2159,7 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_geo()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -2175,6 +2177,7 @@ adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_geo_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
@@ -2192,6 +2195,7 @@ edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_geo_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
@@ -2211,6 +2215,7 @@ adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_cbuffer()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
@@ -2240,6 +2245,7 @@ edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_cbuffer()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
@@ -2270,6 +2276,7 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_cbuffer_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
@@ -2287,6 +2294,7 @@ edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_cbuffer_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
@@ -2669,6 +2677,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -2686,6 +2695,7 @@ edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,

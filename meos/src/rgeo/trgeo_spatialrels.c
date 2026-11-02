@@ -699,6 +699,7 @@ ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double di
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Edwithin_trgeometry_geo() #Edwithin_geo_trgeometry()
+ * @errval -1
  */
 int
 edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -716,6 +717,7 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Adwithin_trgeometry_geo() #Adwithin_geo_trgeometry()
+ * @errval -1
  */
 int
 adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -755,6 +757,7 @@ ea_dwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Edwithin_trgeometry_trgeometry()
+ * @errval -1
  */
 int
 edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, double dist)
@@ -771,6 +774,7 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
  * @param[in] temp1,temp2 Temporal rigid geometries
  * @param[in] dist Distance
  * @csqlfn #Adwithin_trgeometry_trgeometry()
+ * @errval -1
  */
 int
 adwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, double dist)

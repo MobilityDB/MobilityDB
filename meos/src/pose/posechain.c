@@ -1484,6 +1484,7 @@ posechain_hash(const PoseChain *pc)
  * @param[in] pc Pose chain
  * @param[in] seed Seed
  * @csqlfn #Posechain_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 posechain_hash_extended(const PoseChain *pc, uint64 seed)

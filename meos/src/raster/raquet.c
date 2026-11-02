@@ -708,6 +708,7 @@ raquet_quadbin(const Raquet *rq)
  * @ingroup meos_raster_base_accessor
  * @brief Return the width in pixels of a Raquet tile
  * @csqlfn #Raquet_width()
+ * @errval INT_MAX
  */
 int
 raquet_width(const Raquet *rq)
@@ -721,6 +722,7 @@ raquet_width(const Raquet *rq)
  * @ingroup meos_raster_base_accessor
  * @brief Return the height in pixels of a Raquet tile
  * @csqlfn #Raquet_height()
+ * @errval INT_MAX
  */
 int
 raquet_height(const Raquet *rq)

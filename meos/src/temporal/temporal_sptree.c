@@ -1593,6 +1593,7 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching ids
+ * @errval -1
  */
 int
 sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
@@ -1700,6 +1701,7 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
  * @param[out] result Array collecting the ids, made by #index_result_create
  * @return Number of qualifying pairs, half the number of collected ids, on
  * error -1
+ * @errval -1
  */
 int
 sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
@@ -1774,6 +1776,7 @@ sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching ids
+ * @errval -1
  */
 int
 sptree_search_temporal(const SPTree *sptree, IndexSearchOp op,

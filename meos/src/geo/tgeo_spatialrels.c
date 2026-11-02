@@ -2220,6 +2220,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_tgeo_geo(), #Edwithin_tpose_geo(),
  * #Edwithin_tquadbin_geo(), #Edwithin_tnpoint_geo(),
  * #Edwithin_tposechain_geo()
+ * @errval -1
  */
 int
 edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -2240,6 +2241,7 @@ edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_geo()
+ * @errval -1
  */
 int
 adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -2262,6 +2264,7 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_geo_tgeo(), #Edwithin_geo_tpose(),
  * #Edwithin_geo_tquadbin(), #Edwithin_geo_tnpoint(),
  * #Edwithin_geo_tposechain()
+ * @errval -1
  */
 int
 edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
@@ -2282,6 +2285,7 @@ edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_geo_tgeo()
+ * @errval -1
  */
 int
 adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
@@ -2623,6 +2627,7 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @csqlfn #Edwithin_tgeo_tgeo(), #Edwithin_tpose_tpose(),
  * #Edwithin_tquadbin_tquadbin(), #Edwithin_tnpoint_tnpoint(),
  * #Edwithin_tposechain_tposechain()
+ * @errval -1
  */
 int
 edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
@@ -2642,6 +2647,7 @@ edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_tgeo()
+ * @errval -1
  */
 int
 adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
