@@ -351,4 +351,13 @@ SELECT tDistance(
   trgeometry 'Polygon((0 0,2 0,2 2,1 1.9999999999999,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
   geometry 'Point(1 5)');
 
+-- A body that does not turn is nearest a geometry inside a segment: its
+-- vertex (3 -1) moves from (5 0) to (0 2) while the triangle goes from the
+-- pose (2 1) to (-3 3), and passes (4 1) at the distance 3 / sqrt(29), the
+-- double 0.55708601453115558 nearest it
+
+SELECT nearestApproachDistance(
+  trgeometry 'Polygon((-3 -2,-2 -5,3 -1,-3 -2));[Pose(Point(2 1),0)@2001-01-01 00:00:00, Pose(Point(-3 3),0)@2001-01-01 00:06:05.630507, Pose(Point(-3 -3),0)@2001-01-01 00:13:58.721992, Pose(Point(-3 -2),0)@2001-01-01 00:55:53.96598]',
+  geometry 'Point(4 1)') = 0.55708601453115558;
+
 -------------------------------------------------------------------------------

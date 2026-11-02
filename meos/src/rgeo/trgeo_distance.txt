@@ -438,6 +438,19 @@ The minimum of two linear interpolations has instants where they cross,
 and the value there comes from the interpolation.  Thus the algorithm
 computes each value of the minimum again, with PostGIS on the placed body.
 
+A body whose poses at the two ends of a segment have the angle 0
+translates over the segment.  Its least distance to a part is then the
+least distance of two segments: the path of a vertex of the body against
+an edge of the part, or the path of a vertex of the part, seen from the
+body, against an edge of the body, unless they overlap at the start or
+meet on the way.  Each is the double nearest its exact value on the exact
+sums of the coordinates and the positions, and rounding is monotone, so
+the least of them is the double nearest the least distance over the
+segment.  No instant inside the segment is below it.  Where it is below
+the values at the two ends, the instant of least value inside the
+segment, which the walk puts at the nearest microsecond of the minimum,
+takes it, as an event takes the value at its time.
+
 A value that is exactly the threshold d stays d.  Such a value comes from a
 threshold crossing of the closest part, thus it is the exact distance.  A
 value from PostGIS has a rounding error, which can put the crossing in the
