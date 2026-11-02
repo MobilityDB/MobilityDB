@@ -626,9 +626,9 @@ Span *
 span_make(Datum lower, Datum upper, bool lower_inc, bool upper_inc,
   MeosType basetype)
 {
-  /* Ensure that a float bound is not NaN */
-  if (basetype == T_FLOAT8 && (! ensure_not_nan(DatumGetFloat8(lower)) ||
-      ! ensure_not_nan(DatumGetFloat8(upper))))
+  /* Ensure that a float bound is finite */
+  if (basetype == T_FLOAT8 && (! ensure_finite(DatumGetFloat8(lower)) ||
+      ! ensure_finite(DatumGetFloat8(upper))))
     return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
@@ -778,7 +778,7 @@ Span *
 floatspan_make(double lower, double upper, bool lower_inc, bool upper_inc)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(lower) || ! ensure_not_nan(upper))
+  if (! ensure_finite(lower) || ! ensure_finite(upper))
     return NULL;
   /* The span is zero-filled so that a span #span_set refuses to fill keeps
    * no span type */
@@ -1248,7 +1248,7 @@ Span *
 float_to_span(double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   Span *result = palloc(sizeof(Span));
   span_set(Float8GetDatum(d), Float8GetDatum(d), true, true, T_FLOAT8,
@@ -1670,19 +1670,19 @@ floatspan_ceil(const Span *s)
 }
 
 /**
- * @brief Return true when no bound of a span computed from another one is a
- * NaN, raising an error otherwise
- * @details An infinite bound of a float span can give a bound with no value,
- * see #ensure_not_nan_result
+ * @brief Return true when every bound of a span computed from another one is
+ * finite, raising an error otherwise
+ * @details A bound computed from finite ones can exceed the largest double,
+ * see #ensure_finite_result
  * @param[in] s Span
  */
-static bool
-span_bounds_not_nan(const Span *s)
+bool
+ensure_finite_span_bounds(const Span *s)
 {
   if (s->basetype != T_FLOAT8)
     return true;
-  return ensure_not_nan_result(DatumGetFloat8(s->lower)) &&
-    ensure_not_nan_result(DatumGetFloat8(s->upper));
+  return ensure_finite_result(DatumGetFloat8(s->lower)) &&
+    ensure_finite_result(DatumGetFloat8(s->upper));
 }
 
 /**
@@ -1700,7 +1700,7 @@ floatspan_degrees(const Span *s, bool normalize)
   Span *result = span_copy(s);
   result->lower = datum_degrees(s->lower, normalize);
   result->upper = datum_degrees(s->upper, normalize);
-  if (! span_bounds_not_nan(result))
+  if (! ensure_finite_span_bounds(result))
   {
     pfree(result);
     return NULL;
@@ -1779,7 +1779,7 @@ numspan_expand(const Span *s, Datum value)
   Span *result = span_copy(s);
   result->lower = datum_sub(s->lower, value, s->basetype);
   result->upper = datum_add(s->upper, value, s->basetype);
-  if (! span_bounds_not_nan(result))
+  if (! ensure_finite_span_bounds(result))
   {
     pfree(result);
     return NULL;
@@ -1825,7 +1825,7 @@ Span *
 floatspan_expand(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   return numspan_expand(s, Float8GetDatum(d));
 }
@@ -2120,7 +2120,7 @@ numspan_shift_scale(const Span *s, Datum shift, Datum width, bool hasshift,
   /* Shift and/or scale the resulting span */
   span_bounds_shift_scale_value(shift, width, s->basetype, hasshift, haswidth,
     &result->lower, &result->upper);
-  if (! span_bounds_not_nan(result))
+  if (! ensure_finite_span_bounds(result))
   {
     pfree(result);
     return NULL;
@@ -2278,7 +2278,7 @@ floatspan_shift_scale(const Span *s, double shift, double width, bool hasshift,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_FLOATSPAN(s, NULL);
-  if (! ensure_not_nan(shift) || ! ensure_not_nan(width))
+  if (! ensure_finite(shift) || ! ensure_finite(width))
     return NULL;
   return numspan_shift_scale(s, Float8GetDatum(shift), Float8GetDatum(width),
     hasshift, haswidth);

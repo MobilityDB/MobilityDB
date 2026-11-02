@@ -2437,7 +2437,7 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tdensity(tpcpatch) → tfloat
 </programlisting>
-				<para>Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <varname>+Infinity</varname> for that instant; filter with <varname>isfinite()</varname> in downstream queries if needed.</para>
+				<para>Each pcpatch carries the inline <varname>PCBOUNDS</varname> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A patch whose XY bounds have no area, a single point or points on a line, has no density: the division by zero raises an error. A query over patches that may have no area reads those whose box has an area, <varname>area(stbox(tpcbox(patch))) &gt; 0</varname>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
 SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),

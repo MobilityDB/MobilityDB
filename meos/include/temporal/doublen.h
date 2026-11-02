@@ -83,6 +83,7 @@ typedef struct
 extern char *double2_out(const double2 *d, int maxdd);
 extern void double2_set(double a, double b, double2 *result);
 extern double2 *double2_add(const double2 *d1, const double2 *d2);
+extern double double2_avg(const double2 *d);
 extern bool double2_eq(const double2 *d1, const double2 *d2);
 
 extern char *double3_out(const double3 *d, int maxdd);

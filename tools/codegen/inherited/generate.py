@@ -4199,12 +4199,44 @@ def _tiling_sub(text: str, t: dict) -> str:
                 .replace("{TEMP}", t["temp"]))
 
 
+# The split functions of the manual's Splitting Operations, per box kind: the box
+# its name carries, the array its functions return and the prefix of the C
+# symbols they call, Temporal for the time spans, Tnumber for the value boxes and
+# Tgeo for the spatiotemporal boxes.
+_SPLIT_KINDS = {"spans": ("Spans", "tstzspan[]", "Temporal"),
+                "tboxes": ("Tboxes", "tbox[]", "Tnumber"),
+                "stboxes": ("Stboxes", "stbox[]", "Tgeo")}
+
+
+def _tiling_splits(st: dict) -> str:
+    """A `splits` stanza, expanded over its `temps` as the `gen` chunk of
+    #render_tiling expands over a pool, each function from #_tiling_skeleton: per
+    kind of its `kinds`, splitN<Box> and then splitEachN<Box>, each a group of one
+    function per type, packed with no blank line, the groups one blank line apart.
+    `prefix` names, per kind, the C prefix of a type with kernels of its own
+    (Trgeometry, Geo), and `comment` heads each group with its `-- <name>()` line."""
+    groups = []
+    for kind in st["kinds"]:
+        box, ret, prefix = _SPLIT_KINDS[kind]
+        prefix = (st.get("prefix") or {}).get(kind, prefix)
+        for name, sym in ((f"splitN{box}", f"split_n_{kind}"),
+                          (f"splitEachN{box}", f"split_each_n_{kind}")):
+            pre = f"-- {name}()\n" if st.get("comment") else ""
+            items = [_tiling_skeleton({"sig": f"{name}({t}, integer)", "ret": ret,
+                                       "sym": f"{prefix}_{sym}",
+                                       "pre": pre if i == 0 else ""})
+                     for i, t in enumerate(st["temps"])]
+            groups.append("\n".join(items) + "\n")
+    return "\n".join(groups)
+
+
 def render_tiling(fam: dict) -> str:
     """Render one family's tiling block from its `blocks` sequence. A block is a
     verbatim `lit` (the section banners, CREATE TYPE statements and blank lines, kept
     exactly as the hand file), a `fns` list (the tiling CREATE FUNCTIONs rendered
     from the shared skeleton, packed with no blank line and closed by one trailing
-    newline), or — for the base Temporal<T> multi-base-type mode (025_temporal_tile)
+    newline), a `splits` stanza (#_tiling_splits), or — for the base Temporal<T>
+    multi-base-type mode (025_temporal_tile)
     — a `gen` chunk (ONE function expanded over the family's `types:` pool that its
     `presence` class selects, packed like a `fns` list, mirroring render_restrictions).
     Blocks concatenate with no automatic separator — every separator is baked into
@@ -4225,6 +4257,8 @@ def render_tiling(fam: dict) -> str:
                 f["ret"] = _tiling_sub(g.get("ret", "{TEMP}"), t)
                 items.append(_tiling_skeleton(f, fam))
             out += "\n".join(items) + "\n"
+        elif "splits" in blk:
+            out += _tiling_splits(blk["splits"])
         else:
             out += "\n".join(_tiling_skeleton(f, fam) for f in blk["fns"]) + "\n"
     return out
@@ -4237,7 +4271,9 @@ def extract_tiling(filetext: str, fam: dict) -> str:
     whole-file family, or to the `/*` opening the next section (the family's `end`
     anchor), mirroring extract_representations. `begin_exact` (th3index/tquadbin,
     whose timeSplit material has no "Multidimensional tiling" banner to back up to)
-    anchors `begin` at its own index instead, mirroring the comparison/hash axes."""
+    anchors `begin` at its own index instead, mirroring the comparison/hash axes;
+    `end_exact` (the split functions of a boxops file) ends the block at the first
+    `end` past its start, mirroring #extract_distance."""
     begin, end = _tiling_markers(fam["family"])
     if begin in filetext:
         b = filetext.index(begin) + len(begin)
@@ -4247,6 +4283,8 @@ def extract_tiling(filetext: str, fam: dict) -> str:
     start = i if fam.get("begin_exact") else filetext.rfind("/*", 0, i)
     if fam.get("whole_file"):
         return filetext[start:len(filetext)]
+    if fam.get("end_exact"):
+        return filetext[start:filetext.index(fam["end"], start)]
     j = filetext.index(fam["end"])
     return filetext[start:filetext.rfind("/*", 0, j)]
 
@@ -4269,8 +4307,11 @@ def bootstrap_tiling(filetext: str, fam: dict, rendered: str) -> str:
     begin_m, end_m = _tiling_markers(fam["family"])
     if fam.get("whole_file"):
         return filetext[:start] + begin_m + rendered + end_m
-    j = filetext.index(fam["end"])
-    end = filetext.rfind("/*", 0, j)
+    if fam.get("end_exact"):
+        end = filetext.index(fam["end"], start)
+    else:
+        j = filetext.index(fam["end"])
+        end = filetext.rfind("/*", 0, j)
     return filetext[:start] + begin_m + rendered + end_m + filetext[end:]
 
 

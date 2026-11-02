@@ -136,9 +136,10 @@ tgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   VALIDATE_TGEO(temp, false); VALIDATE_NOT_NULL(result, false);
 
   Datum res;
-  bool found = temporal_value_at_timestamptz(temp, t, strict, &res);
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *result = DatumGetGserializedP(res);
-  return found;
+  return true;
 }
 
 /*****************************************************************************

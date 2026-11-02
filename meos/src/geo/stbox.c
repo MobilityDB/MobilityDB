@@ -414,10 +414,10 @@ stbox_make(bool hasx, bool hasz, bool geodetic, int32_t srid, double xmin,
   if (! ensure_srid_valid(srid) ||
       (s && ! ensure_span_isof_type(s, T_TSTZSPAN)))
     return NULL;
-  /* A coordinate the box carries cannot be NaN */
-  if (hasx && (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax)))))
+  /* A coordinate the box carries is finite */
+  if (hasx && (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      (hasz && (! ensure_finite(zmin) || ! ensure_finite(zmax)))))
     return NULL;
 
   /* Note: zero-fill is done in function stbox_set */
@@ -931,7 +931,7 @@ geo_to_stbox(const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (gserialized_is_empty(gs) || ! ensure_not_nan_geo(gs))
+  if (gserialized_is_empty(gs) || ! ensure_finite_geo(gs))
     return NULL;
   return geo_stbox(gs);
 }
@@ -1471,8 +1471,18 @@ stbox_area(const STBox *box, bool spheroid)
     return DBL_MAX;
 
   if (! MEOS_FLAGS_GET_GEODETIC(box->flags))
-    return (box->xmax - box->xmin) * (box->ymax - box->ymin);
-  
+  {
+    /* An extent of finite bounds can exceed the largest double while the
+     * area does not, so the area is then read from the halves of the bounds,
+     * which halving keeps exact as #floatsegm_interpolate keeps its weights;
+     * an area beyond the largest double raises (#ensure_finite_result) */
+    double dx = box->xmax - box->xmin, dy = box->ymax - box->ymin;
+    double result = (isfinite(dx) && isfinite(dy)) ? dx * dy :
+      4.0 * ((box->xmax / 2.0 - box->xmin / 2.0) *
+        (box->ymax / 2.0 - box->ymin / 2.0));
+    return ensure_finite_result(result) ? result : DBL_MAX;
+  }
+
   GSERIALIZED *geo = stbox_geo(box);
   double result = geog_area(geo, spheroid);
   pfree(geo);
@@ -1494,8 +1504,16 @@ stbox_volume(const STBox *box)
   if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_has_Z(T_STBOX, box->flags) || ! ensure_not_geodetic(box->flags))
     return DBL_MAX;
-  return (box->xmax - box->xmin) * (box->ymax - box->ymin) * 
-    (box->zmax - box->zmin);
+  /* The halves of the bounds where an extent exceeds the largest double, as
+   * #stbox_area reads them */
+  double dx = box->xmax - box->xmin, dy = box->ymax - box->ymin,
+    dz = box->zmax - box->zmin;
+  double result = (isfinite(dx) && isfinite(dy) && isfinite(dz)) ?
+    dx * dy * dz :
+    8.0 * ((box->xmax / 2.0 - box->xmin / 2.0) *
+      (box->ymax / 2.0 - box->ymin / 2.0) *
+      (box->zmax / 2.0 - box->zmin / 2.0));
+  return ensure_finite_result(result) ? result : DBL_MAX;
 }
 
 /**
@@ -1756,7 +1774,7 @@ stbox_expand_space(const STBox *box, double d)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_not_nan(d))
+  if (! ensure_finite(d))
     return NULL;
   STBox *result = palloc(sizeof(STBox));
   if (! stbox_expand_space_set(box, d, result))

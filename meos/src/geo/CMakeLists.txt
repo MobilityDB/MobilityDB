@@ -51,6 +51,7 @@ set(GEO_SOURCES
   tpoint_spatialfuncs.c
   tspatial.c
   tspatial_parser.c
+  tspatial_posops.c
   tspatial_spgist.c
   tspatial_tempspatialrels.c
   tspatial_srid.c
@@ -59,9 +60,7 @@ set(GEO_SOURCES
 if(MEOS)
   list(APPEND GEO_SOURCES
   geoset_meos.c
-  tgeo_meos.c
   tspatial_transform_meos.c
-  tspatial_posops_meos.c
   # tspatial_rtree.c
   tspatial_topops_meos.c
 )

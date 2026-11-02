@@ -824,7 +824,7 @@ Npoint *
 npoint_make(int64 rid, double pos)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(pos))
+  if (! ensure_finite(pos))
     return NULL;
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos))
     return NULL;
@@ -867,7 +867,7 @@ Nsegment *
 nsegment_make(int64 rid, double pos1, double pos2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(pos1) || ! ensure_not_nan(pos2))
+  if (! ensure_finite(pos1) || ! ensure_finite(pos2))
     return NULL;
   if (! ensure_route_exists(rid) || ! ensure_valid_position(pos1) ||
       ! ensure_valid_position(pos2))
@@ -1634,7 +1634,7 @@ npoint_sortkey_size(void)
  * each written as #datum_sortkey_put writes an integer or a double: big
  * endian with the sign bit flipped, and -0.0 written as 0.0. The SRID is not
  * part of the key since every network point takes the one of the `ways`
- * table. The position is in [0, 1] and never NaN, which the input refuses,
+ * table. The position is in [0, 1], a finite number as every input requires,
  * so #npoint_cmp, which compares it with < and >, is a total order holding
  * two points equal exactly when #npoint_eq does, as the key requires
  * @param[in] np Network point

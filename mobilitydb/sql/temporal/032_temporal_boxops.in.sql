@@ -70,6 +70,8 @@ CREATE FUNCTION tboxes(tfloat)
   AS 'MODULE_PATHNAME', 'Tnumber_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TILING-BEGIN temporal_splits — tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/tiling_families.yaml and re-run.
 CREATE FUNCTION splitNSpans(tbool, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
@@ -137,5 +139,6 @@ CREATE FUNCTION splitEachNTboxes(tfloat, integer)
   RETURNS tbox[]
   AS 'MODULE_PATHNAME', 'Tnumber_split_each_n_tboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-TILING-END temporal_splits
 
 /*****************************************************************************/

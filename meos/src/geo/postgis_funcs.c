@@ -102,18 +102,17 @@ gbox_make(bool hasz, bool hasm, bool geodetic, double xmin, double xmax,
   double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax)
 {
-  /* Ensure the validity of the arguments: no NaN, which has no place among
-   * the bounds, as #box3d_make; the bounds of a dimension the box lacks are
-   * not read */
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax) ||
-      ! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))
+  /* Ensure the validity of the arguments: finite bounds, as #box3d_make
+   * reads them; the bounds of a dimension the box lacks are not read */
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax) ||
+      ! ensure_finite(mmin) || ! ensure_finite(mmax))
     return NULL;
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      (hasz && (! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))) ||
-      (hasm && (! ensure_not_nan(mmin) || ! ensure_not_nan(mmax))))
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      (hasz && (! ensure_finite(zmin) || ! ensure_finite(zmax))) ||
+      (hasm && (! ensure_finite(mmin) || ! ensure_finite(mmax))))
     return NULL;
 
   GBOX *result = gbox_new(lwflags(hasz, hasm, geodetic));
@@ -193,16 +192,16 @@ BOX3D *
 box3d_make(double xmin, double xmax, double ymin, double ymax, double zmin,
   double zmax, int32_t srid)
 {
-  /* Ensure the validity of the arguments: no NaN, which has no place among
-   * the bounds, as #stbox_make refuses one */
-  if (! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+  /* Ensure the validity of the arguments: finite bounds, as #stbox_make
+   * reads them */
+  if (! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax))
     return NULL;
   if (! ensure_srid_valid(srid) ||
-      ! ensure_not_nan(xmin) || ! ensure_not_nan(xmax) ||
-      ! ensure_not_nan(ymin) || ! ensure_not_nan(ymax) ||
-      ! ensure_not_nan(zmin) || ! ensure_not_nan(zmax))
+      ! ensure_finite(xmin) || ! ensure_finite(xmax) ||
+      ! ensure_finite(ymin) || ! ensure_finite(ymax) ||
+      ! ensure_finite(zmin) || ! ensure_finite(zmax))
     return NULL;
 
   /* Note: zero-fill is required here, just as in heap tuples */
@@ -529,7 +528,7 @@ GSERIALIZED *
 geompoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -546,7 +545,7 @@ GSERIALIZED *
 geogpoint_make2d(int32_t srid, double x, double y)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y))
     return NULL;
 
   LWPOINT *point = lwpoint_make2d(srid, x, y);
@@ -564,8 +563,8 @@ GSERIALIZED *
 geompoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
-      ! ensure_not_nan(z))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y) ||
+      ! ensure_finite(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -582,8 +581,8 @@ GSERIALIZED *
 geogpoint_make3dz(int32_t srid, double x, double y, double z)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_srid_valid(srid) || ! ensure_not_nan(x) || ! ensure_not_nan(y) ||
-      ! ensure_not_nan(z))
+  if (! ensure_srid_valid(srid) || ! ensure_finite(x) || ! ensure_finite(y) ||
+      ! ensure_finite(z))
     return NULL;
 
   LWPOINT *point = lwpoint_make3dz(srid, x, y, z);
@@ -994,9 +993,48 @@ ring_signed_area(const double *c, uint32_t npoints, uint32_t ndims)
 }
 
 /**
+ * @brief Return the length of a segment whose largest difference of
+ * coordinates lies outside 2^-500 to 2^500
+ * @details The differences are scaled by the power of two that brings the
+ * largest into [1, 2), which is exact but where a difference far below the
+ * largest underflows, below the rounding of the length, so the squares
+ * neither overflow nor underflow, and the length is scaled back. A difference
+ * of two coordinates exceeding the largest double is taken from their halves,
+ * which are exact, and the length doubled. A length exceeding the largest
+ * double is infinite, which the measure tests (#geom_measure)
+ * @param[in] frm, to Coordinates of the ends
+ * @param[in] hasz True when the Z coordinates are measured
+ */
+static pg_noinline double
+segment_length_far(const double *frm, const double *to, bool hasz)
+{
+  double dx = to[0] - frm[0], dy = to[1] - frm[1];
+  double dz = hasz ? to[2] - frm[2] : 0.0;
+  int half = 0;
+  if (! isfinite(dx) || ! isfinite(dy) || ! isfinite(dz))
+  {
+    dx = to[0] / 2 - frm[0] / 2;
+    dy = to[1] / 2 - frm[1] / 2;
+    dz = hasz ? to[2] / 2 - frm[2] / 2 : 0.0;
+    half = 1;
+  }
+  double m = Max(Max(fabs(dx), fabs(dy)), fabs(dz));
+  if (m == 0.0)
+    return 0.0;
+  int k = ilogb(m);
+  dx = ldexp(dx, - k);
+  dy = ldexp(dy, - k);
+  dz = ldexp(dz, - k);
+  return ldexp(sqrt((dx * dx) + (dy * dy) + (dz * dz)), k + half);
+}
+
+/**
  * @brief Return the 2D length of a ring or a line of serialized coordinates
  * @details Mirrors #ptarray_length_2d term by term, in the same order, on the
- * coordinates read in place rather than through a point array
+ * coordinates read in place rather than through a point array, for a segment
+ * whose largest difference of coordinates lies within 2^-500 to 2^500 or is
+ * 0, where the squares neither overflow nor underflow; any other segment is
+ * measured scaled (#segment_length_far)
  * @param[in] c Coordinates of the ring or the line
  * @param[in] npoints Number of points
  * @param[in] ndims Number of coordinates of a point
@@ -1009,8 +1047,39 @@ ring_length_2d(const double *c, uint32_t npoints, uint32_t ndims)
   double dist = 0.0;
   const double *end = c + (size_t) npoints * ndims;
   for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
-    dist += sqrt(((frm[0] - to[0]) * (frm[0] - to[0])) +
-                 ((frm[1] - to[1]) * (frm[1] - to[1])));
+  {
+    double dx = frm[0] - to[0], dy = frm[1] - to[1];
+    double m = Max(fabs(dx), fabs(dy));
+    dist += (m <= 0x1p500 && (m >= 0x1p-500 || m == 0.0)) ?
+      sqrt((dx * dx) + (dy * dy)) : segment_length_far(frm, to, false);
+  }
+  return dist;
+}
+
+/**
+ * @brief Return the 3D length of a line of serialized coordinates
+ * @details Mirrors #ptarray_length term by term, in the same order, on the
+ * coordinates read in place rather than through a point array, measuring a
+ * segment as #ring_length_2d measures it
+ * @param[in] c Coordinates of the line
+ * @param[in] npoints Number of points
+ * @param[in] ndims Number of coordinates of a point
+ */
+static double
+line_length_3d(const double *c, uint32_t npoints, uint32_t ndims)
+{
+  if (npoints < 2)
+    return 0.0;
+  double dist = 0.0;
+  const double *end = c + (size_t) npoints * ndims;
+  for (const double *frm = c, *to = c + ndims; to < end; frm = to, to += ndims)
+  {
+    double dx = frm[0] - to[0], dy = frm[1] - to[1], dz = frm[2] - to[2];
+    double m = Max(Max(fabs(dx), fabs(dy)), fabs(dz));
+    dist += (m <= 0x1p500 && (m >= 0x1p-500 || m == 0.0)) ?
+      sqrt((dx * dx) + (dy * dy) + (dz * dz)) :
+      segment_length_far(frm, to, true);
+  }
   return dist;
 }
 
@@ -1097,10 +1166,14 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
     case LINETYPE:
       if (measure == WALK_LENGTH && num)
       {
-        /* The length as #lwline_length computes it, in 3D for a line with Z */
-        pa.npoints = pa.maxpoints = num;
-        pa.serialized_pointlist = (uint8_t *) (p + 8);
-        *result = ptarray_length(&pa);
+        /* The length as #lwline_length computes it, in 3D for a line with Z;
+         * the serialized form stores the coordinates as doubles aligned on 8
+         * bytes, as #poly_walk_measure reads them */
+        const void *coords = p + 8;
+        const double *c = coords;
+        uint32_t ndims = (uint32_t) FLAGS_NDIMS(flags);
+        *result = FLAGS_GET_Z(flags) ? line_length_3d(c, num, ndims) :
+          ring_length_2d(c, num, ndims);
       }
       *size = 8 + num * ptsize;
       return WALK_DONE;
@@ -1109,7 +1182,10 @@ geo_walk_measure(const uint8_t *p, lwflags_t flags, WalkMeasure measure,
       pa.npoints = pa.maxpoints = num;
       pa.serialized_pointlist = (uint8_t *) (p + 8);
       if (measure == WALK_PERIMETER)
-        *result = ptarray_length_2d(&pa);
+      {
+        const void *coords = p + 8;
+        *result = ring_length_2d(coords, num, (uint32_t) FLAGS_NDIMS(flags));
+      }
       else if (measure == WALK_AREA && num)
       {
         /* The area as #lwtriangle_area computes it */
@@ -1275,6 +1351,49 @@ geom_walk_measure(const GSERIALIZED *gs, WalkMeasure measure)
 }
 
 /**
+ * @brief Return the area, the length or the perimeter of a geometry
+ * @details A length or a perimeter is walked as it is, each segment measured
+ * scaled where its squares would overflow or underflow (#ring_length_2d), and
+ * raises an error where it exceeds the largest double (#ensure_finite_result).
+ * An area multiplies differences of coordinates, which overflows beyond 2^511
+ * and underflows below 2^-511, so a geometry whose largest coordinate lies
+ * outside 2^-500 to 2^500 is read scaled by the power of two that brings it
+ * to 2^500, exactly or with an error (#geo_scale_pow2), as the analytic
+ * distances read far operands (#nad_tpoint_geo_analytic): the products of its
+ * differences stay below the largest double, and its smallest differences
+ * stay as far above the denormals as they can. A power is at most 2^1022, the
+ * largest whose inverse is a normal double, which brings a denormal largest
+ * coordinate above 2^-52. The area scales back by the square of that power
+ * and raises an error where it exceeds the largest double. Every other
+ * geometry is measured as it is
+ * @errval DBL_MAX
+ */
+static double
+geom_measure(const GSERIALIZED *gs, WalkMeasure measure)
+{
+  if (measure != WALK_AREA)
+  {
+    double length = geom_walk_measure(gs, measure);
+    if (length == DBL_MAX)
+      return DBL_MAX;
+    return ensure_finite_result(length) ? length : DBL_MAX;
+  }
+  double mag = geo_magnitude(gs);
+  if (mag == 0.0 || (mag >= 0x1p-500 && mag <= 0x1p500))
+    return geom_walk_measure(gs, measure);
+  int shift = Min(500 - ilogb(mag), DBL_MAX_EXP - 2);
+  GSERIALIZED *scaled = geo_scale_pow2(gs, ldexp(1.0, shift));
+  if (! scaled)
+    return DBL_MAX;
+  double r = geom_walk_measure(scaled, measure);
+  pfree(scaled);
+  if (r == DBL_MAX)
+    return DBL_MAX;
+  double result = ldexp(r, -2 * shift);
+  return ensure_finite_result(result) ? result : DBL_MAX;
+}
+
+/**
  * @ingroup meos_geo_base_accessor
  * @brief Return the area of a geometry
  * @details Defined by
@@ -1298,7 +1417,7 @@ geom_area(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_AREA);
+  return geom_measure(gs, WALK_AREA);
 }
 
 /**
@@ -1324,7 +1443,7 @@ geom_length(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_LENGTH);
+  return geom_measure(gs, WALK_LENGTH);
 }
 
 /**
@@ -1349,7 +1468,7 @@ geom_perimeter(const GSERIALIZED *gs)
   if (! ensure_not_geodetic_geo(gs))
     return DBL_MAX;
 
-  return geom_walk_measure(gs, WALK_PERIMETER);
+  return geom_measure(gs, WALK_PERIMETER);
 }
 
 /**
@@ -1853,15 +1972,19 @@ geom_distance_visit(const double *a, const double *b, const double *c,
   GeomDistanceCand **cand, const GeomDistanceCand *candstack, int *ncand,
   int *maxcand, double *minhi, double *best)
 {
-  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
-      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
-    return false;
+  /* Outside the range of the filter the pair is answered exactly by the
+   * kernel, which scales the coordinates before it tests whether the
+   * segments meet: the orientations #linesegm_intersect computes on them
+   * overflow beyond 2^512 */
   if (! filter)
   {
     double v = segment_distance_exact_bounded(a, b, c, d, ndims, big);
     *best = geom_distance_fmin(*best, v);
     return v > 0.0;
   }
+  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
+      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
+    return false;
   double lo = 0.0, hi = 0.0;
   int side = -1;
   if (ndims == 3)
@@ -1931,7 +2054,8 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * @param[in] bounds Where not NULL, a bound on the magnitude of every
  * coordinate and a bound on every difference of two of them, which spare the
  * walk its pass over the coordinates (#geom_distance3d_exact)
- * @return DBL_MAX where a list holds no point
+ * @return DBL_MAX where a list holds no point, an infinity where the distance
+ * exceeds the largest double
  */
 static pg_attribute_always_inline double
 geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
@@ -2038,10 +2162,12 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   GeomDistanceCand candstack[GEOM_DISTANCE_CANDS], *cand = candstack;
   int ncand = 0, maxcand = GEOM_DISTANCE_CANDS;
   double minhi = INFINITY, best = INFINITY;
-  bool overlap, meet = false;
+  bool overlap, meet = false, pairs = false;
   for (uint32_t k1 = 0; k1 < n1 && ! meet; k1++)
     for (uint32_t k2 = 0; k2 < n2 && ! meet; k2++)
     {
+      if (arr1[k1]->npoints > 0 && arr2[k2]->npoints > 0)
+        pairs = true;
       /* Two point arrays whose boxes lie beyond the least found hold no
        * nearer pair */
       if (boxes[0])
@@ -2105,8 +2231,9 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   for (int g = 0; g < 2; g++)
     if (boxes[g] && boxes[g] != &boxstack[g][0][0])
       pfree(boxes[g]);
-  /* A list holding no point leaves no pair */
-  return isinf(best) ? DBL_MAX : best;
+  /* A list holding no point leaves no pair, while a pair whose distance
+   * exceeds the largest double answers an infinity */
+  return pairs ? best : DBL_MAX;
 }
 
 /** Point arrays the distance walks hold on the stack, the rings and members
@@ -2276,9 +2403,7 @@ geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       arrs[i][k] = &pas[i][k];
   }
   /* The boxes the serialized geometries carry, rounded outward to floats,
-   * bound every finite coordinate: exactness is defined for finite
-   * coordinates, and a geometry holding NaN, invalid as GEOS reports it, has
-   * an unspecified distance. A float holds 24 bits and no magnitude below
+   * bound every coordinate, each finite (#ensure_finite_geo). A float holds 24 bits and no magnitude below
    * 2^-149, so the boxes are read only where they are tight: their largest
    * magnitude within 2^100 of 1 and their extent at least 2^-20 of it, the
    * rounding of a float then at most an eighth of the extent. Elsewhere, or
@@ -2591,9 +2716,7 @@ geom_distance2d_disc_witness(const double *c, double r, const GSERIALIZED *gs,
  * @note PostGIS function: @p ST_Distance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
- * @note The answer is the double nearest the exact distance for finite
- * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
- * it, leaves the distance unspecified
+ * @note The answer is the double nearest the exact distance
  * @errval DBL_MAX
  */
 double
@@ -2613,14 +2736,23 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   if (geom_distance_straight_type(stype1) &&
       geom_distance_straight_type(stype2))
   {
+    double result;
     if (stype1 == POINTTYPE && stype2 == POINTTYPE)
-      return point_distance_exact((const double *) GSERIALIZED_POINT2D_P(gs1),
+      result = point_distance_exact(
+        (const double *) GSERIALIZED_POINT2D_P(gs1),
         (const double *) GSERIALIZED_POINT2D_P(gs2), 2);
-    LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
-    LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
-    double result = geom_distance2d_exact(sgeom1, sgeom2);
-    lwgeom_free(sgeom1);
-    lwgeom_free(sgeom2);
+    else
+    {
+      LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
+      LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
+      result = geom_distance2d_exact(sgeom1, sgeom2);
+      lwgeom_free(sgeom1);
+      lwgeom_free(sgeom2);
+    }
+    /* The double nearest a distance of finite coordinates is infinite where
+     * the distance leaves the doubles (#ensure_finite_result) */
+    if (! ensure_finite_result(result))
+      return DBL_MAX;
     return result;
   }
 
@@ -2746,9 +2878,7 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @note PostGIS function: @p ST_3DDistance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
- * @note The answer is the double nearest the exact distance for finite
- * coordinates; a coordinate that is NaN or infinite, invalid as GEOS reports
- * it, leaves the distance unspecified
+ * @note The answer is the double nearest the exact distance
  * @errval DBL_MAX
  */
 double
@@ -2770,10 +2900,15 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
       geom_distance3d_straight_type(ztype1) &&
       geom_distance3d_straight_type(ztype2))
   {
-    if (ztype1 == POINTTYPE && ztype2 == POINTTYPE)
-      return point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
-        (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3);
-    return geom_distance3d_exact(gs1, gs2);
+    double result = (ztype1 == POINTTYPE && ztype2 == POINTTYPE) ?
+      point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
+        (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3) :
+      geom_distance3d_exact(gs1, gs2);
+    /* The double nearest a distance of finite coordinates is infinite where
+     * the distance leaves the doubles, as #geom_distance2d raises it */
+    if (! ensure_finite_result(result))
+      return DBL_MAX;
+    return result;
   }
 
   /* Fast path: the distance between two points with Z is computed from their
@@ -2880,7 +3015,7 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
@@ -2932,7 +3067,7 @@ geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
@@ -2953,7 +3088,7 @@ geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
@@ -3041,7 +3176,7 @@ geo_segmentize(const GSERIALIZED *gs, double max_seg_length)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(max_seg_length))
+  if (! ensure_finite(max_seg_length))
     return NULL;
 
   uint32_t type = gserialized_get_type(gs);
@@ -6989,7 +7124,7 @@ geog_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance,
   bool use_spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_nan(tolerance))
+  if (! ensure_finite(tolerance))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) || ! ensure_geodetic_geo(gs1))
     return false;
@@ -7249,15 +7384,16 @@ postgis_valid_typmod(GSERIALIZED *gs, int32_t typmod)
 
 /**
  * @brief Return the geometry a reader built, or NULL when one of its
- * coordinates is NaN
- * @details A NaN coordinate has no position, so no reader returns a geometry
+ * coordinates is not finite
+ * @details A NaN or an infinite coordinate has no position, so no reader
+ * returns a geometry
  * holding one, as #tinstant_make refuses it in a temporal point
- * (#ensure_not_nan_geo). A geometry refused is freed
+ * (#ensure_finite_geo). A geometry refused is freed
  */
 static GSERIALIZED *
 geo_read_result(GSERIALIZED *gs)
 {
-  if (! gs || ensure_not_nan_geo(gs))
+  if (! gs || ensure_finite_geo(gs))
     return gs;
   pfree(gs);
   return NULL;
@@ -8055,7 +8191,7 @@ line_interpolate_point(const GSERIALIZED *gs, double fraction, bool repeat)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(fraction))
+  if (! ensure_finite(fraction))
     return NULL;
   if (fraction < 0 || fraction > 1)
   {
@@ -8094,7 +8230,7 @@ line_substring(const GSERIALIZED *gs, double from, double to)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_nan(from) || ! ensure_not_nan(to))
+  if (! ensure_finite(from) || ! ensure_finite(to))
     return NULL;
   if (from < 0 || from > 1)
   {

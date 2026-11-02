@@ -77,8 +77,8 @@ trgeometry_space_boxes(const Temporal *temp, double xsize, double ysize,
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   *count = 0;
   /* Ensure the validity of the arguments */
@@ -140,8 +140,8 @@ trgeometry_space_time_boxes(const Temporal *temp, double xsize, double ysize,
 {
   /* The out parameter is defined even when a later check fails */
   VALIDATE_NOT_NULL(count, NULL);
-  if (! ensure_not_nan(xsize) || ! ensure_not_nan(ysize) ||
-      ! ensure_not_nan(zsize))
+  if (! ensure_finite(xsize) || ! ensure_finite(ysize) ||
+      ! ensure_finite(zsize))
     return NULL;
   *count = 0;
   /* Ensure the validity of the arguments */

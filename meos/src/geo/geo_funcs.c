@@ -911,6 +911,10 @@ grow_expansion(int elen, const double *e, double b, double *h)
   return hlen;
 }
 
+static int cross_product_sign_wide(double ax, double ay, double bx,
+  double by, double cx, double cy, double dx, double dy);
+static inline int double_lowest_bit(double a);
+
 /**
  * @brief Add the cross product of the vectors B - A and D - C, exactly, into
  * an expansion held in one of two buffers, and return its length
@@ -976,20 +980,56 @@ cross_product_expansion(double ax, double ay, double bx, double by,
  * and the sixteen terms are added into an expansion whose last component
  * carries the sign; a term with a zero factor adds nothing and is skipped.
  * #cross_product_sign calls it where its filter cannot tell, which keeps this
- * out of every call the filter decides
- * @note Exact where no product of coordinate differences overflows or
- * underflows
+ * out of every call the filter decides, and a product overflowing the
+ * doubles is one it cannot tell. The sign does not change when every
+ * coordinate is multiplied by one power of two, which is exact, so
+ * coordinates beyond 2^510 are first brought below it, where no product of
+ * two differences overflows. Where that scaling would round a coordinate
+ * below the normal range, or a product of the differences could underflow,
+ * the sign is read on #WideDyadic (#cross_product_sign_wide), exact for any
+ * finite coordinates.
  * @return 1 or -1 for the two turns, 0 exactly where the vectors are parallel
  */
 int
 cross_product_sign_exact(double ax, double ay, double bx, double by,
   double cx, double cy, double dx, double dy)
 {
+  double v[8] = {ax, ay, bx, by, cx, cy, dx, dy};
+  double big = 0.0;
+  for (int i = 0; i < 8; i++)
+    big = Max(big, fabs(v[i]));
+  if (big > 0x1p510)
+  {
+    int k = ilogb(big) - 509;
+    for (int i = 0; i < 8; i++)
+    {
+      double s = ldexp(v[i], -k);
+      if (ldexp(s, k) != v[i])
+        return cross_product_sign_wide(ax, ay, bx, by, cx, cy, dx, dy);
+      v[i] = s;
+    }
+  }
   double d[4], t[4];
-  two_diff(bx, ax, &d[0], &t[0]);
-  two_diff(dy, cy, &d[1], &t[1]);
-  two_diff(by, ay, &d[2], &t[2]);
-  two_diff(dx, cx, &d[3], &t[3]);
+  two_diff(v[2], v[0], &d[0], &t[0]);
+  two_diff(v[7], v[5], &d[1], &t[1]);
+  two_diff(v[3], v[1], &d[2], &t[2]);
+  two_diff(v[6], v[4], &d[3], &t[3]);
+  /* A product of two terms is exact where the sum of the exponents of their
+   * lowest bits reaches that of the least subnormal */
+  int low[4];
+  for (int i = 0; i < 4; i++)
+  {
+    low[i] = INT_MAX;
+    if (d[i] != 0.0)
+      low[i] = double_lowest_bit(d[i]);
+    if (t[i] != 0.0)
+      low[i] = Min(low[i], double_lowest_bit(t[i]));
+  }
+  if ((low[0] != INT_MAX && low[1] != INT_MAX && low[0] + low[1] < -1074) ||
+      (low[2] != INT_MAX && low[3] != INT_MAX && low[2] + low[3] < -1074))
+    return cross_product_sign_wide(ax, ay, bx, by, cx, cy, dx, dy);
+  ax = v[0]; ay = v[1]; bx = v[2]; by = v[3];
+  cx = v[4]; cy = v[5]; dx = v[6]; dy = v[7];
   if (t[0] == 0.0 && t[1] == 0.0 && t[2] == 0.0 && t[3] == 0.0)
   {
     double l = d[0] * d[1], r = d[2] * d[3];
@@ -3606,6 +3646,32 @@ wide_dyadic_cmp(const WideDyadic *a, const WideDyadic *b)
       return (xi > yi) ? a->sign : - a->sign;
   }
   return 0;
+}
+
+/**
+ * @brief Return the sign of the cross product of the vectors B - A and D - C,
+ * read on #WideDyadic for any finite coordinates
+ * @details The four differences are exact, and the sign is that of
+ * `(bx - ax)(dy - cy) - (by - ay)(dx - cx)`, a comparison of two products
+ * (#wide_dyadic_product_cmp), as #segment_interior_wide reads its signs.
+ * #cross_product_sign_exact calls it where its doubles cannot hold the
+ * products exactly
+ */
+static int
+cross_product_sign_wide(double ax, double ay, double bx, double by,
+  double cx, double cy, double dx, double dy)
+{
+  const double ends[4][2] = {{bx, ax}, {dy, cy}, {by, ay}, {dx, cx}};
+  WideDyadic diff[4];
+  for (int i = 0; i < 4; i++)
+  {
+    WideDyadic hi, lo;
+    wide_dyadic_set_double(&hi, ends[i][0]);
+    wide_dyadic_set_double(&lo, ends[i][1]);
+    lo.sign = - lo.sign;
+    wide_dyadic_add(&hi, &lo, &diff[i]);
+  }
+  return wide_dyadic_product_cmp(&diff[0], &diff[1], &diff[2], &diff[3]);
 }
 
 /**
@@ -8580,7 +8646,12 @@ segment_distance_unscaled(const double *a, const double *b, const double *c,
  * otherwise
  * @details Scaling is not needed where the largest coordinate lies within
  * 2^100 of 1, and not exact where it rounds the smallest nonzero coordinate
- * below the normal range
+ * below the normal range. A largest coordinate beyond 2^1021 is nonetheless
+ * scaled, by the largest power of two keeping the smallest nonzero one
+ * normal, since a difference of two such coordinates can exceed the largest
+ * double; where no such power brings it below 2^1022, 0 is returned, and the
+ * kernels read the coordinates as they are, on #WideDyadic where their
+ * differences overflow (#segment_interior_wide)
  * @param[in] pts The four ends, @p ndims coordinates each
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] big The largest magnitude of their coordinates
@@ -8604,7 +8675,14 @@ segment_distance_scale_exponent(const double *const *pts, int ndims,
     }
   int e = ilogb(big);
   if (ilogb(small) - e < DBL_MIN_EXP - 1)
-    return 0;
+  {
+    if (e < DBL_MAX_EXP - 3)
+      return 0;
+    /* The largest exact power, which brings the smallest coordinate to the
+     * least normal exponent */
+    int e1 = ilogb(small) - (DBL_MIN_EXP - 1);
+    return (e - e1 < DBL_MAX_EXP - 3) ? e1 : 0;
+  }
   return e;
 }
 
@@ -8646,7 +8724,13 @@ segment_distance_exact(const double *a, const double *b, const double *c,
       if (v > big)
         big = v;
     }
-  int e = segment_distance_scale_exponent(pts, ndims, big);
+  /* The 2D kernels are exact for any finite coordinates on their own: the
+   * orientations of #linesegm_intersect read #WideDyadic where their products
+   * leave the doubles, and #point_segment_distance_offset_exact scales its
+   * differences or reads its input coordinates. A common scale would push
+   * the coordinates near 1 of a pair also holding coordinates near the largest
+   * double below the range where those kernels' products stay exact */
+  int e = (ndims == 2) ? 0 : segment_distance_scale_exponent(pts, ndims, big);
   if (e != 0)
   {
     double sa[3] = {0.0}, sb[3] = {0.0}, sc[3] = {0.0}, sd[3] = {0.0};
@@ -8660,8 +8744,11 @@ segment_distance_exact(const double *a, const double *b, const double *c,
     double r = segment_distance_unscaled(sa, sb, sc, sd, ndims,
       ldexp(big, -e));
     double dist = ldexp(r, e);
-    /* Scaled back exactly where it lies in the normal range */
-    if (r == 0.0 || (isfinite(dist) && dist >= DBL_MIN))
+    /* Scaled back exactly where both the scaled distance and the distance lie
+     * in the normal range, and infinite where it exceeds the largest double,
+     * as #point_distance_exact answers; a subnormal scaled distance holds
+     * fewer bits than the double nearest the distance */
+    if (r == 0.0 || (r >= DBL_MIN && dist >= DBL_MIN))
       return dist;
   }
   return segment_distance_unscaled(a, b, c, d, ndims, big);
@@ -17287,13 +17374,13 @@ ensure_not_empty(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return true if a coordinate of a geometry/geography is NaN, walking
- * its points as #lwgeom_isfinite walks them
+ * @brief Return true if a coordinate of a geometry/geography is not finite,
+ * walking its points as #lwgeom_isfinite walks them
  * @details Kept out of line: inlined, it makes the caller save the registers
  * it uses on every call, which the test of a point never needs
  */
 static pg_noinline bool
-geo_walk_has_nan(const GSERIALIZED *gs)
+geo_walk_has_non_finite(const GSERIALIZED *gs)
 {
   LWGEOM *geom = lwgeom_from_gserialized(gs);
   bool hasz = lwgeom_has_z(geom), hasm = lwgeom_has_m(geom);
@@ -17303,8 +17390,8 @@ geo_walk_has_nan(const GSERIALIZED *gs)
   {
     POINT4D p;
     lwpointiterator_next(it, &p);
-    nan = isnan(p.x) || isnan(p.y) || (hasz && isnan(p.z)) ||
-      (hasm && isnan(p.m));
+    nan = ! isfinite(p.x) || ! isfinite(p.y) || (hasz && ! isfinite(p.z)) ||
+      (hasm && ! isfinite(p.m));
   }
   lwpointiterator_destroy(it);
   lwgeom_free(geom);
@@ -17312,13 +17399,13 @@ geo_walk_has_nan(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Ensure that no coordinate of a geometry/geography is NaN
- * @details A NaN coordinate has no position, so the point holding it cannot
- * be bounded, compared or indexed. An infinite coordinate, which
- * #lwgeom_isfinite also refuses, is accepted
+ * @brief Ensure that every coordinate of a geometry/geography is finite
+ * @details A NaN or an infinite coordinate has no position, so the point
+ * holding it cannot be bounded, compared exactly or indexed, as
+ * #lwgeom_isfinite also refuses it
  */
 bool
-ensure_not_nan_geo(const GSERIALIZED *gs)
+ensure_finite_geo(const GSERIALIZED *gs)
 {
   /* A point, the value of every temporal point instant, is read in place: a
    * temporal instant is made by every operation that produces one, so the
@@ -17326,22 +17413,22 @@ ensure_not_nan_geo(const GSERIALIZED *gs)
    * the number of points of a serialized geometry are the two words before
    * the coordinates of its first point, and an empty point has none */
   const uint32_t *words = (const uint32_t *) (GS_POINT_PTR(gs) - 8);
-  bool nan;
+  bool nonfinite;
   if (words[0] == POINTTYPE)
   {
     const POINT2D *pt = GSERIALIZED_POINT2D_P(gs);
     bool z = FLAGS_GET_Z(gs->gflags), m = FLAGS_GET_M(gs->gflags);
-    nan = words[1] != 0 && (isnan(pt->x) || isnan(pt->y) ||
-      (z && isnan(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
-      (m && isnan(z ? GSERIALIZED_POINT4D_P(gs)->m :
+    nonfinite = words[1] != 0 && (! isfinite(pt->x) || ! isfinite(pt->y) ||
+      (z && ! isfinite(GSERIALIZED_POINT3DZ_P(gs)->z)) ||
+      (m && ! isfinite(z ? GSERIALIZED_POINT4D_P(gs)->m :
         GSERIALIZED_POINT3DM_P(gs)->m)));
   }
   else
-    nan = geo_walk_has_nan(gs);
-  if (! nan)
+    nonfinite = geo_walk_has_non_finite(gs);
+  if (! nonfinite)
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "The coordinates of a geometry cannot be NaN");
+    "The coordinates of a geometry must be finite");
   return false;
 }
 
@@ -27387,6 +27474,109 @@ meos_area(const LWGEOM *geom)
   CentroidAcc areal = {0}, lineal = {0}, punctual = {0};
   centroid_add_geo(geom, &areal, &lineal, &punctual);
   return areal.weight;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return the largest magnitude of the X, Y and Z coordinates of a
+ * geometry, read from its points as #geo_walk_has_non_finite walks them
+ */
+static pg_noinline double
+geo_walk_magnitude(const GSERIALIZED *gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool hasz = lwgeom_has_z(geom);
+  double result = 0.0;
+  LWPOINTITERATOR *it = lwpointiterator_create(geom);
+  while (lwpointiterator_has_next(it))
+  {
+    POINT4D p;
+    lwpointiterator_next(it, &p);
+    result = Max(result, Max(fabs(p.x), fabs(p.y)));
+    if (hasz)
+      result = Max(result, fabs(p.z));
+  }
+  lwpointiterator_destroy(it);
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @brief Return the largest magnitude of the X, Y and Z coordinates of a
+ * geometry, 0 for an empty geometry
+ * @details The box of a serialized geometry stores its bounds as floats
+ * rounded outward, so below FLT_MAX and from FLT_MIN on the answer bounds
+ * every coordinate of a geometry holding no polygon from above. The box of a
+ * polygon bounds its exterior ring alone (#lwgeom_calculate_gbox), which a
+ * hole lying outside it escapes, and a float bound saturates at FLT_MAX and
+ * rounds outward to the float range below FLT_MIN, so a geometry that may
+ * hold a polygon, or whose bound lies beyond either, is read from its points.
+ * No function of the geometry layer answers it; #geom_distance_walk reads the
+ * same largest coordinate from the points it walks
+ * @param[in] gs Geometry
+ */
+double
+geo_magnitude(const GSERIALIZED *gs)
+{
+  assert(gs);
+  if (gserialized_is_empty(gs))
+    return 0.0;
+  switch (gserialized_get_type(gs))
+  {
+    case POLYGONTYPE:
+    case CURVEPOLYTYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case COLLECTIONTYPE:
+      return geo_walk_magnitude(gs);
+    default:
+      break;
+  }
+  GBOX box;
+  memset(&box, 0, sizeof(GBOX));
+  if (gserialized_get_gbox_p(gs, &box) != LW_SUCCESS)
+    return 0.0;
+  double result = Max(Max(fabs(box.xmin), fabs(box.xmax)),
+    Max(fabs(box.ymin), fabs(box.ymax)));
+  if (FLAGS_GET_Z(box.flags))
+    result = Max(result, Max(fabs(box.zmin), fabs(box.zmax)));
+  if (result < FLT_MAX && result >= FLT_MIN)
+    return result;
+  return geo_walk_magnitude(gs);
+}
+
+/**
+ * @brief Return a geometry whose X, Y and Z coordinates are scaled by a power
+ * of two, or NULL with an error where the scaling is not exact
+ * @details Multiplying a double by a power of two is exact unless the product
+ * leaves the normal range, so the scaling is exact exactly where scaling the
+ * result back by the inverse power restores every coordinate
+ * (#geo_scale, #ptarray_same through #lwgeom_same)
+ * @param[in] gs Geometry
+ * @param[in] scale Power of two
+ */
+GSERIALIZED *
+geo_scale_pow2(const GSERIALIZED *gs, double scale)
+{
+  assert(gs); assert(scale > 0.0); assert(isfinite(scale));
+  POINT4D f = {.x = scale, .y = scale, .z = scale, .m = 1.0};
+  POINT4D b = {.x = 1.0 / scale, .y = 1.0 / scale, .z = 1.0 / scale,
+    .m = 1.0};
+  GSERIALIZED *result = geo_scale(gs, f.x, f.y, f.z);
+  GSERIALIZED *back = geo_scale(result, b.x, b.y, b.z);
+  LWGEOM *g1 = lwgeom_from_gserialized(gs);
+  LWGEOM *g2 = lwgeom_from_gserialized(back);
+  bool exact = lwgeom_same(g1, g2);
+  lwgeom_free(g1); lwgeom_free(g2); pfree(back);
+  if (exact)
+    return result;
+  pfree(result);
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+    "A geometry with coordinates near the largest and the smallest doubles "
+    "cannot be measured exactly");
+  return NULL;
 }
 
 /*****************************************************************************/

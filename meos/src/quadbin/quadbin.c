@@ -740,7 +740,7 @@ quadbin_row_latitude(double y, double n)
 Quadbin
 quadbin_point_to_cell(double longitude, double latitude, uint32_t resolution)
 {
-  if (! ensure_not_nan(longitude) || ! ensure_not_nan(latitude))
+  if (! ensure_finite(longitude) || ! ensure_finite(latitude))
     return (Quadbin) 0;
   if (resolution == 0)
     return quadbin_tile_to_cell(0, 0, 0);

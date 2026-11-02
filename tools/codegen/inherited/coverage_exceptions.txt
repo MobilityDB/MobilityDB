@@ -5,11 +5,10 @@
 # land unnoticed. The list is a ratchet: it may only shrink. Bring a file
 # under the manifest, then delete its line here.
 #
-# 85 of 221 files remain.
+# 74 of 221 files remain.
 
 mobilitydb/sql/cbuffer/204_tcbuffer_compops.in.sql
 mobilitydb/sql/cbuffer/205_tcbuffer_spatialfuncs.in.sql
-mobilitydb/sql/cbuffer/207_tcbuffer_boxops.in.sql
 mobilitydb/sql/cbuffer/208_tcbuffer_topops.in.sql
 mobilitydb/sql/cbuffer/209_tcbuffer_posops.in.sql
 mobilitydb/sql/cbuffer/216_tcbuffer_indexes.in.sql
@@ -18,8 +17,6 @@ mobilitydb/sql/geo/049_geo_funcs.in.sql
 mobilitydb/sql/geo/051_stbox.in.sql
 mobilitydb/sql/geo/056_tgeo_spatialfuncs.in.sql
 mobilitydb/sql/geo/056_tpoint_spatialfuncs.in.sql
-mobilitydb/sql/geo/060_tgeo_boxops.in.sql
-mobilitydb/sql/geo/060_tpoint_boxops.in.sql
 mobilitydb/sql/geo/061_tgeo_topops.in.sql
 mobilitydb/sql/geo/061_tpoint_topops.in.sql
 mobilitydb/sql/geo/062_tgeo_posops.in.sql
@@ -53,7 +50,6 @@ mobilitydb/sql/json/460_tjsonb_topops.in.sql
 mobilitydb/sql/json/462_tjsonb_posops.in.sql
 mobilitydb/sql/json/466_tjsonb_indexes.in.sql
 mobilitydb/sql/npoint/306_tnpoint_spatialfuncs.in.sql
-mobilitydb/sql/npoint/307_tnpoint_boxops.in.sql
 mobilitydb/sql/npoint/310_tnpoint_routeops.in.sql
 mobilitydb/sql/npoint/311_tnpoint_gin.in.sql
 mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql
@@ -64,14 +60,12 @@ mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql
 mobilitydb/sql/pointcloud/442_tpcpoint_spatialfuncs.in.sql
 mobilitydb/sql/pointcloud/445_tpcpoint_analytics.in.sql
 mobilitydb/sql/pose/105_tpose_spatialfuncs.in.sql
-mobilitydb/sql/pose/107_tpose_boxops.in.sql
 mobilitydb/sql/pose/117_tpose_analytics.in.sql
 mobilitydb/sql/pose/120_geopose_frames.in.sql
 mobilitydb/sql/posechain/555_tposechain_spatialfuncs.in.sql
 mobilitydb/sql/quadbin/352_quadbin_ops.in.sql
 mobilitydb/sql/quadbin/355_tquadbin_spatialfuncs.in.sql
 mobilitydb/sql/rgeo/156_trgeo_spatialfuncs.in.sql
-mobilitydb/sql/rgeo/160_trgeo_boxops.in.sql
 mobilitydb/sql/rgeo/175_trgeo_geom_clip.in.sql
 mobilitydb/sql/s2cell/602_s2cell_ops.in.sql
 mobilitydb/sql/s2cell/605_ts2cell_spatialfuncs.in.sql
@@ -79,7 +73,6 @@ mobilitydb/sql/temporal/019_geo_constructors.in.sql
 mobilitydb/sql/temporal/021_tbox.in.sql
 mobilitydb/sql/temporal/028_tbool_boolops.in.sql
 mobilitydb/sql/temporal/029_ttext_textfuncs.in.sql
-mobilitydb/sql/temporal/032_temporal_boxops.in.sql
 mobilitydb/sql/temporal/033_temporal_topops.in.sql
 mobilitydb/sql/temporal/034_temporal_posops.in.sql
 mobilitydb/sql/temporal/038_temporal_similarity.in.sql
