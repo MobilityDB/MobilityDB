@@ -4,10 +4,11 @@
 # operation: its SQL operator and the relation its wrappers state, `sym` marking a
 # relation stated of both operands together (two boxes overlap). The kernel an
 # operation calls is <op>_<left>_<right> (contains_tbox_numspan), and its SQL name is
-# <sqlclass><Op> (tboxContains).
+# <sqlclass><Op> (tboxContains); `comm` is the commutator of its operator in the
+# box-by-box SQL (templates/boxbox.sql.tmpl).
 boxtopops:
-  - {op: Contains,  sqlop: "@>",  rel: contains}
-  - {op: Contained, sqlop: "<@",  rel: is contained in}
-  - {op: Overlaps,  sqlop: "&&",  rel: overlap, sym: true}
-  - {op: Same,      sqlop: "~=",  rel: are equal in the common dimensions, sym: true}
-  - {op: Adjacent,  sqlop: "-|-", rel: are adjacent, sym: true}
+  - {op: Contains,  sqlop: "@>",  rel: contains, comm: "<@"}
+  - {op: Contained, sqlop: "<@",  rel: is contained in, comm: "@>"}
+  - {op: Overlaps,  sqlop: "&&",  rel: overlap, sym: true, comm: "&&"}
+  - {op: Same,      sqlop: "~=",  rel: are equal in the common dimensions, sym: true, comm: "~="}
+  - {op: Adjacent,  sqlop: "-|-", rel: are adjacent, sym: true, comm: "-|-"}

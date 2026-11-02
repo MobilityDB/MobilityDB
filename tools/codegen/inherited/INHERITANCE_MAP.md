@@ -190,7 +190,11 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   axes, and per span side of the stanza those of the side and the box in either
   order, the position ones on the side's axes. `tbox` writes the 49 wrappers of
   `tbox.c` (the box with itself, a number span and a timestamptz span), `stbox` the
-  21 of `stbox.c` and `tpcbox` the 21 of `tpcbox.c`. A box type naming a
+  21 of `stbox.c` and `tpcbox` the 21 of `tpcbox.c`. The SQL functions and
+  operators over them are a region of the stanza's `sqlfile`
+  (`templates/boxbox.sql.tmpl`): the 85 of `021_tbox`, the 21 of `051_stbox` and
+  the 21 of `410_tpcbox`, a number span side declared over `intspan`,
+  `bigintspan` and `floatspan`. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
@@ -391,7 +395,7 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 
 | behaviour (file in `sql/temporal/`) | class | generated? | notes |
 |---|---|---|---|
-| `021_tbox` (TBox type: value × time) | TNumber | ✗ HAND | the number bounding box; its **C dispatchers ARE generated** — `boxops.c.tmpl` box type `tbox` region in `temporal_boxops.c` |
+| `021_tbox` (TBox type: value × time) | TNumber | ◐ PARTIAL | the number bounding box; its **C dispatchers ARE generated** — `boxops.c.tmpl` box type `tbox` region in `temporal_boxops.c` — and its topological and position operators with a box, a number span or a timestamptz span are the `boxbox.sql.tmpl` region |
 | `026_tnumber_mathfuncs` (`+ - * /`, abs, delta, trend, derivative) | TNumber | ✓ **GEN** | `mathfuncs.sql.tmpl` + `mathfunc_families`, **1 entry** (`tnumber`, `reference: true`) — the whole-file TNumber arithmetic surface |
 | `036_tnumber_distance` (tDistance, nad) | TNumber | ✓ **GEN** | `distance_families`' `tnumber` entry writes the file's `GENERATED-DISTANCE` region: each `fnops` stanza declares the functions of one procedure over its rows, then the operator over the same rows |
 | number Restrictions (atSpan/atSpanset/atTbox) | TNumber | ✓ **GEN** | inside `022_temporal.in.sql`, governed by `restriction_families`' `temporal` entry (§4 table) |
@@ -416,7 +420,7 @@ the same engine independently via their own `subtypes:` entry, not by copying
 **Base value-domain types** (`Set` / `Span` / `SpanSet` / `TBox` / `STBox`) are the
 finite-subset representations of the value/time domains that the restriction surface
 (atValues=Set, atSpan=Span, atTbox=TBox…) consumes. Their operator files
-(`001–015`, `021_tbox`) are hand today; memory
+(`001–015`, and `021_tbox` but for its box-by-box region) are hand today; memory
 `generate-boxops-campaign-boxtype-axis` flags the repeated per-span-type
 `005_span_ops`/`009_spanset_ops` as a future generation target. **§9 maps this
 value-domain surface class-by-class** (membership, the Set-vs-Span asymmetry,

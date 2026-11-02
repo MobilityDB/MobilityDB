@@ -292,28 +292,35 @@ CREATE OPERATOR * (
   COMMUTATOR = *
 );
 
-/******************************************************************************
- * Topological predicates
- ******************************************************************************/
+-- GENERATED-BOXBOX-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxbox.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
+/*****************************************************************************
+ * Topological operators
+ *****************************************************************************/
 
 CREATE FUNCTION tpcboxContains(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpcbox'
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contains_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxContained(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpcbox'
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Contained_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxOverlaps(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpcbox'
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overlaps_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxSame(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Same_tpcbox_tpcbox'
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Same_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tpcboxAdjacent(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpcbox'
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adjacent_tpcbox_tpcbox'
   SUPPORT span_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
@@ -342,6 +349,165 @@ CREATE OPERATOR -|- (
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
   COMMUTATOR = -|-
 );
+
+/*****************************************************************************
+ * Position operators
+ *****************************************************************************/
+
+CREATE FUNCTION tpcboxLeft(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Left_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverleft(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overleft_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxRight(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Right_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverright(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overright_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxBelow(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Below_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverbelow(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbelow_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxAbove(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Above_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverabove(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overabove_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxFront(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Front_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverfront(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overfront_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxBack(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Back_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverback(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overback_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxBefore(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverbefore(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxAfter(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcboxOverafter(tpcbox, tpcbox)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tpcbox_tpcbox'
+  SUPPORT span_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR << (
+  PROCEDURE = tpcboxLeft,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = >>
+);
+CREATE OPERATOR &< (
+  PROCEDURE = tpcboxOverleft,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR >> (
+  PROCEDURE = tpcboxRight,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = <<
+);
+CREATE OPERATOR &> (
+  PROCEDURE = tpcboxOverright,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR <<| (
+  PROCEDURE = tpcboxBelow,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = |>>
+);
+CREATE OPERATOR &<| (
+  PROCEDURE = tpcboxOverbelow,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR |>> (
+  PROCEDURE = tpcboxAbove,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = <<|
+);
+CREATE OPERATOR |&> (
+  PROCEDURE = tpcboxOverabove,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR <</ (
+  PROCEDURE = tpcboxFront,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = />>
+);
+CREATE OPERATOR &</ (
+  PROCEDURE = tpcboxOverfront,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR />> (
+  PROCEDURE = tpcboxBack,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = <</
+);
+CREATE OPERATOR /&> (
+  PROCEDURE = tpcboxOverback,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR <<# (
+  PROCEDURE = tpcboxBefore,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = #>>
+);
+CREATE OPERATOR &<# (
+  PROCEDURE = tpcboxOverbefore,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+CREATE OPERATOR #>> (
+  PROCEDURE = tpcboxAfter,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  COMMUTATOR = <<#
+);
+CREATE OPERATOR #&> (
+  PROCEDURE = tpcboxOverafter,
+  LEFTARG = tpcbox, RIGHTARG = tpcbox
+);
+-- GENERATED-BOXBOX-END tpcbox
 
 /******************************************************************************
  * Comparison / B-tree
@@ -404,132 +570,5 @@ CREATE OPERATOR CLASS tpcbox_btree_ops
     OPERATOR  4  >=,
     OPERATOR  5  >,
     FUNCTION  1  cmp(tpcbox, tpcbox);
-
-/******************************************************************************
- * Position predicates — strict + overlap variants across X / Y / Z / time.
- * A predicate only evaluates on dimensions both operands carry.
- ******************************************************************************/
-
-CREATE FUNCTION tpcboxLeft(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Left_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverleft(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overleft_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxRight(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Right_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverright(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overright_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxBelow(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Below_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverbelow(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overbelow_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxAbove(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Above_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverabove(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overabove_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxFront(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Front_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverfront(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overfront_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxBack(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Back_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverback(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overback_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxBefore(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Before_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverbefore(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overbefore_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxAfter(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'After_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tpcboxOverafter(tpcbox, tpcbox)
-  RETURNS boolean AS 'MODULE_PATHNAME', 'Overafter_tpcbox_tpcbox'
-  SUPPORT span_supportfn
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR << (
-  PROCEDURE = tpcboxLeft, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = >>
-);
-CREATE OPERATOR &< (
-  PROCEDURE = tpcboxOverleft, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR >> (
-  PROCEDURE = tpcboxRight, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<
-);
-CREATE OPERATOR &> (
-  PROCEDURE = tpcboxOverright, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR <<| (
-  PROCEDURE = tpcboxBelow, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = |>>
-);
-CREATE OPERATOR &<| (
-  PROCEDURE = tpcboxOverbelow, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR |>> (
-  PROCEDURE = tpcboxAbove, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<|
-);
-CREATE OPERATOR |&> (
-  PROCEDURE = tpcboxOverabove, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR <</ (
-  PROCEDURE = tpcboxFront, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = />>
-);
-CREATE OPERATOR &</ (
-  PROCEDURE = tpcboxOverfront, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR />> (
-  PROCEDURE = tpcboxBack, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <</
-);
-CREATE OPERATOR /&> (
-  PROCEDURE = tpcboxOverback, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR <<# (
-  PROCEDURE = tpcboxBefore, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = #>>
-);
-CREATE OPERATOR &<# (
-  PROCEDURE = tpcboxOverbefore, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
-CREATE OPERATOR #>> (
-  PROCEDURE = tpcboxAfter, LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<#
-);
-CREATE OPERATOR #&> (
-  PROCEDURE = tpcboxOverafter, LEFTARG = tpcbox, RIGHTARG = tpcbox
-);
 
 /*****************************************************************************/

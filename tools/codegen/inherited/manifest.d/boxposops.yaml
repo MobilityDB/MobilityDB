@@ -5,21 +5,22 @@
 # manifest.d/boxtypes.yaml (`posaxes:`) and carries the operations of those axes over
 # the three directions of the boxops generator: box first, temporal value first, two
 # temporal values. The kernel an operation calls is <op>_<prim>_<prim>
-# (left_tpcbox_tpcbox), and its SQL name is <sqlclass><Op> (tpcboxLeft).
+# (left_tpcbox_tpcbox), and its SQL name is <sqlclass><Op> (tpcboxLeft); `comm` is the
+# commutator of its operator in the box-by-box SQL (templates/boxbox.sql.tmpl).
 boxposops:
-  - {op: Left,       axis: x, sqlop: "<<",  rel: is to the left of}
+  - {op: Left,       axis: x, sqlop: "<<",  rel: is to the left of, comm: ">>"}
   - {op: Overleft,   axis: x, sqlop: "&<",  rel: does not extend to the right of}
-  - {op: Right,      axis: x, sqlop: ">>",  rel: is to the right of}
+  - {op: Right,      axis: x, sqlop: ">>",  rel: is to the right of, comm: "<<"}
   - {op: Overright,  axis: x, sqlop: "&>",  rel: does not extend to the left of}
-  - {op: Below,      axis: y, sqlop: "<<|", rel: is below}
+  - {op: Below,      axis: y, sqlop: "<<|", rel: is below, comm: "|>>"}
   - {op: Overbelow,  axis: y, sqlop: "&<|", rel: does not extend above}
-  - {op: Above,      axis: y, sqlop: "|>>", rel: is above}
+  - {op: Above,      axis: y, sqlop: "|>>", rel: is above, comm: "<<|"}
   - {op: Overabove,  axis: y, sqlop: "|&>", rel: does not extend below}
-  - {op: Front,      axis: z, sqlop: "<</", rel: is in front of}
+  - {op: Front,      axis: z, sqlop: "<</", rel: is in front of, comm: "/>>"}
   - {op: Overfront,  axis: z, sqlop: "&</", rel: does not extend to the back of}
-  - {op: Back,       axis: z, sqlop: "/>>", rel: is at the back of}
+  - {op: Back,       axis: z, sqlop: "/>>", rel: is at the back of, comm: "<</"}
   - {op: Overback,   axis: z, sqlop: "/&>", rel: does not extend to the front of}
-  - {op: Before,     axis: t, sqlop: "<<#", rel: is before}
+  - {op: Before,     axis: t, sqlop: "<<#", rel: is before, comm: "#>>"}
   - {op: Overbefore, axis: t, sqlop: "&<#", rel: is not after}
-  - {op: After,      axis: t, sqlop: "#>>", rel: is after}
+  - {op: After,      axis: t, sqlop: "#>>", rel: is after, comm: "<<#"}
   - {op: Overafter,  axis: t, sqlop: "#&>", rel: is not before}
