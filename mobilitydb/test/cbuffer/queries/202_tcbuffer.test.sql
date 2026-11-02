@@ -318,6 +318,18 @@ SELECT tcbuffer '{Cbuffer(Point(1 1), 0.3)@2001-01-01, Cbuffer(Point(1 1), 0.5)@
 SELECT tcbuffer '[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03]' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 SELECT tcbuffer '{[Cbuffer(Point(1 1), 0.2)@2001-01-01, Cbuffer(Point(1 1), 0.4)@2001-01-02, Cbuffer(Point(1 1), 0.5)@2001-01-03], [Cbuffer(Point(2 2), 0.6)@2001-01-04, Cbuffer(Point(2 2), 0.6)@2001-01-05]}' %= cbuffer 'Cbuffer(Point(1 1), 0.5)';
 
+/* A circular buffer keeping its radius while its centre passes through the
+ * centre of a circular buffer equals it only when the two radii are equal */
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(1 0), 2)';
+SELECT cbuffer 'Cbuffer(Point(1 0), 2)' ?= tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' %= cbuffer 'Cbuffer(Point(1 0), 2)';
+SELECT cbuffer 'Cbuffer(Point(1 0), 2)' %= tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' #= cbuffer 'Cbuffer(Point(1 0), 2)';
+SELECT cbuffer 'Cbuffer(Point(1 0), 2)' #= tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' ?= cbuffer 'Cbuffer(Point(1 0), 1)';
+SELECT cbuffer 'Cbuffer(Point(1 0), 1)' ?= tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]';
+SELECT tcbuffer '[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(2 0), 1)@2001-01-03]' #= cbuffer 'Cbuffer(Point(1 0), 1)';
+
 /* Two moving circular buffers are equal where their centres and their radii
  * are both equal: radii crossing about one centre, centres crossing with one
  * radius, both crossing at one instant, and both crossing at two instants */
