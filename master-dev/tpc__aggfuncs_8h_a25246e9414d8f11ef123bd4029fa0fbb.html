@@ -119,8 +119,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return the instants of a temporal pgpointcloud patch carrying the density of the patch at each instant, its number of points divided by the area of its XY bounds, infinite for a patch whose bounds have no area. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return the instants of a temporal pgpointcloud patch carrying the density of the patch at each instant, its number of points divided by the area of its XY bounds, or NULL with an error where the bounds of a patch have no area. </p>
+<p >A patch has no area exactly where two of its bounds are equal; the density is then a division by zero, which raises the error the division of a temporal number raises (<a class="el" href="tnumber__mathfuncs_8h_a3b4f5650ffd37396ca07b2dcbd2da968.html#a3b4f5650ffd37396ca07b2dcbd2da968" title="Generic arithmetic operator on a temporal number and a number.">arithop_tnumber_number</a>). The number of points is divided by the two extents in turn, so a product of extents beyond the largest double does not read a density of 0 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pgpointcloud patch </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of instants </td></tr>

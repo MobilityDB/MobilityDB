@@ -96,8 +96,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_af52315c2ed74d7cf18758a86505058f8.html#af52315c2ed74d7cf18758a86505058f8">tdiscseq_find_timestamptz</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_aae63a1e78acb7d9899e41a8d578e70d3.html#aae63a1e78acb7d9899e41a8d578e70d3">tfloatsegm_intersection_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_aac8550f2783a43ad9d2f3a0d95dbbace.html#aac8550f2783a43ad9d2f3a0d95dbbace">tinstarr_normalize</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a1596c3ecae3c92e9b8193212f15f135c.html#a1596c3ecae3c92e9b8193212f15f135c">tnumber_integral_scale</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_afbb8e27934db9a11d6598e89c52e303f.html#afbb8e27934db9a11d6598e89c52e303f">tnumbersegm_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a720ca0698accae4ef47ef252a30592fa.html#a720ca0698accae4ef47ef252a30592fa">tnumberseq_cont_twavg</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a4b2b68fe43340e9ca726b8e7517085b3.html#a4b2b68fe43340e9ca726b8e7517085b3">tnumberseq_integral_scaled</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a07aacdb65ece7e5b48b4d4d06cc5cfc2.html#a07aacdb65ece7e5b48b4d4d06cc5cfc2">tnumberseq_shift_scale_value_iter</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_a0c88ad6b1c5fb29432d3ace7e0f7db9b.html#a0c88ad6b1c5fb29432d3ace7e0f7db9b">tsegment_intersection</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="tsequence_8h_ab3739b88dd9e2963c32f71ba831a17c4.html#ab3739b88dd9e2963c32f71ba831a17c4">tsegment_intersection_value</a></td></tr>
@@ -158,6 +160,7 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The difference of two finite doubles of opposite signs can exceed the largest double while every value between them is finite, so such a segment is interpolated as the weighted average of its ends, which never exceeds them. The coordinates of <a class="el" href="tgeo__spatialfuncs_8h_acbeac9282eb0e0700dc3b3bea30aab8a.html#acbeac9282eb0e0700dc3b3bea30aab8a" title="Return a point interpolated from the geometry/geography segment with respect to the fraction of its t...">pointsegm_interpolate</a>, <a class="el" href="cbuffer_8h_a6f23b5d5a81fedda3c5e73e598cba8ee.html#a6f23b5d5a81fedda3c5e73e598cba8ee" title="Return a circular buffer interpolated from a circular buffer segment with respect to a fraction of it...">cbuffersegm_interpolate</a> and <a class="el" href="meos_2include_2temporal_2doublen_8h_acbf24f3ded5490f3955b6ef14da41610.html#acbf24f3ded5490f3955b6ef14da41610" title="Return a double2 interpolated from a double2 segment with respect to a fraction of its total length.">double2segm_interpolate</a> are interpolated by this function. </dd></dl>
 
 </div>
 </div>
