@@ -125,7 +125,8 @@ def params_of(lines: list[str], i: int) -> list[tuple[str, str]]:
     inner = text[text.index("(") + 1:text.rindex(")")]
     out = []
     for part in inner.split(","):
-        part = part.strip()
+        # UNUSED, an attribute after the name, is not the name
+        part = re.sub(r"\s+UNUSED$", "", part.strip())
         m = re.match(r"^(.*?)(\w+)\s*(\[\s*\])?$", part)
         if not m or part == "void":
             continue
