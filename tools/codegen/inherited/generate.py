@@ -724,6 +724,77 @@ def splice_boxbox_c(filetext: str, box: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# The SQL of the box-by-box wrappers: the functions and operators over them, in a
+# region of the stanza's `sqlfile`. A function over two boxes carries the stanza's
+# `support` function, one with a span side none; an operator states the commutator
+# of its operation (boxtopops.yaml, boxposops.yaml) and the stanza's `sel`
+# selectivity (RESTRICT = <sel>_sel, JOIN = <sel>_joinsel). A span side declares its
+# functions over each SQL type of its `sqltypes` (intspan, bigintspan, floatspan for
+# the number span), its own name when it lists none.
+def _boxbox_sql_markers(box: str):
+    """BEGIN/END markers of a box type's box-by-box SQL, as #_topops_markers marks
+    the topological operators of a set family."""
+    begin = (f"-- GENERATED-BOXBOX-BEGIN {box} — "
+             "tools/codegen/inherited/generate.py from templates/boxbox.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml "
+             "and re-run.\n")
+    return begin, f"-- GENERATED-BOXBOX-END {box}\n"
+
+
+def render_boxbox_sql(bt: dict, topops: list, posops: list) -> str:
+    """The box-by-box SQL of a box type, over the operand pairs of #_boxbox_groups:
+    per group and per SQL type of its span side, the functions of the topological
+    operations and then their operators; then likewise the position operations on
+    the group's axes, under the position banner."""
+    topo_banner, pos_banner, fn_t, op_t = \
+        read_template("boxbox.sql.tmpl").rstrip("\n").split("\n\n")
+    stanza = bt["boxbox"]
+    sqlclass = bt.get("sqlclass", bt["box"])
+    sel = (f",\n  RESTRICT = {stanza['sel']}_sel, JOIN = {stanza['sel']}_joinsel"
+           if stanza.get("sel") else "")
+
+    def sub(t: str, vals: dict) -> str:
+        for k, v in vals.items():
+            t = t.replace("{" + k + "}", v)
+        return t
+
+    def block(ops: list, pairs: list) -> str:
+        side = next((t for l, r in pairs for t in (l, r) if t["box"] != bt["box"]),
+                    None)
+        fns, opers = [], []
+        for typ in (side.get("sqltypes") or [side["box"]]) if side else [None]:
+            for o in ops:
+                for l, r in pairs:
+                    vals = {"FN": f"{sqlclass}{o['op']}",
+                            "LEFT": bt["box"] if l["box"] == bt["box"] else typ,
+                            "RIGHT": bt["box"] if r["box"] == bt["box"] else typ,
+                            "SYM": f"{o['op']}_{l['box']}_{r['box']}",
+                            "SUPPORT": (f"\n  SUPPORT {stanza['support']}"
+                                        if not side and stanza.get("support") else ""),
+                            "SQLOP": o["sqlop"],
+                            "COMMUTATOR": (f",\n  COMMUTATOR = {o['comm']}"
+                                           if o.get("comm") else ""),
+                            "SEL": sel}
+                    fns.append(sub(fn_t, vals))
+                    opers.append(sub(op_t, vals))
+        return "\n".join(fns) + "\n\n" + "\n".join(opers)
+
+    groups = _boxbox_groups(bt)
+    out = [topo_banner] + [block(topops, pairs) for pairs, _ in groups]
+    out += [pos_banner] + [block([o for o in posops if o["axis"] in axes], pairs)
+                           for pairs, axes in groups]
+    return "\n\n".join(out) + "\n"
+
+
+def splice_boxbox_sql(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's box-by-box SQL markers with
+    `rendered`, as #splice_boxbox_c replaces its C region."""
+    begin, end = _boxbox_sql_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 # --- C nadops (box-type axis) --------------------------------------------
 # The nearest approach distance wrappers of a box type are generated into the
 # region between these markers in `nadfile`: the base value by the temporal value
@@ -5012,6 +5083,9 @@ def manifest_files(mf: dict) -> set:
 
     A `reference: true` subtype is excluded, matching emit mode, which skips it:
     that file stays hand-owned and `--validate` is what checks its regions.
+
+    A box type's `boxbox` stanza names the SQL file of its box-by-box region in
+    `sqlfile`, which emit mode writes.
     """
     out = set()
     for value in mf.values():
@@ -5020,6 +5094,8 @@ def manifest_files(mf: dict) -> set:
         for entry in value:
             if isinstance(entry, dict) and entry.get("file"):
                 out.add(entry["file"])
+            if isinstance(entry, dict) and (entry.get("boxbox") or {}).get("sqlfile"):
+                out.add(entry["boxbox"]["sqlfile"])
     positions = mf.get("positions") or {}
     for sub in mf.get("subtypes") or []:
         if sub.get("reference"):
@@ -5649,6 +5725,13 @@ def main() -> int:
                                    mf.get("boxposops", []))
         p.write_text(splice_boxbox_c(p.read_text(), bt["box"], rendered))
         print(f"spliced boxbox {bt['box']} -> {path}")
+        sqlpath = bt["boxbox"].get("sqlfile")
+        if sqlpath:
+            p = ROOT / sqlpath
+            rendered = render_boxbox_sql(bt, mf.get("boxtopops", []),
+                                         mf.get("boxposops", []))
+            p.write_text(splice_boxbox_sql(p.read_text(), bt["box"], rendered))
+            print(f"spliced boxbox {bt['box']} -> {sqlpath}")
 
     for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]

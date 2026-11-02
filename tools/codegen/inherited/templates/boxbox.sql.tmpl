@@ -1,0 +1,17 @@
+/*****************************************************************************
+ * Topological operators
+ *****************************************************************************/
+
+/*****************************************************************************
+ * Position operators
+ *****************************************************************************/
+
+CREATE FUNCTION {FN}({LEFT}, {RIGHT})
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', '{SYM}'{SUPPORT}
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR {SQLOP} (
+  PROCEDURE = {FN},
+  LEFTARG = {LEFT}, RIGHTARG = {RIGHT}{COMMUTATOR}{SEL}
+);
