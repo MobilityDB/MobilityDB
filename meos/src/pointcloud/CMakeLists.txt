@@ -153,7 +153,11 @@ if(POINTCLOUD)
   # stays off by default (matching the main repo); its vendored adapter needs
   # the external laz-perf library. The PC_NONE and PC_DIMENSIONAL schemes,
   # built into libpc, are unaffected.
-  file(WRITE ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_config.h
+  # The content is written in the build tree and copied into the subtree only
+  # when it differs from the copy there, so a reconfigure leaves an unchanged
+  # header and its timestamp as they are, and a build watching the source tree
+  # sees no change.
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/pc_config.h
     "#define POINTCLOUD_VERSION \"${POINTCLOUD_VERSION}\"\n"
     "#define LIBXML2_VERSION \"${LIBXML2_VERSION}\"\n"
     "#define PGSQL_VERSION \"${PGSQL_VERSION}\"\n"
@@ -161,6 +165,8 @@ if(POINTCLOUD)
     "/* #undef HAVE_CUNIT */\n"
     "#define PROJECT_SOURCE_DIR \"${PROJECT_SOURCE_DIR_STR}\"\n"
   )
+  configure_file(${CMAKE_CURRENT_BINARY_DIR}/pc_config.h
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_config.h COPYONLY)
 
   # Include paths for pgpointcloud headers. The embedded
   # `pointcloud-pg/lib/` provides the declarations the generated C
