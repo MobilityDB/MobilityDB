@@ -41,21 +41,27 @@ CREATE FUNCTION stboxes(trgeometry)
   AS 'MODULE_PATHNAME', 'Trgeometry_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TILING-BEGIN rgeo_splits — tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/tiling_families.yaml and re-run.
 CREATE FUNCTION splitNSpans(trgeometry, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitEachNSpans(trgeometry, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_each_n_spans'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitNStboxes(trgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Trgeometry_split_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION splitEachNStboxes(trgeometry, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Trgeometry_split_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-TILING-END rgeo_splits
 
 /*****************************************************************************/

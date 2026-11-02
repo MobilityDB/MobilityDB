@@ -83,6 +83,8 @@ CREATE FUNCTION stboxes(tgeography)
 
 /*****************************************************************************/
 
+-- GENERATED-TILING-BEGIN geo_splits — tools/codegen/inherited/generate.py from templates/tiling.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/tiling_families.yaml and re-run.
 CREATE FUNCTION splitNSpans(tgeometry, integer)
   RETURNS tstzspan[]
   AS 'MODULE_PATHNAME', 'Temporal_split_n_spans'
@@ -118,5 +120,6 @@ CREATE FUNCTION splitEachNStboxes(tgeography, integer)
   RETURNS stbox[]
   AS 'MODULE_PATHNAME', 'Tgeo_split_each_n_stboxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+-- GENERATED-TILING-END geo_splits
 
 /*****************************************************************************/
