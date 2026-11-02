@@ -1708,16 +1708,29 @@ tbox_tbox_flags(const TBox *box1, const TBox *box2, bool *hasx, bool *hast)
  * @param[in] box1,box2 Temporal boxes
  */
 bool
+tbox_tbox_is_valid(const TBox *box1, const TBox *box2)
+{
+  assert(box1); assert(box2);
+  /* Both boxes carry a value span here, so reading its type is what states
+   * whether the two of them measure the same quantity */
+  return ! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags) ||
+    span_type_is_same(&box1->span, &box2->span);
+}
+
+/**
+ * @brief Ensure that two temporal boxes are valid for operations
+ * @details As #tbox_tbox_is_valid states
+ * @param[in] box1,box2 Temporal boxes
+ */
+bool
 ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  /* Both boxes carry a value span here, so reading its type is what states
-   * whether the two of them measure the same quantity */
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
-      ! ensure_same_span_type(&box1->span, &box2->span))
-    return false;
-  return true;
+  if (tbox_tbox_is_valid(box1, box2))
+    return true;
+  /* The span types differ, which the following reports */
+  return ensure_same_span_type(&box1->span, &box2->span);
 }
 
 /**

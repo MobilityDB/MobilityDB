@@ -83,12 +83,21 @@ extern bool ensure_span_isof_type(const Span *s, MeosType spantype);
 extern bool ensure_span_isof_basetype(const Span *s, MeosType basetype);
 extern bool ensure_finite_span_bounds(const Span *s);
 /**
+ * @brief Return true if two spans have the same type
+ */
+static inline bool
+span_type_is_same(const Span *s1, const Span *s2)
+{
+  return s1->spantype == s2->spantype;
+}
+
+/**
  * @brief Ensure that two spans have the same type
  */
 static inline bool
 ensure_same_span_type(const Span *s1, const Span *s2)
 {
-  if (s1->spantype == s2->spantype)
+  if (span_type_is_same(s1, s2))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
     "Operation on mixed span types: %s and %s",
