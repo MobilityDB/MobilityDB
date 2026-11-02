@@ -49,6 +49,9 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
   MEOS.js classes of the extended families; the catalog marking the type support functions
   (IO-B11b); the bindings' table rebuilt by `io_matrix.py` (IO-B15b). MobilityNebula (IO-B13) is
   paused by the owner.
+- **Every string MEOS returns states its size** (IO-S1 to IO-S10, decided by the owner
+  2026-11-02): the 118 public text outputs take `size_t *size_out` as the hex WKB writers do, and
+  every binding reads the string with that size rather than scanning for its terminator.
 
 ## The SQL functions: `<type>From<Format>` and `as<Format>`
 
