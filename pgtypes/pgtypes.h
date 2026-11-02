@@ -45,6 +45,25 @@
 #include <utils/jsonpath.h>
 #include <utils/timestamp.h>
 
+/*
+ * PGTYPES_INTERNAL_BEGIN and PGTYPES_INTERNAL_END enclose the functions no
+ * installed header declares: a pg_-prefixed twin through which the
+ * PostgreSQL extension build reaches a name PostgreSQL also owns (pg_date_in
+ * beside the public date_in of pg_date.h), or a helper only pgtypes and MEOS
+ * call. The MEOS library keeps such a function out of its dynamic symbol
+ * table, so a consumer of MEOS reaches the clean names alone; the extension
+ * build exports what it always has. Visibility is an ELF and Mach-O notion,
+ * so Windows is left as it is, as for the protected libpc objects of
+ * meos/src/pointcloud/CMakeLists.txt.
+ */
+#if MEOS && (defined(__GNUC__) || defined(__clang__)) && ! defined(_WIN32)
+  #define PGTYPES_INTERNAL_BEGIN _Pragma("GCC visibility push(hidden)")
+  #define PGTYPES_INTERNAL_END _Pragma("GCC visibility pop")
+#else
+  #define PGTYPES_INTERNAL_BEGIN
+  #define PGTYPES_INTERNAL_END
+#endif
+
 #if POSTGRESQL_VERSION_NUMBER < 170000
 /*
  * Infinite intervals are represented by setting all fields to the minimum or
@@ -113,6 +132,7 @@ extern text *bool_to_text(bool b);
 /* Functions for numeric */
 
 extern Numeric numeric_copy(Numeric num);
+PGTYPES_INTERNAL_BEGIN
 extern Numeric pg_numeric_in(const char *str, int32 typmod);
 extern char *pg_numeric_out(Numeric num);
 extern int32 pg_numeric_typmodin(int32 *tl, int n);
@@ -126,8 +146,10 @@ extern Numeric pg_numeric_round(Numeric num, int32 scale);
 extern Numeric pg_numeric_trunc(Numeric num, int32 scale);
 extern Numeric pg_numeric_ceil(Numeric num);
 extern Numeric pg_numeric_floor(Numeric num);
+PGTYPES_INTERNAL_END
 extern int32 numeric_width_bucket(Numeric operand, Numeric bound1,
   Numeric bound2, int32 count);
+PGTYPES_INTERNAL_BEGIN
 extern int32 pg_numeric_cmp(Numeric num1, Numeric num2);
 extern bool pg_numeric_eq(Numeric num1, Numeric num2);
 extern bool pg_numeric_ne(Numeric num1, Numeric num2);
@@ -135,8 +157,10 @@ extern bool pg_numeric_gt(Numeric num1, Numeric num2);
 extern bool pg_numeric_ge(Numeric num1, Numeric num2);
 extern bool pg_numeric_lt(Numeric num1, Numeric num2);
 extern bool pg_numeric_le(Numeric num1, Numeric num2);
+PGTYPES_INTERNAL_END
 extern uint32 numeric_hash(Numeric key);
 extern uint64 numeric_hash_extended(Numeric key, uint64 seed);
+PGTYPES_INTERNAL_BEGIN
 extern Numeric pg_numeric_add(Numeric num1, Numeric num2);
 extern Numeric pg_numeric_sub(Numeric num1, Numeric num2);
 extern Numeric pg_numeric_mul(Numeric num1, Numeric num2);
@@ -153,10 +177,13 @@ extern Numeric pg_numeric_sqrt(Numeric num);
 extern Numeric pg_numeric_exp(Numeric num);
 extern Numeric pg_numeric_ln(Numeric num);
 extern Numeric pg_numeric_log(Numeric num1, Numeric num2);
+PGTYPES_INTERNAL_END
 extern Numeric numeric_pow(Numeric num1, Numeric num2);
+PGTYPES_INTERNAL_BEGIN
 extern int32 pg_numeric_scale(Numeric num);
 extern int32 pg_numeric_min_scale(Numeric num);
 extern Numeric pg_numeric_trim_scale(Numeric num);
+PGTYPES_INTERNAL_END
 extern Numeric int32_to_numeric(int32 num);
 extern int32 numeric_to_int32(Numeric num);
 extern Numeric int64_to_numeric(int64 num);
@@ -223,7 +250,9 @@ extern float8 float8_in(const char *str);
 extern float8 float8_larger(float8 num1, float8 num2);
 /* Locale-safe strtod(): pins numeric input to the C locale (the decimal
  * separator is always '.') regardless of the process's LC_NUMERIC. */
+PGTYPES_INTERNAL_BEGIN
 extern double meos_strtod(const char *str, char **endptr);
+PGTYPES_INTERNAL_END
 extern float8 float8_lgamma(float8 num);
 extern float8 float8_ln(float8 num);
 extern float8 float8_log10(float8 num);
@@ -281,14 +310,18 @@ extern bool ne_float4_float4(float4 num1, float4 num2);
 extern bool ne_float4_float8(float4 num1, float8 num2);
 extern bool ne_float8_float4(float8 num1, float4 num2);
 extern bool ne_float8_float8(float8 num1, float8 num2);
+PGTYPES_INTERNAL_BEGIN
 extern int pg_float4_cmp(float4 a, float4 b);
 extern int pg_float8_cmp(float8 a, float8 b);
+PGTYPES_INTERNAL_END
  
 /* Functions for text */
 
 extern uint32 char_hash(char c);
 extern uint64 char_hash_extended(char c, uint64 seed);
+PGTYPES_INTERNAL_BEGIN
 extern text *pg_cstring_to_text(const char *str);
+PGTYPES_INTERNAL_END
 extern text *cstring_to_text(const char *str);
 extern text *int32_to_bin(int32 num);
 extern text *int32_to_hex(int32 num);
@@ -296,6 +329,7 @@ extern text *int32_to_oct(int32 num);
 extern text *int64_to_bin(int64 num);
 extern text *int64_to_hex(int64 num);
 extern text *int64_to_oct(int64 num);
+PGTYPES_INTERNAL_BEGIN
 extern text *pg_cstring_to_text(const char *str);
 extern text *pg_icu_unicode_version(void);
 extern text *pg_text_concat(text **textarr, int count);
@@ -322,6 +356,7 @@ extern text *pg_unicode_normalize_func(const text *txt, const text *fmt);
 extern text *pg_unicode_version(void);
 extern text *pg_unistr(const text *txt);
 extern char *pg_text_to_cstring(const text *txt);
+PGTYPES_INTERNAL_END
 extern char *text_to_cstring(const text *txt);
 extern text *text_cat(const text *txt1, const text *txt2);
 extern int text_cmp(const text *txt1, const text *txt2, Oid collid);
@@ -344,7 +379,9 @@ extern text *textcat_text_text(const text *txt1, const text *txt2);
 
 /* Functions for bytea */
 
+PGTYPES_INTERNAL_BEGIN
 extern bytea *bytea_copy(const bytea *ba);
+PGTYPES_INTERNAL_END
 
 /* Functions for date */
 
@@ -395,11 +432,13 @@ extern bool ne_date_timestamp(DateADT date, Timestamp ts);
 extern bool ne_date_timestamptz(DateADT date, TimestampTz ts2);
 extern bool ne_timestamp_date(Timestamp ts1, DateADT date);
 extern bool ne_timestamptz_date(TimestampTz ts1, DateADT date);
+PGTYPES_INTERNAL_BEGIN
 extern DateADT pg_date_in(const char *str);
 extern DateADT pg_date_larger(DateADT date1, DateADT date2);
 extern DateADT pg_date_make(int year, int mon, int mday);
 extern DateADT pg_date_smaller(DateADT date1, DateADT date2);
 extern char *pg_date_out(DateADT date);
+PGTYPES_INTERNAL_END
 extern bool time_overlaps(TimeADT ts1, TimeADT te1, TimeADT ts2, TimeADT te2);
 extern DateADT timestamp_to_date(Timestamp timestamp);
 extern DateADT timestamptz_to_date(TimestampTz timestamp);
@@ -411,6 +450,7 @@ extern TimeADT interval_to_time(const Interval *interv);
 extern TimeADT minus_time_interval(TimeADT time, const Interval *interv);
 extern Interval *minus_time_time(TimeADT time1, TimeADT time2);
 extern TimeTzADT *minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
+PGTYPES_INTERNAL_BEGIN
 extern int32 pg_time_cmp(TimeADT time1, TimeADT time2);
 extern bool pg_time_eq(TimeADT time1, TimeADT time2);
 extern bool pg_time_ge(TimeADT time1, TimeADT time2);
@@ -444,6 +484,7 @@ extern float8 pg_timetz_part(const TimeTzADT *timetz, const text *units);
 extern TimeTzADT *pg_timetz_scale(const TimeTzADT *timetz, int32 typmod);
 extern TimeTzADT *pg_timetz_smaller(const TimeTzADT *timetz1, const TimeTzADT *timetz2);
 extern TimeTzADT *pg_timetz_zone(const TimeTzADT *timetz, const text *zone);
+PGTYPES_INTERNAL_END
 extern TimeADT plus_time_interval(TimeADT time, Interval *interv);
 extern TimeTzADT *plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv);
 extern Numeric time_extract(TimeADT time, const text *units);
@@ -493,6 +534,7 @@ extern bool ne_timestamptz_date(TimestampTz tstz, DateADT date);
 extern bool ne_timestamp_timestamp(Timestamp ts1, Timestamp ts2);
 extern bool ne_timestamp_timestamptz(Timestamp ts, TimestampTz tstz);
 extern bool ne_timestamptz_timestamp(TimestampTz tstz, Timestamp ts);
+PGTYPES_INTERNAL_BEGIN
 extern Interval *pg_interval_justify_days(const Interval *interv);
 extern Interval *pg_interval_justify_hours(const Interval *interv);
 extern Interval *pg_interval_justify_interval(const Interval *interv);
@@ -503,7 +545,9 @@ extern uint32 pg_timestamp_hash(Timestamp ts);
 extern uint64 pg_timestamp_hash_extended(TimestampTz tstz, uint64 seed);
 extern Timestamp pg_timestamp_in(const char *str, int32 typmod);
 extern TimestampTz pg_timestamp_izone(Timestamp ts, const Interval *zone);
+PGTYPES_INTERNAL_END
 extern text *time_of_day(void);
+PGTYPES_INTERNAL_BEGIN
 extern Timestamp pg_timestamp_larger(Timestamp ts1, Timestamp ts2);
 extern char *pg_timestamp_out(Timestamp ts);
 extern float8 pg_timestamp_part(Timestamp ts, const text *units);
@@ -523,13 +567,16 @@ extern TimestampTz pg_timestamptz_scale(TimestampTz tstz, int32 typmod);
 extern TimestampTz pg_timestamptz_trunc(TimestampTz tstz, const text *units);
 extern TimestampTz pg_timestamptz_trunc_zone(TimestampTz tstz, const text *units, const text *zone);
 extern Timestamp pg_timestamptz_zone(TimestampTz tstz, const text *zone);
+PGTYPES_INTERNAL_END
 extern Numeric timestamp_extract(Timestamp ts, const text *units);
 extern bool timestamp_is_finite(Timestamp ts);
 extern Timestamp timestamp_make(int32 year, int32 month, int32 mday, int32 hour, int32 min, float8 sec);
 extern bool timestamp_overlaps(Timestamp ts1, Timestamp te1, Timestamp ts2, Timestamp te2);
 extern TimestampTz timestamp_to_timestamptz(Timestamp ts);
 extern TimestampTz timestamptz_at_local(TimestampTz tstz);
+PGTYPES_INTERNAL_BEGIN
 extern TimestampTz pg_timestamptz_at_local(TimestampTz tstz);
+PGTYPES_INTERNAL_END
 extern Numeric timestamptz_extract(TimestampTz tstz, const text *units);
 extern TimestampTz timestamptz_make(int32 year, int32 month, int32 day, int32 hour, int32 min, float8 sec);
 extern TimestampTz timestamptz_make_at_timezone(int32 year, int32 month, int32 day, int32 hour, int32 min, float8 sec, const text *zone);
@@ -550,6 +597,7 @@ extern Timestamp timestamptz_to_timestamp(TimestampTz tstz);
  * declarations must stay out of every translation unit that sees them. The
  * pg_-prefixed twins below are what the extension build uses. */
 
+PGTYPES_INTERNAL_BEGIN
 extern int32 pg_interval_cmp(const Interval *interv1, const Interval *interv2);
 extern bool pg_interval_eq(const Interval *interv1, const Interval *interv2);
 extern bool pg_interval_ge(const Interval *interv1, const Interval *interv2);
@@ -668,6 +716,7 @@ extern bool pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb
 extern Jsonb *pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Jsonb *pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz);
 extern Jsonb **pg_jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars, bool silent, bool tz, int *count);
+PGTYPES_INTERNAL_END
 
 /*****************************************************************************/
 
