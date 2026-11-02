@@ -1324,17 +1324,25 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
  * reference geometry and emits the resulting polygon. The returned
  * `tgeometry` has the same temporal structure as the input and the same
  * SRID as the reference geometry.
+ *
+ * A temporal geometry keeps its value from one instant to the next, so it
+ * states a rigid geometry with step or discrete interpolation. A rigid
+ * geometry with linear interpolation moves and turns between its instants,
+ * which no temporal geometry states, and the function returns an error for
+ * it.
  * @note Unlike `trgeometry_to_tgeompoint` (which gives the antenna point trajectory),
  * this preserves the body's footprint at each instant — the natural input
  * for compositional spatial-rel queries against `tgeometry`'s full surface.
  * @param[in] temp Temporal rigid geometry
+ * @errval NULL
  * @csqlfn #Trgeometry_to_tgeometry()
  */
 Temporal *
 trgeometry_to_tgeometry(const Temporal *temp)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
-  if (! ensure_has_geom(temp->flags))
+  if (! ensure_has_geom(temp->flags) ||
+      ! ensure_nonlinear_interp(temp->flags))
     return NULL;
   const GSERIALIZED *ref = trgeo_geom_p(temp);
   assert(temptype_subtype(temp->subtype));

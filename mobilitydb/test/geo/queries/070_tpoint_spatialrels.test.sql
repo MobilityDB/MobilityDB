@@ -281,6 +281,12 @@ SELECT eIntersects(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Po
 SELECT eDwithin(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}', 1);
 SELECT aDisjoint(tgeompoint '{Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(9 9)@2001-01-03}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03}');
 SELECT aDwithin(tgeompoint '{Point(0 0)@2001-01-01, Point(9 9)@2001-01-02}', tgeompoint '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 1);
+-- Two step values that meet at their first instant and part at a later one: an always
+-- relationship reads every instant
+SELECT aIntersects(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(9 9)@2001-01-02, Point(9 9)@2001-01-03]', tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(0 0)@2001-01-03]');
+SELECT aDwithin(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(9 9)@2001-01-02, Point(9 9)@2001-01-03]', tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(0 0)@2001-01-03]', 1);
+SELECT aDisjoint(tgeompoint 'Interp=Step;[Point(9 9)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03]', tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(0 0)@2001-01-03]');
+SELECT aDwithin(tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(0 0)@2001-01-03]', tgeompoint 'Interp=Step;[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02, Point(0 0)@2001-01-03]', 1);
 
 -- Mixed 2D/3D
 SELECT eIntersects(geometry 'Point(1 1 1)', tgeompoint 'Point(1 1)@2001-01-01');

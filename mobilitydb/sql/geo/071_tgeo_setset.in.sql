@@ -129,6 +129,30 @@ CREATE FUNCTION aTouchesPairs(tgeometry[], tgeometry[],
   AS 'MODULE_PATHNAME', 'Atouches_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION eContainsPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Econtains_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aContainsPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Acontains_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION eCoversPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Ecovers_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION aCoversPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Acovers_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION tDwithinPairs(tgeometry[], tgeometry[], dist float,
     OUT i integer, OUT j integer, OUT periods tstzspanset)
   RETURNS setof record
@@ -163,4 +187,16 @@ CREATE FUNCTION tTouchesPairs(tgeometry[], tgeometry[],
     OUT i integer, OUT j integer, OUT periods tstzspanset)
   RETURNS setof record
   AS 'MODULE_PATHNAME', 'Ttouches_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tContainsPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer, OUT periods tstzspanset)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Tcontains_tgeoarr_tgeoarr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION tCoversPairs(tgeometry[], tgeometry[],
+    OUT i integer, OUT j integer, OUT periods tstzspanset)
+  RETURNS setof record
+  AS 'MODULE_PATHNAME', 'Tcovers_tgeoarr_tgeoarr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;

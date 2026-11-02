@@ -86,6 +86,54 @@ SELECT i, j FROM aTouchesPairs(
  1 | 1
 (1 row)
 
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+ 1 | 2
+(2 rows)
+
+SELECT i, j FROM aContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(2 2)@2001-01-01, Point(2 2)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 2
+(1 row)
+
+SELECT i, j FROM eCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+ 1 | 2
+(2 rows)
+
+SELECT i, j FROM aCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(4 2)@2001-01-01, Point(4 2)@2001-01-03]',
+    tgeometry '[Point(5 2)@2001-01-01, Point(2 2)@2001-01-02,
+    Point(2 2)@2001-01-03]']) ORDER BY i, j;
+ i | j 
+---+---
+ 1 | 1
+(1 row)
+
 SELECT i, j FROM eIntersectsPairs(
   ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
   ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]']) ORDER BY i, j;
@@ -118,6 +166,31 @@ SELECT i, j FROM tTouchesPairs(
  1 | 1
 (1 row)
 
+SELECT i, j, periods FROM tContainsPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-02,
+    Point(5 5)@2001-01-03]',
+    tgeometry '[Point(6 6)@2001-01-01, Point(6 6)@2001-01-03]']) ORDER BY i, j;
+ i | j |                            periods                             
+---+---+----------------------------------------------------------------
+ 1 | 1 | {[Mon Jan 01 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST)}
+(1 row)
+
+SELECT i, j, periods FROM tCoversPairs(
+  ARRAY[tgeometry '[Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-01,
+    Polygon((0 0,4 0,4 4,0 4,0 0))@2001-01-03]'],
+  ARRAY[tgeometry '[Point(5 2)@2001-01-01, Point(4 2)@2001-01-02,
+    Point(4 2)@2001-01-03]']) ORDER BY i, j;
+ i | j |                            periods                             
+---+---+----------------------------------------------------------------
+ 1 | 1 | {[Tue Jan 02 00:00:00 2001 PST, Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT i, j FROM eContainsPairs(
+  ARRAY[tgeometry 'Point(0 0 0)@2001-01-01'],
+  ARRAY[tgeometry 'Point(0 0 0)@2001-01-01']);
+ERROR:  The tgeometry cannot have Z dimension
 SELECT i, j FROM tDisjointPairs(
   ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]'],
   ARRAY[tgeography '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]']) ORDER BY i, j;

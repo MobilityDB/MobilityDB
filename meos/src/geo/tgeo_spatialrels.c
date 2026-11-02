@@ -451,8 +451,6 @@ typedef enum
 {
   SREL_INTERSECTS,     /**< The two share a point */
   SREL_COVERS,         /**< The first leaves no point of the second outside */
-  SREL_CONTAINS,       /**< The first covers the interior of the second */
-  SREL_INTERIORS_MEET, /**< The interiors share a point, DE-9IM "T********" */
   SREL_DWITHIN,        /**< The two lie within a distance of one another */
 } SpatialRelOp;
 
@@ -482,13 +480,6 @@ spatialrel_datum_geo_geo(Datum d1, Datum d2, SpatialRelOp op, double dist,
           datum_geo_intersects2d(d1, d2));
     case SREL_COVERS:
       return datum_geo_covers2d(d1, d2);
-    case SREL_CONTAINS:
-      return datum_geom_contains(d1, d2);
-    case SREL_INTERIORS_MEET:
-    {
-      char pattern[10] = "T********";
-      return datum_geom_relate_pattern(d1, d2, PointerGetDatum(&pattern));
-    }
     default: /* SREL_DWITHIN */
       return geodetic ?
         datum_geog_dwithin(d1, d2, Float8GetDatum(dist),
@@ -541,7 +532,7 @@ spatialrel_tgeo_geo_box(const Temporal *temp, const GSERIALIZED *gs,
     stbox_expand_space_set(&box1, dist, &box);
     return overlaps_stbox_stbox(&box, &box2);
   }
-  if (op == SREL_CONTAINS || op == SREL_COVERS)
+  if (op == SREL_COVERS)
   {
     uint8_t type = gserialized_get_type(gs);
     bool exact = tpoint_type(temp->temptype) && type != CIRCSTRINGTYPE &&
@@ -814,22 +805,48 @@ ea_spatialrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
 /*****************************************************************************/
 
 /**
+ * @brief Return 1 if a temporal point with linear interpolation and a
+ * temporal geometry with step interpolation ever/always satisfy a spatial
+ * relationship, 0 if not, and -1 if they share no instant
+ * @details The relationship is read from its temporal Boolean, computed on
+ * each stretch where the temporal geometry keeps its value
+ * (#tspatialrel_tgeo_tpoint_stretch), so the instants of the moving point
+ * between those of the two values are read too
+ * @param[in] temp1,temp2 Temporal geos (#tgeo_tgeo_moving_point)
+ * @param[in] rel Relationship of @p temp1 and @p temp2, in this order
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ */
+static int
+ea_tgeo_tpoint_stretch(const Temporal *temp1, const Temporal *temp2,
+  tgeoRel rel, bool ever)
+{
+  Temporal *res = tspatialrel_tgeo_tpoint_stretch(temp1, temp2, rel);
+  if (! res)
+    return -1;
+  int result = ever ? ever_eq_tbool_bool(res, true) :
+    always_eq_tbool_bool(res, true);
+  pfree(res);
+  return result;
+}
+
+/**
  * @ingroup meos_internal_geo_rel_ever
- * @brief Return 1 if two temporal geometries ever/always contains satisfy a
- * spatial relationship, 0 if not, and -1 on error
+ * @brief Return 1 if two temporal geometries ever/always satisfy a spatial
+ * relationship, 0 if not, and -1 on error
  * @details
- * - A temporal geometry *ever* contains another one if there is an instant in
- *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* contains another one if the traversed area
- *   of the first temporal geometry contains the traversed area of the second
- *   one
+ * - Two temporal geometries *ever* satisfy the relationship if they satisfy
+ *   it at an instant of the time they share.
+ * - Two temporal geometries *always* satisfy the relationship if they satisfy
+ *   it at every instant of the time they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] func Spatial relationship function to apply
+ * @param[in] rel Relationship that @p func computes, applied on the stretches
+ * of a temporal point that moves against a temporal geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
 ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
-  datum_func2 func, bool ever)
+  datum_func2 func, tgeoRel rel, bool ever)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
@@ -839,18 +856,13 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
     return -1;
 
   /* Common-time gate: two temporal geometries sharing no instant are compared nowhere,
-   * so the relationship has no answer, as #ea_dwithin_tgeo_tgeo also states. The always
-   * branch below reads the traversed areas, which carry no time of their own */
+   * so the relationship has no answer, as #ea_dwithin_tgeo_tgeo also states */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
 
-  /* Ever */
-  if (ever)
-    return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, EVER);
-  /* Always */
-  int result = spatialrel_tgeo_tgeo(temp1, temp2, (Datum) NULL,
-    (varfunc) func, 2);
-  return result ? 1 : 0;
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return ea_tgeo_tpoint_stretch(temp1, temp2, rel, ever);
+  return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
 
 /*****************************************************************************
@@ -858,22 +870,64 @@ ea_spatialrel_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
  *****************************************************************************/
 
 /**
- * @brief Return 1 if a temporal geometry ever/always contains a geo, 0 if not,
- * and -1 on error
- * @details
- * - A temporal geometry *ever* contains a geometry if the traversed area of
- *   the temporal geometry and the geometry intersect only in their interior,
- *   that is, they satisfy the relate pattern `"T********"`
- * - A temporal geometry *always* contains a geometry if the traversed area of
- *   the temporal geometry contains the geometry
+ * @brief Return true if the relate pattern holds for a geometry and each part
+ * of a trajectory (always), or for one of them (ever)
+ * @details The trajectory of a temporal point with instants and sequences is
+ * a collection of points and lines, which is read part by part, as
+ * #spatialrel_tgeo_geo reads the composing values of a traversed area
  * @param[in] gs Geometry
+ * @param[in] traj Trajectory of a temporal point
+ * @param[in] patt Relate pattern of the geometry and the trajectory
+ * @param[in] covers True to test that the geometry covers the trajectory
+ * instead of a relate pattern
+ * @param[in] ever True for one part, false for every part
+ */
+static bool
+geo_traj_relate(const GSERIALIZED *gs, const GSERIALIZED *traj, char *patt,
+  bool covers, bool ever)
+{
+  if (gserialized_get_type(traj) != COLLECTIONTYPE)
+    return covers ? geom_covers(gs, traj) : geom_relate_pattern(gs, traj, patt);
+  LWCOLLECTION *coll = lwgeom_as_lwcollection(lwgeom_from_gserialized(traj));
+  bool result = ! ever;
+  for (uint32_t i = 0; i < coll->ngeoms; i++)
+  {
+    GSERIALIZED *part = geo_serialize(lwcollection_getsubgeom(coll, i));
+    bool res = covers ? geom_covers(gs, part) :
+      geom_relate_pattern(gs, part, patt);
+    pfree(part);
+    if (ever == res)
+    {
+      result = res;
+      break;
+    }
+  }
+  lwcollection_free(coll);
+  return result;
+}
+
+/**
+ * @brief Return 1 if a temporal geo and a geometry ever/always satisfy the
+ * contains relationship, 0 if not, and -1 on error
+ * @details The relationship holds at an instant where it holds for the value
+ * of the temporal geo at that instant and the geometry.
+ * - The positions of a temporal point are its trajectory. A geometry contains
+ *   the point at an instant if the trajectory meets the interior of the
+ *   geometry, that is, they satisfy the relate pattern `"T********"`, and at
+ *   every instant if the trajectory lies in the interior of the geometry, the
+ *   relate pattern `"T**FF*FF*"`. A point contains a geometry where the
+ *   geometry is that point, that is, where they intersect if the geometry is
+ *   one point, and nowhere otherwise.
+ * - A temporal geometry keeps its value from one of its instants to the next,
+ *   so the relationship is read at its instants.
  * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @param[in] invert True if the arguments should be inverted
+ * @param[in] invert True when the geometry is the first argument
  * @note Please refer to the documentation of the `ST_Contains` and `ST_Covers`
  * functions
  * https://postgis.net/docs/ST_Contains.html
- * https://postgis.net/docs/ST_Convers.html
+ * https://postgis.net/docs/ST_Covers.html
  * for detailed explanations about the difference between both functions.
  */
 int
@@ -886,11 +940,18 @@ ea_contains_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ev
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
 
-  int result = ever ?
-    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_INTERIORS_MEET, invert,
-      EVER) :
-    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_CONTAINS, invert, ALWAYS);
-  return result ? 1 : 0;
+  if (tpoint_type(temp->temptype))
+  {
+    if (! invert)
+      return geo_is_one_point(gs) ? ea_intersects_tgeo_geo(temp, gs, ever) : 0;
+    GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
+    bool result = geo_traj_relate(gs, traj,
+      ever ? "T********" : "T**FF*FF*", false, ever);
+    pfree(traj);
+    return result ? 1 : 0;
+  }
+  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_contains, ever,
+    invert);
 }
 
 /**
@@ -980,9 +1041,8 @@ acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @details
  * - A temporal geometry *ever* contains another one if there is an instant in
  *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* contains another one if the traversed area
- *   of the first temporal geometry contains the traversed area of the second
- *   one
+ * - A temporal geometry *always* contains another one if the two temporal
+ *   geometries satisfy the relationship at every instant they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @note Please refer to the documentation of the `ST_Contains` and `ST_Covers`
@@ -994,7 +1054,8 @@ acontains_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_contains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_contains, ever);
+  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geom_contains,
+    TGEOREL_CONTAINS, ever);
 }
 
 /**
@@ -1028,21 +1089,25 @@ acontains_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  *****************************************************************************/
 
 /**
- * @brief Return 1 if a temporal geometry ever/always covers a geo, 0 if not,
- * and -1 on error
- * @details
- * - A temporal geometry *ever* covers a geometry if there is an instant in
- *   which the temporal geometry and the geometry satisfy the relationship.
- * - A temporal geometry *always* covers a geometry if the traversed area of
- *   the temporal geometry covers the geometry
- * @param[in] gs Geometry
+ * @brief Return 1 if a temporal geo and a geometry ever/always satisfy the
+ * covers relationship, 0 if not, and -1 on error
+ * @details The relationship holds at an instant where it holds for the value
+ * of the temporal geo at that instant and the geometry.
+ * - The positions of a temporal point are its trajectory. A geometry covers
+ *   the point at an instant if they intersect, and at every instant if the
+ *   geometry covers the trajectory. A point covers a geometry where the
+ *   geometry is that point, that is, where they intersect if the geometry is
+ *   one point, and nowhere otherwise.
+ * - A temporal geometry keeps its value from one of its instants to the next,
+ *   so the relationship is read at its instants.
  * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @param[in] invert True if the arguments should be inverted
- * @note Please refer to the documentation of the `ST_Covers` and `ST_Covers`
+ * @param[in] invert True when the geometry is the first argument
+ * @note Please refer to the documentation of the `ST_Contains` and `ST_Covers`
  * functions
+ * https://postgis.net/docs/ST_Contains.html
  * https://postgis.net/docs/ST_Covers.html
- * https://postgis.net/docs/ST_Convers.html
  * for detailed explanations about the difference between both functions.
  */
 int
@@ -1055,25 +1120,24 @@ ea_covers_tgeo_geo_common(const Temporal *temp, const GSERIALIZED *gs, bool ever
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return -1;
 
-  /* A geometry covers a point exactly when it intersects it, both placing the
-   * point in the closure of the geometry; only contains differs, by excluding
-   * the boundary. The ever semantics of a temporal point are therefore the
-   * ever intersects, which the trajectory settles in a single call, in place
-   * of the iteration below that tests every distinct value of the temporal
-   * point against the geometry one at a time. The equivalence belongs to the
-   * point: a temporal geometry intersects a geometry without being covered by
-   * it, and a point covers a geometry only where the geometry is that same
-   * point, so the reduction stays with the geometry-covers-temporal-point
-   * direction of a temporal point. */
-  if (ever && invert && tpoint_type(temp->temptype))
-    return ea_intersects_tgeo_geo(temp, gs, EVER);
-
-  int result = ever ?
-    /* Iterate for each composing geometry */
-    ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, EVER, invert) :
-    /* Compute the result from the traversed area and the geometry */
-    spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_COVERS, invert, ALWAYS);
-  return result ? 1 : 0;
+  if (tpoint_type(temp->temptype))
+  {
+    /* A point covers a geometry where the geometry is that point */
+    if (! invert)
+      return geo_is_one_point(gs) ? ea_intersects_tgeo_geo(temp, gs, ever) : 0;
+    /* A geometry covers a point exactly when it intersects it, both placing
+     * the point in the closure of the geometry, so the ever semantics are the
+     * ever intersects, and the always semantics hold when the geometry covers
+     * the trajectory */
+    if (ever)
+      return ea_intersects_tgeo_geo(temp, gs, EVER);
+    GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
+    bool result = geo_traj_relate(gs, traj, NULL, true, ALWAYS);
+    pfree(traj);
+    return result ? 1 : 0;
+  }
+  return ea_spatialrel_tspatial_geo(temp, gs, &datum_geo_covers2d, ever,
+    invert);
 }
 
 /**
@@ -1163,9 +1227,8 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @details
  * - A temporal geometry *ever* covers another one if there is an instant in
  *   which the two temporal geometries satisfy the relationship.
- * - A temporal geometry *always* covers another one if the traversed
- *   area of the first temporal geometry covers the traversed area of the
- *   second one
+ * - A temporal geometry *always* covers another one if the two temporal
+ *   geometries satisfy the relationship at every instant they share.
  * @param[in] temp1,temp2 Temporal geometries
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @note Please refer to the documentation of the `ST_Covers` and `ST_Covers`
@@ -1177,7 +1240,8 @@ acovers_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 ea_covers_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geo_covers2d, ever);
+  return ea_spatialrel_tgeo_tgeo(temp1, temp2, &datum_geo_covers2d,
+    TGEOREL_COVERS, ever);
 }
 
 /**
@@ -1474,6 +1538,8 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   int box = ea_intersects_tgeo_tgeo_box(temp1, temp2);
   if (box <= 0)
     return box < 0 ? -1 : 1;
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_DISJOINT, ever);
   datum_func2 func = geo_disjoint_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
@@ -1595,6 +1661,11 @@ ea_intersects_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     }
   }
 
+  /* A temporal geometry keeps its value from one of its instants to the
+   * next, so it intersects the geometry where one of its values does */
+  if (! tpoint_type(temp->temptype))
+    return ea_spatialrel_tspatial_geo(temp, gs,
+      geo_intersects_fn_geo(temp->flags, gs->gflags), EVER, INVERT_NO);
   return spatialrel_tgeo_geo(temp, gs, 0.0, true, SREL_INTERSECTS, INVERT_NO,
     EVER);
 }
@@ -1692,6 +1763,8 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   int box = ea_intersects_tgeo_tgeo_box(temp1, temp2);
   if (box <= 0)
     return box;
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_INTERSECTS, ever);
   datum_func2 func = geo_intersects_fn(temp1->flags, temp2->flags);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, func, ever);
 }
@@ -1733,15 +1806,14 @@ aintersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2)
  * @brief Return 1 if a temporal point ever/always touches a geometry,
  * 0 if not, and -1 on error
  * @details
- * - A temporal point *ever* touches a geometry if (a) the trajectory of the
- *   temporal point intersects the boundary of the geometry when the latter
- *   is not empty, or (b) the boundary of the trajectory of the temporal point
- *   intersects the geometry when the former is not empty
+ * A point touches a geometry where it lies on the boundary of the geometry.
+ * - A temporal point *ever* touches a geometry if its trajectory intersects
+ *   the boundary of the geometry
  * - A temporal point *always* touches a geometry if the restriction of the
  *   temporal point to the complement of the boundary of the geometry (that is,
  *   MINUS) is empty.
- * Note that when the two boundaries are empty, the trajectory of the point and
- * the geometry are both (multi)points and the result is false.
+ * Note that a geometry whose boundary is empty, such as a point or a
+ * multipoint, is touched by no point, and the result is false.
  * @param[in] temp Temporal point
  * @param[in] gs Geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1786,18 +1858,11 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
     GSERIALIZED *traj = tpoint_trajectory(temp, UNARY_UNION_NO);
     GSERIALIZED *gsbound = geom_boundary(gs);
     bool result = false;
+    /* A point touches a geometry where it lies on the boundary of the
+     * geometry, so it touches no geometry whose boundary is empty, such as a
+     * point or a multipoint */
     if (gsbound && ! gserialized_is_empty(gsbound))
       result = func(GserializedPGetDatum(gsbound), GserializedPGetDatum(traj));
-    else if (MEOS_FLAGS_LINEAR_INTERP(temp->flags))
-    {
-      /* The geometry is a point or a multipoint -> the boundary is empty */
-      GSERIALIZED *tempbound = geom_boundary(traj);
-      if (tempbound)
-      {
-        result = func(GserializedPGetDatum(tempbound), GserializedPGetDatum(gs));
-        pfree(tempbound);
-      }
-    }
     pfree(traj); pfree(gsbound);
     return result ? 1 : 0;
   }
@@ -1905,6 +1970,12 @@ ea_touches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
   if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
+  /* A temporal point moves continuously, so it touches the geometry at the
+   * instants its trajectory reaches the boundary of the geometry, which
+   * #ea_touches_tpoint_geo reads; a temporal geometry keeps its value from one
+   * of its instants to the next */
+  if (tpoint_type(temp->temptype))
+    return ea_touches_tpoint_geo(temp, gs, ever);
   return ea_spatialrel_tspatial_geo(temp, gs, &datum_geom_touches, ever,
     INVERT_NO);
 }
@@ -1987,9 +2058,9 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2) ||
       /* The validity function ensures that both have the same geodetic flag */
-      ! ensure_not_geodetic(temp1->temptype) ||
+      ! ensure_not_geodetic(temp1->flags) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp1->temptype, temp2->flags))
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return -1;
 
   /* Common-time gate, before the box test: the box carries time as a dimension, so two
@@ -2005,6 +2076,8 @@ ea_touches_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   if (! overlaps_stbox_stbox(&box1, &box2))
     return 0;
 
+  if (tgeo_tgeo_moving_point(temp1, temp2))
+    return ea_tgeo_tpoint_stretch(temp1, temp2, TGEOREL_TOUCHES, ever);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum_geom_touches,
     ever);
 }
@@ -2796,6 +2869,8 @@ typedef enum
   SS_EDWITHIN, SS_ADWITHIN,
   SS_EINTERSECTS, SS_AINTERSECTS,
   SS_ETOUCHES, SS_ATOUCHES,
+  SS_ECONTAINS, SS_ACONTAINS,
+  SS_ECOVERS, SS_ACOVERS,
   SS_EDISJOINT, SS_ADISJOINT,
 } SetSetEAPred;
 
@@ -2834,6 +2909,14 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
       return ea_touches_tgeo_tgeo(temp1, temp2, EVER);
     case SS_ATOUCHES:
       return ea_touches_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_ECONTAINS:
+      return ea_contains_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_ACONTAINS:
+      return ea_contains_tgeo_tgeo(temp1, temp2, ALWAYS);
+    case SS_ECOVERS:
+      return ea_covers_tgeo_tgeo(temp1, temp2, EVER);
+    case SS_ACOVERS:
+      return ea_covers_tgeo_tgeo(temp1, temp2, ALWAYS);
     case SS_EDISJOINT:
       /* Ever disjoint is the negation of always intersects */
       return INVERT_RESULT(ea_intersects_tgeo_tgeo(temp1, temp2, ALWAYS));
@@ -2850,8 +2933,9 @@ setset_ea_exact(const Temporal *temp1, const Temporal *temp2, double dist,
  * - the within-distance relationships need the pairs whose boxes are closer
  *   than the distance, which is the overlap of the boxes of the first side
  *   grown by it;
- * - intersects and touches need the pairs whose boxes overlap, since boxes
- *   apart can neither intersect nor touch;
+ * - intersects, touches, contains and covers need the pairs whose boxes
+ *   overlap, since boxes apart can neither intersect, touch, contain nor
+ *   cover;
  * - the disjoint relationships report every pair sharing time whose boxes are
  *   apart in space without an exact test, and test only the pairs whose boxes
  *   overlap, so they need the pairs overlapping in time and the pairs
@@ -2931,8 +3015,9 @@ setset_ea_pairs_indexed(const Temporal **arr1, int count1,
  * spatial bounding-box prefilter (planar case only):
  * - within-distance predicates skip pairs whose boxes are farther than the
  *   distance apart;
- * - intersects and touches predicates skip pairs whose boxes are spatially
- *   disjoint (they can never intersect or touch);
+ * - intersects, touches, contains and covers predicates skip pairs whose
+ *   boxes are spatially disjoint (they can never intersect, touch, contain
+ *   or cover);
  * - disjoint predicates return pairs whose boxes are spatially disjoint
  *   without the exact test (they are always disjoint) and run the exact test
  *   only on the pairs whose boxes overlap in space.
@@ -2949,6 +3034,17 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Contains and covers are planar and two-dimensional, as their scalar
+   * forms are; every element shares the flags of the first, so one test
+   * answers for every pair */
+  if ((pred == SS_ECONTAINS || pred == SS_ACONTAINS ||
+       pred == SS_ECOVERS || pred == SS_ACOVERS) &&
+      (! ensure_not_geodetic(arr1[0]->flags) ||
+       ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags)))
+  {
+    pfree(bb1); pfree(bb2);
+    return NULL;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   bool is_dwithin = (pred == SS_EDWITHIN || pred == SS_ADWITHIN);
   bool is_disjoint = (pred == SS_EDISJOINT || pred == SS_ADISJOINT);
@@ -3006,7 +3102,8 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
 /* The temporal set-set predicates supported by the generic driver below */
 typedef enum
 {
-  SS_TDWITHIN, SS_TINTERSECTS, SS_TTOUCHES, SS_TDISJOINT,
+  SS_TDWITHIN, SS_TINTERSECTS, SS_TTOUCHES, SS_TCONTAINS, SS_TCOVERS,
+  SS_TDISJOINT,
 } SetSetTPred;
 
 /**
@@ -3029,6 +3126,16 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Contains and covers are planar and two-dimensional, as their scalar
+   * forms are; every element shares the flags of the first, so one test
+   * answers for every pair */
+  if ((pred == SS_TCONTAINS || pred == SS_TCOVERS) &&
+      (! ensure_not_geodetic(arr1[0]->flags) ||
+       ! ensure_has_not_Z(arr1[0]->temptype, arr1[0]->flags)))
+  {
+    pfree(bb1); pfree(bb2);
+    return NULL;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
   SpanSet **ss = palloc((size_t) count1 * count2 * sizeof(SpanSet *));
@@ -3043,7 +3150,8 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
         if (pred == SS_TDWITHIN &&
             ! stbox_within_dist_space(&bb1[i], &bb2[j], dist))
           continue;
-        else if ((pred == SS_TINTERSECTS || pred == SS_TTOUCHES) &&
+        else if ((pred == SS_TINTERSECTS || pred == SS_TTOUCHES ||
+            pred == SS_TCONTAINS || pred == SS_TCOVERS) &&
           ! stbox_overlaps_space(&bb1[i], &bb2[j]))
           continue;
       }
@@ -3056,6 +3164,10 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
           t = tintersects_tgeo_tgeo(arr1[i], arr2[j]); break;
         case SS_TTOUCHES:
           t = ttouches_tgeo_tgeo(arr1[i], arr2[j]); break;
+        case SS_TCONTAINS:
+          t = tcontains_tgeo_tgeo(arr1[i], arr2[j]); break;
+        case SS_TCOVERS:
+          t = tcovers_tgeo_tgeo(arr1[i], arr2[j]); break;
         default: /* SS_TDISJOINT */
           t = tdisjoint_tgeo_tgeo(arr1[i], arr2[j]); break;
       }
@@ -3214,6 +3326,98 @@ atouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
 
 /**
  * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one
+ * @details The array form of #econtains_tgeo_tgeo, as
+ * #etouches_tgeoarr_tgeoarr is that of #etouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Econtains_tgeoarr_tgeoarr()
+ */
+int *
+econtains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECONTAINS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always contains the second one
+ * @details The array form of #acontains_tgeo_tgeo, as
+ * #atouches_tgeoarr_tgeoarr is that of #atouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Acontains_tgeoarr_tgeoarr()
+ */
+int *
+acontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACONTAINS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one
+ * @details The array form of #ecovers_tgeo_tgeo, as
+ * #etouches_tgeoarr_tgeoarr is that of #etouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Ecovers_tgeoarr_tgeoarr()
+ */
+int *
+ecovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ECOVERS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element always covers the second one
+ * @details The array form of #acovers_tgeo_tgeo, as
+ * #atouches_tgeoarr_tgeoarr is that of #atouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Acovers_tgeoarr_tgeoarr()
+ */
+int *
+acovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL);
+  return setset_ea_pairs(arr1, count1, arr2, count2, 0.0, true, SS_ACOVERS,
+    count);
+}
+
+/**
+ * @ingroup meos_geo_rel_ever
  * @brief Return the index pairs of two arrays of temporal geos that are ever
  * disjoint
  * @param[in] arr1,arr2 Arrays of temporal geos
@@ -3325,6 +3529,56 @@ ttouches_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
   return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TTOUCHES,
+    count, periods);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever contains the second one together with the
+ * periods during which it does
+ * @details The array form of #tcontains_tgeo_tgeo, as
+ * #ttouches_tgeoarr_tgeoarr is that of #ttouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @param[out] periods Spansets of the times when each resulting pair holds
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Tcontains_tgeoarr_tgeoarr()
+ */
+int *
+tcontains_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count, SpanSet ***periods)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCONTAINS,
+    count, periods);
+}
+
+/**
+ * @ingroup meos_geo_rel_temp
+ * @brief Return the index pairs of two arrays of temporal geometries such
+ * that the first element ever covers the second one together with the
+ * periods during which it does
+ * @details The array form of #tcovers_tgeo_tgeo, as
+ * #ttouches_tgeoarr_tgeoarr is that of #ttouches_tgeo_tgeo
+ * @param[in] arr1,arr2 Arrays of temporal geometries
+ * @param[in] count1,count2 Number of elements in the arrays
+ * @param[out] count Number of resulting index pairs
+ * @param[out] periods Spansets of the times when each resulting pair holds
+ * @return Flattened array of @p count index pairs `[i0, j0, i1, j1, ...]`, or
+ * NULL on validation failure or when no pair qualifies
+ * @csqlfn #Tcovers_tgeoarr_tgeoarr()
+ */
+int *
+tcovers_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, int *count, SpanSet ***periods)
+{
+  VALIDATE_NOT_NULL(arr1, NULL); VALIDATE_NOT_NULL(arr2, NULL);
+  VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(periods, NULL);
+  return setset_t_pairs(arr1, count1, arr2, count2, 0.0, true, SS_TCOVERS,
     count, periods);
 }
 

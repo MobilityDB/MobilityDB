@@ -7146,16 +7146,16 @@ SELECT asText(atGeometry(
 SELECT asText(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2), 6);
 SELECT asText(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
 SELECT asText(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1), 6);
-SELECT asText(tgeometry(translate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
-  asText(translate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
-SELECT asText(tgeometry(rotate(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
-  asText(rotate(tgeometry(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
-SELECT asText(tgeometry(rotateX(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateX(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
-SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
-  asText(rotateY(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
-SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
-  asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(translate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2)), 6) =
+  asText(translate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 1, 2), 6);
+SELECT asText(tgeometry(rotate(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7, 1, 1)), 6) =
+  asText(rotate(tgeometry(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 0.7, 1, 1), 6);
+SELECT asText(tgeometry(rotateX(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateX(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateY(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 0.7)), 6) =
+  asText(rotateY(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(tgeometry(rotateZ(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
+  asText(rotateZ(tgeometry(trgeometry 'Interp=Step;Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
 -------------------------------------------------------------------------------
 -- Extracted from rgeo/queries/164_trgeo_spatialfuncs.test.sql
 -------------------------------------------------------------------------------

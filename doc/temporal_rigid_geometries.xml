@@ -959,7 +959,7 @@ aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
 eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </programlisting>
-				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin.</para>
+				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin. A temporal rigid geometry with linear interpolation moves and turns between its instants, and these relationships raise an error for it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
@@ -1004,9 +1004,9 @@ tDwithin({geometry,trgeometry},{geometry,trgeometry},float) → tbool
 tIntersects({geometry,trgeometry},{geometry,trgeometry}) → tbool
 tTouches({geometry,trgeometry},{geometry,trgeometry}) → tbool
 </programlisting>
-				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A rigid geometry covers an area, so every relationship is declared in both directions and between two temporal rigid geometries.</para>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A rigid geometry covers an area, so every relationship is declared in both directions and between two temporal rigid geometries. Except <varname>tDwithin</varname>, they compute the relationship of the temporal geometry that places the reference geometry at the pose of each instant and keeps it until the next one. A temporal rigid geometry with linear interpolation moves and turns between its instants, which no temporal geometry states, so these relationships, and the cast to <varname>tgeometry</varname>, raise an error for it.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT tIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
   geometry 'Polygon((0 0,0 2,2 2,2 0,0 0))');
 -- [t@2001-01-01, f@2001-01-03]
