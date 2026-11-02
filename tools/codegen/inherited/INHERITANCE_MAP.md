@@ -180,10 +180,18 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
 - **region-in-file** for C: emits the block between
   `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END`,
-  `GENERATED-NADOPS-BEGIN/END` and `GENERATED-SPATIALRELS-BEGIN/END` markers. A box
-  type's position wrappers (`templates/posops.c.tmpl`) carry the operations of the
-  axes it lists in `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its
-  axis). A box type naming a `nadfile:` has its nearest approach distance wrappers
+  `GENERATED-BOXBOX-BEGIN/END`, `GENERATED-NADOPS-BEGIN/END` and
+  `GENERATED-SPATIALRELS-BEGIN/END` markers. A box type's position wrappers
+  (`templates/posops.c.tmpl`) carry the operations of the axes it lists in
+  `posaxes:` (`manifest.d/boxposops.yaml` gives each operation its axis). A box type
+  with a `boxbox:` stanza has the wrappers whose operands are two of its boxes in a
+  region of the stanza's `file` (`templates/boxbox.c.tmpl`): the topological
+  operations of `manifest.d/boxtopops.yaml`, then the position operations of its
+  axes, and per span side of the stanza those of the side and the box in either
+  order, the position ones on the side's axes. `tbox` writes the 49 wrappers of
+  `tbox.c` (the box with itself, a number span and a timestamptz span), `stbox` the
+  21 of `stbox.c` and `tpcbox` the 21 of `tpcbox.c`. A box type naming a
+  `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
   type, the directions of its box operators and, for each number type its value
