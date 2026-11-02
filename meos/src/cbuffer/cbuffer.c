@@ -139,7 +139,12 @@ cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
   }
   else
   {
-    /* If the radii are equal return result1 where
+    /* The radius is constant on the segment: a value carrying another
+     * radius is never on it, as npointsegm_locate answers a value on another
+     * road */
+    if (start->radius != value->radius)
+      return -1.0;
+    /* Otherwise return result1 where
      * - result1 = -1.0 if gs1 == gs2 == gs, or
      * - result1 in [0,1] if gs1 != gs2 */
     return result1;
