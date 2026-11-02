@@ -2253,17 +2253,31 @@ adjacent_stbox_stbox(const STBox *box1, const STBox *box2)
  * @param[in] box1,box2 Spatiotemporal boxes
  */
 bool
+stbox_stbox_is_valid(const STBox *box1, const STBox *box2)
+{
+  assert(box1); assert(box2);
+  /* Both boxes carry X here, so reading the SRID through the validating
+   * accessor would only repeat the test the condition has just made */
+  return ! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags) ||
+    (srid_is_same(box1->srid, box2->srid) &&
+     geodetic_is_same(box1->flags, box2->flags));
+}
+
+/**
+ * @brief Ensure that two spatiotemporal boxes are valid for operations
+ * @details As #stbox_stbox_is_valid states
+ * @param[in] box1,box2 Spatiotemporal boxes
+ */
+bool
 ensure_valid_stbox_stbox(const STBox *box1, const STBox *box2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(box1, false); VALIDATE_NOT_NULL(box2, false);
-  /* Both boxes carry X here, so reading the SRID through the validating
-   * accessor would only repeat the test the condition has just made */
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) && (
-       ! ensure_same_srid(box1->srid, box2->srid) ||
-       ! ensure_same_geodetic(box1->flags, box2->flags)))
-    return false;
-  return true;
+  if (stbox_stbox_is_valid(box1, box2))
+    return true;
+  /* The reference systems differ, which the first failing test reports */
+  return ensure_same_srid(box1->srid, box2->srid) &&
+    ensure_same_geodetic(box1->flags, box2->flags);
 }
 
 /**

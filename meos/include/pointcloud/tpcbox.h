@@ -67,6 +67,7 @@ extern TPCBox *pcpatch_srid_to_tpcbox(const Pcpatch *pa, int32_t srid);
 
 /* Validity functions */
 
+extern bool tpcbox_tpcbox_is_valid(const TPCBox *box1, const TPCBox *box2);
 extern bool ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 
 /* Bounding box operators */

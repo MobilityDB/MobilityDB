@@ -635,19 +635,27 @@ extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
 extern bool ensure_geodetic(int16 flags);
 extern bool ensure_not_geodetic(int16 flags);
 /**
+ * @brief Return true if two temporal values have the same geodetic flag
+ * @details A value without X dimension states no geodetic flag
+ */
+static inline bool
+geodetic_is_same(int16 flags1, int16 flags2)
+{
+  return ! MEOS_FLAGS_GET_X(flags1) || ! MEOS_FLAGS_GET_X(flags2) ||
+    MEOS_FLAGS_GET_GEODETIC(flags1) == MEOS_FLAGS_GET_GEODETIC(flags2);
+}
+
+/**
  * @brief Ensure that two temporal values have the same geodetic flag
  */
 static inline bool
 ensure_same_geodetic(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) && MEOS_FLAGS_GET_X(flags2) &&
-    MEOS_FLAGS_GET_GEODETIC(flags1) != MEOS_FLAGS_GET_GEODETIC(flags2))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on mixed planar and geodetic coordinates");
-    return false;
-  }
-  return true;
+  if (geodetic_is_same(flags1, flags2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on mixed planar and geodetic coordinates");
+  return false;
 }
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
@@ -656,12 +664,21 @@ extern bool ensure_same_dimensionality_geo(const GSERIALIZED *gs1,
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_srid_valid(int32_t srid);
 /**
+ * @brief Return true if two values have the same SRID
+ */
+static inline bool
+srid_is_same(int32_t srid1, int32_t srid2)
+{
+  return srid1 == srid2;
+}
+
+/**
  * @brief Ensure that two values have the same SRID
  */
 static inline bool
 ensure_same_srid(int32_t srid1, int32_t srid2)
 {
-  if (srid1 == srid2)
+  if (srid_is_same(srid1, srid2))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "Operation on mixed SRID");

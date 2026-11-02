@@ -453,13 +453,23 @@ extern bool ensure_same_continuous_interp(int16 flags1, int16 flags2);
 extern bool ensure_linear_interp(int16 flags);
 extern bool ensure_nonlinear_interp(int16 flags);
 /**
+ * @brief Return true if two temporal values have at least one common
+ * dimension
+ */
+static inline bool
+dimension_is_common(int16 flags1, int16 flags2)
+{
+  return MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) ||
+    MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2);
+}
+
+/**
  * @brief Ensure that two temporal values have at least one common dimension
  */
 static inline bool
 ensure_common_dimension(int16 flags1, int16 flags2)
 {
-  if (MEOS_FLAGS_GET_X(flags1) == MEOS_FLAGS_GET_X(flags2) ||
-      MEOS_FLAGS_GET_T(flags1) == MEOS_FLAGS_GET_T(flags2))
+  if (dimension_is_common(flags1, flags2))
     return true;
   meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "The temporal values must have at least one common dimension");

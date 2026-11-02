@@ -38,6 +38,7 @@
 
 /* PostgreSQL */
 #include <postgres.h>
+#include <access/stratnum.h>
 /* MEOS */
 #include <meos.h>
 #include "temporal/meos_catalog.h"
@@ -83,6 +84,8 @@ typedef struct
 /*****************************************************************************/
 
 extern int common_entry_cmp(const void *i1, const void *i2);
+extern bool index_strategy_is_valid(MeosType bboxtype, StrategyNumber strategy,
+  const void *box, const void *query);
 extern void bbox_split(MeosType bboxtype, void **boxes, int count,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *),
   bool *left);

@@ -445,6 +445,18 @@
  *   one of the same type: the same queries answer the same, and it can be
  *   filled further by `_insert`.
  * - `_free` releases the index and everything it holds.
+ * - An index holds boxes of any structure: any axes, and any span type, SRID,
+ *   geodetic flag or point cloud schema. It keeps the boxes of each structure
+ *   in a tree of their own, so that a tree partitions only axes all its boxes
+ *   carry.
+ * - A search answers as its operation applied to every stored box does, as a
+ *   scan of the boxes would: the ids of the boxes it holds for, or the error
+ *   it raises on the boxes of some structure, such as a box without the axis
+ *   the operation orders. The operation is one the box type answers: a span
+ *   orders its single axis to the left and to the right, whether it holds
+ *   values or times, a temporal box orders its value to the left and to the
+ *   right and its time before and after, and a spatiotemporal or point cloud
+ *   box orders also its other spatial axes.
  *
  * @defgroup meos_temporal_spatial_rel_ever Ever/always spatial relationship functions
  * @ingroup meos_temporal
