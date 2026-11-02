@@ -11,7 +11,7 @@
 This note is the plan of the campaign that makes every MEOS and MobilityDB value a finite
 number: the rule, the census that measures where MEOS does not apply it, the pull requests that
 apply it, in order, the oracles that judge them, and the topics they leave, each a pull request of
-its own. Master read: `9c0caecd72`.
+its own. Master read: `e649e96748`.
 
 ## 1. The rule
 
@@ -116,8 +116,7 @@ fails on the file of master and passes on the fix:
 
 ## 4. PR 1, the finite rule
 
-MobilityDB #3361, branch `fix/meos-refuses-non-finite`, head `6e5415a103` on master
-`9c0caecd72`. Seven commits:
+MobilityDB #3361, MERGED as the seven commits `be48a71c32` to `e649e96748` of master:
 
 1. `Refuse an infinite value where MEOS refuses a NaN`: the helpers test `isfinite`, the geometry
    walk refuses a non-finite coordinate, the raster pixel readers test `isfinite`; the interval
