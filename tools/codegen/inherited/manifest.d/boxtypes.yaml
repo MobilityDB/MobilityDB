@@ -26,8 +26,13 @@ boxtypes:
     posreference: true
     # box-by-box wrappers (templates/boxbox.c.tmpl, topological operations in
     # boxtopops.yaml, position ones over `posaxes`), the region of `file`, their
-    # groups `group`_topo and `group`_pos
-    boxbox:    {file: mobilitydb/src/geo/stbox.c, group: mobilitydb_geo_box}
+    # groups `group`_topo and `group`_pos; the SQL of their functions and operators
+    # (templates/boxbox.sql.tmpl) is the region of `sqlfile`, a function over two
+    # boxes carrying the `support` function and an operator the `sel` selectivity;
+    # a span side declares its functions over each type of its `sqltypes`
+    boxbox:    {file: mobilitydb/src/geo/stbox.c, group: mobilitydb_geo_box,
+                sqlfile: mobilitydb/sql/geo/051_stbox.in.sql, sel: tspatial,
+                support: span_supportfn}
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl): one per
     # pair [left, right, kernel], the kernel naming the order of its arguments,
     # a side marked `free` released after the call; `nadearth` adds the earth
@@ -302,7 +307,9 @@ boxtypes:
     posgroup:  mobilitydb_pointcloud_box_pos
     posreference: true
     # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them
-    boxbox:    {file: mobilitydb/src/pointcloud/tpcbox.c, group: mobilitydb_pointcloud_box}
+    boxbox:    {file: mobilitydb/src/pointcloud/tpcbox.c, group: mobilitydb_pointcloud_box,
+                sqlfile: mobilitydb/sql/pointcloud/410_tpcbox.in.sql,
+                support: span_supportfn}
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl)
     nadgroup:  mobilitydb_pointcloud_temp
     nadfile:   mobilitydb/src/pointcloud/tpc_boxops.c
@@ -371,8 +378,12 @@ boxtypes:
     boxbox:
       file:  mobilitydb/src/temporal/tbox.c
       group: mobilitydb_box
+      sqlfile: mobilitydb/sql/temporal/021_tbox.in.sql
+      sel:   tnumber
+      support: span_supportfn
       sides:
-        - {box: numspan, c: Span, var: s, getarg: PG_GETARG_SPAN_P, desc: the box of a number span, posaxes: [x]}
+        - {box: numspan, c: Span, var: s, getarg: PG_GETARG_SPAN_P, desc: the box of a number span, posaxes: [x],
+           sqltypes: [intspan, bigintspan, floatspan]}
         - {box: tstzspan, c: Span, var: s, getarg: PG_GETARG_SPAN_P, desc: the box of a timestamptz span, posaxes: [t]}
     # nearest approach distance wrappers (templates/nadops.c.tmpl): the base value
     # by the temporal value both ways (nadbase), the box's directions and, per
