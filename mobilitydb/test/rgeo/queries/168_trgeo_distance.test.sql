@@ -360,4 +360,18 @@ SELECT nearestApproachDistance(
   trgeometry 'Polygon((-3 -2,-2 -5,3 -1,-3 -2));[Pose(Point(2 1),0)@2001-01-01 00:00:00, Pose(Point(-3 3),0)@2001-01-01 00:06:05.630507, Pose(Point(-3 -3),0)@2001-01-01 00:13:58.721992, Pose(Point(-3 -2),0)@2001-01-01 00:55:53.96598]',
   geometry 'Point(4 1)') = 0.55708601453115558;
 
+-- At an instant, a body that does not turn is its reference geometry moved
+-- exactly by the position of the pose: the vertex (2.623 2.152) at the pose
+-- (1.869 -2.829) is at x = 4.492, the sum of the two doubles, which rounds to
+-- a double 2.2e-16 below it. The distance of the exact body to the line is
+-- the double 0.043970339265039356 nearest it, where the body with the
+-- rounded sums is at the distance 0.04397033926503958
+
+SELECT nearestApproachDistance(trg, geo) = 0.043970339265039356,
+  valueAtTimestamp(tDistance(trg, geo), '2001-01-01 00:21:01.796393') =
+    0.043970339265039356
+FROM (SELECT
+  trgeometry 'Polygon((-4.876 2.124,-2.334 -2.237,-1.084 -1.315,2.623 2.152,-0.252 4.765,-4.876 2.124));[Pose(Point(-0.384 0.392),0)@2001-01-01 00:00:00, Pose(Point(1.869 -2.829),0)@2001-01-01 00:21:01.796393]' AS trg,
+  geometry 'LineString(4.498 -2.698,4.619 3.741)' AS geo) t;
+
 -------------------------------------------------------------------------------

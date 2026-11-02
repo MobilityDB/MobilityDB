@@ -4414,6 +4414,29 @@ wide_point_in_convex(const WidePoint *q, const WidePoint *poly, int n)
 }
 
 /**
+ * @brief Return true if no sum of a coordinate of the points @p b and the
+ * translation @p p rounds
+ * @details Each sum is split by #two_sum into its rounded value and its
+ * error, so where every error is zero the points moved by one rounded sum per
+ * coordinate are the points moved exactly
+ * @param[in] b,nb Points, `x, y` pairs
+ * @param[in] p Translation
+ */
+bool
+translation_is_exact(const double *b, int nb, const double *p)
+{
+  assert(b); assert(p);
+  for (int i = 0; i < 2 * nb; i++)
+  {
+    double s, e;
+    two_sum(b[i], p[i % 2], &s, &e);
+    if (e != 0.0)
+      return false;
+  }
+  return true;
+}
+
+/**
  * @brief Return the number of edges of a point, a segment or a convex
  * polygon of @p n vertices, a point being one edge of no length
  */

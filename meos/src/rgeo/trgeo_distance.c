@@ -281,11 +281,42 @@ typedef struct
 } DistOps;
 
 /**
+ * @brief Return the distance between the first operand at the pose @p pose
+ * and the static geometry of @p ops
+ * @details A body at the angle 0 is its reference geometry moved by the
+ * position of the pose, and its distance to the geometry is the least of the
+ * distances to the parts, each the double nearest its exact value
+ * (#convex_motion_nad_exact) on the exact sums of the coordinates and the
+ * position.  Where no such sum rounds (#translation_is_exact), the placed
+ * body is that body, and its distance is the one of #geom_distance2d().
+ * Otherwise, and for a body that turns, the distance is the one of the body
+ * placed at the pose.
+ */
+static double
+dist_pose_geo(const DistOps *ops, const Pose *pose)
+{
+  if (ops->refxy && pose->data[2] == 0.0 &&
+      ! translation_is_exact(ops->refxy, ops->nref, pose->data))
+  {
+    double result = DBL_MAX;
+    for (int i = 0; i < ops->nparts; i++)
+      result = fmin(result, convex_motion_nad_exact(ops->refxy, ops->nref,
+        pose->data, pose->data, ops->parts[i].xy, ops->parts[i].npts));
+    return result;
+  }
+  GSERIALIZED *geo = pose_apply_geo(pose, ops->ref1);
+  double result = geom_distance2d(geo, ops->gs);
+  pfree(geo);
+  return result;
+}
+
+/**
  * @brief Return the distance between the first operand at the pose @p pose1
  * and the second operand
  * @details The function places the bodies at their poses and returns the
  * double nearest the distance of the placed geometries, see
- * #geom_distance2d().  The second operand is the static geometry of @p ops,
+ * #geom_distance2d().  The distance to a static geometry is the one of
+ * #dist_pose_geo().  The second operand is the static geometry of @p ops,
  * the point @p point2 of a temporal point, or the body of a temporal rigid
  * geometry at the pose @p pose2.
  * @param[in] pose2 Pose of a temporal rigid geometry, or NULL @nullable
@@ -295,11 +326,11 @@ static double
 dist_placed(const DistOps *ops, const Pose *pose1, const Pose *pose2,
   const GSERIALIZED *point2)
 {
+  if (ops->gs)
+    return dist_pose_geo(ops, pose1);
   GSERIALIZED *geo1 = pose_apply_geo(pose1, ops->ref1);
   double result;
-  if (ops->gs)
-    result = geom_distance2d(geo1, ops->gs);
-  else if (! ops->ref2)
+  if (! ops->ref2)
     result = geom_distance2d(geo1, point2);
   else
   {
@@ -643,24 +674,26 @@ tfloatseq_min_tfloatseq(const TSequence *seq1, const TSequence *seq2)
 
 /**
  * @brief Set the value of each instant of @p dist to the exact distance
- * between the rigid geometry @p seq and the geometry @p gs
+ * between the rigid geometry @p seq and the static geometry of @p ops
  * @details The minimum of the distances to the parts has instants where two
  * linear interpolations cross.  The interpolated value there is not the
  * distance, thus the function computes the distance at each instant, see
- * #dist_placed().  Then the result is exact at each instant, as for one part,
- * see #dist_walk_seq().
+ * #dist_pose_geo().  Then the result is exact at each instant, as for one
+ * part, see #dist_walk_seq().
  *
- * An instant whose value is exactly @p level keeps it.  Such a value comes
- * from the crossing of @p level by the part that is closest at that time, see
- * distwalk_segm(), thus it is the exact distance.  A value from PostGIS has a
- * rounding error, which can put the crossing in the same microsecond as the
- * instant, where the comparison with @p level does not see it.
+ * An instant whose value is exactly the distance level of @p ops keeps it.
+ * Such a value comes from the crossing of the level by the part that is
+ * closest at that time, see distwalk_segm(), thus it is the exact distance.
+ * A value from PostGIS has a rounding error, which can put the crossing in
+ * the same microsecond as the instant, where the comparison with the level
+ * does not see it.
  * @param[in] dist Minimum of the distances to the parts, freed
  */
 static TSequence *
-dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
-  const GSERIALIZED *gs, const GSERIALIZED *ref_gs, double level)
+dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
+  const TSequence *seq)
 {
+  double level = ops->level;
   TInstant **instants = palloc(sizeof(TInstant *) * dist->count);
   for (int i = 0; i < dist->count; i++)
   {
@@ -677,10 +710,9 @@ dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
       instants[i] = tinstant_copy(inst);
       continue;
     }
-    GSERIALIZED *body = pose_apply_geo(DatumGetPoseP(pose), ref_gs);
-    instants[i] = tinstant_make(Float8GetDatum(geom_distance2d(body, gs)),
-      T_TFLOAT, inst->t);
-    pfree(body); pfree(DatumGetPointer(pose));
+    instants[i] = tinstant_make(Float8GetDatum(dist_pose_geo(ops,
+      DatumGetPoseP(pose))), T_TFLOAT, inst->t);
+    pfree(DatumGetPointer(pose));
   }
   TSequence *result = tsequence_make_free(instants, dist->count,
     dist->period.lower_inc, dist->period.upper_inc, LINEAR, NORMALIZE_NO);
@@ -830,8 +862,7 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
     }
   }
   if (ops->nparts > 1)
-    result = dist2d_seq_exact_values(result, seq1, ops->gs, ops->ref1,
-      ops->level);
+    result = dist2d_seq_exact_values(ops, result, seq1);
   if (ops->refxy)
     result = dist_seq_least(ops, seq1, result);
   return (Temporal *) result;
