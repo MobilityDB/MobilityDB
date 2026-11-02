@@ -388,17 +388,17 @@ npoint_union_transfn(Set *state, const Npoint *np)
  * @brief Return the distance between two network point sets, as
  * #distance_geoset_geoset does for two geo sets
  * @param[in] s1,s2 Sets
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_set_set()
  */
 double
 distance_npointset_npointset(const Set *s1, const Set *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NPOINTSET(s1, DBL_MAX); VALIDATE_NPOINTSET(s2, DBL_MAX);
+  VALIDATE_NPOINTSET(s1, -1.0); VALIDATE_NPOINTSET(s2, -1.0);
   if (! ensure_valid_set_set(s1, s2) ||
       ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_set_set(s1, s2));
 }
 

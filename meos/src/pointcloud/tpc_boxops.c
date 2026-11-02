@@ -434,7 +434,7 @@ tpcbox_set_stbox(const TPCBox *src, STBox *dst)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_tpcbox_tpcbox()
  */
 double
@@ -442,7 +442,7 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tpcbox_tpcbox(box1, box2))
-    return DBL_MAX;
+    return -1.0;
   STBox sbox1, sbox2;
   tpcbox_set_stbox(box1, &sbox1);
   tpcbox_set_stbox(box2, &sbox2);
@@ -458,14 +458,14 @@ nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_tpointcloud_tpcbox() #NAD_tpcbox_tpointcloud()
  */
 double
 nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINTCLOUD(temp, DBL_MAX); VALIDATE_TPCBOX(box, DBL_MAX);
+  VALIDATE_TPOINTCLOUD(temp, -1.0); VALIDATE_TPCBOX(box, -1.0);
   TPCBox tmp;
   temporal_set_bbox(temp, &tmp);
   return nad_tpcbox_tpcbox(&tmp, box);
@@ -479,14 +479,14 @@ nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_tpointcloud_tpointcloud()
  */
 double
 nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPOINTCLOUD(temp1, DBL_MAX); VALIDATE_TPOINTCLOUD(temp2, DBL_MAX);
+  VALIDATE_TPOINTCLOUD(temp1, -1.0); VALIDATE_TPOINTCLOUD(temp2, -1.0);
 
   /* Patches are not point trajectories: they have no single-point
    * projection to a tgeompoint, so their nearest-approach distance stays
@@ -506,7 +506,7 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
   const Pcpoint *first2 =
     (const Pcpoint *) DatumGetPointer(temporal_start_value(temp2));
   if (! ensure_same_pcid_pcpoint(first1, first2))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project both values onto their point trajectories and return the
    * minimum of their synchronized distance, as the sibling spatiotemporal
@@ -518,7 +518,7 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
   {
     if (proj1) pfree(proj1);
     if (proj2) pfree(proj2);
-    return DBL_MAX;
+    return -1.0;
   }
   double result = nad_tgeo_tgeo(proj1, proj2, true);
   pfree(proj1); pfree(proj2);

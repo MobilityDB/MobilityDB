@@ -151,6 +151,7 @@ extern bool *lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo,
 
 extern void *lifting_result(void *result, int last_errno);
 extern int lifting_result_int(int result, int last_errno);
+extern double distance_result(double result, int last_errno);
 
 /*****************************************************************************/
 

@@ -1488,7 +1488,8 @@ temporal_similarity(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for temporal geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #Temporal_frechet_distance()
  */
 double
@@ -1497,7 +1498,7 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
   return temporal_similarity(temp1, temp2, FRECHET, spheroid);
 }
 
@@ -1507,7 +1508,8 @@ temporal_frechet_distance(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for temporal geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #Temporal_dyntimewarp_distance()
  */
 double
@@ -1516,7 +1518,7 @@ temporal_dyntimewarp_distance(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
   return temporal_similarity(temp1, temp2, DYNTIMEWARP, spheroid);
 }
 
@@ -1865,7 +1867,8 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for temporal geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #Temporal_hausdorff_distance()
  */
 double
@@ -1874,7 +1877,7 @@ temporal_hausdorff_distance(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
   double result;
   int count1, count2;
@@ -2780,7 +2783,8 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for temporal geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #Temporal_average_hausdorff_distance()
  */
 double
@@ -2789,7 +2793,7 @@ temporal_average_hausdorff_distance(const Temporal *temp1,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_temporal_temporal(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
   int count1, count2;
   const TInstant **instants1 = temporal_insts_p(temp1, &count1);
@@ -2853,7 +2857,8 @@ tinstarr_lcss_distance(const TInstant **instants1, int count1,
  * @param[in] epsilon Maximum distance for two instants to match
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for temporal geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
+ * @note A distance is never negative, so -1.0 states an error
  * @csqlfn #Temporal_lcss_distance()
  */
 double
@@ -2861,9 +2866,12 @@ temporal_lcss_distance(const Temporal *temp1, const Temporal *temp2,
   double epsilon, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_finite(epsilon))
-    return DBL_MAX;
-  if (epsilon < 0 || ! ensure_valid_temporal_temporal(temp1, temp2))
+  if (! ensure_finite(epsilon) ||
+      ! ensure_valid_temporal_temporal(temp1, temp2))
+    return -1.0;
+  /* No two instants match within a negative distance, so the values have no
+   * such distance, which is an answer */
+  if (epsilon < 0)
     return DBL_MAX;
 
   int count1, count2;

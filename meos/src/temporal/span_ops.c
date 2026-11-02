@@ -2650,14 +2650,14 @@ distance_span_span_double(const Span *s1, const Span *s2)
  * @brief Return the distance between a span and an integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
 distance_span_int(const Span *s, int i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s, INT_MAX);
+  VALIDATE_INTSPAN(s, -1);
   return DatumGetInt32(distance_span_value(s, Int32GetDatum(i)));
 }
 
@@ -2666,14 +2666,14 @@ distance_span_int(const Span *s, int i)
  * @brief Return the distance between a span and a big integer as a double
  * @param[in] s Span
  * @param[in] i Value
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int64
 distance_span_bigint(const Span *s, int64 i)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s, INT64_MAX);
+  VALIDATE_BIGINTSPAN(s, -1);
   return DatumGetInt64(distance_span_value(s, Int64GetDatum(i)));
 }
 
@@ -2682,16 +2682,16 @@ distance_span_bigint(const Span *s, int64 i)
  * @brief Return the distance between a span and a float
  * @param[in] s Span
  * @param[in] d Value
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 double
 distance_span_float(const Span *s, double d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s, DBL_MAX);
+  VALIDATE_FLOATSPAN(s, -1.0);
   if (! ensure_finite(d))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_span_value(s, Float8GetDatum(d)));
 }
 
@@ -2700,14 +2700,14 @@ distance_span_float(const Span *s, double d)
  * @brief Return the distance in days between a span and a date as a double
  * @param[in] s Span
  * @param[in] d Value
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_span_value() #Distance_value_span()
  */
 int
 distance_span_date(const Span *s, DateADT d)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s, INT_MAX);
+  VALIDATE_DATESPAN(s, -1);
   return DatumGetInt32(distance_span_value(s, DateADTGetDatum(d)));
 }
 
@@ -2734,14 +2734,14 @@ distance_span_timestamptz(const Span *s, TimestampTz t)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two integer spans
  * @param[in] s1,s2 Spans
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_span_span()
  */
 int
 distance_intspan_intspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_INTSPAN(s1, INT_MAX); VALIDATE_INTSPAN(s2, INT_MAX);
+  VALIDATE_INTSPAN(s1, -1); VALIDATE_INTSPAN(s2, -1);
   return DatumGetInt32(distance_span_span(s1, s2));
 }
 
@@ -2749,14 +2749,14 @@ distance_intspan_intspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two big integer spans
  * @param[in] s1,s2 Spans
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Distance_span_span()
  */
 int64
 distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_BIGINTSPAN(s1, INT64_MAX); VALIDATE_BIGINTSPAN(s2, INT64_MAX);
+  VALIDATE_BIGINTSPAN(s1, -1); VALIDATE_BIGINTSPAN(s2, -1);
   return DatumGetInt64(distance_span_span(s1, s2));
 }
 
@@ -2764,14 +2764,14 @@ distance_bigintspan_bigintspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two float spans
  * @param[in] s1,s2 Spans
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_span_span()
  */
 double
 distance_floatspan_floatspan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_FLOATSPAN(s1, DBL_MAX); VALIDATE_FLOATSPAN(s2, DBL_MAX);
+  VALIDATE_FLOATSPAN(s1, -1.0); VALIDATE_FLOATSPAN(s2, -1.0);
   return DatumGetFloat8(distance_span_span(s1, s2));
 }
 
@@ -2779,14 +2779,14 @@ distance_floatspan_floatspan(const Span *s1, const Span *s2)
  * @ingroup meos_setspan_dist
  * @brief Return the distance between two date spans
  * @param[in] s1,s2 Spans
- * @errval INT_MAX
+ * @errval -1
  * @csqlfn #Distance_span_span()
  */
 int
 distance_datespan_datespan(const Span *s1, const Span *s2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_DATESPAN(s1, INT_MAX); VALIDATE_DATESPAN(s2, INT_MAX);
+  VALIDATE_DATESPAN(s1, -1); VALIDATE_DATESPAN(s2, -1);
   return DatumGetInt32(distance_span_span(s1, s2));
 }
 

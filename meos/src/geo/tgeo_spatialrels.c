@@ -1776,7 +1776,10 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * time, and this rejects those among them that never make contact. #ea_touches_tcbuffer_geo carries the same reject with the
    * same tolerance, and the guards above have already restricted this to
    * planar 2D operands, which is what the nearest approach requires. */
-  if (nad_tgeo_geo(temp, gs, true) > 1e-6)
+  double nad = nad_tgeo_geo(temp, gs, true);
+  if (nad < 0.0)
+    return -1;
+  if (nad > 1e-6)
     return 0;
 
   /* EVER */
@@ -2148,7 +2151,10 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * dimensions. */
   if (ever && dist > 0.0 && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
-    return (nad_tgeo_geo(temp, gs, true) <= dist) ? 1 : 0;
+  {
+    double nad = nad_tgeo_geo(temp, gs, true);
+    return nad < 0.0 ? -1 : (nad <= dist ? 1 : 0);
+  }
 
   /* Native fast path for a temporal geometry point with linear interpolation
    * against a non-point geometry the clip engine supports (planar, 2D,

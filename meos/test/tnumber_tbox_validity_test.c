@@ -68,13 +68,13 @@ call(enum fn f, const Temporal *temp, const TBox *box)
   switch (f)
   {
     case FN_TINT:
-      errval = nad_tint_tbox(temp, box) == INT_MAX;
+      errval = nad_tint_tbox(temp, box) == -1;
       break;
     case FN_TBIGINT:
-      errval = nad_tbigint_tbox(temp, box) == INT64_MAX;
+      errval = nad_tbigint_tbox(temp, box) == -1;
       break;
     default:
-      errval = nad_tfloat_tbox(temp, box) == DBL_MAX;
+      errval = nad_tfloat_tbox(temp, box) == -1.0;
   }
   bool error = meos_errno() != 0;
   if (! error)

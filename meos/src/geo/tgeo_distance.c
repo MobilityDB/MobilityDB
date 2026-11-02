@@ -3482,6 +3482,7 @@ tgeoseq_nad(const TSequence *seq, const DistGeom *g, DistNad *n)
 /**
  * @brief Nearest approach distance between a planar temporal point
  * and a geometry; returns false when the geometry does not decompose
+ * @note The distance is -1.0 where reading far coordinates raises an error
  */
 static bool
 nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
@@ -3503,12 +3504,12 @@ nad_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
     {
       if (t2)
         pfree(t2);
-      *result = DBL_MAX;
+      *result = -1.0;
       return true;
     }
     bool found = nad_tpoint_geo_analytic(t2, g2, result);
     pfree(t2); pfree(g2);
-    if (found)
+    if (found && *result >= 0.0)
       *result /= GEO_FAR_SCALE;
     return found;
   }
@@ -3919,17 +3920,20 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
  * @csqlfn #NAD_tgeo_geo() #NAD_geo_tgeo()
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  VALIDATE_TGEO(temp, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
-      ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
-      gserialized_is_empty(gs))
+      ! ensure_same_geodetic_tspatial_geo(temp, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
   /* Planar 2D temporal point: the analytic engine at radius 0,
@@ -3943,7 +3947,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
       /* A distance of finite operands can exceed the largest double
        * (#ensure_finite_result) */
       if (! ensure_finite_result(result))
-        return DBL_MAX;
+        return -1.0;
       return result;
     }
   }
@@ -3966,16 +3970,21 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geodetic boxes only, as #stbox_area reads it
  * @csqlfn #NAD_stbox_geo() #NAD_geo_stbox()
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 nad_stbox_geo(const STBox *box, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(box, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
-  if (! ensure_valid_stbox_geo(box, gs) ||
-      ! ensure_same_spatial_dimensionality_stbox_geo(box, gs))
+  VALIDATE_NOT_NULL(box, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
+  if (! ensure_valid_stbox_geo(box, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
+  if (! ensure_same_spatial_dimensionality_stbox_geo(box, gs))
+    return -1.0;
 
   Datum geo = PointerGetDatum(stbox_geo(box));
   double result = DatumGetFloat8(datum_geo_distance(geo, PointerGetDatum(gs),
@@ -4027,7 +4036,7 @@ stbox_nad(const STBox *box1, const STBox *box2, bool spheroid)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_stbox_stbox()
  */
 double
@@ -4038,7 +4047,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid)
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags) ||
       ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
-    return DBL_MAX;
+    return -1.0;
   return stbox_nad(box1, box2, spheroid);
 }
 
@@ -4053,17 +4062,17 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #NAD_tgeo_stbox() #NAD_stbox_tgeo()
  */
 double
 nad_tgeo_stbox(const Temporal *temp, const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp, DBL_MAX);  VALIDATE_NOT_NULL(box, DBL_MAX);
+  VALIDATE_TGEO(temp, -1.0);  VALIDATE_NOT_NULL(box, -1.0);
   if (! ensure_valid_tgeo_stbox(temp, box) ||
       ! ensure_same_spatial_dimensionality(temp->flags, box->flags))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project the temporal geo to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -4375,17 +4384,17 @@ ea_dwithin_tpoint_tpoint_exact(const Temporal *temp1, const Temporal *temp2,
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TGEO(temp1, DBL_MAX); VALIDATE_TGEO(temp2, DBL_MAX);
+  VALIDATE_TGEO(temp1, -1.0); VALIDATE_TGEO(temp2, -1.0);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags) ||
       ! ensure_same_dimensionality(temp1->flags, temp2->flags))
-    return DBL_MAX;
+    return -1.0;
 
   /* Two planar linearly moving points: the nearest approach over continuous
    * time, the double nearest its exact value */
@@ -4411,13 +4420,23 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
       return d;
   }
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_tgeo_tgeo(temp1, temp2, spheroid);
-  if (dist == NULL)
-    return DBL_MAX;
-
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -4681,7 +4700,7 @@ stbox_spatial_dist(const STBox *box1, const STBox *box2, bool spheroid)
  * @brief Return the spatial-only minimum distance between two spatiotemporal
  * boxes, ignoring the time dimension entirely
  * @param[in] box1,box2 Spatiotemporal boxes
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 stbox_spatial_distance(const STBox *box1, const STBox *box2)
@@ -4690,7 +4709,7 @@ stbox_spatial_distance(const STBox *box1, const STBox *box2)
   if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
       ! ensure_has_X(T_STBOX, box2->flags))
-    return DBL_MAX;
+    return -1.0;
   return stbox_spatial_dist(box1, box2, true);
 }
 
@@ -4952,19 +4971,20 @@ tspatialarr_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
  * @return Minimum spatial distance; DBL_MAX on validation failure or on
  *   any empty input array.
  * @csqlfn #Mindistance_tgeoarr_tgeoarr()
+ * @errval -1.0
  */
 double
 mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(arr1, DBL_MAX); VALIDATE_NOT_NULL(arr2, DBL_MAX);
+  VALIDATE_NOT_NULL(arr1, -1.0); VALIDATE_NOT_NULL(arr2, -1.0);
   if (count1 <= 0 || count2 <= 0)
     return DBL_MAX;
   for (int i = 0; i < count1; i++)
-    VALIDATE_TGEO(arr1[i], DBL_MAX);
+    VALIDATE_TGEO(arr1[i], -1.0);
   for (int j = 0; j < count2; j++)
-    VALIDATE_TGEO(arr2[j], DBL_MAX);
+    VALIDATE_TGEO(arr2[j], -1.0);
 
   /* Soundness gate: all inputs share SRID, dimensionality, geodetic flag */
   int32_t srid = tspatial_srid(arr1[0]);
@@ -4973,12 +4993,12 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
     if (! ensure_same_srid(tspatial_srid(arr1[i]), srid) ||
         ! ensure_same_dimensionality(arr1[i]->flags, flags) ||
         ! ensure_same_geodetic(arr1[i]->flags, flags))
-      return DBL_MAX;
+      return -1.0;
   for (int j = 0; j < count2; j++)
     if (! ensure_same_srid(tspatial_srid(arr2[j]), srid) ||
         ! ensure_same_dimensionality(arr2[j]->flags, flags) ||
         ! ensure_same_geodetic(arr2[j]->flags, flags))
-      return DBL_MAX;
+      return -1.0;
 
   /* Every pair with the distance between its boxes, nearest first */
   size_t npairs = count1;
@@ -5042,6 +5062,12 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
         (MEOS_FLAGS_GET_Z(flags) ?
           geom_distance3d(traj1[i], traj2[j]) :
           geom_distance2d(traj1[i], traj2[j]));
+    }
+    /* A pair whose distance raises an error makes the answer an error */
+    if (d < 0.0)
+    {
+      running_min = -1.0;
+      break;
     }
     if (d < running_min)
       running_min = d;
