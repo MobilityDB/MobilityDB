@@ -24,6 +24,10 @@ boxtypes:
     posgroup:  mobilitydb_geo_bbox_pos
     posfile:   mobilitydb/src/geo/tspatial_posops.c
     posreference: true
+    # box-by-box wrappers (templates/boxbox.c.tmpl, topological operations in
+    # boxtopops.yaml, position ones over `posaxes`), the region of `file`, their
+    # groups `group`_topo and `group`_pos
+    boxbox:    {file: mobilitydb/src/geo/stbox.c, group: mobilitydb_geo_box}
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl): one per
     # pair [left, right, kernel], the kernel naming the order of its arguments,
     # a side marked `free` released after the call; `nadearth` adds the earth
@@ -297,6 +301,8 @@ boxtypes:
     posaxes:   [x, y, z, t]
     posgroup:  mobilitydb_pointcloud_box_pos
     posreference: true
+    # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them
+    boxbox:    {file: mobilitydb/src/pointcloud/tpcbox.c, group: mobilitydb_pointcloud_box}
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl)
     nadgroup:  mobilitydb_pointcloud_temp
     nadfile:   mobilitydb/src/pointcloud/tpc_boxops.c
@@ -359,6 +365,15 @@ boxtypes:
     posgroup:  mobilitydb_temporal_bbox_pos
     posfile:   mobilitydb/src/temporal/temporal_posops.c
     posreference: true
+    # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them,
+    # then per span side those of the side and the box in either order, over the
+    # topological operations and the position ones of the side's `posaxes`
+    boxbox:
+      file:  mobilitydb/src/temporal/tbox.c
+      group: mobilitydb_box
+      sides:
+        - {box: numspan, c: Span, var: s, getarg: PG_GETARG_SPAN_P, desc: the box of a number span, posaxes: [x]}
+        - {box: tstzspan, c: Span, var: s, getarg: PG_GETARG_SPAN_P, desc: the box of a timestamptz span, posaxes: [t]}
     # nearest approach distance wrappers (templates/nadops.c.tmpl): the base value
     # by the temporal value both ways (nadbase), the box's directions and, per
     # number type of the value span, its span directions

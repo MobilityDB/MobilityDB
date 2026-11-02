@@ -1,0 +1,25 @@
+/*****************************************************************************
+ * Topological operators
+ *****************************************************************************/
+
+/*****************************************************************************
+ * Position operators
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {OP}_{LEFT}_{RIGHT}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({OP}_{LEFT}_{RIGHT});
+/**
+ * @ingroup {GROUP}
+ * @brief Return true if {BRIEF}
+ * @sqlfn {SQLFN}
+ * @sqlop @p {SQLOP}
+ */
+Datum
+{OP}_{LEFT}_{RIGHT}(PG_FUNCTION_ARGS)
+{
+  {LC} *{LV} = {LGETARG}(0);
+  {RC} *{RV} = {RGETARG}(1);
+  PG_RETURN_BOOL({OPLC}_{LEFT}_{RIGHT}({LV}, {RV}));
+}
+
+/*****************************************************************************/
