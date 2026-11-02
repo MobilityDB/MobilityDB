@@ -639,6 +639,91 @@ def bootstrap_posops_c(filetext: str, bt: dict, rendered: str) -> str:
             + filetext[stop:].lstrip("\n"))
 
 
+# --- C box-by-box operators (box-type axis) -------------------------------
+# The topological and position operator wrappers whose operands are two boxes of a
+# box type, or a box and a span side its `boxbox` stanza lists (a number span by a
+# temporal box), are generated into the region between these markers in the box's
+# own file, each calling the kernel of its operation and operand pair. The
+# topological operations are those of manifest.d/boxtopops.yaml, the position ones
+# those of manifest.d/boxposops.yaml on the axes of the box (`posaxes`) or of the
+# side (its own `posaxes`), as #render_posops_c selects them.
+def _boxbox_c_markers(box: str):
+    """BEGIN/END markers of a box type's box-by-box wrappers, as #_posops_c_markers
+    marks its position wrappers."""
+    begin = (f"/* GENERATED-BOXBOX-BEGIN {box} — tools/codegen/inherited/generate.py "
+             "from templates/boxbox.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxtypes.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXBOX-END {box} */\n"
+
+
+def _boxbox_groups(bt: dict) -> list:
+    """The operand pairs of a box type's box-by-box wrappers, grouped as the wrappers
+    of an operation follow each other, as #_posops_directions orders the directions
+    of the position wrappers: [(left, right)] for the box with itself, then per span
+    side of its `boxbox` stanza [(side, box), (box, side)], and with each group the
+    axes of its position operations."""
+    box = {"box": bt["box"], "c": bt["boxc"], "getarg": bt["getarg"]}
+    groups = [([({**box, "var": "box1", "desc": f"the first {bt['boxdesc']}"},
+                 {**box, "var": "box2", "desc": "the second one"})],
+               bt.get("posaxes", []))]
+    one = {**box, "var": "box", "desc": f"a {bt['boxdesc']}"}
+    for side in bt["boxbox"].get("sides", []):
+        groups.append(([(side, one), (one, side)], side["posaxes"]))
+    return groups
+
+
+def _boxbox_brief(o: dict, left: dict, right: dict, bt: dict) -> str:
+    """What a wrapper's brief states after "Return true if": the relation of its
+    operation, a symmetric one stated of two boxes of the type together."""
+    if not o.get("sym"):
+        return f"{left['desc']} {o['rel']} {right['desc']}"
+    if left["box"] == right["box"]:
+        return f"two {bt['boxdescpl']} {o['rel']}"
+    return f"{left['desc']} and {right['desc']} {o['rel']}"
+
+
+def render_boxbox_c(bt: dict, topops: list, posops: list) -> str:
+    """The box-by-box wrappers of a box type: the topological banner and one wrapper
+    per topological operation and operand pair, then the position banner and one per
+    position operation on the axes the pair shares, its first operand the box when
+    both are boxes, else the span side."""
+    topo_banner, pos_banner, wrapper, trailer = \
+        read_template("boxbox.c.tmpl").split("\n\n")
+    group = bt["boxbox"]["group"]
+    sqlclass = bt.get("sqlclass", bt["box"])
+
+    def wrap(o: dict, left: dict, right: dict, kind: str) -> str:
+        vals = {"OP": o["op"], "OPLC": o["op"].lower(), "LEFT": left["box"],
+                "RIGHT": right["box"], "GROUP": f"{group}_{kind}",
+                "BRIEF": _boxbox_brief(o, left, right, bt), "SQLOP": o["sqlop"],
+                "SQLFN": f"{sqlclass}{o['op']}()", "LC": left["c"], "LV": left["var"],
+                "LGETARG": left["getarg"], "RC": right["c"], "RV": right["var"],
+                "RGETARG": right["getarg"]}
+        out = wrapper
+        for k, v in vals.items():
+            out = out.replace("{" + k + "}", v)
+        return _wrap_doc(out)
+
+    groups = _boxbox_groups(bt)
+    out = [topo_banner]
+    out += [wrap(o, l, r, "topo") for pairs, _ in groups for o in topops
+            for l, r in pairs]
+    out.append(pos_banner)
+    out += [wrap(o, l, r, "pos") for pairs, axes in groups for o in posops
+            if o["axis"] in axes for l, r in pairs]
+    out.append(trailer)
+    return "\n\n".join(out)
+
+
+def splice_boxbox_c(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's box-by-box markers with
+    `rendered`, as #splice_posops_c replaces its region."""
+    begin, end = _boxbox_c_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 # --- C nadops (box-type axis) --------------------------------------------
 # The nearest approach distance wrappers of a box type are generated into the
 # region between these markers in `nadfile`: the base value by the temporal value
@@ -5551,6 +5636,19 @@ def main() -> int:
         else:
             p.write_text(bootstrap_posops_c(text, bt, rendered))
             print(f"bootstrapped posops {bt['box']} -> {posfile(bt)}")
+
+    for bt in mf.get("boxtypes", []):
+        if not bt.get("boxbox"):
+            continue
+        path = bt["boxbox"]["file"]
+        p = ROOT / path
+        if args.check:
+            print(f"would splice boxbox {bt['box']} -> {path}")
+            continue
+        rendered = render_boxbox_c(bt, mf.get("boxtopops", []),
+                                   mf.get("boxposops", []))
+        p.write_text(splice_boxbox_c(p.read_text(), bt["box"], rendered))
+        print(f"spliced boxbox {bt['box']} -> {path}")
 
     for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]

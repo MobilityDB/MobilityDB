@@ -1,0 +1,13 @@
+# ---------------------------------------------------------------------------
+# Topological operations of the box-by-box wrapper generator (templates/boxbox.c.tmpl),
+# whose position operations are those of manifest.d/boxposops.yaml. One entry per
+# operation: its SQL operator and the relation its wrappers state, `sym` marking a
+# relation stated of both operands together (two boxes overlap). The kernel an
+# operation calls is <op>_<left>_<right> (contains_tbox_numspan), and its SQL name is
+# <sqlclass><Op> (tboxContains).
+boxtopops:
+  - {op: Contains,  sqlop: "@>",  rel: contains}
+  - {op: Contained, sqlop: "<@",  rel: is contained in}
+  - {op: Overlaps,  sqlop: "&&",  rel: overlap, sym: true}
+  - {op: Same,      sqlop: "~=",  rel: are equal in the common dimensions, sym: true}
+  - {op: Adjacent,  sqlop: "-|-", rel: are adjacent, sym: true}

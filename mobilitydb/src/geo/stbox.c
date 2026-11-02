@@ -1200,6 +1200,8 @@ Stbox_transform_pipeline(PG_FUNCTION_ARGS)
   PG_RETURN_STBOX_P(result);
 }
 
+/* GENERATED-BOXBOX-BEGIN stbox — tools/codegen/inherited/generate.py from templates/boxbox.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxtypes.yaml and re-run. */
 /*****************************************************************************
  * Topological operators
  *****************************************************************************/
@@ -1224,8 +1226,8 @@ PGDLLEXPORT Datum Contained_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Contained_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_topo
- * @brief Return true if the first spatiotemporal box is contained in the
- * second one
+ * @brief Return true if the first spatiotemporal box is contained in the second
+ * one
  * @sqlfn stboxContained()
  * @sqlop @p <@
  */
@@ -1345,7 +1347,7 @@ PGDLLEXPORT Datum Overright_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overright_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first spatio temporal box does not extend to the
+ * @brief Return true if the first spatiotemporal box does not extend to the
  * left of the second one
  * @sqlfn stboxOverright()
  * @sqlop @p &>
@@ -1362,8 +1364,7 @@ PGDLLEXPORT Datum Below_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Below_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first spatiotemporal box is below the second
- * one
+ * @brief Return true if the first spatiotemporal box is below the second one
  * @sqlfn stboxBelow()
  * @sqlop @p <<|
  */
@@ -1379,8 +1380,8 @@ PGDLLEXPORT Datum Overbelow_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbelow_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first spatiotemporal box does not extend above of
- * the second one
+ * @brief Return true if the first spatiotemporal box does not extend above the
+ * second one
  * @sqlfn stboxOverbelow()
  * @sqlop @p &<|
  */
@@ -1396,8 +1397,7 @@ PGDLLEXPORT Datum Above_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Above_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first spatiotemporal box is above of the second
- * one
+ * @brief Return true if the first spatiotemporal box is above the second one
  * @sqlfn stboxAbove()
  * @sqlop @p |>>
  */
@@ -1413,8 +1413,8 @@ PGDLLEXPORT Datum Overabove_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overabove_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first spatiotemporal box does not extend below of
- * the second one
+ * @brief Return true if the first spatiotemporal box does not extend below the
+ * second one
  * @sqlfn stboxOverabove()
  * @sqlop @p |&>
  */
@@ -1514,7 +1514,8 @@ PGDLLEXPORT Datum Overbefore_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overbefore_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first temporal box is not after the second one
+ * @brief Return true if the first spatiotemporal box is not after the second
+ * one
  * @sqlfn stboxOverbefore()
  * @sqlop @p &<#
  */
@@ -1546,7 +1547,8 @@ PGDLLEXPORT Datum Overafter_stbox_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Overafter_stbox_stbox);
 /**
  * @ingroup mobilitydb_geo_box_pos
- * @brief Return true if the first temporal box is not before the second one
+ * @brief Return true if the first spatiotemporal box is not before the second
+ * one
  * @sqlfn stboxOverafter()
  * @sqlop @p #&>
  */
@@ -1557,6 +1559,9 @@ Overafter_stbox_stbox(PG_FUNCTION_ARGS)
   STBox *box2 = PG_GETARG_STBOX_P(1);
   PG_RETURN_BOOL(overafter_stbox_stbox(box1, box2));
 }
+
+/*****************************************************************************/
+/* GENERATED-BOXBOX-END stbox */
 
 /*****************************************************************************
  * Set operators
