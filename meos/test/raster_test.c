@@ -1138,7 +1138,7 @@ int main(void)
     ! bandstats_stddev(&none, &field) && ! bandstats_min(&none, &field) &&
     ! bandstats_max(&none, &field));
   meos_errno_reset();
-  assert(bandstats_count(NULL) == INT64_MAX);
+  assert(bandstats_count(NULL) == -1);
   assert(! bandstats_mean(NULL, &field) && ! bandstats_mean(st, NULL));
   assert(meos_errno() != 0);
   free(st);

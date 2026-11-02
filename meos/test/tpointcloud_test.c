@@ -404,7 +404,7 @@ int main(void)
   assert(tpcpatch_start_npoints(tpcpoint) == INT_MAX);
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(tpcpatch_npoints(tpcpoint) == INT64_MAX);
+  assert(tpcpatch_npoints(tpcpoint) == -1);
   assert(meos_errno() != 0);
   meos_errno_reset();
 

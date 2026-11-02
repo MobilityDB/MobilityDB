@@ -2512,14 +2512,14 @@ raster_summary_stats(const Raster *rast, int band, bool exclude_nodata)
  * #raster_summary_stats answers, as a query reads them in every engine, by a
  * function rather than by the name of a field
  * @param[in] stats Statistics, as #raster_summary_stats answers them
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Summarystats_count()
  */
 int64
 bandstats_count(const BandStats *stats)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(stats, INT64_MAX);
+  VALIDATE_NOT_NULL(stats, -1);
   return (int64) stats->count;
 }
 /**

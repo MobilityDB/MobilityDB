@@ -2578,13 +2578,13 @@ rtree_num_entries(const RTree *rtree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] rtree The RTree
- * @errval INT64_MAX
+ * @errval -1
  */
 int64
 rtree_mem_size(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree, INT64_MAX);
+  VALIDATE_NOT_NULL(rtree, -1);
   int64 bytes = (int64) (sizeof(RTree) + rtree->bboxsize);
   if (rtree->root)
   {

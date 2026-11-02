@@ -1177,7 +1177,9 @@ s2cell_cube_centre(S2CellId cell, uint32_t level, int64 centre[3])
  * four faces between them, going around the cube along one axis of the faces,
  * so the distance is the shortest of those four paths.
  * @param[in] origin,dest S2 cells
- * @return The distance, -1 when the levels differ
+ * @return The distance
+ * @errval -1
+ * @note A distance is never negative, so -1 states an error
  */
 int64
 s2cell_grid_distance(S2CellId origin, S2CellId dest)
