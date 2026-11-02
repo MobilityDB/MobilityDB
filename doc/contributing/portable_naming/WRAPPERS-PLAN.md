@@ -348,6 +348,10 @@ public functions (`timestamptz_to_span`, `tint_in`, `contains_set_bigint`, ...),
 of a generic kernel, and their family's `CMakeLists.txt` lists them under `if(MEOS)`. The
 coverage reason for that list is the one the `#if MEOS` gates of `meos/src` had, and a function a
 binding or a wrapper calls is never MEOS-only.
+The smaller library of the extension that the list buys does not outweigh the uniformity of one
+set of public functions in every build (CONFIRMED BY THE OWNER 2026-11-02); the bindings link
+`libmeos`, which compiles these functions in either case. A file stays MEOS-only only where MEOS and
+the extension differ by environment: `lifting_meos.c`, `tspatial_transform_meos.c` and `ways_meos.c`.
 
 **The rule.** Every public function is compiled in both builds. A wrapper whose SQL signature is
 type-specific calls the typed public function, as `tbox(integer)` calls `int_to_tbox` (decided
