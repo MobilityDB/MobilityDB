@@ -59,14 +59,17 @@ DECIDED BY THE OWNER 2026-11-02: every text output of MEOS gives its size throug
 writers': the size counts the terminator, the public function requires `size_out`
 (`VALIDATE_NOT_NULL(size_out, NULL)`, documented `@param[out]`, which the catalog carries as
 `shape.outParams`), and the internal builder takes NULL for a size nobody reads, as
-`datum_as_wkb` does. The size comes from where the string is built, never from a scan of the
-result, which would only move the binding's scan into MEOS. No SQL function changes, and the
+`datum_as_wkb` does. The size comes from where the string is built, since a scan of the result
+would only move the binding's scan into MEOS: the count a builder writes, the size of a WKB, a
+stringbuffer, an lwvarlena or a text header, json-c's length. A short output whose builder states
+no length, a base value written by a PostgreSQL output function, a box, a name, a cell token or
+a version, is measured once in MEOS (`cstring_size`). No SQL function changes, and the
 object layer of each binding keeps its surface: the wrapper consumes the size and answers the
 string alone.
 
 | Task | Repository | Change | State |
 |---|---|---|---|
-| IO-S1 | MobilityDB | the 118 public `char *` returns without a size take `size_t *size_out` (`temporal_as_mfjson`, the `*_out`, `*_as_text`, `*_as_ewkt`, `*_as_geojson`, `*_as_geopose` of every family, the version and style accessors); the internal builders `stringarr_to_string`, `set_out`, `span_out`, `spanset_out`, `temporal_out`, `tinstant_out`, `tsequence_out`, `tsequenceset_out` and each family's `*_wkt_out` hand the length out of what they build; the PostgreSQL wrappers, the examples and `meos/test` pass the size the function now asks for; the PostgreSQL mirrors in `pgtypes` (`pg_*_out`) and the vendored `pc_api.h` keep their signatures | branch `meos/text-outputs-size` off `38f547bf85` |
+| IO-S1 | MobilityDB | the 118 public `char *` returns without a size take `size_t *size_out` (`temporal_as_mfjson`, the `*_out`, `*_as_text`, `*_as_ewkt`, `*_as_geojson`, `*_as_geopose` of every family, the version and style accessors); the internal builders `stringarr_to_string`, `set_out`, `span_out`, `spanset_out`, `temporal_out`, `tinstant_out`, `tsequence_out`, `tsequenceset_out` and each family's `*_wkt_out` hand the length out of what they build; the PostgreSQL wrappers, the examples and `meos/test` pass the size the function now asks for; the PostgreSQL mirrors in `pgtypes` (`pg_*_out`) and the vendored `pc_api.h` keep their signatures | branch `meos/text-outputs-size` (`03db3a7743`) off `7d03ec7ad2`: `meos/test/text_size_test.c` finds the size of 84 outputs, one of each kind, to be the length plus one, and a null `size_out` refused with `MEOS_ERR_INVALID_ARG`; the 127 other `meos/test` programs print what they print on master, the wall clock of `timestamp_test` aside |
 | IO-S2 | MEOS-API | every public `char *` return lists a `size_t *` in `shape.outParams`, a catalog test refusing one that does not | ready: IO-S1 |
 | IO-S3 | PyMEOS-CFFI | a `char *` return whose `shape.outParams` holds a `size_t *` read through `_ffi.unpack(result, size_out[0] - 1)` and freed, the `str` alone answered | ready: IO-S2 |
 | IO-S4 | GoMEOS | the same return read through `C.GoStringN` | ready: IO-S2 |
