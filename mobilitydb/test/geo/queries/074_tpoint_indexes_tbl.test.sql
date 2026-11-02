@@ -442,3 +442,57 @@ DROP FUNCTION gist_bound_inc_disagreements();
 DROP TABLE tbl_gist_bound_inc;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- An instant [t, t] is after a span [a, t): the bound they share belongs to
+-- the instant only. A node of a space-partitioning index whose values reach t
+-- and no further therefore holds an answer. Every sequence below ends on the
+-- same timestamp, so every centroid ends there and so does every node below
+-- one; the instants sitting on that bound are the answers of a query excluding
+-- it. The answer of each operator class is compared with the sequential scan.
+-------------------------------------------------------------------------------
+
+CREATE FUNCTION spgist_shared_bound_disagreements(opclass text)
+RETURNS bigint AS $$
+DECLARE scan int; s bigint; i bigint; bad bigint := 0;
+  t timestamptz := timestamptz '2001-01-01';
+BEGIN
+  DROP TABLE IF EXISTS tbl_spgist_shared_bound;
+  CREATE TABLE tbl_spgist_shared_bound AS
+    SELECT k, CASE WHEN k % 10 = 0
+      THEN tgeompoint(format('Point(%s %s)@%s', k % 89, k % 83,
+        t + interval '100 s'))
+      ELSE tgeompoint(format('[Point(%s %s)@%s, Point(%s %s)@%s]', k % 89,
+        k % 83, t + (k % 97) * interval '1 s', k % 83, k % 89,
+        t + interval '100 s')) END AS temp
+    FROM generate_series(1, 5000) AS k;
+  EXECUTE format('CREATE INDEX tbl_spgist_shared_bound_idx ON '
+    'tbl_spgist_shared_bound USING spgist(temp %s)', opclass);
+  ANALYZE tbl_spgist_shared_bound;
+  FOR scan IN 0..1 LOOP
+    IF scan = 0 THEN
+      SET LOCAL enable_seqscan = on;
+      SET LOCAL enable_bitmapscan = off;
+      SET LOCAL enable_indexscan = off;
+    ELSE
+      SET LOCAL enable_seqscan = off;
+      SET LOCAL enable_bitmapscan = on;
+      SET LOCAL enable_indexscan = on;
+    END IF;
+    SELECT COUNT(*) INTO i FROM tbl_spgist_shared_bound WHERE temp #>>
+      span(t + interval '95 s', t + interval '100 s', true, false);
+    IF scan = 0 THEN s := i; ELSE bad := s - i; END IF;
+  END LOOP;
+  DROP TABLE tbl_spgist_shared_bound;
+  RETURN bad;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT spgist_shared_bound_disagreements('tgeompoint_quadtree_ops')
+  AS quadtree_answers_the_index_misses;
+SELECT spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
+  AS kdtree_answers_the_index_misses;
+
+DROP FUNCTION spgist_shared_bound_disagreements(text);
+
+-------------------------------------------------------------------------------

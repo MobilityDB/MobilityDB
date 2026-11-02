@@ -34,14 +34,16 @@
  * (quad-tree and k-d tree), i.e., sptree_create_*, sptree_insert and
  * sptree_search, against an exact brute-force oracle.
  *
- * For the integer span, float span and temporal box bounding box types, and
- * for both the quad-tree and the k-d tree kinds, a set of random boxes is
- * inserted and the overlaps, contains and contained-by searches are compared
- * with the exact set of boxes satisfying the operator. Two properties are
- * asserted per configuration and operator:
+ * For the five span types, the temporal box, the spatiotemporal box with and
+ * without Z and the point cloud box, and for both the quad-tree and the k-d
+ * tree kinds, a set of boxes is inserted and every search operation the box
+ * type answers is compared with the exact set of boxes satisfying the
+ * operator. Two properties are asserted per configuration and operator:
  * (i)  no false negatives: every box satisfying the operator is a candidate;
  * (ii) no false positives: every candidate satisfies the operator.
- * What the nearest-neighbour cursor refuses to open on is asserted separately.
+ * Instants sharing a bound the query excludes, the multi-entry indexes and the
+ * nearest-neighbour cursor are asserted in both kinds of tree, and what the
+ * cursor refuses to open on separately.
  *
  * The program can be built as follows
  * @code
@@ -522,13 +524,13 @@ make_wiggly_tfloat(int seed, char *buf, size_t bufsize)
 }
 
 static void
-test_mest(void)
+test_mest(SPTreeKind kind, const char *kindname)
 {
   char buf[MAX_LEN_TRIP];
   Temporal **trips = malloc(sizeof(Temporal *) * NUM_TRIPS);
-  SPTree *single = sptree_create_tbox(SPTREE_QUADTREE);
-  SPTree *mest = sptree_create_tbox(SPTREE_QUADTREE);
-  SPTree *deg = sptree_create_tbox(SPTREE_QUADTREE);
+  SPTree *single = sptree_create_tbox(kind);
+  SPTree *mest = sptree_create_tbox(kind);
+  SPTree *deg = sptree_create_tbox(kind);
   for (int i = 0; i < NUM_TRIPS; i++)
   {
     trips[i] = make_wiggly_tfloat(i, buf, sizeof(buf));
@@ -574,8 +576,8 @@ test_mest(void)
     deg_seen[id]++;
   }
 
-  printf("MEST SPTree (tfloat, %d wiggly values, maxboxes=%d):\n",
-    NUM_TRIPS, MAX_BOXES);
+  printf("MEST SPTree %s (tfloat, %d wiggly values, maxboxes=%d):\n",
+    kindname, NUM_TRIPS, MAX_BOXES);
 
   /* (i) No false negatives against the exact per-segment oracle: a value is a
    * true candidate iff one of its split boxes overlaps one of the query's
@@ -663,13 +665,13 @@ make_wiggly_trip(int seed, char *buf, size_t bufsize)
 }
 
 static void
-test_stbox_mest(void)
+test_stbox_mest(SPTreeKind kind, const char *kindname)
 {
   char buf[MAX_LEN_TRIP];
   Temporal **trips = malloc(sizeof(Temporal *) * NUM_TRIPS);
-  SPTree *single = sptree_create_stbox(SPTREE_QUADTREE);
-  SPTree *mest = sptree_create_stbox(SPTREE_QUADTREE);
-  SPTree *deg = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *single = sptree_create_stbox(kind);
+  SPTree *mest = sptree_create_stbox(kind);
+  SPTree *deg = sptree_create_stbox(kind);
   for (int i = 0; i < NUM_TRIPS; i++)
   {
     trips[i] = make_wiggly_trip(i, buf, sizeof(buf));
@@ -715,8 +717,8 @@ test_stbox_mest(void)
     deg_seen[id]++;
   }
 
-  printf("MEST SPTree (tgeompoint, %d wiggly trips, maxboxes=%d):\n",
-    NUM_TRIPS, MAX_BOXES);
+  printf("MEST SPTree %s (tgeompoint, %d wiggly trips, maxboxes=%d):\n",
+    kindname, NUM_TRIPS, MAX_BOXES);
 
   int qn;
   STBox *qboxes = tgeo_split_n_stboxes(query, MAX_BOXES, &qn);
@@ -883,11 +885,11 @@ check_metric(const char *label, const int64 *cur_id, const double *cur_dist,
 }
 
 static void
-test_nn_floatspan(void)
+test_nn_floatspan(SPTreeKind kind, const char *kindname)
 {
   double *lo = malloc(NUM_BOXES * sizeof(double));
   double *hi = malloc(NUM_BOXES * sizeof(double));
-  SPTree *sptree = sptree_create_floatspan(SPTREE_QUADTREE);
+  SPTree *sptree = sptree_create_floatspan(kind);
   for (int i = 0; i < NUM_BOXES; i++)
   {
     lo[i] = random_int(-10000, 10000) / 10.0;
@@ -911,7 +913,8 @@ test_nn_floatspan(void)
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
 
-  printf("NN SPTree (float span, %d random spans):\n", NUM_BOXES);
+  printf("NN SPTree %s (float span, %d random spans):\n", kindname,
+    NUM_BOXES);
   check_structural("  ", sptree, query, ci, cd, seen, n);
   /* The span node distance uses distance_span_span, whose scale is not
    * replicated here; validate the ordering metric-robustly by checking the
@@ -929,14 +932,14 @@ test_nn_floatspan(void)
 }
 
 static void
-test_nn_tbox(void)
+test_nn_tbox(SPTreeKind kind, const char *kindname)
 {
   double *v = malloc(NUM_BOXES * sizeof(double));
   double *vh = malloc(NUM_BOXES * sizeof(double));
   /* A single shared time span makes every box overlap in time, so the distance
    * reduces to the value-dimension gap */
   Span *tspan = tstzspan_make(0, (TimestampTz) 1000000000, true, false);
-  SPTree *sptree = sptree_create_tbox(SPTREE_QUADTREE);
+  SPTree *sptree = sptree_create_tbox(kind);
   for (int i = 0; i < NUM_BOXES; i++)
   {
     v[i] = random_int(-10000, 10000) / 10.0;
@@ -963,7 +966,8 @@ test_nn_tbox(void)
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
 
-  printf("NN SPTree (temporal box, %d random boxes):\n", NUM_BOXES);
+  printf("NN SPTree %s (temporal box, %d random boxes):\n", kindname,
+    NUM_BOXES);
   check_structural("  ", sptree, query, ci, cd, seen, n);
   check_metric("  ", ci, cd, n, brute);
 
@@ -973,10 +977,10 @@ test_nn_tbox(void)
 }
 
 static void
-test_nn_stbox(void)
+test_nn_stbox(SPTreeKind kind, const char *kindname)
 {
   STBox **boxes = malloc(NUM_BOXES * sizeof(STBox *));
-  SPTree *sptree = sptree_create_stbox(SPTREE_QUADTREE);
+  SPTree *sptree = sptree_create_stbox(kind);
   for (int i = 0; i < NUM_BOXES; i++)
   {
     boxes[i] = random_stbox(200, 50);
@@ -991,7 +995,8 @@ test_nn_stbox(void)
   int n = drain(cursor, ci, cd, seen);
   sptree_nn_cursor_close(cursor);
 
-  printf("NN SPTree (spatiotemporal box, %d random boxes):\n", NUM_BOXES);
+  printf("NN SPTree %s (spatiotemporal box, %d random boxes):\n", kindname,
+    NUM_BOXES);
   check_structural("  ", sptree, query, ci, cd, seen, n);
 
   for (int i = 0; i < NUM_BOXES; i++)
@@ -1233,6 +1238,414 @@ test_reported_size(SPTreeKind kind, const char *kindname)
   return;
 }
 
+/*****************************************************************************
+ * Every search operation of every box type, in both kinds of tree
+ *
+ * The boxes are laid on an integer grid, so that equal bounds, shared bounds
+ * and boxes on either side of a query all occur, and a quarter of them hold
+ * their time dimension constant, so that a level splitting a dimension the
+ * data does not vary on loses rows. Each tree is queried with stored boxes,
+ * which are selective on the scale of the data, and every answer is compared
+ * with the predicate of the operation applied to every stored box.
+ *****************************************************************************/
+
+#define GRID_BOXES 1024
+#define GRID_QUERIES 96
+/* One second in microseconds */
+#define SEC 1000000
+
+typedef bool (*box_pred)(const void *, const void *);
+
+#define PRED(fn, T) \
+  static bool p_##fn(const void *a, const void *b) \
+  { return fn((const T *) a, (const T *) b); }
+
+PRED(overlaps_span_span, Span) PRED(contains_span_span, Span)
+PRED(contained_span_span, Span) PRED(same_span_span, Span)
+PRED(adjacent_span_span, Span) PRED(left_span_span, Span)
+PRED(overleft_span_span, Span) PRED(right_span_span, Span)
+PRED(overright_span_span, Span)
+
+PRED(overlaps_tbox_tbox, TBox) PRED(contains_tbox_tbox, TBox)
+PRED(contained_tbox_tbox, TBox) PRED(same_tbox_tbox, TBox)
+PRED(adjacent_tbox_tbox, TBox) PRED(left_tbox_tbox, TBox)
+PRED(overleft_tbox_tbox, TBox) PRED(right_tbox_tbox, TBox)
+PRED(overright_tbox_tbox, TBox) PRED(before_tbox_tbox, TBox)
+PRED(overbefore_tbox_tbox, TBox) PRED(after_tbox_tbox, TBox)
+PRED(overafter_tbox_tbox, TBox)
+
+PRED(overlaps_stbox_stbox, STBox) PRED(contains_stbox_stbox, STBox)
+PRED(contained_stbox_stbox, STBox) PRED(same_stbox_stbox, STBox)
+PRED(adjacent_stbox_stbox, STBox) PRED(left_stbox_stbox, STBox)
+PRED(overleft_stbox_stbox, STBox) PRED(right_stbox_stbox, STBox)
+PRED(overright_stbox_stbox, STBox) PRED(below_stbox_stbox, STBox)
+PRED(overbelow_stbox_stbox, STBox) PRED(above_stbox_stbox, STBox)
+PRED(overabove_stbox_stbox, STBox) PRED(front_stbox_stbox, STBox)
+PRED(overfront_stbox_stbox, STBox) PRED(back_stbox_stbox, STBox)
+PRED(overback_stbox_stbox, STBox) PRED(before_stbox_stbox, STBox)
+PRED(overbefore_stbox_stbox, STBox) PRED(after_stbox_stbox, STBox)
+PRED(overafter_stbox_stbox, STBox)
+
+PRED(overlaps_tpcbox_tpcbox, TPCBox) PRED(contains_tpcbox_tpcbox, TPCBox)
+PRED(contained_tpcbox_tpcbox, TPCBox) PRED(same_tpcbox_tpcbox, TPCBox)
+PRED(adjacent_tpcbox_tpcbox, TPCBox) PRED(left_tpcbox_tpcbox, TPCBox)
+PRED(overleft_tpcbox_tpcbox, TPCBox) PRED(right_tpcbox_tpcbox, TPCBox)
+PRED(overright_tpcbox_tpcbox, TPCBox) PRED(below_tpcbox_tpcbox, TPCBox)
+PRED(overbelow_tpcbox_tpcbox, TPCBox) PRED(above_tpcbox_tpcbox, TPCBox)
+PRED(overabove_tpcbox_tpcbox, TPCBox) PRED(before_tpcbox_tpcbox, TPCBox)
+PRED(overbefore_tpcbox_tpcbox, TPCBox) PRED(after_tpcbox_tpcbox, TPCBox)
+PRED(overafter_tpcbox_tpcbox, TPCBox)
+
+/* An operation and the predicate answering it */
+typedef struct
+{
+  IndexSearchOp op;
+  const char *name;
+  box_pred pred;
+} GridOp;
+
+#define SPAN_OPS(T) \
+  {INDEX_OVERLAPS, "overlaps", p_overlaps_##T##_##T}, \
+  {INDEX_CONTAINS, "contains", p_contains_##T##_##T}, \
+  {INDEX_CONTAINED_BY, "contained by", p_contained_##T##_##T}, \
+  {INDEX_SAME, "same", p_same_##T##_##T}, \
+  {INDEX_ADJACENT, "adjacent", p_adjacent_##T##_##T}
+
+#define X_OPS(T) \
+  {INDEX_LEFT, "left", p_left_##T##_##T}, \
+  {INDEX_OVERLEFT, "overleft", p_overleft_##T##_##T}, \
+  {INDEX_RIGHT, "right", p_right_##T##_##T}, \
+  {INDEX_OVERRIGHT, "overright", p_overright_##T##_##T}
+
+#define T_OPS(T) \
+  {INDEX_BEFORE, "before", p_before_##T##_##T}, \
+  {INDEX_OVERBEFORE, "overbefore", p_overbefore_##T##_##T}, \
+  {INDEX_AFTER, "after", p_after_##T##_##T}, \
+  {INDEX_OVERAFTER, "overafter", p_overafter_##T##_##T}
+
+#define Y_OPS(T) \
+  {INDEX_BELOW, "below", p_below_##T##_##T}, \
+  {INDEX_OVERBELOW, "overbelow", p_overbelow_##T##_##T}, \
+  {INDEX_ABOVE, "above", p_above_##T##_##T}, \
+  {INDEX_OVERABOVE, "overabove", p_overabove_##T##_##T}
+
+#define Z_OPS(T) \
+  {INDEX_FRONT, "front", p_front_##T##_##T}, \
+  {INDEX_OVERFRONT, "overfront", p_overfront_##T##_##T}, \
+  {INDEX_BACK, "back", p_back_##T##_##T}, \
+  {INDEX_OVERBACK, "overback", p_overback_##T##_##T}
+
+static const GridOp span_ops[] = { SPAN_OPS(span), X_OPS(span) };
+static const GridOp tbox_ops[] = { SPAN_OPS(tbox), X_OPS(tbox), T_OPS(tbox) };
+static const GridOp stbox_ops[] =
+  { SPAN_OPS(stbox), X_OPS(stbox), Y_OPS(stbox), T_OPS(stbox) };
+static const GridOp stboxz_ops[] =
+  { SPAN_OPS(stbox), X_OPS(stbox), Y_OPS(stbox), Z_OPS(stbox), T_OPS(stbox) };
+static const GridOp tpcbox_ops[] =
+  { SPAN_OPS(tpcbox), X_OPS(tpcbox), Y_OPS(tpcbox), T_OPS(tpcbox) };
+
+/* The box types of the grid */
+typedef enum
+{
+  G_INTSPAN, G_BIGINTSPAN, G_FLOATSPAN, G_DATESPAN, G_TSTZSPAN, G_TBOX, G_STBOX,
+  G_TPCBOX
+} GridType;
+
+#define NOPS(a) ((int) (sizeof(a) / sizeof(a[0])))
+
+/* Return the lower bound and the length of a grid interval, the length zero
+ * for a quarter of them so that equal bounds occur */
+static void
+grid_interval(int *lo, int *len)
+{
+  *lo = random_int(0, 200);
+  *len = (rand() % 4 == 0) ? 0 : random_int(1, 12);
+}
+
+/* Return a grid box of a type, with a Z dimension when `hasz`; `flat` holds
+ * its time dimension constant */
+static void *
+grid_box(GridType type, bool hasz, bool flat)
+{
+  int lo, len, xlo, xlen, ylo, ylen, zlo, zlen;
+  grid_interval(&lo, &len);
+  bool linc = rand() % 2, uinc = rand() % 2;
+  if (len == 0)
+    linc = uinc = true;
+  TimestampTz tlo = lo, tlen = len;
+  Span *t = flat ? tstzspan_make(0, 400 * SEC, true, true) :
+    tstzspan_make(tlo * SEC, (tlo + tlen) * SEC, linc, uinc);
+  void *result;
+  grid_interval(&xlo, &xlen);
+  grid_interval(&ylo, &ylen);
+  grid_interval(&zlo, &zlen);
+  switch (type)
+  {
+    case G_INTSPAN:
+      result = intspan_make(lo, lo + len + 1, true, false);
+      break;
+    case G_BIGINTSPAN:
+    {
+      int64 big = lo;
+      result = bigintspan_make(big * 1000000000, (big + len + 1) * 1000000000,
+        true, false);
+      break;
+    }
+    case G_FLOATSPAN:
+      result = floatspan_make(lo, lo + len, linc, uinc);
+      break;
+    case G_DATESPAN:
+      result = datespan_make(lo, lo + len + 1, true, false);
+      break;
+    case G_TSTZSPAN:
+      result = tstzspan_make(tlo * SEC, (tlo + tlen) * SEC, linc, uinc);
+      break;
+    case G_TBOX:
+    {
+      Span *v = floatspan_make(xlo, xlo + xlen, true, true);
+      result = tbox_make(v, t);
+      free(v);
+      break;
+    }
+    case G_STBOX:
+      result = stbox_make(true, hasz, false, 0, xlo, xlo + xlen, ylo,
+        ylo + ylen, zlo, zlo + zlen, t);
+      break;
+    default: /* G_TPCBOX */
+      result = tpcbox_make(true, false, false, 1, xlo, xlo + xlen, ylo,
+        ylo + ylen, 0, 0, t);
+      break;
+  }
+  free(t);
+  return result;
+}
+
+static void
+test_grid(GridType type, bool hasz, const char *typename, const GridOp *ops,
+  int nops, SPTreeKind kind, const char *kindname)
+{
+  void **boxes = malloc(GRID_BOXES * sizeof(void *));
+  SPTree *sptree;
+  switch (type)
+  {
+    case G_INTSPAN:    sptree = sptree_create_intspan(kind); break;
+    case G_BIGINTSPAN: sptree = sptree_create_bigintspan(kind); break;
+    case G_FLOATSPAN:  sptree = sptree_create_floatspan(kind); break;
+    case G_DATESPAN:   sptree = sptree_create_datespan(kind); break;
+    case G_TSTZSPAN:   sptree = sptree_create_tstzspan(kind); break;
+    case G_TBOX:       sptree = sptree_create_tbox(kind); break;
+    case G_STBOX:      sptree = sptree_create_stbox(kind); break;
+    default:           sptree = sptree_create_tpcbox(kind); break;
+  }
+  for (int i = 0; i < GRID_BOXES; i++)
+  {
+    boxes[i] = grid_box(type, hasz, i % 4 == 0);
+    sptree_insert(sptree, boxes[i], i);
+  }
+
+  printf("Every operation, %s %s (%d grid boxes, %d stored queries):\n",
+    typename, kindname, GRID_BOXES, GRID_QUERIES);
+  MeosArray *result = index_result_create();
+  bool *in_index = malloc(GRID_BOXES * sizeof(bool));
+  for (int o = 0; o < nops; o++)
+  {
+    int missed = 0, extra = 0, matches = 0;
+    for (int q = 0; q < GRID_QUERIES; q++)
+    {
+      const void *query = boxes[(q * 7) % GRID_BOXES];
+      memset(in_index, 0, GRID_BOXES * sizeof(bool));
+      int count = sptree_search(sptree, ops[o].op, query, result);
+      for (int i = 0; i < count; i++)
+      {
+        int64 id;
+        index_result_id(result, i, &id);
+        in_index[id] = true;
+      }
+      for (int i = 0; i < GRID_BOXES; i++)
+      {
+        bool truth = ops[o].pred(boxes[i], query);
+        matches += truth;
+        if (truth && ! in_index[i])
+          missed++;
+        if (! truth && in_index[i])
+          extra++;
+      }
+    }
+    char name[128];
+    snprintf(name, sizeof(name), "  %-12s %6d matches, none missed",
+      ops[o].name, matches);
+    check(name, matches > 0 && missed == 0);
+    if (missed)
+      printf("    %d missed\n", missed);
+    snprintf(name, sizeof(name), "  %-12s no false positives", ops[o].name);
+    check(name, extra == 0);
+    if (extra)
+      printf("    %d false positives\n", extra);
+  }
+  free(in_index);
+  meos_array_destroy(result);
+  for (int i = 0; i < GRID_BOXES; i++)
+    free(boxes[i]);
+  free(boxes);
+  sptree_free(sptree);
+}
+
+/*****************************************************************************
+ * A box sharing an excluded bound of the query
+ *
+ * An instant [t, t] is after a query [a, t) and before a query (t, b]: the
+ * bound they share belongs to one of them only. A region whose boxes reach t
+ * and no further therefore holds an answer, so a descent comparing the bound of
+ * the region with the bound of the query must read the inclusivity of the
+ * query. Such a region arises where a centroid shares the bound, so each
+ * instant [i, i] is inserted after [i - 1, i] and [i, i + 1]. Every instant of
+ * the tree is queried this way, on each axis whose bounds carry an
+ * inclusivity.
+ *****************************************************************************/
+
+/* Number of instants, each inserted after two spans sharing its bound */
+#define BOUND_INSTANTS 200
+#define BOUND_BOXES (3 * BOUND_INSTANTS)
+
+/* Return a box of a type whose axis `axis` (0 the time, 1 the value of a
+ * temporal box) is [lo, hi] with the given inclusivity, its other axes fixed */
+static void *
+bound_box(GridType type, int axis, int lo, int hi, bool linc, bool uinc)
+{
+  TimestampTz tlo = lo, thi = hi;
+  Span *t = (axis == 0) ? tstzspan_make(tlo * SEC, thi * SEC, linc, uinc) :
+    tstzspan_make(0, 1000 * SEC, true, true);
+  void *result;
+  switch (type)
+  {
+    case G_TBOX:
+    {
+      Span *v = (axis == 1) ? floatspan_make(lo, hi, linc, uinc) :
+        floatspan_make(0, 1000, true, true);
+      result = tbox_make(v, t);
+      free(v);
+      break;
+    }
+    case G_STBOX:
+      result = stbox_make(true, false, false, 0, 0, 1000, 0, 1000, 0, 0, t);
+      break;
+    default: /* G_TPCBOX */
+      result = tpcbox_make(true, false, false, 1, 0, 1000, 0, 1000, 0, 0, t);
+      break;
+  }
+  free(t);
+  return result;
+}
+
+static void
+test_shared_bound(GridType type, int axis, const char *label,
+  IndexSearchOp before, IndexSearchOp after, box_pred before_pred,
+  box_pred after_pred, SPTreeKind kind, const char *kindname)
+{
+  void *boxes[BOUND_BOXES];
+  SPTree *sptree;
+  switch (type)
+  {
+    case G_TBOX:  sptree = sptree_create_tbox(kind); break;
+    case G_STBOX: sptree = sptree_create_stbox(kind); break;
+    default:      sptree = sptree_create_tpcbox(kind); break;
+  }
+  for (int i = 0; i < BOUND_INSTANTS; i++)
+  {
+    boxes[3 * i] = bound_box(type, axis, i, i + 1, true, true);
+    boxes[3 * i + 1] = bound_box(type, axis, i + 1, i + 2, true, true);
+    boxes[3 * i + 2] = bound_box(type, axis, i + 1, i + 1, true, true);
+    for (int j = 0; j < 3; j++)
+      sptree_insert(sptree, boxes[3 * i + j], 3 * i + j);
+  }
+  MeosArray *result = index_result_create();
+  int missed[2] = {0, 0}, extra[2] = {0, 0}, matches[2] = {0, 0};
+  for (int q = 5; q < BOUND_INSTANTS - 5; q++)
+  {
+    /* The instant q is before (q, q + 5] and after [q - 5, q) */
+    void *queries[2] = {
+      bound_box(type, axis, q, q + 5, false, true),
+      bound_box(type, axis, q - 5, q, true, false) };
+    IndexSearchOp ops[2] = {before, after};
+    box_pred preds[2] = {before_pred, after_pred};
+    for (int o = 0; o < 2; o++)
+    {
+      bool in_index[BOUND_BOXES] = {false};
+      int count = sptree_search(sptree, ops[o], queries[o], result);
+      for (int i = 0; i < count; i++)
+      {
+        int64 id;
+        index_result_id(result, i, &id);
+        in_index[id] = true;
+      }
+      for (int i = 0; i < BOUND_BOXES; i++)
+      {
+        bool truth = preds[o](boxes[i], queries[o]);
+        matches[o] += truth;
+        if (truth && ! in_index[i])
+          missed[o]++;
+        if (! truth && in_index[i])
+          extra[o]++;
+      }
+    }
+    free(queries[0]); free(queries[1]);
+  }
+  printf("Instants sharing an excluded bound, %s %s:\n", label, kindname);
+  static const char *names[2] = {"before", "after"};
+  for (int o = 0; o < 2; o++)
+  {
+    char name[128];
+    snprintf(name, sizeof(name), "  %-12s %6d matches, none missed",
+      names[o], matches[o]);
+    check(name, matches[o] > 0 && missed[o] == 0);
+    if (missed[o])
+      printf("    %d missed\n", missed[o]);
+    snprintf(name, sizeof(name), "  %-12s no false positives", names[o]);
+    check(name, extra[o] == 0);
+  }
+  meos_array_destroy(result);
+  for (int i = 0; i < BOUND_BOXES; i++)
+    free(boxes[i]);
+  sptree_free(sptree);
+}
+
+static void
+test_shared_bounds(SPTreeKind kind, const char *kindname)
+{
+  test_shared_bound(G_TBOX, 0, "temporal box time", INDEX_BEFORE, INDEX_AFTER,
+    p_before_tbox_tbox, p_after_tbox_tbox, kind, kindname);
+  test_shared_bound(G_TBOX, 1, "temporal box value", INDEX_LEFT, INDEX_RIGHT,
+    p_left_tbox_tbox, p_right_tbox_tbox, kind, kindname);
+  test_shared_bound(G_STBOX, 0, "spatiotemporal box time", INDEX_BEFORE,
+    INDEX_AFTER, p_before_stbox_stbox, p_after_stbox_stbox, kind, kindname);
+  test_shared_bound(G_TPCBOX, 0, "point cloud box time", INDEX_BEFORE,
+    INDEX_AFTER, p_before_tpcbox_tpcbox, p_after_tpcbox_tpcbox, kind,
+    kindname);
+}
+
+static void
+test_grids(SPTreeKind kind, const char *kindname)
+{
+  test_grid(G_INTSPAN, false, "integer span", span_ops, NOPS(span_ops), kind,
+    kindname);
+  test_grid(G_BIGINTSPAN, false, "big integer span", span_ops, NOPS(span_ops),
+    kind, kindname);
+  test_grid(G_FLOATSPAN, false, "float span", span_ops, NOPS(span_ops), kind,
+    kindname);
+  test_grid(G_DATESPAN, false, "date span", span_ops, NOPS(span_ops), kind,
+    kindname);
+  test_grid(G_TSTZSPAN, false, "timestamptz span", span_ops, NOPS(span_ops),
+    kind, kindname);
+  test_grid(G_TBOX, false, "temporal box", tbox_ops, NOPS(tbox_ops), kind,
+    kindname);
+  test_grid(G_STBOX, false, "spatiotemporal box", stbox_ops, NOPS(stbox_ops),
+    kind, kindname);
+  test_grid(G_STBOX, true, "spatiotemporal box with Z", stboxz_ops,
+    NOPS(stboxz_ops), kind, kindname);
+  test_grid(G_TPCBOX, false, "point cloud box", tpcbox_ops, NOPS(tpcbox_ops),
+    kind, kindname);
+}
+
 int
 main(void)
 {
@@ -1259,13 +1672,22 @@ main(void)
   test_selective_tbox(SPTREE_KDTREE, "k-d tree");
   test_selective_stbox(SPTREE_QUADTREE, "quad-tree");
   test_selective_stbox(SPTREE_KDTREE, "k-d tree");
-  test_mest();
-  test_stbox_mest();
-  test_nn_floatspan();
-  test_nn_tbox();
-  test_nn_stbox();
+  test_mest(SPTREE_QUADTREE, "quad-tree");
+  test_mest(SPTREE_KDTREE, "k-d tree");
+  test_stbox_mest(SPTREE_QUADTREE, "quad-tree");
+  test_stbox_mest(SPTREE_KDTREE, "k-d tree");
+  test_nn_floatspan(SPTREE_QUADTREE, "quad-tree");
+  test_nn_floatspan(SPTREE_KDTREE, "k-d tree");
+  test_nn_tbox(SPTREE_QUADTREE, "quad-tree");
+  test_nn_tbox(SPTREE_KDTREE, "k-d tree");
+  test_nn_stbox(SPTREE_QUADTREE, "quad-tree");
+  test_nn_stbox(SPTREE_KDTREE, "k-d tree");
   test_reported_size(SPTREE_QUADTREE, "quad-tree");
   test_reported_size(SPTREE_KDTREE, "k-d tree");
+  test_grids(SPTREE_QUADTREE, "quad-tree");
+  test_grids(SPTREE_KDTREE, "k-d tree");
+  test_shared_bounds(SPTREE_QUADTREE, "quad-tree");
+  test_shared_bounds(SPTREE_KDTREE, "k-d tree");
   test_nn_refused();
 
   meos_finalize();
