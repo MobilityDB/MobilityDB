@@ -11,7 +11,7 @@
 This note is the plan of the campaign that makes every MEOS and MobilityDB value a finite
 number: the rule, the census that measures where MEOS does not apply it, the pull requests that
 apply it, in order, the oracles that judge them, and the topics they leave, each a pull request of
-its own. Master read: `91f8d676e7`.
+its own. Master read: `9c0caecd72`.
 
 ## 1. The rule
 
@@ -51,8 +51,8 @@ every public function tests each double it takes.
 - **2026-10-30.** The NaN work is one pull request (section 3).
 - **2026-10-31.** A float span refuses ±Infinity like every input, as `tstzspan` does; spans gain
   no unbounded flag. An unbounded span is written with a finite bound.
-- **2026-11-01.** The documented error value of the 107 functions returning a double moves from
-  `DBL_MAX` to +Infinity (section 5).
+- **2026-11-02.** The error value of a failed call stays as each function's `@errval` tag states
+  it, `DBL_MAX` for a double (section 5); moving it to +Infinity is no part of this campaign.
 
 **Kept as they are.** A raster pixel holding NaN is no value: the pixel readers skip it (MobilityDB
 #3322), and no MEOS value read from a raster holds one. The float8 comparator `float8_cmp` keeps
@@ -116,8 +116,8 @@ fails on the file of master and passes on the fix:
 
 ## 4. PR 1, the finite rule
 
-MobilityDB #3361, branch `fix/meos-refuses-non-finite`, head `5ab1ba4d0d` on master
-`91f8d676e7`. Seven commits:
+MobilityDB #3361, branch `fix/meos-refuses-non-finite`, head `6e5415a103` on master
+`9c0caecd72`. Seven commits:
 
 1. `Refuse an infinite value where MEOS refuses a NaN`: the helpers test `isfinite`, the geometry
    walk refuses a non-finite coordinate, the raster pixel readers test `isfinite`; the interval
@@ -149,7 +149,8 @@ MobilityDB #3361, branch `fix/meos-refuses-non-finite`, head `5ab1ba4d0d` on mas
    through every entry class and checks the results of finite operands near the largest double,
    95 cases.
 7. `State the rule of finite values for the users of MEOS`: `doc/specs/meos-finite-values.md`,
-   its examples run against the head.
+   with the error value of a failed call (section 5) and an example of each, its examples run
+   against the head.
 
 **The oracle.** Every corpus is judged by CGAL's exact rationals on the doubles the engine holds,
 on the branch's answers alone; an answer "error" is right exactly where the exact distance rounds
@@ -180,28 +181,25 @@ scaling of the area is not exact; the worst row is within 3.5e-16.
 refusals, and the `round` example of `doc/set_span_types.xml` takes a finite bound.
 
 **The user document** `doc/specs/meos-finite-values.md` states the rule for the users of MEOS and
-of the bindings.
+of the bindings, and the error value of a failed call.
 
-**Receipts** on the head: strict-ci, Windows, cppcheck, valgrind, the CGAL oracle (12 witnesses,
+**Receipts** on the head: strict-ci, smoke, Windows, cppcheck, valgrind, the CGAL oracle (12 witnesses,
 24 controls) and the speed probe (26 cells, the distance of geometries at 0.435 of GEOS called
 directly). Its merged-lines approval is the row of #2861 naming its branch.
 
-## 5. PR 2, the double error value
+## 5. The error value of a failed call
 
-The rule that an error value lies outside the value domain of its function (owner, 2026-09-09) is
-met by `INT_MAX` and `INT64_MAX`, and not by `DBL_MAX`, which 107 functions document as their
-error value although it is a value they can answer: `float_round(DBL_MAX, 0)` answers `DBL_MAX`.
-Once PR 1 refuses ±Infinity as a value, +Infinity is the one double no function answers; it sorts
-after every distance, strictly, and lies in the return type, as the typed bindings require.
-
-Branch `fix/double-error-value-infinity`, whose base is the branch of PR 1; its pull request opens
-once PR 1 is green. Two commits:
-the double error value is named once, beside `distance_sentinel`, and the 88 `result == DBL_MAX`
-tests of the PostgreSQL wrappers and the 12 of MEOS call it, no answer changing; then its value
-moves to +Infinity with the 107 `@errval` tags, the `EXPECTED` and `ALIASES` maps of
-`check_error_sentinels.py` and `distance_sentinel(T_FLOAT8)`, the bindings regenerating from the
-catalog. The three nearest approach distances of float boxes and `line_locate_point` keep -1.0.
-The user document gains its section on the error value of a failed call.
+A function that cannot answer reports the error to the error handler; in PostgreSQL it is an
+`ERROR`. Where the handler returns, the function returns the error value its `@errval` tag
+states, and `meos_errno()` holds the code. The error value is the maximum of the return type
+(`NULL`, `false`, `INT_MAX`, `INT64_MAX`, `UINT32_MAX`, `UINT64_MAX`, `DBL_MAX`, `DATEVAL_NOEND`,
+`DT_NOEND`), and a value outside the answers of the function where that maximum is one of them:
+-1 for the three-valued relationships and the `int` counts, -1.0 for `line_locate_point` and the
+nearest approach distances of float boxes and spans, whose `DBL_MAX` answers "no shared time".
+A missing answer is no error: a `@note` states it, `meos_errno()` stays 0, and the PostgreSQL
+function answers `NULL`. At the SQL level a failed call is an `ERROR`, a missing answer `NULL`,
+and `DBL_MAX` an answer. `tools/scripts/check_error_sentinels.py` checks each tag against its
+return. PR 1 refuses ±Infinity as a value and leaves every error value as it is.
 
 ## 6. Topics the campaign leaves, each a pull request of its own
 
@@ -212,3 +210,6 @@ The user document gains its section on the error value of a failed call.
 | The integer sums and deltas raise on overflow | the sum and the delta of a temporal integer and a temporal big integer overflow with no error |
 | The area of a geometry is exact at every magnitude | `geom_area` raises "not supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates near the largest double beside coordinates the scaling by 2^-523 rounds; the exact area sums the shoelace terms in expansions, then `WideDyadic` |
 | The temporal distance of a temporal point to a geometry of segments is exact | `tpoint_linear_distance_geom` takes the root of a square rounded in doubles behind an absolute tolerance of 1e-12; an entry of [Exact distance](EXACT-DISTANCE.md), MobilityDB #3287 |
+| One error value per function returning a double | 12 public functions returning a double document `DBL_MAX` both as their `@errval` and as the missing answer of a `@note`: `geom_distance`, `geom_distance2d`, `geom_distance3d`, `geom_max_distance2d`, `geom_max_distance3d`, `geog_distance`, `nad_stbox_stbox`, `nad_tgeo_stbox`, `nad_tgeo_tgeo`, `nad_tpcbox_tpcbox`, `nad_tpointcloud_tpcbox`, `nad_tpointcloud_tpointcloud` |
+| The `int64` counts take the error value of the `int` counts | `tpcpatch_npoints` and `bandstats_count` document `INT64_MAX` where the `int` counts take -1; the count rule of `check_error_sentinels.py` reads `int` alone |
+| Every nearest approach distance states its error value | 31 of the 58 `nad_*` functions of the MEOS headers carry no `@errval` tag, such as `nad_tbox_tbox`, `nad_tnumber_tnumber` and `nad_tcbuffer_tcbuffer` |
