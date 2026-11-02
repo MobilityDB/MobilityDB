@@ -684,6 +684,7 @@ ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double di
   bool ever)
 {
   if (! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, ever ? -1.0 : dist),
