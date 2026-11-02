@@ -643,13 +643,17 @@ before8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from a nodebox be after a query?
+ * @brief Does no box from a nodebox extend after a query?
+ * @details The bound of the node box is read as included, since the boxes of
+ * the node may reach it, so a box ending on an upper bound the query excludes
+ * extends after the query, as #overBefore4D reads it
  */
 bool
 overBefore8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper,
+  int cmp = datum_cmp(nodebox->right.period.upper, query->period.upper,
     T_TIMESTAMPTZ);
+  return cmp < 0 || (cmp == 0 && query->period.upper_inc);
 }
 
 /**
@@ -663,13 +667,17 @@ after8D(const STboxNode *nodebox, const STBox *query)
 }
 
 /**
- * @brief Can any box from a nodebox be before a query?
+ * @brief Does no box from a nodebox extend before a query?
+ * @details The bound of the node box is read as included, since the boxes of
+ * the node may reach it, so a box starting on a lower bound the query excludes
+ * extends before the query, as #overAfter4D reads it
  */
 bool
 overAfter8D(const STboxNode *nodebox, const STBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower,
+  int cmp = datum_cmp(nodebox->left.period.lower, query->period.lower,
     T_TIMESTAMPTZ);
+  return cmp > 0 || (cmp == 0 && query->period.lower_inc);
 }
 
 /**

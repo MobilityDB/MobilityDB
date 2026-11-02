@@ -475,13 +475,14 @@ left4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend to the right of this query?
- * @details A span `s1` does not extend to the right of a span `s2` if
- * `s1.upper < s2.upper`. Therefore, given a query box and a node box, a box
- * in the node box may may not extend to the right of the query box
- * if for dimension X
+ * @brief Does no box from nodebox extend to the right of the query?
+ * @details A span `s1` extends to the right of a span `s2` if its upper bound
+ * is greater, or equal and excluded by `s2` only. The bound of the node box is
+ * read as included, since the boxes of the node may reach it. Therefore no box
+ * in the node box extends to the right of the query box if for dimension X
  * - `nodebox->right.span.upper` (the maximum of the upper bounds in the node
- *   box) <= `query->span.upper` (the upper bound of the query).
+ *   box) < `query->span.upper` (the upper bound of the query), or both are
+ *   equal and the query includes its upper bound.
  * 
  * Continuing with the example at the top of this file, if `TboxNode` is 
  * @code
@@ -494,8 +495,9 @@ left4D(const TboxNode *nodebox, const TBox *query)
 bool
 overLeft4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.span.upper, query->span.upper,
+  int cmp = datum_cmp(nodebox->right.span.upper, query->span.upper,
     query->span.basetype);
+  return cmp < 0 || (cmp == 0 && query->span.upper_inc);
 }
 
 /**
@@ -521,13 +523,14 @@ right4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any box from nodebox does not extend to the left of the query?
- * @details A span `s1` does not extend to the left of a span `s2` if
- * `s1.lower > s2.lower`. Therefore, given a query box and a node box, a box in
- * the node box may may not extend to the right of the query box
- * if for dimension X
+ * @brief Does no box from nodebox extend to the left of the query?
+ * @details A span `s1` extends to the left of a span `s2` if its lower bound
+ * is smaller, or equal and excluded by `s2` only. The bound of the node box is
+ * read as included, since the boxes of the node may reach it. Therefore no box
+ * in the node box extends to the left of the query box if for dimension X
  * - `nodebox->left.span.lower` (the minimum of the lower bounds in the node
- *   box) <= `query->span.lower` (the lower bound of the query).
+ *   box) > `query->span.lower` (the lower bound of the query), or both are
+ *   equal and the query includes its lower bound.
  * 
  * Continuing with the example at the top of this file, if `TboxNode` is 
  * @code
@@ -540,8 +543,9 @@ right4D(const TboxNode *nodebox, const TBox *query)
 bool
 overRight4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.span.lower, query->span.lower,
+  int cmp = datum_cmp(nodebox->left.span.lower, query->span.lower,
     query->span.basetype);
+  return cmp > 0 || (cmp == 0 && query->span.lower_inc);
 }
 
 /**
@@ -556,14 +560,15 @@ before4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be not after the query?
+ * @brief Does no box from nodebox extend after the query?
  * @note See above the explanations for #overLeft4D
  */
 bool
 overBefore4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_le(nodebox->right.period.upper, query->period.upper,
+  int cmp = datum_cmp(nodebox->right.period.upper, query->period.upper,
     T_TIMESTAMPTZ);
+  return cmp < 0 || (cmp == 0 && query->period.upper_inc);
 }
 
 /**
@@ -578,14 +583,15 @@ after4D(const TboxNode *nodebox, const TBox *query)
 }
 
 /**
- * @brief Can any box from nodebox be not before the query?
+ * @brief Does no box from nodebox extend before the query?
  * @note See above the explanations for #overRight4D
  */
 bool
 overAfter4D(const TboxNode *nodebox, const TBox *query)
 {
-  return datum_ge(nodebox->left.period.lower, query->period.lower,
+  int cmp = datum_cmp(nodebox->left.period.lower, query->period.lower,
     T_TIMESTAMPTZ);
+  return cmp > 0 || (cmp == 0 && query->period.lower_inc);
 }
 
 /**
