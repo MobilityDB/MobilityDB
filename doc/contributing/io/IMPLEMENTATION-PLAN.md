@@ -51,3 +51,28 @@ generates (the bindings plan of the portable naming notes, `BINDINGS-PLAN.md`), 
 | IO-B16 | MobilityDB | one input and output test covering every type and every format it supports, which each binding replays through its own surface: the reader and writer queries of the `nnn_*.test.sql` files extracted with their expected lines, then a query for every type and format no extracted query covers, over the `tbl_<type>` fixtures, its expected output harvested from PostgreSQL; the generator states which queries are extracted and which added, and the coverage of each (DECIDED BY THE OWNER 2026-10-31) | MERGED as MobilityDB #3338 (`a8e931bf50`), `tools/gen_io_test.py` and `io/700_io_every_type_tbl`: 4951 extracted queries from 112 test files and 37 added, 289 of the 349 pairs of the 59 types with a round trip, 58 written only, 2 without a fixture (`posechainset` Text, `ts2cell` Output); an extracted query whose expected output prints a float beyond six decimal digits is left out |
 | IO-B15 | MobilityDB | `tools/io_matrix.py`, which rebuilds the table of every type from `mobilitydb/sql`, the public headers and the catalog, and `--check` diffs it against this document; it reproduces the table at `845a60f141`, its measured commit, cell for cell, and at master the 56 cells G6, G8, G9, G13 and G14 closed | MERGED as MobilityDB #3334 (`68c43454cd`) |
 | IO-B15b | MobilityDB | the bindings' table rebuilt by the same tool from each binding's generated surface at a pinned commit (`--repo NAME=PATH`) | ready: IO-B15 MERGED |
+
+## Every string MEOS returns states its size
+
+DECIDED BY THE OWNER 2026-11-02: every text output of MEOS gives its size through
+`size_t *size_out`, so no binding scans a string MEOS hands it. The convention is the hex WKB
+writers': the size counts the terminator, the public function requires `size_out`
+(`VALIDATE_NOT_NULL(size_out, NULL)`, documented `@param[out]`, which the catalog carries as
+`shape.outParams`), and the internal builder takes NULL for a size nobody reads, as
+`datum_as_wkb` does. The size comes from where the string is built, never from a scan of the
+result, which would only move the binding's scan into MEOS. No SQL function changes, and the
+object layer of each binding keeps its surface: the wrapper consumes the size and answers the
+string alone.
+
+| Task | Repository | Change | State |
+|---|---|---|---|
+| IO-S1 | MobilityDB | the 118 public `char *` returns without a size take `size_t *size_out` (`temporal_as_mfjson`, the `*_out`, `*_as_text`, `*_as_ewkt`, `*_as_geojson`, `*_as_geopose` of every family, the version and style accessors); the internal builders `stringarr_to_string`, `set_out`, `span_out`, `spanset_out`, `temporal_out`, `tinstant_out`, `tsequence_out`, `tsequenceset_out` and each family's `*_wkt_out` hand the length out of what they build; the PostgreSQL wrappers, the examples and `meos/test` pass the size the function now asks for; the PostgreSQL mirrors in `pgtypes` (`pg_*_out`) and the vendored `pc_api.h` keep their signatures | branch `meos/text-outputs-size` off `38f547bf85` |
+| IO-S2 | MEOS-API | every public `char *` return lists a `size_t *` in `shape.outParams`, a catalog test refusing one that does not | ready: IO-S1 |
+| IO-S3 | PyMEOS-CFFI | a `char *` return whose `shape.outParams` holds a `size_t *` read through `_ffi.unpack(result, size_out[0] - 1)` and freed, the `str` alone answered | ready: IO-S2 |
+| IO-S4 | GoMEOS | the same return read through `C.GoStringN` | ready: IO-S2 |
+| IO-S5 | MEOS.NET | the same return read through `Marshal.PtrToStringUTF8(ptr, length)` | ready: IO-S2 |
+| IO-S6 | JMEOS (Spark, Flink and Kafka generators) | the owned `char *` copied as `size_out - 1` bytes and decoded as UTF-8 in place of `Pointer.getString(0)`, in JMEOS's `FunctionsGenerator.java` and the Spark generator that mirrors it; Flink and Kafka call the JMEOS methods, whose signatures stay | ready: IO-S2 |
+| IO-S7 | MEOS.js | the same return decoded from `HEAPU8.subarray(ptr, ptr + size - 1)` | ready: IO-S2 |
+| IO-S8 | meos-rs | the same return built from `slice::from_raw_parts(ptr, size - 1)`, in both FFI designs left open for the owner and David García Morillo | ready: IO-S2 |
+| IO-S9 | MobilityDuck | the generated bodies build the DuckDB string from the pointer and its length | ready: IO-S2 |
+| IO-S10 | every binding of IO-S3 to IO-S9 | the cost of reading a string with and without its size, over the lengths cffi measures (40 to 4000000 characters), stated in each pull request | with each of IO-S3 to IO-S9 |
