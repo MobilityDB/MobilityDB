@@ -123,7 +123,7 @@ meos/src/pointcloud/tpc_topops_meos.c	same_tpcbox_tpointcloud	box unstated
 meos/src/pointcloud/tpc_topops_meos.c	same_tpointcloud_tpcbox	box unstated
 meos/src/pose/pose.c	pose_hash_extended	pose unstated
 meos/src/pose/posechainset_meos.c	posechainset_values	count unstated
-meos/src/pose/poseset_meos.c	poseset_values	count unstated
+meos/src/pose/poseset.c	poseset_values	count unstated
 meos/src/quadbin/quadbinset.c	quadbinset_values	count unstated
 meos/src/rgeo/trgeo_tile.c	trgeometry_space_boxes	sorigin unstated
 meos/src/rgeo/trgeo_tile.c	trgeometry_space_time_boxes	sorigin unstated
