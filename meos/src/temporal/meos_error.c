@@ -175,7 +175,8 @@ meos_errno_restore(int err)
  * @ingroup meos_misc
  * @brief Reset the error number to zero and return its previous value
  */
-int meos_errno_reset(void)
+int
+meos_errno_reset(void)
 {
   int last_errno = meos_errno();
   /* Clear the error status directly: #meos_errno_set ignores a zero argument

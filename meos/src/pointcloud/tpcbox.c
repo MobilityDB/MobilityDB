@@ -1442,7 +1442,8 @@ tpcbox_cmp(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if two TPCBox values are strictly equal
  * @csqlfn #Tpcbox_eq()
  */
-bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) == 0;
 }
@@ -1452,7 +1453,8 @@ bool tpcbox_eq(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if two TPCBox values differ
  * @csqlfn #Tpcbox_ne()
  */
-bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) != 0;
 }
@@ -1462,7 +1464,8 @@ bool tpcbox_ne(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if box1 strictly precedes box2 in total order
  * @csqlfn #Tpcbox_lt()
  */
-bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) <  0;
 }
@@ -1472,7 +1475,8 @@ bool tpcbox_lt(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if box1 precedes or equals box2 in total order
  * @csqlfn #Tpcbox_le()
  */
-bool tpcbox_le(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_le(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) <= 0;
 }
@@ -1482,7 +1486,8 @@ bool tpcbox_le(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if box1 strictly follows box2 in total order
  * @csqlfn #Tpcbox_gt()
  */
-bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) >  0;
 }
@@ -1492,7 +1497,8 @@ bool tpcbox_gt(const TPCBox *box1, const TPCBox *box2)
  * @brief Return @p true if box1 follows or equals box2 in total order
  * @csqlfn #Tpcbox_ge()
  */
-bool tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
+bool
+tpcbox_ge(const TPCBox *box1, const TPCBox *box2)
 {
   return tpcbox_cmp(box1, box2) >= 0;
 }

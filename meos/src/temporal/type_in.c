@@ -2050,7 +2050,8 @@ byte_from_wkb_state(meos_wkb_parse_state *s)
 /**
  * @brief Swap bytes in-place for endian conversion
  */
-static inline void swap_bytes(void *data, size_t size)
+static inline void
+swap_bytes(void *data, size_t size)
 {
   uint8_t *bytes = (uint8_t*)data;
   for (size_t i = 0; i < size/2; i++)
@@ -2064,7 +2065,8 @@ static inline void swap_bytes(void *data, size_t size)
 /**
  * @brief Generic function to read and parse basic types from WKB state
  */
-static inline void read_wkb_value(meos_wkb_parse_state *s, void *dest, size_t size)
+static inline void
+read_wkb_value(meos_wkb_parse_state *s, void *dest, size_t size)
 {
   /* Does the data we want to read exist? */
   if (! wkb_parse_state_check(s, size))

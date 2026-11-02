@@ -160,7 +160,8 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
 /**
  * @brief Filter a TSequence
  */
-static TSequence * tsequence_ext_kalman_filter(const TSequence *seq,
+static TSequence *
+tsequence_ext_kalman_filter(const TSequence *seq,
   MeosType temptype, double gate, double q, double variance, bool to_drop)
 {
   if (seq->count < 2)
