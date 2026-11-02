@@ -327,27 +327,32 @@ CREATE FUNCTION tpcboxAdjacent(tpcbox, tpcbox)
 CREATE OPERATOR @> (
   PROCEDURE = tpcboxContains,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <@
+  COMMUTATOR = <@,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <@ (
   PROCEDURE = tpcboxContained,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = @>
+  COMMUTATOR = @>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR && (
   PROCEDURE = tpcboxOverlaps,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = &&
+  COMMUTATOR = &&,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR ~= (
   PROCEDURE = tpcboxSame,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = ~=
+  COMMUTATOR = ~=,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR -|- (
   PROCEDURE = tpcboxAdjacent,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = -|-
+  COMMUTATOR = -|-,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
 /*****************************************************************************
@@ -438,74 +443,90 @@ CREATE FUNCTION tpcboxOverafter(tpcbox, tpcbox)
 CREATE OPERATOR << (
   PROCEDURE = tpcboxLeft,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = >>
+  COMMUTATOR = >>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &< (
   PROCEDURE = tpcboxOverleft,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR >> (
   PROCEDURE = tpcboxRight,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<
+  COMMUTATOR = <<,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &> (
   PROCEDURE = tpcboxOverright,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<| (
   PROCEDURE = tpcboxBelow,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = |>>
+  COMMUTATOR = |>>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<| (
   PROCEDURE = tpcboxOverbelow,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |>> (
   PROCEDURE = tpcboxAbove,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<|
+  COMMUTATOR = <<|,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR |&> (
   PROCEDURE = tpcboxOverabove,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <</ (
   PROCEDURE = tpcboxFront,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = />>
+  COMMUTATOR = />>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &</ (
   PROCEDURE = tpcboxOverfront,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR />> (
   PROCEDURE = tpcboxBack,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <</
+  COMMUTATOR = <</,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR /&> (
   PROCEDURE = tpcboxOverback,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR <<# (
   PROCEDURE = tpcboxBefore,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = #>>
+  COMMUTATOR = #>>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
   PROCEDURE = tpcboxOverbefore,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
   PROCEDURE = tpcboxAfter,
   LEFTARG = tpcbox, RIGHTARG = tpcbox,
-  COMMUTATOR = <<#
+  COMMUTATOR = <<#,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
   PROCEDURE = tpcboxOverafter,
-  LEFTARG = tpcbox, RIGHTARG = tpcbox
+  LEFTARG = tpcbox, RIGHTARG = tpcbox,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 -- GENERATED-BOXBOX-END tpcbox
 
