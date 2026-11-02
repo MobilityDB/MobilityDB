@@ -396,7 +396,14 @@ instants are:
 At the start and the end of each segment, which are instants of the
 operands, the value is the distance between the bodies placed at that
 instant, the double nearest the exact distance of the placed geometries.
-Inside a segment, an event is at a time that is not a microsecond, and its
+A body at the angle 0 against a static geometry is its reference geometry
+moved by the position of the pose, and each coordinate is the exact sum of
+a coordinate of the reference geometry and one of the position, not that
+sum rounded to a double.  The value is the double nearest the exact
+distance of that body.  Where no sum rounds, the placed body is that body.
+Thus the value can differ in the last bits from the distance of the
+geometry that valueAtTimestamp returns, whose coordinates are the rounded
+sums.  Inside a segment, an event is at a time that is not a microsecond, and its
 value is the one at that time: zero at an entry into and an exit from an
 overlap, d at a crossing of the threshold d, and the function of the
 feature at an extremum or a change of feature.  The result has all the
@@ -436,7 +443,9 @@ distance to a geometry is the minimum of the distances to its parts.
 
 The minimum of two linear interpolations has instants where they cross,
 and the value there comes from the interpolation.  Thus the algorithm
-computes each value of the minimum again, with PostGIS on the placed body.
+computes each value of the minimum again, with PostGIS on the placed body,
+or for a body at the angle 0 on the exact sums, as at an instant of the
+operands.
 
 A body whose poses at the two ends of a segment have the angle 0
 translates over the segment.  Its least distance to a part is then the

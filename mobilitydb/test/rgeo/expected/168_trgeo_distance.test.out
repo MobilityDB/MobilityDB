@@ -516,3 +516,14 @@ SELECT nearestApproachDistance(
  t
 (1 row)
 
+SELECT nearestApproachDistance(trg, geo) = 0.043970339265039356,
+  valueAtTimestamp(tDistance(trg, geo), '2001-01-01 00:21:01.796393') =
+    0.043970339265039356
+FROM (SELECT
+  trgeometry 'Polygon((-4.876 2.124,-2.334 -2.237,-1.084 -1.315,2.623 2.152,-0.252 4.765,-4.876 2.124));[Pose(Point(-0.384 0.392),0)@2001-01-01 00:00:00, Pose(Point(1.869 -2.829),0)@2001-01-01 00:21:01.796393]' AS trg,
+  geometry 'LineString(4.498 -2.698,4.619 3.741)' AS geo) t;
+ ?column? | ?column? 
+----------+----------
+ t        | t
+(1 row)
+
