@@ -73,7 +73,7 @@ meos/src/json/tjsonb_compops.c	ever_ne_tjsonb_tjsonb	temp2 unstated
 meos/src/json/tjsonb_jsonfuncs.c	tjsonb_insert	newjb unstated
 meos/src/npoint/npoint.c	npoint_srid	np unstated
 meos/src/npoint/npoint.c	nsegment_srid	ns unstated
-meos/src/npoint/npointset_meos.c	npointset_values	count unstated
+meos/src/npoint/npointset.c	npointset_values	count unstated
 meos/src/npoint/ways_meos.c	meos_set_ways_csv	path unstated
 meos/src/pointcloud/schema_hook.c	meos_pc_schema_from_dims	compression unstated
 meos/src/pointcloud/schema_hook.c	meos_pc_schema_register	schema unstated
