@@ -149,7 +149,7 @@
 				<tbody>
 					<row><entry>Distancia</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tDistance</varname></primary></indexterm>tDistance(a, b)</entry></row>
 					<row><entry></entry><entry>|=|</entry><entry><indexterm significance="normal"><primary><varname>nearestApproachDistance</varname></primary></indexterm>nearestApproachDistance(a, b)</entry></row>
-					<row><entry>Distancia (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
+					<row><entry>Distancia (base / set / span / span set)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>setDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spanDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>spansetDistance</varname></primary></indexterm><indexterm significance="normal"><primary><varname>distance</varname></primary></indexterm>distance / setDistance / spanDistance / spansetDistance (a, b)</entry></row>
 					<row><entry>Distancia de rejilla (índice de celda)</entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>th3GridDistance</varname></primary></indexterm>th3GridDistance(a, b)</entry></row>
 					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>tquadbinGridDistance</varname></primary></indexterm>tquadbinGridDistance(a, b)</entry></row>
 					<row><entry></entry><entry>&lt;-&gt;</entry><entry><indexterm significance="normal"><primary><varname>ts2GridDistance</varname></primary></indexterm>ts2GridDistance(a, b)</entry></row>
@@ -454,6 +454,7 @@
 			</tgroup>
 		</informaltable>
 	</sect1>
+
 	<sect1 xml:id="portable_sql_porting">
 		<title>Ejecución de una consulta en Apache Spark y Apache Flink</title>
 
@@ -509,7 +510,7 @@
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; npoint, npointset, tnpoint; nsegment; pose, poseset, tpose; posechain, posechainset, tposechain; tbox; stbox; tpcbox</entry><entry>cbufferRound, npointRound, nsegmentRound, poseRound, posechainRound, tboxRound, stboxRound, tpcboxRound</entry></row>
 						<row><entry>abs</entry><entry>tint, tbigint, tfloat</entry><entry>intAbs, bigintAbs, floatAbs</entry></row>
 						<row><entry>ceil, floor, degrees, radians, cos, sin, tan, exp, ln, log10</entry><entry>float y sus tipos conjunto, rango, conjunto de rangos y temporal</entry><entry>floatCeil, floatFloor, floatDegrees, floatRadians, floatCos, floatSin, floatTan, floatExp, floatLn, floatLog10</entry></row>
-						<row><entry>transform</entry><entry>los conjuntos y tipos temporales de geometría y geografía, trgeometry</entry><entry>geoTransform</entry></row>
+						<row><entry>transform</entry><entry>geometría y geografía, sus conjuntos y tipos temporales, trgeometry</entry><entry>geoTransform</entry></row>
 						<row><entry>transformPipeline</entry><entry>geometría y geografía, sus conjuntos y tipos temporales, trgeometry</entry><entry>geoTransformPipeline</entry></row>
 						<row><entry></entry><entry>cbuffer, cbufferset, tcbuffer; pose, poseset, tpose; posechain, posechainset, tposechain; stbox; raster</entry><entry>cbufferTransform, poseTransform, posechainTransform, stboxTransform, rasterTransform, y el …TransformPipeline de cada uno</entry></row>
 						<row><entry>translate, affine, rotate, rotateX, rotateY, rotateZ, scale, transscale</entry><entry>geometry, tgeompoint, tgeometry</entry><entry>geoTranslate, geoAffine, geoRotate, geoRotateX, geoRotateY, geoRotateZ, geoScale, geoTransscale</entry></row>
@@ -518,10 +519,11 @@
 						<row><entry>width, height, bandPixelType, bandHasNoDataValue, bandNoDataValue, pixels, asHexWKB, stbox</entry><entry>raster; raquet</entry><entry>rasterWidth, rasterHeight, rasterBandPixelType, rasterBandHasNoDataValue, rasterBandNoDataValue, rasterPixels, rasterAsHexWKB, rasterStbox; raquetWidth, raquetHeight, raquetBandPixelType, raquetBandHasNoDataValue, raquetBandNoDataValue, raquetPixels, raquetAsHexWKB, raquetStbox</entry></row>
 						<row><entry>length, cumulativeLength</entry><entry>geometría, geografía, tgeompoint, tgeogpoint, trgeometry</entry><entry>geoLength, geoCumulativeLength</entry></row>
 						<row><entry></entry><entry>tnpoint</entry><entry>npointLength, npointCumulativeLength</entry></row>
-						<row><entry>contains, covers, disjoint, intersects, touches, dwithin, relate</entry><entry>geometría, geografía</entry><entry>geoContains, geoCovers, geoDisjoint, geoIntersects, geoTouches, geoDwithin, geoRelate</entry></row>
-						<row><entry>reverse</entry><entry>geometría</entry><entry>geoReverse</entry></row>
-						<row><entry>collect</entry><entry>geometría[]</entry><entry>geoCollect</entry></row>
-						<row><entry>transform</entry><entry>geometría, geografía</entry><entry>geoTransform</entry></row>
+						<row><entry>contains, covers, disjoint, intersects, touches, dwithin, equals, relate</entry><entry>geometría; geografía (intersects, disjoint, dwithin)</entry><entry>geoContains, geoCovers, geoDisjoint, geoIntersects, geoTouches, geoDwithin, geoEquals, geoRelate</entry></row>
+						<row><entry></entry><entry>cbuffer</entry><entry>cbufferContains, cbufferCovers, cbufferDisjoint, cbufferIntersects, cbufferTouches, cbufferDwithin</entry></row>
+						<row><entry>distance, shortestLine, maxDistance, area, perimeter, centroid</entry><entry>geometría, geografía</entry><entry>geoDistance, geoShortestLine, geoMaxDistance, geoArea, geoPerimeter, geoCentroid</entry></row>
+						<row><entry>boundary, reverse, numGeometries, geometryN, numPoints, lineInterpolatePoint, lineSubstring, lineLocatePoint, collect, makeLine, asText, asEWKB, asGeoJSON, clusterKMeans, clusterDBSCAN, clusterIntersecting, clusterWithin</entry><entry>geometría, geografía</entry><entry>geo seguido del nombre: geoBoundary, geoReverse, …, geoClusterWithin</entry></row>
+						<row><entry>el MultiPoint de ST_Points</entry><entry>geometría</entry><entry>geoPoints, en todos los motores (points devuelve un geomset)</entry></row>
 						<row><entry>hash, hashExtended</entry><entry>conjunto, rango, conjunto de rangos, cuadro delimitador, temporal, tipo base</entry><entry>setHash, spanHash, spansetHash, tboxHash, stboxHash, temporalHash, cbufferHash, …, y sus …HashExtended</entry></row>
 						<row><entry>insert, update, merge</entry><entry>temporal</entry><entry>temporalInsert, temporalUpdate, temporalMerge</entry></row>
 						<row><entry>tMin, tMax, merge, appendInstant, appendSequence, tAnd, tOr (los agregados)</entry><entry>temporal</entry><entry>tMinAgg, tMaxAgg, mergeAgg, appendInstantAgg, appendSequenceAgg, tAndAgg, tOrAgg</entry></row>
