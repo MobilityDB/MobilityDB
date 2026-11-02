@@ -226,7 +226,7 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
         if want == "INT_MAX" and (PREDICATE.match(name) or
                                   PREDICATE_DOC.search(doctext)):
             want = "-1"
-        if want == "INT_MAX" and COUNT_DOC.search("\n".join(doc)):
+        if want in ("INT_MAX", "INT64_MAX") and COUNT_DOC.search("\n".join(doc)):
             want = "-1"
         if want == "DBL_MAX" and LOCATOR.search(name):
             want = "-1.0"

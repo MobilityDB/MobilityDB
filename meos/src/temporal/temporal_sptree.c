@@ -2052,13 +2052,13 @@ sptree_num_entries(const SPTree *sptree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] sptree The SPTree
- * @errval INT64_MAX
+ * @errval -1
  */
 int64
 sptree_mem_size(const SPTree *sptree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree, INT64_MAX);
+  VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
   int64 bytes = (int64) sizeof(SPTree);
   spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);

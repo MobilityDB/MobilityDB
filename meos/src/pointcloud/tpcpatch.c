@@ -491,14 +491,14 @@ tpcpatch_end_npoints(const Temporal *temp)
  * decompressed, and the total is a 64-bit integer since a long sequence of
  * dense patches exceeds the range of a 32-bit one
  * @param[in] temp Temporal value
- * @errval INT64_MAX
+ * @errval -1
  * @csqlfn #Tpcpatch_npoints()
  */
 int64
 tpcpatch_npoints(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPCPATCH(temp, INT64_MAX);
+  VALIDATE_TPCPATCH(temp, -1);
   int count;
   const TInstant **instants = temporal_insts_p(temp, &count);
   int64 result = 0;
