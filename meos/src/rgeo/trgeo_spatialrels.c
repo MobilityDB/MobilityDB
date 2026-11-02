@@ -73,14 +73,14 @@
  * @errval -1
  */
 static int
-ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
+ea_spatialrel_trgeometry_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
   datum_func2 func, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
 
-  GSERIALIZED *places = trgeo_placements(temp);
+  GSERIALIZED *places = trgeometry_placements(temp);
   Datum geo = PointerGetDatum(gs);
   int count;
   GSERIALIZED **poses = geo_extract_elements(places, &count);
@@ -120,12 +120,12 @@ ea_spatialrel_trgeo_poses_geo(const Temporal *temp, const GSERIALIZED *gs,
  * https://postgis.net/docs/ST_Contains.html
  */
 int
-ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_contains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
-  GSERIALIZED *places = trgeo_placements(temp);
+  GSERIALIZED *places = trgeometry_placements(temp);
   bool result = ever ? geom_relate_pattern(gs, places, "T********") :
     geom_contains(gs, places);
   pfree(places);
@@ -147,7 +147,7 @@ ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 int
 econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_contains_geo_trgeo(gs, temp, EVER);
+  return ea_contains_geo_trgeometry(gs, temp, EVER);
 }
 
 /**
@@ -165,7 +165,7 @@ econtains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 acontains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_contains_geo_trgeo(gs, temp, ALWAYS);
+  return ea_contains_geo_trgeometry(gs, temp, ALWAYS);
 }
 
 /**
@@ -175,17 +175,17 @@ acontains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_contains_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
     return -1;
   /* Common-time gate: the placements below hold where each body passes and carry no time,
    * so two rigid geometries sharing no instant would be related through positions they
    * never hold together */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
-  GSERIALIZED *places1 = trgeo_placements(temp1);
-  GSERIALIZED *places2 = trgeo_placements(temp2);
+  GSERIALIZED *places1 = trgeometry_placements(temp1);
+  GSERIALIZED *places2 = trgeometry_placements(temp2);
   bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
     geom_contains(places1, places2);
   pfree(places1); pfree(places2);
@@ -202,11 +202,11 @@ ea_contains_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_contains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
-  GSERIALIZED *places = trgeo_placements(temp);
+  GSERIALIZED *places = trgeometry_placements(temp);
   bool result = ever ? geom_relate_pattern(places, gs, "T********") :
     geom_contains(places, gs);
   pfree(places);
@@ -230,12 +230,12 @@ ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * https://postgis.net/docs/ST_Contains.html
  */
 int
-ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_covers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
-  GSERIALIZED *places = trgeo_placements(temp);
+  GSERIALIZED *places = trgeometry_placements(temp);
   bool result = ever ? geom_relate_pattern(gs, places, "T********") :
     geom_covers(gs, places);
   pfree(places);
@@ -257,7 +257,7 @@ ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 int
 ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_covers_geo_trgeo(gs, temp, EVER);
+  return ea_covers_geo_trgeometry(gs, temp, EVER);
 }
 
 /**
@@ -275,7 +275,7 @@ ecovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 int
 acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
 {
-  return ea_covers_geo_trgeo(gs, temp, ALWAYS);
+  return ea_covers_geo_trgeometry(gs, temp, ALWAYS);
 }
 
 /*****************************************************************************/
@@ -293,9 +293,9 @@ acovers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
  * https://postgis.net/docs/ST_Contains.html
  */
 int
-ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_covers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_covers, ever);
+  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_covers, ever);
 }
 
 /**
@@ -312,7 +312,7 @@ ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 ecovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_covers_trgeo_geo(temp, gs, EVER);
+  return ea_covers_trgeometry_geo(temp, gs, EVER);
 }
 
 /**
@@ -329,7 +329,7 @@ ecovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 acovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_covers_trgeo_geo(temp, gs, ALWAYS);
+  return ea_covers_trgeometry_geo(temp, gs, ALWAYS);
 }
 
 /**
@@ -339,15 +339,15 @@ acovers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_covers_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
     return -1;
-  /* Common-time gate, as in #ea_contains_trgeo_trgeo: the placements carry no time */
+  /* Common-time gate, as in #ea_contains_trgeometry_trgeometry: the placements carry no time */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
-  GSERIALIZED *places1 = trgeo_placements(temp1);
-  GSERIALIZED *places2 = trgeo_placements(temp2);
+  GSERIALIZED *places1 = trgeometry_placements(temp1);
+  GSERIALIZED *places2 = trgeometry_placements(temp2);
   bool result = ever ? geom_relate_pattern(places1, places2, "T********") :
     geom_covers(places1, places2);
   pfree(places1); pfree(places2);
@@ -366,13 +366,13 @@ ea_covers_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_disjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
   if (ever)
-    return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_disjoint2d,
+    return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_disjoint2d,
       EVER);
   /* aDisjoint(trgeo, geo) ≡ NOT eIntersects(trgeo, geo) */
   return INVERT_RESULT(eintersects_trgeometry_geo(temp, gs));
@@ -388,7 +388,7 @@ ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 edisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_disjoint_trgeo_geo(temp, gs, EVER);
+  return ea_disjoint_trgeometry_geo(temp, gs, EVER);
 }
 
 /**
@@ -403,7 +403,7 @@ edisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 adisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_disjoint_trgeo_geo(temp, gs, ALWAYS);
+  return ea_disjoint_trgeometry_geo(temp, gs, ALWAYS);
 }
 
 /**
@@ -412,12 +412,12 @@ adisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note Disjoint is symmetric: delegates to ea_disjoint_trgeo_geo
+ * @note Disjoint is symmetric: delegates to ea_disjoint_trgeometry_geo
  */
 int
-ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_disjoint_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  return ea_disjoint_trgeo_geo(temp, gs, ever);
+  return ea_disjoint_trgeometry_geo(temp, gs, ever);
 }
 
 /**
@@ -427,7 +427,7 @@ ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_disjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_disjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, ever);
 }
@@ -442,7 +442,7 @@ ea_disjoint_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
 int
 edisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_disjoint_trgeo_trgeo(temp1, temp2, EVER);
+  return ea_disjoint_trgeometry_trgeometry(temp1, temp2, EVER);
 }
 
 /**
@@ -456,7 +456,7 @@ edisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_disjoint_trgeo_trgeo(temp1, temp2, ALWAYS);
+  return ea_disjoint_trgeometry_trgeometry(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************
@@ -473,11 +473,11 @@ adisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_intersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) )
+  if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
-  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_intersects2d,
+  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_intersects2d,
     ever);
 }
 
@@ -492,7 +492,7 @@ ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 int
 eintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_intersects_trgeo_geo(temp, gs, EVER);
+  return ea_intersects_trgeometry_geo(temp, gs, EVER);
 }
 
 /**
@@ -507,7 +507,7 @@ eintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 aintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_intersects_trgeo_geo(temp, gs, ALWAYS);
+  return ea_intersects_trgeometry_geo(temp, gs, ALWAYS);
 }
 
 /**
@@ -516,12 +516,12 @@ aintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] gs Geometry
  * @param[in] temp Temporal rigid geometry
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @note Intersects is symmetric: delegates to ea_intersects_trgeo_geo
+ * @note Intersects is symmetric: delegates to ea_intersects_trgeometry_geo
  */
 int
-ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_intersects_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  return ea_intersects_trgeo_geo(temp, gs, ever);
+  return ea_intersects_trgeometry_geo(temp, gs, ever);
 }
 
 /**
@@ -531,7 +531,7 @@ ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_intersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
+ea_intersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, ever);
@@ -547,7 +547,7 @@ ea_intersects_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
 int
 eintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_intersects_trgeo_trgeo(temp1, temp2, EVER);
+  return ea_intersects_trgeometry_trgeometry(temp1, temp2, EVER);
 }
 
 /**
@@ -560,7 +560,7 @@ eintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
-  return ea_intersects_trgeo_trgeo(temp1, temp2, ALWAYS);
+  return ea_intersects_trgeometry_trgeometry(temp1, temp2, ALWAYS);
 }
 
 /*****************************************************************************
@@ -578,7 +578,7 @@ aintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 int
 etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_touches, EVER);
+  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_touches, EVER);
 }
 
 /**
@@ -592,7 +592,7 @@ etouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 int
 atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
-  return ea_spatialrel_trgeo_poses_geo(temp, gs, &datum_geom_touches, ALWAYS);
+  return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_touches, ALWAYS);
 }
 
 /**
@@ -603,7 +603,7 @@ atouches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
+ea_touches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
 {
   return ever ? etouches_trgeometry_geo(temp, gs) : atouches_trgeometry_geo(temp, gs);
 }
@@ -616,9 +616,9 @@ ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
+ea_touches_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool ever)
 {
-  return ea_touches_trgeo_geo(temp, gs, ever);
+  return ea_touches_trgeometry_geo(temp, gs, ever);
 }
 
 /**
@@ -628,15 +628,15 @@ ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_touches_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
+ea_touches_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
     return -1;
-  /* Common-time gate, as in #ea_contains_trgeo_trgeo: the placements carry no time */
+  /* Common-time gate, as in #ea_contains_trgeometry_trgeometry: the placements carry no time */
   if (! temporal_time_overlaps(temp1, temp2))
     return -1;
-  GSERIALIZED *places1 = trgeo_placements(temp1);
-  GSERIALIZED *places2 = trgeo_placements(temp2);
+  GSERIALIZED *places1 = trgeometry_placements(temp1);
+  GSERIALIZED *places2 = trgeometry_placements(temp2);
   bool result = geom_touches(places1, places2);
   (void) ever;
   pfree(places1); pfree(places2);
@@ -680,13 +680,13 @@ ea_dwithin_tdist(Temporal *tdist, double dist, bool ever)
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
+ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   bool ever)
 {
-  if (! ensure_valid_trgeo_geo(temp, gs) ||
+  if (! ensure_valid_trgeometry_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  return ea_dwithin_tdist(trgeo_tdistance_geo(temp, gs, ever ? -1.0 : dist),
+  return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, ever ? -1.0 : dist),
     dist, ever);
 }
 
@@ -704,7 +704,7 @@ edwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 {
   if (! ensure_finite(dist))
     return -1;
-  return ea_dwithin_trgeo_geo(temp, gs, dist, EVER);
+  return ea_dwithin_trgeometry_geo(temp, gs, dist, EVER);
 }
 
 /**
@@ -721,7 +721,7 @@ adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
 {
   if (! ensure_finite(dist))
     return -1;
-  return ea_dwithin_trgeo_geo(temp, gs, dist, ALWAYS);
+  return ea_dwithin_trgeometry_geo(temp, gs, dist, ALWAYS);
 }
 
 /**
@@ -732,18 +732,18 @@ adwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist
  * @param[in] ever True for the ever semantics, false for the always semantics
  */
 int
-ea_dwithin_trgeo_trgeo(const Temporal *temp1, const Temporal *temp2,
+ea_dwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
   double dist, bool ever)
 {
-  if (! ensure_valid_trgeo_trgeo(temp1, temp2) ||
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
   /* The ever semantics stops at the first distance within the bound */
   if (ever)
-    return trgeo_edwithin_trgeo(temp1, temp2, dist);
-  return ea_dwithin_tdist(trgeo_tdistance_trgeo(temp1, temp2, dist), dist,
+    return edwithin_trgeometry_trgeometry_intl(temp1, temp2, dist);
+  return ea_dwithin_tdist(tdistance_trgeometry_trgeometry_intl(temp1, temp2, dist), dist,
     ever);
 }
 
@@ -760,7 +760,7 @@ edwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 {
   if (! ensure_finite(dist))
     return -1;
-  return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, EVER);
+  return ea_dwithin_trgeometry_trgeometry(temp1, temp2, dist, EVER);
 }
 
 /**
@@ -776,7 +776,7 @@ adwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
 {
   if (! ensure_finite(dist))
     return -1;
-  return ea_dwithin_trgeo_trgeo(temp1, temp2, dist, ALWAYS);
+  return ea_dwithin_trgeometry_trgeometry(temp1, temp2, dist, ALWAYS);
 }
 
 /*****************************************************************************/

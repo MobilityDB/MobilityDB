@@ -76,7 +76,7 @@ Trgeometry_geom_clip_polygon(PG_FUNCTION_ARGS)
 
   LWGEOM *geom = lwgeom_from_gserialized(gs_poly);
   Span *intervals = NULL;
-  int n = trgeo_geom_clip_lwgeom(a1, b1, a2, b2, geom, &intervals);
+  int n = trgeometry_geom_clip_lwgeom(a1, b1, a2, b2, geom, &intervals);
   lwgeom_free(geom);
 
   PG_FREE_IF_COPY(gs_a1, 0);
@@ -123,7 +123,7 @@ Trgeometry_geom_clip_polygon_posed(PG_FUNCTION_ARGS)
 
   LWGEOM *geom = lwgeom_from_gserialized(gs_poly);
   Span *intervals = NULL;
-  int n = trgeo_geom_clip_lwgeom_posed(p_a_local, p_b_local, pose1, pose2,
+  int n = trgeometry_geom_clip_lwgeom_posed(p_a_local, p_b_local, pose1, pose2,
     geom, &intervals);
   lwgeom_free(geom);
 

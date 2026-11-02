@@ -257,7 +257,7 @@ error:
  * @param[in,out] temp_srid SRID of the temporal rigid geometry
  */
 GSERIALIZED *
-trgeo_parse_geom(const char **str, int32_t temp_srid)
+trgeometry_parse_geom(const char **str, int32_t temp_srid)
 {
   p_whitespace(str);
   int pos = 0;
@@ -304,7 +304,7 @@ trgeo_parse_geom(const char **str, int32_t temp_srid)
  * @param[in] temptype Temporal type
  */
 Temporal *
-trgeo_parse(const char **str, MeosType temptype)
+trgeometry_parse(const char **str, MeosType temptype)
 {
   p_whitespace(str);
 
@@ -320,7 +320,7 @@ trgeo_parse(const char **str, MeosType temptype)
   GSERIALIZED *geom = NULL;
   if (temptype == T_TRGEOMETRY)
   {
-    geom = trgeo_parse_geom(str, temp_srid);
+    geom = trgeometry_parse_geom(str, temp_srid);
     if (! geom)
       return NULL;
   }

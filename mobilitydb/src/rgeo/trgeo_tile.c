@@ -52,7 +52,7 @@
  * @brief Return the boxes a grid function answered as an array
  */
 static Datum
-Trgeo_boxes_array(STBox *boxes, int count)
+Trgeometry_boxes_array(STBox *boxes, int count)
 {
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
@@ -88,11 +88,11 @@ Trgeometry_space_boxes(PG_FUNCTION_ARGS)
   STBox *boxes = trgeometry_space_boxes(temp, xsize, ysize, zsize, sorigin,
     bitmatrix, border_inc, &count);
   PG_FREE_IF_COPY(temp, 0);
-  return Trgeo_boxes_array(boxes, count);
+  return Trgeometry_boxes_array(boxes, count);
 }
 
-PGDLLEXPORT Datum Trgeo_time_boxes(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Trgeo_time_boxes);
+PGDLLEXPORT Datum Trgeometry_time_boxes(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Trgeometry_time_boxes);
 /**
  * @ingroup mobilitydb_rgeo_tile
  * @brief Return the spatiotemporal boxes of a temporal rigid geometry split
@@ -100,7 +100,7 @@ PG_FUNCTION_INFO_V1(Trgeo_time_boxes);
  * @sqlfn timeBoxes()
  */
 Datum
-Trgeo_time_boxes(PG_FUNCTION_ARGS)
+Trgeometry_time_boxes(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   Interval *duration = PG_GETARG_INTERVAL_P(1);
@@ -111,7 +111,7 @@ Trgeo_time_boxes(PG_FUNCTION_ARGS)
   STBox *boxes = trgeometry_time_boxes(temp, duration, torigin, bitmatrix,
     border_inc, &count);
   PG_FREE_IF_COPY(temp, 0);
-  return Trgeo_boxes_array(boxes, count);
+  return Trgeometry_boxes_array(boxes, count);
 }
 
 PGDLLEXPORT Datum Trgeometry_space_time_boxes(PG_FUNCTION_ARGS);
@@ -145,7 +145,7 @@ Trgeometry_space_time_boxes(PG_FUNCTION_ARGS)
   STBox *boxes = trgeometry_space_time_boxes(temp, xsize, ysize, zsize,
     duration, sorigin, torigin, bitmatrix, border_inc, &count);
   PG_FREE_IF_COPY(temp, 0);
-  return Trgeo_boxes_array(boxes, count);
+  return Trgeometry_boxes_array(boxes, count);
 }
 
 /*****************************************************************************/

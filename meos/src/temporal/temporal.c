@@ -656,7 +656,7 @@ temporal_strip_geom(const Temporal *temp, const GSERIALIZED **geom)
 #if RGEO
   if (temp->temptype == T_TRGEOMETRY)
   {
-    *geom = trgeo_geom_p(temp);
+    *geom = trgeometry_geom_p(temp);
     return trgeometry_to_tpose(temp);
   }
 #endif /* RGEO */
@@ -697,7 +697,7 @@ temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp)
   if (! geom || ! temp)
     return temp;
 #if RGEO
-  Temporal *result = geo_tpose_to_trgeo(geom, temp);
+  Temporal *result = geometry_tpose_to_trgeometry_intl(geom, temp);
   pfree(temp);
   return result;
 #else

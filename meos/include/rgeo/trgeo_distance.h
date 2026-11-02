@@ -40,13 +40,13 @@
 
 /*****************************************************************************/
 
-extern Temporal *trgeo_tdistance_geo(const Temporal *temp,
+extern Temporal *tdistance_trgeometry_geo_intl(const Temporal *temp,
   const GSERIALIZED *gs, double level);
-extern Temporal *trgeo_tdistance_tpoint(const Temporal *temp1,
+extern Temporal *tdistance_trgeometry_tpoint_intl(const Temporal *temp1,
   const Temporal *temp2, double level);
-extern Temporal *trgeo_tdistance_trgeo(const Temporal *temp1,
+extern Temporal *tdistance_trgeometry_trgeometry_intl(const Temporal *temp1,
   const Temporal *temp2, double level);
-extern int trgeo_edwithin_trgeo(const Temporal *temp1, const Temporal *temp2,
+extern int edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2,
   double dist);
 
 /*****************************************************************************/

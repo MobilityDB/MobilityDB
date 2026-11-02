@@ -47,49 +47,49 @@
 /*****************************************************************************/
 
 /* eContains / aContains */
-extern int ea_contains_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+extern int ea_contains_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
-extern int ea_contains_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_contains_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int ea_contains_trgeo_trgeo(const Temporal *temp1,
+extern int ea_contains_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 /* eCovers / aCovers */
-extern int ea_covers_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+extern int ea_covers_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
-extern int ea_covers_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_covers_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int ea_covers_trgeo_trgeo(const Temporal *temp1,
+extern int ea_covers_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 /* eDisjoint / aDisjoint */
-extern int ea_disjoint_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+extern int ea_disjoint_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
-extern int ea_disjoint_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_disjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int ea_disjoint_trgeo_trgeo(const Temporal *temp1,
+extern int ea_disjoint_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 /* eIntersects / aIntersects */
-extern int ea_intersects_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+extern int ea_intersects_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
-extern int ea_intersects_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_intersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int ea_intersects_trgeo_trgeo(const Temporal *temp1,
+extern int ea_intersects_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 /* eTouches / aTouches */
-extern int ea_touches_geo_trgeo(const GSERIALIZED *gs, const Temporal *temp,
+extern int ea_touches_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp,
   bool ever);
-extern int ea_touches_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_touches_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool ever);
-extern int ea_touches_trgeo_trgeo(const Temporal *temp1,
+extern int ea_touches_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, bool ever);
 
 /* eDwithin / aDwithin */
-extern int ea_dwithin_trgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
+extern int ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   double dist, bool ever);
-extern int ea_dwithin_trgeo_trgeo(const Temporal *temp1,
+extern int ea_dwithin_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2, double dist, bool ever);
 
 /*****************************************************************************/
