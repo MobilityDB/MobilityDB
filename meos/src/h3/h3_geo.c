@@ -1042,6 +1042,7 @@ h3index_cell_to_cover(H3Index cell, int32 resolution)
  * @param[in] cells The candidate H3 cell set (T_H3INDEX).
  * @param[in] th3idx The th3index temporal value.
  * @csqlfn #Ever_eq_h3indexset_th3index()
+ * @errval -1
  */
 int
 ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
@@ -1063,6 +1064,7 @@ ever_eq_h3indexset_th3index(const Set *cells, const Temporal *th3idx)
  * @param[in] th3idx The th3index temporal value.
  * @param[in] cells The candidate H3 cell set (T_H3INDEX).
  * @csqlfn #Ever_eq_th3index_h3indexset()
+ * @errval -1
  */
 int
 ever_eq_th3index_h3indexset(const Temporal *th3idx, const Set *cells)

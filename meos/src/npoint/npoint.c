@@ -1465,6 +1465,7 @@ nsegment_round(const Nsegment *ns, int maxdd)
  * @brief Return the route of a network point
  * @param[in] np Network point
  * @csqlfn #Npoint_route()
+ * @errval INT64_MAX
  */
 int64
 npoint_route(const Npoint *np)
@@ -1494,6 +1495,7 @@ npoint_position(const Npoint *np)
  * @brief Return the route of a network segment
  * @param[in] ns Network segment
  * @csqlfn #Nsegment_route()
+ * @errval INT64_MAX
  */
 int64
 nsegment_route(const Nsegment *ns)
@@ -1879,6 +1881,7 @@ npoint_hash(const Npoint *np)
  * @brief Return the 64-bit hash value of a network point using a seed
  * @param[in] np Network point
  * @param[in] seed Seed
+ * @errval UINT64_MAX
  */
 uint64
 npoint_hash_extended(const Npoint *np, uint64 seed)

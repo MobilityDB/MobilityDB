@@ -320,6 +320,7 @@ timestamptz_bin_start(TimestampTz t, int64 size, TimestampTz origin)
  * @param[in] t Input timestamp
  * @param[in] duration Interval defining the size of the bins
  * @param[in] torigin Origin of the bins
+ * @errval DT_NOEND
  */
 TimestampTz
 timestamptz_get_bin(TimestampTz t, const Interval *duration,

@@ -843,6 +843,7 @@ cbuffer_point(const Cbuffer *cb)
  * @brief Return the radius of a circular buffer
  * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_radius()
+ * @errval DBL_MAX
  */
 double
 cbuffer_radius(const Cbuffer *cb)
@@ -1521,6 +1522,7 @@ touches_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @param[in] dist Distance
  * @csqlfn #Cbuffer_dwithin()
+ * @errval -1
  */
 int
 dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
@@ -1860,6 +1862,7 @@ cbuffer_hash(const Cbuffer *cb)
  * @param[in] seed Seed
  * csqlfn hash_extended
  * @csqlfn #Cbuffer_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)

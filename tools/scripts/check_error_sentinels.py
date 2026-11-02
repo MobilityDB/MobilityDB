@@ -258,6 +258,18 @@ def scan(path: Path, rel: str) -> list[tuple[str, str]]:
                                  f"{rel}:{i + 1}: {name}() {where} {raw}, which "
                                  f"is 32 bits on LLP64 Windows: use INT64_MAX"))
 
+        # A public function answering a number or a time states the error
+        # value it returns, since its callers and the bindings read it from
+        # that tag alone
+        if (documented is None and want not in ("NULL", "false") and
+                PUBLIC_DOC.search("\n".join(doc)) and
+                (validated is not None or
+                 any(re.search(r"\breturn\s+" + re.escape(want) + r"\s*;", bl)
+                     for bl in body))):
+            findings.append((f"{rel}\t{name}\tstates no error value",
+                             f"{rel}:{i + 1}: {name}() returns an error value "
+                             f"and states none: add \"@errval {want}\""))
+
         if validated is not None and validated != want:
             findings.append((f"{rel}\t{name}\tvalidates with {validated}",
                              f"{rel}:{i + 1}: {name}() returns {rettype} but "

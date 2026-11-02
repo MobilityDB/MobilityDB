@@ -1960,6 +1960,7 @@ rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching IDs
+ * @errval -1
  */
 int
 rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
@@ -1992,6 +1993,7 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the ids, made by #index_result_create
  * @return Number of qualifying pairs, half the number of collected ids, on
  * error -1
+ * @errval -1
  */
 int
 rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
@@ -2051,6 +2053,7 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching IDs
+ * @errval -1
  */
 int
 rtree_search_temporal(const RTree *rtree, IndexSearchOp op,

@@ -6468,6 +6468,7 @@ geom_intersection2d_coll(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * linearization would put in its place
  * @note PostGIS function: @p ST_Equals(PG_FUNCTION_ARGS)
  * @csqlfn #Geom_equals()
+ * @errval -1
  */
 int
 geo_equals(const GSERIALIZED *gs1, const GSERIALIZED *gs2)

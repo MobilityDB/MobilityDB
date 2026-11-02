@@ -720,6 +720,7 @@ pcpatch_hash(const Pcpatch *pa)
  * @ingroup meos_pointcloud_base_comp
  * @brief Return the 64-bit hash of a pcpatch with a seed
  * @csqlfn #Pcpatch_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 pcpatch_hash_extended(const Pcpatch *pa, uint64 seed)

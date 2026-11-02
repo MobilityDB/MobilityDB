@@ -403,6 +403,7 @@ temporal_ext_kalman_filter(const Temporal *temp, double gate, double q, double v
  * @param[in] duration Size of the time bins
  * @param[in] torigin Time origin of the bins
  * @csqlfn #Timestamptz_tprecision()
+ * @errval DT_NOEND
  */
 TimestampTz
 timestamptz_tprecision(TimestampTz t, const Interval *duration,
