@@ -1208,10 +1208,12 @@ tfunc_tlinearseq_base_discfn(const TSequence *seq, Datum value,
       }
       else /* cross */
       {
-        tpvalue1 = tsegment_value_at_timestamptz(startvalue, endvalue,
-          start->temptype, start->t, end->t, tpt1);
-        tpresult = tfunc_base_base(tpvalue1, value, lfinfo);
-        DATUM_FREE(tpvalue1, basetype);
+        /* The segment takes the value at the crossing, so the function is
+         * computed on the value itself, as #eafunc_tlinearseq_base does. The
+         * value interpolated at the microsecond dating the crossing differs
+         * from it by a rounding, which a comparison would read as a
+         * different value */
+        tpresult = tfunc_base_base(value, value, lfinfo);
         lower_eq = datum_eq(startresult, tpresult, resbasetype);
         bool upper_eq = datum_eq(tpresult, endresult, resbasetype);
         /* If the value at the crossing is equal to the start or to the end
