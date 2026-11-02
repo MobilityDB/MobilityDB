@@ -929,10 +929,11 @@ tbool_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TBOOL(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res = (Datum) 0;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  Datum res;
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetBool(res);
-  return result;
+  return true;
 }
 
 /**
@@ -951,10 +952,11 @@ tint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TINT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res = (Datum) 0;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  Datum res;
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetInt32(res);
-  return result;
+  return true;
 }
 
 /**
@@ -974,9 +976,10 @@ tbigint_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
   /* Ensure the validity of the arguments */
   VALIDATE_TBIGINT(temp, false); VALIDATE_NOT_NULL(value, false);
   Datum res;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetInt64(res);
-  return result;
+  return true;
 }
 
 /**
@@ -995,10 +998,11 @@ tfloat_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TFLOAT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res = (Datum) 0;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  Datum res;
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetFloat8(res);
-  return result;
+  return true;
 }
 
 /**
@@ -1017,10 +1021,11 @@ ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TTEXT(temp, false); VALIDATE_NOT_NULL(value, false);
-  Datum res = (Datum) 0;
-  bool result = temporal_value_at_timestamptz(temp, t, strict, &res);
+  Datum res;
+  if (! temporal_value_at_timestamptz(temp, t, strict, &res))
+    return false;
   *value = DatumGetTextP(res);
-  return result;
+  return true;
 }
 
 /*****************************************************************************/
