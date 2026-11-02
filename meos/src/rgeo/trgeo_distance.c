@@ -687,8 +687,10 @@ Temporal *
 tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   double level)
 {
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags))
+  assert(temp); assert(gs); assert(ensure_valid_trgeometry_geo(temp, gs));
+  assert(! MEOS_FLAGS_GET_Z(temp->flags));
+  /* An empty geometry has no distance to a temporal value */
+  if (gserialized_is_empty(gs))
     return NULL;
   DistOps ops;
   memset(&ops, 0, sizeof(DistOps));
@@ -762,10 +764,8 @@ Temporal *
 tdistance_trgeometry_tpoint_intl(const Temporal *temp1, const Temporal *temp2,
   double level)
 {
-  if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
-      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return NULL;
+  assert(temp1); assert(temp2);
+  assert(ensure_valid_trgeometry_tpoint(temp1, temp2));
   return tdistance_trgeometry_temporal(temp1, temp2, level);
 }
 
@@ -777,10 +777,8 @@ Temporal *
 tdistance_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2,
   double level)
 {
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
-      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
-      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return NULL;
+  assert(temp1); assert(temp2);
+  assert(ensure_valid_trgeometry_trgeometry(temp1, temp2));
   return tdistance_trgeometry_temporal(temp1, temp2, level);
 }
 
@@ -1204,6 +1202,10 @@ dist_normalize(Temporal *temp)
 Temporal *
 tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return NULL;
   return dist_normalize(tdistance_trgeometry_geo_intl(temp, gs, -1.0));
 }
 
@@ -1217,6 +1219,11 @@ tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 Temporal *
 tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
+    return NULL;
   return dist_normalize(tdistance_trgeometry_tpoint_intl(temp1, temp2, -1.0));
 }
 
@@ -1229,6 +1236,11 @@ tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 Temporal *
 tdistance_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
+    return NULL;
   return dist_normalize(tdistance_trgeometry_trgeometry_intl(temp1, temp2, -1.0));
 }
 
@@ -1254,7 +1266,9 @@ tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   if (! ensure_finite(dist))
     return NULL;
-  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8) ||
+      ! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
   Temporal *tdist = tdistance_trgeometry_geo_intl(temp, gs, dist);
   if (! tdist)
@@ -1292,7 +1306,10 @@ tdwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
 {
   if (! ensure_finite(dist))
     return NULL;
-  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
+  if (! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8) ||
+      ! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
   Temporal *tdist = tdistance_trgeometry_trgeometry_intl(temp1, temp2, dist);
   if (! tdist)
@@ -1317,7 +1334,9 @@ TInstant *
 nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
+      gserialized_is_empty(gs))
     return NULL;
 
   /* Also an instant goes through the temporal distance, which refuses the
@@ -1348,7 +1367,9 @@ TInstant *
 nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_tpoint(temp1, temp2))
+  if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
 
   TInstant *result = NULL;
@@ -1378,7 +1399,9 @@ TInstant *
 nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
 
   TInstant *result = NULL;
@@ -1411,7 +1434,9 @@ double
 nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
+      gserialized_is_empty(gs))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_geo_intl(temp, gs, -1.0);
@@ -1433,7 +1458,8 @@ double
 nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_stbox(temp, box))
+  if (! ensure_valid_trgeometry_stbox(temp, box) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
     return DBL_MAX;
 
   /* Project the temporal value to the timespan of the box */
@@ -1493,7 +1519,9 @@ double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_tpoint(temp1, temp2))
+  if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_tpoint_intl(temp1, temp2, -1.0);
@@ -1515,7 +1543,9 @@ double
 nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return DBL_MAX;
 
   Temporal *dist = tdistance_trgeometry_trgeometry_intl(temp1, temp2, -1.0);
@@ -1542,7 +1572,9 @@ GSERIALIZED *
 shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs) ||
+      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
+      gserialized_is_empty(gs))
     return NULL;
 
   Temporal *dist = tdistance_trgeometry_geo_intl(temp, gs, -1.0);
@@ -1568,7 +1600,9 @@ GSERIALIZED *
 shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_tpoint(temp1, temp2))
+  if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
 
   Temporal *dist = tdistance_trgeometry_tpoint_intl(temp1, temp2, -1.0);
@@ -1596,7 +1630,9 @@ GSERIALIZED *
 shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
+      ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
+      ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return NULL;
 
   Temporal *dist = tdistance_trgeometry_trgeometry_intl(temp1, temp2, -1.0);
