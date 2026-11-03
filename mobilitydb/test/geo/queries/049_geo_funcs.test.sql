@@ -290,6 +290,15 @@ SELECT disjoint(geometry 'Point(1 1 1)', geometry 'Point(1 1 2)');
 SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5),
   ST_3DDWithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
 SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
+-- A distance is compared with the exact one, whatever double that rounds to
+SELECT dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.605551275463989),
+  dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.6055512754639896),
+  dwithin(geometry 'Point(0 0)', geometry 'Point(1 2)', 2.23606797749979);
+SELECT dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
+    geometry 'Linestring(0 0,1 4.9406564584124654e-324)', 0),
+  dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
+    geometry 'Linestring(0 0,1 0)', 0),
+  dwithin(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)', 0);
 
 -- The containment family has no 3D form, so a geometry with Z is refused
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
