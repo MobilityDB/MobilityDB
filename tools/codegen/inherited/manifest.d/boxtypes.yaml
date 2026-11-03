@@ -331,6 +331,23 @@ boxtypes:
     posaxes:   [x, y, z, t]
     posgroup:  mobilitydb_pointcloud_box_pos
     posreference: true
+    # the SQL of the topological and position wrappers (templates/tempbox.sql.tmpl)
+    # over the temporal point clouds, as the stbox entry states those of the
+    # temporal geometries
+    tempsql:
+      - file:    mobilitydb/sql/pointcloud/436_tpc_topops.in.sql
+        posfile: mobilitydb/sql/pointcloud/437_tpc_posops.in.sql
+        sel:     tspatial
+        support: tspatial_supportfn
+        temps:
+          - {temp: tpcpoint, desc: Temporal point cloud point}
+          - {temp: tpcpatch, desc: Temporal point cloud patch}
+        groups:
+          - [[tstzspan, "{T}", tstzspan_temporal, [t]],
+             ["{T}", tstzspan, temporal_tstzspan, [t]]]
+          - [[tpcbox, "{T}", tpcbox_tpointcloud, [x, y, z, t]],
+             ["{T}", tpcbox, tpointcloud_tpcbox, [x, y, z, t]],
+             ["{T}", "{T}", tpointcloud_tpointcloud, [x, y, z, t]]]
     # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them
     boxbox:    {file: mobilitydb/src/pointcloud/tpcbox.c, group: mobilitydb_pointcloud_box,
                 sqlfile: mobilitydb/sql/pointcloud/410_tpcbox.in.sql, sel: tspatial,
