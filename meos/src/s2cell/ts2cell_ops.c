@@ -534,4 +534,79 @@ tpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
   return result;
 }
 
+/**
+ * @brief Return the S2 cells of an array of datums, freeing the array
+ */
+static S2CellId *
+s2cell_cells(Datum *datums, int count)
+{
+  S2CellId *result = palloc(sizeof(S2CellId) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetS2Cell(datums[i]);
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the fragments of a temporal planar point split by the S2
+ * cells it crosses at a level, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeompoint_s2cell_split()
+ */
+Temporal **
+tgeompoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
+  S2CellId **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_s2cell_split(temp, level, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = s2cell_cells(datum_cells, *count);
+  return result;
+}
+
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Return the fragments of a temporal geodetic point split by the S2
+ * cells it crosses at a level, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] level S2 level
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeogpoint_s2cell_split()
+ */
+Temporal **
+tgeogpoint_s2cell_split(const Temporal *temp, int32 level, bool border_inc,
+  S2CellId **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_s2cell_split(temp, level, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = s2cell_cells(datum_cells, *count);
+  return result;
+}
+
 /*****************************************************************************/
