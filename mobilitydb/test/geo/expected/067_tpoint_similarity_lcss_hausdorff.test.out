@@ -163,3 +163,17 @@ SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01
  1.000000
 (1 row)
 
+SELECT frechetDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+SELECT dynTimeWarpDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+SELECT hausdorffDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+SELECT averageHausdorffDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+SELECT lcssDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', 1.0);
+ERROR:  Operation on mixed SRID
+SELECT frechetDistancePath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+SELECT dynTimeWarpPath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+ERROR:  Operation on mixed SRID
