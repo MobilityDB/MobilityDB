@@ -147,9 +147,9 @@ static_assert(offsetof(TPCBox, pcid) >= sizeof(STBox),
 /* Input and output */
 
 extern Pcpoint *pcpoint_hex_in(const char *str);
-extern char *pcpoint_hex_out(const Pcpoint *pt, int maxdd);
+extern char *pcpoint_hex_out(const Pcpoint *pt, int maxdd, size_t *size_out);
 extern Pcpoint *pcpoint_from_hexwkb(const char *hexwkb);
-extern char *pcpoint_as_hexwkb(const Pcpoint *pt);
+extern char *pcpoint_as_hexwkb(const Pcpoint *pt, size_t *size_out);
 
 /* Constructor */
 
@@ -241,9 +241,9 @@ extern bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2);
 /* Input and output */
 
 extern Pcpatch *pcpatch_hex_in(const char *str);
-extern char *pcpatch_hex_out(const Pcpatch *pa, int maxdd);
+extern char *pcpatch_hex_out(const Pcpatch *pa, int maxdd, size_t *size_out);
 extern Pcpatch *pcpatch_from_hexwkb(const char *hexwkb);
-extern char *pcpatch_as_hexwkb(const Pcpatch *pa);
+extern char *pcpatch_as_hexwkb(const Pcpatch *pa, size_t *size_out);
 
 /* Constructor */
 
@@ -283,7 +283,7 @@ extern bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2);
 /* Input and output */
 
 extern Set *pcpointset_in(const char *str);
-extern char *pcpointset_out(const Set *s, int maxdd);
+extern char *pcpointset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor */
 
@@ -322,7 +322,7 @@ extern Set *pcpoint_union_transfn(Set *state, const Pcpoint *pt);
 /* Input and output */
 
 extern Set *pcpatchset_in(const char *str);
-extern char *pcpatchset_out(const Set *s, int maxdd);
+extern char *pcpatchset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor */
 
@@ -367,7 +367,7 @@ extern uint8_t *tpcbox_as_wkb(const TPCBox *box, uint8_t variant, size_t *size_o
 extern TPCBox *tpcbox_from_hexwkb(const char *hexwkb);
 extern TPCBox *tpcbox_from_wkb(const uint8_t *wkb, size_t size);
 extern TPCBox *tpcbox_in(const char *str);
-extern char *tpcbox_out(const TPCBox *box, int maxdd);
+extern char *tpcbox_out(const TPCBox *box, int maxdd, size_t *size_out);
 
 /* Constructor */
 
@@ -495,10 +495,10 @@ extern bool overafter_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
 /* Input and output */
 
 extern Temporal *tpcpoint_in(const char *str);
-extern char *tpcpoint_out(const Temporal *temp);
+extern char *tpcpoint_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tpcpoint_from_mfjson(const char *mfjson);
 extern Temporal *tpcpatch_in(const char *str);
-extern char *tpcpatch_out(const Temporal *temp);
+extern char *tpcpatch_out(const Temporal *temp, size_t *size_out);
 extern Temporal *tpcpatch_from_mfjson(const char *mfjson);
 
 // Internal

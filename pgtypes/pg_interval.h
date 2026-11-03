@@ -72,7 +72,7 @@ extern Interval *interval_make(int32 years, int32 months, int32 weeks, int32 day
 extern bool interval_ne(const Interval *interv1, const Interval *interv2);
 extern Interval *interval_negate(const Interval *interv);
 #if MEOS
-extern char *interval_out(const Interval *interv);
+extern char *interval_out(const Interval *interv, size_t *size_out);
 #endif /* MEOS */
 extern float8 interval_part(const Interval *interv, const text *units);
 extern Interval *interval_scale(const Interval *interv, int32 typmod);

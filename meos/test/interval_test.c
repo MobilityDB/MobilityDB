@@ -52,6 +52,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -59,8 +60,8 @@ int main(void)
   /* Create values to test the functions of the API */
   Interval *interv_in1 = interval_in("3 months", -1);
   Interval *interv_in2 = interval_in("3 weeks", -1);
-  char *interv_out1 = interval_out(interv_in1);
-  char *interv_out2 = interval_out(interv_in2);
+  char *interv_out1 = interval_out(interv_in1, &size_out);
+  char *interv_out2 = interval_out(interv_in2, &size_out);
 
   /* Create the result types for the bool functions of the API */
   bool bool_result;
@@ -80,13 +81,13 @@ int main(void)
 
   /* Interval *add_interval_interval(const Interval *interv1, const Interval *interv2); */
   interv_result = add_interval_interval(interv_in1, interv_in2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("add_interval_interval(%s, %s): %s\n", interv_out1, interv_out2, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *div_interval_float8(const Interval *interv, double factor); */
   interv_result = div_interval_float8(interv_in1, 5);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("div_interval_float8(%s, 5): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
@@ -96,7 +97,7 @@ int main(void)
 
   /* Interval *interval_copy(const Interval *interv); */
   interv_result = interval_copy(interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_copy(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
@@ -107,7 +108,7 @@ int main(void)
   /* Numeric interval_extract(const Interval *interv, const text *units); */
   text *units = text_in("seconds");
   numeric_result = interval_extract(interv_in1, units);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("interval_extract(%s, \"seconds\"): %s\n", interv_out1, char_result);
   free(units); free(numeric_result); free(char_result);
 
@@ -129,7 +130,7 @@ int main(void)
 
   /* Interval *interval_in(const char *str, int32_t typmod); */
   interv_result = interval_in("3 hours", -1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_in(\"3 hours\", -1): %s\n", char_result);
   free(interv_result); free(char_result);
 
@@ -139,25 +140,25 @@ int main(void)
 
   /* Interval *interval_justify_days(const Interval *interv); */
   interv_result = interval_justify_days(interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_justify_days(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *interval_justify_hours(const Interval *interv); */
   interv_result = interval_justify_hours(interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_justify_hours(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *interval_justify_interval(const Interval *interv); */
   interv_result = interval_justify_interval(interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_justify_interval(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *interval_larger(const Interval *interv1, const Interval *interv2); */
   interv_result = interval_larger(interv_in1, interv_in2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_larger(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
@@ -171,7 +172,7 @@ int main(void)
 
   /* Interval *interval_make(int32_t years, int32_t months, int32_t weeks, int32_t days, int32_t hours, int32_t mins, double secs); */
   interv_result = interval_make(2025, 3, 1, 4, 8, 0, 0);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_make(2025, 3, 1, 4, 8, 0, 0): %s\n", char_result);
   free(interv_result); free(char_result);
 
@@ -181,12 +182,12 @@ int main(void)
 
   /* Interval *interval_negate(const Interval *interv); */
   interv_result = interval_negate(interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_negate(%s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
-  /* char *interval_out(const Interval *interv); */
-  char_result = interval_out(interv_in1);
+  /* char *interval_out(const Interval *interv, size_t *size_out); */
+  char_result = interval_out(interv_in1, &size_out);
   printf("interval_out(%s): %s\n", interv_out1, char_result);
   free(char_result);
 
@@ -199,38 +200,38 @@ int main(void)
   /* Interval *interval_scale(const Interval *interv, int32_t typmod); */
   /* The value below sets the precision to (0) */
   Interval *interv = interval_in("1 hour 1 minute 1.123456789 seconds", 2147418112);
-  char_result = interval_out(interv);
+  char_result = interval_out(interv, &size_out);
   printf("interval_scale(\"1 hour 1 minute 1.123456789 seconds\", 2147418112): %s\n", char_result);
   free(interv); free(char_result);
 
   /* Interval *interval_smaller(const Interval *interv1, const Interval *interv2); */
   interv_result = interval_smaller(interv_in1, interv_in2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_smaller(%s, %s): %s\n", interv_out1, interv_out2, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *interval_trunc(const Interval *interv, const text *units); */
   units = text_in("seconds");
   interv_result = interval_trunc(interv_in1, units);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("interval_trunc(%s, \"seconds\"): %s\n", interv_out1, char_result);
   free(units); free(interv_result); free(char_result);
 
   /* Interval *minus_interval_interval(const Interval *interv1, const Interval *interv2); */
   interv_result = minus_interval_interval(interv_in1, interv_in2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("minus_interval_interval(%s, %s): %s\n", interv_out1, interv_out2, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *mul_float8_interval(double factor, const Interval *interv); */
   interv_result = mul_float8_interval(8, interv_in1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("mul_float8_interval(8, %s): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 
   /* Interval *mul_interval_float8(const Interval *interv, double factor); */
   interv_result = mul_interval_float8(interv_in1, 8);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("mul_interval_float8(%s, 8): %s\n", interv_out1, char_result);
   free(interv_result); free(char_result);
 

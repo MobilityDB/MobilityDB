@@ -88,6 +88,7 @@ expect_text(char *res, const char *expected, const char *call)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -135,22 +136,22 @@ int main(void)
   /* The factor point answers the scaled value, about the origin when there
    * is one */
   Temporal *scaled = tgeo_scale(temp, 2, 3, 1);
-  char *expected = tspatial_as_text(scaled, 6);
+  char *expected = tspatial_as_text(scaled, 6, &size_out);
   Temporal *res = tgeo_scale_geo(temp, factors);
-  expect_text(tspatial_as_text(res, 6), expected, "tgeo_scale_geo(2 3)");
+  expect_text(tspatial_as_text(res, 6, &size_out), expected, "tgeo_scale_geo(2 3)");
   free(res); free(scaled); free(expected);
   Temporal *about = tgeompoint_in(
     "SRID=3812;[Point(1 1)@2001-01-01, Point(3 4)@2001-01-02]");
-  expected = tspatial_as_text(about, 6);
+  expected = tspatial_as_text(about, 6, &size_out);
   res = tgeo_scale_geo_origin(temp, factors, origin);
-  expect_text(tspatial_as_text(res, 6), expected,
+  expect_text(tspatial_as_text(res, 6, &size_out), expected,
     "tgeo_scale_geo_origin(2 3, 1 1)");
   free(res); free(about); free(expected);
   GSERIALIZED *gres = geo_scale_geo(gs, factors);
-  expect_text(geo_as_text(gres, 6), "POINT(4 6)", "geo_scale_geo(2 3)");
+  expect_text(geo_as_text(gres, 6, &size_out), "POINT(4 6)", "geo_scale_geo(2 3)");
   free(gres);
   gres = geo_scale_geo_origin(gs, factors, origin);
-  expect_text(geo_as_text(gres, 6), "POINT(3 4)",
+  expect_text(geo_as_text(gres, 6, &size_out), "POINT(3 4)",
     "geo_scale_geo_origin(2 3, 1 1)");
   free(gres);
 

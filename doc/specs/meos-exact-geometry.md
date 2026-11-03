@@ -194,8 +194,10 @@ less than, equal to or more than a given distance
 ### 6.2 Two static geometries within a distance
 
 Whether two geometries of points and straight edges are within a distance in
-two dimensions is the exact answer. In MobilityDB, `dwithin(geometry, geometry,
-float)` answers it unless both geometries have Z; in MEOS, `geom_dwithin2d`.
+two dimensions is the exact answer, and so is whether two geometries of points
+and segments with Z are within a distance in three. In MobilityDB,
+`dwithin(geometry, geometry, float)` answers both; in MEOS, `geom_dwithin2d`
+and `geom_dwithin3d`.
 The distance given is itself a rational, and the answer compares the exact
 distance with it, whatever double the exact distance rounds to.
 
@@ -206,10 +208,12 @@ distance with it, whatever double the exact distance rounds to.
 | `POINT(0 0)`, `POINT(1 2)` | `2.23606797749979` | true | the square root of 5 lies just below the nearest double to it |
 | `POINT(0.5 5e-324)`, `LINESTRING(0 0,1 0)` | `0` | false | the two are apart by the least double there is |
 | a square, a point inside it | `0` | true | the point is on no edge, and the area holds it |
+| `LINESTRING Z(0 0 0,2 0 0)`, `LINESTRING Z(1 -1 3,1 1 3)` | `3` | true | the two are nearest inside both, at a distance held by no end |
+| `LINESTRING Z(-1 0 -2,1 0 2)`, `LINESTRING Z(0 -1 5e-324,0 1 5e-324)` | `0` | false | the least double over the root of 5, which rounds to 0 |
 
-A distance read in three dimensions, or a geometry carrying an arc, compares the
-given distance with a distance in doubles, so the answer can differ from the
-exact one where the two lie within its rounding.
+A polygon in three dimensions, or a geometry carrying an arc, compares the given
+distance with a distance in doubles, so the answer can differ from the exact one
+where the two lie within its rounding.
 
 ### 6.3 Relationships
 

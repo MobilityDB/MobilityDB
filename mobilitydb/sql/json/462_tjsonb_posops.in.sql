@@ -32,9 +32,11 @@
  * @brief Relative position operators for temporal JSONB
  */
 
------------------------------------------------------------------------------
-
-/* tstzspan op tjsonb */
+-- GENERATED-TEMPBOX-BEGIN tstzspan — tools/codegen/inherited/generate.py from templates/tempbox.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
+/*****************************************************************************
+ * Temporal JSONB
+ *****************************************************************************/
 
 CREATE FUNCTION spanBefore(tstzspan, tjsonb)
   RETURNS boolean
@@ -62,29 +64,29 @@ CREATE FUNCTION spanOverafter(tstzspan, tjsonb)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
-  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE  = spanBefore,
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = spanBefore,
   COMMUTATOR = #>>,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
-  LEFTARG   = tstzspan, RIGHTARG = tjsonb,
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
   PROCEDURE = spanOverbefore,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
-  LEFTARG    = tstzspan, RIGHTARG = tjsonb,
-  PROCEDURE  = spanAfter,
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
+  PROCEDURE = spanAfter,
   COMMUTATOR = <<#,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
-  LEFTARG   = tstzspan, RIGHTARG = tjsonb,
+  LEFTARG = tstzspan, RIGHTARG = tjsonb,
   PROCEDURE = spanOverafter,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/* tjsonb op tstzspan */
+/*****************************************************************************/
 
 CREATE FUNCTION spanBefore(tjsonb, tstzspan)
   RETURNS boolean
@@ -112,29 +114,29 @@ CREATE FUNCTION spanOverafter(tjsonb, tstzspan)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
-  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE  = spanBefore,
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = spanBefore,
   COMMUTATOR = #>>,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
-  LEFTARG   = tjsonb, RIGHTARG = tstzspan,
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
   PROCEDURE = spanOverbefore,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
-  LEFTARG    = tjsonb, RIGHTARG = tstzspan,
-  PROCEDURE  = spanAfter,
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
+  PROCEDURE = spanAfter,
   COMMUTATOR = <<#,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
-  LEFTARG   = tjsonb, RIGHTARG = tstzspan,
+  LEFTARG = tjsonb, RIGHTARG = tstzspan,
   PROCEDURE = spanOverafter,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/* tjsonb op tjsonb */
+/*****************************************************************************/
 
 CREATE FUNCTION spanBefore(tjsonb, tjsonb)
   RETURNS boolean
@@ -162,24 +164,27 @@ CREATE FUNCTION spanOverafter(tjsonb, tjsonb)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
-  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE  = spanBefore,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = spanBefore,
   COMMUTATOR = #>>,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR &<# (
-  LEFTARG   = tjsonb, RIGHTARG = tjsonb,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = spanOverbefore,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #>> (
-  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
-  PROCEDURE  = spanAfter,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
+  PROCEDURE = spanAfter,
   COMMUTATOR = <<#,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 CREATE OPERATOR #&> (
-  LEFTARG   = tjsonb, RIGHTARG = tjsonb,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
   PROCEDURE = spanOverafter,
-  RESTRICT  = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
+-- GENERATED-TEMPBOX-END tstzspan
+
+/*****************************************************************************/

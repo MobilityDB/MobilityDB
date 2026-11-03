@@ -48,6 +48,8 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>
+#include "temporal/temporal.h"
+#include "temporal/type_util.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>
 #endif
@@ -534,16 +536,20 @@ meos_set_datestyle(const char *newval, void *extra)
 /**
  * @ingroup meos_setup
  * @brief Get the DateStyle
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-meos_get_datestyle(void)
+meos_get_datestyle(size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   char *result = palloc(DATESTYLE_STR_MAXLEN);
   if (! result)
     return NULL;
   snprintf(result, DATESTYLE_STR_MAXLEN, "%s, %s", datestyle_string(DateStyle),
     dateorder_string(DateOrder));
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /***************************************************************************/
@@ -593,16 +599,20 @@ meos_set_intervalstyle(const char *newval, int extra)
 /**
  * @ingroup meos_setup
  * @brief Get the IntervalStyle
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  */
 char *
-meos_get_intervalstyle(void)
+meos_get_intervalstyle(size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   char *result = palloc(INTERVALSTYLE_STR_MAXLEN);
   if (! result)
     return NULL;
   snprintf(result, INTERVALSTYLE_STR_MAXLEN, "%s",
     intervalstyle_string(IntervalStyle));
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************/

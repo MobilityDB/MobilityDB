@@ -64,9 +64,10 @@
 static char *
 geojson(const char *ewkt, int option, const char *srs)
 {
+  size_t size_out;
   GSERIALIZED *gs = geom_in(ewkt, -1);
   assert(gs);
-  char *result = geo_as_geojson(gs, option, 9, srs);
+  char *result = geo_as_geojson(gs, option, 9, srs, &size_out);
   free(gs);
   return result;
 }
@@ -77,8 +78,9 @@ geojson(const char *ewkt, int option, const char *srs)
 static char *
 mfjson(Temporal *temp, int option)
 {
+  size_t size_out;
   assert(temp);
-  char *result = temporal_as_mfjson(temp, option, 0, 6, NULL);
+  char *result = temporal_as_mfjson(temp, option, 0, 6, NULL, &size_out);
   free(temp);
   return result;
 }

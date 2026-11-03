@@ -330,21 +330,21 @@ typedef enum
 extern BOX3D *box3d_make(double xmin, double xmax, double ymin, double ymax,
   double zmin, double zmax, int32_t srid);
 extern BOX3D *box3d_in(const char *str);
-extern char *box3d_out(const BOX3D *box, int maxdd);
+extern char *box3d_out(const BOX3D *box, int maxdd, size_t *size_out);
 extern GBOX *gbox_make(bool hasz, bool hasm, bool geodetic, double xmin,
   double xmax, double ymin, double ymax, double zmin, double zmax, double mmin,
   double mmax);
 extern GBOX *gbox_in(const char *str);
-extern char *gbox_out(const GBOX *box, int maxdd);
+extern char *gbox_out(const GBOX *box, int maxdd, size_t *size_out);
 extern uint8_t *geo_as_ewkb(const GSERIALIZED *gs, const char *endian, size_t *size);
-extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision);
-extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs);
-extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian);
-extern char *geo_as_text(const GSERIALIZED *gs, int precision);
+extern char *geo_as_ewkt(const GSERIALIZED *gs, int precision, size_t *size_out);
+extern char *geo_as_geojson(const GSERIALIZED *gs, int option, int precision, const char *srs, size_t *size_out);
+extern char *geo_as_hexewkb(const GSERIALIZED *gs, const char *endian, size_t *size_out);
+extern char *geo_as_text(const GSERIALIZED *gs, int precision, size_t *size_out);
 extern GSERIALIZED *geo_from_ewkb(const uint8_t *wkb, size_t wkb_size, int32_t srid);
 extern GSERIALIZED *geo_from_geojson(const char *geojson);
 extern GSERIALIZED *geo_from_text(const char *wkt, int32_t srid);
-extern char *geo_out(const GSERIALIZED *gs);
+extern char *geo_out(const GSERIALIZED *gs, size_t *size_out);
 // extern GSERIALIZED *geog_from_binary(const char *wkb_bytea);
 extern GSERIALIZED *geog_from_hexewkb(const char *hexwkb);
 extern GSERIALIZED *geog_in(const char *str, int32 typmod);
@@ -455,7 +455,7 @@ extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, doubl
 extern bool geom_intersects(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 extern bool geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
-extern char *geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern char *geom_relate(const GSERIALIZED *gs1, const GSERIALIZED *gs2, size_t *size_out);
 extern bool geom_relate_pattern(const GSERIALIZED *gs1, const GSERIALIZED *gs2, char *patt);
 extern bool geom_touches(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
@@ -491,10 +491,10 @@ extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 extern Set *geogset_in(const char *str);
 extern Set *geomset_in(const char *str);
-extern char *spatialset_out(const Set *s, int maxdd);
-extern char *spatialset_as_text(const Set *set, int maxdd);
+extern char *spatialset_out(const Set *s, int maxdd, size_t *size_out);
+extern char *spatialset_as_text(const Set *set, int maxdd, size_t *size_out);
 extern uint8_t *spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out);
-extern char *spatialset_as_ewkt(const Set *set, int maxdd);
+extern char *spatialset_as_ewkt(const Set *set, int maxdd, size_t *size_out);
 extern char *spatialset_as_hexewkb(const Set *s, uint8_t variant, size_t *size_out);
 
 /* Constructor functions */
@@ -550,7 +550,7 @@ extern uint8_t *stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out
 extern STBox *stbox_from_hexwkb(const char *hexwkb);
 extern STBox *stbox_from_wkb(const uint8_t *wkb, size_t size);
 extern STBox *stbox_in(const char *str);
-extern char *stbox_out(const STBox *box, int maxdd);
+extern char *stbox_out(const STBox *box, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -662,7 +662,7 @@ extern uint8_t *stbox_sortkey(const STBox *box, size_t *size);
 
 /* Input and output functions */
 
-extern char *tspatial_out(const Temporal *temp, int maxdd);
+extern char *tspatial_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern Temporal *tgeogpoint_from_mfjson(const char *str);
 extern Temporal *tgeogpoint_in(const char *str);
 extern Temporal *tgeography_from_mfjson(const char *mfjson);
@@ -672,9 +672,9 @@ extern Temporal *tgeometry_in(const char *str);
 extern Temporal *tgeompoint_from_mfjson(const char *str);
 extern Temporal *tgeompoint_in(const char *str);
 extern uint8_t *tspatial_as_ewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd);
+extern char *tspatial_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out);
 extern char *tspatial_as_hexewkb(const Temporal *temp, uint8_t variant, size_t *size_out);
-extern char *tspatial_as_text(const Temporal *temp, int maxdd);
+extern char *tspatial_as_text(const Temporal *temp, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 

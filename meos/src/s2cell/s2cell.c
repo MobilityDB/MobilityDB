@@ -79,6 +79,7 @@
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Hilbert curve orientation tables
@@ -1217,12 +1218,16 @@ s2cell_grid_distance(S2CellId origin, S2CellId dest)
 /**
  * @ingroup meos_s2cell
  * @brief Return the canonical token of an S2 cell
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A palloc'd, null-terminated string (caller frees)
  * @csqlfn #S2cell_cell_to_token()
  */
 char *
-s2cell_cell_to_token(S2CellId cell)
+s2cell_cell_to_token(S2CellId cell, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   char buf[S2_TOKEN_MAXLEN + 1];
   snprintf(buf, sizeof(buf), "%016" PRIx64, (uint64) cell);
   size_t len = S2_TOKEN_MAXLEN;
@@ -1231,7 +1236,7 @@ s2cell_cell_to_token(S2CellId cell)
   char *result = palloc(len + 1);
   memcpy(result, buf, len);
   result[len] = '\0';
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**
@@ -1348,13 +1353,17 @@ bigint_to_s2cell(int64 i)
  * @ingroup meos_s2cell_base_inout
  * @brief Return the string representation of an S2 cell
  * @param[in] cell S2 cell
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A palloc'd, null-terminated string (caller frees)
  * @csqlfn #S2cell_out(), #S2cell_as_text()
  */
 char *
-s2cell_out(S2CellId cell)
+s2cell_out(S2CellId cell, size_t *size_out)
 {
-  return s2cell_cell_to_token(cell);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return s2cell_cell_to_token(cell, size_out);
 }
 
 

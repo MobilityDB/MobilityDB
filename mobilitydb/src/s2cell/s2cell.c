@@ -86,8 +86,9 @@ PG_FUNCTION_INFO_V1(S2cell_out);
 Datum
 S2cell_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   S2CellId cell = PG_GETARG_S2CELL(0);
-  PG_RETURN_CSTRING(s2cell_out(cell));
+  PG_RETURN_CSTRING(s2cell_out(cell, &size_out));
 }
 
 PGDLLEXPORT Datum S2cell_as_text(PG_FUNCTION_ARGS);
@@ -100,8 +101,9 @@ PG_FUNCTION_INFO_V1(S2cell_as_text);
 Datum
 S2cell_as_text(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   S2CellId cell = PG_GETARG_S2CELL(0);
-  char *str = s2cell_out(cell);
+  char *str = s2cell_out(cell, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

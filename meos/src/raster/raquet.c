@@ -61,6 +61,7 @@
 #include "raster/raster_quadbin.h"
 #include "temporal/temporal.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Pixel type catalog
@@ -501,16 +502,18 @@ raquet_in(const char *str)
  * @brief Return the ASCII hex-encoded Well-Known Binary (HexWKB)
  * representation of a Raquet tile
  * @param[in] rq Raquet tile
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Raquet_out()
  */
 char *
-raquet_out(const Raquet *rq)
+raquet_out(const Raquet *rq, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(rq, NULL);
-  size_t size;
   return (char *) datum_as_wkb(RaquetPGetDatum(rq), T_RAQUET,
-    (uint8_t) (WKB_NDR | WKB_HEX), &size);
+    (uint8_t) (WKB_NDR | WKB_HEX), size_out);
 }
 
 /**
@@ -731,6 +734,8 @@ raquet_height(const Raquet *rq)
  * @ingroup meos_raster_base_accessor
  * @brief Return the name of the pixel data type of the band of a Raquet tile
  * @param[in] rq Raquet tile
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @note The returned name is the one the RaQuet specification writes for the
  * type, that is, one of uint8, int8, uint16, int16, uint32, int32, uint64,
@@ -739,13 +744,15 @@ raquet_height(const Raquet *rq)
  * @csqlfn #Raquet_band_pixel_type()
  */
 char *
-raquet_band_pixel_type(const Raquet *rq)
+raquet_band_pixel_type(const Raquet *rq, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(rq, NULL);
   if (! ensure_valid_pixtype(rq->pixtype))
     return NULL;
-  return pstrdup(MEOS_PIXTYPE_CATALOG[rq->pixtype].name);
+  return cstring_size(pstrdup(MEOS_PIXTYPE_CATALOG[rq->pixtype].name),
+    size_out);
 }
 
 /**

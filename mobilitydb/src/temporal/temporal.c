@@ -266,7 +266,8 @@ PG_FUNCTION_INFO_V1(Mobilitydb_version);
 Datum
 Mobilitydb_version(PG_FUNCTION_ARGS UNUSED)
 {
-  char *version = mobilitydb_version();
+  size_t size_out;
+  char *version = mobilitydb_version(&size_out);
   text *result = cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
@@ -282,7 +283,8 @@ PG_FUNCTION_INFO_V1(Mobilitydb_full_version);
 Datum
 Mobilitydb_full_version(PG_FUNCTION_ARGS UNUSED)
 {
-  char *version = mobilitydb_full_version();
+  size_t size_out;
+  char *version = mobilitydb_full_version(&size_out);
   text *result = cstring_to_text(version);
   pfree(version);
   PG_RETURN_TEXT_P(result);
@@ -324,7 +326,7 @@ Datum
 Temporal_out(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS);
+  char *result = temporal_out(temp, OUT_DEFAULT_DECIMAL_DIGITS, NULL);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_CSTRING(result);
 }

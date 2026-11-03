@@ -88,7 +88,7 @@ extern Numeric numeric_minus(Numeric num1, Numeric num2);
 extern Numeric numeric_mod(Numeric num1, Numeric num2);
 extern Numeric numeric_mul(Numeric num1, Numeric num2);
 extern bool numeric_ne(Numeric num1, Numeric num2);
-extern char *numeric_out(Numeric num);
+extern char *numeric_out(Numeric num, size_t *size_out);
 extern Numeric numeric_pow(Numeric num1, Numeric num2);
 extern Numeric numeric_round(Numeric num, int32 scale);
 extern int32 numeric_scale(Numeric num);

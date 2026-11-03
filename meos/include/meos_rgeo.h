@@ -77,9 +77,9 @@
 
 extern Temporal *trgeometry_in(const char *str);
 extern Temporal *trgeometry_from_mfjson(const char *mfjson);
-extern char *trgeometry_out(const Temporal *temp);
-extern char *trgeometry_as_text(const Temporal *temp, int maxdd);
-extern char *trgeometry_as_ewkt(const Temporal *temp, int maxdd);
+extern char *trgeometry_out(const Temporal *temp, size_t *size_out);
+extern char *trgeometry_as_text(const Temporal *temp, int maxdd, size_t *size_out);
+extern char *trgeometry_as_ewkt(const Temporal *temp, int maxdd, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions

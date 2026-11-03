@@ -96,6 +96,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Get start time */
   clock_t t;
   t = clock();
@@ -198,7 +199,7 @@ int main(void)
   /* Write the records in the output file */
   for (i = 0; i < num_records; i++)
   {
-    char *point_str = geo_out(geoms[i]);
+    char *point_str = geo_out(geoms[i], &size_out);
     fprintf(output_file,"%d,%s,%d\n", ids[i], point_str, clusterNos[i]);
     free(point_str);
   }

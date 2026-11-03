@@ -63,11 +63,12 @@
 static bool
 centroid_at(const char *wkt, double x, double y, double tol)
 {
+  size_t size_out;
   GSERIALIZED *gs = geom_in(wkt, -1);
   assert(gs != NULL);
   GSERIALIZED *c = geom_centroid(gs);
   assert(c != NULL);
-  char *text = geo_as_text(c, 17);
+  char *text = geo_as_text(c, 17, &size_out);
   double cx, cy;
   bool read = sscanf(text, "POINT(%lf %lf)", &cx, &cy) == 2;
   bool result = read && fabs(cx - x) <= tol && fabs(cy - y) <= tol;

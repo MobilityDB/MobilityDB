@@ -103,6 +103,7 @@ fill_stack(void)
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -117,22 +118,22 @@ int main(void)
 
   /* A null argument is reported rather than dereferenced */
   expect_error(jsonb_in(NULL), MEOS_ERR_INVALID_ARG, "jsonb_in(NULL)");
-  expect_error(jsonb_out(NULL), MEOS_ERR_INVALID_ARG, "jsonb_out(NULL)");
+  expect_error(jsonb_out(NULL, &size_out), MEOS_ERR_INVALID_ARG, "jsonb_out(NULL)");
   expect_error(jsonb_from_text(NULL, false), MEOS_ERR_INVALID_ARG,
     "jsonb_from_text(NULL, false)");
   expect_error(jsonb_to_text(NULL), MEOS_ERR_INVALID_ARG,
     "jsonb_to_text(NULL)");
   expect_error(jsonpath_in(NULL), MEOS_ERR_INVALID_ARG, "jsonpath_in(NULL)");
-  expect_error(jsonpath_out(NULL), MEOS_ERR_INVALID_ARG,
+  expect_error(jsonpath_out(NULL, &size_out), MEOS_ERR_INVALID_ARG,
     "jsonpath_out(NULL)");
 
   /* A valid call still answers, and the guards leave no error behind */
   expect_value(jsonb_in("[1, \"two\"]"), "jsonb_in([1, \"two\"])");
-  expect_value(jsonb_out(jb), "jsonb_out(jsonb)");
+  expect_value(jsonb_out(jb, &size_out), "jsonb_out(jsonb)");
   expect_value(jsonb_from_text(txt, false), "jsonb_from_text(text, false)");
   expect_value(jsonb_to_text(jb), "jsonb_to_text(jsonb)");
   expect_value(jsonpath_in("strict $.a"), "jsonpath_in(strict $.a)");
-  expect_value(jsonpath_out(jp), "jsonpath_out(jsonpath)");
+  expect_value(jsonpath_out(jp, &size_out), "jsonpath_out(jsonpath)");
 
   /* An object key followed by no colon, or by a token that is not one, is
    * reported between valid values, in a JSONB and in a temporal JSONB */

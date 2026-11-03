@@ -209,9 +209,12 @@ tinstant_in(const char *str, MeosType temptype)
  * @param[in] maxdd Maximum number of decimal digits
  * @param[in] value_out Function called to output the base value depending on
  * its type
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 char *
-tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
+tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out,
+  size_t *size_out)
 {
   assert(inst); assert(maxdd >= 0);
   char *t = pg_timestamptz_out(inst->t);
@@ -231,6 +234,8 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
   char *result = palloc(size);
   snprintf(result, size, "%s@%s", out, t);
   pfree(t); pfree(value);
+  if (size_out)
+    *size_out = size;
 #if JSON
   if (quoted)
     pfree(quoted);
@@ -243,11 +248,13 @@ tinstant_to_string(const TInstant *inst, int maxdd, outfunc value_out)
  * @brief Return the Well-Known Text (WKT) representation of a temporal instant
  * @param[in] inst Temporal instant
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  */
 inline char *
-tinstant_out(const TInstant *inst, int maxdd)
+tinstant_out(const TInstant *inst, int maxdd, size_t *size_out)
 {
-  return tinstant_to_string(inst, maxdd, &basetype_out);
+  return tinstant_to_string(inst, maxdd, &basetype_out, size_out);
 }
 
 /**

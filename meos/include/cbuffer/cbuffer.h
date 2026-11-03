@@ -80,7 +80,8 @@ extern long double cbuffersegm_locate(const Cbuffer *start, const Cbuffer *end,
 /* Input/output functions */
 
 extern Cbuffer *cbuffer_parse(const char **str, bool end);
-extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended);
+extern char *cbuffer_wkt_out(Datum value, int maxdd, bool extended,
+  size_t *size_out);
 
 /* Accessor functions */
 

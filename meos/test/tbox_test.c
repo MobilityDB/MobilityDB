@@ -45,6 +45,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -60,14 +61,14 @@ int main(void)
 
   char *tstz1_in = "2001-01-01";
   TimestampTz tstz1 = timestamptz_in(tstz1_in, -1);
-  char *tstz1_out = timestamptz_out(tstz1);
+  char *tstz1_out = timestamptz_out(tstz1, &size_out);
 
   char *interv1_in = "3 days";
   char *interv2_in = "3 hours";
   Interval *interv1 = interval_in(interv1_in, -1);
   Interval *interv2 = interval_in(interv2_in, -1);
-  char *interv1_out = interval_out(interv1);
-  char *interv2_out = interval_out(interv2);
+  char *interv1_out = interval_out(interv1, &size_out);
+  char *interv2_out = interval_out(interv2, &size_out);
 
   char *fset1_in = "{1,3,5}";
   char *fspan1_in = "[1,3]";
@@ -75,24 +76,24 @@ int main(void)
   Set *fset1 = floatset_in(fset1_in);
   Span *fspan1 = floatspan_in(fspan1_in);
   SpanSet *fspanset1 = floatspanset_in(fspanset1_in);
-  char *fset1_out = floatset_out(fset1, 6);
-  char *fspan1_out = floatspan_out(fspan1, 6);
-  char *fspanset1_out = floatspanset_out(fspanset1, 6);
+  char *fset1_out = floatset_out(fset1, 6, &size_out);
+  char *fspan1_out = floatspan_out(fspan1, 6, &size_out);
+  char *fspanset1_out = floatspanset_out(fspanset1, 6, &size_out);
 
   char *tstzspan1_in = "[2001-01-01, 2001-01-03]";
   Span *tstzspan1 = tstzspan_in(tstzspan1_in);
-  char *tstzspan1_out = tstzspan_out(tstzspan1);
+  char *tstzspan1_out = tstzspan_out(tstzspan1, &size_out);
 
   char *tbox1_in = "TBOXFLOAT XT([1, 3],[2001-01-01, 2001-01-03])";
   char *tbox2_in = "TBOXFLOAT XT([2, 4],[2001-01-02, 2001-01-04])";
   TBox *tbox1 = tbox_in(tbox1_in);
   TBox *tbox2 = tbox_in(tbox2_in);
-  char *tbox1_out = tbox_out(tbox1, 6);
-  char *tbox2_out = tbox_out(tbox2, 6);
+  char *tbox1_out = tbox_out(tbox1, 6, &size_out);
+  char *tbox2_out = tbox_out(tbox2, 6, &size_out);
 
   char *tintbox1_in = "TBOXINT XT([1, 3],[2001-01-01, 2001-01-03])";
   TBox *tintbox1 = tbox_in(tintbox1_in);
-  char *tintbox1_out = tbox_out(tintbox1, 6);
+  char *tintbox1_out = tbox_out(tintbox1, 6, &size_out);
 
   /* Create the result types for the functions of the API */
 
@@ -146,12 +147,12 @@ int main(void)
 
   /* TBox *tbox_in(const char *str); */
   tbox_result = tbox_in(tbox1_in);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_in(%s): %s\n", tbox1_in, char_result);
   free(tbox_result); free(char_result);
 
-  /* char *tbox_out(const TBox *box, int maxdd); */
-  char_result = tbox_out(tbox1, 6);
+  /* char *tbox_out(const TBox *box, int maxdd, size_t *size_out); */
+  char_result = tbox_out(tbox1, 6, &size_out);
   printf("tbox_out(%s, 6): %s\n", tbox1_out, char_result);
   free(char_result);
 
@@ -161,49 +162,49 @@ int main(void)
 
   /* TBox *float_timestamptz_to_tbox(double d, TimestampTz t); */
   tbox_result = float_timestamptz_to_tbox(float8_in1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_timestamptz_to_tbox(%lf, %s): %s\n", float8_in1, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *float_tstzspan_to_tbox(double d, const Span *sp); */
   tbox_result = float_tstzspan_to_tbox(float8_in1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_tstzspan_to_tbox(%lf, %s): %s\n", float8_in1, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_timestamptz_to_tbox(int i, TimestampTz t); */
   tbox_result = int_timestamptz_to_tbox(int32_in1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_timestamptz_to_tbox(%d, %s): %s\n", int32_in1, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_tstzspan_to_tbox(int i, const Span *sp); */
   tbox_result = int_tstzspan_to_tbox(int32_in1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_tstzspan_to_tbox(%d, %s): %s\n", int32_in1, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *numspan_tstzspan_to_tbox(const Span *span, const Span *sp); */
   tbox_result = numspan_tstzspan_to_tbox(fspan1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("numspan_tstzspan_to_tbox(%s, %s): %s\n", fspan1_out, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *numspan_timestamptz_to_tbox(const Span *span, TimestampTz t); */
   tbox_result = numspan_timestamptz_to_tbox(fspan1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("numspan_timestamptz_to_tbox(%s, %s): %s\n", fspan1_out, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_copy(const TBox *box); */
   tbox_result = tbox_copy(tbox1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_copy(%s): %s\n", tbox1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_make(const Span *sp1, const Span *sp2); */
   tbox_result = tbox_make(fspan1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_make(%s, %s): %s\n", fspan1_out, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -213,55 +214,55 @@ int main(void)
 
   /* TBox *float_to_tbox(double d); */
   tbox_result = float_to_tbox(float8_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_to_tbox(%lf): %s\n", float8_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_to_tbox(int i); */
   tbox_result = int_to_tbox(int32_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_to_tbox(%d): %s\n", int32_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *set_to_tbox(const Set *s); */
   tbox_result = set_to_tbox(fset1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("set_to_tbox(%s): %s\n", fset1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *span_to_tbox(const Span *sp); */
   tbox_result = span_to_tbox(fspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("span_to_tbox(%s): %s\n", fspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *spanset_to_tbox(const SpanSet *ss); */
   tbox_result = spanset_to_tbox(fspanset1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("spanset_to_tbox(%s): %s\n", fspanset1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* Span *tbox_to_intspan(const TBox *box); */
   ispan_result = tbox_to_intspan(tbox1);
-  char_result = intspan_out(ispan_result);
+  char_result = intspan_out(ispan_result, &size_out);
   printf("tbox_to_intspan(%s): %s\n", tbox1_out, char_result);
   free(ispan_result); free(char_result);
 
   /* Span *tbox_to_floatspan(const TBox *box); */
   fspan_result = tbox_to_floatspan(tbox1);
-  char_result = floatspan_out(fspan_result, 6);
+  char_result = floatspan_out(fspan_result, 6, &size_out);
   printf("tbox_to_floatspan(%s): %s\n", tbox1_out, char_result);
   free(fspan_result); free(char_result);
 
   /* Span *tbox_to_tstzspan(const TBox *box); */
   tstzspan_result = tbox_to_tstzspan(tbox1);
-  char_result = tstzspan_out(tstzspan_result);
+  char_result = tstzspan_out(tstzspan_result, &size_out);
   printf("tbox_to_tstzspan(%s): %s\n", tbox1_out, char_result);
   free(tstzspan_result); free(char_result);
 
   /* TBox *timestamptz_to_tbox(TimestampTz t); */
   tbox_result = timestamptz_to_tbox(tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("timestamptz_to_tbox(%s): %s\n", tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -279,7 +280,7 @@ int main(void)
 
   /* bool tbox_tmax(const TBox *box, TimestampTz *result); */
   bool_result = tbox_tmax(tbox1, &tstz_result);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("tbox_tmax(%s, %s): %c\n", tbox1_out, char_result, bool_result ? 't' : 'n');
   free(char_result);
 
@@ -289,7 +290,7 @@ int main(void)
 
   /* bool tbox_tmin(const TBox *box, TimestampTz *result); */
   bool_result = tbox_tmin(tbox1, &tstz_result);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("tbox_tmin(%s, %s): %c\n", tbox1_out, char_result, bool_result ? 't' : 'n');
   free(char_result);
 
@@ -335,43 +336,43 @@ int main(void)
 
   /* TBox *tfloatbox_expand(const TBox *box, double d); */
   tbox_result = tfloatbox_expand(tbox1, float8_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tfloatbox_expand(%s, %lf): %s\n", tbox1_out, float8_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tintbox_expand(const TBox *box, int i); */
   tbox_result = tintbox_expand(tintbox1, int32_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tintbox_expand(%s, %d): %s\n", tintbox1_out, int32_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_expand_time(const TBox *box, const Interval *interv); */
   tbox_result = tbox_expand_time(tbox1, interv1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_expand_time(%s, %s): %s\n", tbox1_out, interv1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_round(const TBox *box, int maxdd); */
   tbox_result = tbox_round(tbox1, 6);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_round(%s, 6): %s\n", tbox1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth); */
   tbox_result = tfloatbox_shift_scale(tbox1, float8_in1, float8_in2, true, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tfloatbox_shift_scale(%s, %lf, %lf, true, true): %s\n", tbox1_out, float8_in1, float8_in2, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth); */
   tbox_result = tintbox_shift_scale(tintbox1, int32_in1, int32_in2, true, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tintbox_shift_scale(%s, %d, %d, true, true): %s\n", tintbox1_out, int32_in1, int32_in2, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration); */
   tbox_result = tbox_shift_scale_time(tbox1, interv1, interv2);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_shift_scale_time(%s, %s, %s): %s\n", tbox1_out, interv1_out, interv2_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -381,13 +382,13 @@ int main(void)
 
   /* TBox *union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict); */
   tbox_result = union_tbox_tbox(tbox1, tbox2, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("union_tbox_tbox(%s, %s, true): %s\n", tbox1_out, tbox2_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *intersection_tbox_tbox(const TBox *box1, const TBox *box2); */
   tbox_result = intersection_tbox_tbox(tbox1, tbox2);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("intersection_tbox_tbox(%s, %s): %s\n", tbox1_out, tbox2_out, char_result);
   free(tbox_result); free(char_result);
 

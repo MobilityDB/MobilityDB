@@ -48,6 +48,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -55,25 +56,25 @@ int main(void)
   /* Create values to test the functions of the API */
   double float8_in1 = 8;
   DateADT date1 = date_in("2025-03-01");
-  char *date1_out = date_out(date1);
+  char *date1_out = date_out(date1, &size_out);
   Interval *interv = interval_in("8 hours", -1);
-  char *interv_out = interval_out(interv);
+  char *interv_out = interval_out(interv, &size_out);
   Timestamp ts1 = timestamp_in("2025-03-01 08:00", -1);
   Timestamp ts2 = timestamp_in("2025-05-01 08:00", -1);
   Timestamp ts3 = timestamp_in("2025-04-01 08:00", -1);
   Timestamp ts4 = timestamp_in("2025-06-01 08:00", -1);
-  char *ts1_out = timestamp_out(ts1);
-  char *ts2_out = timestamp_out(ts2);
-  char *ts3_out = timestamp_out(ts3);
-  char *ts4_out = timestamp_out(ts4);
+  char *ts1_out = timestamp_out(ts1, &size_out);
+  char *ts2_out = timestamp_out(ts2, &size_out);
+  char *ts3_out = timestamp_out(ts3, &size_out);
+  char *ts4_out = timestamp_out(ts4, &size_out);
   TimestampTz tstz1 = timestamptz_in("2025-03-01 08:00", -1);
   TimestampTz tstz2 = timestamptz_in("2025-05-01 08:00", -1);
   TimestampTz tstz3 = timestamptz_in("2025-04-01 08:00", -1);
   TimestampTz tstz4 = timestamptz_in("2025-06-01 08:00", -1);
-  char *tstz1_out = timestamptz_out(tstz1);
-  char *tstz_out2 = timestamptz_out(tstz2);
-  char *tstz_out3 = timestamptz_out(tstz3);
-  char *tstz_out4 = timestamptz_out(tstz4);
+  char *tstz1_out = timestamptz_out(tstz1, &size_out);
+  char *tstz_out2 = timestamptz_out(tstz2, &size_out);
+  char *tstz_out3 = timestamptz_out(tstz3, &size_out);
+  char *tstz_out4 = timestamptz_out(tstz4, &size_out);
 
   /* Create the result types for the functions of the API */
   bool bool_result;
@@ -96,20 +97,20 @@ int main(void)
 
   /* Timestamp add_timestamp_interval(Timestamp ts, const Interval *interv); */
   ts_result = add_timestamp_interval(ts1, interv);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("add_timestamp_interval(%s, %s): %s\n", ts1_out, interv_out, char_result);
   free(char_result);
 
   /* Timestamp add_timestamptz_interval(TimestampTz tstz, const Interval *interv); */
   ts_result = add_timestamptz_interval(tstz1, interv);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("add_timestamptz_interval(%s, %s): %s\n", tstz1_out, interv_out, char_result);
   free(char_result);
 
   /* Timestamp add_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone); */
   text *zone = text_in("Europe/Brussels");
   ts_result = add_timestamptz_interval_at_zone(tstz1, interv, zone);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("add_timestamptz_interval_at_zone(%s, %s, \"Europe/Brussels\"): %s\n",tstz1_out, interv_out, char_result);
   free(zone); free(char_result);
 
@@ -151,7 +152,7 @@ int main(void)
 
   /* TimestampTz float8_to_timestamptz(double seconds); */
   tstz_result = float8_to_timestamptz(float8_in1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("float8_to_timestamptz(%lf): %s\n", float8_in1, char_result);
   free(char_result);
 
@@ -205,32 +206,32 @@ int main(void)
 
   /* Timestamp minus_timestamp_interval(Timestamp ts, const Interval *interv); */
   ts_result = minus_timestamp_interval(ts1, interv);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("minus_timestamp_interval(%s, %s): %s\n", ts1_out, interv_out, char_result);
   free(char_result);
 
   /* Interval *minus_timestamp_timestamp(Timestamp ts1, Timestamp ts2); */
   interv_result = minus_timestamp_timestamp(ts1, ts2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("minus_timestamp_timestamp(%s, %s): %s\n", ts1_out, ts2_out, char_result);
   free(interv_result); free(char_result);
 
   /* TimestampTz minus_timestamptz_interval(TimestampTz tstz, const Interval *interv); */
   tstz_result = minus_timestamptz_interval(tstz1, interv);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("minus_timestamptz_interval(%s, %s): %s\n", tstz1_out, interv_out, char_result);
   free(char_result);
 
   /* TimestampTz minus_timestamptz_interval_at_zone(TimestampTz tstz, const Interval *interv, const text *zone); */
   zone = text_in("Europe/Brussels");
   tstz_result = minus_timestamptz_interval_at_zone(tstz1, interv, zone);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("minus_timestamptz_interval_at_zone(%s, %s, \"Europe/Brussels\"): %s\n", tstz1_out, interv_out, char_result);
   free(zone); free(char_result);
 
   /* Interval *minus_timestamptz_timestamptz(TimestampTz tstz1, TimestampTz tstz2);  */
   interv_result = minus_timestamptz_timestamptz(tstz1, tstz2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("minus_timestamptz_timestamptz(%s, %s): %s\n", tstz1_out, tstz_out2, char_result);
   free(interv_result); free(char_result);
 
@@ -256,13 +257,13 @@ int main(void)
 
   /* Interval *timestamp_age(Timestamp ts1, Timestamp ts2); */
   interv_result = timestamp_age(ts1, ts2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("timestamp_age(%s, %s): %s\n", ts1_out, ts2_out, char_result);
   free(interv_result); free(char_result);
 
   /* TimestampTz timestamp_at_local(Timestamp ts); */
   tstz_result = timestamp_at_local(ts1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamp_at_local(%s): %s\n", ts1_out, char_result);
   free(char_result);
 
@@ -270,14 +271,14 @@ int main(void)
   Interval *stride = interval_in("1 hour", -1);
   Timestamp origin = timestamp_in("2000-01-03", -1);
   ts_result = timestamp_bin(ts1, stride, origin);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_bin(%s, \"1 hour\", \"2000-01-03\"): %s\n", ts1_out, char_result);
   free(stride); free(char_result);
 
   /* Numeric timestamp_extract(Timestamp ts, const text *units); */
   text *units = text_in("seconds");
   numeric_result = timestamp_extract(ts1, units);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("timestamp_extract(%s, \"seconds\"): %s\n", ts1_out, char_result);
   free(units); free(numeric_result); free(char_result);
 
@@ -291,7 +292,7 @@ int main(void)
 
   /* Timestamp timestamp_in(const char *str, int32_t typmod); */
   ts_result = timestamp_in("2025-03-01 08:00:00", -1);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_in(\"2025-03-01 08:00:00\", -1): %s\n", char_result);
   free(char_result);
 
@@ -302,30 +303,30 @@ int main(void)
   /* TimestampTz timestamp_izone(Timestamp ts, const Interval *zone); */
   Interval *interv_zone = interval_in("2 hours", -1);
   tstz_result = timestamp_izone(ts1, interv_zone);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamp_izone(%s, \"Europe/Brussels\"): %s\n", ts1_out, char_result);
   free(interv_zone); free(char_result);
 
   /* text *time_of_day(void); */ 
   text_result = time_of_day();
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("time_of_day(): %s\n", char_result);
   free(text_result); free(char_result);
 
   /* Timestamp timestamp_larger(Timestamp ts1, Timestamp ts2); */
   ts_result = timestamp_larger(ts1, ts2);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_larger(%s, %s): %s\n", ts1_out, ts2_out, char_result);
   free(char_result);
 
   /* Timestamp timestamp_make(int32_t year, int32_t month, int32_t mday, int32_t hour, int32_t min, double sec); */
   ts_result = timestamp_make(2025, 3, 1, 8, 0, 0);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_make(2025, 3, 1, 8, 0, 0): %s\n", char_result);
   free(char_result);
 
-  /* char *timestamp_out(Timestamp ts); */
-  char_result = timestamp_out(ts1);
+  /* char *timestamp_out(Timestamp ts, size_t *size_out); */
+  char_result = timestamp_out(ts1, &size_out);
   printf("timestamp_out(%s,): %s\n", ts1_out, char_result);
   free(char_result);
 
@@ -341,45 +342,45 @@ int main(void)
 
   /* Timestamp timestamp_scale(Timestamp ts, int32_t typmod); */
   ts_result = timestamp_scale(ts1, -1);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_scale(%s, -1): %s\n", ts1_out, char_result);
   free(char_result);
 
   /* Timestamp timestamp_smaller(Timestamp ts1, Timestamp ts2); */
   ts_result = timestamp_smaller(ts1, ts2);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_smaller(%s, %s): %s\n", ts1_out, ts2_out, char_result);
   free(char_result);
 
   /* TimestampTz timestamp_to_timestamptz(Timestamp ts); */
   tstz_result = timestamp_to_timestamptz(ts1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamp_to_timestamptz(%s): %s\n", ts1_out, char_result);
   free(char_result);
 
   /*  Timestamp timestamp_trunc(Timestamp ts, const text *units); */
   units = text_in("seconds");
   ts_result = timestamp_trunc(ts1, units);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamp_trunc(%s, \"seconds\"): %s\n", ts1_out, char_result);
   free(units); free(char_result);
 
   /* TimestampTz timestamp_zone(Timestamp ts, const text *zone); */
   zone = text_in("Europe/Brussels");
   tstz_result = timestamp_zone(ts1, zone);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamp_zone(%s, \"Europe/Brussels\"): %s\n", ts1_out, char_result);
   free(zone); free(char_result);
 
   /* Interval *timestamptz_age(TimestampTz tstz1, TimestampTz tstz2); */
   interv_result = timestamptz_age(tstz1, tstz2);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("timestamptz_age(%s, %s): %s\n", tstz1_out, tstz_out2, char_result);
   free(interv_result); free(char_result);
 
   /* TimestampTz timestamptz_at_local(TimestampTz tstz); */
   tstz_result = timestamptz_at_local(tstz1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_at_local(%s): %s\n", tstz1_out, char_result);
   free(char_result);
 
@@ -387,14 +388,14 @@ int main(void)
   stride = interval_in("1 hour", -1);
   origin = timestamp_in("2000-01-03", -1);
   tstz_result = timestamptz_bin(tstz1, stride, origin);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_bin(%s, \"1 hour\", \"2000-01-03\"): %s\n", tstz1_out, char_result);
   free(stride); free(char_result);
 
   /* Numeric *timestamptz_extract(TimestampTz tstz, const text *units); */
   units = text_in("seconds");
   numeric_result = timestamptz_extract(tstz1, units);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("timestamptz_extract(%s, \"seconds\"): %s\n", tstz1_out, char_result);
   free(numeric_result); free(units); free(char_result);
 
@@ -408,32 +409,32 @@ int main(void)
 
   /* TimestampTz timestamptz_in(const char *str, int32_t typmod); */
   tstz_result = timestamptz_in("2025-03-01 08:00:00", -1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_in(\"2025-03-01 08:00:00\", -1): %s\n", char_result);
   free(char_result);
 
   /* Timestamp timestamptz_izone(TimestampTz tstz, const Interval *zone); */
   interv_zone = interval_in("2 hours", -1);
   ts_result = timestamptz_izone(tstz1, interv_zone);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamptz_izone(%s, \"Europe/Brussels\"): %s\n", tstz1_out, char_result);
   free(interv_zone); free(char_result);
 
   /* TimestampTz timestamptz_make(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, double sec); */
   tstz_result = timestamptz_make(2025, 3, 1, 8, 0, 0);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_make(2025, 03, 01, 08, 00, 00): %s\n", char_result);
   free(char_result);
 
   /* TimestampTz timestamptz_make_at_timezone(int32_t year, int32_t month, int32_t day, int32_t hour, int32_t min, double sec, const text *zone); */
   zone = text_in("Europe/Brussels");
   tstz_result = timestamptz_make_at_timezone(2025, 3, 1, 8, 0, 0, zone);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_make_at_timezone(2025, 3, 1, 8, 0, 0, \"Europe/Brussels\"): %s\n", char_result);
   free(zone); free(char_result);
 
-  /* char *timestamptz_out(TimestampTz tstz); */
-  char_result = timestamptz_out(tstz1);
+  /* char *timestamptz_out(TimestampTz tstz, size_t *size_out); */
+  char_result = timestamptz_out(tstz1, &size_out);
   printf("timestamptz_out(%s): %s\n", tstz1_out, char_result);
   free(char_result);
 
@@ -449,26 +450,26 @@ int main(void)
 
   /* TimestampTz timestamptz_scale(TimestampTz tstz, int32_t typmod); */
   tstz_result = timestamptz_scale(tstz1, -1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_scale(%s, -1): %s\n", tstz1_out, char_result);
   free(char_result);
 
   /* TimestampTz timestamptz_shift(TimestampTz tstz, const Interval *interv); */
   tstz_result = timestamptz_shift(tstz1, interv);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_shift(%s, %s): %s\n", tstz1_out, interv_out, char_result);
   free(char_result);
 
   /* Timestamp timestamptz_to_timestamp(TimestampTz tstz); */
   ts_result = timestamptz_to_timestamp(tstz1);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamptz_to_timestamp(%s): %s\n", tstz1_out, char_result);
   free(char_result);
 
   /* TimestampTz timestamptz_trunc(TimestampTz tstz, const text *units); */
   units = text_in("seconds");
   tstz_result = timestamptz_trunc(tstz1, units);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_trunc(%s, \"seconds\"): %s\n", tstz1_out, char_result);
   free(units); free(char_result);
 
@@ -476,14 +477,14 @@ int main(void)
   units = text_in("seconds");
   zone = text_in("Europe/Brussels");
   tstz_result = timestamptz_trunc_zone(tstz1, units, zone);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("timestamptz_trunc_zone(%s, \"seconds\", \"Europe/Brussels\"): %s\n", tstz1_out, char_result);
   free(units); free(zone); free(char_result);
 
   /* Timestamp timestamptz_zone(TimestampTz tstz, const text *zone); */
   zone = text_in("Europe/Brussels");
   ts_result = timestamptz_zone(tstz1, zone);
-  char_result = timestamp_out(ts_result);
+  char_result = timestamp_out(ts_result, &size_out);
   printf("timestamptz_zone(%s, \"Europe/Brussels\"): %s\n", tstz1_out, char_result);
   free(zone); free(char_result);
 

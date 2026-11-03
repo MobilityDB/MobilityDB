@@ -1846,7 +1846,7 @@ tcbuffer_disc_boundary_sign(double cx, double cy, double r,
         return -1;
     }
     const double a[2] = {ed->x1, ed->y1}, b[2] = {ed->x2, ed->y2};
-    int s = point_segment_offset_sign(c, a, b, r);
+    int s = point_segment_offset_sign(c, a, b, 2, r);
     if (s < 0)
       return -1;
     if (s == 0)

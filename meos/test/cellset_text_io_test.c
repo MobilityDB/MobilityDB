@@ -56,7 +56,7 @@
 #include <meos_s2cell.h>
 
 typedef Set *(*text_in_fn)(const char *);
-typedef char *(*text_out_fn)(const Set *);
+typedef char *(*text_out_fn)(const Set *, size_t *);
 
 /* Read a set, write it out, read the output back and write it again: the
  * two outputs agree, the first reading back what the input reads. Then the
@@ -68,21 +68,23 @@ check(const char *name, text_in_fn in, text_out_fn out, const char *text,
 {
   Set *s = in(text);
   assert(s && meos_errno() == 0);
-  char *str1 = out(s);
+  size_t size;
+  char *str1 = out(s, &size);
   Set *back = str1 ? in(str1) : NULL;
-  char *str2 = back ? out(back) : NULL;
+  char *str2 = back ? out(back, &size) : NULL;
   printf("%s: %s, errno %d\n", name, str1 ? str1 : "NULL", meos_errno());
   assert(str1 && str2 && strcmp(str1, str2) == 0);
+  assert(size == strlen(str2) + 1);
   assert(meos_errno() == 0);
   free(s); free(back); free(str1); free(str2);
 
-  char *res = out(NULL);
+  char *res = out(NULL, &size);
   printf("%s(NULL): %s, errno %d\n", name, res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
 
-  res = out(other);
+  res = out(other, &size);
   printf("%s(intset): %s, errno %d\n", name, res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);

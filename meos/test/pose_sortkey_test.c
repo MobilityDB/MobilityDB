@@ -254,6 +254,7 @@ temporal_check(const char *name, Temporal **temps, int n)
 int
 main(void)
 {
+  size_t size_out;
   /* Install the error handler that reports through meos_errno instead of
    * exiting, after meos_initialize, which installs the default one */
   meos_initialize();
@@ -363,8 +364,8 @@ main(void)
   int ntemps = 0;
   for (int i = 0; i < nposes && ntemps < MAXV - 1; i += 5)
   {
-    char *v1 = pose_out((Pose *) poses[i], 17);
-    char *v2 = pose_out((Pose *) poses[(i * 7 + 5) % nposes], 17);
+    char *v1 = pose_out((Pose *) poses[i], 17, &size_out);
+    char *v2 = pose_out((Pose *) poses[(i * 7 + 5) % nposes], 17, &size_out);
     snprintf(str, sizeof(str), "%s@2001-01-01", v1);
     Temporal *t = tpose_in(str);
     if (t)
@@ -383,8 +384,9 @@ main(void)
   ntemps = 0;
   for (int i = 0; i < nchains && ntemps < MAXV - 1; i += 3)
   {
-    char *v1 = posechain_out((PoseChain *) chains[i], 17);
-    char *v2 = posechain_out((PoseChain *) chains[(i * 7 + 5) % nchains], 17);
+    char *v1 = posechain_out((PoseChain *) chains[i], 17, &size_out);
+    char *v2 = posechain_out((PoseChain *) chains[(i * 7 + 5) % nchains], 17,
+      &size_out);
     snprintf(str, sizeof(str), "%s@2001-01-01", v1);
     Temporal *t = tposechain_in(str);
     if (t)

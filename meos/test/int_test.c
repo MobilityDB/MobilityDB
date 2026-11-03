@@ -51,6 +51,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -400,8 +401,8 @@ int main(void)
   int32_result = int32_or(int32_in1, int32_in2);
   printf("int32_or(%d, %d): %d\n", int32_in1, int32_in2, int32_result);
 
-  /* char *int32_out(int32_t num); */
-  char_result = int32_out(int32_in1);
+  /* char *int32_out(int32_t num, size_t *size_out); */
+  char_result = int32_out(int32_in1, &size_out);
   printf("int32_out(%d): %s\n", int32_in1, char_result);
   free(char_result);
 
@@ -497,8 +498,8 @@ int main(void)
   int64_result = int64_or(int64_in1, int64_in2);
   printf("int64_or(%ld, %ld): %ld\n", int64_in1, int64_in2, int64_result);
 
-  /* char *int64_out(int64_t num); */
-  char_result = int64_out(int64_in1);
+  /* char *int64_out(int64_t num, size_t *size_out); */
+  char_result = int64_out(int64_in1, &size_out);
   printf("int64_out(%ld): %s\n", int64_in1, char_result);
   free(char_result);
 

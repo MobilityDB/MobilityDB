@@ -73,7 +73,7 @@ Temporal_as_text(PG_FUNCTION_ARGS)
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = temporal_out(temp, dbl_dig_for_wkt);
+  char *str = temporal_out(temp, dbl_dig_for_wkt, NULL);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -228,6 +228,7 @@ PG_FUNCTION_INFO_V1(Temporal_as_mfjson);
 Datum
 Temporal_as_mfjson(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   int precision = OUT_DEFAULT_DECIMAL_DIGITS;
   int option = 0;
   int flags = 0;
@@ -276,7 +277,8 @@ Temporal_as_mfjson(PG_FUNCTION_ARGS)
   if (PG_NARGS() > 3 && !PG_ARGISNULL(3))
     precision = PG_GETARG_INT32(3);
 
-  char *mfjson = temporal_as_mfjson(temp, option, flags, precision, srs);
+  char *mfjson = temporal_as_mfjson(temp, option, flags, precision, srs,
+    &size_out);
   text *result = cstring_to_text(mfjson);
   /* Cannot pfree(mfjson) here — temporal_as_mfjson uses json-c's
    * allocator, not PG's; pfree triggers

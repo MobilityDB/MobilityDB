@@ -422,10 +422,12 @@ unquote(char *str)
  * @brief Return the Well-Known Text (WKT) representation of a span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out If not NULL, the size of the result, the terminating
+ * null character included
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-span_out(const Span *s, int maxdd)
+span_out(const Span *s, int maxdd, size_t *size_out)
 {
   assert(s);
   /* Ensure the validity of the arguments */
@@ -452,6 +454,8 @@ span_out(const Span *s, int maxdd)
   char *result = palloc(size);
   snprintf(result, size, "%c%s, %s%c", open, lower, upper, close);
   pfree(lower); pfree(upper);
+  if (size_out)
+    *size_out = size;
   return result;
 }
 
@@ -538,29 +542,35 @@ tstzspan_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of an integer span
  * @errval NULL
  * @param[in] s Span
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-intspan_out(const Span *s)
+intspan_out(const Span *s, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_INTSPAN(s, NULL);
-  return span_out(s, 0);
+  return span_out(s, 0, size_out);
 }
 
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a big integer span
  * @param[in] s Span
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-bigintspan_out(const Span *s)
+bigintspan_out(const Span *s, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_BIGINTSPAN(s, NULL);
-  return span_out(s, 0);
+  return span_out(s, 0, size_out);
 }
 
 /**
@@ -568,47 +578,56 @@ bigintspan_out(const Span *s)
  * @brief Return the Well-Known Text (WKT) representation of a float span
  * @param[in] s Span
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-floatspan_out(const Span *s, int maxdd)
+floatspan_out(const Span *s, int maxdd, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_FLOATSPAN(s, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
-  return span_out(s, maxdd);
+  return span_out(s, maxdd, size_out);
 }
 
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a date span
  * @param[in] s Span
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-datespan_out(const Span *s)
+datespan_out(const Span *s, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_DATESPAN(s, NULL);
-  return span_out(s, 0);
+  return span_out(s, 0, size_out);
 }
 
 /**
  * @ingroup meos_setspan_inout
  * @brief Return the Well-Known Text (WKT) representation of a timestamtz span
  * @param[in] s Span
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Span_out(), #Span_as_text()
  */
 char *
-tstzspan_out(const Span *s)
+tstzspan_out(const Span *s, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TSTZSPAN(s, NULL);
-  return span_out(s, 0);
+  return span_out(s, 0, size_out);
 }
 
 /*****************************************************************************

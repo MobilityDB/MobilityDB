@@ -216,14 +216,17 @@ ts2cellseqset_in(const char *str)
  * @ingroup meos_s2cell_inout
  * @brief Return the Well-Known Text (WKT) representation of a temporal S2 cell
  * @param[in] temp Temporal S2 cell
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-ts2cell_out(const Temporal *temp)
+ts2cell_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TS2CELL(temp, NULL);
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /*****************************************************************************

@@ -81,7 +81,8 @@ typedef struct
 
 /* General functions */
 
-extern char *set_out_fn(const Set *s, int maxdd, outfunc value_out);
+extern char *set_out_fn(const Set *s, int maxdd, outfunc value_out,
+  size_t *size_out);
 
 extern bool ensure_set_isof_type(const Set *s, MeosType settype);
 extern bool ensure_valid_set_set(const Set *s1, const Set *s2);

@@ -187,12 +187,16 @@ stbox_in(const char *str)
  * box
  * @param[in] box Spatiotemporal box
  * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Stbox_out(), #Stbox_as_text()
  */
 char *
-stbox_out(const STBox *box, int maxdd)
+stbox_out(const STBox *box, int maxdd, size_t *size_out)
 {
+  size_t part_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_NOT_NULL(box, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
@@ -217,7 +221,7 @@ stbox_out(const STBox *box, int maxdd)
   if (hast)
   {
     /* The second argument is not used for periods */
-    period = span_out(&box->period, maxdd);
+    period = span_out(&box->period, maxdd, NULL);
     if (! period)
     {
       pfree(str);
@@ -227,14 +231,14 @@ stbox_out(const STBox *box, int maxdd)
 
   if (hasx && hast)
   {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
+    xmin = float8_out(box->xmin, maxdd, &part_size);
+    xmax = float8_out(box->xmax, maxdd, &part_size);
+    ymin = float8_out(box->ymin, maxdd, &part_size);
+    ymax = float8_out(box->ymax, maxdd, &part_size);
     if (hasz)
     {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
+      zmin = float8_out(box->zmin, maxdd, &part_size);
+      zmax = float8_out(box->zmax, maxdd, &part_size);
       snprintf(str, size, "%s%s ZT(((%s,%s,%s),(%s,%s,%s)),%s)",
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax, period);
     }
@@ -244,14 +248,14 @@ stbox_out(const STBox *box, int maxdd)
   }
   else if (hasx)
   {
-    xmin = float8_out(box->xmin, maxdd);
-    xmax = float8_out(box->xmax, maxdd);
-    ymin = float8_out(box->ymin, maxdd);
-    ymax = float8_out(box->ymax, maxdd);
+    xmin = float8_out(box->xmin, maxdd, &part_size);
+    xmax = float8_out(box->xmax, maxdd, &part_size);
+    ymin = float8_out(box->ymin, maxdd, &part_size);
+    ymax = float8_out(box->ymax, maxdd, &part_size);
     if (hasz)
     {
-      zmin = float8_out(box->zmin, maxdd);
-      zmax = float8_out(box->zmax, maxdd);
+      zmin = float8_out(box->zmin, maxdd, &part_size);
+      zmax = float8_out(box->zmax, maxdd, &part_size);
       snprintf(str, size, "%s%s Z((%s,%s,%s),(%s,%s,%s))",
         srid, boxtype, xmin, ymin, zmin, xmax, ymax, zmax);
     }
@@ -273,7 +277,7 @@ stbox_out(const STBox *box, int maxdd)
   }
   if (hast)
     pfree(period);
-  return str;
+  return cstring_size(str, size_out);
 }
 
 /*****************************************************************************

@@ -49,7 +49,7 @@ extern bool bool_in(const char *str);
 extern bool bool_le(bool arg1, bool arg2);
 extern bool bool_lt(bool arg1, bool arg2);
 extern bool bool_ne(bool arg1, bool arg2);
-extern char *bool_out(bool b);
+extern char *bool_out(bool b, size_t *size_out);
 extern text *bool_to_text(bool b);
 
 /*****************************************************************************/

@@ -68,6 +68,7 @@
 #include "temporal/temporal.h"
 #include "temporal/tcellindex.h"
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 
 /*****************************************************************************
  * Input/output
@@ -127,13 +128,17 @@ quadbin_in(const char *str)
  * @ingroup meos_quadbin_base_inout
  * @brief Return the string representation of a quadbin
  * @param[in] cell Quadbin
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A palloc'd, null-terminated string (caller frees)
  * @csqlfn #Quadbin_out(), #Quadbin_as_text()
  */
 char *
-quadbin_out(Quadbin cell)
+quadbin_out(Quadbin cell, size_t *size_out)
 {
-  return quadbin_index_to_string(cell);
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  return quadbin_index_to_string(cell, size_out);
 }
 
 /**
@@ -466,12 +471,16 @@ quadbin_cell_to_tile(Quadbin cell, int *count)
  * column bit in `d & 1` and the tile row bit in `d & 2`. A zoom-0 cell has the
  * empty quadkey.
  * @param[in] cell Quadbin cell
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A palloc'd, null-terminated string of `z` characters (caller frees)
  * @csqlfn #Quadbin_cell_to_quadkey()
  */
 char *
-quadbin_cell_to_quadkey(Quadbin cell)
+quadbin_cell_to_quadkey(Quadbin cell, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   uint32_t x, y, z;
   quadbin_cell_tile(cell, &x, &y, &z);
   char *result = palloc(z + 1);
@@ -487,7 +496,7 @@ quadbin_cell_to_quadkey(Quadbin cell)
     result[i] = digit;
   }
   result[z] = '\0';
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /*****************************************************************************
@@ -1305,14 +1314,18 @@ quadbin_is_valid_cell(Quadbin cell)
 /**
  * @ingroup meos_quadbin
  * @brief Return the lowercase hexadecimal string of a quadbin index
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @return A palloc'd, null-terminated string (caller frees)
  */
 char *
-quadbin_index_to_string(Quadbin index)
+quadbin_index_to_string(Quadbin index, size_t *size_out)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   char *result = palloc(17);
   snprintf(result, 17, "%016" PRIx64, (uint64_t) index);
-  return result;
+  return cstring_size(result, size_out);
 }
 
 /**

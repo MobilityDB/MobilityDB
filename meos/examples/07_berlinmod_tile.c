@@ -88,6 +88,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Variables to read the input CSV file */
   char trip_buffer[MAX_LEN_TRIP];
   char header_buffer[MAX_LEN_HEADER];
@@ -224,8 +225,8 @@ int main(void)
   {
     if (interval_cmp(&trip_splits[k].duration, &intervalzero) != 0)
     {
-      char *stbox_str = stbox_out(&trip_tiles[k], 0);
-      char *interval_str = interval_out(&trip_splits[k].duration);
+      char *stbox_str = stbox_out(&trip_tiles[k], 0, &size_out);
+      char *interval_str = interval_out(&trip_splits[k].duration, &size_out);
       printf("Tile: %d, Box: %s, Count: %d, Duration: %s, Distance: %f\n",
         i, stbox_str, trip_splits[k].count, interval_str,
         trip_splits[k].distance);
@@ -243,9 +244,9 @@ int main(void)
   k = 0;
   for (i = 0; i < num_speed_tiles; i++)
   {
-    char *span_str = floatspan_out(&speed_tiles[k].span, 0);
-    char *tstzspan_str = tstzspan_out(&speed_tiles[k].period);
-    char *interval_str = interval_out(&speed_splits[k].duration);
+    char *span_str = floatspan_out(&speed_tiles[k].span, 0, &size_out);
+    char *tstzspan_str = tstzspan_out(&speed_tiles[k].period, &size_out);
+    char *interval_str = interval_out(&speed_splits[k].duration, &size_out);
     printf("Tile: %d, Span: %s, Period: %s, Count: %d, Duration: %s\n",
       i, span_str, tstzspan_str, speed_splits[k].count, interval_str);
     free(span_str); free(tstzspan_str); free(interval_str);

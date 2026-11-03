@@ -45,6 +45,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -302,8 +303,8 @@ int main(void)
   float8_result = float8_log10(float8_in1);
   printf("float8_log10(%lf): %lf\n", float8_in1, float8_result);
 
-  /* char *float8_out(double num, int maxdd); */
-  char_result = float8_out(float8_in1, 6);
+  /* char *float8_out(double num, int maxdd, size_t *size_out); */
+  char_result = float8_out(float8_in1, 6, &size_out);
   printf("float8_out(%lf, 6): %s\n", float8_in1, char_result);
   free(char_result);
 

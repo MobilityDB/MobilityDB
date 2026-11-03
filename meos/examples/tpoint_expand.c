@@ -76,6 +76,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -104,7 +105,7 @@ int main(void)
       fflush(stdout);
     }
     t = add_timestamptz_interval(t, oneday);
-    char *time_str = timestamptz_out(t);
+    char *time_str = timestamptz_out(t, &size_out);
     int value = i % 2 + 1;
 #if GEODETIC == true
     snprintf(inst_buffer, MAX_LEN_INST - 1,

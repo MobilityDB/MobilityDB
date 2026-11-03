@@ -49,21 +49,22 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
 
   /* Create values to test the functions of the API */
   DateADT date1 = date_in("2025-03-01");
-  char *date1_out = date_out(date1);
+  char *date1_out = date_out(date1, &size_out);
   TimeADT time1 = time_in("08:00:00", -1);
   TimeADT time2 = time_in("10:00:00", -1);
   TimeADT time3 = time_in("09:00:00", -1);
   TimeADT time4 = time_in("11:00:00", -1);
-  char *time1_out = time_out(time1);
-  char *time2_out = time_out(time2);
-  char *time_out3 = time_out(time3);
-  char *time_out4 = time_out(time4);
+  char *time1_out = time_out(time1, &size_out);
+  char *time2_out = time_out(time2, &size_out);
+  char *time_out3 = time_out(time3, &size_out);
+  char *time_out4 = time_out(time4, &size_out);
   // TimeTzADT *timetz1 = timetz_in("08:00:00", -1);
   // TimeTzADT *timetz2 = timetz_in("10:00:00", -1);
   // TimeTzADT *timetz3 = timetz_in("09:00:00", -1);
@@ -73,11 +74,11 @@ int main(void)
   // char *timetz3_out = timetz_out(timetz3);
   // char *timetz4_out = timetz_out(timetz4);
   Timestamp ts_in = timestamp_in("2025-03-01 08:00:00", -1);
-  char *ts_out = timestamp_out(ts_in);
+  char *ts_out = timestamp_out(ts_in, &size_out);
   TimestampTz tstz_in = timestamptz_in("2025-03-01 08:00:00", -1);
-  char *tstz_out = timestamptz_out(tstz_in);
+  char *tstz_out = timestamptz_out(tstz_in, &size_out);
   Interval *interv_in = interval_in("3 hours", -1);
-  char *interv_out = interval_out(interv_in);
+  char *interv_out = interval_out(interv_in, &size_out);
 
   /* Create the result types for the functions of the API */
   bool bool_result;
@@ -106,19 +107,19 @@ int main(void)
 
   /* TimeADT interval_to_time(const Interval *interv); */
   time_result = interval_to_time(interv_in);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("interval_to_time(%s): %s\n", interv_out, char_result);
   free(char_result);
 
   /* TimeADT minus_time_interval(TimeADT time, const Interval *interv); */
   time_result = minus_time_interval(time1, interv_in);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("minus_time_interval(%s, %s): %s\n", time1_out, interv_out, char_result);
   free(char_result);
 
   /* Interval *minus_time_time(TimeADT time1, TimeADT time2); */
   interv_result = minus_time_time(time1, time2);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("minus_time_time(%s, %s): %s\n", time1_out, time2_out, char_result);
   free(interv_result); free(char_result);
 
@@ -130,7 +131,7 @@ int main(void)
 
   /* TimeADT plus_time_interval(TimeADT time, Interval *interv); */
   time_result = plus_time_interval(time1, interv_in);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("plus_time_interval(%s, %s): %s\n", time1_out, interv_out, char_result);
   free(char_result);
 
@@ -151,7 +152,7 @@ int main(void)
   /* Numeric time_extract(TimeADT time, const text *units); */
   text *units = text_in("seconds");
   numeric_result = time_extract(time1, units);
-  char_result = numeric_out(numeric_result);
+  char_result = numeric_out(numeric_result, &size_out);
   printf("time_extract(%s, \"seconds\"): %s\n", time1_out, char_result);
   free(units); free(numeric_result); free(char_result);
 
@@ -173,13 +174,13 @@ int main(void)
 
   /* TimeADT time_in(const char *str, int32_t typmod); */
   time_result = time_in("08:00:00", -1);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("time_in(\"08:00:00\"): %s\n", char_result);
   free(char_result);
 
   /* TimeADT time_larger(TimeADT time1, TimeADT time2); */
   time_result = time_larger(time1, time2);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("time_larger(%s, %s): %s\n", time1_out, time2_out, char_result);
   free(char_result);
 
@@ -193,7 +194,7 @@ int main(void)
 
   /* TimeADT time_make(int tm_hour, int tm_min, double sec); */
   time_result = time_make(3, 3, 3);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("time_make(3, 3, 3): %s\n", char_result);
   free(char_result);
 
@@ -201,8 +202,8 @@ int main(void)
   bool_result = time_ne(time1, time2);
   printf("time_ne(%s, %s): %s\n", time1_out, time2_out, bool_result ? "t" : "f");
 
-  /* char *time_out(TimeADT time); */
-  char_result = time_out(time1);
+  /* char *time_out(TimeADT time, size_t *size_out); */
+  char_result = time_out(time1, &size_out);
   printf("time_out(%s): %s\n", time1_out, char_result);
   free(char_result);
 
@@ -218,19 +219,19 @@ int main(void)
 
   /* TimeADT time_scale(TimeADT date, int32_t typmod); */
   time_result = time_scale(date1, -1);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("time_scale(%s, -1): %s\n", date1_out, char_result);
   free(char_result);
 
   /* TimeADT time_smaller(TimeADT time1, TimeADT time2); */
   time_result = time_smaller(time1, time2);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("time_smaller(%s, %s): %s\n", time1_out, time2_out, char_result);
   free(char_result);
 
   /* Interval *time_to_interval(TimeADT time); */
   interv_result = time_to_interval(time1);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("time_to_interval(%s): %s\n", time1_out, char_result);
   free(interv_result); free(char_result);
 
@@ -242,13 +243,13 @@ int main(void)
 
   /* TimeADT timestamp_to_time(Timestamp ts); */
   time_result = timestamp_to_time(ts_in);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("timestamp_to_time(%s): %s\n", ts_out, char_result);
   free(char_result);
 
   /* TimeADT timestamptz_to_time(TimestampTz tztz); */
   time_result = timestamptz_to_time(tstz_in);
-  char_result = time_out(time_result);
+  char_result = time_out(time_result, &size_out);
   printf("timestamptz_to_time(%s): %s\n", tstz_out, char_result);
   free(char_result);
 
@@ -325,7 +326,7 @@ int main(void)
   // bool_result = timetz_ne(timetz1, timetz2);
   // printf("timetz_ne(%s, %s): %s\n", timetz1_out, timetz2_out, bool_result ? "t" : "f");
 
-  // /* char *timetz_out(const TimeTzADT *timetz); */
+  // /* char *timetz_out(const TimeTzADT *timetz, size_t *size_out); */
   // char_result = timetz_out(timetz1);
   // printf("timetz_out(%s): %s\n", timetz1_out, char_result);
   // free(char_result);

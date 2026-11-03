@@ -102,11 +102,12 @@ PG_FUNCTION_INFO_V1(Spatialset_as_text);
 Datum
 Spatialset_as_text(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Set *s = PG_GETARG_SET_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = spatialset_as_text(s, dbl_dig_for_wkt);
+  char *str = spatialset_as_text(s, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(s, 0);
@@ -124,11 +125,12 @@ PG_FUNCTION_INFO_V1(Spatialset_as_ewkt);
 Datum
 Spatialset_as_ewkt(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Set *s = PG_GETARG_SET_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = spatialset_as_ewkt(s, dbl_dig_for_wkt);
+  char *str = spatialset_as_ewkt(s, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(s, 0);

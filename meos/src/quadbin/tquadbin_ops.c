@@ -145,7 +145,8 @@ datum_quadbin_cell_to_boundary(Datum d)
 static Datum
 datum_quadbin_cell_to_quadkey(Datum d)
 {
-  char *str = quadbin_cell_to_quadkey((Quadbin) DatumGetInt64(d));
+  size_t size_out;
+  char *str = quadbin_cell_to_quadkey((Quadbin) DatumGetInt64(d), &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   return PointerGetDatum(result);

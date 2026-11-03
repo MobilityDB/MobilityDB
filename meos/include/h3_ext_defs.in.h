@@ -15,7 +15,7 @@
 
 extern H3Index h3index_in(const char *str);
 extern H3Index bigint_to_h3index(int64 i);
-extern char *h3index_out(H3Index cell);
+extern char *h3index_out(H3Index cell, size_t *size_out);
 
 /* Validity predicates. An h3index is a mode-tagged 64-bit identifier: the
  * same bit pattern is a cell, a directed edge, or a vertex according to its

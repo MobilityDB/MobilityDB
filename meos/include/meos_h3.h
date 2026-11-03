@@ -179,7 +179,7 @@ extern Temporal *th3index_in(const char *str);
 extern TInstant *th3indexinst_in(const char *str);
 extern TSequence *th3indexseq_in(const char *str, interpType interp);
 extern TSequenceSet *th3indexseqset_in(const char *str);
-extern char *th3index_out(const Temporal *temp);
+extern char *th3index_out(const Temporal *temp, size_t *size_out);
 extern Temporal *th3index_from_mfjson(const char *mfjson);
 
 /* Constructors */
@@ -285,7 +285,7 @@ extern Set    *h3index_to_set(H3Index cell);
 /* Input and output functions of `h3indexset` */
 
 extern Set    *h3indexset_in(const char *str);
-extern char   *h3indexset_out(const Set *s);
+extern char   *h3indexset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions of `h3indexset` */
 

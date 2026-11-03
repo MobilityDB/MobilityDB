@@ -469,6 +469,7 @@ buffer_matches(const GSERIALIZED *actual, const GSERIALIZED *expected,
 int
 main(int argc, char **argv)
 {
+  size_t size_out;
   if (argc != 2 || (strcmp(argv[1], "convexhull") && strcmp(argv[1], "buffer")
       && strcmp(argv[1], "orientedenvelope") && strcmp(argv[1], "issimple")))
   {
@@ -581,7 +582,7 @@ main(int argc, char **argv)
     if (! ok)
     {
       nfailed++;
-      char *wa = geo_as_ewkt(actual, 8), *we = geo_as_ewkt(expected, 8);
+      char *wa = geo_as_ewkt(actual, 8, &size_out), *we = geo_as_ewkt(expected, 8, &size_out);
       printf("FAIL   in       %.100s\n", line);
       if (is_buffer)
         printf("       distance %g: %s\n", distance, reason);

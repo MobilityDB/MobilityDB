@@ -59,8 +59,9 @@
   do { \
     Set *made = fn(values, count); \
     Set *read = in(text); \
-    char *s1 = made ? out(made) : NULL; \
-    char *s2 = out(read); \
+    size_t size; \
+    char *s1 = made ? out(made, &size) : NULL; \
+    char *s2 = out(read, &size); \
     printf(#fn ": %s, errno %d\n", s1 ? s1 : "NULL", meos_errno()); \
     assert(s1 && s2 && strcmp(s1, s2) == 0 && meos_errno() == 0); \
     free(s1); free(s2); free(made); free(read); \

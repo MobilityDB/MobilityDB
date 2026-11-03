@@ -260,13 +260,23 @@ text_in(const char *str)
  * @ingroup meos_base_text
  * @brief Return the string representation of a text value
  * @param[in] txt Text
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @note Derived from PostgreSQL function @p textout()
  */
 char *
-text_out(const text *txt)
+text_out(const text *txt, size_t *size_out)
 {
   assert(txt);
-  return pg_text_to_cstring(txt);
+  if (! size_out)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG, "Null pointer not allowed");
+    return NULL;
+  }
+  char *result = pg_text_to_cstring(txt);
+  if (result)
+    *size_out = VARSIZE_ANY_EXHDR(txt) + 1;
+  return result;
 }
 
 /**

@@ -44,6 +44,7 @@
 
 int main()
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -54,11 +55,11 @@ int main()
     agg = int_union_transfn(agg, i * 2);
     agg = int_union_transfn(agg, i * 2);
   }
-  char *agg_out = intset_out(agg);
+  char *agg_out = intset_out(agg, &size_out);
   printf("Result of the transition function: %s\n", agg_out);
 
   Set *result = set_union_finalfn(agg);
-  char *result_out = intset_out(result);
+  char *result_out = intset_out(result, &size_out);
   printf("Result of the set union aggregation: %s\n", result_out);
 
   /* Clean up allocated objects */

@@ -45,6 +45,7 @@
 
 int main()
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -59,9 +60,9 @@ int main()
   GSERIALIZED *polygon = geom_in(polygon_wkt, -1);
 
   /* Convert geometries to WKT */
-  char *point_text = geo_as_text(point, 6);
-  char *linestring_text = geo_as_text(linestring, 6);
-  char *polygon_text = geo_as_text(polygon, 6);
+  char *point_text = geo_as_text(point, 6, &size_out);
+  char *linestring_text = geo_as_text(linestring, 6, &size_out);
+  char *polygon_text = geo_as_text(polygon, 6, &size_out);
 
   /* Revert generated WKT strings into geometries */
   GSERIALIZED *point1 = geom_in(point_text, -1);
@@ -80,9 +81,9 @@ int main()
       polygon_wkt, polygon_text);
 
   /* Convert geometries to GeoJSON */
-  char *point_geojson = geo_as_geojson(point, 1, 6, NULL);
-  char *linestring_geojson = geo_as_geojson(linestring, 1, 6, NULL);
-  char *polygon_geojson = geo_as_geojson(polygon, 1, 6, NULL);
+  char *point_geojson = geo_as_geojson(point, 1, 6, NULL, &size_out);
+  char *linestring_geojson = geo_as_geojson(linestring, 1, 6, NULL, &size_out);
+  char *polygon_geojson = geo_as_geojson(polygon, 1, 6, NULL, &size_out);
 
   /* Revert generated GeoJSON strings into geometries */
   GSERIALIZED *point2 = geo_from_geojson(point_geojson);
@@ -101,9 +102,9 @@ int main()
       polygon_wkt, polygon_geojson);
 
   /* Convert geometries to HexEWKB */
-  char *point_hexwkb = geo_as_hexewkb(point, "XDR");
-  char *linestring_hexwkb = geo_as_hexewkb(linestring, "XDR");
-  char *polygon_hexwkb = geo_as_hexewkb(polygon, "XDR");
+  char *point_hexwkb = geo_as_hexewkb(point, "XDR", &size_out);
+  char *linestring_hexwkb = geo_as_hexewkb(linestring, "XDR", &size_out);
+  char *polygon_hexwkb = geo_as_hexewkb(polygon, "XDR", &size_out);
 
   /* Revert generated GeoJSON strings into geometries */
   GSERIALIZED *point3 = geom_from_hexewkb(point_hexwkb);

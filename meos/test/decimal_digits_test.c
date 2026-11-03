@@ -83,6 +83,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -101,24 +102,24 @@ int main(void)
   /* A pcpoint writes the hex its input reads back */
   Pcpoint *pt = pcpoint_from_hexwkb(PCPOINT_HEX);
   assert(pt && meos_errno() == 0);
-  char *hex1 = pcpoint_as_hexwkb(pt);
+  char *hex1 = pcpoint_as_hexwkb(pt, &size_out);
   printf("pcpoint_as_hexwkb: %s, errno %d\n", hex1 ? hex1 : "NULL",
     meos_errno());
   assert(hex1 && meos_errno() == 0);
   Pcpoint *pt2 = pcpoint_from_hexwkb(hex1);
-  char *hex2 = pt2 ? pcpoint_as_hexwkb(pt2) : NULL;
+  char *hex2 = pt2 ? pcpoint_as_hexwkb(pt2, &size_out) : NULL;
   assert(hex2 && strcmp(hex1, hex2) == 0);
   free(pt); free(pt2); free(hex1); free(hex2);
 
   /* So does a pcpatch */
   Pcpatch *pa = pcpatch_from_hexwkb(PCPATCH_HEX);
   assert(pa && meos_errno() == 0);
-  hex1 = pcpatch_as_hexwkb(pa);
+  hex1 = pcpatch_as_hexwkb(pa, &size_out);
   printf("pcpatch_as_hexwkb: %s, errno %d\n", hex1 ? hex1 : "NULL",
     meos_errno());
   assert(hex1 && meos_errno() == 0);
   Pcpatch *pa2 = pcpatch_from_hexwkb(hex1);
-  hex2 = pa2 ? pcpatch_as_hexwkb(pa2) : NULL;
+  hex2 = pa2 ? pcpatch_as_hexwkb(pa2, &size_out) : NULL;
   assert(hex2 && strcmp(hex1, hex2) == 0);
   free(pa); free(pa2); free(hex1); free(hex2);
 
@@ -126,12 +127,12 @@ int main(void)
   Temporal *temp = tgeompoint_in(
     "[Point(1.25 2.75)@2001-01-01, Point(2 2)@2001-01-02]");
   assert(temp);
-  char *str = tspatial_out(temp, 0);
+  char *str = tspatial_out(temp, 0, &size_out);
   printf("tspatial_out(temp, 0): %s, errno %d\n", str ? str : "NULL",
     meos_errno());
   assert(str && meos_errno() == 0);
   free(str);
-  str = tspatial_out(temp, -1);
+  str = tspatial_out(temp, -1, &size_out);
   printf("tspatial_out(temp, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -142,7 +143,7 @@ int main(void)
   Pose *pose = pose_in("Pose(Point(1.25 2.75),0.5)");
   assert(pose);
   Pose *rounded = pose_round(pose, 0);
-  str = rounded ? pose_out(rounded, 15) : NULL;
+  str = rounded ? pose_out(rounded, 15, &size_out) : NULL;
   printf("pose_round(pose, 0): %s, errno %d\n", str ? str : "NULL",
     meos_errno());
   assert(rounded && meos_errno() == 0);
@@ -154,12 +155,12 @@ int main(void)
   meos_errno_reset();
 
   /* A pose is written with a negative count refused */
-  str = pose_as_text(pose, -1);
+  str = pose_as_text(pose, -1, &size_out);
   printf("pose_as_text(pose, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = pose_as_ewkt(pose, -1);
+  str = pose_as_ewkt(pose, -1, &size_out);
   printf("pose_as_ewkt(pose, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -170,7 +171,7 @@ int main(void)
    * lossless form, the default of every asGeoPose declaration */
   Pose *gpose = pose_in("Geodpose(Point(1 1),0.5)");
   assert(gpose);
-  str = pose_as_geopose(gpose, 0, -1);
+  str = pose_as_geopose(gpose, 0, -1, &size_out);
   printf("pose_as_geopose(gpose, 0, -1): %s, errno %d\n",
     str ? str : "NULL", meos_errno());
   assert(str && meos_errno() == 0);
@@ -179,7 +180,7 @@ int main(void)
   /* So is a circular buffer */
   Cbuffer *cb = cbuffer_in("Cbuffer(Point(1 1),0.5)");
   assert(cb);
-  str = cbuffer_as_ewkt(cb, -1);
+  str = cbuffer_as_ewkt(cb, -1, &size_out);
   printf("cbuffer_as_ewkt(cb, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -190,17 +191,17 @@ int main(void)
    * refused */
   GSERIALIZED *gs = geom_in("Point(1.25 2.75)", -1);
   assert(gs);
-  str = geo_as_text(gs, 0);
+  str = geo_as_text(gs, 0, &size_out);
   printf("geo_as_text(gs, 0): %s, errno %d\n", str ? str : "NULL",
     meos_errno());
   assert(str && meos_errno() == 0);
   free(str);
-  str = geo_as_text(gs, -1);
+  str = geo_as_text(gs, -1, &size_out);
   printf("geo_as_text(gs, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = geo_as_geojson(gs, 0, -1, NULL);
+  str = geo_as_geojson(gs, 0, -1, NULL, &size_out);
   printf("geo_as_geojson(gs, 0, -1, NULL): %s, errno %d\n",
     str ? "a value" : "NULL", meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -214,27 +215,27 @@ int main(void)
   SpanSet *fspanset = floatspanset_in("{[1.25, 2.5]}");
   Temporal *tfloat = tfloat_in("1.26@2001-01-01");
   assert(fset && fspan && fspanset && tfloat);
-  str = floatset_out(fset, -1);
+  str = floatset_out(fset, -1, &size_out);
   printf("floatset_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = floatspan_out(fspan, -1);
+  str = floatspan_out(fspan, -1, &size_out);
   printf("floatspan_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = floatspanset_out(fspanset, -1);
+  str = floatspanset_out(fspanset, -1, &size_out);
   printf("floatspanset_out(ss, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = tfloat_out(tfloat, -1);
+  str = tfloat_out(tfloat, -1, &size_out);
   printf("tfloat_out(temp, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = temporal_as_mfjson(tfloat, 0, 0, -1, NULL);
+  str = temporal_as_mfjson(tfloat, 0, 0, -1, NULL, &size_out);
   printf("temporal_as_mfjson(temp, 0, 0, -1, NULL): %s, errno %d\n",
     str ? "a value" : "NULL", meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -270,7 +271,7 @@ int main(void)
   /* The internal outputs of a temporal value, an array of them, a set, a
    * span and a span set, which the PostgreSQL wrappers call with the count a
    * user writes, report a negative count */
-  str = temporal_out(tfloat, -1);
+  str = temporal_out(tfloat, -1, NULL);
   printf("temporal_out(temp, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -281,17 +282,17 @@ int main(void)
     strarr ? "a value" : "NULL", meos_errno());
   assert(strarr == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = set_out(fset, -1);
+  str = set_out(fset, -1, NULL);
   printf("set_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = span_out(fspan, -1);
+  str = span_out(fspan, -1, NULL);
   printf("span_out(s, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
   meos_errno_reset();
-  str = spanset_out(fspanset, -1);
+  str = spanset_out(fspanset, -1, NULL);
   printf("spanset_out(ss, -1): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   assert(str == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
@@ -299,8 +300,8 @@ int main(void)
 
   /* An MF-JSON precision above the default writes the default number of
    * decimal digits */
-  str = temporal_as_mfjson(tfloat, 0, 0, 20, NULL);
-  char *str15 = temporal_as_mfjson(tfloat, 0, 0, 15, NULL);
+  str = temporal_as_mfjson(tfloat, 0, 0, 20, NULL, &size_out);
+  char *str15 = temporal_as_mfjson(tfloat, 0, 0, 15, NULL, &size_out);
   printf("temporal_as_mfjson(temp, 0, 0, 20, NULL): %s, errno %d\n",
     str ? str : "NULL", meos_errno());
   assert(str && str15 && strcmp(str, str15) == 0 && meos_errno() == 0);

@@ -87,6 +87,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -172,8 +173,8 @@ int main(void)
   seq = ttext_in("[\"AAA\"@2001-01-01, \"BBB\"@2001-01-02]");
   text *txt = ttext_value(inst);
   text *txt2 = ttext_start_value(inst);
-  char *str = text_out(txt);
-  char *str2 = text_out(txt2);
+  char *str = text_out(txt, &size_out);
+  char *str2 = text_out(txt2, &size_out);
   printf("ttext_value: %s, errno %d\n", str, meos_errno());
   assert(strcmp(str, "AAA") == 0 && strcmp(str, str2) == 0 &&
     meos_errno() == 0);
@@ -191,7 +192,7 @@ int main(void)
   seq = tgeompoint_in("[Point(1 2)@2001-01-01, Point(3 4)@2001-01-02]");
   GSERIALIZED *gs = tgeo_value(inst);
   GSERIALIZED *gs2 = tgeo_start_value(inst);
-  str = geo_as_text(gs, 6);
+  str = geo_as_text(gs, 6, &size_out);
   printf("tgeo_value: %s, errno %d\n", str, meos_errno());
   assert(strcmp(str, "POINT(1 2)") == 0 && geo_same(gs, gs2) &&
     meos_errno() == 0);
@@ -210,7 +211,7 @@ int main(void)
     "Cbuffer(Point(2 2),0.5)@2001-01-02]");
   Cbuffer *cb = tcbuffer_value(inst);
   Cbuffer *cb2 = tcbuffer_start_value(inst);
-  str = cbuffer_out(cb, 6);
+  str = cbuffer_out(cb, 6, &size_out);
   printf("tcbuffer_value: %s, errno %d\n", str, meos_errno());
   assert(cbuffer_radius(cb) == 0.5 && cbuffer_eq(cb, cb2) &&
     meos_errno() == 0);
@@ -243,7 +244,7 @@ int main(void)
   seq = tjsonb_in("{{\"a\": 1}@2001-01-01, {\"a\": 2}@2001-01-02}");
   Jsonb *jb = tjsonb_value(inst);
   Jsonb *jb2 = tjsonb_start_value(inst);
-  str = jsonb_out(jb);
+  str = jsonb_out(jb, &size_out);
   printf("tjsonb_value: %s, errno %d\n", str, meos_errno());
   assert(strcmp(str, "{\"a\": 1}") == 0 && jsonb_eq(jb, jb2) &&
     meos_errno() == 0);
@@ -261,7 +262,7 @@ int main(void)
   seq = tnpoint_in("[Npoint(1, 0.5)@2001-01-01, Npoint(1, 0.7)@2001-01-02]");
   Npoint *np = tnpoint_value(inst);
   Npoint *np2 = tnpoint_start_value(inst);
-  str = npoint_out(np, 6);
+  str = npoint_out(np, 6, &size_out);
   printf("tnpoint_value: %s, errno %d\n", str, meos_errno());
   assert(npoint_route(np) == 1 && npoint_position(np) == 0.5 &&
     npoint_eq(np, np2) && meos_errno() == 0);
@@ -320,7 +321,7 @@ int main(void)
     "Pose(Point(2 2), 0.5)@2001-01-02]");
   Pose *pose = tpose_value(inst);
   Pose *pose2 = tpose_start_value(inst);
-  str = pose_out(pose, 6);
+  str = pose_out(pose, 6, &size_out);
   printf("tpose_value: %s, errno %d\n", str, meos_errno());
   assert(pose_eq(pose, pose2) && meos_errno() == 0);
   free(pose); free(pose2); free(str);
@@ -341,7 +342,7 @@ int main(void)
   PoseChain *pc = tposechain_value(inst);
   PoseChain **pcs = tposechain_values(inst, &count);
   PoseChain *pc2 = tposechain_start_value(inst);
-  str = posechain_out(pc, 6);
+  str = posechain_out(pc, 6, &size_out);
   printf("tposechain_value: %s, errno %d\n", str, meos_errno());
   assert(count == 1 && posechain_num_poses(pc) == 2 &&
     posechain_eq(pc, pcs[0]) && posechain_eq(pc, pc2) && meos_errno() == 0);
@@ -428,7 +429,7 @@ int main(void)
     "{Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-02}");
   pose = trgeometry_value(inst);
   Pose **poses = trgeometry_values(inst, &count);
-  str = pose_out(pose, 6);
+  str = pose_out(pose, 6, &size_out);
   printf("trgeometry_value: %s, errno %d\n", str, meos_errno());
   assert(count == 1 && pose_eq(pose, poses[0]) && meos_errno() == 0);
   free(pose); free(poses[0]); free(poses); free(str);

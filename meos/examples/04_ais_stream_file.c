@@ -185,7 +185,7 @@ main(int argc, char **argv)
     /* Send to the output file the trip if reached the maximum number of instants */
     if (trips[j].trip && trips[j].trip->count == NUM_INSTS_BATCH)
     {
-      char *temp_out = tsequence_out(trips[j].trip, 15);
+      char *temp_out = tsequence_out(trips[j].trip, 15, NULL);
       fprintf(file_out, "%ld, %s\n",trips[j].MMSI, temp_out);
       /* Free memory */
       free(temp_out);

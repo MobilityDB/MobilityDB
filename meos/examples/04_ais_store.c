@@ -109,6 +109,7 @@ exec_sql(PGconn *conn, const char *sql, ExecStatusType status)
 int
 main(int argc, char **argv)
 {
+  size_t size_out;
   const char *conninfo;
   PGconn *conn;
   int res_sql;
@@ -245,7 +246,7 @@ main(int argc, char **argv)
       len = snprintf(insert_buffer, MAX_LEN_SQL - 1,
         "INSERT INTO public.AISInstants(MMSI, location, SOG) VALUES ");
 
-    char *t_out = timestamp_out(rec.T);
+    char *t_out = timestamp_out(rec.T, &size_out);
     len += snprintf(insert_buffer + len, MAX_LEN_SQL - 1 - len,
       "(%ld, 'SRID=4326;Point(%lf %lf)@%s+00', '%lf@%s+00'),",
       rec.MMSI, rec.Longitude, rec.Latitude, t_out, rec.SOG, t_out);

@@ -48,6 +48,7 @@
 
 int main()
 {
+  size_t size_out;
   double xcoords[MAX_COUNT] = {1, 2, 1, 2};
   double ycoords[MAX_COUNT] = {1, 2, 1, 2};
   double zcoords[MAX_COUNT] = {1, 2, 1, 2};
@@ -70,9 +71,9 @@ int main()
     4, 4326, true, true, true, true, true);
 
   /* Print result in WKT */
-  char *seq1_wkt = tspatial_as_ewkt((Temporal *) seq1, 2);
-  char *seq2_wkt = tspatial_as_ewkt((Temporal *) seq2, 2);
-  char *seq3_wkt = tspatial_as_ewkt((Temporal *) seq3, 2);
+  char *seq1_wkt = tspatial_as_ewkt((Temporal *) seq1, 2, &size_out);
+  char *seq2_wkt = tspatial_as_ewkt((Temporal *) seq2, 2, &size_out);
+  char *seq3_wkt = tspatial_as_ewkt((Temporal *) seq3, 2, &size_out);
   printf("\nSequence l: %s\nSequence 2: %s\nSequence 3: %s\n\n",
     seq1_wkt, seq2_wkt, seq3_wkt);
 

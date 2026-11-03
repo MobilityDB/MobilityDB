@@ -125,12 +125,13 @@ Tspatial_from_ewkt(PG_FUNCTION_ARGS)
 static Datum
 Tspatial_as_text_common(FunctionCallInfo fcinfo, bool extended)
 {
+  size_t size_out;
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = extended ? tspatial_as_ewkt(temp, dbl_dig_for_wkt) : 
-    tspatial_as_text(temp, dbl_dig_for_wkt);
+  char *str = extended ? tspatial_as_ewkt(temp, dbl_dig_for_wkt, &size_out) : 
+    tspatial_as_text(temp, dbl_dig_for_wkt, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_FREE_IF_COPY(temp, 0);
@@ -294,10 +295,11 @@ PG_FUNCTION_INFO_V1(Geo_as_hexewkb);
 Datum
 Geo_as_hexewkb(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(0);
   text *endian_text = PG_GETARG_TEXT_P(1);
   char *endian = text_to_cstring(endian_text);
-  char *hexwkb = geo_as_hexewkb(gs, endian);
+  char *hexwkb = geo_as_hexewkb(gs, endian, &size_out);
   text *result = cstring_to_text(hexwkb);
   pfree(endian); pfree(hexwkb);
   PG_FREE_IF_COPY(gs, 0);

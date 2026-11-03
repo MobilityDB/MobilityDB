@@ -225,14 +225,17 @@ th3indexseqset_in(const char *str)
  * @brief Return the Well-Known Text (WKT) representation of a temporal H3
  * cell index
  * @param[in] temp Temporal H3 cell index
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Temporal_out(), #Temporal_as_text()
  */
 char *
-th3index_out(const Temporal *temp)
+th3index_out(const Temporal *temp, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
   VALIDATE_TH3INDEX(temp, NULL);
-  return temporal_out(temp, 0);
+  return temporal_out(temp, 0, size_out);
 }
 
 /*****************************************************************************

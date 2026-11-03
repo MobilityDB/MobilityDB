@@ -71,6 +71,7 @@ typedef struct
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
 
@@ -172,7 +173,7 @@ int main(void)
   }
   
   Npoint *np = npoint_make(rec.gid, pos);
-  char *np_str = npoint_out(np, 3);
+  char *np_str = npoint_out(np, 3, &size_out);
   printf("Network point: %s\n", np_str);
   free(np); free(np_str);
   

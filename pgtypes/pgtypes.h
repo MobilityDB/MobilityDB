@@ -116,7 +116,7 @@ extern bool bool_in(const char *str);
 extern bool bool_le(bool arg1, bool arg2);
 extern bool bool_lt(bool arg1, bool arg2);
 extern bool bool_ne(bool arg1, bool arg2);
-extern char *bool_out(bool b);
+extern char *bool_out(bool b, size_t *size_out);
 extern text *bool_to_text(bool b);
 
 /* Functions for integers */
@@ -256,7 +256,7 @@ PGTYPES_INTERNAL_END
 extern float8 float8_lgamma(float8 num);
 extern float8 float8_ln(float8 num);
 extern float8 float8_log10(float8 num);
-extern char *float8_out(float8 num, int maxdd);
+extern char *float8_out(float8 num, int maxdd, size_t *size_out);
 extern float8 float8_pi(void);
 extern float8 float8_pow(float8 num1, float8 num2);
 extern float8 float8_radians(float8 num);
@@ -370,7 +370,7 @@ extern int32 text_len(const text *txt);
 extern text *text_lower(const text *txt);
 extern bool text_ne(const text *txt1, const text *txt2);
 extern int32 text_octetlen(const text *txt);
-extern char *text_out(const text *txt);
+extern char *text_out(const text *txt, size_t *size_out);
 extern text *text_overlay(const text *txt1, const text *txt2, int from, int count);
 extern text *text_overlay_no_len(const text *txt1, const text *txt2, int from);
 extern int32 text_pos(const text *txt, const text *search);

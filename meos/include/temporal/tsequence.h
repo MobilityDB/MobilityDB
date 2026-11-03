@@ -119,7 +119,7 @@ extern bool intersection_tinstant_tsequence(const TInstant *inst,
 /* Input/output functions */
 
 extern char *tsequence_to_string(const TSequence *seq, int maxdd,
-  bool component, outfunc value_out);
+  bool component, outfunc value_out, size_t *size_out);
 
 /* Constructor functions */
 

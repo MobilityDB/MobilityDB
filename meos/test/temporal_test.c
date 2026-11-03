@@ -46,6 +46,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS */
   meos_initialize();
   meos_initialize_timezone("UTC");
@@ -55,7 +56,7 @@ int main(void)
    ***************************************************************************/
 
   bool bool1 = bool_in("true");
-  char *bool1_out = bool_out(bool1);
+  char *bool1_out = bool_out(bool1, &size_out);
 
   int32 int32_in1 = 1;
   int64 int64_in1 = 1;
@@ -69,115 +70,115 @@ int main(void)
 
   char *text1_in = "abcdef";
   text *text1 = text_in(text1_in);
-  char *text1_out = text_out(text1);
+  char *text1_out = text_out(text1, &size_out);
 
   text *text_null = text_in("NULL");
 
   char *tstz1_in = "2001-01-01";
   TimestampTz tstz1 = timestamptz_in(tstz1_in, -1);
-  char *tstz1_out = timestamptz_out(tstz1);
+  char *tstz1_out = timestamptz_out(tstz1, &size_out);
   char *tstz2_in = "2001-01-02";
   TimestampTz tstz2 = timestamptz_in(tstz2_in, -1);
-  char *tstz2_out = timestamptz_out(tstz2);
+  char *tstz2_out = timestamptz_out(tstz2, &size_out);
 
   char *interv1_in = "3 hours";
   Interval *interv1 = interval_in(interv1_in, -1);
-  char *interv1_out = interval_out(interv1);
+  char *interv1_out = interval_out(interv1, &size_out);
   char *interv2_in = "3 mins";
   Interval *interv2 = interval_in(interv2_in, -1);
-  char *interv2_out = interval_out(interv2);
+  char *interv2_out = interval_out(interv2, &size_out);
   char *interv3_in = "3 days";
   Interval *interv3 = interval_in(interv3_in, -1);
-  char *interv3_out = interval_out(interv3);
+  char *interv3_out = interval_out(interv3, &size_out);
 
   char *fset1_in = "{1,3,5}";
   Set *fset1 = floatset_in(fset1_in);
-  char *fset1_out = floatset_out(fset1, 6);
+  char *fset1_out = floatset_out(fset1, 6, &size_out);
   char *fspan1_in = "[1,3]";
   Span *fspan1 = floatspan_in(fspan1_in);
-  char *fspan1_out = floatspan_out(fspan1, 6);
+  char *fspan1_out = floatspan_out(fspan1, 6, &size_out);
   char *fspanset1_in = "{[1,3],[4,6]}";
   SpanSet *fspanset1 = floatspanset_in(fspanset1_in);
-  char *fspanset1_out = floatspanset_out(fspanset1, 6);
+  char *fspanset1_out = floatspanset_out(fspanset1, 6, &size_out);
 
   char *tstzset1_in = "{2001-01-01, 2001-01-03, 2001-01-05}";
   Set *tstzset1 = tstzset_in(tstzset1_in);
-  char *tstzset1_out = tstzset_out(tstzset1);
+  char *tstzset1_out = tstzset_out(tstzset1, &size_out);
   char *tstzset2_in = "{2001-01-02, 2001-01-03, 2001-01-04, 2001-01-06}";
   Set *tstzset2 = tstzset_in(tstzset2_in);
-  char *tstzset2_out = tstzset_out(tstzset2);
+  char *tstzset2_out = tstzset_out(tstzset2, &size_out);
 
   char *tstzspan1_in = "[2001-01-01, 2001-01-03]";
   Span *tstzspan1 = tstzspan_in(tstzspan1_in);
-  char *tstzspan1_out = tstzspan_out(tstzspan1);
+  char *tstzspan1_out = tstzspan_out(tstzspan1, &size_out);
   char *tstzspan2_in = "[2001-01-02, 2001-01-04]";
   Span *tstzspan2 = tstzspan_in(tstzspan2_in);
-  char *tstzspan2_out = tstzspan_out(tstzspan2);
+  char *tstzspan2_out = tstzspan_out(tstzspan2, &size_out);
 
   char *tstzspanset1_in = "{[2001-01-01, 2001-01-03],[2001-01-04, 2001-01-06]}";
   SpanSet *tstzspanset1 = tstzspanset_in(tstzspanset1_in);
-  char *tstzspanset1_out = tstzspanset_out(tstzspanset1);
+  char *tstzspanset1_out = tstzspanset_out(tstzspanset1, &size_out);
   char *tstzspanset2_in = "{[2001-01-02, 2001-01-04],[2001-01-05, 2001-01-07]}";
   SpanSet *tstzspanset2 = tstzspanset_in(tstzspanset2_in);
-  char *tstzspanset2_out = tstzspanset_out(tstzspanset2);
+  char *tstzspanset2_out = tstzspanset_out(tstzspanset2, &size_out);
 
   char *tbox1_in = "TBOXFLOAT XT([1, 3],[2001-01-01, 2001-01-03])";
   TBox *tbox1 = tbox_in(tbox1_in);
-  char *tbox1_out = tbox_out(tbox1, 6);
+  char *tbox1_out = tbox_out(tbox1, 6, &size_out);
   char *tbox1_hexwkb = tbox_as_hexwkb(tbox1, 1, &size_hexwkb);
   uint8_t *tbox1_wkb = tbox_as_wkb(tbox1, 1, &tbox_size_wkb);
   char *tbox2_in = "TBOXFLOAT XT([2, 4],[2001-01-02, 2001-01-04])";
   TBox *tbox2 = tbox_in(tbox2_in);
-  char *tbox2_out = tbox_out(tbox2, 6);
+  char *tbox2_out = tbox_out(tbox2, 6, &size_out);
 
   TBox *tintbox1 = tbox_in("TBOXINT XT([1, 3],[2001-01-01, 2001-01-03])");
-  char *tintbox1_out = tbox_out(tintbox1, 6);
+  char *tintbox1_out = tbox_out(tintbox1, 6, &size_out);
   TBox *tbigintbox1 = tbox_in("TBOXBIGINT XT([1, 3],[2001-01-01, 2001-01-03])");
-  char *tbigintbox1_out = tbox_out(tbigintbox1, 6);
+  char *tbigintbox1_out = tbox_out(tbigintbox1, 6, &size_out);
   TBox *tintbox2 = tbox_in("TBOXINT XT([2, 4],[2001-01-02, 2001-01-04])");
-  char *tintbox2_out = tbox_out(tintbox2, 6);
+  char *tintbox2_out = tbox_out(tintbox2, 6, &size_out);
 
   char *tbool1_in = "{[t@2001-01-01, t@2001-01-03],[f@2001-01-04, f@2001-01-06]}";
   Temporal *tbool1 = tbool_in(tbool1_in);
-  char *tbool1_out = tbool_out(tbool1);
+  char *tbool1_out = tbool_out(tbool1, &size_out);
   char *tbool2_in = "{[t@2001-01-02, t@2001-01-03],[f@2001-01-04, f@2001-01-06]}";
   Temporal *tbool2 = tbool_in(tbool2_in);
-  char *tbool2_out = tbool_out(tbool2);
+  char *tbool2_out = tbool_out(tbool2, &size_out);
 
   char *tbigint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tbigint1 = tbigint_in(tbigint1_in);
-  char *tbigint1_out = tbigint_out(tbigint1);
+  char *tbigint1_out = tbigint_out(tbigint1, &size_out);
 
   char *tint1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tint1 = tint_in(tint1_in);
-  char *tint1_out = tint_out(tint1);
-  char *tint1_mfjson = temporal_as_mfjson(tint1, 1, 1, 6, NULL);
+  char *tint1_out = tint_out(tint1, &size_out);
+  char *tint1_mfjson = temporal_as_mfjson(tint1, 1, 1, 6, NULL, &size_out);
   char *tint2_in = "{[2@2001-01-01, 4@2001-01-04],[5@2001-01-05, 7@2001-01-07]}";
   Temporal *tint2 = tint_in(tint2_in);
-  char *tint2_out = tint_out(tint2);
+  char *tint2_out = tint_out(tint2, &size_out);
 
   char *tfloat1_in = "{[1@2001-01-01, 3@2001-01-03],[4@2001-01-04, 6@2001-01-06]}";
   Temporal *tfloat1 = tfloat_in(tfloat1_in);
-  char *tfloat1_out = tfloat_out(tfloat1, 6);
+  char *tfloat1_out = tfloat_out(tfloat1, 6, &size_out);
   char *tfloat1_hexwkb = temporal_as_hexwkb(tfloat1, 1, &size_hexwkb);
   uint8_t *tfloat1_wkb = temporal_as_wkb(tfloat1, 1, &tfloat_size_wkb);
-  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, 1, 1, 6, NULL);
+  char *tfloat1_mfjson = temporal_as_mfjson(tfloat1, 1, 1, 6, NULL, &size_out);
   char *tfloatinst1_in = "1@2001-01-01";
   TInstant *tfloatinst1 = (TInstant *) tfloat_in(tfloatinst1_in);
-  char *tfloatinst1_out = tfloat_out((Temporal *) tfloatinst1, 6);
+  char *tfloatinst1_out = tfloat_out((Temporal *) tfloatinst1, 6, &size_out);
   char *tfloatseq1_in = "[1@2001-01-01, 3@2001-01-03]";
   TSequence *tfloatseq1 = (TSequence *) tfloat_in(tfloatseq1_in);
-  char *tfloatseq1_out = tfloat_out((Temporal *) tfloatseq1, 6);
+  char *tfloatseq1_out = tfloat_out((Temporal *) tfloatseq1, 6, &size_out);
 
   char *tfloat2_in = "{[2@2001-01-02, 4@2001-01-03],[5@2001-01-04, 7@2001-01-06]}";
   Temporal *tfloat2 = tfloat_in(tfloat2_in);
-  char *tfloat2_out = tfloat_out(tfloat2, 6);
+  char *tfloat2_out = tfloat_out(tfloat2, 6, &size_out);
   char *tfloatinst2_in = "2@2001-01-02";
   TInstant *tfloatinst2 = (TInstant *) tfloat_in(tfloatinst2_in);
-  char *tfloatinst2_out = tfloat_out((Temporal *) tfloatinst2, 6);
+  char *tfloatinst2_out = tfloat_out((Temporal *) tfloatinst2, 6, &size_out);
   char *tfloatseq2_in = "[2@2001-01-04, 4@2001-01-06]";
   TSequence *tfloatseq2 = (TSequence *) tfloat_in(tfloatseq2_in);
-  char *tfloatseq2_out = tfloat_out((Temporal *) tfloatseq2, 6);
+  char *tfloatseq2_out = tfloat_out((Temporal *) tfloatseq2, 6, &size_out);
 
   Temporal *tfloatarray[2];
   TInstant *tfloatinstarray[2];
@@ -185,11 +186,11 @@ int main(void)
 
   char *ttext1_in = "{[A@2001-01-01, B@2001-01-03],[C@2001-01-04, D@2001-01-06]}";
   Temporal *ttext1 = ttext_in(ttext1_in);
-  char *ttext1_out = ttext_out(ttext1);
-  char *ttext1_mfjson = temporal_as_mfjson(ttext1, 1, 1, 6, NULL);
+  char *ttext1_out = ttext_out(ttext1, &size_out);
+  char *ttext1_mfjson = temporal_as_mfjson(ttext1, 1, 1, 6, NULL, &size_out);
   char *ttext2_in = "{[E@2001-01-02, F@2001-01-04],[G@2001-01-05, H@2001-01-07]}";
   Temporal *ttext2 = ttext_in(ttext2_in);
-  char *ttext2_out = ttext_out(ttext2);
+  char *ttext2_out = ttext_out(ttext2, &size_out);
 
   /* For aggregates */
   SkipList *sklist;
@@ -268,7 +269,8 @@ int main(void)
   printf("tbox_as_hexwkb(%s, 1, %ld): %s\n", tbox1_out, size, char_result);
   free(char_result);
 
-  /* uint8_t *tbox_as_wkb(const TBox *box, uint8_t variant, size_t *size_out); */
+  /* uint8_t *tbox_as_wkb(const TBox *box, uint8_t variant,
+    size_t *size_out); */
   binchar_result = tbox_as_wkb(tbox1, 1, &size);
   printf("tbox_as_wkb(%s, 1, %ld): ", tbox1_out, size);
   fwrite(binchar_result, size, 1, stdout);
@@ -277,13 +279,13 @@ int main(void)
 
   /* TBox *tbox_from_hexwkb(const char *hexwkb); */
   tbox_result = tbox_from_hexwkb(tbox1_hexwkb);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_from_hexwkb(%s, %ld): %s\n", tbox1_hexwkb, size_hexwkb, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_from_wkb(const uint8_t *wkb, size_t size); */
   tbox_result = tbox_from_wkb(tbox1_wkb, tbox_size_wkb);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("temporal_from_wkb(");
   fwrite(tbox1_wkb, tbox_size_wkb, 1, stdout);
   printf(", %zu): %s\n", size, char_result);
@@ -291,12 +293,12 @@ int main(void)
 
   /* TBox *tbox_in(const char *str); */
   tbox_result = tbox_in(tbox1_in);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_in(%s): %s\n", tbox1_in, char_result);
   free(tbox_result); free(char_result);
 
-  /* char *tbox_out(const TBox *box, int maxdd); */
-  char_result = tbox_out(tbox1, 6);
+  /* char *tbox_out(const TBox *box, int maxdd, size_t *size_out); */
+  char_result = tbox_out(tbox1, 6, &size_out);
   printf("tbox_out(%s, 6): %s\n", tbox1_out, char_result);
   free(char_result);
 
@@ -306,49 +308,49 @@ int main(void)
 
   /* TBox *float_timestamptz_to_tbox(double d, TimestampTz t); */
   tbox_result = float_timestamptz_to_tbox(float8_in1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_timestamptz_to_tbox(%lf, %s): %s\n", float8_in1, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *float_tstzspan_to_tbox(double d, const Span *s); */
   tbox_result = float_tstzspan_to_tbox(float8_in1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_tstzspan_to_tbox(%lf, %s): %s\n", float8_in1, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_timestamptz_to_tbox(int i, TimestampTz t); */
   tbox_result = int_timestamptz_to_tbox(int32_in1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_timestamptz_to_tbox(%d, %s): %s\n", int32_in1, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_tstzspan_to_tbox(int i, const Span *s); */
   tbox_result = int_tstzspan_to_tbox(int32_in1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_tstzspan_to_tbox(%d, %s): %s\n", int32_in1, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *numspan_tstzspan_to_tbox(const Span *span, const Span *s); */
   tbox_result = numspan_tstzspan_to_tbox(fspan1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("numspan_tstzspan_to_tbox(%s, %s): %s\n", fspan1_out, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *numspan_timestamptz_to_tbox(const Span *span, TimestampTz t); */
   tbox_result = numspan_timestamptz_to_tbox(fspan1, tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("numspan_timestamptz_to_tbox(%s, %s): %s\n", fspan1_out, tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_copy(const TBox *box); */
   tbox_result = tbox_copy(tbox1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_copy(%s): %s\n", tbox1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_make(const Span *s, const Span *p); */
   tbox_result = tbox_make(fspan1, tstzspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_make(%s, %s): %s\n", fspan1_out, tstzspan1_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -358,55 +360,55 @@ int main(void)
 
   /* TBox *float_to_tbox(double d); */
   tbox_result = float_to_tbox(float8_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("float_to_tbox(%lf): %s\n", float8_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *int_to_tbox(int i); */
   tbox_result = int_to_tbox(int32_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("int_to_tbox(%d): %s\n", int32_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *set_to_tbox(const Set *s); */
   tbox_result = set_to_tbox(fset1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("set_to_tbox(%s): %s\n", fset1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *span_to_tbox(const Span *s); */
   tbox_result = span_to_tbox(fspan1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("span_to_tbox(%s): %s\n", fspan1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *spanset_to_tbox(const SpanSet *ss); */
   tbox_result = spanset_to_tbox(fspanset1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("spanset_to_tbox(%s): %s\n", fspanset1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* Span *tbox_to_intspan(const TBox *box); */
   ispan_result = tbox_to_intspan(tbox1);
-  char_result = intspan_out(ispan_result);
+  char_result = intspan_out(ispan_result, &size_out);
   printf("tbox_to_intspan(%s): %s\n", tbox1_out, char_result);
   free(ispan_result); free(char_result);
 
   /* Span *tbox_to_floatspan(const TBox *box); */
   fspan_result = tbox_to_floatspan(tbox1);
-  char_result = floatspan_out(fspan_result, 6);
+  char_result = floatspan_out(fspan_result, 6, &size_out);
   printf("tbox_to_floatspan(%s): %s\n", tbox1_out, char_result);
   free(fspan_result); free(char_result);
 
   /* Span *tbox_to_tstzspan(const TBox *box); */
   tstzspan_result = tbox_to_tstzspan(tbox1);
-  char_result = tstzspan_out(tstzspan_result);
+  char_result = tstzspan_out(tstzspan_result, &size_out);
   printf("tbox_to_tstzspan(%s): %s\n", tbox1_out, char_result);
   free(tstzspan_result); free(char_result);
 
   /* TBox *timestamptz_to_tbox(TimestampTz t); */
   tbox_result = timestamptz_to_tbox(tstz1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("timestamptz_to_tbox(%s): %s\n", tstz1_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -428,7 +430,7 @@ int main(void)
 
   /* bool tbox_tmax(const TBox *box, TimestampTz *result); */
   bool_result = tbox_tmax(tbox1, &tstz_result);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("tbox_tmax(%s, %s): %c\n", tbox1_out, char_result, bool_result ? 't' : 'n');
   free(char_result);
 
@@ -438,7 +440,7 @@ int main(void)
 
   /* bool tbox_tmin(const TBox *box, TimestampTz *result); */
   bool_result = tbox_tmin(tbox1, &tstz_result);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("tbox_tmin(%s, %s): %c\n", tbox1_out, char_result, bool_result ? 't' : 'n');
   free(char_result);
 
@@ -484,43 +486,43 @@ int main(void)
 
   /* TBox *tfloatbox_expand(const TBox *box, double d); */
   tbox_result = tfloatbox_expand(tbox1, float8_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tfloatbox_expand(%s, %lf): %s\n", tbox1_out, float8_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tintbox_expand(const TBox *box, int i); */
   tbox_result = tintbox_expand(tintbox1, int32_in1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tintbox_expand(%s, %d): %s\n", tintbox1_out, int32_in1, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_expand_time(const TBox *box, const Interval *interv); */
   tbox_result = tbox_expand_time(tbox1, interv1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_expand_time(%s, %s): %s\n", tbox1_out, interv1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_round(const TBox *box, int maxdd); */
   tbox_result = tbox_round(tbox1, 6);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_round(%s, 6): %s\n", tbox1_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tfloatbox_shift_scale(const TBox *box, double shift, double width, bool hasshift, bool haswidth); */
   tbox_result = tfloatbox_shift_scale(tbox1, float8_in1, float8_in2, true, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tfloatbox_shift_scale(%s, %lf, %lf, true, true): %s\n", tbox1_out, float8_in1, float8_in2, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tintbox_shift_scale(const TBox *box, int shift, int width, bool hasshift, bool haswidth); */
   tbox_result = tintbox_shift_scale(tintbox1, int32_in1, int32_in2, true, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tintbox_shift_scale(%s, %d, %d, true, true): %s\n", tintbox1_out, int32_in1, int32_in2, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *tbox_shift_scale_time(const TBox *box, const Interval *shift, const Interval *duration); */
   tbox_result = tbox_shift_scale_time(tbox1, interv1, interv2);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tbox_shift_scale_time(%s, %s, %s): %s\n", tbox1_out, interv1_out, interv2_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -530,13 +532,13 @@ int main(void)
 
   /* TBox *union_tbox_tbox(const TBox *box1, const TBox *box2, bool strict); */
   tbox_result = union_tbox_tbox(tbox1, tbox2, true);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("union_tbox_tbox(%s, %s, true): %s\n", tbox1_out, tbox2_out, char_result);
   free(tbox_result); free(char_result);
 
   /* TBox *intersection_tbox_tbox(const TBox *box1, const TBox *box2); */
   tbox_result = intersection_tbox_tbox(tbox1, tbox2);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("intersection_tbox_tbox(%s, %s): %s\n", tbox1_out, tbox2_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -639,34 +641,36 @@ int main(void)
    *****************************************************************************/
 
   /* Temporal *tbool_from_mfjson(const char *str); */
-  char *mfjson = temporal_as_mfjson(tbool1, 1, 1, 6, NULL);
+  char *mfjson = temporal_as_mfjson(tbool1, 1, 1, 6, NULL, &size_out);
   tbool_result = tbool_from_mfjson(mfjson);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_from_mfjson(%s): %s\n", tbool1_in, char_result);
   free(mfjson); free(tbool_result); free(char_result);
 
   /* Temporal *tbool_in(const char *str); */
   tbool_result = tbool_in(tbool1_in);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_in(%s): %s\n", tbool1_in, char_result);
   free(tbool_result); free(char_result);
 
-  /* char *tbool_out(const Temporal *temp); */
-  char_result = tbool_out(tbool1);
+  /* char *tbool_out(const Temporal *temp, size_t *size_out); */
+  char_result = tbool_out(tbool1, &size_out);
   printf("tbool_out(%s): %s\n", tbool1_out, char_result);
   free(char_result);
 
-  /* char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out); */
+  /* char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant,
+    size_t *size_out); */
   char_result = temporal_as_hexwkb(tfloat1, 1, &size);
   printf("temporal_as_hexwkb(%s, 1, &size): %s\n", tfloat1_out, char_result);
   free(char_result);
 
-  /* char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs); */
-  char_result = temporal_as_mfjson(tfloat1, 1, 1, 1, "");
+  /* char *temporal_as_mfjson(const Temporal *temp, bool with_bbox, int flags, int precision, const char *srs, size_t *size_out); */
+  char_result = temporal_as_mfjson(tfloat1, 1, 1, 1, "", &size_out);
   printf("temporal_as_mfjson(%s, 1, 1, 1, \"\"): %s\n", tfloat1_out, char_result);
   free(char_result);
 
-  /* uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out); */
+  /* uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant,
+    size_t *size_out); */
   binchar_result = temporal_as_wkb(tfloat1, 1, &size);
   printf("tbox_as_wkb(%s, 1, %ld): ", tfloat1_out, size);
   fwrite(binchar_result, size, 1, stdout);
@@ -675,13 +679,13 @@ int main(void)
 
   /* Temporal *temporal_from_hexwkb(const char *hexwkb); */
   tfloat_result = temporal_from_hexwkb(tfloat1_hexwkb);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_from_hexwkb(%s): %s\n", tfloat1_hexwkb, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size); */
   tfloat_result = temporal_from_wkb(tfloat1_wkb, tfloat_size_wkb);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_from_wkb(");
   fwrite(tfloat1_wkb, tfloat_size_wkb, 1, stdout);
   printf(", %zu): %s\n", size, char_result);
@@ -689,52 +693,52 @@ int main(void)
 
   /* Temporal *tfloat_from_mfjson(const char *str); */
   tfloat_result = tfloat_from_mfjson(tfloat1_mfjson);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_from_mfjson(%s): %s\n", tfloat1_mfjson, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_in(const char *str); */
   tfloat_result = tfloat_in(tfloat1_in);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_in(%s): %s\n", tfloat1_in, char_result);
   free(tfloat_result); free(char_result);
 
-  /* char *tfloat_out(const Temporal *temp, int maxdd); */
-  char_result = tfloat_out(tfloat1, 6);
+  /* char *tfloat_out(const Temporal *temp, int maxdd, size_t *size_out); */
+  char_result = tfloat_out(tfloat1, 6, &size_out);
   printf("tfloat_out(%s, 6): %s\n", tfloat1_out, char_result);
   free(char_result);
 
   /* Temporal *tint_from_mfjson(const char *str); */
   tint_result = tint_from_mfjson(tint1_mfjson);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_from_mfjson(%s): %s\n", tfloat1_mfjson, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tint_in(const char *str); */
   tint_result = tint_in(tint1_in);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_in(%s): %s\n", tint1_in, char_result);
   free(tint_result); free(char_result);
 
-  /* char *tint_out(const Temporal *temp); */
-  char_result = tint_out(tint1);
+  /* char *tint_out(const Temporal *temp, size_t *size_out); */
+  char_result = tint_out(tint1, &size_out);
   printf("tint_out(%s): %s\n", tint1_out, char_result);
   free(char_result);
 
   /* Temporal *ttext_from_mfjson(const char *str); */
   ttext_result = ttext_from_mfjson(ttext1_mfjson);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_from_mfjson(%s): %s\n", ttext1_mfjson, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *ttext_in(const char *str); */
   ttext_result = ttext_in(ttext1_in);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_in(%s): %s\n", ttext1_in, char_result);
   free(ttext_result); free(char_result);
 
-  /* char *ttext_out(const Temporal *temp); */
-  char_result = ttext_out(ttext1);
+  /* char *ttext_out(const Temporal *temp, size_t *size_out); */
+  char_result = ttext_out(ttext1, &size_out);
   printf("ttext_out(%s): %s\n", ttext1_out, char_result);
   free(char_result);
 
@@ -745,97 +749,97 @@ int main(void)
 
   /* Temporal *tbool_from_base_temp(bool b, const Temporal *temp); */
   tbool_result = tbool_from_base_temp(bool1, tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_from_base_temp(%s, %s): %s\n", bool1_out, tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* TInstant *tboolinst_make(bool b, TimestampTz t); */
   tbool_result = (Temporal *) tboolinst_make(bool1, tstz1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tboolinst_make(%s, %s): %s\n", bool1_out, tstz1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* TSequence *tboolseq_from_base_tstzset(bool b, const Set *s); */
   tbool_result = (Temporal *) tboolseq_from_base_tstzset(bool1, tstzset1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tboolseq_from_base_tstzset(%s, %s): %s\n", bool1_out, tstz1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* TSequence *tboolseq_from_base_tstzspan(bool b, const Span *s); */
   tbool_result = (Temporal *) tboolseq_from_base_tstzspan(bool1, tstzspan1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tboolseq_from_base_tstzspan(%s, %s): %s\n", bool1_out, tstzspan1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* TSequenceSet *tboolseqset_from_base_tstzspanset(bool b, const SpanSet *ss); */
   tbool_result = (Temporal *) tboolseqset_from_base_tstzspanset(bool1, tstzspanset1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tboolseqset_from_base_tstzspanset(%s, %s): %s\n", bool1_out, tstzspanset1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *temporal_copy(const Temporal *temp); */
   tfloat_result = temporal_copy(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_copy(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_from_base_temp(double d, const Temporal *temp); */
   tfloat_result = tfloat_from_base_temp(float8_in1, tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_from_base_temp(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TInstant *tfloatinst_make(double d, TimestampTz t); */
   tfloat_result = (Temporal *) tfloatinst_make(float8_in1, tstz1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloatinst_make(%lf, %s): %s\n", float8_in1, tstz1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TSequence *tfloatseq_from_base_tstzset(double d, const Set *s); */
   tfloat_result = (Temporal *) tfloatseq_from_base_tstzset(float8_in1, tstzset1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloatseq_from_base_tstzset(%lf, %s): %s\n", float8_in1, tstz1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TSequence *tfloatseq_from_base_tstzspan(double d, const Span *s, interpType interp); */
   tfloat_result = (Temporal *) tfloatseq_from_base_tstzspan(float8_in1, tstzspan1, LINEAR);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloatseq_from_base_tstzspan(%lf, %s, LINEAR): %s\n", float8_in1, tstzspan1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TSequenceSet *tfloatseqset_from_base_tstzspanset(double d, const SpanSet *ss, interpType interp); */
   tfloat_result = (Temporal *) tfloatseqset_from_base_tstzspanset(float8_in1, tstzspanset1, LINEAR);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloatseqset_from_base_tstzspanset(%lf, %s, LINEAR): %s\n", float8_in1, tstzspanset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tint_from_base_temp(int i, const Temporal *temp); */
   tint_result = tint_from_base_temp(int32_in1, tint1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_from_base_temp(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
   /* TInstant *tintinst_make(int i, TimestampTz t); */
   tint_result = (Temporal *) tintinst_make(int32_in1, tstz1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tintinst_make(%d, %s): %s\n", int32_in1, tstz1_out, char_result);
   free(tint_result); free(char_result);
 
   /* TSequence *tintseq_from_base_tstzset(int i, const Set *s); */
   tint_result = (Temporal *) tintseq_from_base_tstzset(int32_in1, tstzset1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tintinst_make(%d, %s): %s\n", int32_in1, tstzset1_out, char_result);
   free(tint_result); free(char_result);
 
   /* TSequence *tintseq_from_base_tstzspan(int i, const Span *s); */
   tint_result = (Temporal *) tintseq_from_base_tstzspan(int32_in1, tstzspan1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tintseq_from_base_tstzspan(%d, %s): %s\n", int32_in1, tstzspan1_out, char_result);
   free(tint_result); free(char_result);
 
   /* TSequenceSet *tintseqset_from_base_tstzspanset(int i, const SpanSet *ss); */
   tint_result = (Temporal *) tintseqset_from_base_tstzspanset(int32_in1, tstzspanset1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tintseqset_from_base_tstzspanset(%d, %s): %s\n", int32_in1, tstzspanset1_out, char_result);
   free(tint_result); free(char_result);
 
@@ -843,7 +847,7 @@ int main(void)
   tfloatinstarray[0] = tfloatinst1;
   tfloatinstarray[1] = tfloatinst2;
   tfloat_result = (Temporal *) tsequence_make(tfloatinstarray, 1, true, true, LINEAR, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tsequence_make({%s, %s}, 1, true, true, LINEAR, true): %s\n", tfloatseq1_out, tfloatseq2_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -851,7 +855,7 @@ int main(void)
   tfloatseqarray[0] = tfloatseq1;
   tfloatseqarray[1] = tfloatseq2;
   tfloat_result = (Temporal *) tsequenceset_make(tfloatseqarray, 2, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tsequenceset_make({%s, %s}, 2, true): %s\n", tfloatseq1_out, tfloatseq2_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -859,37 +863,37 @@ int main(void)
   tfloatinstarray[0] = tfloatinst1;
   tfloatinstarray[1] = tfloatinst2;
   tfloat_result =  (Temporal *) tsequenceset_make_gaps(tfloatinstarray, 2, LINEAR, interv1, float8_in2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tsequenceset_make_gaps({%s, %s}, 2, LINEAR, %s, %lf): %s\n", tfloatinst1_out, tfloatinst2_out, interv1_out, float8_in2, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *ttext_from_base_temp(const text *txt, const Temporal *temp); */
   ttext_result = ttext_from_base_temp(text1, ttext1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_from_base_temp(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* TInstant *ttextinst_make(const text *txt, TimestampTz t); */
   ttext_result = (Temporal *) ttextinst_make(text1, tstz1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttextinst_make(%s, %s): %s\n", text1_out, tstz1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* TSequence *ttextseq_from_base_tstzset(const text *txt, const Set *s); */
   ttext_result = (Temporal *) ttextseq_from_base_tstzset(text1, tstzset1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttextinst_make(%s, %s): %s\n", text1_out, tstz1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* TSequence *ttextseq_from_base_tstzspan(const text *txt, const Span *s); */
   ttext_result = (Temporal *) ttextseq_from_base_tstzspan(text1, tstzspan1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttextseq_from_base_tstzspan(%s, %s): %s\n", text1_out, tstzspan1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* TSequenceSet *ttextseqset_from_base_tstzspanset(const text *txt, const SpanSet *ss); */
   ttext_result = (Temporal *) ttextseqset_from_base_tstzspanset(text1, tstzspanset1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttextseqset_from_base_tstzspanset(%s, %s): %s\n", text1_out, tstzspanset1_out, char_result);
   free(ttext_result); free(char_result);
 
@@ -900,38 +904,38 @@ int main(void)
 
   /* Temporal *tbool_to_tint(const Temporal *temp); */
   tint_result = tbool_to_tint(tbool1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tbool_to_tint(%s): %s\n", tbool1_out, char_result);
   free(tint_result); free(char_result);
 
   /* Span *temporal_to_tstzspan(const Temporal *temp); */
   tstzspan_result = temporal_to_tstzspan(tfloat1);
-  char_result = tstzspan_out(tstzspan_result);
+  char_result = tstzspan_out(tstzspan_result, &size_out);
   printf("temporal_to_tstzspan(%s): %s\n", tfloat1_out, char_result);
   free(tstzspan_result); free(char_result);
 
   /* Temporal *tfloat_to_tint(const Temporal *temp); */
   Temporal *tfloat_step = tfloat_in("interp=Step;[1@2001-01-01, 2@2001-01-02]");
   tint_result = tfloat_to_tint(tfloat_step);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tfloat_to_tint(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_step); free(tint_result); free(char_result);
 
   /* Temporal *tint_to_tfloat(const Temporal *temp); */
   tfloat_result = tint_to_tfloat(tint1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tint_to_tfloat(%s): %s\n", tint1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Span *tnumber_to_span(const Temporal *temp); */
   fspan_result = tnumber_to_span(tfloat1);
-  char_result = floatspan_out(fspan_result, 6);
+  char_result = floatspan_out(fspan_result, 6, &size_out);
   printf("tnumber_to_span(%s): %s\n", tfloat1_out, char_result);
   free(fspan_result); free(char_result);
 
   /* TBox *tnumber_to_tbox (const Temporal *temp); */
   tbox_result = tnumber_to_tbox (tfloat1);
-  char_result = tbox_out(tbox_result, 6);
+  char_result = tbox_out(tbox_result, 6, &size_out);
   printf("tnumber_to_tbox(%s): %s\n", tfloat1_out, char_result);
   free(tbox_result); free(char_result);
 
@@ -971,25 +975,25 @@ int main(void)
 
   /* Interval *temporal_duration(const Temporal *temp, bool boundspan); */
   interv_result = temporal_duration(tfloat1, true);
-  char_result = interval_out(interv_result);
+  char_result = interval_out(interv_result, &size_out);
   printf("tnumber_to_span(%s, true): %s\n", tfloat1_out, char_result);
   free(interv_result); free(char_result);
 
   /* TInstant *temporal_end_instant(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_end_instant(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_end_instant(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TSequence *temporal_end_sequence(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_end_sequence(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_end_sequence(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TimestampTz temporal_end_timestamptz(const Temporal *temp); */
   tstz_result = temporal_end_timestamptz(tfloat1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("temporal_end_timestamptz(%s): %s\n", tfloat1_out, char_result);
   free(char_result);
 
@@ -999,7 +1003,7 @@ int main(void)
 
   /* TInstant *temporal_instant_n(const Temporal *temp, int n); */
   tfloat_result = (Temporal *) temporal_instant_n(tfloat1, 1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_instant_n(%s, 1): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -1008,7 +1012,7 @@ int main(void)
   printf("temporal_instants(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -1030,13 +1034,13 @@ int main(void)
 
   /* TInstant *temporal_max_instant(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_max_instant(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_max_instant(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TInstant *temporal_min_instant(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_min_instant(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_min_instant(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -1057,7 +1061,7 @@ int main(void)
   printf("temporal_segments(%s, %d): {", tfloat1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -1070,7 +1074,7 @@ int main(void)
 
   /* TSequence *temporal_sequence_n(const Temporal *temp, int i); */
   tfloat_result = (Temporal *) temporal_sequence_n(tfloat1, 1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_sequence_n(%s, 1): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -1079,7 +1083,7 @@ int main(void)
   printf("temporal_sequences(%s, %d): {", tfloat1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -1092,25 +1096,25 @@ int main(void)
 
   /* TInstant *temporal_start_instant(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_start_instant(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_start_instant(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TSequence *temporal_start_sequence(const Temporal *temp); */
   tfloat_result = (Temporal *) temporal_start_sequence(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_start_sequence(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TimestampTz temporal_start_timestamptz(const Temporal *temp); */
   tstz_result = temporal_start_timestamptz(tfloat1);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("temporal_start_timestamptz(%s): %s\n", tfloat1_out, char_result);
   free(char_result);
 
   /* TSequenceSet *temporal_stops(const Temporal *temp, double maxdist, const Interval *minduration); */
   tfloat_result = (Temporal *) temporal_stops(tfloat1, float8_in1, interv1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_stops(%s, %lf, %s): %s\n", tfloat1_out, float8_in1, interv1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -1121,7 +1125,7 @@ int main(void)
 
   /* SpanSet *temporal_time(const Temporal *temp); */
   tstzspanset_result = temporal_time(tfloat1);
-  char_result = tstzspanset_out(tstzspanset_result);
+  char_result = tstzspanset_out(tstzspanset_result, &size_out);
   printf("temporal_time(%s): %s\n", tfloat1_out, char_result);
   free(tstzspanset_result); free(char_result);
 
@@ -1130,7 +1134,7 @@ int main(void)
   printf("temporal_timestamps(%s, %d): {", tstzset1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = timestamptz_out(tstzarray_result[i]);
+    char_result = timestamptz_out(tstzarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -1142,7 +1146,7 @@ int main(void)
 
   /* bool temporal_timestamptz_n(const Temporal *temp, int n, TimestampTz *result); */
   bool_result = temporal_timestamptz_n(tfloat1, 1, &tstz_result);
-  char_result = timestamptz_out(tstz_result);
+  char_result = timestamptz_out(tstz_result, &size_out);
   printf("temporal_timestamptz_n(%s, 1, %s): %c\n", tfloat1_out, char_result, bool_result ? 't' : 'n');
   free(char_result);
 
@@ -1238,43 +1242,43 @@ int main(void)
 
   /* SpanSet *tnumber_valuespans(const Temporal *temp); */
   fspanset_result = tnumber_valuespans(tfloat1);
-  char_result = floatspanset_out(fspanset_result, 6);
+  char_result = floatspanset_out(fspanset_result, 6, &size_out);
   printf("tnumber_valuespans(%s): %s\n", tfloat1_out, char_result);
   free(fspanset_result); free(char_result);
 
   /* text *ttext_end_value(const Temporal *temp); */
   text_result = ttext_end_value(ttext1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_end_value(%s): %s\n", ttext1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *ttext_max_value(const Temporal *temp); */
   text_result = ttext_max_value(ttext1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_max_value(%s): %s\n", ttext1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *ttext_min_value(const Temporal *temp); */
   text_result = ttext_min_value(ttext1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_min_value(%s): %s\n", ttext1_out, char_result);
   free(text_result); free(char_result);
 
   /* text *ttext_start_value(const Temporal *temp); */
   text_result = ttext_start_value(ttext1);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_start_value(%s): %s\n", ttext1_out, char_result);
   free(text_result); free(char_result);
 
   /* bool ttext_value_at_timestamptz(const Temporal *temp, TimestampTz t, bool strict, text **value); */
   bool_result = ttext_value_at_timestamptz(ttext1, tstz1, true, &text_result);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_value_at_timestamptz(%s, %s, true, %s): %c\n", ttext1_out, tstz1_out, char_result, bool_result ? 't' : 'n');
   free(text_result); free(char_result);
 
   /* bool ttext_value_n(const Temporal *temp, int n, text **result); */
   bool_result = ttext_value_n(ttext1, 1, &text_result);
-  char_result = text_out(text_result);
+  char_result = text_out(text_result, &size_out);
   printf("ttext_value_n(%s, 1, %s): %c\n", ttext1_out, char_result, bool_result ? 't' : 'n');
   free(text_result); free(char_result);
 
@@ -1283,7 +1287,7 @@ int main(void)
   printf("ttext_values(%s): {", tint1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = text_out(textarray_result[i]);
+    char_result = text_out(textarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -1310,7 +1314,7 @@ int main(void)
   printf("temparr_round({%s, %s}, 2, 6): {", tfloatinst1_out, tfloatinst2_out);
   for (int i = 0; i < 2; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < 1)
       printf(", ");
@@ -1323,109 +1327,109 @@ int main(void)
 
   /* Temporal *temporal_round(const Temporal *temp, int maxdd); */
   tfloat_result = temporal_round(tfloat1, 6);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_round(%s, 6): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_scale_time(const Temporal *temp, const Interval *duration); */
   tfloat_result = temporal_scale_time(tfloat1, interv1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_scale_time(%s, %s): %s\n", tfloat1_out, interv1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_set_interp(const Temporal *temp, interpType interp); */
   tfloat_result = temporal_set_interp(tfloat1, LINEAR);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_set_interp(%s, LINEAR): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_shift_scale_time(const Temporal *temp, const Interval *shift, const Interval *duration); */
   tfloat_result = temporal_shift_scale_time(tfloat1, interv1, interv2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_shift_scale_time(%s, %s, %s): %s\n", tfloat1_out, interv1_out, interv2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_shift_time(const Temporal *temp, const Interval *shift); */
   tfloat_result = temporal_shift_time(tfloat1, interv1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_shift_time(%s, %s): %s\n", tfloat1_out, interv1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* TInstant *temporal_as_tinstant(const Temporal *temp); */
   tfloatinst_result = temporal_as_tinstant((Temporal *) tfloatinst1);
-  char_result = tfloat_out((Temporal *) tfloatinst_result, 6);
+  char_result = tfloat_out((Temporal *) tfloatinst_result, 6, &size_out);
   printf("temporal_as_tinstant(%s): %s\n", tfloat1_out, char_result);
   free(tfloatinst_result); free(char_result);
 
   /* TSequence *temporal_as_tsequence(const Temporal *temp, interpType interp); */
   tfloatseq_result = temporal_as_tsequence((Temporal *) tfloatinst1, LINEAR);
-  char_result = tfloat_out((Temporal *) tfloatseq_result, 6);
+  char_result = tfloat_out((Temporal *) tfloatseq_result, 6, &size_out);
   printf("temporal_as_tsequence(%s, LINEAR): %s\n", tfloat1_out, char_result);
   free(tfloatseq_result); free(char_result);
 
   /* TSequenceSet *temporal_as_tsequenceset(const Temporal *temp, interpType interp); */
   tfloatseqset_result = temporal_as_tsequenceset(tfloat1, LINEAR);
-  char_result = tfloat_out((Temporal *) tfloatseqset_result, 6);
+  char_result = tfloat_out((Temporal *) tfloatseqset_result, 6, &size_out);
   printf("temporal_as_tsequenceset(%s, LINEAR): %s\n", tfloat1_out, char_result);
   free(tfloatseqset_result); free(char_result);
 
   /* Temporal *tfloat_ceil(const Temporal *temp); */
   tfloat_result = tfloat_ceil(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_ceil(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_degrees(const Temporal *temp, bool normalize); */
   tfloat_result = tfloat_degrees(tfloat1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_degrees(%s, true): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_floor(const Temporal *temp); */
   tfloat_result = tfloat_floor(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_floor(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_radians(const Temporal *temp); */
   tfloat_result = tfloat_radians(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_radians(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_scale_value(const Temporal *temp, double width); */
   tfloat_result = tfloat_scale_value(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_scale_value(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_shift_scale_value(const Temporal *temp, double shift, double width); */
   tfloat_result = tfloat_shift_scale_value(tfloat1, float8_in1, float8_in2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_shift_scale_value(%s, %lf, %lf): %s\n", tfloat1_out, float8_in1, float8_in2, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_shift_value(const Temporal *temp, double shift); */
   tfloat_result = tfloat_shift_value(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_shift_value(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tint_scale_value(const Temporal *temp, int width); */
   tint_result = tint_scale_value(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_scale_value(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tint_shift_scale_value(const Temporal *temp, int shift, int width); */
   tint_result = tint_shift_scale_value(tint1, int32_in1, int32_in2);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_shift_scale_value(%s, %d, %d): %s\n", tint1_out, int32_in1, int32_in2, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tint_shift_value(const Temporal *temp, int shift); */
   tint_result = tint_shift_value(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_shift_value(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
@@ -1440,7 +1444,7 @@ int main(void)
   /* In expandable mode the temporal value passed as first argument is consumed
    * by the function and thus it must not be freed below */
   tfloat_result = temporal_append_tinstant(tfloat_start, tfloat_inst, LINEAR, float8_in1, interv1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_append_tinstant(%s, %s): %s\n", tfloat1_out, tfloatinst1_out, char_result);
   free(tfloat_inst); free(tfloat_result); free(char_result);
 
@@ -1448,49 +1452,49 @@ int main(void)
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_seq = (TSequence *) tfloat_in("[4@20001-01-04, 5@20001-01-05]");
   tfloat_result = temporal_append_tsequence(tfloat_start, tfloat_seq, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_append_tsequence(%s, %s): %s\n", tfloat1_out, tfloatseq1_out, char_result);
   free(tfloat_start); free(tfloat_seq); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_delete_timestamptz(const Temporal *temp, TimestampTz t, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_delete_timestamptz(tfloat_start, tstz1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_delete_timestamptz(%s, %s, true): %s\n", tfloat1_out, tstz1_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_delete_tstzset(const Temporal *temp, const Set *s, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_delete_tstzset(tfloat_start, tstzset1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_delete_tstzset(%s, %s): %s\n", tfloat1_out, tstzset1_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_delete_tstzspan(const Temporal *temp, const Span *s, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_delete_tstzspan(tfloat_start, tstzspan1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_delete_tstzspan(%s, %s, true): %s\n", tfloat1_out, tstzspan1_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_delete_tstzspanset(const Temporal *temp, const SpanSet *ss, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_delete_tstzspanset(tfloat_start, tstzspanset1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_delete_tstzspanset(%s, %s, true): %s\n", tfloat1_out, tstzspanset1_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_insert(const Temporal *temp1, const Temporal *temp2, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_insert(tfloat_start, tfloat2, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_insert(%s, %s, true): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_merge(const Temporal *temp1, const Temporal *temp2); */
   Temporal *tfloat_merge =  tfloat_in("7@2001-01-07");
   tfloat_result = temporal_merge(tfloat1, tfloat_merge);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_merge(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_merge); free(tfloat_result); free(char_result);
 
@@ -1498,14 +1502,14 @@ int main(void)
   tfloatarray[0] = (Temporal *) tfloatseq1;
   tfloatarray[1] = (Temporal *) tfloatseq2;
   tfloat_result = temporal_merge_array(tfloatarray, 2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_merge_array({%s, %s}, 2): %s\n", tfloatinst1_out, tfloatinst2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_update(const Temporal *temp1, const Temporal *temp2, bool connect); */
   tfloat_start = tfloat_in("[1@20001-01-01, 3@20001-01-03]");
   tfloat_result = temporal_update(tfloat_start, tfloat2, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_update(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_start); free(tfloat_result); free(char_result);
 
@@ -1516,73 +1520,73 @@ int main(void)
 
   /* Temporal *tbool_at_value(const Temporal *temp, bool b); */
   tbool_result = tbool_at_value(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_at_value(%s, %s): %s\n", tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tbool_minus_value(const Temporal *temp, bool b); */
   tbool_result = tbool_minus_value(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_minus_value(%s, %s): %s\n", tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *temporal_at_max(const Temporal *temp); */
   tfloat_result = temporal_at_max(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_max(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_min(const Temporal *temp); */
   tfloat_result = temporal_at_min(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_min(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_timestamptz(const Temporal *temp, TimestampTz t); */
   tfloat_result = temporal_at_timestamptz(tfloat1, tstz1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_timestamptz(%s, %s): %s\n", tfloat1_out, tstz1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_tstzset(const Temporal *temp, const Set *s); */
   tfloat_result = temporal_at_tstzset(tfloat1, tstzset1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_tstzset(%s, %s): %s\n", tfloat1_out, tstzset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_tstzspan(const Temporal *temp, const Span *s); */
   tfloat_result = temporal_at_tstzspan(tfloat1, tstzspan1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_tstzspan(%s, %s): %s\n", tfloat1_out, tstzspan1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_tstzspanset(const Temporal *temp, const SpanSet *ss); */
   tfloat_result = temporal_at_tstzspanset(tfloat1, tstzspanset1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_tstzspanset(%s, %s): %s\n", tfloat1_out, tstzspanset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_at_values(const Temporal *temp, const Set *set); */
   tfloat_result = temporal_at_values(tfloat1, fset1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_at_values(%s, %s): %s\n", tfloat1_out, fset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_minus_max(const Temporal *temp); */
   tfloat_result = temporal_minus_max(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_minus_max(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_minus_min(const Temporal *temp); */
   tfloat_result = temporal_minus_min(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_minus_min(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_minus_timestamptz(const Temporal *temp, TimestampTz t); */
   tfloat_result = temporal_minus_timestamptz(tfloat1, tstz1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_minus_timestamptz(%s, %s): %s\n", tfloat1_out, tstz1_out, char_result);
   if (tfloat_result)
     free(tfloat_result);
@@ -1590,7 +1594,7 @@ int main(void)
 
   /* Temporal *temporal_minus_tstzset(const Temporal *temp, const Set *s); */
   tfloat_result = temporal_minus_tstzset(tfloat1, tstzset1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_minus_tstzset(%s, %s): %s\n", tfloat1_out, tstzset1_out, char_result);
   if (tfloat_result)
     free(tfloat_result);
@@ -1598,7 +1602,7 @@ int main(void)
 
   /* Temporal *temporal_minus_tstzspan(const Temporal *temp, const Span *s); */
   tfloat_result = temporal_minus_tstzspan(tfloat1, tstzspan1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_minus_tstzspan(%s, %s): %s\n", tfloat1_out, tstzspan1_out, char_result);
   if (tfloat_result)
     free(tfloat_result);
@@ -1606,7 +1610,7 @@ int main(void)
 
   /* Temporal *temporal_minus_tstzspanset(const Temporal *temp, const SpanSet *ss); */
   tfloat_result = temporal_minus_tstzspanset(tfloat1, tstzspanset1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_minus_tstzspanset(%s, %s): %s\n", tfloat1_out, tstzspanset1_out, char_result);
   if (tfloat_result)
     free(tfloat_result);
@@ -1614,7 +1618,7 @@ int main(void)
 
   /* Temporal *temporal_minus_values(const Temporal *temp, const Set *set); */
   tfloat_result = temporal_minus_values(tfloat1, fset1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("temporal_minus_values(%s, %s): %s\n", tfloat1_out, fset1_out, char_result);
   if (tfloat_result)
     free(tfloat_result);
@@ -1622,73 +1626,73 @@ int main(void)
 
   /* Temporal *tfloat_at_value(const Temporal *temp, double d); */
   tfloat_result = tfloat_at_value(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_at_value(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_minus_value(const Temporal *temp, double d); */
   tfloat_result = tfloat_minus_value(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_minus_value(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tint_at_value(const Temporal *temp, int i); */
   tint_result = tint_at_value(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_at_value(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tint_minus_value(const Temporal *temp, int i); */
   tint_result = tint_minus_value(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_minus_value(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tnumber_at_span(const Temporal *temp, const Span *span); */
   tfloat_result = tnumber_at_span(tfloat1, fspan1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_at_span(%s, %s): %s\n", tfloat1_out, fspan1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_at_spanset(const Temporal *temp, const SpanSet *ss); */
   tfloat_result = tnumber_at_spanset(tfloat1, fspanset1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_at_spanset(%s, %s): %s\n", tfloat1_out, fspanset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_at_tbox(const Temporal *temp, const TBox *box); */
   tfloat_result = tnumber_at_tbox(tfloat1, tbox1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_at_tbox(%s, %s): %s\n", tfloat1_out, tbox1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_minus_span(const Temporal *temp, const Span *span); */
   tfloat_result = tnumber_minus_span(tfloat1, fspan1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnumber_minus_span(%s, %s): %s\n", tfloat1_out, fspan1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_minus_spanset(const Temporal *temp, const SpanSet *ss); */
   tfloat_result = tnumber_minus_spanset(tfloat1, fspanset1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnumber_minus_spanset(%s, %s): %s\n", tfloat1_out, fspanset1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_minus_tbox(const Temporal *temp, const TBox *box); */
   tfloat_result = tnumber_minus_tbox(tfloat1, tbox1);
-  char_result = tfloat_result ? tfloat_out(tfloat_result, 6) : text_out(text_null);
+  char_result = tfloat_result ? tfloat_out(tfloat_result, 6, &size_out) : text_out(text_null, &size_out);
   printf("tnumber_minus_tbox(%s, %s): %s\n", tfloat1_out, tbox1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *ttext_at_value(const Temporal *temp, text *txt); */
   ttext_result = ttext_at_value(ttext1, text1);
-  char_result = ttext_result ? ttext_out(ttext_result) : text_out(text_null);
+  char_result = ttext_result ? ttext_out(ttext_result, &size_out) : text_out(text_null, &size_out);
   printf("ttext_at_value(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *ttext_minus_value(const Temporal *temp, text *txt); */
   ttext_result = ttext_minus_value(ttext1, text1);
-  char_result = ttext_result ? ttext_out(ttext_result) : text_out(text_null);
+  char_result = ttext_result ? ttext_out(ttext_result, &size_out) : text_out(text_null, &size_out);
   printf("ttext_minus_value(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(ttext_result); free(char_result);
 
@@ -2201,349 +2205,349 @@ int main(void)
 
   /* Temporal *teq_bool_tbool(bool b, const Temporal *temp); */
   tbool_result = teq_bool_tbool(bool1, tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_bool_tbool(%s, %s): %s\n", bool1_out, tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_float_tfloat(double d, const Temporal *temp); */
   tbool_result = teq_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = teq_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_int_tint(int i, const Temporal *temp); */
   tbool_result = teq_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_tbool_bool(const Temporal *temp, bool b); */
   tbool_result = teq_tbool_bool(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_tbool_bool(%s, %s): %s\n", tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = teq_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = teq_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_tfloat_float(const Temporal *temp, double d); */
   tbool_result = teq_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = teq_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_tint_int(const Temporal *temp, int i); */
   tbool_result = teq_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *teq_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = teq_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("teq_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_float_tfloat(double d, const Temporal *temp); */
   tbool_result = tge_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = tge_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_int_tint(int i, const Temporal *temp); */
   tbool_result = tge_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tge_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = tge_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_tfloat_float(const Temporal *temp, double d); */
   tbool_result = tge_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = tge_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_tint_int(const Temporal *temp, int i); */
   tbool_result = tge_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tge_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = tge_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tge_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_float_tfloat(double d, const Temporal *temp); */
   tbool_result = tgt_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = tgt_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_int_tint(int i, const Temporal *temp); */
   tbool_result = tgt_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tgt_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = tgt_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_tfloat_float(const Temporal *temp, double d); */
   tbool_result = tgt_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = tgt_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_tint_int(const Temporal *temp, int i); */
   tbool_result = tgt_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tgt_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = tgt_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tgt_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_float_tfloat(double d, const Temporal *temp); */
   tbool_result = tle_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = tle_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_int_tint(int i, const Temporal *temp); */
   tbool_result = tle_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tle_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = tle_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_tfloat_float(const Temporal *temp, double d); */
   tbool_result = tle_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = tle_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_tint_int(const Temporal *temp, int i); */
   tbool_result = tle_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tle_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = tle_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tle_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_float_tfloat(double d, const Temporal *temp); */
   tbool_result = tlt_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = tlt_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_int_tint(int i, const Temporal *temp); */
   tbool_result = tlt_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tlt_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = tlt_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_tfloat_float(const Temporal *temp, double d); */
   tbool_result = tlt_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = tlt_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_tint_int(const Temporal *temp, int i); */
   tbool_result = tlt_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tlt_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = tlt_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tlt_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_bool_tbool(bool b, const Temporal *temp); */
   tbool_result = tne_bool_tbool(bool1, tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_bool_tbool(%s, %s): %s\n", bool1_out, tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_float_tfloat(double d, const Temporal *temp); */
   tbool_result = tne_float_tfloat(float8_in1, tfloat1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_bigint_tbigint(int64 i, const Temporal *temp); */
   tbool_result = tne_bigint_tbigint(int64_in1, tbigint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_bigint_tbigint(%lld, %s): %s\n", (long long) int64_in1, tbigint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_int_tint(int i, const Temporal *temp); */
   tbool_result = tne_int_tint(int32_in1, tint1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tbool_bool(const Temporal *temp, bool b); */
   tbool_result = tne_tbool_bool(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_tbool_bool(%s, %s): %s\n", tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_temporal_temporal(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tne_temporal_temporal(tfloat1, tfloat2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_temporal_temporal(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_text_ttext(const text *txt, const Temporal *temp); */
   tbool_result = tne_text_ttext(text1, ttext1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tfloat_float(const Temporal *temp, double d); */
   tbool_result = tne_tfloat_float(tfloat1, float8_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tbigint_bigint(const Temporal *temp, int64 i); */
   tbool_result = tne_tbigint_bigint(tbigint1, int64_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_tbigint_bigint(%s, %lld): %s\n", tbigint1_out, (long long) int64_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_tint_int(const Temporal *temp, int i); */
   tbool_result = tne_tint_int(tint1, int32_in1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tne_ttext_text(const Temporal *temp, const text *txt); */
   tbool_result = tne_ttext_text(ttext1, text1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tne_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(tbool_result); free(char_result);
 
@@ -2559,7 +2563,7 @@ int main(void)
   printf("temporal_spans(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tstzspan_out(&tstzspanarray_result[i]);
+    char_result = tstzspan_out(&tstzspanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2574,7 +2578,7 @@ int main(void)
   printf("temporal_split_each_n_spans(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tstzspan_out(&tstzspanarray_result[i]);
+    char_result = tstzspan_out(&tstzspanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2589,7 +2593,7 @@ int main(void)
   printf("temporal_split_n_spans(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tstzspan_out(&tstzspanarray_result[i]);
+    char_result = tstzspan_out(&tstzspanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2604,7 +2608,7 @@ int main(void)
   printf("tnumber_split_each_n_tboxes(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2619,7 +2623,7 @@ int main(void)
   printf("tnumber_split_n_tboxes(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2634,7 +2638,7 @@ int main(void)
   printf("tnumber_tboxes(%s): {", tfloat1_out);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -2993,49 +2997,49 @@ int main(void)
 
   /* Temporal *tand_bool_tbool(bool b, const Temporal *temp); */
   tbool_result = tand_bool_tbool(bool1, tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tand_bool_tbool(%s, %s): %s\n", bool1_out, tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tand_tbool_bool(const Temporal *temp, bool b); */
   tbool_result = tand_tbool_bool(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tand_tbool_bool(%s, %s): %s\n", tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tand_tbool_tbool(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tand_tbool_tbool(tbool1, tbool2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tand_tbool_tbool(%s, %s): %s\n", tbool1_out, tbool2_out, char_result);
   free(tbool_result); free(char_result);
 
   /* SpanSet *tbool_when_true(const Temporal *temp); */
   tstzspanset_result = tbool_when_true(tbool1);
-  char_result = tstzspanset_out(tstzspanset_result);
+  char_result = tstzspanset_out(tstzspanset_result, &size_out);
   printf("tbool_when_true(%s): %s\n", tbool1_out, char_result);
   free(tstzspanset_result); free(char_result);
 
   /* Temporal *tnot_tbool(const Temporal *temp); */
   tbool_result = tnot_tbool(tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tnot_tbool(%s): %s\n", tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tor_bool_tbool(bool b, const Temporal *temp); */
   tbool_result = tor_bool_tbool(bool1, tbool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tor_bool_tbool(%s, %s): %s\n", bool1_out, tbool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tor_tbool_bool(const Temporal *temp, bool b); */
   tbool_result = tor_tbool_bool(tbool1, bool1);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tor_tbool_bool(%s, %s): %s\n",  tbool1_out, bool1_out, char_result);
   free(tbool_result); free(char_result);
 
   /* Temporal *tor_tbool_tbool(const Temporal *temp1, const Temporal *temp2); */
   tbool_result = tor_tbool_tbool(tbool1, tbool2);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tor_tbool_tbool(%s, %s): %s\n", tbool1_out, tbool2_out, char_result);
   free(tbool_result); free(char_result);
 
@@ -3046,163 +3050,163 @@ int main(void)
 
   /* Temporal *add_float_tfloat(double d, const Temporal *tnumber); */
   tfloat_result = add_float_tfloat(float8_in1, tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("add_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *add_int_tint(int i, const Temporal *tnumber); */
   tint_result = add_int_tint(int32_in1, tint1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("add_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *add_tfloat_float(const Temporal *tnumber, double d); */
   tfloat_result = add_tfloat_float(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("add_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *add_tint_int(const Temporal *tnumber, int i); */
   tint_result = add_tint_int(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("add_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *add_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
   tfloat_result = add_tnumber_tnumber(tfloat1, tfloat2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("add_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *div_float_tfloat(double d, const Temporal *tnumber); */
   tfloat_result = div_float_tfloat(float8_in1, tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("div_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *div_int_tint(int i, const Temporal *tnumber); */
   tint_result = div_int_tint(int32_in1, tint1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("div_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *div_tfloat_float(const Temporal *tnumber, double d); */
   tfloat_result = div_tfloat_float(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("div_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *div_tint_int(const Temporal *tnumber, int i); */
   tint_result = div_tint_int(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("div_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *div_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
   tfloat_result = div_tnumber_tnumber(tfloat1, tfloat2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("div_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *mul_float_tfloat(double d, const Temporal *tnumber); */
   tfloat_result = mul_float_tfloat(float8_in1, tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("mul_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *mul_int_tint(int i, const Temporal *tnumber); */
   tint_result = mul_int_tint(int32_in1, tint1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("mul_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *mul_tfloat_float(const Temporal *tnumber, double d); */
   tfloat_result = mul_tfloat_float(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("mul_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *mul_tint_int(const Temporal *tnumber, int i); */
   tint_result = mul_tint_int(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("mul_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *mul_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
   tfloat_result = mul_tnumber_tnumber(tfloat1, tfloat2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("mul_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *sub_float_tfloat(double d, const Temporal *tnumber); */
   tfloat_result = sub_float_tfloat(float8_in1, tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("sub_float_tfloat(%lf, %s): %s\n", float8_in1, tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *sub_int_tint(int i, const Temporal *tnumber); */
   tint_result = sub_int_tint(int32_in1, tint1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("sub_int_tint(%d, %s): %s\n", int32_in1, tint1_out, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *sub_tfloat_float(const Temporal *tnumber, double d); */
   tfloat_result = sub_tfloat_float(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("sub_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *sub_tint_int(const Temporal *tnumber, int i); */
   tint_result = sub_tint_int(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("sub_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *sub_tnumber_tnumber(const Temporal *tnumber1, const Temporal *tnumber2); */
   tfloat_result = sub_tnumber_tnumber(tfloat1, tfloat2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("sub_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_derivative(const Temporal *temp); */
   tfloat_result = temporal_derivative(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_derivative(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_exp(const Temporal *temp); */
   tfloat_result = tfloat_exp(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_exp(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_ln(const Temporal *temp); */
   tfloat_result = tfloat_ln(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_ln(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tfloat_log10(const Temporal *temp); */
   tfloat_result = tfloat_log10(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_log10(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_abs(const Temporal *temp); */
   tfloat_result = tnumber_abs(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_abs(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_angular_difference(const Temporal *temp); */
   tfloat_result = tnumber_angular_difference(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_angular_difference(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tnumber_delta_value(const Temporal *temp); */
   tfloat_result = tnumber_delta_value(tfloat1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_delta_value(%s): %s\n", tfloat1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -3213,37 +3217,37 @@ int main(void)
 
   /* Temporal *textcat_text_ttext(const text *txt, const Temporal *temp); */
   ttext_result = textcat_text_ttext(text1, ttext1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("textcat_text_ttext(%s, %s): %s\n", text1_out, ttext1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *textcat_ttext_text(const Temporal *temp, const text *txt); */
   ttext_result = textcat_ttext_text(ttext1, text1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("textcat_ttext_text(%s, %s): %s\n", ttext1_out, text1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *textcat_ttext_ttext(const Temporal *temp1, const Temporal *temp2); */
   ttext_result = textcat_ttext_ttext(ttext1, ttext2);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("textcat_ttext_ttext(%s, %s): %s\n", ttext1_out, ttext2_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *ttext_initcap(const Temporal *temp); */
   ttext_result = ttext_initcap(ttext1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_initcap(%s): %s\n", ttext1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *ttext_upper(const Temporal *temp); */
   ttext_result = ttext_upper(ttext1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_upper(%s): %s\n", ttext1_out, char_result);
   free(ttext_result); free(char_result);
 
   /* Temporal *ttext_lower(const Temporal *temp); */
   ttext_result = ttext_lower(ttext1);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_lower(%s): %s\n", ttext1_out, char_result);
   free(ttext_result); free(char_result);
 
@@ -3254,19 +3258,19 @@ int main(void)
 
   /* Temporal *tdistance_tfloat_float(const Temporal *temp, double d); */
   tfloat_result = tdistance_tfloat_float(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tdistance_tfloat_float(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *tdistance_tint_int(const Temporal *temp, int i); */
   tint_result = tdistance_tint_int(tint1, int32_in1);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tdistance_tint_int(%s, %d): %s\n", tint1_out, int32_in1, char_result);
   free(tint_result); free(char_result);
 
   /* Temporal *tdistance_tnumber_tnumber(const Temporal *temp1, const Temporal *temp2); */
   tfloat_result = tdistance_tnumber_tnumber(tfloat1, tfloat2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tdistance_tnumber_tnumber(%s, %s): %s\n", tfloat1_out, tfloat2_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -3311,7 +3315,7 @@ int main(void)
   sklist = tbool_tand_transfn(NULL, tbool1);
   sklist = tbool_tand_transfn(sklist, tbool2);
   tbool_result = temporal_tagg_finalfn(sklist);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_tand aggregate\n");
   printf("%s\n", tbool1_out);
   printf("%s\n", tbool2_out);
@@ -3323,7 +3327,7 @@ int main(void)
   sklist = tbool_tor_transfn(NULL, tbool1);
   sklist = tbool_tor_transfn(sklist, tbool2);
   tbool_result = temporal_tagg_finalfn(sklist);
-  char_result = tbool_out(tbool_result);
+  char_result = tbool_out(tbool_result, &size_out);
   printf("tbool_tor aggregate\n");
   printf("%s\n", tbool1_out);
   printf("%s\n", tbool2_out);
@@ -3334,7 +3338,7 @@ int main(void)
   /* Span *temporal_extent_transfn(Span *s, const Temporal *temp); */
   Span *result_agg = temporal_extent_transfn(NULL, tbool1);
   result_agg = temporal_extent_transfn(result_agg, tbool2);
-  char_result = tstzspan_out(result_agg);
+  char_result = tstzspan_out(result_agg, &size_out);
   printf("temporal_extent aggregate\n");
   printf("%s\n", tbool1_out);
   printf("%s\n", tbool2_out);
@@ -3345,7 +3349,7 @@ int main(void)
   /* Temporal *temporal_app_tinst_transfn(Temporal *state, const TInstant *inst, interpType interp, double maxdist, const Interval *maxt); */
   tfloat_result = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
   tfloat_result = temporal_app_tinst_transfn(tfloat_result, tfloatinst2, LINEAR, -1.0, NULL);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_app_tinst aggregate\n");
   printf("%s\n", tfloatinst1_out);
   printf("%s\n", tfloatinst2_out);
@@ -3356,7 +3360,7 @@ int main(void)
   /* Temporal *temporal_app_tseq_transfn(Temporal *state, const TSequence *seq); */
   tfloat_result = temporal_app_tseq_transfn(NULL, tfloatseq1);
   tfloat_result = temporal_app_tseq_transfn(tfloat_result, tfloatseq2);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_app_tseq aggregate\n");
   printf("%s\n", tfloatseq1_out);
   printf("%s\n", tfloatseq2_out);
@@ -3368,7 +3372,7 @@ int main(void)
   Temporal *app_state = temporal_app_tinst_transfn(NULL, tfloatinst1, LINEAR, -1.0, NULL);
   app_state = temporal_app_tinst_transfn(app_state, tfloatinst2, LINEAR, -1.0, NULL);
   tfloat_result = temporal_append_finalfn(app_state);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_append_finalfn result\n");
   printf("%s\n", char_result);
   free(app_state); free(tfloat_result); free(char_result);
@@ -3377,7 +3381,7 @@ int main(void)
   sklist = temporal_tcount_transfn(NULL, tfloat1);
   sklist = temporal_tcount_transfn(sklist, tfloat2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("temporal_tcount aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3397,7 +3401,7 @@ int main(void)
    * function releases the other one */
   free(temporal_tagg_finalfn(sklist == sklist1 ? sklist2 : sklist1));
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("temporal_tcount combined from two partial results\n");
   printf("%s\n", char_result);
   free(tint_part1); free(tint_part2); free(tint_result); free(char_result);
@@ -3425,7 +3429,7 @@ int main(void)
     tfloat_result = temporal_tagg_finalfn(sklist);
     Temporal *both = temporal_tagg_finalfn(transfns[i](transfns[i](NULL,
       tfloat1), tfloat2));
-    char_result = tfloat_out(tfloat_result, 6);
+    char_result = tfloat_out(tfloat_result, 6, &size_out);
     printf("%s of two partial results\n", combnames[i]);
     printf("%s\n", char_result);
     assert(temporal_eq(tfloat_result, both));
@@ -3445,7 +3449,7 @@ int main(void)
   Temporal *wboth = temporal_tagg_finalfn(tfloat_wsum_transfn(
     tfloat_wsum_transfn(NULL, (Temporal *) tfloatinst1, interv3),
     (Temporal *) tfloatinst2, interv3));
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_tsum_combinefn of two partial window sums\n");
   printf("%s\n", char_result);
   assert(temporal_eq(tfloat_result, wboth));
@@ -3456,7 +3460,7 @@ int main(void)
   sklist = tfloat_tmax_transfn(NULL, tfloat1);
   sklist = tfloat_tmax_transfn(sklist, tfloat2);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_tmax aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3468,7 +3472,7 @@ int main(void)
   sklist = tfloat_tmin_transfn(NULL, tfloat1);
   sklist = tfloat_tmin_transfn(sklist, tfloat2);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_tmin aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3480,7 +3484,7 @@ int main(void)
   sklist = tfloat_tsum_transfn(NULL, tfloat1);
   sklist = tfloat_tsum_transfn(sklist, tfloat2);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_tsum aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3492,7 +3496,7 @@ int main(void)
   sklist = tfloat_wmax_transfn(NULL, tfloat1, interv3);
   sklist = tfloat_wmax_transfn(sklist, tfloat2, interv3);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_wmax aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3504,7 +3508,7 @@ int main(void)
   sklist = tfloat_wmin_transfn(NULL, tfloat1, interv3);
   sklist = tfloat_wmin_transfn(sklist, tfloat2, interv3);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_wmin aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3516,7 +3520,7 @@ int main(void)
   sklist = tfloat_wsum_transfn(NULL, (Temporal *) tfloatinst1, interv3);
   sklist = tfloat_wsum_transfn(sklist, (Temporal *) tfloatinst2, interv3);
   tfloat_result = temporal_tagg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tfloat_wsum aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tfloatinst1_out);
   printf("%s\n", tfloatinst2_out);
@@ -3528,7 +3532,7 @@ int main(void)
   sklist = timestamptz_tcount_transfn(NULL, tstz1);
   sklist = timestamptz_tcount_transfn(sklist, tstz2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("timestamptz_tcount aggregate\n");
   printf("%s\n", tstz1_out);
   printf("%s\n", tstz2_out);
@@ -3540,7 +3544,7 @@ int main(void)
   sklist = tint_tmax_transfn(NULL, tint1);
   sklist = tint_tmax_transfn(sklist, tint2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_tmax aggregate\n");
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3552,7 +3556,7 @@ int main(void)
   sklist = tint_tmin_transfn(NULL, tint1);
   sklist = tint_tmin_transfn(sklist, tint2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_tmin aggregate\n");
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3564,7 +3568,7 @@ int main(void)
   sklist = tint_tsum_transfn(NULL, tint1);
   sklist = tint_tsum_transfn(sklist, tint2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_tsum aggregate\n");
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3577,7 +3581,7 @@ int main(void)
   sklist = tint_wmax_transfn(NULL, tint1, interv3);
   sklist = tint_wmax_transfn(sklist, tint2, interv3);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_wmax aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3590,7 +3594,7 @@ int main(void)
   sklist = tint_wmin_transfn(NULL, tint1, interv3);
   sklist = tint_wmin_transfn(sklist, tint2, interv3);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_wmin aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3603,7 +3607,7 @@ int main(void)
   sklist = tint_wsum_transfn(NULL, tint1, interv3);
   sklist = tint_wsum_transfn(sklist, tint2, interv3);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tint_wsum aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3615,7 +3619,7 @@ int main(void)
   sklist = temporal_wcount_transfn(NULL, tint1, interv3);
   sklist = temporal_wcount_transfn(sklist, tint2, interv3);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("temporal_wcount aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tint1_out);
   printf("%s\n", tint2_out);
@@ -3626,7 +3630,7 @@ int main(void)
   /* TBox *tnumber_extent_transfn(TBox *box, const Temporal *temp); */
   TBox *tbox_agg = tnumber_extent_transfn(NULL, tfloat1);
   tbox_agg = tnumber_extent_transfn(tbox_agg, tfloat2);
-  char_result = tbox_out(tbox_agg, 6);
+  char_result = tbox_out(tbox_agg, 6, &size_out);
   printf("tnumber_extent aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3637,7 +3641,7 @@ int main(void)
   /* TBox *tbox_extent_transfn(TBox *state, const TBox *box); */
   tbox_agg = tbox_extent_transfn(NULL, tbox1);
   tbox_agg = tbox_extent_transfn(tbox_agg, tbox2);
-  char_result = tbox_out(tbox_agg, 6);
+  char_result = tbox_out(tbox_agg, 6, &size_out);
   printf("tbox_extent aggregate\n");
   printf("%s\n", tbox1_out);
   printf("%s\n", tbox2_out);
@@ -3649,7 +3653,7 @@ int main(void)
   sklist = tnumber_tavg_transfn(NULL, tfloat1);
   sklist = tnumber_tavg_transfn(sklist, tfloat2);
   tfloat_result = tnumber_tavg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_tavg aggregate\n");
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3679,7 +3683,7 @@ int main(void)
   sklist = tnumber_wavg_transfn(NULL, tfloat1, interv3);
   sklist = tnumber_wavg_transfn(sklist, tfloat2, interv3);
   tfloat_result = tnumber_tavg_finalfn(sklist);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("tnumber_wavg aggregate with interval = %s\n", interv3_out);
   printf("%s\n", tfloat1_out);
   printf("%s\n", tfloat2_out);
@@ -3691,7 +3695,7 @@ int main(void)
   sklist = tstzset_tcount_transfn(NULL, tstzset1);
   sklist = tstzset_tcount_transfn(sklist, tstzset2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tstzset_tcount aggregate\n");
   printf("%s\n", tstzspan1_out);
   printf("%s\n", tstzspan2_out);
@@ -3703,7 +3707,7 @@ int main(void)
   sklist = tstzspan_tcount_transfn(NULL, tstzspan1);
   sklist = tstzspan_tcount_transfn(sklist, tstzspan2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tstzspan_tcount aggregate\n");
   printf("%s\n", tstzspan1_out);
   printf("%s\n", tstzspan2_out);
@@ -3715,7 +3719,7 @@ int main(void)
   sklist = tstzspanset_tcount_transfn(NULL, tstzspanset1);
   sklist = tstzspanset_tcount_transfn(sklist, tstzspanset2);
   tint_result = temporal_tagg_finalfn(sklist);
-  char_result = tint_out(tint_result);
+  char_result = tint_out(tint_result, &size_out);
   printf("tstzspanset_tcount aggregate\n");
   printf("%s\n", tstzspanset1_out);
   printf("%s\n", tstzspanset2_out);
@@ -3727,7 +3731,7 @@ int main(void)
   sklist = ttext_tmax_transfn(NULL, ttext1);
   sklist = ttext_tmax_transfn(sklist, ttext2);
   ttext_result = temporal_tagg_finalfn(sklist);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_tmax aggregate\n");
   printf("%s\n", ttext1_out);
   printf("%s\n", ttext2_out);
@@ -3739,7 +3743,7 @@ int main(void)
   sklist = ttext_tmin_transfn(NULL, ttext1);
   sklist = ttext_tmin_transfn(sklist, ttext2);
   ttext_result = temporal_tagg_finalfn(sklist);
-  char_result = ttext_out(ttext_result);
+  char_result = ttext_out(ttext_result, &size_out);
   printf("ttext_tmin aggregate\n");
   printf("%s\n", ttext1_out);
   printf("%s\n", ttext2_out);
@@ -3756,25 +3760,25 @@ int main(void)
 
   /* Temporal *temporal_simplify_dp(const Temporal *temp, double dist, bool synchronized); */
   tfloat_result = temporal_simplify_dp(tfloat1, float8_in1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_simplify_dp(%s, %lf, true): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_simplify_max_dist(const Temporal *temp, double dist, bool synchronized); */
   tfloat_result = temporal_simplify_max_dist(tfloat1, float8_in1, true);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_simplify_max_dist(%s, %lf, true): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_simplify_min_dist(const Temporal *temp, double dist); */
   tfloat_result = temporal_simplify_min_dist(tfloat1, float8_in1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_simplify_min_dist(%s, %lf): %s\n", tfloat1_out, float8_in1, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_simplify_min_tdelta(const Temporal *temp, const Interval *mint); */
   tfloat_result = temporal_simplify_min_tdelta(tfloat1, interv1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_simplify_min_tdelta(%s, %s): %s\n", tfloat1_out, interv1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -3784,13 +3788,13 @@ int main(void)
 
   /* Temporal *temporal_tprecision(const Temporal *temp, const Interval *duration, TimestampTz origin); */
   tfloat_result = temporal_tprecision(tfloat1, interv1, tstz1);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_tprecision(%s, %s, %s): %s\n", tfloat1_out, interv1_out, tstz1_out, char_result);
   free(tfloat_result); free(char_result);
 
   /* Temporal *temporal_tsample(const Temporal *temp, const Interval *duration, TimestampTz origin, interpType interp); */
   tfloat_result = temporal_tsample(tfloat1, interv1, tstz1, LINEAR);
-  char_result = tfloat_out(tfloat_result, 6);
+  char_result = tfloat_out(tfloat_result, 6, &size_out);
   printf("temporal_tsample(%s, %s, %s, LINEAR): %s\n", tfloat1_out, interv1_out, tstz1_out, char_result);
   free(tfloat_result); free(char_result);
 
@@ -3848,7 +3852,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tstzspan_out(&tstzspanarray_result[i]);
+    char_result = tstzspan_out(&tstzspanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -3867,8 +3871,8 @@ int main(void)
     tfloat1_out, interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = timestamptz_out(tstzarray_result[i]);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
+    char1_result = timestamptz_out(tstzarray_result[i], &size_out);
     printf("%s: %s", char_result, char1_result);
     if (i < count - 1)
       printf(", ");
@@ -3888,7 +3892,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -3906,7 +3910,7 @@ int main(void)
     (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = bigintspan_out(&ispanarray_result[i]);
+    char_result = bigintspan_out(&ispanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -3924,7 +3928,7 @@ int main(void)
     (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -3941,7 +3945,7 @@ int main(void)
   printf("tbigint_value_split(%s, %lld, %lld, true, &int64array_result, %d): {", tbigint1_out, (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbigint_out(tbigintarray_result[i]);
+    char_result = tbigint_out(tbigintarray_result[i], &size_out);
     printf("%s: %lld", char_result, (long long) int64array_result[i]);
     if (i < count - 1)
       printf(", ");
@@ -3963,7 +3967,7 @@ int main(void)
     tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -3981,8 +3985,8 @@ int main(void)
   printf("tbigint_value_time_split(%s, %lld, %s, %lld, %s, true, &int64array_result, &tstzarray_result, %d): {", tbigint1_out, (long long) int64_in1, interv3_out, (long long) int64_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbigint_out(tbigintarray_result[i]);
-    char1_result = timestamptz_out(tstzarray_result[i]);
+    char_result = tbigint_out(tbigintarray_result[i], &size_out);
+    char1_result = timestamptz_out(tstzarray_result[i], &size_out);
     printf("%s: %lld: %s", char_result, (long long) int64array_result[i], char1_result);
     if (i < count - 1)
       printf(", ");
@@ -4004,7 +4008,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4022,7 +4026,7 @@ int main(void)
     tbigintbox1_out, (long long) int64_in1, (long long) int64_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4042,7 +4046,7 @@ int main(void)
     tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4059,7 +4063,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4077,7 +4081,7 @@ int main(void)
     float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = floatspan_out(&fspanarray_result[i], 6);
+    char_result = floatspan_out(&fspanarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4094,7 +4098,7 @@ int main(void)
   printf("tfloat_value_boxes(%s, %lf, %lf, %s, %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4111,8 +4115,8 @@ int main(void)
   printf("tfloat_value_split(%s, %lf, %lf, %s, &float8array_result, %d): {", tfloat1_out, float8_in1, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float8_out(float8array_result[i], 6);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
+    char1_result = float8_out(float8array_result[i], 6, &size_out);
     printf("%s:%s", char_result, char1_result);
     if (i < count - 1)
       printf(", ");
@@ -4134,7 +4138,7 @@ int main(void)
     tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4152,9 +4156,9 @@ int main(void)
   printf("tfloat_value_time_split(%s, %lf, %s, %lf, %s, true, &float8array_result, %d): {", tfloat1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tfloat_out(tfloatarray_result[i], 6);
-    char1_result = float8_out(float8array_result[i], 6);
-    char2_result = timestamptz_out(tstzarray_result[i]);
+    char_result = tfloat_out(tfloatarray_result[i], 6, &size_out);
+    char1_result = float8_out(float8array_result[i], 6, &size_out);
+    char2_result = timestamptz_out(tstzarray_result[i], &size_out);
     printf("%s:%s,%s", char_result, char1_result, char2_result);
     if (i < count - 1)
       printf(", ");
@@ -4176,7 +4180,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4194,7 +4198,7 @@ int main(void)
     float8_in1, float8_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4213,7 +4217,7 @@ int main(void)
     tbox1_out, float8_in1, interv3_out, float8_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4230,7 +4234,7 @@ int main(void)
     tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4248,7 +4252,7 @@ int main(void)
     tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = intspan_out(&ispanarray_result[i]);
+    char_result = intspan_out(&ispanarray_result[i], &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4267,7 +4271,7 @@ int main(void)
     int32_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4285,7 +4289,7 @@ int main(void)
     tfloat1_out, int32_in1, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tint_out(tintarray_result[i]);
+    char_result = tint_out(tintarray_result[i], &size_out);
     printf("%s: %d", char_result, int32array_result[i]);
     if (i < count - 1)
       printf(", ");
@@ -4306,7 +4310,7 @@ int main(void)
     int32_in1, interv3_out, int32_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4324,8 +4328,8 @@ int main(void)
   printf("tint_value_time_split(%s, %d, %s, %d, &ispanarray_result, true, &tstzspanarray_result, %d): {", tint1_out, int32_in1, interv3_out, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tint_out(tintarray_result[i]);
-    char1_result = timestamptz_out(tstzarray_result[i]);
+    char_result = tint_out(tintarray_result[i], &size_out);
+    char1_result = timestamptz_out(tstzarray_result[i], &size_out);
     printf("%s: %d: %s", char_result, int32array_result[i], char1_result);
     if (i < count - 1)
       printf(", ");
@@ -4346,7 +4350,7 @@ int main(void)
     interv3_out, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4364,7 +4368,7 @@ int main(void)
     int32_in1, int32_in2, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");
@@ -4383,7 +4387,7 @@ int main(void)
     tintbox1_out, int32_in1, interv3_out, int32_in2, tstz1_out, count);
   for (int i = 0; i < count; i++)
   {
-    char_result = tbox_out(&tboxarray_result[i], 6);
+    char_result = tbox_out(&tboxarray_result[i], 6, &size_out);
     printf("%s", char_result);
     if (i < count - 1)
       printf(", ");

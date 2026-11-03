@@ -62,6 +62,7 @@
 /* Main program */
 int main(void)
 {
+  size_t size_out;
   /* Initialize MEOS and install the error handler that reports through
    * meos_errno instead of exiting */
   meos_initialize();
@@ -102,17 +103,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled set */
   res = tstzset_shift(s, shift);
-  char *out = tstzset_out(res);
+  char *out = tstzset_out(res, &size_out);
   printf("tstzset_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(res && meos_errno() == 0);
   free(out); free(res);
   res = tstzset_scale(s, duration);
-  out = tstzset_out(res);
+  out = tstzset_out(res, &size_out);
   printf("tstzset_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(res && meos_errno() == 0);
   free(out); free(res);
   res = tstzset_shift_scale(s, shift, duration);
-  out = tstzset_out(res);
+  out = tstzset_out(res, &size_out);
   printf("tstzset_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(res && meos_errno() == 0);
@@ -148,17 +149,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled span */
   spres = tstzspan_shift(sp, shift);
-  out = tstzspan_out(spres);
+  out = tstzspan_out(spres, &size_out);
   printf("tstzspan_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(spres && meos_errno() == 0);
   free(out); free(spres);
   spres = tstzspan_scale(sp, duration);
-  out = tstzspan_out(spres);
+  out = tstzspan_out(spres, &size_out);
   printf("tstzspan_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(spres && meos_errno() == 0);
   free(out); free(spres);
   spres = tstzspan_shift_scale(sp, shift, duration);
-  out = tstzspan_out(spres);
+  out = tstzspan_out(spres, &size_out);
   printf("tstzspan_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(spres && meos_errno() == 0);
@@ -195,17 +196,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled span set */
   ssres = tstzspanset_shift(ss, shift);
-  out = tstzspanset_out(ssres);
+  out = tstzspanset_out(ssres, &size_out);
   printf("tstzspanset_shift(1 day): %s, errno %d\n", out, meos_errno());
   assert(ssres && meos_errno() == 0);
   free(out); free(ssres);
   ssres = tstzspanset_scale(ss, duration);
-  out = tstzspanset_out(ssres);
+  out = tstzspanset_out(ssres, &size_out);
   printf("tstzspanset_scale(4 days): %s, errno %d\n", out, meos_errno());
   assert(ssres && meos_errno() == 0);
   free(out); free(ssres);
   ssres = tstzspanset_shift_scale(ss, shift, duration);
-  out = tstzspanset_out(ssres);
+  out = tstzspanset_out(ssres, &size_out);
   printf("tstzspanset_shift_scale(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(ssres && meos_errno() == 0);
@@ -241,17 +242,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled temporal box */
   boxres = tbox_shift_time(box, shift);
-  out = tbox_out(boxres, 6);
+  out = tbox_out(boxres, 6, &size_out);
   printf("tbox_shift_time(1 day): %s, errno %d\n", out, meos_errno());
   assert(boxres && meos_errno() == 0);
   free(out); free(boxres);
   boxres = tbox_scale_time(box, duration);
-  out = tbox_out(boxres, 6);
+  out = tbox_out(boxres, 6, &size_out);
   printf("tbox_scale_time(4 days): %s, errno %d\n", out, meos_errno());
   assert(boxres && meos_errno() == 0);
   free(out); free(boxres);
   boxres = tbox_shift_scale_time(box, shift, duration);
-  out = tbox_out(boxres, 6);
+  out = tbox_out(boxres, 6, &size_out);
   printf("tbox_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(boxres && meos_errno() == 0);
@@ -287,17 +288,17 @@ int main(void)
 
   /* The intervals answer the shifted and scaled spatiotemporal box */
   stboxres = stbox_shift_time(stbox, shift);
-  out = stbox_out(stboxres, 6);
+  out = stbox_out(stboxres, 6, &size_out);
   printf("stbox_shift_time(1 day): %s, errno %d\n", out, meos_errno());
   assert(stboxres && meos_errno() == 0);
   free(out); free(stboxres);
   stboxres = stbox_scale_time(stbox, duration);
-  out = stbox_out(stboxres, 6);
+  out = stbox_out(stboxres, 6, &size_out);
   printf("stbox_scale_time(4 days): %s, errno %d\n", out, meos_errno());
   assert(stboxres && meos_errno() == 0);
   free(out); free(stboxres);
   stboxres = stbox_shift_scale_time(stbox, shift, duration);
-  out = stbox_out(stboxres, 6);
+  out = stbox_out(stboxres, 6, &size_out);
   printf("stbox_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(stboxres && meos_errno() == 0);

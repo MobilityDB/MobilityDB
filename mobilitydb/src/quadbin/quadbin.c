@@ -86,8 +86,9 @@ PG_FUNCTION_INFO_V1(Quadbin_out);
 Datum
 Quadbin_out(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  PG_RETURN_CSTRING(quadbin_out(cell));
+  PG_RETURN_CSTRING(quadbin_out(cell, &size_out));
 }
 
 PGDLLEXPORT Datum Quadbin_as_text(PG_FUNCTION_ARGS);
@@ -100,8 +101,9 @@ PG_FUNCTION_INFO_V1(Quadbin_as_text);
 Datum
 Quadbin_as_text(PG_FUNCTION_ARGS)
 {
+  size_t size_out;
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  char *str = quadbin_out(cell);
+  char *str = quadbin_out(cell, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

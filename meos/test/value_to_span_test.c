@@ -69,6 +69,7 @@ check(const char *what, void *result, char *out, const char *expected)
 int
 main(void)
 {
+  size_t size_out;
   meos_initialize();
   meos_initialize_timezone("UTC");
 
@@ -79,60 +80,60 @@ main(void)
   /* Integer */
   int i = -7;
   s = int_to_set(i);
-  check("int_to_set(-7)", s, intset_out(s), "{-7}");
+  check("int_to_set(-7)", s, intset_out(s, &size_out), "{-7}");
   sp = int_to_span(i);
-  check("int_to_span(-7)", sp, intspan_out(sp), "[-7, -6)");
+  check("int_to_span(-7)", sp, intspan_out(sp, &size_out), "[-7, -6)");
   ss = int_to_spanset(i);
-  check("int_to_spanset(-7)", ss, intspanset_out(ss), "{[-7, -6)}");
+  check("int_to_spanset(-7)", ss, intspanset_out(ss, &size_out), "{[-7, -6)}");
 
   /* Big integer beyond 32 bits, positive and negative */
   int64 big = 5000000000LL;
   s = bigint_to_set(big);
-  check("bigint_to_set(5000000000)", s, bigintset_out(s), "{5000000000}");
+  check("bigint_to_set(5000000000)", s, bigintset_out(s, &size_out), "{5000000000}");
   sp = bigint_to_span(big);
-  check("bigint_to_span(5000000000)", sp, bigintspan_out(sp),
+  check("bigint_to_span(5000000000)", sp, bigintspan_out(sp, &size_out),
     "[5000000000, 5000000001)");
   ss = bigint_to_spanset(big);
-  check("bigint_to_spanset(5000000000)", ss, bigintspanset_out(ss),
+  check("bigint_to_spanset(5000000000)", ss, bigintspanset_out(ss, &size_out),
     "{[5000000000, 5000000001)}");
   sp = bigint_to_span(-big);
-  check("bigint_to_span(-5000000000)", sp, bigintspan_out(sp),
+  check("bigint_to_span(-5000000000)", sp, bigintspan_out(sp, &size_out),
     "[-5000000000, -4999999999)");
   ss = bigint_to_spanset(-big);
-  check("bigint_to_spanset(-5000000000)", ss, bigintspanset_out(ss),
+  check("bigint_to_spanset(-5000000000)", ss, bigintspanset_out(ss, &size_out),
     "{[-5000000000, -4999999999)}");
 
   /* Float with a fractional part */
   double d = 3.7;
   s = float_to_set(d);
-  check("float_to_set(3.7)", s, floatset_out(s, 15), "{3.7}");
+  check("float_to_set(3.7)", s, floatset_out(s, 15, &size_out), "{3.7}");
   sp = float_to_span(d);
-  check("float_to_span(3.7)", sp, floatspan_out(sp, 15), "[3.7, 3.7]");
+  check("float_to_span(3.7)", sp, floatspan_out(sp, 15, &size_out), "[3.7, 3.7]");
   ss = float_to_spanset(d);
-  check("float_to_spanset(3.7)", ss, floatspanset_out(ss, 15),
+  check("float_to_spanset(3.7)", ss, floatspanset_out(ss, 15, &size_out),
     "{[3.7, 3.7]}");
 
   /* Date */
   DateADT date = date_in("2001-01-02");
   s = date_to_set(date);
-  check("date_to_set(2001-01-02)", s, dateset_out(s), "{2001-01-02}");
+  check("date_to_set(2001-01-02)", s, dateset_out(s, &size_out), "{2001-01-02}");
   sp = date_to_span(date);
-  check("date_to_span(2001-01-02)", sp, datespan_out(sp),
+  check("date_to_span(2001-01-02)", sp, datespan_out(sp, &size_out),
     "[2001-01-02, 2001-01-03)");
   ss = date_to_spanset(date);
-  check("date_to_spanset(2001-01-02)", ss, datespanset_out(ss),
+  check("date_to_spanset(2001-01-02)", ss, datespanset_out(ss, &size_out),
     "{[2001-01-02, 2001-01-03)}");
 
   /* Timestamp with a time of day */
   TimestampTz t = timestamptz_in("2001-01-02 08:30:00", -1);
   s = timestamptz_to_set(t);
-  check("timestamptz_to_set", s, tstzset_out(s),
+  check("timestamptz_to_set", s, tstzset_out(s, &size_out),
     "{\"2001-01-02 08:30:00+00\"}");
   sp = timestamptz_to_span(t);
-  check("timestamptz_to_span", sp, tstzspan_out(sp),
+  check("timestamptz_to_span", sp, tstzspan_out(sp, &size_out),
     "[2001-01-02 08:30:00+00, 2001-01-02 08:30:00+00]");
   ss = timestamptz_to_spanset(t);
-  check("timestamptz_to_spanset", ss, tstzspanset_out(ss),
+  check("timestamptz_to_spanset", ss, tstzspanset_out(ss, &size_out),
     "{[2001-01-02 08:30:00+00, 2001-01-02 08:30:00+00]}");
 
   if (failures == 0)
