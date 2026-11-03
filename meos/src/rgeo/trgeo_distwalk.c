@@ -43,6 +43,7 @@
 #include <math.h>
 /* MEOS */
 #include "temporal/temporal.h"
+#include "geo/geo_funcs.h"
 
 
 /*****************************************************************************
@@ -147,9 +148,9 @@ distrefedge_set(DistRefEdge *e, double sx, double sy, double ex, double ey)
   double ux = ex - sx, uy = ey - sy;
   e->sx = sx; e->sy = sy;
   e->ex = ex; e->ey = ey;
-  e->len = hypot(ux, uy);
+  e->ux = ux; e->uy = uy;
+  e->len = sqrt(ux * ux + uy * uy);
   assert(e->len > 0.0);
-  e->beta = atan2(uy, ux);
   e->dots = sx * ux + sy * uy;
   e->crss = sx * uy - sy * ux;
 }
@@ -163,8 +164,30 @@ distrefvert_set(DistRefVert *v, double x, double y)
   assert(v);
   v->x = x;
   v->y = y;
-  v->rho = hypot(x, y);
-  v->alpha = (v->rho > 0.0) ? atan2(y, x) : 0.0;
+  v->rho = sqrt(x * x + y * y);
+}
+
+/**
+ * @brief Return in (@p rc, @p rs) the vector (@p c, @p s) turned by the
+ * angle @p th
+ * @details This is the rotation of #distmotion_place().  The phase of a term
+ * of the walk is the angle of a vector of the bodies, such as an edge,
+ * turned by the angles of the poses.  The function keeps the vector as it is
+ * when the angle is zero, thus a vector along an axis keeps its zero
+ * coordinate.
+ */
+static void
+rotate_cs(double c, double s, double th, double *rc, double *rs)
+{
+  if (th == 0.0)
+  {
+    *rc = c;
+    *rs = s;
+    return;
+  }
+  double ct = cos(th), st = sin(th);
+  *rc = c * ct - s * st;
+  *rs = s * ct + c * st;
 }
 
 /*****************************************************************************
@@ -199,6 +222,10 @@ distwalk_check(const DistFun *f, double direct, double t)
  * f(t) = L * [ Wx(t) * cos(wA*t + thA + beta) + Wy(t) * sin(wA*t + thA + beta) ]
  *      + rho * L * cos((wA - wB)*t + thA - thB + beta - alpha) - dots
  * @endcode
+ * with beta the angle of the edge and alpha the angle of the vertex.  Each
+ * phase is given by a vector, see #distfun_add_cs(): L * (cos(beta),
+ * sin(beta)) is the edge (ux, uy), and rho * L * (cos(beta - alpha),
+ * sin(beta - alpha)) is (dot(u, v), cross(v, u)).
  */
 void
 distwalk_transition(const DistSegm *seg, const DistRefEdge *e,
@@ -206,13 +233,16 @@ distwalk_transition(const DistSegm *seg, const DistRefEdge *e,
 {
   assert(seg); assert(e); assert(v); assert(f);
   const DistMotion *ma = &seg->ma, *mb = &seg->mb;
-  double L = e->len;
+  double c, s;
   distfun_init(f);
-  distfun_add(f, ma->w, ma->th0 + e->beta, L * seg->wx1, L * seg->wx0,
-    L * seg->wy1, L * seg->wy0);
+  rotate_cs(e->ux, e->uy, ma->th0, &c, &s);
+  distfun_add_cs(f, ma->w, c, s, seg->wx1, seg->wx0, seg->wy1, seg->wy0);
   if (v->rho > 0.0)
-    distfun_add(f, ma->w - mb->w,
-      (ma->th0 - mb->th0) + e->beta - v->alpha, 0.0, v->rho * L, 0.0, 0.0);
+  {
+    rotate_cs(e->ux * v->x + e->uy * v->y, e->uy * v->x - e->ux * v->y,
+      ma->th0 - mb->th0, &c, &s);
+    distfun_add_cs(f, ma->w - mb->w, c, s, 0.0, 1.0, 0.0, 0.0);
+  }
   distfun_add_poly(f, 0.0, 0.0, -e->dots);
 #ifndef NDEBUG
   for (int i = 0; i <= 2; i++)
@@ -239,15 +269,18 @@ distwalk_cross(const DistSegm *seg, const DistRefEdge *e,
 {
   assert(seg); assert(e); assert(v); assert(f);
   const DistMotion *ma = &seg->ma, *mb = &seg->mb;
-  double L = e->len;
+  double c, s;
   distfun_init(f);
-  /* The same term with cos and sin exchanged: the cos coefficient carries
-   * -Wy and the sin coefficient carries Wx */
-  distfun_add(f, ma->w, ma->th0 + e->beta, -L * seg->wy1, -L * seg->wy0,
-    L * seg->wx1, L * seg->wx0);
+  /* The terms of distwalk_transition() with cos and sin exchanged: the cos
+   * coefficient carries -Wy and the sin coefficient carries Wx */
+  rotate_cs(e->ux, e->uy, ma->th0, &c, &s);
+  distfun_add_cs(f, ma->w, c, s, -seg->wy1, -seg->wy0, seg->wx1, seg->wx0);
   if (v->rho > 0.0)
-    distfun_add(f, ma->w - mb->w,
-      (ma->th0 - mb->th0) + e->beta - v->alpha, 0.0, 0.0, 0.0, v->rho * L);
+  {
+    rotate_cs(e->ux * v->x + e->uy * v->y, e->uy * v->x - e->ux * v->y,
+      ma->th0 - mb->th0, &c, &s);
+    distfun_add_cs(f, ma->w - mb->w, c, s, 0.0, 0.0, 0.0, 1.0);
+  }
   distfun_add_poly(f, 0.0, 0.0, -e->crss);
 #ifndef NDEBUG
   for (int i = 0; i <= 2; i++)
@@ -271,6 +304,10 @@ distwalk_cross(const DistSegm *seg, const DistRefEdge *e,
  *      - 2*ra * [ Wx(t)*cos(wA*t + thA + alpha_a) + Wy(t)*sin(wA*t + thA + alpha_a) ]
  *      - 2*ra*rb * cos((wB - wA)*t + thB - thA + alpha_b - alpha_a)
  * @endcode
+ * with alpha_a and alpha_b the angles of the vertices.  Each phase is given
+ * by a vector, see #distfun_add_cs(): rb * (cos(alpha_b), sin(alpha_b)) is
+ * the vertex (xb, yb), and ra * rb * (cos(alpha_b - alpha_a),
+ * sin(alpha_b - alpha_a)) is (dot(a, b), cross(a, b)).
  */
 void
 distwalk_vertdist2(const DistSegm *seg, const DistRefVert *va,
@@ -279,6 +316,7 @@ distwalk_vertdist2(const DistSegm *seg, const DistRefVert *va,
   assert(seg); assert(va); assert(vb); assert(f);
   const DistMotion *ma = &seg->ma, *mb = &seg->mb;
   double wx1 = seg->wx1, wx0 = seg->wx0, wy1 = seg->wy1, wy0 = seg->wy0;
+  double c, s;
   distfun_init(f);
   /* |W(t)|^2, a quadratic, plus the two constant radii */
   distfun_add_poly(f, wx1 * wx1 + wy1 * wy1,
@@ -286,20 +324,22 @@ distwalk_vertdist2(const DistSegm *seg, const DistRefVert *va,
     wx0 * wx0 + wy0 * wy0 + va->rho * va->rho + vb->rho * vb->rho);
   if (vb->rho > 0.0)
   {
-    double k = 2.0 * vb->rho;
-    distfun_add(f, mb->w, mb->th0 + vb->alpha, k * wx1, k * wx0, k * wy1,
-      k * wy0);
+    rotate_cs(vb->x, vb->y, mb->th0, &c, &s);
+    distfun_add_cs(f, mb->w, c, s, 2.0 * wx1, 2.0 * wx0, 2.0 * wy1,
+      2.0 * wy0);
   }
   if (va->rho > 0.0)
   {
-    double k = -2.0 * va->rho;
-    distfun_add(f, ma->w, ma->th0 + va->alpha, k * wx1, k * wx0, k * wy1,
-      k * wy0);
+    rotate_cs(va->x, va->y, ma->th0, &c, &s);
+    distfun_add_cs(f, ma->w, c, s, -2.0 * wx1, -2.0 * wx0, -2.0 * wy1,
+      -2.0 * wy0);
   }
   if (va->rho > 0.0 && vb->rho > 0.0)
-    distfun_add(f, mb->w - ma->w,
-      (mb->th0 - ma->th0) + vb->alpha - va->alpha,
-      0.0, -2.0 * va->rho * vb->rho, 0.0, 0.0);
+  {
+    rotate_cs(va->x * vb->x + va->y * vb->y, va->x * vb->y - va->y * vb->x,
+      mb->th0 - ma->th0, &c, &s);
+    distfun_add_cs(f, mb->w - ma->w, c, s, 0.0, -2.0, 0.0, 0.0);
+  }
 #ifndef NDEBUG
   for (int i = 0; i <= 2; i++)
   {
@@ -318,7 +358,10 @@ distwalk_vertdist2(const DistSegm *seg, const DistRefVert *va,
  * @code
  * f(t) = La * Lb * sin((wB - wA)*t + thB - thA + beta_b - beta_a)
  * @endcode
- * The function is zero when the two edges are parallel.
+ * with beta_a and beta_b the angles of the edges.  The phase is given by the
+ * vector La * Lb * (cos(beta_b - beta_a), sin(beta_b - beta_a)), which is
+ * (dot(ua, ub), cross(ua, ub)), see #distfun_add_cs().  The function is zero
+ * when the two edges are parallel.
  */
 void
 distwalk_parallel(const DistSegm *seg, const DistRefEdge *ea,
@@ -326,10 +369,11 @@ distwalk_parallel(const DistSegm *seg, const DistRefEdge *ea,
 {
   assert(seg); assert(ea); assert(eb); assert(f);
   const DistMotion *ma = &seg->ma, *mb = &seg->mb;
+  double c, s;
   distfun_init(f);
-  distfun_add(f, mb->w - ma->w,
-    (mb->th0 - ma->th0) + eb->beta - ea->beta, 0.0, 0.0, 0.0,
-    ea->len * eb->len);
+  rotate_cs(ea->ux * eb->ux + ea->uy * eb->uy,
+    ea->ux * eb->uy - ea->uy * eb->ux, mb->th0 - ma->th0, &c, &s);
+  distfun_add_cs(f, mb->w - ma->w, c, s, 0.0, 0.0, 0.0, 1.0);
 #ifndef NDEBUG
   for (int i = 0; i <= 2; i++)
   {
@@ -469,11 +513,14 @@ walk_before(const DistWalk *w, uint32_t i, uint32_t j, double t)
   int s = distfun_sign_after(&p, 0.0, t, w->ftol);
   if (s != 0)
     return s < 0;
-  /* The edges are parallel: dot(uA, reversed uB) > 0 for the angle 0 */
+  /* The edges are parallel: dot(uA, reversed uB) > 0 for the angle 0, that
+   * is, dot(uA, uB) < 0 with the edges turned to time t */
   const DistMotion *ma = &w->sab->ma, *mb = &w->sab->mb;
-  double phase = (mb->w - ma->w) * t + (mb->th0 - ma->th0) + eb->beta -
-    ea->beta;
-  return cos(phase) < 0.0;
+  double dotab, crsab;
+  rotate_cs(ea->ux * eb->ux + ea->uy * eb->uy,
+    ea->ux * eb->uy - ea->uy * eb->ux,
+    (mb->w - ma->w) * t + (mb->th0 - ma->th0), &dotab, &crsab);
+  return dotab < 0.0;
 }
 
 /**
@@ -577,6 +624,21 @@ walk_edge_g(const DistWalk *w, const DistPair *e, DistFun *g)
 }
 
 /**
+ * @brief Return true if the origin is not inside the line of the edge @p e
+ * just after @p t
+ * @details This is the test of #walk_settle_local() on the cross function
+ * of #walk_edge_g(): a point on the line of an edge is outside the
+ * difference.
+ */
+static bool
+walk_edge_outside(const DistWalk *w, const DistPair *e, double t)
+{
+  DistFun g;
+  walk_edge_g(w, e, &g);
+  return distfun_sign_after(&g, 0.0, t, w->ftol) >= 0;
+}
+
+/**
  * @brief Set @p f to the distance function of the feature @p cf and return
  * the value to give to #fun_dist()
  * @details For a vertex, @p f is the squared distance and the result is 0.
@@ -654,21 +716,30 @@ walk_settle_local(const DistWalk *w, double t, DistPair *cf)
   {
     if (cf->kind == DISTPAIR_VV)
     {
+      /* The region of an edge is the set of points that project on the edge
+       * and are not inside its line.  An origin on the boundary of the
+       * difference, which moves along an edge from one of its ends, projects
+       * on both edges of that end and is inside the line of one of them.  It
+       * goes to the edge whose region it is in.  If it is in neither region
+       * and projects on an edge, it goes to that edge, where
+       * #walk_settle() finds it inside the difference. */
       DistPair next = walk_vertex_next(w, cf->i, cf->j, t);
       walk_edge_n(w, &next, &f);
-      if (distfun_sign_after(&f, 0.0, t, w->ftol) >= 0)
-      {
-        *cf = next;
-        continue;
-      }
+      bool onnext = distfun_sign_after(&f, 0.0, t, w->ftol) >= 0;
       DistPair prev = walk_vertex_prev(w, cf->i, cf->j, t);
       len = walk_edge_n(w, &prev, &f);
-      if (distfun_sign_after(&f, len * len, t, w->ftol) <= 0)
-      {
+      bool onprev = distfun_sign_after(&f, len * len, t, w->ftol) <= 0;
+      if (onnext && walk_edge_outside(w, &next, t))
+        *cf = next;
+      else if (onprev && walk_edge_outside(w, &prev, t))
         *cf = prev;
-        continue;
-      }
-      return DISTWALK_OK;
+      else if (onnext)
+        *cf = next;
+      else if (onprev)
+        *cf = prev;
+      else
+        return DISTWALK_OK;
+      continue;
     }
 
     /* Move the vertex to the one that supports the edge */
@@ -1083,9 +1154,10 @@ distwalk_ftol(const DistSegm *seg, const DistRefPoly *ra,
   const DistRefPoly *rb)
 {
   assert(seg); assert(ra); assert(rb);
-  double w0 = hypot(seg->wx0, seg->wy0);
-  double w1 = hypot(seg->wx0 + seg->wx1, seg->wy0 + seg->wy1);
-  double scale = ra->rmax + rb->rmax + fmax(w0, w1);
+  double x1 = seg->wx0 + seg->wx1, y1 = seg->wy0 + seg->wy1;
+  double w2 = fmax(seg->wx0 * seg->wx0 + seg->wy0 * seg->wy0,
+    x1 * x1 + y1 * y1);
+  double scale = ra->rmax + rb->rmax + sqrt(w2);
   return 1e-14 * scale * scale;
 }
 
@@ -1225,19 +1297,25 @@ distwalk_segm(const DistSegm *seg, const DistRefPoly *ra,
  * Bodies
  *****************************************************************************/
 
-/** A vertex at a distance of at most this fraction of the size of the ring
- * from the previous vertex is the same vertex */
-#define DISTREF_DUPTOL     1e-12
-
-/** A vertex whose turn has a sine of at most this value, and that does not
- * go back, is on the line between its two neighbors */
-#define DISTREF_COLTOL     1e-12
+/**
+ * @brief Return true if @p b is strictly between @p a and @p c
+ */
+static bool
+refring_between(double a, double b, double c)
+{
+  return (a < b && b < c) || (a > b && b > c);
+}
 
 /**
  * @brief Remove the repeated vertices and the vertices on the line between
  * their neighbors, orient the ring counterclockwise, and return the number of
  * vertices
- * @details These changes do not change the distance to the ring.
+ * @details These changes do not change the distance to the ring.  Every
+ * question is decided exactly on the doubles of the ring: two vertices are
+ * the same vertex when their coordinates are equal, a vertex is on the line
+ * between its neighbors when the cross product of its two edges is zero
+ * (#cross_product_sign) and it lies strictly between them, and the turns of
+ * a convex ring all have one sign, which is its orientation.
  * @return Number of vertices, or 0 if the ring is not a convex polygon
  */
 static int
@@ -1245,25 +1323,16 @@ refring_canonicalize(double *px, double *py, int n)
 {
   if (n < 3)
     return 0;
-  double xmin = px[0], xmax = px[0], ymin = py[0], ymax = py[0];
-  for (int i = 1; i < n; i++)
-  {
-    if (px[i] < xmin) xmin = px[i];
-    if (px[i] > xmax) xmax = px[i];
-    if (py[i] < ymin) ymin = py[i];
-    if (py[i] > ymax) ymax = py[i];
-  }
-  double dtol = DISTREF_DUPTOL * hypot(xmax - xmin, ymax - ymin);
 
   /* Repeated vertices, also across the end of the ring */
   int m = 0;
   for (int i = 0; i < n; i++)
   {
-    if (m > 0 && hypot(px[i] - px[m - 1], py[i] - py[m - 1]) <= dtol)
+    if (m > 0 && px[i] == px[m - 1] && py[i] == py[m - 1])
       continue;
     px[m] = px[i]; py[m] = py[i]; m++;
   }
-  while (m > 1 && hypot(px[m - 1] - px[0], py[m - 1] - py[0]) <= dtol)
+  while (m > 1 && px[m - 1] == px[0] && py[m - 1] == py[0])
     m--;
 
   /* Vertices on the line between their neighbors.  The removal of a vertex
@@ -1277,11 +1346,10 @@ refring_canonicalize(double *px, double *py, int n)
     for (int i = 0; i < m; i++)
     {
       int p = (i + m - 1) % m, q = (i + 1) % m;
-      double ux = px[i] - px[p], uy = py[i] - py[p];
-      double vx = px[q] - px[i], vy = py[q] - py[i];
-      double lu = hypot(ux, uy), lv = hypot(vx, vy);
-      if (lu > 0.0 && lv > 0.0 && ux * vx + uy * vy > 0.0 &&
-          fabs(ux * vy - uy * vx) <= DISTREF_COLTOL * lu * lv)
+      if (cross_product_sign(px[p], py[p], px[i], py[i], px[i], py[i],
+            px[q], py[q]) == 0 &&
+          (refring_between(px[p], px[i], px[q]) ||
+           refring_between(py[p], py[i], py[q])))
         continue;
       px[w] = px[i]; py[w] = py[i]; w++;
     }
@@ -1292,31 +1360,26 @@ refring_canonicalize(double *px, double *py, int n)
   if (m < 3)
     return 0;
 
-  /* Counterclockwise orientation */
-  double area2 = 0.0;
+  /* Convexity: every turn has the sign of the first one, which is not zero */
+  int orient = 0;
   for (int i = 0; i < m; i++)
   {
-    int j = (i + 1) % m;
-    area2 += px[i] * py[j] - px[j] * py[i];
+    int j = (i + 1) % m, l = (i + 2) % m;
+    int turn = cross_product_sign(px[i], py[i], px[j], py[j], px[j], py[j],
+      px[l], py[l]);
+    if (turn == 0 || (orient != 0 && turn != orient))
+      return 0;
+    orient = turn;
   }
-  if (area2 < 0.0)
+
+  /* Counterclockwise orientation */
+  if (orient < 0)
     for (int i = 0, j = m - 1; i < j; i++, j--)
     {
       double tx = px[i], ty = py[i];
       px[i] = px[j]; py[i] = py[j];
       px[j] = tx;    py[j] = ty;
     }
-  else if (area2 == 0.0)
-    return 0;
-
-  /* Convexity */
-  for (int i = 0; i < m; i++)
-  {
-    int j = (i + 1) % m, l = (i + 2) % m;
-    if ((px[j] - px[i]) * (py[l] - py[j]) -
-        (py[j] - py[i]) * (px[l] - px[j]) <= 0.0)
-      return 0;
-  }
   return m;
 }
 
@@ -1344,10 +1407,23 @@ distrefpoly_set_offset(DistRefPoly *rp, const LWPOLY *poly, double ox,
   for (int i = 0; i < nraw; i++)
   {
     const POINT2D *p = getPoint2d_cp(poly->rings[0], (uint32_t) i);
-    px[i] = p->x - ox;
-    py[i] = p->y - oy;
+    px[i] = p->x;
+    py[i] = p->y;
   }
+  /* The ring is cleaned on its input vertices, which decide whether it is
+   * convex.  The subtraction of a nonzero offset rounds, so the walk's ring
+   * is cleaned again on the doubles it uses: two vertices can become one and
+   * a turn can become flat */
   int n = refring_canonicalize(px, py, nraw);
+  if (n > 0 && (ox != 0.0 || oy != 0.0))
+  {
+    for (int i = 0; i < n; i++)
+    {
+      px[i] -= ox;
+      py[i] -= oy;
+    }
+    n = refring_canonicalize(px, py, n);
+  }
   if (n == 0)
   {
     pfree(px); pfree(py);

@@ -59,6 +59,16 @@ second, and a very small rotation is zero, as in the interpolation of the
 poses.  Thus the algorithm places a body at the same position as the
 database.
 
+The angles beta and alpha are never computed.  A term whose phase is an
+angle times a length is the vector with that angle and length:
+L * (cos(beta), sin(beta)) is u, rho * (cos(alpha), sin(alpha)) is b, and
+rho * L * (cos(beta - alpha), sin(beta - alpha)) is (dot(u, b),
+cross(b, u)).  The algorithm turns such a vector by the angle of a pose,
+and keeps it as it is when the angle is zero.  Thus an edge along an axis
+of a body that does not turn gives coefficients with exact zeros, which
+cos(atan2(y, x)) does not give: an edge in the direction pi has a sine of
+1.2e-16, and a contact that slides along it reads as an entry.
+
 The Function Family
 -------------------
 
@@ -312,6 +322,14 @@ features give the same distance.  Then fixed rules decide:
   * A point on the line of an edge is outside A - B.  Its distance is zero
     for the two choices.
 
+  * The region of an edge is the set of points that project on the edge
+    and are not inside its line.  An origin that leaves a vertex along one
+    of its two edges is on the boundary of A - B: it projects on both edges
+    and is inside the line of the other one.  The walk takes the edge whose
+    region has the origin, and takes an edge on which the origin projects
+    only if neither region has it, where the scan finds the origin inside
+    A - B.
+
 Thresholds
 ..........
 
@@ -375,11 +393,23 @@ instants are:
   * for the threshold functions, each crossing of the threshold d, with
     the value d.
 
-The value at each instant comes from the function of the feature at that
-time.  Thus the result is exact at its instants.  It has all the extrema,
-thus its minimum is the nearest approach distance, and its maximum is the
-largest distance.  Between two instants, the linear interpolation is not
-exact when a body rotates.
+At the start and the end of each segment, which are instants of the
+operands, the value is the distance between the bodies placed at that
+instant, the double nearest the exact distance of the placed geometries.
+A body at the angle 0 against a static geometry is its reference geometry
+moved by the position of the pose, and each coordinate is the exact sum of
+a coordinate of the reference geometry and one of the position, not that
+sum rounded to a double.  The value is the double nearest the exact
+distance of that body.  Where no sum rounds, the placed body is that body.
+Thus the value can differ in the last bits from the distance of the
+geometry that valueAtTimestamp returns, whose coordinates are the rounded
+sums.  Inside a segment, an event is at a time that is not a microsecond, and its
+value is the one at that time: zero at an entry into and an exit from an
+overlap, d at a crossing of the threshold d, and the function of the
+feature at an extremum or a change of feature.  The result has all the
+extrema, thus its minimum is the nearest approach distance, and its
+maximum is the largest distance.  Between two instants, the linear
+interpolation is not exact when a body rotates.
 
 A contact where the distance touches zero is an extremum, thus it is an
 instant of the result.  Two instants at the same timestamp become one
@@ -413,7 +443,22 @@ distance to a geometry is the minimum of the distances to its parts.
 
 The minimum of two linear interpolations has instants where they cross,
 and the value there comes from the interpolation.  Thus the algorithm
-computes each value of the minimum again, with PostGIS on the placed body.
+computes each value of the minimum again, with PostGIS on the placed body,
+or for a body at the angle 0 on the exact sums, as at an instant of the
+operands.
+
+A body whose poses at the two ends of a segment have the angle 0
+translates over the segment.  Its least distance to a part is then the
+least distance of two segments: the path of a vertex of the body against
+an edge of the part, or the path of a vertex of the part, seen from the
+body, against an edge of the body, unless they overlap at the start or
+meet on the way.  Each is the double nearest its exact value on the exact
+sums of the coordinates and the positions, and rounding is monotone, so
+the least of them is the double nearest the least distance over the
+segment.  No instant inside the segment is below it.  Where it is below
+the values at the two ends, the instant of least value inside the
+segment, which the walk puts at the nearest microsecond of the minimum,
+takes it, as an event takes the value at its time.
 
 A value that is exactly the threshold d stays d.  Such a value comes from a
 threshold crossing of the closest part, thus it is the exact distance.  A
@@ -523,9 +568,14 @@ vertices are in the millions, and the terms of the functions would be the
 square of the millions for a question about meters.
 
 The walk cleans a reference ring before it uses it.  It removes a vertex
-at a distance of at most 1e-12 of the size of the ring from the previous
-vertex, and a vertex whose turn has a sine of at most 1e-12 and that does
-not go back.  These vertices do not change the distance.  Without them,
+equal to the previous one, and a vertex on the line between its two
+neighbors that lies strictly between them, decided by the exact sign of
+the cross product of its two edges.  These vertices do not change the
+distance.  The turns of the ring then all have one sign, which is its
+orientation, and the walk turns a clockwise ring around.  These questions
+are asked on the input vertices.  A static polygon is then taken relative
+to the mean of its vertices, a subtraction that rounds, and the walk asks
+them again on the doubles it uses.  Without them,
 each edge has a direction and each vertex has a turn.  A vertex where the
 ring goes back on the same line is the end of a spike.  It stays, because
 it changes the distance, and the ring is then not convex.  The walk

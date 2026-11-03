@@ -99,6 +99,8 @@ typedef struct
 extern void distfun_init(DistFun *f);
 extern bool distfun_add(DistFun *f, double w, double g, double A1, double A0,
   double B1, double B0);
+extern bool distfun_add_cs(DistFun *f, double w, double cg, double sg,
+  double A1, double A0, double B1, double B0);
 extern void distfun_add_poly(DistFun *f, double c2, double c1, double c0);
 
 extern double distfun_eval(const DistFun *f, double t);

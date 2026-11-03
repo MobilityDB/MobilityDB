@@ -4250,6 +4250,282 @@ point_motion_nad_exact(const double *p0, const double *p1, int64 s0,
   return wide_dyadic_nearest_root(&nmin, &dmin);
 }
 
+/**
+ * @brief A point of the plane whose coordinates are held exactly, see
+ * #WideDyadic
+ */
+typedef struct
+{
+  WideDyadic x, y;
+} WidePoint;
+
+/**
+ * @brief Set the difference of two #WideDyadic, exactly
+ * @note The result is not one of the operands
+ */
+static void
+wide_dyadic_sub(const WideDyadic *a, const WideDyadic *b, WideDyadic *r)
+{
+  WideDyadic nb = *b;
+  nb.sign = - nb.sign;
+  wide_dyadic_add(a, &nb, r);
+  return;
+}
+
+/**
+ * @brief Set @p p to the point (@p ax, @p ay) plus @p sign times the point
+ * (@p bx, @p by), exactly
+ */
+static void
+wide_point_sum(WidePoint *p, double ax, double ay, double bx, double by,
+  int sign)
+{
+  WideDyadic a, b;
+  wide_dyadic_set_double(&a, ax);
+  wide_dyadic_set_double(&b, sign * bx);
+  wide_dyadic_add(&a, &b, &p->x);
+  wide_dyadic_set_double(&a, ay);
+  wide_dyadic_set_double(&b, sign * by);
+  wide_dyadic_add(&a, &b, &p->y);
+  return;
+}
+
+/**
+ * @brief Return the sign of the cross product `(b - a) x (c - a)`, exactly
+ */
+static int
+wide_point_orient(const WidePoint *a, const WidePoint *b, const WidePoint *c)
+{
+  WideDyadic ux, uy, vx, vy, l, r;
+  wide_dyadic_sub(&b->x, &a->x, &ux); wide_dyadic_sub(&b->y, &a->y, &uy);
+  wide_dyadic_sub(&c->x, &a->x, &vx); wide_dyadic_sub(&c->y, &a->y, &vy);
+  wide_dyadic_mul(&ux, &vy, &l); wide_dyadic_mul(&uy, &vx, &r);
+  return wide_dyadic_cmp(&l, &r);
+}
+
+/**
+ * @brief Return true if the point @p c, on the line of @p a and @p b, lies
+ * on the closed segment from @p a to @p b
+ */
+static bool
+wide_point_between(const WidePoint *a, const WidePoint *b,
+  const WidePoint *c)
+{
+  return wide_dyadic_cmp(&c->x, &a->x) * wide_dyadic_cmp(&c->x, &b->x) <= 0 &&
+    wide_dyadic_cmp(&c->y, &a->y) * wide_dyadic_cmp(&c->y, &b->y) <= 0;
+}
+
+/**
+ * @brief Return true if the closed segments from @p a to @p b and from @p c
+ * to @p d meet, by exact orientations
+ * @details A segment whose two ends are equal is a point
+ */
+static bool
+wide_segment_meet(const WidePoint *a, const WidePoint *b, const WidePoint *c,
+  const WidePoint *d)
+{
+  int o1 = wide_point_orient(a, b, c), o2 = wide_point_orient(a, b, d);
+  int o3 = wide_point_orient(c, d, a), o4 = wide_point_orient(c, d, b);
+  if (o1 * o2 < 0 && o3 * o4 < 0)
+    return true;
+  return (o1 == 0 && wide_point_between(a, b, c)) ||
+    (o2 == 0 && wide_point_between(a, b, d)) ||
+    (o3 == 0 && wide_point_between(c, d, a)) ||
+    (o4 == 0 && wide_point_between(c, d, b));
+}
+
+/**
+ * @brief Return the double nearest the distance of the point @p p to the
+ * closed segment from @p a to @p b
+ * @details With `w = p - a` and `u = b - a`, the nearest point is the end
+ * `a` where `w . u <= 0` or `u` is zero, the end `b` where `w . u >= u . u`,
+ * and otherwise the foot of the perpendicular, at the squared distance
+ * `(w x u)^2 / (u . u)`. Each is a rational of degree at most four in the
+ * exact coordinates, answered as the double nearest its root
+ * (#wide_dyadic_nearest_root), as #point_segment_shortestline_exact reads it
+ */
+static double
+wide_point_segment_distance(const WidePoint *p, const WidePoint *a,
+  const WidePoint *b)
+{
+  WideDyadic ux, uy, wx, wy, t1, t2, n, d, one;
+  wide_dyadic_set_double(&one, 1.0);
+  wide_dyadic_sub(&b->x, &a->x, &ux); wide_dyadic_sub(&b->y, &a->y, &uy);
+  wide_dyadic_sub(&p->x, &a->x, &wx); wide_dyadic_sub(&p->y, &a->y, &wy);
+  wide_dyadic_mul(&wx, &ux, &t1); wide_dyadic_mul(&wy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &n);
+  wide_dyadic_mul(&ux, &ux, &t1); wide_dyadic_mul(&uy, &uy, &t2);
+  wide_dyadic_add(&t1, &t2, &d);
+  if (d.sign != 0 && n.sign > 0 && wide_dyadic_cmp(&n, &d) >= 0)
+  {
+    /* The nearest point is the end b */
+    wide_dyadic_sub(&p->x, &b->x, &wx); wide_dyadic_sub(&p->y, &b->y, &wy);
+  }
+  else if (d.sign != 0 && n.sign > 0)
+  {
+    /* The nearest point is the foot of the perpendicular */
+    WideDyadic x;
+    wide_dyadic_mul(&wx, &uy, &t1); wide_dyadic_mul(&wy, &ux, &t2);
+    wide_dyadic_sub(&t1, &t2, &x);
+    wide_dyadic_mul(&x, &x, &n);
+    return wide_dyadic_nearest_root(&n, &d);
+  }
+  /* The nearest point is an end, at the offset (wx, wy) */
+  wide_dyadic_mul(&wx, &wx, &t1); wide_dyadic_mul(&wy, &wy, &t2);
+  wide_dyadic_add(&t1, &t2, &n);
+  return wide_dyadic_nearest_root(&n, &one);
+}
+
+/**
+ * @brief Return the double nearest the distance of the closed segments from
+ * @p a to @p b and from @p c to @p d, or 0 where they meet
+ * @details Two segments of the plane that do not meet are nearest at an end
+ * of one of them, and rounding is monotone, so the least of the four
+ * distances of an end to the other segment, each rounded once, is the double
+ * nearest their distance, as #segment_distance_exact answers it
+ */
+static double
+wide_segment_distance(const WidePoint *a, const WidePoint *b,
+  const WidePoint *c, const WidePoint *d)
+{
+  if (wide_segment_meet(a, b, c, d))
+    return 0.0;
+  double r = wide_point_segment_distance(a, c, d);
+  r = fmin(r, wide_point_segment_distance(b, c, d));
+  r = fmin(r, wide_point_segment_distance(c, a, b));
+  return fmin(r, wide_point_segment_distance(d, a, b));
+}
+
+/**
+ * @brief Return true if the point @p q lies in the closed convex polygon of
+ * the @p n vertices @p poly, in either orientation
+ */
+static bool
+wide_point_in_convex(const WidePoint *q, const WidePoint *poly, int n)
+{
+  bool pos = false, neg = false;
+  for (int i = 0; i < n; i++)
+  {
+    int s = wide_point_orient(&poly[i], &poly[(i + 1) % n], q);
+    pos |= (s > 0);
+    neg |= (s < 0);
+  }
+  return ! (pos && neg);
+}
+
+/**
+ * @brief Return true if no sum of a coordinate of the points @p b and the
+ * translation @p p rounds
+ * @details Each sum is split by #two_sum into its rounded value and its
+ * error, so where every error is zero the points moved by one rounded sum per
+ * coordinate are the points moved exactly
+ * @param[in] b,nb Points, `x, y` pairs
+ * @param[in] p Translation
+ */
+bool
+translation_is_exact(const double *b, int nb, const double *p)
+{
+  assert(b); assert(p);
+  for (int i = 0; i < 2 * nb; i++)
+  {
+    double s, e;
+    two_sum(b[i], p[i % 2], &s, &e);
+    if (e != 0.0)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Return the number of edges of a point, a segment or a convex
+ * polygon of @p n vertices, a point being one edge of no length
+ */
+static inline int
+convex_nedges(int n)
+{
+  return (n <= 2) ? 1 : n;
+}
+
+/**
+ * @brief Return the nearest approach of a body that translates linearly and
+ * a body at rest, the double nearest its exact value
+ * @details The moving body is the point, the segment or the convex polygon
+ * of the @p nb vertices @p b moved by `p(t) = p0 + t (p1 - p0)` for t in
+ * [0, 1], the body at rest the one of the @p ng vertices @p g. Their distance
+ * is the distance of `-p(t)` to the Minkowski difference `B - G`, whose edges
+ * are those of `b_i - [g_j, g_k]` and `[b_i, b_k] - g_j`. Thus where the
+ * bodies meet at no time, the least distance is the least of the distances
+ * of two segments: the path `[b_i + p0, b_i + p1]` of each vertex of the
+ * moving body to each edge of the body at rest, and the path
+ * `[g_j - p0, g_j - p1]` of each vertex of the body at rest, seen from the
+ * moving body, to each of its edges. The bodies meet when one of these pairs
+ * meets, or when they overlap at t = 0: a vertex of one in the other, or an
+ * edge of one across an edge of the other. Every coordinate is the exact sum
+ * of two doubles (#WidePoint), every test an exact sign of degree at most
+ * two, and every distance the double nearest it
+ * (#wide_point_segment_distance), so the least of them is the double nearest
+ * the nearest approach
+ * @param[in] b,nb Vertices of the moving body, `x, y` pairs, the first not
+ * repeated at the end
+ * @param[in] p0,p1 Translation of the moving body at the start and the end
+ * @param[in] g,ng Vertices of the body at rest, `x, y` pairs, the first not
+ * repeated at the end
+ * @pre `nb, ng >= 1`; a body of three vertices or more is a convex polygon
+ */
+double
+convex_motion_nad_exact(const double *b, int nb, const double *p0,
+  const double *p1, const double *g, int ng)
+{
+  assert(b); assert(p0); assert(p1); assert(g); assert(nb > 0);
+  assert(ng > 0);
+  WidePoint *b0 = palloc(sizeof(WidePoint) * nb);
+  WidePoint *b1 = palloc(sizeof(WidePoint) * nb);
+  WidePoint *bref = palloc(sizeof(WidePoint) * nb);
+  WidePoint *gref = palloc(sizeof(WidePoint) * ng);
+  WidePoint *g0 = palloc(sizeof(WidePoint) * ng);
+  WidePoint *g1 = palloc(sizeof(WidePoint) * ng);
+  for (int i = 0; i < nb; i++)
+  {
+    wide_point_sum(&b0[i], b[2 * i], b[2 * i + 1], p0[0], p0[1], 1);
+    wide_point_sum(&b1[i], b[2 * i], b[2 * i + 1], p1[0], p1[1], 1);
+    wide_point_sum(&bref[i], b[2 * i], b[2 * i + 1], 0.0, 0.0, 1);
+  }
+  for (int j = 0; j < ng; j++)
+  {
+    wide_point_sum(&gref[j], g[2 * j], g[2 * j + 1], 0.0, 0.0, 1);
+    wide_point_sum(&g0[j], g[2 * j], g[2 * j + 1], p0[0], p0[1], -1);
+    wide_point_sum(&g1[j], g[2 * j], g[2 * j + 1], p1[0], p1[1], -1);
+  }
+  int eb = convex_nedges(nb), eg = convex_nedges(ng);
+  double result = DBL_MAX;
+
+  /* An overlap at t = 0 */
+  for (int i = 0; result > 0.0 && ng > 2 && i < nb; i++)
+    if (wide_point_in_convex(&b0[i], gref, ng))
+      result = 0.0;
+  for (int j = 0; result > 0.0 && nb > 2 && j < ng; j++)
+    if (wide_point_in_convex(&gref[j], b0, nb))
+      result = 0.0;
+  for (int i = 0; result > 0.0 && i < eb; i++)
+    for (int j = 0; result > 0.0 && j < eg; j++)
+      if (wide_segment_meet(&b0[i], &b0[(i + 1) % nb], &gref[j],
+          &gref[(j + 1) % ng]))
+        result = 0.0;
+
+  /* The path of each vertex of one body to each edge of the other */
+  for (int i = 0; result > 0.0 && i < nb; i++)
+    for (int j = 0; result > 0.0 && j < eg; j++)
+      result = fmin(result, wide_segment_distance(&b0[i], &b1[i], &gref[j],
+        &gref[(j + 1) % ng]));
+  for (int j = 0; result > 0.0 && j < ng; j++)
+    for (int i = 0; result > 0.0 && i < eb; i++)
+      result = fmin(result, wide_segment_distance(&g0[j], &g1[j], &bref[i],
+        &bref[(i + 1) % nb]));
+
+  pfree(b0); pfree(b1); pfree(bref); pfree(gref); pfree(g0); pfree(g1);
+  return result;
+}
+
 /** Relative slack on either side of a comparison
  * #point_motion_dwithin_filter certifies, above the relative error of the at
  * most a few dozen roundings forming each side, about 2^-48 */

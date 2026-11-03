@@ -309,4 +309,69 @@ SELECT round(valueAtTimestamp(tDistance(
   geometry 'Polygon((-1 2,1 2,1 3,-1 3,-1 2))'),
   '2001-01-01 23:59:00')::numeric, 6);
 
+-- At each instant of a moving body the distance is the one of the body placed
+-- there. The triangle at the pose (1 0) is at distance 1 from (0 3), at the
+-- pose (0.5 0.25) at distance 0.5, and at the pose (0 0) it has (0 3) on its
+-- edge.
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(1 0),0)@2001-01-01 00:00:10, Pose(Point(0 0),0)@2001-01-01 00:00:35, Pose(Point(0.5 0.25),0)@2001-01-01 00:00:45, Pose(Point(2 1),0)@2001-01-01 00:01:35]',
+  geometry 'Point(0 3)');
+
+-- A body at rest touching a point is at distance 0 all along
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,6 0,0 6,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(0 3)');
+
+-- A body that slides along a point: the 4 x 4 square has (3 4) on its top
+-- edge while it moves left, and in it afterwards, so the distance is 0 all
+-- along
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,4 0,4 4,0 4,0 0));[Pose(Point(3 0),0)@2001-01-01 00:00:05, Pose(Point(-1 0),0)@2001-01-01 00:00:20, Pose(Point(0 0),0)@2001-01-01 00:01:10, Pose(Point(2 1),0)@2001-01-01 00:01:25]',
+  geometry 'Point(3 4)');
+
+-- The same with an edge that is not along an axis: (-6 6) is the end of the
+-- top edge of the body, which moves left along it
+
+SELECT tDistance(
+  trgeometry 'Polygon((-4 4,2 -4,3 -3,3 0,1 4,-4 4));[Pose(Point(-2 2),0)@2001-01-01, Pose(Point(-4.5 2),0)@2001-01-02]',
+  geometry 'Point(-6 6)');
+
+-- A vertex on the line between its neighbors is not a corner of the body:
+-- (1 2) is on the top edge of the square, which is convex. A vertex 1e-13
+-- below that line is a corner turning inward, and a body that is not convex
+-- is refused
+
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+SELECT tDistance(
+  trgeometry 'Polygon((0 0,2 0,2 2,1 1.9999999999999,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01, Pose(Point(0 0),0)@2001-01-02]',
+  geometry 'Point(1 5)');
+
+-- A body that does not turn is nearest a geometry inside a segment: its
+-- vertex (3 -1) moves from (5 0) to (0 2) while the triangle goes from the
+-- pose (2 1) to (-3 3), and passes (4 1) at the distance 3 / sqrt(29), the
+-- double 0.55708601453115558 nearest it
+
+SELECT nearestApproachDistance(
+  trgeometry 'Polygon((-3 -2,-2 -5,3 -1,-3 -2));[Pose(Point(2 1),0)@2001-01-01 00:00:00, Pose(Point(-3 3),0)@2001-01-01 00:06:05.630507, Pose(Point(-3 -3),0)@2001-01-01 00:13:58.721992, Pose(Point(-3 -2),0)@2001-01-01 00:55:53.96598]',
+  geometry 'Point(4 1)') = 0.55708601453115558;
+
+-- At an instant, a body that does not turn is its reference geometry moved
+-- exactly by the position of the pose: the vertex (2.623 2.152) at the pose
+-- (1.869 -2.829) is at x = 4.492, the sum of the two doubles, which rounds to
+-- a double 2.2e-16 below it. The distance of the exact body to the line is
+-- the double 0.043970339265039356 nearest it, where the body with the
+-- rounded sums is at the distance 0.04397033926503958
+
+SELECT nearestApproachDistance(trg, geo) = 0.043970339265039356,
+  valueAtTimestamp(tDistance(trg, geo), '2001-01-01 00:21:01.796393') =
+    0.043970339265039356
+FROM (SELECT
+  trgeometry 'Polygon((-4.876 2.124,-2.334 -2.237,-1.084 -1.315,2.623 2.152,-0.252 4.765,-4.876 2.124));[Pose(Point(-0.384 0.392),0)@2001-01-01 00:00:00, Pose(Point(1.869 -2.829),0)@2001-01-01 00:21:01.796393]' AS trg,
+  geometry 'LineString(4.498 -2.698,4.619 3.741)' AS geo) t;
+
 -------------------------------------------------------------------------------

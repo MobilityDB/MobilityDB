@@ -71,16 +71,16 @@
 /**
  * @brief Return the maximum of |(a1*t + a0)*cos(w*t) + (b1*t + b0)*sin(w*t)|
  * over [lo, hi]
- * @details The maximum is at most the amplitude hypot(a1*t + a0, b1*t + b0).
+ * @details The maximum is at most the amplitude |(a1*t + a0, b1*t + b0)|.
  * The amplitude is the distance from the origin to a point that moves on a
  * line, thus it is convex and its maximum is at an end of the interval.
  */
 static double
 term_absmax(const DistFunTerm *k, double lo, double hi)
 {
-  double vlo = hypot(k->a1 * lo + k->a0, k->b1 * lo + k->b0);
-  double vhi = hypot(k->a1 * hi + k->a0, k->b1 * hi + k->b0);
-  return (vlo > vhi) ? vlo : vhi;
+  double alo = k->a1 * lo + k->a0, blo = k->b1 * lo + k->b0;
+  double ahi = k->a1 * hi + k->a0, bhi = k->b1 * hi + k->b0;
+  return sqrt(fmax(alo * alo + blo * blo, ahi * ahi + bhi * bhi));
 }
 
 /**
@@ -230,7 +230,7 @@ quad_roots(double c2, double c1, double c0, double lo, double hi,
 
 /**
  * @brief Insert the roots of A*cos(w*t) + B*sin(w*t) + C in [lo, hi]
- * @details With R = hypot(A, B) and phi = atan2(B, A), the equation is
+ * @details With R = |(A, B)| and phi = atan2(B, A), the equation is
  * cos(w*t - phi) = -C/R, which has closed-form solutions.
  * @return 1 on success, 0 if the array of roots is full, and -1 if the
  * enumeration is too long, in which case the caller uses the general method
@@ -239,7 +239,7 @@ static int
 sinusoid_roots(double w, double A, double B, double C, double lo, double hi,
   double *roots, int *nroots, int maxroots, double xacc)
 {
-  double R = hypot(A, B);
+  double R = sqrt(A * A + B * B);
   if (R == 0.0)
     return -1;
   double ratio = -C / R;
@@ -347,11 +347,17 @@ distfun_init(DistFun *f)
 
 /**
  * @brief Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to @p f
- * @details The function stores each term with phase zero and with a
- * frequency that is not negative.  A term of frequency zero is added to the
- * polynomial part, and a term of a frequency that @p f already has is added
- * to that term.  Thus two functions of the same segment have the same
- * frequencies, and their sum or difference is a sum of terms.
+ * @details The phase g is given by its cosine @p cg and its sine @p sg, both
+ * multiplied by one factor, which then multiplies the term.  A caller that
+ * knows the phase as a vector (x, y) whose angle is g and whose length is the
+ * factor passes x and y.  Then a vector along an axis gives a sine or a
+ * cosine that is exactly zero, which cos(atan2(y, x)) does not give.
+ *
+ * The function stores each term with phase zero and with a frequency that is
+ * not negative.  A term of frequency zero is added to the polynomial part,
+ * and a term of a frequency that @p f already has is added to that term.
+ * Thus two functions of the same segment have the same frequencies, and
+ * their sum or difference is a sum of terms.
  *
  * The frequencies are compared exactly.  A rotation below #MEOS_EPSILON is
  * already exactly zero (see motion_omega() in trgeo_distwalk.c), and two
@@ -361,13 +367,12 @@ distfun_init(DistFun *f)
  * @return False if @p f already has #DISTFUN_MAXTERMS terms
  */
 bool
-distfun_add(DistFun *f, double w, double g, double A1, double A0, double B1,
-  double B0)
+distfun_add_cs(DistFun *f, double w, double cg, double sg, double A1,
+  double A0, double B1, double B0)
 {
   assert(f);
   /* cos(w*t + g) = cos(g)*cos(w*t) - sin(g)*sin(w*t) and
    * sin(w*t + g) = cos(g)*sin(w*t) + sin(g)*cos(w*t) */
-  double cg = cos(g), sg = sin(g);
   double a1 = A1 * cg + B1 * sg;
   double a0 = A0 * cg + B0 * sg;
   double b1 = B1 * cg - A1 * sg;
@@ -405,6 +410,18 @@ distfun_add(DistFun *f, double w, double g, double A1, double A0, double B1,
   f->term[f->nterm].b0 = b0;
   f->nterm++;
   return true;
+}
+
+/**
+ * @brief Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to @p f,
+ * see #distfun_add_cs()
+ * @return False if @p f already has #DISTFUN_MAXTERMS terms
+ */
+bool
+distfun_add(DistFun *f, double w, double g, double A1, double A0, double B1,
+  double B0)
+{
+  return distfun_add_cs(f, w, cos(g), sin(g), A1, A0, B1, B0);
 }
 
 /**

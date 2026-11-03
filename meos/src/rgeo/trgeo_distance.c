@@ -95,7 +95,27 @@ typedef struct
 {
   DistRefPoly body;          /**< Point, segment or convex polygon */
   DistMotion motion;         /**< Static motion at the center of the body */
+  double *xy;                /**< Vertices of the part as in the geometry,
+                                  x, y pairs, the first not repeated */
+  int npts;                  /**< Number of vertices */
 } DistPart;
+
+/**
+ * @brief Set the vertices of a part to the @p n points of @p pa from @p i
+ */
+static void
+dist_part_points(DistPart *part, const POINTARRAY *pa, uint32_t i, int n)
+{
+  part->xy = palloc(sizeof(double) * 2 * n);
+  part->npts = n;
+  for (int k = 0; k < n; k++)
+  {
+    const POINT2D *p = getPoint2d_cp(pa, i + (uint32_t) k);
+    part->xy[2 * k] = p->x;
+    part->xy[2 * k + 1] = p->y;
+  }
+  return;
+}
 
 /**
  * @brief Add a point part to an array of parts
@@ -105,6 +125,10 @@ dist_part_point(DistPart *parts, int *n, double x, double y)
 {
   distrefpoly_set_point(&parts[*n].body);
   distmotion_set_static(&parts[*n].motion, x, y);
+  parts[*n].xy = palloc(sizeof(double) * 2);
+  parts[*n].xy[0] = x;
+  parts[*n].xy[1] = y;
+  parts[*n].npts = 1;
   (*n)++;
 }
 
@@ -140,6 +164,7 @@ dist_parts_add(const LWGEOM *geom, DistPart *parts, int *n)
         distrefpoly_set_segment(&parts[*n].body, p->x, p->y, q->x, q->y, &cx,
           &cy);
         distmotion_set_static(&parts[*n].motion, cx, cy);
+        dist_part_points(&parts[*n], pa, i, 2);
         (*n)++;
       }
     }
@@ -160,8 +185,24 @@ dist_parts_add(const LWGEOM *geom, DistPart *parts, int *n)
     return false;
   }
   distmotion_set_static(&parts[*n].motion, cx, cy);
+  const POINTARRAY *ring = ((LWPOLY *) geom)->rings[0];
+  dist_part_points(&parts[*n], ring, 0, (int) ring->npoints - 1);
   (*n)++;
   return true;
+}
+
+/**
+ * @brief Free an array of parts
+ */
+static void
+dist_parts_free(DistPart *parts, int count)
+{
+  for (int i = 0; i < count; i++)
+  {
+    distrefpoly_free(&parts[i].body);
+    pfree(parts[i].xy);
+  }
+  pfree(parts);
 }
 
 /**
@@ -203,24 +244,12 @@ dist_geo_parts(const GSERIALIZED *gs, int *count)
   lwgeom_free(geom);
   if (! ok)
   {
-    for (int i = 0; i < *count; i++)
-      distrefpoly_free(&parts[i].body);
-    pfree(parts);
+    dist_parts_free(parts, *count);
     return NULL;
   }
   return parts;
 }
 
-/**
- * @brief Free an array of parts
- */
-static void
-dist_parts_free(DistPart *parts, int count)
-{
-  for (int i = 0; i < count; i++)
-    distrefpoly_free(&parts[i].body);
-  pfree(parts);
-}
 
 /*****************************************************************************
  * Distance at an instant
@@ -239,6 +268,10 @@ typedef struct
   const GSERIALIZED *gs;     /**< Static geometry @nullable */
   DistPart *parts;           /**< Parts of the static geometry */
   int nparts;                /**< Number of parts */
+  double *refxy;             /**< Vertices of the reference geometry of the
+                                  first operand, x, y pairs, the first not
+                                  repeated, for a static geometry */
+  int nref;                  /**< Number of vertices */
   const GSERIALIZED *ref2;   /**< Reference geometry of a temporal rigid
                                   geometry, or NULL for a temporal point */
   DistRefPoly body2;         /**< Body of a temporal point or temporal rigid
@@ -248,30 +281,136 @@ typedef struct
 } DistOps;
 
 /**
- * @brief Return the distance between the operands at the instant @p inst1 of
- * the first operand and @p inst2 of the second operand
- * @details The function places the bodies and uses PostGIS.  @p inst2 is
- * NULL for a static geometry.
+ * @brief Return the distance between the first operand at the pose @p pose
+ * and the static geometry of @p ops
+ * @details A body at the angle 0 is its reference geometry moved by the
+ * position of the pose, and its distance to the geometry is the least of the
+ * distances to the parts, each the double nearest its exact value
+ * (#convex_motion_nad_exact) on the exact sums of the coordinates and the
+ * position.  Where no such sum rounds (#translation_is_exact), the placed
+ * body is that body, and its distance is the one of #geom_distance2d().
+ * Otherwise, and for a body that turns, the distance is the one of the body
+ * placed at the pose.
  */
 static double
-dist_instant(const DistOps *ops, const TInstant *inst1, const TInstant *inst2)
+dist_pose_geo(const DistOps *ops, const Pose *pose)
 {
-  GSERIALIZED *geo1 = pose_apply_geo(DatumGetPoseP(tinstant_value_p(inst1)),
-    ops->ref1);
-  double result;
+  if (ops->refxy && pose->data[2] == 0.0 &&
+      ! translation_is_exact(ops->refxy, ops->nref, pose->data))
+  {
+    double result = DBL_MAX;
+    for (int i = 0; i < ops->nparts; i++)
+      result = fmin(result, convex_motion_nad_exact(ops->refxy, ops->nref,
+        pose->data, pose->data, ops->parts[i].xy, ops->parts[i].npts));
+    return result;
+  }
+  GSERIALIZED *geo = pose_apply_geo(pose, ops->ref1);
+  double result = geom_distance2d(geo, ops->gs);
+  pfree(geo);
+  return result;
+}
+
+/**
+ * @brief Return the distance between the first operand at the pose @p pose1
+ * and the second operand
+ * @details The function places the bodies at their poses and returns the
+ * double nearest the distance of the placed geometries, see
+ * #geom_distance2d().  The distance to a static geometry is the one of
+ * #dist_pose_geo().  The second operand is the static geometry of @p ops,
+ * the point @p point2 of a temporal point, or the body of a temporal rigid
+ * geometry at the pose @p pose2.
+ * @param[in] pose2 Pose of a temporal rigid geometry, or NULL @nullable
+ * @param[in] point2 Point of a temporal point, or NULL @nullable
+ */
+static double
+dist_placed(const DistOps *ops, const Pose *pose1, const Pose *pose2,
+  const GSERIALIZED *point2)
+{
   if (ops->gs)
-    result = geom_distance2d(geo1, ops->gs);
-  else if (! ops->ref2)
-    result = geom_distance2d(geo1,
-      DatumGetGserializedP(tinstant_value_p(inst2)));
+    return dist_pose_geo(ops, pose1);
+  GSERIALIZED *geo1 = pose_apply_geo(pose1, ops->ref1);
+  double result;
+  if (! ops->ref2)
+    result = geom_distance2d(geo1, point2);
   else
   {
-    GSERIALIZED *geo2 = pose_apply_geo(
-      DatumGetPoseP(tinstant_value_p(inst2)), ops->ref2);
+    GSERIALIZED *geo2 = pose_apply_geo(pose2, ops->ref2);
     result = geom_distance2d(geo1, geo2);
     pfree(geo2);
   }
   pfree(geo1);
+  return result;
+}
+
+/**
+ * @brief Return the distance between the operands with the value @p value1
+ * of the first operand and @p value2 of the second operand
+ * @details @p value2 is a pose for a temporal rigid geometry, a point for a
+ * temporal point, and is not read for a static geometry.
+ */
+static double
+dist_values(const DistOps *ops, Datum value1, Datum value2)
+{
+  const Pose *pose1 = DatumGetPoseP(value1);
+  if (ops->gs)
+    return dist_placed(ops, pose1, NULL, NULL);
+  if (! ops->ref2)
+    return dist_placed(ops, pose1, NULL, DatumGetGserializedP(value2));
+  return dist_placed(ops, pose1, DatumGetPoseP(value2), NULL);
+}
+
+/**
+ * @brief Return the distance between the operands at the instant @p inst1 of
+ * the first operand and @p inst2 of the second operand
+ * @details @p inst2 is NULL for a static geometry.
+ */
+static double
+dist_instant(const DistOps *ops, const TInstant *inst1, const TInstant *inst2)
+{
+  const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+  if (! inst2)
+    return dist_placed(ops, pose1, NULL, NULL);
+  return dist_values(ops, tinstant_value_p(inst1), tinstant_value_p(inst2));
+}
+
+/**
+ * @brief Return a copy of the value of segment @p i of a sequence at @p t
+ * @details With step interpolation, the value is the one of instant @p i
+ * during the whole segment, its end included, since the segment gives the
+ * piece [t_i, t_{i+1}) of the result.  With linear interpolation, the value
+ * is the one #tsequence_value_at_timestamptz() gives.
+ */
+static Datum
+dist_segvalue(const TSequence *seq, int i, TimestampTz t)
+{
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+  if (! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+    return tinstant_value(inst1);
+  const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+  return tsegment_value_at_timestamptz(tinstant_value_p(inst1),
+    tinstant_value_p(inst2), seq->temptype, inst1->t, inst2->t, t);
+}
+
+/**
+ * @brief Return the distance between the operands at the instant @p t of
+ * segment @p i
+ * @details @p seq2 is NULL for a static geometry.
+ */
+static double
+dist_segm_at(const DistOps *ops, const TSequence *seq1, const TSequence *seq2,
+  int i, TimestampTz t)
+{
+  Datum value1 = dist_segvalue(seq1, i, t);
+  double result;
+  if (! seq2)
+    result = dist_placed(ops, DatumGetPoseP(value1), NULL, NULL);
+  else
+  {
+    Datum value2 = dist_segvalue(seq2, i, t);
+    result = dist_values(ops, value1, value2);
+    pfree(DatumGetPointer(value2));
+  }
+  pfree(DatumGetPointer(value1));
   return result;
 }
 
@@ -363,6 +502,16 @@ dist_append(TInstant ***insts, int *count, int *size, double dist,
  * sequence with the last instant, as for the other temporal types.  Else the
  * result is one sequence.
  *
+ * The walk gives the instants of the result.  At an instant of the operands,
+ * the value is the distance between the operands placed there, see
+ * #dist_placed(), as #tsequence_value_at_timestamptz() places them.  An
+ * event inside a segment is at a time that is not a microsecond, and its
+ * value is the one of the walk at that time: zero where the bodies meet,
+ * @p level where the distance crosses it, and the value of the function of
+ * the feature at an extremum.  The instant of such an event is the nearest
+ * microsecond, see #dist_event_time(), where the value of the bodies placed
+ * differs from the value at the event.
+ *
  * The result is not normalized, see dist_normalize().
  *
  * A failure of the walk raises an error.  It is not a property of the data
@@ -374,6 +523,10 @@ dist_walk_seq(const DistOps *ops, const TSequence *seq1,
 {
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool jumps = seq2 && (linear1 != MEOS_FLAGS_LINEAR_INTERP(seq2->flags));
+  /* The distance to one part of a static geometry of several parts is not
+   * the distance to the geometry, whose values the minimum over the parts
+   * sets, see dist2d_seq_exact_values() */
+  bool exact = ! (ops->gs && ops->nparts > 1);
   DistEvents events;
   distevents_init(&events);
   int size = seq1->count * 4, count = 0, npieces = 0;
@@ -409,8 +562,14 @@ dist_walk_seq(const DistOps *ops, const TSequence *seq1,
       return NULL;
     }
     for (int j = 0; j < events.count; j++)
-      dist_append(&insts, &count, &size, events.ev[j].dist,
-        dist_event_time(seq1, i, events.ev[j].t));
+    {
+      double ratio = events.ev[j].t;
+      TimestampTz t = dist_event_time(seq1, i, ratio);
+      double dist = events.ev[j].dist;
+      if (exact && (ratio <= 0.0 || ratio >= 1.0))
+        dist = dist_segm_at(ops, seq1, seq2, i, t);
+      dist_append(&insts, &count, &size, dist, t);
+    }
     if (jumps)
     {
       /* The segment gives the sequence [t_i, t_{i+1}) */
@@ -515,23 +674,26 @@ tfloatseq_min_tfloatseq(const TSequence *seq1, const TSequence *seq2)
 
 /**
  * @brief Set the value of each instant of @p dist to the exact distance
- * between the rigid geometry @p seq and the geometry @p gs
+ * between the rigid geometry @p seq and the static geometry of @p ops
  * @details The minimum of the distances to the parts has instants where two
  * linear interpolations cross.  The interpolated value there is not the
- * distance, thus the function computes the distance at each instant with
- * PostGIS.  Then the result is exact at each instant, as for one part.
+ * distance, thus the function computes the distance at each instant, see
+ * #dist_pose_geo().  Then the result is exact at each instant, as for one
+ * part, see #dist_walk_seq().
  *
- * An instant whose value is exactly @p level keeps it.  Such a value comes
- * from the crossing of @p level by the part that is closest at that time, see
- * distwalk_segm(), thus it is the exact distance.  A value from PostGIS has a
- * rounding error, which can put the crossing in the same microsecond as the
- * instant, where the comparison with @p level does not see it.
+ * An instant whose value is exactly the distance level of @p ops keeps it.
+ * Such a value comes from the crossing of the level by the part that is
+ * closest at that time, see distwalk_segm(), thus it is the exact distance.
+ * A value from PostGIS has a rounding error, which can put the crossing in
+ * the same microsecond as the instant, where the comparison with the level
+ * does not see it.
  * @param[in] dist Minimum of the distances to the parts, freed
  */
 static TSequence *
-dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
-  const GSERIALIZED *gs, const GSERIALIZED *ref_gs, double level)
+dist2d_seq_exact_values(const DistOps *ops, TSequence *dist,
+  const TSequence *seq)
 {
+  double level = ops->level;
   TInstant **instants = palloc(sizeof(TInstant *) * dist->count);
   for (int i = 0; i < dist->count; i++)
   {
@@ -548,13 +710,99 @@ dist2d_seq_exact_values(TSequence *dist, const TSequence *seq,
       instants[i] = tinstant_copy(inst);
       continue;
     }
-    GSERIALIZED *body = pose_apply_geo(DatumGetPoseP(pose), ref_gs);
-    instants[i] = tinstant_make(Float8GetDatum(geom_distance2d(body, gs)),
-      T_TFLOAT, inst->t);
-    pfree(body); pfree(DatumGetPointer(pose));
+    instants[i] = tinstant_make(Float8GetDatum(dist_pose_geo(ops,
+      DatumGetPoseP(pose))), T_TFLOAT, inst->t);
+    pfree(DatumGetPointer(pose));
   }
   TSequence *result = tsequence_make_free(instants, dist->count,
     dist->period.lower_inc, dist->period.upper_inc, LINEAR, NORMALIZE_NO);
+  pfree(dist);
+  return result;
+}
+
+/**
+ * @brief Give the instants inside each segment of a body that does not turn
+ * the exact least distance to a static geometry
+ * @details A body whose poses at the two ends of a segment have the angle 0
+ * translates.  Its least distance over the segment to a part at rest is the
+ * nearest approach of the two, the double nearest its exact value
+ * (#convex_motion_nad_exact), and the least over the parts is the least
+ * distance to the geometry.  No instant inside the segment is below it.
+ * Where it is below the distances at the two ends, computed in the same way,
+ * the instant of least value inside the segment, which the walk puts at the
+ * least distance, takes it: the value at the event, whose time is not a
+ * microsecond.  An instant whose value is exactly the distance @p level of
+ * #DistOps keeps it, see #dist2d_seq_exact_values().
+ * @param[in] dist Temporal distance of @p seq to the static geometry, freed
+ */
+static TSequence *
+dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
+{
+  double *values = palloc(sizeof(double) * dist->count);
+  for (int j = 0; j < dist->count; j++)
+    values[j] = DatumGetFloat8(tinstant_value_p(TSEQUENCE_INST_N(dist, j)));
+  bool changed = false;
+  int k = 0;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const TInstant *inst1 = TSEQUENCE_INST_N(seq, i);
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
+    /* The instants first to last - 1 are inside the segment */
+    while (k < dist->count && TSEQUENCE_INST_N(dist, k)->t <= inst1->t)
+      k++;
+    int first = k;
+    while (k < dist->count && TSEQUENCE_INST_N(dist, k)->t < inst2->t)
+      k++;
+    int last = k;
+    const Pose *pose1 = DatumGetPoseP(tinstant_value_p(inst1));
+    const Pose *pose2 = DatumGetPoseP(tinstant_value_p(inst2));
+    if (first == last || pose1->data[2] != 0.0 || pose2->data[2] != 0.0)
+      continue;
+    double least = DBL_MAX;
+    for (int j = 0; j < ops->nparts; j++)
+      least = fmin(least, convex_motion_nad_exact(ops->refxy, ops->nref,
+        pose1->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
+    int min = -1;
+    for (int j = first; j < last; j++)
+    {
+      if (values[j] == ops->level)
+        continue;
+      if (values[j] < least)
+      {
+        values[j] = least;
+        changed = true;
+      }
+      if (min < 0 || values[j] < values[min])
+        min = j;
+    }
+    if (min < 0 || values[min] == least)
+      continue;
+    double end1 = DBL_MAX, end2 = DBL_MAX;
+    for (int j = 0; j < ops->nparts; j++)
+    {
+      end1 = fmin(end1, convex_motion_nad_exact(ops->refxy, ops->nref,
+        pose1->data, pose1->data, ops->parts[j].xy, ops->parts[j].npts));
+      end2 = fmin(end2, convex_motion_nad_exact(ops->refxy, ops->nref,
+        pose2->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
+    }
+    if (least < end1 && least < end2)
+    {
+      values[min] = least;
+      changed = true;
+    }
+  }
+  if (! changed)
+  {
+    pfree(values);
+    return dist;
+  }
+  TInstant **instants = palloc(sizeof(TInstant *) * dist->count);
+  for (int j = 0; j < dist->count; j++)
+    instants[j] = tinstant_make(Float8GetDatum(values[j]), T_TFLOAT,
+      TSEQUENCE_INST_N(dist, j)->t);
+  TSequence *result = tsequence_make_free(instants, dist->count,
+    dist->period.lower_inc, dist->period.upper_inc, LINEAR, NORMALIZE_NO);
+  pfree(values);
   pfree(dist);
   return result;
 }
@@ -614,8 +862,9 @@ dist_seq(const DistOps *ops, const TSequence *seq1, const TSequence *seq2)
     }
   }
   if (ops->nparts > 1)
-    result = dist2d_seq_exact_values(result, seq1, ops->gs, ops->ref1,
-      ops->level);
+    result = dist2d_seq_exact_values(ops, result, seq1);
+  if (ops->refxy)
+    result = dist_seq_least(ops, seq1, result);
   return (Temporal *) result;
 }
 
@@ -703,7 +952,16 @@ tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   Temporal *result = NULL;
   if (ops.parts)
   {
+    /* The reference geometry is a polygon, see dist_ref_body() */
+    LWGEOM *ref = lwgeom_from_gserialized(ops.ref1);
+    const POINTARRAY *ring = lwgeom_as_lwpoly(ref)->rings[0];
+    DistPart body;
+    dist_part_points(&body, ring, 0, (int) ring->npoints - 1);
+    lwgeom_free(ref);
+    ops.refxy = body.xy;
+    ops.nref = body.npts;
     result = dist_temporal(&ops, temp, NULL);
+    pfree(ops.refxy);
     dist_parts_free(ops.parts, ops.nparts);
   }
   distrefpoly_free(&ops.body1);
@@ -807,7 +1065,8 @@ dist_segm_apart(const DistSegm *seg, const DistRefPoly *ra,
   if (vv > 0.0)
     t = fmin(fmax(-(seg->wx0 * seg->wx1 + seg->wy0 * seg->wy1) / vv, 0.0),
       1.0);
-  double near = hypot(seg->wx0 + t * seg->wx1, seg->wy0 + t * seg->wy1);
+  double nx = seg->wx0 + t * seg->wx1, ny = seg->wy0 + t * seg->wy1;
+  double near = sqrt(nx * nx + ny * ny);
   double bound = dist + ra->rmax + rb->rmax;
   double scale = fabs(seg->ma.cx) + fabs(seg->ma.cy) + fabs(seg->mb.cx) +
     fabs(seg->mb.cy) + sqrt(vv) + bound;
