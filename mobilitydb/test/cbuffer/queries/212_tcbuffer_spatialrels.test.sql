@@ -133,6 +133,26 @@ SELECT eDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 
 SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
 SELECT eDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
 
+-- Ever and always disjoint and intersects with a static circular buffer. The
+-- radius is the double below sqrt(2)/2, so the two discs, sqrt(2) apart, do
+-- not meet
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)', tcbuffer 'Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01');
+SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)', tcbuffer 'Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01');
+-- The disc meets the static one in the middle of the segment only
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(5 1.5),1)', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]');
+SELECT aIntersects(cbuffer 'Cbuffer(Point(5 1.5),1)', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]');
+-- The boxes are apart
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(20 20),1)');
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(20 20),1)');
+
 -- Curved input, native arc-exact; the curve polygon ring is the circle of
 -- centre (0,0) and radius 5. The disc starts inside the ring and exits it
 SELECT eDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
@@ -194,6 +214,12 @@ SELECT eIntersects(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point
 -- Two discs apart at both instants that meet in between, their centres 1.5 apart at mid-day
 SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(5 1.5),1)@2001-01-01, Cbuffer(Point(5 1.5),1)@2001-01-02]');
 SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(5 1.5),1)@2001-01-01, Cbuffer(Point(5 1.5),1)@2001-01-02]');
+-- The growing disc is outside the constant one at the start, and enters it
+-- inside the first microsecond: they do not always intersect
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(1.875675456414295 7.8468308903233321),4.3825316238376075)@2001-01-01, Cbuffer(Point(1.875675456414295 7.8468308903233321),9.1148048021369767)@2001-01-02]', tcbuffer '[Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-01, Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-02]');
+SELECT aDwithin(tcbuffer '[Cbuffer(Point(1.875675456414295 7.8468308903233321),4.3825316238376075)@2001-01-01, Cbuffer(Point(1.875675456414295 7.8468308903233321),9.1148048021369767)@2001-01-02]', tcbuffer '[Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-01, Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-02]', 0);
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1.875675456414295 7.8468308903233321),4.3825316238376075)@2001-01-01, Cbuffer(Point(1.875675456414295 7.8468308903233321),9.1148048021369767)@2001-01-02]', tcbuffer '[Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-01, Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-02]');
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(1.875675456414295 7.8468308903233321),4.3825316238376075)@2001-01-01, Cbuffer(Point(1.875675456414295 7.8468308903233321),9.1148048021369767)@2001-01-02]', tcbuffer '[Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-01, Cbuffer(Point(0.51928608403408916 2.6943117993570143),0.94553041711859154)@2001-01-02]');
 ------------------------
 -- Curved geometry input (native arc-exact)
 ------------------------
