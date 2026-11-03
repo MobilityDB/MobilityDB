@@ -1901,10 +1901,11 @@ geogsegmpair_crossings(const GeogSegmPair *sp, double dist, double *cross)
   bool in0 = geogsegmpair_dist(sp, 0.0) <= dist;
   for (int k = 0; k < nsplit - 1; k++)
   {
-    double lo = split[k], hi = split[k + 1];
+    double hi = split[k + 1];
     bool inhi = geogsegmpair_dist(sp, hi) <= dist;
     if (in0 != inhi)
     {
+      double lo = split[k];
       bool inlo = in0;
       for (int i = 0; i < 200; i++)
       {

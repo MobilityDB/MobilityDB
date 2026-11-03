@@ -83,7 +83,7 @@ pcpatch_to_geom(const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, NULL);
-  PCSCHEMA *schema = meos_pc_schema(pa->pcid);
+  const PCSCHEMA *schema = meos_pc_schema(pa->pcid);
   if (! schema)
   {
     meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,

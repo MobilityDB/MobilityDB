@@ -204,7 +204,6 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
         "      Edge %d", i + 1);
     /* Get the information about the current edge */
     double maxSpeedEdge = maxSpeeds[i];
-    int category = categories[i];
     noPoints = lines[i]->points->npoints;
     /* Loop for every segment of the current edge */
     for (j = 1; j < noPoints; j++)
@@ -382,7 +381,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
     {
       int nextCategory = categories[i + 1];
       if (pg_prng_double(prng_get_generation_rng()) <= 
-        P_DEST_STOPPROB[category][nextCategory])
+        P_DEST_STOPPROB[categories[i]][nextCategory])
       {
         curSpeed = 0.0;
         waitTime = meos_random_exponential(prng_get_generation_rng(),

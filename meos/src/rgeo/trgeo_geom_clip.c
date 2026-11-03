@@ -224,7 +224,7 @@ dedup_sorted(double *events, int n)
  */
 static int
 walk_events_and_emit(const double *events, int nuniq,
-  bool (*intersects)(double t_m, void *ctx), void *ctx,
+  bool (*intersects)(double t_m, const void *ctx), const void *ctx,
   Span *out)
 {
   int nout = 0;
@@ -316,7 +316,7 @@ typedef struct {
 } M1Ctx;
 
 static bool
-m1_intersects_at(double t_m, void *ctx_)
+m1_intersects_at(double t_m, const void *ctx_)
 {
   const M1Ctx *ctx = (const M1Ctx *) ctx_;
   double sax = ctx->a1x + t_m * ctx->dxd;
@@ -606,7 +606,7 @@ typedef struct {
 } M2Ctx;
 
 static bool
-m2_intersects_at(double t_m, void *ctx_)
+m2_intersects_at(double t_m, const void *ctx_)
 {
   const M2Ctx *ctx = (const M2Ctx *) ctx_;
   double sax, say, sbx, sby;

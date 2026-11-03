@@ -1,4 +1,3 @@
-#line 2 "jsonpath_scan.c"
 /*-------------------------------------------------------------------------
  *
  * jsonpath_scan.l
@@ -28,7 +27,6 @@
 // #include "nodes/miscnodes.h"
 #include "nodes/pg_list.h"
 
-#line 32 "jsonpath_scan.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -4060,9 +4058,7 @@ static const struct yy_trans_info *yy_start_state_list[11] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 
-#line 33 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 struct jsonpath_yy_extra_type
 {
   JsonPathString scanstring;
@@ -4086,7 +4082,6 @@ fprintf_to_ereport(const char *fmt UNUSED, const char *msg)
 
 /* LCOV_EXCL_START */
 
-#line 4090 "jsonpath_scan.c"
 #define YY_NO_INPUT 1
 /*
  * We use exclusive states for quoted and non-quoted strings,
@@ -4102,7 +4097,6 @@ fprintf_to_ereport(const char *fmt UNUSED, const char *msg)
 /* DecimalInteger in ECMAScript; must not start with 0 unless it's exactly 0 */
 /* DecimalDigits in ECMAScript; only used as part of other rules */
 /* Non-decimal integers; in ECMAScript, these must not have underscore after prefix */
-#line 4106 "jsonpath_scan.c"
 
 #define INITIAL 0
 #define xq 1
@@ -4376,10 +4370,8 @@ YY_DECL
     }
 
   {
-#line 120 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 
 
-#line 4383 "jsonpath_scan.c"
 
   while ( /*CONSTCOND*/1 )    /* loops until end-of-file is reached */
     {
@@ -4418,7 +4410,6 @@ do_action:  /* This label is used only to access EOF actions. */
   { /* beginning of action switch */
 case 1:
 YY_RULE_SETUP
-#line 122 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(false, yytext, yyleng, yyscanner);
                 }
@@ -4426,7 +4417,6 @@ YY_RULE_SETUP
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 126 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   BEGIN INITIAL;
@@ -4435,7 +4425,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 132 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   BEGIN xc;
@@ -4443,7 +4432,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 137 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   yyless(0);
@@ -4452,7 +4440,6 @@ YY_RULE_SETUP
                 }
   YY_BREAK
 case YY_STATE_EOF(xnq):
-#line 144 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   BEGIN INITIAL;
@@ -4461,37 +4448,30 @@ case YY_STATE_EOF(xnq):
   YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 150 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\b', yyscanner); }
   YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 152 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\f', yyscanner); }
   YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 154 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\n', yyscanner); }
   YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 156 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\r', yyscanner); }
   YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 158 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\t', yyscanner); }
   YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 160 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, '\v', yyscanner); }
   YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 162 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 if (!parseUnicode(yytext, yyleng, escontext, yyscanner))
                   yyterminate();
@@ -4499,7 +4479,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 167 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 if (!parseHexChar(yytext, escontext, yyscanner))
                   yyterminate();
@@ -4507,7 +4486,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 172 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 jsonpath_yyerror(NULL, escontext, yyscanner,
                          "invalid Unicode escape sequence");
@@ -4516,7 +4494,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 178 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 jsonpath_yyerror(NULL, escontext, yyscanner,
                          "invalid hexadecimal character sequence");
@@ -4525,7 +4502,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 184 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 /* throw back the \\, and treat as unicode */
                 yyless(yyleng - 1);
@@ -4535,12 +4511,10 @@ YY_RULE_SETUP
   YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 191 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addchar(false, yytext[1], yyscanner); }
   YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 193 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 jsonpath_yyerror(NULL, escontext, yyscanner,
                          "unexpected end after backslash");
@@ -4549,7 +4523,6 @@ YY_RULE_SETUP
   YY_BREAK
 case YY_STATE_EOF(xq):
 case YY_STATE_EOF(xvq):
-#line 199 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                 jsonpath_yyerror(NULL, escontext, yyscanner,
                          "unterminated quoted string");
@@ -4558,7 +4531,6 @@ case YY_STATE_EOF(xvq):
   YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 205 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   BEGIN INITIAL;
@@ -4567,7 +4539,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 211 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yylval->str = yyextra->scanstring;
                   BEGIN INITIAL;
@@ -4577,27 +4548,22 @@ YY_RULE_SETUP
 case 20:
 /* rule 20 can match eol */
 YY_RULE_SETUP
-#line 217 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { addstring(false, yytext, yyleng, yyscanner); }
   YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 219 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { BEGIN INITIAL; }
   YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 221 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { }
   YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 223 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { }
   YY_BREAK
 case YY_STATE_EOF(xc):
-#line 225 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   jsonpath_yyerror(NULL, escontext, yyscanner,
                            "unexpected end of comment");
@@ -4606,62 +4572,50 @@ case YY_STATE_EOF(xc):
   YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 230 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return AND_P; }
   YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 232 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return OR_P; }
   YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 234 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return NOT_P; }
   YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 236 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return ANY_P; }
   YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 238 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return LESS_P; }
   YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 240 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return LESSEQUAL_P; }
   YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 242 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return EQUAL_P; }
   YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 244 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return NOTEQUAL_P; }
   YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 246 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return NOTEQUAL_P; }
   YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 248 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return GREATEREQUAL_P; }
   YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 250 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return GREATER_P; }
   YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 252 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext + 1, yyleng - 1, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4671,7 +4625,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 259 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addchar(true, '\0', yyscanner);
                   BEGIN xvq;
@@ -4679,18 +4632,15 @@ YY_RULE_SETUP
   YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 264 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { return *yytext; }
   YY_BREAK
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 266 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { /* ignore */ }
   YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 268 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addchar(true, '\0', yyscanner);
                   BEGIN xc;
@@ -4698,7 +4648,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 273 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4708,7 +4657,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 280 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4718,7 +4666,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 287 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4728,7 +4675,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 294 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4738,7 +4684,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 301 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4748,7 +4693,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 308 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   addchar(false, '\0', yyscanner);
@@ -4758,7 +4702,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 315 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   jsonpath_yyerror(NULL, escontext, yyscanner,
                            "invalid numeric literal");
@@ -4767,7 +4710,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 320 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   jsonpath_yyerror(NULL, escontext, yyscanner,
                            "trailing junk after numeric literal");
@@ -4776,7 +4718,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 325 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   jsonpath_yyerror(NULL, escontext, yyscanner,
                            "trailing junk after numeric literal");
@@ -4785,7 +4726,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 330 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   jsonpath_yyerror(NULL, escontext, yyscanner,
                            "trailing junk after numeric literal");
@@ -4794,7 +4734,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 335 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addchar(true, '\0', yyscanner);
                   BEGIN xq;
@@ -4802,7 +4741,6 @@ YY_RULE_SETUP
   YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 340 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   yyless(0);
                   addchar(true, '\0', yyscanner);
@@ -4811,22 +4749,18 @@ YY_RULE_SETUP
   YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 346 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 {
                   addstring(true, yytext, yyleng, yyscanner);
                   BEGIN xnq;
                 }
   YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 351 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 { yyterminate(); }
   YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 353 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
   YY_BREAK
-#line 4830 "jsonpath_scan.c"
 
   case YY_END_OF_BUFFER:
     {
@@ -5917,7 +5851,6 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 353 "/home/esteban/src/postgresql-18.0/build_dir/../src/backend/utils/adt/jsonpath_scan.l"
 
 
 /* LCOV_EXCL_STOP */

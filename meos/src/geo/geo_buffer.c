@@ -2268,14 +2268,13 @@ buffer_collect_arc_arc_intersections(const Edge *e1, const Edge *e2,
   double dx = e2->cx - e1->cx;
   double dy = e2->cy - e1->cy;
   double d = hypot(dx, dy);
-  double r1 = e1->radius;
-  double r2 = e2->radius;
-
   /* Concentric circles.
    * Coincident arcs are not split here. Their common endpoints are
    * already existing boundary nodes and will be handled separately. */
   if (d < MEOS_GEOM_TOLERANCE)
   {
+    double r1 = e1->radius;
+    double r2 = e2->radius;
     if (fabs(r1 - r2) > MEOS_GEOM_TOLERANCE)
       return;
 
@@ -3560,12 +3559,10 @@ buffer_piece_interior_side(const Edge *piece, BufferLocator *geom)
   assert(piece); assert(geom);
   /* Start with a small displacement relative to the piece itself */
   double scale = 1.0;
-  double dx = piece->x2 - piece->x1;
-  double dy = piece->y2 - piece->y1;
   if (piece->etype == EDGE_POLYARC)
     scale = piece->radius;
   else
-    scale = hypot(dx, dy);
+    scale = hypot(piece->x2 - piece->x1, piece->y2 - piece->y1);
   if (scale <= MEOS_GEOM_TOLERANCE)
     scale = 1.0;
   double epsilon = fmax(MEOS_GEOM_TOLERANCE * 100.0, scale * 1.0e-8);
