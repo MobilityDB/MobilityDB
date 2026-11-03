@@ -32,10 +32,11 @@
  * @brief Topological operators for temporal JSONB
  */
 
+-- GENERATED-TEMPBOX-BEGIN tstzspan — tools/codegen/inherited/generate.py from templates/tempbox.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 /*****************************************************************************
- * Contains
+ * Temporal JSONB
  *****************************************************************************/
-
 
 CREATE FUNCTION spanContains(tstzspan, tjsonb)
   RETURNS boolean
@@ -75,9 +76,7 @@ CREATE OPERATOR #@> (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/*****************************************************************************
- * Contained
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION spanContained(tstzspan, tjsonb)
   RETURNS boolean
@@ -117,9 +116,7 @@ CREATE OPERATOR <@# (
   RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/*****************************************************************************
- * Overlaps
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION spanOverlaps(tstzspan, tjsonb)
   RETURNS boolean
@@ -154,14 +151,12 @@ CREATE OPERATOR && (
 );
 CREATE OPERATOR && (
   PROCEDURE = spanOverlaps,
-  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = &&,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/*****************************************************************************
- * Same
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION spanSame(tstzspan, tjsonb)
   RETURNS boolean
@@ -196,14 +191,12 @@ CREATE OPERATOR ~= (
 );
 CREATE OPERATOR ~= (
   PROCEDURE = spanSame,
-  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = ~=,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
 
-/*****************************************************************************
- * Adjacent
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION spanAdjacent(tstzspan, tjsonb)
   RETURNS boolean
@@ -238,9 +231,10 @@ CREATE OPERATOR -|- (
 );
 CREATE OPERATOR -|- (
   PROCEDURE = spanAdjacent,
-  LEFTARG    = tjsonb, RIGHTARG = tjsonb,
+  LEFTARG = tjsonb, RIGHTARG = tjsonb,
   COMMUTATOR = -|-,
-  RESTRICT   = temporal_sel, JOIN = temporal_joinsel
+  RESTRICT = temporal_sel, JOIN = temporal_joinsel
 );
+-- GENERATED-TEMPBOX-END tstzspan
 
 /*****************************************************************************/

@@ -204,7 +204,11 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   pair's axes and then their operators. `tstzspan` writes the 60 statements of
   `tbool` and `ttext` in `033_temporal_topops` and their 48 in
   `034_temporal_posops`, `tbox` the 210 of `tint`, `tbigint` and `tfloat` in
-  `033_temporal_topops` and their 240 in `034_temporal_posops`. A box type naming a
+  `033_temporal_topops` and their 240 in `034_temporal_posops`. A box bounding
+  temporal types whose SQL lives in several files states a list of stanzas:
+  `tstzspan` adds the 30 statements of `tjsonb` in `460_tjsonb_topops` and its
+  24 in `462_tjsonb_posops`, its `opnames` naming contains and contained `#@>`
+  and `<@#`, the operators `meos_catalog.h` gives JSON. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base

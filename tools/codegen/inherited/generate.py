@@ -815,16 +815,26 @@ def _tempbox_sql_markers(box: str):
     return begin, f"-- GENERATED-TEMPBOX-END {box}\n"
 
 
-def render_tempbox_sql(bt: dict, ops: list, pos: bool = False) -> str:
+def tempsql_stanzas(bt: dict) -> list:
+    """The `tempsql` stanzas of a box type: the one it states, or each of the list
+    it states when the box bounds temporal types whose SQL lives in several files,
+    as the timestamptz span bounds the alphanumeric types and the JSONB one."""
+    stanzas = bt.get("tempsql") or []
+    return stanzas if isinstance(stanzas, list) else [stanzas]
+
+
+def render_tempbox_sql(bt: dict, stanza: dict, ops: list, pos: bool = False) -> str:
     """The temporal-by-box SQL of a box type, as #render_boxbox_sql writes its
     box-by-box SQL: per temporal type its banner, then its blocks separated by a
     divider, each block the functions and then their operators. A topological block
     is an operation of boxtopops.yaml over the pairs of a group; a position block is
     a pair, over the operations of boxposops.yaml on the axes the pair lists after
-    its C suffix, as #_boxbox_groups pairs each group with its axes."""
+    its C suffix, as #_boxbox_groups pairs each group with its axes. The stanza's
+    `opnames` renames an operator symbol, in the operator and in the commutator
+    naming it."""
     banner, divider, fn_t, topo_t, pos_t = \
         read_template("tempbox.sql.tmpl").rstrip("\n").split("\n\n")
-    stanza = bt["tempsql"]
+    opnames = stanza.get("opnames", {})
     sqlclass = bt.get("sqlclass", bt["box"])
 
     def sub(t: str, vals: dict) -> str:
@@ -838,8 +848,9 @@ def render_tempbox_sql(bt: dict, ops: list, pos: bool = False) -> str:
             vals = {"FN": f"{sqlclass}{o['op']}",
                     "LEFT": names.get(left, left), "RIGHT": names.get(right, right),
                     "SYM": f"{o['op']}_{csuffix}", "SUPPORT": stanza["support"],
-                    "SQLOP": o["sqlop"],
-                    "COMMUTATOR": (f",\n  COMMUTATOR = {o['comm']}"
+                    "SQLOP": opnames.get(o["sqlop"], o["sqlop"]),
+                    "COMMUTATOR": (f",\n  COMMUTATOR = "
+                                   f"{opnames.get(o['comm'], o['comm'])}"
                                    if o.get("comm") else ""),
                     "SEL": stanza["sel"]}
             fns.append(sub(fn_t, vals))
@@ -5166,9 +5177,8 @@ def manifest_files(mf: dict) -> set:
                 out.add(entry["file"])
             if isinstance(entry, dict) and (entry.get("boxbox") or {}).get("sqlfile"):
                 out.add(entry["boxbox"]["sqlfile"])
-            for key in ("file", "posfile"):
-                if isinstance(entry, dict) and (entry.get("tempsql") or {}).get(key):
-                    out.add(entry["tempsql"][key])
+            for stanza in tempsql_stanzas(entry) if isinstance(entry, dict) else []:
+                out.update(stanza[key] for key in ("file", "posfile") if stanza.get(key))
     positions = mf.get("positions") or {}
     for sub in mf.get("subtypes") or []:
         if sub.get("reference"):
@@ -5857,22 +5867,19 @@ def main() -> int:
             print(f"spliced boxbox {bt['box']} -> {sqlpath}")
 
     for bt in mf.get("boxtypes", []):
-        if not bt.get("tempsql"):
-            continue
-        path = bt["tempsql"]["file"]
-        p = ROOT / path
-        if args.check:
-            print(f"would splice tempbox {bt['box']} -> {path}")
-            continue
-        rendered = render_tempbox_sql(bt, mf.get("boxtopops", []))
-        p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
-        print(f"spliced tempbox {bt['box']} -> {path}")
-        pospath = bt["tempsql"].get("posfile")
-        if pospath:
-            p = ROOT / pospath
-            rendered = render_tempbox_sql(bt, mf.get("boxposops", []), pos=True)
-            p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
-            print(f"spliced tempbox {bt['box']} -> {pospath}")
+        for stanza in tempsql_stanzas(bt):
+            for key, ops in (("file", "boxtopops"), ("posfile", "boxposops")):
+                path = stanza.get(key)
+                if not path:
+                    continue
+                p = ROOT / path
+                if args.check:
+                    print(f"would splice tempbox {bt['box']} -> {path}")
+                    continue
+                rendered = render_tempbox_sql(bt, stanza, mf.get(ops, []),
+                                              pos=(key == "posfile"))
+                p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
+                print(f"spliced tempbox {bt['box']} -> {path}")
 
     for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]

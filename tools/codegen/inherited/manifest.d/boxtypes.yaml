@@ -349,19 +349,29 @@ boxtypes:
     posreference: true
     # the SQL of the topological and position wrappers (templates/tempbox.sql.tmpl)
     # over each temporal type the span bounds alone, a group of pairs
-    # [left, right, C suffix, axes]
+    # [left, right, C suffix, axes]; the JSONB one in its own files, its contains
+    # and contained operators #@> and <@#, those of meos_catalog.h, since @> and
+    # <@ state the containment of JSONB values
     tempsql:
-      file:    mobilitydb/sql/temporal/033_temporal_topops.in.sql
-      posfile: mobilitydb/sql/temporal/034_temporal_posops.in.sql
-      sel:     temporal
-      support: temporal_supportfn
-      temps:
-        - {temp: tbool, desc: Temporal boolean}
-        - {temp: ttext, desc: Temporal text}
-      groups:
-        - [[tstzspan, "{T}", tstzspan_temporal, [t]],
-           ["{T}", tstzspan, temporal_tstzspan, [t]],
-           ["{T}", "{T}", temporal_temporal, [t]]]
+      - file:    mobilitydb/sql/temporal/033_temporal_topops.in.sql
+        posfile: mobilitydb/sql/temporal/034_temporal_posops.in.sql
+        sel:     temporal
+        support: temporal_supportfn
+        temps:
+          - {temp: tbool, desc: Temporal boolean}
+          - {temp: ttext, desc: Temporal text}
+        groups: &tstzspan_groups
+          - [[tstzspan, "{T}", tstzspan_temporal, [t]],
+             ["{T}", tstzspan, temporal_tstzspan, [t]],
+             ["{T}", "{T}", temporal_temporal, [t]]]
+      - file:    mobilitydb/sql/json/460_tjsonb_topops.in.sql
+        posfile: mobilitydb/sql/json/462_tjsonb_posops.in.sql
+        sel:     temporal
+        support: temporal_supportfn
+        opnames: {"@>": "#@>", "<@": "<@#"}
+        temps:
+          - {temp: tjsonb, desc: Temporal JSONB}
+        groups: *tstzspan_groups
 
   # tbox: a COMPOSITE box (value span × time). Its own directions dispatch on the
   # tbox primitives (overlaps_tbox_tbox, ...); the `valspan` sub-block adds the
