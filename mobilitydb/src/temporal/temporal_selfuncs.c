@@ -493,6 +493,17 @@ temporal_oper_sel_family(MeosOper oper UNUSED, MeosType ltype,
 /*****************************************************************************/
 
 /**
+ * @brief Return the product of the selectivity estimated so far and that of
+ * one more dimension, negative when either is negative, that is, when the
+ * column has no statistics for a dimension
+ */
+static Selectivity
+sel_dim_product(Selectivity selec, Selectivity dimselec)
+{
+  return (selec < 0.0 || dimselec < 0.0) ? -1.0 : selec * dimselec;
+}
+
+/**
  * @brief Return an estimate of the selectivity of the search period and the
  * operator for columns of temporal values
  * @details For the traditional comparison operators (<, <=, ...), we follow the
@@ -584,18 +595,21 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
   {
     /* Selectivity for the value dimension */
     if (span)
-      selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
+      selec = sel_dim_product(selec,
+        span_sel_hist(vardata, span, oper, VALUE_SEL));
     /* Selectivity for the time dimension */
     if (period)
       /* Convert the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
+      selec = sel_dim_product(selec,
+        span_sel_hist(vardata, (Span *) period, oper, TIME_SEL));
   }
   else if (oper == LEFT_OP || oper == RIGHT_OP ||
     oper == OVERLEFT_OP || oper == OVERRIGHT_OP)
   {
     /* Selectivity for the value dimension */
     if (span)
-      selec *= span_sel_hist(vardata, span, oper, VALUE_SEL);
+      selec = sel_dim_product(selec,
+        span_sel_hist(vardata, span, oper, VALUE_SEL));
   }
   else if (oper == BEFORE_OP || oper == AFTER_OP ||
     oper == OVERBEFORE_OP || oper == OVERAFTER_OP)
@@ -603,7 +617,8 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
     /* Selectivity for the value dimension */
     if (period)
       /* Convert the period as a span to call the span selectivity functions */
-      selec *= span_sel_hist(vardata, (Span *) period, oper, TIME_SEL);
+      selec = sel_dim_product(selec,
+        span_sel_hist(vardata, (Span *) period, oper, TIME_SEL));
   }
   else /* Unknown operator */
   {
@@ -674,6 +689,23 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
   }
 
   /*
+   * The same operator is estimated with the equality of the spans of each
+   * dimension, which reads the most common values of the column. Those of a
+   * column of boxes are boxes, which the equality of the spans cannot read,
+   * so a column that is not of a temporal type takes the default selectivity.
+   */
+  if (oper == SAME_OP && ! temporal_type(oid_meostype(vardata.vartype)))
+  {
+    ReleaseVariableStats(vardata);
+    if (tempfamily == TEMPORALTYPE)
+      return temporal_sel_default(oper);
+    else if (tempfamily == TNUMBERTYPE)
+      return tnumber_sel_default(oper);
+    else /* tempfamily == TSPATIALTYPE */
+      return tspatial_sel_default(oper);
+  }
+
+  /*
    * If var is on the right, commute the operator, so that we can assume the
    * var is on the left in what follows.
    */
@@ -701,8 +733,11 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     if (! temporal_const_to_tstzspan(other, &period))
       /* In the case of unknown constant */
       return temporal_sel_default(oper);
-    /* Compute the selectivity */
+    /* Compute the selectivity, the default one when the column has no
+     * statistics */
     selec = temporal_sel_tstzspan(&vardata, &period, oper);
+    if (selec < 0.0)
+      selec = temporal_sel_default(oper);
   }
   else if (tempfamily == TNUMBERTYPE)
   {
@@ -713,8 +748,11 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       /* In the case of unknown constant */
       return tnumber_sel_default(oper);
 
-    /* Compute the selectivity */
+    /* Compute the selectivity, the default one when the column has no
+     * statistics */
     selec = tnumber_sel_span_tstzspan(&vardata, s, p, oper);
+    if (selec < 0.0)
+      selec = tnumber_sel_default(oper);
     /* Free variables */
     if (s) pfree(s);
     if (p) pfree(p);
@@ -734,6 +772,9 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     /* Enable the multiplication of the selectivity of the spatial and time
      * dimensions since either may be missing */
     selec = 1.0;
+    /* Selectivity of a dimension, negative when the column has no statistics
+     * for it */
+    Selectivity dimselec;
 
     /*
      * Estimate selectivity for the spatial dimension
@@ -743,9 +784,10 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       /* PostGIS does not provide selectivity for the traditional
        * comparisons <, <=, >, >= */
       if (oper == LT_OP || oper == LE_OP || oper == GT_OP || oper == GE_OP)
-        selec *= tspatial_sel_default(oper);
+        dimselec = tspatial_sel_default(oper);
       else
-        selec *= geo_sel(&vardata, &box, oper);
+        dimselec = geo_sel(&vardata, &box, oper);
+      selec = sel_dim_product(selec, dimselec);
     }
     /*
      * Estimate selectivity for the time dimension
@@ -757,8 +799,12 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       memcpy(&period, &box.period, sizeof(Span));
 
       /* Compute the selectivity */
-      selec *= temporal_sel_tstzspan(&vardata, &period, oper);
+      dimselec = temporal_sel_tstzspan(&vardata, &period, oper);
+      selec = sel_dim_product(selec, dimselec);
     }
+    /* The default selectivity when the column has no statistics */
+    if (selec < 0.0)
+      selec = tspatial_sel_default(oper);
   }
 
   ReleaseVariableStats(vardata);

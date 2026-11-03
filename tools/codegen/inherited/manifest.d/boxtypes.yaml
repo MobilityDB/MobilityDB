@@ -308,7 +308,7 @@ boxtypes:
     posreference: true
     # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them
     boxbox:    {file: mobilitydb/src/pointcloud/tpcbox.c, group: mobilitydb_pointcloud_box,
-                sqlfile: mobilitydb/sql/pointcloud/410_tpcbox.in.sql,
+                sqlfile: mobilitydb/sql/pointcloud/410_tpcbox.in.sql, sel: tspatial,
                 support: span_supportfn}
     # nearest approach distance wrappers (templates/nadpairs.c.tmpl)
     nadgroup:  mobilitydb_pointcloud_temp

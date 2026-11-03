@@ -1336,6 +1336,7 @@ generated:
 | `topops` / `posops` (`subtypes:` families) | the `{SEL}` token of `templates/{topops,posops}.sql.tmpl`, resolved by `subtype_selectivity()` |
 | `compops` (`subtypes:` families) | `_compops_spec_from_subtype()`, which also picks the Eq support function |
 | `compops` (`compops_families:` entries) | each pair's `rest`/`join` keys |
+| box-by-box operators (`boxbox` stanzas of `boxtypes.yaml`) | each stanza's `sel` key: `tnumber` for `tbox`, `tspatial` for `stbox` and `tpcbox` |
 | B-tree comparisons | the `lit` blocks of `comparison_families:` / `hash_families:` |
 | the `coverage_exceptions.txt` files | written out, since no template governs them yet |
 

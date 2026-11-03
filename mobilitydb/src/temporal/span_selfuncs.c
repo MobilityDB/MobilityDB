@@ -1483,6 +1483,9 @@ span_joinsel(PlannerInfo *root, bool value, MeosOper oper, List *args,
 
   /* Estimate join selectivity */
   Selectivity selec = span_joinsel_hist(&vardata1, &vardata2, value, oper);
+  /* The default selectivity when a column has no histogram of spans */
+  if (selec < 0.0)
+    selec = span_joinsel_default(oper);
 
   ReleaseVariableStats(vardata1);
   ReleaseVariableStats(vardata2);
