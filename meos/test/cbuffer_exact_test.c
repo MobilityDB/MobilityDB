@@ -101,9 +101,11 @@ main(void)
         int sum = (r1 + r2) * (r1 + r2);
         int dif = (r1 - r2) * (r1 - r2);
 
-        /* Touching is the centres standing exactly the sum of the radii apart */
-        assert(touches_cbuffer_cbuffer(cb1, cb2) == (gap == sum ? 1 : 0));
-        if (gap == sum) tangent++;
+        /* Touching is the centres standing exactly the sum of the radii apart,
+         * the two not both points, which have no boundary */
+        bool touches = (gap == sum) && (r1 + r2 > 0);
+        assert(touches_cbuffer_cbuffer(cb1, cb2) == (touches ? 1 : 0));
+        if (touches) tangent++;
 
         /* Covering is the second disc lying inside or on the first, which asks
          * the centre distance against the difference of the radii, and only
