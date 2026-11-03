@@ -80,7 +80,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Reading of the error number by the lifting functions under an error handler that does not exit.  
+<p>Reading of the error number by the lifting functions and the nearest approach distances under an error handler that does not exit.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="lifting_8h_source.html">temporal/lifting.h</a>&quot;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
@@ -88,6 +88,9 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a2514324293a8bb6832183608179d40c1"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lifting__meos_8c_a2514324293a8bb6832183608179d40c1.html#a2514324293a8bb6832183608179d40c1">distance_result</a> (double <a class="el" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>, int last_errno)</td></tr>
+<tr class="memdesc:a2514324293a8bb6832183608179d40c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a distance read from a temporal distance, or -1.0 when the temporal distance raised an error.  <a href="lifting__meos_8c_a2514324293a8bb6832183608179d40c1.html#a2514324293a8bb6832183608179d40c1">More...</a><br /></td></tr>
+<tr class="separator:a2514324293a8bb6832183608179d40c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30b00b0c7ef6d28cd32a3c9db4eb81ec"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lifting__meos_8c_a30b00b0c7ef6d28cd32a3c9db4eb81ec.html#a30b00b0c7ef6d28cd32a3c9db4eb81ec">lifting_result</a> (void *<a class="el" href="nan__refusal__test_8c_a9c75e20020f82fd14cc4fba83e0b403b.html#a9c75e20020f82fd14cc4fba83e0b403b">result</a>, int last_errno)</td></tr>
 <tr class="memdesc:a30b00b0c7ef6d28cd32a3c9db4eb81ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the result of a lifted operation, or NULL when the function it applies raised an error for one of the values.  <a href="lifting__meos_8c_a30b00b0c7ef6d28cd32a3c9db4eb81ec.html#a30b00b0c7ef6d28cd32a3c9db4eb81ec">More...</a><br /></td></tr>
 <tr class="separator:a30b00b0c7ef6d28cd32a3c9db4eb81ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -96,7 +99,7 @@ Functions</h2></td></tr>
 <tr class="separator:a8a9abebb73577819bd3316906a185784"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >Reading of the error number by the lifting functions under an error handler that does not exit. </p>
+<div class="textblock"><p >Reading of the error number by the lifting functions and the nearest approach distances under an error handler that does not exit. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
