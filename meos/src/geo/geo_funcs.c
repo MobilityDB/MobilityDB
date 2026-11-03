@@ -5409,6 +5409,83 @@ point_motion_dwithin_only_at_end(const double *a0, const double *a1,
 }
 
 /**
+ * @brief Return 2, 1 or 0 where the gap between two discs moving linearly
+ * over a segment is zero at every fraction of it, at some fraction strictly
+ * inside it, or at none strictly inside it, writing in @p s0 and @p s1 its
+ * sign at the start and at the end, decided exactly
+ * @details The gap `|w(f)| - L(f)` has at every fraction the sign of the
+ * quadratic `q = A f^2 + 2 B f + C` of #point_motion_dwithin_coeffs at the
+ * distance 0, `L` being not negative. It is zero throughout where `A`, `B`
+ * and `C` are all zero, and otherwise at the roots of `q`, two at most. A
+ * root lies strictly inside where `q(0) = C` and `q(1) = A + 2 B + C` have
+ * opposite signs; where both are positive, where the vertex `-B / A` of a
+ * convex parabola lies inside and `A C - B^2` is not positive, as
+ * #point_motion_dwithin_period_exact reads a segment within at neither end;
+ * where `q(0) = 0`, where the other root `-2 B / A` lies inside; where
+ * `q(1) = 0`, where the other root `C / A` does. Where both are negative the
+ * gap, convex, is negative throughout. The filter
+ * #point_motion_dwithin_period_filter answers where doubles decide that the
+ * discs are never within the distance 0, the gap positive throughout
+ * @param[in] a0,a1,b0,b1,ndims,ra0,ra1,rb0,rb1 As for
+ * #point_motion_dwithin_period_exact
+ * @param[out] s0,s1 Sign of the gap at the start and at the end
+ * @pre The radii are finite and not negative
+ */
+int
+point_motion_gap_zero_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, int *s0, int *s1)
+{
+  assert(ndims == 2 || ndims == 3);
+  assert(ra0 >= 0.0 && ra1 >= 0.0 && rb0 >= 0.0 && rb1 >= 0.0);
+  if (point_motion_dwithin_period_filter(a0, a1, b0, b1, ndims, ra0, ra1,
+      rb0, rb1, 0.0) == 0)
+  {
+    *s0 = *s1 = 1;
+    return 0;
+  }
+  WideDyadic A, B, C, B2, t, q1, x, y;
+  point_motion_dwithin_coeffs(a0, a1, b0, b1, ndims, ra0, ra1, rb0, rb1, 0.0,
+    0.0, &A, &B, &C);
+  wide_dyadic_set_int(&t, 2);
+  wide_dyadic_mul(&B, &t, &B2);
+  wide_dyadic_add(&A, &B2, &q1);
+  wide_dyadic_accumulate(&q1, &C);
+  *s0 = C.sign;
+  *s1 = q1.sign;
+  if (A.sign == 0 && B.sign == 0 && C.sign == 0)
+    return 2;
+  if (C.sign * q1.sign < 0)
+    return 1;
+  if (C.sign == 0 && q1.sign == 0)
+    return 0;
+  if (C.sign == 0)
+    /* The other root -2 B / A, inside where -2 B and A + 2 B = q(1) have the
+     * sign of A */
+    return (A.sign != 0 && B2.sign == - A.sign && q1.sign == A.sign) ? 1 : 0;
+  if (q1.sign == 0)
+  {
+    /* The other root C / A, inside where C and A - C have the sign of A */
+    x = C;
+    x.sign = - x.sign;
+    wide_dyadic_add(&A, &x, &y);
+    return (A.sign != 0 && C.sign == A.sign && y.sign == A.sign) ? 1 : 0;
+  }
+  if (C.sign < 0)
+    return 0;
+  /* Positive at both ends: a root inside where the vertex of a convex
+   * parabola lies inside and the parabola reaches zero there */
+  wide_dyadic_add(&A, &B, &x);
+  if (A.sign <= 0 || B.sign >= 0 || x.sign <= 0)
+    return 0;
+  wide_dyadic_mul(&B, &B, &x);
+  x.sign = - x.sign;
+  wide_dyadic_mul(&A, &C, &y);
+  wide_dyadic_accumulate(&y, &x);
+  return (y.sign <= 0) ? 1 : 0;
+}
+
+/**
  * @brief Return the sign of the least, over a segment, of the gap between a
  * disc moving linearly and a point, less a distance `d + dlo`, exactly
  * @details The gap `|w(f)| - L(f)` and the quadratic `q(f)` of
