@@ -48,6 +48,7 @@
 #include <meos.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
+#include "temporal/bbox_index.h"
 #include "temporal/span.h"              /* PG_GETARG_SPAN_P */
 #include "temporal/stratnum.h"
 #include "temporal/type_util.h"
@@ -128,7 +129,17 @@ Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   bool result;
-  if (GIST_LEAF(entry))
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_TPCBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
     result = tpcbox_index_leaf_consistent(key, &query, strategy);
   else
     result = tpcbox_gist_inner_consistent(key, &query, strategy);
@@ -154,7 +165,8 @@ Tpcbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TPCBox *result = tpcbox_copy(DatumGetTpcboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    stbox_adjust(result, DatumGetTpcboxP(ent[i].key));
+    bbox_gist_adjust(T_TPCBOX, result, DatumGetTpcboxP(ent[i].key),
+      &stbox_adjust);
   PG_RETURN_TPCBOX_P(result);
 }
 
@@ -177,7 +189,8 @@ Tpcbox_gist_penalty(PG_FUNCTION_ARGS)
   float *result = (float *) PG_GETARG_POINTER(2);
   void *origbox = (TPCBox *) DatumGetPointer(origentry->key);
   void *newbox = (TPCBox *) DatumGetPointer(newentry->key);
-  *result = (float) stbox_penalty(origbox, newbox);
+  *result = (float) bbox_gist_penalty(T_TPCBOX, origbox, newbox,
+    &stbox_penalty);
   PG_RETURN_POINTER(result);
 }
 
@@ -223,7 +236,9 @@ Tpcbox_gist_same(PG_FUNCTION_ARGS)
   TPCBox *b2 = PG_GETARG_TPCBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = (b1->pcid == b2->pcid &&
+    /* A key over boxes of several structures bounds none of them */
+    *result = b1->flags == b2->flags && (MEOS_FLAGS_GET_PARTS(b1->flags) ||
+     (b1->pcid == b2->pcid && b1->srid == b2->srid &&
       FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
       FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
       FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
@@ -231,7 +246,7 @@ Tpcbox_gist_same(PG_FUNCTION_ARGS)
        * instant with a different inclusivity are NOT reported as the same */
       MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
       (! MEOS_FLAGS_GET_T(b1->flags) ||
-        span_eq(&b1->period, &b2->period)));
+        span_eq(&b1->period, &b2->period))));
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
@@ -358,11 +373,18 @@ Tpcbox_gist_distance(PG_FUNCTION_ARGS)
   }
   else
     PG_RETURN_FLOAT8(DBL_MAX);
+  /* A key over boxes of several structures bounds none of them, and is
+   * visited before every other one, since it may hold boxes on which the
+   * distance raises its error */
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  /* Where the distance raises its error on the boxes under the key, the
+   * entry is visited before every other one, and the operator applied to the
+   * rows of its leaves, which are rechecked, raises it */
+  if (! index_distance_is_valid(T_TPCBOX, key, &query))
+    PG_RETURN_FLOAT8(-get_float8_infinity());
 
-  double distance = nad_tpcbox_tpcbox(key, &query);
-  if (distance < 0)
-    PG_RETURN_FLOAT8(DBL_MAX);
-  PG_RETURN_FLOAT8(distance);
+  PG_RETURN_FLOAT8(nad_tpcbox_tpcbox(key, &query));
 }
 
 /*****************************************************************************

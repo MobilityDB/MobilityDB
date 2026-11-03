@@ -107,6 +107,7 @@
 #include <meos_internal.h>
 #include "temporal/span.h"
 #include "temporal/stratnum.h"
+#include "temporal/bbox_index.h"
 #include "temporal/tbox.h"
 #include "temporal/tbox_index.h"
 #include "temporal/type_util.h"
@@ -139,6 +140,87 @@ Tbox_spgist_config(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * Boxes of several structures
+ *****************************************************************************/
+
+/**
+ * @brief Choose the node of an inner tuple for boxes of several structures
+ * @details The quad-tree and the k-d tree partition boxes on the axes they
+ * carry, so the boxes of each structure, see #bbox_same_structure, are kept
+ * in a tree of their own. An inner tuple whose prefix carries the flag
+ * @p MEOS_FLAG_PARTS sends the boxes of the structure of its prefix to its
+ * first node and the others to its second one, without adding a level. A box
+ * reaching an inner tuple of another structure splits it: a tuple of the
+ * structure of the inner tuple is placed above it, the inner tuple becoming its
+ * first node
+ * @return True when the box is placed by this function
+ */
+static bool
+tbox_spgist_choose_parts(spgChooseIn *in, spgChooseOut *out)
+{
+  TBox *centroid = DatumGetTboxP(in->prefixDatum),
+    *box = DatumGetTboxP(in->leafDatum);
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+  {
+    out->resultType = spgMatchNode;
+    out->result.matchNode.nodeN =
+      bbox_same_structure(T_TBOX, centroid, box) ? 0 : 1;
+    out->result.matchNode.levelAdd = 0;
+    out->result.matchNode.restDatum = PointerGetDatum(box);
+    return true;
+  }
+  if (bbox_same_structure(T_TBOX, centroid, box))
+    return false;
+  TBox *parts = tbox_copy(centroid);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->resultType = spgSplitTuple;
+  out->result.splitTuple.prefixHasPrefix = true;
+  out->result.splitTuple.prefixPrefixDatum = PointerGetDatum(parts);
+  out->result.splitTuple.prefixNNodes = 2;
+  out->result.splitTuple.prefixNodeLabels = NULL;
+  out->result.splitTuple.childNodeN = 0;
+  out->result.splitTuple.postfixHasPrefix = true;
+  out->result.splitTuple.postfixPrefixDatum =
+    PointerGetDatum(tbox_copy(centroid));
+  return true;
+}
+
+/**
+ * @brief Split the boxes of a leaf page when they have several structures
+ * @details The boxes of the structure of the first one go to the first node of
+ * an inner tuple carrying the flag @p MEOS_FLAG_PARTS, the others to the
+ * second one, see #tbox_spgist_choose_parts
+ * @return True when the boxes have several structures and are split by this
+ * function
+ */
+static bool
+tbox_spgist_picksplit_parts(spgPickSplitIn *in, spgPickSplitOut *out)
+{
+  TBox *first = DatumGetTboxP(in->datums[0]);
+  int i;
+  for (i = 1; i < in->nTuples; i++)
+    if (! bbox_same_structure(T_TBOX, first, DatumGetTboxP(in->datums[i])))
+      break;
+  if (i == in->nTuples)
+    return false;
+  TBox *parts = tbox_copy(first);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->hasPrefix = true;
+  out->prefixDatum = PointerGetDatum(parts);
+  out->nNodes = 2;
+  out->nodeLabels = NULL;
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  for (i = 0; i < in->nTuples; i++)
+  {
+    out->leafTupleDatums[i] = in->datums[i];
+    out->mapTuplesToNodes[i] = bbox_same_structure(T_TBOX, first,
+      DatumGetTboxP(in->datums[i])) ? 0 : 1;
+  }
+  return true;
+}
+
+/*****************************************************************************
  * SP-GiST choose function
  *****************************************************************************/
 
@@ -152,6 +234,8 @@ Tbox_quadtree_choose(PG_FUNCTION_ARGS)
 {
   spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  if (tbox_spgist_choose_parts(in, out))
+    PG_RETURN_VOID();
   TBox *centroid = DatumGetTboxP(in->prefixDatum),
     *box = DatumGetTboxP(in->leafDatum);
 
@@ -213,6 +297,8 @@ Tbox_kdtree_choose(PG_FUNCTION_ARGS)
   spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
   TBox *query = DatumGetTboxP(in->leafDatum), *centroid;
   assert(in->hasPrefix);
+  if (tbox_spgist_choose_parts(in, out))
+    PG_RETURN_VOID();
   centroid = DatumGetTboxP(in->prefixDatum);
   assert(in->nNodes == 2);
   out->resultType = spgMatchNode;
@@ -292,6 +378,8 @@ Tbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 {
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  if (tbox_spgist_picksplit_parts(in, out))
+    PG_RETURN_VOID();
   TBox *centroid;
   int median, i;
   Datum *lowXs = palloc(sizeof(Datum) * in->nTuples);
@@ -376,6 +464,8 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   int i;
+  if (tbox_spgist_picksplit_parts(in, out))
+    PG_RETURN_VOID();
 
   /* Sort the boxes and determine the centroid */
   SortedTbox *sorted = palloc(sizeof(SortedTbox) * in->nTuples);
@@ -430,6 +520,25 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * @brief Return the distance of a node of an SP-GiST index to an order by
+ * @details Where the distance raises its error on the boxes of the structure
+ * of the centroid, the node is visited before every other one, and the
+ * recheck of its leaf entries applies the operator to the rows, which raises
+ * it
+ * @param[in] orderby Box of the order by
+ * @param[in] centroid Centroid of the inner tuple
+ * @param[in] nodebox Box of the node
+ */
+static double
+tbox_spgist_node_distance(const TBox *orderby, const TBox *centroid,
+  const TboxNode *nodebox)
+{
+  if (! index_distance_is_valid(T_TBOX, centroid, orderby))
+    return -get_float8_infinity();
+  return distance_tbox_nodebox(orderby, nodebox);
+}
+
+/**
  * @brief Generic SP-GiST inner consistent function for temporal numbers
  */
 static Datum
@@ -445,6 +554,32 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /* Fetch the centroid of this node. */
   assert(in->hasPrefix);
   centroid = DatumGetTboxP(in->prefixDatum);
+
+  /* An inner tuple over boxes of several structures sends the search to both
+   * of its nodes, where the trees of the structures start without a traversal
+   * value, see #tbox_spgist_choose_parts */
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+  {
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+    out->levelAdds = palloc0(sizeof(int) * in->nNodes);
+    out->traversalValues = palloc0(sizeof(void *) * in->nNodes);
+    if (in->norderbys > 0)
+      out->distances = palloc(sizeof(double *) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+    {
+      out->nodeNumbers[i] = i;
+      if (in->norderbys > 0)
+      {
+        /* Either node may hold boxes on which the distance raises its
+         * error, so both are visited before every other one */
+        out->distances[i] = palloc(sizeof(double) * in->norderbys);
+        for (int j = 0; j < in->norderbys; j++)
+          out->distances[i][j] = -get_float8_infinity();
+      }
+    }
+    PG_RETURN_VOID();
+  }
 
   /*
    * We are saving the traversal value or initialize it an unbounded one, if
@@ -502,7 +637,8 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
           double *distances = palloc0(sizeof(double) * in->norderbys);
           out->distances[i] = distances;
           for (int j = 0; j < in->norderbys; j++)
-            distances[j] = distance_tbox_nodebox(&orderbys[j], nodebox);
+            distances[j] = tbox_spgist_node_distance(&orderbys[j],
+              centroid, nodebox);
         }
       }
 
@@ -515,16 +651,25 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
       elog(ERROR, "allTheSame should not occur for k-d trees");
   }
 
-  /* Transform the queries into bounding boxes. */
+  /* Transform the queries into bounding boxes. The boxes of the tree share
+   * the structure of the centroid: a query whose operator raises its error on
+   * them restricts no node, the recheck applying the operator to the rows,
+   * and any other query is compared on the axes they carry */
+  bool *raises = NULL;
   if (in->nkeys > 0)
   {
     queries = palloc0(sizeof(TBox) * in->nkeys);
+    raises = palloc(sizeof(bool) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
     {
       const ScanKeyData *scankey = &in->scankeys[i];
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
-      tnumber_spgist_get_tbox(value, type, &queries[i]);
+      TBox query;
+      tnumber_spgist_get_tbox(value, type, &query);
+      raises[i] = ! index_strategy_is_valid(T_TBOX, scankey->sk_strategy,
+        centroid, &query);
+      index_query_project(T_TBOX, &query, centroid, &queries[i]);
     }
   }
 
@@ -554,6 +699,8 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     bool flag = true;
     for (i = 0; i < in->nkeys; i++)
     {
+      if (raises[i])
+        continue;
       StrategyNumber strategy = in->scankeys[i].sk_strategy;
       switch (strategy)
       {
@@ -611,7 +758,8 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         double *distances = palloc(sizeof(double) * in->norderbys);
         out->distances[out->nNodes] = distances;
         for (i = 0; i < in->norderbys; i++)
-          distances[i] = distance_tbox_nodebox(&orderbys[i], &next_nodebox);
+          distances[i] = tbox_spgist_node_distance(&orderbys[i], centroid,
+            &next_nodebox);
       }
       out->nNodes++;
     }
@@ -621,7 +769,9 @@ tbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   MemoryContextSwitchTo(old_ctx);
 
   if (in->nkeys > 0)
-    pfree(queries);
+  {
+    pfree(queries); pfree(raises);
+  }
   if (in->norderbys > 0)
     pfree(orderbys);
 
@@ -686,6 +836,10 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     Datum value = scankey->sk_argument;
     MeosType type = oid_meostype(scankey->sk_subtype);
     tnumber_spgist_get_tbox(value, type, &box);
+    /* Where the operator raises its error on the box, the recheck applies it
+     * to the row */
+    if (! index_strategy_is_valid(T_TBOX, strategy, key, &box))
+      continue;
     result = tbox_index_leaf_consistent(key, &box, strategy);
     /* If any check is failed, we have found our answer. */
     if (! result)
@@ -705,13 +859,11 @@ Tbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
       tnumber_spgist_get_tbox(value, type, &box);
-      /* The kernel states its preconditions as assertions, and this scan
-       * reaches it with no MEOS function in between. An entry the order by
-       * cannot be measured against sorts after every measurable one */
-      if (! ensure_valid_tbox_tbox(&box, key) ||
-          ! ensure_has_X(T_TBOX, box.flags) ||
-          ! ensure_has_X(T_TBOX, key->flags))
-        distances[i] = DBL_MAX;
+      /* Where the distance raises its error on the key, the entry is
+       * visited before every other one, and the recheck applies the operator
+       * to the row, which raises it */
+      if (! index_distance_is_valid(T_TBOX, key, &box))
+        distances[i] = -get_float8_infinity();
       else
         distances[i] = distance_double(nad_tbox_tbox(&box, key),
           key->span.basetype);
