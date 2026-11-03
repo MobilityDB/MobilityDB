@@ -308,6 +308,17 @@ SELECT dwithin(geometry 'Linestring(0 0 0,2 0 0)',
     geometry 'Linestring(1 -1 3,1 1 3)', 2.9999999999999996),
   dwithin(geometry 'Linestring(-1 0 -2,1 0 2)',
     geometry 'Linestring(0 -1 4.9406564584124654e-324,0 1 4.9406564584124654e-324)', 0);
+SELECT dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.5857864376269046),
+  dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.585786437626905),
+  dwithin(geometry 'Point(3.0000000000000004 4)', geometry 'CircularString(5 0,3 4,0 5)', 0);
+SELECT dwithin(geometry 'Linestring(0 10,10 0)', geometry 'CircularString(5 0,3 4,0 5)', 2.071067811865475),
+  dwithin(geometry 'Linestring(0 10,10 0)', geometry 'CircularString(5 0,3 4,0 5)', 2.0710678118654755),
+  dwithin(geometry 'Linestring(0 0,10 10)', geometry 'CircularString(5 0,3 4,0 5)', 0);
+SELECT dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(5 10,7 6,10 5)', 4.14213562373095),
+  dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(5 10,7 6,10 5)', 4.142135623730951),
+  dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(0 0,4 3,0 6)', 0);
+SELECT dwithin(geometry 'Point(0 0)', geometry 'CurvePolygon(CircularString(1 0,-1 0,1 0))', 0),
+  dwithin(geometry 'Point(1.0000000000000002 0)', geometry 'CurvePolygon(CircularString(1 0,-1 0,1 0))', 0);
 
 -- The containment family has no 3D form, so a geometry with Z is refused
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');

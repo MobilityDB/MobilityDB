@@ -3913,6 +3913,45 @@ int main(void)
   assert(geom_dwithin3d(dz1, d2, 1.2) && geom_dwithin3d(d2, dz1, 1.2));
   free(f122); free(f230); free(fs1); free(fs2); free(ft1); free(ft2);
 
+  /* An arc of radius 5 about the origin in the first quadrant. A point inside
+   * the disk lies 5 - sqrt(2) from it, a segment on the far side 5 sqrt(2) - 5,
+   * another arc 10 sqrt(2) - 10 and an arc about the same centre exactly 4 */
+  GSERIALIZED *ac = geom_in("CircularString(5 0,3 4,0 5)", -1);
+  GSERIALIZED *ap = geom_in("Point(1 1)", -1);
+  GSERIALIZED *apn = geom_in("Point(3.0000000000000004 4)", -1);
+  GSERIALIZED *apo = geom_in("Point(3 4)", -1);
+  GSERIALIZED *as = geom_in("Linestring(0 10,10 0)", -1);
+  GSERIALIZED *asc = geom_in("Linestring(0 0,10 10)", -1);
+  GSERIALIZED *aa = geom_in("CircularString(5 10,7 6,10 5)", -1);
+  GSERIALIZED *ai = geom_in("CircularString(1 0,0.6 0.8,0 1)", -1);
+  GSERIALIZED *ax = geom_in("CircularString(0 0,4 3,0 6)", -1);
+  GSERIALIZED *ad = geom_in("CurvePolygon(CircularString(1 0,-1 0,1 0))", -1);
+  GSERIALIZED *ao = geom_in("Point(0 0)", -1);
+  GSERIALIZED *aq = geom_in("Point(1.0000000000000002 0)", -1);
+  GSERIALIZED *acc = geom_in("CompoundCurve(CircularString(5 0,3 4,0 5),(0 5,0 9))",
+    -1);
+  assert(ac && ap && apn && apo && as && asc && aa && ai && ax && ad && ao && aq &&
+    acc);
+  assert(! geom_dwithin2d(ap, ac, 3.5857864376269046));
+  assert(geom_dwithin2d(ap, ac, 3.585786437626905));
+  assert(geom_dwithin2d(acc, ap, 3.585786437626905));
+  assert(geom_dwithin2d(apo, ac, 0.0));
+  assert(! geom_dwithin2d(apn, ac, 0.0));
+  assert(! geom_dwithin2d(as, ac, 2.071067811865475));
+  assert(geom_dwithin2d(as, ac, 2.0710678118654755));
+  assert(geom_dwithin2d(asc, ac, 0.0));
+  assert(! geom_dwithin2d(ac, aa, 4.14213562373095));
+  assert(geom_dwithin2d(ac, aa, 4.142135623730951));
+  assert(! geom_dwithin2d(ac, ai, 3.9999999999999996));
+  assert(geom_dwithin2d(ac, ai, 4.0));
+  assert(geom_dwithin2d(ac, ax, 0.0));
+  /* Inside a curved polygon, and the least double outside its circle */
+  assert(geom_dwithin2d(ao, ad, 0.0));
+  assert(! geom_dwithin2d(aq, ad, 0.0));
+  assert(geom_dwithin2d(aq, ad, 2.220446049250313e-16));
+  free(ac); free(ap); free(apn); free(apo); free(as); free(asc); free(aa);
+  free(ai); free(ax); free(ad); free(ao); free(aq); free(acc);
+
   assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
   assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
   assert(geom_distance(dz1, dz2) == sqrt(26.0));
