@@ -797,11 +797,14 @@ def splice_boxbox_sql(filetext: str, box: str, rendered: str) -> str:
 
 # The SQL of the temporal-by-box wrappers of a box type: per temporal type of its
 # `tempsql` stanza, the functions of each topological operation over the operand
-# pairs of a group and then their operators, in a region of the stanza's `file`. A
-# group lists its pairs as [left, right, C suffix], `{T}` naming the temporal type
-# and `{SPAN}` the span of its base type; the wrappers of #render_boxops answer
+# pairs of a group and then their operators, in a region of the stanza's `file`,
+# and the functions of each pair over the position operations of its axes and then
+# their operators, in a region of its `posfile`. A group lists its pairs as
+# [left, right, C suffix, axes], `{T}` naming the temporal type and `{SPAN}` the
+# span of its base type; the wrappers of #render_boxops and #render_posops_c answer
 # them. Every function carries the stanza's `support` function and every operator
-# its `sel` selectivity and the commutator of its operation (boxtopops.yaml).
+# its `sel` selectivity and the commutator of its operation (boxtopops.yaml,
+# boxposops.yaml).
 def _tempbox_sql_markers(box: str):
     """BEGIN/END markers of a box type's temporal-by-box SQL, as
     #_boxbox_sql_markers marks its box-by-box SQL."""
@@ -812,11 +815,14 @@ def _tempbox_sql_markers(box: str):
     return begin, f"-- GENERATED-TEMPBOX-END {box}\n"
 
 
-def render_tempbox_sql(bt: dict, topops: list) -> str:
-    """The temporal-by-box SQL of a box type: per temporal type its banner, then per
-    topological operation and group of the stanza the functions over the group's
-    pairs and their operators, the blocks separated by a divider."""
-    banner, divider, fn_t, op_t = \
+def render_tempbox_sql(bt: dict, ops: list, pos: bool = False) -> str:
+    """The temporal-by-box SQL of a box type, as #render_boxbox_sql writes its
+    box-by-box SQL: per temporal type its banner, then its blocks separated by a
+    divider, each block the functions and then their operators. A topological block
+    is an operation of boxtopops.yaml over the pairs of a group; a position block is
+    a pair, over the operations of boxposops.yaml on the axes the pair lists after
+    its C suffix, as #_boxbox_groups pairs each group with its axes."""
+    banner, divider, fn_t, topo_t, pos_t = \
         read_template("tempbox.sql.tmpl").rstrip("\n").split("\n\n")
     stanza = bt["tempsql"]
     sqlclass = bt.get("sqlclass", bt["box"])
@@ -826,25 +832,30 @@ def render_tempbox_sql(bt: dict, topops: list) -> str:
             t = t.replace("{" + k + "}", v)
         return t
 
+    def block(names: dict, items: list) -> str:
+        fns, opers = [], []
+        for o, (left, right, csuffix) in items:
+            vals = {"FN": f"{sqlclass}{o['op']}",
+                    "LEFT": names.get(left, left), "RIGHT": names.get(right, right),
+                    "SYM": f"{o['op']}_{csuffix}", "SUPPORT": stanza["support"],
+                    "SQLOP": o["sqlop"],
+                    "COMMUTATOR": (f",\n  COMMUTATOR = {o['comm']}"
+                                   if o.get("comm") else ""),
+                    "SEL": stanza["sel"]}
+            fns.append(sub(fn_t, vals))
+            opers.append(sub(pos_t if pos else topo_t, vals))
+        return "\n".join(fns) + "\n\n" + "\n".join(opers)
+
     sections = []
     for temp in stanza["temps"]:
         names = {"{T}": temp["temp"], "{SPAN}": temp.get("span", "")}
-        blocks = []
-        for o in topops:
-            for group in stanza["groups"]:
-                fns, opers = [], []
-                for left, right, csuffix in group:
-                    vals = {"FN": f"{sqlclass}{o['op']}",
-                            "LEFT": names.get(left, left),
-                            "RIGHT": names.get(right, right),
-                            "SYM": f"{o['op']}_{csuffix}",
-                            "SUPPORT": stanza["support"], "SQLOP": o["sqlop"],
-                            "COMMUTATOR": (f",\n  COMMUTATOR = {o['comm']}"
-                                           if o.get("comm") else ""),
-                            "SEL": stanza["sel"]}
-                    fns.append(sub(fn_t, vals))
-                    opers.append(sub(op_t, vals))
-                blocks.append("\n".join(fns) + "\n\n" + "\n".join(opers))
+        if pos:
+            blocks = [block(names, [(o, pair[:3]) for o in ops
+                                    if o["axis"] in pair[3]])
+                      for group in stanza["groups"] for pair in group]
+        else:
+            blocks = [block(names, [(o, pair[:3]) for pair in group])
+                      for o in ops for group in stanza["groups"]]
         sections.append(sub(banner, {"DESC": temp["desc"]}) + "\n\n" +
                         f"\n\n{divider}\n\n".join(blocks))
     return "\n\n".join(sections) + "\n"
@@ -5155,8 +5166,9 @@ def manifest_files(mf: dict) -> set:
                 out.add(entry["file"])
             if isinstance(entry, dict) and (entry.get("boxbox") or {}).get("sqlfile"):
                 out.add(entry["boxbox"]["sqlfile"])
-            if isinstance(entry, dict) and (entry.get("tempsql") or {}).get("file"):
-                out.add(entry["tempsql"]["file"])
+            for key in ("file", "posfile"):
+                if isinstance(entry, dict) and (entry.get("tempsql") or {}).get(key):
+                    out.add(entry["tempsql"][key])
     positions = mf.get("positions") or {}
     for sub in mf.get("subtypes") or []:
         if sub.get("reference"):
@@ -5855,6 +5867,12 @@ def main() -> int:
         rendered = render_tempbox_sql(bt, mf.get("boxtopops", []))
         p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
         print(f"spliced tempbox {bt['box']} -> {path}")
+        pospath = bt["tempsql"].get("posfile")
+        if pospath:
+            p = ROOT / pospath
+            rendered = render_tempbox_sql(bt, mf.get("boxposops", []), pos=True)
+            p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
+            print(f"spliced tempbox {bt['box']} -> {pospath}")
 
     for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]
