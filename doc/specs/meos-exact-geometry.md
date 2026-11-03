@@ -211,9 +211,19 @@ distance with it, whatever double the exact distance rounds to.
 | `LINESTRING Z(0 0 0,2 0 0)`, `LINESTRING Z(1 -1 3,1 1 3)` | `3` | true | the two are nearest inside both, at a distance held by no end |
 | `LINESTRING Z(-1 0 -2,1 0 2)`, `LINESTRING Z(0 -1 5e-324,0 1 5e-324)` | `0` | false | the least double over the root of 5, which rounds to 0 |
 
-A polygon in three dimensions, or a geometry carrying an arc, compares the given
-distance with a distance in doubles, so the answer can differ from the exact one
-where the two lie within its rounding.
+A geometry carrying an arc is answered exactly in two dimensions, and the table
+holds whichever double the distance rounds to:
+
+| Geometries | Distance | Within | Why |
+|---|---|---|---|
+| `POINT(1 1)`, `CIRCULARSTRING(5 0,3 4,0 5)` | `3.585786437626905` | true | the least double over `5 - sqrt(2)`, the radius less the distance to the centre |
+| `POINT(1 1)`, `CIRCULARSTRING(5 0,3 4,0 5)` | `3.5857864376269046` | false | the double under it |
+| `POINT(3.0000000000000004 4)`, `CIRCULARSTRING(5 0,3 4,0 5)` | `0` | false | the least double off the circle |
+| `POINT(1.0000000000000002 0)`, `CURVEPOLYGON(CIRCULARSTRING(1 0,-1 0,1 0))` | `0` | false | the least double outside the disk |
+
+A polygon in three dimensions, or a geometry carrying an arc read in three, compares
+the given distance with a distance in doubles, so the answer can differ from the
+exact one where the two lie within its rounding.
 
 ### 6.3 Relationships
 

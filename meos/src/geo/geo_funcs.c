@@ -12189,6 +12189,611 @@ tower_on_segment(TowerCtx *ctx, const TowerPoint *p0, const TowerPoint *p1,
   return (s0 > 0 && s1 > 0) ? -1 : -2;
 }
 
+/*****************************************************************************
+ * The distance to an arc of a geometry, exactly
+ *
+ * The circle of an arc is held as the centre c / w taken from an origin, with
+ * w positive, and the square of its radius times w^2, each a polynomial in the
+ * coordinates; the two radii from the centre to the ends of the arc are A and
+ * B, times w. A distance to an arc is then the difference of square roots of
+ * such values, whose sign the tower reads (#tower_sign_k) through the tiers of
+ * #tower_pred_run, so that it holds for any finite coordinates.
+ *****************************************************************************/
+
+/* The circle of an arc, whose sweep runs counterclockwise from A to B */
+typedef struct
+{
+  TowerX cx, cy, w, r2, ax, ay, bx, by;
+  int sab;           /**< Sign of A x B, 0 for a half circle */
+} TowerArc;
+
+/* The circle of an arc as #TowerArc holds it. With a = S - M and b = E - M the
+ * centre is M + N / D, as #arcarc_centre_exact forms it, D = 2 a x b; the arc
+ * turns counterclockwise where a x b is negative */
+static void
+tower_arc_read(TowerCtx *ctx, const ExactArc *arc, double ox, double oy,
+  TowerArc *out)
+{
+  if (arc->half)
+  {
+    out->w = tx_val(ctx, 2.0);
+    out->cx = tx_add(ctx, tx_diff(ctx, arc->s[0], ox),
+      tx_diff(ctx, arc->e[0], ox));
+    out->cy = tx_add(ctx, tx_diff(ctx, arc->s[1], oy),
+      tx_diff(ctx, arc->e[1], oy));
+    out->ax = tx_diff(ctx, arc->s[0], arc->e[0]);
+    out->ay = tx_diff(ctx, arc->s[1], arc->e[1]);
+    out->bx = tx_diff(ctx, arc->e[0], arc->s[0]);
+    out->by = tx_diff(ctx, arc->e[1], arc->s[1]);
+    out->r2 = tx_add(ctx, tx_mul(ctx, out->ax, out->ax),
+      tx_mul(ctx, out->ay, out->ay));
+    out->sab = 0;
+    return;
+  }
+  TowerX ax = tx_diff(ctx, arc->s[0], arc->m[0]);
+  TowerX ay = tx_diff(ctx, arc->s[1], arc->m[1]);
+  TowerX bx = tx_diff(ctx, arc->e[0], arc->m[0]);
+  TowerX by = tx_diff(ctx, arc->e[1], arc->m[1]);
+  TowerX a2 = tx_add(ctx, tx_mul(ctx, ax, ax), tx_mul(ctx, ay, ay));
+  TowerX b2 = tx_add(ctx, tx_mul(ctx, bx, bx), tx_mul(ctx, by, by));
+  TowerX nx = tx_sub(ctx, tx_mul(ctx, a2, by), tx_mul(ctx, b2, ay));
+  TowerX ny = tx_sub(ctx, tx_mul(ctx, b2, ax), tx_mul(ctx, a2, bx));
+  TowerX d = tx_scale(ctx, tx_sub(ctx, tx_mul(ctx, ax, by),
+    tx_mul(ctx, ay, bx)), 2.0);
+  int sd = tx_sign(ctx, d);
+  /* With w = |D|, the sign carried through N */
+  double k = (sd < 0) ? -1.0 : 1.0;
+  nx = tx_scale(ctx, nx, k);
+  ny = tx_scale(ctx, ny, k);
+  out->w = tx_scale(ctx, d, k);
+  out->cx = tx_add(ctx, tx_mul(ctx, out->w, tx_diff(ctx, arc->m[0], ox)), nx);
+  out->cy = tx_add(ctx, tx_mul(ctx, out->w, tx_diff(ctx, arc->m[1], oy)), ny);
+  TowerX rax = tx_sub(ctx, tx_mul(ctx, out->w, ax), nx);
+  TowerX ray = tx_sub(ctx, tx_mul(ctx, out->w, ay), ny);
+  TowerX rbx = tx_sub(ctx, tx_mul(ctx, out->w, bx), nx);
+  TowerX rby = tx_sub(ctx, tx_mul(ctx, out->w, by), ny);
+  out->r2 = tx_add(ctx, tx_mul(ctx, rax, rax), tx_mul(ctx, ray, ray));
+  /* Clockwise the arc is the sweep from E to S */
+  out->ax = (sd < 0) ? rax : rbx;
+  out->ay = (sd < 0) ? ray : rby;
+  out->bx = (sd < 0) ? rbx : rax;
+  out->by = (sd < 0) ? rby : ray;
+  out->sab = tx_sign(ctx, tx_sub(ctx, tx_mul(ctx, out->ax, out->by),
+    tx_mul(ctx, out->ay, out->bx)));
+  return;
+}
+
+/* The tower of the n square roots of values */
+static void
+tower_of_roots(TowerCtx *ctx, Tower *t, const TowerX *h, int n)
+{
+  t->depth = n;
+  for (int i = 0; i < n; i++)
+  {
+    tower_set(ctx, h[i], i, t->h[i].c);
+    t->key[i] = NULL;
+  }
+  return;
+}
+
+/* Whether the direction u, a vector of k roots of a tower taken from the centre
+ * of an arc, points into the sweep of the arc, its two ends included */
+static bool
+tower_arc_holds(TowerCtx *ctx, const Tower *t, int k, const TowerArc *arc,
+  const TowerX *ux, const TowerX *uy)
+{
+  TowerX p[TOWER_SIZE], q[TOWER_SIZE], r[TOWER_SIZE];
+  tower_mulx_k(ctx, uy, arc->ax, k, p);
+  tower_mulx_k(ctx, ux, arc->ay, k, q);
+  tower_sub_k(ctx, p, q, k, r);
+  int s1 = tower_sign_k(ctx, t, r, k);
+  if (arc->sab == 0)
+    return s1 >= 0;
+  tower_mulx_k(ctx, ux, arc->by, k, p);
+  tower_mulx_k(ctx, uy, arc->bx, k, q);
+  tower_sub_k(ctx, p, q, k, r);
+  int s2 = tower_sign_k(ctx, t, r, k);
+  return (arc->sab > 0) ? (s1 >= 0 && s2 >= 0) : (s1 >= 0 || s2 >= 0);
+}
+
+/* As #tower_arc_holds for a direction with no root */
+static bool
+tower_arc_holds_xy(TowerCtx *ctx, const TowerArc *arc, TowerX ux, TowerX uy)
+{
+  Tower t;
+  t.depth = 0;
+  return tower_arc_holds(ctx, &t, 0, arc, &ux, &uy);
+}
+
+/* Whether x, the difference of the two sides of a distance of a witness, and
+ * its opposite, the two taking @p dist away, are both not positive */
+static bool
+tower_gap_within(TowerCtx *ctx, const Tower *t, const TowerX *x, TowerX dist)
+{
+  int k = t->depth;
+  TowerX p[TOWER_SIZE], q[TOWER_SIZE], neg[TOWER_SIZE];
+  tower_set(ctx, dist, k, q);
+  tower_sub_k(ctx, x, q, k, p);
+  if (tower_sign_k(ctx, t, p, k) > 0)
+    return false;
+  tower_scale_k(ctx, x, -1.0, k, neg);
+  tower_sub_k(ctx, neg, q, k, p);
+  return tower_sign_k(ctx, t, p, k) <= 0;
+}
+
+typedef struct
+{
+  const double *a, *b;   /**< A point, or the ends of a segment */
+  const ExactArc *p, *q; /**< One arc, or two */
+  double dist;
+} ArcWithinArg;
+
+/* Whether a point is within a distance of the circle of an arc at a point of
+ * the arc: the point of the circle nearest it lies on the radius through it,
+ * and with U = |P - C|^2 w^2, | sqrt(U) - sqrt(r^2 w^2) | is the distance
+ * times w */
+static int
+point_arc_within_pred(TowerCtx *ctx, const void *varg)
+{
+  const ArcWithinArg *o = varg;
+  TowerArc arc;
+  tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
+  TowerX ux = tx_scale(ctx, arc.cx, -1.0), uy = tx_scale(ctx, arc.cy, -1.0);
+  bool holds = tower_arc_holds_xy(ctx, &arc, ux, uy);
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  if (! holds)
+    return 0;
+  TowerX h[2] = {tx_add(ctx, tx_mul(ctx, ux, ux), tx_mul(ctx, uy, uy)), arc.r2};
+  Tower t;
+  tower_of_roots(ctx, &t, h, 2);
+  TowerX x[4] = {tx_val(ctx, 0.0), tx_val(ctx, 1.0), tx_val(ctx, -1.0),
+    tx_val(ctx, 0.0)};
+  bool within = tower_gap_within(ctx, &t, x,
+    tx_mul(ctx, tx_val(ctx, o->dist), arc.w));
+  return tower_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
+}
+
+/* The range of coordinates and radii where the squares and the products of a
+ * double evaluation neither overflow nor underflow */
+#define ARC_FILTER_MIN 0x1p-400
+#define ARC_FILTER_MAX 0x1p400
+
+/**
+ * @brief Set the circle of an arc in doubles, with a bound on its error, and a
+ * box holding the arc
+ * @details Measured from the middle point, as #emit_arc_edge forms it, the centre
+ * is N / D. With the two chords a and b from the middle, each term of N and D
+ * rounds by a few epsilon of its size, so that D holds to 8 epsilon of |a| |b| and
+ * N / D to 16 epsilon of |a| times |a| |b| / |D|. Where |a| |b| / |D| is at most
+ * 2^20 the centre so lies within 2^-27 of the radius, with what the sums add;
+ * otherwise, as outside #ARC_FILTER_MAX, nothing is read in doubles. The box
+ * holds the three points, and each extreme of the circle along an axis that
+ * lies, or may lie, on the side of the chord the arc lies on
+ * @param[in,out] arc Arc, its points set
+ * @param[out] box Least x, least y, greatest x, greatest y
+ */
+void
+exact_arc_bound(ExactArc *arc, double box[4])
+{
+  box[0] = fmin(arc->s[0], arc->e[0]);
+  box[1] = fmin(arc->s[1], arc->e[1]);
+  box[2] = fmax(arc->s[0], arc->e[0]);
+  box[3] = fmax(arc->s[1], arc->e[1]);
+  double big = fmax(fmax(fabs(arc->s[0]), fabs(arc->s[1])),
+    fmax(fabs(arc->e[0]), fabs(arc->e[1])));
+  double err = -1.0, side = -1.0;
+  arc->cx = arc->cy = arc->r = 0.0;
+  if (arc->half)
+  {
+    arc->cx = (arc->s[0] + arc->e[0]) / 2.0;
+    arc->cy = (arc->s[1] + arc->e[1]) / 2.0;
+    arc->r = hypot(arc->e[0] - arc->s[0], arc->e[1] - arc->s[1]) / 2.0;
+    err = 0x1p-50 * (big + arc->r);
+  }
+  else
+  {
+    box[0] = fmin(box[0], arc->m[0]);
+    box[1] = fmin(box[1], arc->m[1]);
+    box[2] = fmax(box[2], arc->m[0]);
+    box[3] = fmax(box[3], arc->m[1]);
+    big = fmax(big, fmax(fabs(arc->m[0]), fabs(arc->m[1])));
+    double ax = arc->s[0] - arc->m[0], ay = arc->s[1] - arc->m[1];
+    double bx = arc->e[0] - arc->m[0], by = arc->e[1] - arc->m[1];
+    double a2 = ax * ax + ay * ay, b2 = bx * bx + by * by;
+    double d = 2.0 * (ax * by - ay * bx);
+    if (big <= ARC_FILTER_MAX && fabs(d) * 0x1p20 >= sqrt(a2) * sqrt(b2) &&
+        d != 0.0)
+    {
+      arc->cx = arc->m[0] + (a2 * by - b2 * ay) / d;
+      arc->cy = arc->m[1] + (b2 * ax - a2 * bx) / d;
+      arc->r = sqrt((arc->s[0] - arc->cx) * (arc->s[0] - arc->cx) +
+        (arc->s[1] - arc->cy) * (arc->s[1] - arc->cy));
+      err = 0x1p-27 * arc->r + 0x1p-50 * (big + arc->r);
+      side = ((arc->e[0] - arc->s[0]) * (arc->m[1] - arc->s[1]) -
+        (arc->e[1] - arc->s[1]) * (arc->m[0] - arc->s[0]) > 0.0) ? 1.0 : -1.0;
+    }
+  }
+  if (! (big <= ARC_FILTER_MAX && arc->r >= ARC_FILTER_MIN &&
+         arc->r <= ARC_FILTER_MAX && err >= 0.0))
+  {
+    arc->err = -1.0;
+    box[0] = box[1] = - INFINITY;
+    box[2] = box[3] = INFINITY;
+    return;
+  }
+  arc->err = err;
+  double ex = arc->e[0] - arc->s[0], ey = arc->e[1] - arc->s[1];
+  /* Two chords' sizes of the error of the circle and of the side */
+  double unsure = 2.0 * err * (fabs(ex) + fabs(ey)) * (1.0 + 0x1p-40) +
+    0x1p-48 * (fabs(ex) + fabs(ey)) * (big + arc->r);
+  static const double dirs[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+  for (int i = 0; i < 4; i++)
+  {
+    double x = arc->cx + dirs[i][0] * arc->r, y = arc->cy + dirs[i][1] * arc->r;
+    double o = ex * (y - arc->s[1]) - ey * (x - arc->s[0]);
+    if (o * side >= - unsure)
+    {
+      box[0] = fmin(box[0], x);
+      box[1] = fmin(box[1], y);
+      box[2] = fmax(box[2], x);
+      box[3] = fmax(box[3], y);
+    }
+  }
+  double pad = 2.0 * err;
+  box[0] -= pad; box[1] -= pad; box[2] += pad; box[3] += pad;
+  return;
+}
+
+/* Whether a gap in doubles with a margin lies past a distance exactly */
+static inline bool
+arc_gap_past(double gap, double margin, double dist)
+{
+  return (gap - margin) * (1.0 - 0x1p-50) > dist;
+}
+
+/* Where a point stands against a distance of a segment in doubles, as
+ * #geom_dwithin_end reads it: 1 past it, -1 within it, 0 where it cannot tell */
+static int
+point_segm_within_filter(const double *p, const double *a, const double *b,
+  double dist)
+{
+  double big = fmax(fmax(fabs(p[0]), fabs(p[1])), fmax(fmax(fabs(a[0]),
+    fabs(a[1])), fmax(fabs(b[0]), fabs(b[1]))));
+  if (! (big >= ARC_FILTER_MIN && big <= ARC_FILTER_MAX))
+    return 0;
+  double v = sqrt(point_seg_dist2(p[0], p[1], a[0], a[1], b[0], b[1]));
+  double margin = 0x1p-40 * big;
+  if (arc_gap_past(v, margin, dist))
+    return 1;
+  return ((v + margin) * (1.0 + 0x1p-50) < dist) ? -1 : 0;
+}
+
+/* Whether a point is within a distance of a segment, exactly */
+static bool
+point_segm_within(const double *p, const double *a, const double *b, double dist)
+{
+  int f = point_segm_within_filter(p, a, b, dist);
+  return (f != 0) ? f < 0 :
+    point_segment_offset_sign(p, a, b, 2, dist) <= 0;
+}
+
+/**
+ * @brief Return true if a point is within a distance of an arc, exactly
+ * @param[in] p Point, two coordinates
+ * @param[in] arc Arc, whose three points do not lie on one line
+ * @param[in] dist Distance, not negative
+ */
+bool
+point_arc_within_exact(const double *p, const ExactArc *arc, double dist)
+{
+  /* Past the distance from the circle, in doubles */
+  if (arc->err >= 0.0 && fabs(p[0]) <= ARC_FILTER_MAX &&
+      fabs(p[1]) <= ARC_FILTER_MAX)
+  {
+    double gap = fabs(sqrt((p[0] - arc->cx) * (p[0] - arc->cx) +
+      (p[1] - arc->cy) * (p[1] - arc->cy)) - arc->r);
+    double margin = 2.0 * arc->err + 0x1p-48 * (fabs(p[0]) + fabs(p[1]) +
+      fabs(arc->cx) + fabs(arc->cy) + arc->r);
+    if (arc_gap_past(gap, margin, dist))
+      return false;
+  }
+  if (point_segm_within(p, arc->s, arc->s, dist) ||
+      point_segm_within(p, arc->e, arc->e, dist))
+    return true;
+  ArcWithinArg arg = {p, NULL, arc, NULL, dist};
+  return tower_pred_run(point_arc_within_pred, &arg) == 1;
+}
+
+/* Whether a segment A B and an arc meet, or lie within a distance at points
+ * inside both. With the origin at A, v = B - A and L = |v|^2, a point of the
+ * segment at t lies on the circle where (t w L - c . v)^2 = (c . v)^2 -
+ * L (|c|^2 - r^2 w^2) = E, so that t w L = c . v + sigma sqrt(E), and the radius
+ * to it is (t w L) v - L c, times positive factors. Inside both, the foot of the
+ * centre on the segment and the point of the circle on the radius through it
+ * are the only pair of a positive least distance: with X = c x v its distance
+ * is | |X| - sqrt(L) sqrt(r^2 w^2) | / (w sqrt(L)) */
+static int
+arcsegm_within_pred(TowerCtx *ctx, const void *varg)
+{
+  const ArcWithinArg *o = varg;
+  TowerArc arc;
+  tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
+  TowerX vx = tx_diff(ctx, o->b[0], o->a[0]);
+  TowerX vy = tx_diff(ctx, o->b[1], o->a[1]);
+  TowerX l = tx_add(ctx, tx_mul(ctx, vx, vx), tx_mul(ctx, vy, vy));
+  TowerX tn = tx_add(ctx, tx_mul(ctx, arc.cx, vx), tx_mul(ctx, arc.cy, vy));
+  TowerX wl = tx_mul(ctx, arc.w, l);
+  TowerX c2 = tx_sub(ctx, tx_add(ctx, tx_mul(ctx, arc.cx, arc.cx),
+    tx_mul(ctx, arc.cy, arc.cy)), arc.r2);
+  TowerX disc = tx_sub(ctx, tx_mul(ctx, tn, tn), tx_mul(ctx, l, c2));
+  if (tx_sign(ctx, disc) >= 0)
+  {
+    Tower t;
+    tower_of_roots(ctx, &t, &disc, 1);
+    TowerX lcx = tx_mul(ctx, l, arc.cx), lcy = tx_mul(ctx, l, arc.cy);
+    for (int i = 0; i < 2; i++)
+    {
+      double sigma = i ? 1.0 : -1.0;
+      TowerX lo[2] = {tn, tx_val(ctx, sigma)};
+      TowerX hi[2] = {tx_sub(ctx, wl, tn), tx_val(ctx, - sigma)};
+      if (tower_sign_k(ctx, &t, lo, 1) < 0 || tower_sign_k(ctx, &t, hi, 1) < 0)
+        continue;
+      TowerX ux[2] = {tx_sub(ctx, tx_mul(ctx, tn, vx), lcx),
+        tx_scale(ctx, vx, sigma)};
+      TowerX uy[2] = {tx_sub(ctx, tx_mul(ctx, tn, vy), lcy),
+        tx_scale(ctx, vy, sigma)};
+      if (tower_arc_holds(ctx, &t, 1, &arc, ux, uy))
+        return tower_ctx_unsafe(ctx) ? 2 : 1;
+    }
+  }
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  TowerX x = tx_sub(ctx, tx_mul(ctx, arc.cx, vy), tx_mul(ctx, arc.cy, vx));
+  int sx = tx_sign(ctx, x);
+  if (sx == 0 || tx_sign(ctx, tn) <= 0 ||
+      tx_sign(ctx, tx_sub(ctx, wl, tn)) <= 0)
+    return tower_ctx_unsafe(ctx) ? 2 : 0;
+  double k = (double) sx;
+  /* From the centre to the line, the quarter turn of v on the side of X */
+  if (! tower_arc_holds_xy(ctx, &arc, tx_scale(ctx, vy, - k),
+      tx_scale(ctx, vx, k)))
+    return tower_ctx_unsafe(ctx) ? 2 : 0;
+  TowerX h[2] = {l, arc.r2};
+  Tower t;
+  tower_of_roots(ctx, &t, h, 2);
+  /* | |X| - sqrt(L) sqrt(R) | against the distance times w sqrt(L), which
+   * #tower_gap_within reads as a value of no root: each side is taken over
+   * sqrt(L) by keeping the root in the coefficients */
+  TowerX dw = tx_mul(ctx, tx_val(ctx, o->dist), arc.w);
+  TowerX p1[4] = {tx_scale(ctx, x, k), tx_scale(ctx, dw, -1.0),
+    tx_val(ctx, 0.0), tx_val(ctx, -1.0)};
+  TowerX p2[4] = {tx_scale(ctx, x, - k), tx_scale(ctx, dw, -1.0),
+    tx_val(ctx, 0.0), tx_val(ctx, 1.0)};
+  bool within = tower_sign_k(ctx, &t, p1, 2) <= 0 &&
+    tower_sign_k(ctx, &t, p2, 2) <= 0;
+  return tower_ctx_unsafe(ctx) ? 2 : (within ? 1 : 0);
+}
+
+/**
+ * @brief Return true if a segment is within a distance of an arc, exactly
+ * @details Their least distance, where it is not 0, has an end of one of them
+ * at one of its points (#point_arc_within_exact,
+ * #point_segment_offset_sign), or else the two points lie inside both
+ * @param[in] a,b Ends of the segment, distinct, two coordinates each
+ * @param[in] arc Arc, whose three points do not lie on one line
+ * @param[in] dist Distance, not negative
+ */
+bool
+arcsegm_within_exact(const double *a, const double *b, const ExactArc *arc,
+  double dist)
+{
+  /* The segment lies in the ring of radii from its nearest and furthest points
+   * to the centre, in doubles */
+  double big = fmax(fmax(fabs(a[0]), fabs(a[1])), fmax(fabs(b[0]), fabs(b[1])));
+  if (arc->err >= 0.0 && big <= ARC_FILTER_MAX)
+  {
+    double dax = a[0] - arc->cx, day = a[1] - arc->cy;
+    double dbx = b[0] - arc->cx, dby = b[1] - arc->cy;
+    double closest = sqrt(point_seg_dist2(arc->cx, arc->cy, a[0], a[1], b[0], b[1]));
+    double furthest = sqrt(fmax(dax * dax + day * day, dbx * dbx + dby * dby));
+    double gap = fmax(closest - arc->r, arc->r - furthest);
+    double margin = 2.0 * arc->err + 0x1p-40 * (big + fabs(arc->cx) +
+      fabs(arc->cy) + arc->r);
+    if (arc_gap_past(gap, margin, dist))
+      return false;
+  }
+  if (point_segm_within(arc->s, a, b, dist) ||
+      point_segm_within(arc->e, a, b, dist) ||
+      point_arc_within_exact(a, arc, dist) ||
+      point_arc_within_exact(b, arc, dist))
+    return true;
+  ArcWithinArg arg = {a, b, arc, NULL, dist};
+  return tower_pred_run(arcsegm_within_pred, &arg) == 1;
+}
+
+/* Whether two arcs of distinct circles meet, or lie within a distance at points
+ * inside both. In the terms of #arcarc_meet_exact, with d = L (C2 - C1), Q =
+ * |d|^2 and R1, R2 the squares of the radii times L^2, the meetings lie along
+ * the radii G d + sigma sqrt(H) rot(d) of the first circle and (G - 2 Q) d +
+ * sigma sqrt(H) rot(d) of the second, both over a positive factor. Inside both,
+ * the points of a positive least distance lie on the line of the centres: on
+ * facing sides for two circles apart, on the same side for one inside the
+ * other. The distance times L is | sqrt(Q) + s1 sqrt(R1) + s2 sqrt(R2) | */
+static int
+arcarc_within_pred(TowerCtx *ctx, const void *varg)
+{
+  const ArcWithinArg *o = varg;
+  TowerArc c1, c2;
+  double ox = o->p->s[0], oy = o->p->s[1];
+  tower_arc_read(ctx, o->p, ox, oy, &c1);
+  tower_arc_read(ctx, o->q, ox, oy, &c2);
+  TowerX l = tx_mul(ctx, c1.w, c2.w);
+  TowerX dx = tx_sub(ctx, tx_mul(ctx, c1.w, c2.cx), tx_mul(ctx, c2.w, c1.cx));
+  TowerX dy = tx_sub(ctx, tx_mul(ctx, c1.w, c2.cy), tx_mul(ctx, c2.w, c1.cy));
+  TowerX qq = tx_add(ctx, tx_mul(ctx, dx, dx), tx_mul(ctx, dy, dy));
+  /* One centre: the ends of the arcs decide */
+  if (tx_sign(ctx, qq) == 0)
+    return tower_ctx_unsafe(ctx) ? 2 : 0;
+  TowerX r1 = tx_mul(ctx, c1.r2, tx_mul(ctx, c2.w, c2.w));
+  TowerX r2 = tx_mul(ctx, c2.r2, tx_mul(ctx, c1.w, c1.w));
+  TowerX g = tx_sub(ctx, tx_add(ctx, qq, r1), r2);
+  TowerX hh = tx_sub(ctx, tx_scale(ctx, tx_mul(ctx, r1, qq), 4.0),
+    tx_mul(ctx, g, g));
+  if (tx_sign(ctx, hh) >= 0)
+  {
+    Tower t;
+    tower_of_roots(ctx, &t, &hh, 1);
+    TowerX g2 = tx_sub(ctx, g, tx_scale(ctx, qq, 2.0));
+    for (int i = 0; i < 2; i++)
+    {
+      double sigma = i ? 1.0 : -1.0;
+      TowerX rx = tx_scale(ctx, dy, - sigma), ry = tx_scale(ctx, dx, sigma);
+      TowerX u1x[2] = {tx_mul(ctx, g, dx), rx}, u1y[2] = {tx_mul(ctx, g, dy), ry};
+      TowerX u2x[2] = {tx_mul(ctx, g2, dx), rx},
+        u2y[2] = {tx_mul(ctx, g2, dy), ry};
+      if (tower_arc_holds(ctx, &t, 1, &c1, u1x, u1y) &&
+          tower_arc_holds(ctx, &t, 1, &c2, u2x, u2y))
+        return tower_ctx_unsafe(ctx) ? 2 : 1;
+    }
+  }
+  if (tower_ctx_unsafe(ctx))
+    return 2;
+  /* The sides of the two points along d, and the signs of the two radii */
+  static const double sides[3][4] = {{1, -1, -1, -1}, {1, 1, -1, 1},
+    {-1, -1, 1, -1}};
+  TowerX h[3] = {qq, r1, r2};
+  Tower t;
+  tower_of_roots(ctx, &t, h, 3);
+  TowerX dl = tx_mul(ctx, tx_val(ctx, o->dist), l);
+  for (int i = 0; i < 3; i++)
+  {
+    const double *c = sides[i];
+    if (! tower_arc_holds_xy(ctx, &c1, tx_scale(ctx, dx, c[0]),
+          tx_scale(ctx, dy, c[0])) ||
+        ! tower_arc_holds_xy(ctx, &c2, tx_scale(ctx, dx, c[1]),
+          tx_scale(ctx, dy, c[1])))
+      continue;
+    TowerX x[8];
+    tower_set(ctx, tx_val(ctx, 0.0), 3, x);
+    x[1] = tx_val(ctx, 1.0);
+    x[2] = tx_val(ctx, c[2]);
+    x[4] = tx_val(ctx, c[3]);
+    if (tower_gap_within(ctx, &t, x, dl))
+      return tower_ctx_unsafe(ctx) ? 2 : 1;
+  }
+  return tower_ctx_unsafe(ctx) ? 2 : 0;
+}
+
+/**
+ * @brief Return true if two arcs are within a distance, exactly
+ * @details Their least distance, where it is not 0, has an end of one of them at
+ * one of its points (#point_arc_within_exact), or else the two points lie inside
+ * both. Two arcs of one circle hold one end of one in the other where they
+ * overlap, and otherwise are nearest at their ends
+ * @param[in] p,q Arcs, the three points of each not on one line
+ * @param[in] dist Distance, not negative
+ */
+bool
+arcarc_within_exact(const ExactArc *p, const ExactArc *q, double dist)
+{
+  /* Two circles apart, or one inside the other, past the distance in doubles */
+  if (p->err >= 0.0 && q->err >= 0.0)
+  {
+    double dx = q->cx - p->cx, dy = q->cy - p->cy;
+    double c = sqrt(dx * dx + dy * dy);
+    double gap = fmax(c - p->r - q->r, fmax(p->r - c - q->r, q->r - c - p->r));
+    double margin = 2.0 * (p->err + q->err) + 0x1p-48 * (fabs(p->cx) +
+      fabs(p->cy) + fabs(q->cx) + fabs(q->cy) + p->r + q->r);
+    if (arc_gap_past(gap, margin, dist))
+      return false;
+  }
+  if (point_arc_within_exact(p->s, q, dist) ||
+      point_arc_within_exact(p->e, q, dist) ||
+      point_arc_within_exact(q->s, p, dist) ||
+      point_arc_within_exact(q->e, p, dist))
+    return true;
+  ArcWithinArg arg = {NULL, NULL, p, q, dist};
+  return tower_pred_run(arcarc_within_pred, &arg) == 1;
+}
+
+/* The side of the line A B a point moved off it lies on: the point stands
+ * for itself moved right by an infinitesimal, and up by a far smaller one, which
+ * leaves unchanged whether it lies inside a boundary it does not touch */
+static int
+point_line_side_moved(const double *p, const double *a, const double *b)
+{
+  int s = cross_product_sign(a[0], a[1], b[0], b[1], a[0], a[1], p[0], p[1]);
+  if (s != 0)
+    return s;
+  /* (B - A) x (right, up) */
+  if (a[1] != b[1])
+    return (b[1] > a[1]) ? -1 : 1;
+  return (b[0] > a[0]) ? 1 : -1;
+}
+
+/**
+ * @brief Return true if the ray to the right of a point crosses a segment
+ * @details The point stands as #point_line_side_moved moves it, so that the
+ * crossings along a ring of segments and arcs tell whether it lies inside
+ * @param[in] p Point, not on the ring the segment belongs to
+ * @param[in] a,b Ends of the segment
+ */
+bool
+point_segm_ray_parity(const double *p, const double *a, const double *b)
+{
+  bool up = (b[1] > p[1]), was = (a[1] > p[1]);
+  if (up == was)
+    return false;
+  int s = point_line_side_moved(p, a, b);
+  return up ? s > 0 : s < 0;
+}
+
+/* The sign of the square of the distance from a point moved as
+ * #point_line_side_moved moves it to the centre of an arc, less the square of
+ * the radius, times w^2 */
+static int
+point_arc_circle_side_pred(TowerCtx *ctx, const void *varg)
+{
+  const ArcWithinArg *o = varg;
+  TowerArc arc;
+  tower_arc_read(ctx, o->p, o->a[0], o->a[1], &arc);
+  int s = tx_sign(ctx, tx_sub(ctx, tx_add(ctx, tx_mul(ctx, arc.cx, arc.cx),
+    tx_mul(ctx, arc.cy, arc.cy)), arc.r2));
+  if (s == 0)
+  {
+    /* Moved along the radius from the centre, whose first coordinates are
+     * those of - c */
+    s = - tx_sign(ctx, arc.cx);
+    if (s == 0)
+      s = - tx_sign(ctx, arc.cy);
+  }
+  return tower_ctx_unsafe(ctx) ? 2 : s;
+}
+
+/**
+ * @brief Return true if the ray to the right of a point crosses an arc an odd
+ * number of times
+ * @details The arc and its chord bound the part of the disk cut off on the side
+ * of the arc, which holds the point where the crossings of the ray with the
+ * arc and with the chord differ in parity
+ * @param[in] p Point, not on the ring the arc belongs to
+ * @param[in] arc Arc, whose three points do not lie on one line
+ */
+bool
+point_arc_ray_parity(const double *p, const ExactArc *arc)
+{
+  bool parity = point_segm_ray_parity(p, arc->s, arc->e);
+  /* A half circle runs counterclockwise on the right of its chord */
+  int side = arc->half ? -1 : cross_product_sign(arc->s[0], arc->s[1],
+    arc->e[0], arc->e[1], arc->s[0], arc->s[1], arc->m[0], arc->m[1]);
+  if (point_line_side_moved(p, arc->s, arc->e) != side)
+    return parity;
+  ArcWithinArg arg = {p, NULL, arc, NULL, 0.0};
+  return (tower_pred_run(point_arc_circle_side_pred, &arg) < 0) ? ! parity :
+    parity;
+}
+
 typedef struct
 {
   const Edge *p, *q;

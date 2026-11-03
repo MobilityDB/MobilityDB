@@ -3186,12 +3186,368 @@ geom_dwithin3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist
   return (nearest != dist) ? nearest < dist : within;
 }
 
+/** A point, a segment or an arc of a geometry #geom_curve_parts reads */
+typedef struct
+{
+  int npoints;       /**< 1 for a point, 2 for a segment, 3 for an arc */
+  double a[2], b[2]; /**< The point, or the ends of the segment */
+  ExactArc arc;      /**< The arc */
+  double box[4];     /**< A box holding it: least x, least y, greatest x and
+                          greatest y (#exact_arc_bound) */
+} GeomCurveEdge;
+
+/** A part of a geometry, the edges of a surface all of its rings */
+typedef struct
+{
+  uint32_t first;    /**< Its first edge */
+  uint32_t n;        /**< Number of its edges */
+  bool surface;      /**< Whether it holds the region its rings bound */
+} GeomCurvePart;
+
+/** The edges and the parts of a geometry */
+typedef struct
+{
+  GeomCurveEdge *edges;
+  uint32_t nedges, capedges;
+  GeomCurvePart *parts;
+  uint32_t nparts, capparts;
+} GeomCurveParts;
+
+/**
+ * @brief Add an edge to the parts of a geometry
+ */
+static GeomCurveEdge *
+geom_curve_edge_add(GeomCurveParts *gp, int npoints)
+{
+  if (gp->nedges == gp->capedges)
+  {
+    gp->capedges = gp->capedges ? 2 * gp->capedges : 32;
+    gp->edges = gp->edges ?
+      repalloc(gp->edges, sizeof(GeomCurveEdge) * gp->capedges) :
+      palloc(sizeof(GeomCurveEdge) * gp->capedges);
+  }
+  GeomCurveEdge *e = &gp->edges[gp->nedges++];
+  e->npoints = npoints;
+  return e;
+}
+
+/**
+ * @brief Add a segment to the parts of a geometry, a point where its ends are
+ * one
+ */
+static void
+geom_curve_add_seg(GeomCurveParts *gp, const POINT2D *a, const POINT2D *b)
+{
+  bool one = (a->x == b->x && a->y == b->y);
+  GeomCurveEdge *e = geom_curve_edge_add(gp, one ? 1 : 2);
+  e->a[0] = a->x; e->a[1] = a->y;
+  e->b[0] = b->x; e->b[1] = b->y;
+  e->box[0] = fmin(a->x, b->x); e->box[1] = fmin(a->y, b->y);
+  e->box[2] = fmax(a->x, b->x); e->box[3] = fmax(a->y, b->y);
+  return;
+}
+
+/**
+ * @brief Add a half circle to the parts of a geometry
+ */
+static void
+geom_curve_add_half(GeomCurveParts *gp, const POINT2D *a, const POINT2D *b)
+{
+  GeomCurveEdge *e = geom_curve_edge_add(gp, 3);
+  e->arc.half = true;
+  e->arc.s[0] = a->x; e->arc.s[1] = a->y;
+  e->arc.e[0] = b->x; e->arc.e[1] = b->y;
+  e->arc.m[0] = e->arc.m[1] = 0.0;
+  exact_arc_bound(&e->arc, e->box);
+  return;
+}
+
+/**
+ * @brief Add the edges of a point array to the parts of a geometry
+ * @details As #emit_arc_edge reads a circular string: three points returning to
+ * the first are a full circle on the diameter from the first to the second, and
+ * three on one line are the two segments between them
+ */
+static void
+geom_curve_add_points(GeomCurveParts *gp, const POINTARRAY *pa, bool arcs)
+{
+  if (pa->npoints == 1)
+  {
+    POINT2D p;
+    getPoint2d_p(pa, 0, &p);
+    geom_curve_add_seg(gp, &p, &p);
+    return;
+  }
+  for (uint32_t i = 0; i + (arcs ? 2 : 1) < pa->npoints; i += arcs ? 2 : 1)
+  {
+    POINT2D p, q, r;
+    getPoint2d_p(pa, i, &p);
+    getPoint2d_p(pa, i + 1, &q);
+    if (! arcs)
+    {
+      geom_curve_add_seg(gp, &p, &q);
+      continue;
+    }
+    getPoint2d_p(pa, i + 2, &r);
+    if (p.x == r.x && p.y == r.y)
+    {
+      if (p.x == q.x && p.y == q.y)
+        geom_curve_add_seg(gp, &p, &q);
+      else
+      {
+        geom_curve_add_half(gp, &p, &q);
+        geom_curve_add_half(gp, &q, &p);
+      }
+    }
+    else if (cross_product_sign(p.x, p.y, q.x, q.y, p.x, p.y, r.x, r.y) == 0)
+    {
+      geom_curve_add_seg(gp, &p, &q);
+      geom_curve_add_seg(gp, &q, &r);
+    }
+    else
+    {
+      GeomCurveEdge *e = geom_curve_edge_add(gp, 3);
+      e->arc.half = false;
+      e->arc.s[0] = p.x; e->arc.s[1] = p.y;
+      e->arc.m[0] = q.x; e->arc.m[1] = q.y;
+      e->arc.e[0] = r.x; e->arc.e[1] = r.y;
+      exact_arc_bound(&e->arc, e->box);
+    }
+  }
+  return;
+}
+
+/**
+ * @brief Add the edges of a curve or a ring to the parts of a geometry
+ * @return False for a type that is no curve
+ */
+static bool
+geom_curve_add_curve(GeomCurveParts *gp, const LWGEOM *curve)
+{
+  if (lwgeom_is_empty(curve))
+    return true;
+  switch (curve->type)
+  {
+    case LINETYPE:
+      geom_curve_add_points(gp, ((const LWLINE *) curve)->points, false);
+      return true;
+    case CIRCSTRINGTYPE:
+      geom_curve_add_points(gp, ((const LWCIRCSTRING *) curve)->points, true);
+      return true;
+    case COMPOUNDTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) curve;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (! geom_curve_add_curve(gp, coll->geoms[i]))
+          return false;
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
+/**
+ * @brief Read a geometry into its parts, the members of its collections
+ * @return False for a geometry holding a type that stays on liblwgeom: a
+ * triangle, a TIN, a polyhedral surface
+ */
+static bool
+geom_curve_parts(GeomCurveParts *gp, const LWGEOM *geom)
+{
+  if (lwgeom_is_empty(geom))
+    return true;
+  bool surface = false;
+  uint32_t first = gp->nedges;
+  switch (geom->type)
+  {
+    case POINTTYPE:
+      geom_curve_add_points(gp, ((const LWPOINT *) geom)->point, false);
+      break;
+    case LINETYPE:
+    case CIRCSTRINGTYPE:
+    case COMPOUNDTYPE:
+      if (! geom_curve_add_curve(gp, geom))
+        return false;
+      break;
+    case POLYGONTYPE:
+    {
+      const LWPOLY *poly = (const LWPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        geom_curve_add_points(gp, poly->rings[i], false);
+      surface = true;
+      break;
+    }
+    case CURVEPOLYTYPE:
+    {
+      const LWCURVEPOLY *poly = (const LWCURVEPOLY *) geom;
+      for (uint32_t i = 0; i < poly->nrings; i++)
+        if (! geom_curve_add_curve(gp, poly->rings[i]))
+          return false;
+      surface = true;
+      break;
+    }
+    case MULTIPOINTTYPE:
+    case MULTILINETYPE:
+    case MULTIPOLYGONTYPE:
+    case MULTICURVETYPE:
+    case MULTISURFACETYPE:
+    case COLLECTIONTYPE:
+    {
+      const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
+      for (uint32_t i = 0; i < coll->ngeoms; i++)
+        if (! geom_curve_parts(gp, coll->geoms[i]))
+          return false;
+      return true;
+    }
+    default:
+      return false;
+  }
+  if (gp->nparts == gp->capparts)
+  {
+    gp->capparts = gp->capparts ? 2 * gp->capparts : 8;
+    gp->parts = gp->parts ?
+      repalloc(gp->parts, sizeof(GeomCurvePart) * gp->capparts) :
+      palloc(sizeof(GeomCurvePart) * gp->capparts);
+  }
+  GeomCurvePart *part = &gp->parts[gp->nparts++];
+  part->first = first;
+  part->n = gp->nedges - first;
+  part->surface = surface;
+  return true;
+}
+
+/**
+ * @brief Return true if two edges of the parts of geometries are within a
+ * distance, exactly
+ */
+static bool
+geom_curve_edges_within(const GeomCurveEdge *e, const GeomCurveEdge *f,
+  double dist)
+{
+  if (e->npoints > f->npoints)
+  {
+    const GeomCurveEdge *t = e;
+    e = f;
+    f = t;
+  }
+  if (f->npoints == 3)
+  {
+    if (e->npoints == 3)
+      return arcarc_within_exact(&e->arc, &f->arc, dist);
+    return (e->npoints == 2) ?
+      arcsegm_within_exact(e->a, e->b, &f->arc, dist) :
+      point_arc_within_exact(e->a, &f->arc, dist);
+  }
+  if (e->npoints == 1)
+    return point_segment_offset_sign(e->a, f->a, (f->npoints == 2) ? f->b : f->a,
+      2, dist) <= 0;
+  return geom_dwithin_segs(e->a, e->b, f->a, f->b, 2, dist);
+}
+
+/**
+ * @brief Return the first point of an edge
+ */
+static inline const double *
+geom_curve_edge_first(const GeomCurveEdge *e)
+{
+  return (e->npoints == 3) ? e->arc.s : e->a;
+}
+
+/**
+ * @brief Return true if a point lies inside a surface whose boundary does not
+ * reach it: the crossings of a ray along every ring are odd
+ */
+static bool
+geom_curve_part_holds(const GeomCurveParts *gp, const GeomCurvePart *part,
+  const double *p)
+{
+  bool parity = false;
+  for (uint32_t i = 0; i < part->n; i++)
+  {
+    const GeomCurveEdge *e = &gp->edges[part->first + i];
+    if (e->npoints == 3)
+      parity ^= point_arc_ray_parity(p, &e->arc);
+    else if (e->npoints == 2)
+      parity ^= point_segm_ray_parity(p, e->a, e->b);
+  }
+  return parity;
+}
+
+/**
+ * @brief Return true if two geometries read into their parts are within a
+ * distance, exactly
+ * @details Where no edge of one is within the distance of an edge of the other,
+ * no part of one meets a part of the other, so a part of one lies inside a
+ * surface of the other exactly where its first point does
+ */
+static bool
+geom_curve_parts_within(const GeomCurveParts *g1, const GeomCurveParts *g2,
+  double dist)
+{
+  for (uint32_t i = 0; i < g1->nedges; i++)
+  {
+    const GeomCurveEdge *e = &g1->edges[i];
+    for (uint32_t j = 0; j < g2->nedges; j++)
+    {
+      const GeomCurveEdge *f = &g2->edges[j];
+      /* A gap along an axis above the distance in doubles lies above it
+       * exactly, since rounding is monotone (#geom_dwithin_segs) */
+      if (f->box[0] - e->box[2] > dist || e->box[0] - f->box[2] > dist ||
+          f->box[1] - e->box[3] > dist || e->box[1] - f->box[3] > dist)
+        continue;
+      if (geom_curve_edges_within(e, f, dist))
+        return true;
+    }
+  }
+  const GeomCurveParts *g[2] = {g1, g2};
+  for (int k = 0; k < 2; k++)
+    for (uint32_t i = 0; i < g[k]->nparts; i++)
+    {
+      const GeomCurvePart *pi = &g[k]->parts[i];
+      if (pi->n == 0)
+        continue;
+      const double *p = geom_curve_edge_first(&g[k]->edges[pi->first]);
+      for (uint32_t j = 0; j < g[1 - k]->nparts; j++)
+      {
+        const GeomCurvePart *pj = &g[1 - k]->parts[j];
+        if (pj->surface && geom_curve_part_holds(g[1 - k], pj, p))
+          return true;
+      }
+    }
+  return false;
+}
+
+/**
+ * @brief Answer whether two geometries carrying arcs are within a distance,
+ * exactly
+ * @param[in] geom1,geom2 Geometries, not empty
+ * @param[in] dist Distance, finite and not negative
+ * @param[out] result The answer
+ * @return False for a geometry holding a type #geom_curve_parts does not read
+ */
+static bool
+geom_dwithin_curves(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
+  bool *result)
+{
+  GeomCurveParts g1 = {0}, g2 = {0};
+  bool ok = geom_curve_parts(&g1, geom1) && geom_curve_parts(&g2, geom2);
+  if (ok)
+    *result = geom_curve_parts_within(&g1, &g2, dist);
+  if (g1.edges) pfree(g1.edges);
+  if (g1.parts) pfree(g1.parts);
+  if (g2.edges) pfree(g2.edges);
+  if (g2.parts) pfree(g2.parts);
+  return ok;
+}
+
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
  * @details Two geometries of straight edges are answered exactly: the answer
  * is that of their exact distance, whatever double that distance rounds to
- * (#geom_dwithin2d_exact)
+ * (#geom_dwithin2d_exact), and so are two geometries carrying arcs
+ * (#geom_dwithin_curves)
  * @param[in] gs1,gs2 Geometries
  * @param[in] dist Distance
  * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
@@ -3230,7 +3586,8 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   if (geom1 && geom2 && geom_distance_straight_type(geom1->type) &&
       geom_distance_straight_type(geom2->type))
     result = geom_dwithin2d_exact(geom1, geom2, dist);
-  else
+  else if (! geom1 || ! geom2 ||
+      ! geom_dwithin_curves(geom1, geom2, dist, &result))
   {
 #if ! MEOS
     /* A kept geometry is read in the context that keeps it, as a relationship
