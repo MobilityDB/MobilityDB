@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+# Index-tree axis (C constructor generator). The in-memory trees of MEOS are one
+# engine each, dispatching on the bounding box type: the R-tree of
+# meos/src/temporal/temporal_rtree.c and the space-partitioning tree (quad-tree or
+# k-d tree) of meos/src/temporal/temporal_sptree.c. The constructor of a tree for
+# a box type is the same for every box type, so each tree renders one constructor
+# per entry of `boxes` from its template into the region between its
+# GENERATED-INDEXTREES markers in `file`, the boxes in the order listed.
+# The details of a constructor's brief are the note of its box for the tree, then
+# the tree's `details`. A box lists its MeosType, the plural noun of its brief,
+# and optionally its doxygen group (meos_misc otherwise), the build flag guarding
+# it and its note per tree.
+indextrees:
+  trees:
+    - tree:     rtree
+      file:     meos/src/temporal/temporal_rtree.c
+      template: rtree_create.c.tmpl
+      details: >-
+        Pair with @ref rtree_insert / @ref rtree_insert_temporal to populate,
+        @ref rtree_search / @ref rtree_search_temporal to query.
+    - tree:     sptree
+      file:     meos/src/temporal/temporal_sptree.c
+      template: sptree_create.c.tmpl
+      details: >-
+        Pair with @ref sptree_insert / @ref sptree_insert_temporal to populate,
+        @ref sptree_search / @ref sptree_search_temporal to query.
+  boxes:
+    - {box: intspan,    meostype: T_INTSPAN,    noun: integer spans}
+    - {box: bigintspan, meostype: T_BIGINTSPAN, noun: big integer spans}
+    - {box: floatspan,  meostype: T_FLOATSPAN,  noun: float spans}
+    - {box: datespan,   meostype: T_DATESPAN,   noun: date spans}
+    - {box: tstzspan,   meostype: T_TSTZSPAN,   noun: timestamptz spans}
+    - {box: tbox,       meostype: T_TBOX,       noun: temporal boxes}
+    - {box: stbox,      meostype: T_STBOX,      noun: spatiotemporal boxes}
+    - box:      tpcbox
+      meostype: T_TPCBOX
+      noun:     point cloud boxes
+      ingroup:  meos_pointcloud_box
+      guard:    POINTCLOUD
+      notes:
+        sptree: >-
+          The boxes are projected to spatiotemporal boxes on entry, so the tree
+          reuses the spatiotemporal box partitioning unchanged.
