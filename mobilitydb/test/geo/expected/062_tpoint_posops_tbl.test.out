@@ -543,3 +543,56 @@ ORDER BY op, leftarg, rightarg;
 
 DROP TABLE test_posops;
 DROP TABLE
+CREATE FUNCTION test_estimated_rows(query text)
+RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE
+  plan json;
+BEGIN
+  EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
+  RETURN (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
+END;
+$$;
+CREATE FUNCTION
+DROP TABLE IF EXISTS tbl_tgeompoint_possel;
+NOTICE:  table "tbl_tgeompoint_possel" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tgeompoint_possel AS
+SELECT t1.k * 1000 + t2.k AS k, t1.temp
+FROM tbl_tgeompoint t1, generate_series(1, 100) t2(k);
+SELECT 10000
+ANALYZE tbl_tgeompoint_possel;
+ANALYZE
+SELECT op,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX XT(((30,30),(60,60)),[2001-04-01, 2001-08-01])')) AS box_xt,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX X((30,30),(60,60))')) AS box_x,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX T([2001-04-01, 2001-08-01])')) AS box_t
+FROM unnest(ARRAY['&&', '<<', '&<', '>>', '&>', '<<|', '&<|', '|>>', '|&>',
+  '<<#', '&<#', '#>>', '#&>']) WITH ORDINALITY AS t(op, n)
+ORDER BY n;
+ op  | box_xt | box_x | box_t 
+-----+--------+-------+-------
+ &&  |    383 |  1095 |  3499
+ <<  |   3169 |  3169 |  3333
+ &<  |   6752 |  6752 |  3333
+ >>  |   3395 |  3395 |  3333
+ &>  |   6894 |  6894 |  3333
+ <<| |   1823 |  1823 |  3333
+ &<| |   5436 |  5436 |  3333
+ |>> |   4577 |  4577 |  3333
+ |&> |   8301 |  8301 |  3333
+ <<# |   2446 |  3333 |  2446
+ &<# |   5945 |  3333 |  5945
+ #>> |   4055 |  3333 |  4055
+ #&> |   7552 |  3333 |  7552
+(13 rows)
+
+DROP TABLE tbl_tgeompoint_possel;
+DROP TABLE
+DROP FUNCTION test_estimated_rows(text);
+DROP FUNCTION
