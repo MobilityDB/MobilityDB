@@ -80,6 +80,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   integral, the averages and the interpolation of temporal numbers answer the results near the
   largest double, as the owner approved on 2026-11-01:
   branch `fix/meos-refuses-non-finite` rewrites `089206e021`, rewrites `340785dc65`, rewrites `51fa7d058d`, rewrites `526ac77a42`, rewrites `5df4db1f9c`, rewrites `7102fd6de2`, rewrites `a0cedabe63`, rewrites `cce310aca2`, rewrites `cfdd06dcb4`, rewrites `d2ccbae61a`, rewrites `d2ecc4070f`, rewrites `db003d84f1`, rewrites `e9c8b8f600`, rewrites `05aa7eb6be`, rewrites `297c4131bb` and rewrites `9c0caecd72`, the lines of those tests, messages and computations.
+  Every distance answers -1 where it raises an error and `DBL_MAX` stays the missing answer, as the owner ruled on 2026-11-02: branch `fix/error-values-outside-answers` rewrites `1f31e29092`, rewrites `1fa64600db`, rewrites `340785dc65`, rewrites `526ac77a42`, rewrites `5777307bcc`, rewrites `7102fd6de2`, rewrites `848427b169`, rewrites `982eeeafce` and rewrites `e9c8b8f600`, the error values of those functions, their tags and the assertions reading them.
 - **The value of a temporal value at a timestamptz** is written only when the temporal value
   holds the timestamp: the thirteen typed `*_value_at_timestamptz` that write their output when
   they return false take the form of `tposechain_value_at_timestamptz`, which returns false
