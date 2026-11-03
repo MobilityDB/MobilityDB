@@ -1,0 +1,16 @@
+/**
+ * @ingroup {INGROUP}
+ * @brief Create an in-memory space-partitioning index for {NOUN}
+{DETAILS}
+ * @param[in] kind Quad-tree or k-d tree
+ * @return SPTree initialized
+ * @errval NULL
+ */
+SPTree *
+sptree_create_{BOX}(SPTreeKind kind)
+{
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
+  return sptree_create({MEOSTYPE}, kind);
+}

@@ -229,6 +229,14 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   says it in `token:`, a side holding a `Datum` is `byval:`, and under
   `nadearth:` the temporal distance alone is followed by the procedure of its
   operator.
+  The in-memory trees of MEOS take their constructors from the `indextrees:`
+  axis (`manifest.d/indextrees.yaml`): each tree renders one constructor per
+  box type of `boxes` from its template into the region between its
+  `GENERATED-INDEXTREES-BEGIN/END` markers,
+  `templates/rtree_create.c.tmpl` the 8 `rtree_create_<box>(void)` of
+  `temporal_rtree.c` and `templates/sptree_create.c.tmpl` the 8
+  `sptree_create_<box>(SPTreeKind)` of `temporal_sptree.c`, over the five span
+  types, `tbox`, `stbox` and `tpcbox`, the last under `POINTCLOUD`.
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
@@ -258,6 +266,7 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | posops | `posops.sql.tmpl` | **GENERATED** |
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
+| indextrees (C) | `rtree_create.c.tmpl` + `sptree_create.c.tmpl` | **GENERATED** (the constructors of the in-memory trees, one per box type) |
 | gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the three templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
