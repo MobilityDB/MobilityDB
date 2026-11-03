@@ -569,6 +569,81 @@ tpoint_h3index_split(const Temporal *temp, int32 resolution, bool border_inc,
   return result;
 }
 
+/**
+ * @brief Return the H3 cells of an array of datums, freeing the array
+ */
+static H3Index *
+h3index_cells(Datum *datums, int count)
+{
+  H3Index *result = palloc(sizeof(H3Index) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetH3Index(datums[i]);
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_h3_latlng
+ * @brief Return the fragments of a temporal planar point split by the H3
+ * cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution H3 resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeompoint_h3index_split()
+ */
+Temporal **
+tgeompoint_h3index_split(const Temporal *temp, int32 resolution,
+  bool border_inc, H3Index **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_h3index_split(temp, resolution, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = h3index_cells(datum_cells, *count);
+  return result;
+}
+
+/**
+ * @ingroup meos_h3_latlng
+ * @brief Return the fragments of a temporal geodetic point split by the H3
+ * cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution H3 resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeogpoint_h3index_split()
+ */
+Temporal **
+tgeogpoint_h3index_split(const Temporal *temp, int32 resolution,
+  bool border_inc, H3Index **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_h3index_split(temp, resolution, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = h3index_cells(datum_cells, *count);
+  return result;
+}
+
 /*****************************************************************************
  * cellToPoint (geodetic output)
  *****************************************************************************/
