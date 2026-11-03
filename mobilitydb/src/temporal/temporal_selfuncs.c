@@ -724,6 +724,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       else /* tempfamily == TSPATIALTYPE */
         return tspatial_sel_default(oper);
     }
+    oper = oid_meosoper(operid, &ltype, &rtype);
   }
 
   /* Transform the constant into a bounding box and compute the selectivity */

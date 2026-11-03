@@ -1,0 +1,67 @@
+CREATE FUNCTION test_estimated_rows(query text)
+RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE
+  plan json;
+BEGIN
+  EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
+  RETURN (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
+END;
+$$;
+CREATE FUNCTION
+DROP TABLE IF EXISTS tbl_tfloat_possel;
+NOTICE:  table "tbl_tfloat_possel" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tfloat_possel AS
+SELECT t1.k * 1000 + t2.k AS k, t1.temp
+FROM tbl_tfloat t1, generate_series(1, 100) t2(k);
+SELECT 10000
+ANALYZE tbl_tfloat_possel;
+ANALYZE
+DROP TABLE IF EXISTS tbl_tbool_possel;
+NOTICE:  table "tbl_tbool_possel" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_tbool_possel AS
+SELECT t1.k * 1000 + t2.k AS k, t1.temp
+FROM tbl_tbool t1, generate_series(1, 100) t2(k);
+SELECT 10000
+ANALYZE tbl_tbool_possel;
+ANALYZE
+SELECT op, comm,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS var_op_const,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE tbox %L %s temp',
+    'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])', comm)) AS const_comm_var
+FROM (VALUES (1, '<<', '>>'), (2, '>>', '<<'), (3, '<<#', '#>>'),
+  (4, '#>>', '<<#')) AS t(n, op, comm)
+ORDER BY n;
+ op  | comm | var_op_const | const_comm_var 
+-----+------+--------------+----------------
+ <<  | >>   |          694 |            694
+ >>  | <<   |         1734 |           1734
+ <<# | #>>  |         3020 |           3020
+ #>> | <<#  |         4010 |           4010
+(4 rows)
+
+SELECT op, comm,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tbool_possel WHERE temp %s tstzspan %L', op,
+    '[2001-04-01, 2001-08-01]')) AS var_op_const,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tbool_possel WHERE tstzspan %L %s temp',
+    '[2001-04-01, 2001-08-01]', comm)) AS const_comm_var
+FROM (VALUES (1, '<<#', '#>>'), (2, '#>>', '<<#')) AS t(n, op, comm)
+ORDER BY n;
+ op  | comm | var_op_const | const_comm_var 
+-----+------+--------------+----------------
+ <<# | #>>  |         2885 |           2885
+ #>> | <<#  |         3669 |           3669
+(2 rows)
+
+DROP TABLE tbl_tbool_possel;
+DROP TABLE
+DROP TABLE tbl_tfloat_possel;
+DROP TABLE
+DROP FUNCTION test_estimated_rows(text);
+DROP FUNCTION
