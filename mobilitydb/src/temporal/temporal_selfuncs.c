@@ -504,6 +504,36 @@ sel_dim_product(Selectivity selec, Selectivity dimselec)
 }
 
 /**
+ * @brief Return true if the operator is a position operator of the space or
+ * value dimension
+ * @details The restriction estimate of #temporal_sel and the join estimate of
+ * #tspatial_joinsel_components read the dimension of an operator from it
+ */
+static bool
+space_position_oper(MeosOper oper)
+{
+  return (oper == LEFT_OP || oper == OVERLEFT_OP ||
+    oper == RIGHT_OP || oper == OVERRIGHT_OP ||
+    oper == BELOW_OP || oper == OVERBELOW_OP ||
+    oper == ABOVE_OP || oper == OVERABOVE_OP ||
+    oper == FRONT_OP || oper == OVERFRONT_OP ||
+    oper == BACK_OP || oper == OVERBACK_OP);
+}
+
+/**
+ * @brief Return true if the operator is a position operator of the time
+ * dimension
+ * @details The restriction estimate of #temporal_sel and the join estimate of
+ * #tspatial_joinsel_components read the dimension of an operator from it
+ */
+static bool
+time_position_oper(MeosOper oper)
+{
+  return (oper == BEFORE_OP || oper == OVERBEFORE_OP ||
+    oper == AFTER_OP || oper == OVERAFTER_OP);
+}
+
+/**
  * @brief Return an estimate of the selectivity of the search period and the
  * operator for columns of temporal values
  * @details For the traditional comparison operators (<, <=, ...), we follow the
@@ -606,19 +636,17 @@ tnumber_sel_span_tstzspan(VariableStatData *vardata, Span *span, Span *period,
   else if (oper == LEFT_OP || oper == RIGHT_OP ||
     oper == OVERLEFT_OP || oper == OVERRIGHT_OP)
   {
-    /* Selectivity for the value dimension */
-    if (span)
-      selec = sel_dim_product(selec,
-        span_sel_hist(vardata, span, oper, VALUE_SEL));
+    /* Selectivity for the value dimension, the default one when the
+     * constant lacks it */
+    selec = span ? span_sel_hist(vardata, span, oper, VALUE_SEL) : -1.0;
   }
   else if (oper == BEFORE_OP || oper == AFTER_OP ||
     oper == OVERBEFORE_OP || oper == OVERAFTER_OP)
   {
-    /* Selectivity for the value dimension */
-    if (period)
-      /* Convert the period as a span to call the span selectivity functions */
-      selec = sel_dim_product(selec,
-        span_sel_hist(vardata, (Span *) period, oper, TIME_SEL));
+    /* Selectivity for the time dimension, the default one when the
+     * constant lacks it */
+    selec = period ?
+      span_sel_hist(vardata, (Span *) period, oper, TIME_SEL) : -1.0;
   }
   else /* Unknown operator */
   {
@@ -776,11 +804,17 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     /* Selectivity of a dimension, negative when the column has no statistics
      * for it */
     Selectivity dimselec;
+    /* A position operator compares a single dimension, which the constant
+     * may lack */
+    bool space = MEOS_FLAGS_GET_X(box.flags) && ! time_position_oper(oper);
+    bool time = MEOS_FLAGS_GET_T(box.flags) && ! space_position_oper(oper);
+    if (! space && ! time)
+      selec = -1.0;
 
     /*
      * Estimate selectivity for the spatial dimension
      */
-    if (MEOS_FLAGS_GET_X(box.flags))
+    if (space)
     {
       /* PostGIS does not provide selectivity for the traditional
        * comparisons <, <=, >, >= */
@@ -793,7 +827,7 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
     /*
      * Estimate selectivity for the time dimension
      */
-    if (MEOS_FLAGS_GET_T(box.flags))
+    if (time)
     {
       /* Transform the STBox into a timestamptz span */
       Span period;
@@ -803,7 +837,8 @@ temporal_sel(PlannerInfo *root, Oid operid, List *args, int varRelid,
       dimselec = temporal_sel_tstzspan(&vardata, &period, oper);
       selec = sel_dim_product(selec, dimselec);
     }
-    /* The default selectivity when the column has no statistics */
+    /* The default selectivity when the column has no statistics or the
+     * constant lacks the dimension of the operator */
     if (selec < 0.0)
       selec = tspatial_sel_default(oper);
   }
@@ -931,21 +966,13 @@ tspatial_joinsel_components(MeosOper oper, MeosType oprleft,
   MeosType arg = tspatial_type(oprleft) ? oprright : oprleft;
 
   /* Determine the components */
-  if (spatial_basetype(arg) ||
-    oper == LEFT_OP || oper == OVERLEFT_OP ||
-    oper == RIGHT_OP || oper == OVERRIGHT_OP ||
-    oper == BELOW_OP || oper == OVERBELOW_OP ||
-    oper == ABOVE_OP || oper == OVERABOVE_OP ||
-    oper == FRONT_OP || oper == OVERFRONT_OP ||
-    oper == BACK_OP || oper == OVERBACK_OP ||
+  if (spatial_basetype(arg) || space_position_oper(oper) ||
     oper == ADJACENT_OP)
   {
     *space = true;
     *time = false;
   }
-  else if (time_type(arg) ||
-    oper == BEFORE_OP || oper == OVERBEFORE_OP ||
-    oper == AFTER_OP || oper == OVERAFTER_OP)
+  else if (time_type(arg) || time_position_oper(oper))
   {
     *space = false;
     *time = true;

@@ -509,3 +509,46 @@ ORDER BY op, leftarg, rightarg;
 DROP TABLE test_posops;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A position operator is estimated on the dimension it compares: a space
+-- position operator on the space of the box, a time position operator on its
+-- time, so a box of both dimensions estimates the rows of the box of that
+-- dimension alone, and a box without it the default selectivity of the
+-- operator.
+-------------------------------------------------------------------------------
+
+CREATE FUNCTION test_estimated_rows(query text)
+RETURNS bigint LANGUAGE plpgsql AS $$
+DECLARE
+  plan json;
+BEGIN
+  EXECUTE 'EXPLAIN (FORMAT JSON) ' || query INTO plan;
+  RETURN (plan -> 0 -> 'Plan' ->> 'Plan Rows')::bigint;
+END;
+$$;
+
+DROP TABLE IF EXISTS tbl_tgeompoint_possel;
+CREATE TABLE tbl_tgeompoint_possel AS
+SELECT t1.k * 1000 + t2.k AS k, t1.temp
+FROM tbl_tgeompoint t1, generate_series(1, 100) t2(k);
+ANALYZE tbl_tgeompoint_possel;
+
+SELECT op,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX XT(((30,30),(60,60)),[2001-04-01, 2001-08-01])')) AS box_xt,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX X((30,30),(60,60))')) AS box_x,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tgeompoint_possel WHERE temp %s stbox %L', op,
+    'STBOX T([2001-04-01, 2001-08-01])')) AS box_t
+FROM unnest(ARRAY['&&', '<<', '&<', '>>', '&>', '<<|', '&<|', '|>>', '|&>',
+  '<<#', '&<#', '#>>', '#&>']) WITH ORDINALITY AS t(op, n)
+ORDER BY n;
+
+DROP TABLE tbl_tgeompoint_possel;
+DROP FUNCTION test_estimated_rows(text);
+
+-------------------------------------------------------------------------------

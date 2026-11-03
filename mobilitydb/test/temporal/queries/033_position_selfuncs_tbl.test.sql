@@ -76,6 +76,24 @@ SELECT op, comm,
 FROM (VALUES (1, '<<#', '#>>'), (2, '#>>', '<<#')) AS t(n, op, comm)
 ORDER BY n;
 
+-- A position operator is estimated on the dimension it compares, so a box of
+-- both dimensions estimates the rows of the box of that dimension alone, and
+-- a box without it the default selectivity of the operator
+
+SELECT op,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS box_xt,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOXFLOAT X([30, 60])')) AS box_x,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOX T([2001-04-01, 2001-08-01])')) AS box_t
+FROM unnest(ARRAY['<<', '&<', '>>', '&>', '<<#', '&<#', '#>>', '#&>'])
+  WITH ORDINALITY AS t(op, n)
+ORDER BY n;
+
 DROP TABLE tbl_tbool_possel;
 DROP TABLE tbl_tfloat_possel;
 DROP FUNCTION test_estimated_rows(text);
