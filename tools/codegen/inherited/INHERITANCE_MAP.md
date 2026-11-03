@@ -194,7 +194,17 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   operators over them are a region of the stanza's `sqlfile`
   (`templates/boxbox.sql.tmpl`): the 85 of `021_tbox`, the 21 of `051_stbox` and
   the 21 of `410_tpcbox`, a number span side declared over `intspan`,
-  `bigintspan` and `floatspan`. A box type naming a
+  `bigintspan` and `floatspan`. A box type with a `tempsql:` stanza has the SQL of
+  its temporal-by-box topological wrappers in a region of the stanza's `file`
+  (`templates/tempbox.sql.tmpl`): per temporal type of `temps:`, per operation of
+  `boxtopops.yaml` and per group of `groups:`, the functions over the group's
+  `[left, right, C suffix, axes]` pairs and then their operators; and the SQL of
+  its position wrappers in a region of its `posfile`: per temporal type and per
+  pair, the functions of the position operations of `boxposops.yaml` on the
+  pair's axes and then their operators. `tstzspan` writes the 60 statements of
+  `tbool` and `ttext` in `033_temporal_topops` and their 48 in
+  `034_temporal_posops`, `tbox` the 210 of `tint`, `tbigint` and `tfloat` in
+  `033_temporal_topops` and their 240 in `034_temporal_posops`. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
@@ -386,7 +396,7 @@ point, `eIntersects`/`eDwithin` through C wrappers with index support
 | Transformations | `temporal_` | ✓ **GEN** | `transformations.sql.tmpl` + `transformation_families`, **14 entries** all `reference: true` (same family set as Constructors) — shiftTime/scaleTime, setInterp, tprecision, tsample. ⛔ `tsample` and `tprecision` are NOT the same surface and the manifest is the record of which family carries which: **`tsample` 10** (temporal, cbuffer, h3, json, npoint, pose, posechain, quadbin, tpcpatch, tpcpoint) against **`tprecision` 7** (temporal, cbuffer, h3, pose, posechain, quadbin, rgeo). `tsample` SELECTS the value holding at a bin boundary, so it applies to every temporal type; `tprecision` SYNTHESIZES one value per bin as a time-weighted average, so it applies only where the value type carries such an average — `ensure_has_twavg_temptype()` in `meos/src/temporal/temporal_analytics.c` is the kernel's own list. A family in the first set and not the second is either a gap to close or an exception to argue; the per-type table sits under §4b |
 | Modifications | `temporal_` | ✓ **GEN** | `modifications.sql.tmpl` + `modification_families`, **14 entries** all `reference: true` (same family set) — appendInstant, insert, update, merge |
 | Restrictions | `temporal_` | ✓ **GEN** | `restrictions.sql.tmpl` + `restriction_families`, **14 entries** all `reference: true` (same family set) — atValue(s)/minusValue(s), atTime/minusTime, atSpan(set), atTbox |
-| **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox` |
+| **Bounding Box Operators** | `temporal_`/`tnumber_` | ✓ **GEN** | `topops.sql.tmpl` (`&&`,`@>`,`<@`,`~=`,`-\|-`) + `posops.sql.tmpl` (`<<`,`>>`,`&<`,`&>`,`<<#`,`#>>`…), both via the `subtypes:` track (§3), + `boxops.c.tmpl` box types `tstzspan`,`tbox`, whose `tempsql` stanzas write the SQL of `tbool`, `tint`, `tbigint`, `tfloat` and `ttext` through `tempbox.sql.tmpl` |
 | Comparisons → Traditional | (btree) | ✓ **GEN** | `comparisons.sql.tmpl` + `comparison_families` (13 temporal-type entries: temporal, geo, tpoint, cbuffer, h3, json, npoint, pointcloud, pointcloud_patch, pose, posechain, quadbin, rgeo) — `=`,`<>`,`<`,`>`,`<=`,`>=` + `cmp` + the `<type>_btree_ops` opclass; `--gaps`: `comparison_families` 20/20, full coverage. The hash tail of the same files (`hash`/`hashExtended` + the `<type>_hash_ops` opclass) is `hash_families` — the same 13 entries. ⛔ Each hash entry's LEADING `lit` is the bare `/****/` divider standing between the B-tree opclass and the hash block, because a region starts at the divider preceding its `begin` anchor: without that divider the hash region reaches back to the comparison banner and the entry has to carry the comparison section too; `--gaps`: `hash_families` 20/20, full coverage |
 | Comparisons → **Ever/Always** | `temporal_` | ✓ **GEN** | `compops.sql.tmpl` + one shared `render_compops_body` engine, fed by two manifest tracks: `compops_families` (multi-pair families — temporal's 5 base types on one generic base/temporal C symbol per op, tgeo/tpoint's geometry+geography pair on one generic geo/tgeo C symbol per op) and the `subtypes:` `compops` behaviour (every one-pair family — cbuffer, jsonb, quadbin, h3index, s2cell, npoint, pose, trgeometry, pcpoint, pcpatch). `eEqual`/`aEqual`/`eNotEqual`/`aNotEqual` + `?=`/`%=`/`?<>`/`%<>` (all 3 arg directions); a pair whose temporal type the catalog's `torder_type` holds (temporal's int/bigint/float/text) additionally gets `eLessThan…aGreaterEqual` + `?<…%>=`. A `compops_families` `pairs:` entry names only its `temp` type — `base` is never hand-paired alongside it; `render_compops` derives it from `catalog_temptype_basetype()`, read from meos_catalog.c's own `MEOS_RELTYPE_CATALOG[...].temptype_basetype` field, the same table `temptype_basetype()` reads at runtime for these functions' MEOS entry point. This makes a mismatched pair (`temp: tfloat` naming `base: integer`, which would render `tGreaterThan(tfloat, integer)` while the C entry point still derives float8 from the temp type alone) unrepresentable — the generator raises if a pair still carries a `base:` key |
 | Comparisons → Temporal | `temporal_` | ✓ **GEN** | same engine as Ever/Always above — renders `tEqual`/`tNotEqual`/`tLessThan`/`tGreaterThan`/`tLessEqual`/`tGreaterEqual` → `#=`/`#<>`/`#<`/`#>`/`#<=`/`#>=` in the same pass, not a separate template |
@@ -416,7 +426,9 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 
 **The generic base `Temporal<T>` reference files** (`032_temporal_boxops`
 (extraction: spans/tboxes, its split functions a `tiling_families` region), `033_temporal_topops` (topological: spanOverlaps/
-spanContains/spanContained/spanSame/spanAdjacent), `034_temporal_posops`, `040/042` aggfuncs,
+spanContains/spanContained/spanSame/spanAdjacent and their tbox forms, the two
+`tempsql` regions of box types `tstzspan` and `tbox`), `034_temporal_posops` (their
+position regions), `040/042` aggfuncs,
 `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
 similarity/analytics) are likewise the hand reference; the generator re-emits their
 *shape* onto the derived families (§6) and regenerates the **C boxops region** for
@@ -1346,6 +1358,7 @@ generated:
 | `compops` (`subtypes:` families) | `_compops_spec_from_subtype()`, which also picks the Eq support function |
 | `compops` (`compops_families:` entries) | each pair's `rest`/`join` keys |
 | box-by-box operators (`boxbox` stanzas of `boxtypes.yaml`) | each stanza's `sel` key: `tnumber` for `tbox`, `tspatial` for `stbox` and `tpcbox` |
+| temporal-by-box topological and position operators (`tempsql` stanzas of `boxtypes.yaml`) | each stanza's `sel` key: `temporal` for `tstzspan`, `tnumber` for `tbox` |
 | B-tree comparisons | the `lit` blocks of `comparison_families:` / `hash_families:` |
 | the `coverage_exceptions.txt` files | written out, since no template governs them yet |
 
