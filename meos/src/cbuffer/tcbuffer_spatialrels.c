@@ -1302,13 +1302,10 @@ adisjoint_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
 
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
- * @brief Return 1 if a temporal circular buffer and a circular buffer are ever
- * disjoint, 0 if not, and -1 on error
- * @details aDisjoint = ¬eIntersects reduces exactly to ¬eDwithin(., ., 0). 
- * A static circular buffer is a degenerate constant temporal circular buffer,
- * so promote it and route through the native dwithin turning-point engine.
- * The ever semantics (∃t disjoint) are not distance-reducible and stay on
- * the traversed-area path.
+ * @brief Return 1 if a temporal circular buffer and a circular buffer are
+ * ever/always disjoint, 0 if not, and -1 on error
+ * @details Disjoint is the complement of intersects with the quantifier
+ * swapped: aDisjoint = ¬eIntersects and eDisjoint = ¬aIntersects
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1321,16 +1318,7 @@ ea_disjoint_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
-
-  if (! ever)
-  {
-    Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
-    int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
-    pfree(ctemp);
-    return result < 0 ? result : (result ? 0 : 1);
-  }
-  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-    (varfunc) &datum_geom_disjoint2d, 2, ever, INVERT_NO);
+  return INVERT_RESULT(ea_intersects_tcbuffer_cbuffer(temp, cb, ! ever));
 }
 
 /**
@@ -1595,12 +1583,10 @@ aintersects_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp)
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always intersects a
  * circular buffer, 0 if not, and -1 on error
- * @details eIntersects reduces exactly to eDwithin(., ., 0). A static circular
- * buffer is a degenerate constant temporal circular buffer, so promote it
- * and route through the native dwithin turning-point engine, which detects
- * the mid-segment approach that a per-instant evaluation would miss.
- * The always semantics (∀t intersects) are not distance-reducible and stay
- * on the traversed-area path.
+ * @details A static circular buffer is a constant temporal circular buffer
+ * over the time of the temporal one, so both quantifiers are those of two
+ * temporal circular buffers, which ever or always intersect where they are
+ * ever or always within the distance zero, decided over continuous time
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @param[in] ever True for the ever semantics, false for the always semantics
@@ -1614,15 +1600,10 @@ ea_intersects_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
     return -1;
 
-  if (ever)
-  {
-    Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
-    int result = ea_dwithin_tcbuffer_tcbuffer(temp, ctemp, 0.0, EVER);
-    pfree(ctemp);
-    return result;
-  }
-  return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
-    (varfunc) &datum_geom_intersects2d, 2, ever, INVERT_NO);
+  Temporal *ctemp = tcbuffer_from_base_temp(cb, temp);
+  int result = ea_intersects_tcbuffer_tcbuffer(temp, ctemp, ever);
+  pfree(ctemp);
+  return result;
 }
 
 /**

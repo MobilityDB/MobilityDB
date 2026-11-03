@@ -289,7 +289,7 @@ SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{Cbuffer(Point(1 1
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]');
  edisjoint 
 -----------
- f
+ t
 (1 row)
 
 SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.5)', tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}');
@@ -313,13 +313,97 @@ SELECT eDisjoint(tcbuffer '{Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 
 SELECT eDisjoint(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03]',  cbuffer 'Cbuffer(Point(1 1),0.5)');
  edisjoint 
 -----------
- f
+ t
 (1 row)
 
 SELECT eDisjoint(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 2),0.5)@2001-01-02, Cbuffer(Point(1 1),0.5)@2001-01-03],[Cbuffer(Point(3 3),0.5)@2001-01-04, Cbuffer(Point(3 3),0.5)@2001-01-05]}',  cbuffer 'Cbuffer(Point(1 1),0.5)');
  edisjoint 
 -----------
  t
+(1 row)
+
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+ adisjoint 
+-----------
+ t
+(1 row)
+
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+ eintersects 
+-------------
+ f
+(1 row)
+
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01, Cbuffer(Point(0 0),0.70710678118654746)@2001-01-02]', cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)', tcbuffer 'Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aIntersects(cbuffer 'Cbuffer(Point(1 1),0.70710678118654746)', tcbuffer 'Cbuffer(Point(0 0),0.70710678118654746)@2001-01-01');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+ adisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(5 1.5),1)');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(cbuffer 'Cbuffer(Point(5 1.5),1)', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aIntersects(cbuffer 'Cbuffer(Point(5 1.5),1)', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]');
+ aintersects 
+-------------
+ f
+(1 row)
+
+SELECT eDisjoint(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(20 20),1)');
+ edisjoint 
+-----------
+ t
+(1 row)
+
+SELECT aIntersects(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(10 0),1)@2001-01-02]', cbuffer 'Cbuffer(Point(20 20),1)');
+ aintersects 
+-------------
+ f
 (1 row)
 
 SELECT eDisjoint(geometry 'CurvePolygon(CircularString(5 0, 0 5, -5 0, 0 -5, 5 0))', tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(8 0),0.5)@2001-01-03]');
