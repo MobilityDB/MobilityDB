@@ -1424,6 +1424,11 @@ cbuffer_intersects(const Cbuffer *cb1, const Cbuffer *cb2)
 int
 cbuffer_touches(const Cbuffer *cb1, const Cbuffer *cb2)
 {
+  /* Two buffers touch where they meet and their interiors are disjoint. A
+   * buffer of a zero radius is the point at its centre, whose interior is the
+   * point itself and which has no boundary, so two such buffers never touch */
+  if (cb1->radius == 0 && cb2->radius == 0)
+    return 0;
   /* The centres stand exactly the sum of the radii apart, read by
    * #cbuffer_gap_sign */
   const double l[2] = {cb1->radius, cb2->radius};

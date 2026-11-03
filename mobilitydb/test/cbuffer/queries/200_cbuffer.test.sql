@@ -165,4 +165,19 @@ SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(1 1),0.5)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(1 1),0.7)';
 SELECT cbuffer 'Cbuffer(Point(1 1),0.5)' >= cbuffer 'Cbuffer(Point(2 2),0.5)';
 
+-------------------------------------------------------------------------------
+-- Spatial relationships
+-------------------------------------------------------------------------------
+
+-- Discs touch where their centres stand exactly the sum of the radii apart;
+-- a point touches a disc on its circle; internal tangency is not touching;
+-- two points, which have no boundary, never touch, coincident or not
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(0 0),0.5)', cbuffer 'Cbuffer(Point(1 0),0.5)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(0 0),0.5)', cbuffer 'Cbuffer(Point(1 0),0.50000000000000011)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(3 4),0)', cbuffer 'Cbuffer(Point(0 0),5)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(0 0),5)', cbuffer 'Cbuffer(Point(3 4),0)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(2 0),3)', cbuffer 'Cbuffer(Point(0 0),5)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(1 1),0)', cbuffer 'Cbuffer(Point(1 1),0)');
+SELECT cbufferTouches(cbuffer 'Cbuffer(Point(1 1),0)', cbuffer 'Cbuffer(Point(2 2),0)');
+
 -------------------------------------------------------------------------------/
