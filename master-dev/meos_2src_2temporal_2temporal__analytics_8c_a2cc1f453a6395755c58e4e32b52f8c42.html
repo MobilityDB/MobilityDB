@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: dist3d_pt_pt</title>
+<title>MobilityDB: dist3d_pt_seg</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -80,10 +80,10 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ac1e57113e79bc388637bb49dc896f02b.html#ac1e57113e79bc388637bb49dc896f02b">_float_t</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_abab4eeb5878ce108f259b5793d94816a.html#abab4eeb5878ce108f259b5793d94816a">dist2d_pt_pt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aed76fe0dd26921c51488051c35ed7524.html#aed76fe0dd26921c51488051c35ed7524">dist2d_pt_seg</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a862ea0a8d0e3ad2fd3fedb7dfcd8ba23.html#a862ea0a8d0e3ad2fd3fedb7dfcd8ba23">dist3d_pt_pt</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a8ba5a6a80e7744bcfff43f12a1ed373a.html#a8ba5a6a80e7744bcfff43f12a1ed373a">dist3d_pt_seg</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a07e18a86a2b86e85b3fa8733eb21e977.html#a07e18a86a2b86e85b3fa8733eb21e977">dist2d_pt_pt</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a79cc88612a8fbb27db6d05e18db2f6a4.html#a79cc88612a8fbb27db6d05e18db2f6a4">dist2d_pt_seg</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_aeea204aebac466112ab59367ee7c00d4.html#aeea204aebac466112ab59367ee7c00d4">dist3d_pt_pt</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a2cc1f453a6395755c58e4e32b52f8c42.html#a2cc1f453a6395755c58e4e32b52f8c42">dist3d_pt_seg</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9">DP_STACK_SIZE</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae4a7d85d9b66caa7152a62c83de74ca7.html#ae4a7d85d9b66caa7152a62c83de74ca7">ekf_build_F</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a26d3102c7cbbdcb86e8ec2a08be22bdd.html#a26d3102c7cbbdcb86e8ec2a08be22bdd">ekf_build_H_hx</a></td></tr>
@@ -152,8 +152,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a862ea0a8d0e3ad2fd3fedb7dfcd8ba23" name="a862ea0a8d0e3ad2fd3fedb7dfcd8ba23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a862ea0a8d0e3ad2fd3fedb7dfcd8ba23">&#9670;&#160;</a></span>dist3d_pt_pt()</h2>
+<a id="a2cc1f453a6395755c58e4e32b52f8c42" name="a2cc1f453a6395755c58e4e32b52f8c42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cc1f453a6395755c58e4e32b52f8c42">&#9670;&#160;</a></span>dist3d_pt_seg()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -162,16 +162,22 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static double dist3d_pt_pt </td>
+          <td class="memname">static double dist3d_pt_seg </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *&#160;</td>
-          <td class="paramname"><em>p1</em>, </td>
+          <td class="paramtype">const <a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *&#160;</td>
-          <td class="paramname"><em>p2</em>&#160;</td>
+          <td class="paramtype">const <a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structPOINT3DZ.html">POINT3DZ</a> *&#160;</td>
+          <td class="paramname"><em>B</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -181,12 +187,21 @@ $(function() {
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
-<p>Return the 3D distance between the points. </p>
+<p>Return the 3D distance between the point the segment. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">p</td><td>Point </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">A,B</td><td>Points defining the segment </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Derived from the PostGIS function lw_dist3d_pt_seg in file measures3d.c </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a href="http://geomalgorithms.com/a02-_lines.html">http://geomalgorithms.com/a02-_lines.html</a> </dd></dl>
 
 </div>
 </div>
