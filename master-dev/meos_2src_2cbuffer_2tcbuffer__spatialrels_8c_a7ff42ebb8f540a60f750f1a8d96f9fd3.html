@@ -180,7 +180,9 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a082a43e5ae772822a1fe6bec50c3f987.html#a082a43e5ae772822a1fe6bec50c3f987">spatialrel_geo_geo</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_ad88761bdb5f43e802952c292ec161074.html#ad88761bdb5f43e802952c292ec161074">spatialrel_geo_geo_simple</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_ad8e8362a7b1e5986d5f98f1b2c749d5b.html#ad8e8362a7b1e5986d5f98f1b2c749d5b">spatialrel_quantifiers</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_af027073c9c2993815407d931492ba9ee.html#af027073c9c2993815407d931492ba9ee">tcbuffer_discs_dwithin_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_adad6b4ea1844b4162f2e0ef9d2c87380.html#adad6b4ea1844b4162f2e0ef9d2c87380">tcbuffer_dwithin_interval</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a30be5b4b3092cc1ae23a4cdaef5a2488.html#a30be5b4b3092cc1ae23a4cdaef5a2488">tcbuffer_dwithin_whole</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a64734a35dd23bc858850102792224b32.html#a64734a35dd23bc858850102792224b32">tcbuffer_escapes_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_ab1e783831c409fd6034b7b86947aeaed.html#ab1e783831c409fd6034b7b86947aeaed">tcbuffer_geo_box_decided</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a19a50ae65eeef834cad3275777d8131a.html#a19a50ae65eeef834cad3275777d8131a">tcbufferinst_disc</a></td></tr>
@@ -256,7 +258,7 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return 2, 1 or 0 as <a class="el" href="geo__funcs_8h_a4266a7da307af7d60e93b726915e2513.html#a4266a7da307af7d60e93b726915e2513" title="Return 2, 1 or 0 where two discs moving linearly over a segment of D microseconds are within a distan...">point_motion_dwithin_period_exact</a> does for the discs of two synchronized circular buffer sequences from their instants <code>i</code> to <code>i</code> + 1, a step value keeping the disc of instant <code>i</code>, writing in <code>whole</code> whether they are within over the whole segment and in <code>seg</code> and <code>rad</code> the discs it reads. </p>
+<p>Return 2, 1 or 0 as <a class="el" href="geo__funcs_8h_a4266a7da307af7d60e93b726915e2513.html#a4266a7da307af7d60e93b726915e2513" title="Return 2, 1 or 0 where two discs moving linearly over a segment of D microseconds are within a distan...">point_motion_dwithin_period_exact</a> does for the discs of two synchronized circular buffer sequences from their instants <code>i</code> to <code>i</code> + 1, a step value keeping the disc of instant <code>i</code>, writing in <code>whole</code> whether they are within over the whole segment (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a30be5b4b3092cc1ae23a4cdaef5a2488.html#a30be5b4b3092cc1ae23a4cdaef5a2488" title="Return true if two discs moving linearly over a segment, read by point_motion_dwithin_period_exact as...">tcbuffer_dwithin_whole</a>) and in <code>seg</code> and <code>rad</code> the discs it reads. </p>
 
 </div>
 </div>
