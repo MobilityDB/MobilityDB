@@ -1622,6 +1622,142 @@ tjsonb_pretty(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_json_json
+ * @brief Extract a JSON object field with the given key from a temporal JSON
+ * value
+ * @param[in] temp Temporal JSON value
+ * @param[in] key Key
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjson_object_field()
+ */
+Temporal *
+tjson_object_field(const Temporal *temp, const text *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TTEXT(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjson_object_field_common(temp, key, false, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract a JSONB object field with the given key from a temporal
+ * JSONB value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] key Key
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_object_field()
+ */
+Temporal *
+tjsonb_object_field(const Temporal *temp, const text *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_object_field_common(temp, key, false, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract a JSONB object field with the given key from a temporal
+ * JSONB value as a temporal text
+ * @param[in] temp Temporal JSONB value
+ * @param[in] key Key
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_object_field_text()
+ */
+Temporal *
+tjsonb_object_field_text(const Temporal *temp, const text *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return tjsonb_object_field_common(temp, key, true, null_handle);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract an array element from a temporal JSONB value
+ * @param[in] temp Temporal JSONB value
+ * @param[in] idx Index
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_array_element()
+ */
+Temporal *
+tjsonb_array_element(const Temporal *temp, int idx,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  return tjsonb_array_element_common(temp, idx, false, null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract an array element from a temporal JSONB value as a temporal
+ * text
+ * @param[in] temp Temporal JSONB value
+ * @param[in] idx Index
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_array_element_text()
+ */
+Temporal *
+tjsonb_array_element_text(const Temporal *temp, int idx,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL);
+  return tjsonb_array_element_common(temp, idx, true, null_handle);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract a temporal JSONB value specified by a path
+ * @param[in] temp Temporal JSONB value
+ * @param[in] path_elems Keys
+ * @param[in] path_len Number of elements in the input array
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_extract_path()
+ */
+Temporal *
+tjsonb_extract_path(const Temporal *temp, text **path_elems, int path_len,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  if (! ensure_positive(path_len))
+    return NULL;
+  return tjsonb_extract_path_common(temp, path_elems, path_len, false,
+    null_handle);
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Extract a temporal JSONB value specified by a path as a temporal
+ * text
+ * @param[in] temp Temporal JSONB value
+ * @param[in] path_elems Keys
+ * @param[in] path_len Number of elements in the input array
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Tjsonb_extract_path_text()
+ */
+Temporal *
+tjsonb_extract_path_text(const Temporal *temp, text **path_elems,
+  int path_len, nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TJSONB(temp, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  if (! ensure_positive(path_len))
+    return NULL;
+  return tjsonb_extract_path_common(temp, path_elems, path_len, true,
+    null_handle);
+}
+
 /*****************************************************************************
  * Path functions
  *****************************************************************************/
