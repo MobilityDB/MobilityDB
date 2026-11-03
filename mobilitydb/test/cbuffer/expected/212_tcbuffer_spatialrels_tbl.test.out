@@ -133,7 +133,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE aDisjoint(temp, g);
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eDisjoint(cb, temp);
  count 
 -------
-  9942
+  9982
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aDisjoint(cb, temp);
@@ -145,7 +145,7 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aDisjoint(cb, temp);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eDisjoint(temp, cb);
  count 
 -------
-  9942
+  9982
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aDisjoint(temp, cb);
@@ -199,7 +199,7 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE eIntersects(cb, temp);
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE aIntersects(cb, temp);
  count 
 -------
-    58
+    18
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eIntersects(temp, cb);
@@ -211,7 +211,7 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE eIntersects(temp, cb);
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_cbuffer WHERE aIntersects(temp, cb);
  count 
 -------
-    58
+    18
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE eIntersects(t1.temp, t2.temp);
