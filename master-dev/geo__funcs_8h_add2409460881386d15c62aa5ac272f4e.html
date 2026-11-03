@@ -238,7 +238,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a8639632d586c3c1cb6acf37a16ed47d8.html#a8639632d586c3c1cb6acf37a16ed47d8">point_on_segment_within</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6660bb520eaef21e7dfdcbadf08a15ee.html#a6660bb520eaef21e7dfdcbadf08a15ee">point_seg_dist2</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0cba23cd24b48b511a57c440faf4a58d.html#a0cba23cd24b48b511a57c440faf4a58d">point_segment_distance_offset_exact</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_aff687681629971ae274d03355e883371.html#aff687681629971ae274d03355e883371">point_segment_offset_sign</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_add2409460881386d15c62aa5ac272f4e.html#add2409460881386d15c62aa5ac272f4e">point_segment_offset_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a3f702fcb0e62bf66dde1c606d645d94d.html#a3f702fcb0e62bf66dde1c606d645d94d">point_segment_shortestline_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a17d4b97aba1473852dbd6a983b9707db.html#a17d4b97aba1473852dbd6a983b9707db">point_within_distance_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a60e3328c0fae3184aeaba6bb51d3e841.html#a60e3328c0fae3184aeaba6bb51d3e841">point_within_distance_sign_exact</a></td></tr>
@@ -267,6 +267,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6f5c714783ab4e37510cd28d4bbdfd43.html#a6f5c714783ab4e37510cd28d4bbdfd43">segment_distance_exact_bounded</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a0bd32cb23943393713d254e32c24ffff.html#a0bd32cb23943393713d254e32c24ffff">segment_distance_range</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a7a8d3595d74f537eb673a506a10d5108.html#a7a8d3595d74f537eb673a506a10d5108">segment_distance_square</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a135f16300f42f93b2c24f391d5a84889.html#a135f16300f42f93b2c24f391d5a84889">segment_interior_offset_sign</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_ac8a3484ed4bd0feeef85b8a6122cf879.html#ac8a3484ed4bd0feeef85b8a6122cf879">segment_interior_range</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a486857d3b286fbcee1a78eb937a82a32.html#a486857d3b286fbcee1a78eb937a82a32">tangent_point_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a974efd978b561a04efefacfb67e03450.html#a974efd978b561a04efefacfb67e03450">towerseg_meet</a></td></tr>
@@ -278,8 +279,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="aff687681629971ae274d03355e883371" name="aff687681629971ae274d03355e883371"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff687681629971ae274d03355e883371">&#9670;&#160;</a></span>point_segment_offset_sign()</h2>
+<a id="add2409460881386d15c62aa5ac272f4e" name="add2409460881386d15c62aa5ac272f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add2409460881386d15c62aa5ac272f4e">&#9670;&#160;</a></span>point_segment_offset_sign()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -305,6 +306,12 @@ $(function() {
         <tr>
           <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ndims</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">double&#160;</td>
           <td class="paramname"><em>r</em>&#160;</td>
         </tr>
@@ -319,7 +326,8 @@ $(function() {
 <p>Return the sign of the distance of a point to a segment less a radius, computed exactly for any finite doubles. </p>
 <p >The sign <a class="el" href="meos_2src_2geo_2geo__funcs_8c_a0cba23cd24b48b511a57c440faf4a58d.html#a0cba23cd24b48b511a57c440faf4a58d" title="Return the distance of a point to a segment less a radius, computed exactly and rounded once,...">point_segment_distance_offset_exact</a> rounds its answer from, with no rounding: the nearest point of the segment is an end where <a class="el" href="meos_2src_2geo_2geo__funcs_8c_adf38780c060ebb1c999b1800092c3a49.html#adf38780c060ebb1c999b1800092c3a49" title="Return the sign of (p - s) .">point_segment_dot_sign_inputs</a> says so, and the sign is then that of the squared distance of the two points less the squared radius (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_aded54b1c15206ced6b98512e21036af0.html#aded54b1c15206ced6b98512e21036af0" title="Return the sign of the squared distance between two points less the square of r + c + g/2,...">point_distance_offset_side_sign</a>); otherwise it is that of <code>(w x u)^2 - r^2 (u . u)</code> (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_aa5fe1cc7451d58fc1f695d8f2942ac0a.html#aa5fe1cc7451d58fc1f695d8f2942ac0a" title="Return the sign of the squared distance of a point to the line of a segment, times the squared length...">point_segment_side_sign_inputs</a>). Each is a sum of products of the input doubles decided exactly, so the answer is 0 exactly where the disc of the radius is tangent to the segment </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">p,a,b</td><td>The point and the two ends of the segment, two coordinates each </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">p,a,b</td><td>The point and the two ends of the segment </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ndims</td><td>Number of coordinates, 2 or 3 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">r</td><td>Radius, not negative </td></tr>
   </table>
   </dd>
