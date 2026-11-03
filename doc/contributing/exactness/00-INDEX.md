@@ -50,7 +50,8 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 - **Every distance answers the double nearest the exact distance**: every row of
   [Exact distance](EXACT-DISTANCE.md) to ED18 is merged, ED15 last as MobilityDB #3269
   (`d06cb0d010`) and #3272 (`0c6883d4e7`), and ED17's relate items (4) to (6) as #3226. ED19, the
-  temporal distance of a rigid body, is MobilityDB #3375. The engine is
+  temporal distance of a rigid body, is MobilityDB #3375 (`ba50756731`) and ED20, whether two static
+  geometries of straight edges are within a distance, #3385 (`957a7a1e9f`). The engine is
   specified for its users in `doc/specs/meos-exact-geometry.md`, MobilityDB #3372, merged as `fe8c187b2b`, whose
   version v0.2.0 covers the distances, predicates and relationships. The work that starts after it,
   [Exact crossings](EXACT-CROSSINGS.md) steps 2–4, [Any number of turning points](N-TURNING-POINTS.md)
@@ -93,4 +94,4 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   of its decisions is an exact sign, CGAL finds no answer it certifies wrong (1 199 of 1 199
   natural areas certified), and it owes its speed (1.045 of GEOS called directly at distance 1);
   [Exact buffer](EXACT-BUFFER.md), where these steps stand.
-- **Open pull requests** on 2026-11-03: this one, MobilityDB #3259 and #3375.
+- **Open pull requests** on 2026-11-03: this one and MobilityDB #3259.
