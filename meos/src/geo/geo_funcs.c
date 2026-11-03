@@ -10929,16 +10929,27 @@ meet_val(ArcsegArena *arena, double v)
  * exactly as expansions, and where a product of
  * expansions leaves the range where they are exact -- their components span
  * the exponents of doubles, which the squarings of the recursion outgrow --
- * as #WideDyadic, the points of the question built again from what defines
+ * as #TowerWide, the points of the question built again from what defines
  * them (#TowerCtx).
  */
 #define TOWER_MAXDEPTH 4
 #define TOWER_SIZE (1 << TOWER_MAXDEPTH)
-#define TOWER_WIDE_BLOCK 32
+
+/* A dyadic rational `sign * magnitude * 2^exp` as #WideDyadic holds one, with
+ * as many limbs as the value takes: the numbers of a tower spread over a number
+ * of bits that grows with the squarings of its recursion, which no capacity
+ * fixed beforehand bounds for any finite coordinates */
+typedef struct
+{
+  int sign;
+  int len;
+  int exp;
+  uint64_t limb[];
+} TowerWide;
 
 /* The arithmetic the numbers of a tower are computed in: expansions in
- * @p arena, or #WideDyadic where @p wide is set, taken from blocks of
- * #TOWER_WIDE_BLOCK */
+ * @p arena, or #TowerWide where @p wide is set, each kept in @p blocks until
+ * the context is freed */
 typedef struct
 {
   ArcsegArena arena;
@@ -10947,10 +10958,9 @@ typedef struct
                             the bound cannot tell marking the arena unsafe */
   bool dd;             /**< Pairs of doubles carrying a bound on their error
                             (#DDBound), as @p filter */
-  WideDyadic **blocks;
+  TowerWide **blocks;
   int nblocks;
   int capblocks;
-  int used;            /**< Taken from the last block */
 } TowerCtx;
 
 /* A value of the arithmetic of a #TowerCtx, the whole union zeroed where it
@@ -10958,7 +10968,7 @@ typedef struct
 typedef union
 {
   ArcsegExact x;
-  WideDyadic *w;
+  TowerWide *w;
   ArcsegFilter f;
   DDBound d;
 } TowerX;
@@ -10992,7 +11002,6 @@ tower_ctx_init(TowerCtx *ctx, bool wide)
   ctx->dd = false;
   ctx->blocks = NULL;
   ctx->nblocks = ctx->capblocks = 0;
-  ctx->used = TOWER_WIDE_BLOCK;
   return;
 }
 
@@ -11006,7 +11015,6 @@ tower_ctx_free(TowerCtx *ctx)
     pfree(ctx->blocks);
   ctx->blocks = NULL;
   ctx->nblocks = ctx->capblocks = 0;
-  ctx->used = TOWER_WIDE_BLOCK;
   return;
 }
 
@@ -11017,23 +11025,166 @@ tower_ctx_unsafe(const TowerCtx *ctx)
   return ! ctx->wide && ctx->arena.unsafe;
 }
 
-static WideDyadic *
-tower_wide_alloc(TowerCtx *ctx)
+/* A number of a context of @p n limbs */
+static TowerWide *
+tower_wide_alloc(TowerCtx *ctx, int n)
 {
-  if (ctx->used == TOWER_WIDE_BLOCK)
+  if (ctx->nblocks == ctx->capblocks)
   {
-    if (ctx->nblocks == ctx->capblocks)
-    {
-      ctx->capblocks = ctx->capblocks ? 2 * ctx->capblocks : 16;
-      ctx->blocks = ctx->blocks ?
-        repalloc(ctx->blocks, sizeof(WideDyadic *) * ctx->capblocks) :
-        palloc(sizeof(WideDyadic *) * ctx->capblocks);
-    }
-    ctx->blocks[ctx->nblocks++] =
-      palloc(sizeof(WideDyadic) * TOWER_WIDE_BLOCK);
-    ctx->used = 0;
+    ctx->capblocks = ctx->capblocks ? 2 * ctx->capblocks : 64;
+    ctx->blocks = ctx->blocks ?
+      repalloc(ctx->blocks, sizeof(TowerWide *) * ctx->capblocks) :
+      palloc(sizeof(TowerWide *) * ctx->capblocks);
   }
-  return &ctx->blocks[ctx->nblocks - 1][ctx->used++];
+  TowerWide *r = palloc(offsetof(TowerWide, limb) +
+    sizeof(uint64_t) * (size_t) Max(n, 1));
+  ctx->blocks[ctx->nblocks++] = r;
+  r->sign = 0;
+  r->len = 0;
+  r->exp = 0;
+  return r;
+}
+
+/* Drop the zero limbs at both ends, as #wide_dyadic_normalize does */
+static void
+tower_wide_normalize(TowerWide *a)
+{
+  while (a->len > 0 && a->limb[a->len - 1] == 0)
+    a->len--;
+  if (a->len == 0)
+  {
+    a->sign = 0;
+    a->exp = 0;
+    return;
+  }
+  int z = 0;
+  while (a->limb[z] == 0)
+    z++;
+  if (z > 0)
+  {
+    memmove(a->limb, a->limb + z, (size_t) (a->len - z) * sizeof(uint64_t));
+    a->len -= z;
+    a->exp += 64 * z;
+  }
+  return;
+}
+
+/* A finite double, exactly (#wide_dyadic_set_double) */
+static TowerWide *
+tower_wide_of_double(TowerCtx *ctx, double x)
+{
+  TowerWide *r = tower_wide_alloc(ctx, 1);
+  if (x == 0.0)
+    return r;
+  uint64_t bits;
+  memcpy(&bits, &x, sizeof(bits));
+  int e = (int) ((bits >> 52) & 0x7FF);
+  uint64_t m = bits & 0xFFFFFFFFFFFFFULL;
+  if (e)
+  {
+    m |= 1ULL << 52;
+    r->exp = e - 1075;
+  }
+  else
+    r->exp = -1074;
+  r->sign = (bits >> 63) ? -1 : 1;
+  r->limb[0] = m;
+  r->len = 1;
+  return r;
+}
+
+/* The magnitude of @p a at the weight @p e, at most its own, in @p n limbs
+ * (#wide_dyadic_aligned) */
+static void
+tower_wide_aligned(const TowerWide *a, int e, uint64_t *out, int n)
+{
+  memset(out, 0, (size_t) n * sizeof(uint64_t));
+  if (a->sign == 0)
+    return;
+  int s = a->exp - e, ls = s / 64, bs = s % 64;
+  for (int i = 0; i < a->len; i++)
+  {
+    out[i + ls] |= a->limb[i] << bs;
+    if (bs)
+      out[i + ls + 1] |= a->limb[i] >> (64 - bs);
+  }
+  return;
+}
+
+/* The sum of two numbers, exactly (#wide_dyadic_add) */
+static TowerWide *
+tower_wide_add(TowerCtx *ctx, const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+  {
+    const TowerWide *c = (a->sign == 0) ? b : a;
+    TowerWide *r = tower_wide_alloc(ctx, c->len);
+    memcpy(r, c, offsetof(TowerWide, limb) +
+      sizeof(uint64_t) * (size_t) c->len);
+    return r;
+  }
+  int e = (a->exp < b->exp) ? a->exp : b->exp;
+  int nx = a->len + (a->exp - e) / 64 + 1, ny = b->len + (b->exp - e) / 64 + 1;
+  int n = (nx > ny) ? nx : ny;
+  TowerWide *r = tower_wide_alloc(ctx, n + 1);
+  uint64_t *x = palloc(sizeof(uint64_t) * 2 * (size_t) n), *y = x + n;
+  tower_wide_aligned(a, e, x, n);
+  tower_wide_aligned(b, e, y, n);
+  r->exp = e;
+  if (a->sign == b->sign)
+  {
+    uint64_t carry = 0;
+    for (int i = 0; i < n; i++)
+    {
+      uint64_t s = x[i] + y[i];
+      uint64_t c1 = s < x[i];
+      r->limb[i] = s + carry;
+      carry = c1 + (r->limb[i] < s);
+    }
+    r->limb[n] = carry;
+    r->len = n + 1;
+    r->sign = a->sign;
+  }
+  else
+  {
+    /* The larger magnitude less the smaller, with the sign of the larger */
+    int cmp = 0;
+    for (int i = n - 1; i >= 0 && cmp == 0; i--)
+      if (x[i] != y[i])
+        cmp = (x[i] > y[i]) ? 1 : -1;
+    if (cmp != 0)
+    {
+      const uint64_t *big = (cmp > 0) ? x : y, *small = (cmp > 0) ? y : x;
+      uint64_t borrow = 0;
+      for (int i = 0; i < n; i++)
+      {
+        uint64_t d = big[i] - small[i];
+        uint64_t b1 = big[i] < small[i];
+        r->limb[i] = d - borrow;
+        borrow = b1 + (d < borrow);
+      }
+      r->len = n;
+      r->sign = (cmp > 0) ? a->sign : b->sign;
+    }
+  }
+  pfree(x);
+  tower_wide_normalize(r);
+  return r;
+}
+
+/* The product of two numbers, exactly (#wide_dyadic_mul) */
+static TowerWide *
+tower_wide_mul(TowerCtx *ctx, const TowerWide *a, const TowerWide *b)
+{
+  if (a->sign == 0 || b->sign == 0)
+    return tower_wide_alloc(ctx, 1);
+  TowerWide *r = tower_wide_alloc(ctx, a->len + b->len);
+  wide_limbs_mul(a->limb, a->len, b->limb, b->len, r->limb);
+  r->len = a->len + b->len;
+  r->sign = a->sign * b->sign;
+  r->exp = a->exp + b->exp;
+  tower_wide_normalize(r);
+  return r;
 }
 
 /* The difference of two doubles, exactly */
@@ -11060,11 +11211,8 @@ tx_diff(TowerCtx *ctx, double a, double b)
     r.x = arcseg_x_diff(&ctx->arena, a, b);
     return r;
   }
-  WideDyadic da, db;
-  wide_dyadic_set_double(&da, a);
-  wide_dyadic_set_double(&db, - b);
-  r.w = tower_wide_alloc(ctx);
-  wide_dyadic_add(&da, &db, r.w);
+  r.w = tower_wide_add(ctx, tower_wide_of_double(ctx, a),
+    tower_wide_of_double(ctx, - b));
   return r;
 }
 
@@ -11107,8 +11255,7 @@ tx_add(TowerCtx *ctx, TowerX a, TowerX b)
     r.x = arcseg_x_add(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_alloc(ctx);
-  wide_dyadic_add(a.w, b.w, r.w);
+  r.w = tower_wide_add(ctx, a.w, b.w);
   return r;
 }
 
@@ -11136,8 +11283,9 @@ tx_scale(TowerCtx *ctx, TowerX a, double k)
   }
   int e;
   frexp(k, &e);
-  r.w = tower_wide_alloc(ctx);
-  *r.w = *a.w;
+  r.w = tower_wide_alloc(ctx, a.w->len);
+  memcpy(r.w, a.w, offsetof(TowerWide, limb) +
+    sizeof(uint64_t) * (size_t) a.w->len);
   if (r.w->sign != 0)
   {
     r.w->exp += e - 1;
@@ -11159,6 +11307,10 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
   if (ctx->filter)
   {
     r.f = arcseg_f_mul(a.f, b.f);
+    /* A product that underflows to 0 is not the exact zero #tx_sign reads */
+    if (r.f.v == 0.0 && r.f.e == 0.0 && (a.f.v != 0.0 || a.f.e != 0.0) &&
+        (b.f.v != 0.0 || b.f.e != 0.0))
+      r.f.e = DBL_MIN;
     return r;
   }
   if (ctx->dd)
@@ -11173,8 +11325,7 @@ tx_mul(TowerCtx *ctx, TowerX a, TowerX b)
     r.x = arcseg_x_mul(&ctx->arena, a.x, b.x);
     return r;
   }
-  r.w = tower_wide_alloc(ctx);
-  wide_dyadic_mul(a.w, b.w, r.w);
+  r.w = tower_wide_mul(ctx, a.w, b.w);
   return r;
 }
 
@@ -11243,12 +11394,22 @@ tx_filter(const TowerCtx *ctx, TowerX a)
   }
   if (ctx->wide)
   {
-    int e;
-    double m = wide_dyadic_frexp(a.w, &e);
+    /* The two limbs at the top of the value */
+    int i = a.w->len - 1;
+    double m = 0.0;
+    int e = 0;
+    if (a.w->sign != 0)
+    {
+      m = (double) a.w->limb[i];
+      if (i > 0)
+        m += ldexp((double) a.w->limb[i - 1], -64);
+      e = a.w->exp + 64 * i;
+    }
     r.v = ldexp(m, e) * (double) a.w->sign;
     /* The two limbs read hold the value to 2^-60 of it, and ldexp rounds
-     * once */
-    r.e = fabs(r.v) * 0x1p-50;
+     * once, by up to the least double where it leaves the normal range, down
+     * to 0 for a value no double reaches */
+    r.e = fabs(r.v) * 0x1p-50 + ((a.w->sign != 0) ? 0x1p-1074 : 0.0);
     return r;
   }
   double s = 0.0, mag = 0.0;
@@ -11366,6 +11527,14 @@ static ArcsegFilter
 tower_f_sqrt(ArcsegFilter h)
 {
   ArcsegFilter r;
+  /* A value that left the doubles bounds nothing, and fmax below would read
+   * one that is not a number as 0 */
+  if (! isfinite(h.v) || ! isfinite(h.e))
+  {
+    r.v = 0.0;
+    r.e = INFINITY;
+    return r;
+  }
   double s = sqrt(fmax(h.v, 0.0));
   double lo = h.v - h.e;
   r.v = s;
@@ -11382,6 +11551,13 @@ tower_dd_sqrt(DDBound h)
 {
   DDBound r;
   double v = h.hi + h.lo;
+  /* As #tower_f_sqrt */
+  if (! isfinite(v) || ! isfinite(h.e))
+  {
+    r.hi = r.lo = 0.0;
+    r.e = INFINITY;
+    return r;
+  }
   if (! (h.hi > 0.0))
   {
     r.hi = r.lo = 0.0;
