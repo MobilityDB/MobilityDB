@@ -1334,6 +1334,22 @@ temporal_tsample(const Temporal *temp, const Interval *duration,
  *****************************************************************************/
 
 /**
+ * @brief Return the flags selecting the distance of two temporal values, which
+ * reads only the dimensions both have, since a 2D point holds no Z to read: a
+ * value with no Z has any Z, so the distance is the 2D one, as in
+ * #geom_distance3d
+ * @param[in] inst1,inst2 Temporal instants, one of each value
+ */
+static int16
+similarity_flags(const TInstant *inst1, const TInstant *inst2)
+{
+  int16 flags = inst1->flags;
+  if (! MEOS_FLAGS_GET_Z(inst2->flags))
+    MEOS_FLAGS_SET_Z(flags, false);
+  return flags;
+}
+
+/**
  * @brief Return the distance between two temporal instants
  * @param[in] inst1,inst2 Temporal instants
  * @param[in] lfinfo Distance function of the spatial values and its
@@ -1375,7 +1391,8 @@ tinstarr_similarity1(double *dist, TInstant **instants1, int count1,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+  pt_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+    spheroid, &lfinfo);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -1649,9 +1666,11 @@ tinstarr_similarity_matrix1(TInstant **instants1, int count1,
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
   if (tgeo_type(temptype))
-    geo_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+    geo_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+      spheroid, &lfinfo);
   else if (tpoint_type(temptype))
-    pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+    pt_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+      spheroid, &lfinfo);
   for (int i = 0; i < count1; i++)
   {
     for (int j = 0; j < count2; j++)
@@ -1822,7 +1841,8 @@ tinstarr_hausdorff_distance(TInstant **instants1, int count1,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+  pt_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+    spheroid, &lfinfo);
   const TInstant *inst1, *inst2;
   double cmax = 0.0, cmin;
   double d;
@@ -2744,7 +2764,8 @@ tinstarr_average_hausdorff_distance(const TInstant **instants1, int count1,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+  pt_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+    spheroid, &lfinfo);
   const TInstant *inst1, *inst2;
   double sum1 = 0.0, sum2 = 0.0;
   double cmin, d;
@@ -2828,7 +2849,8 @@ tinstarr_lcss_distance(const TInstant **instants1, int count1,
 {
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-  pt_distance_lfinfo(instants1[0]->flags, spheroid, &lfinfo);
+  pt_distance_lfinfo(similarity_flags(instants1[0], instants2[0]),
+    spheroid, &lfinfo);
   int *prev = palloc0(sizeof(int) * (count2 + 1));
   int *curr = palloc0(sizeof(int) * (count2 + 1));
   for (int i = 1; i <= count1; i++)

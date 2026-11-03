@@ -3013,6 +3013,8 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
  * @note The answer is the double nearest the exact distance
+ * @note A geometry with no Z has any Z, so the answer is the distance in 2D, as
+ * in PostGIS
  * @errval -1.0
  */
 double
@@ -3028,6 +3030,8 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
    * distance, which is an answer */
   if (gserialized_is_empty(gs1) || gserialized_is_empty(gs2))
     return DBL_MAX;
+  if (! FLAGS_GET_Z(gs1->gflags) || ! FLAGS_GET_Z(gs2->gflags))
+    return geom_distance2d(gs1, gs2);
 
   /* Two geometries with Z of points and segments: the double nearest their 3D
    * distance, two points from their coordinates without deserializing them */
