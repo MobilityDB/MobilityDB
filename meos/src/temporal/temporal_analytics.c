@@ -176,13 +176,17 @@ tsequence_ext_kalman_filter(const TSequence *seq,
 
   double x0 = 0.0, y0 = 0.0, z0 = 0.0;
 
+  /* The only dispatch on the type: every later step reads the flag it sets */
+  bool point;
   if (temptype == T_TFLOAT)
   {
+    point = false;
     dims = 1;
     x0 = DatumGetFloat8(tinstant_value_p(inst0));
   }
   else if (temptype == T_TGEOMPOINT)
   {
+    point = true;
     MeosType basetype = temptype_basetype(seq->temptype);
     int16 flags = spatial_flags(tinstant_value_p(inst0), basetype);
     hasz = FLAGS_GET_Z(flags);
@@ -228,16 +232,14 @@ tsequence_ext_kalman_filter(const TSequence *seq,
   int outcount = 0;
 
   /* First output instant is the initial observation */
-  if (temptype == T_TFLOAT)
-  {
-    outinsts[outcount++] = tinstant_make(Float8GetDatum(x0), T_TFLOAT, inst0->t);
-  }
-  else /* T_TGEOMPOINT */
+  if (point)
   {
     GSERIALIZED *gsp = geopoint_make(x0, y0, z0, hasz, false, srid);
     outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gsp),
       T_TGEOMPOINT, inst0->t);
   }
+  else
+    outinsts[outcount++] = tinstant_make(Float8GetDatum(x0), T_TFLOAT, inst0->t);
 
   TimestampTz prev_t = inst0->t;
 
@@ -266,12 +268,12 @@ tsequence_ext_kalman_filter(const TSequence *seq,
     ekf_build_H_hx(H, hx, fx, dims);
 
     _float_t z[EKF_M] = {0};
-    if (temptype == T_TFLOAT)
+    if (! point)
     {
       double zval = DatumGetFloat8(tinstant_value_p(inst));
       z[0] = (_float_t) zval;
     }
-    else /* T_TGEOMPOINT */
+    else
     {
       if (hasz)
       {
@@ -306,12 +308,7 @@ tsequence_ext_kalman_filter(const TSequence *seq,
       if (!to_drop)
       {
         /* Keep predicted value without updating the state */
-        if (temptype == T_TFLOAT)
-        {
-          outinsts[outcount++] = tinstant_make(
-            Float8GetDatum((double) fx[0]), T_TFLOAT, inst->t);
-        }
-        else /* T_TGEOMPOINT */
+        if (point)
         {
           double x = fx[0];
           double y = fx[2];
@@ -320,6 +317,9 @@ tsequence_ext_kalman_filter(const TSequence *seq,
           outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
             T_TGEOMPOINT, inst->t);
         }
+        else
+          outinsts[outcount++] = tinstant_make(
+            Float8GetDatum((double) fx[0]), T_TFLOAT, inst->t);
       }
       /* Skip update to avoid contaminating state */
       prev_t = inst->t;
@@ -329,18 +329,16 @@ tsequence_ext_kalman_filter(const TSequence *seq,
     /* Inlier: update and emit filtered value */
     (void) ekf_update(&ekf, z, hx, H, Rm);
 
-    if (temptype == T_TFLOAT)
-    {
-      outinsts[outcount++] = tinstant_make(
-        Float8GetDatum((double) ekf.x[0]), T_TFLOAT, inst->t);
-    }
-    else /* T_TGEOMPOINT */
+    if (point)
     {
       double x = ekf.x[0], y = ekf.x[2], zpos = ekf.x[4];
       GSERIALIZED *gs = geopoint_make(x, y, zpos, hasz, false, srid);
       outinsts[outcount++] = tinstant_make_free(PointerGetDatum(gs),
         T_TGEOMPOINT, inst->t);
     }
+    else
+      outinsts[outcount++] = tinstant_make(
+        Float8GetDatum((double) ekf.x[0]), T_TFLOAT, inst->t);
     prev_t = inst->t;
   }
 
