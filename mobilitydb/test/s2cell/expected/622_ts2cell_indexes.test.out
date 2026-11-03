@@ -1,0 +1,1038 @@
+CREATE FUNCTION test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION
+DROP TABLE IF EXISTS tbl_ts2cell_src;
+NOTICE:  table "tbl_ts2cell_src" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ts2cell_src AS
+SELECT k, 4.0 + (k % 20) * 0.05 AS x, 50.0 + (k / 20) * 0.05 AS y,
+  timestamptz '2001-01-01' + k * interval '1 hour' AS t
+FROM generate_series(1, 240) k;
+SELECT 240
+DROP TABLE IF EXISTS tbl_ts2cell_idx;
+NOTICE:  table "tbl_ts2cell_idx" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ts2cell_idx AS
+SELECT k, ts2cell(geoToS2Cell(geography(ST_SetSRID(ST_MakePoint(x, y), 4326)), 12), t) AS temp
+FROM tbl_ts2cell_src WHERE k <= 100
+UNION ALL
+SELECT k, ts2cell(tgeogpoint(format('[Point(%s %s)@%s, Point(%s %s)@%s)',
+    x, y, t, x + 0.04, y + 0.04, t + interval '3 hours')), 12)
+FROM tbl_ts2cell_src WHERE k > 100 AND k <= 200
+UNION ALL
+SELECT k, ts2cell(geoToS2Cell(geography(ST_SetSRID(ST_MakePoint(4.5, 51.5), 4326)), 12),
+    tstzspan(format('[%s, %s)', t, t + interval '1 hour')))
+FROM tbl_ts2cell_src WHERE k > 200;
+SELECT 240
+ANALYZE tbl_ts2cell_idx;
+ANALYZE
+DROP TABLE IF EXISTS tbl_ts2cell_box;
+NOTICE:  table "tbl_ts2cell_box" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ts2cell_box AS
+SELECT temp::stbox AS b FROM tbl_ts2cell_idx WHERE k % 4 = 0
+UNION ALL
+SELECT expandTime(expandSpace(temp::stbox, 0.1), interval '1 day')
+FROM tbl_ts2cell_idx WHERE k % 4 = 1
+UNION ALL
+SELECT stbox(format('SRID=4326;GEODSTBOX XT(((%s,%s),(%s,%s)),[%s,%s])',
+    x + 0.02, y + 0.02, x + 0.021, y + 0.021, t + interval '1 hour',
+    t + interval '2 hours'))
+FROM tbl_ts2cell_src WHERE k > 100 AND k <= 200 AND k % 4 = 2;
+SELECT 145
+ANALYZE tbl_ts2cell_box;
+ANALYZE
+DROP TABLE IF EXISTS tbl_ts2cell_xbox;
+NOTICE:  table "tbl_ts2cell_xbox" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ts2cell_xbox AS
+SELECT stbox(format('SRID=4326;GEODSTBOX X((%s,%s),(%s,%s))', x, y, x + 0.1, y + 0.1)) AS b
+FROM tbl_ts2cell_src WHERE k % 4 = 3
+UNION ALL
+SELECT stbox(format('SRID=4326;GEODSTBOX X((%s,%s),(%s,%s))',
+    x + 0.02, y + 0.02, x + 0.021, y + 0.021))
+FROM tbl_ts2cell_src WHERE k > 100 AND k <= 200 AND k % 4 = 2
+UNION ALL
+SELECT stbox(format('SRID=4326;GEODSTBOX X((%s,%s),(%s,%s))',
+    xmin(temp::stbox), ymin(temp::stbox), xmax(temp::stbox), ymax(temp::stbox)))
+FROM tbl_ts2cell_idx WHERE k % 4 = 0
+UNION ALL
+SELECT stbox(format('SRID=4326;GEODSTBOX X((%s,%s),(%s,%s))',
+    xmax(temp::stbox), ymin(temp::stbox), xmax(temp::stbox) + 0.1, ymax(temp::stbox)))
+FROM tbl_ts2cell_idx WHERE k % 4 = 1;
+SELECT 205
+ANALYZE tbl_ts2cell_xbox;
+ANALYZE
+DROP TABLE IF EXISTS tbl_ts2cell_span;
+NOTICE:  table "tbl_ts2cell_span" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_ts2cell_span AS
+SELECT temp::tstzspan AS t FROM tbl_ts2cell_idx WHERE k % 4 = 0
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', t - interval '1 day', t + interval '1 day'))
+FROM tbl_ts2cell_src WHERE k % 4 = 1
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', t + interval '1 hour', t + interval '2 hours'))
+FROM tbl_ts2cell_src WHERE k > 100 AND k <= 200 AND k % 4 = 2
+UNION ALL
+SELECT tstzspan(format('[%s, %s)', t - interval '1 hour', t))
+FROM tbl_ts2cell_src WHERE k % 4 = 3;
+SELECT 205
+ANALYZE tbl_ts2cell_span;
+ANALYZE
+DROP TABLE IF EXISTS test_ts2cell_idx;
+NOTICE:  table "test_ts2cell_idx" does not exist, skipping
+DROP TABLE
+CREATE TABLE test_ts2cell_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+  kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
+  kdtree_probe boolean);
+CREATE TABLE
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<< ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&< ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&& ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('>> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('~= ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('@> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<@ ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<| ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<| ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|>> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|&> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('-|- ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<# ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<# ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#>> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#&> ts2cell', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<< stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<| stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<| stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|>> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|&> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<# stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#>> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<< stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&< stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&& stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&> stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('>> stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('~= stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('@> stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<@ stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('&<| stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('<<| stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|>> stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('|&> stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b)::text);
+INSERT 0 1
+INSERT INTO test_ts2cell_idx(op, no_idx) VALUES ('-|- stbox x', (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT 0 1
+SET enable_seqscan = off;
+SET
+SELECT test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b') AS no_index_probe;
+ no_index_probe 
+----------------
+ f
+(1 row)
+
+RESET enable_seqscan;
+RESET
+CREATE INDEX tbl_ts2cell_idx_rtree ON tbl_ts2cell_idx USING gist(temp);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_ts2cell_idx_rtree;
+DROP INDEX
+CREATE INDEX tbl_ts2cell_idx_quadtree ON tbl_ts2cell_idx USING spgist(temp);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_ts2cell_idx_quadtree;
+DROP INDEX
+CREATE INDEX tbl_ts2cell_idx_kdtree ON tbl_ts2cell_idx USING spgist(temp ts2cell_kdtree_ops);
+CREATE INDEX
+SET enable_seqscan = off;
+SET
+SET enable_hashjoin = off;
+SET
+SET enable_mergejoin = off;
+SET
+SET enable_sort = off;
+SET
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_idx t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> ts2cell';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE 1
+UPDATE test_ts2cell_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_ts2cell_idx t1, tbl_ts2cell_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE 1
+RESET enable_seqscan;
+RESET
+RESET enable_hashjoin;
+RESET
+RESET enable_mergejoin;
+RESET
+RESET enable_sort;
+RESET
+DROP INDEX tbl_ts2cell_idx_kdtree;
+DROP INDEX
+SELECT op, split_part(no_idx, ':', 1) AS no_idx FROM test_ts2cell_idx ORDER BY op;
+      op      | no_idx 
+--------------+--------
+ #&> stbox    | 18066
+ #&> ts2cell  | 28920
+ #&> tstzspan | 25326
+ #>> stbox    | 15066
+ #>> ts2cell  | 28480
+ #>> tstzspan | 22316
+ && stbox     | 1249
+ && stbox x   | 1748
+ && ts2cell   | 428
+ && tstzspan  | 3210
+ &< stbox     | 18294
+ &< stbox x   | 27258
+ &< ts2cell   | 29700
+ &<# stbox    | 19557
+ &<# ts2cell  | 28922
+ &<# tstzspan | 26626
+ &<| stbox    | 20088
+ &<| stbox x  | 26508
+ &<| ts2cell  | 29700
+ &> stbox     | 19966
+ &> stbox x   | 23403
+ &> ts2cell   | 29700
+ -|- stbox    | 51
+ -|- stbox x  | 476
+ -|- ts2cell  | 178
+ -|- tstzspan | 370
+ << stbox     | 13717
+ << stbox x   | 23174
+ << ts2cell   | 25480
+ <<# stbox    | 16584
+ <<# ts2cell  | 28480
+ <<# tstzspan | 23674
+ <<| stbox    | 14328
+ <<| stbox x  | 22008
+ <<| ts2cell  | 24529
+ <@ stbox     | 952
+ <@ stbox x   | 470
+ <@ ts2cell   | 240
+ <@ tstzspan  | 2802
+ >> stbox     | 15312
+ >> stbox x   | 20112
+ >> ts2cell   | 25480
+ @> stbox     | 85
+ @> stbox x   | 475
+ @> ts2cell   | 240
+ @> tstzspan  | 195
+ |&> stbox    | 18559
+ |&> stbox x  | 23733
+ |&> ts2cell  | 29700
+ |>> stbox    | 12681
+ |>> stbox x  | 19448
+ |>> ts2cell  | 24529
+ ~= stbox     | 60
+ ~= stbox x   | 450
+ ~= ts2cell   | 240
+ ~= tstzspan  | 70
+(56 rows)
+
+SELECT * FROM test_ts2cell_idx
+WHERE no_idx IS DISTINCT FROM rtree_idx OR no_idx IS DISTINCT FROM quadtree_idx OR
+  no_idx IS DISTINCT FROM kdtree_idx OR NOT rtree_probe OR NOT quadtree_probe OR
+  NOT kdtree_probe
+ORDER BY op;
+ op | no_idx | rtree_idx | quadtree_idx | kdtree_idx | rtree_probe | quadtree_probe | kdtree_probe 
+----+--------+-----------+--------------+------------+-------------+----------------+--------------
+(0 rows)
+
+DROP TABLE test_ts2cell_idx;
+DROP TABLE
+DROP TABLE tbl_ts2cell_span;
+DROP TABLE
+DROP TABLE tbl_ts2cell_xbox;
+DROP TABLE
+DROP TABLE tbl_ts2cell_box;
+DROP TABLE
+DROP TABLE tbl_ts2cell_idx;
+DROP TABLE
+DROP TABLE tbl_ts2cell_src;
+DROP TABLE
+DROP FUNCTION test_probes_index(text);
+DROP FUNCTION
