@@ -110,18 +110,18 @@ subtypes:
     details:
       spatialrels: *cell_spatialrels_geodetic
 
-  # ---- reference families (validate self-regeneration == committed; not new) ----
+  # ---- circular buffers: the four inherited files the templates were cut from ----
   - temp:  tcbuffer
     base:  cbuffer
     brief: "temporal circular buffers"
     bin:   200
     category: tspatial
-    reference: true
     # Its set of base values is indexed beside it, by the box the set stores.
     setindex: true
     setmetric: true
     files: [compops, posops, topops, indexes]
 
+  # ---- reference families (validate self-regeneration == committed; not new) ----
   # tjsonb's compops surface (base jsonb, eq/ne only, tspatial_supportfn/_sel) is
   # byte-identical in shape to this template's single-pair output, so it converges
   # here from the compops_families items/lit axis rather than staying a second
@@ -136,7 +136,7 @@ subtypes:
     files: [compops]
 
   # ---- converted families: the combined `indexes` opclass file is now generated ----
-  # These reproduce the cbuffer reference byte-for-byte (npoint's non-canonical index
+  # These reproduce the cbuffer files byte-for-byte (npoint's non-canonical index
   # doc-comment header is normalised to the shared form). Their other inherited files
   # are still hand-maintained and will be migrated incrementally.
   - temp:  tnpoint
