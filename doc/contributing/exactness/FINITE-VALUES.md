@@ -198,7 +198,8 @@ nearest approach distances of float boxes and spans, whose `DBL_MAX` answers "no
 A missing answer is no error: a `@note` states it, `meos_errno()` stays 0, and the PostgreSQL
 function answers `NULL`. At the SQL level a failed call is an `ERROR`, a missing answer `NULL`,
 and `DBL_MAX` an answer. `tools/scripts/check_error_sentinels.py` checks each tag against its
-return. PR 1 refuses ±Infinity as a value and leaves every error value as it is.
+return. PR 1 refuses ±Infinity as a value and leaves every error value as it is. MobilityDB #3386 moves every
+distance and every `int64` count to -1 (section 6).
 
 ## 6. Topics the campaign leaves, each a pull request of its own
 
@@ -209,6 +210,6 @@ return. PR 1 refuses ±Infinity as a value and leaves every error value as it is
 | The integer sums and deltas raise on overflow | the sum and the delta of a temporal integer and a temporal big integer overflow with no error |
 | The area of a geometry is exact at every magnitude | `geom_area` raises "not supported" where scaling the geometry into 2^-500 to 2^500 is not exact, such as coordinates near the largest double beside coordinates the scaling by 2^-523 rounds; the exact area sums the shoelace terms in expansions, then `WideDyadic` |
 | The temporal distance of a temporal point to a geometry of segments is exact | `tpoint_linear_distance_geom` takes the root of a square rounded in doubles behind an absolute tolerance of 1e-12; an entry of [Exact distance](EXACT-DISTANCE.md), MobilityDB #3287 |
-| One error value per function returning a double | 12 public functions returning a double document `DBL_MAX` both as their `@errval` and as the missing answer of a `@note`: `geom_distance`, `geom_distance2d`, `geom_distance3d`, `geom_max_distance2d`, `geom_max_distance3d`, `geog_distance`, `nad_stbox_stbox`, `nad_tgeo_stbox`, `nad_tgeo_tgeo`, `nad_tpcbox_tpcbox`, `nad_tpointcloud_tpcbox`, `nad_tpointcloud_tpointcloud` |
-| The `int64` counts take the error value of the `int` counts | `tpcpatch_npoints` and `bandstats_count` document `INT64_MAX` where the `int` counts take -1; the count rule of `check_error_sentinels.py` reads `int` alone |
-| Every nearest approach distance states its error value | 31 of the 58 `nad_*` functions of the MEOS headers carry no `@errval` tag, such as `nad_tbox_tbox`, `nad_tnumber_tnumber` and `nad_tcbuffer_tcbuffer` |
+| One error value per function returning a double | 12 public functions returning a double document `DBL_MAX` both as their `@errval` and as the missing answer of a `@note`: `geom_distance`, `geom_distance2d`, `geom_distance3d`, `geom_max_distance2d`, `geom_max_distance3d`, `geog_distance`, `nad_stbox_stbox`, `nad_tgeo_stbox`, `nad_tgeo_tgeo`, `nad_tpcbox_tpcbox`, `nad_tpointcloud_tpcbox`, `nad_tpointcloud_tpointcloud`; answered by MobilityDB #3386: as the owner ruled on 2026-11-02, every distance answers -1 where it raises an error and `DBL_MAX` stays the missing answer |
+| The `int64` counts take the error value of the `int` counts | `tpcpatch_npoints` and `bandstats_count` document `INT64_MAX` where the `int` counts take -1; the count rule of `check_error_sentinels.py` reads `int` alone; answered by MobilityDB #3386, which answers -1, and the count rule reads `int64` as well |
+| Every nearest approach distance states its error value | 31 of the 58 `nad_*` functions of the MEOS headers carry no `@errval` tag, such as `nad_tbox_tbox`, `nad_tnumber_tnumber` and `nad_tcbuffer_tcbuffer`; answered by MobilityDB #3386, whose third commit states the `@errval` tags, the checker refusing a function that returns an error value and states none |
