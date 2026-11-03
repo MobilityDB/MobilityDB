@@ -12,8 +12,8 @@
 
 | | |
 |---|---|
-| Version | v0.1.0 |
-| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances |
+| Version | v0.2.0 |
+| Scope | What the native geometry engine of MEOS answers, how it computes the answer, and what lies outside it; this version covers distances, predicates and relationships |
 | Reference | `meos/src/geo/geo_funcs.c` (the exact kernels), `meos/src/geo/tgeo_distance.c` (the distances of moving values), `meos/test/distance_point_test.c` (the witnesses quoted below) |
 
 ## 1. Scope and intent
@@ -88,7 +88,7 @@ closest point on an arc (`dist_geom_closest_on_arc`) and the turning points of
 the distance of a moving point (`tpoint_geo_distance_turnpt`). The exactness
 plan of the project, MobilityDB #3287, lists them and the changes that decide
 each one exactly. The answers this document states are the ones the CGAL
-judges check (section 7).
+judges check (section 8).
 
 ## 4. How the engine reaches an exact answer
 
@@ -180,7 +180,59 @@ bits from the distance measured on a value MEOS returns rounded: the point
 the distance of that point to a geometry can differ by a few ulps from the
 temporal distance at that time.
 
-## 6. What lies outside
+## 6. Predicates and relationships
+
+### 6.1 Questions about the input
+
+A question that reads only the doubles of the input is decided exactly, at any
+scale, by the filter and the exact layer of section 4: the side of a line a
+point lies on (`cross_product_sign`), whether two segments meet
+(`linesegm_intersect`), and whether the distance of a point to a segment is
+less than, equal to or more than a given distance
+(`point_segment_offset_sign`).
+
+### 6.2 Two static geometries within a distance
+
+Whether two geometries of points and straight edges are within a distance in
+two dimensions is the exact answer. In MobilityDB, `dwithin(geometry, geometry,
+float)` answers it unless both geometries have Z; in MEOS, `geom_dwithin2d`.
+The distance given is itself a rational, and the answer compares the exact
+distance with it, whatever double the exact distance rounds to.
+
+| Operands | Distance | Answer | Why it needs care |
+|---|---|---|---|
+| `POINT(0 0)`, `POINT(2 3)` | `3.605551275463989` | false | the distance, the square root of 13, lies just above this double, which is the nearest double to it |
+| `POINT(0 0)`, `POINT(2 3)` | `3.6055512754639896` | true | the next double, above the distance |
+| `POINT(0 0)`, `POINT(1 2)` | `2.23606797749979` | true | the square root of 5 lies just below the nearest double to it |
+| `POINT(0.5 5e-324)`, `LINESTRING(0 0,1 0)` | `0` | false | the two are apart by the least double there is |
+| a square, a point inside it | `0` | true | the point is on no edge, and the area holds it |
+
+A distance read in three dimensions, or a geometry carrying an arc, compares the
+given distance with a distance in doubles, so the answer can differ from the
+exact one where the two lie within its rounding.
+
+### 6.3 Relationships
+
+The relationships of two geometries, `intersects`, `contains`, `covers`,
+`touches`, `disjoint` and the DE-9IM matrix of `relate`, are not exact answers
+of this engine. A relationship of two geometries is about the points where
+their boundaries meet, and two edges crossing cross at a point that is in
+general no pair of doubles. The engine builds that point, rounded, and classifies
+it against the other geometry within a tolerance sized to the construction
+(`coordinate_tolerance`, `MEOS_GEOM_TOLERANCE`, section 3), in the functions of
+`meos/src/geo/geo_funcs.c` named `relate_*`.
+
+Asking an exact question of that rounded point would answer about its rounding,
+not about the input: the point is not on the edge it was built from. A decision
+with no tolerance therefore needs the arrangement of the two geometries, whose
+vertices are held exactly and never located by a rounded coordinate. Step 16 of
+the exact buffer plan of the project, MobilityDB #3287, reads the relationship
+of two areal operands off that arrangement.
+
+The temporal relationships inherit this: at an instant they read the same
+engine.
+
+## 7. What lies outside
 
 - **Geodetic distances.** A distance on the spheroid is not a rational of the
   coordinates; MEOS computes it by iteration, accurate to the iteration and
@@ -196,7 +248,7 @@ temporal distance at that time.
   (see [Finite Values](meos-finite-values.md)); the exact answer is defined
   for finite doubles.
 
-## 7. How the answers are checked
+## 8. How the answers are checked
 
 The reference for every exact answer of the engine is CGAL, an independent
 library of exact geometry, computing on the same doubles in exact rational
