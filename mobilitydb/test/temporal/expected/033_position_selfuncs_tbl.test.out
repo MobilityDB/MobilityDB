@@ -59,6 +59,31 @@ ORDER BY n;
  #>> | <<#  |         3669 |           3669
 (2 rows)
 
+SELECT op,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOXFLOAT XT([30, 60],[2001-04-01, 2001-08-01])')) AS box_xt,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOXFLOAT X([30, 60])')) AS box_x,
+  test_estimated_rows(format(
+    'SELECT * FROM tbl_tfloat_possel WHERE temp %s tbox %L', op,
+    'TBOX T([2001-04-01, 2001-08-01])')) AS box_t
+FROM unnest(ARRAY['<<', '&<', '>>', '&>', '<<#', '&<#', '#>>', '#&>'])
+  WITH ORDINALITY AS t(op, n)
+ORDER BY n;
+ op  | box_xt | box_x | box_t 
+-----+--------+-------+-------
+ <<  |    694 |   694 |  3333
+ &<  |   2275 |  2275 |  3333
+ >>  |   1734 |  1734 |  3333
+ &>  |   3508 |  3508 |  3333
+ <<# |   3020 |  3333 |  3020
+ &<# |   5990 |  3333 |  5990
+ #>> |   4010 |  3333 |  4010
+ #&> |   6980 |  3333 |  6980
+(8 rows)
+
 DROP TABLE tbl_tbool_possel;
 DROP TABLE
 DROP TABLE tbl_tfloat_possel;
