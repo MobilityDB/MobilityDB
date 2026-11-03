@@ -479,6 +479,24 @@ SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0)', 1.5);
  t
 (1 row)
 
+SELECT dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.605551275463989),
+  dwithin(geometry 'Point(0 0)', geometry 'Point(2 3)', 3.6055512754639896),
+  dwithin(geometry 'Point(0 0)', geometry 'Point(1 2)', 2.23606797749979);
+ dwithin | dwithin | dwithin 
+---------+---------+---------
+ f       | t       | t
+(1 row)
+
+SELECT dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
+    geometry 'Linestring(0 0,1 4.9406564584124654e-324)', 0),
+  dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
+    geometry 'Linestring(0 0,1 0)', 0),
+  dwithin(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)', 0);
+ dwithin | dwithin | dwithin 
+---------+---------+---------
+ f       | f       | t
+(1 row)
+
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
 ERROR:  The geometry cannot have Z dimension
 SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');
