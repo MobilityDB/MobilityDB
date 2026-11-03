@@ -831,7 +831,8 @@ def render_tempbox_sql(bt: dict, stanza: dict, ops: list, pos: bool = False) -> 
     a pair, over the operations of boxposops.yaml on the axes the pair lists after
     its C suffix, as #_boxbox_groups pairs each group with its axes. The stanza's
     `opnames` renames an operator symbol, in the operator and in the commutator
-    naming it."""
+    naming it; a temporal type's `axes` keeps of each pair the axes it lists, as
+    a geodetic type compares the time of its box alone."""
     banner, divider, fn_t, topo_t, pos_t = \
         read_template("tempbox.sql.tmpl").rstrip("\n").split("\n\n")
     opnames = stanza.get("opnames", {})
@@ -861,8 +862,10 @@ def render_tempbox_sql(bt: dict, stanza: dict, ops: list, pos: bool = False) -> 
     for temp in stanza["temps"]:
         names = {"{T}": temp["temp"], "{SPAN}": temp.get("span", "")}
         if pos:
+            axes = temp.get("axes")
             blocks = [block(names, [(o, pair[:3]) for o in ops
-                                    if o["axis"] in pair[3]])
+                                    if o["axis"] in pair[3]
+                                    and (axes is None or o["axis"] in axes)])
                       for group in stanza["groups"] for pair in group]
         else:
             blocks = [block(names, [(o, pair[:3]) for pair in group])
@@ -5082,6 +5085,31 @@ def rendered_subtype_types(axis: str, subtypes: list, candidates: list) -> set:
     return out
 
 
+# The axis a `tempsql` stanza of a box type serves, with the operations it renders
+# and whether it renders their position form.
+TEMPBOX_AXIS_OPS = {
+    "topop_families": ("boxtopops", False),
+    "posop_families": ("boxposops", True),
+}
+
+
+def rendered_tempbox_types(axis: str, mf: dict, candidates: list) -> set:
+    """The temporal types the `tempsql` stanzas of the box types declare a surface
+    for on this axis, measured on their rendered SQL as #rendered_subtype_types
+    measures that of the subtypes: mechanism."""
+    if axis not in TEMPBOX_AXIS_OPS:
+        return set()
+    key, pos = TEMPBOX_AXIS_OPS[axis]
+    out = set()
+    for bt in mf.get("boxtypes") or []:
+        for stanza in tempsql_stanzas(bt):
+            sql = render_tempbox_sql(bt, stanza, mf.get(key, []), pos=pos)
+            for decl in DECLARATION.finditer(sql):
+                subject = RETURNS_CLAUSE.sub("", decl.group(0))
+                out.update(_decl_subject(subject, candidates))
+    return out
+
+
 def report_gaps(mf: dict) -> int:
     """Per behaviour, which members of its class its rendered SQL does not name.
 
@@ -5112,7 +5140,8 @@ def report_gaps(mf: dict) -> int:
             continue
         scored_on = "temporal"
         have = (rendered_temp_types(axis, entries, every)
-                | rendered_subtype_types(axis, subtypes, every))
+                | rendered_subtype_types(axis, subtypes, every)
+                | rendered_tempbox_types(axis, mf, every))
         if not have and value_domain:
             scored_on = "value domain"
             have = (rendered_temp_types(axis, entries, value_domain)
