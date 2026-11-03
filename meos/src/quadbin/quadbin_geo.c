@@ -510,6 +510,7 @@ geo_to_quadbin_set(const GSERIALIZED *gs, int32 resolution)
  * @param[in] cells Set of QUADBIN cells
  * @param[in] tqb Temporal QUADBIN cell
  * @csqlfn #Ever_eq_quadbinset_tquadbin()
+ * @errval -1
  */
 int
 ever_eq_quadbinset_tquadbin(const Set *cells, const Temporal *tqb)
@@ -530,6 +531,7 @@ ever_eq_quadbinset_tquadbin(const Set *cells, const Temporal *tqb)
  * @param[in] tqb Temporal QUADBIN cell
  * @param[in] cells Set of QUADBIN cells
  * @csqlfn #Ever_eq_tquadbin_quadbinset()
+ * @errval -1
  */
 int
 ever_eq_tquadbin_quadbinset(const Temporal *tqb, const Set *cells)

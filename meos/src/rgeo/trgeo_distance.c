@@ -53,6 +53,7 @@
 #include "temporal/temporal.h"
 #include "temporal/temporal_aggfuncs.h"
 #include "temporal/temporal_compops.h"
+#include "temporal/lifting.h"
 #include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
@@ -960,7 +961,15 @@ tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
     lwgeom_free(ref);
     ops.refxy = body.xy;
     ops.nref = body.npts;
+    /* An error raised for one of the instants makes the answer NULL, as the
+     * entry functions of lifting.c answer it */
+#if MEOS
+    int last_errno = meos_errno_reset();
+    result = (Temporal *) lifting_result(dist_temporal(&ops, temp, NULL),
+      last_errno);
+#else
     result = dist_temporal(&ops, temp, NULL);
+#endif /* MEOS */
     pfree(ops.refxy);
     dist_parts_free(ops.parts, ops.nparts);
   }
@@ -1005,7 +1014,15 @@ tdistance_trgeometry_temporal(const Temporal *temp1, const Temporal *temp2,
   if (intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
   {
+    /* An error raised for one of the instants makes the answer NULL, as the
+     * entry functions of lifting.c answer it */
+#if MEOS
+    int last_errno = meos_errno_reset();
+    result = (Temporal *) lifting_result(dist_temporal(&ops, sync1, sync2),
+      last_errno);
+#else
     result = dist_temporal(&ops, sync1, sync2);
+#endif /* MEOS */
     pfree(sync1); pfree(sync2);
   }
   distrefpoly_free(&ops.body1);
@@ -1260,7 +1277,10 @@ trgeometry_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2
     /* The two values share one instant: the distance of the placed bodies */
     GSERIALIZED *geo1 = pose_apply_geo(p1, dw->ops->ref1);
     GSERIALIZED *geo2 = pose_apply_geo(p2, dw->ops->ref2);
-    result = geom_distance2d(geo1, geo2) <= dw->dist;
+    /* A distance raising an error, -1.0, places the bodies within no
+     * distance */
+    double d = geom_distance2d(geo1, geo2);
+    result = d >= 0.0 && d <= dw->dist;
     pfree(geo1); pfree(geo2);
   }
   else
@@ -1688,20 +1708,25 @@ nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a geometry
  * @csqlfn #NAD_trgeometry_geo() #NAD_geo_trgeometry()
+ * @errval -1.0
  */
 double
 nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeometry_geo(temp, gs) ||
-      ! ensure_has_not_Z(temp->temptype, temp->flags) ||
-      gserialized_is_empty(gs))
+      ! ensure_has_not_Z(temp->temptype, temp->flags))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
+  /* A geometry is defined at every instant of the temporal value, so the
+   * temporal distance is NULL only where it raises an error */
   Temporal *dist = tdistance_trgeometry_geo_intl(temp, gs, -1.0);
-  if (dist == NULL)
-    return DBL_MAX;
-
+  if (! dist)
+    return -1.0;
   double result = DatumGetFloat8(temporal_min_value(dist));
   pfree(dist);
   return result;
@@ -1712,6 +1737,7 @@ nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a spatiotemporal box
  * @csqlfn #NAD_trgeometry_stbox() #NAD_stbox_trgeometry()
+ * @errval -1.0
  */
 double
 nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
@@ -1719,7 +1745,7 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_trgeometry_stbox(temp, box) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project the temporal value to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -1740,18 +1766,16 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
   }
   /* Convert the stbox to a geometry */
   GSERIALIZED *geo = stbox_geo(box);
-  /* Compute the result */
+  /* Compute the result. The time the operands share is decided above, so the
+   * temporal distance is NULL only where it raises an error */
   Temporal *dist = tdistance_trgeometry_geo_intl(temp1, geo, -1.0);
-  if (dist == NULL)
+  double result = -1.0;
+  if (dist)
   {
-    pfree(geo);
-    if (hast)
-      pfree(temp1);
-    return DBL_MAX;
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
   }
-
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist); pfree(geo);
+  pfree(geo);
   if (hast)
     pfree(temp1);
   return result;
@@ -1761,6 +1785,7 @@ nad_trgeometry_stbox(const Temporal *temp, const STBox *box)
  * @ingroup meos_rgeo_dist
  * @brief Return the nearest approach distance between a spatiotemporal box and
  * a temporal rigid geometry
+ * @errval -1.0
  */
 double
 nad_stbox_trgeometry(const STBox *box, const Temporal *temp)
@@ -1773,6 +1798,7 @@ nad_stbox_trgeometry(const STBox *box, const Temporal *temp)
  * @brief Return the nearest approach distance between a temporal rigid
  * geometry and a temporal point
  * @csqlfn #NAD_trgeometry_tpoint() #NAD_tpoint_trgeometry()
+ * @errval -1.0
  */
 double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
@@ -1781,15 +1807,25 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_trgeometry_tpoint(temp1, temp2) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return DBL_MAX;
+    return -1.0;
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_trgeometry_tpoint_intl(temp1, temp2, -1.0);
-  if (dist == NULL)
-    return DBL_MAX;
-
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /**
@@ -1797,6 +1833,7 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
  * @brief Return the nearest approach distance between two temporal rigid
  * geometries
  * @csqlfn #NAD_trgeometry_trgeometry()
+ * @errval -1.0
  */
 double
 nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
@@ -1805,15 +1842,25 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_trgeometry_trgeometry(temp1, temp2) ||
       ! ensure_has_not_Z(temp1->temptype, temp1->flags) ||
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
-    return DBL_MAX;
+    return -1.0;
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_trgeometry_trgeometry_intl(temp1, temp2, -1.0);
-  if (dist == NULL)
-    return DBL_MAX;
-
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /*****************************************************************************

@@ -663,7 +663,9 @@ quadbin_k_ring(Quadbin cell, int k, int *count)
  * distance of the cell and no tile beyond an edge of the grid, so the grid
  * distance is the Chebyshev distance of the two tiles
  * @param[in] origin,dest Quadbin cells
- * @return The distance, -1 when the zooms differ
+ * @return The distance
+ * @errval -1
+ * @note A distance is never negative, so -1 states an error
  */
 int64
 quadbin_grid_distance(Quadbin origin, Quadbin dest)

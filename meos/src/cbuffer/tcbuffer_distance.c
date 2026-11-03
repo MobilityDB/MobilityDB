@@ -995,6 +995,7 @@ tcbufferseq_nad(const TSequence *seq, const DistGeom *g, DistNad *n)
 /**
  * @brief Nearest approach distance between a temporal circular buffer and a
  * geometry
+ * @note The distance is -1.0 where reading far coordinates raises an error
  */
 static double
 nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
@@ -1010,11 +1011,11 @@ nad_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs)
     {
       if (t2)
         pfree(t2);
-      return DBL_MAX;
+      return -1.0;
     }
     double result = nad_tcbuffer_geo_analytic(t2, g2);
     pfree(t2); pfree(g2);
-    return result / GEO_FAR_SCALE;
+    return result < 0.0 ? -1.0 : result / GEO_FAR_SCALE;
   }
 
   /* A geometry that has no edge decomposition, or no segments: fall back to
@@ -2122,13 +2123,14 @@ tcbufferseg_boundary_roots(const Cbuffer *cb1, const Cbuffer *cb2,
  * @param[in] cb Circular buffer
  * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_cbuffer_stbox() #NAD_stbox_cbuffer()
+ * @errval -1.0
  */
 double
 nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_stbox(cb, box))
-    return DBL_MAX;
+    return -1.0;
 
   Datum geocbuf = PointerGetDatum(cbuffer_to_geom(cb));
   Datum geobox = PointerGetDatum(stbox_geo(box));
@@ -2146,19 +2148,24 @@ nad_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
  * @param[in] temp Temporal circular buffer
  * @param[in] gs Geometry
  * @csqlfn #NAD_tcbuffer_geo() #NAD_geo_tcbuffer()
+ * @errval -1.0
  */
 double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
   double result = nad_tcbuffer_geo_analytic(temp, gs);
   /* A distance of finite operands can exceed the largest double
    * (#ensure_finite_result) */
   if (! ensure_finite_result(result))
-    return DBL_MAX;
+    return -1.0;
   return result;
 }
 
@@ -2169,13 +2176,14 @@ nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
  * @param[in] temp Temporal circular buffer
  * @param[in] box Spatiotemporal box
  * @csqlfn #NAD_tcbuffer_stbox() #NAD_stbox_tcbuffer()
+ * @errval -1.0
  */
 double
 nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_stbox(temp, box))
-    return DBL_MAX;
+    return -1.0;
 
   /* Project the temporal value to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -2209,13 +2217,14 @@ nad_tcbuffer_stbox(const Temporal *temp, const STBox *box)
  * @param[in] temp Temporal circular buffer
  * @param[in] cb Circular buffer
  * @csqlfn #NAD_tcbuffer_cbuffer() #NAD_cbuffer_tcbuffer()
+ * @errval -1.0
  */
 double
 nad_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_cbuffer(temp, cb))
-    return DBL_MAX;
+    return -1.0;
 
   /* A static disc is a constant temporal circular buffer, so the nearest
    * approach distance is the exact plane-sweep spatial minimum the two-temporal
@@ -2260,13 +2269,14 @@ tcbufferseg_distance_lb(Datum start1, Datum end1, Datum start2, Datum end2)
  * @brief Return the nearest approach distance of two temporal circular buffers
  * @param[in] temp1,temp2 Temporal circular buffers
  * @csqlfn #NAD_tcbuffer_tcbuffer()
+ * @errval -1.0
  */
 double
 nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
   /* Fast path: linear temporal circular buffers via the time-synchronous
    * running minimum, avoiding the temporal distance materialization. A finite
@@ -2280,12 +2290,23 @@ nad_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2)
       return d;
   }
 
+#if MEOS
+  int last_errno = meos_errno_reset();
+#endif /* MEOS */
   Temporal *dist = tdistance_tcbuffer_tcbuffer(temp1, temp2);
-  if (dist == NULL)
-    return DBL_MAX;
-  double result = DatumGetFloat8(temporal_min_value(dist));
-  pfree(dist);
+  /* The temporal distance is NULL where the operands share no time, which
+   * is an answer, and where it raises an error */
+  double result = DBL_MAX;
+  if (dist)
+  {
+    result = DatumGetFloat8(temporal_min_value(dist));
+    pfree(dist);
+  }
+#if MEOS
+  return distance_result(result, last_errno);
+#else
   return result;
+#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -2727,6 +2748,7 @@ mindist_tcbuffer_tcbuffer_threshold(const Temporal *temp1,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] threshold Running minimum from a calling aggregate; pass
  *   @c DBL_MAX for unconditional evaluation
+ * @errval -1.0
  */
 double
 mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -2734,9 +2756,9 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
 {
   /* Ensure the validity of the arguments */
   if (! ensure_finite(threshold))
-    return DBL_MAX;
+    return -1.0;
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
-    return DBL_MAX;
+    return -1.0;
 
   /* Outer STBox prune.  The STBox of a tcbuffer encloses every point any
    * disc visits, so the minimum spatial distance is bounded below by the
@@ -2749,6 +2771,8 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
     const STBox *bbox1 = (const STBox *) temporal_bbox_ptr(temp1);
     const STBox *bbox2 = (const STBox *) temporal_bbox_ptr(temp2);
     double bbox_dist = stbox_spatial_distance(bbox1, bbox2);
+    if (bbox_dist < 0.0)
+      return -1.0;
     if (bbox_dist >= threshold)
       return threshold;
   }
@@ -2768,7 +2792,7 @@ mindistance_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] arr1,arr2 Arrays of temporal circular buffers
  * @param[in] count1,count2 Array lengths
  * @return Minimum spatial distance, DBL_MAX for an empty array
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Mindistance_tcbufferarr_tcbufferarr()
  */
 double
@@ -2776,20 +2800,20 @@ mindistance_tcbufferarr_tcbufferarr(const Temporal **arr1, int count1,
   const Temporal **arr2, int count2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(arr1, DBL_MAX); VALIDATE_NOT_NULL(arr2, DBL_MAX);
+  VALIDATE_NOT_NULL(arr1, -1.0); VALIDATE_NOT_NULL(arr2, -1.0);
   if (count1 <= 0 || count2 <= 0)
     return DBL_MAX;
   for (int i = 0; i < count1; i++)
-    VALIDATE_TCBUFFER(arr1[i], DBL_MAX);
+    VALIDATE_TCBUFFER(arr1[i], -1.0);
   for (int j = 0; j < count2; j++)
-    VALIDATE_TCBUFFER(arr2[j], DBL_MAX);
+    VALIDATE_TCBUFFER(arr2[j], -1.0);
   int32_t srid = tspatial_srid(arr1[0]);
   for (int i = 1; i < count1; i++)
     if (! ensure_same_srid(tspatial_srid(arr1[i]), srid))
-      return DBL_MAX;
+      return -1.0;
   for (int j = 0; j < count2; j++)
     if (! ensure_same_srid(tspatial_srid(arr2[j]), srid))
-      return DBL_MAX;
+      return -1.0;
 
   size_t npairs = count1;
   npairs *= count2;
@@ -2799,6 +2823,12 @@ mindistance_tcbufferarr_tcbufferarr(const Temporal **arr1, int count1,
   {
     double d = mindistance_tcbuffer_tcbuffer(arr1[pairs[k].i],
       arr2[pairs[k].j], result);
+    /* A pair whose distance raises an error makes the answer an error */
+    if (d < 0.0)
+    {
+      result = -1.0;
+      break;
+    }
     if (d < result)
       result = d;
     if (result == 0.0)

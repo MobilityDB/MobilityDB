@@ -2309,6 +2309,7 @@ set_hash(const Set *s)
  * @param[in] s Set
  * @param[in] seed Seed
  * @csqlfn #Set_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 set_hash_extended(const Set *s, uint64 seed)

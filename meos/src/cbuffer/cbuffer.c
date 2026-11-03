@@ -843,6 +843,7 @@ cbuffer_point(const Cbuffer *cb)
  * @brief Return the radius of a circular buffer
  * @param[in] cb Circular buffer
  * @csqlfn #Cbuffer_radius()
+ * @errval DBL_MAX
  */
 double
 cbuffer_radius(const Cbuffer *cb)
@@ -1105,7 +1106,7 @@ cbuffer_distance(const Cbuffer *cb1, const Cbuffer *cb2)
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between two circular buffers
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_cbuffer_cbuffer()
  */
 double
@@ -1113,13 +1114,13 @@ distance_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_cbuffer(cb1, cb2))
-    return DBL_MAX;
+    return -1.0;
   /* The following function assumes that all validity tests have been done */
   double result = cbuffer_distance(cb1, cb2);
   /* The distance between two finite circular buffers can exceed the largest
    * double (#ensure_finite_result) */
   if (! ensure_finite_result(result))
-    return DBL_MAX;
+    return -1.0;
   return result;
 }
 
@@ -1166,6 +1167,7 @@ cbuffer_scale_pow2(const Cbuffer *cb, double scale)
 /**
  * @brief Return the distance between a circular buffer and a geometry,
  * infinity where it exceeds the largest double
+ * @note The distance is -1.0 where reading far coordinates raises an error
  */
 static double
 cbuffer_geo_distance(const Cbuffer *cb, const GSERIALIZED *gs)
@@ -1182,11 +1184,11 @@ cbuffer_geo_distance(const Cbuffer *cb, const GSERIALIZED *gs)
     {
       if (cb2)
         pfree(cb2);
-      return DBL_MAX;
+      return -1.0;
     }
     double result = cbuffer_geo_distance(cb2, g2);
     pfree(cb2); pfree(g2);
-    return result / GEO_FAR_SCALE;
+    return result < 0.0 ? -1.0 : result / GEO_FAR_SCALE;
   }
 
   double d = geom_distance2d_disc((const double *) c, cb->radius, gs);
@@ -1217,35 +1219,39 @@ cbuffer_geo_distance(const Cbuffer *cb, const GSERIALIZED *gs)
  * circular buffer at rest reads (#dist_segm_nad, as #nad_tcbuffer_geo answers
  * an instant). A geometry with no edge decomposition is measured against the
  * geometry of the disc.
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_cbuffer_geo() #Distance_geo_cbuffer()
  */
 double
 distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_cbuffer_geo(cb, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_cbuffer_geo(cb, gs))
+    return -1.0;
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
 
   double result = cbuffer_geo_distance(cb, gs);
   /* A distance of finite operands can exceed the largest double
    * (#ensure_finite_result) */
   if (! ensure_finite_result(result))
-    return DBL_MAX;
+    return -1.0;
   return result;
 }
 
 /**
  * @ingroup meos_cbuffer_base_dist
  * @brief Return the distance between a circular buffer and a spatiotemporal box
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 distance_cbuffer_stbox(const Cbuffer *cb, const STBox *box)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_stbox(cb, box))
-    return DBL_MAX;
+    return -1.0;
 
   GSERIALIZED *geo1 = cbuffer_to_geom(cb);
   GSERIALIZED *geo2 = stbox_geo(box);
@@ -1516,6 +1522,7 @@ touches_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2)
  * @param[in] cb1,cb2 Circular buffers
  * @param[in] dist Distance
  * @csqlfn #Cbuffer_dwithin()
+ * @errval -1
  */
 int
 dwithin_cbuffer_cbuffer(const Cbuffer *cb1, const Cbuffer *cb2, double dist)
@@ -1855,6 +1862,7 @@ cbuffer_hash(const Cbuffer *cb)
  * @param[in] seed Seed
  * csqlfn hash_extended
  * @csqlfn #Cbuffer_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 cbuffer_hash_extended(const Cbuffer *cb, uint64 seed)

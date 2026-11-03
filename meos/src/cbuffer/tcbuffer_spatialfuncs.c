@@ -714,7 +714,7 @@ cbuffer_covers_geo(const Cbuffer *cb, const GSERIALIZED *gs)
   GSERIALIZED *centre = cbuffer_point(cb);
   double maxdist = geom_max_distance2d(centre, gs);
   pfree(centre);
-  if (maxdist == DBL_MAX)
+  if (maxdist < 0.0 || maxdist == DBL_MAX)
     return -1;
   return (maxdist <= cb->radius) ? 1 : 0;
 }
@@ -735,9 +735,13 @@ cbuffer_contains_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
   GSERIALIZED *centre = cbuffer_point(cb);
   double maxdist = geom_max_distance2d(centre, gs);
-  int result = (maxdist == DBL_MAX) ? -1 :
-    ((maxdist <= cb->radius && geom_distance2d(centre, gs) < cb->radius) ?
-      1 : 0);
+  int result = -1;
+  if (maxdist >= 0.0 && maxdist != DBL_MAX)
+  {
+    double mindist = geom_distance2d(centre, gs);
+    if (mindist >= 0.0)
+      result = (maxdist <= cb->radius && mindist < cb->radius) ? 1 : 0;
+  }
   pfree(centre);
   return result;
 }

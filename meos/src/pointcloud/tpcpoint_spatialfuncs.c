@@ -226,18 +226,18 @@ eintersects_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
  *   a geometry
  * @param[in] temp Temporal pointcloud value (single instant)
  * @param[in] gs Geometry
- * @errval DBL_MAX
+ * @errval -1.0
  */
 double
 nad_tpcpoint_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_TPCPOINT(temp, DBL_MAX); VALIDATE_NOT_NULL(gs, DBL_MAX);
+  VALIDATE_TPCPOINT(temp, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
   if (! ensure_temporal_isof_subtype(temp, TINSTANT))
-    return DBL_MAX;
+    return -1.0;
   GSERIALIZED *probe = pcpoint_to_geompoint2d(tpointcloudinst_pcpoint(temp));
   if (!probe)
-    return DBL_MAX;
+    return -1.0;
   double result = geom_distance2d(probe, gs);
   pfree(probe);
   return result;

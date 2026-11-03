@@ -242,25 +242,29 @@ answers of the function where the maximum is one of them:
 | a pointer | `NULL` | `cbufferset_start_value` |
 | `bool` | `false` | `geom_contains` |
 | `int`, `int64`, `uint32`, `uint64` | `INT_MAX`, `INT64_MAX`, `UINT32_MAX`, `UINT64_MAX` | `cbuffer_cmp`, which answers -1, 0 or 1; `tpcpatch_npoints` |
-| `double` | `DBL_MAX` | `tfloat_start_value`, `distance_cbuffer_cbuffer` |
+| `double` | `DBL_MAX` | `tfloat_start_value` |
 | an `int` answering 1, 0 or -1 for true, false or unknown | `-1` | `spatialrel_geo_geo` |
 | an `int` answering a count | `-1` | `geo_num_points` |
 | a `double` answering a fraction along a line | `-1.0` | `line_locate_point` |
-| a `double` answering the nearest approach distance of float boxes and spans | `-1.0` | `nad_tboxfloat_tboxfloat`, `nad_floatspan_tbox`, `nad_tfloat_floatspan` |
+| a number answering a distance | `-1`, `-1.0` for a `double` | `distance_cbuffer_cbuffer`, `nad_tgeo_tgeo`, `distance_set_int`, `temporal_frechet_distance` |
 
 The last four rows follow from the domain. A comparator answering -1 takes
 the maximum, and a relationship answering -1 for unknown takes -1. A count
-of `INT_MAX` is a count, so its error is -1. A fraction lies in [0, 1]. The
-nearest approach distance of boxes answers `DBL_MAX` where the boxes share no
-time, an answer, so its error takes -1.0, a value no distance has.
+of `INT_MAX` is a count, so its error is -1. A fraction lies in [0, 1]. A
+distance answers the maximum where its operands have no distance (section
+6.3), and a distance of finite values can itself be the largest double, so
+its error takes -1, a value no distance has. A distance is a function of a
+distance group of the reference manual, or one whose note states that a
+distance is never negative.
 
 ### 6.3 A missing answer is not an error
 
 Where the operands are valid and have no answer, a function answers without
 error, and a `@note` of the function states that answer: the distance to an
 empty geometry, which has no point to measure from, is `DBL_MAX`, as is the
-nearest approach distance of two temporal values that share no time. The
-PostgreSQL function answers `NULL` there:
+nearest approach distance of two temporal values that share no time. A
+distance raising an error answers -1.0 instead, so its value alone tells the
+two apart. The PostgreSQL function answers `NULL` there:
 
 ```sql
 SELECT nearestApproachDistance(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]',

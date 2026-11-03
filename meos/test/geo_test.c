@@ -3714,12 +3714,12 @@ int main(void)
   double sbd = stbox_spatial_distance(sb1, sb2);
   assert(fabs(sbd * sbd - 18.0) < 1e-9);
   assert(meos_errno() == 0);
-  assert(stbox_spatial_distance(sb1, sb3) == DBL_MAX);
+  assert(stbox_spatial_distance(sb1, sb3) == -1.0);
   printf("stbox_spatial_distance across two reference systems: errno %d\n",
     meos_errno());
   assert(meos_errno() != 0);
   meos_errno_reset();
-  assert(stbox_spatial_distance(sb1, sbt) == DBL_MAX);
+  assert(stbox_spatial_distance(sb1, sbt) == -1.0);
   assert(meos_errno() != 0);
   meos_errno_reset();
 
@@ -3921,8 +3921,33 @@ int main(void)
   printf("shortest line in 3D: %s\n", dline_wkt);
   assert(strcmp(dline_wkt, "LINESTRING Z (0 0 0,0 1 5)") == 0);
   assert(meos_errno() == 0);
-  assert(geom_distance(dz1, d2) == DBL_MAX && meos_errno() != 0);
+  assert(geom_distance(dz1, d2) == -1.0 && meos_errno() != 0);
   meos_errno_reset();
+  /* A distance answers DBL_MAX where its operands have no distance, an empty
+   * geometry or values sharing no time, with no error, and -1.0 where it
+   * raises one, a value no distance has */
+  GSERIALIZED *dempty = geom_in("Point empty", -1);
+  assert(geom_distance(dempty, d2) == DBL_MAX && meos_errno() == 0);
+  STBox *dbox = stbox_in("STBOX X((1,1),(2,2))");
+  assert(nad_stbox_geo(dbox, dempty, true) == DBL_MAX && meos_errno() == 0);
+  free(dbox);
+  Temporal *tjan = tgeompoint_in("[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]");
+  Temporal *tjun = tgeompoint_in("[Point(1 1)@2001-06-01, Point(2 2)@2001-06-02]");
+  Temporal *t3857 = tgeompoint_in(
+    "SRID=3857;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]");
+  assert(nad_tgeo_tgeo(tjan, tjun, true) == DBL_MAX && meos_errno() == 0);
+  assert(nad_tgeo_tgeo(tjan, t3857, true) == -1.0 && meos_errno() != 0);
+  meos_errno_reset();
+  assert(temporal_lcss_distance(tjan, tjan, -1.0, true) == DBL_MAX &&
+    meos_errno() == 0);
+  Temporal *tnum = tint_in("1@2001-01-01");
+  assert(temporal_lcss_distance(tjan, tnum, 1.0, true) == -1.0 &&
+    meos_errno() != 0);
+  meos_errno_reset();
+  free(tnum);
+  printf("a distance with no answer: DBL_MAX, a distance raising an error: "
+    "-1.0\n");
+  free(dempty); free(tjan); free(tjun); free(t3857);
   assert(geom_shortestline(dz1, d2) == NULL && meos_errno() != 0);
   meos_errno_reset();
   free(dline_wkt); free(dline);

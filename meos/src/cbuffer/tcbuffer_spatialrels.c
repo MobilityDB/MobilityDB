@@ -1219,7 +1219,10 @@ ea_disjoint_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 1;
   if (! ever)
-    return nad_tcbuffer_geo(temp, gs) > 0.0 ? 1 : 0;
+  {
+    double d = nad_tcbuffer_geo(temp, gs);
+    return d < 0.0 ? -1 : (d > 0.0 ? 1 : 0);
+  }
   int native = edisjoint_tcbuffer_geo_native(temp, gs);
   if (native >= 0)
     return native;
@@ -1496,7 +1499,10 @@ ea_intersects_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   if (geo_set_stbox(gs, &box2) && ! overlaps_stbox_stbox(&box1, &box2))
     return 0;
   if (ever)
-    return nad_tcbuffer_geo(temp, gs) <= 0.0 ? 1 : 0;
+  {
+    double d = nad_tcbuffer_geo(temp, gs);
+    return d < 0.0 ? -1 : (d <= 0.0 ? 1 : 0);
+  }
   int native = edisjoint_tcbuffer_geo_native(temp, gs);
   if (native >= 0)
     return native == 1 ? 0 : 1;
@@ -1790,7 +1796,10 @@ ea_touches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * many-vertex disk for which the analytic distance is not a win. */
   if (ever)
   {
-    if (nad_tcbuffer_geo(temp, gs) > 1e-6)
+    double d = nad_tcbuffer_geo(temp, gs);
+    if (d < 0.0)
+      return -1;
+    if (d > 1e-6)
       return 0;
   }
   else if (tcbuffer_escapes_box(temp, box2.xmin, box2.ymin, box2.xmax,
@@ -1905,7 +1914,10 @@ ea_touches_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
    * touch under either quantifier. The native disk-to-disk nearest-approach
    * distance is analytic and cheap, so this prunes far pairs before the
    * per-instant geometry touch predicate below. */
-  if (nad_tcbuffer_cbuffer(temp, cb) > 1e-6)
+  double d = nad_tcbuffer_cbuffer(temp, cb);
+  if (d < 0.0)
+    return -1;
+  if (d > 1e-6)
     return 0;
   return ea_spatialrel_tcbuffer_cbuffer(temp, cb, (Datum) NULL,
     (varfunc) &datum_geom_touches, 2, ever, INVERT_NO);
@@ -2101,7 +2113,10 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
    * distance: eDwithin(temp, gs, d) ⟺ min_t dist(disk(t), gs) ≤ d, which
    * reads the round buffer as a disk, without linearizing it. */
   if (ever)
-    return nad_tcbuffer_geo(temp, gs) <= dist ? 1 : 0;
+  {
+    double d = nad_tcbuffer_geo(temp, gs);
+    return d < 0.0 ? -1 : (d <= dist ? 1 : 0);
+  }
   /* The always semantics reduce to native coverage: being within d of the
    * geometry is the same as intersecting it once the disk radius is grown by d
    * (dist(disk, gs) ≤ d ⟺ dist(disk⊕d, gs) ≤ 0), so aDwithin(temp, gs, d) ⟺
@@ -2126,6 +2141,7 @@ ea_dwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_geo()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -2143,6 +2159,7 @@ edwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] gs Geometry
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_geo()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
@@ -2160,6 +2177,7 @@ adwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_geo_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
@@ -2177,6 +2195,7 @@ edwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_geo_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
@@ -2196,6 +2215,7 @@ adwithin_geo_tcbuffer(const GSERIALIZED *gs, const Temporal *temp, double dist)
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_cbuffer()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
@@ -2225,6 +2245,7 @@ edwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] cb Circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_cbuffer()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
@@ -2255,6 +2276,7 @@ adwithin_tcbuffer_cbuffer(const Temporal *temp, const Cbuffer *cb,
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Edwithin_cbuffer_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
@@ -2272,6 +2294,7 @@ edwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
  * @param[in] temp Temporal circular buffer
  * @param[in] dist Distance
  * @csqlfn #Adwithin_cbuffer_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp, double dist)
@@ -2654,6 +2677,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Edwithin_tcbuffer_tcbuffer()
+ * @errval -1
  */
 int
 edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
@@ -2671,6 +2695,7 @@ edwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @csqlfn #Adwithin_tcbuffer_tcbuffer()
+ * @errval -1
  */
 int
 adwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,

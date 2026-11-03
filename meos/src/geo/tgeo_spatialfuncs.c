@@ -744,7 +744,7 @@ bool
 ensure_valid_stbox_geo(const STBox *box, const GSERIALIZED *gs)
 {
   VALIDATE_NOT_NULL(box, false); VALIDATE_NOT_NULL(gs, false);
-  if (! ensure_has_X(T_STBOX, box->flags) || gserialized_is_empty(gs) ||
+  if (! ensure_has_X(T_STBOX, box->flags) ||
       ! ensure_same_srid(box->srid, gserialized_get_srid(gs)) ||
       ! ensure_same_geodetic_stbox_geo(box, gs))
     return false;

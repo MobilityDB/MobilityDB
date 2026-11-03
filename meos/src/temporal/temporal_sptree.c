@@ -1593,6 +1593,7 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching ids
+ * @errval -1
  */
 int
 sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
@@ -1700,6 +1701,7 @@ spnode_join(const SPTree *sptree1, const SPNode *node1, const SPTree *sptree2,
  * @param[out] result Array collecting the ids, made by #index_result_create
  * @return Number of qualifying pairs, half the number of collected ids, on
  * error -1
+ * @errval -1
  */
 int
 sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
@@ -1774,6 +1776,7 @@ sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching ids
+ * @errval -1
  */
 int
 sptree_search_temporal(const SPTree *sptree, IndexSearchOp op,
@@ -2052,13 +2055,13 @@ sptree_num_entries(const SPTree *sptree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] sptree The SPTree
- * @errval INT64_MAX
+ * @errval -1
  */
 int64
 sptree_mem_size(const SPTree *sptree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(sptree, INT64_MAX);
+  VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
   int64 bytes = (int64) sizeof(SPTree);
   spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);

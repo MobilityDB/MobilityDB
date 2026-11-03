@@ -578,7 +578,7 @@ spatialset_set_stbox(const Set *s, STBox *result)
  * @details A set answers the distance of the extent that bounds it, which for
  * a spatial set is its spatiotemporal box where for a span set it is its
  * bounding span: the gaps between the elements are not boundaries of the set.
- * @errval DBL_MAX
+ * @errval -1.0
  */
 Datum
 distance_spatialset_value(const Set *s, Datum value, bool spheroid)
@@ -598,7 +598,7 @@ distance_spatialset_value(const Set *s, Datum value, bool spheroid)
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only
  * @details Each set answers for the extent that bounds it, as above.
- * @errval DBL_MAX
+ * @errval -1.0
  */
 Datum
 distance_spatialset_spatialset(const Set *s1, const Set *s2, bool spheroid)
@@ -619,7 +619,7 @@ distance_spatialset_spatialset(const Set *s1, const Set *s2, bool spheroid)
  * @param[in] gs Geometry/geography
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_geoset_geo(), #Distance_geo_geoset()
  */
 double
@@ -627,7 +627,7 @@ distance_set_geo(const Set *s, const GSERIALIZED *gs, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_geoset_geo(s, gs))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_spatialset_value(s, PointerGetDatum(gs),
     spheroid));
 }
@@ -639,17 +639,17 @@ distance_set_geo(const Set *s, const GSERIALIZED *gs, bool spheroid)
  * @param[in] s1,s2 Sets
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere; read for geographies only, as in #stbox_area
- * @errval DBL_MAX
+ * @errval -1.0
  * @csqlfn #Distance_geoset_geoset()
  */
 double
 distance_geoset_geoset(const Set *s1, const Set *s2, bool spheroid)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_GEOSET(s1, DBL_MAX); VALIDATE_GEOSET(s2, DBL_MAX);
+  VALIDATE_GEOSET(s1, -1.0); VALIDATE_GEOSET(s2, -1.0);
   if (! ensure_valid_set_set(s1, s2) ||
       ! ensure_same_srid(spatialset_srid(s1), spatialset_srid(s2)))
-    return DBL_MAX;
+    return -1.0;
   return DatumGetFloat8(distance_spatialset_spatialset(s1, s2, spheroid));
 }
 

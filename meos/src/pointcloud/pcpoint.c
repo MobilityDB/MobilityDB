@@ -473,6 +473,7 @@ pcpoint_hash(const Pcpoint *pt)
  * @ingroup meos_pointcloud_base_comp
  * @brief Return the 64-bit seeded hash of a pcpoint
  * @csqlfn #Pcpoint_hash_extended()
+ * @errval UINT64_MAX
  */
 uint64
 pcpoint_hash_extended(const Pcpoint *pt, uint64 seed)

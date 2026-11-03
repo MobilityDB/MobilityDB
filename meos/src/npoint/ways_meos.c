@@ -482,7 +482,9 @@ geompoint_to_npoint(const GSERIALIZED *gs)
       }
       /* Compute minimal distance */
       double dist = geom_distance2d(rec.the_geom, gs);
-      if (dist < min_dist)
+      /* A distance raising an error, -1.0, makes no candidate, as a position
+       * raising one does above */
+      if (dist >= 0.0 && dist < min_dist)
       {
         min_dist = dist;
         /* Previous previous candidate to shortest distance */

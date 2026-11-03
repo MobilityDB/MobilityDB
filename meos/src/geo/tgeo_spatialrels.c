@@ -1776,7 +1776,10 @@ ea_touches_tpoint_geo(const Temporal *temp, const GSERIALIZED *gs, bool ever)
    * time, and this rejects those among them that never make contact. #ea_touches_tcbuffer_geo carries the same reject with the
    * same tolerance, and the guards above have already restricted this to
    * planar 2D operands, which is what the nearest approach requires. */
-  if (nad_tgeo_geo(temp, gs, true) > 1e-6)
+  double nad = nad_tgeo_geo(temp, gs, true);
+  if (nad < 0.0)
+    return -1;
+  if (nad > 1e-6)
     return 0;
 
   /* EVER */
@@ -2148,7 +2151,10 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * dimensions. */
   if (ever && dist > 0.0 && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
       ! MEOS_FLAGS_GET_Z(temp->flags) && ! FLAGS_GET_Z(gs->gflags))
-    return (nad_tgeo_geo(temp, gs, true) <= dist) ? 1 : 0;
+  {
+    double nad = nad_tgeo_geo(temp, gs, true);
+    return nad < 0.0 ? -1 : (nad <= dist ? 1 : 0);
+  }
 
   /* Native fast path for a temporal geometry point with linear interpolation
    * against a non-point geometry the clip engine supports (planar, 2D,
@@ -2214,6 +2220,7 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_tgeo_geo(), #Edwithin_tpose_geo(),
  * #Edwithin_tquadbin_geo(), #Edwithin_tnpoint_geo(),
  * #Edwithin_tposechain_geo()
+ * @errval -1
  */
 int
 edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -2234,6 +2241,7 @@ edwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_geo()
+ * @errval -1
  */
 int
 adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
@@ -2256,6 +2264,7 @@ adwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
  * @csqlfn #Edwithin_geo_tgeo(), #Edwithin_geo_tpose(),
  * #Edwithin_geo_tquadbin(), #Edwithin_geo_tnpoint(),
  * #Edwithin_geo_tposechain()
+ * @errval -1
  */
 int
 edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
@@ -2276,6 +2285,7 @@ edwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_geo_tgeo()
+ * @errval -1
  */
 int
 adwithin_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp, double dist,
@@ -2617,6 +2627,7 @@ ea_dwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @csqlfn #Edwithin_tgeo_tgeo(), #Edwithin_tpose_tpose(),
  * #Edwithin_tquadbin_tquadbin(), #Edwithin_tnpoint_tnpoint(),
  * #Edwithin_tposechain_tposechain()
+ * @errval -1
  */
 int
 edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
@@ -2636,6 +2647,7 @@ edwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
  * @csqlfn #Adwithin_tgeo_tgeo()
+ * @errval -1
  */
 int
 adwithin_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, double dist,

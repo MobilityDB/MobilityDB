@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <meos.h>
 #include <meos_cbuffer.h>
+#include <meos_geo.h>
 #include <meos_npoint.h>
 #include <meos_pose.h>
 
@@ -112,17 +113,39 @@ int main(void)
 
   /* A NULL set, a set of another type and two SRIDs are refused */
   REFUSED("distance_cbufferset_cbufferset(NULL)",
-    distance_cbufferset_cbufferset(NULL, cb1) == DBL_MAX, MEOS_ERR_INVALID_ARG);
+    distance_cbufferset_cbufferset(NULL, cb1) == -1.0, MEOS_ERR_INVALID_ARG);
   REFUSED("distance_cbufferset_cbufferset(poseset)",
-    distance_cbufferset_cbufferset(cb1, p1) == DBL_MAX, MEOS_ERR_INVALID_ARG_TYPE);
+    distance_cbufferset_cbufferset(cb1, p1) == -1.0, MEOS_ERR_INVALID_ARG_TYPE);
   REFUSED("distance_cbufferset_cbufferset(mixed SRID)",
-    distance_cbufferset_cbufferset(cb1, cb3) == DBL_MAX, MEOS_ERR_INVALID_ARG_VALUE);
+    distance_cbufferset_cbufferset(cb1, cb3) == -1.0, MEOS_ERR_INVALID_ARG_VALUE);
   REFUSED("distance_npointset_npointset(NULL)",
-    distance_npointset_npointset(np1, NULL) == DBL_MAX, MEOS_ERR_INVALID_ARG);
+    distance_npointset_npointset(np1, NULL) == -1.0, MEOS_ERR_INVALID_ARG);
   REFUSED("distance_poseset_poseset(posechainset)",
-    distance_poseset_poseset(p1, pc1) == DBL_MAX, MEOS_ERR_INVALID_ARG_TYPE);
+    distance_poseset_poseset(p1, pc1) == -1.0, MEOS_ERR_INVALID_ARG_TYPE);
   REFUSED("distance_posechainset_posechainset(cbufferset)",
-    distance_posechainset_posechainset(pc1, cb1) == DBL_MAX, MEOS_ERR_INVALID_ARG_TYPE);
+    distance_posechainset_posechainset(pc1, cb1) == -1.0, MEOS_ERR_INVALID_ARG_TYPE);
+
+  /* An empty geometry and values of different dimensions have no distance,
+   * which raises no error, while two SRIDs raise one */
+  Pose *pose2d = pose_in("Pose(Point(0 0), 0)");
+  PoseChain *pc2d = posechain_in("PoseChain(Pose(Point(0 0), 0))");
+  PoseChain *pc3d = posechain_in("PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))");
+  PoseChain *pc3857 = posechain_in("SRID=3857;PoseChain(Pose(Point(0 0), 0))");
+  GSERIALIZED *gempty = geom_in("Point empty", -1);
+  GSERIALIZED *g3d = geom_in("Point(1 1 1)", -1);
+  GSERIALIZED *g3857 = geom_in("SRID=3857;Point(1 1)", -1);
+  assert(pose2d && pc2d && pc3d && pc3857 && gempty && g3d && g3857);
+  assert(distance_pose_geo(pose2d, gempty) == DBL_MAX && meos_errno() == 0);
+  assert(distance_pose_geo(pose2d, g3d) == DBL_MAX && meos_errno() == 0);
+  assert(distance_posechain_posechain(pc2d, pc3d) == DBL_MAX &&
+    meos_errno() == 0);
+  REFUSED("distance_pose_geo(mixed SRID)",
+    distance_pose_geo(pose2d, g3857) == -1.0, MEOS_ERR_INVALID_ARG_VALUE);
+  REFUSED("distance_posechain_posechain(mixed SRID)",
+    distance_posechain_posechain(pc2d, pc3857) == -1.0,
+    MEOS_ERR_INVALID_ARG_VALUE);
+  free(pose2d); free(pc2d); free(pc3d); free(pc3857);
+  free(gempty); free(g3d); free(g3857);
 
   free(cb1); free(cb2); free(cb3); free(p1); free(p2); free(pc1); free(pc2);
   free(np1); free(np2); free(np3);

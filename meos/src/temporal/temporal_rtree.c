@@ -1960,6 +1960,7 @@ rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching IDs
+ * @errval -1
  */
 int
 rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
@@ -1992,6 +1993,7 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
  * @param[out] result Array collecting the ids, made by #index_result_create
  * @return Number of qualifying pairs, half the number of collected ids, on
  * error -1
+ * @errval -1
  */
 int
 rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
@@ -2051,6 +2053,7 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
  * @param[out] result Array collecting the matching ids, made by
  * #index_result_create
  * @return Number of matching IDs
+ * @errval -1
  */
 int
 rtree_search_temporal(const RTree *rtree, IndexSearchOp op,
@@ -2264,15 +2267,19 @@ rtree_bbox_distance(const RTree *rtree, const void *query, const void *box)
   if (rtree->bboxtype == T_TBOX)
     return distance_double(nad_tbox_tbox((const TBox *) query,
       (const TBox *) box), ((const TBox *) query)->span.basetype);
-  if (rtree->bboxtype == T_STBOX)
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
-      true);
+  /* An index orders a box whose distance raises an error last, as it orders
+   * a box sharing no time with the query, whose distance is DBL_MAX.
+   * TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
+  if (rtree->bboxtype == T_STBOX
 #if POINTCLOUD
-  if (rtree->bboxtype == T_TPCBOX)
-    /* TPCBox shares the STBox prefix layout (see get_axis_tpcbox) */
-    return nad_stbox_stbox((const STBox *) query, (const STBox *) box,
-      true);
+      || rtree->bboxtype == T_TPCBOX
 #endif
+     )
+  {
+    double d = nad_stbox_stbox((const STBox *) query, (const STBox *) box,
+      true);
+    return d < 0.0 ? DBL_MAX : d;
+  }
   /* Span types: the one-dimensional gap between the two spans, zero when they
    * overlap, read through the box's axis accessor */
   double qlo = rtree->get_axis(query, 0, false);
@@ -2574,13 +2581,13 @@ rtree_num_entries(const RTree *rtree)
  * @details The nodes of the tree and the tree itself, which is what a caller
  * accounting for the memory of an index reports
  * @param[in] rtree The RTree
- * @errval INT64_MAX
+ * @errval -1
  */
 int64
 rtree_mem_size(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(rtree, INT64_MAX);
+  VALIDATE_NOT_NULL(rtree, -1);
   int64 bytes = (int64) (sizeof(RTree) + rtree->bboxsize);
   if (rtree->root)
   {

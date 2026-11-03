@@ -313,7 +313,7 @@ int main(void)
   else
   {
     meos_errno_reset();
-    if (nad_trgeometry_geo(trgeo4, coll) != DBL_MAX || meos_errno() == 0)
+    if (nad_trgeometry_geo(trgeo4, coll) != -1.0 || meos_errno() == 0)
     {
       printf("FAILED: nad_trgeometry_geo(trgeometry, collection)\n");
       result = 1;
@@ -323,7 +323,7 @@ int main(void)
         "sentinel, errno %d\n", meos_errno());
 
     meos_errno_reset();
-    if (nad_trgeometry_geo(trgeo5, point3d) != DBL_MAX || meos_errno() == 0)
+    if (nad_trgeometry_geo(trgeo5, point3d) != -1.0 || meos_errno() == 0)
     {
       printf("FAILED: nad_trgeometry_geo(3D trgeometry, 3D point)\n");
       result = 1;
@@ -333,7 +333,7 @@ int main(void)
         "sentinel, errno %d\n", meos_errno());
 
     meos_errno_reset();
-    if (nad_trgeometry_stbox(trgeo5, box3d) != DBL_MAX || meos_errno() == 0)
+    if (nad_trgeometry_stbox(trgeo5, box3d) != -1.0 || meos_errno() == 0)
     {
       printf("FAILED: nad_trgeometry_stbox(3D trgeometry, 3D box)\n");
       result = 1;
@@ -345,7 +345,7 @@ int main(void)
     /* A computable distance still answers it */
     meos_errno_reset();
     double nad = nad_trgeometry_geo(trgeo4, point2d);
-    if (nad == DBL_MAX || meos_errno() != 0)
+    if (nad == -1.0 || meos_errno() != 0)
     {
       printf("FAILED: nad_trgeometry_geo(trgeometry, point) answered the "
         "sentinel, errno %d\n", meos_errno());

@@ -54,6 +54,7 @@
  * @param[in] jb JSONB value
  * @param[in] temp Temporal JSONB
  * @csqlfn #Ever_eq_jsonb_tjsonb()
+ * @errval -1
  */
 int
 ever_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -69,6 +70,7 @@ ever_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB value
  * @csqlfn #Ever_eq_tjsonb_jsonb()
+ * @errval -1
  */
 int
 ever_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -84,6 +86,7 @@ ever_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
  * @csqlfn #Always_eq_jsonb_tjsonb()
+ * @errval -1
  */
 int
 always_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -99,6 +102,7 @@ always_eq_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
  * @csqlfn #Always_eq_tjsonb_jsonb()
+ * @errval -1
  */
 int
 always_eq_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -166,6 +170,7 @@ always_ne_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2)
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
  * @csqlfn #Ever_ne_jsonb_tjsonb()
+ * @errval -1
  */
 int
 ever_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -181,6 +186,7 @@ ever_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
  * @csqlfn #Ever_ne_tjsonb_jsonb()
+ * @errval -1
  */
 int
 ever_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
@@ -196,6 +202,7 @@ ever_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
  * @param[in] jb JSONB
  * @param[in] temp Temporal JSONB
  * @csqlfn #Always_ne_jsonb_tjsonb()
+ * @errval -1
  */
 int
 always_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
@@ -211,6 +218,7 @@ always_ne_jsonb_tjsonb(const Jsonb *jb, const Temporal *temp)
  * @param[in] temp Temporal JSONB
  * @param[in] jb JSONB
  * @csqlfn #Always_ne_tjsonb_jsonb()
+ * @errval -1
  */
 int
 always_ne_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb)
