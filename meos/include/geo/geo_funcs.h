@@ -360,6 +360,9 @@ extern bool point_motion_point_offset_bounds(const double *c1,
 extern bool point_motion_dwithin_only_at_end(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, bool start);
+extern int point_motion_gap_zero_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, int *s0, int *s1);
 
 /* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
  * with the double nearest to it and a bound on the error of that double */
