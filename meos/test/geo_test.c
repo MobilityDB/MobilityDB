@@ -3888,6 +3888,30 @@ int main(void)
   free(e23); free(e12); free(eln); free(eax); free(ept); free(esq);
   free(ein);
 
+  /* The same in 3D: the distance is an exact 3, or sqrt(13), and two skew
+   * segments are nearest inside both, 3 apart, or apart by the least double
+   * over the root of 5, which rounds to 0 */
+  GSERIALIZED *f122 = geom_in("Point(1 2 2)", -1);
+  GSERIALIZED *f230 = geom_in("Point(2 3 0)", -1);
+  GSERIALIZED *fs1 = geom_in("Linestring(0 0 0,2 0 0)", -1);
+  GSERIALIZED *fs2 = geom_in("Linestring(1 -1 3,1 1 3)", -1);
+  GSERIALIZED *ft1 = geom_in("Linestring(-1 0 -2,1 0 2)", -1);
+  GSERIALIZED *ft2 = geom_in(
+    "Linestring(0 -1 4.9406564584124654e-324,0 1 4.9406564584124654e-324)", -1);
+  assert(f122 && f230 && fs1 && fs2 && ft1 && ft2);
+  assert(geom_dwithin3d(dz1, f122, 3.0));
+  assert(! geom_dwithin3d(dz1, f122, 2.9999999999999996));
+  assert(! geom_dwithin3d(dz1, f230, 3.605551275463989));
+  assert(geom_dwithin3d(dz1, f230, 3.6055512754639896));
+  assert(geom_dwithin3d(fs1, fs2, 3.0));
+  assert(! geom_dwithin3d(fs1, fs2, 2.9999999999999996));
+  assert(geom_distance3d(ft1, ft2) == 0.0);
+  assert(! geom_dwithin3d(ft1, ft2, 0.0));
+  assert(geom_dwithin3d(ft1, ft2, 4.9406564584124654e-324));
+  /* A geometry with no Z is answered on the common dimensions */
+  assert(geom_dwithin3d(dz1, d2, 1.2) && geom_dwithin3d(d2, dz1, 1.2));
+  free(f122); free(f230); free(fs1); free(fs2); free(ft1); free(ft2);
+
   assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
   assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
   assert(geom_distance(dz1, dz2) == sqrt(26.0));

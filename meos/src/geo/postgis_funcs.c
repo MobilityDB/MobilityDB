@@ -1988,6 +1988,58 @@ geom_distance_part_inside(const LWGEOM *const *parts1, uint32_t n1,
   return false;
 }
 
+/**
+ * @brief Return true if an end is within a distance of a segment, exactly
+ * @details Where the coordinates are within a factor 2^400 of 1, the distance
+ * in doubles lies within @p margin of the exact one, so an end past the distance
+ * by more than that needs no exact sign (#point_segment_offset_sign)
+ * @param[in] p,a,b The end and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] dist Distance
+ * @param[in] margin The margin, negative where no double evaluation is read
+ */
+static bool
+geom_dwithin_end(const double *p, const double *a, const double *b, int ndims,
+  double dist, double margin)
+{
+  if (margin >= 0.0 && (sqrt(geom_distance_pt_seg_sqr(p, a, b, ndims)) - margin) *
+      (1.0 - 0x1p-50) > dist)
+    return false;
+  return point_segment_offset_sign(p, a, b, ndims, dist) <= 0;
+}
+
+/**
+ * @brief Return true if two segments are within a distance, exactly
+ * @details A gap along an axis above the distance in doubles lies above it
+ * exactly, since rounding is monotone, which passes over a far pair without an
+ * exact sign. Two segments are within it where they meet in 2D, or in 3D where
+ * their nearest points lie inside both (#segment_interior_offset_sign), or else
+ * where an end of one is (#geom_dwithin_end)
+ */
+static bool
+geom_dwithin_segs(const double *a, const double *b, const double *c,
+  const double *d, int ndims, double dist)
+{
+  double big = 0.0;
+  for (int k = 0; k < ndims; k++)
+  {
+    if (fmin(c[k], d[k]) - fmax(a[k], b[k]) > dist ||
+        fmin(a[k], b[k]) - fmax(c[k], d[k]) > dist)
+      return false;
+    big = fmax(big, fmax(fmax(fabs(a[k]), fabs(b[k])),
+      fmax(fabs(c[k]), fabs(d[k]))));
+  }
+  double margin = (big >= 0x1p-400 && big <= 0x1p400) ? 0x1p-40 * big : -1.0;
+  bool inner = (ndims == 2) ?
+    linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1], d[0],
+      d[1]).type != INTERSECT_NONE :
+    segment_interior_offset_sign(a, b, c, d, dist) <= 0;
+  return inner || geom_dwithin_end(a, c, d, ndims, dist, margin) ||
+    geom_dwithin_end(b, c, d, ndims, dist, margin) ||
+    geom_dwithin_end(c, a, b, ndims, dist, margin) ||
+    geom_dwithin_end(d, a, b, ndims, dist, margin);
+}
+
 /** A pair of segments whose distance may be the least, and a lower bound of
  * it (#geom_distance_walk) */
 typedef struct
@@ -2011,11 +2063,12 @@ typedef struct
  * the nearest points of the lines outside a segment
  * (#segment_interior_range), which otherwise bounds the distance of the
  * lines inside both or, where it cannot tell, leaves 0 as the lower bound.
- * Outside that range the pair is answered exactly at once
+ * Outside that range the pair is answered exactly at once, or kept with a lower
+ * bound of 0 where @p keep says the second tier reads each pair
  */
 static pg_attribute_always_inline bool
 geom_distance_visit(const double *a, const double *b, const double *c,
-  const double *d, bool overlap, int ndims, bool filter, double big,
+  const double *d, bool overlap, int ndims, bool filter, bool keep, double big,
   double ext, double margin,
   GeomDistanceCand **cand, const GeomDistanceCand *candstack, int *ncand,
   int *maxcand, double *minhi, double *best)
@@ -2024,18 +2077,23 @@ geom_distance_visit(const double *a, const double *b, const double *c,
    * kernel, which scales the coordinates before it tests whether the
    * segments meet: the orientations #linesegm_intersect computes on them
    * overflow beyond 2^512 */
-  if (! filter)
+  if (! filter && ! keep)
   {
     double v = segment_distance_exact_bounded(a, b, c, d, ndims, big);
     *best = geom_distance_fmin(*best, v);
     return v > 0.0;
   }
-  if (ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0], b[1],
-      c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
+  if (filter && ndims == 2 && overlap && linesegm_intersect(a[0], a[1], b[0],
+      b[1], c[0], c[1], d[0], d[1]).type != INTERSECT_NONE)
     return false;
   double lo = 0.0, hi = 0.0;
   int side = -1;
-  if (ndims == 3)
+  if (! filter)
+  {
+    hi = INFINITY;
+    side = 1;
+  }
+  else if (ndims == 3)
   {
     /* The interval of the squared distance of GTE's closest parameters and
      * of the Frank-Wolfe gap (#segment_distance_range), its roots moved out
@@ -2108,13 +2166,16 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * it: the answer is then the double nearest the distance where that double is
  * at most @p cut with no upper bound below it, and otherwise a value on the same
  * side of @p cut as the distance
+ * @param[in,out] within Where not NULL, with @p cut, set to true where the answer
+ * equals @p cut and two segments are within it exactly (#geom_dwithin_segs); a
+ * pair kept is the only one whose distance can reach @p cut, so no other is read
  * @return DBL_MAX where a list holds no point, an infinity where the distance
  * exceeds the largest double
  */
 static pg_attribute_always_inline double
 geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   const POINTARRAY *const *arr2, uint32_t n2, int ndims,
-  const double *bounds, const double *cut)
+  const double *bounds, const double *cut, bool *within)
 {
   /* Two single segments, a point being one of no length, are the kernel's
    * own question */
@@ -2124,7 +2185,10 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   {
     geom_distance_seg(arr1[0], 0, &a, &b);
     geom_distance_seg(arr2[0], 0, &c, &d);
-    return segment_distance_exact(a, b, c, d, ndims);
+    double v = segment_distance_exact(a, b, c, d, ndims);
+    if (within && v == *cut)
+      *within = geom_dwithin_segs(a, b, c, d, ndims, *cut);
+    return v;
   }
 
   /* The largest magnitude of a coordinate, which sizes the margin of the
@@ -2254,7 +2318,7 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
               continue;
           }
           meet = ! geom_distance_visit(a, b, c, d, overlap, ndims, filter,
-            big, ext, margin, &cand, candstack, &ncand, &maxcand, &minhi, &best);
+            within != NULL, big, ext, margin, &cand, candstack, &ncand, &maxcand, &minhi, &best);
           decided = cut && geom_distance_fmin(minhi, best) < *cut;
         }
       }
@@ -2263,7 +2327,11 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   /* Second tier: the pairs kept, by increasing lower bound, each answered
    * exactly while its lower bound reaches the least found */
   if (meet)
+  {
     best = 0.0;
+    if (within)
+      *within = true;
+  }
   else if (decided)
     best = geom_distance_fmin(minhi, best);
   else
@@ -2275,14 +2343,21 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
         cand[j] = cand[j - 1];
         cand[j - 1] = t;
       }
-    for (int i = 0; i < ncand && best > 0.0; i++)
+    for (int i = 0; i < ncand && (best > 0.0 || within); i++)
     {
       if (cand[i].lo > geom_distance_fmin(minhi, best))
         break;
-      best = geom_distance_fmin(best, segment_distance_exact_bounded(cand[i].a,
-        cand[i].b, cand[i].c, cand[i].d, ndims, big));
+      double v = segment_distance_exact_bounded(cand[i].a, cand[i].b, cand[i].c,
+        cand[i].d, ndims, big);
+      best = geom_distance_fmin(best, v);
       if (cut && best < *cut)
         break;
+      if (within && v == *cut && geom_dwithin_segs(cand[i].a, cand[i].b,
+          cand[i].c, cand[i].d, ndims, *cut))
+      {
+        *within = true;
+        break;
+      }
     }
   }
   if (cand != candstack)
@@ -2311,10 +2386,11 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
  * admits, not empty
  * @param[in] cut Where not NULL, a distance the answer is only compared with
  * (#geom_distance_walk)
+ * @param[in,out] within As #geom_distance_walk reads it @nullable
  */
 static pg_attribute_always_inline double
 geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
-  const double *cut)
+  const double *cut, bool *within)
 {
   const LWGEOM *const *parts[2];
   uint32_t nparts[2];
@@ -2348,7 +2424,7 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
     }
   }
   double best = geom_distance_walk(arrs[0], narrs[0], arrs[1], narrs[1], 2,
-    NULL, cut);
+    NULL, cut, within);
   for (int i = 0; i < 2; i++)
     if (arrs[i] != stack[i])
       pfree(arrs[i]);
@@ -2421,9 +2497,12 @@ geom_distance_gs_arrays(const GSERIALIZED *gs, POINTARRAY *stack,
  * (#geom_distance_walk, #geom_distance_gs_arrays)
  * @param[in] gs1,gs2 Geometries with Z of the types
  * #geom_distance3d_straight_type admits, not empty
+ * @param[in] cut Distance at which the walk stops, as #geom_distance_walk reads
+ * it @nullable
  */
 static double
-geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
+  const double *cut, bool *within)
 {
   const GSERIALIZED *gss[2] = {gs1, gs2};
   POINTARRAY stack[2][GEOM_DISTANCE_ARRAYS], *pas[2];
@@ -2491,7 +2570,7 @@ geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     }
   }
   double best = geom_distance_walk(arrs[0], npas[0], arrs[1], npas[1], 3,
-    pbounds, NULL);
+    pbounds, cut, within);
   for (int i = 0; i < 2; i++)
   {
     if (arrs[i] != pstack[i])
@@ -2785,7 +2864,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     {
       LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
       LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
-      result = geom_distance2d_exact(sgeom1, sgeom2, NULL);
+      result = geom_distance2d_exact(sgeom1, sgeom2, NULL, NULL);
       lwgeom_free(sgeom1);
       lwgeom_free(sgeom2);
     }
@@ -2943,7 +3022,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     double result = (ztype1 == POINTTYPE && ztype2 == POINTTYPE) ?
       point_distance_exact((const double *) GSERIALIZED_POINT3DZ_P(gs1),
         (const double *) GSERIALIZED_POINT3DZ_P(gs2), 3) :
-      geom_distance3d_exact(gs1, gs2);
+      geom_distance3d_exact(gs1, gs2, NULL, NULL);
     /* The double nearest a distance of finite coordinates is infinite where
      * the distance leaves the doubles, as #geom_distance2d raises it */
     if (! ensure_finite_result(result))
@@ -3042,30 +3121,6 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @brief Return true if two segments are within a distance, exactly
- * @details A gap along an axis above the distance in doubles lies above it
- * exactly, since rounding is monotone, which passes over a far pair without an
- * exact sign. Two segments that do not meet are nearest at an end of one of
- * them, whose distance to the other is compared with the distance with no
- * rounding (#point_segment_offset_sign)
- */
-static bool
-geom_dwithin_segs(const double *a, const double *b, const double *c,
-  const double *d, double dist)
-{
-  for (int k = 0; k < 2; k++)
-    if (fmin(c[k], d[k]) - fmax(a[k], b[k]) > dist ||
-        fmin(a[k], b[k]) - fmax(c[k], d[k]) > dist)
-      return false;
-  return linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1], d[0],
-      d[1]).type != INTERSECT_NONE ||
-    point_segment_offset_sign(a, c, d, dist) <= 0 ||
-    point_segment_offset_sign(b, c, d, dist) <= 0 ||
-    point_segment_offset_sign(c, a, b, dist) <= 0 ||
-    point_segment_offset_sign(d, a, b, dist) <= 0;
-}
-
-/**
  * @brief Return true if two geometries of straight edges are within a
  * distance, exactly, in 2D
  * @details The double nearest their distance decides where it differs from the
@@ -3081,35 +3136,36 @@ geom_dwithin_segs(const double *a, const double *b, const double *c,
 static bool
 geom_dwithin2d_exact(const LWGEOM *geom1, const LWGEOM *geom2, double dist)
 {
-  double nearest = geom_distance2d_exact(geom1, geom2, &dist);
+  bool within = false;
+  double nearest = geom_distance2d_exact(geom1, geom2, &dist, &within);
   if (nearest != dist)
     return nearest < dist;
+  if (within)
+    return true;
   const LWGEOM *const *parts1, *const *parts2;
   uint32_t nparts1 = geom_distance_parts(&geom1, &parts1);
   uint32_t nparts2 = geom_distance_parts(&geom2, &parts2);
-  for (uint32_t i = 0; i < nparts1; i++)
-    for (uint32_t j = 0; j < nparts2; j++)
-    {
-      POINTARRAY *const *arr1, *const *arr2;
-      uint32_t n1 = geom_distance_arrays(parts1[i], &arr1);
-      uint32_t n2 = geom_distance_arrays(parts2[j], &arr2);
-      for (uint32_t r1 = 0; r1 < n1; r1++)
-        for (uint32_t r2 = 0; r2 < n2; r2++)
-        {
-          uint32_t ns1 = geom_distance_nsegs(arr1[r1]);
-          uint32_t ns2 = geom_distance_nsegs(arr2[r2]);
-          for (uint32_t k1 = 0; k1 < ns1; k1++)
-            for (uint32_t k2 = 0; k2 < ns2; k2++)
-            {
-              const double *a, *b, *c, *d;
-              geom_distance_seg(arr1[r1], k1, &a, &b);
-              geom_distance_seg(arr2[r2], k2, &c, &d);
-              if (geom_dwithin_segs(a, b, c, d, dist))
-                return true;
-            }
-        }
-    }
   return geom_distance_part_inside(parts1, nparts1, parts2, nparts2);
+}
+
+/**
+ * @brief Return true if two geometries of points and segments are within a
+ * distance, exactly, in 3D
+ * @details The double nearest their distance decides where it differs from the
+ * distance, since rounding is monotone, and the walk that finds it stops once
+ * the answer is known (#geom_distance_walk). Where it equals the distance, their
+ * distance is at most the distance exactly where two of their segments are
+ * within it (#geom_dwithin_segs)
+ * @param[in] gs1,gs2 Geometries with Z of the types
+ * #geom_distance3d_straight_type admits, not empty
+ * @param[in] dist Distance, finite and not negative
+ */
+static bool
+geom_dwithin3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
+{
+  bool within = false;
+  double nearest = geom_distance3d_exact(gs1, gs2, &dist, &within);
+  return (nearest != dist) ? nearest < dist : within;
 }
 
 /**
@@ -3142,7 +3198,7 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   {
     const double *p = (const double *) GSERIALIZED_POINT2D_P(gs1);
     const double *q = (const double *) GSERIALIZED_POINT2D_P(gs2);
-    return point_segment_offset_sign(p, q, q, dist) <= 0;
+    return point_segment_offset_sign(p, q, q, 2, dist) <= 0;
   }
 
   /* The geometry a distance reads is the one a relationship has already read,
@@ -3207,6 +3263,10 @@ geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
+ * @details Two geometries with Z of points and segments are answered exactly:
+ * the answer is that of their exact distance, whatever double that distance
+ * rounds to (#geom_dwithin3d_exact). Two geometries of which one has no Z are
+ * answered on their common dimensions (#geom_dwithin2d)
  * @param[in] gs1,gs2 Geometries
  * @param[in] dist Distance
  * @note PostGIS function: @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
@@ -3215,15 +3275,31 @@ bool
 geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
 {
   /* Ensure the validity of the arguments */
-  /* The Z dimension is not verified: PostGIS function
-   * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
-   * the geometries has no Z, regarding the missing value as any value */
+  /* The Z dimension is not verified: a geometry with no Z regards the missing
+   * value as any value, so the two are answered in 2D */
   if (! ensure_finite(dist))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return false;
+
+  if (! FLAGS_GET_Z(gs1->gflags) || ! FLAGS_GET_Z(gs2->gflags))
+    return geom_dwithin2d(gs1, gs2, dist);
+
+  /* Two geometries of points and segments are answered exactly, two points
+   * from their coordinates without deserializing them */
+  uint32_t type1 = gserialized_get_type(gs1);
+  uint32_t type2 = gserialized_get_type(gs2);
+  if (type1 == POINTTYPE && type2 == POINTTYPE)
+  {
+    const double *p = (const double *) GSERIALIZED_POINT3DZ_P(gs1);
+    const double *q = (const double *) GSERIALIZED_POINT3DZ_P(gs2);
+    return point_segment_offset_sign(p, q, q, 3, dist) <= 0;
+  }
+  if (geom_distance3d_straight_type(type1) &&
+      geom_distance3d_straight_type(type2))
+    return geom_dwithin3d_exact(gs1, gs2, dist);
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
