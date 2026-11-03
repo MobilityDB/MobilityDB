@@ -2317,11 +2317,45 @@ tcbufferinst_disc(const TInstant *inst, double *c, double *r)
 }
 
 /**
+ * @brief Return true if two discs are within a distance, decided exactly as a
+ * segment at rest (#point_motion_dwithin_period_exact)
+ */
+static bool
+tcbuffer_discs_dwithin_exact(const double *c1, double r1, const double *c2,
+  double r2, double dist)
+{
+  int64 n1, n2;
+  return point_motion_dwithin_period_exact(c1, c1, c2, c2, 2, r1, r1, r2, r2,
+    dist, 1, &n1, &n2) > 0;
+}
+
+/**
+ * @brief Return true if two discs moving linearly over a segment, read by
+ * #point_motion_dwithin_period_exact as @p result with the period from @p n1
+ * to @p n2 of its @p D microseconds, are within a distance over the whole
+ * segment
+ * @details The gap between the discs is convex over the segment, so they are
+ * within over the whole of it exactly where they are within at both its ends.
+ * A period from the start to the end of the segment is the candidate, and the
+ * exact sign at each end decides it: the period dates its bounds on whole
+ * microseconds, so a bound inside the first microsecond of the segment is
+ * dated at its start where the discs are not within
+ */
+static bool
+tcbuffer_dwithin_whole(int result, int64 n1, int64 n2, int64 D,
+  double seg[4][2], const double rad[4], double dist)
+{
+  return result == 2 && n1 == 0 && n2 == D &&
+    tcbuffer_discs_dwithin_exact(seg[0], rad[0], seg[2], rad[2], dist) &&
+    tcbuffer_discs_dwithin_exact(seg[1], rad[1], seg[3], rad[3], dist);
+}
+
+/**
  * @brief Return 2, 1 or 0 as #point_motion_dwithin_period_exact does for the
  * discs of two synchronized circular buffer sequences from their instants
  * @p i to @p i + 1, a step value keeping the disc of instant @p i, writing in
- * @p whole whether they are within over the whole segment and in @p seg and
- * @p rad the discs it reads
+ * @p whole whether they are within over the whole segment
+ * (#tcbuffer_dwithin_whole) and in @p seg and @p rad the discs it reads
  */
 static int
 tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
@@ -2340,9 +2374,7 @@ tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
   int64 n1, n2, D = TSEQUENCE_INST_N(seq1, i + 1)->t - s1->t;
   int result = point_motion_dwithin_period_exact(seg[0], seg[1], seg[2],
     seg[3], 2, rad[0], rad[1], rad[2], rad[3], dist, D, &n1, &n2);
-  /* A period from the start to the end of the segment is the whole one: a
-   * bound of the period inside the last microsecond is dated before the end */
-  *whole = result == 2 && n1 == 0 && n2 == D;
+  *whole = tcbuffer_dwithin_whole(result, n1, n2, D, seg, rad, dist);
   return result;
 }
 
@@ -2358,9 +2390,7 @@ tcbufferinst_dwithin_exact(const TInstant *inst1, const TInstant *inst2,
   double c1[2], c2[2], r1, r2;
   tcbufferinst_disc(inst1, c1, &r1);
   tcbufferinst_disc(inst2, c2, &r2);
-  int64 n1, n2;
-  return point_motion_dwithin_period_exact(c1, c1, c2, c2, 2, r1, r1, r2, r2,
-    dist, 1, &n1, &n2) > 0;
+  return tcbuffer_discs_dwithin_exact(c1, r1, c2, r2, dist);
 }
 
 /**
@@ -2531,7 +2561,7 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
     seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, D, &n1, &n2);
   if (! st->ever)
     /* Not within over the whole interval */
-    return ! (result == 2 && n1 == 0 && n2 == D);
+    return ! tcbuffer_dwithin_whole(result, n1, n2, D, seg, rad, st->dist);
   if (result == 0)
     return false;
   /* Within at an end alone that no instant of the shared time reaches */
