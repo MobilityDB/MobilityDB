@@ -795,6 +795,70 @@ def splice_boxbox_sql(filetext: str, box: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# The SQL of the temporal-by-box wrappers of a box type: per temporal type of its
+# `tempsql` stanza, the functions of each topological operation over the operand
+# pairs of a group and then their operators, in a region of the stanza's `file`. A
+# group lists its pairs as [left, right, C suffix], `{T}` naming the temporal type
+# and `{SPAN}` the span of its base type; the wrappers of #render_boxops answer
+# them. Every function carries the stanza's `support` function and every operator
+# its `sel` selectivity and the commutator of its operation (boxtopops.yaml).
+def _tempbox_sql_markers(box: str):
+    """BEGIN/END markers of a box type's temporal-by-box SQL, as
+    #_boxbox_sql_markers marks its box-by-box SQL."""
+    begin = (f"-- GENERATED-TEMPBOX-BEGIN {box} — "
+             "tools/codegen/inherited/generate.py from templates/tempbox.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml "
+             "and re-run.\n")
+    return begin, f"-- GENERATED-TEMPBOX-END {box}\n"
+
+
+def render_tempbox_sql(bt: dict, topops: list) -> str:
+    """The temporal-by-box SQL of a box type: per temporal type its banner, then per
+    topological operation and group of the stanza the functions over the group's
+    pairs and their operators, the blocks separated by a divider."""
+    banner, divider, fn_t, op_t = \
+        read_template("tempbox.sql.tmpl").rstrip("\n").split("\n\n")
+    stanza = bt["tempsql"]
+    sqlclass = bt.get("sqlclass", bt["box"])
+
+    def sub(t: str, vals: dict) -> str:
+        for k, v in vals.items():
+            t = t.replace("{" + k + "}", v)
+        return t
+
+    sections = []
+    for temp in stanza["temps"]:
+        names = {"{T}": temp["temp"], "{SPAN}": temp.get("span", "")}
+        blocks = []
+        for o in topops:
+            for group in stanza["groups"]:
+                fns, opers = [], []
+                for left, right, csuffix in group:
+                    vals = {"FN": f"{sqlclass}{o['op']}",
+                            "LEFT": names.get(left, left),
+                            "RIGHT": names.get(right, right),
+                            "SYM": f"{o['op']}_{csuffix}",
+                            "SUPPORT": stanza["support"], "SQLOP": o["sqlop"],
+                            "COMMUTATOR": (f",\n  COMMUTATOR = {o['comm']}"
+                                           if o.get("comm") else ""),
+                            "SEL": stanza["sel"]}
+                    fns.append(sub(fn_t, vals))
+                    opers.append(sub(op_t, vals))
+                blocks.append("\n".join(fns) + "\n\n" + "\n".join(opers))
+        sections.append(sub(banner, {"DESC": temp["desc"]}) + "\n\n" +
+                        f"\n\n{divider}\n\n".join(blocks))
+    return "\n\n".join(sections) + "\n"
+
+
+def splice_tempbox_sql(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's temporal-by-box SQL markers with
+    `rendered`, as #splice_boxbox_sql replaces its region."""
+    begin, end = _tempbox_sql_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 # --- C nadops (box-type axis) --------------------------------------------
 # The nearest approach distance wrappers of a box type are generated into the
 # region between these markers in `nadfile`: the base value by the temporal value
@@ -5091,6 +5155,8 @@ def manifest_files(mf: dict) -> set:
                 out.add(entry["file"])
             if isinstance(entry, dict) and (entry.get("boxbox") or {}).get("sqlfile"):
                 out.add(entry["boxbox"]["sqlfile"])
+            if isinstance(entry, dict) and (entry.get("tempsql") or {}).get("file"):
+                out.add(entry["tempsql"]["file"])
     positions = mf.get("positions") or {}
     for sub in mf.get("subtypes") or []:
         if sub.get("reference"):
@@ -5777,6 +5843,18 @@ def main() -> int:
                                          mf.get("boxposops", []))
             p.write_text(splice_boxbox_sql(p.read_text(), bt["box"], rendered))
             print(f"spliced boxbox {bt['box']} -> {sqlpath}")
+
+    for bt in mf.get("boxtypes", []):
+        if not bt.get("tempsql"):
+            continue
+        path = bt["tempsql"]["file"]
+        p = ROOT / path
+        if args.check:
+            print(f"would splice tempbox {bt['box']} -> {path}")
+            continue
+        rendered = render_tempbox_sql(bt, mf.get("boxtopops", []))
+        p.write_text(splice_tempbox_sql(p.read_text(), bt["box"], rendered))
+        print(f"spliced tempbox {bt['box']} -> {path}")
 
     for bt in nadregions(mf):
         p = ROOT / bt["nadfile"]
