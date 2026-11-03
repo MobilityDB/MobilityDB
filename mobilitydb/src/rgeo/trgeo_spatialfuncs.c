@@ -88,7 +88,7 @@ Trgeometry_restrict_geom(FunctionCallInfo fcinfo, bool atfunc)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   GSERIALIZED *gs = PG_GETARG_GSERIALIZED_P(1);
-  Temporal *result = trgeo_restrict_geom(temp, gs, atfunc);
+  Temporal *result = trgeometry_restrict_geom(temp, gs, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   PG_FREE_IF_COPY(gs, 1);
   if (! result)
@@ -134,7 +134,7 @@ Trgeometry_restrict_stbox(FunctionCallInfo fcinfo, bool atfunc)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   STBox *box = PG_GETARG_STBOX_P(1);
   bool border_inc = PG_GETARG_BOOL(2);
-  Temporal *result = trgeo_restrict_stbox(temp, box, border_inc, atfunc);
+  Temporal *result = trgeometry_restrict_stbox(temp, box, border_inc, atfunc);
   PG_FREE_IF_COPY(temp, 0);
   if (! result)
     PG_RETURN_NULL();

@@ -72,7 +72,7 @@ PG_FUNCTION_INFO_V1(Econtains_geo_trgeometry);
 inline Datum
 Econtains_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeo, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeometry, EVER);
 }
 
 PGDLLEXPORT Datum Acontains_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -85,7 +85,8 @@ PG_FUNCTION_INFO_V1(Acontains_geo_trgeometry);
 inline Datum
 Acontains_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeo, ALWAYS);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_contains_geo_trgeometry,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Econtains_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -98,7 +99,7 @@ PG_FUNCTION_INFO_V1(Econtains_trgeometry_geo);
 inline Datum
 Econtains_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_trgeo_geo, EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Acontains_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -111,7 +112,8 @@ PG_FUNCTION_INFO_V1(Acontains_trgeometry_geo);
 inline Datum
 Acontains_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_trgeo_geo, ALWAYS);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_contains_trgeometry_geo,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Econtains_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -124,7 +126,7 @@ PG_FUNCTION_INFO_V1(Econtains_trgeometry_trgeometry);
 inline Datum
 Econtains_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_trgeometry_trgeometry,
     EVER);
 }
 
@@ -138,7 +140,7 @@ PG_FUNCTION_INFO_V1(Acontains_trgeometry_trgeometry);
 inline Datum
 Acontains_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_contains_trgeometry_trgeometry,
     ALWAYS);
 }
 
@@ -156,7 +158,7 @@ PG_FUNCTION_INFO_V1(Ecovers_geo_trgeometry);
 inline Datum
 Ecovers_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeometry, EVER);
 }
 
 PGDLLEXPORT Datum Acovers_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -169,7 +171,7 @@ PG_FUNCTION_INFO_V1(Acovers_geo_trgeometry);
 inline Datum
 Acovers_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeo, ALWAYS);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_covers_geo_trgeometry, ALWAYS);
 }
 
 PGDLLEXPORT Datum Ecovers_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -182,7 +184,7 @@ PG_FUNCTION_INFO_V1(Ecovers_trgeometry_geo);
 inline Datum
 Ecovers_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Acovers_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -195,7 +197,7 @@ PG_FUNCTION_INFO_V1(Acovers_trgeometry_geo);
 inline Datum
 Acovers_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeo_geo, ALWAYS);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_covers_trgeometry_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Ecovers_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -208,7 +210,8 @@ PG_FUNCTION_INFO_V1(Ecovers_trgeometry_trgeometry);
 inline Datum
 Ecovers_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_trgeo_trgeo, EVER);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_trgeometry_trgeometry,
+    EVER);
 }
 
 PGDLLEXPORT Datum Acovers_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -221,7 +224,7 @@ PG_FUNCTION_INFO_V1(Acovers_trgeometry_trgeometry);
 inline Datum
 Acovers_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_covers_trgeometry_trgeometry,
     ALWAYS);
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_contains_covers */
@@ -243,7 +246,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_geo_trgeometry);
 inline Datum
 Edisjoint_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeo, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeometry, EVER);
 }
 
 PGDLLEXPORT Datum Adisjoint_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -257,7 +260,8 @@ PG_FUNCTION_INFO_V1(Adisjoint_geo_trgeometry);
 inline Datum
 Adisjoint_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeo, ALWAYS);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_disjoint_geo_trgeometry,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Edisjoint_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -271,7 +275,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_trgeometry_geo);
 inline Datum
 Edisjoint_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeo_geo, EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adisjoint_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -285,7 +289,8 @@ PG_FUNCTION_INFO_V1(Adisjoint_trgeometry_geo);
 inline Datum
 Adisjoint_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeo_geo, ALWAYS);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_disjoint_trgeometry_geo,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Edisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -298,7 +303,7 @@ PG_FUNCTION_INFO_V1(Edisjoint_trgeometry_trgeometry);
 inline Datum
 Edisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeometry_trgeometry,
     EVER);
 }
 
@@ -312,7 +317,7 @@ PG_FUNCTION_INFO_V1(Adisjoint_trgeometry_trgeometry);
 inline Datum
 Adisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_disjoint_trgeometry_trgeometry,
     ALWAYS);
 }
 
@@ -330,7 +335,8 @@ PG_FUNCTION_INFO_V1(Eintersects_geo_trgeometry);
 inline Datum
 Eintersects_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeo, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeometry,
+    EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -344,7 +350,8 @@ PG_FUNCTION_INFO_V1(Aintersects_geo_trgeometry);
 inline Datum
 Aintersects_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeo, ALWAYS);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_intersects_geo_trgeometry,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -357,7 +364,8 @@ PG_FUNCTION_INFO_V1(Eintersects_trgeometry_geo);
 inline Datum
 Eintersects_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeo_geo, EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeometry_geo,
+    EVER);
 }
 
 PGDLLEXPORT Datum Aintersects_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -371,7 +379,8 @@ PG_FUNCTION_INFO_V1(Aintersects_trgeometry_geo);
 inline Datum
 Aintersects_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeo_geo, ALWAYS);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_intersects_trgeometry_geo,
+    ALWAYS);
 }
 
 PGDLLEXPORT Datum Eintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -384,7 +393,7 @@ PG_FUNCTION_INFO_V1(Eintersects_trgeometry_trgeometry);
 inline Datum
 Eintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeometry_trgeometry,
     EVER);
 }
 
@@ -398,7 +407,7 @@ PG_FUNCTION_INFO_V1(Aintersects_trgeometry_trgeometry);
 inline Datum
 Aintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_intersects_trgeometry_trgeometry,
     ALWAYS);
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_disjoint_intersects */
@@ -419,7 +428,7 @@ PG_FUNCTION_INFO_V1(Etouches_geo_trgeometry);
 inline Datum
 Etouches_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeo, EVER);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeometry, EVER);
 }
 
 PGDLLEXPORT Datum Atouches_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -432,7 +441,7 @@ PG_FUNCTION_INFO_V1(Atouches_geo_trgeometry);
 inline Datum
 Atouches_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeo, ALWAYS);
+  return EA_spatialrel_geo_tspatial(fcinfo, &ea_touches_geo_trgeometry, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -445,7 +454,7 @@ PG_FUNCTION_INFO_V1(Etouches_trgeometry_geo);
 inline Datum
 Etouches_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeo_geo, EVER);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Atouches_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -458,7 +467,7 @@ PG_FUNCTION_INFO_V1(Atouches_trgeometry_geo);
 inline Datum
 Atouches_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeo_geo, ALWAYS);
+  return EA_spatialrel_tspatial_geo(fcinfo, &ea_touches_trgeometry_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Etouches_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -471,7 +480,8 @@ PG_FUNCTION_INFO_V1(Etouches_trgeometry_trgeometry);
 inline Datum
 Etouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeo_trgeo, EVER);
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeometry_trgeometry,
+    EVER);
 }
 
 PGDLLEXPORT Datum Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS);
@@ -484,7 +494,7 @@ PG_FUNCTION_INFO_V1(Atouches_trgeometry_trgeometry);
 inline Datum
 Atouches_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeo_trgeo,
+  return EA_spatialrel_tspatial_tspatial(fcinfo, &ea_touches_trgeometry_trgeometry,
     ALWAYS);
 }
 /* GENERATED-SPATIALRELS-END rgeo_ea_touches */
@@ -507,7 +517,7 @@ PG_FUNCTION_INFO_V1(Edwithin_geo_trgeometry);
 inline Datum
 Edwithin_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeo_geo, EVER);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_geo_trgeometry(PG_FUNCTION_ARGS);
@@ -521,7 +531,7 @@ PG_FUNCTION_INFO_V1(Adwithin_geo_trgeometry);
 inline Datum
 Adwithin_geo_trgeometry(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);
+  return EA_dwithin_geo_tspatial(fcinfo, &ea_dwithin_trgeometry_geo, ALWAYS);
 }
 
 PGDLLEXPORT Datum Edwithin_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -535,7 +545,7 @@ PG_FUNCTION_INFO_V1(Edwithin_trgeometry_geo);
 inline Datum
 Edwithin_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, EVER);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeometry_geo, EVER);
 }
 
 PGDLLEXPORT Datum Adwithin_trgeometry_geo(PG_FUNCTION_ARGS);
@@ -549,7 +559,7 @@ PG_FUNCTION_INFO_V1(Adwithin_trgeometry_geo);
 inline Datum
 Adwithin_trgeometry_geo(PG_FUNCTION_ARGS)
 {
-  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeo_geo, ALWAYS);
+  return EA_dwithin_tspatial_geo(fcinfo, &ea_dwithin_trgeometry_geo, ALWAYS);
 }
 
 /**
@@ -563,7 +573,7 @@ EA_dwithin_trgeometry_trgeometry(FunctionCallInfo fcinfo, bool ever)
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double dist = PG_GETARG_FLOAT8(2);
-  int result = ea_dwithin_trgeo_trgeo(temp1, temp2, dist, ever);
+  int result = ea_dwithin_trgeometry_trgeometry(temp1, temp2, dist, ever);
   PG_FREE_IF_COPY(temp1, 0);
   PG_FREE_IF_COPY(temp2, 1);
   if (result < 0)

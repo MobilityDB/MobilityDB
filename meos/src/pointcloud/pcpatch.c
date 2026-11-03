@@ -562,7 +562,8 @@ pcpatch_mem_size(const Pcpatch *pa)
  * @brief Return the pcid (schema id) of a pcpatch
  * @csqlfn #Pcpatch_pcid()
  */
-uint32_t pcpatch_get_pcid(const Pcpatch *pa)
+uint32_t
+pcpatch_get_pcid(const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, INT_MAX);
@@ -574,7 +575,8 @@ uint32_t pcpatch_get_pcid(const Pcpatch *pa)
  * @brief Return the number of points stored in a pcpatch
  * @csqlfn #Pcpatch_npoints()
  */
-uint32_t pcpatch_npoints(const Pcpatch *pa)
+uint32_t
+pcpatch_npoints(const Pcpatch *pa)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(pa, INT_MAX);
@@ -753,7 +755,8 @@ pcpatch_cmp(const Pcpatch *pa1, const Pcpatch *pa2)
  * @brief Return true if two pcpatch values are equal
  * @csqlfn #Pcpatch_eq()
  */
-bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   return pcpatch_cmp(pa1, pa2) == 0;
 }
@@ -763,7 +766,8 @@ bool pcpatch_eq(const Pcpatch *pa1, const Pcpatch *pa2)
  * @brief Return true if two pcpatch values differ
  * @csqlfn #Pcpatch_ne()
  */
-bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   return pcpatch_cmp(pa1, pa2) != 0;
 }
@@ -773,7 +777,8 @@ bool pcpatch_ne(const Pcpatch *pa1, const Pcpatch *pa2)
  * @brief Return true if the first pcpatch precedes the second in total order
  * @csqlfn #Pcpatch_lt()
  */
-bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   return pcpatch_cmp(pa1, pa2) <  0;
 }
@@ -784,7 +789,8 @@ bool pcpatch_lt(const Pcpatch *pa1, const Pcpatch *pa2)
  *   in total order
  * @csqlfn #Pcpatch_le()
  */
-bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   return pcpatch_cmp(pa1, pa2) <= 0;
 }
@@ -794,7 +800,8 @@ bool pcpatch_le(const Pcpatch *pa1, const Pcpatch *pa2)
  * @brief Return true if the first pcpatch follows the second in total order
  * @csqlfn #Pcpatch_gt()
  */
-bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
 { return pcpatch_cmp(pa1, pa2) >  0; }
 
 /**
@@ -803,7 +810,8 @@ bool pcpatch_gt(const Pcpatch *pa1, const Pcpatch *pa2)
  *   in total order
  * @csqlfn #Pcpatch_ge()
  */
-bool pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2)
+bool
+pcpatch_ge(const Pcpatch *pa1, const Pcpatch *pa2)
 {
   return pcpatch_cmp(pa1, pa2) >= 0;
 }

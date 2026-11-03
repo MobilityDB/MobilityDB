@@ -233,7 +233,7 @@ trgeometry_stboxes(const Temporal *temp, int *count)
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  const GSERIALIZED *geom = trgeo_geom_p(temp);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
   switch (temp->subtype)
   {
     case TINSTANT:
@@ -313,7 +313,7 @@ trgeometry_stboxes(const Temporal *temp, int *count)
  * box_count boxes for a temporal rigid geometry sequence
  */
 static int
-trgeo_seq_cont_split_n_iter(const TSequence *seq,
+trgeometry_seq_cont_split_n_iter(const TSequence *seq,
   const GSERIALIZED *geom, int box_count, STBox *result)
 {
   assert(seq); assert(result);
@@ -376,7 +376,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
   if (! ensure_positive(box_count))
     return NULL;
 
-  const GSERIALIZED *geom = trgeo_geom_p(temp);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
   switch (temp->subtype)
   {
     case TINSTANT:
@@ -413,7 +413,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
       int nboxes = (seq->count <= box_count) ?
         (seq->count == 1 ? 1 : seq->count - 1) : box_count;
       STBox *result = palloc(sizeof(STBox) * nboxes);
-      *count = trgeo_seq_cont_split_n_iter(seq, geom, box_count, result);
+      *count = trgeometry_seq_cont_split_n_iter(seq, geom, box_count, result);
       return result;
     }
     default: /* TSEQUENCESET */
@@ -439,7 +439,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
             end = true;
             nboxes_seq = box_count - nboxes1;
           }
-          nboxes1 += trgeo_seq_cont_split_n_iter(seq, geom, nboxes_seq,
+          nboxes1 += trgeometry_seq_cont_split_n_iter(seq, geom, nboxes_seq,
             &result[nboxes1]);
           if (end)
             break;
@@ -456,12 +456,12 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
         int j = i + size;
         if (k < remainder)
           j++;
-        trgeo_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, i), geom, 1,
+        trgeometry_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, i), geom, 1,
           &result[k]);
         for (int l = i + 1; l < j; l++)
         {
           STBox box;
-          trgeo_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, l), geom, 1,
+          trgeometry_seq_cont_split_n_iter(TSEQUENCESET_SEQ_N(ss, l), geom, 1,
             &box);
           stbox_expand(&box, &result[k]);
         }
@@ -483,7 +483,7 @@ trgeometry_split_n_stboxes(const Temporal *temp, int box_count, int *count)
  * elems_per_box consecutive segments into one box for a trgeo sequence
  */
 static int
-trgeo_seq_cont_split_each_n_iter(const TSequence *seq,
+trgeometry_seq_cont_split_each_n_iter(const TSequence *seq,
   const GSERIALIZED *geom, int elems_per_box, STBox *result)
 {
   assert(seq); assert(result);
@@ -529,7 +529,7 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
   if (! ensure_positive(elems_per_box))
     return NULL;
 
-  const GSERIALIZED *geom = trgeo_geom_p(temp);
+  const GSERIALIZED *geom = trgeometry_geom_p(temp);
   switch (temp->subtype)
   {
     case TINSTANT:
@@ -561,7 +561,7 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
       int nelems = (seq->count == 1) ? 1 : seq->count - 1;
       int nboxes = (int) ceil((double) nelems / (double) elems_per_box);
       STBox *result = palloc(sizeof(STBox) * nboxes);
-      *count = trgeo_seq_cont_split_each_n_iter(seq, geom, elems_per_box,
+      *count = trgeometry_seq_cont_split_each_n_iter(seq, geom, elems_per_box,
         result);
       return result;
     }
@@ -571,7 +571,7 @@ trgeometry_split_each_n_stboxes(const Temporal *temp, int elems_per_box,
       int nboxes = 0;
       STBox *result = palloc(sizeof(STBox) * ss->totalcount);
       for (int i = 0; i < ss->count; i++)
-        nboxes += trgeo_seq_cont_split_each_n_iter(TSEQUENCESET_SEQ_N(ss, i),
+        nboxes += trgeometry_seq_cont_split_each_n_iter(TSEQUENCESET_SEQ_N(ss, i),
           geom, elems_per_box, &result[nboxes]);
       *count = nboxes;
       return result;

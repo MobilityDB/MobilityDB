@@ -55,7 +55,7 @@ CREATE FUNCTION timeBoxes(trgeometry, duration interval,
     torigin timestamptz DEFAULT '2000-01-03', bitmatrix boolean DEFAULT TRUE,
     borderInc boolean DEFAULT TRUE)
   RETURNS stbox[]
-  AS 'MODULE_PATHNAME', 'Trgeo_time_boxes'
+  AS 'MODULE_PATHNAME', 'Trgeometry_time_boxes'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION spaceTimeBoxes(trgeometry, xsize float, ysize float,

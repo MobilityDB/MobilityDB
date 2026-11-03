@@ -1097,11 +1097,6 @@ def render_spatialrels(fam: dict) -> str:
     ingroup = fam.get("ingroup", "mobilitydb_geo_rel_ever")
     order = fam.get("order", _SR_ORDER)
     disp_map = fam.get("disp", _SR_DISP)
-    # Some families name the MEOS kernel with an abbreviated type token that
-    # differs from the public-function direction token (e.g. rgeo functions are
-    # `..._trgeometry` but their kernels are `ea_..._trgeo`). kernel_dir maps a
-    # direction to its kernel token; absent, the direction is used unchanged.
-    kernel_dir = fam.get("kernel_dir", {})
     # A temporal family (`temporal: true`) renders the temporal relationships of
     # the same predicates: one T<Rel>_<dir> wrapper per direction, answering a
     # temporal boolean through the family dispatcher over the MEOS
@@ -1119,7 +1114,7 @@ def render_spatialrels(fam: dict) -> str:
         for direc in pred.get("directions", order):
             disp = disp_over[direc] if direc in disp_over else disp_map[direc]
             if temporal:
-                meos = meos_fixed or f"t{pred['rel']}_{kernel_dir.get(direc, direc)}"
+                meos = meos_fixed or f"t{pred['rel']}_{direc}"
                 ret = f"  return {disp}(fcinfo, &{meos});"
                 if len(ret) > 80:
                     ret = f"  return {disp}(fcinfo,\n    &{meos});"
@@ -1136,7 +1131,7 @@ def render_spatialrels(fam: dict) -> str:
                     frag = frag.replace("{" + k + "}", v)
                 out.append(frag)
                 continue
-            meos = meos_fixed or f"ea_{pred['rel']}_{kernel_dir.get(direc, direc)}"
+            meos = meos_fixed or f"ea_{pred['rel']}_{direc}"
             for ea, word, low in (("E", "ever", "e"), ("A", "always", "a")):
                 brief = _wrap_brief(
                     "Return true if " + pred["briefs"][direc].replace("{word}", word))

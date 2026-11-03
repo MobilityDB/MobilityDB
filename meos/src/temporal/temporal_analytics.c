@@ -160,7 +160,8 @@ innovation_distance(const _float_t v[EKF_M], const _float_t Sinv[EKF_M*EKF_M])
 /**
  * @brief Filter a TSequence
  */
-static TSequence * tsequence_ext_kalman_filter(const TSequence *seq,
+static TSequence *
+tsequence_ext_kalman_filter(const TSequence *seq,
   MeosType temptype, double gate, double q, double variance, bool to_drop)
 {
   if (seq->count < 2)
@@ -1051,7 +1052,7 @@ temporal_tprecision(const Temporal *temp, const Interval *duration,
     Temporal *tpose = trgeometry_to_tpose(temp);
     Temporal *res = temporal_tprecision(tpose, duration, torigin);
     res->temptype = T_TPOSE;
-    Temporal *result = geometry_tpose_to_trgeometry(trgeo_geom_p(temp), res);
+    Temporal *result = geometry_tpose_to_trgeometry(trgeometry_geom_p(temp), res);
     pfree(res); pfree(tpose);
     return result;
   }

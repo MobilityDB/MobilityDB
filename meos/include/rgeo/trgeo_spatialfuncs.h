@@ -41,11 +41,11 @@
 
 /*****************************************************************************/
 
-extern GSERIALIZED *trgeo_placements(const Temporal *temp);
+extern GSERIALIZED *trgeometry_placements(const Temporal *temp);
 
-extern Temporal *trgeo_restrict_geom(const Temporal *temp,
+extern Temporal *trgeometry_restrict_geom(const Temporal *temp,
   const GSERIALIZED *gs, bool atfunc);
-extern Temporal *trgeo_restrict_stbox(const Temporal *temp, const STBox *box,
+extern Temporal *trgeometry_restrict_stbox(const Temporal *temp, const STBox *box,
   bool border_inc, bool atfunc);
 
 /*****************************************************************************/

@@ -42,7 +42,7 @@
 
 /*****************************************************************************/
 
-extern Temporal *trgeo_parse(const char **str, MeosType temptype);
+extern Temporal *trgeometry_parse(const char **str, MeosType temptype);
 
 /*****************************************************************************/
 

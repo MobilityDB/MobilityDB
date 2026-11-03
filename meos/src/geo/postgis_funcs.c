@@ -328,7 +328,8 @@ box3d_in(const char *str)
  * @details A multipoint must have at least one fully contained member and no
  * members outside the polygon to be contained.
  */
-bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -373,7 +374,8 @@ bool itree_pip_contains(const IntervalTree *itree, const LWGEOM *lwpoints)
  * @brief If any point in the point/multipoint is outside the polygon, then the
  * polygon does not cover the point/multipoint
  */
-bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -409,7 +411,8 @@ bool itree_pip_covers(const IntervalTree *itree, const LWGEOM *lwpoints)
  * without any member reaching their interior, that is, at least one member
  * lies on the boundary and none inside.
  */
-bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -454,7 +457,8 @@ bool itree_pip_touches(const IntervalTree *itree, const LWGEOM *lwpoints)
  * @brief A.intersects(B) implies if any member of the point/multipoint is not
  * outside, then they intersect
  */
-bool itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
+bool
+itree_pip_intersects(const IntervalTree *itree, const LWGEOM *lwpoints)
 {
   if (lwgeom_get_type(lwpoints) == POINTTYPE)
   {
@@ -1940,6 +1944,50 @@ geom_distance_first_point(const LWGEOM *part)
     NULL;
 }
 
+/**
+ * @brief Return the number of parts of a geometry of the types
+ * #geom_distance_straight_type admits, writing them in the last argument: the
+ * members of a collection, or the geometry itself
+ * @param[in] geom Address of the geometry, which @p parts may reference
+ * @param[out] parts Parts
+ */
+static uint32_t
+geom_distance_parts(const LWGEOM *const *geom, const LWGEOM *const **parts)
+{
+  if (lwgeom_is_collection(*geom))
+  {
+    const LWCOLLECTION *coll = (const LWCOLLECTION *) *geom;
+    *parts = (const LWGEOM *const *) coll->geoms;
+    return coll->ngeoms;
+  }
+  *parts = geom;
+  return 1;
+}
+
+/**
+ * @brief Return true if a part of one list lies inside a polygon of the other,
+ * given that no segment of one meets the other: a part does exactly where its
+ * first point does
+ */
+static bool
+geom_distance_part_inside(const LWGEOM *const *parts1, uint32_t n1,
+  const LWGEOM *const *parts2, uint32_t n2)
+{
+  for (uint32_t i = 0; i < n1; i++)
+    for (uint32_t j = 0; j < n2; j++)
+    {
+      const LWGEOM *p1 = parts1[i], *p2 = parts2[j];
+      const POINT2D *q1 = geom_distance_first_point(p1);
+      const POINT2D *q2 = geom_distance_first_point(p2);
+      if (! q1 || ! q2)
+        continue;
+      if ((p2->type == POLYGONTYPE && geom_distance_poly_contains(p2, q1)) ||
+          (p1->type == POLYGONTYPE && geom_distance_poly_contains(p1, q2)))
+        return true;
+    }
+  return false;
+}
+
 /** A pair of segments whose distance may be the least, and a lower bound of
  * it (#geom_distance_walk) */
 typedef struct
@@ -2054,13 +2102,19 @@ geom_distance_visit(const double *a, const double *b, const double *c,
  * @param[in] bounds Where not NULL, a bound on the magnitude of every
  * coordinate and a bound on every difference of two of them, which spare the
  * walk its pass over the coordinates (#geom_distance3d_exact)
+ * @param[in] cut Where not NULL, a distance the answer is only compared with
+ * (#geom_dwithin2d_exact). It seeds the least upper bound, so a pair whose lower
+ * bound lies above it is passed over, and the walk stops at an upper bound below
+ * it: the answer is then the double nearest the distance where that double is
+ * at most @p cut with no upper bound below it, and otherwise a value on the same
+ * side of @p cut as the distance
  * @return DBL_MAX where a list holds no point, an infinity where the distance
  * exceeds the largest double
  */
 static pg_attribute_always_inline double
 geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
   const POINTARRAY *const *arr2, uint32_t n2, int ndims,
-  const double *bounds)
+  const double *bounds, const double *cut)
 {
   /* Two single segments, a point being one of no length, are the kernel's
    * own question */
@@ -2161,10 +2215,10 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
    * kept */
   GeomDistanceCand candstack[GEOM_DISTANCE_CANDS], *cand = candstack;
   int ncand = 0, maxcand = GEOM_DISTANCE_CANDS;
-  double minhi = INFINITY, best = INFINITY;
-  bool overlap, meet = false, pairs = false;
-  for (uint32_t k1 = 0; k1 < n1 && ! meet; k1++)
-    for (uint32_t k2 = 0; k2 < n2 && ! meet; k2++)
+  double minhi = cut ? *cut : INFINITY, best = INFINITY;
+  bool overlap, meet = false, pairs = false, decided = false;
+  for (uint32_t k1 = 0; k1 < n1 && ! meet && ! decided; k1++)
+    for (uint32_t k2 = 0; k2 < n2 && ! meet && ! decided; k2++)
     {
       if (arr1[k1]->npoints > 0 && arr2[k2]->npoints > 0)
         pairs = true;
@@ -2179,13 +2233,13 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
       }
       uint32_t m1 = geom_distance_nsegs(arr1[k1]);
       uint32_t m2 = geom_distance_nsegs(arr2[k2]);
-      for (uint32_t l1 = 0; l1 < m1 && ! meet; l1++)
+      for (uint32_t l1 = 0; l1 < m1 && ! meet && ! decided; l1++)
       {
         geom_distance_seg(arr1[k1], l1, &a, &b);
         double blo[3], bhi[3];
         if (finite)
           geom_distance_seg_box(a, b, ndims, blo, bhi);
-        for (uint32_t l2 = 0; l2 < m2 && ! meet; l2++)
+        for (uint32_t l2 = 0; l2 < m2 && ! meet && ! decided; l2++)
         {
           geom_distance_seg(arr2[k2], l2, &c, &d);
           /* The gap of the boxes against the square of the least found moved
@@ -2201,6 +2255,7 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
           }
           meet = ! geom_distance_visit(a, b, c, d, overlap, ndims, filter,
             big, ext, margin, &cand, candstack, &ncand, &maxcand, &minhi, &best);
+          decided = cut && geom_distance_fmin(minhi, best) < *cut;
         }
       }
     }
@@ -2209,6 +2264,8 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
    * exactly while its lower bound reaches the least found */
   if (meet)
     best = 0.0;
+  else if (decided)
+    best = geom_distance_fmin(minhi, best);
   else
   {
     for (int i = 1; i < ncand; i++)
@@ -2224,6 +2281,8 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
         break;
       best = geom_distance_fmin(best, segment_distance_exact_bounded(cand[i].a,
         cand[i].b, cand[i].c, cand[i].d, ndims, big));
+      if (cut && best < *cut)
+        break;
     }
   }
   if (cand != candstack)
@@ -2250,9 +2309,12 @@ geom_distance_walk(const POINTARRAY *const *arr1, uint32_t n1,
  * geometry, a part lies inside a polygon exactly where one of its points does
  * @param[in] geom1,geom2 Geometries of the types #geom_distance_straight_type
  * admits, not empty
+ * @param[in] cut Where not NULL, a distance the answer is only compared with
+ * (#geom_distance_walk)
  */
-static double
-geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
+static pg_attribute_always_inline double
+geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2,
+  const double *cut)
 {
   const LWGEOM *const *parts[2];
   uint32_t nparts[2];
@@ -2262,17 +2324,7 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
   uint32_t narrs[2];
   for (int i = 0; i < 2; i++)
   {
-    if (lwgeom_is_collection(geoms[i]))
-    {
-      const LWCOLLECTION *coll = (const LWCOLLECTION *) geoms[i];
-      parts[i] = (const LWGEOM *const *) coll->geoms;
-      nparts[i] = coll->ngeoms;
-    }
-    else
-    {
-      parts[i] = &geoms[i];
-      nparts[i] = 1;
-    }
+    nparts[i] = geom_distance_parts(&geoms[i], &parts[i]);
     /* The point arrays of the parts, in one list */
     uint32_t total = 0;
     for (uint32_t j = 0; j < nparts[i]; j++)
@@ -2296,28 +2348,16 @@ geom_distance2d_exact(const LWGEOM *geom1, const LWGEOM *geom2)
     }
   }
   double best = geom_distance_walk(arrs[0], narrs[0], arrs[1], narrs[1], 2,
-    NULL);
+    NULL, cut);
   for (int i = 0; i < 2; i++)
     if (arrs[i] != stack[i])
       pfree(arrs[i]);
-  if (best == 0.0 || best == DBL_MAX)
+  if (best == 0.0 || best == DBL_MAX || (cut && best < *cut))
     return best;
 
-  /* No segment meets the other geometry: a part lies inside a polygon of the
-   * other exactly where its first point does */
-  for (uint32_t i = 0; i < nparts[0]; i++)
-    for (uint32_t j = 0; j < nparts[1]; j++)
-    {
-      const LWGEOM *p1 = parts[0][i], *p2 = parts[1][j];
-      const POINT2D *q1 = geom_distance_first_point(p1);
-      const POINT2D *q2 = geom_distance_first_point(p2);
-      if (! q1 || ! q2)
-        continue;
-      if ((p2->type == POLYGONTYPE && geom_distance_poly_contains(p2, q1)) ||
-          (p1->type == POLYGONTYPE && geom_distance_poly_contains(p1, q2)))
-        return 0.0;
-    }
-  return best;
+  /* No segment meets the other geometry */
+  return geom_distance_part_inside(parts[0], nparts[0], parts[1], nparts[1]) ?
+    0.0 : best;
 }
 
 /**
@@ -2451,7 +2491,7 @@ geom_distance3d_exact(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     }
   }
   double best = geom_distance_walk(arrs[0], npas[0], arrs[1], npas[1], 3,
-    pbounds);
+    pbounds, NULL);
   for (int i = 0; i < 2; i++)
   {
     if (arrs[i] != pstack[i])
@@ -2745,7 +2785,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
     {
       LWGEOM *sgeom1 = lwgeom_from_gserialized(gs1);
       LWGEOM *sgeom2 = lwgeom_from_gserialized(gs2);
-      result = geom_distance2d_exact(sgeom1, sgeom2);
+      result = geom_distance2d_exact(sgeom1, sgeom2, NULL);
       lwgeom_free(sgeom1);
       lwgeom_free(sgeom2);
     }
@@ -3002,25 +3042,108 @@ geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
+ * @brief Return true if two segments are within a distance, exactly
+ * @details A gap along an axis above the distance in doubles lies above it
+ * exactly, since rounding is monotone, which passes over a far pair without an
+ * exact sign. Two segments that do not meet are nearest at an end of one of
+ * them, whose distance to the other is compared with the distance with no
+ * rounding (#point_segment_offset_sign)
+ */
+static bool
+geom_dwithin_segs(const double *a, const double *b, const double *c,
+  const double *d, double dist)
+{
+  for (int k = 0; k < 2; k++)
+    if (fmin(c[k], d[k]) - fmax(a[k], b[k]) > dist ||
+        fmin(a[k], b[k]) - fmax(c[k], d[k]) > dist)
+      return false;
+  return linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1], d[0],
+      d[1]).type != INTERSECT_NONE ||
+    point_segment_offset_sign(a, c, d, dist) <= 0 ||
+    point_segment_offset_sign(b, c, d, dist) <= 0 ||
+    point_segment_offset_sign(c, a, b, dist) <= 0 ||
+    point_segment_offset_sign(d, a, b, dist) <= 0;
+}
+
+/**
+ * @brief Return true if two geometries of straight edges are within a
+ * distance, exactly, in 2D
+ * @details The double nearest their distance decides where it differs from the
+ * distance, since rounding is monotone, and the walk that finds it stops once
+ * the answer is known (#geom_distance_walk). Where it equals the distance, their
+ * distance is at most the distance exactly where two of their segments are
+ * within it (#geom_dwithin_segs) or a part of one lies inside a polygon of the
+ * other
+ * @param[in] geom1,geom2 Geometries of the types #geom_distance_straight_type
+ * admits, not empty
+ * @param[in] dist Distance, finite and not negative
+ */
+static bool
+geom_dwithin2d_exact(const LWGEOM *geom1, const LWGEOM *geom2, double dist)
+{
+  double nearest = geom_distance2d_exact(geom1, geom2, &dist);
+  if (nearest != dist)
+    return nearest < dist;
+  const LWGEOM *const *parts1, *const *parts2;
+  uint32_t nparts1 = geom_distance_parts(&geom1, &parts1);
+  uint32_t nparts2 = geom_distance_parts(&geom2, &parts2);
+  for (uint32_t i = 0; i < nparts1; i++)
+    for (uint32_t j = 0; j < nparts2; j++)
+    {
+      POINTARRAY *const *arr1, *const *arr2;
+      uint32_t n1 = geom_distance_arrays(parts1[i], &arr1);
+      uint32_t n2 = geom_distance_arrays(parts2[j], &arr2);
+      for (uint32_t r1 = 0; r1 < n1; r1++)
+        for (uint32_t r2 = 0; r2 < n2; r2++)
+        {
+          uint32_t ns1 = geom_distance_nsegs(arr1[r1]);
+          uint32_t ns2 = geom_distance_nsegs(arr2[r2]);
+          for (uint32_t k1 = 0; k1 < ns1; k1++)
+            for (uint32_t k2 = 0; k2 < ns2; k2++)
+            {
+              const double *a, *b, *c, *d;
+              geom_distance_seg(arr1[r1], k1, &a, &b);
+              geom_distance_seg(arr2[r2], k2, &c, &d);
+              if (geom_dwithin_segs(a, b, c, d, dist))
+                return true;
+            }
+        }
+    }
+  return geom_distance_part_inside(parts1, nparts1, parts2, nparts2);
+}
+
+/**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
+ * @details Two geometries of straight edges are answered exactly: the answer
+ * is that of their exact distance, whatever double that distance rounds to
+ * (#geom_dwithin2d_exact)
  * @param[in] gs1,gs2 Geometries
- * @param[in] tolerance Tolerance
+ * @param[in] dist Distance
  * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
  */
 bool
-geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  double tolerance)
+geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
 {
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: this is the function selected for mixed
    * 2D/3D arguments, which are answered on their common dimensions */
-  if (! ensure_finite(tolerance))
+  if (! ensure_finite(dist))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return false;
+
+  /* Two points are answered from their coordinates without deserializing
+   * them, as #geom_distance2d measures them */
+  if (gserialized_get_type(gs1) == POINTTYPE &&
+      gserialized_get_type(gs2) == POINTTYPE)
+  {
+    const double *p = (const double *) GSERIALIZED_POINT2D_P(gs1);
+    const double *q = (const double *) GSERIALIZED_POINT2D_P(gs2);
+    return point_segment_offset_sign(p, q, q, dist) <= 0;
+  }
 
   /* The geometry a distance reads is the one a relationship has already read,
    * where it has: these routines take an LWGEOM and never look at an edge, so
@@ -3029,24 +3152,32 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
   LWGEOM *made1, *made2;
   const LWGEOM *geom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
   const LWGEOM *geom2 = relate_ctx_borrow_geom(gs2, &ent2, &made2);
+  bool result;
+  if (geom1 && geom2 && geom_distance_straight_type(geom1->type) &&
+      geom_distance_straight_type(geom2->type))
+    result = geom_dwithin2d_exact(geom1, geom2, dist);
+  else
+  {
 #if ! MEOS
-  /* A kept geometry is read in the context that keeps it, as a relationship
-   * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
-   * it measures and to its parts, and they must live as long as the entry */
-  MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
+    /* A kept geometry is read in the context that keeps it, as a relationship
+     * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
+     * it measures and to its parts, and they must live as long as the entry */
+    MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
 #endif
-  double mindist = (geom1 && geom2) ?
-    lwgeom_mindistance2d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2,
-      tolerance) : DBL_MAX;
+    double mindist = (geom1 && geom2) ?
+      lwgeom_mindistance2d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2,
+        dist) : DBL_MAX;
 #if ! MEOS
-  MemoryContextSwitchTo(oldctx);
+    MemoryContextSwitchTo(oldctx);
 #endif
+    /* empty geometries cases should be right handled since return from
+     underlying functions should be DBL_MAX which causes false as answer */
+    result = (dist >= mindist);
+  }
   relate_ctx_return_geom(ent1); relate_ctx_return_geom(ent2);
   if (made1) lwgeom_free(made1);
   if (made2) lwgeom_free(made2);
-  /* empty geometries cases should be right handled since return from
-   underlying functions should be DBL_MAX which causes false as answer */
-  return (tolerance >= mindist);
+  return result;
 }
 
 /**
@@ -3057,51 +3188,50 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * every instant; this is PostGIS @p ST_3DDWithin when both have Z and
  * @p ST_DWithin otherwise
  * @param[in] gs1,gs2 Geometries
- * @param[in] tolerance Tolerance
+ * @param[in] dist Distance
  * @note PostGIS functions: @p LWGEOM_dwithin(PG_FUNCTION_ARGS),
  * @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  * @csqlfn #Geom_dwithin()
  */
 bool
-geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double tolerance)
+geom_dwithin(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, false); VALIDATE_NOT_NULL(gs2, false);
-  if (! ensure_finite(tolerance))
+  if (! ensure_finite(dist))
     return false;
   return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
-    geom_dwithin3d(gs1, gs2, tolerance) : geom_dwithin2d(gs1, gs2, tolerance);
+    geom_dwithin3d(gs1, gs2, dist) : geom_dwithin2d(gs1, gs2, dist);
 }
 
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
  * @param[in] gs1,gs2 Geometries
- * @param[in] tolerance Tolerance
+ * @param[in] dist Distance
  * @note PostGIS function: @p LWGEOM_dwithin3d(PG_FUNCTION_ARGS)
  */
 bool
-geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
-  double tolerance)
+geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
 {
   /* Ensure the validity of the arguments */
   /* The Z dimension is not verified: PostGIS function
    * #lwgeom_mindistance3d_tolerance reduces to its 2D counterpart when one of
    * the geometries has no Z, regarding the missing value as any value */
-  if (! ensure_finite(tolerance))
+  if (! ensure_finite(dist))
     return false;
   if (! ensure_valid_geo_geo(gs1, gs2) ||
       gserialized_is_empty(gs1) || gserialized_is_empty(gs2) ||
-      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
+      ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return false;
 
   LWGEOM *geom1 = lwgeom_from_gserialized(gs1);
   LWGEOM *geom2 = lwgeom_from_gserialized(gs2);
-  double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, tolerance);
+  double mindist = lwgeom_mindistance3d_tolerance(geom1, geom2, dist);
   /*empty geometries cases should be right handled since return from underlying
    functions should be DBL_MAX which causes false as answer*/
   lwgeom_free(geom1); lwgeom_free(geom2);
-  return (tolerance >= mindist);
+  return (dist >= mindist);
 }
 
 /**

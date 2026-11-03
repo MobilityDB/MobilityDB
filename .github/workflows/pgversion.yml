@@ -78,7 +78,10 @@ jobs:
         run: |
           sudo apt-get install curl ca-certificates gnupg
           sudo install -d /usr/share/postgresql-common/pgdg
-          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+          # A transfer the server breaks off is retried, as rerun-slow-mirror.yml reads
+          # its logs: one dropped connection otherwise fails the job before it builds.
+          sudo curl -fsSL --retry 5 --retry-all-errors --retry-delay 15 \
+            -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
             https://www.postgresql.org/media/keys/ACCC4CF8.asc
           sudo sh -c 'echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] http://apt.postgresql.org/pub/repos/apt/ \
             $(lsb_release -cs)-pgdg main ${{ matrix.psql }}" > /etc/apt/sources.list.d/pgdg.list'

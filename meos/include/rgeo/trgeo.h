@@ -49,29 +49,29 @@
  *****************************************************************************/
 
 extern bool ensure_has_geom(int16 flags);
-extern bool ensure_valid_trgeo_geo(const Temporal *temp,
+extern bool ensure_valid_trgeometry_geo(const Temporal *temp,
   const GSERIALIZED *gs);
-extern bool ensure_valid_trgeo_stbox(const Temporal *temp,
+extern bool ensure_valid_trgeometry_stbox(const Temporal *temp,
   const STBox *box);
-extern bool ensure_valid_trgeo_trgeo(const Temporal *temp1,
+extern bool ensure_valid_trgeometry_trgeometry(const Temporal *temp1,
   const Temporal *temp2);
-extern bool ensure_valid_trgeo_tpoint(const Temporal *temp1,
+extern bool ensure_valid_trgeometry_tpoint(const Temporal *temp1,
   const Temporal *temp2);
-extern const GSERIALIZED *trgeo_geom_p(const Temporal *temp);
+extern const GSERIALIZED *trgeometry_geom_p(const Temporal *temp);
 
 /* Input/output functions */
 
-extern char *trgeo_wkt_out(const Temporal *temp, int maxdd, bool extended);
+extern char *trgeometry_wkt_out(const Temporal *temp, int maxdd, bool extended);
 
 /* Constructor functions */
 
-extern TInstant *geo_tposeinst_to_trgeo(const GSERIALIZED *gs,
+extern TInstant *geo_tposeinst_to_trgeometry(const GSERIALIZED *gs,
   const TInstant *inst);
-extern TSequence *geo_tposeseq_to_trgeo(const GSERIALIZED *gs,
+extern TSequence *geo_tposeseq_to_trgeometry(const GSERIALIZED *gs,
   const TSequence *seq);
-extern TSequenceSet *geo_tposeseqset_to_trgeo(const GSERIALIZED *gs,
+extern TSequenceSet *geo_tposeseqset_to_trgeometry(const GSERIALIZED *gs,
   const TSequenceSet *ss);
-extern Temporal *geo_tpose_to_trgeo(const GSERIALIZED *gs,
+extern Temporal *geometry_tpose_to_trgeometry_intl(const GSERIALIZED *gs,
   const Temporal *temp);
 
 /* Conversion functions */
@@ -79,7 +79,7 @@ extern Temporal *geo_tpose_to_trgeo(const GSERIALIZED *gs,
 
 /* Accessor functions */
 
-extern bool trgeo_value_at_timestamptz(const Temporal *temp, TimestampTz t,
+extern bool trgeometry_value_at_timestamptz_intl(const Temporal *temp, TimestampTz t,
   bool strict, Datum *result);
 
 /* Restriction functions */

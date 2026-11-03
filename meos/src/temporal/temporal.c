@@ -656,7 +656,7 @@ temporal_strip_geom(const Temporal *temp, const GSERIALIZED **geom)
 #if RGEO
   if (temp->temptype == T_TRGEOMETRY)
   {
-    *geom = trgeo_geom_p(temp);
+    *geom = trgeometry_geom_p(temp);
     return trgeometry_to_tpose(temp);
   }
 #endif /* RGEO */
@@ -697,7 +697,7 @@ temporal_attach_geom(const GSERIALIZED *geom, Temporal *temp)
   if (! geom || ! temp)
     return temp;
 #if RGEO
-  Temporal *result = geo_tpose_to_trgeo(geom, temp);
+  Temporal *result = geometry_tpose_to_trgeometry_intl(geom, temp);
   pfree(temp);
   return result;
 #else
@@ -4254,7 +4254,8 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
   for (int i = 0; i < seq->count - 1; i++)
   {
     const TInstant *inst2 = TSEQUENCE_INST_N(seq, i + 1);
-    bool upper_inc = (i == seq->count - 1) ? seq->period.upper_inc : false;
+    /* The last segment ends at the upper bound of the sequence */
+    bool upper_inc = (i == seq->count - 2) ? seq->period.upper_inc : false;
     int64_t length = (int64)(inst2->t - inst1->t);
     switch(oper)
     {
@@ -4270,6 +4271,8 @@ tsequence_segm_duration_iter(const TSequence *seq, int64 tunits, CompOper oper,
       NORMALIZE_NO);
     pfree(instants[0]); pfree(instants[1]);
     inst1 = inst2;
+    /* Every segment after the first starts at an instant of the sequence */
+    lower_inc = true;
   }
   return nseqs;
 }

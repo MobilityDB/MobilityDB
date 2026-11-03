@@ -513,7 +513,8 @@ pcpoint_cmp(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if two pcpoints are equal
  * @csqlfn #Pcpoint_eq()
  */
-bool pcpoint_eq(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_eq(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) == 0;
 }
@@ -523,7 +524,8 @@ bool pcpoint_eq(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if two pcpoints differ
  * @csqlfn #Pcpoint_ne()
  */
-bool pcpoint_ne(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_ne(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) != 0;
 }
@@ -533,7 +535,8 @@ bool pcpoint_ne(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if the first pcpoint precedes the second one
  * @csqlfn #Pcpoint_lt()
  */
-bool pcpoint_lt(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_lt(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) <  0;
 }
@@ -543,7 +546,8 @@ bool pcpoint_lt(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if the first pcpoint precedes or equals the second one
  * @csqlfn #Pcpoint_le()
  */
-bool pcpoint_le(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_le(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) <= 0;
 }
@@ -553,7 +557,8 @@ bool pcpoint_le(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if the first pcpoint follows the second in total order
  * @csqlfn #Pcpoint_gt()
  */
-bool pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) >  0;
 }
@@ -563,7 +568,8 @@ bool pcpoint_gt(const Pcpoint *pt1, const Pcpoint *pt2)
  * @brief Return true if the first pcpoint follows or equals the second one
  * @csqlfn #Pcpoint_ge()
  */
-bool pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
+bool
+pcpoint_ge(const Pcpoint *pt1, const Pcpoint *pt2)
 {
   return pcpoint_cmp(pt1, pt2) >= 0;
 }

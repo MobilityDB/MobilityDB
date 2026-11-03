@@ -98,7 +98,7 @@ Trgeometry_in(PG_FUNCTION_ARGS)
 {
   const char *input = PG_GETARG_CSTRING(0);
   Oid temptypid = PG_GETARG_OID(1);
-  Temporal *result = trgeo_parse(&input, oid_meostype(temptypid));
+  Temporal *result = trgeometry_parse(&input, oid_meostype(temptypid));
   PG_RETURN_POINTER(result);
 }
 
@@ -189,7 +189,7 @@ Trgeometry_from_ewkt(PG_FUNCTION_ARGS)
   char *wkt = text_to_cstring(wkt_text);
   /* Copy the pointer since it will be advanced during parsing */
   const char *wkt_ptr = wkt;
-  Temporal *result = trgeo_parse(&wkt_ptr, oid_meostype(temptypid));
+  Temporal *result = trgeometry_parse(&wkt_ptr, oid_meostype(temptypid));
   pfree(wkt);
   PG_FREE_IF_COPY(wkt_text, 0);
   PG_RETURN_POINTER(result);
@@ -540,7 +540,7 @@ Trgeometry_value_at_timestamptz(PG_FUNCTION_ARGS)
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   TimestampTz t = PG_GETARG_TIMESTAMPTZ(1);
   Datum result;
-  bool found = trgeo_value_at_timestamptz(temp, t, true, &result);
+  bool found = trgeometry_value_at_timestamptz_intl(temp, t, true, &result);
   PG_FREE_IF_COPY(temp, 0);
   if (! found)
     PG_RETURN_NULL();

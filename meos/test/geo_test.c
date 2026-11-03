@@ -3866,6 +3866,28 @@ int main(void)
   assert(dz1 && dz2 && dz3 && d2 && d0);
   assert(! geom_dwithin(dz1, dz2, 1.2));
   assert(geom_dwithin(dz1, d2, 1.2) && geom_dwithin(d2, dz1, 1.2));
+
+  /* A distance is compared with the exact one, whatever double that rounds to:
+   * sqrt(13) lies above the double nearest it and sqrt(5) below, and a point
+   * the least double from a segment, or nearer than half of it, which rounds
+   * to 0, is apart from the segment at 0 */
+  GSERIALIZED *e23 = geom_in("Point(2 3)", -1);
+  GSERIALIZED *e12 = geom_in("Point(1 2)", -1);
+  GSERIALIZED *eln = geom_in("Linestring(0 0,1 4.9406564584124654e-324)", -1);
+  GSERIALIZED *eax = geom_in("Linestring(0 0,1 0)", -1);
+  GSERIALIZED *ept = geom_in("Point(0.5 4.9406564584124654e-324)", -1);
+  GSERIALIZED *esq = geom_in("Polygon((0 0,4 0,4 4,0 4,0 0))", -1);
+  GSERIALIZED *ein = geom_in("Point(2 2)", -1);
+  assert(e23 && e12 && eln && eax && ept && esq && ein);
+  assert(! geom_dwithin(d0, e23, 3.605551275463989));
+  assert(geom_dwithin(d0, e23, 3.6055512754639896));
+  assert(geom_dwithin(d0, e12, 2.23606797749979));
+  assert(! geom_dwithin(ept, eln, 0.0));
+  assert(! geom_dwithin(ept, eax, 0.0));
+  assert(geom_dwithin(esq, ein, 0.0) && geom_dwithin(ein, esq, 0.0));
+  free(e23); free(e12); free(eln); free(eax); free(ept); free(esq);
+  free(ein);
+
   assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
   assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));
   assert(geom_distance(dz1, dz2) == sqrt(26.0));
