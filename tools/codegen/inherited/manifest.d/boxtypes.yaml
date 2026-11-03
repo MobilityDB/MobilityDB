@@ -347,6 +347,18 @@ boxtypes:
     posgroup:  mobilitydb_temporal_bbox_pos
     posfile:   mobilitydb/src/temporal/temporal_posops.c
     posreference: true
+    # the SQL of the topological wrappers (templates/tempbox.sql.tmpl) over each
+    # temporal type the span bounds alone, a group of pairs [left, right, C suffix]
+    tempsql:
+      file:    mobilitydb/sql/temporal/033_temporal_topops.in.sql
+      sel:     temporal
+      support: temporal_supportfn
+      temps:
+        - {temp: tbool, desc: Temporal boolean}
+        - {temp: ttext, desc: Temporal text}
+      groups:
+        - [[tstzspan, "{T}", tstzspan_temporal], ["{T}", tstzspan, temporal_tstzspan],
+           ["{T}", "{T}", temporal_temporal]]
 
   # tbox: a COMPOSITE box (value span × time). Its own directions dispatch on the
   # tbox primitives (overlaps_tbox_tbox, ...); the `valspan` sub-block adds the
@@ -372,6 +384,21 @@ boxtypes:
     posgroup:  mobilitydb_temporal_bbox_pos
     posfile:   mobilitydb/src/temporal/temporal_posops.c
     posreference: true
+    # the SQL of the topological wrappers (templates/tempbox.sql.tmpl) over each
+    # temporal number: its time span, then its value span, its box and itself
+    tempsql:
+      file:    mobilitydb/sql/temporal/033_temporal_topops.in.sql
+      sel:     tnumber
+      support: tnumber_supportfn
+      temps:
+        - {temp: tint, span: intspan, desc: Temporal integer}
+        - {temp: tbigint, span: bigintspan, desc: Temporal bigint}
+        - {temp: tfloat, span: floatspan, desc: Temporal float}
+      groups:
+        - [[tstzspan, "{T}", tstzspan_temporal], ["{T}", tstzspan, temporal_tstzspan]]
+        - [["{SPAN}", "{T}", numspan_tnumber], ["{T}", "{SPAN}", tnumber_numspan],
+           [tbox, "{T}", tbox_tnumber], ["{T}", tbox, tnumber_tbox],
+           ["{T}", "{T}", tnumber_tnumber]]
     # box-by-box wrappers (templates/boxbox.c.tmpl), as the stbox entry states them,
     # then per span side those of the side and the box in either order, over the
     # topological operations and the position ones of the side's `posaxes`

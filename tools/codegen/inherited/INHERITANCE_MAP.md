@@ -194,7 +194,13 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   operators over them are a region of the stanza's `sqlfile`
   (`templates/boxbox.sql.tmpl`): the 85 of `021_tbox`, the 21 of `051_stbox` and
   the 21 of `410_tpcbox`, a number span side declared over `intspan`,
-  `bigintspan` and `floatspan`. A box type naming a
+  `bigintspan` and `floatspan`. A box type with a `tempsql:` stanza has the SQL of
+  its temporal-by-box topological wrappers in a region of the stanza's `file`
+  (`templates/tempbox.sql.tmpl`): per temporal type of `temps:`, per operation of
+  `boxtopops.yaml` and per group of `groups:`, the functions over the group's
+  `[left, right, C suffix]` pairs and then their operators. `tstzspan` writes the
+  60 statements of `tbool` and `ttext` in `033_temporal_topops`, `tbox` the 210 of
+  `tint`, `tbigint` and `tfloat`. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
@@ -416,7 +422,8 @@ documented inline in `temporal_types_p1/p2` (no separate number chapter).
 
 **The generic base `Temporal<T>` reference files** (`032_temporal_boxops`
 (extraction: spans/tboxes, its split functions a `tiling_families` region), `033_temporal_topops` (topological: spanOverlaps/
-spanContains/spanContained/spanSame/spanAdjacent), `034_temporal_posops`, `040/042` aggfuncs,
+spanContains/spanContained/spanSame/spanAdjacent and their tbox forms, the two
+`tempsql` regions of box types `tstzspan` and `tbox`), `034_temporal_posops`, `040/042` aggfuncs,
 `043/044` gist/spgist, `022/023` type/inout, `025_temporal_tile`, `038/046`
 similarity/analytics) are likewise the hand reference; the generator re-emits their
 *shape* onto the derived families (§6) and regenerates the **C boxops region** for
@@ -1346,6 +1353,7 @@ generated:
 | `compops` (`subtypes:` families) | `_compops_spec_from_subtype()`, which also picks the Eq support function |
 | `compops` (`compops_families:` entries) | each pair's `rest`/`join` keys |
 | box-by-box operators (`boxbox` stanzas of `boxtypes.yaml`) | each stanza's `sel` key: `tnumber` for `tbox`, `tspatial` for `stbox` and `tpcbox` |
+| temporal-by-box topological operators (`tempsql` stanzas of `boxtypes.yaml`) | each stanza's `sel` key: `temporal` for `tstzspan`, `tnumber` for `tbox` |
 | B-tree comparisons | the `lit` blocks of `comparison_families:` / `hash_families:` |
 | the `coverage_exceptions.txt` files | written out, since no template governs them yet |
 
