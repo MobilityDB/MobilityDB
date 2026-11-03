@@ -525,9 +525,13 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
   return sptree;
 }
 
+/* GENERATED-INDEXTREES-BEGIN sptree — tools/codegen/inherited/generate.py from templates/sptree_create.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/indextrees.yaml and re-run. */
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for integer spans
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -544,6 +548,8 @@ sptree_create_intspan(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for big integer spans
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -560,6 +566,8 @@ sptree_create_bigintspan(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for float spans
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -576,6 +584,8 @@ sptree_create_floatspan(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for date spans
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -592,6 +602,8 @@ sptree_create_datespan(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for timestamptz spans
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -608,6 +620,8 @@ sptree_create_tstzspan(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for temporal boxes
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -624,6 +638,8 @@ sptree_create_tbox(SPTreeKind kind)
 /**
  * @ingroup meos_misc
  * @brief Create an in-memory space-partitioning index for spatiotemporal boxes
+ * @details Pair with @ref sptree_insert / @ref sptree_insert_temporal to
+ * populate, @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
  * @errval NULL
@@ -640,11 +656,10 @@ sptree_create_stbox(SPTreeKind kind)
 #if POINTCLOUD
 /**
  * @ingroup meos_pointcloud_box
- * @brief Create an in-memory space-partitioning index for the @c tpcbox
- * bounding-box type
+ * @brief Create an in-memory space-partitioning index for point cloud boxes
  * @details The boxes are projected to spatiotemporal boxes on entry, so the
  * tree reuses the spatiotemporal box partitioning unchanged. Pair with
- * @ref sptree_insert / @ref sptree_insert_temporal to populate and
+ * @ref sptree_insert / @ref sptree_insert_temporal to populate,
  * @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
@@ -659,6 +674,7 @@ sptree_create_tpcbox(SPTreeKind kind)
   return sptree_create(T_TPCBOX, kind);
 }
 #endif /* POINTCLOUD */
+/* GENERATED-INDEXTREES-END sptree */
 
 /*****************************************************************************
  * Insertion

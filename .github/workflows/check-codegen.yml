@@ -1,8 +1,8 @@
 name: Check codegen
 
-# Verifies that the SQL emitted by the inherited-behaviour generator
-# (tools/codegen/inherited) is in sync with its template + manifest, so a
-# hand edit to an emitted file — or a template change that was not
+# Verifies that the SQL and C emitted by the inherited-behaviour generator
+# (tools/codegen/inherited) are in sync with its templates + manifest, so a
+# hand edit to an emitted file or region — or a template change that was not
 # re-emitted — cannot land unnoticed. The generator is deterministic, so
 # regenerating and diffing is enough.
 
@@ -13,11 +13,15 @@ on:
       - '.github/workflows/check-codegen.yml'
       - 'tools/codegen/inherited/**'
       - 'mobilitydb/sql/**'
+      - 'meos/src/temporal/temporal_rtree.c'
+      - 'meos/src/temporal/temporal_sptree.c'
   pull_request:
     paths:
       - '.github/workflows/check-codegen.yml'
       - 'tools/codegen/inherited/**'
       - 'mobilitydb/sql/**'
+      - 'meos/src/temporal/temporal_rtree.c'
+      - 'meos/src/temporal/temporal_sptree.c'
 
 permissions:
   contents: read
@@ -35,10 +39,10 @@ jobs:
       - name: Regenerate the inherited SQL
         run: python3 tools/codegen/inherited/generate.py
 
-      - name: Fail if the emitted SQL is out of date
+      - name: Fail if the emitted SQL or C is out of date
         run: |
           if ! git diff --exit-code; then
-            echo "::error::Emitted SQL is out of date. Run" \
+            echo "::error::Emitted SQL or C is out of date. Run" \
                  "'python3 tools/codegen/inherited/generate.py' and commit the result."
             exit 1
           fi

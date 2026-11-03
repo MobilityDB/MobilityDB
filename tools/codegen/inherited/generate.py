@@ -5141,6 +5141,56 @@ def check_coverage(mf: dict) -> int:
     return 0
 
 
+# --- C index-tree constructors (box-type axis) ----------------------------
+# The constructors of the in-memory index trees of MEOS, one per tree and box
+# type, are generated into the region between these markers in the tree's
+# `file` (manifest.d/indextrees.yaml): the R-tree constructors
+# rtree_create_<box>(void) and the space-partitioning tree constructors
+# sptree_create_<box>(SPTreeKind), each calling its tree's engine with the
+# MeosType of the box. A box built under a flag is guarded by it.
+def _indextrees_markers(tree: str, tmpl: str):
+    """BEGIN/END markers of a tree's constructors, naming their template"""
+    begin = (f"/* GENERATED-INDEXTREES-BEGIN {tree} — tools/codegen/inherited/"
+             f"generate.py from templates/{tmpl}; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/indextrees.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-INDEXTREES-END {tree} */\n"
+
+
+def _indextree_details(text: str) -> str:
+    """The @details lines of a constructor, wrapped at 80 columns, an @ref
+    staying on the line of the name it refers to"""
+    lines = textwrap.wrap(text.replace("@ref ", "@ref\0"), width=80,
+                          initial_indent=" * @details ", subsequent_indent=" * ",
+                          break_long_words=False, break_on_hyphens=False)
+    return "\n".join(lines).replace("@ref\0", "@ref ")
+
+
+def render_indextree(tree: dict, boxes: list) -> str:
+    """The constructors of a tree, one per box, separated by a blank line"""
+    tmpl = read_template(tree["template"]).rstrip("\n")
+    out = []
+    for box in boxes:
+        note = (box.get("notes") or {}).get(tree["tree"])
+        details = f"{note} {tree['details']}" if note else tree["details"]
+        text = (tmpl.replace("{INGROUP}", box.get("ingroup", "meos_misc"))
+                    .replace("{NOUN}", box["noun"])
+                    .replace("{DETAILS}", _indextree_details(details))
+                    .replace("{BOX}", box["box"])
+                    .replace("{MEOSTYPE}", box["meostype"]))
+        if box.get("guard"):
+            text = f"#if {box['guard']}\n{text}\n#endif /* {box['guard']} */"
+        out.append(text)
+    return "\n\n".join(out) + "\n"
+
+
+def splice_indextree(filetext: str, tree: dict, rendered: str) -> str:
+    """Replace the text strictly between the tree's markers with `rendered`"""
+    begin, end = _indextrees_markers(tree["tree"], tree["template"])
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
@@ -6145,6 +6195,15 @@ def main() -> int:
             continue
         p.write_text(render_compops(fam))
         print(f"wrote compops {fam['family']} -> {fam['file']}")
+    trees = mf.get("indextrees") or {}
+    for tree in trees.get("trees", []):
+        p = ROOT / tree["file"]
+        if args.check:
+            print(f"would splice indextrees {tree['tree']} -> {tree['file']}")
+            continue
+        p.write_text(splice_indextree(p.read_text(), tree,
+                                      render_indextree(tree, trees["boxes"])))
+        print(f"spliced indextrees {tree['tree']} -> {tree['file']}")
     return 0
 
 

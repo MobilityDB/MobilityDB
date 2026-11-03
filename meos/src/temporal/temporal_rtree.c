@@ -1510,9 +1510,13 @@ rtree_create(MeosType bboxtype)
   return rtree;
 }
 
+/* GENERATED-INDEXTREES-BEGIN rtree — tools/codegen/inherited/generate.py from templates/rtree_create.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/indextrees.yaml and re-run. */
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for integer spans
+ * @brief Create an in-memory R-tree index for integer spans
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1523,7 +1527,9 @@ rtree_create_intspan(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for big integer spans
+ * @brief Create an in-memory R-tree index for big integer spans
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1534,7 +1540,9 @@ rtree_create_bigintspan(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for float spans
+ * @brief Create an in-memory R-tree index for float spans
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1545,7 +1553,9 @@ rtree_create_floatspan(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for temporal boxes
+ * @brief Create an in-memory R-tree index for date spans
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1556,7 +1566,9 @@ rtree_create_datespan(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for temporal boxes
+ * @brief Create an in-memory R-tree index for timestamptz spans
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1567,7 +1579,9 @@ rtree_create_tstzspan(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for temporal boxes
+ * @brief Create an in-memory R-tree index for temporal boxes
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1578,7 +1592,9 @@ rtree_create_tbox(void)
 
 /**
  * @ingroup meos_misc
- * @brief Creates an RTree index for spatiotemporal boxes
+ * @brief Create an in-memory R-tree index for spatiotemporal boxes
+ * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
+ * populate, @ref rtree_search / @ref rtree_search_temporal to query.
  * @return RTree initialized
  */
 RTree *
@@ -1590,17 +1606,18 @@ rtree_create_stbox(void)
 #if POINTCLOUD
 /**
  * @ingroup meos_pointcloud_box
- * @brief Create an in-memory RTree index for the @c tpcbox bounding-box type
+ * @brief Create an in-memory R-tree index for point cloud boxes
  * @details Pair with @ref rtree_insert / @ref rtree_insert_temporal to
  * populate, @ref rtree_search / @ref rtree_search_temporal to query.
- * @return RTree initialized.
+ * @return RTree initialized
  */
 RTree *
 rtree_create_tpcbox(void)
 {
   return rtree_create(T_TPCBOX);
 }
-#endif
+#endif /* POINTCLOUD */
+/* GENERATED-INDEXTREES-END rtree */
 
 /*****************************************************************************
  * Build from a whole entry set
