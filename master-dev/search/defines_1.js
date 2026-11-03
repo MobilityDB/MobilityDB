@@ -11,5 +11,6 @@ var searchData=
   ['arena_8',['ARENA',['../rtree__mest__example_8c_a08bb50663a7d17fe03e3976032fe8009.html#a08bb50663a7d17fe03e3976032fe8009',1,'ARENA():&#160;rtree_mest_example.c'],['../sptree__mest__example_8c_a08bb50663a7d17fe03e3976032fe8009.html#a08bb50663a7d17fe03e3976032fe8009',1,'ARENA():&#160;sptree_mest_example.c']]],
   ['assertion_5fsegs_5fper_5fquad_9',['ASSERTION_SEGS_PER_QUAD',['../geo__op__diff_8c_a55a1aca334b087c07d688c1edd3243e9.html#a55a1aca334b087c07d688c1edd3243e9',1,'geo_op_diff.c']]],
   ['axis1_5fportable_5ffunctions_10',['AXIS1_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_aeb285000b4a075315134db408054c35f.html#aeb285000b4a075315134db408054c35f',1,'temporal_supportfn.c']]],
-  ['axis1_5fportable_5fstrategies_11',['AXIS1_PORTABLE_STRATEGIES',['../temporal__supportfn_8c_acee915e422b23c5359c2f3cbc9724cd9.html#acee915e422b23c5359c2f3cbc9724cd9',1,'temporal_supportfn.c']]]
+  ['axis1_5fportable_5fstrategies_11',['AXIS1_PORTABLE_STRATEGIES',['../temporal__supportfn_8c_acee915e422b23c5359c2f3cbc9724cd9.html#acee915e422b23c5359c2f3cbc9724cd9',1,'temporal_supportfn.c']]],
+  ['axis23_5fportable_5ffunctions_12',['AXIS23_PORTABLE_FUNCTIONS',['../temporal__supportfn_8c_a6268f6a2e1d72109117dde8612521459.html#a6268f6a2e1d72109117dde8612521459',1,'temporal_supportfn.c']]]
 ];
