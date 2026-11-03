@@ -32,11 +32,11 @@
  * @brief Relative position operators for temporal points
  */
 
+-- GENERATED-TEMPBOX-BEGIN stbox — tools/codegen/inherited/generate.py from templates/tempbox.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 /*****************************************************************************
- * tstzspan
+ * Temporal geometry point
  *****************************************************************************/
-
-/* tstzspan op tgeompoint */
 
 CREATE FUNCTION stboxBefore(tstzspan, tgeompoint)
   RETURNS boolean
@@ -88,59 +88,55 @@ CREATE OPERATOR #&> (
 
 /*****************************************************************************/
 
-/* tstzspan op tgeogpoint */
-
-CREATE FUNCTION stboxBefore(tstzspan, tgeogpoint)
+CREATE FUNCTION stboxBefore(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
+  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbefore(tstzspan, tgeogpoint)
+CREATE FUNCTION stboxOverbefore(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
+  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAfter(tstzspan, tgeogpoint)
+CREATE FUNCTION stboxAfter(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
+  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverafter(tstzspan, tgeogpoint)
+CREATE FUNCTION stboxOverafter(tgeompoint, tstzspan)
   RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
+  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
   SUPPORT tspatial_supportfn
   COST 5
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE OPERATOR <<# (
-  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
   PROCEDURE = stboxBefore,
   COMMUTATOR = #>>,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR &<# (
-  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
   PROCEDURE = stboxOverbefore,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #>> (
-  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
   PROCEDURE = stboxAfter,
   COMMUTATOR = <<#,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 CREATE OPERATOR #&> (
-  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
   PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
 
-/*****************************************************************************
- * Stbox
- *****************************************************************************/
+/*****************************************************************************/
 
 CREATE FUNCTION stboxLeft(stbox, tgeompoint)
   RETURNS boolean
@@ -330,112 +326,6 @@ CREATE OPERATOR #&> (
 
 /*****************************************************************************/
 
-CREATE FUNCTION stboxBefore(stbox, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbefore(stbox, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAfter(stbox, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverafter(stbox, tgeogpoint)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <<# (
-  LEFTARG = stbox, RIGHTARG = tgeogpoint,
-  PROCEDURE = stboxBefore,
-  COMMUTATOR = #>>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR &<# (
-  LEFTARG = stbox, RIGHTARG = tgeogpoint,
-  PROCEDURE = stboxOverbefore,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR #>> (
-  LEFTARG = stbox, RIGHTARG = tgeogpoint,
-  PROCEDURE = stboxAfter,
-  COMMUTATOR = <<#,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR #&> (
-  LEFTARG = stbox, RIGHTARG = tgeogpoint,
-  PROCEDURE = stboxOverafter,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-/*****************************************************************************
- * tgeompoint
- *****************************************************************************/
-
-/* tgeompoint op tstzspan */
-
-CREATE FUNCTION stboxBefore(tgeompoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Before_temporal_tstzspan'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverbefore(tgeompoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overbefore_temporal_tstzspan'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxAfter(tgeompoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'After_temporal_tstzspan'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION stboxOverafter(tgeompoint, tstzspan)
-  RETURNS boolean
-  AS 'MODULE_PATHNAME', 'Overafter_temporal_tstzspan'
-  SUPPORT tspatial_supportfn
-  COST 5
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-
-CREATE OPERATOR <<# (
-  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
-  PROCEDURE = stboxBefore,
-  COMMUTATOR = #>>,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR &<# (
-  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
-  PROCEDURE = stboxOverbefore,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR #>> (
-  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
-  PROCEDURE = stboxAfter,
-  COMMUTATOR = <<#,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-CREATE OPERATOR #&> (
-  LEFTARG = tgeompoint, RIGHTARG = tstzspan,
-  PROCEDURE = stboxOverafter,
-  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
-);
-
-/*****************************************************************************/
-
-/* tgeompoint op stbox */
-
 CREATE FUNCTION stboxLeft(tgeompoint, stbox)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_stbox'
@@ -624,8 +514,6 @@ CREATE OPERATOR #&> (
 
 /*****************************************************************************/
 
-/* tgeompoint op tgeompoint */
-
 CREATE FUNCTION stboxLeft(tgeompoint, tgeompoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Left_tspatial_tspatial'
@@ -813,10 +701,58 @@ CREATE OPERATOR #&> (
 );
 
 /*****************************************************************************
- * tgeogpoint
+ * Temporal geography point
  *****************************************************************************/
 
-/* tgeogpoint op tstzspan */
+CREATE FUNCTION stboxBefore(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxOverbefore(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxAfter(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxOverafter(tstzspan, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_tstzspan_temporal'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxBefore,
+  COMMUTATOR = #>>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxOverbefore,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxAfter,
+  COMMUTATOR = <<#,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = tstzspan, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxOverafter,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
 
 CREATE FUNCTION stboxBefore(tgeogpoint, tstzspan)
   RETURNS boolean
@@ -868,7 +804,55 @@ CREATE OPERATOR #&> (
 
 /*****************************************************************************/
 
-/* tgeogpoint op stbox */
+CREATE FUNCTION stboxBefore(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Before_stbox_tspatial'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxOverbefore(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overbefore_stbox_tspatial'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxAfter(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'After_stbox_tspatial'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxOverafter(stbox, tgeogpoint)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Overafter_stbox_tspatial'
+  SUPPORT tspatial_supportfn
+  COST 5
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE OPERATOR <<# (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxBefore,
+  COMMUTATOR = #>>,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR &<# (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxOverbefore,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR #>> (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxAfter,
+  COMMUTATOR = <<#,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+CREATE OPERATOR #&> (
+  LEFTARG = stbox, RIGHTARG = tgeogpoint,
+  PROCEDURE = stboxOverafter,
+  RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
+);
+
+/*****************************************************************************/
 
 CREATE FUNCTION stboxBefore(tgeogpoint, stbox)
   RETURNS boolean
@@ -920,8 +904,6 @@ CREATE OPERATOR #&> (
 
 /*****************************************************************************/
 
-/* tgeogpoint op tgeogpoint */
-
 CREATE FUNCTION stboxBefore(tgeogpoint, tgeogpoint)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Before_tspatial_tspatial'
@@ -969,5 +951,6 @@ CREATE OPERATOR #&> (
   PROCEDURE = stboxOverafter,
   RESTRICT = tspatial_sel, JOIN = tspatial_joinsel
 );
+-- GENERATED-TEMPBOX-END stbox
 
 /*****************************************************************************/

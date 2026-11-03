@@ -24,6 +24,31 @@ boxtypes:
     posgroup:  mobilitydb_geo_bbox_pos
     posfile:   mobilitydb/src/geo/tspatial_posops.c
     posreference: true
+    # the SQL of the topological and position wrappers (templates/tempbox.sql.tmpl)
+    # over the temporal geometries and the temporal points: their time span, then
+    # their box and themselves, a geodetic type comparing the time of its box alone
+    tempsql:
+      - file:    mobilitydb/sql/geo/061_tgeo_topops.in.sql
+        posfile: mobilitydb/sql/geo/062_tgeo_posops.in.sql
+        sel:     tspatial
+        support: tspatial_supportfn
+        temps:
+          - {temp: tgeometry, desc: Temporal geometry}
+          - {temp: tgeography, desc: Temporal geography, axes: [t]}
+        groups: &stbox_groups
+          - [[tstzspan, "{T}", tstzspan_temporal, [t]],
+             ["{T}", tstzspan, temporal_tstzspan, [t]]]
+          - [[stbox, "{T}", stbox_tspatial, [x, y, z, t]],
+             ["{T}", stbox, tspatial_stbox, [x, y, z, t]],
+             ["{T}", "{T}", tspatial_tspatial, [x, y, z, t]]]
+      - file:    mobilitydb/sql/geo/061_tpoint_topops.in.sql
+        posfile: mobilitydb/sql/geo/062_tpoint_posops.in.sql
+        sel:     tspatial
+        support: tspatial_supportfn
+        temps:
+          - {temp: tgeompoint, desc: Temporal geometry point}
+          - {temp: tgeogpoint, desc: Temporal geography point, axes: [t]}
+        groups: *stbox_groups
     # box-by-box wrappers (templates/boxbox.c.tmpl, topological operations in
     # boxtopops.yaml, position ones over `posaxes`), the region of `file`, their
     # groups `group`_topo and `group`_pos; the SQL of their functions and operators

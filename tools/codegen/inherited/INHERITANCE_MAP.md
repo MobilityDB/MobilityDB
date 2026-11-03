@@ -208,7 +208,12 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   temporal types whose SQL lives in several files states a list of stanzas:
   `tstzspan` adds the 30 statements of `tjsonb` in `460_tjsonb_topops` and its
   24 in `462_tjsonb_posops`, its `opnames` naming contains and contained `#@>`
-  and `<@#`, the operators `meos_catalog.h` gives JSON. A box type naming a
+  and `<@#`, the operators `meos_catalog.h` gives JSON. `stbox` states two
+  stanzas over its time span, its box and the temporal type itself: the 100
+  statements of `tgeometry` and `tgeography` in `061_tgeo_topops` and their 152
+  in `062_tgeo_posops`, and the 100 of `tgeompoint` and `tgeogpoint` in
+  `061_tpoint_topops` and their 152 in `062_tpoint_posops`; a temporal type's
+  `axes` keeps of each pair the axes it lists, the geodetic types `[t]`. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
@@ -928,20 +933,15 @@ its last edit:
   stanza declares a SQL body calling the function of the `via` type with the argument of the
   `src` type cast to it, `atinstant` restricting that argument to the timestamp of the instant
   the call answers, and `quote` quotes the commutator of an `ops` stanza.
-- `topop_families` and `posop_families`, both **7/13**: `tgeompoint`, `tgeogpoint`,
-  `tgeometry`, `tgeography`, `tpcpoint`, `tpcpatch`.
-  ⛔ THOSE SIX ARE THREE PAIRS, AND THE PAIR IS THE WHOLE REASON. A covered family
-  declares ONE temporal type per file — `108_tpose_topops` names `tpose`, `stbox`
-  and `tstzspan` and nothing else — while each missing file carries TWO:
-  `061/062_tgeo_*` name `tgeometry` AND `tgeography`, `061/062_tpoint_*` name
-  `tgeompoint` AND `tgeogpoint`, and `436/437_tpc_*` name `tpcpoint` AND
-  `tpcpatch` over a `tpcbox` rather than an `stbox`. MEASURED: the tpose render
-  declares 5 operand pairs, the committed geo file 10.
-  ⇒ `render()` substitutes ONE `(base, temp)` pair, so a cloned entry would emit
-  HALF of each of those files and silently drop the other temporal type. Closing
-  this needs the template taught to interleave two temporal types — a generator
-  capability, not a manifest entry — which is the same limit recorded for the
-  three families that stay on `compops_families`.
+- `topop_families` and `posop_families`, both **18/20** of `temporal`, counting the
+  declarations the `tempsql` stanzas of the box types render: `tpcpoint` and
+  `tpcpatch` remain. A file holding TWO temporal types is a `tempsql` stanza, its
+  `temps` listing both: the `stbox` entry writes `061/062_tgeo_*` (`tgeometry` and
+  `tgeography`) and `061/062_tpoint_*` (`tgeompoint` and `tgeogpoint`), a geodetic
+  type listing `axes: [t]` since its position operators compare time alone, and
+  `436/437_tpc_*` name `tpcpoint` and `tpcpatch` over a `tpcbox`, an entry with no
+  stanza. The `subtypes:` track renders ONE `(base, temp)` pair per file, which is
+  the limit recorded for the three families that stay on `compops_families`.
 
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
