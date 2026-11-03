@@ -516,6 +516,37 @@ SELECT dwithin(geometry 'Linestring(0 0 0,2 0 0)',
  t       | f       | f
 (1 row)
 
+SELECT dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.5857864376269046),
+  dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.585786437626905),
+  dwithin(geometry 'Point(3.0000000000000004 4)', geometry 'CircularString(5 0,3 4,0 5)', 0);
+ dwithin | dwithin | dwithin 
+---------+---------+---------
+ f       | t       | f
+(1 row)
+
+SELECT dwithin(geometry 'Linestring(0 10,10 0)', geometry 'CircularString(5 0,3 4,0 5)', 2.071067811865475),
+  dwithin(geometry 'Linestring(0 10,10 0)', geometry 'CircularString(5 0,3 4,0 5)', 2.0710678118654755),
+  dwithin(geometry 'Linestring(0 0,10 10)', geometry 'CircularString(5 0,3 4,0 5)', 0);
+ dwithin | dwithin | dwithin 
+---------+---------+---------
+ f       | t       | t
+(1 row)
+
+SELECT dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(5 10,7 6,10 5)', 4.14213562373095),
+  dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(5 10,7 6,10 5)', 4.142135623730951),
+  dwithin(geometry 'CircularString(5 0,3 4,0 5)', geometry 'CircularString(0 0,4 3,0 6)', 0);
+ dwithin | dwithin | dwithin 
+---------+---------+---------
+ f       | t       | t
+(1 row)
+
+SELECT dwithin(geometry 'Point(0 0)', geometry 'CurvePolygon(CircularString(1 0,-1 0,1 0))', 0),
+  dwithin(geometry 'Point(1.0000000000000002 0)', geometry 'CurvePolygon(CircularString(1 0,-1 0,1 0))', 0);
+ dwithin | dwithin 
+---------+---------
+ t       | f
+(1 row)
+
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
 ERROR:  The geometry cannot have Z dimension
 SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');

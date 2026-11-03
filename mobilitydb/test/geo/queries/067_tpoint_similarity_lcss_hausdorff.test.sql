@@ -142,3 +142,16 @@ SELECT round(averageHausdorffDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(
 -- Within 110800 m both pairs of consecutive meridian points match on the spheroid, only the shared point on the sphere
 SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800)::numeric, 6);
 SELECT round(lcssDistance(tgeogpoint '[Point(0 0)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', 110800, false)::numeric, 6);
+
+-------------------------------------------------------------------------------
+
+-- Values in two reference systems are not comparable
+SELECT frechetDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT dynTimeWarpDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT hausdorffDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT averageHausdorffDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT lcssDistance(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', 1.0);
+SELECT frechetDistancePath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+SELECT dynTimeWarpPath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
+
+-------------------------------------------------------------------------------

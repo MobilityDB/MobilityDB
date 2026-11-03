@@ -277,6 +277,32 @@ extern void point_segment_shortestline_exact(const double *c, double r,
   double *ey);
 extern double point_segment_distance_offset_exact(const double *p,
   const double *a, const double *b, int ndims, double r);
+/**
+ * @brief The points that define an arc of a geometry, the doubles it holds
+ */
+typedef struct
+{
+  double s[2];       /**< Start */
+  double m[2];       /**< Middle, not read for a half circle */
+  double e[2];       /**< End */
+  bool half;         /**< The half of the circle on the diameter from the start
+                          to the end that runs counterclockwise between them */
+  double cx, cy, r;  /**< Its circle in doubles (#exact_arc_bound) */
+  double err;        /**< How far that circle may lie from the exact one, or
+                          negative where it is not read */
+} ExactArc;
+
+extern void exact_arc_bound(ExactArc *arc, double box[4]);
+
+extern bool point_arc_within_exact(const double *p, const ExactArc *arc,
+  double dist);
+extern bool arcsegm_within_exact(const double *a, const double *b,
+  const ExactArc *arc, double dist);
+extern bool arcarc_within_exact(const ExactArc *p, const ExactArc *q,
+  double dist);
+extern bool point_segm_ray_parity(const double *p, const double *a,
+  const double *b);
+extern bool point_arc_ray_parity(const double *p, const ExactArc *arc);
 extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, int ndims, double r);
 extern int segment_interior_offset_sign(const double *a, const double *b,
