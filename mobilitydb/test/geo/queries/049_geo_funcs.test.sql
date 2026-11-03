@@ -299,6 +299,15 @@ SELECT dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
   dwithin(geometry 'Point(0.5 4.9406564584124654e-324)',
     geometry 'Linestring(0 0,1 0)', 0),
   dwithin(geometry 'Polygon((0 0,4 0,4 4,0 4,0 0))', geometry 'Point(2 2)', 0);
+SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(2 3 0)', 3.605551275463989),
+  dwithin(geometry 'Point(0 0 0)', geometry 'Point(2 3 0)', 3.6055512754639896),
+  dwithin(geometry 'Point(0 0 0)', geometry 'Point(1 2 2)', 3);
+SELECT dwithin(geometry 'Linestring(0 0 0,2 0 0)',
+    geometry 'Linestring(1 -1 3,1 1 3)', 3),
+  dwithin(geometry 'Linestring(0 0 0,2 0 0)',
+    geometry 'Linestring(1 -1 3,1 1 3)', 2.9999999999999996),
+  dwithin(geometry 'Linestring(-1 0 -2,1 0 2)',
+    geometry 'Linestring(0 -1 4.9406564584124654e-324,0 1 4.9406564584124654e-324)', 0);
 
 -- The containment family has no 3D form, so a geometry with Z is refused
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');

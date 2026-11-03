@@ -7181,21 +7181,22 @@ point_segment_distance_offset_exact(const double *p, const double *a,
  * `(w x u)^2 - r^2 (u . u)` (#point_segment_side_sign_inputs). Each is a sum
  * of products of the input doubles decided exactly, so the answer is 0
  * exactly where the disc of the radius is tangent to the segment
- * @param[in] p,a,b The point and the two ends of the segment, two coordinates
- * each
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius, not negative
  * @return -1, 0 or 1
  */
 int
 point_segment_offset_sign(const double *p, const double *a, const double *b,
-  double r)
+  int ndims, double r)
 {
+  assert(ndims == 2 || ndims == 3);
   assert(r >= 0.0);
-  if (point_segment_dot_sign_inputs(p, a, a, b, 2) <= 0)
-    return point_distance_offset_side_sign(p, a, 2, r, 0.0, 0.0);
-  if (point_segment_dot_sign_inputs(p, b, a, b, 2) >= 0)
-    return point_distance_offset_side_sign(p, b, 2, r, 0.0, 0.0);
-  return point_segment_side_sign_inputs(p, a, b, 2, r, 0.0, 0.0);
+  if (point_segment_dot_sign_inputs(p, a, a, b, ndims) <= 0)
+    return point_distance_offset_side_sign(p, a, ndims, r, 0.0, 0.0);
+  if (point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
+    return point_distance_offset_side_sign(p, b, ndims, r, 0.0, 0.0);
+  return point_segment_side_sign_inputs(p, a, b, ndims, r, 0.0, 0.0);
 }
 
 /**
@@ -8223,16 +8224,15 @@ nearest_lines_side(const WideDyadic *mid, const void *arg)
 
 /**
  * @brief Return true where the nearest points of two segments in 3D lie
- * inside both, setting in @p result the double nearest their distance, read
+ * inside both, setting in @p en and @p nn the values `e . n` and `n . n`, read
  * on #WideDyadic for any finite coordinates
  * @details The differences, `n = u x v` and the dot products have degree at
  * most four in the input doubles, which a #WideDyadic holds for every finite
- * input, and the rounding compares `(e . n)^2` with `mid^2 (n . n)`, degree
- * six, as a comparison of two products (#wide_dyadic_product_cmp)
+ * input
  */
 static bool
-segment_interior_wide(const double *a, const double *b, const double *c,
-  const double *d, double *result)
+segment_interior_wide_values(const double *a, const double *b, const double *c,
+  const double *d, WideDyadic *en, WideDyadic *nn)
 {
   WideDyadic u[3], v[3], e[3], n[3], x, y, t1, t2;
   for (int k = 0; k < 3; k++)
@@ -8272,9 +8272,29 @@ segment_interior_wide(const double *a, const double *b, const double *c,
       dot[w] = y;
     }
   }
-  WideDyadic *nn = &dot[0], *en = &dot[3];
-  int ss1 = wide_dyadic_cmp(&dot[1], nn), st1 = wide_dyadic_cmp(&dot[2], nn);
-  if (! SEGMENT_INSIDE(nn->sign, dot[1].sign, ss1, dot[2].sign, st1))
+  int ss1 = wide_dyadic_cmp(&dot[1], &dot[0]),
+    st1 = wide_dyadic_cmp(&dot[2], &dot[0]);
+  if (! SEGMENT_INSIDE(dot[0].sign, dot[1].sign, ss1, dot[2].sign, st1))
+    return false;
+  *nn = dot[0];
+  *en = dot[3];
+  return true;
+}
+
+/**
+ * @brief Return true where the nearest points of two segments in 3D lie
+ * inside both, setting in @p result the double nearest their distance, read
+ * on #WideDyadic for any finite coordinates
+ * @details The values of #segment_interior_wide_values, and the rounding
+ * compares `(e . n)^2` with `mid^2 (n . n)`, degree six, as a comparison of
+ * two products (#wide_dyadic_product_cmp)
+ */
+static bool
+segment_interior_wide(const double *a, const double *b, const double *c,
+  const double *d, double *result)
+{
+  WideDyadic en_v, nn_v, *en = &en_v, *nn = &nn_v;
+  if (! segment_interior_wide_values(a, b, c, d, en, nn))
     return false;
   if (en->sign == 0)
   {
@@ -8294,6 +8314,32 @@ segment_interior_wide(const double *a, const double *b, const double *c,
   NearestLines lines = {en, nn};
   *result = nearest_double_exact(guess, &nearest_lines_side, &lines);
   return true;
+}
+
+/**
+ * @brief Return the sign of the distance of two segments in 3D less a radius
+ * where their nearest points lie inside both, computed exactly for any finite
+ * doubles, and 1 otherwise
+ * @details The sign of `(e . n)^2 - r^2 (n . n)`, as #nearest_lines_side reads
+ * it for a midpoint (#segment_interior_wide_values). Where the nearest points
+ * do not lie inside both, an end of one of the segments is the nearest, which
+ * #point_segment_offset_sign answers
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1
+ */
+int
+segment_interior_offset_sign(const double *a, const double *b, const double *c,
+  const double *d, double r)
+{
+  assert(r >= 0.0);
+  WideDyadic en, nn, wr, r2;
+  if (! segment_interior_wide_values(a, b, c, d, &en, &nn))
+    return 1;
+  wide_dyadic_set_double(&wr, r);
+  wide_dyadic_mul(&wr, &wr, &r2);
+  return wide_dyadic_product_cmp(&en, &en, &r2, &nn);
 }
 
 
