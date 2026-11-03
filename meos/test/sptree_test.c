@@ -43,7 +43,8 @@
  * (ii) no false positives: every candidate satisfies the operator.
  * Instants sharing a bound the query excludes, the multi-entry indexes and the
  * nearest-neighbour cursor are asserted in both kinds of tree, and what the
- * cursor refuses to open on separately.
+ * cursor refuses to open on and the kinds of tree the constructors refuse
+ * separately.
  *
  * The program can be built as follows
  * @code
@@ -1015,6 +1016,51 @@ test_nn_stbox(SPTreeKind kind, const char *kindname)
  * an exit
  *****************************************************************************/
 
+/* A constructor of a space-partitioning tree, by box type */
+typedef SPTree *(*sptree_ctor)(SPTreeKind);
+
+/*
+ * A space-partitioning tree is a quad-tree or a k-d tree, and a constructor
+ * given any other kind refuses it rather than building a tree whose descent no
+ * kind describes. The refusal is read through #meos_errno, as #test_nn_refused
+ * reads what the cursor refuses
+ */
+static void
+test_kind_refused(void)
+{
+  static const sptree_ctor ctors[] = {
+    sptree_create_intspan, sptree_create_bigintspan, sptree_create_floatspan,
+    sptree_create_datespan, sptree_create_tstzspan, sptree_create_tbox,
+    sptree_create_stbox, sptree_create_tpcbox };
+  static const char *names[] = { "intspan", "bigintspan", "floatspan",
+    "datespan", "tstzspan", "tbox", "stbox", "tpcbox" };
+  SPTreeKind invalid[2] = { (SPTreeKind) (SPTREE_KDTREE + 1), (SPTreeKind) -1 };
+  meos_initialize_noexit_error_handler();
+  printf("What the SPTree constructors refuse:\n");
+  for (int c = 0; c < 8; c++)
+  {
+    int refused = 0;
+    for (int k = 0; k < 2; k++)
+    {
+      meos_errno_reset();
+      SPTree *sptree = ctors[c](invalid[k]);
+      if (sptree == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_VALUE)
+        refused++;
+      else if (sptree)
+        sptree_free(sptree);
+    }
+    meos_errno_reset();
+    SPTree *valid = ctors[c](SPTREE_KDTREE);
+    char name[128];
+    snprintf(name, sizeof(name),
+      "  %-10s refuses an unknown kind, takes a k-d tree", names[c]);
+    check(name, refused == 2 && valid != NULL && meos_errno() == 0);
+    sptree_free(valid);
+  }
+  meos_errno_reset();
+  return;
+}
+
 static void
 test_nn_refused(void)
 {
@@ -1689,6 +1735,7 @@ main(void)
   test_shared_bounds(SPTREE_QUADTREE, "quad-tree");
   test_shared_bounds(SPTREE_KDTREE, "k-d tree");
   test_nn_refused();
+  test_kind_refused();
 
   meos_finalize();
 

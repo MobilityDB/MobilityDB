@@ -73,7 +73,7 @@ meos/src/json/tjsonb_compops.c	ever_ne_tjsonb_tjsonb	temp2 unstated
 meos/src/json/tjsonb_jsonfuncs.c	tjsonb_insert	newjb unstated
 meos/src/npoint/npoint.c	npoint_srid	np unstated
 meos/src/npoint/npoint.c	nsegment_srid	ns unstated
-meos/src/npoint/npointset_meos.c	npointset_values	count unstated
+meos/src/npoint/npointset.c	npointset_values	count unstated
 meos/src/npoint/ways_meos.c	meos_set_ways_csv	path unstated
 meos/src/pointcloud/schema_hook.c	meos_pc_schema_from_dims	compression unstated
 meos/src/pointcloud/schema_hook.c	meos_pc_schema_register	schema unstated
@@ -123,7 +123,7 @@ meos/src/pointcloud/tpc_topops_meos.c	same_tpcbox_tpointcloud	box unstated
 meos/src/pointcloud/tpc_topops_meos.c	same_tpointcloud_tpcbox	box unstated
 meos/src/pose/pose.c	pose_hash_extended	pose unstated
 meos/src/pose/posechainset_meos.c	posechainset_values	count unstated
-meos/src/pose/poseset_meos.c	poseset_values	count unstated
+meos/src/pose/poseset.c	poseset_values	count unstated
 meos/src/quadbin/quadbinset.c	quadbinset_values	count unstated
 meos/src/rgeo/trgeo_tile.c	trgeometry_space_boxes	sorigin unstated
 meos/src/rgeo/trgeo_tile.c	trgeometry_space_time_boxes	sorigin unstated

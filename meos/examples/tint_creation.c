@@ -87,7 +87,7 @@ int main(void)
 
   /* Create temporal instants using the constructor */
   time = clock();
-  TimestampTz t = pg_timestamptz_in("2025-01-01 12:00:00", -1);
+  TimestampTz t = timestamptz_in("2025-01-01 12:00:00", -1);
   for (int i = 0; i < MAX_NUM_INSTS; i++)
   {
     int value = i % 2 + 1;

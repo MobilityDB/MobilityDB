@@ -406,6 +406,33 @@ tpcbox_project(const void *in, void *out)
  *****************************************************************************/
 
 /**
+ * @brief Return true if a value names a kind of space-partitioning tree
+ * @param[in] kind Kind of tree
+ */
+static bool
+sptree_kind_is_valid(SPTreeKind kind)
+{
+  return kind == SPTREE_QUADTREE || kind == SPTREE_KDTREE;
+}
+
+/**
+ * @brief Return true if a value names a kind of space-partitioning tree,
+ * report an error otherwise
+ * @details The check belongs to the constructors a user calls, as
+ * #ensure_valid_sptree_box belongs to the entry points of a search
+ * @param[in] kind Kind of tree
+ */
+static bool
+ensure_valid_sptree_kind(SPTreeKind kind)
+{
+  if (sptree_kind_is_valid(kind))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "The kind of a space-partitioning tree is a quad-tree or a k-d tree");
+  return false;
+}
+
+/**
  * @ingroup meos_internal_box_index
  * @brief Create an in-memory space-partitioning index for a bounding box type
  * @details A host creates the index of a column of any type with the key
@@ -423,6 +450,7 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
     || bboxtype == T_TPCBOX
 #endif
     );
+  assert(sptree_kind_is_valid(kind));
   SPTree *sptree = palloc0(sizeof(SPTree));
   sptree->bboxtype = bboxtype;
   sptree->boxsize = bbox_get_size(bboxtype);
@@ -502,10 +530,14 @@ sptree_create(MeosType bboxtype, SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for integer spans
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_intspan(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_INTSPAN, kind);
 }
 
@@ -514,10 +546,14 @@ sptree_create_intspan(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for big integer spans
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_bigintspan(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_BIGINTSPAN, kind);
 }
 
@@ -526,10 +562,14 @@ sptree_create_bigintspan(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for float spans
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_floatspan(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_FLOATSPAN, kind);
 }
 
@@ -538,10 +578,14 @@ sptree_create_floatspan(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for date spans
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_datespan(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_DATESPAN, kind);
 }
 
@@ -550,10 +594,14 @@ sptree_create_datespan(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for timestamptz spans
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_tstzspan(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_TSTZSPAN, kind);
 }
 
@@ -562,10 +610,14 @@ sptree_create_tstzspan(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for temporal boxes
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_tbox(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_TBOX, kind);
 }
 
@@ -574,10 +626,14 @@ sptree_create_tbox(SPTreeKind kind)
  * @brief Create an in-memory space-partitioning index for spatiotemporal boxes
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_stbox(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_STBOX, kind);
 }
 
@@ -592,10 +648,14 @@ sptree_create_stbox(SPTreeKind kind)
  * @ref sptree_search / @ref sptree_search_temporal to query.
  * @param[in] kind Quad-tree or k-d tree
  * @return SPTree initialized
+ * @errval NULL
  */
 SPTree *
 sptree_create_tpcbox(SPTreeKind kind)
 {
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_sptree_kind(kind))
+    return NULL;
   return sptree_create(T_TPCBOX, kind);
 }
 #endif /* POINTCLOUD */

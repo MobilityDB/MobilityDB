@@ -27,6 +27,7 @@
 
 set(NPOINT_SOURCES
   npoint.c
+  npointset.c
   tnpoint.c
   tnpoint_aggfuncs.c
   tnpoint_boxops.c
@@ -38,7 +39,6 @@ set(NPOINT_SOURCES
 
 if(MEOS)
   list(APPEND NPOINT_SOURCES
-  npointset_meos.c
   ways_meos.c
   )
 else()

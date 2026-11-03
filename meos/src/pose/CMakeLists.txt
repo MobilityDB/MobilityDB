@@ -29,6 +29,7 @@ set(POSE_SOURCES
   pose.c
   pose_geopose.c
   posechain.c
+  poseset.c
   tpose.c
   tpose_boxops.c
   tpose_compops.c
@@ -43,7 +44,6 @@ set(POSE_SOURCES
 if(MEOS)
   list(APPEND POSE_SOURCES
   posechainset_meos.c
-  poseset_meos.c
 )
 endif()
 
