@@ -50,8 +50,14 @@ if(POINTCLOUD)
 
     # TPCBox bbox helpers for temporal pointcloud types (set-from-
     # instant, expand, array aggregation). These are called by the
-    # generic temporal_bbox machinery in meos/src/temporal.
+    # generic temporal_bbox machinery in meos/src/temporal. The topological
+    # bounding-box operators taking a temporal point cloud sit beside the
+    # dispatchers they call, as in meos/src/geo/tgeo_boxops.c.
     tpc_boxops.c
+
+    # Position bounding-box operators taking a temporal point cloud, mirroring
+    # meos/src/geo/tspatial_posops.c.
+    tpc_posops.c
 
     # Function-pointer hook that lets the MEOS-layer bbox helpers
     # resolve a pgpointcloud PCSCHEMA by pcid without touching PG
@@ -111,16 +117,6 @@ if(POINTCLOUD)
   else()
     add_definitions(-DPC_API_HAS_SERIALIZE=0)
     message(STATUS "pgPointCloud serialize helpers not in lib/pc_api.h — vendored shim active (pgsql_compat.c)")
-  endif()
-
-  if(MEOS)
-    # Topological bounding-box operators taking a temporal point cloud,
-    # mirroring meos/src/geo/tspatial_topops_meos.c. The PG extension reaches
-    # the same answers through the Boxop_* dispatchers in the wrapper layer.
-    list(APPEND POINTCLOUD_SRCS tpc_topops_meos.c)
-    # Position bounding-box operators taking a temporal point cloud, mirroring
-    # meos/src/geo/tspatial_posops.c.
-    list(APPEND POINTCLOUD_SRCS tpc_posops_meos.c)
   endif()
 
   add_library(pointcloud OBJECT ${POINTCLOUD_SRCS})
