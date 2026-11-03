@@ -42,6 +42,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # The whole history, so that the step scoping the findings to the
+          # lines a pull request changes finds the merge base with its base
+          # branch.
+          fetch-depth: 0
 
       - uses: ./.github/actions/apt-resilient
 
@@ -286,6 +291,95 @@ jobs:
                   print(f"::error file={path},line={line}::{rid}: {msg}")
               sys.exit(1)
           print(f"cppcheck: no critical-pattern violations in MEOS/MobilityDB code.")
+          PYEOF
+
+      - name: Fail on findings in the lines the pull request changes
+        # Every finding of the enabled classes whose location lies in a line
+        # the pull request adds or changes fails the job, vendored code
+        # excluded as in the previous step. The lines are those of the diff
+        # between the analysed merge commit and its merge base with the
+        # pull request's own base branch, so that a pull request to a stable
+        # branch is scoped against that branch. A push has no base to scope
+        # against and is held to the critical patterns alone.
+        if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          MERGE_BASE=$(git merge-base "$BASE_SHA" HEAD)
+          echo "Lines changed since $MERGE_BASE, the merge base with $BASE_REF"
+          git diff -U0 --no-color --no-ext-diff --diff-filter=ACMR \
+            "$MERGE_BASE" HEAD > changed.diff
+          python3 <<'PYEOF'
+          import os, re, sys, xml.etree.ElementTree as ET
+
+          # The classes the job enables, and "error", which cppcheck always
+          # reports; "information" describes the run, not the code.
+          SEVERITIES = {"error", "warning", "style", "performance", "portability"}
+          VENDORED = ("postgres/", "postgis/", "pgtypes/", "h3-pg/", "pointcloud-pg/")
+          VENDORED_BASENAMES = (
+              "lwin_wkt_lex.c", "lwin_wkt_lex.l",
+              "lwin_wkt_parse.c", "lwin_wkt_parse.y",
+          )
+
+          # File -> the (first, last) line ranges the diff adds or changes;
+          # an added file is one range covering the whole file.
+          HUNK = re.compile(r"^@@ -\S+ \+(\d+)(?:,(\d+))? @@")
+          changed = {}
+          path = None
+          with open("changed.diff", encoding="utf-8", errors="replace") as f:
+              for line in f:
+                  if line.startswith("+++ "):
+                      target = line[4:].rstrip("\n")
+                      path = target[2:] if target.startswith("b/") else None
+                      continue
+                  m = HUNK.match(line)
+                  if m and path:
+                      first = int(m.group(1))
+                      count = 1 if m.group(2) is None else int(m.group(2))
+                      if count > 0:
+                          changed.setdefault(path, []).append(
+                              (first, first + count - 1))
+
+          workspace = os.environ["GITHUB_WORKSPACE"].rstrip("/") + "/"
+
+          def normalize(file):
+              norm = file.replace("\\", "/")
+              if norm.startswith(workspace):
+                  norm = norm[len(workspace):]
+              while norm.startswith("./"):
+                  norm = norm[2:]
+              return norm
+
+          def in_changed(file, line):
+              return any(a <= line <= b for a, b in changed.get(file, ()))
+
+          root = ET.parse("cppcheck.xml").getroot()
+          findings = []
+          for err in root.iter("error"):
+              if err.get("severity", "") not in SEVERITIES:
+                  continue
+              for loc in err.iter("location"):
+                  file = normalize(loc.get("file", ""))
+                  if not file or file.startswith(VENDORED) or \
+                     file.split("/")[-1] in VENDORED_BASENAMES:
+                      continue
+                  line = int(loc.get("line") or 0)
+                  if in_changed(file, line):
+                      findings.append((err.get("id", ""), file, line,
+                                       err.get("msg", "")[:200]))
+                      break
+
+          nranges = sum(len(r) for r in changed.values())
+          print(f"cppcheck: {nranges} changed line ranges over "
+                f"{len(changed)} files")
+          if findings:
+              print(f"::error::cppcheck found {len(findings)} findings in "
+                    f"the lines this pull request changes:")
+              for rid, file, line, msg in findings:
+                  print(f"::error file={file},line={line}::{rid}: {msg}")
+              sys.exit(1)
+          print("cppcheck: no finding in the lines this pull request changes.")
           PYEOF
 
       - name: Upload SARIF to GitHub Code Scanning
