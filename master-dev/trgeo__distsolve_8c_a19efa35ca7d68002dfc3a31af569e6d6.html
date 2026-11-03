@@ -81,6 +81,7 @@ $(function() {
         <table>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a9383b01a754d0acd8f773a42598e302e.html#a9383b01a754d0acd8f773a42598e302e">distfun_absmax</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="trgeo__distsolve_8c_a19efa35ca7d68002dfc3a31af569e6d6.html#a19efa35ca7d68002dfc3a31af569e6d6">distfun_add</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a9d9f08938aba647f9c1c5fefe501df00.html#a9d9f08938aba647f9c1c5fefe501df00">distfun_add_cs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_ac3e7c84fb7a15c9a97abe5a491547cdc.html#ac3e7c84fb7a15c9a97abe5a491547cdc">distfun_add_poly</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a1ef36510282cd89231863eea85a8e549.html#a1ef36510282cd89231863eea85a8e549">DISTFUN_CELLMAX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="trgeo__distsolve_8c_a22ca5d90b975b7d4563af425aaab2f76.html#a22ca5d90b975b7d4563af425aaab2f76">distfun_crossings</a></td></tr>
@@ -162,9 +163,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to <code>f</code>. </p>
-<p >The function stores each term with phase zero and with a frequency that is not negative. A term of frequency zero is added to the polynomial part, and a term of a frequency that <code>f</code> already has is added to that term. Thus two functions of the same segment have the same frequencies, and their sum or difference is a sum of terms.</p>
-<p >The frequencies are compared exactly. A rotation below <a class="el" href="meos_2include_2temporal_2temporal_8h_a390788067e16536aadb3c44552d90557.html#a390788067e16536aadb3c44552d90557" title="Floating point precision.">MEOS_EPSILON</a> is already exactly zero (see <a class="el" href="trgeo__distwalk_8c_a4d2f247d6d5e0c07d52e18f6a94253c3.html#a4d2f247d6d5e0c07d52e18f6a94253c3" title="Return the rotation from the angle th1 to the angle th2.">motion_omega()</a> in <a class="el" href="trgeo__distwalk_8c.html" title="Closest-feature walk for the distance between rigid geometries.">trgeo_distwalk.c</a>), and two bodies that rotate at the same rate give a frequency wA - wB that is exactly zero. A frequency that is only close to zero stays a term, which is exact and costs nothing. </p><dl class="section return"><dt>Returns</dt><dd>False if <code>f</code> already has <a class="el" href="trgeo__distsolve_8h_ae258a25c1968469f2ae8a7a9c7750779.html#ae258a25c1968469f2ae8a7a9c7750779" title="Maximum number of terms of a function.">DISTFUN_MAXTERMS</a> terms </dd></dl>
+<p>Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to <code>f</code>, see <a class="el" href="trgeo__distsolve_8c_a9d9f08938aba647f9c1c5fefe501df00.html#a9d9f08938aba647f9c1c5fefe501df00" title="Add (A1*t + A0)*cos(w*t + g) + (B1*t + B0)*sin(w*t + g) to f.">distfun_add_cs()</a> </p>
+<dl class="section return"><dt>Returns</dt><dd>False if <code>f</code> already has <a class="el" href="trgeo__distsolve_8h_ae258a25c1968469f2ae8a7a9c7750779.html#ae258a25c1968469f2ae8a7a9c7750779" title="Maximum number of terms of a function.">DISTFUN_MAXTERMS</a> terms </dd></dl>
 
 </div>
 </div>

@@ -82,14 +82,12 @@ var searchData=
   ['distpair_5fnone_79',['DISTPAIR_NONE',['../trgeo__distwalk_8h_ad66e19014851b272f5906abfc0b051fd.html#ad66e19014851b272f5906abfc0b051fd',1,'trgeo_distwalk.h']]],
   ['distpair_5fve_80',['DISTPAIR_VE',['../trgeo__distwalk_8h_acfa489fbd80485c84a158ff7c6f779a3.html#acfa489fbd80485c84a158ff7c6f779a3',1,'trgeo_distwalk.h']]],
   ['distpair_5fvv_81',['DISTPAIR_VV',['../trgeo__distwalk_8h_abdf91484f67e9141fd64d9cddad99d5c.html#abdf91484f67e9141fd64d9cddad99d5c',1,'trgeo_distwalk.h']]],
-  ['distref_5fcoltol_82',['DISTREF_COLTOL',['../trgeo__distwalk_8c_a6eeee4ee05f3654cc344b8c8aa7b4fb8.html#a6eeee4ee05f3654cc344b8c8aa7b4fb8',1,'trgeo_distwalk.c']]],
-  ['distref_5fduptol_83',['DISTREF_DUPTOL',['../trgeo__distwalk_8c_aaa2af7930fa8e00dd7e49e370a451d48.html#aaa2af7930fa8e00dd7e49e370a451d48',1,'trgeo_distwalk.c']]],
-  ['distwalk_5fcycle_84',['DISTWALK_CYCLE',['../trgeo__distwalk_8h_abd5567a2c802bb7a9754e93c29ea156e.html#abd5567a2c802bb7a9754e93c29ea156e',1,'trgeo_distwalk.h']]],
-  ['distwalk_5fok_85',['DISTWALK_OK',['../trgeo__distwalk_8h_a4081a59fe80f4e8e8f7b3b9f75259d0b.html#a4081a59fe80f4e8e8f7b3b9f75259d0b',1,'trgeo_distwalk.h']]],
-  ['distwalk_5fsolve_86',['DISTWALK_SOLVE',['../trgeo__distwalk_8h_a71977acdee65d1d134088c948079aeee.html#a71977acdee65d1d134088c948079aeee',1,'trgeo_distwalk.h']]],
-  ['double2pgetdatum_87',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],
-  ['double3pgetdatum_88',['Double3PGetDatum',['../meos_2include_2temporal_2temporal_8h_a510bcaed2c65d1111a7492315648df86.html#a510bcaed2c65d1111a7492315648df86',1,'temporal.h']]],
-  ['double4pgetdatum_89',['Double4PGetDatum',['../meos_2include_2temporal_2temporal_8h_a1b25eb74c05a533191b049358180e88a.html#a1b25eb74c05a533191b049358180e88a',1,'temporal.h']]],
-  ['double_5fpad_90',['DOUBLE_PAD',['../meos_8h_ad541123ad64c1db30045cc5c5fcf41f0.html#ad541123ad64c1db30045cc5c5fcf41f0',1,'meos.h']]],
-  ['dp_5fstack_5fsize_91',['DP_STACK_SIZE',['../meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9',1,'temporal_analytics.c']]]
+  ['distwalk_5fcycle_82',['DISTWALK_CYCLE',['../trgeo__distwalk_8h_abd5567a2c802bb7a9754e93c29ea156e.html#abd5567a2c802bb7a9754e93c29ea156e',1,'trgeo_distwalk.h']]],
+  ['distwalk_5fok_83',['DISTWALK_OK',['../trgeo__distwalk_8h_a4081a59fe80f4e8e8f7b3b9f75259d0b.html#a4081a59fe80f4e8e8f7b3b9f75259d0b',1,'trgeo_distwalk.h']]],
+  ['distwalk_5fsolve_84',['DISTWALK_SOLVE',['../trgeo__distwalk_8h_a71977acdee65d1d134088c948079aeee.html#a71977acdee65d1d134088c948079aeee',1,'trgeo_distwalk.h']]],
+  ['double2pgetdatum_85',['Double2PGetDatum',['../meos_2include_2temporal_2temporal_8h_ab26a31953f73bd85a5b5734b77fa31e4.html#ab26a31953f73bd85a5b5734b77fa31e4',1,'temporal.h']]],
+  ['double3pgetdatum_86',['Double3PGetDatum',['../meos_2include_2temporal_2temporal_8h_a510bcaed2c65d1111a7492315648df86.html#a510bcaed2c65d1111a7492315648df86',1,'temporal.h']]],
+  ['double4pgetdatum_87',['Double4PGetDatum',['../meos_2include_2temporal_2temporal_8h_a1b25eb74c05a533191b049358180e88a.html#a1b25eb74c05a533191b049358180e88a',1,'temporal.h']]],
+  ['double_5fpad_88',['DOUBLE_PAD',['../meos_8h_ad541123ad64c1db30045cc5c5fcf41f0.html#ad541123ad64c1db30045cc5c5fcf41f0',1,'meos.h']]],
+  ['dp_5fstack_5fsize_89',['DP_STACK_SIZE',['../meos_2src_2temporal_2temporal__analytics_8c_ad668ce175fa912153919c940139c2bd9.html#ad668ce175fa912153919c940139c2bd9',1,'temporal_analytics.c']]]
 ];
