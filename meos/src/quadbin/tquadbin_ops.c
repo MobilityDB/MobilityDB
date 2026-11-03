@@ -763,4 +763,81 @@ tpoint_quadbin_split(const Temporal *temp, int32 resolution, bool border_inc,
   return result;
 }
 
+/**
+ * @brief Return the quadbin cells of an array of datums, freeing the array
+ */
+static Quadbin *
+quadbin_cells(Datum *datums, int count)
+{
+  Quadbin *result = palloc(sizeof(Quadbin) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = DatumGetQuadbin(datums[i]);
+  pfree(datums);
+  return result;
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the fragments of a temporal planar point split by the quadbin
+ * cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeompoint_quadbin_split()
+ */
+Temporal **
+tgeompoint_quadbin_split(const Temporal *temp, int32 resolution,
+  bool border_inc, Quadbin **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOMPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_quadbin_split(temp, resolution, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = quadbin_cells(datum_cells, *count);
+  return result;
+}
+
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Return the fragments of a temporal geodetic point split by the
+ * quadbin cells it crosses at a resolution, and the cell of each
+ * @param[in] temp Temporal point
+ * @param[in] resolution Quadbin resolution
+ * @param[in] border_inc True when the grid contains the upper border of the
+ * extent of the trajectory, its easternmost longitude and its southernmost
+ * latitude
+ * @param[out] cells Cell of each fragment
+ * @param[out] count Number of fragments
+ * @csqlfn #Tgeogpoint_quadbin_split()
+ */
+Temporal **
+tgeogpoint_quadbin_split(const Temporal *temp, int32 resolution,
+  bool border_inc, Quadbin **cells, int *count)
+{
+  /* The out parameter is defined even when a later check fails */
+  VALIDATE_NOT_NULL(count, NULL);
+  *count = 0;
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEOGPOINT(temp, NULL); VALIDATE_NOT_NULL(cells, NULL);
+
+  Datum *datum_cells;
+  Temporal **result = tpoint_quadbin_split(temp, resolution, border_inc,
+    &datum_cells, count);
+  if (! result)
+    return NULL;
+  *cells = quadbin_cells(datum_cells, *count);
+  return result;
+}
+
 /*****************************************************************************/

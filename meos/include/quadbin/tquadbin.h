@@ -80,8 +80,8 @@ extern bool ensure_valid_tquadbin_tgeompoint(const Temporal *temp1,
 
 /*****************************************************************************
  * Split of a temporal point by the cells it crosses (body in tquadbin_ops.c,
- * typed by tgeompoint_quadbin_split and tgeogpoint_quadbin_split of
- * tquadbin_ops_meos.c)
+ * typed by tgeompoint_quadbin_split and tgeogpoint_quadbin_split in the
+ * same file)
  *****************************************************************************/
 
 extern Temporal **tpoint_quadbin_split(const Temporal *temp,
