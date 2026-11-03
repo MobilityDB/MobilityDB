@@ -273,6 +273,18 @@ static const int16 TSpatialStrategies[] =
   {prefix "Right", RIGHT_IDX, 2, 0}, \
   {prefix "Overright", OVERRIGHT_IDX, 2, 0}
 
+/* The portable spellings of the second- and third-axis position operators,
+ * those of a box of three space axes */
+#define AXIS23_PORTABLE_FUNCTIONS(prefix) \
+  {prefix "Below", BELOW_IDX, 2, 0}, \
+  {prefix "Overbelow", OVERBELOW_IDX, 2, 0}, \
+  {prefix "Above", ABOVE_IDX, 2, 0}, \
+  {prefix "Overabove", OVERABOVE_IDX, 2, 0}, \
+  {prefix "Front", FRONT_IDX, 2, 0}, \
+  {prefix "Overfront", OVERFRONT_IDX, 2, 0}, \
+  {prefix "Back", BACK_IDX, 2, 0}, \
+  {prefix "Overback", OVERBACK_IDX, 2, 0}
+
 /* A temporal Boolean, text or JSONB value is bounded by its time span */
 static const IndexableFunction TemporalIndexableFunctions[] =
 {
@@ -341,15 +353,11 @@ static const IndexableFunction TSpatialIndexableFunctions[] = {
   TOPO_PORTABLE_FUNCTIONS("stbox"),
   TOPO_PORTABLE_FUNCTIONS("tpcbox"),
   TIME_PORTABLE_FUNCTIONS("stbox"),
+  TIME_PORTABLE_FUNCTIONS("tpcbox"),
   AXIS1_PORTABLE_FUNCTIONS("stbox"),
-  {"stboxBelow", BELOW_IDX, 2, 0},
-  {"stboxOverbelow", OVERBELOW_IDX, 2, 0},
-  {"stboxAbove", ABOVE_IDX, 2, 0},
-  {"stboxOverabove", OVERABOVE_IDX, 2, 0},
-  {"stboxFront", FRONT_IDX, 2, 0},
-  {"stboxOverfront", OVERFRONT_IDX, 2, 0},
-  {"stboxBack", BACK_IDX, 2, 0},
-  {"stboxOverback", OVERBACK_IDX, 2, 0},
+  AXIS1_PORTABLE_FUNCTIONS("tpcbox"),
+  AXIS23_PORTABLE_FUNCTIONS("stbox"),
+  AXIS23_PORTABLE_FUNCTIONS("tpcbox"),
   {NULL, 0, 0, 0}
 };
 
@@ -873,7 +881,7 @@ Tnumber_supportfn(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_supportfn(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_supportfn);
 /**
- * @brief Support function for temporal number types
+ * @brief Support function for spatiotemporal types
  */
 Datum
 Tspatial_supportfn(PG_FUNCTION_ARGS)

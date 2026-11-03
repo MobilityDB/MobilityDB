@@ -180,6 +180,17 @@ WHERE tpcboxOverlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
 SELECT COUNT(*) AS seq_fn_patch FROM tbl_tpcpatch
 WHERE tpcboxOverlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS seq_fn_left FROM tbl_tpcpoint
+WHERE tpcboxLeft(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS seq_fn_overfront FROM tbl_tpcpoint
+WHERE tpcboxOverfront(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS seq_fn_before FROM tbl_tpcpoint
+WHERE tpcboxBefore(temp, tstzspan '[2001-06-01, 2001-12-31]');
+SELECT COUNT(*) AS seq_fn_patch_overbelow FROM tbl_tpcpatch
+WHERE tpcboxOverbelow(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
 
 SET enable_seqscan = off; SET enable_indexscan = on; SET enable_bitmapscan = on;
 SELECT COUNT(*) AS idx_fn_box FROM tbl_tpcpoint
@@ -190,6 +201,46 @@ WHERE tpcboxOverlaps(temp, tstzspan '[2001-06-01, 2001-12-31]');
 SELECT COUNT(*) AS idx_fn_patch FROM tbl_tpcpatch
 WHERE tpcboxOverlaps(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
   tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS idx_fn_left FROM tbl_tpcpoint
+WHERE tpcboxLeft(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS idx_fn_overfront FROM tbl_tpcpoint
+WHERE tpcboxOverfront(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
+SELECT COUNT(*) AS idx_fn_before FROM tbl_tpcpoint
+WHERE tpcboxBefore(temp, tstzspan '[2001-06-01, 2001-12-31]');
+SELECT COUNT(*) AS idx_fn_patch_overbelow FROM tbl_tpcpatch
+WHERE tpcboxOverbelow(temp, tpcboxZT(0, 0, 0, 50, 50, 50,
+  tstzspan '[2001-06-01, 2001-12-31]', 1));
+
+-- The plan of a call of a topological or a position function probes the index,
+-- the support function of the call rewriting it into its operator
+CREATE FUNCTION test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+
+SELECT test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverlaps(temp, '
+  'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_overlaps,
+  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxLeft(temp, '
+  'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_left,
+  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxOverfront(temp, '
+  'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_overfront,
+  test_probes_index('SELECT * FROM tbl_tpcpoint WHERE tpcboxBefore(temp, '
+  'tstzspan ''[2001-06-01, 2001-12-31]'')') AS fn_before,
+  test_probes_index('SELECT * FROM tbl_tpcpatch WHERE tpcboxOverbelow(temp, '
+  'tpcboxZT(0, 0, 0, 50, 50, 50, tstzspan ''[2001-06-01, 2001-12-31]'', 1))') AS fn_patch_overbelow;
+
+DROP FUNCTION test_probes_index(text);
 
 DROP INDEX tbl_tpcpoint_gist_idx;
 DROP INDEX tbl_tpcpatch_gist_idx;
