@@ -369,8 +369,9 @@ ensure_valid_temporal_set(const Temporal *temp, const Set *s)
 }
 
 /**
- * @brief Ensure that a temporal number and a temporal box have the same span
- * type
+ * @brief Ensure that two temporal values have the same temporal type and, when
+ * they are spatial, the same SRID as #ensure_valid_tspatial_tspatial requires,
+ * since values in two reference systems are not comparable
  * @param[in] temp1,temp2 Temporal values
  */
 bool
@@ -384,6 +385,9 @@ ensure_valid_temporal_temporal(const Temporal *temp1, const Temporal *temp2)
       meostype_name(temp1->temptype), meostype_name(temp2->temptype));
     return false;
   }
+  if (tspatial_type(temp1->temptype) &&
+      ! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)))
+    return false;
   return true;
 }
 

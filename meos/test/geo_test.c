@@ -3953,6 +3953,45 @@ int main(void)
   free(dline_wkt); free(dline);
   free(dz1); free(dz2); free(dz3); free(d2); free(d0);
 
+  /* Values in two reference systems are not comparable: every similarity
+   * distance raises the error that a nearest approach distance raises, the same
+   * coordinates in one reference system answering with no error */
+  meos_errno_reset();
+  Temporal *s4326 = tgeompoint_in(
+    "SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]");
+  Temporal *s3857 = tgeompoint_in(
+    "SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]");
+  int spath;
+  temporal_frechet_distance(s4326, s4326, true);
+  temporal_dyntimewarp_distance(s4326, s4326, true);
+  temporal_hausdorff_distance(s4326, s4326, true);
+  temporal_average_hausdorff_distance(s4326, s4326, true);
+  temporal_lcss_distance(s4326, s4326, 1.0, true);
+  assert(meos_errno() == 0);
+  temporal_frechet_distance(s4326, s3857, true);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  temporal_dyntimewarp_distance(s4326, s3857, true);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  temporal_hausdorff_distance(s4326, s3857, true);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  temporal_average_hausdorff_distance(s4326, s3857, true);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  temporal_lcss_distance(s4326, s3857, 1.0, true);
+  assert(meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  assert(temporal_frechet_path(s4326, s3857, true, &spath) == NULL &&
+    meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  assert(temporal_dyntimewarp_path(s4326, s3857, true, &spath) == NULL &&
+    meos_errno() == MEOS_ERR_INVALID_ARG_VALUE);
+  meos_errno_reset();
+  printf("a similarity distance over two SRIDs raises an error\n");
+  free(s4326); free(s3857);
+
   /* Finalize MEOS */
   meos_finalize();
 
