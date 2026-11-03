@@ -25,14 +25,14 @@ SELECT tnpoints(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
 -- {2@2001-01-01, 2@2001-01-02}
 </pre></li><li class="listitem"><a name="tpcpatch_tdensity"></a><a class="indexterm" name="id17806"></a><p>Per-instant point density (<code class="varname">numPoints / xy-bbox-area</code>) summed across rows</p><pre class="programlisting">
 tdensity(tpcpatch) → tfloat
-</pre><p>Each pcpatch carries the inline <code class="varname">PCBOUNDS</code> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A 1-point or co-linear patch yields <code class="varname">+Infinity</code> for that instant; filter with <code class="varname">isfinite()</code> in downstream queries if needed.</p><pre class="programlisting">
+</pre><p>Each pcpatch carries the inline <code class="varname">PCBOUNDS</code> (xmin / xmax / ymin / ymax) so the bbox-area term is read directly, no recomputation. A patch whose XY bounds have no area, a single point or points on a line, has no density: the division by zero raises an error. A query over patches that may have no area reads those whose box has an area, <code class="varname">area(stbox(tpcbox(patch))) &gt; 0</code>.</p><pre class="programlisting">
 -- Each patch holds 2 points over a 1x1 xy-bbox.
 SELECT tdensity(v) FROM (VALUES (tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)),
   (tpcpatch(pcpatch(pcpoint(1, 3, 3, 3),
   pcpoint(1, 4, 4, 4)), '2001-01-02'::timestamptz))) t(v);
 -- {2@2001-01-01, 2@2001-01-02}
-</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id17818"></a><p>Combine multiple temporal values into a single one with all input instants merged in temporal order</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_mergeAgg"></a><a class="indexterm" name="id17817"></a><p>Combine multiple temporal values into a single one with all input instants merged in temporal order</p><pre class="programlisting">
 merge(tpcpoint) → tpcpoint
 merge(tpcpatch) → tpcpatch
 </pre><p>All inputs must share the same pcid and subtype.</p><pre class="programlisting">
@@ -40,7 +40,7 @@ SELECT numInstants(merge(v)) FROM (VALUES (tpcpoint(pcpoint(1, 1, 1, 1),
   '2001-01-01'::timestamptz)),
   (tpcpoint(pcpoint(1, 2, 2, 2), '2001-01-02'::timestamptz))) t(v);
 -- 2
-</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id17826"></a><a class="indexterm" name="id17829"></a><p>Streaming construction aggregates: <code class="varname">appendInstant</code> assembles instants into a sequence; <code class="varname">appendSequence</code> assembles sequences into a sequence set</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tpcpoint_appendInstantAgg"></a><a class="indexterm" name="id17825"></a><a class="indexterm" name="id17828"></a><p>Streaming construction aggregates: <code class="varname">appendInstant</code> assembles instants into a sequence; <code class="varname">appendSequence</code> assembles sequences into a sequence set</p><pre class="programlisting">
 appendInstant({tpcpoint,tpcpatch}[,interp text[,maxt interval]]) → {tpcpoint,tpcpatch}
 appendSequence(tpcpoint) → tpcpoint
 appendSequence(tpcpatch) → tpcpatch

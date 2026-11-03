@@ -37,16 +37,16 @@ segmentMaxDuration(ttype,interval,strict boolean=true) → tbool
 </pre><p>If <code class="varname">strict</code> is not specified, the value <code class="varname">true</code> is assumed by default, and therefore the function checks whether the segment duration is strictly less than or greater than the interval. If the argument is set to <code class="varname">false</code>, the function checks whether the segment duration is less/greater than or <span class="emphasis"><em>equal to</em></span> the interval.</p><pre class="programlisting">
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
--- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06)}
+-- {[t@2001-01-01, f@2001-01-03, t@2001-01-04, t@2001-01-06]}
 SELECT segmentMinDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
--- {[t@2001-01-01, t@2001-01-06)}
+-- {[t@2001-01-01, t@2001-01-06]}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day');
--- {[f@2001-01-01, f@2001-01-06)}
+-- {[f@2001-01-01, f@2001-01-06]}
 SELECT segmentMaxDuration(tfloat '[1@2001-01-01, 0@2001-01-03, -1@2001-01-04,
   -1@2001-01-06]', '1 day', false);
--- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06)}
+-- {[f@2001-01-01, t@2001-01-03, f@2001-01-04, f@2001-01-06]}
 </pre></li><li class="listitem"><a name="ttype_shiftTime"></a><a class="indexterm" name="id4805"></a><a class="indexterm" name="id4808"></a><a class="indexterm" name="id4811"></a><p>Shift and/or scale the time span of a temporal value by one or two intervals</p><pre class="programlisting">
 shiftTime(ttype,interval) → ttype
 scaleTime(ttype,interval) → ttype
