@@ -43,8 +43,9 @@
  * pcid mismatch — and it keeps the behaviour of the already-deployed
  * @c eEqual / @c aEqual, which bind the generic @c Ever_eq_temporal_base,
  * unchanged. The pcid is enforced where mixing schemas would build an
- * ill-formed value, namely set construction (@c ensure_same_pcid_pcpoint in
- * @c pcset_meos.c).
+ * ill-formed value, namely set construction (@c set_make_exp in @c set.c)
+ * and the set operations with a value (@c ensure_valid_pcpointset_pcpoint in
+ * @c pcset.c).
  *
  * Ordering comparisons (@c <, @c <=, @c >, @c >=) are not lifted: only
  * equality and inequality are exposed, as in the other spatial families.

@@ -38,6 +38,11 @@ if(POINTCLOUD)
     pcpoint.c
     pcpatch.c
 
+    # Set types over pcpoint / pcpatch, the typed functions of the generic set
+    # kernels of meos/src/temporal/set.c, as geo/geoset.c is for geometries.
+    # Same-pcid on the constructor path is enforced inside set_make_exp.
+    pcset.c
+
     # Bounding-box type — fixed-size struct mirroring STBox with an
     # extra pcid field. Pcpatch → TPCBox is free (embedded
     # PCBOUNDS); pcpoint → TPCBox goes via the schema hook.
@@ -108,13 +113,7 @@ if(POINTCLOUD)
     message(STATUS "pgPointCloud serialize helpers not in lib/pc_api.h — vendored shim active (pgsql_compat.c)")
   endif()
 
-  # Set types — `_meos.c` suffix → MEOS-only build. The PG extension
-  # build reaches pcpointset / pcpatchset through the generic Set_*
-  # wrappers in mobilitydb/src/temporal/set.c; same-pcid on the
-  # constructor path is enforced inside set_make_exp (set.c), not
-  # via these MEOS helpers.
   if(MEOS)
-    list(APPEND POINTCLOUD_SRCS pcset_meos.c)
     # Topological bounding-box operators taking a temporal point cloud,
     # mirroring meos/src/geo/tspatial_topops_meos.c. The PG extension reaches
     # the same answers through the Boxop_* dispatchers in the wrapper layer.
