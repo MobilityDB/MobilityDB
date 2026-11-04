@@ -67,16 +67,3 @@ endif()
 
 add_library(geo OBJECT ${GEO_SOURCES})
 
-# The GEOS entry points the vendored raster core calls directly are answered by
-# geo_geos_none.c, an object library of its own so that its symbols are hidden
-# from the dynamic table of the shared library, as pointcloud_libpc_stringbuffer
-# is. They carry the names of the GEOS C API (GEOSUnaryUnion, GEOSisValid,
-# initGEOS, ...), which PostGIS imports in the same backend, so an exported
-# definition would be open to the ELF interposition that
-# postgis/liblwgeom/CMakeLists.txt describes: PostGIS loaded after MobilityDB
-# would bind its GEOS calls to these definitions.
-if(RASTER)
-  add_library(geo_geos_none OBJECT geo_geos_none.c)
-  set_target_properties(geo_geos_none PROPERTIES
-    C_VISIBILITY_PRESET hidden POSITION_INDEPENDENT_CODE ON)
-endif()

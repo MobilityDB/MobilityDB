@@ -6712,6 +6712,32 @@ geom_unary_union(const GSERIALIZED *gs)
 }
 
 /**
+ * @brief Return the unary union of a geometry, over the geometry model of the
+ * vendored geometry library
+ * @details As #geom_unary_union(). The result owns all of its memory, since the
+ * geometry of a serialized value points into it.
+ * @param[in] geom Geometry
+ */
+LWGEOM *
+meos_unary_union(const LWGEOM *geom)
+{
+  assert(geom);
+  GSERIALIZED *gs = geo_serialize(geom);
+  if (! gs)
+    return NULL;
+  GSERIALIZED *gsresult = geom_unary_union(gs);
+  pfree(gs);
+  if (! gsresult)
+    return NULL;
+  LWGEOM *lwresult = lwgeom_from_gserialized(gsresult);
+  LWGEOM *result = lwresult ? lwgeom_clone_deep(lwresult) : NULL;
+  if (lwresult)
+    lwgeom_free(lwresult);
+  pfree(gsresult);
+  return result;
+}
+
+/**
  * @ingroup meos_geo_base_spatial
  * @brief Return true if a geometry has no anomalous point, which is a point
  * at which it crosses or touches itself

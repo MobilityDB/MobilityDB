@@ -51,10 +51,8 @@
  *
  * liblwgeom reports through the same two channels, its errors and its notices
  * being routed to #meos_error() by the two handlers #meos_initialize() installs
- * (meos/src/temporal/meos.c). MEOS calls no GEOS function, so it installs no
- * GEOS handler: the GEOS names the vendored raster core calls are answered in
- * meos/src/geo/geo_geos_none.c, which ignores the handlers given to initGEOS()
- * and routes an error to liblwgeom's.
+ * (meos/src/temporal/meos.c). MEOS calls no GEOS function and defines none of
+ * its names, so it installs no GEOS handler.
  *
  * A host that wants both channels installs its own handler, records the code
  * of an error with #meos_errno_set() and logs the other levels:
