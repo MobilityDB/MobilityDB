@@ -10,14 +10,15 @@
 
 [Back to the index](00-INDEX.md) · [Implementation plan](IMPLEMENTATION-PLAN.md)
 
-Measured on master `78839117d9`. Every statement below is an output of `tools/trgeo_gaps/`.
+Measured on master `78839117d9`. Every statement below is an output of `tools/trgeo_gaps.py`.
 
 ## The measurement
 
-`ledger.sql` asks the catalog for every function taking a `trgeometry` and calls it over the
-product of the values below, printing one line per call. `known_answers.sql` and
-`known_answers_controls.sql` state cases whose answer the geometry fixes. `gaps.py` reports a call
-that fails where the same call answers with one property of the failing argument changed.
+`tools/trgeo_gaps.py sql ledger` prints the script that asks the catalog for every function taking a
+`trgeometry` and calls it over the product of the values below, printing one line per call. `sql
+known` and `sql controls` print the cases whose answer the geometry fixes. Each runs in the test
+harness, in the place of a test of the family. `report <output>` reports a call that fails where the
+same call answers with one property of the failing argument changed.
 
 | Argument | Values |
 |---|---|
@@ -103,16 +104,15 @@ Each is a call that should answer, or an error that misleads, so its pull reques
 | `round(x, 1)` of a 3D rotation | "Rotation quaternion must be of unit norm", since each coordinate is rounded alone; 6 digits answer |
 | `tDistance` of a 3D value and a 3D `tgeompoint` | "The arguments must be of the same dimensionality", although both have Z |
 
-## Recorded in the other plans
+## Related subjects
 
-| Subject | Where | Here |
-|---|---|---|
-| The distance of non-convex and holed geometries | [its note](NON-CONVEX-DISTANCE.md) and [its feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md) | The note lists collections as accepted, while this ledger reads "Unsupported geometry type: GeometryCollection" for a collection holding a point and a line. |
-| The relationships in linear motion | [its note](RIGID-SWEPT-RELATIONSHIPS.md), and #3347 | The refusals #3347 adds and their manual notes are in the note. This ledger reads master, without #3347, so it shows none of them. |
-| The exact temporal distance of a rigid body | #3287, `EXACT-DISTANCE.md`, ED19 | Not a gap of acceptance. |
-| The `transform` signatures | #2861, `04-SPATIAL-TRANSFORMATIONS.md` | That note lists `trgeometry` under `Tspatial_transform`, and says that what is refused is for G11's test to establish. This ledger establishes it: every call is refused. |
-| The aggregates | #2861, `AGGREGATES-PLAN.md`, AG10 and AG12, merged | Not re-measured: the ledger cannot call a transition function outside an aggregate. |
-| The similarity distances | #2861, G27, merged | The manual already states that a `trgeometry` has none. |
+| Subject | Here |
+|---|---|
+| The distance of non-convex and holed geometries | [Its note](NON-CONVEX-DISTANCE.md) and [its feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md). The note lists collections as accepted, while this ledger reads "Unsupported geometry type: GeometryCollection" for a collection holding a point and a line. |
+| The relationships in linear motion | [Its note](RIGID-SWEPT-RELATIONSHIPS.md). The refusals #3347 adds are there; this ledger reads master, without #3347. |
+| The `transform` signatures | SQL declares them over `trgeometry`, and every call is refused. |
+| The aggregates | Merged as #3100 and #3102, and not measured here: the ledger cannot call a transition function outside an aggregate. |
+| The similarity distances | The manual states that a `trgeometry` has none. |
 
 ## The manual and the design notes against the code
 
