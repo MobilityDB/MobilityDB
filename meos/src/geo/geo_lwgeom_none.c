@@ -45,11 +45,13 @@
  * @p meos_lwerror_handler(), so it reaches the caller as a MEOS error rather
  * than ending the process.
  *
- * ONE of them is answered rather than refused. @p lwgeom_centroid() IS reached
+ * TWO of them are answered rather than refused. @p lwgeom_centroid() IS reached
  * from MEOS: #geo_cluster_kmeans() calls @p lwgeom_cluster_kmeans(), which
  * takes the centroid of every input that is not a point, so without it MEOS
  * could not cluster a polygon. #meos_centroid() answers it natively,
- * so the clustering works wherever the library does. The rest are reached only
+ * so the clustering works wherever the library does. @p lwgeom_unaryunion() is
+ * answered by #meos_unary_union(), since the engine holds the union. The rest
+ * are reached only
  * from entry points MEOS never calls, and the definitions exist so that the
  * set of entry points the left-out files carry is answered as a whole.
  */
@@ -111,8 +113,7 @@ lwgeom_intersection_prec(const LWGEOM *geom1, const LWGEOM *geom2,
 LWGEOM *
 lwgeom_unaryunion(const LWGEOM *geom)
 {
-  (void) geom;
-  return lwgeom_needs_geos(__func__);
+  return meos_unary_union(geom);
 }
 
 LWGEOM *
