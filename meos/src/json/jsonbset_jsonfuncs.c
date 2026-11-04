@@ -541,6 +541,120 @@ jsonbset_pretty(const Set *set)
   return lfunc_set(set, &lfinfo);
 }
 
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract a JSONB object field with the given key from a JSONB set
+ * @param[in] set JSONB set
+ * @param[in] key Key
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_object_field()
+ */
+Set *
+jsonbset_object_field(const Set *set, const text *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return jsonbset_object_field_common(set, key, false, null_handle);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract a JSONB object field with the given key from a JSONB set as
+ * a text set
+ * @param[in] set JSONB set
+ * @param[in] key Key
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_object_field_text()
+ */
+Set *
+jsonbset_object_field_text(const Set *set, const text *key,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(key, NULL);
+  return jsonbset_object_field_common(set, key, true, null_handle);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract an array element from a JSONB set
+ * @param[in] set JSONB set
+ * @param[in] idx Index
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_array_element()
+ */
+Set *
+jsonbset_array_element(const Set *set, int idx, nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL);
+  return jsonbset_array_element_common(set, idx, false, null_handle);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract an array element from a JSONB set as a text set
+ * @param[in] set JSONB set
+ * @param[in] idx Index
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_array_element_text()
+ */
+Set *
+jsonbset_array_element_text(const Set *set, int idx,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL);
+  return jsonbset_array_element_common(set, idx, true, null_handle);
+}
+
+/*****************************************************************************/
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract a JSONB set specified by a path
+ * @param[in] set JSONB set
+ * @param[in] path_elems Keys
+ * @param[in] path_len Number of elements in the input array
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_extract_path()
+ */
+Set *
+jsonbset_extract_path(const Set *set, text **path_elems, int path_len,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  if (! ensure_positive(path_len))
+    return NULL;
+  return jsonbset_extract_path_common(set, path_elems, path_len, false,
+    null_handle);
+}
+
+/**
+ * @ingroup meos_json_set_json
+ * @brief Extract a JSONB set specified by a path as a text set
+ * @param[in] set JSONB set
+ * @param[in] path_elems Keys
+ * @param[in] path_len Number of elements in the input array
+ * @param[in] null_handle States the null value treatment
+ * @csqlfn #Jsonbset_extract_path_text()
+ */
+Set *
+jsonbset_extract_path_text(const Set *set, text **path_elems, int path_len,
+  nullHandleType null_handle)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_JSONBSET(set, NULL); VALIDATE_NOT_NULL(path_elems, NULL);
+  if (! ensure_positive(path_len))
+    return NULL;
+  return jsonbset_extract_path_common(set, path_elems, path_len, true,
+    null_handle);
+}
+
 /*****************************************************************************
  * Path functions
  *****************************************************************************/

@@ -148,9 +148,9 @@ span_inner_consistent(const void *nodebox, const void *query, IndexSearchOp op)
 
 /**
  * @brief Return true if a leaf entry satisfies the search operation
- * @details A tree stores homogeneous spans -- same span type by construction,
- * which #ensure_valid_sptree_box establishes at the entry point -- so the
- * internal predicates, which assert that contract, are what the descent calls
+ * @details A tree stores spans of one span type, the structure
+ * #bbox_same_structure states, so the internal predicates, which assert that
+ * contract, are what the descent calls
  * @param[in] key,query Spans
  * @param[in] op Search operation
  */
@@ -418,8 +418,7 @@ sptree_kind_is_valid(SPTreeKind kind)
 /**
  * @brief Return true if a value names a kind of space-partitioning tree,
  * report an error otherwise
- * @details The check belongs to the constructors a user calls, as
- * #ensure_valid_sptree_box belongs to the entry points of a search
+ * @details The check belongs to the constructors a user calls
  * @param[in] kind Kind of tree
  */
 static bool
@@ -764,70 +763,49 @@ spnode_child(const SPTree *sptree, const void *centroid, const void *box,
 }
 
 /**
- * @brief Return true if a box may enter or query an SPTree, report an error
- * otherwise
- * @details A tree holds boxes of one SRID: the first entry fixes it, and a box
- * of another one is an error rather than a coercion. The check belongs here,
- * at the entry point, so that every comparison the descent makes can assume it
+ * @brief Return the tree of an SPTree index holding the boxes of the
+ * structure of a box, appending an empty one when no tree does
+ * @details As #rtree_part for an RTree index. A tree keeps a box of its
+ * structure as received, since it may hold its boxes projected
  */
-static bool
-ensure_valid_sptree_box(const SPTree *sptree, const void *box)
+static SPTree *
+sptree_part(SPTree *sptree, const void *box)
 {
-  if (! sptree->root)
-    return true;
-  /* A box is compared with every stored box, which share the SRID, the
-   * geodetic flag and the axes the root carries, so the checks the external
-   * test makes on each pair are made here once, and the descent compares the
-   * boxes with the internal test */
-  if (sptree->bboxtype == T_STBOX)
+  SPTree *last = sptree;
+  for (SPTree *part = sptree; part; part = part->next)
   {
-    const STBox *root = (const STBox *) sptree->root->centroid;
-    const STBox *query = (const STBox *) box;
-    return ensure_valid_stbox_stbox(root, query) &&
-      ensure_common_dimension(root->flags, query->flags);
+    if (! part->root ||
+        bbox_same_structure(sptree->bboxtype, &part->structure, box))
+      return part;
+    last = part;
   }
-  if (sptree->bboxtype == T_TBOX)
-  {
-    const TBox *root = (const TBox *) sptree->root->centroid;
-    const TBox *query = (const TBox *) box;
-    return ensure_valid_tbox_tbox(root, query) &&
-      ensure_common_dimension(root->flags, query->flags);
-  }
-#if POINTCLOUD
-  if (sptree->bboxtype == T_TPCBOX)
-  {
-    /* A tpcbox tree holds its centroids already projected to STBox, so only
-     * the incoming box is projected here */
-    const STBox *root = (const STBox *) sptree->root->centroid;
-    STBox s;
-    tpcbox_set_stbox((const TPCBox *) box, &s);
-    return ensure_valid_stbox_stbox(root, &s) &&
-      ensure_common_dimension(root->flags, s.flags);
-  }
-#endif /* POINTCLOUD */
-  return true;
+  last->next = sptree_create(sptree->bboxtype, sptree->kind);
+  return last->next;
 }
 
 /**
- * @brief Return true if two SPTrees may be joined, report an error otherwise
- * @details A join compares a box of one tree with a box of the other, so the
- * two trees answer the same question #ensure_valid_sptree_box asks of a query.
- * Both trees hold their centroids in the internal box type, a tpcbox tree
- * already projected to an @p STBox, so the two SRIDs compare directly rather
- * than through that function's projection of an incoming box
+ * @brief Return true if a search operation applied to the boxes of every
+ * tree of an SPTree index and a query raises no error, raise the error of the
+ * operation otherwise
+ * @details As #ensure_rtree_op_box for an RTree index, on the box each tree
+ * keeps of its structure as received, the first box stored in the tree
+ * @param[in] sptree SPTree index
+ * @param[in] op Search operation
+ * @param[in] query Query box, or a box stored in another SPTree index
  */
 static bool
-ensure_valid_sptree_sptree(const SPTree *sptree1, const SPTree *sptree2)
+ensure_sptree_op_box(const SPTree *sptree, IndexSearchOp op,
+  const void *query)
 {
-  if (! sptree1->root || ! sptree2->root)
-    return true;
-  if (sptree1->bboxtype == T_STBOX
-#if POINTCLOUD
-      || sptree1->bboxtype == T_TPCBOX
-#endif /* POINTCLOUD */
-     )
-    return ensure_same_srid(((const STBox *) sptree1->root->centroid)->srid,
-      ((const STBox *) sptree2->root->centroid)->srid);
+  if (! ensure_index_op(sptree->bboxtype, op))
+    return false;
+  for (const SPTree *part = sptree; part; part = part->next)
+    if (part->root &&
+        ! index_op_is_valid(sptree->bboxtype, op, &part->structure, query))
+    {
+      (void) index_op_apply(sptree->bboxtype, op, &part->structure, query);
+      return false;
+    }
   return true;
 }
 
@@ -849,10 +827,12 @@ bool
 sptree_insert(SPTree *sptree, void *box, int64 id)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) sptree) || ! ensure_not_null((void *) box) ||
-      ! ensure_valid_sptree_box(sptree, box))
+  if (! ensure_not_null((void *) sptree) || ! ensure_not_null((void *) box))
     return false;
 
+  sptree = sptree_part(sptree, box);
+  if (! sptree->root)
+    memcpy(&sptree->structure, box, bbox_get_size(sptree->bboxtype));
   /* Project the incoming box into the internal box type (TPCBox: STBox) */
   bboxunion proj;
   if (sptree->project)
@@ -1106,25 +1086,71 @@ spnode_build(SPBuild *build, int from, int count, int level)
  * @param[in] ids The id of each box
  * @param[in] count Number of entries
  */
+static void sptree_part_load(SPTree *sptree, const void *boxes,
+  const int64 *ids, int count);
+
 bool
 sptree_load(SPTree *sptree, const void *boxes, const int64 *ids, int count)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) sptree) || ! ensure_not_null((void *) boxes) ||
-      ! ensure_not_null((void *) ids) || ! ensure_valid_sptree_box(sptree, boxes))
+      ! ensure_not_null((void *) ids))
     return false;
 
-  /* The build assigns the root, so the nodes the tree holds are released
+  /* The build assigns the roots, so the trees the index holds are released
    * before it does, and are released whatever the number of entries given: an
-   * empty entry set leaves an empty tree rather than the previous one */
+   * empty entry set leaves an empty index rather than the previous one */
   if (sptree->root)
   {
     spnode_free(sptree, sptree->root);
     sptree->root = NULL;
   }
-
+  if (sptree->next)
+  {
+    sptree_free(sptree->next);
+    sptree->next = NULL;
+  }
   if (count <= 0)
     return true;
+
+  /* The boxes of each structure are built into a tree of their own, in the
+   * order they are given, read at the stride of their type */
+  size_t insize = bbox_get_size(sptree->bboxtype);
+  const char *base = (const char *) boxes;
+  bool *done = palloc0((size_t) count * sizeof(bool));
+  char *pboxes = palloc((size_t) count * insize);
+  int64 *pids = palloc((size_t) count * sizeof(int64));
+  for (int i = 0; i < count; i++)
+  {
+    if (done[i])
+      continue;
+    const void *first = base + (size_t) i * insize;
+    int n = 0;
+    for (int j = i; j < count; j++)
+    {
+      const void *box = base + (size_t) j * insize;
+      if (done[j] || ! bbox_same_structure(sptree->bboxtype, first, box))
+        continue;
+      memcpy(pboxes + (size_t) n * insize, box, insize);
+      pids[n++] = ids[j];
+      done[j] = true;
+    }
+    SPTree *part = sptree_part(sptree, first);
+    memcpy(&part->structure, first, insize);
+    sptree_part_load(part, pboxes, pids, n);
+  }
+  pfree(done); pfree(pboxes); pfree(pids);
+  return true;
+}
+
+/**
+ * @brief Build the boxes of one structure into an empty tree of an SPTree
+ * index
+ */
+static void
+sptree_part_load(SPTree *sptree, const void *boxes, const int64 *ids,
+  int count)
+{
 
   /* A type indexed through a projection is given boxes of its own type and
    * holds them as the type it partitions (TPCBox: STBox), so the entries are
@@ -1161,7 +1187,7 @@ sptree_load(SPTree *sptree, const void *boxes, const int64 *ids, int count)
   pfree(build.tmpbox);
   pfree(build.ids);
   pfree(build.boxes);
-  return true;
+  return;
 }
 
 /*****************************************************************************
@@ -1513,6 +1539,9 @@ spnode_search_tbox(const SPTree *sptree, const SPNode *node,
   return;
 }
 
+static void sptree_part_search(const SPTree *sptree, IndexSearchOp op,
+  const void *query, MeosArray *result);
+
 /**
  * @ingroup meos_internal_box_index
  * @brief Search an SPTree with a bounding box, collecting matching ids into
@@ -1532,7 +1561,7 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
   MeosArray *result)
 {
   assert(sptree); assert(query); assert(result);
-  assert(ensure_valid_sptree_box(sptree, query));
+  meos_array_reset(result);
   /* Project the query box into the internal box type (TPCBox: STBox) */
   bboxunion proj;
   if (sptree->project)
@@ -1540,22 +1569,39 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
     sptree->project(query, &proj);
     query = &proj;
   }
-  meos_array_reset(result);
-  if (! sptree->root)
-    return 0;
+  for (const SPTree *part = sptree; part; part = part->next)
+    if (part->root)
+      sptree_part_search(part, op, query, result);
+  return (int) result->count;
+}
+
+/**
+ * @brief Append to an array the ids of the boxes of one tree of an SPTree
+ * index answering a search operation
+ * @details The boxes of the tree share their structure, the query is given in
+ * the internal box type, and the operation applies to them and the query, as
+ * #ensure_sptree_op_box states
+ */
+static void
+sptree_part_search(const SPTree *sptree, IndexSearchOp op, const void *query,
+  MeosArray *result)
+{
   char rootbox[SPTREE_NODEBOX_MAXSIZE];
   sptree->nodebox_init(rootbox, sptree->root->centroid, sptree);
+  /* The stored boxes share their axes, which the root carries, so the query
+   * is compared on the axes it shares with them, read once here rather than
+   * once per box. A tree holding its boxes projected holds spatiotemporal
+   * boxes, see #tpcbox_project */
+  bboxunion proj;
+  index_query_project(sptree->project ? T_STBOX : sptree->bboxtype, query,
+    sptree->root->centroid, &proj);
+  query = &proj;
   if (sptree->bboxtype == T_STBOX && (op == INDEX_OVERLAPS ||
       op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
   {
-    /* The stored boxes share their axes, which the root carries, so the
-     * axes both sides have are read once here rather than once per box;
-     * the entry has refused a query sharing none */
     const STBox *q = (const STBox *) query;
-    int16 f = ((const STBox *) sptree->root->centroid)->flags;
-    bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
-      z = MEOS_FLAGS_GET_Z(q->flags) && MEOS_FLAGS_GET_Z(f),
-      t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
+    bool x = MEOS_FLAGS_GET_X(q->flags), z = MEOS_FLAGS_GET_Z(q->flags),
+      t = MEOS_FLAGS_GET_T(q->flags);
     if (op == INDEX_OVERLAPS)
       spnode_search_overlaps_stbox(sptree, sptree->root,
         (const STboxNode *) rootbox, q, 0, x, z, t, result);
@@ -1567,17 +1613,13 @@ sptree_search_intl(const SPTree *sptree, IndexSearchOp op, const void *query,
   else if (sptree->bboxtype == T_TBOX && (op == INDEX_OVERLAPS ||
       op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
   {
-    /* As for the spatiotemporal boxes above */
     const TBox *q = (const TBox *) query;
-    int16 f = ((const TBox *) sptree->root->centroid)->flags;
-    bool x = MEOS_FLAGS_GET_X(q->flags) && MEOS_FLAGS_GET_X(f),
-      t = MEOS_FLAGS_GET_T(q->flags) && MEOS_FLAGS_GET_T(f);
     spnode_search_tbox(sptree, sptree->root, (const TboxNode *) rootbox, q,
-      op, 0, x, t, result);
+      op, 0, MEOS_FLAGS_GET_X(q->flags), MEOS_FLAGS_GET_T(q->flags), result);
   }
   else
     spnode_search(sptree, sptree->root, rootbox, op, query, 0, result);
-  return (int) result->count;
+  return;
 }
 
 /**
@@ -1602,7 +1644,8 @@ sptree_search(const SPTree *sptree, IndexSearchOp op, const void *query,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sptree, -1); VALIDATE_NOT_NULL(query, -1);
   VALIDATE_NOT_NULL(result, -1);
-  if (! ensure_valid_sptree_box(sptree, query) || ! ensure_index_result(result))
+  if (! ensure_sptree_op_box(sptree, op, query) ||
+      ! ensure_index_result(result))
     return -1;
   return sptree_search_intl(sptree, op, query, result);
 }
@@ -1711,20 +1754,25 @@ sptree_join(const SPTree *sptree1, const SPTree *sptree2, IndexSearchOp op,
   VALIDATE_NOT_NULL(sptree1, -1); VALIDATE_NOT_NULL(sptree2, -1);
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_same_index_bboxtype(sptree1->bboxtype, sptree2->bboxtype) ||
-      ! ensure_valid_sptree_sptree(sptree1, sptree2) ||
       ! ensure_index_join_op(op) || ! ensure_index_result(result))
     return -1;
+  for (const SPTree *part2 = sptree2; part2; part2 = part2->next)
+    if (part2->root &&
+        ! ensure_sptree_op_box(sptree1, op, &part2->structure))
+      return -1;
 
   meos_array_reset(result);
-  if (sptree1->root && sptree2->root)
-  {
-    char rootbox2[SPTREE_NODEBOX_MAXSIZE];
-    sptree2->nodebox_init(rootbox2, sptree2->root->centroid, sptree2);
-    MeosArray *found = index_result_create();
-    spnode_join(sptree1, sptree1->root, sptree2, rootbox2,
-      index_op_converse(op), found, result);
-    meos_array_destroy(found);
-  }
+  MeosArray *found = index_result_create();
+  for (const SPTree *part1 = sptree1; part1; part1 = part1->next)
+    for (const SPTree *part2 = sptree2; part2; part2 = part2->next)
+      if (part1->root && part2->root)
+      {
+        char rootbox2[SPTREE_NODEBOX_MAXSIZE];
+        part2->nodebox_init(rootbox2, part2->root->centroid, part2);
+        spnode_join(part1, part1->root, part2, rootbox2,
+          index_op_converse(op), found, result);
+      }
+  meos_array_destroy(found);
   return meos_array_count(result) / 2;
 }
 
@@ -1760,8 +1808,7 @@ sptree_insert_temporal(SPTree *sptree, const Temporal *temp, int64 id)
   bboxunion buf;
   memset(&buf, 0, sizeof(buf));
   temporal_set_bbox(temp, &buf);
-  sptree_insert(sptree, &buf, id);
-  return true;
+  return sptree_insert(sptree, &buf, id);
 }
 
 /**
@@ -1883,7 +1930,7 @@ sptree_search_temporal_dedup(const SPTree *sptree, IndexSearchOp op,
   bboxunion whole;
   memset(&whole, 0, sizeof(whole));
   temporal_set_bbox(temp, &whole);
-  if (! ensure_valid_sptree_box(sptree, &whole))
+  if (! ensure_sptree_op_box(sptree, op, &whole))
     return -1;
 
   int count;
@@ -2045,7 +2092,8 @@ sptree_num_entries(const SPTree *sptree)
   VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
   int64 bytes = 0;
-  spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);
+  for (const SPTree *part = sptree; part; part = part->next)
+    spnode_stats(part, part->root, 1, &entries, &bytes, &height);
   return entries;
 }
 
@@ -2063,8 +2111,12 @@ sptree_mem_size(const SPTree *sptree)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sptree, -1);
   int entries = 0, height = 0;
-  int64 bytes = (int64) sizeof(SPTree);
-  spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);
+  int64 bytes = 0;
+  for (const SPTree *part = sptree; part; part = part->next)
+  {
+    bytes += (int64) sizeof(SPTree);
+    spnode_stats(part, part->root, 1, &entries, &bytes, &height);
+  }
   return bytes;
 }
 
@@ -2080,10 +2132,16 @@ sptree_height(const SPTree *sptree)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sptree, -1);
-  int entries = 0, height = 0;
-  int64 bytes = 0;
-  spnode_stats(sptree, sptree->root, 1, &entries, &bytes, &height);
-  return height;
+  int result = 0;
+  for (const SPTree *part = sptree; part; part = part->next)
+  {
+    int entries = 0, height = 0;
+    int64 bytes = 0;
+    spnode_stats(part, part->root, 1, &entries, &bytes, &height);
+    if (height > result)
+      result = height;
+  }
+  return result;
 }
 
 /**
@@ -2094,8 +2152,13 @@ sptree_height(const SPTree *sptree)
 void
 sptree_free(SPTree *sptree)
 {
-  spnode_free(sptree, sptree->root);
-  pfree(sptree);
+  while (sptree)
+  {
+    SPTree *next = sptree->next;
+    spnode_free(sptree, sptree->root);
+    pfree(sptree);
+    sptree = next;
+  }
   return;
 }
 
@@ -2177,6 +2240,7 @@ typedef struct SPNNEntry
   bool is_emit;                /**< True for an emittable id, false for a node */
   int64 id;                    /**< Stored id (when @p is_emit) */
   const SPNode *node;          /**< Tree node to expand (when not @p is_emit) */
+  const SPTree *part;          /**< Tree holding @p node */
   int level;                   /**< Depth of @p node (drives the k-d dimension) */
   char region[SPTREE_NODEBOX_MAXSIZE];  /**< Region covered by @p node */
 } SPNNEntry;
@@ -2266,8 +2330,8 @@ spnn_heap_pop(SPNNCursor *cursor)
  * As for #sptree_search, the query box is validated here, at the entry point,
  * so that every distance the traversal computes can assume it.
  * @param[in] sptree The SPTree to query
- * @param[in] query The query bounding box of type @p sptree->bboxtype and of
- * the SRID the tree holds
+ * @param[in] query The query bounding box of type @p sptree->bboxtype, of the
+ * SRID of every box of the index carrying a spatial axis
  * @return A cursor to be freed with #sptree_nn_cursor_close
  * @errval NULL
  */
@@ -2276,8 +2340,16 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(sptree, NULL); VALIDATE_NOT_NULL(query, NULL);
-  if (! ensure_valid_sptree_box(sptree, query))
-    return NULL;
+  /* The distance raises an error on a pair of boxes by their structures
+   * alone. Where it raises on the boxes of a tree, a box stored in it is
+   * measured, which raises the error a scan of the boxes raises */
+  for (const SPTree *part = sptree; part; part = part->next)
+    if (part->root &&
+        ! index_distance_is_valid(sptree->bboxtype, &part->structure, query))
+    {
+      (void) index_distance_apply(sptree->bboxtype, &part->structure, query);
+      return NULL;
+    }
 
   SPNNCursor *cursor = palloc0(sizeof(SPNNCursor));
   cursor->sptree = sptree;
@@ -2290,18 +2362,22 @@ sptree_nn_cursor_open(const SPTree *sptree, const void *query)
   cursor->capacity = 64;
   cursor->heap = palloc((size_t) cursor->capacity * sizeof(SPNNEntry));
   cursor->count = 0;
-  /* Seed the heap with the root node covering the infinite region */
-  if (sptree->root)
-  {
-    SPNNEntry entry;
-    memset(&entry, 0, sizeof(entry));
-    entry.is_emit = false;
-    entry.node = sptree->root;
-    entry.level = 0;
-    sptree->nodebox_init(entry.region, sptree->root->centroid, sptree);
-    entry.dist = sptree_nodebox_distance(sptree, cursor->query, entry.region);
-    spnn_heap_push(cursor, &entry);
-  }
+  /* Seed the heap with the root node of every tree, each covering the
+   * infinite region: the distance of a region depends on the box type alone,
+   * so one heap orders the entries of every tree */
+  for (const SPTree *part = sptree; part; part = part->next)
+    if (part->root)
+    {
+      SPNNEntry entry;
+      memset(&entry, 0, sizeof(entry));
+      entry.is_emit = false;
+      entry.node = part->root;
+      entry.part = part;
+      entry.level = 0;
+      part->nodebox_init(entry.region, part->root->centroid, part);
+      entry.dist = sptree_nodebox_distance(part, cursor->query, entry.region);
+      spnn_heap_push(cursor, &entry);
+    }
   return cursor;
 }
 
@@ -2323,10 +2399,10 @@ sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(cursor, false);
 
-  const SPTree *sptree = cursor->sptree;
   while (cursor->count > 0)
   {
     SPNNEntry entry = spnn_heap_pop(cursor);
+    const SPTree *sptree = entry.part;
     if (entry.is_emit)
     {
       /* A stored id reached the top of the heap: nothing unexpanded is closer */
@@ -2356,6 +2432,7 @@ sptree_nn_cursor_next(SPNNCursor *cursor, int64 *id_out, double *dist_out)
       memset(&childentry, 0, sizeof(childentry));
       childentry.is_emit = false;
       childentry.node = child;
+      childentry.part = sptree;
       childentry.level = entry.level + 1;
       if (sptree->kind == SPTREE_QUADTREE)
         sptree->quadtree_next(entry.region, node->centroid, (uint8) quadrant,

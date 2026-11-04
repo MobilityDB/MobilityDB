@@ -57,6 +57,7 @@ extern bool ensure_same_dimensionality_tbox(const TBox *box1, const TBox *box2);
 
 /* Validity of a pair of temporal boxes */
 
+extern bool tbox_tbox_is_valid(const TBox *box1, const TBox *box2);
 extern bool ensure_valid_tbox_tbox(const TBox *box1, const TBox *box2);
 extern size_t tbox_sortkey_size(const TBox *box);
 extern uint8_t *tbox_sortkey_put(const TBox *box, uint8_t *out);

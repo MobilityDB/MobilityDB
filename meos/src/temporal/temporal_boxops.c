@@ -56,12 +56,16 @@
 #include <meos_internal_geo.h>
 #include "temporal/bbox_index.h"
 #include "temporal/span.h"
+#include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/stbox.h"
+#include "geo/geo_funcs.h"
 #include "geo/tspatial_boxops.h"
 #if POINTCLOUD
   #include <meos_pointcloud.h>
   #include "pointcloud/tpc_boxops.h"
+  #include "pointcloud/tpcbox.h"
 #endif
 
 /*****************************************************************************
@@ -246,6 +250,448 @@ ensure_index_join_op(IndexSearchOp op)
     "A join answers the operations that compare extents, not the ones that "
     "order a dimension");
   return false;
+}
+
+/**
+ * @brief Return true if two bounding boxes have the same structure
+ * @details Shared by the in-memory RTree and SPTree indexes and the
+ * PostgreSQL GiST and SP-GiST indexes. Two boxes have the same structure when
+ * they carry the same axes and, where they carry a value or a spatial axis,
+ * the same span type and the same SRID and geodetic flag. A point cloud box is
+ * indexed as the spatiotemporal box it begins with, its SRID read from its
+ * schema, so its structure is the one of that box. Whether an operation raises
+ * an error on a pair of boxes depends on their structures, and a tree
+ * partitions its boxes on the axes they carry, so an index keeps the boxes of
+ * each structure in a tree of their own
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] box1,box2 Bounding boxes
+ */
+bool
+bbox_same_structure(MeosType bboxtype, const void *box1, const void *box2)
+{
+  assert(box1); assert(box2);
+  if (bboxtype == T_TBOX)
+  {
+    const TBox *b1 = (const TBox *) box1, *b2 = (const TBox *) box2;
+    if (MEOS_FLAGS_GET_X(b1->flags) != MEOS_FLAGS_GET_X(b2->flags) ||
+        MEOS_FLAGS_GET_T(b1->flags) != MEOS_FLAGS_GET_T(b2->flags))
+      return false;
+    return ! MEOS_FLAGS_GET_X(b1->flags) ||
+      b1->span.spantype == b2->span.spantype;
+  }
+  if (bboxtype == T_STBOX
+#if POINTCLOUD
+      || bboxtype == T_TPCBOX
+#endif
+     )
+  {
+    /* A point cloud box begins with a whole spatiotemporal box */
+    const STBox *b1 = (const STBox *) box1, *b2 = (const STBox *) box2;
+    int16 f1 = b1->flags, f2 = b2->flags;
+    if (MEOS_FLAGS_GET_X(f1) != MEOS_FLAGS_GET_X(f2) ||
+        MEOS_FLAGS_GET_Z(f1) != MEOS_FLAGS_GET_Z(f2) ||
+        MEOS_FLAGS_GET_T(f1) != MEOS_FLAGS_GET_T(f2) ||
+        MEOS_FLAGS_GET_GEODETIC(f1) != MEOS_FLAGS_GET_GEODETIC(f2))
+      return false;
+    return ! MEOS_FLAGS_GET_X(f1) || b1->srid == b2->srid;
+  }
+  /* The spans of an index share their span type */
+  return true;
+}
+
+/* A predicate of two boxes answering a search operation */
+typedef bool (*index_pred_fn)(const void *, const void *);
+
+#define INDEX_PRED(fn, T) \
+  static bool ip_##fn(const void *box, const void *query) \
+  { return fn((const T *) box, (const T *) query); }
+
+#define INDEX_PREDS_BASE(B, T) \
+  INDEX_PRED(overlaps_##B##_##B, T) INDEX_PRED(contains_##B##_##B, T) \
+  INDEX_PRED(contained_##B##_##B, T) INDEX_PRED(same_##B##_##B, T) \
+  INDEX_PRED(adjacent_##B##_##B, T) INDEX_PRED(left_##B##_##B, T) \
+  INDEX_PRED(overleft_##B##_##B, T) INDEX_PRED(right_##B##_##B, T) \
+  INDEX_PRED(overright_##B##_##B, T)
+#define INDEX_PREDS_T(B, T) \
+  INDEX_PRED(before_##B##_##B, T) INDEX_PRED(overbefore_##B##_##B, T) \
+  INDEX_PRED(after_##B##_##B, T) INDEX_PRED(overafter_##B##_##B, T)
+#define INDEX_PREDS_YZ(B, T) \
+  INDEX_PRED(below_##B##_##B, T) INDEX_PRED(overbelow_##B##_##B, T) \
+  INDEX_PRED(above_##B##_##B, T) INDEX_PRED(overabove_##B##_##B, T) \
+  INDEX_PRED(front_##B##_##B, T) INDEX_PRED(overfront_##B##_##B, T) \
+  INDEX_PRED(back_##B##_##B, T) INDEX_PRED(overback_##B##_##B, T)
+
+INDEX_PREDS_BASE(span, Span)
+INDEX_PREDS_BASE(tbox, TBox) INDEX_PREDS_T(tbox, TBox)
+INDEX_PREDS_BASE(stbox, STBox) INDEX_PREDS_T(stbox, STBox)
+INDEX_PREDS_YZ(stbox, STBox)
+#if POINTCLOUD
+INDEX_PREDS_BASE(tpcbox, TPCBox) INDEX_PREDS_T(tpcbox, TPCBox)
+INDEX_PREDS_YZ(tpcbox, TPCBox)
+#endif /* POINTCLOUD */
+
+#define INDEX_OPS_BASE(B) \
+  [INDEX_OVERLAPS] = ip_overlaps_##B##_##B, \
+  [INDEX_CONTAINS] = ip_contains_##B##_##B, \
+  [INDEX_CONTAINED_BY] = ip_contained_##B##_##B, \
+  [INDEX_SAME] = ip_same_##B##_##B, \
+  [INDEX_ADJACENT] = ip_adjacent_##B##_##B, \
+  [INDEX_LEFT] = ip_left_##B##_##B, \
+  [INDEX_OVERLEFT] = ip_overleft_##B##_##B, \
+  [INDEX_RIGHT] = ip_right_##B##_##B, \
+  [INDEX_OVERRIGHT] = ip_overright_##B##_##B
+#define INDEX_OPS_T(B) \
+  [INDEX_BEFORE] = ip_before_##B##_##B, \
+  [INDEX_OVERBEFORE] = ip_overbefore_##B##_##B, \
+  [INDEX_AFTER] = ip_after_##B##_##B, \
+  [INDEX_OVERAFTER] = ip_overafter_##B##_##B
+#define INDEX_OPS_YZ(B) \
+  [INDEX_BELOW] = ip_below_##B##_##B, \
+  [INDEX_OVERBELOW] = ip_overbelow_##B##_##B, \
+  [INDEX_ABOVE] = ip_above_##B##_##B, \
+  [INDEX_OVERABOVE] = ip_overabove_##B##_##B, \
+  [INDEX_FRONT] = ip_front_##B##_##B, \
+  [INDEX_OVERFRONT] = ip_overfront_##B##_##B, \
+  [INDEX_BACK] = ip_back_##B##_##B, \
+  [INDEX_OVERBACK] = ip_overback_##B##_##B
+
+/* Number of search operations */
+#define INDEX_NUM_OPS (INDEX_ADJACENT + 1)
+
+static const index_pred_fn INDEX_SPAN_PREDS[INDEX_NUM_OPS] =
+  { INDEX_OPS_BASE(span) };
+static const index_pred_fn INDEX_TBOX_PREDS[INDEX_NUM_OPS] =
+  { INDEX_OPS_BASE(tbox), INDEX_OPS_T(tbox) };
+static const index_pred_fn INDEX_STBOX_PREDS[INDEX_NUM_OPS] =
+  { INDEX_OPS_BASE(stbox), INDEX_OPS_T(stbox), INDEX_OPS_YZ(stbox) };
+#if POINTCLOUD
+static const index_pred_fn INDEX_TPCBOX_PREDS[INDEX_NUM_OPS] =
+  { INDEX_OPS_BASE(tpcbox), INDEX_OPS_T(tpcbox), INDEX_OPS_YZ(tpcbox) };
+#endif /* POINTCLOUD */
+
+/**
+ * @brief Return the predicate answering a search operation on a bounding box
+ * type, NULL when the box type answers no such operation
+ * @details A span has one axis, which the operations to the left and to the
+ * right order whether it holds values or times, a temporal box orders its
+ * value to the left and to the right and its time before and after, and a
+ * spatiotemporal or point cloud box orders also its other spatial axes
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] op Search operation
+ */
+static index_pred_fn
+index_op_pred(MeosType bboxtype, IndexSearchOp op)
+{
+  if ((int) op < 0 || (int) op >= INDEX_NUM_OPS)
+    return NULL;
+  if (span_type(bboxtype))
+    return INDEX_SPAN_PREDS[op];
+  if (bboxtype == T_TBOX)
+    return INDEX_TBOX_PREDS[op];
+  if (bboxtype == T_STBOX)
+    return INDEX_STBOX_PREDS[op];
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return INDEX_TPCBOX_PREDS[op];
+#endif /* POINTCLOUD */
+  return NULL;
+}
+
+/**
+ * @brief Return true if an index of a bounding box type answers a search
+ * operation, report an error otherwise
+ * @details Shared by the in-memory RTree and SPTree indexes, as
+ * #ensure_index_join_op
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] op Search operation
+ */
+bool
+ensure_index_op(MeosType bboxtype, IndexSearchOp op)
+{
+  if (index_op_pred(bboxtype, op))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "An index of type %s answers no such search operation",
+    meostype_name(bboxtype));
+  return false;
+}
+
+/**
+ * @brief Return true if the validator of a pair of boxes raises no error on a
+ * stored box and a query, and in the last arguments their flags
+ * @details The validator of the pair is #tbox_tbox_is_valid,
+ * #stbox_stbox_is_valid or #tpcbox_tpcbox_is_valid by the type of the boxes
+ * @param[in] bboxtype Type of the bounding boxes, no span type
+ * @param[in] box Stored bounding box
+ * @param[in] query Query bounding box
+ * @param[out] f1,f2 Flags of the stored box and of the query
+ */
+static bool
+index_pair_is_valid(MeosType bboxtype, const void *box, const void *query,
+  int16 *f1, int16 *f2)
+{
+  if (bboxtype == T_TBOX)
+  {
+    *f1 = ((const TBox *) box)->flags; *f2 = ((const TBox *) query)->flags;
+    return tbox_tbox_is_valid((const TBox *) box, (const TBox *) query);
+  }
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+  {
+    *f1 = ((const TPCBox *) box)->flags; *f2 = ((const TPCBox *) query)->flags;
+    return tpcbox_tpcbox_is_valid((const TPCBox *) box,
+      (const TPCBox *) query);
+  }
+#endif /* POINTCLOUD */
+  *f1 = ((const STBox *) box)->flags; *f2 = ((const STBox *) query)->flags;
+  return stbox_stbox_is_valid((const STBox *) box, (const STBox *) query);
+}
+
+/**
+ * @brief Return true if a search operation applied to a stored box and a
+ * query raises no error
+ * @details Shared by the in-memory RTree and SPTree indexes and the
+ * PostgreSQL GiST and SP-GiST indexes. The test is the conjunction of the
+ * tests of the validators the operation calls, so that it holds exactly when
+ * the operation raises no error: a span operation tests the span types
+ * (#span_type_is_same); a topological operation on boxes tests the pair
+ * (#tbox_tbox_is_valid, #stbox_stbox_is_valid, #tpcbox_tpcbox_is_valid) and a
+ * common dimension (#dimension_is_common); an operation ordering the value or
+ * a spatial axis tests the pair and that both boxes carry the axis; an
+ * operation ordering the time tests that both boxes carry it. It depends on
+ * the structures of the boxes alone, see #bbox_same_structure
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] op Search operation, one #ensure_index_op accepts
+ * @param[in] box Stored bounding box
+ * @param[in] query Query bounding box
+ */
+bool
+index_op_is_valid(MeosType bboxtype, IndexSearchOp op, const void *box,
+  const void *query)
+{
+  assert(box); assert(query); assert(index_op_pred(bboxtype, op));
+  if (span_type(bboxtype))
+    return span_type_is_same((const Span *) box, (const Span *) query);
+  int16 f1, f2;
+  bool pair = index_pair_is_valid(bboxtype, box, query, &f1, &f2);
+  switch (op)
+  {
+    case INDEX_OVERLAPS:
+    case INDEX_CONTAINS:
+    case INDEX_CONTAINED_BY:
+    case INDEX_SAME:
+    case INDEX_ADJACENT:
+      return pair && dimension_is_common(f1, f2);
+    case INDEX_LEFT:
+    case INDEX_OVERLEFT:
+    case INDEX_RIGHT:
+    case INDEX_OVERRIGHT:
+    case INDEX_BELOW:
+    case INDEX_OVERBELOW:
+    case INDEX_ABOVE:
+    case INDEX_OVERABOVE:
+      return pair && MEOS_FLAGS_GET_X(f1) && MEOS_FLAGS_GET_X(f2);
+    case INDEX_FRONT:
+    case INDEX_OVERFRONT:
+    case INDEX_BACK:
+    case INDEX_OVERBACK:
+      return pair && MEOS_FLAGS_GET_Z(f1) && MEOS_FLAGS_GET_Z(f2);
+    default: /* INDEX_BEFORE, INDEX_OVERBEFORE, INDEX_AFTER, INDEX_OVERAFTER */
+      return MEOS_FLAGS_GET_T(f1) && MEOS_FLAGS_GET_T(f2);
+  }
+}
+
+/**
+ * @brief Return the result of a search operation applied to a stored box and
+ * a query
+ * @details Shared by the in-memory RTree and SPTree indexes. Where
+ * #index_op_is_valid states that the operation raises an error on the boxes
+ * of a tree, the search applies it to a stored box, which raises the error a
+ * scan of the boxes raises
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] op Search operation, one #ensure_index_op accepts
+ * @param[in] box Stored bounding box
+ * @param[in] query Query bounding box
+ */
+bool
+index_op_apply(MeosType bboxtype, IndexSearchOp op, const void *box,
+  const void *query)
+{
+  index_pred_fn pred = index_op_pred(bboxtype, op);
+  assert(pred);
+  return pred(box, query);
+}
+
+/**
+ * @brief Return in the last argument a query box projected onto the axes a
+ * stored box carries
+ * @details Shared by the in-memory RTree and SPTree indexes and the
+ * PostgreSQL SP-GiST indexes. An operation raising no error, see
+ * #index_op_is_valid, compares two boxes on the axes both carry, so an axis
+ * of the query that the boxes of a tree lack does not restrict a search of
+ * the tree, and the node predicates of the tree read the axes of the
+ * projected query. A span has a single axis, which the query keeps
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] query Query bounding box
+ * @param[in] box Bounding box of the structure of the tree
+ * @param[out] result Projected query, of the size of the box type
+ */
+void
+index_query_project(MeosType bboxtype, const void *query, const void *box,
+  void *result)
+{
+  assert(query); assert(box); assert(result);
+  memcpy(result, query, bbox_get_size(bboxtype));
+  if (span_type(bboxtype))
+    return;
+  if (bboxtype == T_TBOX)
+  {
+    int16 flags = ((const TBox *) box)->flags;
+    TBox *res = (TBox *) result;
+    if (! MEOS_FLAGS_GET_X(flags))
+      MEOS_FLAGS_SET_X(res->flags, false);
+    if (! MEOS_FLAGS_GET_T(flags))
+      MEOS_FLAGS_SET_T(res->flags, false);
+    return;
+  }
+  /* A point cloud box begins with a whole spatiotemporal box */
+  int16 flags = ((const STBox *) box)->flags;
+  STBox *res = (STBox *) result;
+  if (! MEOS_FLAGS_GET_X(flags))
+    MEOS_FLAGS_SET_X(res->flags, false);
+  if (! MEOS_FLAGS_GET_Z(flags))
+    MEOS_FLAGS_SET_Z(res->flags, false);
+  if (! MEOS_FLAGS_GET_T(flags))
+    MEOS_FLAGS_SET_T(res->flags, false);
+  return;
+}
+
+/**
+ * @brief Return true if the nearest approach distance of a stored box and a
+ * query raises no error
+ * @details Shared by the in-memory RTree and SPTree indexes and the
+ * PostgreSQL GiST and SP-GiST indexes, as #index_op_is_valid is for the
+ * search operations. The test is the conjunction of the tests of the
+ * validators the distance calls: a span distance tests the span types
+ * (#span_type_is_same); a box distance tests the pair (#tbox_tbox_is_valid,
+ * #stbox_stbox_is_valid, #tpcbox_tpcbox_is_valid) and that both boxes carry
+ * the value or the space, a spatiotemporal or point cloud box distance tests
+ * also that both have the same spatial dimensionality
+ * (#same_spatial_dimensionality). It depends on the structures of the boxes
+ * alone, see #bbox_same_structure
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] box Stored bounding box
+ * @param[in] query Query bounding box
+ */
+bool
+index_distance_is_valid(MeosType bboxtype, const void *box, const void *query)
+{
+  assert(box); assert(query);
+  if (span_type(bboxtype))
+    return span_type_is_same((const Span *) box, (const Span *) query);
+  int16 f1, f2;
+  bool pair = index_pair_is_valid(bboxtype, box, query, &f1, &f2);
+  if (! pair || ! MEOS_FLAGS_GET_X(f1) || ! MEOS_FLAGS_GET_X(f2))
+    return false;
+  return bboxtype == T_TBOX || same_spatial_dimensionality(f1, f2);
+}
+
+/**
+ * @brief Return the nearest approach distance of a stored box and a query
+ * @details Shared by the in-memory RTree and SPTree indexes. Where
+ * #index_distance_is_valid states that the distance raises an error on the
+ * boxes of a tree, a nearest-neighbour search measures a box stored in it,
+ * which raises the error the operator @p |=| raises over the stored boxes:
+ * the one of the validators of #NAD_tbox_tbox for temporal boxes, of
+ * #nad_stbox_stbox for spatiotemporal boxes and of #nad_tpcbox_tpcbox for
+ * point cloud boxes
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] box Stored bounding box
+ * @param[in] query Query bounding box
+ * @errval DBL_MAX
+ */
+double
+index_distance_apply(MeosType bboxtype, const void *box, const void *query)
+{
+  assert(box); assert(query);
+  if (span_type(bboxtype))
+  {
+    if (! ensure_same_span_type((const Span *) box, (const Span *) query))
+      return DBL_MAX;
+    return distance_span_span_double((const Span *) box, (const Span *) query);
+  }
+  if (bboxtype == T_TBOX)
+  {
+    const TBox *b = (const TBox *) box, *q = (const TBox *) query;
+    if (! ensure_valid_tbox_tbox(b, q) || ! ensure_has_X(T_TBOX, b->flags) ||
+        ! ensure_has_X(T_TBOX, q->flags))
+      return DBL_MAX;
+    return distance_double(nad_tbox_tbox(b, q), b->span.basetype);
+  }
+#if POINTCLOUD
+  if (bboxtype == T_TPCBOX)
+    return nad_tpcbox_tpcbox((const TPCBox *) box, (const TPCBox *) query);
+#endif /* POINTCLOUD */
+  return nad_stbox_stbox((const STBox *) box, (const STBox *) query, true);
+}
+
+/**
+ * @brief Return in the last argument the search operation of a strategy of
+ * a PostgreSQL index over bounding boxes
+ * @param[in] strategy Strategy number
+ * @param[out] op Search operation
+ * @return False when the strategy is no search operation
+ */
+static bool
+index_strategy_op(StrategyNumber strategy, IndexSearchOp *op)
+{
+  switch (strategy)
+  {
+    case RTOverlapStrategyNumber: *op = INDEX_OVERLAPS; return true;
+    case RTContainsStrategyNumber: *op = INDEX_CONTAINS; return true;
+    case RTContainedByStrategyNumber: *op = INDEX_CONTAINED_BY; return true;
+    case RTSameStrategyNumber: *op = INDEX_SAME; return true;
+    case RTAdjacentStrategyNumber: *op = INDEX_ADJACENT; return true;
+    case RTLeftStrategyNumber: *op = INDEX_LEFT; return true;
+    case RTOverLeftStrategyNumber: *op = INDEX_OVERLEFT; return true;
+    case RTRightStrategyNumber: *op = INDEX_RIGHT; return true;
+    case RTOverRightStrategyNumber: *op = INDEX_OVERRIGHT; return true;
+    case RTBelowStrategyNumber: *op = INDEX_BELOW; return true;
+    case RTOverBelowStrategyNumber: *op = INDEX_OVERBELOW; return true;
+    case RTAboveStrategyNumber: *op = INDEX_ABOVE; return true;
+    case RTOverAboveStrategyNumber: *op = INDEX_OVERABOVE; return true;
+    case RTFrontStrategyNumber: *op = INDEX_FRONT; return true;
+    case RTOverFrontStrategyNumber: *op = INDEX_OVERFRONT; return true;
+    case RTBackStrategyNumber: *op = INDEX_BACK; return true;
+    case RTOverBackStrategyNumber: *op = INDEX_OVERBACK; return true;
+    case RTBeforeStrategyNumber: *op = INDEX_BEFORE; return true;
+    case RTOverBeforeStrategyNumber: *op = INDEX_OVERBEFORE; return true;
+    case RTAfterStrategyNumber: *op = INDEX_AFTER; return true;
+    case RTOverAfterStrategyNumber: *op = INDEX_OVERAFTER; return true;
+    default: return false;
+  }
+}
+
+/**
+ * @brief Return true if the operator of a strategy of a PostgreSQL index over
+ * bounding boxes applied to a stored box and a query raises no error
+ * @details The test #index_op_is_valid, for the consistent functions of the
+ * GiST and SP-GiST indexes, which never raise: where the operator raises, they
+ * return the entry as a candidate, and the recheck applies the operator to
+ * the row, which raises its error
+ * @param[in] bboxtype Type of the bounding boxes
+ * @param[in] strategy Strategy number
+ * @param[in] box Stored bounding box, or the key of a GiST index over boxes
+ * of one structure
+ * @param[in] query Query bounding box
+ */
+bool
+index_strategy_is_valid(MeosType bboxtype, StrategyNumber strategy,
+  const void *box, const void *query)
+{
+  IndexSearchOp op;
+  return ! index_strategy_op(strategy, &op) ||
+    index_op_is_valid(bboxtype, op, box, query);
 }
 
 /**

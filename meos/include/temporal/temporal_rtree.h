@@ -90,6 +90,9 @@ struct RTree
   uint8 axes[4];         /**< The axis @p get_axis reads for each of the
                               @p dims axes the boxes carry */
   RTreeNode *root;
+  struct RTree *next;    /**< The tree holding the boxes of the next structure
+                              the index holds, see #bbox_same_structure, or
+                              @p NULL @nullable */
   double (*get_axis)(const void *, int, bool);
   void (*bbox_expand)(const void *, void *);
   bool (*bbox_contains)(const void *, const void *);

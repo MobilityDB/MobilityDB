@@ -52,6 +52,11 @@
  * the GiST entries around it */
 extern Datum bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
   void (*bbox_adjust)(void *, void *), double (*bbox_penalty)(void *, void *));
+/* A key over boxes of several structures carries MEOS_FLAG_PARTS */
+extern void bbox_gist_adjust(MeosType bboxtype, void *key, const void *box,
+  void (*bbox_adjust)(void *, void *));
+extern double bbox_gist_penalty(MeosType bboxtype, void *key, void *box,
+  double (*bbox_penalty)(void *, void *));
 
 /* The following functions are also called by tnumber_spgist.c */
 extern bool tbox_index_leaf_consistent(const TBox *key, const TBox *query,

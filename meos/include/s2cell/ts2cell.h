@@ -78,8 +78,8 @@ extern bool ensure_valid_ts2cell_tgeogpoint(const Temporal *temp1,
 
 /*****************************************************************************
  * Split of a temporal point by the cells it crosses (body in ts2cell_ops.c,
- * typed by tgeompoint_s2cell_split and tgeogpoint_s2cell_split of
- * ts2cell_ops_meos.c)
+ * typed by tgeompoint_s2cell_split and tgeogpoint_s2cell_split in the same
+ * file)
  *****************************************************************************/
 
 extern Temporal **tpoint_s2cell_split(const Temporal *temp, int32 level,

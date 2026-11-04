@@ -35,12 +35,4 @@ set(JSON_SOURCES
   tjsonb_compops.c
 )
 
-if(MEOS)
-  list(APPEND JSON_SOURCES
-  jsonbset_jsonfuncs_meos.c
-  jsonbset_meos.c
-  tjsonb_jsonfuncs_meos.c
-)
-endif()
-
 add_library(json OBJECT ${JSON_SOURCES})

@@ -82,6 +82,15 @@
  *****************************************************************************/
 
 /**
+ * @brief Return true if two TPCBoxes share the same schema (pcid)
+ */
+static bool
+tpcbox_pcid_is_same(const TPCBox *box1, const TPCBox *box2)
+{
+  return box1->pcid == box2->pcid;
+}
+
+/**
  * @brief Ensure two TPCBoxes share the same schema (pcid)
  * @note The schemas are compared as they are stated: a pcid of 0 names no
  * schema, and a box carrying coordinates under it is not comparable with a box
@@ -93,14 +102,12 @@ static bool
 ensure_same_pcid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  if (box1->pcid != box2->pcid)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on TPCBox values with different schemas: %u vs %u",
-      box1->pcid, box2->pcid);
-    return false;
-  }
-  return true;
+  if (tpcbox_pcid_is_same(box1, box2))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on TPCBox values with different schemas: %u vs %u",
+    box1->pcid, box2->pcid);
+  return false;
 }
 
 /**
@@ -112,14 +119,12 @@ static bool
 ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
 {
   assert(box1); assert(box2);
-  if (box1->srid != box2->srid)
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "Operation on TPCBox values with different SRIDs: %d vs %d",
-      box1->srid, box2->srid);
-    return false;
-  }
-  return true;
+  if (srid_is_same(box1->srid, box2->srid))
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Operation on TPCBox values with different SRIDs: %d vs %d",
+    box1->srid, box2->srid);
+  return false;
 }
 
 /**
@@ -131,20 +136,35 @@ ensure_same_srid_tpcbox(const TPCBox *box1, const TPCBox *box2)
  * @param[in] box1,box2 Temporal pointcloud boxes
  */
 bool
-ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+tpcbox_tpcbox_is_valid(const TPCBox *box1, const TPCBox *box2)
 {
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  assert(box1); assert(box2);
   /* Both boxes carry coordinates here, so both name the schema those
    * coordinates are read in, the reference system they are measured in, and
    * whether they are planar or spherical. A box carrying none has nothing to
    * interpret, so it meets a box of any schema */
-  if (MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags) &&
-      (! ensure_same_pcid_tpcbox(box1, box2) ||
-       ! ensure_same_srid_tpcbox(box1, box2) ||
-       ! ensure_same_geodetic(box1->flags, box2->flags)))
-    return false;
-  return true;
+  return ! MEOS_FLAGS_GET_X(box1->flags) || ! MEOS_FLAGS_GET_X(box2->flags) ||
+    (tpcbox_pcid_is_same(box1, box2) && srid_is_same(box1->srid, box2->srid) &&
+     geodetic_is_same(box1->flags, box2->flags));
+}
+
+/**
+ * @brief Ensure that two temporal pointcloud boxes are valid for operations
+ * @details As #tpcbox_tpcbox_is_valid states
+ * @param[in] box1,box2 Temporal pointcloud boxes
+ */
+bool
+ensure_valid_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCBOX(box1, false); VALIDATE_TPCBOX(box2, false);
+  if (tpcbox_tpcbox_is_valid(box1, box2))
+    return true;
+  /* The schemas or the reference systems differ, which the first failing
+   * test reports */
+  return ensure_same_pcid_tpcbox(box1, box2) &&
+    ensure_same_srid_tpcbox(box1, box2) &&
+    ensure_same_geodetic(box1->flags, box2->flags);
 }
 
 

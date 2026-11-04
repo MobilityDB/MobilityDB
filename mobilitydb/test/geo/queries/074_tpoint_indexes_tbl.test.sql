@@ -496,3 +496,111 @@ SELECT spgist_shared_bound_disagreements('tgeompoint_kdtree_ops')
 DROP FUNCTION spgist_shared_bound_disagreements(text);
 
 -------------------------------------------------------------------------------
+-- An index over boxes of several structures answers as the sequential scan:
+-- the same count, or an error where the scan raises one, for every operator
+-- and every query, and the same 25 nearest distances for |=|. Where the boxes
+-- of several structures raise different errors, the error is the one of the
+-- first box a plan meets, which no plan orders. Per operator class: whether
+-- the plan reads the index, how many answers are errors, and how many differ
+-- from the scan
+-------------------------------------------------------------------------------
+
+CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+  queries text[], ops text[])
+RETURNS TABLE(opclass text, uses_index boolean, errors int,
+  disagreements int) AS $$
+DECLARE
+  a text; o text; q text; r bigint; ans text; line text;
+  seqans jsonb := '{}';
+BEGIN
+  FOREACH a IN ARRAY array_prepend('seq', opclasses) LOOP
+    EXECUTE format('DROP INDEX IF EXISTS %I', tbl || '_idx');
+    IF a = 'seq' THEN
+      SET LOCAL enable_seqscan = on;
+      SET LOCAL enable_indexscan = off;
+      SET LOCAL enable_bitmapscan = off;
+    ELSE
+      EXECUTE format('CREATE INDEX %I ON %I USING %s', tbl || '_idx', tbl, a);
+      SET LOCAL enable_seqscan = off;
+      SET LOCAL enable_indexscan = on;
+      SET LOCAL enable_bitmapscan = on;
+    END IF;
+    opclass := a; uses_index := false; errors := 0; disagreements := 0;
+    FOR line IN EXECUTE format('EXPLAIN SELECT count(*) FROM %I WHERE b && %L::%s',
+      tbl, queries[1], typ) LOOP
+      uses_index := uses_index OR line LIKE '%' || tbl || '_idx%';
+    END LOOP;
+    FOREACH o IN ARRAY ops LOOP
+      FOREACH q IN ARRAY queries LOOP
+        BEGIN
+          IF o = '|=|' THEN
+            EXECUTE format('SELECT string_agg(coalesce(round(d::numeric, 6)::text, '
+              '''null''), '','' ORDER BY d) FROM (SELECT b |=| %L::%s AS d '
+              'FROM %I ORDER BY b |=| %L::%s LIMIT 25) s', q, typ, tbl, q, typ)
+              INTO ans;
+          ELSE
+            EXECUTE format('SELECT count(*) FROM %I WHERE b %s %L::%s',
+              tbl, o, q, typ) INTO r;
+            ans := r::text;
+          END IF;
+        EXCEPTION WHEN OTHERS THEN
+          ans := 'ERROR: ' || SQLERRM;
+          errors := errors + 1;
+        END;
+        IF a = 'seq' THEN
+          seqans := seqans || jsonb_build_object(o || ' ' || q, ans);
+        ELSIF seqans ->> (o || ' ' || q) IS DISTINCT FROM ans AND
+            NOT (seqans ->> (o || ' ' || q) LIKE 'ERROR: %' AND
+              ans LIKE 'ERROR: %') THEN
+          disagreements := disagreements + 1;
+        END IF;
+      END LOOP;
+    END LOOP;
+    RETURN NEXT;
+  END LOOP;
+  EXECUTE format('DROP INDEX IF EXISTS %I', tbl || '_idx');
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+  SELECT timestamptz '2001-01-01' + d * interval '1 day'
+$$ LANGUAGE sql IMMUTABLE;
+
+CREATE TABLE tbl_index_structures AS
+  SELECT k, CASE k % 7
+    WHEN 0 THEN stbox(format('SRID=3857;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+    WHEN 1 THEN stbox(format('SRID=5676;STBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+    WHEN 2 THEN stbox(format('SRID=4326;GEODSTBOX XT(((%s,%s),(%s,%s)),[%s, %s])',
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2, day_of(k % 40), day_of(k % 40 + 2)))
+    WHEN 3 THEN stbox(format('SRID=3857;STBOX X((%s,%s),(%s,%s))',
+      k % 50, k % 47, k % 50 + 2, k % 47 + 2))
+    WHEN 4 THEN stbox(format('SRID=3857;STBOX ZT(((%s,%s,%s),(%s,%s,%s)),[%s, %s])',
+      k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2,
+      day_of(k % 40), day_of(k % 40 + 2)))
+    WHEN 5 THEN stbox(format('SRID=3857;STBOX Z((%s,%s,%s),(%s,%s,%s))',
+      k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2, k % 43 + 2))
+    ELSE stbox(format('STBOX T([%s, %s])', day_of(k % 40), day_of(k % 40 + 2)))
+    END AS b
+  FROM generate_series(1, 4000) AS k;
+
+SELECT * FROM index_structures('tbl_index_structures', 'stbox',
+  ARRAY['gist(b stbox_rtree_ops)', 'spgist(b stbox_quadtree_ops)',
+    'spgist(b stbox_kdtree_ops)'],
+  ARRAY[format('SRID=3857;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
+    format('SRID=5676;STBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
+    format('SRID=4326;GEODSTBOX XT(((10,10),(20,20)),[%s, %s])', day_of(9), day_of(19)),
+    'SRID=3857;STBOX X((10,10),(20,20))',
+    format('SRID=3857;STBOX ZT(((10,10,10),(20,20,20)),[%s, %s])', day_of(9), day_of(19)),
+    'SRID=3857;STBOX Z((10,10,10),(20,20,20))',
+    format('STBOX T([%s, %s])', day_of(9), day_of(19))],
+  ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>', '<<|', '&<|',
+    '|>>', '|&>', '<</', '&</', '/>>', '/&>', '<<#', '&<#', '#>>', '#&>',
+    '|=|']);
+
+DROP TABLE tbl_index_structures;
+DROP FUNCTION day_of(int);
+DROP FUNCTION index_structures(text, text, text[], text[], text[]);
+
+-------------------------------------------------------------------------------

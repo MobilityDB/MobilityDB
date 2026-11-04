@@ -40,6 +40,7 @@
 #include <meos.h>
 
 #include "temporal/meos_catalog.h"
+#include "temporal/temporal.h"
 
 /*****************************************************************************
  * SPTree
@@ -91,6 +92,13 @@ struct SPTree
                              its boxes */
   SPTreeKind kind;      /**< Quad-tree or k-d tree */
   SPNode *root;         /**< Root node, or @p NULL when empty @nullable */
+  struct SPTree *next;  /**< The tree holding the boxes of the next structure
+                             the index holds, see #bbox_same_structure, or
+                             @p NULL @nullable */
+  bboxunion structure;  /**< A box of the structure of the tree, as received:
+                             a tree indexed through a projection holds its
+                             boxes projected, which drops what tells the
+                             structures apart */
   int (*box_dims)(const void *box);  /**< Dimensions of a box, or @p NULL when
                                           fixed at creation */
   void (*project)(const void *in, void *out);  /**< Project an incoming box

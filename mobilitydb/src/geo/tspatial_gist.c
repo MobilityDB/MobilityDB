@@ -45,6 +45,7 @@
 #include <meos_internal_geo.h>
 #include "temporal/set.h"
 #include "temporal/stratnum.h"
+#include "temporal/bbox_index.h"
 #include "temporal/span.h"
 #include "temporal/type_util.h"
 #include "geo/stbox.h"
@@ -134,7 +135,17 @@ Stbox_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   bool result;
-  if (GIST_LEAF(entry))
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_STBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
     result = stbox_index_leaf_consistent(key, &query, strategy);
   else
     result = stbox_gist_inner_consistent(key, &query, strategy);
@@ -160,7 +171,8 @@ Stbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   STBox *result = stbox_copy(DatumGetSTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    stbox_adjust(result, DatumGetSTboxP(ent[i].key));
+    bbox_gist_adjust(T_STBOX, result, DatumGetSTboxP(ent[i].key),
+      &stbox_adjust);
   PG_RETURN_SPAN_P(result);
 }
 
@@ -231,7 +243,8 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
   float *result = (float *) PG_GETARG_POINTER(2);
   void *origstbox = (STBox *) DatumGetPointer(origentry->key);
   void *newbox = (STBox *) DatumGetPointer(newentry->key);
-  *result = (float) stbox_penalty(origstbox, newbox);
+  *result = (float) bbox_gist_penalty(T_STBOX, origstbox, newbox,
+    &stbox_penalty);
   PG_RETURN_POINTER(result);
 }
 
@@ -289,14 +302,17 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
   STBox *b2 = PG_GETARG_STBOX_P(1);
   bool *result = (bool *) PG_GETARG_POINTER(2);
   if (b1 && b2)
-    *result = (FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
+    /* A key over boxes of several structures bounds none of them */
+    *result = b1->flags == b2->flags && (MEOS_FLAGS_GET_PARTS(b1->flags) ||
+     (b1->srid == b2->srid &&
+      FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
       FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
       FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
       /* The period is compared as a span, so that two keys ending on the same
        * instant with a different inclusivity are NOT reported as the same */
       MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
       (! MEOS_FLAGS_GET_T(b1->flags) ||
-        span_eq(&b1->period, &b2->period)));
+        span_eq(&b1->period, &b2->period))));
   else
     *result = (b1 == NULL && b2 == NULL);
   PG_RETURN_POINTER(result);
@@ -335,10 +351,24 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   STBox query;
   if (! tspatial_gist_get_stbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
+  /* A key over boxes of several structures bounds none of them, and is
+   * visited before every other one, since it may hold boxes on which the
+   * distance raises its error */
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  /* Where the distance raises its error on the boxes under the key, the
+   * entry is visited before every other one. A leaf the executor rechecks
+   * leaves the error to the operator applied to its row; the exact leaf of a
+   * column of boxes is the value itself, which an index-only scan returns
+   * without a recheck, so the distance applied to it raises the error */
+  if (! index_distance_is_valid(T_STBOX, key, &query))
+  {
+    if (GIST_LEAF(entry) && ! *recheck)
+      PG_RETURN_FLOAT8(index_distance_apply(T_STBOX, key, &query));
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  }
 
   double distance = nad_stbox_stbox(key, &query, true);
-  if (distance < 0)
-    PG_RETURN_FLOAT8(DBL_MAX);
 
   /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
    * box rather than the value, so what they report is lowered to stay under

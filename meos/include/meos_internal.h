@@ -566,6 +566,10 @@
 #define MEOS_FLAG_T          0x0040  // 64
 #define MEOS_FLAG_GEODETIC   0x0080  // 128
 #define MEOS_FLAG_GEOM       0x0100  // 256
+/* The following flag is only used for the keys of a PostgreSQL index over
+ * bounding boxes: a key standing for boxes of several structures, see
+ * #bbox_same_structure */
+#define MEOS_FLAG_PARTS      0x0200  // 512
 
 #define MEOS_FLAGS_GET_BYVAL(flags)      ((bool) (((flags) & MEOS_FLAG_BYVAL)))
 #define MEOS_FLAGS_GET_ORDERED(flags)    ((bool) (((flags) & MEOS_FLAG_ORDERED)>>1))
@@ -575,6 +579,7 @@
 #define MEOS_FLAGS_GET_T(flags)          ((bool) (((flags) & MEOS_FLAG_T)>>6))
 #define MEOS_FLAGS_GET_GEODETIC(flags)   ((bool) (((flags) & MEOS_FLAG_GEODETIC)>>7))
 #define MEOS_FLAGS_GET_GEOM(flags)       ((bool) (((flags) & MEOS_FLAG_GEOM)>>8))
+#define MEOS_FLAGS_GET_PARTS(flags)      ((bool) (((flags) & MEOS_FLAG_PARTS)>>9))
 
 #define MEOS_FLAGS_BYREF(flags)          ((bool) (((flags) & ! MEOS_FLAG_BYVAL)))
 
@@ -594,6 +599,8 @@
   ((flags) = (value) ? ((flags) | MEOS_FLAG_GEODETIC) : ((flags) & ~MEOS_FLAG_GEODETIC))
 #define MEOS_FLAGS_SET_GEOM(flags, value) \
   ((flags) = (value) ? ((flags) | MEOS_FLAG_GEOM) : ((flags) & ~MEOS_FLAG_GEOM))
+#define MEOS_FLAGS_SET_PARTS(flags, value) \
+  ((flags) = (value) ? ((flags) | MEOS_FLAG_PARTS) : ((flags) & ~MEOS_FLAG_PARTS))
 
 #define MEOS_FLAGS_GET_INTERP(flags) (((flags) & MEOS_FLAGS_INTERP) >> 2)
 #define MEOS_FLAGS_SET_INTERP(flags, value) ((flags) = (((flags) & ~MEOS_FLAGS_INTERP) | ((value & 0x0003) << 2)))
@@ -973,6 +980,19 @@ extern bool ensure_bbox_temporal_compatible(MeosType bboxtype,
   const Temporal *temp);
 extern bool ensure_same_index_bboxtype(MeosType bboxtype1, MeosType bboxtype2);
 extern bool ensure_index_join_op(IndexSearchOp op);
+extern bool bbox_same_structure(MeosType bboxtype, const void *box1,
+  const void *box2);
+extern bool ensure_index_op(MeosType bboxtype, IndexSearchOp op);
+extern bool index_op_is_valid(MeosType bboxtype, IndexSearchOp op,
+  const void *box, const void *query);
+extern bool index_op_apply(MeosType bboxtype, IndexSearchOp op,
+  const void *box, const void *query);
+extern void index_query_project(MeosType bboxtype, const void *query,
+  const void *box, void *result);
+extern bool index_distance_is_valid(MeosType bboxtype, const void *box,
+  const void *query);
+extern double index_distance_apply(MeosType bboxtype, const void *box,
+  const void *query);
 extern bool ensure_index_result(const MeosArray *result);
 extern RTree *rtree_create(MeosType bboxtype);
 extern SPTree *sptree_create(MeosType bboxtype, SPTreeKind kind);

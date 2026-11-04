@@ -133,7 +133,17 @@ Tnumber_gist_consistent(PG_FUNCTION_ARGS)
     PG_RETURN_BOOL(false);
 
   bool result;
-  if (GIST_LEAF(entry))
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_TBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
     result = tbox_index_leaf_consistent(key, &query, strategy);
   else
     result = tbox_gist_inner_consistent(key, &query, strategy);
@@ -159,7 +169,8 @@ Tbox_gist_union(PG_FUNCTION_ARGS)
   GISTENTRY *ent = entryvec->vector;
   TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
   for (int i = 1; i < entryvec->n; i++)
-    tbox_adjust((void *) result, DatumGetPointer(ent[i].key));
+    bbox_gist_adjust(T_TBOX, result, DatumGetPointer(ent[i].key),
+      &tbox_adjust);
   PG_RETURN_TBOX_P(result);
 }
 
@@ -207,7 +218,8 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
   float *result = (float *) PG_GETARG_POINTER(2);
   void *origbox = DatumGetPointer(origentry->key);
   void *newbox = DatumGetPointer(newentry->key);
-  *result = (float) tbox_penalty(origbox, newbox);
+  *result = (float) bbox_gist_penalty(T_TBOX, origbox, newbox,
+    &tbox_penalty);
   PG_RETURN_POINTER(result);
 }
 
@@ -216,8 +228,109 @@ Tbox_gist_penalty(PG_FUNCTION_ARGS)
  *****************************************************************************/
 
 /**
+ * @brief Return a pointer to the flags of a bounding box
+ * @param[in] bboxtype Type of the box: T_TBOX, T_STBOX or T_TPCBOX
+ * @param[in] box Bounding box
+ */
+static int16 *
+bbox_gist_flags(MeosType bboxtype, const void *box)
+{
+  /* A point cloud box begins with a whole spatiotemporal box */
+  return (bboxtype == T_TBOX) ? &((TBox *) box)->flags :
+    &((STBox *) box)->flags;
+}
+
+/**
+ * @brief Grow a key of a GiST index over bounding boxes to include a box
+ * @details Boxes of one structure, see #bbox_same_structure, grow the key as
+ * the function given does. A key over boxes of several structures bounds none
+ * of them: it carries the flag @p MEOS_FLAG_PARTS, and the consistent and
+ * distance methods descend it for every query
+ * @param[in] bboxtype Type of the boxes: T_TBOX, T_STBOX or T_TPCBOX
+ * @param[in,out] key Key grown
+ * @param[in] box Box or key added
+ * @param[in] bbox_adjust Function growing its first box to include the second
+ */
+void
+bbox_gist_adjust(MeosType bboxtype, void *key, const void *box,
+  void (*bbox_adjust)(void *, void *))
+{
+  int16 *flags = bbox_gist_flags(bboxtype, key);
+  if (MEOS_FLAGS_GET_PARTS(*flags))
+    return;
+  if (MEOS_FLAGS_GET_PARTS(*bbox_gist_flags(bboxtype, box)) ||
+      ! bbox_same_structure(bboxtype, key, box))
+    MEOS_FLAGS_SET_PARTS(*flags, true);
+  else
+    bbox_adjust(key, (void *) box);
+  return;
+}
+
+/**
+ * @brief Return the penalty of adding a box to a key of a GiST index over
+ * bounding boxes
+ * @details A box goes under a key of its structure when there is one, else
+ * under a key over several structures, so that the boxes of each structure
+ * gather under keys of their own
+ * @param[in] bboxtype Type of the boxes: T_TBOX, T_STBOX or T_TPCBOX
+ * @param[in] key Key
+ * @param[in] box Box or key added
+ * @param[in] bbox_penalty Function returning the growth of its first box when
+ * the second is added
+ */
+double
+bbox_gist_penalty(MeosType bboxtype, void *key, void *box,
+  double (*bbox_penalty)(void *, void *))
+{
+  if (MEOS_FLAGS_GET_PARTS(*bbox_gist_flags(bboxtype, key)))
+    return FLT_MAX / 2;
+  if (MEOS_FLAGS_GET_PARTS(*bbox_gist_flags(bboxtype, box)) ||
+      ! bbox_same_structure(bboxtype, key, box))
+    return FLT_MAX;
+  return bbox_penalty(key, box);
+}
+
+/**
+ * @brief Split by structure the entries of a GiST index over bounding boxes
+ * @details The entries of the structure of the first box go to the left and
+ * the others to the right; keys over several structures go to the right, and
+ * when every entry is one, the entries are halved
+ * @param[in] bboxtype Type of the boxes: T_TBOX, T_STBOX or T_TPCBOX
+ * @param[in] boxes Boxes or keys of the entries
+ * @param[in] count Number of entries
+ * @param[out] left Whether each entry goes to the left
+ * @return False when the entries are boxes of one structure, which the
+ * function leaves unsplit
+ */
+static bool
+bbox_gist_split_structures(MeosType bboxtype, void **boxes, int count,
+  bool *left)
+{
+  int first = -1;
+  bool several = false;
+  for (int i = 0; i < count && ! several; i++)
+  {
+    if (MEOS_FLAGS_GET_PARTS(*bbox_gist_flags(bboxtype, boxes[i])))
+      several = true;
+    else if (first < 0)
+      first = i;
+    else if (! bbox_same_structure(bboxtype, boxes[first], boxes[i]))
+      several = true;
+  }
+  if (! several)
+    return false;
+  for (int i = 0; i < count; i++)
+    left[i] = (first < 0) ? (i < count / 2) :
+      (! MEOS_FLAGS_GET_PARTS(*bbox_gist_flags(bboxtype, boxes[i])) &&
+       bbox_same_structure(bboxtype, boxes[first], boxes[i]));
+  return true;
+}
+
+/**
  * @brief GiST picksplit method for bounding boxes
- * @details The split is the double sorting split of Korotkov that MEOS
+ * @details Entries of several structures are split by structure
+ * (#bbox_gist_split_structures). The split of the entries of one structure is
+ * the double sorting split of Korotkov that MEOS
  * computes (#bbox_split) on the boxes of the entries, shared with the
  * in-memory RTree; this function only reads the entries and writes the two
  * groups and their bounding boxes in the form GiST expects.
@@ -240,7 +353,8 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
   bool *left = palloc(sizeof(bool) * nentries);
   for (int i = 0; i < nentries; i++)
     boxes[i] = DatumGetPointer(entryvec->vector[i + FirstOffsetNumber].key);
-  bbox_split(bboxtype, boxes, nentries, bbox_adjust, bbox_penalty, left);
+  if (! bbox_gist_split_structures(bboxtype, boxes, nentries, left))
+    bbox_split(bboxtype, boxes, nentries, bbox_adjust, bbox_penalty, left);
 
   size_t bbox_size = bbox_get_size(bboxtype);
   void *leftBox = palloc0(bbox_size);
@@ -254,7 +368,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
     if (left[i])
     {
       if (v->spl_nleft > 0)
-        bbox_adjust(leftBox, boxes[i]);
+        bbox_gist_adjust(bboxtype, leftBox, boxes[i], bbox_adjust);
       else
         memcpy(leftBox, boxes[i], bbox_size);
       v->spl_left[v->spl_nleft++] = off;
@@ -262,7 +376,7 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
     else
     {
       if (v->spl_nright > 0)
-        bbox_adjust(rightBox, boxes[i]);
+        bbox_gist_adjust(bboxtype, rightBox, boxes[i], bbox_adjust);
       else
         memcpy(rightBox, boxes[i], bbox_size);
       v->spl_right[v->spl_nright++] = off;
@@ -308,8 +422,10 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
      * bound with a different inclusivity are NOT reported as the same */
     *result = MEOS_FLAGS_GET_X(b1->flags) == MEOS_FLAGS_GET_X(b2->flags) &&
       MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+      MEOS_FLAGS_GET_PARTS(b1->flags) == MEOS_FLAGS_GET_PARTS(b2->flags) &&
+      (MEOS_FLAGS_GET_PARTS(b1->flags) || ((
       (! MEOS_FLAGS_GET_X(b1->flags) || span_eq(&b1->span, &b2->span)) &&
-      (! MEOS_FLAGS_GET_T(b1->flags) || span_eq(&b1->period, &b2->period));
+      (! MEOS_FLAGS_GET_T(b1->flags) || span_eq(&b1->period, &b2->period)))));
   else
     *result = (! b1 && ! b2);
   PG_RETURN_POINTER(result);
@@ -350,18 +466,28 @@ tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   TBox query;
   if (! key || ! tnumber_gist_get_tbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
+  /* A key over boxes of several structures bounds none of them, and is
+   * visited before every other one, since it may hold boxes on which the
+   * distance raises its error */
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+
+  /* Where the distance raises its error on the boxes under the key, the
+   * entry is visited before every other one. A leaf the executor rechecks
+   * leaves the error to the operator applied to its row; the exact leaf of a
+   * column of boxes is the value itself, which an index-only scan returns
+   * without a recheck, so the distance applied to it raises the error */
+  if (! index_distance_is_valid(T_TBOX, key, &query))
+  {
+    if (GIST_LEAF(entry) && ! *recheck)
+      PG_RETURN_FLOAT8(index_distance_apply(T_TBOX, key, &query));
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  }
 
   /* Since we only have boxes we'll return the minimum possible distance,
    * and let the recheck sort things out in the case of leaves. Since the
    * GiST framework expects a double for the distance method, we need to
    * convert the integer distance for temporal integer boxes into a double */
-  /* The kernel states its preconditions as assertions, and this scan reaches
-   * it with no MEOS function in between. An entry the query cannot be measured
-   * against takes the same maximum as one carrying no key at all */
-  if (! ensure_valid_tbox_tbox(key, &query) ||
-      ! ensure_has_X(T_TBOX, key->flags) ||
-      ! ensure_has_X(T_TBOX, query.flags))
-    PG_RETURN_FLOAT8(DBL_MAX);
   double distance = distance_double(nad_tbox_tbox(key, &query),
     key->span.basetype);
   PG_RETURN_FLOAT8(distance);

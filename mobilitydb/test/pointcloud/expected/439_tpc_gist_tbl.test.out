@@ -419,3 +419,100 @@ ANALYZE tbl_tpcpoint;
 ANALYZE
 ANALYZE tbl_tpcpatch;
 ANALYZE
+CREATE FUNCTION index_structures(tbl text, typ text, opclasses text[],
+  queries text[], ops text[])
+RETURNS TABLE(opclass text, uses_index boolean, errors int,
+  disagreements int) AS $$
+DECLARE
+  a text; o text; q text; r bigint; ans text; line text;
+  seqans jsonb := '{}';
+BEGIN
+  FOREACH a IN ARRAY array_prepend('seq', opclasses) LOOP
+    EXECUTE format('DROP INDEX IF EXISTS %I', tbl || '_idx');
+    IF a = 'seq' THEN
+      SET LOCAL enable_seqscan = on;
+      SET LOCAL enable_indexscan = off;
+      SET LOCAL enable_bitmapscan = off;
+    ELSE
+      EXECUTE format('CREATE INDEX %I ON %I USING %s', tbl || '_idx', tbl, a);
+      SET LOCAL enable_seqscan = off;
+      SET LOCAL enable_indexscan = on;
+      SET LOCAL enable_bitmapscan = on;
+    END IF;
+    opclass := a; uses_index := false; errors := 0; disagreements := 0;
+    FOR line IN EXECUTE format('EXPLAIN SELECT count(*) FROM %I WHERE b && %L::%s',
+      tbl, queries[1], typ) LOOP
+      uses_index := uses_index OR line LIKE '%' || tbl || '_idx%';
+    END LOOP;
+    FOREACH o IN ARRAY ops LOOP
+      FOREACH q IN ARRAY queries LOOP
+        BEGIN
+          IF o = '|=|' THEN
+            EXECUTE format('SELECT string_agg(coalesce(round(d::numeric, 6)::text, '
+              '''null''), '','' ORDER BY d) FROM (SELECT b |=| %L::%s AS d '
+              'FROM %I ORDER BY b |=| %L::%s LIMIT 25) s', q, typ, tbl, q, typ)
+              INTO ans;
+          ELSE
+            EXECUTE format('SELECT count(*) FROM %I WHERE b %s %L::%s',
+              tbl, o, q, typ) INTO r;
+            ans := r::text;
+          END IF;
+        EXCEPTION WHEN OTHERS THEN
+          ans := 'ERROR: ' || SQLERRM;
+          errors := errors + 1;
+        END;
+        IF a = 'seq' THEN
+          seqans := seqans || jsonb_build_object(o || ' ' || q, ans);
+        ELSIF seqans ->> (o || ' ' || q) IS DISTINCT FROM ans AND
+            NOT (seqans ->> (o || ' ' || q) LIKE 'ERROR: %' AND
+              ans LIKE 'ERROR: %') THEN
+          disagreements := disagreements + 1;
+        END IF;
+      END LOOP;
+    END LOOP;
+    RETURN NEXT;
+  END LOOP;
+  EXECUTE format('DROP INDEX IF EXISTS %I', tbl || '_idx');
+END;
+$$ LANGUAGE plpgsql;
+CREATE FUNCTION
+CREATE FUNCTION day_of(d int) RETURNS timestamptz AS $$
+  SELECT timestamptz '2001-01-01' + d * interval '1 day'
+$$ LANGUAGE sql IMMUTABLE;
+CREATE FUNCTION
+CREATE TABLE tbl_index_structures AS
+  SELECT k, CASE k % 4
+    WHEN 0 THEN tpcboxXT(k % 50, k % 47, k % 50 + 2, k % 47 + 2,
+      span(day_of(k % 40), day_of(k % 40 + 2)), 1)
+    WHEN 1 THEN tpcboxX(k % 50, k % 47, k % 50 + 2, k % 47 + 2, 1)
+    WHEN 2 THEN tpcboxZT(k % 50, k % 47, k % 43, k % 50 + 2, k % 47 + 2,
+      k % 43 + 2, span(day_of(k % 40), day_of(k % 40 + 2)), 1)
+    ELSE tpcboxT(span(day_of(k % 40), day_of(k % 40 + 2)), 1) END AS b
+  FROM generate_series(1, 4000) AS k;
+SELECT 4000
+SELECT * FROM index_structures('tbl_index_structures', 'tpcbox',
+  ARRAY['gist(b tpcbox_rtree_ops)', 'spgist(b tpcbox_quadtree_ops)',
+    'spgist(b tpcbox_kdtree_ops)'],
+  ARRAY[tpcboxXT(10, 10, 20, 20, span(day_of(9), day_of(19)), 1)::text,
+    tpcboxX(10, 10, 20, 20, 1)::text,
+    tpcboxZT(10, 10, 10, 20, 20, 20, span(day_of(9), day_of(19)), 1)::text,
+    tpcboxT(span(day_of(9), day_of(19)), 1)::text],
+  ARRAY['&&', '@>', '<@', '~=', '-|-', '<<', '&<', '>>', '&>', '<<|', '&<|',
+    '|>>', '|&>', '<</', '&</', '/>>', '/&>', '<<#', '&<#', '#>>', '#&>',
+    '|=|']);
+NOTICE:  index "tbl_index_structures_idx" does not exist, skipping
+NOTICE:  index "tbl_index_structures_idx" does not exist, skipping
+            opclass            | uses_index | errors | disagreements 
+-------------------------------+------------+--------+---------------
+ seq                           | f          |     78 |             0
+ gist(b tpcbox_rtree_ops)      | t          |     78 |             0
+ spgist(b tpcbox_quadtree_ops) | t          |     78 |             0
+ spgist(b tpcbox_kdtree_ops)   | t          |     78 |             0
+(4 rows)
+
+DROP TABLE tbl_index_structures;
+DROP TABLE
+DROP FUNCTION day_of(int);
+DROP FUNCTION
+DROP FUNCTION index_structures(text, text, text[], text[], text[]);
+DROP FUNCTION

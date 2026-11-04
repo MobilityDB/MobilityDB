@@ -1701,63 +1701,66 @@ str_pack_level(const RTree *rtree, STRItem *items, int count, bool leaf,
 }
 
 /**
- * @brief Return true if a box may enter or query an RTree, report an error
- * otherwise
- * @details A tree holds boxes of one SRID: the first entry fixes it, and a box
- * of another one is an error rather than a coercion. The check belongs here,
- * at the entry point, so that every comparison the descent makes can assume it
+ * @brief Return the tree of an RTree index holding the boxes of the structure
+ * of a box, appending an empty one when no tree does
+ * @details An index keeps the boxes of each structure, see
+ * #bbox_same_structure, in a tree of their own, chained from the first one.
+ * Every box of a tree then carries the axes, the SRID and the schema of the
+ * others, which is what the partitioning of a tree and its descent read
  */
-static bool
-ensure_valid_rtree_box(const RTree *rtree, const void *box)
+static RTree *
+rtree_part(RTree *rtree, const void *box)
 {
-  if (! rtree->root)
-    return true;
-  /* A box is compared with every stored box, which share the SRID, the
-   * geodetic flag and the axes the extent of the tree carries, so the checks
-   * the external test makes on each pair are made here once. A query sharing
-   * no axis with them is refused rather than answered: the overlap test the
-   * descent reads compares no axis for it and accepts every box */
-  if (rtree->bboxtype == T_STBOX)
+  RTree *last = rtree;
+  for (RTree *part = rtree; part; part = part->next)
   {
-    const STBox *extent = (const STBox *) rtree->box;
-    const STBox *query = (const STBox *) box;
-    return ensure_valid_stbox_stbox(extent, query) &&
-      ensure_common_dimension(extent->flags, query->flags);
+    if (! part->root ||
+        bbox_same_structure(rtree->bboxtype, part->box, box))
+      return part;
+    last = part;
   }
-  if (rtree->bboxtype == T_TBOX)
-  {
-    const TBox *extent = (const TBox *) rtree->box;
-    const TBox *query = (const TBox *) box;
-    return ensure_valid_tbox_tbox(extent, query) &&
-      ensure_common_dimension(extent->flags, query->flags);
-  }
-#if POINTCLOUD
-  if (rtree->bboxtype == T_TPCBOX)
-  {
-    STBox s1, s2;
-    tpcbox_set_stbox((const TPCBox *) rtree->box, &s1);
-    tpcbox_set_stbox((const TPCBox *) box, &s2);
-    return ensure_valid_stbox_stbox(&s1, &s2) &&
-      ensure_common_dimension(s1.flags, s2.flags);
-  }
-#endif /* POINTCLOUD */
-  return true;
+  last->next = rtree_create(rtree->bboxtype);
+  return last->next;
 }
 
 /**
- * @brief Return true if two RTrees may be joined, report an error otherwise
- * @details A join compares a box of one tree with a box of the other, which is
- * the comparison #ensure_valid_rtree_box admits for a query, so the second
- * tree's own box is what the first one is asked about. Every entry of a tree
- * has passed that check on entry, so an overall box carries the SRID of every
- * entry under it
+ * @brief Return the first box stored in a tree of an RTree index
+ */
+static const void *
+rtree_first_box(const RTree *rtree)
+{
+  const RTreeNode *node = rtree->root;
+  while (node->node_type != RTREE_LEAF)
+    node = node->nodes[0];
+  return RTREE_NODE_BBOX_N(node, 0);
+}
+
+/**
+ * @brief Return true if a search operation applied to the boxes of every
+ * tree of an RTree index and a query raises no error, raise the error of the
+ * operation otherwise
+ * @details The operation raises an error on a pair of boxes by their
+ * structures alone, which #index_op_is_valid tests on the extent of each
+ * tree. Where it raises, the operation is applied to a box stored in the
+ * tree, which raises the error a scan of the boxes raises
+ * @param[in] rtree RTree index
+ * @param[in] op Search operation
+ * @param[in] query Query box, or a box stored in another RTree index
  */
 static bool
-ensure_valid_rtree_rtree(const RTree *rtree1, const RTree *rtree2)
+ensure_rtree_op_box(const RTree *rtree, IndexSearchOp op, const void *query)
 {
-  if (! rtree2->root)
-    return true;
-  return ensure_valid_rtree_box(rtree1, rtree2->box);
+  if (! ensure_index_op(rtree->bboxtype, op))
+    return false;
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root &&
+        ! index_op_is_valid(rtree->bboxtype, op, part->box, query))
+    {
+      (void) index_op_apply(rtree->bboxtype, op, rtree_first_box(part),
+        query);
+      return false;
+    }
+  return true;
 }
 
 /**
@@ -1777,25 +1780,66 @@ ensure_valid_rtree_rtree(const RTree *rtree1, const RTree *rtree2)
  * @param[in] ids The id of each box
  * @param[in] count Number of entries
  */
+static void rtree_part_load(RTree *rtree, const void *boxes,
+  const int64 *ids, int count);
+
 bool
 rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_not_null((void *) rtree) || ! ensure_not_null((void *) boxes) ||
-      ! ensure_not_null((void *) ids) || ! ensure_valid_rtree_box(rtree, boxes))
+      ! ensure_not_null((void *) ids))
     return false;
 
-  /* The packing assigns the root, so the nodes the tree holds are released
+  /* The packing assigns the roots, so the trees the index holds are released
    * before it does, and are released whatever the number of entries given: an
-   * empty entry set leaves an empty tree rather than the previous one */
+   * empty entry set leaves an empty index rather than the previous one */
   if (rtree->root)
   {
     node_free(rtree->root);
     rtree->root = NULL;
   }
-
+  if (rtree->next)
+  {
+    rtree_free(rtree->next);
+    rtree->next = NULL;
+  }
   if (count <= 0)
     return true;
+
+  /* The boxes of each structure are packed into a tree of their own, in the
+   * order they are given */
+  const char *base = (const char *) boxes;
+  bool *done = palloc0((size_t) count * sizeof(bool));
+  char *pboxes = palloc((size_t) count * rtree->bboxsize);
+  int64 *pids = palloc((size_t) count * sizeof(int64));
+  for (int i = 0; i < count; i++)
+  {
+    if (done[i])
+      continue;
+    const void *first = base + (size_t) i * rtree->bboxsize;
+    int n = 0;
+    for (int j = i; j < count; j++)
+    {
+      const void *box = base + (size_t) j * rtree->bboxsize;
+      if (done[j] || ! bbox_same_structure(rtree->bboxtype, first, box))
+        continue;
+      memcpy(pboxes + (size_t) n * rtree->bboxsize, box, rtree->bboxsize);
+      pids[n++] = ids[j];
+      done[j] = true;
+    }
+    rtree_part_load(rtree_part(rtree, first), pboxes, pids, n);
+  }
+  pfree(done); pfree(pboxes); pfree(pids);
+  return true;
+}
+
+/**
+ * @brief Pack the boxes of one structure into an empty tree of an RTree index
+ */
+static void
+rtree_part_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
+{
 
   /* A box type whose dimension count depends on the data carries -1 until the
    * first box arrives, which for a tree grown by insertion is the first insert */
@@ -1838,7 +1882,7 @@ rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
   for (int k = 1; k < level[0]->count; k++)
     rtree->bbox_expand(RTREE_NODE_BBOX_N(level[0], k), &rtree->box);
   pfree(level);
-  return true;
+  return;
 }
 
 
@@ -1856,10 +1900,10 @@ bool
 rtree_insert(RTree *rtree, void *box, int64 id)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_not_null((void *) rtree) || ! ensure_not_null((void *) box) ||
-      ! ensure_valid_rtree_box(rtree, box))
+  if (! ensure_not_null((void *) rtree) || ! ensure_not_null((void *) box))
     return false;
 
+  rtree = rtree_part(rtree, box);
   while (1)
   {
     if (! rtree->root)
@@ -1891,6 +1935,9 @@ rtree_insert(RTree *rtree, void *box, int64 id)
   return true;
 }
 
+static void rtree_part_search(const RTree *rtree, IndexSearchOp op,
+  const void *query, MeosArray *result);
+
 /**
  * @ingroup meos_internal_box_index
  * @brief Search an RTree with a bounding box, collecting matching IDs into
@@ -1910,20 +1957,34 @@ rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
   MeosArray *result)
 {
   assert(rtree); assert(query); assert(result);
-  assert(ensure_valid_rtree_box(rtree, query));
   meos_array_reset(result);
-  if (! rtree->root)
-    return 0;
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root)
+      rtree_part_search(part, op, query, result);
+  return (int) result->count;
+}
+
+/**
+ * @brief Append to an array the ids of the boxes of one tree of an RTree
+ * index answering a search operation
+ * @details The boxes of the tree share their structure, and the operation
+ * applies to them and the query, as #ensure_rtree_op_box states
+ */
+static void
+rtree_part_search(const RTree *rtree, IndexSearchOp op, const void *query,
+  MeosArray *result)
+{
+  /* The boxes of a tree share their axes, which its extent carries, so the
+   * query is compared on the axes it shares with them, read once here rather
+   * than once per entry */
+  bboxunion proj;
+  index_query_project(rtree->bboxtype, query, rtree->box, &proj);
   if (rtree->bboxtype == T_STBOX && (op == INDEX_OVERLAPS ||
       op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
   {
-    /* The boxes of a tree share their axes, which its extent carries, so the
-     * axes both sides have are read once here rather than once per entry */
-    const STBox *q = (const STBox *) query;
-    int16 f = ((const STBox *) rtree->box)->flags;
-    bool x = MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
-      z = MEOS_FLAGS_GET_Z(f) && MEOS_FLAGS_GET_Z(q->flags),
-      t = MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags);
+    const STBox *q = (const STBox *) &proj;
+    bool x = MEOS_FLAGS_GET_X(q->flags), z = MEOS_FLAGS_GET_Z(q->flags),
+      t = MEOS_FLAGS_GET_T(q->flags);
     if (op == INDEX_OVERLAPS)
       node_search_overlaps_stbox(rtree->root, q, x, z, t, result);
     else
@@ -1933,16 +1994,13 @@ rtree_search_intl(const RTree *rtree, IndexSearchOp op, const void *query,
   else if (rtree->bboxtype == T_TBOX && (op == INDEX_OVERLAPS ||
       op == INDEX_CONTAINS || op == INDEX_CONTAINED_BY))
   {
-    /* As for the spatiotemporal boxes above */
-    const TBox *q = (const TBox *) query;
-    int16 f = ((const TBox *) rtree->box)->flags;
-    bool x = MEOS_FLAGS_GET_X(f) && MEOS_FLAGS_GET_X(q->flags),
-      t = MEOS_FLAGS_GET_T(f) && MEOS_FLAGS_GET_T(q->flags);
-    node_search_tbox(rtree->root, q, op, x, t, result);
+    const TBox *q = (const TBox *) &proj;
+    node_search_tbox(rtree->root, q, op, MEOS_FLAGS_GET_X(q->flags),
+      MEOS_FLAGS_GET_T(q->flags), result);
   }
   else
-    node_search(rtree, rtree->root, op, query, result);
-  return (int) result->count;
+    node_search(rtree, rtree->root, op, &proj, result);
+  return;
 }
 
 /**
@@ -1969,7 +2027,8 @@ rtree_search(const RTree *rtree, IndexSearchOp op, const void *query,
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rtree, -1); VALIDATE_NOT_NULL(query, -1);
   VALIDATE_NOT_NULL(result, -1);
-  if (! ensure_valid_rtree_box(rtree, query) || ! ensure_index_result(result))
+  if (! ensure_rtree_op_box(rtree, op, query) ||
+      ! ensure_index_result(result))
     return -1;
   return rtree_search_intl(rtree, op, query, result);
 }
@@ -2003,14 +2062,19 @@ rtree_join(const RTree *rtree1, const RTree *rtree2, IndexSearchOp op,
   VALIDATE_NOT_NULL(rtree1, -1); VALIDATE_NOT_NULL(rtree2, -1);
   VALIDATE_NOT_NULL(result, -1);
   if (! ensure_same_index_bboxtype(rtree1->bboxtype, rtree2->bboxtype) ||
-      ! ensure_valid_rtree_rtree(rtree1, rtree2) ||
       ! ensure_index_join_op(op) || ! ensure_index_result(result))
     return -1;
+  for (const RTree *part2 = rtree2; part2; part2 = part2->next)
+    if (part2->root &&
+        ! ensure_rtree_op_box(rtree1, op, rtree_first_box(part2)))
+      return -1;
 
   meos_array_reset(result);
-  if (rtree1->root && rtree2->root)
-    node_join(rtree1, rtree1->root, NULL, rtree2, rtree2->root, NULL, op,
-      result);
+  for (const RTree *part1 = rtree1; part1; part1 = part1->next)
+    for (const RTree *part2 = rtree2; part2; part2 = part2->next)
+      if (part1->root && part2->root)
+        node_join(part1, part1->root, NULL, part2, part2->root, NULL, op,
+          result);
   return meos_array_count(result) / 2;
 }
 
@@ -2037,8 +2101,7 @@ rtree_insert_temporal(RTree *rtree, const Temporal *temp, int64 id)
   bboxunion buf;
   memset(&buf, 0, sizeof(buf));
   temporal_set_bbox(temp, &buf);
-  rtree_insert(rtree, &buf, id);
-  return true;
+  return rtree_insert(rtree, &buf, id);
 }
 
 /**
@@ -2186,7 +2249,7 @@ rtree_search_temporal_dedup(const RTree *rtree, IndexSearchOp op,
   bboxunion whole;
   memset(&whole, 0, sizeof(whole));
   temporal_set_bbox(temp, &whole);
-  if (! ensure_valid_rtree_box(rtree, &whole))
+  if (! ensure_rtree_op_box(rtree, op, &whole))
     return -1;
 
   int count;
@@ -2410,8 +2473,17 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rtree, NULL); VALIDATE_NOT_NULL(query, NULL);
-  if (! ensure_valid_rtree_box(rtree, query))
-    return NULL;
+  /* The distance raises an error on a pair of boxes by their structures
+   * alone. Where it raises on the boxes of a tree, a box stored in it is
+   * measured, which raises the error a scan of the boxes raises */
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root &&
+        ! index_distance_is_valid(rtree->bboxtype, part->box, query))
+    {
+      (void) index_distance_apply(rtree->bboxtype, rtree_first_box(part),
+        query);
+      return NULL;
+    }
 
   RTreeNNCursor *cursor = palloc0(sizeof(RTreeNNCursor));
   cursor->rtree = rtree;
@@ -2420,16 +2492,19 @@ rtree_nn_cursor_open(const RTree *rtree, const void *query)
   cursor->capacity = MAXITEMS;
   cursor->heap = palloc((size_t) cursor->capacity * sizeof(RTreeNNEntry));
   cursor->count = 0;
-  /* Seed the heap with the root, which is always expanded first */
-  if (rtree->root)
-  {
-    RTreeNNEntry root_entry;
-    root_entry.dist = 0.0;
-    root_entry.is_leaf_entry = false;
-    root_entry.id = 0;
-    root_entry.node = rtree->root;
-    nn_heap_push(cursor, root_entry);
-  }
+  /* Seed the heap with the root of every tree, which are expanded first: the
+   * distance of a box depends on its type alone, so one heap orders the
+   * entries of every tree */
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root)
+    {
+      RTreeNNEntry root_entry;
+      root_entry.dist = 0.0;
+      root_entry.is_leaf_entry = false;
+      root_entry.id = 0;
+      root_entry.node = part->root;
+      nn_heap_push(cursor, root_entry);
+    }
   return cursor;
 }
 
@@ -2567,11 +2642,11 @@ rtree_num_entries(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rtree, -1);
-  if (! rtree->root)
-    return 0;
   int entries = 0, height = 0;
   int64 bytes = 0;
-  node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root)
+      node_stats(part->root, part->bboxsize, 1, &entries, &bytes, &height);
   return entries;
 }
 
@@ -2588,11 +2663,15 @@ rtree_mem_size(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rtree, -1);
-  int64 bytes = (int64) (sizeof(RTree) + rtree->bboxsize);
-  if (rtree->root)
+  int64 bytes = 0;
+  for (const RTree *part = rtree; part; part = part->next)
   {
-    int entries = 0, height = 0;
-    node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
+    bytes += (int64) (sizeof(RTree) + part->bboxsize);
+    if (part->root)
+    {
+      int entries = 0, height = 0;
+      node_stats(part->root, part->bboxsize, 1, &entries, &bytes, &height);
+    }
   }
   return bytes;
 }
@@ -2609,12 +2688,17 @@ rtree_height(const RTree *rtree)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(rtree, -1);
-  if (! rtree->root)
-    return 0;
-  int entries = 0, height = 0;
-  int64 bytes = 0;
-  node_stats(rtree->root, rtree->bboxsize, 1, &entries, &bytes, &height);
-  return height;
+  int result = 0;
+  for (const RTree *part = rtree; part; part = part->next)
+    if (part->root)
+    {
+      int entries = 0, height = 0;
+      int64 bytes = 0;
+      node_stats(part->root, part->bboxsize, 1, &entries, &bytes, &height);
+      if (height > result)
+        result = height;
+    }
+  return result;
 }
 
 /**
@@ -2625,9 +2709,14 @@ rtree_height(const RTree *rtree)
 void
 rtree_free(RTree *rtree)
 {
-  if (rtree->root)
-    node_free(rtree->root);
-  pfree(rtree);
+  while (rtree)
+  {
+    RTree *next = rtree->next;
+    if (rtree->root)
+      node_free(rtree->root);
+    pfree(rtree);
+    rtree = next;
+  }
   return;
 }
 
