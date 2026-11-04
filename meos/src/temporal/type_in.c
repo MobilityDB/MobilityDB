@@ -174,15 +174,11 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       /* A failed parse is told by the error number, which #meos_errno_reset
        * clears first, as for T_INT4 */
-#if MEOS
       int last_errno = meos_errno_reset();
-#endif /* MEOS */
       bool b = bool_in(str);
       if (meos_errno())
         return false;
-#if MEOS
       meos_errno_restore(last_errno);
-#endif /* MEOS */
       *result = BoolGetDatum(b);
       return true;
     }
@@ -190,29 +186,21 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       /* The type maximum is a value of the domain, so a failed parse is
        * told by the error number, which #meos_errno_reset clears first */
-#if MEOS
       int last_errno = meos_errno_reset();
-#endif /* MEOS */
       int i = int32_in(str);
       if (meos_errno())
         return false;
-#if MEOS
       meos_errno_restore(last_errno);
-#endif /* MEOS */
       *result = Int32GetDatum(i);
       return true;
     }
     case T_INT8:
     {
-#if MEOS
       int last_errno = meos_errno_reset();
-#endif /* MEOS */
       int64 i = int64_in(str);
       if (meos_errno())
         return false;
-#if MEOS
       meos_errno_restore(last_errno);
-#endif /* MEOS */
       *result = Int64GetDatum(i);
       return true;
     }
@@ -220,15 +208,11 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       /* The largest double is a value of the domain, as the type maximum of
        * an integer is, so a failed parse is told by the error number */
-#if MEOS
       int last_errno = meos_errno_reset();
-#endif /* MEOS */
       double d = float8_in(str);
       if (meos_errno() || ! ensure_finite(d))
         return false;
-#if MEOS
       meos_errno_restore(last_errno);
-#endif /* MEOS */
       *result = Float8GetDatum(d);
       return true;
     }
@@ -271,15 +255,11 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
     {
       /* A failed parse is told by the error number, which #meos_errno_reset
        * clears first, as for T_INT4 */
-#if MEOS
       int last_errno = meos_errno_reset();
-#endif /* MEOS */
       H3Index cell = meos_h3index_in(str);
       if (meos_errno())
         return false;
-#if MEOS
       meos_errno_restore(last_errno);
-#endif /* MEOS */
       *result = Int64GetDatum((int64) cell);
       return true;
     }
@@ -3454,13 +3434,10 @@ type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
      * Span by value, so on a foreign type code it can only return a zeroed
      * struct (non-NULL once wrapped). Honour the same NULL contract as the
      * other families: reset the error state, parse, and fail if the reader
-     * raised an error (the type-code guard in span_from_wkb_state). The
-     * meos_errno reset API is only built under MEOS; in the PostgreSQL
-     * extension a foreign type code is raised via ereport (longjmp), so the
-     * reset is unnecessary there and meos_errno() stays 0. */
-#if MEOS
+     * raised an error (the type-code guard in span_from_wkb_state). In the
+     * PostgreSQL extension a foreign type code ends the statement where it
+     * is raised, so meos_errno() stays 0. */
     meos_errno_reset();
-#endif /* MEOS */
     *span = span_from_wkb_state(&s);
     if (s.error || meos_errno() != 0)
     {
@@ -3533,9 +3510,7 @@ type_from_wkb_read(const uint8_t *wkb, size_t size, MeosType type)
 Datum
 type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
-#endif /* MEOS */
   Datum result = type_from_wkb_read(wkb, size, type);
   if (meos_errno())
   {
@@ -3543,9 +3518,7 @@ type_from_wkb(const uint8_t *wkb, size_t size, MeosType type)
       pfree(DatumGetPointer(result));
     return 0;
   }
-#if MEOS
   meos_errno_restore(last_errno);
-#endif /* MEOS */
   return result;
 }
 
