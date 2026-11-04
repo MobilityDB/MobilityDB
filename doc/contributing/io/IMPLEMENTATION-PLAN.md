@@ -55,7 +55,7 @@ generates (the bindings plan of the portable naming notes, `BINDINGS-PLAN.md`), 
 ## Every string MEOS returns states its size
 
 DECIDED BY THE OWNER 2026-11-02: every text output of MEOS gives its size through
-`size_t *size_out`, so no binding scans a string MEOS hands it. The convention is the hex WKB
+`size_t *size_out`, so no binding has to scan a string MEOS hands it. The convention is the hex WKB
 writers': the size counts the terminator, the public function requires `size_out`
 (`VALIDATE_NOT_NULL(size_out, NULL)`, documented `@param[out]`, which the catalog carries as
 `shape.outParams`), and the internal builder takes NULL for a size nobody reads, as
@@ -67,15 +67,35 @@ a version, is measured once in MEOS (`cstring_size`). No SQL function changes, a
 object layer of each binding keeps its surface: the wrapper consumes the size and answers the
 string alone.
 
+DECIDED BY THE OWNER 2026-11-04: PyMEOS-CFFI keeps the scan. Its wrapper passes `size_out`, which
+the C signature requires, and reads the string with `_ffi.string`, since reading it with its size
+gains nothing on AIS and costs a short string more. The ratios are of the sized read to the scan,
+each timing the MEOS call, the read, the UTF-8 decode and the free, in pairs within one process
+over MobilityDB `4508df3a68`, cffi 2.1.1 and Python 3.10:
+
+| Strings | Characters | Sized / scan | Scan / scan |
+|---|---|---|---|
+| `ttext_out` | 26 to 400 | 1.04 to 1.10 | 1.00 |
+| `ttext_out` | 1000 to 4000 | 1.01 to 1.03 | 1.00 |
+| `ttext_out` | 10000 to 4000000 | 0.98 to 1.00 | 1.00 to 1.02 |
+| `tfloat_out` | 27 to 983 | 1.01 to 1.06 | 1.00 |
+| `tfloat_out` | 9355 to 93087 | 1.00 | 1.00 |
+| five writers, ten longest trips of `meos/examples/data/ais_trips_longest.csv` | 124254 to 773700 | 0.99 to 1.01 | 0.99 to 1.01 |
+| five writers, summed over the 1711 Class A ships of `aisdk-2025-01-01.csv` | up to 2025375 | 1.00 (0.98 to 1.02 by round) | not measured |
+
+The five writers are `tspatial_out`, `tspatial_as_ewkt`, `tspatial_as_text`, `temporal_as_mfjson`
+and `temporal_as_hexwkb`. This decides PyMEOS-CFFI alone: the other bindings cross into C at other
+costs, and each states its own measurement under IO-S10.
+
 | Task | Repository | Change | State |
 |---|---|---|---|
 | IO-S1 | MobilityDB | the 118 public `char *` returns without a size take `size_t *size_out` (`temporal_as_mfjson`, the `*_out`, `*_as_text`, `*_as_ewkt`, `*_as_geojson`, `*_as_geopose` of every family, the version and style accessors); the internal builders `stringarr_to_string`, `set_out`, `span_out`, `spanset_out`, `temporal_out`, `tinstant_out`, `tsequence_out`, `tsequenceset_out` and each family's `*_wkt_out` hand the length out of what they build; the PostgreSQL wrappers, the examples and `meos/test` pass the size the function now asks for; the PostgreSQL mirrors in `pgtypes` (`pg_*_out`) and the vendored `pc_api.h` keep their signatures | MERGED as MobilityDB #3393 (`063203bf1b`): `meos/test/text_size_test.c` finds the size of 84 outputs, one of each kind, to be the length plus one, and a null `size_out` refused with `MEOS_ERR_INVALID_ARG`; the 127 other `meos/test` programs print what they print on master, the wall clock of `timestamp_test` aside; every `meos/test` program and the ten smoke suites run clean under valgrind |
 | IO-S2 | MEOS-API | every public `char *` return lists a `size_t *` in `shape.outParams`, a catalog test refusing one that does not | MERGED as MEOS-API #239 (`a964a6f405`): `tests/test_string_size.py` finds the 144 public `char *` returns of MobilityDB `3dd98cc90e` each listing a `size_t *` in `shape.outParams`, and fails on 118 of them over the catalog of `a76d98f21a`; the catalog sets the size aside as an out-parameter of a string writer and of a string result, and its service reads the string for that size; the suite passes 665 tests |
-| IO-S3 | PyMEOS-CFFI | a `char *` return whose `shape.outParams` holds a `size_t *` read through `_ffi.unpack(result, size_out[0] - 1)` and freed, the `str` alone answered | ready: IO-S2 |
+| IO-S3 | PyMEOS-CFFI | a `char *` return whose `shape.outParams` holds a `size_t *` called with that size, read through `_ffi.string` as decided above and freed, the `str` alone answered | ready: IO-S2 |
 | IO-S4 | GoMEOS | the same return read through `C.GoStringN` | ready: IO-S2 |
 | IO-S5 | MEOS.NET | the same return read through `Marshal.PtrToStringUTF8(ptr, length)` | ready: IO-S2 |
 | IO-S6 | JMEOS (Spark, Flink and Kafka generators) | the owned `char *` copied as `size_out - 1` bytes and decoded as UTF-8 in place of `Pointer.getString(0)`, in JMEOS's `FunctionsGenerator.java` and the Spark generator that mirrors it; Flink and Kafka call the JMEOS methods, whose signatures stay | ready: IO-S2 |
 | IO-S7 | MEOS.js | the same return decoded from `HEAPU8.subarray(ptr, ptr + size - 1)` | ready: IO-S2 |
 | IO-S8 | meos-rs | the same return built from `slice::from_raw_parts(ptr, size - 1)`, in both FFI designs left open for the owner and David García Morillo | ready: IO-S2 |
 | IO-S9 | MobilityDuck | the generated bodies build the DuckDB string from the pointer and its length | ready: IO-S2 |
-| IO-S10 | every binding of IO-S3 to IO-S9 | the cost of reading a string with and without its size, over the lengths cffi measures (40 to 4000000 characters), stated in each pull request | with each of IO-S3 to IO-S9 |
+| IO-S10 | every binding of IO-S3 to IO-S9 | the cost of reading a string with and without its size, over the lengths cffi measures (40 to 4000000 characters) and the strings of real AIS trajectories, stated in each pull request | with each of IO-S3 to IO-S9 |
