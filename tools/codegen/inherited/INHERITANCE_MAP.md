@@ -933,6 +933,8 @@ its last edit:
   stanza declares a SQL body calling the function of the `via` type with the argument of the
   `src` type cast to it, `atinstant` restricting that argument to the timestamp of the instant
   the call answers, and `quote` quotes the commutator of an `ops` stanza.
+  The GiST distance support functions of `tpcpoint` and `tpcpatch` are a second `lit`
+  block of the `tpc` entry, after the one of `tpcbox`.
 - `topop_families` and `posop_families`, both **18/20** of `temporal`, counting the
   declarations the `tempsql` stanzas of the box types render: `tpcpoint` and
   `tpcpatch` remain. A file holding TWO temporal types is a `tempsql` stanza, its

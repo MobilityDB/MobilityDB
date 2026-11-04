@@ -160,6 +160,51 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 
+-------------------------------------------------------------------------------
+-- GiST R-tree opclass on tpcbox: a nearest-neighbour query reading only the
+-- box column runs as an index-only scan, where the distance of a leaf is the
+-- operator's own, and answers the distances of the sequential scan
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tpcbox_knn AS SELECT b FROM tbl_tpcbox;
+CREATE INDEX tbl_tpcbox_knn_rtree_idx ON tbl_tpcbox_knn USING gist(b);
+VACUUM ANALYZE tbl_tpcbox_knn;
+CREATE FUNCTION tpcbox_knn_reads_index_only() RETURNS boolean AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXPLAIN (COSTS OFF) SELECT b |=| tpcboxZT(200, 200, 200,
+      210, 210, 210, tstzspan '[2001-06-01, 2001-12-31]', 1)
+    FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 LOOP
+    IF line LIKE '%Index Only Scan%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+SET enable_seqscan = on;
+SET enable_indexscan = off;
+SET enable_bitmapscan = off;
+WITH test AS (
+  SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
+  FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+SET enable_seqscan = off;
+SET enable_indexscan = on;
+SELECT tpcbox_knn_reads_index_only();
+WITH test AS (
+  SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
+  FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+RESET enable_seqscan;
+RESET enable_indexscan;
+RESET enable_bitmapscan;
+DROP FUNCTION tpcbox_knn_reads_index_only();
+DROP TABLE tbl_tpcbox_knn;
+
 -- The index key of a box keeps its bounds and drops the schema identifier,
 -- so a box of another schema is answered by the operator on the value.
 INSERT INTO pointcloud_formats (pcid, srid, schema)
