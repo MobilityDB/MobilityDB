@@ -778,6 +778,41 @@ int main(void)
     "its middle vertex lies on it, at %d scales from 1 to 2^-40\n", dist_ok);
   assert(dist_ok == 41);
   meos_errno_reset();
+  /* The box of an arc with Z or M holds the arc, and its Z range is that of its
+   * three vertices. A temporal point within reach of an arc with Z by their boxes
+   * reaches the error of its 3D distance */
+  {
+    static const char *const arc_box_wkt[] = {
+      "CIRCULARSTRING Z(5 0 2,3 4 9,0 5 2)",
+      "CIRCULARSTRING M(5 0 2,3 4 9,0 5 2)",
+      "CIRCULARSTRING ZM(5 0 2 1,3 4 9 1,0 5 2 1)",
+      "COMPOUNDCURVE Z(CIRCULARSTRING Z(5 0 2,3 4 9,0 5 2),(0 5 2,0 5 2.5))",
+      "MULTICURVE Z(CIRCULARSTRING Z(5 0 2,3 4 9,0 5 2))",
+      "CURVEPOLYGON Z(CIRCULARSTRING Z(5 0 2,0 5 9,-5 0 2,0 -5 2,5 0 2))",
+      "GEOMETRYCOLLECTION Z(CIRCULARSTRING Z(5 0 2,3 4 9,0 5 2))",
+    };
+    for (size_t i = 0; i < sizeof arc_box_wkt / sizeof arc_box_wkt[0]; i++)
+    {
+      GSERIALIZED *arc = geom_in(arc_box_wkt[i], -1);
+      assert(arc != NULL);
+      STBox *box = geo_to_stbox(arc);
+      assert(box->xmin <= box->xmax && box->ymin <= box->ymax);
+      assert(box->xmax >= 5.0 && box->xmax < 5.000001);
+      assert(box->ymax >= 5.0 && box->ymax < 5.000001);
+      if (MEOS_FLAGS_GET_Z(box->flags))
+        assert(box->zmin == 2.0 && box->zmax == 9.0);
+      free(box); free(arc);
+    }
+    GSERIALIZED *arc = geom_in("CIRCULARSTRING Z(5 0 2,3 4 2,0 5 2)", -1);
+    Temporal *trip = tgeompoint_in(
+      "[POINT Z(0 0 0)@2001-01-01, POINT Z(1 1 1)@2001-01-02]");
+    meos_errno_reset();
+    edwithin_tgeo_geo(trip, arc, 100.0, false);
+    assert(meos_errno() != 0);
+    meos_errno_reset();
+    free(arc); free(trip);
+    printf("the box of an arc with Z or M holds the arc\n");
+  }
 
   /* A segment and an arc take their distance to an arc from its size in the
    * same way. The segment from (0 2s) to (2s 2s) and the arc through (0 3s),

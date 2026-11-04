@@ -447,6 +447,30 @@ SELECT box3d 'BOX3D(1 1 1,5 5 5)'::stbox;
  STBOX Z((1,1,1),(5,5,5))
 (1 row)
 
+SELECT round(geometry 'CircularString(5 0 2,3 4 9,0 5 2)'::stbox, 6);
+          round           
+--------------------------
+ STBOX Z((0,0,2),(5,5,9))
+(1 row)
+
+SELECT round(geometry 'CircularStringM(5 0 2,3 4 9,0 5 2)'::stbox, 6);
+        round         
+----------------------
+ STBOX X((0,0),(5,5))
+(1 row)
+
+SELECT round(geometry 'CompoundCurve(CircularString(5 0 2,3 4 9,0 5 2),(0 5 2,0 5 2.5))'::stbox, 6);
+          round           
+--------------------------
+ STBOX Z((0,0,2),(5,5,9))
+(1 row)
+
+SELECT round(geometry 'CurvePolygon(CircularString(5 0 2,0 5 9,-5 0 2,0 -5 2,5 0 2))'::stbox, 6);
+           round            
+----------------------------
+ STBOX Z((-5,-5,2),(5,5,9))
+(1 row)
+
 SELECT MAX(duration(b::tstzspan)) FROM tbl_stbox;
    max    
 ----------
