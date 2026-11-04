@@ -16,7 +16,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG1 | State every refusal and every wrong answer of a 3D value in `doc/temporal_rigid_geometries.xml` and its Spanish twin, each where its function is documented, in the wording of the assessment; state what the type accepts in place of "2D" in the chapter's opening and in Input and Output, and in place of "2D-only" in `doc/contributing/trgeometry_design_notes.md` | open, next |
+| TG1 | State every refusal and every wrong answer of a 3D value in `doc/temporal_rigid_geometries.xml` and its Spanish twin, each where its function is documented, state what the type accepts in place of "2D" there and in `doc/contributing/trgeometry_design_notes.md`, and make the examples of the chapter run | #3443, open |
 
 ## Wrong answers
 
@@ -32,8 +32,8 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG6 | `atValues`, `minusValues` over a `poseset` answer | open |
-| TG7 | `stops` over a `trgeometry` answers, or its declaration goes | open, decision 2 |
+| TG6 | An SRID stated before the pose in a literal is held rather than dropped, and `atStbox`, `minusStbox` take a box of time alone, as `atTime` does | open |
+| TG7 | `stops` over a `trgeometry` and a `tpose` answers, or its declaration goes | open, decision 2 |
 | TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | open |
 | TG9 | `round` of a 3D rotation keeps the quaternion of unit norm | open |
 | TG10 | `tDistance` of a 3D value and a 3D `tgeompoint` names the 3D refusal | open |
@@ -51,7 +51,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
-| TG24 | A SQL function projecting a `trgeometry` to the ground, in place of `EgoBody2D` and `ObjectTrip2D` of the companion | open, next after TG1 |
+| TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | open, next |
 
 ## Regularity
 

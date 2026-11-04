@@ -11,7 +11,7 @@
 This plan is the one place for what `trgeometry` answers, what it does not, and what closes the
 difference. A `trgeometry` accepts more than it answers: it takes a concave polygon, a polygon with
 holes, a polyhedral surface and a reference geometry in three dimensions, and a function then
-refuses some of them, or answers without reading Z. The manual states none of this and describes
+refuses some of them, or answers without reading Z. The manual states little of this and describes
 the type as 2D, while the code builds 3D values and indexes them, and Chapter 4 of MobilityBook Vol. 2
 uses them on the nuScenes dataset.
 
@@ -55,9 +55,9 @@ Measured on master `78839117d9`: 316 functions, 50,411 calls, no backend lost.
   `transform` and `transformPipeline` over every value.
 - **Operands of different dimensions.** The distance of a 2D value reads the dimensions both have,
   as MobilityDB #3439 states, and its relationships refuse.
-- **Functions no call answers.** `atValues` and `minusValues` over a `poseset`, and `stops`.
-- **The manual.** `doc/temporal_rigid_geometries.xml` holds no refusal, and its text says the
-  reference geometry is 2D.
+- **Functions no call answers.** `stops`.
+- **The manual.** `doc/temporal_rigid_geometries.xml` states the convex polygons the distance needs
+  and no other gap, and its text says the reference geometry is 2D; #3443 states them.
 
 ## The rules
 
