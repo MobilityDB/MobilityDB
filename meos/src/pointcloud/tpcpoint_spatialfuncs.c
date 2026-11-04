@@ -176,8 +176,9 @@ tpcpoint_to_tgeompoint(const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TPCPOINT(temp, NULL);
-  const Pcpoint *first =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp));
+  /* The schema is the one of the first value, read in place */
+  const Pcpoint *first = (const Pcpoint *) DatumGetPointer(
+    tinstant_value_p(temporal_start_inst(temp)));
   PCSCHEMA *schema = meos_pc_schema(first->pcid);
   if (! schema)
     return NULL;
