@@ -39,9 +39,7 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
 | [Geodetic boxes](GEODETIC-BOXES.md) | The operations that read a geodetic box as something other than the longitude/latitude rectangle the manual defines, measured, and the pull requests that correct them |
 | [Exact crossings in the lifting infrastructure](EXACT-CROSSINGS.md) | Which microsecond dates a crossing that falls between two microseconds, and whether ever/always and the temporal result read the crossing in the same time |
 | [Any number of turning points in a binary lift](N-TURNING-POINTS.md) | Whether the lifting of a function of two arguments accepts any number of turning points per segment, as the unary lift already does, so that the temporal rigid geometries and the geodetic points stop keeping walks of their own |
-| [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md) | How the distance of a temporal rigid geometry answers a body or a static polygon that is not convex or has holes, which master refuses, and whether the minimum over parts carries its corners at their true instants |
-| [Feasibility of the distance of non-convex and holed geometries](NON-CONVEX-DISTANCE-FEASIBILITY.md) | What master already provides for that plan, what is new, how the convex cover is made exact, where the difficulty and the risk lie, and in which order the work is delivered |
-| [The relationships of a rigid geometry in linear motion](RIGID-SWEPT-RELATIONSHIPS.md) | Which ever, always and temporal relationships of a temporal rigid geometry are refused for linear motion, why its traversed area, its instants and its distance at zero do not answer them, the subset the exact temporal distance answers, the event algorithm that answers the rest exactly, its risks and the pull requests that deliver it |
+| [The temporal rigid geometries](../trgeometry/00-INDEX.md) | MobilityDB #3441 holds, as one plan of that type, the distance of non-convex and holed geometries with its feasibility, and the relationships of a rigid geometry in linear motion. |
 | [Every MEOS value is a finite number](FINITE-VALUES.md), MobilityDB #3352 | The rule (NaN and ±Infinity refused at every entry point, a result of finite operands beyond the doubles an error, a result within them answered, a division by zero an error, -0 equal to 0), the census of where MEOS does not apply it, and the pull requests that apply it, in order: the NaN work, the finite rule and the double error value |
 | [Exact text output of floating-point values](EXACT-FLOAT-TEXT.md) | Whether the default text of a floating-point value becomes the shortest form that reads back as the same double, and in which notation |
 
@@ -55,7 +53,7 @@ the bindings are the subject of the portable naming notes of MobilityDB #2861.
   specified for its users in `doc/specs/meos-exact-geometry.md`, MobilityDB #3372, merged as `fe8c187b2b`, whose
   version v0.2.0 covers the distances, predicates and relationships. The work that starts after it,
   [Exact crossings](EXACT-CROSSINGS.md) steps 2–4, [Any number of turning points](N-TURNING-POINTS.md)
-  and [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md), interleaved as those
+  and [The distance of non-convex and holed geometries](../trgeometry/NON-CONVEX-DISTANCE.md), interleaved as those
   notes order it, is open to start.
 - **The smallest circle enclosing a geometry is exact**: MobilityDB #3105 (`adbb2ebad1`) searches
   the double nearest its radius by a polynomial of degree six, a term of an exact polynomial
