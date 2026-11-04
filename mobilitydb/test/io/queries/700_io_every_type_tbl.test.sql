@@ -2457,6 +2457,12 @@ SELECT asEWKT(tgeompointFromEWKB(asEWKB(tgeompoint 'SRID=4326;Point(1 1)@2001-01
 SELECT asHexEWKB(tgeompoint 'SRID=4326;Point(1 1)@2001-01-01');
 select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'NDR');
 select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'XDR');
+SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
+SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E6100000000000000000F03F000000000000F03F0060885EC91C0000'));
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E6100000000000000000F03F000000000000F03F'));
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E0000000000000000F03F000000000000F03F'));
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 SELECT astext('{}'::geometry[]);
 SELECT bool_and(d ~ '^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?([+-]\d{2}:\d{2}|Z)$')
@@ -3598,6 +3604,9 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint '[Point(3 3 3)@2001-01-03, Point(4 4 4)@2001-01-04)'),
   (tgeompoint '[Point(2 2 2)@2001-01-02, Point(3 3 3)@2001-01-03)')) t(temp);
 SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1e308 1)@2001-01-01, Point(1e308 1)@2001-01-02]'),
+  ('[Point(1e308 3)@2001-01-01, Point(1e308 3)@2001-01-02]')) t(temp);
+SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2001-01-01'),
   (tgeompoint 'srid=5676;Point(1 1)@2001-01-01'),
   ('Point(2 2)@2001-01-01')) t(temp);
@@ -4287,6 +4296,9 @@ SELECT nsegmentFromHexWKB(asHexWKB(nsegment 'NSegment(1,0.5,0.7)'));
 SELECT nsegmentFromHexEWKB(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)'));
 SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000162C', '000010E6'));
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
+SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
+SELECT npointsetFromHexEWKB('013100412C16000001000000412C1600000100000000000000000000000000E03F');
+SELECT npointsetFromHexEWKB('01310041E61000000100000041E61000000100000000000000000000000000E03F');
 SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
 SELECT asText(nsegment 'NSegment(1,0.123456,0.7)', 2);
 SELECT asEWKT(nsegment 'NSegment(1,0.5,0.7)');
@@ -5041,6 +5053,9 @@ SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '{Pose(Point(1 1), 0.3)@2001-01-0
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03]')));
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+SELECT asEWKT(tposeFromHexEWKB('01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Pose(Point(1 1), 0.5)@2001-01-01', 'NDR')));
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose '{Pose(Point(1 1), 0.3)@2001-01-01, Pose(Point(1 1), 0.5)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03}', 'NDR')));
