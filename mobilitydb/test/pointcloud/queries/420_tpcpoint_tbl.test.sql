@@ -127,3 +127,10 @@ SELECT bool_and(minusTpcbox(temp,
 FROM tbl_tpcpoint;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The cast to tpcbox is the box the extent of each value answers
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tpcpoint WHERE temp::tpcbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tpcpoint WHERE tpcbox(temp) <> extentTransition(NULL::tpcbox, temp);

@@ -789,6 +789,23 @@ pcpatch_to_tpcbox(const Pcpatch *pa)
   return pcpatch_srid_to_tpcbox(pa, srid);
 }
 
+/**
+ * @ingroup meos_pointcloud_box_conversion
+ * @brief Return the bounding box of a temporal point cloud value, as
+ * #tspatial_to_stbox returns the one of a spatiotemporal value
+ * @param[in] temp Temporal point cloud value
+ * @csqlfn #Tpointcloud_to_tpcbox()
+ */
+TPCBox *
+tpointcloud_to_tpcbox(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOINTCLOUD(temp, NULL);
+  TPCBox *result = palloc(sizeof(TPCBox));
+  temporal_set_bbox(temp, result);
+  return result;
+}
+
 /*****************************************************************************
  * Accessors
  *

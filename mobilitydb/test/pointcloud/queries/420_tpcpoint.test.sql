@@ -153,6 +153,14 @@ SELECT (tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]))::tstzspan =
   timeSpan(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3]));
 
 -------------------------------------------------------------------------------
+-- Cast to tpcbox: the bounding box of the value
+-------------------------------------------------------------------------------
+
+SELECT (:inst1)::tpcbox;
+SELECT tpcbox(tpcpointSeq(ARRAY[:inst1, :inst2, :inst3])) =
+  extent(x) FROM unnest(ARRAY[:inst1, :inst2, :inst3]) x;
+
+-------------------------------------------------------------------------------
 -- Comparisons
 -------------------------------------------------------------------------------
 

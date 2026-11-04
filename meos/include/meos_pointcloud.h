@@ -379,6 +379,7 @@ extern TPCBox *tpcbox_copy(const TPCBox *box);
 /* Conversion */
 
 extern TPCBox *pcpatch_to_tpcbox(const Pcpatch *pa);
+extern TPCBox *tpointcloud_to_tpcbox(const Temporal *temp);
 
 /* Accessors */
 
