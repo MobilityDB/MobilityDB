@@ -707,10 +707,10 @@ nad_tpointcloud_tpointcloud(const Temporal *temp1, const Temporal *temp2)
 
   /* Values of different schemas live in unrelated coordinate systems and are
    * rejected, exactly as the TPCBox path above rejects them */
-  const Pcpoint *first1 =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp1));
-  const Pcpoint *first2 =
-    (const Pcpoint *) DatumGetPointer(temporal_start_value(temp2));
+  const Pcpoint *first1 = (const Pcpoint *) DatumGetPointer(
+    tinstant_value_p(temporal_start_inst(temp1)));
+  const Pcpoint *first2 = (const Pcpoint *) DatumGetPointer(
+    tinstant_value_p(temporal_start_inst(temp2)));
   if (! ensure_same_pcid_pcpoint(first1, first2))
     return -1.0;
 
