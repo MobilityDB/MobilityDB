@@ -215,9 +215,9 @@ CREATE OPERATOR CLASS tpcpoint_rtree_ops
   FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
   FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
   FUNCTION  8 (tpcpoint, tpcbox)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+    tpcpoint_gist_distance(internal, tpcpoint, smallint, oid, internal),
   FUNCTION  8 (tpcpoint, tpcpoint)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+    tpcpoint_gist_distance(internal, tpcpoint, smallint, oid, internal),
   FUNCTION 11 tpcbox_gist_sortsupport(internal);
 
 /*****************************************************************************
@@ -310,9 +310,9 @@ CREATE OPERATOR CLASS tpcpatch_rtree_ops
   FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
   FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
   FUNCTION  8 (tpcpatch, tpcbox)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+    tpcpatch_gist_distance(internal, tpcpatch, smallint, oid, internal),
   FUNCTION  8 (tpcpatch, tpcpatch)
-    tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
+    tpcpatch_gist_distance(internal, tpcpatch, smallint, oid, internal),
   FUNCTION 11 tpcbox_gist_sortsupport(internal);
 
 /*****************************************************************************/

@@ -77,4 +77,20 @@ CREATE FUNCTION tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************/
+
+/*****************************************************************************
+ * GiST distance of the temporal point clouds, the support function the operator
+ * classes of tpcpoint and tpcpatch register at strategy 25
+ *****************************************************************************/
+
+CREATE FUNCTION tpcpoint_gist_distance(internal, tpcpoint, smallint, oid, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tpointcloud_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tpcpatch_gist_distance(internal, tpcpatch, smallint, oid, internal)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Tpointcloud_gist_distance'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+/*****************************************************************************/
 -- GENERATED-DISTANCE-END tpc

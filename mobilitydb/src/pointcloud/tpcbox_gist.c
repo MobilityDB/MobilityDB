@@ -333,19 +333,17 @@ Tpcbox_spgist_compress(PG_FUNCTION_ARGS)
  * GiST distance — KNN ordering (strategy 25)
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpcbox_gist_distance(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_distance);
 /**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST distance method — minimum nearest-approach distance from
- *   the index key (TPCBox) to the query (tpcbox / tpcpoint / tpcpatch)
- * @details Returns DBL_MAX for null keys or pcid mismatches; the
- *   recheck on leaf entries refines the distance to the actual leaf
- *   values.
- * @sqlfn tpcbox_gist_distance()
+ * @brief Return the distance between the bounding box of an index entry and a
+ * query, in the last argument whether the leaf entries must be rechecked
+ * @details Returns DBL_MAX for a null key, a query of another type and a
+ * distance the boxes cannot state
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] boxcolumn True when the index is built over a column of point
+ *   cloud boxes, so that a leaf key is the value itself
  */
-Datum
-Tpcbox_gist_distance(PG_FUNCTION_ARGS)
+static Datum
+tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
 {
   GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
   Oid typid = PG_GETARG_OID(3);
@@ -353,15 +351,18 @@ Tpcbox_gist_distance(PG_FUNCTION_ARGS)
   TPCBox *key = (TPCBox *) DatumGetPointer(entry->key);
   if (! key)
     PG_RETURN_FLOAT8(DBL_MAX);
+  MeosType qtype = oid_meostype(typid);
 
-  /* Index keys are bboxes; recheck on leaf levels refines against the
-   * actual leaf entry. */
+  /* A leaf key of a column of boxes is the value itself, so its distance to a
+   * query box is the one the operator computes, and an index-only scan, which
+   * refuses a rechecked distance, can return it. Every other pairing measures
+   * a bounding box against a value and bounds the distance from below, which
+   * the recheck of the leaf entries settles */
   if (GIST_LEAF(entry))
-    *recheck = true;
+    *recheck = ! (boxcolumn && qtype == T_TPCBOX);
 
   /* Derive a TPCBox from whatever query-type the user supplied. */
   TPCBox query;
-  MeosType qtype = oid_meostype(typid);
   if (qtype == T_TPCBOX)
   {
     memcpy(&query, DatumGetTpcboxP(PG_GETARG_DATUM(1)), sizeof(TPCBox));
@@ -379,12 +380,48 @@ Tpcbox_gist_distance(PG_FUNCTION_ARGS)
   if (MEOS_FLAGS_GET_PARTS(key->flags))
     PG_RETURN_FLOAT8(-get_float8_infinity());
   /* Where the distance raises its error on the boxes under the key, the
-   * entry is visited before every other one, and the operator applied to the
-   * rows of its leaves, which are rechecked, raises it */
+   * entry is visited before every other one. A leaf the executor rechecks
+   * leaves the error to the operator applied to its row; the exact leaf of a
+   * column of boxes is the value itself, which an index-only scan returns
+   * without a recheck, so the distance applied to it raises the error */
   if (! index_distance_is_valid(T_TPCBOX, key, &query))
+  {
+    if (GIST_LEAF(entry) && ! *recheck)
+      PG_RETURN_FLOAT8(index_distance_apply(T_TPCBOX, key, &query));
     PG_RETURN_FLOAT8(-get_float8_infinity());
+  }
 
   PG_RETURN_FLOAT8(nad_tpcbox_tpcbox(key, &query));
+}
+
+PGDLLEXPORT Datum Tpcbox_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_distance);
+/**
+ * @ingroup mobilitydb_pointcloud_index
+ * @brief GiST distance method of a column of point cloud boxes: the minimum
+ *   nearest-approach distance from the index key to the query (tpcbox /
+ *   tpcpoint / tpcpatch), exact at a leaf the query is a box for
+ * @sqlfn tpcbox_gist_distance()
+ */
+Datum
+Tpcbox_gist_distance(PG_FUNCTION_ARGS)
+{
+  return tpcbox_gist_distance(fcinfo, true);
+}
+
+PGDLLEXPORT Datum Tpointcloud_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointcloud_gist_distance);
+/**
+ * @ingroup mobilitydb_pointcloud_index
+ * @brief GiST distance method of a column of temporal point clouds: the
+ *   minimum nearest-approach distance from the bounding box of the index key
+ *   to the query, which the recheck of the leaf entries refines
+ * @sqlfn tpcpoint_gist_distance(), tpcpatch_gist_distance()
+ */
+Datum
+Tpointcloud_gist_distance(PG_FUNCTION_ARGS)
+{
+  return tpcbox_gist_distance(fcinfo, false);
 }
 
 /*****************************************************************************

@@ -297,6 +297,77 @@ RESET enable_indexscan;
 RESET
 RESET enable_bitmapscan;
 RESET
+CREATE TABLE tbl_tpcbox_knn AS SELECT b FROM tbl_tpcbox;
+SELECT 100
+CREATE INDEX tbl_tpcbox_knn_rtree_idx ON tbl_tpcbox_knn USING gist(b);
+CREATE INDEX
+VACUUM ANALYZE tbl_tpcbox_knn;
+VACUUM
+CREATE FUNCTION tpcbox_knn_reads_index_only() RETURNS boolean AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXPLAIN (COSTS OFF) SELECT b |=| tpcboxZT(200, 200, 200,
+      210, 210, 210, tstzspan '[2001-06-01, 2001-12-31]', 1)
+    FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 LOOP
+    IF line LIKE '%Index Only Scan%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$ LANGUAGE plpgsql;
+CREATE FUNCTION
+SET enable_seqscan = on;
+SET
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+WITH test AS (
+  SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
+  FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 181.658966
+ 185.207489
+  187.62816
+(3 rows)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SELECT tpcbox_knn_reads_index_only();
+ tpcbox_knn_reads_index_only 
+-----------------------------
+ t
+(1 row)
+
+WITH test AS (
+  SELECT b |=| tpcboxZT(200, 200, 200, 210, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
+  FROM tbl_tpcbox_knn ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+   round    
+------------
+ 181.658966
+ 185.207489
+  187.62816
+(3 rows)
+
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+DROP FUNCTION tpcbox_knn_reads_index_only();
+DROP FUNCTION
+DROP TABLE tbl_tpcbox_knn;
+DROP TABLE
 INSERT INTO pointcloud_formats (pcid, srid, schema)
 SELECT 2, srid, schema FROM pointcloud_formats WHERE pcid = 1;
 INSERT 0 1
