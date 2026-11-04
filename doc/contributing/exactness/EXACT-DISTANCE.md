@@ -191,10 +191,148 @@ reviewer reads each one alone.
 | ED20 | Whether two static geometries of straight edges are within a distance, in 2D | `geom_dwithin2d` compared the given distance with a rounded distance. The double nearest their distance (`geom_distance2d_exact`) decides where it differs from the given distance, since rounding is monotone; where the two are equal the answer is read with no rounding, by `linesegm_intersect`, `point_segment_offset_sign` of each end against the other's segments and the exact containment of the distance walk. The walk takes the given distance as a cut, so it passes over the pairs beyond it and stops at an upper bound below it; two points are answered from their coordinates. The parameter of `geom_dwithin`, `geom_dwithin2d` and `geom_dwithin3d` is `dist`, as in the other dwithin functions | MobilityDB #3385, merged as `957a7a1e9f`; CGAL (Gmpq) on the head agrees on all 4405 pairs of the ED8 corpus and 45 pairs of ties, distances below half the least double and containments, each asked at 0, at the double nearest the distance and at the doubles either side, and refuses the same questions read through the rounded comparison on 1678 of the 4405; 0.64, 0.63 and 0.63 of `GEOSDistanceWithin` over 5050 pairs at the distances 10, 1000 and 100000, and the distance itself 0.18 of `GEOSDistance`; witness, controls and cells in `home-kit`, `cpwork/dwithin` |
 | ED21 | Whether two static geometries of points and segments are within a distance, in 3D | The double nearest their distance (`geom_distance3d_exact`) decides where it differs from the given distance, and its walk takes the given distance as a cut. Where the two are equal, two segments are within the distance exactly where their nearest points lie inside both and `(e . n)^2 - d^2 (n . n)` is not positive (`segment_interior_offset_sign`, on `WideDyadic`), or an end of one is within it of the other (`point_segment_offset_sign`). The walk decides a tie itself, in 2D as in 3D, so the exact signs read only the pairs it keeps, and an end past the distance by more than the margin of the doubles takes no exact sign (`geom_dwithin_end`) | MobilityDB #3406, merged as `609ce180e0`; CGAL (Gmpq) on the head agrees on the 2300 rows of the 3D corpus, 38 refuting rows and 150 at far scales, each asked at 0, at the double nearest the distance and at the doubles either side. Against `lwgeom_mindistance3d_tolerance` called directly, by callgrind, at the tie, at twice the distance plus one and at half the distance: 4.006, 0.672 and 0.586 on real AIS, 22.316, 2.428 and 3.141 on generated rows; witness, controls and probes in `oracle-kit`, `cpwork/dwithin3d` |
 | ED22 | Whether two static geometries carrying arcs are within a distance, in 2D | The geometry is read into points, segments and arcs from its doubles and every pair of edges is asked, past a box and a gap in doubles (`exact_arc_bound`), by the sign of a difference of square roots (`point_arc_within_exact`, `arcsegm_within_exact`, `arcarc_within_exact`, on the tower of `tower_sign_k`); a part inside a surface is read from the parity of a ray (`point_arc_ray_parity`). The tower keeps its signs outside the range of doubles, its last tier as many limbs as a value takes (`TowerWide`) | MobilityDB #3412, merged as `1eeae2920c`; CGAL (`Gmpq`, CORE square roots) on the head agrees on 440 refuting rows, 1440 random rows, 30 rows of real curves and 30 of those moved apart, each asked at 0, at half the distance, at the double nearest it and either side, and past it, where `lwgeom_mindistance2d_tolerance` disagrees on 147, 858, 0 and 30; 320 rows spreading from 1e-320 to 1e300, where CORE asserts, are judged in `Fraction` at 20000 bits, 0 of 1920 asks differing. Against that function called directly, by callgrind, near the distance, at twice it plus one and at half it: 0.955, 0.955 and 0.955 on the real curves, 0.755, 0.822 and 0.637 moved apart, 4.389, 1.395 and 1.540 on random pairs; witness, controls and probes in `oracle-kit`, `cpwork/dwithin-arc` |
-| ED23 | Whether two static geometries with a surface in 3D, a triangle, a TIN or a polyhedral surface, or an arc in 3D, are within a distance | `geom_dwithin3d` compares the given distance with `lwgeom_mindistance3d_tolerance` on a polygon or an arc in 3D, and `geom_dwithin2d` with `lwgeom_mindistance2d_tolerance` on a triangle, a TIN or a polyhedral surface, rounded distances | not started |
+| ED23 | Whether a triangle, a TIN or a polyhedral surface is within a distance, in 2D | `geom_curve_parts` reads a triangle as a surface of one ring, and a TIN and a polyhedral surface as the surfaces of their faces, so no type of `geom_dwithin2d` reaches `lwgeom_mindistance2d_tolerance` | Branch `fix/static-dwithin-surfaces-exact`, `4a0d84c464`, earning its receipts; CGAL (`Gmpq`, CORE square roots) on the head agrees on 320 refuting rows, 1320 random rows and 40 real outlines read as fans of triangles, where that function called directly disagrees on 52, 471 and 25. Against it, by callgrind, near the distance, at twice it plus one and at half it: 0.193, 0.040 and 0.290 on the outlines, 3.227, 1.925 and 1.300 on random pairs |
+| ED24 | Whether a triangle, a TIN or an exactly coplanar polygon or surface is within a distance, in 3D | A filtered exact coplanarity test on each polygon picks the route; [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) | not started |
+| ED25 | Whether a geometry carrying an arc is within a distance, in 3D | An error today, not a rounded answer; the reading of the arc is the open decision of [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) | not started |
+| ED26 | Whether a polygon not exactly coplanar, or a solid, is within a distance, in 3D | Left on `lwgeom_mindistance3d_tolerance` for the moment, by the decision of the owner, so its answers stay rounded | not started, deferred |
+| ED27 | The distance in 3D of a geometry carrying an arc | `geom_distance3d` raises an error where ED25 would answer `geom_dwithin3d`; a distance needs the nearest double, more than a sign | not started |
+| ED28 | `edwithin_tgeo_geo` of a moving point with Z and an arc with Z | Answers false with no error, whatever the distance; the cause is not traced and it is not tried through SQL | not started |
 
 The geodetic distances are not in the plan: an exact answer on the spheroid needs a definition
 first, which the [geodetic boxes](GEODETIC-BOXES.md) share.
+
+## Surfaces and arcs in 3D
+
+Rows ED24 to ED28 rest on what a surface and an arc mean in three dimensions. Every double is a
+rational, so an exact answer exists once the point set is defined, and two types do not define one.
+
+### What the code does today
+
+Measured on `4a0d84c464` with `geom_dwithin3d`, `geom_distance3d` and `edwithin_tgeo_geo` called directly:
+
+| Call | Answer |
+|---|---|
+| `geom_dwithin3d`, a point with Z and `CIRCULARSTRING Z`, `COMPOUNDCURVE Z` or `CURVEPOLYGON Z` | false, with an error raised |
+| `geom_distance3d`, a point with Z and an arc with Z | an error raised |
+| `geom_dwithin`, a point with no Z and an arc with Z of three heights | answers in 2D on the circle through the vertices stripped of Z |
+| `edwithin_tgeo_geo`, a moving point with Z and `LINESTRING Z(5 0 2,0 5 2)`, at 6 | true |
+| `edwithin_tgeo_geo`, the same point and `CIRCULARSTRING Z(5 0 2,3 4 2,0 5 2)`, at 6 and at 100 | false, no error, the point starting 5.385 from the arc |
+| `edwithin_tgeo_geo`, the same with no Z, at 6 and at 100 | true |
+
+`measures3d.c` holds no case of `CIRCSTRINGTYPE`, `CURVEPOLYTYPE` or `COMPOUNDTYPE`: an arc reaches the
+`lwerror` of `lw_dist3d_distribute_bruteforce`. No expected output of the tests depends on that error.
+
+### What PostGIS does with a polygon not coplanar
+
+`measures3d.c` never tests planarity; the word occurs neither there nor in `lwpoly.c`. It proceeds as if
+the polygon were flat. `define_plane` takes the average of the vertices of the outer ring and sums three
+cross products sampled around it, in doubles; holes play no part. `pt_in_ring_3d` projects the point on
+that plane, drops the coordinate where the normal is largest and counts crossings in 2D. Inside, the
+distance is that to the plane; outside, to the vertices and edges of the ring, which do not lie on the
+plane where the polygon is warped. A segment crossing the plane inside the ring is at distance 0
+(`lw_dist3d_ptarray_poly`). A ring defining no plane is measured as a ring (`lw_dist3d_point_poly`). A warped polygon is
+a flat patch and a boundary off it, and the answer depends on where the samples land.
+
+A solid is a polyhedral surface with the flag `FLAGS_GET_SOLID`, at distance 0 of what it contains.
+`lwgeom_solid_contains_lwgeom` casts a ray along Z, and where the ray meets a boundary it skews both
+geometries by a random shear and casts again.
+
+### How often a polygon is exactly coplanar
+
+Quadrilaterals built on a plane and rounded to doubles, seed 3287, 1000 of each, tested in `Fraction`.
+These are generated, not real data:
+
+| Quadrilateral | Exactly coplanar |
+|---|---|
+| A vertical wall, rotated in plan | 1000 |
+| An axis-aligned rectangle on a tilted plane | 740 |
+| A rotated rectangle on a tilted plane | 391 |
+
+### Polygons: what ED24 and ED26 do
+
+The owner's direction is to leave a polygon not exactly coplanar out for the moment. ED24 answers
+triangles, TINs and exactly coplanar polygons; a polygon that is not, or a polyhedral surface with such a
+face, and a solid, stay on `lwgeom_mindistance3d_tolerance`. Two nearly identical tilted polygons may then
+take different routes on their low bits, their answers differing only where a distance lies within
+rounding of the given one. This falls short of [the rule](#the-oracle) that every question has one exact
+answer, so ED26 stays in the plan. The readings ED26 will choose from:
+
+1. The Newell plane, exact: the plane through the average of the vertices with the Newell normal, the
+   region the ring projected on it. Independent of the first vertex, its normal of degree two, so a filter
+   in doubles and the exact signs stay cheap. CGAL builds the plane of a facet so (`normal_vector_newell_3`
+   in `polygon_mesh_to_nef_3.h`). On a coplanar polygon this is its own plane; on a warped one it can
+   differ from PostGIS. This is the reading recommended.
+2. The plane of `define_plane`, computed exactly: closest to PostGIS on a warped polygon, but its normal
+   divides by squared lengths, which costs far more in both layers, and it depends on where the samples
+   land.
+
+### Arcs: what a Z on an arc means
+
+A Z on an arc has no single meaning, and the choice decides whether an exact answer exists:
+
+| Reading | The curve | Exact | Agrees with the 2D reading and PostGIS |
+|---|---|---|---|
+| A, a true 3D circle | the circle through the three points in their plane | yes, algebraic | no: its shadow is an ellipse, where `geom_dwithin2d` reads the circle through the vertices |
+| B, the stroke of PostGIS | a circle in XY with Z linear in the angle, piecewise through the middle point (`interpolate_arc` in `lwstroke.c`, the only use of that reading): a helix | no: the distance mixes the angle with its sine and cosine, so roots do not decide it and CGAL cannot judge it | yes |
+| C, level arcs only | all three points share one Z, a flat circle at that height | yes | yes: A and B give this curve here |
+
+What other systems do:
+
+| System | A Z on an arc, or a nearly flat shape | Tolerance |
+|---|---|---|
+| CGAL arcs | `Circular_arc_3(start, middle, end)` and `Circle_3(p1, p2, p3)` take any three 3D points: reading A, and a near-level arc is a circle in a slightly tilted plane | none in those headers |
+| CGAL Nef polyhedra | the plane of a facet is its exact Newell normal | none in that construction |
+| SFCGAL | tests planarity, per a [PostGIS developer](https://lists.osgeo.org/pipermail/postgis-devel/2018-November/027486.html) | 1e-9 |
+| SQL Server | [describes an arc](https://learn.microsoft.com/en-us/previous-versions/sql/2014/relational-databases/spatial/circularstring?view=sql-server-2014) in a 2D plane | not applicable |
+
+A [user of SFCGAL](https://lists.osgeo.org/pipermail/postgis-users/attachments/20161202/fb1088a0/attachment.html)
+writing exact CGAL results into PostGIS found that rounding to doubles made coplanar points fail its
+check, so its tolerance does not remove the low-bit failure. The
+[reference of `Circular_arc_3`](https://doc.cgal.org/5.5/Circular_kernel_3/classCGAL_1_1Circular__arc__3.html)
+warns that the middle point may not lie on the arc for some orderings, which a judge must verify. The
+sources found say nothing on Open CASCADE or on the text of ISO 19107 for Z.
+
+### The consequences of C
+
+Only calls that raise an error today change, so no answer moves:
+
+1. Level means exactly equal doubles. Heights of `2.0` and `2.0000000000000004` make an arc sloped, and it
+   raises an error, so data through a reprojection can fail on its low bits. A tolerance would be a band
+   deciding an answer, which [the rule](#the-oracle) forbids.
+2. Level is read arc by arc. A compound curve may hold arcs at different heights joined by sloped lines.
+   One sloped arc makes the whole call raise an error, inside a collection too, with no partial answer.
+3. A curve polygon needs all its rings at one height, then acts as a flat disc. A sloped ring has no flat
+   region.
+4. What stays on liblwgeom (ED26) still raises an error against an arc. An arc against the inside of a
+   tilted face may be its own row.
+5. `geom_dwithin3d` goes further than `geom_distance3d` (ED27).
+6. The same sloped arc answers in 2D against a point with no Z and raises an error against a point with Z.
+7. liblwgeom has no answer here, so the cost has no parity ratio; it is reported alone and against the 2D
+   arc route.
+8. CGAL has no ready witness of a sloped segment against an arc, whose condition is a quartic: the
+   algebraic kernel of CGAL 5.4 is to be tested, with a Sturm count in `Fraction` as second judge.
+
+### The decision open
+
+The owner chose C, then asked whether its low-bit error is the best strategy. It is not the best end
+state: a change of one bit in a height turns an answer into an error, where under reading A the same change
+moves the circle by a tiny amount and the answer stays defined. The recommendation awaiting the owner's
+decision is reading A as the definition, implemented in stages. This rests on a derivation neither coded nor
+tested: in any plane the centre and the squared radius are rational, and so is the squared height
+`(n . (p - c))^2 / (n . n)`, so the tilted point and segment cases reduce to the forms of the level ones.
+
+| Pair | C | A in stages |
+|---|---|---|
+| A point or a segment against an arc | level arcs only | all arcs |
+| Two arcs in one plane or in parallel planes | level only | answers |
+| Two arcs in planes not parallel, a polynomial near degree 8 | an error | an error stating that reason |
+| An arc against the inside of a tilted face | may be its own row | may be its own row |
+
+Level arcs answer the same under both, so nothing is lost against C. Low-bit sensitivity remains for two
+near-level arcs whose planes are not exactly parallel, until the harder kernel. The cost falls on truly
+sloped arcs: their reading in 3D is a tilted circle whose shadow is an ellipse, while 2D drops Z from the
+vertices and PostGIS strokes the circle through them, a difference tiny on a near-level arc and real on a
+steep one. ED25 starts once the owner decides.
 
 ## What other libraries reach, and what it leaves
 
