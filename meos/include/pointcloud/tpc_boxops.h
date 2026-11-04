@@ -70,16 +70,6 @@ extern bool boxop_tpointcloud_tpointcloud(const Temporal *temp1,
  * typedef'd via meos.h above. */
 extern void tpcbox_set_stbox(const TPCBox *src, STBox *dst);
 
-/* Nearest-approach distance between two TPCBox values. Returns DBL_MAX
- * when their time spans don't overlap or the pcids differ. */
-extern double nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
-
-/* Nearest-approach distance between a temporal pointcloud value and a
- * tpcbox / another temporal pointcloud value. */
-extern double nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box);
-extern double nad_tpointcloud_tpointcloud(const Temporal *temp1,
-  const Temporal *temp2);
-
 /*****************************************************************************/
 
 #endif /* __TPC_BOXOPS_H__ */

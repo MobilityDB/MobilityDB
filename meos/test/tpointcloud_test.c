@@ -299,6 +299,31 @@ int main(void)
   assert(temporal_eq(proj, proj_exp));
   free(pinst); free(proj_exp); free(proj); free(proj_out);
 
+  /* The nearest approach distance of two boxes of a schema is the one of
+   * their spatial extents over the time they share, two boxes sharing no time
+   * have none, and a point is measured to a box and to another point at the
+   * instant they share */
+  TPCBox *near1 = tpcbox_in("TPCBOX(XT(((1,1),(3,3)),[2024-01-01,2024-01-02]), 2)");
+  TPCBox *near2 = tpcbox_in("TPCBOX(XT(((6,7),(8,9)),[2024-01-02,2024-01-03]), 2)");
+  TPCBox *later = tpcbox_in("TPCBOX(XT(((6,7),(8,9)),[2024-02-01,2024-02-02]), 2)");
+  TPCBox *cube = tpcbox_in("TPCBOX(ZT(((5,5,5),(6,6,6)),[2024-01-01,2024-01-02]), 2)");
+  assert(near1 != NULL && near2 != NULL && later != NULL && cube != NULL);
+  TInstant *at1 = tpcpointinst_make(p1, timestamptz_in("2024-01-01", -1));
+  TInstant *at3 = tpcpointinst_make(p3, timestamptz_in("2024-01-01", -1));
+  assert(at1 != NULL && at3 != NULL);
+  double nad_boxes = nad_tpcbox_tpcbox(near1, near2);
+  double nad_point_box = nad_tpointcloud_tpcbox((Temporal *) at1, cube);
+  double nad_points = nad_tpointcloud_tpointcloud((Temporal *) at1,
+    (Temporal *) at3);
+  printf("nad_tpcbox_tpcbox: %g, nad_tpointcloud_tpcbox: %g, "
+    "nad_tpointcloud_tpointcloud: %g\n", nad_boxes, nad_point_box, nad_points);
+  assert(meos_errno() == 0);
+  assert(nad_boxes == 5.0);
+  assert(nad_point_box > 6.9282 && nad_point_box < 6.9283);
+  assert(nad_points > 3.4641 && nad_points < 3.4642);
+  assert(nad_tpcbox_tpcbox(near1, later) == DBL_MAX);
+  free(near1); free(near2); free(later); free(cube); free(at1); free(at3);
+
   /* A box built from a pcid takes the SRID the schema of the pcid states;
    * pcid 0 names no schema and states SRID 0, and a box with no spatial
    * dimension states SRID 0 whatever its pcid */
