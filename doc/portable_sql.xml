@@ -129,6 +129,7 @@
 
 	<sect1 xml:id="portable_sql_distance">
 		<title>Distance Operations</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<para><varname>tDistance</varname> returns the distance between two values at each instant, as a temporal float, and <varname>nearestApproachDistance</varname> the smallest of these distances. <varname>distance</varname> and its set, span and span set forms return the distance between two values, and <varname>th3GridDistance</varname> the grid distance between two temporal H3 cells at each instant, as a temporal big integer.</para>
 

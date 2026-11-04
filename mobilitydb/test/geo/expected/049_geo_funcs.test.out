@@ -748,9 +748,17 @@ SELECT ST_AsText(shortestLine(geometry 'Point(0 0 0)', geometry 'Linestring(1 -1
 (1 row)
 
 SELECT distance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
-ERROR:  Operation on mixed 2D/3D dimensions
+ distance 
+----------
+        5
+(1 row)
+
 SELECT maxDistance(geometry 'Point(0 0 0)', geometry 'Point(3 4)');
-ERROR:  Operation on mixed 2D/3D dimensions
+ maxdistance 
+-------------
+           5
+(1 row)
+
 SELECT round(area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric),
   round(ST_Area(geography 'Polygon((0 0,1 0,1 1,0 1,0 0))')::numeric);
     round    |    round    

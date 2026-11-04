@@ -536,9 +536,9 @@ SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT(((1,1,1),(1,1,1)),[20
 
 /* Errors */
 SELECT stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-02])' |=| geometry 'SRID=5676;Point(0 0)';
-SELECT stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-02])' |=| geometry 'Point(0 0 0)';
+SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-02])' |=| geometry 'Point(0 0 0)'), 6);
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' |=| stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))';
-SELECT stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04])' |=| geography 'Point(0 0)';
+SELECT round((stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04])' |=| geography 'Point(0 0)'), 3);
 
 SELECT round((tgeompoint 'Point(1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])'), 6);
 SELECT round((tgeompoint 'Point(1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-02,2001-01-03])'), 6);
@@ -554,7 +554,7 @@ SELECT round((tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-03}' |=| st
 
 /* Errors */
 SELECT round((tgeompoint 'Point(1 1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])'), 6);
-SELECT round((tgeogpoint 'Point(1 1)@2001-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2001-01-01,2001-01-02])'), 6);
+SELECT round((tgeogpoint 'Point(1 1)@2001-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2001-01-01,2001-01-02])'), 3);
 
 SELECT round((stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])' |=| tgeompoint 'Point(1 1)@2001-01-01' ), 6);
 SELECT round((stbox 'STBOX XT(((2,2),(2,2)),[2001-01-02,2001-01-03])' |=| tgeompoint 'Point(1 1)@2001-01-01' ), 6);
@@ -960,5 +960,17 @@ SELECT tgeompoint '[Point(-1e153 0)@2001-01-01, Point(-1e153 4)@2001-01-02]' <->
 SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <-> geometry 'Linestring(1e200 -1,1e200 1)';
 -- Coordinates beyond 2^1021 and below 2^-1021 in one pair of segments in 3D
 SELECT round((tgeompoint '[Point(1e308 0 1e-310)@2001-01-01, Point(-1e308 1 2e-310)@2001-01-02]' |=| geometry 'Point(0 3e-310 5)')::numeric, 6);
+
+-------------------------------------------------------------------------------
+
+-- Operands of different dimensions read the dimensions both have: the examples
+-- of the manual, the answers in both orders, and an operation building a value
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]' |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+SELECT tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]' |=| tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]';
+SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(10 0 0)@2001-01-02]' |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+SELECT merge(tgeompoint 'Point(0 0)@2001-01-01', tgeompoint 'Point(0 0 0)@2001-01-02');
+SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=| tgeompoint 'SRID=4326;Point(0 0)@2001-01-01';
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
+SELECT asText(shortestLine(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
 
 -------------------------------------------------------------------------------

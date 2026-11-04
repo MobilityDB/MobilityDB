@@ -1188,6 +1188,7 @@ distance_posechain_geo(const PoseChain *pc, const GSERIALIZED *gs)
  * @details Each pose chain answers for the pose its composition gives, as
  * #distance_pose_pose answers for two poses
  * @param[in] pc1,pc2 Pose chains
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #Distance_posechain_posechain()
  */
@@ -1198,10 +1199,6 @@ distance_posechain_posechain(const PoseChain *pc1, const PoseChain *pc2)
   VALIDATE_NOT_NULL(pc1, -1.0); VALIDATE_NOT_NULL(pc2, -1.0);
   if (! ensure_same_srid(posechain_srid(pc1), posechain_srid(pc2)))
     return -1.0;
-  /* Two pose chains of different dimensions are not measured here, so they
-   * have no distance, which is an answer */
-  if (MEOS_FLAGS_GET_Z(pc1->flags) != MEOS_FLAGS_GET_Z(pc2->flags))
-    return DBL_MAX;
   Pose *pose1 = posechain_to_pose(pc1);
   Pose *pose2 = posechain_to_pose(pc2);
   double result = distance_pose_pose(pose1, pose2);

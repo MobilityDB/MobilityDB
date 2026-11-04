@@ -752,6 +752,7 @@ SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 	<sect1 xml:id="trgeometry_distance">
 		<title>Distance Operations</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<para>The distance functions compute the distance between the body of a temporal rigid geometry and a geometry, a temporal point, or the body of another temporal rigid geometry. The body at an instant is the reference geometry moved and turned by the pose at that instant.</para>
 

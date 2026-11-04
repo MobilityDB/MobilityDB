@@ -129,6 +129,7 @@
 
 	<sect1 xml:id="portable_sql_distance">
 		<title>Operaciones de distancia</title>
+		<para>Los operandos de dimensiones distintas se leen en las dimensiones que ambos tienen, véase <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<para><varname>tDistance</varname> devuelve la distancia entre dos valores en cada instante, como un flotante temporal, y <varname>nearestApproachDistance</varname> la menor de estas distancias. <varname>distance</varname> y sus formas de conjunto, rango y conjunto de rangos devuelven la distancia entre dos valores, y <varname>th3GridDistance</varname> la distancia en la cuadrícula entre dos celdas H3 temporales en cada instante, como un entero grande temporal.</para>
 

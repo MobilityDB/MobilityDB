@@ -489,14 +489,14 @@ SELECT round((geometry 'Point (0 0 0)' |=| stbox 'STBOX ZT(((1,1,1),(1,1,1)),[20
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-02])' |=| geometry 'SRID=5676;Point(0 0)'), 6);
 SELECT round((stbox 'STBOX XT(((1,1),(1,1)),[2001-01-01,2001-01-02])' |=| geometry 'Point(0 0 0)'), 6);
 SELECT stbox 'STBOX X((1.0,2.0),(3.0,4.0))' |=| stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))';
-SELECT round((stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04])' |=| geography 'Point(0 0)'), 6);
+SELECT round((stbox 'GEODSTBOX ZT(((1.0,2.0,3.0),(1.0,2.0,3.0)),[2001-01-03,2001-01-04])' |=| geography 'Point(0 0)'), 3);
 
 SELECT round((tgeometry 'Point(1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])'), 6);
 SELECT round((tgeometry 'Point(1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-02,2001-01-03])'), 6);
 
 /* Errors */
 SELECT round((tgeometry 'Point(1 1 1)@2001-01-01' |=| stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])'), 6);
-SELECT round((tgeography 'Point(1 1)@2001-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2001-01-01,2001-01-02])'), 6);
+SELECT round((tgeography 'Point(1 1)@2001-01-01' |=| stbox 'GEODSTBOX ZT(((2,2,2),(2,2,2)),[2001-01-01,2001-01-02])'), 3);
 
 SELECT round((stbox 'STBOX XT(((2,2),(2,2)),[2001-01-01,2001-01-02])' |=| tgeometry 'Point(1 1)@2001-01-01' ), 6);
 SELECT round((stbox 'STBOX XT(((2,2),(2,2)),[2001-01-02,2001-01-03])' |=| tgeometry 'Point(1 1)@2001-01-01' ), 6);

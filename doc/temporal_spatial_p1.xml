@@ -173,7 +173,7 @@ SELECT geoEquals(geometry 'Linestring(0 0,2 0)', geometry 'Linestring(0 0,1 0,2 
 dwithin(geometry,geometry,float) → boolean
 dwithin(geography,geography,float,spheroid boolean=true) → boolean
 </programlisting>
-				<para>Two geometries with Z are measured in 3D, as <varname>ST_3DDWithin</varname>, and in 2D when one of them has no Z. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
+				<para>Two geometries with Z are measured in 3D, as <varname>ST_3DDWithin</varname>, and in 2D when one of them has no Z, see <xref linkend="tgeo_different_dimensions"/>. For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT dwithin(geometry 'Point(0 0 0)', geometry 'Point(0 0 2)', 1.5);
 -- false

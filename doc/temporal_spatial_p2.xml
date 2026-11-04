@@ -71,7 +71,7 @@ atStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 minusStbox(tgeom,stbox,borderInc boolean=true) → tgeompoint
 </programlisting>
 				<para>The third optional argument is used for multidimensional tiling (see <xref linkend="ttype_tiling"/>) to exclude the upper border of the tiles when a temporal value is split in multiple tiles, so that all fragments of the temporal geometry are exclusive.</para>
-				<para>A temporal point is restricted in 3D. The Z dimension is taken into account only when both the temporal point and the box have it, so that 2D and 3D arguments can be mixed, and the result preserves the Z dimension of the temporal point. The body of a temporal geometry is instead clipped in 2D: a box holding coordinates refuses a temporal geometry having Z dimension, while a box holding only a period restricts it in time as for any other temporal type. The restriction of a <varname>tgeography</varname> to a spatiotemporal box is not implemented.</para>
+				<para>A temporal point is restricted in 3D. The Z dimension is taken into account only when both the temporal point and the box have it, see <xref linkend="tgeo_different_dimensions"/>, and the result preserves the Z dimension of the temporal point. The body of a temporal geometry is instead clipped in 2D: a box holding coordinates refuses a temporal geometry having Z dimension, while a box holding only a period restricts it in time as for any other temporal type. The restriction of a <varname>tgeography</varname> to a spatiotemporal box is not implemented.</para>
 				<para>A geodetic temporal point travels the great circle between two positions, and the box holds it where that circle enters and leaves the box: a trip from <varname>Point(10 60)</varname> to <varname>Point(50 60)</varname> reaches latitude 61.518762, and a trip across the antimeridian sweeps the longitudes the short way round. Two boxes meeting at a crossing state the same instant for it, so the pieces of a trip hold the period of the trip and its positions.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(atStbox(tgeogpoint '[Point(10 60)@2001-01-01, Point(50 60)@2001-01-02]',
@@ -195,6 +195,49 @@ SELECT asEWKT(transformPipeline(transformPipeline(tgeo, pipeline, 4326), pipelin
 		</itemizedlist>
 	</sect1>
 
+	<sect1 xml:id="tgeo_different_dimensions">
+		<title>Operands of Different Dimensions</title>
+		<para><emphasis role="strong">An operation relating two spatial values reads only the dimensions both of them have.</emphasis> Two values with Z are read in 3D. If one of them has no Z, both are read in 2D, the Z of the other one is ignored, and neither an error nor a notice is raised. The order of the operands does not change the answer.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- A car with no Z and a plane above it are at the distance of the map
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]' |=|
+  tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+-- 0
+-- Two values with Z are read in 3D
+SELECT tgeompoint '[Point(0 0 0)@2001-01-01, Point(10 0 0)@2001-01-02]' |=|
+  tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+-- 10000
+-- An operation building a value requires the same dimensions
+SELECT merge(tgeompoint 'Point(0 0)@2001-01-01', tgeompoint 'Point(0 0 0)@2001-01-02');
+-- ERROR:  The arguments must be of the same dimensionality
+-- Two reference systems are not comparable
+SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=|
+  tgeompoint 'SRID=4326;Point(0 0)@2001-01-01';
+-- ERROR:  Operation on mixed SRID
+</programlisting>
+		<itemizedlist>
+			<listitem>
+				<para>The rule covers the distances (<varname>|=|</varname>, <varname>&lt;-&gt;</varname>, <varname>nearestApproachInstant</varname>, <varname>shortestLine</varname>, <varname>distance</varname>, <varname>maxDistance</varname>, and the similarity distances), the distance within (<varname>eDwithin</varname>, <varname>aDwithin</varname>, <varname>tDwithin</varname>), the relationships <varname>intersects</varname> and <varname>disjoint</varname> in their ever, always, and temporal forms, and the bounding box operators. The nearest approach instant keeps the Z of the value it is taken from, and the shortest line of operands of different dimensions has no Z.</para>
+			</listitem>
+			<listitem>
+				<para>An operation building or comparing values requires the same dimensions and raises an error otherwise. This is the case of equality and comparison, <varname>merge</varname> and the constructors, the restriction to a value, the aggregates, the union and the intersection of boxes, and the tiles.</para>
+			</listitem>
+			<listitem>
+				<para>An operation with no definition in 3D, such as <varname>contains</varname>, <varname>covers</varname>, or <varname>touches</varname>, raises an error on any operand with Z.</para>
+			</listitem>
+			<listitem>
+				<para>A type with two dimensions, such as a temporal circular buffer or a temporal rigid geometry, reads the X and Y of a 3D operand of its distances. Its other relationships raise an error on an operand with Z.</para>
+			</listitem>
+			<listitem>
+				<para>A geography is measured on the surface of the earth: its Z is not read, whether or not the other operand has one.</para>
+			</listitem>
+			<listitem>
+				<para>Values in two spatial reference systems always raise an error, since their units are not comparable.</para>
+			</listitem>
+		</itemizedlist>
+		<para>Since the rule raises no error, a value that lacks its Z by mistake answers in 2D with no warning. A column declared with a Z dimension, such as <varname>tgeompoint(Sequence, PointZ)</varname>, accepts no value with no Z, so that a table cannot hold one.</para>
+	</sect1>
+
 	<sect1 xml:id="tgeo_spatial_bbox">
 		<title>Bounding Box Operations</title>
 
@@ -217,6 +260,7 @@ SELECT expandSpace(tgeompoint 'Point(0 0)@2001-01-01', 2);
 
 	<sect1 xml:id="tgeo_distance">
 		<title>Distance Operations</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<itemizedlist>
 			<listitem xml:id="tgeo_nearestApproachDistance">
@@ -476,6 +520,7 @@ SELECT round(nearestApproachDistance(tgeometry 'SRID=4326;[Polygon((4.35 50.84,
 
 	<sect1 xml:id="tgeo_everalways_rels">
 		<title>Ever and Always Relationships</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 		<itemizedlist>
 				<listitem xml:id="tgeo_eContains">
 					<indexterm significance="normal"><primary><varname>eContains</varname></primary></indexterm>

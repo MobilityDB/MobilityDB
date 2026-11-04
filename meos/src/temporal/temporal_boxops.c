@@ -575,10 +575,9 @@ index_query_project(MeosType bboxtype, const void *query, const void *box,
  * validators the distance calls: a span distance tests the span types
  * (#span_type_is_same); a box distance tests the pair (#tbox_tbox_is_valid,
  * #stbox_stbox_is_valid, #tpcbox_tpcbox_is_valid) and that both boxes carry
- * the value or the space, a spatiotemporal or point cloud box distance tests
- * also that both have the same spatial dimensionality
- * (#same_spatial_dimensionality). It depends on the structures of the boxes
- * alone, see #bbox_same_structure
+ * the value or the space. Boxes of different dimensions read the dimensions
+ * both have (#stbox_nad). It depends on the structures of the boxes alone, see
+ * #bbox_same_structure
  * @param[in] bboxtype Type of the bounding boxes
  * @param[in] box Stored bounding box
  * @param[in] query Query bounding box
@@ -591,9 +590,7 @@ index_distance_is_valid(MeosType bboxtype, const void *box, const void *query)
     return span_type_is_same((const Span *) box, (const Span *) query);
   int16 f1, f2;
   bool pair = index_pair_is_valid(bboxtype, box, query, &f1, &f2);
-  if (! pair || ! MEOS_FLAGS_GET_X(f1) || ! MEOS_FLAGS_GET_X(f2))
-    return false;
-  return bboxtype == T_TBOX || same_spatial_dimensionality(f1, f2);
+  return pair && MEOS_FLAGS_GET_X(f1) && MEOS_FLAGS_GET_X(f2);
 }
 
 /**

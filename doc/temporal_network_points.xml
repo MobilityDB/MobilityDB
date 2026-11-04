@@ -943,6 +943,7 @@ SELECT tnpoint '[NPoint(1, 0.3)@2001-01-03, NPoint(1, 0.3)@2001-01-05]' #&gt;&gt
 
 	<sect1 xml:id="tnpoint_distance_ops">
 		<title>Distance Operations</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 		<itemizedlist>
 			<listitem xml:id="tnpoint_nearestApproachDistance">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>
