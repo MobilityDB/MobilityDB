@@ -152,6 +152,11 @@ SELECT stbox 'STBOX Z((1.0,2.0,3.0),(4.0,5.0,6.0))'::tstzspan;
 SELECT geomset '{"Point(1 1 1)", "Point(2 2 2)", "Point(3 3 3)"}'::stbox;
 SELECT box2d 'BOX(1 1,5 5)'::stbox;
 SELECT box3d 'BOX3D(1 1 1,5 5 5)'::stbox;
+-- The box of an arc with Z or M holds the arc, and its Z range is that of its vertices
+SELECT round(geometry 'CircularString(5 0 2,3 4 9,0 5 2)'::stbox, 6);
+SELECT round(geometry 'CircularStringM(5 0 2,3 4 9,0 5 2)'::stbox, 6);
+SELECT round(geometry 'CompoundCurve(CircularString(5 0 2,3 4 9,0 5 2),(0 5 2,0 5 2.5))'::stbox, 6);
+SELECT round(geometry 'CurvePolygon(CircularString(5 0 2,0 5 9,-5 0 2,0 -5 2,5 0 2))'::stbox, 6);
 
 -------------------------------------------------------------------------------
 
