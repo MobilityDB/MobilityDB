@@ -221,9 +221,19 @@ holds whichever double the distance rounds to:
 | `POINT(3.0000000000000004 4)`, `CIRCULARSTRING(5 0,3 4,0 5)` | `0` | false | the least double off the circle |
 | `POINT(1.0000000000000002 0)`, `CURVEPOLYGON(CIRCULARSTRING(1 0,-1 0,1 0))` | `0` | false | the least double outside the disk |
 
-A polygon in three dimensions, or a geometry carrying an arc read in three, compares
-the given distance with a distance in doubles, so the answer can differ from the
-exact one where the two lie within its rounding.
+So is a triangle, a TIN and a polyhedral surface, each face a surface as a polygon is:
+
+| Geometries | Distance | Within | Why |
+|---|---|---|---|
+| `POINT(3 3)`, `TRIANGLE((0 0,4 0,0 3,0 0))` | `1.7999999999999998` | false | the foot on the hypotenuse lies `9/5` from the point, above this double |
+| `POINT(3 3)`, `TRIANGLE((0 0,4 0,0 3,0 0))` | `1.8` | true | the double nearest `9/5` lies above it |
+| `POINT(4.5 4.5)`, a surface whose square has a hole about the point | `1.5` | true | the hole holds the point, `1.5` from its edge |
+| `POINT(4.5 4.5)`, that surface with a face filling the hole | `0` | true | another face holds the point |
+
+In three dimensions, a polygon, a triangle, a TIN or a polyhedral surface compares the given
+distance with a distance in doubles, so the answer can differ from the exact one where the two
+lie within its rounding. A geometry carrying an arc raises an error, as its distance in three
+dimensions does.
 
 ### 6.3 Relationships
 
