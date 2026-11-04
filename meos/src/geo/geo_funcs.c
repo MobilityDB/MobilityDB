@@ -6035,6 +6035,61 @@ point_segment_dot_sign_inputs(const double *p, const double *s,
 }
 
 /**
+ * @brief Return whether a point moving along a segment at a constant speed
+ * during @p D microseconds is nearest a point at rest strictly inside the
+ * segment, setting in @p n the microsecond from the start that dates it
+ * @details The fraction of the nearest point is `N / A`, with `N = (p - a).u`,
+ * `A = u.u` and `u = b - a`, and it is inside the segment where the two signs
+ * of #point_segment_dot_sign_inputs say so, as #linesegm_param_side reads them.
+ * The instant is dated as MEOS dates a turning point, by truncating its exact
+ * offset to a whole microsecond: `n` lies at or before it exactly where
+ * `A n - N D` is not positive, the vertex test of #dwithin_grid_sign, an exact
+ * sign on the input doubles and the integer @p D, so no rounded fraction decides
+ * the date. An instant dated on the start of the segment is the start's, and
+ * the function returns false.
+ * @param[in] p Point at rest
+ * @param[in] a,b Ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] D Duration of the segment in microseconds
+ * @param[out] n Microsecond from the start of the segment
+ * @pre `D > 0`
+ */
+bool
+point_segment_nearest_microsecond(const double *p, const double *a,
+  const double *b, int ndims, int64 D, int64 *n)
+{
+  assert(D > 0); assert(ndims == 2 || ndims == 3);
+  if (point_segment_dot_sign_inputs(p, a, a, b, ndims) <= 0 ||
+      point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
+    return false;
+  WideDyadic N, A, t, wD;
+  wide_dyadic_set_int(&N, 0);
+  wide_dyadic_set_int(&A, 0);
+  for (int i = 0; i < ndims; i++)
+  {
+    WideDyadic wa, wb, wp, u, w;
+    wide_dyadic_set_double(&wa, a[i]);
+    wide_dyadic_set_double(&wb, b[i]);
+    wide_dyadic_set_double(&wp, p[i]);
+    wide_dyadic_sub(&wb, &wa, &u);
+    wide_dyadic_sub(&wp, &wa, &w);
+    wide_dyadic_mul(&w, &u, &t);
+    wide_dyadic_accumulate(&N, &t);
+    wide_dyadic_mul(&u, &u, &t);
+    wide_dyadic_accumulate(&A, &t);
+  }
+  DWithinGrid g;
+  memset(&g, 0, sizeof(DWithinGrid));
+  g.A = A;
+  wide_dyadic_set_int(&wD, D);
+  wide_dyadic_mul(&N, &wD, &g.BD);
+  g.BD.sign = - g.BD.sign;
+  double est = wide_dyadic_approx(&N) / wide_dyadic_approx(&A) * (double) D;
+  *n = dwithin_grid_last(&g, 0, D, est, true);
+  return *n > 0;
+}
+
+/**
  * @brief Return the side of the position of a point along a segment, as
  * #linesegm_param reads it: -1 where it reads 0, 1 where it reads 1, 0 inside
  */
