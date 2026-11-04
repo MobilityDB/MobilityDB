@@ -514,10 +514,9 @@ SELECT (tbigint '42@2001-01-01')::tquadbin;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Convertir una celda temporal en un punto temporal geodésico o plano de centroides de celda</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-th3index::{tgeogpoint,tgeompoint}
-tquadbin::tgeompoint
-ts2cell::tgeogpoint
+{th3index,tquadbin,ts2cell}::{tgeogpoint,tgeompoint}
 </programlisting>
+				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 				<para>La conversión de una celda QUADBIN responde un punto del plano Web-Mercator sobre el que se define la cuadrícula, mientras que la conversión de una celda S2 responde uno geodésico; cada cuadrícula declara la única conversión que exige su propia definición. H3 declara ambas, de modo que es la única cuadrícula en la que quien llama elige entre la representación geodésica y la plana en SRID 4326.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);

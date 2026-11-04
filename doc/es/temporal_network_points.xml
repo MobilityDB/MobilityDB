@@ -264,10 +264,11 @@ SELECT nsegment(76, 0.3, 0.5);
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convierte entre un punto o un segmento de red y una geometría</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-{npoint,nsegment}::geometry
+{npoint,nsegment}::{geometry,geography}
 geometry::{npoint,nsegment}
 npoint(geometry,float) → npoint
 </programlisting>
+				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(npoint(76, 0.33)::geometry, 6);
 -- POINT(27.842471 43.855103)
@@ -575,7 +576,9 @@ SELECT tnpointSeqSetGaps(ARRAY[tnpoint 'NPoint(1,0.1)@2001-01-01',
 				<para>Convierte entre un punto de red temporal y un punto de geometría temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 {tnpoint,tgeompoint}::{tgeompoint,tnpoint}
+tnpoint::tgeogpoint
 </programlisting>
+				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tnpoint '[NPoint(1, 0.2)@2001-01-01,
   NPoint(1, 0.3)@2001-01-02)')::tgeompoint);

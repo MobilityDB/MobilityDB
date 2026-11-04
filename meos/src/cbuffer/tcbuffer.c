@@ -969,6 +969,28 @@ tcbuffer_to_tgeompoint(const Temporal *temp)
   }
 }
 
+/**
+ * @ingroup meos_cbuffer_conversion
+ * @brief Convert a temporal circular buffer into a temporal geography point
+ * @details The value converts through #tcbuffer_to_tgeompoint and #tgeompoint_to_tgeogpoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Tcbuffer_to_tgeogpoint()
+ */
+Temporal *
+tcbuffer_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TCBUFFER(temp, NULL);
+  Temporal *value = tcbuffer_to_tgeompoint(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeompoint_to_tgeogpoint(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**

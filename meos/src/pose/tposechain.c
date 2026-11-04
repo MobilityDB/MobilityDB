@@ -388,6 +388,52 @@ tposechain_to_tpose(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_posechain_conversion
+ * @brief Convert a temporal pose chain, planar or geodetic, into a temporal
+ * geometry point
+ * @details The value converts through #tposechain_to_tpose and #tpose_to_tgeompoint, as
+ * every spatial type does
+ * @param[in] temp Temporal pose chain
+ * @errval NULL
+ * @csqlfn #Tposechain_to_tgeompoint()
+ */
+Temporal *
+tposechain_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  Temporal *tpose = tposechain_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Temporal *result = tpose_to_tgeompoint(tpose);
+  pfree(tpose);
+  return result;
+}
+
+/**
+ * @ingroup meos_posechain_conversion
+ * @brief Convert a temporal pose chain, planar or geodetic, into a temporal
+ * geography point
+ * @details The value converts through #tposechain_to_tpose and #tpose_to_tgeogpoint, as
+ * every spatial type does
+ * @param[in] temp Temporal pose chain
+ * @errval NULL
+ * @csqlfn #Tposechain_to_tgeogpoint()
+ */
+Temporal *
+tposechain_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSECHAIN(temp, NULL);
+  Temporal *tpose = tposechain_to_tpose(temp);
+  if (! tpose)
+    return NULL;
+  Temporal *result = tpose_to_tgeogpoint(tpose);
+  pfree(tpose);
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

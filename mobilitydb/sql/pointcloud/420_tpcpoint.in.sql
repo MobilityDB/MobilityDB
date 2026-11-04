@@ -466,6 +466,13 @@ CREATE FUNCTION tgeompoint(tpcpoint)
 
 CREATE CAST (tpcpoint AS tgeompoint) WITH FUNCTION tgeompoint(tpcpoint);
 
+CREATE FUNCTION tgeogpoint(tpcpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tpcpoint_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tpcpoint);
+
 -- The tstzspan cast is backed by the generated timeSpan accessor.
 CREATE CAST (tpcpoint AS tstzspan) WITH FUNCTION timeSpan(tpcpoint);
 

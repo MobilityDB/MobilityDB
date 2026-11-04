@@ -180,6 +180,18 @@ CREATE FUNCTION pose(posechain)
 
 CREATE CAST (posechain AS pose) WITH FUNCTION pose(posechain);
 
+CREATE FUNCTION geometry(posechain)
+  RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Posechain_to_point'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geography(posechain)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Posechain_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (posechain AS geometry) WITH FUNCTION geometry(posechain);
+CREATE CAST (posechain AS geography) WITH FUNCTION geography(posechain);
+
 -- The pose of the frame the first n links define, that is, where the n-th
 -- joint of the chain is.
 CREATE FUNCTION pose(posechain, integer)

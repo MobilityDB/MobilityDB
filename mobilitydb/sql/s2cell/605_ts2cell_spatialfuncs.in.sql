@@ -81,6 +81,13 @@ CREATE FUNCTION cellToBoundary(ts2cell)
 -- sphere, so the geodetic type is the one a cell answers in.
 CREATE CAST (ts2cell AS tgeogpoint) WITH FUNCTION cellToPoint(ts2cell);
 
+CREATE FUNCTION tgeompoint(ts2cell)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Ts2cell_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (ts2cell AS tgeompoint) WITH FUNCTION tgeompoint(ts2cell);
+
 CREATE FUNCTION ts2CellToToken(ts2cell)
   RETURNS ttext
   AS 'MODULE_PATHNAME', 'Ts2cell_cell_to_token'

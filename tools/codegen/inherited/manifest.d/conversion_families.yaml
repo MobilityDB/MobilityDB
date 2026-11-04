@@ -48,12 +48,13 @@ conversion_families:
   - lit: "/*****************************************************************************\n * Conversions\n *****************************************************************************/\n\n"
   - fns:
     - {sig: "tgeompoint(tcbuffer)", ret: tgeompoint, sym: Tcbuffer_to_tgeompoint}
+    - {sig: "tgeogpoint(tcbuffer)", ret: tgeogpoint, sym: Tcbuffer_to_tgeogpoint}
     - {sig: "tfloat(tcbuffer)", ret: tfloat, sym: Tcbuffer_to_tfloat}
   - lit: "\n"
   - fns:
     - {sig: "tcbuffer(tgeompoint)", ret: tcbuffer, sym: Tgeometry_to_tcbuffer}
     - {sig: "tcbuffer(tgeometry)", ret: tcbuffer, sym: Tgeometry_to_tcbuffer}
-  - lit: "\nCREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);\nCREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);\nCREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);\nCREATE CAST (tgeometry AS tcbuffer) WITH FUNCTION tcbuffer(tgeometry);\n\n"
+  - lit: "\nCREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);\nCREATE CAST (tcbuffer AS tgeogpoint) WITH FUNCTION tgeogpoint(tcbuffer);\nCREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);\nCREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);\nCREATE CAST (tgeometry AS tcbuffer) WITH FUNCTION tcbuffer(tgeometry);\n\n"
 - family: json
   file: mobilitydb/sql/json/452_tjsonb.in.sql
   reference: true
@@ -74,8 +75,9 @@ conversion_families:
   - lit: "/******************************************************************************\n * Cast functions\n ******************************************************************************/\n\n"
   - fns:
     - {sig: "tgeompoint(tnpoint)", ret: tgeompoint, sym: Tnpoint_to_tgeompoint}
+    - {sig: "tgeogpoint(tnpoint)", ret: tgeogpoint, sym: Tnpoint_to_tgeogpoint}
     - {sig: "tnpoint(tgeompoint)", ret: tnpoint, sym: Tgeompoint_to_tnpoint}
-  - lit: "\nCREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);\nCREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);\n\n"
+  - lit: "\nCREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);\nCREATE CAST (tnpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tnpoint);\nCREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);\n\n"
 - family: pose
   file: mobilitydb/sql/pose/102_tpose.in.sql
   reference: true
@@ -84,8 +86,10 @@ conversion_families:
   blocks:
   - lit: "/******************************************************************************\n * Conversions\n ******************************************************************************/\n\n"
   - fns:
-    - {sig: "tgeompoint(tpose)", ret: tgeompoint, sym: Tpose_to_tpoint}
-    - {sig: "tgeogpoint(tpose)", ret: tgeogpoint, sym: Tpose_to_tpoint}
+    - {sig: "tgeompoint(tpose)", ret: tgeompoint, sym: Tpose_to_tgeompoint}
+    - {sig: "tgeogpoint(tpose)", ret: tgeogpoint, sym: Tpose_to_tgeogpoint}
+    - {sig: "tgeompointOpr(tpose)", ret: tgeompoint, sym: Tpose_to_tpoint_opr}
+    - {sig: "tgeogpointOpr(tpose)", ret: tgeogpoint, sym: Tpose_to_tpoint_opr}
   - lit: "\nCREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);\nCREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);\n\n"
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql
@@ -97,8 +101,10 @@ conversion_families:
   - fns:
     - {sig: "tpose(trgeometry)", ret: tpose, sym: Trgeometry_to_tpose}
     - {sig: "tgeompoint(trgeometry)", ret: tgeompoint, sym: Trgeometry_to_tgeompoint}
+    - {sig: "tgeogpoint(trgeometry)", ret: tgeogpoint, sym: Trgeometry_to_tgeogpoint}
     - {sig: "tgeometry(trgeometry)", ret: tgeometry, sym: Trgeometry_to_tgeometry}
-  - lit: "\nCREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);\nCREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);\nCREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);\n\n"
+    - {sig: "tgeography(trgeometry)", ret: tgeography, sym: Trgeometry_to_tgeography}
+  - lit: "\nCREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);\nCREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);\nCREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);\nCREATE CAST (trgeometry AS tgeogpoint) WITH FUNCTION tgeogpoint(trgeometry);\nCREATE CAST (trgeometry AS tgeography) WITH FUNCTION tgeography(trgeometry);\n\n"
   - fns:
     - {sig: "stbox(trgeometry)", ret: stbox, sym: Tspatial_to_stbox, cost: 5}
   - lit: "\nCREATE CAST (trgeometry AS stbox) WITH FUNCTION stbox(trgeometry);\n\nCREATE FUNCTION expandSpace(trgeometry, float)\n  RETURNS stbox\n  AS 'SELECT @extschema@.expandSpace($1::stbox, $2)'\n  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE;\n\n"

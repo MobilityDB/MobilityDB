@@ -274,3 +274,30 @@ SELECT merge(NULL::tposechain, tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(P
  t
 (1 row)
 
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "econtains" statement 1

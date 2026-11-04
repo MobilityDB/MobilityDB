@@ -350,6 +350,7 @@ geometry(stbox) &#8594; geometry
 geography(stbox) &#8594; geography
 tstzspan(stbox) &#8594; tstzspan
 </programlisting>
+				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT stbox 'STBOX XT(((1.0,2.0),(3.0,4.0)),[2001-01-01,2001-01-03])'::box2d;
 -- BOX(1 2,3 4)

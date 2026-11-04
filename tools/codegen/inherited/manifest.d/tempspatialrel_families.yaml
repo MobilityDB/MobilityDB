@@ -217,7 +217,7 @@ tempspatialrel_families:
           - {l: geometry, r: tpose}
           - {l: tpose, r: geometry}
           - {l: tpose, r: tpose}
-    convert: "@N@::@extschema@.tgeompoint"
+    convert: "@extschema@.tgeompointOpr(@N@)"
 
   # A tpcpoint carries the Z its schema declares, and tContains, tCovers and
   # tTouches are planar DE-9IM relationships that refuse a Z dimension, so the
@@ -324,7 +324,7 @@ tempspatialrel_families:
           - {l: geometry, r: tposechain}
           - {l: tposechain, r: geometry}
           - {l: tposechain, r: tposechain}
-    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
+    convert: "@extschema@.tgeompointOpr(@N@::@extschema@.tpose)"
 
   # tDwithin is native: a tgeometry holds each geometry until the next instant,
   # thus the cast loses the motion of the body between the instants.  The

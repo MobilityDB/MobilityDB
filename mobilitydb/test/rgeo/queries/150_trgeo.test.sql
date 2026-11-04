@@ -706,3 +706,11 @@ FROM (SELECT unnest(merge(
     timestamptz '2001-01-01'),
   trgeometry(geometry 'Polygon((0 0,1 0,1 1,0 1,0 0))', pose(geometry 'Point(3 2)', pi() / 2),
     timestamptz '2001-01-02'))) AS rec) AS t;
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeogpoint);
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography);
+SELECT trgeometry 'SRID=3857;Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography;

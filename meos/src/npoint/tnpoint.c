@@ -683,6 +683,28 @@ tnpoint_to_tgeompoint(const Temporal *temp)
   }
 }
 
+/**
+ * @ingroup meos_npoint_conversion
+ * @brief Convert a temporal network point into a temporal geography point
+ * @details The value converts through #tnpoint_to_tgeompoint and #tgeompoint_to_tgeogpoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Tnpoint_to_tgeogpoint()
+ */
+Temporal *
+tnpoint_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TNPOINT(temp, NULL);
+  Temporal *value = tnpoint_to_tgeompoint(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeompoint_to_tgeogpoint(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**

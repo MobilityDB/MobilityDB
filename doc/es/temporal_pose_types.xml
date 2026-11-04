@@ -306,9 +306,9 @@ SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 				<listitem xml:id="pose_geography">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convierte una pose, planar o geodésica, en un punto geográfico</para>
-					<para>Las conversiones a una geometría y a una geografía leen ambos tipos de pose, como lo hacen las conversiones entre <varname>geometry</varname> y <varname>geography</varname>. Como geografía, un punto sin SRID tiene el SRID 4326 y un punto en un sistema de referencia proyectado genera un error.</para>
+					<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pose::geogpoint
+{pose,posechain}::geogpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geography);
@@ -324,7 +324,7 @@ SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convierte una pose, planar o geodésica, en un punto geométrico</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pose::geompoint
+{pose,posechain}::geompoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
@@ -978,13 +978,13 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 
 	<sect1 xml:id="tpose_conversions">
 		<title>Conversión de tipos</title>
-		<para>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal para una pose planar y un punto geográfico temporal para una pose geodésica. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
+		<para>Un valor de pose temporal se puede convertir hacia y desde un punto temporal, que es un punto geométrico temporal o un punto geográfico temporal cualquiera que sea el tipo de la pose, véase <xref linkend="geo_geog_convert"/>. Esto se puede hacer utilizando un <varname>CAST</varname> explícito o utilizando la notación <varname>::</varname>. Convertir una pose temporal al tipo de punto temporal del otro marco de referencia genera un error. Se devuelve un valor nulo si alguno de los valores de punto geométrico que lo componen no se puede convertir en un valor <varname>pose</varname>.</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convierte una pose temporal en un punto geométrico temporal</para>
+				<para>Convierte una pose temporal, planar o geodésica, en un punto geométrico temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpose::tgeompoint
+{tpose,tposechain}::tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
@@ -998,9 +998,9 @@ SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
 
 			<listitem xml:id="tpose_tgeogpoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convierte una pose temporal geodésica en un punto geográfico temporal</para>
+				<para>Convierte una pose temporal, planar o geodésica, en un punto geográfico temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpose::tgeogpoint
+{tpose,tposechain}::tgeogpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tpose '[GeodPose(Point(1 1), 0.2)@2001-01-01,

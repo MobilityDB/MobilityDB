@@ -697,3 +697,14 @@ SELECT volume(stbox 'STBOX Z((-1e308,-1e308,0),(1e308,1e308,1))');
 SELECT perimeter(stbox 'STBOX X((-1e308,0),(1e308,1))');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT ST_AsEWKT(stbox 'STBOX X((1,2),(1,2))'::geometry);
+SELECT ST_AsEWKT(stbox 'STBOX X((1,2),(1,2))'::geography);
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX X((1,2),(1,2))'::geography);
+SELECT stbox 'SRID=3857;STBOX X((1,2),(1,2))'::geography;
+SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geometry);
+SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geography);

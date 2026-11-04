@@ -278,6 +278,40 @@ Geoset_to_geo(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
+PGDLLEXPORT Datum Geomset_to_geogset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geomset_to_geogset);
+/**
+ * @ingroup mobilitydb_geo_set_conversion
+ * @brief Convert a geometry set into a geography set
+ * @sqlfn geogset()
+ * @sqlop @p ::
+ */
+Datum
+Geomset_to_geogset(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  Set *result = geomset_to_geogset(set);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_SET_P(result);
+}
+
+PGDLLEXPORT Datum Geogset_to_geomset(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Geogset_to_geomset);
+/**
+ * @ingroup mobilitydb_geo_set_conversion
+ * @brief Convert a geography set into a geometry set
+ * @sqlfn geomset()
+ * @sqlop @p ::
+ */
+Datum
+Geogset_to_geomset(PG_FUNCTION_ARGS)
+{
+  Set *set = PG_GETARG_SET_P(0);
+  Set *result = geogset_to_geomset(set);
+  PG_FREE_IF_COPY(set, 0);
+  PG_RETURN_SET_P(result);
+}
+
 /*****************************************************************************
  * Spatial reference system functions for spatial sets
  *****************************************************************************/

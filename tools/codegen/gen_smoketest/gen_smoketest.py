@@ -1447,7 +1447,14 @@ TNPOINT_CONFIG = dict(
     # NOT a fresh allocation — freeing it corrupts the cache (use-after-free
     # cascades through every later route lookup).
     no_free={"route_geom"},
-    skip={},
+    # A geography reads lon/lat and the one network shipped, ways.csv, is in the
+    # projected SRID 5676, so these refuse every input this harness has. Their
+    # refusal is stated in 300_tnpoint and 302_tnpoint_spatialfuncs.
+    skip={
+        "npoint_to_geog":        "ways.csv is projected, so a geography is refused",
+        "nsegment_to_geog":      "ways.csv is projected, so a geography is refused",
+        "tnpoint_to_tgeogpoint": "ways.csv is projected, so a geography is refused",
+    },
     common_inputs="""\
   TimestampTz tstz1 = timestamptz_in("2001-01-02", -1);
   Span *tstzspan1 = tstzspan_in("[2001-01-01, 2001-01-04]");
@@ -1744,6 +1751,11 @@ TGEOMETRY_CONFIG = dict(
         # no in-place write ever happens either way.
         "geom_relate_pattern":        {2: "geom_relate_pattern1"},
         "geomset_in":                 {0: "geomset_wkt1"},
+        # A geography reads lon/lat, and the canned geomset and box are in the
+        # projected SRID 5676, which it refuses.
+        "geomset_to_geogset":         {0: "geomset_lonlat1"},
+        "geogset_to_geomset":         {0: "geogset1"},
+        "stbox_to_geog":              {0: "stbox_lonlat1"},
         "spatialset_transform_pipeline": {1: "pipeline1", 2: "4326"},
         "stbox_from_hexwkb":          {0: "stbox_hexwkb1"},
         "stbox_in":                   {0: "stbox_wkt1"},
@@ -1866,6 +1878,9 @@ TGEOMETRY_CONFIG = dict(
   GSERIALIZED *geog1 = geog_in("SRID=4326;Polygon((2 49,3 49,3 50,2 50,2 49))", -1);
   Set *geomset1 = geomset_in("{\\"SRID=5676;Point(0 0)\\", \\"SRID=5676;Point(1 1)\\"}");
   STBox *stbox1 = stbox_in("SRID=5676;STBOX X((0, 0), (10, 10))");
+  Set *geomset_lonlat1 = geomset_in("{\\"SRID=4326;Point(2 49)\\", \\"SRID=4326;Point(3 49)\\"}");
+  Set *geogset1 = geogset_in("{\\"SRID=4326;Point(2 49)\\", \\"SRID=4326;Point(3 49)\\"}");
+  STBox *stbox_lonlat1 = stbox_in("SRID=4326;STBOX X((2, 49), (3, 50))");
   STBox *stbox_zt1 = stbox_in("SRID=5676;STBOX ZT(((0,0,0),(10,10,10)),[2001-01-01, 2001-01-02])");
   Datum geom1_datum = (Datum) geom1;
   Datum geom_point1_datum = (Datum) geom_point1;
@@ -2105,6 +2120,9 @@ TGEOMETRY_CONFIG = dict(
   free(garr_gg2);
   free(stbox1);
   free(stbox_zt1);
+  free(geomset_lonlat1);
+  free(geogset1);
+  free(stbox_lonlat1);
   free(box3d1);
   free(gbox1);
   free(geomset1);

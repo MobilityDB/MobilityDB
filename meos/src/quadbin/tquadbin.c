@@ -575,6 +575,28 @@ tquadbin_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_quadbin_conversion
+ * @brief Convert a temporal quadbin cell into the temporal geography point of its centre
+ * @details The value converts through #tcellindex_cell_to_point and #tgeompoint_to_tgeogpoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Tquadbin_to_tgeogpoint()
+ */
+Temporal *
+tquadbin_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TQUADBIN(temp, NULL);
+  Temporal *value = tcellindex_cell_to_point(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeompoint_to_tgeogpoint(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************
  * Restriction functions
  *****************************************************************************/

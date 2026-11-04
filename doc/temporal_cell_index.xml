@@ -514,10 +514,9 @@ SELECT (tbigint '42@2001-01-01')::tquadbin;
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<para>Cast a temporal cell to a temporal geodetic or planar point of cell centroids</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-th3index::{tgeogpoint,tgeompoint}
-tquadbin::tgeompoint
-ts2cell::tgeogpoint
+{th3index,tquadbin,ts2cell}::{tgeogpoint,tgeompoint}
 </programlisting>
+				<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
 				<para>The cast of a QUADBIN cell answers a point of the Web-Mercator plane the grid is defined on, while the cast of an S2 cell answers a geodetic one; each grid declares the single cast its own definition calls for. H3 declares both, so it is the one grid where the caller chooses between the geodetic and the SRID-4326 planar representation.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((th3index '831c02fffffffff@2001-01-01')::tgeogpoint, 6);
