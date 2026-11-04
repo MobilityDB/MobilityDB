@@ -129,6 +129,23 @@ Tquadbin_cell_to_point(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tquadbin_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tquadbin_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_quadbin_conversion
+ * @brief Convert a temporal quadbin cell into the temporal geography point of its centre
+ * @sqlfn tgeogpoint()
+ * @sqlop @p ::
+ */
+Datum
+Tquadbin_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tquadbin_to_tgeogpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tquadbin_cell_to_boundary(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tquadbin_cell_to_boundary);
 /**

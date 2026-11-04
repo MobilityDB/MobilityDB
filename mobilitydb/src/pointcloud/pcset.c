@@ -669,6 +669,24 @@ Pcpatch_to_geom(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(result);
 }
 
+PGDLLEXPORT Datum Pcpatch_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pcpatch_to_geog);
+/**
+ * @ingroup mobilitydb_pointcloud_base_conversion
+ * @brief Convert a pcpatch into the geography of the positions its points occupy
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Pcpatch_to_geog(PG_FUNCTION_ARGS)
+{
+  Pcpatch *pa = PG_GETARG_PCPATCH_P(0);
+  GSERIALIZED *result = pcpatch_to_geog(pa);
+  PG_FREE_IF_COPY(pa, 0);
+  if (! result) PG_RETURN_NULL();
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 PGDLLEXPORT Datum Pcpatch_eq(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Pcpatch_eq);
 /**

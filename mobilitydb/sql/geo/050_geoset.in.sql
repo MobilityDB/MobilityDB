@@ -249,6 +249,18 @@ CREATE FUNCTION geography(geogset)
 CREATE CAST (geomset AS geometry) WITH FUNCTION geometry(geomset);
 CREATE CAST (geogset AS geography) WITH FUNCTION geography(geogset);
 
+CREATE FUNCTION geogset(geomset)
+  RETURNS geogset
+  AS 'MODULE_PATHNAME', 'Geomset_to_geogset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geomset(geogset)
+  RETURNS geomset
+  AS 'MODULE_PATHNAME', 'Geogset_to_geomset'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (geomset AS geogset) WITH FUNCTION geogset(geomset);
+CREATE CAST (geogset AS geomset) WITH FUNCTION geomset(geogset);
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/

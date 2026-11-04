@@ -421,6 +421,23 @@ Posechain_to_point(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(posechain_to_point(pc));
 }
 
+PGDLLEXPORT Datum Posechain_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Posechain_to_geog);
+/**
+ * @ingroup mobilitydb_posechain_base_conversion
+ * @brief Convert a pose chain into a geography point
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Posechain_to_geog(PG_FUNCTION_ARGS)
+{
+  PoseChain *value = PG_GETARG_POSECHAIN_P(0);
+  GSERIALIZED *result = posechain_to_geog(value);
+  PG_FREE_IF_COPY(value, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 PGDLLEXPORT Datum Posechain_to_stbox(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Posechain_to_stbox);
 /**

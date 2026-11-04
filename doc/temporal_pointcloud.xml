@@ -276,6 +276,7 @@ SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
 					<para>Return the multipoint of the positions the points of a patch occupy</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geometry(pcpatch) &#8594; geometry
+geography(pcpatch) &#8594; geography
 </programlisting>
 					<para>The schema the <varname>pcid</varname> names decides the SRID and whether the result carries a Z dimension</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -895,8 +896,9 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convert a temporal point cloud point to a temporal geometry point</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpoint::tgeompoint
+tpcpoint::{tgeompoint,tgeogpoint}
 </programlisting>
+					<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
 					<para>Every non-spatial dimension is projected away and the timestamps are preserved. The result carries the SRID the schema states, and is three-dimensional when the schema states a Z dimension. The reverse conversion is not provided, since rebuilding a <varname>pcpoint</varname> needs a target schema that the temporal value alone does not carry.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
@@ -1783,6 +1785,7 @@ SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
 					<para>Convert a temporal patch into the temporal geometry of the multipoints its patches occupy</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tgeometry(tpcpatch) &#8594; tgeometry
+tgeography(tpcpatch) &#8594; tgeography
 </programlisting>
 					<para>Each instant's patch becomes the multipoint of the positions its points occupy, read through the schema its <varname>pcid</varname> names</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

@@ -324,6 +324,28 @@ trgeometry_to_tgeompoint(const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_rgeo_conversion
+ * @brief Convert a temporal rigid geometry into a temporal geography point
+ * @details The value converts through #trgeometry_to_tgeompoint and #tgeompoint_to_tgeogpoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Trgeometry_to_tgeogpoint()
+ */
+Temporal *
+trgeometry_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *value = trgeometry_to_tgeompoint(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeompoint_to_tgeogpoint(value);
+  pfree(value);
+  return result;
+}
+
+/**
  * @ingroup meos_internal_rgeo_conversion
  * @brief Return the reference geometry of a temporal rigid geometry
  * @param[in] temp Temporal rigid geometry

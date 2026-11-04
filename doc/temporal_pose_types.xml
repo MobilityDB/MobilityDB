@@ -305,9 +305,9 @@ SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 				<listitem xml:id="pose_geography">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convert a pose, planar or geodetic, into a geography point</para>
-					<para>The conversions into a geometry and into a geography both read either kind of pose, as the conversions between <varname>geometry</varname> and <varname>geography</varname> do. As a geography, a point with no SRID has the SRID 4326 and a point in a projected reference system raises an error.</para>
+					<para>The conversions follow the rule of <xref linkend="geo_geog_convert"/>.</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pose::geogpoint
+{pose,posechain}::geogpoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geography);
@@ -323,7 +323,7 @@ SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convert a pose, planar or geodetic, into a geometry point</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-pose::geompoint
+{pose,posechain}::geompoint
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(pose(ST_Point(1, 1), 1)::geometry);
@@ -983,13 +983,13 @@ SELECT asText(tpose(tgeompoint '[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02)',
 
 	<sect1 xml:id="tpose_conversions">
 		<title>Conversions</title>
-		<para>A temporal pose value can be converted to and from a temporal point, which is a temporal geometry point for a planar pose and a temporal geography point for a geodetic pose. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. Converting a temporal pose to the temporal point type of the other reference frame raises an error. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
+		<para>A temporal pose value can be converted to and from a temporal point, which is a temporal geometry point or a temporal geography point whatever the kind of the pose, see <xref linkend="geo_geog_convert"/>. This can be done using an explicit <varname>CAST</varname> or using the <varname>::</varname> notation. Converting a temporal pose to the temporal point type of the other reference frame raises an error. A null value is returned if any of the composing geometry point values cannot be converted into a <varname>pose</varname> value.</para>
 		<itemizedlist>
 			<listitem xml:id="tpose_tgeompoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convert a temporal pose into a temporal geometry point</para>
+				<para>Convert a temporal pose, planar or geodetic, into a temporal geometry point</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpose::tgeompoint
+{tpose,tposechain}::tgeompoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tpose '[Pose(Point(1 1), 0.2)@2001-01-01,
@@ -1003,9 +1003,9 @@ SELECT asEWKT((tpose '[Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)@2001-01-01,
 
 			<listitem xml:id="tpose_tgeogpoint">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-				<para>Convert a geodetic temporal pose into a temporal geography point</para>
+				<para>Convert a temporal pose, planar or geodetic, into a temporal geography point</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpose::tgeogpoint
+{tpose,tposechain}::tgeogpoint
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText((tpose '[GeodPose(Point(1 1), 0.2)@2001-01-01,

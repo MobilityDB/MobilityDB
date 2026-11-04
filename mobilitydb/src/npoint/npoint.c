@@ -677,6 +677,23 @@ Npoint_to_geompoint(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(npoint_to_geompoint(np));
 }
 
+PGDLLEXPORT Datum Npoint_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Npoint_to_geog);
+/**
+ * @ingroup mobilitydb_npoint_base_conversion
+ * @brief Convert a network point into a geography point
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Npoint_to_geog(PG_FUNCTION_ARGS)
+{
+  Npoint *value = PG_GETARG_NPOINT_P(0);
+  GSERIALIZED *result = npoint_to_geog(value);
+  PG_FREE_IF_COPY(value, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 PGDLLEXPORT Datum Geompoint_to_npoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geompoint_to_npoint);
 /**
@@ -714,6 +731,23 @@ Nsegment_to_geom(PG_FUNCTION_ARGS)
 {
   Nsegment *ns = PG_GETARG_NSEGMENT_P(0);
   PG_RETURN_GSERIALIZED_P(nsegment_to_geom(ns));
+}
+
+PGDLLEXPORT Datum Nsegment_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Nsegment_to_geog);
+/**
+ * @ingroup mobilitydb_npoint_base_conversion
+ * @brief Convert a network segment into a geography
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Nsegment_to_geog(PG_FUNCTION_ARGS)
+{
+  Nsegment *value = PG_GETARG_NSEGMENT_P(0);
+  GSERIALIZED *result = nsegment_to_geog(value);
+  PG_FREE_IF_COPY(value, 0);
+  PG_RETURN_GSERIALIZED_P(result);
 }
 
 PGDLLEXPORT Datum Geom_to_nsegment(PG_FUNCTION_ARGS);

@@ -138,12 +138,12 @@ CREATE FUNCTION trajectory(tpose)
 
 CREATE FUNCTION centroid(tpose)
   RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpose_to_tpoint'
+  AS 'MODULE_PATHNAME', 'Tpose_to_tpoint_opr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION convexHull(tpose)
   RETURNS geometry
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE AS
-  $$ SELECT @extschema@.convexHull($1::@extschema@.tgeompoint) $$;
+  $$ SELECT @extschema@.convexHull(@extschema@.tgeompointOpr($1)) $$;
 
 /*****************************************************************************/

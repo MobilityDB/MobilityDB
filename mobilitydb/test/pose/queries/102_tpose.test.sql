@@ -764,3 +764,20 @@ SELECT asText(tposeFromText('{"Pose(Point(1 1),0.5)"@2001-01-01, "Pose(Point(2 2
 /* A GeoPose document is read by tposeFromGeoPose, not by the type input */
 SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)));
 SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)::tpose;
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+SELECT tpose 'SRID=3857;Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint;
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+-- A relationship with no definition on the ellipsoid keeps refusing a geodetic pose
+SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+SELECT eTouches(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
+SELECT tContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+SELECT eDisjoint(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
+SELECT eDisjoint(tpose 'SRID=4326;Pose(Point(1 2),0.5)@2001-01-01', geography 'SRID=4326;Point(1 2)');
+SELECT convexHull(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');

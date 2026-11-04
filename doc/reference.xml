@@ -241,6 +241,9 @@
 					<para><link linkend="geoset_convert"><varname>::</varname>, <varname>geometry</varname>, <varname>geography</varname></link>: Convert a geo set into the collection of its values</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="geo_geog_convert"><varname>::</varname>, <varname>geomset</varname>, <varname>geogset</varname></link>: Convert between a geometry and a geography</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="span_convert"><varname>::</varname>, <varname>spanset</varname></link>: Convert a span value to a span set value</para>
 				</listitem>
 				<listitem>
@@ -1568,10 +1571,10 @@
 				<title>Conversions</title>
 				<itemizedlist>
 					<listitem>
-						<para><link linkend="tpose_tgeompoint"><varname>::</varname></link>: Convert a temporal pose into a temporal geometry point</para>
+						<para><link linkend="tpose_tgeompoint"><varname>::</varname></link>: Convert a temporal pose, planar or geodetic, into a temporal geometry point</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="tpose_tgeogpoint"><varname>::</varname></link>: Convert a geodetic temporal pose into a temporal geography point</para>
+						<para><link linkend="tpose_tgeogpoint"><varname>::</varname></link>: Convert a temporal pose, planar or geodetic, into a temporal geography point</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

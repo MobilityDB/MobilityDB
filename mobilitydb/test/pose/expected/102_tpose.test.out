@@ -2607,9 +2607,17 @@ SELECT pg_typeof(tgeogpoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
 (1 row)
 
 SELECT asText(tgeogpoint(tpose '[Pose(Point(1 1),0.1)@2001-01-01]'));
-ERROR:  Only geodetic coordinates supported
+                  astext                   
+-------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
 SELECT asText(tgeompoint(tpose '[GeodPose(Point(1 1),0.1)@2001-01-01]'));
-ERROR:  Only planar coordinates supported
+                  astext                   
+-------------------------------------------
+ [POINT(1 1)@Mon Jan 01 00:00:00 2001 PST]
+(1 row)
+
 WITH ais(mmsi, temp) AS (
   SELECT mmsi, tposeSeq(array_agg(tpose(pose(geom, heading), t) ORDER BY t))
   FROM tbl_ais_instant GROUP BY mmsi )
@@ -2722,3 +2730,47 @@ SELECT asText(tposeFromGeoPose(asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01
 
 SELECT asGeoPose(tpose 'Geodpose(Point(8 47), 0)@2026-01-01', 0, 6)::tpose;
 ERROR:  Missing delimeter character '@': "position":{"lat":47,"lon":8,"h":0},"quaternion":{"x":0,"y":0,"z":0,"w":1},"validTime":1767254400000}
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+                 asewkt                  
+-----------------------------------------
+ POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tpose 'SRID=3857;Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint;
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "econtains" statement 1
+SELECT eTouches(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "etouches" statement 1
+SELECT tContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "tcontains" statement 1
+SELECT eDisjoint(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "edisjoint" statement 1
+SELECT eDisjoint(tpose 'SRID=4326;Pose(Point(1 2),0.5)@2001-01-01', geography 'SRID=4326;Point(1 2)');
+ERROR:  Only geodetic coordinates supported
+CONTEXT:  SQL function "edisjoint" statement 1
+SELECT convexHull(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
+ERROR:  Only planar coordinates supported
+CONTEXT:  SQL function "convexhull" statement 1

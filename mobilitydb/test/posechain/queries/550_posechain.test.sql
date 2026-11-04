@@ -156,3 +156,12 @@ SELECT hashExtended(posechain 'PoseChain(Pose(Point(0 0), 0))', 1) =
   hashExtended(posechain 'PoseChain(Pose(Point(0 0), 0))', 1);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT ST_AsEWKT(posechain 'PoseChain(Pose(Point(1 2),0.5))'::geometry);
+SELECT ST_AsEWKT(posechain 'PoseChain(Pose(Point(1 2),0.5))'::geography);
+SELECT ST_AsEWKT(posechain 'PoseChain(GeodPose(Point(1 2),0.5))'::geometry);
+SELECT ST_AsEWKT(posechain 'PoseChain(GeodPose(Point(1 2),0.5))'::geography);

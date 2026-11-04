@@ -2899,3 +2899,11 @@ SELECT extent(temp) = extent(temp::stbox) FROM (VALUES
  t
 (1 row)
 
+SELECT asEWKT(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT tcbuffer 'SRID=3857;Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint;
+ERROR:  Only lon/lat coordinate systems are supported

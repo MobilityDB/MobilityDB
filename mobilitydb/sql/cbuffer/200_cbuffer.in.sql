@@ -170,6 +170,13 @@ CREATE FUNCTION cbuffer(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (cbuffer AS geometry) WITH FUNCTION geometry(cbuffer);
+
+CREATE FUNCTION geography(cbuffer)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Cbuffer_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (cbuffer AS geography) WITH FUNCTION geography(cbuffer);
 CREATE CAST (geometry AS cbuffer) WITH FUNCTION cbuffer(geometry);
 
 /*****************************************************************************

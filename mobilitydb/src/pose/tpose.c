@@ -128,16 +128,48 @@ Tpose_make(PG_FUNCTION_ARGS)
  * Conversion functions
  *****************************************************************************/
 
-PGDLLEXPORT Datum Tpose_to_tpoint(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_to_tpoint);
+PGDLLEXPORT Datum Tpose_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_to_tgeompoint);
 /**
  * @ingroup mobilitydb_pose_conversion
- * @brief Convert a temporal pose into a temporal point
- * @sqlfn tgeompoint(), tgeogpoint()
+ * @brief Convert a temporal pose, planar or geodetic, into a temporal geometry point
+ * @sqlfn tgeompoint()
  * @sqlop @p ::
  */
 Datum
-Tpose_to_tpoint(PG_FUNCTION_ARGS)
+Tpose_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_to_tgeompoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_pose_conversion
+ * @brief Convert a temporal pose, planar or geodetic, into a temporal geography point
+ * @sqlfn tgeogpoint()
+ * @sqlop @p ::
+ */
+Datum
+Tpose_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_to_tgeogpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tpose_to_tpoint_opr(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_to_tpoint_opr);
+/**
+ * @brief Return the temporal point a relationship of a temporal pose delegates to,
+ * which raises an error on a pose of the other kind where the conversions answer
+ */
+Datum
+Tpose_to_tpoint_opr(PG_FUNCTION_ARGS)
 {
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
   /* A pose carries its own reference frame, so the pose decides the type of the

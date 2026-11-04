@@ -2762,3 +2762,5 @@ SELECT merge(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2001-01-01') = tnpoint 'Npoi
  t
 (1 row)
 
+SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeogpoint;
+ERROR:  Only lon/lat coordinate systems are supported

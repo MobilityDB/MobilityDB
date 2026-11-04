@@ -1388,4 +1388,26 @@ trgeometry_to_tgeometry(const Temporal *temp)
   return (Temporal *) tsequenceset_make_free(seqs, ss->count, NORMALIZE);
 }
 
+/**
+ * @ingroup meos_rgeo_conversion
+ * @brief Convert a temporal rigid geometry into a temporal geography
+ * @details The value converts through #trgeometry_to_tgeometry and #tgeometry_to_tgeography, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Trgeometry_to_tgeography()
+ */
+Temporal *
+trgeometry_to_tgeography(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  Temporal *value = trgeometry_to_tgeometry(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeometry_to_tgeography(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************/

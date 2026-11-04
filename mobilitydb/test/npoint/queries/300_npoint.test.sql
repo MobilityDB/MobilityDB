@@ -251,3 +251,10 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(2,0.3,0.5)';
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT npoint 'Npoint(1, 0.5)'::geography;
+SELECT nsegment 'Nsegment(1, 0.5, 0.7)'::geography;

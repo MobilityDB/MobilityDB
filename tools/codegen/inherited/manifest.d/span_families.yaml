@@ -2519,7 +2519,7 @@ span_families:
   - {sig: "{v}({vs})", ret: "{v}", sym: Geoset_to_geo}
   - lit: "\n"
   - {stmt: "CREATE CAST ({vs} AS {v}) WITH FUNCTION {v}({vs});"}
-  - lit: "\n"
+  - lit: "\nCREATE FUNCTION geogset(geomset)\n  RETURNS geogset\n  AS 'MODULE_PATHNAME', 'Geomset_to_geogset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\nCREATE FUNCTION geomset(geogset)\n  RETURNS geomset\n  AS 'MODULE_PATHNAME', 'Geogset_to_geomset'\n  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;\n\nCREATE CAST (geomset AS geogset) WITH FUNCTION geogset(geomset);\nCREATE CAST (geogset AS geomset) WITH FUNCTION geomset(geogset);\n\n"
 
 - family: poseset_conversions
   file: mobilitydb/sql/pose/101_poseset.in.sql

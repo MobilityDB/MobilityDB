@@ -196,6 +196,28 @@ tpcpoint_to_tgeompoint(const Temporal *temp)
   }
 }
 
+/**
+ * @ingroup meos_pointcloud_conversion
+ * @brief Convert a temporal point cloud point into a temporal geography point
+ * @details The value converts through #tpcpoint_to_tgeompoint and #tgeompoint_to_tgeogpoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Tpcpoint_to_tgeogpoint()
+ */
+Temporal *
+tpcpoint_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPOINT(temp, NULL);
+  Temporal *value = tpcpoint_to_tgeompoint(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeompoint_to_tgeogpoint(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************
  * Spatial predicates and nearest-approach distance
  *****************************************************************************/

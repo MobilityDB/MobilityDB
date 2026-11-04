@@ -215,12 +215,17 @@ CREATE FUNCTION tgeompoint(tnpoint)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tnpoint_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(tnpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tnpoint_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tnpoint(tgeompoint)
   RETURNS tnpoint
   AS 'MODULE_PATHNAME', 'Tgeompoint_to_tnpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tnpoint AS tgeompoint) WITH FUNCTION tgeompoint(tnpoint);
+CREATE CAST (tnpoint AS tgeogpoint) WITH FUNCTION tgeogpoint(tnpoint);
 CREATE CAST (tgeompoint AS tnpoint) WITH FUNCTION tnpoint(tgeompoint);
 
 /******************************************************************************

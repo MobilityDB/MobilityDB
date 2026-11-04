@@ -300,6 +300,18 @@ CREATE FUNCTION nsegment(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);
+
+CREATE FUNCTION geography(npoint)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Npoint_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geography(nsegment)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Nsegment_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (npoint AS geography) WITH FUNCTION geography(npoint);
+CREATE CAST (nsegment AS geography) WITH FUNCTION geography(nsegment);
 CREATE CAST (geometry AS nsegment) WITH FUNCTION nsegment(geometry);
 
 CREATE FUNCTION stbox(npoint)

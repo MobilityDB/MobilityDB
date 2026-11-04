@@ -265,6 +265,7 @@ extern int pcpatch_mem_size(const Pcpatch *pa);
 /* Conversion */
 
 extern GSERIALIZED *pcpatch_to_geom(const Pcpatch *pa);
+extern GSERIALIZED *pcpatch_to_geog(const Pcpatch *pa);
 
 /* Comparison */
 
@@ -513,7 +514,9 @@ extern TSequenceSet *tpcpatchseqset_in(const char *str);
 /* Conversion */
 
 extern Temporal *tpcpoint_to_tgeompoint(const Temporal *temp);
+extern Temporal *tpcpoint_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tpcpatch_to_tgeometry(const Temporal *temp);
+extern Temporal *tpcpatch_to_tgeography(const Temporal *temp);
 
 extern TInstant *tpcpointinst_make(const Pcpoint *pt, TimestampTz t);
 extern TSequence *tpcpointseq_from_base_tstzset(const Pcpoint *pt, const Set *s);

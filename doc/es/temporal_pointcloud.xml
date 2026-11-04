@@ -275,6 +275,7 @@ SELECT pointN(pcpatch(pcpoint(1, 1.0, 1.0, 1.0), pcpoint(1, 2.0, 2.0, 2.0)), 3)
 					<para>Devuelve el multipunto de las posiciones que ocupan los puntos de un parche</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 geometry(pcpatch) &#8594; geometry
+geography(pcpatch) &#8594; geography
 </programlisting>
 					<para>El esquema que nombra el <varname>pcid</varname> decide el SRID y si el resultado lleva una dimensión Z</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
@@ -895,8 +896,9 @@ SELECT numInstants(tpcpointSeqSet(ARRAY[tpcpointSeq(ARRAY[
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 					<para>Convierte un punto de nube de puntos temporal a un punto de geometría temporal</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tpcpoint::tgeompoint
+tpcpoint::{tgeompoint,tgeogpoint}
 </programlisting>
+					<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 					<para>Toda dimensión no espacial se proyecta y las marcas temporales se preservan. El resultado lleva el SRID que indica el esquema, y es tridimensional cuando el esquema indica una dimensión Z. No se proporciona la conversión inversa, ya que reconstruir un <varname>pcpoint</varname> necesita un esquema destino que el valor temporal por sí solo no lleva.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
@@ -1783,6 +1785,7 @@ SELECT numSequences(tpcpatchSeqSet(ARRAY[tpcpatchSeq(ARRAY[
 					<para>Convierte un parche temporal en la geometría temporal de los multipuntos que ocupan sus parches</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tgeometry(tpcpatch) &#8594; tgeometry
+tgeography(tpcpatch) &#8594; tgeography
 </programlisting>
 					<para>El parche de cada instante se convierte en el multipunto de las posiciones que ocupan sus puntos, leídas a través del esquema que nombra su <varname>pcid</varname></para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">

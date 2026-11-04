@@ -127,6 +127,7 @@ extern Cbuffer *cbuffer_make(const GSERIALIZED *point, double radius);
 /* Conversion functions */
 
 extern GSERIALIZED *cbuffer_to_geom(const Cbuffer *cb);
+extern GSERIALIZED *cbuffer_to_geog(const Cbuffer *cb);
 extern STBox *cbuffer_to_stbox(const Cbuffer *cb);
 extern GSERIALIZED *cbufferarr_to_geom(const Cbuffer **cbarr, int count);
 extern Cbuffer *geom_to_cbuffer(const GSERIALIZED *gs);
@@ -266,6 +267,7 @@ extern SpanSet **tcbuffer_unnest(const Temporal *temp, Cbuffer ***values, int *c
 
 extern Temporal *tcbuffer_to_tfloat(const Temporal *temp);
 extern Temporal *tcbuffer_to_tgeompoint(const Temporal *temp);
+extern Temporal *tcbuffer_to_tgeogpoint(const Temporal *temp);
 extern Temporal *tgeometry_to_tcbuffer(const Temporal *temp);
 
 /*****************************************************************************

@@ -252,3 +252,27 @@ SELECT hashExtended(posechain 'PoseChain(Pose(Point(0 0), 0))', 1) =
  t
 (1 row)
 
+SELECT ST_AsEWKT(posechain 'PoseChain(Pose(Point(1 2),0.5))'::geometry);
+ st_asewkt  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(posechain 'PoseChain(Pose(Point(1 2),0.5))'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(posechain 'PoseChain(GeodPose(Point(1 2),0.5))'::geometry);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(posechain 'PoseChain(GeodPose(Point(1 2),0.5))'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+

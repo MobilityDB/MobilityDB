@@ -510,20 +510,34 @@ Stbox_to_box3d(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
-PGDLLEXPORT Datum Stbox_to_geo(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_to_geo);
+PGDLLEXPORT Datum Stbox_to_geom(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_to_geom);
 /**
  * @ingroup mobilitydb_geo_box_conversion
- * @brief Convert a spatiotemporal box into a PostGIS geometry/geography
+ * @brief Convert a spatiotemporal box, planar or geodetic, into a geometry
  * @sqlfn geometry()
  * @sqlop @p ::
  */
 Datum
-Stbox_to_geo(PG_FUNCTION_ARGS)
+Stbox_to_geom(PG_FUNCTION_ARGS)
 {
   STBox *box = PG_GETARG_STBOX_P(0);
-  Datum result = PointerGetDatum(stbox_to_geo(box));
-  PG_RETURN_DATUM(result);
+  PG_RETURN_GSERIALIZED_P(stbox_to_geom(box));
+}
+
+PGDLLEXPORT Datum Stbox_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_to_geog);
+/**
+ * @ingroup mobilitydb_geo_box_conversion
+ * @brief Convert a spatiotemporal box, planar or geodetic, into a geography
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Stbox_to_geog(PG_FUNCTION_ARGS)
+{
+  STBox *box = PG_GETARG_STBOX_P(0);
+  PG_RETURN_GSERIALIZED_P(stbox_to_geog(box));
 }
 
 PGDLLEXPORT Datum Stbox_to_tstzspan(PG_FUNCTION_ARGS);

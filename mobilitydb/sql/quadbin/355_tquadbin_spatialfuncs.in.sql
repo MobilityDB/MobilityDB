@@ -199,6 +199,13 @@ CREATE OPERATOR <-> (
 CREATE CAST (tquadbin AS tgeompoint)
   WITH FUNCTION cellToPoint(tquadbin);
 
+CREATE FUNCTION tgeogpoint(tquadbin)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tquadbin_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tquadbin AS tgeogpoint) WITH FUNCTION tgeogpoint(tquadbin);
+
 /******************************************************************************
  * quadbinset × tquadbin — ever-equal (sound cell-set prefilter)
  *

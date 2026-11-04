@@ -538,6 +538,30 @@ SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="geo_geog_convert">
+				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geomset</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geogset</varname></primary></indexterm>
+				<para>Convert between a geometry and a geography</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geomset::geogset
+geogset::geomset
+geogset(geomset) → geogset
+geomset(geogset) → geomset
+</programlisting>
+				<para><emphasis role="strong">A spatial value of any type converts to a geometry and to a geography, whether it is planar or geodetic.</emphasis> The conversion changes the type and never the coordinates, so a measure then follows the target: on the plane for a geometry, on the surface of the earth for a geography. As a geography, a value with no SRID has the SRID 4326 and a value in a projected reference system raises an error, as in PostGIS. The rule holds for every spatial type and every temporal one, each of which reaches the same conversion of its geometry or geography values.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsEWKT(geometry 'Point(1 2)'::geography);
+-- SRID=4326;POINT(1 2)
+SELECT asEWKT(geomset '{"Point(1 2)"}'::geogset);
+-- SRID=4326;{"POINT(1 2)"}
+SELECT asEWKT(geogset '{"Point(1 2)"}'::geomset);
+-- SRID=4326;{"POINT(1 2)"}
+SELECT geomset 'SRID=3857;{"Point(1 2)"}'::geogset;
+-- ERROR:  Only lon/lat coordinate systems are supported
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="span_convert">
 				<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
 				<indexterm significance="normal"><primary><varname>spanset</varname></primary></indexterm>

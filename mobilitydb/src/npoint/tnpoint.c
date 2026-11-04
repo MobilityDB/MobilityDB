@@ -104,6 +104,23 @@ Tnpoint_to_tgeompoint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tnpoint_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnpoint_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_npoint_conversion
+ * @brief Convert a temporal network point into a temporal geography point
+ * @sqlfn tgeogpoint()
+ * @sqlop @p ::
+ */
+Datum
+Tnpoint_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tnpoint_to_tgeogpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tgeompoint_to_tnpoint(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeompoint_to_tnpoint);
 /**

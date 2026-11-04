@@ -147,9 +147,11 @@ extern Nsegment *nsegment_make(int64 rid, double pos1, double pos2);
 extern Npoint *geompoint_to_npoint(const GSERIALIZED *gs, double tolerance);
 extern Nsegment *geom_to_nsegment(const GSERIALIZED *gs);
 extern GSERIALIZED *npoint_to_geompoint(const Npoint *np);
+extern GSERIALIZED *npoint_to_geog(const Npoint *np);
 extern Nsegment *npoint_to_nsegment(const Npoint *np);
 extern STBox *npoint_to_stbox(const Npoint *np);
 extern GSERIALIZED *nsegment_to_geom(const Nsegment *ns);
+extern GSERIALIZED *nsegment_to_geog(const Nsegment *ns);
 extern STBox *nsegment_to_stbox(const Nsegment *ns);
 
 /* Accessor functions */
@@ -270,6 +272,7 @@ extern TSequenceSet *tnpointseqset_from_base_tstzspanset(const Npoint *np, const
 
 extern Temporal *tgeompoint_to_tnpoint(const Temporal *temp);
 extern Temporal *tnpoint_to_tgeompoint(const Temporal *temp);
+extern Temporal *tnpoint_to_tgeogpoint(const Temporal *temp);
 
 /*****************************************************************************
  * Accessor functions

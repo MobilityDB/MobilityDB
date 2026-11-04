@@ -453,6 +453,13 @@ CREATE FUNCTION tgeometry(tpcpatch)
 
 CREATE CAST (tpcpatch AS tgeometry) WITH FUNCTION tgeometry(tpcpatch);
 
+CREATE FUNCTION tgeography(tpcpatch)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Tpcpatch_to_tgeography'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpatch AS tgeography) WITH FUNCTION tgeography(tpcpatch);
+
 -- The tstzspan cast is backed by the generated timeSpan accessor.
 CREATE CAST (tpcpatch AS tstzspan) WITH FUNCTION timeSpan(tpcpatch);
 

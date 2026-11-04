@@ -828,3 +828,15 @@ SELECT tpcpoint '0163000000000000000000F03F00000000000000400000000000000840@2024
 ERROR:  No schema registered for pcid 99
 LINE 1: SELECT tpcpoint '0163000000000000000000F03F00000000000000400...
                         ^
+SELECT asEWKT((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeompoint, 6);
+                    asewkt                    
+----------------------------------------------
+ POINT Z (1 1 1)@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+
+SELECT asEWKT((tpcpoint(PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), '2024-01-01'::timestamptz))::tgeogpoint, 6);
+                         asewkt                         
+--------------------------------------------------------
+ SRID=4326;POINT Z (1 1 1)@Mon Jan 01 00:00:00 2024 PST
+(1 row)
+

@@ -286,6 +286,8 @@ extern TSequenceSet *tposeseqset_from_base_tstzspanset(const Pose *pose, const S
 
 extern Temporal *tpose_make(const Temporal *tpoint, const Temporal *ttheta);
 extern Temporal *tpose_to_tpoint(const Temporal *temp);
+extern Temporal *tpose_to_tgeompoint(const Temporal *temp);
+extern Temporal *tpose_to_tgeogpoint(const Temporal *temp);
 
 /*****************************************************************************
  * Accessor functions
@@ -458,6 +460,7 @@ extern PoseChain *pose_to_posechain(const Pose *pose);
 extern Pose *posechain_to_pose(const PoseChain *pc);
 extern Pose *posechain_prefix_pose(const PoseChain *pc, int n);
 extern GSERIALIZED *posechain_to_point(const PoseChain *pc);
+extern GSERIALIZED *posechain_to_geog(const PoseChain *pc);
 extern STBox *posechain_to_stbox(const PoseChain *pc);
 extern STBox *posechain_timestamptz_to_stbox(const PoseChain *pc, TimestampTz t);
 extern STBox *posechain_tstzspan_to_stbox(const PoseChain *pc, const Span *s);
@@ -570,6 +573,8 @@ extern TSequenceSet *tposechainseqset_from_base_tstzspanset(const PoseChain *pc,
 /* Conversion functions */
 
 extern Temporal *tposechain_to_tpose(const Temporal *temp);
+extern Temporal *tposechain_to_tgeompoint(const Temporal *temp);
+extern Temporal *tposechain_to_tgeogpoint(const Temporal *temp);
 
 /* Accessor functions */
 

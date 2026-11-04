@@ -178,6 +178,9 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
 
 - **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.d/positions.yaml`):
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
+  A family listing `geography:` has, after each statement of a listed name that
+  takes a geometry, the same statement over a geography and a temporal geography
+  point (`_geography_twins`): the temporal pose and the temporal pose chain.
 - **region-in-file** for C: emits the block between
   `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END`,
   `GENERATED-BOXBOX-BEGIN/END`, `GENERATED-NADOPS-BEGIN/END` and

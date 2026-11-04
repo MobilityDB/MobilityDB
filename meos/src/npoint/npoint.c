@@ -1198,6 +1198,28 @@ npoint_to_geompoint(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Convert a network point into a geography point
+ * @details The value converts through #npoint_to_geompoint and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] np Value
+ * @errval NULL
+ * @csqlfn #Npoint_to_geog()
+ */
+GSERIALIZED *
+npoint_to_geog(const Npoint *np)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
+}
+
+/**
  * @brief Return the stretch of a route between two positions
  * @details The stretch holds the points a temporal network point travelling it
  * passes, as #tnpointseq_tgeompointseq_cont states them: the points at the two
@@ -1313,6 +1335,28 @@ route_nearest_update(const GSERIALIZED *gs, int64 gid,
   *min_dist = dist;
   *min_pos = pos;
   return;
+}
+
+/**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Convert a network segment into a geography
+ * @details The value converts through #nsegment_to_geom and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] ns Value
+ * @errval NULL
+ * @csqlfn #Nsegment_to_geog()
+ */
+GSERIALIZED *
+nsegment_to_geog(const Nsegment *ns)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL);
+  GSERIALIZED *geom = nsegment_to_geom(ns);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
 }
 
 /**

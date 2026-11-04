@@ -46,11 +46,11 @@
 CREATE FUNCTION eContains(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eContains($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.eContains($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aContains(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aContains($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aContains($1, @extschema@.tgeompointOpr($2)) $$;
 
 /*****************************************************************************
  * Ever/always covers
@@ -59,11 +59,11 @@ CREATE FUNCTION aContains(geometry, tpose)
 CREATE FUNCTION eCovers(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eCovers($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.eCovers($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aCovers(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aCovers($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aCovers($1, @extschema@.tgeompointOpr($2)) $$;
 
 /*****************************************************************************
  * Ever/always disjoint
@@ -72,47 +72,47 @@ CREATE FUNCTION aCovers(geometry, tpose)
 CREATE FUNCTION eDisjoint(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.eDisjoint($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION eDisjoint(geography, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1, $2::@extschema@.tgeogpoint) $$;
+  AS $$ SELECT @extschema@.eDisjoint($1, @extschema@.tgeogpointOpr($2)) $$;
 CREATE FUNCTION aDisjoint(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aDisjoint($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aDisjoint(geography, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1, $2::@extschema@.tgeogpoint) $$;
+  AS $$ SELECT @extschema@.aDisjoint($1, @extschema@.tgeogpointOpr($2)) $$;
 
 CREATE FUNCTION eDisjoint(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeompoint, $2) $$;
+  AS $$ SELECT @extschema@.eDisjoint(@extschema@.tgeompointOpr($1), $2) $$;
 CREATE FUNCTION eDisjoint(tpose, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeogpoint, $2) $$;
+  AS $$ SELECT @extschema@.eDisjoint(@extschema@.tgeogpointOpr($1), $2) $$;
 CREATE FUNCTION aDisjoint(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1::@extschema@.tgeompoint, $2) $$;
+  AS $$ SELECT @extschema@.aDisjoint(@extschema@.tgeompointOpr($1), $2) $$;
 CREATE FUNCTION aDisjoint(tpose, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1::@extschema@.tgeogpoint, $2) $$;
+  AS $$ SELECT @extschema@.aDisjoint(@extschema@.tgeogpointOpr($1), $2) $$;
 
 CREATE FUNCTION eDisjoint(tpose, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeompoint,
-                          $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.eDisjoint(@extschema@.tgeompointOpr($1),
+                          @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aDisjoint(tpose, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDisjoint($1::@extschema@.tgeompoint,
-                          $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aDisjoint(@extschema@.tgeompointOpr($1),
+                          @extschema@.tgeompointOpr($2)) $$;
 
 /*****************************************************************************
  * Ever/always intersects
@@ -131,11 +131,11 @@ CREATE FUNCTION eIntersects(geography, tpose)
 CREATE FUNCTION aIntersects(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aIntersects($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aIntersects(geography, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1, $2::@extschema@.tgeogpoint) $$;
+  AS $$ SELECT @extschema@.aIntersects($1, @extschema@.tgeogpointOpr($2)) $$;
 
 CREATE FUNCTION eIntersects(tpose, geometry)
   RETURNS boolean
@@ -150,11 +150,11 @@ CREATE FUNCTION eIntersects(tpose, geography)
 CREATE FUNCTION aIntersects(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1::@extschema@.tgeompoint, $2) $$;
+  AS $$ SELECT @extschema@.aIntersects(@extschema@.tgeompointOpr($1), $2) $$;
 CREATE FUNCTION aIntersects(tpose, geography)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1::@extschema@.tgeogpoint, $2) $$;
+  AS $$ SELECT @extschema@.aIntersects(@extschema@.tgeogpointOpr($1), $2) $$;
 
 CREATE FUNCTION eIntersects(tpose, tpose)
   RETURNS boolean
@@ -164,8 +164,8 @@ CREATE FUNCTION eIntersects(tpose, tpose)
 CREATE FUNCTION aIntersects(tpose, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aIntersects($1::@extschema@.tgeompoint,
-                            $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aIntersects(@extschema@.tgeompointOpr($1),
+                            @extschema@.tgeompointOpr($2)) $$;
 
 /*****************************************************************************
  * Ever/always touches
@@ -174,20 +174,20 @@ CREATE FUNCTION aIntersects(tpose, tpose)
 CREATE FUNCTION eTouches(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.eTouches($1, @extschema@.tgeompointOpr($2)) $$;
 CREATE FUNCTION aTouches(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches($1, $2::@extschema@.tgeompoint) $$;
+  AS $$ SELECT @extschema@.aTouches($1, @extschema@.tgeompointOpr($2)) $$;
 
 CREATE FUNCTION eTouches(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.eTouches($1::@extschema@.tgeompoint, $2) $$;
+  AS $$ SELECT @extschema@.eTouches(@extschema@.tgeompointOpr($1), $2) $$;
 CREATE FUNCTION aTouches(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aTouches($1::@extschema@.tgeompoint, $2) $$;
+  AS $$ SELECT @extschema@.aTouches(@extschema@.tgeompointOpr($1), $2) $$;
 
 /*****************************************************************************
  * Ever/always dwithin
@@ -206,7 +206,7 @@ CREATE FUNCTION eDwithin(geography, tpose, dist float)
 CREATE FUNCTION aDwithin(geometry, tpose, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin($1, $2::@extschema@.tgeompoint, $3) $$;
+  AS $$ SELECT @extschema@.aDwithin($1, @extschema@.tgeompointOpr($2), $3) $$;
 
 CREATE FUNCTION eDwithin(tpose, geometry, dist float)
   RETURNS boolean
@@ -221,7 +221,7 @@ CREATE FUNCTION eDwithin(tpose, geography, dist float)
 CREATE FUNCTION aDwithin(tpose, geometry, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin($1::@extschema@.tgeompoint, $2, $3) $$;
+  AS $$ SELECT @extschema@.aDwithin(@extschema@.tgeompointOpr($1), $2, $3) $$;
 
 CREATE FUNCTION eDwithin(tpose, tpose, dist float)
   RETURNS boolean
@@ -231,7 +231,7 @@ CREATE FUNCTION eDwithin(tpose, tpose, dist float)
 CREATE FUNCTION aDwithin(tpose, tpose, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.aDwithin($1::@extschema@.tgeompoint,
-                         $2::@extschema@.tgeompoint, $3) $$;
+  AS $$ SELECT @extschema@.aDwithin(@extschema@.tgeompointOpr($1),
+                         @extschema@.tgeompointOpr($2), $3) $$;
 
 /*****************************************************************************/
