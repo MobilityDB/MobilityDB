@@ -236,7 +236,7 @@ SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=|
 				<para>Los valores en dos sistemas de referencia espacial siempre producen un error, ya que sus unidades no son comparables.</para>
 			</listitem>
 		</itemizedlist>
-		<para>Como la regla no produce ningún error, un valor al que le falta su Z por equivocación responde en 2D sin ningún aviso. Una columna declarada con dimensión Z, como <varname>tgeompoint(Sequence, PointZ)</varname>, no acepta un valor sin Z, de modo que una tabla no puede contenerlo.</para>
+		<para>Como la regla no produce ningún error, un valor al que le falta su Z por equivocación responde en 2D sin ningún aviso. Las funciones <xref linkend="tgeo_force"/> indican las dimensiones que se leen. Una columna declarada con dimensión Z, como <varname>tgeompoint(Sequence, PointZ)</varname>, no acepta un valor sin Z, de modo que una tabla no puede contenerlo.</para>
 	</sect1>
 
 	<sect1 xml:id="tgeo_spatial_bbox">

@@ -65,6 +65,23 @@ CREATE FUNCTION transform(tgeography, integer)
   RETURNS tgeography
   AS 'MODULE_PATHNAME', 'Tspatial_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION force2D(tgeometry)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Tgeo_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force3D(tgeometry, zvalue float DEFAULT 0.0)
+  RETURNS tgeometry
+  AS 'MODULE_PATHNAME', 'Tgeo_force3d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force2D(tgeography)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Tgeo_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force3D(tgeography, zvalue float DEFAULT 0.0)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Tgeo_force3d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transformPipeline(tgeography, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS tgeography

@@ -1115,6 +1115,9 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_force"><varname>force2D</varname>, <varname>force3D</varname></link>: Devuelve una geometría temporal sin Z o con una Z, como lo hacen las funciones de PostGIS <varname>ST_Force2D</varname> y <varname>ST_Force3D</varname> para una geometría &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
 				</listitem>
 				<listitem>
