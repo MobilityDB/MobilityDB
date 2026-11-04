@@ -350,3 +350,32 @@ DROP FUNCTION day_of(int);
 DROP FUNCTION index_structures(text, text, text[], text[], text[]);
 
 -------------------------------------------------------------------------------
+
+-- The distance a GiST index over temporal point cloud points reports for an
+-- entry stays under the one |=| computes on the trajectories of the values,
+-- so the nearest values of points at large coordinates come out of the index
+-- as out of a scan
+CREATE TABLE tbl_tpcpoint_far AS
+SELECT k, tpcpoint(pcpoint(1, 19000000 + (k * 37 % 101) * 0.37,
+  19000000 + (k * 53 % 97) * 0.29, 19000000 + (k * 71 % 89) * 0.31),
+  timestamptz '2001-01-01') AS temp
+FROM generate_series(1, 200) k;
+CREATE INDEX tbl_tpcpoint_far_gist_idx ON tbl_tpcpoint_far USING gist(temp);
+SET enable_indexscan = off;
+SET enable_bitmapscan = off;
+SELECT string_agg(round(d::numeric, 6)::text, ',' ORDER BY d) FROM (
+  SELECT temp |=| tpcpoint(pcpoint(1, 19000017.5, 19000013.25, 19000013.75),
+    timestamptz '2001-01-01') AS d
+  FROM tbl_tpcpoint_far ORDER BY 1 LIMIT 10) s;
+SET enable_seqscan = off;
+SET enable_indexscan = on;
+SELECT string_agg(round(d::numeric, 6)::text, ',' ORDER BY d) FROM (
+  SELECT temp |=| tpcpoint(pcpoint(1, 19000017.5, 19000013.25, 19000013.75),
+    timestamptz '2001-01-01') AS d
+  FROM tbl_tpcpoint_far ORDER BY 1 LIMIT 10) s;
+RESET enable_seqscan;
+RESET enable_indexscan;
+RESET enable_bitmapscan;
+DROP TABLE tbl_tpcpoint_far;
+
+-------------------------------------------------------------------------------
