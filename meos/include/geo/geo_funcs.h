@@ -661,8 +661,6 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 }
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
-extern bool ensure_same_dimensionality_geo(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_srid_valid(int32_t srid);
 /**
@@ -727,6 +725,7 @@ extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
   bool geodetic, int32_t srid);
 extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
+extern GSERIALIZED *geo_force2d_intl(const GSERIALIZED *gs);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,

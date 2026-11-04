@@ -2873,6 +2873,7 @@ tpointsegm_distance_turnpt(Datum start1, Datum end1, Datum start2,
  * @param[in] gs Geometry/geography
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #stbox_area reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #Tdistance_tgeo_geo() #Tdistance_geo_tgeo()
  */
 Temporal *
@@ -2881,10 +2882,20 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-      ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
       gserialized_is_empty(gs))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t;
+  const GSERIALIZED *g;
+  void *flat = tgeo_geo_common_dims(temp, gs, &t, &g);
+  if (flat)
+  {
+    Temporal * result = tdistance_tgeo_geo(t, g, spheroid);
+    pfree(flat);
+    return result;
+  }
 
   /* The temporal distance between a temporal geometric point with linear
    * interpolation and a non-point clip-supported planar 2D geometry
@@ -2954,6 +2965,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #Tdistance_tgeo_tgeo()
  */
 Temporal *
@@ -2963,9 +2975,18 @@ tdistance_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    Temporal * result = tdistance_tgeo_tgeo(t1, t2, spheroid);
+    pfree(flat);
+    return result;
+  }
 
   LiftedFunctionInfo lfinfo;
   memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
@@ -3871,6 +3892,23 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
 /*****************************************************************************/
 
 /**
+ * @brief Return the instant of a temporal geo at the time of an instant found
+ * in the dimensions both operands have, keeping the Z of the temporal geo, as
+ * #nai_tgeo_geo reads a value at the time it finds
+ * @param[in] temp Temporal geo
+ * @param[in] inst Instant found, which the function frees
+ */
+static TInstant *
+nai_value_of(const Temporal *temp, TInstant *inst)
+{
+  Datum value;
+  TimestampTz t = inst->t;
+  temporal_value_at_timestamptz(temp, t, false, &value);
+  pfree(inst);
+  return tinstant_make_free(value, temp->temptype, t);
+}
+
+/**
  * @ingroup meos_geo_dist
  * @brief Return the nearest approach instant between a temporal geo and
  * a geometry/geography
@@ -3878,6 +3916,7 @@ nai_tpoint_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] gs Geometry/geography
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #NAI_tgeo_geo() #NAI_geo_tgeo()
  */
 TInstant *
@@ -3886,10 +3925,22 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-      ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
       gserialized_is_empty(gs))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *temp1;
+  const GSERIALIZED *gs1;
+  void *flat = tgeo_geo_common_dims(temp, gs, &temp1, &gs1);
+  if (flat)
+  {
+    TInstant *result = nai_tgeo_geo(temp1, gs1, spheroid);
+    if (result && temp1 != temp)
+      result = nai_value_of(temp, result);
+    pfree(flat);
+    return result;
+  }
 
   /* Planar 2D temporal point: the analytic engine at radius 0 */
   if (tpoint_type(temp->temptype) && ! MEOS_FLAGS_GET_GEODETIC(temp->flags) &&
@@ -3949,6 +4000,7 @@ nai_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_tgeo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #NAI_tgeo_tgeo()
  */
 TInstant *
@@ -3957,9 +4009,20 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    TInstant *result = nai_tgeo_tgeo(t1, t2, spheroid);
+    if (result && t1 != temp1)
+      result = nai_value_of(temp1, result);
+    pfree(flat);
+    return result;
+  }
 
   /* Fast path: linear temporal points via the time-synchronous running
    * minimum, avoiding the temporal distance materialization */
@@ -4010,6 +4073,7 @@ nai_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
  * @param[in] gs Geometry/geography
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_geo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #NAD_tgeo_geo() #NAD_geo_tgeo()
  * @errval -1.0
  */
@@ -4019,9 +4083,19 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-      ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs))
     return -1.0;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t;
+  const GSERIALIZED *g;
+  void *flat = tgeo_geo_common_dims(temp, gs, &t, &g);
+  if (flat)
+  {
+    double result = nad_tgeo_geo(t, g, spheroid);
+    pfree(flat);
+    return result;
+  }
   /* An empty geometry has no point to measure from, so the operands have no
    * distance, which is an answer */
   if (gserialized_is_empty(gs))
@@ -4060,6 +4134,7 @@ nad_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
  * @param[in] gs Geometry
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geodetic boxes only, as #stbox_area reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #NAD_stbox_geo() #NAD_geo_stbox()
  * @errval -1.0
  */
@@ -4074,8 +4149,20 @@ nad_stbox_geo(const STBox *box, const GSERIALIZED *gs, bool spheroid)
    * distance, which is an answer */
   if (gserialized_is_empty(gs))
     return DBL_MAX;
-  if (! ensure_same_spatial_dimensionality_stbox_geo(box, gs))
-    return -1.0;
+  /* Operands of different dimensions read the dimensions both have */
+  if (MEOS_FLAGS_GET_Z(box->flags) != (bool) FLAGS_GET_Z(gs->gflags))
+  {
+    if (FLAGS_GET_Z(gs->gflags))
+    {
+      GSERIALIZED *flat = geo_force2d_intl(gs);
+      double result = nad_stbox_geo(box, flat, spheroid);
+      pfree(flat);
+      return result;
+    }
+    STBox flat = *box;
+    MEOS_FLAGS_SET_Z(flat.flags, false);
+    return nad_stbox_geo(&flat, gs, spheroid);
+  }
 
   Datum geo = PointerGetDatum(stbox_geo(box));
   double result = DatumGetFloat8(datum_geo_distance(geo, PointerGetDatum(gs),
@@ -4095,8 +4182,7 @@ static double stbox_spatial_dist(const STBox *box1, const STBox *box2,
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geodetic boxes only, as #stbox_area reads it
  * @return If the time frames do not intersect return infinity
- * @pre The boxes are comparable, both carry a spatial extent, and they have
- * the same spatial dimensionality
+ * @pre The boxes are comparable and both carry a spatial extent
  */
 double
 stbox_nad(const STBox *box1, const STBox *box2, bool spheroid)
@@ -4105,7 +4191,14 @@ stbox_nad(const STBox *box1, const STBox *box2, bool spheroid)
   assert(ensure_valid_stbox_stbox(box1, box2));
   assert(ensure_has_X(T_STBOX, box1->flags));
   assert(ensure_has_X(T_STBOX, box2->flags));
-  assert(ensure_same_spatial_dimensionality(box1->flags, box2->flags));
+  /* Operands of different dimensions read the dimensions both have */
+  if (MEOS_FLAGS_GET_Z(box1->flags) != MEOS_FLAGS_GET_Z(box2->flags))
+  {
+    STBox flat1 = *box1, flat2 = *box2;
+    MEOS_FLAGS_SET_Z(flat1.flags, false);
+    MEOS_FLAGS_SET_Z(flat2.flags, false);
+    return stbox_nad(&flat1, &flat2, spheroid);
+  }
 
   /* If the boxes do not intersect in the time dimension return infinity */
   bool hast = MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags);
@@ -4127,6 +4220,7 @@ stbox_nad(const STBox *box1, const STBox *box2, bool spheroid)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #NAD_stbox_stbox()
  */
@@ -4136,8 +4230,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_stbox_stbox(box1, box2) ||
       ! ensure_has_X(T_STBOX, box1->flags) ||
-      ! ensure_has_X(T_STBOX, box2->flags) ||
-      ! ensure_same_spatial_dimensionality(box1->flags, box2->flags))
+      ! ensure_has_X(T_STBOX, box2->flags))
     return -1.0;
   return stbox_nad(box1, box2, spheroid);
 }
@@ -4153,6 +4246,7 @@ nad_stbox_stbox(const STBox *box1, const STBox *box2, bool spheroid)
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
  * DBL_MAX
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #NAD_tgeo_stbox() #NAD_stbox_tgeo()
  */
@@ -4161,9 +4255,23 @@ nad_tgeo_stbox(const Temporal *temp, const STBox *box, bool spheroid)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, -1.0);  VALIDATE_NOT_NULL(box, -1.0);
-  if (! ensure_valid_tgeo_stbox(temp, box) ||
-      ! ensure_same_spatial_dimensionality(temp->flags, box->flags))
+  if (! ensure_valid_tgeo_stbox(temp, box))
     return -1.0;
+
+  /* Operands of different dimensions read the dimensions both have */
+  if (MEOS_FLAGS_GET_Z(temp->flags) != MEOS_FLAGS_GET_Z(box->flags))
+  {
+    if (MEOS_FLAGS_GET_Z(temp->flags))
+    {
+      Temporal *flat = tgeo_force2d_intl(temp);
+      double result = nad_tgeo_stbox(flat, box, spheroid);
+      pfree(flat);
+      return result;
+    }
+    STBox flat = *box;
+    MEOS_FLAGS_SET_Z(flat.flags, false);
+    return nad_tgeo_stbox(temp, &flat, spheroid);
+  }
 
   /* Project the temporal geo to the timespan of the box */
   bool hast = MEOS_FLAGS_GET_T(box->flags);
@@ -4471,6 +4579,7 @@ ea_dwithin_tpoint_tpoint_exact(const Temporal *temp1, const Temporal *temp2,
  * @param[in] temp1,temp2 Temporal geos
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #tdistance_tgeo_tgeo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #NAD_tgeo_tgeo()
  * @note A nearest approach is measured over the time the operands share, so
  * operands whose time frames do not intersect have none and the answer is
@@ -4483,9 +4592,18 @@ nad_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool spheroid)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, -1.0); VALIDATE_TGEO(temp2, -1.0);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-      ! ensure_same_geodetic(temp1->flags, temp2->flags) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags))
+      ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return -1.0;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    double result = nad_tgeo_tgeo(t1, t2, spheroid);
+    pfree(flat);
+    return result;
+  }
 
   /* Two planar linearly moving points: the nearest approach over continuous
    * time, the double nearest its exact value */
@@ -4590,6 +4708,7 @@ geog_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
  * @param[in] gs Geometry/geography
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #nad_tgeo_geo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #Shortestline_tgeo_geo() #Shortestline_geo_tgeo()
  * @note The shortest line of two geographies is the one of
  * #geography_shortestline_internal on the model of the earth @p spheroid
@@ -4601,10 +4720,20 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   if (! ensure_same_srid(tspatial_srid(temp), gserialized_get_srid(gs)) ||
-      ! ensure_same_dimensionality_tspatial_geo(temp, gs) ||
       ! ensure_same_geodetic_tspatial_geo(temp, gs) ||
       gserialized_is_empty(gs))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t;
+  const GSERIALIZED *g;
+  void *flat = tgeo_geo_common_dims(temp, gs, &t, &g);
+  if (flat)
+  {
+    GSERIALIZED * result = shortestline_tgeo_geo(t, g, spheroid);
+    pfree(flat);
+    return result;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   if (geodetic && ! ensure_has_not_Z_geo(gs))
     return NULL;
@@ -4648,6 +4777,7 @@ shortestline_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  * @param[in] temp1,temp2 Temporal values
  * @param[in] spheroid True when measuring on the spheroid, false on the
  * sphere, read for geographies only, as #nad_tgeo_tgeo reads it
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #Shortestline_tgeo_tgeo()
  */
 GSERIALIZED *
@@ -4657,9 +4787,18 @@ shortestline_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp1, NULL); VALIDATE_TGEO(temp2, NULL);
   if (! ensure_same_srid(tspatial_srid(temp1), tspatial_srid(temp2)) ||
-      ! ensure_same_dimensionality(temp1->flags, temp2->flags) ||
       ! ensure_same_geodetic(temp1->flags, temp2->flags))
     return NULL;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    GSERIALIZED * result = shortestline_tgeo_tgeo(t1, t2, spheroid);
+    pfree(flat);
+    return result;
+  }
 
   /* Fast path: linear temporal points via the time-synchronous running
    * minimum, avoiding the temporal distance materialization. A finite
@@ -5055,6 +5194,7 @@ tspatialarr_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
  * sphere; read for geographies only, as in #stbox_area
  * @return Minimum spatial distance; DBL_MAX on validation failure or on
  *   any empty input array.
+ * @note Operands of different dimensions read the dimensions both have
  * @csqlfn #Mindistance_tgeoarr_tgeoarr()
  * @errval -1.0
  */
@@ -5081,9 +5221,23 @@ mindistance_tgeoarr_tgeoarr(const Temporal **arr1, int count1,
       return -1.0;
   for (int j = 0; j < count2; j++)
     if (! ensure_same_srid(tspatial_srid(arr2[j]), srid) ||
-        ! ensure_same_dimensionality(arr2[j]->flags, flags) ||
+        ! ensure_same_dimensionality(arr2[j]->flags, arr2[0]->flags) ||
         ! ensure_same_geodetic(arr2[j]->flags, flags))
       return -1.0;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal **a1, **a2;
+  Temporal **flat = tgeoarr_tgeoarr_common_dims(arr1, count1, arr2, count2, &a1,
+    &a2);
+  if (flat)
+  {
+    double result = mindistance_tgeoarr_tgeoarr(a1, count1, a2, count2, spheroid);
+    int count = (a1 == (const Temporal **) flat) ? count1 : count2;
+    for (int i = 0; i < count; i++)
+      pfree(flat[i]);
+    pfree(flat);
+    return result;
+  }
 
   /* Every pair with the distance between its boxes, nearest first */
   size_t npairs = count1;

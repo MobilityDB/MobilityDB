@@ -822,6 +822,121 @@ ensure_valid_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2)
   return true;
 }
 
+/*****************************************************************************
+ * Operands of different dimensions
+ * An operation relating two spatial values reads the dimensions both have, so
+ * it reads an operand with Z and an operand with no Z in 2D, as #similarity_flags
+ * selects it for the similarity distances
+ *****************************************************************************/
+
+/**
+ * @brief Lifted form of #geo_force2d_intl
+ */
+static Datum
+datum_geo_force2d(Datum geo)
+{
+  return PointerGetDatum(geo_force2d_intl(DatumGetGserializedP(geo)));
+}
+
+/**
+ * @brief Return a temporal geo with no Z, a linear motion staying linear since
+ * dropping a coordinate is affine
+ * @details The form of #tpoint_force2d for every temporal geo, keeping the type
+ * of the value, a geography among them
+ * @param[in] temp Temporal geo
+ */
+Temporal *
+tgeo_force2d_intl(const Temporal *temp)
+{
+  assert(temp);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_geo_force2d;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
+ * @brief Return the copy with no Z of the operand that has one, where two
+ * temporal geos have different dimensions, and NULL otherwise, as
+ * #tgeo_force2d_intl gives it
+ * @param[in] temp1,temp2 Temporal geos
+ * @param[out] out1,out2 Operands to read
+ */
+Temporal *
+tgeo_tgeo_common_dims(const Temporal *temp1, const Temporal *temp2,
+  const Temporal **out1, const Temporal **out2)
+{
+  *out1 = temp1; *out2 = temp2;
+  bool hasz1 = MEOS_FLAGS_GET_Z(temp1->flags);
+  if (hasz1 == MEOS_FLAGS_GET_Z(temp2->flags))
+    return NULL;
+  Temporal *result = tgeo_force2d_intl(hasz1 ? temp1 : temp2);
+  if (hasz1)
+    *out1 = result;
+  else
+    *out2 = result;
+  return result;
+}
+
+/**
+ * @brief Return the copy with no Z of the operand that has one, where a temporal
+ * geo and a geometry have different dimensions, and NULL otherwise, as
+ * #tgeo_tgeo_common_dims does for two temporal geos
+ * @param[in] temp Temporal geo
+ * @param[in] gs Geometry
+ * @param[out] outt,outg Operands to read
+ */
+void *
+tgeo_geo_common_dims(const Temporal *temp, const GSERIALIZED *gs,
+  const Temporal **outt, const GSERIALIZED **outg)
+{
+  *outt = temp; *outg = gs;
+  bool hasz = MEOS_FLAGS_GET_Z(temp->flags);
+  if (hasz == (bool) FLAGS_GET_Z(gs->gflags))
+    return NULL;
+  if (hasz)
+  {
+    Temporal *result = tgeo_force2d_intl(temp);
+    *outt = result;
+    return result;
+  }
+  GSERIALIZED *result = geo_force2d_intl(gs);
+  *outg = result;
+  return result;
+}
+
+/**
+ * @brief Return the copies with no Z of the array that has one, where two arrays
+ * of temporal geos, each of one dimension, have different dimensions, and NULL
+ * otherwise, as #tgeo_tgeo_common_dims does for two temporal geos
+ * @param[in] arr1,arr2 Arrays of temporal geos
+ * @param[in] count1,count2 Number of elements of the arrays
+ * @param[out] out1,out2 Arrays to read
+ */
+Temporal **
+tgeoarr_tgeoarr_common_dims(const Temporal **arr1, int count1,
+  const Temporal **arr2, int count2, const Temporal ***out1,
+  const Temporal ***out2)
+{
+  *out1 = arr1; *out2 = arr2;
+  bool hasz1 = MEOS_FLAGS_GET_Z(arr1[0]->flags);
+  if (hasz1 == MEOS_FLAGS_GET_Z(arr2[0]->flags))
+    return NULL;
+  const Temporal **arr = hasz1 ? arr1 : arr2;
+  int count = hasz1 ? count1 : count2;
+  Temporal **result = palloc(sizeof(Temporal *) * count);
+  for (int i = 0; i < count; i++)
+    result[i] = tgeo_force2d_intl(arr[i]);
+  if (hasz1)
+    *out1 = (const Temporal **) result;
+  else
+    *out2 = (const Temporal **) result;
+  return result;
+}
 
 /*****************************************************************************
  * Conversion functions

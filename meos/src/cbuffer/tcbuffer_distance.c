@@ -546,6 +546,16 @@ Temporal *
 tdistance_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  /* A temporal circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    GSERIALIZED *flat = geo_force2d_intl(gs);
+    Temporal * result = tdistance_tcbuffer_geo(temp, flat);
+    pfree(flat);
+    return result;
+  }
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
@@ -744,6 +754,16 @@ nai_tcbuffer_geo_analytic(const Temporal *temp, const GSERIALIZED *gs,
 TInstant *
 nai_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  /* A temporal circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    GSERIALIZED *flat = geo_force2d_intl(gs);
+    TInstant * result = nai_tcbuffer_geo(temp, flat);
+    pfree(flat);
+    return result;
+  }
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
@@ -2154,6 +2174,16 @@ double
 nad_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, -1.0);
+  /* A temporal circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    GSERIALIZED *flat = geo_force2d_intl(gs);
+    double result = nad_tcbuffer_geo(temp, flat);
+    pfree(flat);
+    return result;
+  }
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs))
     return -1.0;
   /* An empty geometry has no point to measure from, so the operands have no
@@ -2847,6 +2877,16 @@ mindistance_tcbufferarr_tcbufferarr(const Temporal **arr1, int count1,
 GSERIALIZED *
 shortestline_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, NULL);
+  /* A temporal circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    GSERIALIZED *flat = geo_force2d_intl(gs);
+    GSERIALIZED * result = shortestline_tcbuffer_geo(temp, flat);
+    pfree(flat);
+    return result;
+  }
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;

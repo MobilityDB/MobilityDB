@@ -18250,6 +18250,25 @@ geo_serialize(const LWGEOM *geom)
   return result;
 }
 
+/**
+ * @brief Return a geometry or a geography with no Z
+ * @details The serialized form of #lwgeom_force_2d, serialized by #geo_serialize
+ * @param[in] gs Geometry or geography
+ */
+GSERIALIZED *
+geo_force2d_intl(const GSERIALIZED *gs)
+{
+  assert(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  LWGEOM *flat = lwgeom_force_2d(geom);
+  /* The function builds the result from the dimensions alone */
+  lwgeom_set_geodetic(flat, FLAGS_GET_GEODETIC(geom->flags));
+  lwgeom_free(geom);
+  GSERIALIZED *result = geo_serialize(flat);
+  lwgeom_free(flat);
+  return result;
+}
+
 /*****************************************************************************
  * Preconditions a geometry is read under
  *****************************************************************************/
@@ -18348,20 +18367,6 @@ ensure_same_geodetic_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
   return false;
 }
 
-/**
- * @brief Ensure that two geometries/geographies have the same dimensionality,
- * as #ensure_same_dimensionality_tspatial_geo requires it of a
- * spatiotemporal value and a geometry/geography
- */
-bool
-ensure_same_dimensionality_geo(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
-{
-  if (FLAGS_GET_Z(gs1->gflags) == FLAGS_GET_Z(gs2->gflags))
-    return true;
-  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-    "Operation on mixed 2D/3D dimensions");
-  return false;
-}
 /**
  * @brief Ensure that the SRID is known
  */

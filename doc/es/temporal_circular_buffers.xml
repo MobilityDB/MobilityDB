@@ -1137,6 +1137,7 @@ SELECT expandSpace(tcbuffer '[Cbuffer(Point(1 1), 0.5)@2001-01-01,
 
 	<sect1 xml:id="tcbuffer_distance">
 		<title>Operaciones de distancia</title>
+		<para>Los operandos de dimensiones distintas se leen en las dimensiones que ambos tienen, véase <xref linkend="tgeo_different_dimensions"/>.</para>
 		<itemizedlist>
 			<listitem xml:id="tcbuffer_nearestApproachDistance">
 				<indexterm significance="normal"><primary><varname>|=|</varname></primary></indexterm>

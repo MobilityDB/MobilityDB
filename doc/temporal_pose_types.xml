@@ -1536,6 +1536,7 @@ SELECT expandSpace(tposechain
 
 	<sect1 xml:id="tpose_distance">
 		<title>Distance Operations</title>
+		<para>Operands of different dimensions read the dimensions both of them have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 		<para>
 			We present next the functions that compute distance operations for temporal poses and temporal pose chains. Notice that for these operations only the point component is considered, not the orientation. A temporal pose chain is measured by the temporal pose its composition gives, <varname>tpose(tposechain)</varname>, which is a step function for a chain of more than one link.
 		</para>

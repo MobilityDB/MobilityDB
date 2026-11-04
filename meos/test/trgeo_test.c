@@ -616,6 +616,24 @@ int main(void)
     free(gap); free(gbody);
   }
 
+  /* A temporal rigid geometry has two dimensions, so a 3D operand is read in 2D */
+  {
+    Temporal *body = trgeometry_in(trgeo1_in);
+    GSERIALIZED *g2 = geom_in("Point(9 9)", -1);
+    GSERIALIZED *g3 = geom_in("Point(9 9 5)", -1);
+    Temporal *pt2 = tgeompoint_in("Point(9 9)@2001-01-01");
+    Temporal *pt3 = tgeompoint_in("Point(9 9 5)@2001-01-01");
+    double dg = nad_trgeometry_geo(body, g2);
+    double dp = nad_trgeometry_tpoint(body, pt2);
+    if (dg <= 0.0 || nad_trgeometry_geo(body, g3) != dg || dp <= 0.0 ||
+        nad_trgeometry_tpoint(body, pt3) != dp || meos_errno() != 0)
+    {
+      printf("FAILED: a 3D operand of a temporal rigid geometry\n");
+      result = 1;
+    }
+    free(body); free(g2); free(g3); free(pt2); free(pt3);
+  }
+
   /* Finalize MEOS */
   meos_finalize();
 
