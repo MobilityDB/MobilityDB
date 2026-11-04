@@ -38,6 +38,18 @@ SELECT round(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02),(Point(
  * geometry point with linear interpolation */
 SELECT round(geometry 'Linestring(1 1,2 2)' <-> tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]', 6);
 SELECT round(tgeompoint '[Point(1 1)@2001-01-01, Point(3 3)@2001-01-03]' <-> geometry 'Linestring(1 1,2 2)', 6);
+/* The distance turns where the point passes nearest, off its segment too */
+SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
+SELECT round(geometry 'Point(1 1)' <-> tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-03]', 6);
+SELECT round(tgeompoint '[Point(0 0 0)@2001-01-01, Point(2 0 0)@2001-01-03]' <-> geometry 'Point(1 1 1)', 6);
+SELECT round(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> geography 'Point(1 1)', 3);
+SELECT round(minValue(tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-03]' <-> geometry 'Point(1 1)'), 6);
+SELECT round(nearestApproachDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-03]', geometry 'Point(1 1)'), 6);
+/* A nearest point just inside the bound makes an instant, unless it is dated on the bound */
+SELECT numInstants(tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' <-> geometry 'Point(1e-7 1)');
+SELECT numInstants(tgeompoint '[Point(0 0)@2001-01-01, Point(1 0)@2001-01-02]' <-> geometry 'Point(1e-12 1)');
+/* A nearest point at a bound of the segment makes no instant */
+SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> geometry 'Point(5 1)', 6);
 /* A temporal point of any other interpolation has a value at its instants
  * alone, the distance of each to the geometry */
 SELECT round(tgeompoint 'Point(25 40)@2001-01-01' <-> geometry 'Linestring(10 10,50 10,50 50)', 6);

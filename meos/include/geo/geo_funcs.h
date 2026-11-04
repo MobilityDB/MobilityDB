@@ -272,6 +272,8 @@ extern double point_distance_offset_exact(const double *p, const double *q,
   int ndims, double r);
 extern double point_distance_offset_sum_exact(const double *p,
   const double *q, int ndims, double r1, double r2);
+extern bool point_segment_nearest_microsecond(const double *p, const double *a,
+  const double *b, int ndims, int64 D, int64 *n);
 extern void point_segment_shortestline_exact(const double *c, double r,
   const double *a, const double *b, double *sx, double *sy, double *ex,
   double *ey);

@@ -2561,30 +2561,115 @@ lw_distance_fraction(const LWGEOM *geom1, const LWGEOM *geom2, int mode,
  *****************************************************************************/
 
 /**
- * @brief Return whether a temporal point segment and a point are at a minimum
- * distance
- * @details Return 1 or 2 if they are at a minimum distance during the period
- * defined by the output timestamps, return 0 otherwise. These are the turning
- * points when computing the temporal distance.
+ * @brief Set the coordinates of a point, as #datum_pt_distance2d and
+ * #datum_pt_distance3d read them
+ */
+static void
+point_coords_get(Datum point, int ndims, double *c)
+{
+  if (ndims == 3)
+  {
+    const POINT3DZ *p = DATUM_POINT3DZ_P(point);
+    c[0] = p->x; c[1] = p->y; c[2] = p->z;
+    return;
+  }
+  const POINT2D *p = DATUM_POINT2D_P(point);
+  c[0] = p->x; c[1] = p->y;
+  return;
+}
+
+/**
+ * @brief Return whether a temporal geography point segment and a point are at
+ * a minimum distance
+ * @details Return 1 if they are at a minimum distance at the output timestamp,
+ * return 0 otherwise. This is the turning point when computing the temporal
+ * distance, located on the sphere in doubles (#geogpointsegm_closest).
  * @param[in] start,end Values defining the first segment
  * @param[in] point Point to locate
- * @param[in] lower,upper Minimum distance at turning point
+ * @param[in] lower,upper Timestamps defining the segment
  * @param[out] t1,t2 Timestamps defining the resulting period, may be equal
  * @pre The segment is not constant
  * @post As there is a single turning point, `t2` is set to `t1`
  */
 static int
-tpoint_geo_distance_turnpt(Datum start, Datum end, Datum point, 
+tgeogpoint_geo_distance_turnpt(Datum start, Datum end, Datum point,
   TimestampTz lower, TimestampTz upper, TimestampTz *t1, TimestampTz *t2)
 {
   assert(lower < upper); assert(t1); assert(t2);
   long double duration = (long double) (upper - lower);
-  double dist;
-  double fraction = (double) pointsegm_locate(start, end, point, &dist);
+  double fraction = (double) geogpointsegm_closest(start, end, point);
   if (fraction < 0.0)
     return 0;
   *t1 = *t2 = lower + (TimestampTz) (duration * fraction);
-  return 1;
+  /* A turning point dated on a bound belongs to the bound, which has an instant
+   * already */
+  return (*t1 > lower && *t1 < upper) ? 1 : 0;
+}
+
+/**
+ * @brief Return the temporal distance of a temporal geometry point sequence
+ * with linear interpolation and a point at rest
+ * @details At an instant of the sequence the value is the distance of the two
+ * points (#point_distance_exact). A segment turns where it passes nearest the
+ * point, dated by #point_segment_nearest_microsecond, and the value there is
+ * the distance to the segment over continuous time
+ * (#point_segment_distance_offset_exact), the least value of the segment, which
+ * the rounded position at the microsecond could only approach. The lifted form
+ * is #tfunc_tlinearseq_base_turnpt, which reads the position at the microsecond.
+ * @param[in] seq Temporal point sequence
+ * @param[in] q Coordinates of the point
+ * @param[in] ndims Number of coordinates, 2 or 3
+ */
+static TSequence *
+tgeompointseq_distance_point(const TSequence *seq, const double *q, int ndims)
+{
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count * 2);
+  int n = 0;
+  double a[3], b[3];
+  const TInstant *inst1 = TSEQUENCE_INST_N(seq, 0);
+  point_coords_get(tinstant_value_p(inst1), ndims, a);
+  for (int i = 1; i < seq->count; i++)
+  {
+    const TInstant *inst2 = TSEQUENCE_INST_N(seq, i);
+    point_coords_get(tinstant_value_p(inst2), ndims, b);
+    instants[n++] = tinstant_make(Float8GetDatum(
+      point_distance_exact(a, q, ndims)), T_TFLOAT, inst1->t);
+    int64 m;
+    if (point_segment_nearest_microsecond(q, a, b, ndims,
+        (int64) (inst2->t - inst1->t), &m))
+      instants[n++] = tinstant_make(Float8GetDatum(
+        point_segment_distance_offset_exact(q, a, b, ndims, 0.0)), T_TFLOAT,
+        inst1->t + (TimestampTz) m);
+    inst1 = inst2;
+    memcpy(a, b, sizeof(a));
+  }
+  instants[n++] = tinstant_make(Float8GetDatum(
+    point_distance_exact(a, q, ndims)), T_TFLOAT, inst1->t);
+  return tsequence_make_free(instants, n, seq->period.lower_inc,
+    seq->period.upper_inc, LINEAR, NORMALIZE);
+}
+
+/**
+ * @brief Return the temporal distance of a temporal geometry point with linear
+ * interpolation and a point at rest
+ * @param[in] temp Temporal point sequence or sequence set
+ * @param[in] gs Point
+ */
+static Temporal *
+tgeompoint_distance_point(const Temporal *temp, const GSERIALIZED *gs)
+{
+  int ndims = MEOS_FLAGS_GET_Z(temp->flags) ? 3 : 2;
+  double q[3];
+  point_coords_get(PointerGetDatum(gs), ndims, q);
+  if (temp->subtype == TSEQUENCE)
+    return (Temporal *) tgeompointseq_distance_point((const TSequence *) temp,
+      q, ndims);
+  const TSequenceSet *ss = (const TSequenceSet *) temp;
+  TSequence **sequences = palloc(sizeof(TSequence *) * ss->count);
+  for (int i = 0; i < ss->count; i++)
+    sequences[i] = tgeompointseq_distance_point(TSEQUENCESET_SEQ_N(ss, i), q,
+      ndims);
+  return (Temporal *) tsequenceset_make_free(sequences, ss->count, NORMALIZE);
 }
 
 /**
@@ -2828,6 +2913,12 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
     }
   }
 
+  /* A temporal geometry point with linear interpolation and a point */
+  if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
+      MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
+      gserialized_get_type(gs) == POINTTYPE)
+    return tgeompoint_distance_point(temp, gs);
+
   /* The turning point function of the generic lifting path takes a pair of
    * points, so a temporal point with linear interpolation accepts a point
    * geometry alone. Any other temporal point has a value at its instants
@@ -2853,7 +2944,7 @@ tdistance_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool spheroid)
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   lfinfo.invert = INVERT_NO;
   lfinfo.discont = CONTINUOUS;
-  lfinfo.tpfn_base = lfinfo.reslinear ? &tpoint_geo_distance_turnpt : NULL;
+  lfinfo.tpfn_base = lfinfo.reslinear ? &tgeogpoint_geo_distance_turnpt : NULL;
   return tfunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
 }
 

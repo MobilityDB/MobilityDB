@@ -453,6 +453,30 @@ pointsegm_locate(Datum start, Datum end, Datum point, double *dist)
   return result;
 }
 
+/**
+ * @brief Return the location of the closest point on a geography segment to a
+ * point, wherever the point lies, as a fraction of the total segment length,
+ * or -1.0 if the closest point is an end of the segment
+ * @details Unlike #pointsegm_locate, the point need not lie on the segment. The
+ * fraction is that of the angle on the sphere, along which
+ * #interpolate_point4d_spheroid moves a temporal point at a constant speed, and
+ * it is computed in doubles.
+ * @param[in] start,end Points defining the segment, distinct
+ * @param[in] point Reference point
+ */
+long double
+geogpointsegm_closest(Datum start, Datum end, Datum point)
+{
+  POINT4D p1, p2, p;
+  double dist;
+  datum_point4d(start, &p1);
+  datum_point4d(end, &p2);
+  datum_point4d(point, &p);
+  long double ratio = closest_point_on_segment_sphere(&p, &p1, &p2, NULL,
+    &dist);
+  return (ratio <= 0.0 || ratio >= 1.0) ? -1.0 : ratio;
+}
+
 /*****************************************************************************
  * Intersection functions
  * N.B. There is no function `tpointsegm_intersection_value` since the
