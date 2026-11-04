@@ -89,7 +89,7 @@ The distance also refuses a reference geometry that is not a convex polygon (`di
 "... a convex polygon without holes") and a static polygon that is not convex or has holes
 (`dist_parts_add`), which is the subject of
 [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md). The rows of
-[Exact distance](../exactness/EXACT-DISTANCE.md) do not cover the temporal distance of a rigid geometry.
+Exact distance do not cover the temporal distance of a rigid geometry.
 
 **The subset the distance answers.** `intersects`, `disjoint` and `dwithin` are the sublevel set
 of the distance at 0 or at the given distance, in every order and in their ever, always and
