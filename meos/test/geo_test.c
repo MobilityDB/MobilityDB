@@ -4031,6 +4031,31 @@ int main(void)
   printf("a similarity distance over two SRIDs raises an error\n");
   free(s4326); free(s3857);
 
+  /* A value with no Z has any Z, so the distance is the 2D one whatever the
+   * order of the operands, and no Z is read from a 2D point */
+  GSERIALIZED *mp2 = geom_in("Point(0 0)", -1);
+  GSERIALIZED *mp2b = geom_in("Point(3 4)", -1);
+  GSERIALIZED *mp3 = geom_in("Point(3 4 12)", -1);
+  assert(geom_distance3d(mp2, mp2b) == 5.0);
+  assert(geom_distance3d(mp2, mp3) == 5.0);
+  assert(geom_distance3d(mp3, mp2) == 5.0);
+  free(mp2); free(mp2b); free(mp3);
+  Temporal *mt2 = tgeompoint_in("[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]");
+  Temporal *mt3 = tgeompoint_in(
+    "[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]");
+  assert(temporal_hausdorff_distance(mt2, mt3, true) == 5.0);
+  assert(temporal_hausdorff_distance(mt3, mt2, true) == 5.0);
+  assert(temporal_average_hausdorff_distance(mt2, mt3, true) == 5.0);
+  assert(temporal_average_hausdorff_distance(mt3, mt2, true) == 5.0);
+  assert(temporal_frechet_distance(mt2, mt3, true) == 5.0);
+  assert(temporal_frechet_distance(mt3, mt2, true) == 5.0);
+  assert(temporal_dyntimewarp_distance(mt2, mt3, true) == 10.0);
+  assert(temporal_dyntimewarp_distance(mt3, mt2, true) == 10.0);
+  assert(temporal_lcss_distance(mt2, mt3, 6.0, true) == 2.0);
+  assert(temporal_lcss_distance(mt3, mt2, 6.0, true) == 2.0);
+  printf("a distance over 2D and 3D operands is the 2D one in either order\n");
+  free(mt2); free(mt3);
+
   /* Finalize MEOS */
   meos_finalize();
 

@@ -155,3 +155,17 @@ SELECT frechetDistancePath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1
 SELECT dynTimeWarpPath(tgeompoint 'SRID=4326;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', tgeompoint 'SRID=3857;[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]');
 
 -------------------------------------------------------------------------------
+
+-- A value with no Z has any Z, so the distance is the 2D one in either order
+SELECT round(frechetDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]')::numeric, 6);
+SELECT round(frechetDistance(tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')::numeric, 6);
+SELECT round(dynTimeWarpDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]')::numeric, 6);
+SELECT round(dynTimeWarpDistance(tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')::numeric, 6);
+SELECT round(hausdorffDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]')::numeric, 6);
+SELECT round(hausdorffDistance(tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')::numeric, 6);
+SELECT round(averageHausdorffDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]')::numeric, 6);
+SELECT round(averageHausdorffDistance(tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]')::numeric, 6);
+SELECT round(lcssDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', 6)::numeric, 6);
+SELECT round(lcssDistance(tgeompoint '[Point(3 4 12)@2001-01-01, Point(3 4 12)@2001-01-02]', tgeompoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 6)::numeric, 6);
+
+-------------------------------------------------------------------------------
