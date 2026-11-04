@@ -1619,6 +1619,9 @@
 					<listitem>
 						<para><link linkend="tpose_rotateZ"><varname>rotateZ</varname></link>: Return a temporal value rotated counter-clockwise about the z axis &Z_support;</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpose_force2D"><varname>force2D</varname></link>: Return a temporal pose projected to the ground &Z_support;</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -2583,6 +2586,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_rotateZ"><varname>rotateZ</varname></link>: Return a temporal value rotated counter-clockwise about the z axis &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_force2D"><varname>force2D</varname></link>: Return a temporal rigid geometry projected to the ground &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

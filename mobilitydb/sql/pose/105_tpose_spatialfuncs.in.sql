@@ -83,6 +83,11 @@ CREATE FUNCTION rotateY(tpose, angle float)
   AS 'MODULE_PATHNAME', 'Tpose_rotate_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION force2D(tpose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'Tpose_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION rotateZ(tpose, angle float)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'Tpose_rotate_z'

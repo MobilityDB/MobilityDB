@@ -111,4 +111,21 @@ SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose
 SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
   asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
 
+-- The projection to the ground of a flat body in 3D
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),0.7071067811865476,0,0,0.7071067811865476)@2001-01-02]'), 6);
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 3,2 -1 3,2 1 3,-2 1 3,-2 -1 3));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+-- A body in 2D stays as it is, a surface among them
+SELECT asText(force2D(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
+SELECT asText(force2D(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01'), 6);
+-- The SRID stays
+SELECT asEWKT(force2D(trgeometry 'SRID=3812;Polygon((0 0 0,2 0 0,2 1 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+-- The 2D functions answer: two bodies at different heights touch on the ground
+WITH t(a, b) AS (SELECT
+  trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),1,0,0,0)@2001-01-02]',
+  trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(5 0 0.8),1,0,0,0)@2001-01-01, Pose(Point(5 0 0.8),1,0,0,0)@2001-01-02]')
+SELECT round(nearestApproachDistance(force2D(a), force2D(b))::numeric, 6), force2D(a) |=| force2D(b) FROM t;
+-- A body with a height has no reference polygon on the ground
+SELECT force2D(trgeometry 'Polygon((0 0 0,2 0 1,2 2 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+SELECT force2D(trgeometry 'PolyhedralSurface(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+
 -------------------------------------------------------------------------------

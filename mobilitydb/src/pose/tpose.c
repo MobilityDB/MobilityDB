@@ -433,6 +433,23 @@ Tpose_rotate_y(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tpose_force2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpose_force2d);
+/**
+ * @ingroup mobilitydb_pose_transf
+ * @brief Return a temporal pose projected to the ground
+ * @sqlfn force2D()
+ * @altsqlfn poseForce2D()
+ */
+Datum
+Tpose_force2d(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpose_force2d(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tpose_rotate_z(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpose_rotate_z);
 /**

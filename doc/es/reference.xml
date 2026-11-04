@@ -1617,6 +1617,9 @@
 				<listitem>
 					<para><link linkend="tpose_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
 				</listitem>
+				<listitem>
+					<para><link linkend="tpose_force2D"><varname>force2D</varname></link>: Devuelve una pose temporal proyectada sobre el suelo &Z_support;</para>
+				</listitem>
 			</itemizedlist>
 		</sect2>
 		<sect2>
@@ -2574,6 +2577,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_force2D"><varname>force2D</varname></link>: Devuelve una geometría rígida temporal proyectada sobre el suelo &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
