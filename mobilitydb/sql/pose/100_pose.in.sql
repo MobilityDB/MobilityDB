@@ -211,6 +211,26 @@ CREATE FUNCTION pose(geometry, yaw double precision, pitch double precision,
   AS 'MODULE_PATHNAME', 'Pose_constructor_point_ypr'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- A geodetic pose from a geography point, as geodstbox names a geodetic box.
+-- It is no overload of pose, where a point written as an untyped literal would
+-- no longer resolve to a geometry.
+CREATE FUNCTION geodpose(geography, double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geodpose(geography, double precision, double precision,
+    double precision, double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point3d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION geodpose(geography, yaw double precision,
+    pitch double precision, roll double precision)
+  RETURNS pose
+  AS 'MODULE_PATHNAME', 'Pose_constructor_point_ypr'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 /*****************************************************************************
  * Conversions
  *****************************************************************************/
@@ -221,6 +241,13 @@ CREATE FUNCTION geometry(pose)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (pose AS geometry) WITH FUNCTION geometry(pose);
+
+CREATE FUNCTION geography(pose)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Pose_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (pose AS geography) WITH FUNCTION geography(pose);
 
 /*****************************************************************************
  * Accessor functions

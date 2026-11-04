@@ -794,6 +794,11 @@ pose_parse(const char **str, bool end)
 
   bool hasZ = FLAGS_GET_Z(point->gflags);
 
+  /* A geodetic pose that states no SRID has the one of a geography, as a
+   * geodetic box has (#stbox_in) */
+  if (geodetic && srid == SRID_UNKNOWN)
+    srid = SRID_DEFAULT;
+
   if (! hasZ)
   {
     double theta;
@@ -1413,6 +1418,27 @@ pose_to_point(const Pose *pose)
   GSERIALIZED *gs = geo_serialize((LWGEOM *) point);
   lwpoint_free(point);
   return gs;
+}
+
+/**
+ * @ingroup meos_pose_base_conversion
+ * @brief Convert a pose, planar or geodetic, into a geography point
+ * @details The point of the pose becomes a geography as #geom_to_geog makes one
+ * of a geometry, and #pose_to_point is the conversion the other way, which
+ * reads a planar or a geodetic pose as well.
+ * @param[in] pose Pose
+ * @errval NULL
+ * @csqlfn #Pose_to_geog()
+ */
+GSERIALIZED *
+pose_to_geog(const Pose *pose)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pose, NULL);
+  GSERIALIZED *point = pose_to_point(pose);
+  GSERIALIZED *result = geom_to_geog(point);
+  pfree(point);
+  return result;
 }
 
 /**

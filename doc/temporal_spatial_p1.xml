@@ -504,6 +504,10 @@ SELECT symDifference(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 			</listitem>
 
 			<listitem>
+				<para><varname>geogpoint</varname> represents the type <varname>geography</varname> restricted to a point.</para>
+			</listitem>
+
+			<listitem>
 				<para><varname>point</varname> represents the types <varname>geometry</varname> or <varname>geography</varname> restricted to a point.</para>
 			</listitem>
 

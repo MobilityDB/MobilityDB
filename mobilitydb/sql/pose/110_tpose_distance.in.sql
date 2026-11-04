@@ -43,7 +43,15 @@ CREATE FUNCTION distance(geometry, pose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_geo_pose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(geography, pose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_geo_pose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION distance(pose, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'Distance_pose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION distance(pose, geography)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Distance_pose_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -60,8 +68,20 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = distance,
+  LEFTARG = geography,
+  RIGHTARG = pose,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
   LEFTARG = pose,
   RIGHTARG = geometry,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = distance,
+  LEFTARG = pose,
+  RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -79,11 +99,19 @@ CREATE FUNCTION tDistance(geometry(Point), tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_point_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance(geography(Point), tpose)
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_point_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(pose, tpose)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDistance(tpose, geometry(Point))
+  RETURNS tfloat
+  AS 'MODULE_PATHNAME', 'Tdistance_tpose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDistance(tpose, geography(Point))
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tdistance_tpose_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -104,6 +132,12 @@ CREATE OPERATOR <-> (
 );
 CREATE OPERATOR <-> (
   PROCEDURE = tDistance,
+  LEFTARG = geography,
+  RIGHTARG = tpose,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
   LEFTARG = pose,
   RIGHTARG = tpose,
   COMMUTATOR = <->
@@ -112,6 +146,12 @@ CREATE OPERATOR <-> (
   PROCEDURE = tDistance,
   LEFTARG = tpose,
   RIGHTARG = geometry,
+  COMMUTATOR = <->
+);
+CREATE OPERATOR <-> (
+  PROCEDURE = tDistance,
+  LEFTARG = tpose,
+  RIGHTARG = geography,
   COMMUTATOR = <->
 );
 CREATE OPERATOR <-> (
@@ -135,11 +175,19 @@ CREATE FUNCTION nearestApproachInstant(geometry, tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_geo_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant(geography, tpose)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'NAI_geo_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(pose, tpose)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachInstant(tpose, geometry)
+  RETURNS tpose
+  AS 'MODULE_PATHNAME', 'NAI_tpose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachInstant(tpose, geography)
   RETURNS tpose
   AS 'MODULE_PATHNAME', 'NAI_tpose_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -166,6 +214,10 @@ CREATE FUNCTION nearestApproachDistance(geometry, tpose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_geo_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(geography, tpose)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_geo_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(stbox, tpose)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_stbox_tpose'
@@ -175,6 +227,10 @@ CREATE FUNCTION nearestApproachDistance(pose, tpose)
   AS 'MODULE_PATHNAME', 'NAD_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION nearestApproachDistance(tpose, geometry)
+  RETURNS float
+  AS 'MODULE_PATHNAME', 'NAD_tpose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION nearestApproachDistance(tpose, geography)
   RETURNS float
   AS 'MODULE_PATHNAME', 'NAD_tpose_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
@@ -207,7 +263,17 @@ CREATE OPERATOR |=| (
   COMMUTATOR = '|=|'
 );
 CREATE OPERATOR |=| (
+  LEFTARG = geography, RIGHTARG = tpose,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
   LEFTARG = tpose, RIGHTARG = geometry,
+  PROCEDURE = nearestApproachDistance,
+  COMMUTATOR = '|=|'
+);
+CREATE OPERATOR |=| (
+  LEFTARG = tpose, RIGHTARG = geography,
   PROCEDURE = nearestApproachDistance,
   COMMUTATOR = '|=|'
 );
@@ -243,12 +309,20 @@ CREATE FUNCTION shortestLine(geometry, tpose)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_geo_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine(geography, tpose)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Shortestline_geo_tpose'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(pose, tpose)
   RETURNS geometry
   AS 'MODULE_PATHNAME', 'Shortestline_pose_tpose'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, geometry)
   RETURNS geometry
+  AS 'MODULE_PATHNAME', 'Shortestline_tpose_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION shortestLine(tpose, geography)
+  RETURNS geography
   AS 'MODULE_PATHNAME', 'Shortestline_tpose_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION shortestLine(tpose, pose)

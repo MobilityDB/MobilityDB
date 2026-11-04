@@ -87,7 +87,7 @@
 
 	<sect1 xml:id="pose_notation">
 		<title>Notation</title>
-		<para>Most functions and operators for temporal types described in the previous chapters can be applied to poses and to pose chains. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>pose</varname> or a <varname>posechain</varname> and the notation <varname>ttype</varname> a <varname>tpose</varname> or a <varname>tposechain</varname>; the notations <varname>geompoint2D</varname> and <varname>geompoint3D</varname> represent a <varname>geompoint</varname> with, respectively, two and three dimensions. To avoid redundancy, we present next only what is specific to the two types.</para>
+		<para>Most functions and operators for temporal types described in the previous chapters can be applied to poses and to pose chains. Therefore, in the signatures of the functions, the notation <varname>base</varname> represents a <varname>pose</varname> or a <varname>posechain</varname> and the notation <varname>ttype</varname> a <varname>tpose</varname> or a <varname>tposechain</varname>; the notations <varname>geompoint2D</varname> and <varname>geompoint3D</varname> represent a <varname>geompoint</varname> with, respectively, two and three dimensions, and the notations <varname>geogpoint2D</varname> and <varname>geogpoint3D</varname> represent a <varname>geogpoint</varname> with, respectively, two and three dimensions. To avoid redundancy, we present next only what is specific to the two types.</para>
 
 		<para>A signature both types answer names them as an alternation, <varname>{pose,posechain}</varname>, and a signature only one of them answers names that one. A function whose <emphasis>name</emphasis> differs between the two keeps a line of its own, so <varname>tpose(pose,timestamptz)</varname> and <varname>tposechain(posechain,timestamptz)</varname> are never collapsed into one callable name that does not exist.</para>
 	</sect1>
@@ -105,7 +105,7 @@ SELECT pose 'Pose(Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 SELECT pose 'SRID=3812;Pose(Point(1 1), 0.5)';
 SELECT pose 'Pose(SRID=5676;Point Z(1 1 1), 0.5, 0.5, 0.5, 0.5)';
 </programlisting>
-		<para>As for other spatial types, a <varname>pose</varname> can be either planar (geometric) or geodetic (geographic). A geodetic pose is denoted by the <varname>GeodPose</varname> keyword, in the same way that a geodetic <varname>stbox</varname> is denoted by <varname>GEODSTBOX</varname>.</para>
+		<para>As for other spatial types, a <varname>pose</varname> can be either planar (geometric) or geodetic (geographic). A geodetic pose is denoted by the <varname>GeodPose</varname> keyword, in the same way that a geodetic <varname>stbox</varname> is denoted by <varname>GEODSTBOX</varname>. A geodetic pose that states no SRID has the SRID 4326 of a geography, while a planar pose has the SRID 0.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT pose 'GeodPose(Point(1 1), 0.5)';
 SELECT pose 'SRID=4326;GeodPose(Point Z(1 1 1), 1, 0, 0, 0)';
@@ -238,6 +238,23 @@ SELECT posechainFromHexEWKB(asHexEWKB( posechain 'SRID=3812;
 		<sect2 xml:id="pose_constructors">
 			<title>Constructors</title>
 			<itemizedlist>
+				<listitem xml:id="geodpose">
+					<indexterm significance="normal"><primary><varname>geodpose</varname></primary></indexterm>
+					<para>Constructor for geodetic poses from a geography point</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+geodpose(geogpoint2D,float) → pose
+geodpose(geogpoint3D,float,float,float,float) → pose
+geodpose(geogpoint3D,yaw float,pitch float,roll float) → pose
+</programlisting>
+					<para>It is a function of its own, as <varname>geodstbox</varname> is, since a point written as an untyped literal resolves to a geometry in <varname>pose</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(geodpose(geography 'Point(1 2)', 0.5));
+-- GeodPose(POINT(1 2),0.5)
+SELECT asText(geodpose(geography 'Point(1 2 3)', 1, 0, 0, 0));
+-- GeodPose(POINT Z (1 2 3),1,0,0,0)
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pose">
 					<indexterm significance="normal"><primary><varname>pose</varname></primary></indexterm>
 					<para>Constructor for poses</para>
@@ -285,9 +302,26 @@ SELECT stbox(pose 'Pose(Point(1 1),0.3)', tstzspan '[2001-01-01,2001-01-02]');
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="pose_geography">
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Convert a pose, planar or geodetic, into a geography point</para>
+					<para>The conversions into a geometry and into a geography both read either kind of pose, as the conversions between <varname>geometry</varname> and <varname>geography</varname> do. As a geography, a point with no SRID has the SRID 4326 and a point in a projected reference system raises an error.</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+pose::geogpoint
+</programlisting>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geography);
+-- SRID=4326;POINT(1 2)
+SELECT ST_AsEWKT(pose 'Pose(Point(1 2), 0.5)'::geography);
+-- SRID=4326;POINT(1 2)
+SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
+-- ERROR:  Only lon/lat coordinate systems are supported in geography.
+</programlisting>
+				</listitem>
+
 				<listitem xml:id="pose_geometry">
 					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
-					<para>Convert a pose into geometry point</para>
+					<para>Convert a pose, planar or geodetic, into a geometry point</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 pose::geompoint
 </programlisting>
@@ -432,7 +466,10 @@ distance(posechain,{geo,posechain}) → float
 {geo,posechain} &lt;-&gt; posechain → float
 </programlisting>
 					<para>A pose chain is measured by the pose its composition gives. Only the point component of the pose is taken into account, the orientation is ignored. The distance is computed in two dimensions, even when the arguments are three-dimensional. The result is <varname>NULL</varname> when the geometry is empty.</para>
+					<para>A geodetic pose and a geography are measured on the surface of the earth, in meters, whatever their Z.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT round(pose 'GeodPose(Point(0 0), 0)' &lt;-&gt; geography 'Point(1 0)', 3);
+-- 111319.491
 SELECT round(distance(geometry 'Point(1 0)', pose 'Pose(Point(4 0),0)'), 6);
 -- 3
 SELECT round(pose 'Pose(Point(0 0),0)' &lt;-&gt; pose 'Pose(Point(3 4),0)', 6);
@@ -1618,10 +1655,10 @@ SELECT ST_AsText(shortestLine(tpose '[Pose(Point(2 2), 0.3)@2001-01-01,
 				<indexterm significance="normal"><primary><varname>&lt;-&gt;</varname></primary></indexterm>
 				<para>Return the temporal distance</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-tDistance({geompoint,pose,tpose},{geompoint,pose,tpose}) → tfloat
-tDistance({geompoint,posechain,tposechain},{geompoint,posechain,tposechain}) → tfloat
-{geompoint,pose,tpose} &lt;-&gt; {geompoint,pose,tpose} → tfloat
-{geompoint,posechain,tposechain} &lt;-&gt; {geompoint,posechain,tposechain} → tfloat
+tDistance({geompoint,geogpoint,pose,tpose},{geompoint,geogpoint,pose,tpose}) → tfloat
+tDistance({geompoint,geogpoint,posechain,tposechain},{geompoint,geogpoint,posechain,tposechain}) → tfloat
+{geompoint,geogpoint,pose,tpose} &lt;-&gt; {geompoint,geogpoint,pose,tpose} → tfloat
+{geompoint,geogpoint,posechain,tposechain} &lt;-&gt; {geompoint,geogpoint,posechain,tposechain} → tfloat
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT round(tpose '[Pose(Point(1 1), 0.3)@2001-01-01,
@@ -1663,16 +1700,16 @@ SELECT asText(round(tposechain '[PoseChain(Pose(Point(0 0),0), Pose(Point(1 0),0
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 eContains(geometry,{tpose,tposechain}) &#8594; boolean
 eCovers(geometry,{tpose,tposechain}) &#8594; boolean
-eDisjoint({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
-eDwithin({geometry,tpose,tposechain},{geometry,tpose,tposechain},float) &#8594; boolean
-eIntersects({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+eDisjoint({geo,tpose,tposechain},{geo,tpose,tposechain}) &#8594; boolean
+eDwithin({geo,tpose,tposechain},{geo,tpose,tposechain},float) &#8594; boolean
+eIntersects({geo,tpose,tposechain},{geo,tpose,tposechain}) &#8594; boolean
 eTouches(geometry,{tpose,tposechain}) &#8594; boolean
 eTouches({tpose,tposechain},geometry) &#8594; boolean
 aContains(geometry,{tpose,tposechain}) &#8594; boolean
 aCovers(geometry,{tpose,tposechain}) &#8594; boolean
-aDisjoint({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+aDisjoint({geo,tpose,tposechain},{geo,tpose,tposechain}) &#8594; boolean
 aDwithin({geometry,tpose,tposechain},{geometry,tpose,tposechain},float) &#8594; boolean
-aIntersects({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; boolean
+aIntersects({geo,tpose,tposechain},{geo,tpose,tposechain}) &#8594; boolean
 aTouches(geometry,{tpose,tposechain}) &#8594; boolean
 aTouches({tpose,tposechain},geometry) &#8594; boolean
 </programlisting>
@@ -1720,7 +1757,7 @@ SELECT eIntersects(tposechain 'PoseChain(Pose(Point(1 1),0), Pose(Point(9 -1),0)
 tContains(geometry,{tpose,tposechain}) &#8594; tbool
 tCovers(geometry,{tpose,tposechain}) &#8594; tbool
 tDisjoint({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; tbool
-tDwithin({geometry,tpose,tposechain},{geometry,tpose,tposechain},float) &#8594; tbool
+tDwithin({geo,tpose,tposechain},{geo,tpose,tposechain},float) &#8594; tbool
 tIntersects({geometry,tpose,tposechain},{geometry,tpose,tposechain}) &#8594; tbool
 tTouches(geometry,{tpose,tposechain}) &#8594; tbool
 tTouches({tpose,tposechain},geometry) &#8594; tbool

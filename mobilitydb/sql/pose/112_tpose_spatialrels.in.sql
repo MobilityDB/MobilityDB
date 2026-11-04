@@ -73,19 +73,35 @@ CREATE FUNCTION eDisjoint(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDisjoint($1, $2::@extschema@.tgeompoint) $$;
+CREATE FUNCTION eDisjoint(geography, tpose)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.eDisjoint($1, $2::@extschema@.tgeogpoint) $$;
 CREATE FUNCTION aDisjoint(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDisjoint($1, $2::@extschema@.tgeompoint) $$;
+CREATE FUNCTION aDisjoint(geography, tpose)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.aDisjoint($1, $2::@extschema@.tgeogpoint) $$;
 
 CREATE FUNCTION eDisjoint(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeompoint, $2) $$;
+CREATE FUNCTION eDisjoint(tpose, geography)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.eDisjoint($1::@extschema@.tgeogpoint, $2) $$;
 CREATE FUNCTION aDisjoint(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDisjoint($1::@extschema@.tgeompoint, $2) $$;
+CREATE FUNCTION aDisjoint(tpose, geography)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.aDisjoint($1::@extschema@.tgeogpoint, $2) $$;
 
 CREATE FUNCTION eDisjoint(tpose, tpose)
   RETURNS boolean
@@ -107,12 +123,26 @@ CREATE FUNCTION eIntersects(geometry, tpose)
   AS 'MODULE_PATHNAME', 'Eintersects_geo_tpose'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eIntersects(geography, tpose)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eintersects_geo_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aIntersects(geometry, tpose)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects($1, $2::@extschema@.tgeompoint) $$;
+CREATE FUNCTION aIntersects(geography, tpose)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.aIntersects($1, $2::@extschema@.tgeogpoint) $$;
 
 CREATE FUNCTION eIntersects(tpose, geometry)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Eintersects_tpose_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eIntersects(tpose, geography)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Eintersects_tpose_geo'
   SUPPORT tspatial_supportfn
@@ -121,6 +151,10 @@ CREATE FUNCTION aIntersects(tpose, geometry)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aIntersects($1::@extschema@.tgeompoint, $2) $$;
+CREATE FUNCTION aIntersects(tpose, geography)
+  RETURNS boolean
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.aIntersects($1::@extschema@.tgeogpoint, $2) $$;
 
 CREATE FUNCTION eIntersects(tpose, tpose)
   RETURNS boolean
@@ -164,12 +198,22 @@ CREATE FUNCTION eDwithin(geometry, tpose, dist float)
   AS 'MODULE_PATHNAME', 'Edwithin_geo_tpose'
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eDwithin(geography, tpose, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Edwithin_geo_tpose'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(geometry, tpose, dist float)
   RETURNS boolean
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.aDwithin($1, $2::@extschema@.tgeompoint, $3) $$;
 
 CREATE FUNCTION eDwithin(tpose, geometry, dist float)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Edwithin_tpose_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION eDwithin(tpose, geography, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Edwithin_tpose_geo'
   SUPPORT tspatial_supportfn

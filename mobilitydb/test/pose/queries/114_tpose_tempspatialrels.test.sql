@@ -126,3 +126,8 @@ SELECT to_regprocedure('tContains(tpose, geometry)') IS NULL AS tcontains_absent
        to_regprocedure('tContains(geometry, tpose)') IS NOT NULL AS tcontains_present;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A geodetic pose and a geography
+SELECT asText(tDwithin(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)', 1000));
+SELECT asText(tDwithin(geography 'Point(1 0)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', 1000));

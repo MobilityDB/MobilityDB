@@ -152,6 +152,174 @@ SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> geometry 
     13
 (1 row)
 
+SELECT round(pose 'GeodPose(Point(0 0), 0)' <-> geography 'Point(1 0)', 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(geography 'Point(1 0)' <-> pose 'GeodPose(Point(0 0), 0)', 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(distance(pose 'GeodPose(Point(8 47 1500), 1, 0, 0, 0)', geography 'Point(8.5 47.2 0)'), 3);
+   round   
+-----------
+ 43989.739
+(1 row)
+
+SELECT round(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]' <-> geography 'Point(1 1)', 3);
+                                                            round                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [156899.568@Mon Jan 01 00:00:00 2001 PST, 110574.389@Tue Jan 02 00:00:00 2001 PST, 156899.568@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(tDistance(geography 'Point(1 1)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]'), 3);
+                                                            round                                                            
+-----------------------------------------------------------------------------------------------------------------------------
+ [156899.568@Mon Jan 01 00:00:00 2001 PST, 110574.389@Tue Jan 02 00:00:00 2001 PST, 156899.568@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT round(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]' |=| geography 'Point(1 1)', 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT asText(nearestApproachInstant(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
+                       astext                        
+-----------------------------------------------------
+ GeodPose(POINT(1 0),0)@Tue Jan 02 00:00:00 2001 PST
+(1 row)
+
+SELECT ST_AsText(shortestLine(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)')::geometry, 3);
+      st_astext      
+---------------------
+ LINESTRING(1 0,1 1)
+(1 row)
+
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 0 0), 1, 0, 0, 0)@2001-01-03]', geometry 'Point(1 3 4)'), 3);
+         st_astext          
+----------------------------
+ LINESTRING Z (1 0 0,1 3 4)
+(1 row)
+
+SELECT round(posechain 'PoseChain(GeodPose(Point(0 0), 0))' <-> geography 'Point(1 0)', 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(GeodPose(Point(0 0), 0))@2001-01-01, PoseChain(GeodPose(Point(2 0), 0))@2001-01-03]', geography 'Point(1 1)'), 3);
+   round    
+------------
+ 110574.389
+(1 row)
+
+SELECT srid(pose 'GeodPose(Point(0 0), 0)');
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT srid(tpose 'GeodPose(Point(0 0), 0)@2001-01-01');
+ srid 
+------
+ 4326
+(1 row)
+
+SELECT srid(pose 'SRID=4979;GeodPose(Point(0 0 0), 1, 0, 0, 0)');
+ srid 
+------
+ 4979
+(1 row)
+
+SELECT srid(tpose 'SRID=4979;[GeodPose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01]');
+ srid 
+------
+ 4979
+(1 row)
+
+SELECT srid(pose 'Pose(Point(0 0), 0)');
+ srid 
+------
+    0
+(1 row)
+
+SELECT asText(geodpose(geography 'Point(1 2)', 0.5));
+          astext          
+--------------------------
+ GeodPose(POINT(1 2),0.5)
+(1 row)
+
+SELECT asText(geodpose(geography 'Point(1 2 3)', 1, 0, 0, 0));
+              astext               
+-----------------------------------
+ GeodPose(POINT Z (1 2 3),1,0,0,0)
+(1 row)
+
+SELECT asText(geodpose(geography 'Point(1 2 3)', yaw := 0, pitch := 0, roll := 0));
+              astext               
+-----------------------------------
+ GeodPose(POINT Z (1 2 3),1,0,0,0)
+(1 row)
+
+SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(pose 'Pose(Point(1 2), 0.5)'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(pose 'SRID=4326;Pose(Point(1 2 3), 1, 0, 0, 0)'::geography);
+       st_asewkt        
+------------------------
+ SRID=4326;POINT(1 2 3)
+(1 row)
+
+SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geometry);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(pose 'Pose(Point(1 2), 0.5)'::geometry);
+ st_asewkt  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT pose 'GeodPose(Point(1 2), 0.5)'::geometry = geography(pose 'GeodPose(Point(1 2), 0.5)')::geometry;
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT asText(pose('Point(1 1)', -1.5));
+        astext         
+-----------------------
+ Pose(POINT(1 1),-1.5)
+(1 row)
+
+SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT pose 'SRID=4326;Pose(Point(0 0), 0)' <-> geography 'SRID=4326;Point(1 0)';
+ERROR:  Operation on mixed planar and geodetic coordinates
+SELECT pose 'SRID=4979;GeodPose(Point(0 0 0), 1, 0, 0, 0)' <-> geography 'SRID=4326;Point(1 0)';
+ERROR:  Operation on mixed SRID
 SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> geometry 'SRID=4326;Point(1 0)', 6);
 ERROR:  Operation on mixed planar and geodetic coordinates
 SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', geometry 'SRID=4326;Point(1 0)'), 6);

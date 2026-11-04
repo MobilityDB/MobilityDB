@@ -188,6 +188,7 @@ tempspatialrel_families:
   # (or, for tpose, the tgeompoint cast chain) instead of a boundary function.
   - family:  tpose
     impl:    cast
+    geography: [tDwithin]
     file:    mobilitydb/sql/pose/114_tpose_tempspatialrels.in.sql
     brief:   "temporal poses"
     predicates:
@@ -294,6 +295,7 @@ tempspatialrel_families:
 
   - family:  tposechain
     impl:    cast
+    geography: [tDwithin]
     file:    mobilitydb/sql/posechain/564_tposechain_tempspatialrels.in.sql
     brief:   "temporal pose chains"
     predicates:
