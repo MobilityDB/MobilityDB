@@ -623,6 +623,28 @@ rotateZ(trgeometry,angle float) &#8594; trgeometry
 				<para>The motion is a planar map, so a geodetic value raises an error.</para>
 			</listitem>
 
+			<listitem xml:id="trgeometry_force2D">
+				<indexterm significance="normal"><primary><varname>force2D</varname></primary></indexterm>
+				<para>Return a temporal rigid geometry projected to the ground &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+force2D(trgeometry) &#8594; trgeometry
+</programlisting>
+				<para>The reference geometry loses its Z and each pose is projected as <link linkend="tpose_force2D"><varname>force2D</varname></link> projects a temporal pose, so the functions in two dimensions answer about the ground: in the second example, two flat bodies at different heights touch. A reference geometry that is not a polygon in a plane gives an error, and a value in two dimensions stays as it is.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));
+  [Pose(Point(0 0 0),1,0,0,0)@2001-01-01,
+  Pose(Point(10 0 0),0.7071067811865476,0,0,0.7071067811865476)@2001-01-02]'), 6);
+/* POLYGON((-2 -1,2 -1,2 1,-2 1,-2 -1));[Pose(POINT(0 0),0)@2001-01-01,
+   Pose(POINT(10 0),1.570796)@2001-01-02] */
+SELECT round(nearestApproachDistance(
+  force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));
+    [Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),1,0,0,0)@2001-01-02]'),
+  force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));
+    [Pose(Point(5 0 0.8),1,0,0,0)@2001-01-01, Pose(Point(5 0 0.8),1,0,0,0)@2001-01-02]'))::numeric, 6);
+-- 0.000000
+</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 

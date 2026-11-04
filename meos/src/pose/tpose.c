@@ -770,6 +770,45 @@ tpose_rotate_z(const Temporal *temp, double angle)
   return tpose_rotate(temp, angle, 0.0, 0.0);
 }
 
+/**
+ * @brief Lifted form of the projection of a pose to the ground: its x and y and
+ * its yaw, the form of #datum_pose_yaw for a pose
+ */
+static Datum
+datum_pose_force2d(Datum value)
+{
+  const Pose *pose = DatumGetPoseP(value);
+  if (! MEOS_FLAGS_GET_Z(pose->flags))
+    return PosePGetDatum(pose_copy(pose));
+  return PosePGetDatum(pose_make_2d(pose->data[0], pose->data[1],
+    pose_yaw(pose), MEOS_FLAGS_GET_GEODETIC(pose->flags), pose_srid(pose)));
+}
+
+/**
+ * @ingroup meos_pose_transf
+ * @brief Return a temporal pose projected to the ground: the x and y of each
+ * instant and its yaw, as #tgeo_force2d_intl drops the Z of a temporal geo
+ * @details The rotation of a 3D segment takes the shortest arc between two
+ * quaternions and that of a 2D segment the shortest way between two yaws, so
+ * the two values agree at the instants, and between them where the rotation of
+ * the segment is about the vertical
+ * @param[in] temp Temporal pose
+ * @csqlfn #Tpose_force2d()
+ */
+Temporal *
+tpose_force2d(const Temporal *temp)
+{
+  VALIDATE_TPOSE(temp, NULL);
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_pose_force2d;
+  lfinfo.numparam = 0;
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

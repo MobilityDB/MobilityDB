@@ -134,3 +134,46 @@ SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0
  t
 (1 row)
 
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),0.7071067811865476,0,0,0.7071067811865476)@2001-01-02]'), 6);
+                                                                     astext                                                                      
+-------------------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((-2 -1,2 -1,2 1,-2 1,-2 -1));[Pose(POINT(0 0),0)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(10 0),1.570796)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 3,2 -1 3,2 1 3,-2 1 3,-2 -1 3));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+                                        astext                                        
+--------------------------------------------------------------------------------------
+ POLYGON((-2 -1,2 -1,2 1,-2 1,-2 -1));Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asText(force2D(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
+                                                                astext                                                                 
+---------------------------------------------------------------------------------------------------------------------------------------
+ POLYGON((0 0,2 0,2 1,0 1,0 0));[Pose(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(3 2),1.1)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT asText(force2D(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01'), 6);
+                                            astext                                            
+----------------------------------------------------------------------------------------------
+ POLYHEDRALSURFACE(((0 0,2 0,2 2,0 2,0 0)));Pose(POINT(1 1),0.3)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(force2D(trgeometry 'SRID=3812;Polygon((0 0 0,2 0 0,2 1 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+                                        asewkt                                        
+--------------------------------------------------------------------------------------
+ SRID=3812;POLYGON((0 0,2 0,2 1,0 0));Pose(POINT(1 1),0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+WITH t(a, b) AS (SELECT
+  trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),1,0,0,0)@2001-01-02]',
+  trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(5 0 0.8),1,0,0,0)@2001-01-01, Pose(Point(5 0 0.8),1,0,0,0)@2001-01-02]')
+SELECT round(nearestApproachDistance(force2D(a), force2D(b))::numeric, 6), force2D(a) |=| force2D(b) FROM t;
+  round   | ?column? 
+----------+----------
+ 0.000000 |        0
+(1 row)
+
+SELECT force2D(trgeometry 'Polygon((0 0 0,2 0 1,2 2 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+ERROR:  The projection of a temporal rigid geometry to the ground needs a reference geometry that is a polygon in a plane
+SELECT force2D(trgeometry 'PolyhedralSurface(((0 0 0,2 0 0,2 2 0,0 0 0)),((0 0 0,2 2 0,0 0 2,0 0 0)));Pose(Point(1 1 5),1,0,0,0)@2001-01-01');
+ERROR:  The projection of a temporal rigid geometry to the ground needs a reference geometry that is a polygon in a plane

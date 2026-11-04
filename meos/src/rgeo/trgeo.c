@@ -1231,6 +1231,66 @@ trgeometry_motion_free(const Temporal *temp, Pose *frame)
 }
 
 /**
+ * @brief Return true if a reference geometry is a polygon in a plane of
+ * constant z
+ */
+static bool
+trgeometry_ref_is_flat(const GSERIALIZED *gs)
+{
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  bool result = geom->type == POLYGONTYPE;
+  if (result)
+  {
+    const LWPOLY *poly = lwgeom_as_lwpoly(geom);
+    POINT3DZ first;
+    getPoint3dz_p(poly->rings[0], 0, &first);
+    for (uint32_t i = 0; result && i < poly->nrings; i++)
+    {
+      for (uint32_t j = 0; result && j < poly->rings[i]->npoints; j++)
+      {
+        POINT3DZ p;
+        getPoint3dz_p(poly->rings[i], j, &p);
+        result = p.z == first.z;
+      }
+    }
+  }
+  lwgeom_free(geom);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_transf
+ * @brief Return a temporal rigid geometry projected to the ground, as
+ * #tpose_force2d projects a temporal pose
+ * @details A flat body in 3D becomes its reference polygon with no Z placed by
+ * the x, the y and the yaw of each pose, so the 2D functions answer about the
+ * ground. A body with a height has no such reference polygon and gives an error
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Trgeometry_force2d()
+ */
+Temporal *
+trgeometry_force2d(const Temporal *temp)
+{
+  VALIDATE_TRGEOMETRY(temp, NULL);
+  const GSERIALIZED *gs = trgeometry_geom_p(temp);
+  if (! FLAGS_GET_Z(gs->gflags))
+    return temporal_copy(temp);
+  if (! trgeometry_ref_is_flat(gs))
+  {
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
+      "The projection of a temporal rigid geometry to the ground needs a "
+      "reference geometry that is a polygon in a plane");
+    return NULL;
+  }
+  Temporal *tpose = trgeometry_to_tpose(temp);
+  Temporal *res_tpose = tpose_force2d(tpose);
+  GSERIALIZED *res_geo = geo_force2d_intl(gs);
+  Temporal *result = geometry_tpose_to_trgeometry(res_geo, res_tpose);
+  pfree(tpose); pfree(res_tpose); pfree(res_geo);
+  return result;
+}
+
+/**
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry translated by offsets, as
  * #tpose_translate translates a temporal pose

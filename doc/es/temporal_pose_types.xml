@@ -1240,6 +1240,20 @@ SELECT asText(rotateZ(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
 </programlisting>
 			</listitem>
 
+			<listitem xml:id="tpose_force2D">
+				<indexterm significance="normal"><primary><varname>force2D</varname></primary></indexterm>
+				<para>Devuelve una pose temporal proyectada sobre el suelo &Z_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+force2D(tpose) &#8594; tpose
+</programlisting>
+				<para>Cada instante conserva la x y la y de su posición y la guiñada de su orientación. La rotación de un segmento en tres dimensiones toma el arco más corto entre dos cuaterniones, de modo que el resultado coincide con el valor en los instantes, y entre ellos donde la rotación es alrededor de la vertical. Un valor en dos dimensiones queda como está.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asText(force2D(tpose '[Pose(Point(1 1 5),0.7071067811865476,0,0,0.7071067811865476)@2001-01-01,
+  Pose(Point(3 2 7),1,0,0,0)@2001-01-02]'), 6);
+-- [Pose(POINT(1 1),1.570796)@2001-01-01, Pose(POINT(3 2),0)@2001-01-02]
+</programlisting>
+			</listitem>
+
 		</itemizedlist>
 	</sect1>
 
