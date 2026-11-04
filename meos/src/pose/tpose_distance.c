@@ -83,7 +83,8 @@ tdistance_tpose_pose(const Temporal *temp, const Pose *pose)
   if (! ensure_valid_tpose_pose(temp, pose))
     return NULL;
 
-  GSERIALIZED *geom = pose_to_point(pose);
+  GSERIALIZED *geom = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
   Temporal *tpoint = tpose_to_tpoint(temp);
   Temporal *result = tdistance_tgeo_geo(tpoint, geom, true);
   pfree(geom); pfree(tpoint);
@@ -154,7 +155,8 @@ nai_tpose_pose(const Temporal *temp, const Pose *pose)
   if (! ensure_valid_tpose_pose(temp, pose))
     return NULL;
 
-  GSERIALIZED *geom = pose_to_point(pose);
+  GSERIALIZED *geom = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
   Temporal *tpoint = tpose_to_tpoint(temp);
   TInstant *res = nai_tgeo_geo(tpoint, geom, true);
   /* We do not call the function tgeompointinst_tposeinst to avoid
@@ -217,7 +219,7 @@ nad_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
     return DBL_MAX;
 
   GSERIALIZED *traj = tpose_trajectory(temp);
-  double result = geom_distance2d(traj, gs);
+  double result = pose_geo_distance(traj, gs);
   pfree(traj);
   return result;
 }
@@ -256,7 +258,7 @@ nad_tpose_stbox(const Temporal *temp, const STBox *box)
 
   GSERIALIZED *traj = tpose_trajectory(temp1);
   GSERIALIZED *geo = stbox_geo(box);
-  double result = geom_distance2d(traj, geo);
+  double result = pose_geo_distance(traj, geo);
   pfree(traj); pfree(geo);
   if (hast)
     pfree(temp1);
@@ -279,9 +281,10 @@ nad_tpose_pose(const Temporal *temp, const Pose *pose)
   if (! ensure_valid_tpose_pose(temp, pose))
     return -1.0;
 
-  GSERIALIZED *geom = pose_to_point(pose);
+  GSERIALIZED *geom = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
   GSERIALIZED *traj = tpose_trajectory(temp);
-  double result = geom_distance2d(traj, geom);
+  double result = pose_geo_distance(traj, geom);
   pfree(traj); pfree(geom);
   return result;
 }

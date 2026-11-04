@@ -2672,15 +2672,43 @@ pose_transform_pipeline(const Pose *pose, const char *pipelinestr,
  *****************************************************************************/
 
 /**
+ * @brief Return the flags selecting the distance of two spatial values: two
+ * values with Z are measured in 3D and a geodetic value on the model of the earth
+ * @param[in] gs1,gs2 Spatial values
+ */
+static int16
+pose_geo_distance_flags(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  int16 flags = 0;
+  MEOS_FLAGS_SET_Z(flags, FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags));
+  MEOS_FLAGS_SET_GEODETIC(flags, FLAGS_GET_GEODETIC(gs1->gflags));
+  return flags;
+}
+
+/**
+ * @brief Return the distance between the point or the trajectory of a pose and
+ * another spatial value, as the temporal distance of #tdistance_tpose_geo does
+ * @param[in] gs1,gs2 Spatial values
+ */
+double
+pose_geo_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
+{
+  return DatumGetFloat8(datum_geo_distance(PointerGetDatum(gs1),
+    PointerGetDatum(gs2), pose_geo_distance_flags(gs1, gs2), true));
+}
+
+/**
  * @brief Return the distance between the two poses
+ * @details The two points are measured by #datum_pt_distance
  */
 Datum
 pose_distance(Datum pose1, Datum pose2)
 {
-  Datum geom1 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose1)));
-  Datum geom2 = PosePGetDatum(pose_to_point(DatumGetPoseP(pose2)));
-  Datum result = datum_pt_distance2d(geom1, geom2);
-  pfree(DatumGetPointer(geom1)); pfree(DatumGetPointer(geom2));
+  GSERIALIZED *gs1 = DatumGetGserializedP(datum_pose_geopoint(pose1));
+  GSERIALIZED *gs2 = DatumGetGserializedP(datum_pose_geopoint(pose2));
+  Datum result = datum_pt_distance(PointerGetDatum(gs1), PointerGetDatum(gs2),
+    pose_geo_distance_flags(gs1, gs2), true);
+  pfree(gs1); pfree(gs2);
   return result;
 }
 
@@ -2735,9 +2763,16 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
   if (gserialized_is_empty(gs) ||
       MEOS_FLAGS_GET_Z(pose->flags) != FLAGS_GET_Z(gs->gflags))
     return DBL_MAX;
+  if (MEOS_FLAGS_GET_GEODETIC(pose->flags) != FLAGS_GET_GEODETIC(gs->gflags))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Operation on mixed planar and geodetic coordinates");
+    return -1.0;
+  }
 
-  GSERIALIZED *geo = pose_to_point(pose);
-  double result = geom_distance2d(geo, gs);
+  GSERIALIZED *geo = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
+  double result = pose_geo_distance(geo, gs);
   pfree(geo);
   return result;
 }
@@ -2755,9 +2790,10 @@ distance_pose_stbox(const Pose *pose, const STBox *box)
   if (! ensure_valid_pose_stbox(pose, box))
     return -1.0;
 
-  GSERIALIZED *geo1 = pose_to_point(pose);
+  GSERIALIZED *geo1 = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
   GSERIALIZED *geo2 = stbox_geo(box);
-  double result = geom_distance2d(geo1, geo2);
+  double result = pose_geo_distance(geo1, geo2);
   pfree(geo1); pfree(geo2); 
   return result;
 }
