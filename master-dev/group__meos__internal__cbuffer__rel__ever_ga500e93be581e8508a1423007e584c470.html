@@ -141,8 +141,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return 1 if a temporal circular buffer ever/always touches another one, 0 if not, and -1 on error. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if a temporal circular buffer ever/always touches another one, 0 if not, and -1 on error or if they do not intersect in time. </p>
+<p >Two discs touch where they meet and their interiors are disjoint: where the gap of their centres less the sum of their radii is zero and they are not both points, a point having no boundary. The gap may be zero only strictly inside a segment, as when one disc leaves another, so both quantifiers are decided over continuous time by the walk of the within distance (<a class="el" href="meos_2src_2cbuffer_2tcbuffer__spatialrels_8c_a045acf464c4f213b5f18f54a4cf13946.html#a045acf464c4f213b5f18f54a4cf13946" title="Return 1 if two temporal circular buffers are ever/always within a distance, or touch where touch is ...">ea_dwithin_touches_tcbuffer_tcbuffer</a>), discs that touch being within the distance 0 </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> circular buffers </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">ever</td><td>True for the ever semantics, false for the always semantics @csqlfn <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga28cbf0f0d2fa227b4896b551b1a05544.html#ga28cbf0f0d2fa227b4896b551b1a05544" title="Return true if two temporal circular buffers ever touch @sqlfn eTouches()">Etouches_tcbuffer_tcbuffer()</a>, <a class="el" href="group__mobilitydb__cbuffer__rel__ever_ga7fb59ca7ffa7e9e9539b2b77f3d4ae0a.html#ga7fb59ca7ffa7e9e9539b2b77f3d4ae0a" title="Return true if two temporal circular buffers always touch @sqlfn aTouches()">Atouches_tcbuffer_tcbuffer()</a> </td></tr>
