@@ -727,6 +727,6 @@ SELECT COUNT(*) FROM tbl_tjsonb WHERE temp && tstzspan '[2001-01-01,2001-01-02]'
 SELECT COUNT(*) FROM tbl_tjsonb WHERE temp && tjsonb '[{"geom": "Point(1 1)"}@2001-06-01, {"geom": "Point(1 1)"}@2001-07-01]';
  count 
 -------
-     0
+     5
 (1 row)
 

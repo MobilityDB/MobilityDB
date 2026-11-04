@@ -17815,19 +17815,19 @@ SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
 SELECT MAX(length(startValue(temp)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT ttext '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
