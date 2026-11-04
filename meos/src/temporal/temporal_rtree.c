@@ -1763,6 +1763,9 @@ ensure_rtree_op_box(const RTree *rtree, IndexSearchOp op, const void *query)
   return true;
 }
 
+static void rtree_part_load(RTree *rtree, const void *boxes,
+  const int64 *ids, int count);
+
 /**
  * @ingroup meos_temporal_box_index
  * @brief Build an RTree from all of its entries at once
@@ -1780,9 +1783,6 @@ ensure_rtree_op_box(const RTree *rtree, IndexSearchOp op, const void *query)
  * @param[in] ids The id of each box
  * @param[in] count Number of entries
  */
-static void rtree_part_load(RTree *rtree, const void *boxes,
-  const int64 *ids, int count);
-
 bool
 rtree_load(RTree *rtree, const void *boxes, const int64 *ids, int count)
 {

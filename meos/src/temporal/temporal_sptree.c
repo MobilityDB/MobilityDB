@@ -1064,6 +1064,9 @@ spnode_build(SPBuild *build, int from, int count, int level)
   return node;
 }
 
+static void sptree_part_load(SPTree *sptree, const void *boxes,
+  const int64 *ids, int count);
+
 /**
  * @ingroup meos_temporal_box_index
  * @brief Build an in-memory space-partitioning index from all of its entries
@@ -1086,9 +1089,6 @@ spnode_build(SPBuild *build, int from, int count, int level)
  * @param[in] ids The id of each box
  * @param[in] count Number of entries
  */
-static void sptree_part_load(SPTree *sptree, const void *boxes,
-  const int64 *ids, int count);
-
 bool
 sptree_load(SPTree *sptree, const void *boxes, const int64 *ids, int count)
 {
