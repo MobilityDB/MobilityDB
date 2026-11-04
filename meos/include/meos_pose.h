@@ -167,6 +167,7 @@ extern Pose *pose_make_point3d_ypr(const GSERIALIZED *gs, double yaw, double pit
 
 /* Conversion functions */
 
+extern GSERIALIZED *pose_to_geog(const Pose *pose);
 extern GSERIALIZED *pose_to_point(const Pose *pose);
 extern STBox *pose_to_stbox(const Pose *pose);
 

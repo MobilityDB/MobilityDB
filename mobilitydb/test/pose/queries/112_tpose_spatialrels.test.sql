@@ -134,3 +134,15 @@ SELECT eDwithin(tpose 'Pose(Point(1 1), 0.1)@2001-01-01',
   tpose 'Pose(Point(1 2), 0.5)@2001-01-01', 2.0);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A geodetic pose and a geography
+
+SELECT eIntersects(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)');
+SELECT eIntersects(geography 'Point(1 1)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]');
+SELECT aIntersects(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)');
+SELECT eDisjoint(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)');
+SELECT aDisjoint(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)');
+SELECT eDwithin(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)', 112000);
+SELECT eDwithin(geography 'Point(1 1)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', 110000);
+SELECT eIntersects(tposechain '[PoseChain(GeodPose(Point(0 0), 0))@2001-01-01, PoseChain(GeodPose(Point(2 0), 0))@2001-01-03]', geography 'Point(1 0)');

@@ -601,6 +601,21 @@ Pose_to_point(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Pose_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Pose_to_geog);
+/**
+ * @ingroup mobilitydb_pose_base_conversion
+ * @brief Convert a pose, planar or geodetic, into a geography point
+ * @sqlfn geography()
+ */
+Datum
+Pose_to_geog(PG_FUNCTION_ARGS)
+{
+  Pose *pose = PG_GETARG_POSE_P(0);
+  GSERIALIZED *result = pose_to_geog(pose);
+  PG_RETURN_POINTER(result);
+}
+
 /*****************************************************************************
  * Bounding box functions
  *****************************************************************************/

@@ -110,10 +110,18 @@ CREATE FUNCTION tDwithin(geometry, tpose, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tDwithin($1, $2::@extschema@.tgeompoint, $3) $$;
+CREATE FUNCTION tDwithin(geography, tpose, dist float)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tDwithin($1, $2::@extschema@.tgeogpoint, $3) $$;
 CREATE FUNCTION tDwithin(tpose, geometry, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
   AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeompoint, $2, $3) $$;
+CREATE FUNCTION tDwithin(tpose, geography, dist float)
+  RETURNS tbool
+  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
+  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeogpoint, $2, $3) $$;
 CREATE FUNCTION tDwithin(tpose, tpose, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
