@@ -22,9 +22,9 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | open, decision 1 |
-| TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, decision 1 |
-| TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, decision 1 |
+| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | open, reads Z by decision 1 |
+| TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, reads Z by decision 1 |
+| TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, reads Z by decision 1 |
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
 | TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | open |
 
@@ -49,7 +49,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG15 | `atGeometry`, `minusGeometry` over a geometry with holes | open |
 | TG16 | `transform`, `transformPipeline` | open, decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
-| TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, decision 1 |
+| TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
 | TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | open, next |
 
@@ -61,14 +61,13 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG21 | The portable names `geoRound`, `geoTransform`, `geoLength`, `geoTranslate`, `geoRotate` by the geometry a `trgeometry` answers at an instant | open |
 | TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | open, branch `test/tnpoint-trgeo-indexes` |
 
-## Decisions for the owner
+## Decisions
 
-1. **What a relationship of two 3D values reads.** A `trgeometry` has three dimensions, as Chapter 4
-   uses it. The rule of `tgeo_different_dimensions` reads Z where both operands have it, and the
-   nuScenes bodies at z = 0 and z = 0.8 then never meet, while a clearance on the road asks about the
-   ground. **The recommendation** follows the rule: a relationship reads Z in every form, so that
-   `eIntersects` and `tIntersects` agree, and the ground is one call away through TG24. Answering on
-   the projection without a call is not a third way, since one answer then has two meanings.
+1. **What a relationship of two 3D values reads: Z, in every form.** Decided by the owner. A
+   `trgeometry` has three dimensions, as Chapter 4 uses it, and the rule of
+   `tgeo_different_dimensions` reads Z where both operands have it, so `eIntersects` and `tIntersects`
+   agree. The nuScenes bodies at z = 0 and z = 0.8 then never meet in 3D, and a question about the road
+   goes through `force2D`, TG24.
 2. **`stops`.** Answer it over the body, or remove the declaration.
 3. **`transform`.** A rigid body is rigid only in a metric the target SRID keeps. Either refuse it
    and say why, or transform the reference geometry and the poses where the transformation is a
@@ -81,7 +80,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 ## The order
 
 TG1 first, since it only states what holds. TG24 next, since the use case of the book needs it and it
-decides nothing. TG2 to TG5 and TG23 then, since they are the wrong answers, once decision 1 is taken. TG6 to TG11 in any order. The refusals as each is taken up, each removing its
+decides nothing. TG2 to TG5 and TG23 then, since they are the wrong answers. TG6 to TG11 in any order. The refusals as each is taken up, each removing its
 own note from the manual.
 
 ## Merged
