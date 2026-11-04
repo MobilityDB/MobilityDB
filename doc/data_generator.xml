@@ -656,5 +656,38 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 			provide usage examples for the functions generating random values listed above.
 		</para>
 	</sect1>
+
+	<sect1>
+	<title>Generator for Temporal JSONB Types</title>
+		<itemizedlist>
+			<listitem>
+				<para><varname>random_jsonb</varname>: Generate a random JSONB document</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_jsonb_array</varname>: Generate a random array of JSONB documents</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_jsonb_set</varname>: Generate a random set of JSONB documents</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_inst</varname>: Generate a random temporal JSONB of instant subtype</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_discseq</varname>: Generate a random temporal JSONB of sequence subtype and discrete interpolation</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_seq</varname>: Generate a random temporal JSONB of sequence subtype and step interpolation</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_seqset</varname>: Generate a random temporal JSONB of sequence set subtype</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			The file
+			<varname>/datagen/json/create_test_tables_tjsonb.sql</varname>
+			provides usage examples for the functions generating random values listed above.
+		</para>
+	</sect1>
 </appendix>
 

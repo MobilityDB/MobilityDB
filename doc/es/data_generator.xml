@@ -658,4 +658,37 @@ WHERE t1.k IN (SELECT i FROM generate_series(1 + 6*perc, 7*perc) i);
 		</para>
 	</sect1>
 
+	<sect1>
+	<title>Generador para tipos JSONB temporales</title>
+		<itemizedlist>
+			<listitem>
+				<para><varname>random_jsonb</varname>: Generar un documento JSONB aleatorio</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_jsonb_array</varname>: Generar una matriz aleatoria de documentos JSONB</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_jsonb_set</varname>: Generar un conjunto aleatorio de documentos JSONB</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_inst</varname>: Generar un JSONB temporal aleatorio de subtipo instante</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_discseq</varname>: Generar un JSONB temporal aleatorio de subtipo secuencia e interpolación discreta</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_seq</varname>: Generar un JSONB temporal aleatorio de subtipo secuencia e interpolación escalonada</para>
+			</listitem>
+			<listitem>
+				<para><varname>random_tjsonb_seqset</varname>: Generar un JSONB temporal aleatorio de subtipo conjunto de secuencias</para>
+			</listitem>
+		</itemizedlist>
+
+		<para>
+			El archivo
+			<varname>/datagen/json/create_test_tables_tjsonb.sql</varname>
+			da ejemplos de utilización de las funciones que generan valores aleatorios listadas arriba.
+		</para>
+	</sect1>
+
 </appendix>

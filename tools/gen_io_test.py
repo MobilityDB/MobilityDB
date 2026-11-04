@@ -709,10 +709,34 @@ def trim_echo(block):
     elif line.rstrip().endswith('*/') and not line.startswith('/*'):
       in_comment = True
     elif not (line.strip() == '' or line.startswith('/*') or
-        re.match(r'--(?!-*$)', line)):
+        line.startswith('--')):
       break
     lines.pop()
   return '\n'.join(lines)
+
+
+# psql echoes \copy <table> TO|FROM '<file>' <options> as the COPY it runs,
+# reading from its standard input or writing to its standard output
+PSQL_COPY_RE = re.compile(r"\\copy\s+(\S+)\s+(TO|FROM)\s+'[^']*'(.*)$",
+  re.IGNORECASE | re.DOTALL)
+# A psql variable, :name, which psql replaces by its value before it echoes the
+# statement; a cast (::), a time (10:30) and a JSON key ("k":v) are not one
+PSQL_VAR_RE = re.compile(r"((?<![:\w\"']):[A-Za-z_]\w*)")
+
+
+def echo_of(stmt):
+  """Return the text psql echoes for a statement, None for one it does not.
+
+  A \\copy echoes the COPY it runs; any other meta-command echoes nothing.
+  """
+  if not stmt.startswith('\\'):
+    return stmt
+  match = PSQL_COPY_RE.match(stmt)
+  if not match:
+    return None
+  table, direction, rest = match.groups()
+  return 'COPY  %s %s%s' % (table,
+    'TO STDOUT' if direction.upper() == 'TO' else 'FROM STDIN', rest)
 
 
 def out_blocks(path, statements):
@@ -720,14 +744,31 @@ def out_blocks(path, statements):
 
   No tool of the tree reads a psql output; the statements are split as
   #strip_sql_comments of tools/scripts/check_binding_io_ownership.py reads
-  them, and a meta-command echoes nothing and has no block.
+  them, and each block ends where the echo of the next statement begins, so a
+  \\copy, which psql echoes as the COPY it runs, ends the block before it.
+  A block ends at the trailing comments psql echoes with the next statement,
+  a rule of dashes included, since a table never ends a block with one.
   """
   with open(path, encoding='utf-8') as handle:
     text = handle.read()
   positions = []
   pos = 0
   for index, stmt in enumerate(statements):
-    if stmt.startswith('\\'):
+    stmt = echo_of(stmt)
+    if stmt is None:
+      continue
+    if PSQL_VAR_RE.search(stmt):
+      # psql echoes the value of a variable, so the statement is found by a
+      # pattern where each variable stands for any text; it ends the block
+      # before it, and its own output is not compared
+      pattern = re.compile(r'(?m)^' + ''.join(
+        '.*?' if PSQL_VAR_RE.fullmatch(part) else re.escape(part)
+        for part in PSQL_VAR_RE.split(stmt)) + r'\n', re.DOTALL)
+      match = pattern.search(text, pos)
+      if not match:
+        continue
+      positions.append((None, match.start()))
+      pos = match.end() - 1
       continue
     found = text.find(stmt + '\n', pos)
     while found > 0 and text[found - 1] != '\n':
@@ -738,6 +779,8 @@ def out_blocks(path, statements):
     pos = found + len(stmt)
   result = {}
   for j, (index, found) in enumerate(positions):
+    if index is None:
+      continue
     end = positions[j + 1][1] if j + 1 < len(positions) else len(text)
     result[index] = trim_echo(text[found:end])
   return result

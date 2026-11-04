@@ -11102,6 +11102,34 @@ select asHexEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'XDR');
  00002E410000162C00000000013FF00000000000003FF000000000000000001CC95E886000
 (1 row)
 
+SELECT asEWKB(geomset 'SRID=4326;{Point(1 1)}');
+                                asewkb                                
+----------------------------------------------------------------------
+ \x012b0041e6100000010000000101000000000000000000f03f000000000000f03f
+(1 row)
+
+SELECT asHexEWKB(geomset 'SRID=4326;{Point(1 1)}');
+                             ashexewkb                              
+--------------------------------------------------------------------
+ 012B0041E6100000010000000101000000000000000000F03F000000000000F03F
+(1 row)
+
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E6100000000000000000F03F000000000000F03F0060885EC91C0000'));
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E6100000000000000000F03F000000000000F03F'));
+          asewkt          
+--------------------------
+ SRID=4326;{"POINT(1 1)"}
+(1 row)
+
+SELECT asEWKT(geomsetFromHexEWKB('012B0041E6100000010000000101000020E40E0000000000000000F03F000000000000F03F'));
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the geomset (3812)
+SELECT asEWKT(tgeompointFromHexEWKB('012E0041E61000000101000020E40E0000000000000000F03F000000000000F03F0060885EC91C0000'));
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the tgeompoint (3812)
 select asEWKB(tgeompoint 'SRID=5676;Point(1 1)@2001-01-01', 'ABCD');
 ERROR:  Invalid value for endian flag
 SELECT astext('{}'::geometry[]);
@@ -16041,6 +16069,14 @@ SELECT asText(tcentroid(temp)) FROM (VALUES
 (1 row)
 
 SELECT asText(tcentroid(temp)) FROM (VALUES
+  (tgeompoint '[Point(1e308 1)@2001-01-01, Point(1e308 1)@2001-01-02]'),
+  ('[Point(1e308 3)@2001-01-01, Point(1e308 3)@2001-01-02]')) t(temp);
+                                             astext                                             
+------------------------------------------------------------------------------------------------
+ {[POINT(1e+308 2)@Mon Jan 01 00:00:00 2001 PST, POINT(1e+308 2)@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT asText(tcentroid(temp)) FROM (VALUES
   (tgeompoint 'Point(0 0)@2001-01-01'),
   (tgeompoint 'srid=5676;Point(1 1)@2001-01-01'),
   ('Point(2 2)@2001-01-01')) t(temp);
@@ -17815,19 +17851,19 @@ SELECT MAX(length(getValue(inst)::text)) FROM tbl_tjsonb_inst;
 SELECT MAX(length(startValue(temp)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT MAX(length(endValue(temp)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT MAX(length(valueN(temp, 1)::text)) FROM tbl_tjsonb;
  max 
 -----
-    
+ 135
 (1 row)
 
 SELECT ttext '"{\"geom\": \"Point(1 1)\"}"@2001-01-01';
@@ -18428,6 +18464,20 @@ SELECT nsegmentFromHexEWKB(replace(asHexEWKB(nsegment 'NSegment(1,0.5,0.7)', 'XD
 ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT nsegmentFromHexWKB(replace(asHexWKB(nsegment 'NSegment(1,0.5,0.7)', 'XDR'), '0000000000000001', '00000000000003E8'));
 ERROR:  There is no route with gid value 1000 in table ways
+SELECT asHexEWKB(npointset '{"NPoint(1,0.5)"}');
+                         ashexewkb                          
+------------------------------------------------------------
+ 013100412C16000001000000010100000000000000000000000000E03F
+(1 row)
+
+SELECT npointsetFromHexEWKB('013100412C16000001000000412C1600000100000000000000000000000000E03F');
+ npointsetfromhexewkb 
+----------------------
+ {"NPoint(1,0.5)"}
+(1 row)
+
+SELECT npointsetFromHexEWKB('01310041E61000000100000041E61000000100000000000000000000000000E03F');
+ERROR:  The SRID of the WKB (4326) does not match the SRID of the network (5676)
 SELECT asText(nsegment 'NSegment(1,0.5,0.7)');
        astext        
 ---------------------
@@ -20848,6 +20898,24 @@ SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;[Pose(Point(1 1), 0.
                                                                                 astext                                                                                 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
  Interp=Step;[Pose(POINT(1 1),0.2)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.4)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.5)@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT asEWKB(tpose 'SRID=7844;Pose(Point(1 2),1)@2001-01-01');
+                                        asewkb                                        
+--------------------------------------------------------------------------------------
+ \x01380041a41e000001000000000000f03f0000000000000040000000000000f03f0060885ec91c0000
+(1 row)
+
+SELECT asHexEWKB(tpose 'SRID=3812;Pose(Point(1 2),1)@2001-01-01');
+                                     ashexewkb                                      
+------------------------------------------------------------------------------------
+ 01380041E40E000001000000000000F03F0000000000000040000000000000F03F0060885EC91C0000
+(1 row)
+
+SELECT asEWKT(tposeFromHexEWKB('01380041E40E000041E40E0000000000000000F03F0000000000000040000000000000F03F009C57D3C11C0000'));
+                          asewkt                           
+-----------------------------------------------------------
+ SRID=3812;Pose(POINT(1 2),1)@Sun Dec 31 15:00:00 2000 PST
 (1 row)
 
 SELECT asText(tposeFromHexEWKB(asHexEWKB(tpose 'Interp=Step;{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05] }')));
