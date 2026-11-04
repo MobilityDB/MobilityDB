@@ -8,7 +8,5 @@ var searchData=
   ['jsonb_5fnull_5fpath_5ftest_2ec_5',['jsonb_null_path_test.c',['../jsonb__null__path__test_8c.html',1,'']]],
   ['jsonb_5fset_5fpath_5ferror_5ftest_2ec_6',['jsonb_set_path_error_test.c',['../jsonb__set__path__error__test_8c.html',1,'']]],
   ['jsonbset_2ec_7',['jsonbset.c',['../meos_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset_8c.html',1,'(Global Namespace)']]],
-  ['jsonbset_5fjsonfuncs_2ec_8',['jsonbset_jsonfuncs.c',['../meos_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)']]],
-  ['jsonbset_5fjsonfuncs_5fmeos_2ec_9',['jsonbset_jsonfuncs_meos.c',['../jsonbset__jsonfuncs__meos_8c.html',1,'']]],
-  ['jsonbset_5fmeos_2ec_10',['jsonbset_meos.c',['../jsonbset__meos_8c.html',1,'']]]
+  ['jsonbset_5fjsonfuncs_2ec_8',['jsonbset_jsonfuncs.c',['../meos_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)'],['../mobilitydb_2src_2json_2jsonbset__jsonfuncs_8c.html',1,'(Global Namespace)']]]
 ];
