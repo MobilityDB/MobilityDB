@@ -89,6 +89,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__index_ga2309b4b2091252b3a558ef060d3aaea4.html#ga2309b4b2091252b3a558ef060d3aaea4">Tpcbox_gist_sortsupport</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__index_gaefdf99b562941d9df0ab2d7961b717c0.html#gaefdf99b562941d9df0ab2d7961b717c0">Tpcbox_gist_union</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__index_ga5ecc05bae4119cf0f3ffa1328532bbc1.html#ga5ecc05bae4119cf0f3ffa1328532bbc1">Tpcbox_spgist_compress</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__mobilitydb__pointcloud__index_gaa1aa153f25393ca491e6a4ea18c789e6.html#gaa1aa153f25393ca491e6a4ea18c789e6">Tpointcloud_gist_distance</a></td></tr>
         </table>
       </div>
    </td>
@@ -109,8 +110,7 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>GiST distance method — minimum nearest-approach distance from the index key (<a class="el" href="structTPCBox.html" title="Structure to represent point cloud spatiotemporal boxes.">TPCBox</a>) to the query (tpcbox / tpcpoint / tpcpatch) </p>
-<p >Returns DBL_MAX for null keys or pcid mismatches; the recheck on leaf entries refines the distance to the actual leaf values. @sqlfn tpcbox_gist_distance() </p>
+<p>GiST distance method of a column of point cloud boxes: the minimum nearest-approach distance from the index key to the query (tpcbox / tpcpoint / tpcpatch), exact at a leaf the query is a box for @sqlfn <a class="el" href="tpcbox__gist_8c_a0c7617e70de4a50a8c0570bbededb89b.html#a0c7617e70de4a50a8c0570bbededb89b" title="Return the distance between the bounding box of an index entry and a query, in the last argument whet...">tpcbox_gist_distance()</a> </p>
 
 </div>
 </div>
