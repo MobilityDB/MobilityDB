@@ -34,6 +34,8 @@
 
 /******************************************************************************/
 
+-- GENERATED-BOXOPCLASS-BEGIN stbox_quadtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS stbox_quadtree_ops
   DEFAULT FOR TYPE stbox USING spgist AS
   -- strictly left
@@ -49,10 +51,10 @@ CREATE OPERATOR CLASS stbox_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (stbox, stbox),
   OPERATOR  4    &> (stbox, tgeompoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (stbox, stbox),
   OPERATOR  5    >> (stbox, tgeompoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (stbox, stbox),
   OPERATOR  6    ~= (stbox, tgeompoint),
   OPERATOR  6    ~= (stbox, tgeogpoint),
@@ -120,9 +122,12 @@ CREATE OPERATOR CLASS stbox_quadtree_ops
   FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
   FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal);
+-- GENERATED-BOXOPCLASS-END stbox_quadtree_ops
 
 /*****************************************************************************/
 
+-- GENERATED-BOXOPCLASS-BEGIN stbox_kdtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS stbox_kdtree_ops
   FOR TYPE stbox USING spgist AS
   -- strictly left
@@ -138,10 +143,10 @@ CREATE OPERATOR CLASS stbox_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (stbox, stbox),
   OPERATOR  4    &> (stbox, tgeompoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (stbox, stbox),
   OPERATOR  5    >> (stbox, tgeompoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (stbox, stbox),
   OPERATOR  6    ~= (stbox, tgeompoint),
   OPERATOR  6    ~= (stbox, tgeogpoint),
@@ -209,6 +214,7 @@ CREATE OPERATOR CLASS stbox_kdtree_ops
   FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
   FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal);
+-- GENERATED-BOXOPCLASS-END stbox_kdtree_ops
 
 /******************************************************************************/
 

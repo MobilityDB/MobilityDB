@@ -795,6 +795,78 @@ def splice_boxbox_sql(filetext: str, box: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# The index operator classes of a box type: per class of its `opclasses` stanza,
+# every strategy of boxstrategies.yaml the box carries, in strategy order, stating
+# the box against itself and against each partner whose `axes` carry the
+# strategy's axis, then the support functions of its access method. The box
+# carries the topological operators, the nearest approach distance and the
+# position operators of its `posaxes`. A GiST class takes the functions of its
+# `fn` box; an SP-GiST one the configuration and leaf functions of its `fn` box
+# and the choose, picksplit and inner consistent functions of its `kind` of tree,
+# then its `compress` function when the box is indexed as another one.
+def _boxopclass_markers(name: str):
+    """BEGIN/END markers of an index operator class of a box type, as
+    #_boxbox_sql_markers marks its box-by-box SQL."""
+    begin = (f"-- GENERATED-BOXOPCLASS-BEGIN {name} — "
+             "tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;\n"
+             "-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml "
+             "and re-run.\n")
+    return begin, f"-- GENERATED-BOXOPCLASS-END {name}\n"
+
+
+def render_boxopclass(bt: dict, cls: dict, strategies: list) -> str:
+    """The index operator class `cls` of the box type `bt`, as the comment of
+    #_boxopclass_markers states it."""
+    box = bt["box"]
+    own = {"topo", "dist", *bt.get("posaxes", [])}
+    partners = [(box, own)] + [(p["type"], set(p["axes"]))
+                               for p in bt["opclasses"].get("partners") or []]
+    members = []
+    for s in strategies:
+        if s["axis"] not in own:
+            continue
+        order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
+        members.append(f"  -- {s['desc']}")
+        members += [f"  OPERATOR  {s['num']}    {s['sqlop']} ({box}, {typ}){order},"
+                    for typ, axes in partners if s["axis"] in axes]
+    fn = cls["fn"]
+    if cls["am"] == "gist":
+        funcs = [(1, f"{fn}_gist_consistent(internal, {box}, smallint, oid, internal)"),
+                 (2, f"{fn}_gist_union(internal, internal)"),
+                 (5, f"{fn}_gist_penalty(internal, internal, internal)"),
+                 (6, f"{fn}_gist_picksplit(internal, internal)"),
+                 (7, f"{fn}_gist_same({box}, {box}, internal)"),
+                 (8, f"{fn}_gist_distance(internal, {box}, smallint, oid, internal)"),
+                 (11, f"{fn}_gist_sortsupport(internal)")]
+    else:
+        kind = cls["kind"]
+        funcs = [(1, f"{fn}_spgist_config(internal, internal)"),
+                 (2, f"{fn}_{kind}_choose(internal, internal)"),
+                 (3, f"{fn}_{kind}_picksplit(internal, internal)"),
+                 (4, f"{fn}_{kind}_inner_consistent(internal, internal)"),
+                 (5, f"{fn}_spgist_leaf_consistent(internal, internal)")]
+        if cls.get("compress"):
+            funcs.append((6, f"{cls['compress']}(internal)"))
+    vals = {"NAME": cls["name"], "BOX": box, "AM": cls["am"],
+            "DEFAULT": "DEFAULT " if cls.get("default") else "",
+            "STORAGE": f"\n  STORAGE {box}," if cls.get("storage") else "",
+            "MEMBERS": "\n".join(members),
+            "FUNCTIONS": ",\n".join(f"  FUNCTION {n:2d}  {f}" for n, f in funcs)}
+    text = read_template("boxopclass.sql.tmpl")
+    for k, v in vals.items():
+        text = text.replace("{" + k + "}", v)
+    return text
+
+
+def splice_boxopclass(filetext: str, name: str, rendered: str) -> str:
+    """Replace the text strictly between the class's markers with `rendered`, as
+    #splice_boxbox_sql replaces its region."""
+    begin, end = _boxopclass_markers(name)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 # The SQL of the temporal-by-box wrappers of a box type: per temporal type of its
 # `tempsql` stanza, the functions of each topological operation over the operand
 # pairs of a group and then their operators, in a region of the stanza's `file`,
@@ -5196,6 +5268,7 @@ def manifest_files(mf: dict) -> set:
 
     A box type's `boxbox` stanza names the SQL file of its box-by-box region in
     `sqlfile`, which emit mode writes.
+    Its `opclasses` stanza names the file of each of its index operator classes.
     """
     out = set()
     for value in mf.values():
@@ -5206,6 +5279,9 @@ def manifest_files(mf: dict) -> set:
                 out.add(entry["file"])
             if isinstance(entry, dict) and (entry.get("boxbox") or {}).get("sqlfile"):
                 out.add(entry["boxbox"]["sqlfile"])
+            if isinstance(entry, dict):
+                out.update(cls["file"] for cls in
+                           (entry.get("opclasses") or {}).get("classes") or [])
             for stanza in tempsql_stanzas(entry) if isinstance(entry, dict) else []:
                 out.update(stanza[key] for key in ("file", "posfile") if stanza.get(key))
     positions = mf.get("positions") or {}
@@ -5894,6 +5970,16 @@ def main() -> int:
                                          mf.get("boxposops", []))
             p.write_text(splice_boxbox_sql(p.read_text(), bt["box"], rendered))
             print(f"spliced boxbox {bt['box']} -> {sqlpath}")
+
+    for bt in mf.get("boxtypes", []):
+        for cls in (bt.get("opclasses") or {}).get("classes") or []:
+            p = ROOT / cls["file"]
+            if args.check:
+                print(f"would splice boxopclass {cls['name']} -> {cls['file']}")
+                continue
+            rendered = render_boxopclass(bt, cls, mf.get("boxstrategies", []))
+            p.write_text(splice_boxopclass(p.read_text(), cls["name"], rendered))
+            print(f"spliced boxopclass {cls['name']} -> {cls['file']}")
 
     for bt in mf.get("boxtypes", []):
         for stanza in tempsql_stanzas(bt):

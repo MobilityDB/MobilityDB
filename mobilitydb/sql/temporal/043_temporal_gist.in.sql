@@ -112,6 +112,8 @@ CREATE FUNCTION ttext_gist_compress(internal)
 
 /******************************************************************************/
 
+-- GENERATED-BOXOPCLASS-BEGIN tbox_rtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbox_rtree_ops
   DEFAULT FOR TYPE tbox USING gist AS
   -- strictly left
@@ -119,7 +121,7 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   OPERATOR  1    << (tbox, tint),
   OPERATOR  1    << (tbox, tbigint),
   OPERATOR  1    << (tbox, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbox, tbox),
   OPERATOR  2    &< (tbox, tint),
   OPERATOR  2    &< (tbox, tbigint),
@@ -139,7 +141,7 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   OPERATOR  5    >> (tbox, tint),
   OPERATOR  5    >> (tbox, tbigint),
   OPERATOR  5    >> (tbox, tfloat),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbox, tbox),
   OPERATOR  6    ~= (tbox, tint),
   OPERATOR  6    ~= (tbox, tbigint),
@@ -191,7 +193,8 @@ CREATE OPERATOR CLASS tbox_rtree_ops
   FUNCTION  6  tbox_gist_picksplit(internal, internal),
   FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
   FUNCTION  8  tbox_gist_distance(internal, tbox, smallint, oid, internal),
-  FUNCTION 11 tbox_gist_sortsupport(internal);
+  FUNCTION 11  tbox_gist_sortsupport(internal);
+-- GENERATED-BOXOPCLASS-END tbox_rtree_ops
 
 /******************************************************************************/
 

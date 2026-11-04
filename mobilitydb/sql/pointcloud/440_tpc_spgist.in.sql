@@ -38,6 +38,8 @@ CREATE FUNCTION tpcbox_spgist_compress(internal)
   AS 'MODULE_PATHNAME', 'Tpcbox_spgist_compress'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-BOXOPCLASS-BEGIN tpcbox_quadtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tpcbox_quadtree_ops
   DEFAULT FOR TYPE tpcbox USING spgist AS
   -- strictly left
@@ -59,39 +61,42 @@ CREATE OPERATOR CLASS tpcbox_quadtree_ops
   -- overlaps or below
   OPERATOR  9    &<| (tpcbox, tpcbox),
   -- strictly below
-  OPERATOR  10   <<| (tpcbox, tpcbox),
+  OPERATOR  10    <<| (tpcbox, tpcbox),
   -- strictly above
-  OPERATOR  11   |>> (tpcbox, tpcbox),
+  OPERATOR  11    |>> (tpcbox, tpcbox),
   -- overlaps or above
-  OPERATOR  12   |&> (tpcbox, tpcbox),
+  OPERATOR  12    |&> (tpcbox, tpcbox),
   -- adjacent
-  OPERATOR  17   -|- (tpcbox, tpcbox),
+  OPERATOR  17    -|- (tpcbox, tpcbox),
   -- nearest approach distance
-  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28   &<# (tpcbox, tpcbox),
+  OPERATOR  28    &<# (tpcbox, tpcbox),
   -- strictly before
-  OPERATOR  29   <<# (tpcbox, tpcbox),
+  OPERATOR  29    <<# (tpcbox, tpcbox),
   -- strictly after
-  OPERATOR  30   #>> (tpcbox, tpcbox),
+  OPERATOR  30    #>> (tpcbox, tpcbox),
   -- overlaps or after
-  OPERATOR  31   #&> (tpcbox, tpcbox),
+  OPERATOR  31    #&> (tpcbox, tpcbox),
   -- overlaps or front
-  OPERATOR  32   &</ (tpcbox, tpcbox),
+  OPERATOR  32    &</ (tpcbox, tpcbox),
   -- strictly front
-  OPERATOR  33   <</ (tpcbox, tpcbox),
+  OPERATOR  33    <</ (tpcbox, tpcbox),
   -- strictly back
-  OPERATOR  34   />> (tpcbox, tpcbox),
+  OPERATOR  34    />> (tpcbox, tpcbox),
   -- overlaps or back
-  OPERATOR  35   /&> (tpcbox, tpcbox),
+  OPERATOR  35    /&> (tpcbox, tpcbox),
   -- functions
-  FUNCTION  1    stbox_spgist_config(internal, internal),
-  FUNCTION  2    stbox_quadtree_choose(internal, internal),
-  FUNCTION  3    stbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4    stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5    stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6    tpcbox_spgist_compress(internal);
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_quadtree_choose(internal, internal),
+  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  tpcbox_spgist_compress(internal);
+-- GENERATED-BOXOPCLASS-END tpcbox_quadtree_ops
 
+-- GENERATED-BOXOPCLASS-BEGIN tpcbox_kdtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tpcbox_kdtree_ops
   FOR TYPE tpcbox USING spgist AS
   -- strictly left
@@ -113,38 +118,39 @@ CREATE OPERATOR CLASS tpcbox_kdtree_ops
   -- overlaps or below
   OPERATOR  9    &<| (tpcbox, tpcbox),
   -- strictly below
-  OPERATOR  10   <<| (tpcbox, tpcbox),
+  OPERATOR  10    <<| (tpcbox, tpcbox),
   -- strictly above
-  OPERATOR  11   |>> (tpcbox, tpcbox),
+  OPERATOR  11    |>> (tpcbox, tpcbox),
   -- overlaps or above
-  OPERATOR  12   |&> (tpcbox, tpcbox),
+  OPERATOR  12    |&> (tpcbox, tpcbox),
   -- adjacent
-  OPERATOR  17   -|- (tpcbox, tpcbox),
+  OPERATOR  17    -|- (tpcbox, tpcbox),
   -- nearest approach distance
-  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
-  OPERATOR  28   &<# (tpcbox, tpcbox),
+  OPERATOR  28    &<# (tpcbox, tpcbox),
   -- strictly before
-  OPERATOR  29   <<# (tpcbox, tpcbox),
+  OPERATOR  29    <<# (tpcbox, tpcbox),
   -- strictly after
-  OPERATOR  30   #>> (tpcbox, tpcbox),
+  OPERATOR  30    #>> (tpcbox, tpcbox),
   -- overlaps or after
-  OPERATOR  31   #&> (tpcbox, tpcbox),
+  OPERATOR  31    #&> (tpcbox, tpcbox),
   -- overlaps or front
-  OPERATOR  32   &</ (tpcbox, tpcbox),
+  OPERATOR  32    &</ (tpcbox, tpcbox),
   -- strictly front
-  OPERATOR  33   <</ (tpcbox, tpcbox),
+  OPERATOR  33    <</ (tpcbox, tpcbox),
   -- strictly back
-  OPERATOR  34   />> (tpcbox, tpcbox),
+  OPERATOR  34    />> (tpcbox, tpcbox),
   -- overlaps or back
-  OPERATOR  35   /&> (tpcbox, tpcbox),
+  OPERATOR  35    /&> (tpcbox, tpcbox),
   -- functions
-  FUNCTION  1    stbox_spgist_config(internal, internal),
-  FUNCTION  2    stbox_kdtree_choose(internal, internal),
-  FUNCTION  3    stbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4    stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5    stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6    tpcbox_spgist_compress(internal);
+  FUNCTION  1  stbox_spgist_config(internal, internal),
+  FUNCTION  2  stbox_kdtree_choose(internal, internal),
+  FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6  tpcbox_spgist_compress(internal);
+-- GENERATED-BOXOPCLASS-END tpcbox_kdtree_ops
 
 /*****************************************************************************/
 

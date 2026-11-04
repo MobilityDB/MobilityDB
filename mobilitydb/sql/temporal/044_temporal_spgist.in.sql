@@ -61,6 +61,8 @@ CREATE FUNCTION tnumber_spgist_compress(internal)
 
 /******************************************************************************/
 
+-- GENERATED-BOXOPCLASS-BEGIN tbox_quadtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbox_quadtree_ops
   DEFAULT FOR TYPE tbox USING spgist AS
   -- strictly left
@@ -68,7 +70,7 @@ CREATE OPERATOR CLASS tbox_quadtree_ops
   OPERATOR  1    << (tbox, tint),
   OPERATOR  1    << (tbox, tbigint),
   OPERATOR  1    << (tbox, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbox, tbox),
   OPERATOR  2    &< (tbox, tint),
   OPERATOR  2    &< (tbox, tbigint),
@@ -88,7 +90,7 @@ CREATE OPERATOR CLASS tbox_quadtree_ops
   OPERATOR  5    >> (tbox, tint),
   OPERATOR  5    >> (tbox, tbigint),
   OPERATOR  5    >> (tbox, tfloat),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbox, tbox),
   OPERATOR  6    ~= (tbox, tint),
   OPERATOR  6    ~= (tbox, tbigint),
@@ -139,6 +141,7 @@ CREATE OPERATOR CLASS tbox_quadtree_ops
   FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
   FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
+-- GENERATED-BOXOPCLASS-END tbox_quadtree_ops
 
 /*****************************************************************************/
 
@@ -157,6 +160,8 @@ CREATE FUNCTION tbox_kdtree_inner_consistent(internal, internal)
 
 /******************************************************************************/
 
+-- GENERATED-BOXOPCLASS-BEGIN tbox_kdtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbox_kdtree_ops
   FOR TYPE tbox USING spgist AS
   -- strictly left
@@ -164,7 +169,7 @@ CREATE OPERATOR CLASS tbox_kdtree_ops
   OPERATOR  1    << (tbox, tint),
   OPERATOR  1    << (tbox, tbigint),
   OPERATOR  1    << (tbox, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbox, tbox),
   OPERATOR  2    &< (tbox, tint),
   OPERATOR  2    &< (tbox, tbigint),
@@ -184,7 +189,7 @@ CREATE OPERATOR CLASS tbox_kdtree_ops
   OPERATOR  5    >> (tbox, tint),
   OPERATOR  5    >> (tbox, tbigint),
   OPERATOR  5    >> (tbox, tfloat),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbox, tbox),
   OPERATOR  6    ~= (tbox, tint),
   OPERATOR  6    ~= (tbox, tbigint),
@@ -235,6 +240,7 @@ CREATE OPERATOR CLASS tbox_kdtree_ops
   FUNCTION  3  tbox_kdtree_picksplit(internal, internal),
   FUNCTION  4  tbox_kdtree_inner_consistent(internal, internal),
   FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal);
+-- GENERATED-BOXOPCLASS-END tbox_kdtree_ops
 
 /******************************************************************************/
 
