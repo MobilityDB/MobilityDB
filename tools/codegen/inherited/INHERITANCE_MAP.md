@@ -213,7 +213,10 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   statements of `tgeometry` and `tgeography` in `061_tgeo_topops` and their 152
   in `062_tgeo_posops`, and the 100 of `tgeompoint` and `tgeogpoint` in
   `061_tpoint_topops` and their 152 in `062_tpoint_posops`; a temporal type's
-  `axes` keeps of each pair the axes it lists, the geodetic types `[t]`. A box type naming a
+  `axes` keeps of each pair the axes it lists, the geodetic types `[t]`. `tpcbox`
+  states one over its time span, its box and the temporal type itself: the 100
+  statements of `tpcpoint` and `tpcpatch` in `436_tpc_topops` and their 224 in
+  `437_tpc_posops`. A box type naming a
   `nadfile:` has its nearest approach distance wrappers
   there (`templates/nadops.c.tmpl`): the base value of its `nadbase:` by the
   temporal value both ways, whose `Datum` kernel answers the sentinel of the base
@@ -935,15 +938,15 @@ its last edit:
   the call answers, and `quote` quotes the commutator of an `ops` stanza.
   The GiST distance support functions of `tpcpoint` and `tpcpatch` are a second `lit`
   block of the `tpc` entry, after the one of `tpcbox`.
-- `topop_families` and `posop_families`, both **18/20** of `temporal`, counting the
-  declarations the `tempsql` stanzas of the box types render: `tpcpoint` and
-  `tpcpatch` remain. A file holding TWO temporal types is a `tempsql` stanza, its
-  `temps` listing both: the `stbox` entry writes `061/062_tgeo_*` (`tgeometry` and
-  `tgeography`) and `061/062_tpoint_*` (`tgeompoint` and `tgeogpoint`), a geodetic
-  type listing `axes: [t]` since its position operators compare time alone, and
-  `436/437_tpc_*` name `tpcpoint` and `tpcpatch` over a `tpcbox`, an entry with no
-  stanza. The `subtypes:` track renders ONE `(base, temp)` pair per file, which is
-  the limit recorded for the three families that stay on `compops_families`.
+- `topop_families` and `posop_families`, both **20/20** of `temporal`, counting the
+  declarations the `tempsql` stanzas of the box types render. A file holding TWO
+  temporal types is a `tempsql` stanza, its `temps` listing both: the `stbox` entry
+  writes `061/062_tgeo_*` (`tgeometry` and `tgeography`) and `061/062_tpoint_*`
+  (`tgeompoint` and `tgeogpoint`), a geodetic type listing `axes: [t]` since its
+  position operators compare time alone, and the `tpcbox` entry writes
+  `436/437_tpc_*` (`tpcpoint` and `tpcpatch`). The `subtypes:` track renders ONE
+  `(base, temp)` pair per file, which is the limit recorded for the three families
+  that stay on `compops_families`.
 
 - The `subtypes:` `spatialrels` behaviour (the ever/always SQL wrapper *file*, as
   opposed to the C kernel above) covers the cast-delegated families (th3index,
