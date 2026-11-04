@@ -16,9 +16,7 @@ mobilitydb/sql/geo/066_tpoint_similarity.in.sql
 mobilitydb/sql/geo/071_tgeo_setset.in.sql
 mobilitydb/sql/geo/071_tpoint_setset.in.sql
 mobilitydb/sql/geo/073_tgeo_gist.in.sql
-mobilitydb/sql/geo/073_tpoint_gist.in.sql
 mobilitydb/sql/geo/074_tgeo_spgist.in.sql
-mobilitydb/sql/geo/074_tpoint_spgist.in.sql
 mobilitydb/sql/geo/076_tgeo_analytics.in.sql
 mobilitydb/sql/geo/076_tpoint_analytics.in.sql
 mobilitydb/sql/geo/078_tpoint_datagen.in.sql
@@ -42,8 +40,6 @@ mobilitydb/sql/npoint/306_tnpoint_spatialfuncs.in.sql
 mobilitydb/sql/npoint/310_tnpoint_routeops.in.sql
 mobilitydb/sql/npoint/311_tnpoint_gin.in.sql
 mobilitydb/sql/pointcloud/399_pointcloud_schemas.in.sql
-mobilitydb/sql/pointcloud/439_tpc_gist.in.sql
-mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql
 mobilitydb/sql/pointcloud/442_tpcpoint_spatialfuncs.in.sql
 mobilitydb/sql/pointcloud/445_tpcpoint_analytics.in.sql
 mobilitydb/sql/pose/105_tpose_spatialfuncs.in.sql
@@ -61,7 +57,5 @@ mobilitydb/sql/temporal/028_tbool_boolops.in.sql
 mobilitydb/sql/temporal/029_ttext_textfuncs.in.sql
 mobilitydb/sql/temporal/038_temporal_similarity.in.sql
 mobilitydb/sql/temporal/042_temporal_waggfuncs.in.sql
-mobilitydb/sql/temporal/043_temporal_gist.in.sql
-mobilitydb/sql/temporal/044_temporal_spgist.in.sql
 mobilitydb/sql/temporal/046_temporal_analytics.in.sql
 mobilitydb/sql/temporal/999_oid_cache.in.sql
