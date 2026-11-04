@@ -119,7 +119,7 @@ spatialbase_as_text(Datum value, MeosType type, int maxdd)
 #endif
 #if H3
     case T_H3INDEX:
-      return meos_h3index_out((H3Index) DatumGetInt64(value));
+      return h3index_out((H3Index) DatumGetInt64(value), &size_out);
 #endif
 #if NPOINT
     case T_NPOINT:

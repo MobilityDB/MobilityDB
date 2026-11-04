@@ -82,7 +82,8 @@ Datum
 H3index_as_text(PG_FUNCTION_ARGS)
 {
   H3Index cell = PG_GETARG_H3INDEX(0);
-  char *str = meos_h3index_out(cell);
+  size_t size_out;
+  char *str = h3index_out(cell, &size_out);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);
@@ -101,7 +102,7 @@ H3index_from_text(PG_FUNCTION_ARGS)
 {
   text *txt = PG_GETARG_TEXT_P(0);
   char *str = text_to_cstring(txt);
-  H3Index result = meos_h3index_in(str);
+  H3Index result = h3index_in(str);
   pfree(str);
   PG_FREE_IF_COPY(txt, 0);
   PG_RETURN_H3INDEX(result);
@@ -237,7 +238,7 @@ PG_FUNCTION_INFO_V1(H3index_eq);
 Datum
 H3index_eq(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_eq(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_eq(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_ne(PG_FUNCTION_ARGS);
@@ -250,7 +251,7 @@ PG_FUNCTION_INFO_V1(H3index_ne);
 Datum
 H3index_ne(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_ne(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_ne(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_lt(PG_FUNCTION_ARGS);
@@ -263,7 +264,7 @@ PG_FUNCTION_INFO_V1(H3index_lt);
 Datum
 H3index_lt(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_lt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_lt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_le(PG_FUNCTION_ARGS);
@@ -277,7 +278,7 @@ PG_FUNCTION_INFO_V1(H3index_le);
 Datum
 H3index_le(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_le(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_le(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_gt(PG_FUNCTION_ARGS);
@@ -291,7 +292,7 @@ PG_FUNCTION_INFO_V1(H3index_gt);
 Datum
 H3index_gt(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_gt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_gt(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_ge(PG_FUNCTION_ARGS);
@@ -305,7 +306,7 @@ PG_FUNCTION_INFO_V1(H3index_ge);
 Datum
 H3index_ge(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_BOOL(meos_h3index_ge(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
+  PG_RETURN_BOOL(h3index_ge(PG_GETARG_H3INDEX(0), PG_GETARG_H3INDEX(1)));
 }
 
 PGDLLEXPORT Datum H3index_cmp(PG_FUNCTION_ARGS);
@@ -319,7 +320,7 @@ PG_FUNCTION_INFO_V1(H3index_cmp);
 Datum
 H3index_cmp(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_INT32(meos_h3index_cmp(PG_GETARG_H3INDEX(0),
+  PG_RETURN_INT32(h3index_cmp(PG_GETARG_H3INDEX(0),
     PG_GETARG_H3INDEX(1)));
 }
 
@@ -334,7 +335,7 @@ PG_FUNCTION_INFO_V1(H3index_hash);
 Datum
 H3index_hash(PG_FUNCTION_ARGS)
 {
-  PG_RETURN_UINT32(meos_h3index_hash(PG_GETARG_H3INDEX(0)));
+  PG_RETURN_UINT32(h3index_hash(PG_GETARG_H3INDEX(0)));
 }
 
 PGDLLEXPORT Datum H3index_hash_extended(PG_FUNCTION_ARGS);
@@ -350,7 +351,7 @@ H3index_hash_extended(PG_FUNCTION_ARGS)
 {
   H3Index cell = PG_GETARG_H3INDEX(0);
   uint64 seed = PG_GETARG_INT64(1);
-  PG_RETURN_UINT64(meos_h3index_hash_extended(cell, seed));
+  PG_RETURN_UINT64(h3index_hash_extended(cell, seed));
 }
 
 /*****************************************************************************/

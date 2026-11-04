@@ -111,7 +111,7 @@ DISTANCE_DOC = re.compile(r"A distance is never negative")
 # contract, so neither a reader nor a binding generator can find it, and the
 # check below reads a documented value it never finds. A comparator whose body
 # has no failing path states no error value, and the body test below is what
-# lets it through: h3index_cmp, meos_h3index_cmp, quadbin_cmp, s2cell_cmp,
+# lets it through: h3index_cmp, quadbin_cmp, s2cell_cmp,
 # int32_cmp and int64_cmp take their operands by value, validate nothing and
 # answer -1, 0 or 1 for every pair, so an INT_MAX in their contract would
 # promise a value they never produce.

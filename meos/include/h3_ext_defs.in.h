@@ -2,9 +2,9 @@
 #define H3_EXT_DEFS_H
 
 /* The following functions have the same name as the C symbols of the h3-pg
- * PostgreSQL extension. The MEOS library defines them (they are the public
- * binding surface); the MobilityDB PostgreSQL extension does not, so that
- * both the h3 and mobilitydb extensions can be loaded in the same server.
+ * PostgreSQL extension. Both the MEOS library and the MobilityDB extension
+ * define them; the extension exports only the functions PostgreSQL calls, so
+ * its calls bind to its own definitions with the h3 extension loaded.
  * Input reads, and output prints, the canonical hexadecimal cell literal
  * with an optional "0x" prefix and at most 16 significant digits. Input
  * additionally requires the value to denote a cell, a directed edge or a

@@ -256,7 +256,7 @@ basetype_in(const char *str, MeosType type, bool end UNUSED, Datum *result)
       /* A failed parse is told by the error number, which #meos_errno_reset
        * clears first, as for T_INT4 */
       int last_errno = meos_errno_reset();
-      H3Index cell = meos_h3index_in(str);
+      H3Index cell = h3index_in(str);
       if (meos_errno())
         return false;
       meos_errno_restore(last_errno);
