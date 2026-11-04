@@ -192,6 +192,14 @@ add_subdirectory(utils)
 # MobilityDB extension and the shared libmeos — links exactly as before.
 add_library(pgtypes_objects OBJECT ${PGTYPES_SOURCES})
 
+# In the extension build the functions and variables pgtypes shares with the
+# backend bind to the backend's, which the server initializes (its settings,
+# its time zone, its memory contexts), so these objects keep the default
+# visibility the hidden preset of the extension build would otherwise remove
+if(NOT MEOS)
+  set_property(TARGET pgtypes_objects PROPERTY C_VISIBILITY_PRESET default)
+endif()
+
 # Create the list of object files
 set(PGTYPES_OBJECTS "$<TARGET_OBJECTS:pgtypes_objects>")
 
