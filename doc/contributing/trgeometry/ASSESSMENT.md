@@ -47,9 +47,7 @@ Each case places a body in the plane z = 1 and a geometry over the same x and y.
 | `tDisjoint` with `Point(1 1 1)` | false, then true | **true, true** |
 | `atStbox` with a box at z in [4,6] | NULL | **the whole value** |
 | `minusStbox` with a box at z in [4,6] | the whole value | **NULL** |
-| `traversedArea(x, true)` of a body at z = 1 | a region at z = 1 | **a polygon with no Z** |
 | `traversedArea(x, true)` turning by pi/2 | area 10.28, as the 2D control | **area 8** |
-| `convexHull` | keeps Z | **a polygon with no Z** |
 
 These answer rightly on the same values: `aIntersects`, `aTouches` and `eDisjoint` with a geometry
 at z = 5, `valueAtTimestamp` in translation and rotation, `length`, `cumulativeLength`, `speed` and
@@ -60,6 +58,45 @@ The concave, holed and surface bodies in 2D answered every known case rightly: `
 `eContains`, `tIntersects` and `atGeometry` with a point or small polygon in the notch or the hole.
 A known-answer case exists only where listed, so the other functions that answer on a 3D value are
 not yet shown right.
+
+The merged `traversedArea` and `convexHull` of a 3D value answer a polygon with no Z. This is the
+ground, as Chapter 4 defines the traversed area, "the part of the plane that the object covers", and
+the manual takes it as a statement rather than a gap.
+
+## The use case of Chapter 4
+
+Chapter 4 of MobilityBook Vol. 2 and `chapter4/` of its companion, MobilityDB/MobilityDataScienceBookVol2,
+use `trgeometry` in three dimensions on the nuScenes dataset. So the type has three dimensions: a road
+vehicle has a pitch and a roll, its pose holds a quaternion, and its reference geometry is a flat
+rectangle that `ST_Force3D` places in the plane z = 0 of the body, since the constructor requires the
+dimension of the pose. `load_nuscenes.sql` builds `ObjectTrip` and `EgoBody` so, and the chapter states
+that its algorithm of the temporal distance is for two dimensions.
+
+`nuscenes_queries.sql` meets the refusal of the distance and works around it, building `EgoBody2D` and
+`ObjectTrip2D` by hand from the instants of each pose: "the bodies are projected to the ground plane
+first". No function taking a `trgeometry` in the catalog projects it.
+
+Measured on v1.0-mini, on the 881 objects and their ego vehicle:
+
+| Question | 3D tables | Ground projection |
+|---|---|---|
+| `\|=\|` of the ego vehicle and an object | "The trgeometry cannot have Z dimension" | answers |
+| The pairs with `tIntersects` ever true | 0 | 1, a car, with `nearestApproachDistance` 0 |
+| `eIntersects` of that pair | false | **false**, although `tIntersects` is ever true and the distance 0 |
+| `traversedArea(x, true)` | 303 objects differ from the projection, 142 larger and 161 smaller, by up to 4.97% and up to 4.44 m² | |
+
+A flat body at z = 0 and one at z = 0.8 never meet in 3D, while on the road they touch, so a question
+about the ground needs the projection. In a pure rotation about z, which tilts nothing,
+`traversedArea(x, true)` of the rectangle of the chapter answers 17.885 in 3D and 17.284 in 2D, and with
+a translation 45.673 and 50.452, so the difference is not the tilt of the body.
+
+The largest ratio of the swept area on master is 88.73, of a car of scene-1077, and the listing of the
+chapter prints 71.4187 for scene-0655 in its first row.
+
+Two relationships disagree in 2D too. Where a body passes through another between two instants,
+`eIntersects` is true and `tIntersects` is false at both instants, the subject of the [note on linear
+motion](RIGID-SWEPT-RELATIONSHIPS.md). The pair above is the opposite: `tIntersects` is ever true and
+`eIntersects` false.
 
 ## Operands of different dimensions
 
@@ -120,7 +157,8 @@ Each is a call that should answer, or an error that misleads, so its pull reques
 |---|---|---|
 | `doc/temporal_rigid_geometries.xml`, the chapter's opening | "a static 2D reference geometry" | Builds a 3D reference geometry with a quaternion pose |
 | The same, Input and Output | "any 2D polygon or polyhedral surface" | The same |
-| `doc/contributing/trgeometry_design_notes.md` | "2D-only reference geometry", "The type carries no 3D rigid-body representation" | `tbl_trgeometry3d` holds such values, `random_trgeom3d_inst` makes them, and the index classes declare the operators on Z |
+| `doc/contributing/trgeometry_design_notes.md` | "2D-only reference geometry", "The type carries no 3D rigid-body representation" | `tbl_trgeometry3d` holds such values, `random_trgeom3d_inst` makes them, the index classes declare the operators on Z, and Chapter 4 uses them |
+| `trgeo_distance.c`, a comment | "A temporal rigid geometry has two dimensions" | The same |
 
 ## What this does not cover
 

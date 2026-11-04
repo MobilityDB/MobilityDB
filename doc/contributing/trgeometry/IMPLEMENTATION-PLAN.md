@@ -25,7 +25,8 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | open, decision 1 |
 | TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, decision 1 |
 | TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, decision 1 |
-| TG5 | The merged `traversedArea` and `convexHull` of a 3D value keep Z, and a turning 3D value sweeps as a 2D one does | open, decision 1 |
+| TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
+| TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | open |
 
 ## Defects
 
@@ -49,7 +50,8 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG16 | `transform`, `transformPipeline` | open, decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, decision 1 |
-| TG19 | The distance of a value in 3D | open, decisions 1 and 4 |
+| TG19 | The distance of a value in 3D | open, decision 4 |
+| TG24 | A SQL function projecting a `trgeometry` to the ground, in place of `EgoBody2D` and `ObjectTrip2D` of the companion | open, next after TG1 |
 
 ## Regularity
 
@@ -61,13 +63,12 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 ## Decisions for the owner
 
-1. **Whether a `trgeometry` has three dimensions.** The manual, the design notes and a comment of
-   `trgeo_distance.c` say two; the constructor, the fixtures and the index classes say three. If it has two, the
-   constructor refuses Z and TG2 to TG5, TG18 and TG19 disappear. If it has three, a relationship
-   either reads Z or refuses it, since answering on the projection makes `eIntersects` true and
-   `tIntersects` false for one pair. **The recommendation** is to keep three, as `tpose` has, to
-   refuse in each function that does not read Z so that no wrong answer stays, then to lift each
-   refusal with an answer that reads Z.
+1. **What a relationship of two 3D values reads.** A `trgeometry` has three dimensions, as Chapter 4
+   uses it. The rule of `tgeo_different_dimensions` reads Z where both operands have it, and the
+   nuScenes bodies at z = 0 and z = 0.8 then never meet, while a clearance on the road asks about the
+   ground. **The recommendation** follows the rule: a relationship reads Z in every form, so that
+   `eIntersects` and `tIntersects` agree, and the ground is one call away through TG24. Answering on
+   the projection without a call is not a third way, since one answer then has two meanings.
 2. **`stops`.** Answer it over the body, or remove the declaration.
 3. **`transform`.** A rigid body is rigid only in a metric the target SRID keeps. Either refuse it
    and say why, or transform the reference geometry and the poses where the transformation is a
@@ -79,8 +80,8 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 ## The order
 
-TG1 first, since it only states what holds. TG2 to TG5 next, since they are the wrong answers, once
-decision 1 is taken. TG6 to TG11 in any order. The refusals as each is taken up, each removing its
+TG1 first, since it only states what holds. TG24 next, since the use case of the book needs it and it
+decides nothing. TG2 to TG5 and TG23 then, since they are the wrong answers, once decision 1 is taken. TG6 to TG11 in any order. The refusals as each is taken up, each removing its
 own note from the manual.
 
 ## Merged
