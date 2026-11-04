@@ -130,7 +130,9 @@ $(function() {
 <dd>
 An empty geometry has no point to measure from, so the answer is DBL_MAX </dd>
 <dd>
-The answer is the double nearest the exact distance </dd></dl>
+The answer is the double nearest the exact distance </dd>
+<dd>
+A geometry with no Z has any Z, so the answer is the distance in 2D, as in PostGIS </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return -1.0 </dd></dl>
 
 </div>
