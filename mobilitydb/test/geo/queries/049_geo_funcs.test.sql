@@ -330,6 +330,9 @@ SELECT dwithin(geometry 'Point(4.5 4.5)', geometry 'Polyhedralsurface(((0 0,9 0,
 SELECT dwithin(geometry 'Point(3 3)', geometry 'Triangle((0 0 5,4 0 5,0 3 5,0 0 5))', 1.7999999999999998),
   dwithin(geometry 'Point(3 3)', geometry 'GeometryCollection(Point(20 20),Triangle((0 0,4 0,0 3,0 0)))', 1.8);
 
+-- A temporal point within reach of an arc with Z by their boxes reaches the error of its 3D distance
+SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]', geometry 'CircularString(5 0 2,3 4 2,0 5 2)', 100);
+
 -- The containment family has no 3D form, so a geometry with Z is refused
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
 SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');

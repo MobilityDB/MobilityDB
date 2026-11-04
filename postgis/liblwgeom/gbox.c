@@ -590,10 +590,11 @@ static int lw_arc_calculate_gbox_cartesian(const POINT4D *p1, const POINT4D *p2,
 	LWDEBUG(2, "lw_arc_calculate_gbox_cartesian called.");
 
 	rv = lw_arc_calculate_gbox_cartesian_2d((POINT2D*)p1, (POINT2D*)p2, (POINT2D*)p3, gbox);
-    gbox->zmin = FP_MIN(p1->z, p3->z);
-    gbox->mmin = FP_MIN(p1->m, p3->m);
-    gbox->zmax = FP_MAX(p1->z, p3->z);
-    gbox->mmax = FP_MAX(p1->m, p3->m);
+	/* The arc passes through its middle vertex, so its ordinates are read too */
+	gbox->zmin = FP_MIN(FP_MIN(p1->z, p2->z), p3->z);
+	gbox->mmin = FP_MIN(FP_MIN(p1->m, p2->m), p3->m);
+	gbox->zmax = FP_MAX(FP_MAX(p1->z, p2->z), p3->z);
+	gbox->mmax = FP_MAX(FP_MAX(p1->m, p2->m), p3->m);
 	return rv;
 }
 
@@ -721,7 +722,9 @@ static int lwcircstring_calculate_gbox_cartesian(LWCIRCSTRING *curve, GBOX *gbox
 	tmp.flags =
 	    lwflags(FLAGS_GET_Z(curve->flags), FLAGS_GET_M(curve->flags), 0);
 
-	/* Initialize */
+	/* Initialize, with the flags #gbox_merge asks of both boxes, as
+	 * #ptarray_calculate_gbox_cartesian sets them */
+	gbox->flags = tmp.flags;
 	gbox->xmin = gbox->ymin = gbox->zmin = gbox->mmin = FLT_MAX;
 	gbox->xmax = gbox->ymax = gbox->zmax = gbox->mmax = -1*FLT_MAX;
 

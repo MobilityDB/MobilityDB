@@ -577,6 +577,8 @@ SELECT dwithin(geometry 'Point(3 3)', geometry 'Triangle((0 0 5,4 0 5,0 3 5,0 0 
  f       | t
 (1 row)
 
+SELECT eDwithin(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 1)@2001-01-02]', geometry 'CircularString(5 0 2,3 4 2,0 5 2)', 100);
+ERROR:  lw_dist3d_distribute_bruteforce: Unsupported geometry type: CircularString
 SELECT contains(geometry 'Polygon((0 0 1,4 0 1,4 4 1,0 4 1,0 0 1))', geometry 'Point(2 2 1)');
 ERROR:  The geometry cannot have Z dimension
 SELECT covers(geometry 'Point(2 2)', geometry 'Point(2 2 1)');

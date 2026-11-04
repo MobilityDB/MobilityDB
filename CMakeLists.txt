@@ -142,6 +142,13 @@ if(MEOS)
 else()
   message(STATUS "MEOS=0: Building MEOS core for MobilityDB (internal API only)")
   add_definitions(-DMEOS=0)
+  # The extension exports only what PostgreSQL calls, as PGXS builds a module
+  # (CFLAGS_SL_MODULE = -fvisibility=hidden): PG_FUNCTION_INFO_V1,
+  # PG_MODULE_MAGIC and _PG_init mark their functions PGDLLEXPORT, and every
+  # other function binds within the library, never to a name another library
+  # loaded in the backend also exports. A target that sets its own
+  # C_VISIBILITY_PRESET keeps it.
+  set(CMAKE_C_VISIBILITY_PRESET hidden)
 endif()
 
 # Options for including the various optional types.
