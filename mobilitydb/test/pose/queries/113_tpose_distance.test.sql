@@ -49,6 +49,23 @@ SELECT round(pose 'Pose(Point(0 0),0)' <-> pose 'Pose(Point(0 0),0)', 6);
 SELECT round(pose 'Pose(Point(0 0),0.5)' <-> pose 'Pose(Point(3 4),1.5)', 6);
 SELECT round(pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'SRID=5676;Pose(Point(3 4),0)', 6);
 SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
+SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> posechain 'PoseChain(Pose(Point(3 4 12), 1, 0, 0, 0))', 6);
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', tpose 'Pose(Point(3 4 12), 1, 0, 0, 0)@2001-01-01'), 6);
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'SRID=4326;GeodPose(Point(0 0 100), 1, 0, 0, 0)', 6);
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> pose 'SRID=4326;GeodPose(Point(1 0), 0)', 3);
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', tpose 'SRID=4326;GeodPose(Point(1 0), 0)@2001-01-01'), 3);
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> geometry 'Point(3 4 12)', 6);
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', geometry 'Point(3 4 12)'), 6);
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' |=| stbox 'STBOX Z((3,4,12),(3,4,12))', 6);
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', stbox 'STBOX Z((3,4,12),(3,4,12))'), 6);
+SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> geometry 'Point(3 4 12)', 6);
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> geometry 'SRID=4326;Point(1 0)', 6);
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', geometry 'SRID=4326;Point(1 0)'), 6);
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' |=| stbox 'SRID=4326;GEODSTBOX X((1,0),(1,0))', 3);
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', stbox 'SRID=4326;GEODSTBOX X((1,0),(1,0))'), 3);
+SELECT asText(round(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01' <-> pose 'SRID=4326;GeodPose(Point(1 0), 0)', 3));
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', pose 'Pose(Point(3 4 12), 1, 0, 0, 0)'), 6);
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', pose 'SRID=4326;GeodPose(Point(1 0), 0)'), 3);
 
 -- Empty geometry and NULL arguments
 SELECT round(geometry 'Point empty' <-> pose 'Pose(Point(4 0),0)', 6);

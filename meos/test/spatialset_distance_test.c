@@ -101,6 +101,17 @@ int main(void)
   DISTANCE("distance_posechainset_posechainset", distance_posechainset_posechainset(pc1, pc2), 5.0);
   DISTANCE("distance_posechainset_posechainset(self)", distance_posechainset_posechainset(pc1, pc1), 0.0);
 
+  /* Two poses with Z and two pose chains with Z are measured in 3D */
+  Pose *posez1 = pose_in("Pose(Point(0 0 0), 1, 0, 0, 0)");
+  Pose *posez2 = pose_in("Pose(Point(3 4 12), 1, 0, 0, 0)");
+  PoseChain *pcz1 = posechain_in("PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))");
+  PoseChain *pcz2 = posechain_in("PoseChain(Pose(Point(3 4 12), 1, 0, 0, 0))");
+  assert(posez1 && posez2 && pcz1 && pcz2);
+  DISTANCE("distance_pose_pose(3D)", distance_pose_pose(posez1, posez2), 13.0);
+  DISTANCE("distance_posechain_posechain(3D)",
+    distance_posechain_posechain(pcz1, pcz2), 13.0);
+  free(posez1); free(posez2); free(pcz1); free(pcz2);
+
   /* Network points */
   Set *np1 = npointset_in("{\"Npoint(1, 0.5)\"}");
   Set *np2 = npointset_in("{\"Npoint(1, 0.5)\", \"Npoint(2, 0.3)\"}");

@@ -89,7 +89,7 @@ SELECT round(posechain 'SRID=5676;PoseChain(Pose(Point(0 0),0))' <-> posechain '
 SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> posechain 'PoseChain(Pose(Point(3 4 12), 1, 0, 0, 0))', 6);
  round 
 -------
-     5
+    13
 (1 row)
 
 SELECT round(geometry 'Point empty' <-> posechain 'PoseChain(Pose(Point(4 0),0))', 6);
