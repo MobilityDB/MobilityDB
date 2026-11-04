@@ -612,10 +612,10 @@ static double
 unioned_area(const RTree *rtree, const void *box1, const void *box2)
 {
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char union_buf[sizeof(STBox)];
-  memcpy(union_buf, box1, rtree->bboxsize);
-  rtree->bbox_expand(box2, union_buf);
-  return box_area(rtree, union_buf);
+  bboxunion union_buf;
+  memcpy(&union_buf, box1, rtree->bboxsize);
+  rtree->bbox_expand(box2, &union_buf);
+  return box_area(rtree, &union_buf);
 }
 
 /**
@@ -790,11 +790,11 @@ static void
 node_swap(const RTree *rtree, RTreeNode *node, int i, int j)
 {
   /* Use a stack buffer large enough for any MEOS bounding box type */
-  char buf[sizeof(STBox)];
-  memcpy(buf, RTREE_NODE_BBOX_N(node, i), rtree->bboxsize);
+  bboxunion buf;
+  memcpy(&buf, RTREE_NODE_BBOX_N(node, i), rtree->bboxsize);
   memcpy(RTREE_NODE_BBOX_N(node, i), RTREE_NODE_BBOX_N(node, j),
     rtree->bboxsize);
-  memcpy(RTREE_NODE_BBOX_N(node, j), buf, rtree->bboxsize);
+  memcpy(RTREE_NODE_BBOX_N(node, j), &buf, rtree->bboxsize);
   if (node->node_type == RTREE_LEAF)
   {
     int64 tmp = node->ids[i];
