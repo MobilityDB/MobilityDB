@@ -150,6 +150,8 @@ extern void pose_set_srid_intl(Pose *pose, int32_t srid);
 
 /* Distance */
 
+extern double pose_geo_distance(const GSERIALIZED *gs1,
+  const GSERIALIZED *gs2);
 extern Datum pose_distance(Datum pose1, Datum pose2);
 
 /* Box functions */

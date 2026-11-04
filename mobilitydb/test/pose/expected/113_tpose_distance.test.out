@@ -89,7 +89,101 @@ SELECT round(pose 'SRID=5676;Pose(Point(0 0),0)' <-> pose 'SRID=5676;Pose(Point(
 SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'Pose(Point(3 4 12), 1, 0, 0, 0)', 6);
  round 
 -------
-     5
+    13
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> posechain 'PoseChain(Pose(Point(3 4 12), 1, 0, 0, 0))', 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', tpose 'Pose(Point(3 4 12), 1, 0, 0, 0)@2001-01-01'), 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0 0), 1, 0, 0, 0)' <-> pose 'SRID=4326;GeodPose(Point(0 0 100), 1, 0, 0, 0)', 6);
+ round 
+-------
+     0
+(1 row)
+
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> pose 'SRID=4326;GeodPose(Point(1 0), 0)', 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', tpose 'SRID=4326;GeodPose(Point(1 0), 0)@2001-01-01'), 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' <-> geometry 'Point(3 4 12)', 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', geometry 'Point(3 4 12)'), 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' |=| stbox 'STBOX Z((3,4,12),(3,4,12))', 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', stbox 'STBOX Z((3,4,12),(3,4,12))'), 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> geometry 'Point(3 4 12)', 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> geometry 'SRID=4326;Point(1 0)', 6);
+ERROR:  Operation on mixed planar and geodetic coordinates
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', geometry 'SRID=4326;Point(1 0)'), 6);
+ERROR:  Operation on mixed planar and geodetic coordinates
+SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' |=| stbox 'SRID=4326;GEODSTBOX X((1,0),(1,0))', 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', stbox 'SRID=4326;GEODSTBOX X((1,0),(1,0))'), 3);
+   round    
+------------
+ 111319.491
+(1 row)
+
+SELECT asText(round(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01' <-> pose 'SRID=4326;GeodPose(Point(1 0), 0)', 3));
+                 astext                  
+-----------------------------------------
+ 111319.491@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', pose 'Pose(Point(3 4 12), 1, 0, 0, 0)'), 6);
+ round 
+-------
+    13
+(1 row)
+
+SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', pose 'SRID=4326;GeodPose(Point(1 0), 0)'), 3);
+   round    
+------------
+ 111319.491
 (1 row)
 
 SELECT round(geometry 'Point empty' <-> pose 'Pose(Point(4 0),0)', 6);
