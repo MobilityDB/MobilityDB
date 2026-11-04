@@ -111,7 +111,9 @@
  * temporal value it belongs to unbuilt, so that the constructor raises no
  * second error and the error number keeps the code the function raised. A
  * warning or a notice leaves the error number clear, so it leaves the answer
- * as it is. In the extension an error ends the statement where it is raised.
+ * as it is. In the extension an error ends the statement where it is raised,
+ * so the error number stays clear and the entry functions answer the result
+ * of the lifting as it is.
  *
  * A struct named `LiftedFunctionInfo` is used to describe the above
  * characteristics of the function to be lifted. Such struct is filled by
@@ -295,6 +297,67 @@ lifting_tinstant_to_tsequence_free(TInstant *inst, interpType interp)
 }
 
 /*****************************************************************************
+ * Result of a lifted operation
+ *****************************************************************************/
+
+/**
+ * @brief Return the result of a lifted operation, or NULL when the function
+ * it applies raised an error for one of the values
+ * @param[in] result Result built by the lifting, freed on an error
+ * @param[in] last_errno Error number found on entry, returned by
+ * #meos_errno_reset
+ * @note See the note on errors in the file comment of lifting.c
+ */
+void *
+lifting_result(void *result, int last_errno)
+{
+  if (meos_errno())
+  {
+    if (result)
+      pfree(result);
+    return NULL;
+  }
+  meos_errno_restore(last_errno);
+  return result;
+}
+
+/**
+ * @brief Return the result of a lifted ever or always operation, or -1 when
+ * the function it applies raised an error for one of the values
+ * @param[in] result Result of the operation
+ * @param[in] last_errno Error number found on entry, returned by
+ * #meos_errno_reset
+ * @note See the note on errors in the file comment of lifting.c
+ */
+int
+lifting_result_int(int result, int last_errno)
+{
+  if (meos_errno())
+    return -1;
+  meos_errno_restore(last_errno);
+  return result;
+}
+
+/**
+ * @brief Return a distance read from a temporal distance, or -1.0 when the
+ * temporal distance raised an error
+ * @details A temporal distance is NULL both where the operands share no time,
+ * which the caller answers with @p DBL_MAX, and where it raises an error,
+ * which the error number set since #meos_errno_reset tells apart
+ * @param[in] result Distance, @p DBL_MAX where the temporal distance is NULL
+ * @param[in] last_errno Error number found on entry, returned by
+ * #meos_errno_reset
+ */
+double
+distance_result(double result, int last_errno)
+{
+  if (meos_errno())
+    return -1.0;
+  meos_errno_restore(last_errno);
+  return result;
+}
+
+/*****************************************************************************
  * Functions where the argument is a base type
  *****************************************************************************/
 
@@ -448,13 +511,9 @@ lfunc_set_dispatch(const Set *set, LiftedFunctionInfo *lfinfo)
 Set *
 lfunc_set(const Set *set, LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return (Set *) lifting_result(lfunc_set_dispatch(set, lfinfo),
     last_errno);
-#else
-  return lfunc_set_dispatch(set, lfinfo);
-#endif /* MEOS */
 }
 
 /**
@@ -472,17 +531,13 @@ bool *
 lfunc_set_bool(const Set *set, LiftedFunctionInfo *lfinfo, int *count)
 {
   assert(set); assert(lfinfo); assert(count);
-#if MEOS
   int last_errno = meos_errno_reset();
-#endif /* MEOS */
   bool *result = palloc(sizeof(bool) * set->count);
   for (int i = 0; i < set->count; i++)
     result[i] = DatumGetBool(lfunc_base(SET_VAL_N(set, i), lfinfo));
-#if MEOS
   result = (bool *) lifting_result(result, last_errno);
   if (! result)
     return NULL;
-#endif /* MEOS */
   *count = set->count;
   return result;
 }
@@ -903,13 +958,9 @@ tfunc_temporal_dispatch(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 Temporal *
 tfunc_temporal(const Temporal *temp, LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return (Temporal *) lifting_result(tfunc_temporal_dispatch(temp, lfinfo),
     last_errno);
-#else
-  return tfunc_temporal_dispatch(temp, lfinfo);
-#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -1386,13 +1437,9 @@ Temporal *
 tfunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return (Temporal *) lifting_result(
     tfunc_temporal_base_dispatch(temp, value, lfinfo), last_errno);
-#else
-  return tfunc_temporal_base_dispatch(temp, value, lfinfo);
-#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -2487,13 +2534,9 @@ Temporal *
 tfunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return (Temporal *) lifting_result(
     tfunc_temporal_temporal_dispatch(temp1, temp2, lfinfo), last_errno);
-#else
-  return tfunc_temporal_temporal_dispatch(temp1, temp2, lfinfo);
-#endif /* MEOS */
 }
 
 /*****************************************************************************
@@ -2775,13 +2818,9 @@ int
 eafunc_temporal_base(const Temporal *temp, Datum value,
   LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return lifting_result_int(
     eafunc_temporal_base_dispatch(temp, value, lfinfo), last_errno);
-#else
-  return eafunc_temporal_base_dispatch(temp, value, lfinfo);
-#endif /* MEOS */
 }
 
 /*****************************************************************************/
@@ -3565,13 +3604,9 @@ int
 eafunc_temporal_temporal(const Temporal *temp1, const Temporal *temp2,
   LiftedFunctionInfo *lfinfo)
 {
-#if MEOS
   int last_errno = meos_errno_reset();
   return lifting_result_int(
     eafunc_temporal_temporal_dispatch(temp1, temp2, lfinfo), last_errno);
-#else
-  return eafunc_temporal_temporal_dispatch(temp1, temp2, lfinfo);
-#endif /* MEOS */
 }
 
 /*****************************************************************************

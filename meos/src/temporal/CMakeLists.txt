@@ -72,10 +72,4 @@ set(TEMPORAL_SOURCES
   type_util.c
 )
 
-if(MEOS)
-  list(APPEND TEMPORAL_SOURCES
-    lifting_meos.c
-)
-endif()
-
 add_library(temporal OBJECT ${TEMPORAL_SOURCES})

@@ -963,13 +963,9 @@ tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
     ops.nref = body.npts;
     /* An error raised for one of the instants makes the answer NULL, as the
      * entry functions of lifting.c answer it */
-#if MEOS
     int last_errno = meos_errno_reset();
     result = (Temporal *) lifting_result(dist_temporal(&ops, temp, NULL),
       last_errno);
-#else
-    result = dist_temporal(&ops, temp, NULL);
-#endif /* MEOS */
     pfree(ops.refxy);
     dist_parts_free(ops.parts, ops.nparts);
   }
@@ -1016,13 +1012,9 @@ tdistance_trgeometry_temporal(const Temporal *temp1, const Temporal *temp2,
   {
     /* An error raised for one of the instants makes the answer NULL, as the
      * entry functions of lifting.c answer it */
-#if MEOS
     int last_errno = meos_errno_reset();
     result = (Temporal *) lifting_result(dist_temporal(&ops, sync1, sync2),
       last_errno);
-#else
-    result = dist_temporal(&ops, sync1, sync2);
-#endif /* MEOS */
     pfree(sync1); pfree(sync2);
   }
   distrefpoly_free(&ops.body1);
@@ -1809,9 +1801,7 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return -1.0;
 
-#if MEOS
   int last_errno = meos_errno_reset();
-#endif /* MEOS */
   Temporal *dist = tdistance_trgeometry_tpoint_intl(temp1, temp2, -1.0);
   /* The temporal distance is NULL where the operands share no time, which
    * is an answer, and where it raises an error */
@@ -1821,11 +1811,7 @@ nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
     result = DatumGetFloat8(temporal_min_value(dist));
     pfree(dist);
   }
-#if MEOS
   return distance_result(result, last_errno);
-#else
-  return result;
-#endif /* MEOS */
 }
 
 /**
@@ -1844,9 +1830,7 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
       ! ensure_has_not_Z(temp2->temptype, temp2->flags))
     return -1.0;
 
-#if MEOS
   int last_errno = meos_errno_reset();
-#endif /* MEOS */
   Temporal *dist = tdistance_trgeometry_trgeometry_intl(temp1, temp2, -1.0);
   /* The temporal distance is NULL where the operands share no time, which
    * is an answer, and where it raises an error */
@@ -1856,11 +1840,7 @@ nad_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
     result = DatumGetFloat8(temporal_min_value(dist));
     pfree(dist);
   }
-#if MEOS
   return distance_result(result, last_errno);
-#else
-  return result;
-#endif /* MEOS */
 }
 
 /*****************************************************************************

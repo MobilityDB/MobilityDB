@@ -109,7 +109,6 @@ meos_errno(void)
   return MEOS_ERR_NO;
 }
 
-#if MEOS
 /**
  * @ingroup meos_misc
  * @brief Set an error number
@@ -186,7 +185,6 @@ meos_errno_reset(void)
   errno = 0;
   return last_errno;
 }
-#endif /* MEOS */
 
 /*****************************************************************************/
 
