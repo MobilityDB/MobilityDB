@@ -391,7 +391,23 @@ tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
     PG_RETURN_FLOAT8(-get_float8_infinity());
   }
 
-  PG_RETURN_FLOAT8(nad_tpcbox_tpcbox(key, &query));
+  double distance = nad_tpcbox_tpcbox(key, &query);
+
+  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, and the ordering operator of two temporal
+   * point cloud points measures their trajectories rather than their boxes,
+   * so what they report is lowered to stay under the distance the operator
+   * computes, as for the spatiotemporal boxes. The exact leaf of a column of
+   * boxes reports the operator's own answer and keeps it */
+  if (! GIST_LEAF(entry) || *recheck)
+  {
+    STBox skey, squery;
+    tpcbox_set_stbox(key, &skey);
+    tpcbox_set_stbox(&query, &squery);
+    distance = stbox_index_distance_bound(distance, &skey, &squery);
+  }
+
+  PG_RETURN_FLOAT8(distance);
 }
 
 PGDLLEXPORT Datum Tpcbox_gist_distance(PG_FUNCTION_ARGS);

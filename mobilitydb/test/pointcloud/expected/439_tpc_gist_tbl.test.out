@@ -516,3 +516,45 @@ DROP FUNCTION day_of(int);
 DROP FUNCTION
 DROP FUNCTION index_structures(text, text, text[], text[], text[]);
 DROP FUNCTION
+CREATE TABLE tbl_tpcpoint_far AS
+SELECT k, tpcpoint(pcpoint(1, 19000000 + (k * 37 % 101) * 0.37,
+  19000000 + (k * 53 % 97) * 0.29, 19000000 + (k * 71 % 89) * 0.31),
+  timestamptz '2001-01-01') AS temp
+FROM generate_series(1, 200) k;
+SELECT 200
+CREATE INDEX tbl_tpcpoint_far_gist_idx ON tbl_tpcpoint_far USING gist(temp);
+CREATE INDEX
+SET enable_indexscan = off;
+SET
+SET enable_bitmapscan = off;
+SET
+SELECT string_agg(round(d::numeric, 6)::text, ',' ORDER BY d) FROM (
+  SELECT temp |=| tpcpoint(pcpoint(1, 19000017.5, 19000013.25, 19000013.75),
+    timestamptz '2001-01-01') AS d
+  FROM tbl_tpcpoint_far ORDER BY 1 LIMIT 10) s;
+                                        string_agg                                         
+-------------------------------------------------------------------------------------------
+ 2.937227,3.007541,4.164337,4.984436,5.192081,5.303923,5.834278,5.927048,6.268572,6.841754
+(1 row)
+
+SET enable_seqscan = off;
+SET
+SET enable_indexscan = on;
+SET
+SELECT string_agg(round(d::numeric, 6)::text, ',' ORDER BY d) FROM (
+  SELECT temp |=| tpcpoint(pcpoint(1, 19000017.5, 19000013.25, 19000013.75),
+    timestamptz '2001-01-01') AS d
+  FROM tbl_tpcpoint_far ORDER BY 1 LIMIT 10) s;
+                                        string_agg                                         
+-------------------------------------------------------------------------------------------
+ 2.937227,3.007541,4.164337,4.984436,5.192081,5.303923,5.834278,5.927048,6.268572,6.841754
+(1 row)
+
+RESET enable_seqscan;
+RESET
+RESET enable_indexscan;
+RESET
+RESET enable_bitmapscan;
+RESET
+DROP TABLE tbl_tpcpoint_far;
+DROP TABLE
