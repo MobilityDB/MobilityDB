@@ -198,7 +198,7 @@ nearest approach distances of float boxes and spans, whose `DBL_MAX` answers "no
 A missing answer is no error: a `@note` states it, `meos_errno()` stays 0, and the PostgreSQL
 function answers `NULL`. At the SQL level a failed call is an `ERROR`, a missing answer `NULL`,
 and `DBL_MAX` an answer. `tools/scripts/check_error_sentinels.py` checks each tag against its
-return. PR 1 refuses ±Infinity as a value and leaves every error value as it is. MobilityDB #3386 moves every
+return. PR 1 refuses ±Infinity as a value and leaves every error value as it is. MobilityDB #3386, merged as `5633b599de`, moves every
 distance and every `int64` count to -1 (section 6).
 
 ## 6. Topics the campaign leaves, each a pull request of its own
