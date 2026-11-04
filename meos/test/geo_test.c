@@ -3951,6 +3951,39 @@ int main(void)
   assert(geom_dwithin2d(aq, ad, 2.220446049250313e-16));
   free(ac); free(ap); free(apn); free(apo); free(as); free(asc); free(aa);
   free(ai); free(ax); free(ad); free(ao); free(aq); free(acc);
+  /* A triangle, a TIN and a polyhedral surface: the foot on a hypotenuse is 9/5
+   * from the point, which no double holds, and a hole and the face filling it */
+  GSERIALIZED *sp = geom_in("Point(3 3)", -1);
+  GSERIALIZED *st = geom_in("Triangle((0 0,4 0,0 3,0 0))", -1);
+  GSERIALIZED *stz = geom_in("Triangle((0 0 5,4 0 5,0 3 5,0 0 5))", -1);
+  GSERIALIZED *si = geom_in("Tin(((0 0,4 0,0 3,0 0)),((20 0,24 0,20 3,20 0)))", -1);
+  GSERIALIZED *ss = geom_in("Polyhedralsurface(((0 0,4 0,0 3,0 0)))", -1);
+  GSERIALIZED *sc = geom_in("GeometryCollection(Point(20 20),Triangle((0 0,4 0,0 3,0 0)))", -1);
+  GSERIALIZED *sn = geom_in("Point(1 1)", -1);
+  GSERIALIZED *sm = geom_in("Point(4.5 4.5)", -1);
+  GSERIALIZED *sh = geom_in(
+    "Polyhedralsurface(((0 0,9 0,9 9,0 9,0 0),(3 3,6 3,6 6,3 6,3 3)))", -1);
+  GSERIALIZED *sf = geom_in(
+    "Polyhedralsurface(((0 0,9 0,9 9,0 9,0 0),(3 3,6 3,6 6,3 6,3 3)),"
+    "((3 3,6 3,6 6,3 6,3 3)))", -1);
+  assert(! geom_dwithin2d(sp, st, 1.7999999999999998));
+  assert(geom_dwithin2d(sp, st, 1.8));
+  assert(! geom_dwithin2d(st, sp, 1.7999999999999998));
+  assert(! geom_dwithin2d(sp, si, 1.7999999999999998));
+  assert(geom_dwithin2d(sp, si, 1.8));
+  assert(! geom_dwithin2d(sp, ss, 1.7999999999999998));
+  assert(geom_dwithin2d(sp, ss, 1.8));
+  assert(! geom_dwithin2d(sp, sc, 1.7999999999999998));
+  assert(geom_dwithin2d(sp, sc, 1.8));
+  assert(! geom_dwithin(sp, stz, 1.7999999999999998));
+  assert(geom_dwithin(sp, stz, 1.8));
+  assert(geom_dwithin2d(sn, st, 0.0));
+  assert(geom_dwithin2d(sn, si, 0.0));
+  assert(! geom_dwithin2d(sm, sh, 1.4999999999999998));
+  assert(geom_dwithin2d(sm, sh, 1.5));
+  assert(geom_dwithin2d(sm, sf, 0.0));
+  free(sp); free(st); free(stz); free(si); free(ss); free(sc); free(sn); free(sm);
+  free(sh); free(sf);
 
   assert(! geom_intersects(dz1, dz3) && geom_disjoint(dz1, dz3));
   assert(geom_intersects(dz1, d0) && ! geom_disjoint(dz3, d0));

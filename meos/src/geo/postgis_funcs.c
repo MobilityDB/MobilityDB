@@ -3323,7 +3323,7 @@ geom_curve_add_points(GeomCurveParts *gp, const POINTARRAY *pa, bool arcs)
 
 /**
  * @brief Add the edges of a curve or a ring to the parts of a geometry
- * @return False for a type that is no curve
+ * @return False for a type that is no curve, with an error raised
  */
 static bool
 geom_curve_add_curve(GeomCurveParts *gp, const LWGEOM *curve)
@@ -3347,14 +3347,15 @@ geom_curve_add_curve(GeomCurveParts *gp, const LWGEOM *curve)
       return true;
     }
     default:
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unknown curve type: %s",
+        lwtype_name(curve->type));
       return false;
   }
 }
 
 /**
  * @brief Read a geometry into its parts, the members of its collections
- * @return False for a geometry holding a type that stays on liblwgeom: a
- * triangle, a TIN, a polyhedral surface
+ * @return False for a geometry holding an unknown type, with an error raised
  */
 static bool
 geom_curve_parts(GeomCurveParts *gp, const LWGEOM *geom)
@@ -3391,11 +3392,17 @@ geom_curve_parts(GeomCurveParts *gp, const LWGEOM *geom)
       surface = true;
       break;
     }
+    case TRIANGLETYPE:
+      geom_curve_add_points(gp, ((const LWTRIANGLE *) geom)->points, false);
+      surface = true;
+      break;
     case MULTIPOINTTYPE:
     case MULTILINETYPE:
     case MULTIPOLYGONTYPE:
     case MULTICURVETYPE:
     case MULTISURFACETYPE:
+    case POLYHEDRALSURFACETYPE:
+    case TINTYPE:
     case COLLECTIONTYPE:
     {
       const LWCOLLECTION *coll = (const LWCOLLECTION *) geom;
@@ -3405,6 +3412,8 @@ geom_curve_parts(GeomCurveParts *gp, const LWGEOM *geom)
       return true;
     }
     default:
+      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR, "Unknown geometry type: %s",
+        lwtype_name(geom->type));
       return false;
   }
   if (gp->nparts == gp->capparts)
@@ -3528,7 +3537,7 @@ geom_curve_parts_within(const GeomCurveParts *g1, const GeomCurveParts *g2,
  * @param[in] geom1,geom2 Geometries, not empty
  * @param[in] dist Distance, finite and not negative
  * @param[out] result The answer
- * @return False for a geometry holding a type #geom_curve_parts does not read
+ * @return False for a geometry holding an unknown type, with an error raised
  */
 static bool
 geom_dwithin_curves(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
@@ -3548,10 +3557,11 @@ geom_dwithin_curves(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
 /**
  * @ingroup meos_geo_base_rel
  * @brief Return true if two geometries are within a distance
- * @details Two geometries of straight edges are answered exactly: the answer
- * is that of their exact distance, whatever double that distance rounds to
- * (#geom_dwithin2d_exact), and so are two geometries carrying arcs
- * (#geom_dwithin_curves)
+ * @details Two geometries are answered exactly: the answer is that of their
+ * exact distance, whatever double that distance rounds to. Those of straight
+ * edges are read by the walk of the distance (#geom_dwithin2d_exact), and those
+ * carrying an arc, a triangle, a TIN or a polyhedral surface, or held in a
+ * collection, edge by edge (#geom_dwithin_curves)
  * @param[in] gs1,gs2 Geometries
  * @param[in] dist Distance
  * @note PostGIS function: @p LWGEOM_dwithin(PG_FUNCTION_ARGS)
@@ -3586,28 +3596,14 @@ geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist)
   LWGEOM *made1, *made2;
   const LWGEOM *geom1 = relate_ctx_borrow_geom(gs1, &ent1, &made1);
   const LWGEOM *geom2 = relate_ctx_borrow_geom(gs2, &ent2, &made2);
-  bool result;
-  if (geom1 && geom2 && geom_distance_straight_type(geom1->type) &&
-      geom_distance_straight_type(geom2->type))
-    result = geom_dwithin2d_exact(geom1, geom2, dist);
-  else if (! geom1 || ! geom2 ||
-      ! geom_dwithin_curves(geom1, geom2, dist, &result))
+  bool result = false;
+  if (geom1 && geom2)
   {
-#if ! MEOS
-    /* A kept geometry is read in the context that keeps it, as a relationship
-     * reads it (#relate_ctx_borrow): liblwgeom attaches boxes to the geometry
-     * it measures and to its parts, and they must live as long as the entry */
-    MemoryContext oldctx = MemoryContextSwitchTo(TopMemoryContext);
-#endif
-    double mindist = (geom1 && geom2) ?
-      lwgeom_mindistance2d_tolerance((LWGEOM *) geom1, (LWGEOM *) geom2,
-        dist) : DBL_MAX;
-#if ! MEOS
-    MemoryContextSwitchTo(oldctx);
-#endif
-    /* empty geometries cases should be right handled since return from
-     underlying functions should be DBL_MAX which causes false as answer */
-    result = (dist >= mindist);
+    if (geom_distance_straight_type(geom1->type) &&
+        geom_distance_straight_type(geom2->type))
+      result = geom_dwithin2d_exact(geom1, geom2, dist);
+    else if (! geom_dwithin_curves(geom1, geom2, dist, &result))
+      result = false;
   }
   relate_ctx_return_geom(ent1); relate_ctx_return_geom(ent2);
   if (made1) lwgeom_free(made1);
