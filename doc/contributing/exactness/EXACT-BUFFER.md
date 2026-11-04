@@ -110,7 +110,9 @@ items).
   directly reads 0.944, 0.893 and 0.562 at distances 1, 50 and 500 and 0.756 on the joints, CGAL
   agreeing on 1 313 of 1 313 natural areas, whose 11 998 crossings of two circles all take the
   plain doubles. Its margin at distance 1 is what the certificate spends.
-- **Step 17** is MobilityDB #3442, open. CGAL, as an exact distance set, agrees with every answer of the
+- **Step 17** is MobilityDB #3442, a draft held by the owner's decision until the certificate is earned on
+  it: a check known to be needed is not cleared by stating the gap. The order is #3259, which buys the
+  margin, then the certificate on #3259 and this branch, then step 17 with it. CGAL, as an exact distance set, agrees with every answer of the
   head: 36 960 of 36 960 straight queries, 274 of the 336 far-vertex lines with 62 declined, and of the
   1 576 AIS line queries 1 530 agree, 11 decline and 35 run past 60 s. Native over GEOS called directly
   reads 0.636, 0.284 and 0.451 on lines at distances 1, 50 and 500, and every one of the ten buffer cells
