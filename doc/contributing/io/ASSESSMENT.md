@@ -147,8 +147,9 @@ argument takes one spelling.
   `tspatial_as_text` and `temporal_as_mfjson` among them, every binding finds the length by
   scanning for the terminator (`ffi.string`, `C.GoString`, `Pointer.getString`), though MEOS has
   it where it builds the string (`stringarr_to_string` adds up the length of every part before
-  allocating). Over cffi, the scan costs 7 to 12 % of reading a string of 40 to 40000
-  characters, and nothing measurable from 400000 on, where the copy dominates.
+  allocating). Over cffi, reading a string with its size costs 1.01 to 1.10 times the scan up to
+  4000 characters and gains nothing measurable on AIS trajectories; the plan states the
+  measurement.
 
 ### The catalog (`typeEncodings`)
 

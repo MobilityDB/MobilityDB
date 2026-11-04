@@ -51,7 +51,9 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
   paused by the owner.
 - **Every string MEOS returns states its size** (IO-S1 to IO-S10, decided by the owner
   2026-11-02): the 118 public text outputs take `size_t *size_out` as the hex WKB writers do, and
-  every binding reads the string with that size rather than scanning for its terminator.
+  every binding reads the string with that size rather than scanning for its terminator, but
+  PyMEOS-CFFI, which keeps the scan because the size gains it nothing on AIS (decided by the owner
+  2026-11-04).
 
 ## The SQL functions: `<type>From<Format>` and `as<Format>`
 
