@@ -132,16 +132,10 @@
 
 /* Input and output */
 
-/* The bare-named I/O, comparison, and hashing functions collide with the
- * C symbols of the h3-pg PostgreSQL extension, so they exist only in the
- * MEOS library build; the extension build uses the meos_-prefixed twins
- * internally (see h3/h3index.h). The installed public header receives the
- * unconditional declarations spliced from h3_ext_defs.in.h so that every
- * binding generated from the MEOS catalog keeps the full surface. The WKB
- * functions stay inline because h3-pg defines no such symbols. */
-#if MEOS
+/* The I/O, comparison, hashing and cell-set functions whose names the h3
+ * PostgreSQL extension also exports, declared in h3_ext_defs.in.h, which the
+ * installed header carries inline */
 #include "h3_ext_defs.in.h"
-#endif /* MEOS */
 
 extern H3Index h3index_from_wkb(const uint8_t *wkb, size_t size);
 extern H3Index h3index_from_hexwkb(const char *hexwkb);
@@ -150,8 +144,7 @@ extern char *h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out);
 
 /* The cell operations (each returning a heap-allocated `Set *` owned by
  * the caller; NULL on libh3 failure after raising a `meos_error`) are
- * declared in h3_ext_defs.in.h spliced above: their bare names collide
- * with the C symbols of the h3-pg PostgreSQL extension. */
+ * declared in h3_ext_defs.in.h included above. */
 
 /* Inspection */
 

@@ -197,8 +197,8 @@ CREATE FUNCTION asHexWKB(h3index, endian text DEFAULT '')
 /******************************************************************************
  * Comparison functions
  *
- * Thin PG wrappers over the MEOS-layer `meos_h3index_eq / _lt / …`
- * helpers declared in `h3/h3index.h`. H3 cell equality and ordering are
+ * Thin PG wrappers over the MEOS functions `h3index_eq / _lt / …`
+ * declared in `meos_h3.h`. H3 cell equality and ordering are
  * exactly int64 bit equality / ordering. The h3 extension provides the
  * operators and the operator classes; these functions are the names a
  * query uses in every engine, as for quadbin and s2cell.

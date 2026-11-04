@@ -10,28 +10,6 @@ meos/src/geo/tspatial_transform_meos.c	SPI_pstrdup(const char *str)	conditional 
 meos/src/geo/tspatial_transform_meos.c	lwproj_lookup(int32_t srid_from, int32_t srid_to, LWPROJ **pj)	conditional in a MEOS-only file
 meos/src/geo/tspatial_transform_meos.c	meos_set_spatial_ref_sys_csv(const char* path)	conditional in a MEOS-only file
 meos/src/geo/tspatial_transform_meos.c	spheroid_init_from_srid(int32_t srid, SPHEROID *s)	conditional in a MEOS-only file
-meos/src/h3/h3index.c	h3_is_valid_cell(H3Index cell)	file-scope conditional
-meos/src/h3/h3index.c	h3_is_valid_directed_edge(H3Index edge)	file-scope conditional
-meos/src/h3/h3index.c	h3_is_valid_vertex(H3Index vertex)	file-scope conditional
-meos/src/h3/h3index.c	h3index_cmp(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_eq(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_ge(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_gt(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_hash(H3Index cell)	file-scope conditional
-meos/src/h3/h3index.c	h3index_in(const char *str)	file-scope conditional
-meos/src/h3/h3index.c	h3index_le(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_lt(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_ne(H3Index a, H3Index b)	file-scope conditional
-meos/src/h3/h3index.c	h3index_out(H3Index cell, size_t *size_out)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_cell_to_children(H3Index origin, int childRes)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_cell_to_vertexes(H3Index cell)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_compact_cells(const Set *cells)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_get_icosahedron_faces(H3Index cell)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_grid_disk(H3Index origin, int k)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_grid_path_cells(H3Index start, H3Index end)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_grid_ring(H3Index origin, int k)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_origin_to_directed_edges(H3Index origin)	file-scope conditional
-meos/src/h3/h3index_sets.c	h3_uncompact_cells(const Set *cells, int res)	file-scope conditional
 meos/src/npoint/npoint.c	#include <libpq/pqformat.h>	file-scope conditional
 meos/src/pointcloud/schema_hook.c	#include <utils/memutils.h>  /* TopMemoryContext */	file-scope conditional
 meos/src/temporal/doublen.c	double2_make(double a, double b)	file-scope conditional

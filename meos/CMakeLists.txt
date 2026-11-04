@@ -373,10 +373,9 @@ if(MEOS)
   file(WRITE "${CMAKE_BINARY_DIR}/meos_geo_export.h" "${MEOS_GEO_EXP_H}")
 
   if(H3)
-    # Generate meos_h3_export.h: replace the MEOS-gated include of the
-    # h3-pg-colliding declarations with their unconditional content, so the
-    # installed public header exposes the full h3index surface to bindings
-    string(REPLACE "#if MEOS\n#include \"h3_ext_defs.in.h\"\n#endif /* MEOS */" "${H3_EXT_DEFS_IN_H}" MEOS_H3_EXP_H "${MEOS_H3_H}")
+    # Generate meos_h3_export.h: replace the include of h3_ext_defs.in.h,
+    # which is not installed, with its content
+    string(REPLACE "#include \"h3_ext_defs.in.h\"\n" "${H3_EXT_DEFS_IN_H}" MEOS_H3_EXP_H "${MEOS_H3_H}")
     file(WRITE "${CMAKE_BINARY_DIR}/meos_h3_export.h" "${MEOS_H3_EXP_H}")
   endif()
 

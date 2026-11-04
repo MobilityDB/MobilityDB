@@ -58,26 +58,10 @@
 #include <meos_h3.h>
 
 /*****************************************************************************
- * Internal twins of the public h3index functions
- *
- * The bare names collide with the C symbols of the h3-pg PostgreSQL
- * extension; the MobilityDB extension build must not export them, so
- * internal call sites use the meos_-prefixed twins and the bare names
- * are compiled only under MEOS (see h3index.c).
+ * Internal functions (bodies in h3index.c)
  *****************************************************************************/
 
-extern H3Index meos_h3index_in(const char *str);
 extern bool h3index_is_valid_input(H3Index index);
-extern char *meos_h3index_out(H3Index cell);
-extern bool meos_h3index_eq(H3Index a, H3Index b);
-extern bool meos_h3index_ne(H3Index a, H3Index b);
-extern bool meos_h3index_lt(H3Index a, H3Index b);
-extern bool meos_h3index_le(H3Index a, H3Index b);
-extern bool meos_h3index_gt(H3Index a, H3Index b);
-extern bool meos_h3index_ge(H3Index a, H3Index b);
-extern int meos_h3index_cmp(H3Index a, H3Index b);
-extern uint32 meos_h3index_hash(H3Index cell);
-extern uint64 meos_h3index_hash_extended(H3Index cell, uint64 seed);
 
 /*****************************************************************************
  * Validators (bodies in h3index.c)

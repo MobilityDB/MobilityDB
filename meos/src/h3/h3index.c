@@ -92,13 +92,11 @@
  * @param[in] cell H3 index
  * @csqlfn #H3index_is_valid_cell()
  */
-#if MEOS
 bool
 h3_is_valid_cell(H3Index cell)
 {
   return h3_is_valid_cell_meos(cell);
 }
-#endif
 
 /**
  * @ingroup meos_h3_base_accessor
@@ -106,13 +104,11 @@ h3_is_valid_cell(H3Index cell)
  * @param[in] edge H3 index
  * @csqlfn #H3index_is_valid_directed_edge()
  */
-#if MEOS
 bool
 h3_is_valid_directed_edge(H3Index edge)
 {
   return h3_is_valid_directed_edge_meos(edge);
 }
-#endif
 
 /**
  * @ingroup meos_h3_base_accessor
@@ -120,13 +116,11 @@ h3_is_valid_directed_edge(H3Index edge)
  * @param[in] vertex H3 index
  * @csqlfn #H3index_is_valid_vertex()
  */
-#if MEOS
 bool
 h3_is_valid_vertex(H3Index vertex)
 {
   return h3_is_valid_vertex_meos(vertex);
 }
-#endif
 
 /*****************************************************************************
  * Validators
@@ -638,34 +632,8 @@ h3index_is_valid_input(H3Index index)
  * @details See header for the accepted input shapes.
  * @csqlfn #H3index_from_text()
  */
-#if MEOS
 H3Index
 h3index_in(const char *str)
-{
-  return meos_h3index_in(str);
-}
-
-/**
- * @ingroup meos_h3_conversion
- * @brief Return an H3 index from a 64-bit integer, raising an error when the
- * integer is no H3 cell, directed edge or vertex, as the text input does
- * @param[in] i Integer
- */
-H3Index
-bigint_to_h3index(int64 i)
-{
-  if (! h3index_is_valid_input((H3Index) i))
-  {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
-      "The value %" PRId64 " does not encode a valid H3 cell, directed edge "
-      "or vertex", i);
-    return (H3Index) 0;
-  }
-  return (H3Index) i;
-}
-#endif
-H3Index
-meos_h3index_in(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, (H3Index) 0);
@@ -731,6 +699,25 @@ meos_h3index_in(const char *str)
   return cell;
 }
 
+/**
+ * @ingroup meos_h3_conversion
+ * @brief Return an H3 index from a 64-bit integer, raising an error when the
+ * integer is no H3 cell, directed edge or vertex, as the text input does
+ * @param[in] i Integer
+ */
+H3Index
+bigint_to_h3index(int64 i)
+{
+  if (! h3index_is_valid_input((H3Index) i))
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The value %" PRId64 " does not encode a valid H3 cell, directed edge "
+      "or vertex", i);
+    return (H3Index) 0;
+  }
+  return (H3Index) i;
+}
+
 /*****************************************************************************/
 
 /**
@@ -742,18 +729,11 @@ meos_h3index_in(const char *str)
  * "0x" prefix, no leading zeros.
  * @csqlfn #H3index_as_text()
  */
-#if MEOS
 char *
 h3index_out(H3Index cell, size_t *size_out)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(size_out, NULL);
-  return cstring_size(meos_h3index_out(cell), size_out);
-}
-#endif
-char *
-meos_h3index_out(H3Index cell)
-{
   /* Maximum 16 hex chars for 64 bits + null terminator. Delegate to
    * libh3, exactly as the h3-pg extension's output function does */
   char *buf = palloc(17);
@@ -765,7 +745,7 @@ meos_h3index_out(H3Index cell)
       "h3 library error %u while formatting an h3index", (unsigned) err);
     return NULL;
   }
-  return buf;
+  return cstring_size(buf, size_out);
 }
 
 /*****************************************************************************
@@ -855,15 +835,8 @@ h3index_as_hexwkb(H3Index cell, uint8_t variant, size_t *size_out)
  * @csqlfn #H3index_eq()
  * @sqlop @p =
  */
-#if MEOS
 bool
 h3index_eq(H3Index a, H3Index b)
-{
-  return a == b;
-}
-#endif
-bool
-meos_h3index_eq(H3Index a, H3Index b)
 {
   return a == b;
 }
@@ -874,15 +847,8 @@ meos_h3index_eq(H3Index a, H3Index b)
  * @csqlfn #H3index_ne()
  * @sqlop @p <>
  */
-#if MEOS
 bool
 h3index_ne(H3Index a, H3Index b)
-{
-  return a != b;
-}
-#endif
-bool
-meos_h3index_ne(H3Index a, H3Index b)
 {
   return a != b;
 }
@@ -893,15 +859,8 @@ meos_h3index_ne(H3Index a, H3Index b)
  * @csqlfn #H3index_lt()
  * @sqlop @p <
  */
-#if MEOS
 bool
 h3index_lt(H3Index a, H3Index b)
-{
-  return a < b;
-}
-#endif
-bool
-meos_h3index_lt(H3Index a, H3Index b)
 {
   return a < b;
 }
@@ -913,15 +872,8 @@ meos_h3index_lt(H3Index a, H3Index b)
  * @csqlfn #H3index_le()
  * @sqlop @p <=
  */
-#if MEOS
 bool
 h3index_le(H3Index a, H3Index b)
-{
-  return a <= b;
-}
-#endif
-bool
-meos_h3index_le(H3Index a, H3Index b)
 {
   return a <= b;
 }
@@ -932,15 +884,8 @@ meos_h3index_le(H3Index a, H3Index b)
  * @csqlfn #H3index_gt()
  * @sqlop @p >
  */
-#if MEOS
 bool
 h3index_gt(H3Index a, H3Index b)
-{
-  return a > b;
-}
-#endif
-bool
-meos_h3index_gt(H3Index a, H3Index b)
 {
   return a > b;
 }
@@ -952,15 +897,8 @@ meos_h3index_gt(H3Index a, H3Index b)
  * @csqlfn #H3index_ge()
  * @sqlop @p >=
  */
-#if MEOS
 bool
 h3index_ge(H3Index a, H3Index b)
-{
-  return a >= b;
-}
-#endif
-bool
-meos_h3index_ge(H3Index a, H3Index b)
 {
   return a >= b;
 }
@@ -971,15 +909,8 @@ meos_h3index_ge(H3Index a, H3Index b)
  * less than, equal to, or greater than the second
  * @csqlfn #H3index_cmp()
  */
-#if MEOS
 int
 h3index_cmp(H3Index a, H3Index b)
-{
-  return (a < b) ? -1 : (a > b) ? 1 : 0;
-}
-#endif
-int
-meos_h3index_cmp(H3Index a, H3Index b)
 {
   return (a < b) ? -1 : (a > b) ? 1 : 0;
 }
@@ -995,25 +926,23 @@ meos_h3index_cmp(H3Index a, H3Index b)
  * bit pattern.
  * @csqlfn #H3index_hash()
  */
-#if MEOS
 uint32
 h3index_hash(H3Index cell)
 {
   return int64_hash((int64) cell);
 }
-#endif
-uint32
-meos_h3index_hash(H3Index cell)
-{
-  return int64_hash((int64) cell);
-}
 
 /**
- * @brief Return the 64-bit hash value of an h3index using a seed, the body of
- * #h3index_hash_extended that the PostgreSQL extension also calls
+ * @ingroup meos_h3_base_accessor
+ * @brief Return the 64-bit hash value of an h3index using a seed
+ * @details The value matches the result `hashint8extended` would produce on
+ * the same bit pattern.
+ * @param[in] cell H3 cell
+ * @param[in] seed Seed
+ * @csqlfn #H3index_hash_extended()
  */
 uint64
-meos_h3index_hash_extended(H3Index cell, uint64 seed)
+h3index_hash_extended(H3Index cell, uint64 seed)
 {
   int64 value = cell;
   return int64_hash_extended(value, seed);
