@@ -1,0 +1,31 @@
+# ---------------------------------------------------------------------------
+# Strategies of the index operator classes of the box types (templates/
+# boxopclass.sql.tmpl), in the order a class declares them. One entry per
+# strategy: its number, its SQL operator, the comment the class gives it and the
+# axis a partner type needs to carry it: `topo` for the topological operators,
+# `dist` for the nearest approach distance, `x`, `y`, `z` or `t` for a position
+# operator. A box type lists its axes in manifest.d/boxtypes.yaml (`posaxes:`),
+# and each partner of its classes the axes it carries (`opclasses:` `partners:`).
+boxstrategies:
+  - {num: 1,  sqlop: "<<",  axis: x,    desc: strictly left}
+  - {num: 2,  sqlop: "&<",  axis: x,    desc: overlaps or left}
+  - {num: 3,  sqlop: "&&",  axis: topo, desc: overlaps}
+  - {num: 4,  sqlop: "&>",  axis: x,    desc: overlaps or right}
+  - {num: 5,  sqlop: ">>",  axis: x,    desc: strictly right}
+  - {num: 6,  sqlop: "~=",  axis: topo, desc: same}
+  - {num: 7,  sqlop: "@>",  axis: topo, desc: contains}
+  - {num: 8,  sqlop: "<@",  axis: topo, desc: contained by}
+  - {num: 9,  sqlop: "&<|", axis: y,    desc: overlaps or below}
+  - {num: 10, sqlop: "<<|", axis: y,    desc: strictly below}
+  - {num: 11, sqlop: "|>>", axis: y,    desc: strictly above}
+  - {num: 12, sqlop: "|&>", axis: y,    desc: overlaps or above}
+  - {num: 17, sqlop: "-|-", axis: topo, desc: adjacent}
+  - {num: 25, sqlop: "|=|", axis: dist, desc: nearest approach distance}
+  - {num: 28, sqlop: "&<#", axis: t,    desc: overlaps or before}
+  - {num: 29, sqlop: "<<#", axis: t,    desc: strictly before}
+  - {num: 30, sqlop: "#>>", axis: t,    desc: strictly after}
+  - {num: 31, sqlop: "#&>", axis: t,    desc: overlaps or after}
+  - {num: 32, sqlop: "&</", axis: z,    desc: overlaps or front}
+  - {num: 33, sqlop: "<</", axis: z,    desc: strictly front}
+  - {num: 34, sqlop: "/>>", axis: z,    desc: strictly back}
+  - {num: 35, sqlop: "/&>", axis: z,    desc: overlaps or back}

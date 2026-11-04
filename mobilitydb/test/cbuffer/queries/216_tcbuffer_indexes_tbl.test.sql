@@ -27,226 +27,985 @@
 --
 -------------------------------------------------------------------------------
 
--- Index correctness tests for tcbuffer on tbl_tcbuffer_big (1 000 rows,
--- SRID 3812). Modeled on mobilitydb/test/geo/queries/074_tpoint_indexes_tbl
--- — same structure, restricted to the 2D operator surface that tcbuffer
--- supports (no Z-axis position operators; no btree comparators since
--- tcbuffer has no total-order opclass).
---
--- Each opclass section: drop indexes, build one opclass, run the same
--- bbox / position / temporal query block against tcbuffer literals,
--- tstzspan literals, and stbox literals. Re-asserting the same counts
--- under three opclasses verifies the rtree / quadtree / kdtree opclasses
--- agree on selectivity.
-
 -------------------------------------------------------------------------------
--- Sanity: ANALYZE catches any planner-stat skew before indexed runs
-
-ANALYZE tbl_tcbuffer_big;
-
-DROP INDEX IF EXISTS tbl_tcbuffer_big_rtree_idx;
-DROP INDEX IF EXISTS tbl_tcbuffer_big_quadtree_idx;
-DROP INDEX IF EXISTS tbl_tcbuffer_big_kdtree_idx;
-
--------------------------------------------------------------------------------
--- 1. rtree (GIST)
+-- The R-tree GiST, quad-tree and k-d tree SP-GiST indexes of a tcbuffer, keyed by
+-- the stbox of the value. Under each index every operator of the class, with each
+-- right argument it declares, answers the rows a sequential scan gives, from a
+-- plan that probes the index, and the search for the nearest values answers the
+-- distances a sort gives.
 -------------------------------------------------------------------------------
 
-CREATE INDEX tbl_tcbuffer_big_rtree_idx ON tbl_tcbuffer_big USING GIST(temp);
+CREATE FUNCTION test_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
 
--- vs tstzspan literal (temporal-axis operators)
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
+DROP TABLE IF EXISTS tbl_tcbuffer_idx;
+CREATE TABLE tbl_tcbuffer_idx AS
+WITH base(k, temp) AS (
+  SELECT k, temp FROM tbl_tcbuffer_big
+  UNION ALL
+  SELECT k + 1000, inst FROM tbl_tcbuffer_inst
+  UNION ALL
+  SELECT k + 1100, ti FROM tbl_tcbuffer_discseq
+  UNION ALL
+  SELECT k + 1200, seq FROM tbl_tcbuffer_seq
+  UNION ALL
+  SELECT k + 1300, ss FROM tbl_tcbuffer_seqset )
+SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+FROM base, generate_series(0, 4) AS n;
+ANALYZE tbl_tcbuffer_idx;
 
--- vs tcbuffer literal: btree comparators (correctness check; GIST does not
--- accelerate these — they seqscan — but tcbuffer_btree_ops in 152_tcbuffer.in.sql
--- declares them, so the result must be deterministic).
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp < tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <= tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp > tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp >= tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
+-- The values, boxes and periods the operators are given. Those of the fixture
+-- are random, so they meet few values exactly: the others come from the rows of
+-- the table, so that every operator has rows to answer.
+DROP TABLE IF EXISTS tbl_tcbuffer_src;
+CREATE TABLE tbl_tcbuffer_src AS
+SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
+FROM tbl_tcbuffer_idx WHERE k % 650 = 0;
 
--- vs tcbuffer literal (bbox + 2D position + temporal axis)
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
+-- A value of the fixture, a value of the table, and one whose period ends where
+-- that of the value starts. The search for the nearest values, whose distance
+-- costs more than a box, is given the second alone.
+DROP TABLE IF EXISTS tbl_tcbuffer_val;
+CREATE TABLE tbl_tcbuffer_val AS
+SELECT temp, false AS knn FROM tbl_tcbuffer WHERE k % 20 = 0
+UNION ALL
+SELECT temp, true FROM tbl_tcbuffer_src
+UNION ALL
+SELECT shiftTime(temp, lower(t) - upper(t)), false FROM tbl_tcbuffer_src;
+ANALYZE tbl_tcbuffer_val;
 
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &< tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp >> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
+-- The box of a value of the fixture, the box of a value, one around it, one
+-- inside it, and one whose period meets it
+DROP TABLE IF EXISTS tbl_tcbuffer_box;
+CREATE TABLE tbl_tcbuffer_box AS
+SELECT temp::stbox AS b, false AS knn FROM tbl_tcbuffer WHERE k % 20 = 0
+UNION ALL
+SELECT b, true FROM tbl_tcbuffer_src
+UNION ALL
+SELECT expandTime(expandSpace(b, 0.1), interval '1 day'), false FROM tbl_tcbuffer_src
+UNION ALL
+SELECT stbox(format('SRID=3812;STBOX XT(((%s,%s),(%s,%s)),[%s,%s])',
+    (xmin(b) + xmax(b)) / 2, (ymin(b) + ymax(b)) / 2, (xmin(b) + xmax(b)) / 2 + 0.000001, (ymin(b) + ymax(b)) / 2 + 0.000001,
+    lower(t) + (upper(t) - lower(t)) / 2, lower(t) + (upper(t) - lower(t)) / 2)), false
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT stbox(format('SRID=3812;STBOX XT(((%s,%s),(%s,%s)),[%s,%s%s)',
+    xmin(b), ymin(b), xmax(b), ymax(b), lower(t) - interval '1 hour', lower(t),
+    CASE WHEN lowerInc(t) THEN ')' ELSE ']' END)), false
+FROM tbl_tcbuffer_src;
+ANALYZE tbl_tcbuffer_box;
 
--- vs stbox literal (cross-bbox-type queries)
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+-- A box of space alone, which the operators on time refuse: one around a value,
+-- one inside it, the space of a value, and one that meets it
+DROP TABLE IF EXISTS tbl_tcbuffer_xbox;
+CREATE TABLE tbl_tcbuffer_xbox AS
+SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
+    xmin(b) - 0.1, ymin(b) - 0.1, xmax(b) + 0.1, ymax(b) + 0.1)) AS b
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
+    (xmin(b) + xmax(b)) / 2, (ymin(b) + ymax(b)) / 2, (xmin(b) + xmax(b)) / 2 + 0.000001, (ymin(b) + ymax(b)) / 2 + 0.000001)) AS b
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
+    xmin(b), ymin(b), xmax(b), ymax(b))) AS b
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT stbox(format('SRID=3812;STBOX X((%s,%s),(%s,%s))',
+    xmax(b), ymin(b), xmax(b) + 0.1, ymax(b))) AS b
+FROM tbl_tcbuffer_src;
+ANALYZE tbl_tcbuffer_xbox;
 
--- Test the commutator on selectivity
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]' <<# temp;
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]' &<# temp;
+-- A period of the fixture, the period of a value, one around it, one inside it,
+-- and one that meets it
+DROP TABLE IF EXISTS tbl_tcbuffer_span;
+CREATE TABLE tbl_tcbuffer_span AS
+SELECT t FROM tbl_tstzspan WHERE k % 20 = 0
+UNION ALL
+SELECT t FROM tbl_tcbuffer_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', lower(t) - interval '1 day', upper(t) + interval '1 day'))
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s]', lower(t) + (upper(t) - lower(t)) / 2, lower(t) + (upper(t) - lower(t)) / 2))
+FROM tbl_tcbuffer_src
+UNION ALL
+SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
+    CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
+FROM tbl_tcbuffer_src;
+ANALYZE tbl_tcbuffer_span;
+
+-- A point at a corner of the box of a value
+DROP TABLE IF EXISTS tbl_tcbuffer_geo;
+CREATE TABLE tbl_tcbuffer_geo AS
+SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 3812) AS g, true AS knn FROM tbl_tcbuffer_src;
+ANALYZE tbl_tcbuffer_geo;
+
+DROP TABLE IF EXISTS test_tcbuffer_idx;
+CREATE TABLE test_tcbuffer_idx(op text, no_idx text, rtree_idx text, quadtree_idx text,
+  kdtree_idx text, rtree_probe boolean, quadtree_probe boolean,
+  kdtree_probe boolean);
+
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<< stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<< stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<< tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&< stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&< stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&< tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&& tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&& stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&& stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&& tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&> stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('>> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('>> stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('~= tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('~= stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('~= stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('~= tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('@> tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('@> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('@> stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('@> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<@ tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<@ stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<@ stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<@ tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<| stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<| stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<| tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<| stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<| stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<| tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|>> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|>> stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|&> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|&> stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|&> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('-|- tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('-|- stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('-|- stbox x', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('-|- tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<# tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<# stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('&<# tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<# tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<# stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('<<# tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#>> tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#>> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#&> tstzspan', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#&> stbox', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('#&> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox >> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan && tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox && tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox << tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan ~= tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox ~= tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan <@ tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox <@ tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan @> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox @> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox |>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox <<| tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan -|- tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox -|- tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan #>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox #>> tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('tstzspan <<# tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('stbox <<# tcbuffer', (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp)::text);
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|=| stbox', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn));
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|=| tcbuffer', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn));
+INSERT INTO test_tcbuffer_idx(op, no_idx) VALUES ('|=| geometry', (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn));
+
+-- With no index a plan cannot probe one, whatever the planner settings
+SET enable_seqscan = off;
+SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b') AS no_index_probe;
+RESET enable_seqscan;
 
 -------------------------------------------------------------------------------
--- 2. quadtree (SPGIST default opclass)
+
+CREATE INDEX tbl_tcbuffer_idx_rtree ON tbl_tcbuffer_idx USING gist(temp);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'stbox >> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'stbox << tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'stbox @> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp')
+WHERE op = 'stbox |>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp')
+WHERE op = 'stbox <<| tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'stbox #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp)::text,
+  rtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'stbox <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| stbox';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tcbuffer';
+UPDATE test_tcbuffer_idx SET rtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
+  rtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| geometry';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tcbuffer_idx_rtree;
+
 -------------------------------------------------------------------------------
 
-DROP INDEX IF EXISTS tbl_tcbuffer_big_rtree_idx;
-
-CREATE INDEX tbl_tcbuffer_big_quadtree_idx ON tbl_tcbuffer_big USING SPGIST(temp);
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &< tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp >> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
+CREATE INDEX tbl_tcbuffer_idx_quadtree ON tbl_tcbuffer_idx USING spgist(temp);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'stbox >> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'stbox << tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'stbox @> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp')
+WHERE op = 'stbox |>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp')
+WHERE op = 'stbox <<| tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'stbox #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp)::text,
+  quadtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'stbox <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| stbox';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tcbuffer';
+UPDATE test_tcbuffer_idx SET quadtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
+  quadtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| geometry';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tcbuffer_idx_quadtree;
 
 -------------------------------------------------------------------------------
--- 3. kdtree (SPGIST tcbuffer_kdtree_ops)
+
+CREATE INDEX tbl_tcbuffer_idx_kdtree ON tbl_tcbuffer_idx USING spgist(temp tcbuffer_kdtree_ops);
+SET enable_seqscan = off;
+SET enable_hashjoin = off;
+SET enable_mergejoin = off;
+SET enable_sort = off;
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp << t2.b')
+WHERE op = '<< stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp << t2.temp')
+WHERE op = '<< tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &< t2.b')
+WHERE op = '&< stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &< t2.temp')
+WHERE op = '&< tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp && t2.t')
+WHERE op = '&& tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp && t2.b')
+WHERE op = '&& stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp && t2.temp')
+WHERE op = '&& tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &> t2.b')
+WHERE op = '&> stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &> t2.temp')
+WHERE op = '&> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp >> t2.b')
+WHERE op = '>> stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp >> t2.temp')
+WHERE op = '>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp ~= t2.t')
+WHERE op = '~= tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp ~= t2.b')
+WHERE op = '~= stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp ~= t2.temp')
+WHERE op = '~= tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp @> t2.t')
+WHERE op = '@> tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp @> t2.b')
+WHERE op = '@> stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp @> t2.temp')
+WHERE op = '@> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <@ t2.t')
+WHERE op = '<@ tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <@ t2.b')
+WHERE op = '<@ stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <@ t2.temp')
+WHERE op = '<@ tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp &<| t2.b')
+WHERE op = '&<| stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<| t2.temp')
+WHERE op = '&<| tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp <<| t2.b')
+WHERE op = '<<| stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<| t2.temp')
+WHERE op = '<<| tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |>> t2.b')
+WHERE op = '|>> stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |>> t2.temp')
+WHERE op = '|>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp |&> t2.b')
+WHERE op = '|&> stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp |&> t2.temp')
+WHERE op = '|&> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp -|- t2.t')
+WHERE op = '-|- tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_xbox t2 WHERE t1.temp -|- t2.b')
+WHERE op = '-|- stbox x';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp -|- t2.temp')
+WHERE op = '-|- tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp &<# t2.t')
+WHERE op = '&<# tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp &<# t2.b')
+WHERE op = '&<# stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp &<# t2.temp')
+WHERE op = '&<# tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp <<# t2.t')
+WHERE op = '<<# tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp <<# t2.b')
+WHERE op = '<<# stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp <<# t2.temp')
+WHERE op = '<<# tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #>> t2.t')
+WHERE op = '#>> tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #>> t2.b')
+WHERE op = '#>> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #>> t2.temp')
+WHERE op = '#>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_span t2 WHERE t1.temp #&> t2.t')
+WHERE op = '#&> tstzspan';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_box t2 WHERE t1.temp #&> t2.b')
+WHERE op = '#&> stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_idx t1, tbl_tcbuffer_val t2 WHERE t1.temp #&> t2.temp')
+WHERE op = '#&> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b >> t1.temp')
+WHERE op = 'stbox >> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t && t1.temp')
+WHERE op = 'tstzspan && tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b && t1.temp')
+WHERE op = 'stbox && tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b << t1.temp')
+WHERE op = 'stbox << tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t ~= t1.temp')
+WHERE op = 'tstzspan ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b ~= t1.temp')
+WHERE op = 'stbox ~= tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <@ t1.temp')
+WHERE op = 'tstzspan <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <@ t1.temp')
+WHERE op = 'stbox <@ tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t @> t1.temp')
+WHERE op = 'tstzspan @> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b @> t1.temp')
+WHERE op = 'stbox @> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b |>> t1.temp')
+WHERE op = 'stbox |>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<| t1.temp')
+WHERE op = 'stbox <<| tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t -|- t1.temp')
+WHERE op = 'tstzspan -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b -|- t1.temp')
+WHERE op = 'stbox -|- tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t #>> t1.temp')
+WHERE op = 'tstzspan #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b #>> t1.temp')
+WHERE op = 'stbox #>> tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_span t2, tbl_tcbuffer_idx t1 WHERE t2.t <<# t1.temp')
+WHERE op = 'tstzspan <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp)::text,
+  kdtree_probe = test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_box t2, tbl_tcbuffer_idx t1 WHERE t2.b <<# t1.temp')
+WHERE op = 'stbox <<# tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn),
+  kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_box t2, LATERAL (SELECT t1.temp |=| t2.b AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.b LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| stbox';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn),
+  kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_val t2, LATERAL (SELECT t1.temp |=| t2.temp AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.temp LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| tcbuffer';
+UPDATE test_tcbuffer_idx SET kdtree_idx = (SELECT string_agg(s.d::text, ',' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn),
+  kdtree_probe = test_probes_index('SELECT string_agg(s.d::text, '','' ORDER BY s.d) FROM tbl_tcbuffer_geo t2, LATERAL (SELECT t1.temp |=| t2.g AS d FROM tbl_tcbuffer_idx t1 ORDER BY t1.temp |=| t2.g LIMIT 3) s WHERE t2.knn')
+WHERE op = '|=| geometry';
+RESET enable_seqscan;
+RESET enable_hashjoin;
+RESET enable_mergejoin;
+RESET enable_sort;
+DROP INDEX tbl_tcbuffer_idx_kdtree;
+
 -------------------------------------------------------------------------------
 
-DROP INDEX IF EXISTS tbl_tcbuffer_big_quadtree_idx;
+SELECT COUNT(*) FROM tbl_tcbuffer_idx;
+SELECT COUNT(*) FROM test_tcbuffer_idx;
+SELECT op, no_idx FROM test_tcbuffer_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
+-- The distances of the nearest values are compared, not stated
+SELECT op FROM test_tcbuffer_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;
+SELECT * FROM test_tcbuffer_idx
+WHERE no_idx IS DISTINCT FROM rtree_idx OR no_idx IS DISTINCT FROM quadtree_idx OR
+  no_idx IS DISTINCT FROM kdtree_idx OR NOT rtree_probe OR NOT quadtree_probe OR
+  NOT kdtree_probe
+ORDER BY op;
 
-CREATE INDEX tbl_tcbuffer_big_kdtree_idx ON tbl_tcbuffer_big USING SPGIST(temp tcbuffer_kdtree_ops);
+DROP TABLE test_tcbuffer_idx;
+DROP TABLE tbl_tcbuffer_geo;
+DROP TABLE tbl_tcbuffer_span;
+DROP TABLE tbl_tcbuffer_xbox;
+DROP TABLE tbl_tcbuffer_box;
+DROP TABLE tbl_tcbuffer_val;
+DROP TABLE tbl_tcbuffer_src;
+DROP TABLE tbl_tcbuffer_idx;
+-- Every row carries the same value, so a split of the quad-tree finds keys that
+-- are all equal
+CREATE TABLE tbl_tcbuffer_allthesame AS
+SELECT k, tcbuffer(cbuffer 'SRID=3812;Cbuffer(Point(5 5), 1)', t) AS temp
+FROM tbl_tstzspan_big;
+CREATE INDEX tbl_tcbuffer_allthesame_quadtree ON tbl_tcbuffer_allthesame USING spgist(temp);
+SELECT COUNT(*) AS rows_scan FROM tbl_tcbuffer_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
+SET enable_seqscan = off;
+SELECT test_probes_index('SELECT COUNT(*) FROM tbl_tcbuffer_allthesame WHERE temp && stbox ''SRID=3812;STBOX X((5,5),(5,5))''') AS probe;
+SELECT COUNT(*) AS rows_index FROM tbl_tcbuffer_allthesame WHERE temp && stbox 'SRID=3812;STBOX X((5,5),(5,5))';
+RESET enable_seqscan;
+DROP TABLE tbl_tcbuffer_allthesame;
 
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tstzspan '[2001-01-01, 2001-02-01]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tstzspan '[2001-01-01, 2001-02-01]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp << tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &< tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp >> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp |&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp &<# tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #>> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp #&> tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-01-01, Cbuffer(Point(50 50), 5)@2001-12-31]';
-
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp && stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp @> stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp <@ stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp ~= stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-SELECT COUNT(*) FROM tbl_tcbuffer_big WHERE temp -|- stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-01-01, 2001-12-31])';
-
--------------------------------------------------------------------------------
--- Cleanup of opclass-section indexes
-
-DROP INDEX IF EXISTS tbl_tcbuffer_big_kdtree_idx;
-
--------------------------------------------------------------------------------
--- 4. KNN ordered-search via |=| on the small tbl_tcbuffer (rtree + quadtree)
--------------------------------------------------------------------------------
-
-ANALYZE tbl_tcbuffer;
-
-DROP INDEX IF EXISTS tbl_tcbuffer_rtree_idx;
-CREATE INDEX tbl_tcbuffer_rtree_idx ON tbl_tcbuffer USING GIST(temp);
-
-WITH test AS (
-  SELECT temp |=| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-06-01, Cbuffer(Point(50 50), 5)@2001-07-01]' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-
-WITH test AS (
-  SELECT temp |=| cbuffer 'SRID=3812;Cbuffer(Point(25 25), 3)' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-WITH test AS (
-  SELECT temp |=| geometry 'SRID=3812;Point(25 25)' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-WITH test AS (
-  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-
-DROP INDEX tbl_tcbuffer_rtree_idx;
-
--------------------------------------------------------------------------------
-
-DROP INDEX IF EXISTS tbl_tcbuffer_quadtree_idx;
-CREATE INDEX tbl_tcbuffer_quadtree_idx ON tbl_tcbuffer USING SPGIST(temp);
-
-WITH test AS (
-  SELECT temp |=| tcbuffer 'SRID=3812;[Cbuffer(Point(0 0), 1)@2001-06-01, Cbuffer(Point(50 50), 5)@2001-07-01]' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-
-WITH test AS (
-  SELECT temp |=| cbuffer 'SRID=3812;Cbuffer(Point(25 25), 3)' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-WITH test AS (
-  SELECT temp |=| geometry 'SRID=3812;Point(25 25)' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-WITH test AS (
-  SELECT temp |=| stbox 'SRID=3812;STBOX XT(((0,0),(50,50)),[2001-06-01, 2001-07-01])' AS distance
-  FROM tbl_tcbuffer ORDER BY 1 LIMIT 3 )
-SELECT round(distance, 6) FROM test;
-
-DROP INDEX tbl_tcbuffer_quadtree_idx;
-
--------------------------------------------------------------------------------
--- 5. SP-GiST "all the same" balancing edge case
--------------------------------------------------------------------------------
--- Build a synthetic 1 000-row table where every row carries the identical
--- tcbuffer value. SP-GiST quadtree must split a node where all keys are
--- equal — exercises the same-key fallback path in the picksplit function.
-
-CREATE TABLE tbl_tcbuffer_big_allthesame AS
-  SELECT k, tcbuffer(cbuffer 'SRID=3812;Cbuffer(Point(5 5), 1)', t) AS temp
-  FROM tbl_tstzspan_big;
-CREATE INDEX tbl_tcbuffer_big_allthesame_quadtree_idx ON tbl_tcbuffer_big_allthesame USING SPGIST(temp);
-ANALYZE tbl_tcbuffer_big_allthesame;
-
-DROP TABLE tbl_tcbuffer_big_allthesame;
+DROP FUNCTION test_probes_index(text);
 
 -------------------------------------------------------------------------------

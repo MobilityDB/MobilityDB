@@ -761,6 +761,13 @@ extern bool overafter_tpointcloud_tpcbox(const Temporal *temp,
 extern bool overafter_tpointcloud_tpointcloud(const Temporal *temp1,
   const Temporal *temp2);
 
+/* Distance functions */
+
+extern double nad_tpcbox_tpcbox(const TPCBox *box1, const TPCBox *box2);
+extern double nad_tpointcloud_tpcbox(const Temporal *temp, const TPCBox *box);
+extern double nad_tpointcloud_tpointcloud(const Temporal *temp1,
+  const Temporal *temp2);
+
 /* Aggregate functions */
 
 extern TPCBox *tpc_extent_transfn(TPCBox *state, const Temporal *temp);

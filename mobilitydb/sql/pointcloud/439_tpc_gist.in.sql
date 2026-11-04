@@ -62,6 +62,8 @@ CREATE FUNCTION tpcbox_gist_sortsupport(internal)
   AS 'MODULE_PATHNAME', 'Tpcbox_gist_sortsupport'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-BOXOPCLASS-BEGIN tpcbox_rtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS tpcbox_rtree_ops
   DEFAULT FOR TYPE tpcbox USING gist AS
   STORAGE tpcbox,
@@ -91,6 +93,8 @@ CREATE OPERATOR CLASS tpcbox_rtree_ops
   OPERATOR  12    |&> (tpcbox, tpcbox),
   -- adjacent
   OPERATOR  17    -|- (tpcbox, tpcbox),
+  -- nearest approach distance
+  OPERATOR  25    |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tpcbox, tpcbox),
   -- strictly before
@@ -107,8 +111,6 @@ CREATE OPERATOR CLASS tpcbox_rtree_ops
   OPERATOR  34    />> (tpcbox, tpcbox),
   -- overlaps or back
   OPERATOR  35    /&> (tpcbox, tpcbox),
-  -- nearest approach distance
-  OPERATOR  25   |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
   -- functions
   FUNCTION  1  tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
   FUNCTION  2  tpcbox_gist_union(internal, internal),
@@ -116,7 +118,8 @@ CREATE OPERATOR CLASS tpcbox_rtree_ops
   FUNCTION  6  tpcbox_gist_picksplit(internal, internal),
   FUNCTION  7  tpcbox_gist_same(tpcbox, tpcbox, internal),
   FUNCTION  8  tpcbox_gist_distance(internal, tpcbox, smallint, oid, internal),
-  FUNCTION 11 tpcbox_gist_sortsupport(internal);
+  FUNCTION 11  tpcbox_gist_sortsupport(internal);
+-- GENERATED-BOXOPCLASS-END tpcbox_rtree_ops
 
 /*****************************************************************************/
 

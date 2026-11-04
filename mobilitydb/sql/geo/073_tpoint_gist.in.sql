@@ -37,6 +37,8 @@ CREATE FUNCTION stbox_gist_consistent(internal, stbox, smallint, oid, internal)
   AS 'MODULE_PATHNAME', 'Stbox_gist_consistent'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-BOXOPCLASS-BEGIN stbox_rtree_ops — tools/codegen/inherited/generate.py from templates/boxopclass.sql.tmpl;
+-- DO NOT EDIT BY HAND; edit the template + manifest.d/boxtypes.yaml and re-run.
 CREATE OPERATOR CLASS stbox_rtree_ops
   DEFAULT FOR TYPE stbox USING gist AS
   STORAGE stbox,
@@ -53,10 +55,10 @@ CREATE OPERATOR CLASS stbox_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (stbox, stbox),
   OPERATOR  4    &> (stbox, tgeompoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (stbox, stbox),
   OPERATOR  5    >> (stbox, tgeompoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (stbox, stbox),
   OPERATOR  6    ~= (stbox, tgeompoint),
   OPERATOR  6    ~= (stbox, tgeogpoint),
@@ -125,7 +127,8 @@ CREATE OPERATOR CLASS stbox_rtree_ops
   FUNCTION  6  stbox_gist_picksplit(internal, internal),
   FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
   FUNCTION  8  stbox_gist_distance(internal, stbox, smallint, oid, internal),
-  FUNCTION 11 stbox_gist_sortsupport(internal);
+  FUNCTION 11  stbox_gist_sortsupport(internal);
+-- GENERATED-BOXOPCLASS-END stbox_rtree_ops
 
 /******************************************************************************/
 
