@@ -860,6 +860,64 @@ tgeo_force2d_intl(const Temporal *temp)
 }
 
 /**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo with no Z, as PostGIS @p ST_Force2D does for a
+ * geometry, of the same type and interpolation
+ * @details A value with no Z answers as it is. Dropping Z may leave instants that
+ * a linear motion in two dimensions does not need, which the result normalizes.
+ * @param[in] temp Temporal geo
+ * @errval NULL
+ * @csqlfn #Tgeo_force2d()
+ */
+Temporal *
+tgeo_force2d(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL);
+  return tgeo_force2d_intl(temp);
+}
+
+/**
+ * @brief Return a geometry/geography with a Z, for the lifting
+ */
+static Datum
+datum_geo_force3d(Datum geo, Datum zvalue)
+{
+  return PointerGetDatum(geo_force3d_intl(DatumGetGserializedP(geo),
+    DatumGetFloat8(zvalue)));
+}
+
+/**
+ * @ingroup meos_geo_transf
+ * @brief Return a temporal geo with a Z, as PostGIS @p ST_Force3D does for a
+ * geometry, of the same type and interpolation
+ * @details A Z the value has stays. Adding a constant coordinate keeps a linear
+ * motion linear. A geography is measured on the surface, so its Z does not move
+ * its distances.
+ * @param[in] temp Temporal geo
+ * @param[in] zvalue Z of a value with none
+ * @errval NULL
+ * @csqlfn #Tgeo_force3d()
+ */
+Temporal *
+tgeo_force3d(const Temporal *temp, double zvalue)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TGEO(temp, NULL);
+  if (! ensure_finite(zvalue))
+    return NULL;
+  LiftedFunctionInfo lfinfo;
+  memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
+  lfinfo.func = (varfunc) &datum_geo_force3d;
+  lfinfo.numparam = 1;
+  lfinfo.param[0] = Float8GetDatum(zvalue);
+  lfinfo.argtype[0] = temp->temptype;
+  lfinfo.restype = temp->temptype;
+  lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
+  return tfunc_temporal(temp, &lfinfo);
+}
+
+/**
  * @brief Return the copy with no Z of the operand that has one, where two
  * temporal geos have different dimensions, and NULL otherwise, as
  * #tgeo_force2d_intl gives it

@@ -1240,3 +1240,31 @@ SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]'),
 SELECT round(speed(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', false), 6);
 SELECT round(length(geography 'Linestring(0 1,0 2)')::numeric, 3);
 SELECT round(length(geography 'Linestring(0 1,0 2)', false)::numeric, 3);
+
+-------------------------------------------------------------------------------
+-- force2D and force3D
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 50)@2001-01-02, Point(2 2 0)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '{[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-02), [Point(1 1 5)@2001-01-02, Point(2 2 5)@2001-01-03]}'));
+SELECT asEWKT(force2D(tgeompoint 'Interp=Step;[Point(0 0 1)@2001-01-01, Point(0 0 2)@2001-01-02]'));
+SELECT asEWKT(force2D(tgeompoint '{Point(0 0 1)@2001-01-01, Point(0 0 2)@2001-01-02}'));
+SELECT asEWKT(force2D(tgeogpoint 'SRID=4326;[Point(0 0 100)@2001-01-01, Point(1 1 200)@2001-01-02]'));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]'));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', 50));
+SELECT asEWKT(force3D(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
+SELECT force3D(tgeompoint 'Point(0 0)@2001-01-01', 'Infinity');
+/* The box follows the dimensions of the result */
+SELECT stbox(force2D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]'));
+SELECT stbox(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
+SELECT stbox(force2D(tgeogpoint '[Point(0 0 100)@2001-01-01, Point(1 1 200)@2001-01-02]'));
+/* The way to choose the dimensions a relation between two values reads */
+SELECT tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]' |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+SELECT force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]') |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+SELECT force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]', 50) |=| tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+/* The turning point of the temporal distance reads the rule as well */
+SELECT round(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]' <-> geometry 'Point(1 1)', 6);
+SELECT round(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]' <-> geometry 'Point(1 1 9)', 6);

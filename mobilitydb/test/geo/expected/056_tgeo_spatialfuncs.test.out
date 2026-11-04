@@ -1730,3 +1730,33 @@ SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false)
  {POINT(0.249967 0.750007)@Mon Jan 01 00:00:00 2001 PST}
 (1 row)
 
+SELECT asEWKT(force2D(tgeometry 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+                      asewkt                      
+--------------------------------------------------
+ LINESTRING(0 0,1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01'));
+                         asewkt                          
+---------------------------------------------------------
+ LINESTRING Z (0 0 0,1 1 0)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01', 50));
+                          asewkt                           
+-----------------------------------------------------------
+ LINESTRING Z (0 0 50,1 1 50)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(force2D(tgeography 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+                           asewkt                           
+------------------------------------------------------------
+ SRID=4326;LINESTRING(0 0,1 1)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(force3D(tgeography 'Linestring(0 0,1 1)@2001-01-01', 50));
+                               asewkt                                
+---------------------------------------------------------------------
+ SRID=4326;LINESTRING Z (0 0 50,1 1 50)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

@@ -1115,6 +1115,9 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_force"><varname>force2D</varname>, <varname>force3D</varname></link>: Return a temporal geometry with no Z or with a Z, as the PostGIS functions <varname>ST_Force2D</varname> and <varname>ST_Force3D</varname> do for a geometry &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
 				</listitem>
 				<listitem>

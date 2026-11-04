@@ -4215,6 +4215,56 @@ int main(void)
   printf("operands of different dimensions read the dimensions both have\n");
   free(r2); free(r3); free(c2); free(c3); free(p2); free(p3); free(b2); free(b3);
 
+  /* A temporal geo with no Z and with a Z: the type, the interpolation and the
+   * box follow, a Z the value has stays, and force3D chooses the dimensions a
+   * relationship reads */
+  Temporal *f2 = tgeompoint_in("[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]");
+  Temporal *f3 = tgeompoint_in(
+    "[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]");
+  Temporal *fflat = tgeo_force2d(f3);
+  assert(fflat && ! MEOS_FLAGS_GET_Z(fflat->flags) && temporal_eq(fflat, f2) == 1);
+  STBox *fbox = tspatial_to_stbox(fflat);
+  assert(! MEOS_FLAGS_GET_Z(fbox->flags));
+  free(fbox);
+  Temporal *flift = tgeo_force3d(f2, 50.0);
+  assert(flift && MEOS_FLAGS_GET_Z(flift->flags));
+  fbox = tspatial_to_stbox(flift);
+  assert(MEOS_FLAGS_GET_Z(fbox->flags) && fbox->zmin == 50.0 && fbox->zmax == 50.0);
+  free(fbox);
+  Temporal *fkept = tgeo_force3d(f3, 50.0);
+  assert(fkept && temporal_eq(fkept, f3) == 1);
+  /* Dropping Z leaves an instant that a linear motion in 2D does not need */
+  Temporal *fbend = tgeompoint_in("[Point(0 0 0)@2001-01-01, "
+    "Point(1 1 50)@2001-01-02, Point(2 2 0)@2001-01-03]");
+  Temporal *fnorm = tgeo_force2d(fbend);
+  assert(temporal_num_instants(fnorm) == 2);
+  /* The planar and the geodetic value keep their type */
+  Temporal *fg3 = tgeogpoint_in(
+    "[Point(0 0 100)@2001-01-01, Point(1 1 200)@2001-01-02]");
+  Temporal *fg2 = tgeo_force2d(fg3);
+  assert(fg2 && fg2->temptype == T_TGEOGPOINT && ! MEOS_FLAGS_GET_Z(fg2->flags) &&
+    MEOS_FLAGS_GET_GEODETIC(fg2->flags));
+  Temporal *fg3b = tgeo_force3d(fg2, 1.0);
+  assert(fg3b && fg3b->temptype == T_TGEOGPOINT && MEOS_FLAGS_GET_Z(fg3b->flags) &&
+    MEOS_FLAGS_GET_GEODETIC(fg3b->flags));
+  /* The public functions validate their arguments */
+  assert(tgeo_force2d(NULL) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  assert(tgeo_force3d(NULL, 0.0) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  assert(tgeo_force3d(f2, INFINITY) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  assert(tgeo_force3d(f2, NAN) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  Temporal *ffloat = tfloat_in("1@2001-01-01");
+  assert(tgeo_force2d(ffloat) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  assert(tgeo_force3d(ffloat, 0.0) == NULL && meos_errno() != 0);
+  meos_errno_reset();
+  printf("force2D and force3D keep the type, the interpolation and the box: OK\n");
+  free(f2); free(f3); free(fflat); free(flift); free(fkept); free(fbend);
+  free(fnorm); free(fg3); free(fg2); free(fg3b); free(ffloat);
+
   /* Finalize MEOS */
   meos_finalize();
 

@@ -18346,6 +18346,26 @@ geo_force2d_intl(const GSERIALIZED *gs)
   return result;
 }
 
+/**
+ * @brief Return a geometry/geography with a Z, the value given where it has none
+ * @details As #geo_force2d_intl, keeping the geodetic flag. A Z the value has stays.
+ * @param[in] gs Geometry/geography
+ * @param[in] zvalue Z of a value with none
+ */
+GSERIALIZED *
+geo_force3d_intl(const GSERIALIZED *gs, double zvalue)
+{
+  assert(gs);
+  LWGEOM *geom = lwgeom_from_gserialized(gs);
+  LWGEOM *lifted = lwgeom_force_3dz(geom, zvalue);
+  /* The function builds the result from the dimensions alone */
+  lwgeom_set_geodetic(lifted, FLAGS_GET_GEODETIC(geom->flags));
+  lwgeom_free(geom);
+  GSERIALIZED *result = geo_serialize(lifted);
+  lwgeom_free(lifted);
+  return result;
+}
+
 /*****************************************************************************
  * Preconditions a geometry is read under
  *****************************************************************************/
