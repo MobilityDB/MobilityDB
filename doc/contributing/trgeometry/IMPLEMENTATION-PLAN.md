@@ -16,7 +16,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG1 | State every refusal and every wrong answer of a 3D value in `doc/temporal_rigid_geometries.xml` and its Spanish twin, each where its function is documented, state what the type accepts in place of "2D" there and in `doc/contributing/trgeometry_design_notes.md`, and make the examples of the chapter run | #3443, open |
+| TG1 | State every refusal and every wrong answer of a 3D value in `doc/temporal_rigid_geometries.xml` and its Spanish twin, each where its function is documented, state what the type accepts in place of "2D" there and in `doc/contributing/trgeometry_design_notes.md`, and make the examples of the chapter run | merged as #3443 |
 
 ## Wrong answers
 
@@ -59,7 +59,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 |---|---|---|
 | TG20 | The array forms of the relationships, and the relationships at the instants of their inputs | open, on #3347 |
 | TG21 | The portable names `geoRound`, `geoTransform`, `geoLength`, `geoTranslate`, `geoRotate` by the geometry a `trgeometry` answers at an instant | open |
-| TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | open, branch `test/tnpoint-trgeo-indexes` |
+| TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | #3444, open |
 
 ## Decisions
 

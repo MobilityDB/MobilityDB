@@ -11,9 +11,8 @@
 This plan is the one place for what `trgeometry` answers, what it does not, and what closes the
 difference. A `trgeometry` accepts more than it answers: it takes a concave polygon, a polygon with
 holes, a polyhedral surface and a reference geometry in three dimensions, and a function then
-refuses some of them, or answers without reading Z. The manual states little of this and describes
-the type as 2D, while the code builds 3D values and indexes them, and Chapter 4 of MobilityBook Vol. 2
-uses them on the nuScenes dataset.
+refuses some of them, or answers without reading Z. The manual states each of these, and
+Chapter 4 of MobilityBook Vol. 2 uses the type in 3D on the nuScenes dataset.
 
 This plan stands alone. It states every task on the type, with its own rows and its own state, so
 that it is read and carried out without another plan. A change another plan makes across every
@@ -56,8 +55,8 @@ Measured on master `78839117d9`: 316 functions, 50,411 calls, no backend lost.
 - **Operands of different dimensions.** The distance of a 2D value reads the dimensions both have,
   as MobilityDB #3439 states, and its relationships refuse.
 - **Functions no call answers.** `stops`.
-- **The manual.** `doc/temporal_rigid_geometries.xml` states the convex polygons the distance needs
-  and no other gap, and its text says the reference geometry is 2D; #3443 states them.
+- **The manual.** `doc/temporal_rigid_geometries.xml` states each gap where its function is documented,
+  as #3443 merged it.
 
 ## The rules
 
