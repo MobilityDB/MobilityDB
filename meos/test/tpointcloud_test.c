@@ -297,6 +297,15 @@ int main(void)
   char *proj_out = tspatial_as_ewkt(proj, 15, &size_out);
   printf("tpcpoint_to_tgeompoint: %s\n", proj_out);
   assert(temporal_eq(proj, proj_exp));
+
+  /* The bounding box of a temporal point cloud point is a point cloud box in
+   * the SRID its schema states, which the value overlaps and equals */
+  TPCBox *pinstbox = tpointcloud_to_tpcbox((Temporal *) pinst);
+  assert(pinstbox != NULL && meos_errno() == 0);
+  assert(tpcbox_srid(pinstbox) == 4326);
+  assert(overlaps_tpointcloud_tpcbox((Temporal *) pinst, pinstbox));
+  assert(same_tpointcloud_tpcbox((Temporal *) pinst, pinstbox));
+  free(pinstbox);
   free(pinst); free(proj_exp); free(proj); free(proj_out);
 
   /* The nearest approach distance of two boxes of a schema is the one of

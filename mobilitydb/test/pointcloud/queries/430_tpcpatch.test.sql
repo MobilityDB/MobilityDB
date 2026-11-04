@@ -202,6 +202,11 @@ SELECT pcid(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 SELECT (tpcpatchSeq(ARRAY[:inst1, :inst2]))::tstzspan =
   timeSpan(tpcpatchSeq(ARRAY[:inst1, :inst2]));
 
+-- Cast to tpcbox: the bounding box of the value.
+SELECT (:inst1)::tpcbox;
+SELECT tpcbox(tpcpatchSeq(ARRAY[:inst1, :inst2])) =
+  extent(x) FROM unnest(ARRAY[:inst1, :inst2]) x;
+
 -------------------------------------------------------------------------------
 -- Comparisons
 -------------------------------------------------------------------------------

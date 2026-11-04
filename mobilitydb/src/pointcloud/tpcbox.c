@@ -415,6 +415,23 @@ Pcpoint_to_tpcbox(PG_FUNCTION_ARGS)
   PG_RETURN_TPCBOX_P(result);
 }
 
+PGDLLEXPORT Datum Tpointcloud_to_tpcbox(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpointcloud_to_tpcbox);
+/**
+ * @ingroup mobilitydb_pointcloud_box_constructor
+ * @brief Convert a temporal point cloud value into a point cloud box, as
+ * #Tspatial_to_stbox converts a spatiotemporal value into its box
+ * @sqlfn tpcbox()
+ * @sqlop @p ::
+ */
+Datum
+Tpointcloud_to_tpcbox(PG_FUNCTION_ARGS)
+{
+  Datum tempdatum = PG_GETARG_DATUM(0);
+  Temporal *temp = temporal_slice(tempdatum);
+  PG_RETURN_TPCBOX_P(tpointcloud_to_tpcbox(temp));
+}
+
 /*****************************************************************************
  * Accessors
  *****************************************************************************/

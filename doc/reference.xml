@@ -3758,6 +3758,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Convert a temporal point cloud point to a temporal geometry point</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convert a temporal point cloud point to its bounding box</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -3944,6 +3947,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convert a temporal patch into the temporal geometry of the multipoints its patches occupy</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convert a temporal point cloud patch to its bounding box</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

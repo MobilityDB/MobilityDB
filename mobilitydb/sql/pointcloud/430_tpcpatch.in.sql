@@ -456,6 +456,13 @@ CREATE CAST (tpcpatch AS tgeometry) WITH FUNCTION tgeometry(tpcpatch);
 -- The tstzspan cast is backed by the generated timeSpan accessor.
 CREATE CAST (tpcpatch AS tstzspan) WITH FUNCTION timeSpan(tpcpatch);
 
+CREATE FUNCTION tpcbox(tpcpatch)
+  RETURNS tpcbox
+  AS 'MODULE_PATHNAME', 'Tpointcloud_to_tpcbox'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tpcpatch AS tpcbox) WITH FUNCTION tpcbox(tpcpatch);
+
 /******************************************************************************
  * Transformation functions
  ******************************************************************************/
