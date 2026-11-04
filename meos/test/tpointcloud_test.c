@@ -287,6 +287,18 @@ int main(void)
   assert(tpcbox_srid(ptbox) == 4326 && tpcbox_srid(pabox) == 4326);
   free(ptbox); free(pabox);
 
+  /* A temporal point cloud point projects onto the temporal geometry point
+   * of its coordinates, in the SRID its schema states */
+  TInstant *pinst = tpcpointinst_make(p3, timestamptz_in("2024-01-01", -1));
+  Temporal *proj_exp = tgeompoint_in("SRID=4326;Point(3 3 3)@2024-01-01");
+  assert(pinst != NULL && proj_exp != NULL);
+  Temporal *proj = tpcpoint_to_tgeompoint((Temporal *) pinst);
+  assert(proj != NULL && meos_errno() == 0);
+  char *proj_out = tspatial_as_ewkt(proj, 15, &size_out);
+  printf("tpcpoint_to_tgeompoint: %s\n", proj_out);
+  assert(temporal_eq(proj, proj_exp));
+  free(pinst); free(proj_exp); free(proj); free(proj_out);
+
   /* A box built from a pcid takes the SRID the schema of the pcid states;
    * pcid 0 names no schema and states SRID 0, and a box with no spatial
    * dimension states SRID 0 whatever its pcid */
