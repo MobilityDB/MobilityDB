@@ -251,7 +251,7 @@ never a wrong answer.
 ### 6.3 The result
 
 - **The corners carry their true instants.** The instant is dated by the rule of
-  [Exact crossings](../exactness/EXACT-CROSSINGS.md) section 7, by the shared primitive once it exists and by
+  Exact crossings section 7, by the shared primitive once it exists and by
   master's truncation until then, like every other instant of the walk.
 - **The value at every instant comes from the piece that holds it**, evaluated as the walk evaluates
   its own values. The recomputation by `geom_distance2d` of the placed body and the whole geometry
@@ -324,14 +324,14 @@ schedule. The status of the feature belongs to this note.
 - **[Feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md).** The assessment of this plan against master:
   the primitives it reuses, the exactness of the convex cover, the widening of the solver, the risks,
   the obligations and the order of delivery.
-- **[Any number of turning points in the lifting](../exactness/N-TURNING-POINTS.md).** The envelope gives any
+- **Any number of turning points in the lifting.** The envelope gives any
   number of instants per segment: corners, minima, maxima. Today they are built inside the family's
   own walk (`dist_seq`). When that note's third pull request puts the rigid geometry distance on the
   shared lift, the minimum over parts stays in the family, since it is a minimum over parts and not a
   lift, and the envelope is what it calls.
-- **[Exact crossings](../exactness/EXACT-CROSSINGS.md).** A corner between two parts is a crossing like any other,
+- **Exact crossings.** A corner between two parts is a crossing like any other,
   and it is dated by that note's rule.
-- **[Exact distance](../exactness/EXACT-DISTANCE.md).** That campaign makes the distances of
+- **Exact distance.** That campaign makes the distances of
   points, segments and circular buffers the nearest double. The rigid geometry walk evaluates its
   functions in doubles, and this note does not change that. It removes one PostGIS recomputation in
   doubles (`dist2d_seq_exact_values`).
@@ -342,9 +342,9 @@ schedule. The status of the feature belongs to this note.
 ## 10. Plan
 
 **Schedule.** This work starts only after the work of
-[Exact distance](../exactness/EXACT-DISTANCE.md) is finished, the measurement of step 1
+Exact distance is finished, the measurement of step 1
 included: exact distance has priority, in particular for the circular buffer benchmark. It changes `dist_seq` and the
-parts in `trgeo_distance.c`, which the third pull request of [N-TURNING-POINTS](../exactness/N-TURNING-POINTS.md)
+parts in `trgeo_distance.c`, which the third pull request of N-TURNING-POINTS
 also rewrites. Whichever lands second carries the other's change.
 
 Each step is its own pull request with its witness, the regression suite, the expected outputs

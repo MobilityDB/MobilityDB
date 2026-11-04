@@ -183,7 +183,7 @@ upper bound are candidates.
    sized on the corpora.
 3. **The containment bound** is derived and stated in its pull request; an unsound bound would answer
    the wrong side of the boundary.
-4. **Sequencing with [Any number of turning points](../exactness/N-TURNING-POINTS.md).** Its third pull request
+4. **Sequencing with Any number of turning points.** Its third pull request
    rewrites `dist_seq` in the same file. That campaign has no pull request in flight, so the two do not
    conflict today; whichever lands second carries the other's change.
 

@@ -14,17 +14,16 @@ holes, a polyhedral surface and a reference geometry in three dimensions, and a 
 refuses some of them, or answers without reading Z. The manual states none of this and describes
 the type as 2D, while the code builds 3D values and indexes them.
 
-A note about `trgeometry` alone lives here. A row shared with other families stays in its plan and is
-cited here by its name, so each fact has one owner: MobilityDB #2861 names, engines and bindings
-(`doc/contributing/portable_naming/`), #3287 exactness (`doc/contributing/exactness/`), #3352 finite
-values and #3353 input and output (`doc/contributing/io/`).
+This plan stands alone. It states every task on the type, with its own rows and its own state, so
+that it is read and carried out without another plan. A change another plan makes across every
+family reaches `trgeometry` through a row here.
 
 ## The notes
 
 | Note | What it states |
 |---|---|
 | [Assessment](ASSESSMENT.md) | The ledger: what each function answers over each body, motion and argument, the calls that answer wrongly, those that refuse, and the wording the manual takes. |
-| [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request that closes each gap, in order, the decisions the owner takes, and the rows of the other plans that touch `trgeometry`. |
+| [Implementation plan](IMPLEMENTATION-PLAN.md) | The pull request that closes each gap, in order, the decisions the owner takes, and what is already merged. |
 | [The distance of non-convex and holed geometries](NON-CONVEX-DISTANCE.md) | How the distance answers a body or a static polygon that is not convex or has holes. |
 | [Its feasibility](NON-CONVEX-DISTANCE-FEASIBILITY.md) | What master provides for it. |
 | [The relationships in linear motion](RIGID-SWEPT-RELATIONSHIPS.md) | Which relationships are refused for linear motion on #3347, and the algorithm that answers them. |
@@ -37,7 +36,7 @@ values and #3353 input and output (`doc/contributing/io/`).
 | `doc/contributing/trgeometry_design_notes.md` | The design decisions, and the home of a deviation from Chapter 4 |
 | `meos/src/rgeo/trgeo_distance.txt` | The algorithm of the temporal distance |
 | Chapter 4 of MobilityBook Vol. 2 | The algorithms of the traversed area and the temporal distance, which govern the code |
-| `tools/trgeo_gaps/` | The ledger and the known answers of the assessment |
+| `tools/trgeo_gaps.py` | The ledger and the known answers of the assessment |
 | `mobilitydb/test/rgeo/` | The regression tests, `162_trgeo_indexes_tbl` for the indexes |
 
 ## Where things stand
@@ -60,7 +59,7 @@ Measured on master `78839117d9`: 316 functions, 50,411 calls, no backend lost.
 
 ## The rules
 
-1. **A gap is stated from a run.** Each row comes from a call of `tools/trgeo_gaps/`, never from a
+1. **A gap is stated from a run.** Each row comes from a call of `tools/trgeo_gaps.py`, never from a
    reading of a guard. A guard says what the code is written to do.
 2. **A refusal is told from invalid input by a control.** A call counts as a gap only where the
    same call answers once one property of the failing argument changes: the body, the dimension,
@@ -73,6 +72,6 @@ Measured on master `78839117d9`: 316 functions, 50,411 calls, no backend lost.
 
 ## Acceptance
 
-A gap is closed when `tools/trgeo_gaps/` does not report it, a regression test holds the answer that
+A gap is closed when `tools/trgeo_gaps.py` does not report it, a regression test holds the answer that
 closes it, and the manual does not state it. An algorithm that answers a new case follows Chapter 4
 of MobilityBook Vol. 2 and `doc/contributing/trgeometry_design_notes.md`.

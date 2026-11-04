@@ -51,6 +51,14 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, decision 1 |
 | TG19 | The distance of a value in 3D | open, decisions 1 and 4 |
 
+## Regularity
+
+| Row | Task | State |
+|---|---|---|
+| TG20 | The array forms of the relationships, and the relationships at the instants of their inputs | open, on #3347 |
+| TG21 | The portable names `geoRound`, `geoTransform`, `geoLength`, `geoTranslate`, `geoRotate` by the geometry a `trgeometry` answers at an instant | open |
+| TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | open, branch `test/tnpoint-trgeo-indexes` |
+
 ## Decisions for the owner
 
 1. **Whether a `trgeometry` has three dimensions.** The manual, the design notes and a comment of
@@ -75,18 +83,16 @@ TG1 first, since it only states what holds. TG2 to TG5 next, since they are the 
 decision 1 is taken. TG6 to TG11 in any order. The refusals as each is taken up, each removing its
 own note from the manual.
 
-## The rows of the other plans
+## Merged
 
-Each of these rows has its owner in the plan named, where its state is stated.
-
-| Plan | Rows | State |
-|---|---|---|
-| #2861, generated SQL | G93, G94, G99 (relationships and distances), G100 (split), G4 (rigid motions), G8, G18, G76 | merged |
-| #2861, removed or moved | G27 (similarity), G16 (`unnest`), D3 and D4 (MobilityDuck restrictions and distances) | merged |
-| #2861, aggregates | AG10 (reference geometry kept), AG12 (gap distance) | merged |
-| #2861, open | G95 (array forms and relationships at the instants, MobilityDB #3347), the `trgeometry` rows of `WRAPPERS-PLAN.md`, the regularity pass 0.2 (`geoRound`, `geoTransform`, `geoLength`, `geoTranslate`) | open |
-| #3287, exactness | ED13 (the merged traversed area), ED19 (the temporal distance), GO1 (`tIntersects`, `tDisjoint`) | merged |
-| #3352, finite values | The NaN in the reference geometry, and the MF-JSON reader | stated there |
-| #3353, input and output | IO-M1 (the SRID on the container), `151_trgeo_inout` | stated there |
-| No plan | #3439 (operands of different dimensions), #3375 (exact distance at instants and in segments), #3336 (value at a timestamptz) | merged |
-| No plan | The index test of `162_trgeo_indexes_tbl`, branch `test/tnpoint-trgeo-indexes` | open |
+| Subject | Pull request |
+|---|---|
+| Operands of different dimensions in the distance | #3439 |
+| The exact temporal distance at instants and in segments | #3375 |
+| The value at a timestamptz | #3336 |
+| The generated ever and always relationships, distances and temporal relationships | #3341, #3350, #3359 |
+| The generated nearest approach distance | #3335 |
+| The internal functions named after the type | #3396 |
+| The constructors named in the MEOS functions they call | #3166 |
+| The exact merged traversed area | #3097 |
+| The aggregates keep the reference geometry, and the distance of a gap | #3100, #3102 |
