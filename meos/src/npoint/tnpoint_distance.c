@@ -337,9 +337,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
     return -1.0;
 
-#if MEOS
   int last_errno = meos_errno_reset();
-#endif /* MEOS */
   Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
   /* The temporal distance is NULL where the operands share no time, which
    * is an answer, and where it raises an error */
@@ -349,11 +347,7 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
     result = DatumGetFloat8(temporal_min_value(dist));
     pfree(dist);
   }
-#if MEOS
   return distance_result(result, last_errno);
-#else
-  return result;
-#endif /* MEOS */
 }
 
 /*****************************************************************************
