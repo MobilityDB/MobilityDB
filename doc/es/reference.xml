@@ -2502,7 +2502,7 @@
 					<para><link linkend="trgeometry_yaw_pitch_roll"><varname>yaw</varname>, <varname>pitch</varname>, <varname>roll</varname></link>: Devuelve el ángulo yaw, pitch o roll como un flotante temporal, en radianes, bajo la convención Tait-Bryan intrínseca ZYX que exige la clase de conformidad Basic-YPR de OGC GeoPose</para>
 				</listitem>
 				<listitem>
-					<para><link linkend="trgeometry_geom"><varname>geom</varname></link>: Devuelve la geometría de referencia estática</para>
+					<para><link linkend="trgeometry_geom"><varname>geometry</varname></link>: Devuelve la geometría de referencia estática</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>

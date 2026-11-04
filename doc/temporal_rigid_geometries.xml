@@ -11,11 +11,11 @@
 <chapter xml:id="trgeometry">
 	<title>Temporal Rigid Geometries</title>
 
-	<para>A temporal rigid geometry (<varname>trgeometry</varname>) is a static 2D reference geometry, typically a polygon describing the shape of a moving body, paired with a temporal pose (<varname>tpose</varname>) describing how that geometry translates and rotates over time. The materialised geometry at time <varname>t</varname> is the reference geometry rotated and translated according to the pose interpolated at <varname>t</varname>.</para>
+	<para>A temporal rigid geometry (<varname>trgeometry</varname>) is a static reference geometry, in two or three dimensions, typically a polygon describing the shape of a moving body, paired with a temporal pose (<varname>tpose</varname>) describing how that geometry translates and rotates over time. The materialised geometry at time <varname>t</varname> is the reference geometry rotated and translated according to the pose interpolated at <varname>t</varname>.</para>
 
 	<para>This is the natural representation for moving objects whose <emphasis>shape</emphasis> matters, not just their position. The motivating example is AIS maritime traffic, where each ship's hull (a pentagon derived from the antenna offsets <varname>A</varname>, <varname>B</varname>, <varname>C</varname>, <varname>D</varname>) follows a pose path defined by lat/lon and heading reports. The materialised geometry at any instant is the actual ship outline at that moment.</para>
 
-	<para>The <varname>trgeometry</varname> type builds on <xref linkend="temporal_pose_types"/>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <varname>tpose</varname> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the centroid trajectory.</para>
+	<para>The <varname>trgeometry</varname> type builds on <xref linkend="temporal_pose_types"/>. Most accessor, comparison, topological, position, and indexing operators have the same shape as the corresponding <varname>tpose</varname> functions; this chapter covers the trgeometry-specific surface, pose-to-shape materialisation, traversed area, materialised distance, and spatial restrictions on the moving body.</para>
 
 	<sect1 xml:id="trgeometry_inout">
 		<title>Input and Output</title>
@@ -33,13 +33,11 @@ SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-04, Pose(Point(2 0), 0.0)@2001-01-05]}';
 </programlisting>
 
-		<para>The reference geometry can be any 2D polygon or polyhedral surface. The pose interpolation is linear in translation and angular-shortest-path in rotation. SRIDs are inherited from the reference geometry and the pose; they must agree.</para>
+		<para>The reference geometry can be any polygon or polyhedral surface, with the dimension of the pose: a pose with a quaternion needs a reference geometry in three dimensions, and <varname>ST_Force3D</varname> gives a flat one, in the plane z = 0 of the body. Other values give an error. The pose interpolation is linear in translation and angular-shortest-path in rotation. SRIDs are inherited from the reference geometry and the pose; they must agree.</para>
 
-		<para>An SRID can be specified for a trgeometry either at the begining of the literal or before the reference geometry as shown below.</para>
+		<para>An SRID can be specified for a trgeometry at the beginning of the literal as shown below.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT trgeometry 'SRID=25832;Polygon((0 0,1 0,1 1,0 1,0 0));
-  Pose(Point(0 0), 0.5)@2001-01-01';
-SELECT trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));SRID=25832;
   Pose(Point(0 0), 0.5)@2001-01-01';
 </programlisting>
 
@@ -89,6 +87,7 @@ asMFJSON(trgeometry [, options integer=0 [, flags integer=0
 SELECT asMFJSON(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(0 0),0)@2001-01-01');
 </programlisting>
+				<para><varname>asMFJSON</varname> does not yet support a polyhedral surface.</para>
 			</listitem>
 
 			<listitem xml:id="trgeometry_asEWKB">
@@ -307,13 +306,13 @@ SELECT asText(pitch(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 			</listitem>
 
 			<listitem xml:id="trgeometry_geom">
-				<indexterm significance="normal"><primary><varname>geom</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>geometry</varname></primary></indexterm>
 				<para>Return the static reference geometry</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
-geom(trgeometry) → geometry
+geometry(trgeometry) → geometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT ST_AsText(geom(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT ST_AsText(geometry(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   Pose(Point(5 0), 0.5)@2001-01-01'));
 -- POLYGON((0 0,1 0,1 1,0 1,0 0))
 </programlisting>
@@ -343,6 +342,7 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 </programlisting>
 				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
 				<para><emphasis>Sampling caveat:</emphasis> the implementation samples at the input instants, so pure-translation segments are exact but the swept ribbon between two instants where a rotation happens is approximated by the convex hull of the two endpoint polygons. Up-sampling the <varname>tpose</varname> before constructing the <varname>trgeometry</varname> tightens the approximation.</para>
+				<para>The merged form of a value in three dimensions is the region on the ground, with no Z. Where the body turns, its area is not yet the one the same value has in two dimensions.</para>
 			</listitem>
 		</itemizedlist>
 	</sect1>
@@ -350,7 +350,7 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_spatial_functions">
 		<title>Spatial Functions</title>
 
-		<para>These functions derive a spatial value from the moving body. <varname>centroid</varname> and <varname>bodyPointTrajectory</varname> return temporal points tracking a position over time; <varname>convexHull</varname> returns a static geometry.</para>
+		<para>These functions derive a spatial value from the moving body. <varname>centroid</varname> and <varname>bodyPointTrajectory</varname> return temporal points tracking a position over time; <varname>convexHull</varname> returns a static geometry, with no Z for a value in three dimensions.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_centroid_func">
@@ -466,7 +466,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformations</title>
 
-		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc.</para>
+		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> does not yet support a polyhedral surface, nor few digits for a rotation in three dimensions, and the transformation to another SRID, <varname>transform</varname> and <varname>transformPipeline</varname>, is not yet supported for a temporal rigid geometry.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">
@@ -677,7 +677,7 @@ SELECT asText(merge( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_restrictions">
 		<title>Restrictions</title>
 
-		<para>The <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname>, and <varname>minusStbox</varname> functions restrict a trgeometry to (the complement of) a geometry or a spatiotemporal box. The semantic mirrors <varname>tpose</varname>: a temporal rigid geometry is "in" a region at time <varname>t</varname> iff its centroid (antenna) at <varname>t</varname> lies in that region.</para>
+		<para>The <varname>atGeometry</varname>, <varname>minusGeometry</varname>, <varname>atStbox</varname>, and <varname>minusStbox</varname> functions restrict a trgeometry to (the complement of) a geometry or a spatiotemporal box. The semantic mirrors <varname>tpose</varname>: a temporal rigid geometry is "in" a region at time <varname>t</varname> iff its body, the reference geometry placed by the pose at <varname>t</varname>, meets that region. <varname>atGeometry</varname> and <varname>minusGeometry</varname> are not yet supported for a value in three dimensions, nor for a geometry with Z or with holes, and <varname>atStbox</varname> and <varname>minusStbox</varname> do not yet read the Z dimension of a box.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_atValue">
@@ -714,14 +714,14 @@ atGeometry(trgeometry,geometry) → trgeometry
 minusGeometry(trgeometry,geometry) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT temporalTime(atGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT getTime(atGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
--- {[2001-01-02, 2001-01-04]}
-SELECT temporalTime(minusGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+-- {[2001-01-01, 2001-01-04]}
+SELECT getTime(minusGeometry( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   geometry 'Polygon((1 -1,3 -1,3 1,1 1,1 -1))'));
--- {[2001-01-01, 2001-01-02), (2001-01-04, 2001-01-05]}
+-- {(2001-01-04, 2001-01-05]}
 </programlisting>
 				<para>Restriction against an empty geometry returns NULL for <varname>atGeometry</varname> and the original input for <varname>minusGeometry</varname>.</para>
 			</listitem>
@@ -735,16 +735,12 @@ atStbox(trgeometry,stbox[,border_inc boolean=true]) → trgeometry
 minusStbox(trgeometry,stbox[,border_inc boolean=true]) → trgeometry
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
+SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
   stbox 'STBOX X((1, -1), (3, 1))'));
--- {[2001-01-02, 2001-01-04]}
-SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
-  [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(4 0), 0.0)@2001-01-05]',
-  stbox 'STBOX T([2001-01-02, 2001-01-04])'));
--- {[2001-01-02, 2001-01-04]}
+-- {[2001-01-01, 2001-01-04]}
 </programlisting>
-				<para>If the STBox has only a temporal component the call collapses to the standard <varname>atTime</varname>; if it has only a spatial component the temporal domain is preserved.</para>
+				<para>A box with only a temporal component is not yet supported, and <varname>atTime</varname> answers that question; if the box has only a spatial component the temporal domain is preserved.</para>
 			</listitem>
 
 		</itemizedlist>
@@ -758,7 +754,7 @@ SELECT temporalTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 
 		<para>The values of a temporal distance are exact. When a body turns, the distance between two instants does not change linearly, so the temporal distance also has an instant at each minimum and maximum of the distance. Thus the nearest approach distance and the nearest approach instant are exact.</para>
 
-		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error.</para>
+		<para>The distance functions need a reference geometry that is a convex polygon without holes. A polygon of the other argument must also be convex and without holes. Other values give an error. The distance of a temporal rigid geometry in three dimensions is not yet supported, and neither is the distance to a geometry collection or a curve. The temporal distance between two concave geometries is thus not yet supported either.</para>
 		<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tDistance(trgeometry 'Polygon((0 0,4 0,4 4,2 1,0 4,0 0));
   Pose(Point(0 0),0)@2001-01-01', geometry 'Point(7 3)');
@@ -960,7 +956,7 @@ aIntersects({geometry,trgeometry},{geometry,trgeometry}) → boolean
 eTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 aTouches({geometry,trgeometry},{geometry,trgeometry}) → boolean
 </programlisting>
-				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin.</para>
+				<para>The <emphasis>ever</emphasis> relationships determine whether the relationship holds at some instant, and the <emphasis>always</emphasis> ones whether it holds at every instant. A temporal rigid geometry answers them at the body its reference geometry places at each instant, so the relationship read is the one of the placed body rather than of the reference geometry at the origin. These relationships do not yet follow <xref linkend="tgeo_different_dimensions"/>: an operand of another dimension gives an error. For a value in three dimensions, <varname>eIntersects</varname>, <varname>eDisjoint</varname>, <varname>aDisjoint</varname>, <varname>eContains</varname>, <varname>eCovers</varname> and <varname>eTouches</varname> do not yet read Z, so a geometry above the body can answer as if it met the body, and <varname>aContains</varname> and <varname>aCovers</varname> do not yet support a geometry with Z in every form.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',
@@ -1005,7 +1001,7 @@ tDwithin({geometry,trgeometry},{geometry,trgeometry},float) → tbool
 tIntersects({geometry,trgeometry},{geometry,trgeometry}) → tbool
 tTouches({geometry,trgeometry},{geometry,trgeometry}) → tbool
 </programlisting>
-				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A rigid geometry covers an area, so every relationship is declared in both directions and between two temporal rigid geometries.</para>
+				<para>The <emphasis>temporal</emphasis> relationships compute the topological or distance relationship at each instant and result in a <varname>tbool</varname>. A rigid geometry covers an area, so every relationship is declared in both directions and between two temporal rigid geometries. A body that meets another only between two instants of a linear value thus answers false at both. For a value in three dimensions, <varname>tIntersects</varname> and <varname>tDisjoint</varname> do not yet answer rightly, since a point inside the body at an instant is reported as not meeting it, and <varname>tContains</varname>, <varname>tCovers</varname> and <varname>tTouches</varname> are not yet supported.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT tIntersects(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0),0)@2001-01-01, Pose(Point(3 3),0)@2001-01-03]',

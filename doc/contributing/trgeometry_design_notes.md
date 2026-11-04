@@ -47,11 +47,11 @@ plus translation of a fixed reference.
 
 ## Frame conventions
 
-- **2D-only reference geometry.** The reference shape is a 2D polygon or
-  polyhedral surface, and the pose's rotation component is the 2D yaw angle. The
-  type carries no 3D rigid-body representation; a workload needing full 3D
-  orientation (quaternion) on a 3D shape composes `tpose` with the
-  materialisation step explicitly.
+- **The reference geometry has the dimension of the pose.** It is a polygon or a
+  polyhedral surface, in 2D with a yaw angle or in 3D with a quaternion, as the
+  nuScenes use case of Chapter 4 of MobilityBook Vol. 2 uses it, a flat rectangle
+  that `ST_Force3D` places in the plane z = 0 of the body. The temporal distance
+  and part of the relationships read 2D alone, as the manual states.
 - **Single shared reference geometry.** Every instant of a `trgeometry` shares
   the same reference shape and only the pose varies. The shape is stored once
   per row, not per instant.
