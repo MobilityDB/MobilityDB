@@ -132,11 +132,13 @@ $(function() {
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">temp1,temp2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> geos </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">spheroid</td><td>True when measuring on the spheroid, false on the sphere, read for geographies only, as <a class="el" href="group__meos__geo__dist_gafcaa2d341ae659f93f288e16289cd970.html#gafcaa2d341ae659f93f288e16289cd970" title="Return the temporal distance between two temporal geos.">tdistance_tgeo_tgeo</a> reads it @csqlfn <a class="el" href="group__mobilitydb__geo__dist_gaed80c7e645f57f88ccc899976590b8ae.html#gaed80c7e645f57f88ccc899976590b8ae" title="Return the nearest approach distance between two temporal geos @sqlfn nearestApproachDistance()">NAD_tgeo_tgeo()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spheroid</td><td>True when measuring on the spheroid, false on the sphere, read for geographies only, as <a class="el" href="group__meos__geo__dist_gafcaa2d341ae659f93f288e16289cd970.html#gafcaa2d341ae659f93f288e16289cd970" title="Return the temporal distance between two temporal geos.">tdistance_tgeo_tgeo</a> reads it </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>A nearest approach is measured over the time the operands share, so operands whose time frames do not intersect have none and the answer is DBL_MAX </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Operands of different dimensions read the dimensions both have @csqlfn <a class="el" href="group__mobilitydb__geo__dist_gaed80c7e645f57f88ccc899976590b8ae.html#gaed80c7e645f57f88ccc899976590b8ae" title="Return the nearest approach distance between two temporal geos @sqlfn nearestApproachDistance()">NAD_tgeo_tgeo()</a> </dd>
+<dd>
+A nearest approach is measured over the time the operands share, so operands whose time frames do not intersect have none and the answer is DBL_MAX </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return -1.0 </dd></dl>
 
 </div>

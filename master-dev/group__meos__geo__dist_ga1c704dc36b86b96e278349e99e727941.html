@@ -133,10 +133,11 @@ $(function() {
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box/geography </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">spheroid</td><td>True when measuring on the spheroid, false on the sphere, read for geodetic boxes only, as <a class="el" href="group__meos__geo__box__accessor_ga08df075179ba2b3f9a538209096f3048.html#ga08df075179ba2b3f9a538209096f3048" title="Return the area of a spatiotemporal box.">stbox_area</a> reads it @csqlfn <a class="el" href="group__mobilitydb__geo__dist_ga49ef6c63cd52bff1f34dbc509768b4b4.html#ga49ef6c63cd52bff1f34dbc509768b4b4" title="Return the nearest approach distance between a spatiotemporal box and a geometry @sqlfn nearestApproa...">NAD_stbox_geo()</a> <a class="el" href="group__mobilitydb__geo__dist_gacf09c40469d005c31a0335f7e231a3a6.html#gacf09c40469d005c31a0335f7e231a3a6" title="Return the nearest approach distance between a geometry and a spatiotemporal box @sqlfn nearestApproa...">NAD_geo_stbox()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">spheroid</td><td>True when measuring on the spheroid, false on the sphere, read for geodetic boxes only, as <a class="el" href="group__meos__geo__box__accessor_ga08df075179ba2b3f9a538209096f3048.html#ga08df075179ba2b3f9a538209096f3048" title="Return the area of a spatiotemporal box.">stbox_area</a> reads it </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>Operands of different dimensions read the dimensions both have @csqlfn <a class="el" href="group__mobilitydb__geo__dist_ga49ef6c63cd52bff1f34dbc509768b4b4.html#ga49ef6c63cd52bff1f34dbc509768b4b4" title="Return the nearest approach distance between a spatiotemporal box and a geometry @sqlfn nearestApproa...">NAD_stbox_geo()</a> <a class="el" href="group__mobilitydb__geo__dist_gacf09c40469d005c31a0335f7e231a3a6.html#gacf09c40469d005c31a0335f7e231a3a6" title="Return the nearest approach distance between a geometry and a spatiotemporal box @sqlfn nearestApproa...">NAD_geo_stbox()</a> </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>On error return -1.0 </dd></dl>
 
 </div>
