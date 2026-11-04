@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: ensure_valid_sptree_box</title>
+<title>MobilityDB: sptree_part</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -79,9 +79,8 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_abb22d6e11fd258d4ef007c6b3cac4013.html#abb22d6e11fd258d4ef007c6b3cac4013">ensure_valid_sptree_box</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ab713915f90f3f8496ed97523c2080201.html#ab713915f90f3f8496ed97523c2080201">ensure_sptree_op_box</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ad7d6322da31ab68e990f6f0f83c2ffda.html#ad7d6322da31ab68e990f6f0f83c2ffda">ensure_valid_sptree_kind</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a58aefa135e6677038ae6578b4dc7b17f.html#a58aefa135e6677038ae6578b4dc7b17f">ensure_valid_sptree_sptree</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_aa9ba567c1edf78c48e398932c96023ae.html#aa9ba567c1edf78c48e398932c96023ae">index_op_converse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a11d5e4e09839e8ddfca58f605736ad13.html#a11d5e4e09839e8ddfca58f605736ad13">span_get_quadrant</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_abced485a36a91cb7d58615b9afdcd87e.html#abced485a36a91cb7d58615b9afdcd87e">span_inner_consistent</a></td></tr>
@@ -134,13 +133,16 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga3c0c25c58fc672c87e7e24457c362372.html#ga3c0c25c58fc672c87e7e24457c362372">sptree_insert_temporal_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga8ea24407c9b7a2645f47ea5b10d529a4.html#ga8ea24407c9b7a2645f47ea5b10d529a4">sptree_join</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ad0bbf58dac82568ccff8e08061cca1d7.html#ad0bbf58dac82568ccff8e08061cca1d7">sptree_kind_is_valid</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga50fa4e3b28485320fcce299c655b16f2.html#ga50fa4e3b28485320fcce299c655b16f2">sptree_load</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a50fa4e3b28485320fcce299c655b16f2.html#a50fa4e3b28485320fcce299c655b16f2">sptree_load</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga300862e465d2538eb5f0df011c4c5c74.html#ga300862e465d2538eb5f0df011c4c5c74">sptree_mem_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga9ab95cd36ed20189a64adacb158b787a.html#ga9ab95cd36ed20189a64adacb158b787a">sptree_nn_cursor_close</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga705beb7077a6fe3013b6923f7bd463b7.html#ga705beb7077a6fe3013b6923f7bd463b7">sptree_nn_cursor_next</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gac0b74b016f58b09a0b05e88267c0b7ff.html#gac0b74b016f58b09a0b05e88267c0b7ff">sptree_nn_cursor_open</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_ae971c03ebf257ae6897ca5c8bc5d080b.html#ae971c03ebf257ae6897ca5c8bc5d080b">sptree_nodebox_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gad025a363390e1854419707c9aaf496c6.html#gad025a363390e1854419707c9aaf496c6">sptree_num_entries</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__sptree_8c_afe66e6bb5465ccdf43a3c5b1ce0dcec3.html#afe66e6bb5465ccdf43a3c5b1ce0dcec3">sptree_part</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gaae27f3c2274bf37a009a5b3e76e0cc44.html#gaae27f3c2274bf37a009a5b3e76e0cc44">sptree_part_load</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="temporal__sptree_8c_a30b1917ba9ec0cb44677af9a1ea60105.html#a30b1917ba9ec0cb44677af9a1ea60105">sptree_part_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga7d765874fe7316bef6f3eedaf12b2c64.html#ga7d765874fe7316bef6f3eedaf12b2c64">sptree_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_gad1d43245c2619ee9219c0a43e78c40fb.html#gad1d43245c2619ee9219c0a43e78c40fb">sptree_search_intl</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga6759384d4407fe195e9d52ad8aced6da.html#ga6759384d4407fe195e9d52ad8aced6da">sptree_search_temporal</a></td></tr>
@@ -164,8 +166,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="abb22d6e11fd258d4ef007c6b3cac4013" name="abb22d6e11fd258d4ef007c6b3cac4013"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abb22d6e11fd258d4ef007c6b3cac4013">&#9670;&#160;</a></span>ensure_valid_sptree_box()</h2>
+<a id="afe66e6bb5465ccdf43a3c5b1ce0dcec3" name="afe66e6bb5465ccdf43a3c5b1ce0dcec3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe66e6bb5465ccdf43a3c5b1ce0dcec3">&#9670;&#160;</a></span>sptree_part()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -174,9 +176,9 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static bool ensure_valid_sptree_box </td>
+          <td class="memname">static <a class="el" href="structSPTree.html">SPTree</a> * sptree_part </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="structSPTree.html">SPTree</a> *&#160;</td>
           <td class="paramname"><em>sptree</em>, </td>
         </tr>
         <tr>
@@ -198,8 +200,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return true if a box may enter or query an <a class="el" href="structSPTree.html" title="In-memory space-partitioning index (quad-tree or k-d tree)">SPTree</a>, report an error otherwise. </p>
-<p >A tree holds boxes of one SRID: the first entry fixes it, and a box of another one is an error rather than a coercion. The check belongs here, at the entry point, so that every comparison the descent makes can assume it </p>
+<p>Return the tree of an <a class="el" href="structSPTree.html" title="In-memory space-partitioning index (quad-tree or k-d tree)">SPTree</a> index holding the boxes of the structure of a box, appending an empty one when no tree does. </p>
+<p >As <a class="el" href="temporal__rtree_8c_a9335f56bd8492f73f920d0ed738c1286.html#a9335f56bd8492f73f920d0ed738c1286" title="Return the tree of an RTree index holding the boxes of the structure of a box, appending an empty one...">rtree_part</a> for an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. A tree keeps a box of its structure as received, since it may hold its boxes projected </p>
 
 </div>
 </div>

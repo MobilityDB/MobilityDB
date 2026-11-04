@@ -186,6 +186,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2stbox_8c_a38dd1a739c323cbec36fc86bcc62197a.html#a38dd1a739c323cbec36fc86bcc62197a">stbox_sortkey_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__srid_gaab82774edf9ac6ec2f10d76476262eb6.html#gaab82774edf9ac6ec2f10d76476262eb6">stbox_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2stbox_8c_a2a377002178fc2f856ceb67df4462669.html#a2a377002178fc2f856ceb67df4462669">stbox_stbox_flags</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2geo_2stbox_8c_a15c6b602b2b94306ca01cffce090cb86.html#a15c6b602b2b94306ca01cffce090cb86">stbox_stbox_is_valid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__accessor_gabf8940ccd38b63ddab198dfc76b2b335.html#gabf8940ccd38b63ddab198dfc76b2b335">stbox_tmax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__accessor_ga4e61116804f996fea578ebf2c84d2dfa.html#ga4e61116804f996fea578ebf2c84d2dfa">stbox_tmax_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__accessor_gae8263e98bab4633f1e02920d556c3052.html#gae8263e98bab4633f1e02920d556c3052">stbox_tmin</a></td></tr>
@@ -245,8 +246,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two spatiotemporal boxes are valid for operations. </p>
-<p >The boxes are comparable when they state the same spatial reference system, which for a spatiotemporal box is its SRID together with whether its coordinates are geodetic. A box carrying no X states neither, so the pair is comparable whatever the other box holds. Which dimensions an operation needs is the operation's own question, asked after this one </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Ensure that two spatiotemporal boxes are valid for operations. </p>
+<p >As <a class="el" href="meos_2src_2geo_2stbox_8c_a15c6b602b2b94306ca01cffce090cb86.html#a15c6b602b2b94306ca01cffce090cb86" title="Return true if two spatiotemporal boxes are valid for operations.">stbox_stbox_is_valid</a> states </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
   </table>

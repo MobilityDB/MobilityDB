@@ -152,6 +152,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__pointcloud__box__pos_gae518ff3dbe8da82091f534abc7b9860c.html#gae518ff3dbe8da82091f534abc7b9860c">tpcbox_overright</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpcbox_8c_a05c6b716e8139cb9dddc8281b3272f72.html#a05c6b716e8139cb9dddc8281b3272f72">tpcbox_parse</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_gad667297a38949a8f2e9e750ae11ed1b1.html#gad667297a38949a8f2e9e750ae11ed1b1">tpcbox_pcid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpcbox_8c_a7a46fe42fe542dfba62911734d22fb27.html#a7a46fe42fe542dfba62911734d22fb27">tpcbox_pcid_is_same</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpcbox_8c_ab05ea6618c0ebfab847a9bc51a4391ca.html#ab05ea6618c0ebfab847a9bc51a4391ca">tpcbox_pcid_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpcbox_8c_a630617c36fbfa4dbb91bcab6c40b8a7f.html#a630617c36fbfa4dbb91bcab6c40b8a7f">tpcbox_resolve_srid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__pointcloud__box__pos_ga9684c0910934038fcf0b7761c09d04e9.html#ga9684c0910934038fcf0b7761c09d04e9">tpcbox_right</a></td></tr>
@@ -167,6 +168,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_ga931ad19f9ef59e36d34bfb1c6264d8f1.html#ga931ad19f9ef59e36d34bfb1c6264d8f1">tpcbox_tmin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_ga6ed5bff2486a190db2fe73f6e9b9fe87.html#ga6ed5bff2486a190db2fe73f6e9b9fe87">tpcbox_tmin_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__conversion_gae326f6637b65550658f4650c93a6a41b.html#gae326f6637b65550658f4650c93a6a41b">tpcbox_to_stbox</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2pointcloud_2tpcbox_8c_ab062b1d7c9e2d2548b30f576f8f81736.html#ab062b1d7c9e2d2548b30f576f8f81736">tpcbox_tpcbox_is_valid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_ga1e53cadb64b03e39b0ba998d3f72f41f.html#ga1e53cadb64b03e39b0ba998d3f72f41f">tpcbox_xmax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_gad68c33d57f9b4f96098d712dfd8620fc.html#gad68c33d57f9b4f96098d712dfd8620fc">tpcbox_xmin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pointcloud__box__accessor_gaefe3b1363cc6a4507295be569ee31482.html#gaefe3b1363cc6a4507295be569ee31482">tpcbox_ymax</a></td></tr>
@@ -213,7 +215,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Ensure two TPCBoxes share the same schema (pcid) </p>
-<dl class="section note"><dt>Note</dt><dd>The schemas are compared as they are stated: a pcid of 0 names no schema, and a box carrying coordinates under it is not comparable with a box carrying them under a schema that does. The X guard in <a class="el" href="meos_2src_2pointcloud_2tpcbox_8c_a612bdb0daa7ba38b7780d577b89fbe43.html#a612bdb0daa7ba38b7780d577b89fbe43" title="Return true if two temporal pointcloud boxes are valid for operations.">ensure_valid_tpcbox_tpcbox</a> is what lets a box holding no coordinates meet a box of any schema. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The schemas are compared as they are stated: a pcid of 0 names no schema, and a box carrying coordinates under it is not comparable with a box carrying them under a schema that does. The X guard in <a class="el" href="meos_2src_2pointcloud_2tpcbox_8c_a612bdb0daa7ba38b7780d577b89fbe43.html#a612bdb0daa7ba38b7780d577b89fbe43" title="Ensure that two temporal pointcloud boxes are valid for operations.">ensure_valid_tpcbox_tpcbox</a> is what lets a box holding no coordinates meet a box of any schema. </dd></dl>
 
 </div>
 </div>

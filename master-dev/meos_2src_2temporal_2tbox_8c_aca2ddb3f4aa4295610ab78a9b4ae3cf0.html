@@ -209,6 +209,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_adcc470973e2e6ae162d1dab25ee1c2b5.html#adcc470973e2e6ae162d1dab25ee1c2b5">tbox_sortkey_put</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_a8caf2bc8c123fd1df194c9e9f0666804.html#a8caf2bc8c123fd1df194c9e9f0666804">tbox_sortkey_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_a434da9322fcf93718edfc91874ab3aa3.html#a434da9322fcf93718edfc91874ab3aa3">tbox_tbox_flags</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2tbox_8c_a6de3852622565b8756b8a85ae263f613.html#a6de3852622565b8756b8a85ae263f613">tbox_tbox_is_valid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__accessor_gaa50a89acac39b6cdf4f99037b3a5604c.html#gaa50a89acac39b6cdf4f99037b3a5604c">tbox_tmax</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__accessor_gab025881950f492d5d85c98416d1b4da3.html#gab025881950f492d5d85c98416d1b4da3">tbox_tmax_inc</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__box__accessor_ga034b39bf990fed8f08d6b042f92118b4.html#ga034b39bf990fed8f08d6b042f92118b4">tbox_tmin</a></td></tr>
@@ -267,8 +268,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two temporal boxes are valid for operations. </p>
-<p >The boxes are comparable when their value spans measure the same quantity, which the span type states. A box carrying no value span states none, so the pair is comparable whatever the other box holds. Which dimensions an operation needs is the operation's own question, asked after this one </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Ensure that two temporal boxes are valid for operations. </p>
+<p >As <a class="el" href="meos_2src_2temporal_2tbox_8c_a6de3852622565b8756b8a85ae263f613.html#a6de3852622565b8756b8a85ae263f613" title="Return true if two temporal boxes are valid for operations.">tbox_tbox_is_valid</a> states </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> boxes </td></tr>
   </table>

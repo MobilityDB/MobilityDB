@@ -202,8 +202,8 @@ parameter u in [0, 1]".  <a href="meos_2src_2rgeo_2trgeo__geom__clip_8c_a4c2011b
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Swept-edge-polygon clip primitive (M1 + M2) </p>
 <p >Computes time intervals during which a moving polygon edge intersects a static polygon. The swept envelope of the edge between two timestamps is:</p><ul>
-<li>M1 (pure translation): a parallelogram; P(u, t) is affine in both u and t. Boundary residuals are linear → closed form.</li>
-<li>M2 (rotation, 2D only): a curved quadrilateral whose two "lateral" sides are arcs; P(u, t) is non-linear in t. Boundary residuals are <code>a + b*t + c*cos(theta(t)) + d*sin(theta(t))</code>. Two solver paths: closed-form Taylor for |Delta theta| &lt; 0.10 rad, and 20-bin sign-change scan + bracket bisection otherwise.</li>
+<li>M1 (pure translation): a parallelogram; <a class="el" href="index__structure__test_8c_afcb6af1fe1e462eee771edc1ada9a6bf.html#afcb6af1fe1e462eee771edc1ada9a6bf">P(u, t)</a> is affine in both u and t. Boundary residuals are linear → closed form.</li>
+<li>M2 (rotation, 2D only): a curved quadrilateral whose two "lateral" sides are arcs; <a class="el" href="index__structure__test_8c_afcb6af1fe1e462eee771edc1ada9a6bf.html#afcb6af1fe1e462eee771edc1ada9a6bf">P(u, t)</a> is non-linear in t. Boundary residuals are <code>a + b*t + c*cos(theta(t)) + d*sin(theta(t))</code>. Two solver paths: closed-form Taylor for |Delta theta| &lt; 0.10 rad, and 20-bin sign-change scan + bracket bisection otherwise.</li>
 </ul>
 <p >Note: "trapezoid" in this codebase refers to the shape swept by a tcbuffer segment (two circle arcs + two tangent lines), implemented in <a class="el" href="tcbuffer__spatialfuncs_8c_a60b2e52584556ea166432d1993f475b1.html#a60b2e52584556ea166432d1993f475b1" title="Return a trapezoid created from two circular buffers.">trapezoid_make()</a>. The trgeo swept quadrilateral is a distinct shape — do not conflate the two.</p>
 <p >3D pose input is rejected: trgeometry surfaces operate in 2D (PostGIS curve arithmetic bottoms out in 2D).</p>

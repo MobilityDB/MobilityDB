@@ -86,6 +86,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a40479edec59d5ae9579f470a970f8230.html#a40479edec59d5ae9579f470a970f8230">point_get_coords</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a8fd48671cd63a2bbd38f3206c892e3e7.html#a8fd48671cd63a2bbd38f3206c892e3e7">stbox_sortkey_put</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a38dd1a739c323cbec36fc86bcc62197a.html#a38dd1a739c323cbec36fc86bcc62197a">stbox_sortkey_size</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="stbox_8h_a15c6b602b2b94306ca01cffce090cb86.html#a15c6b602b2b94306ca01cffce090cb86">stbox_stbox_is_valid</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a7af3ef677bf8e92f4a5fdb3dc8bab334.html#a7af3ef677bf8e92f4a5fdb3dc8bab334">STboxPGetDatum</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a5bcad7ed96894a77469a06522942e9ff.html#a5bcad7ed96894a77469a06522942e9ff">tstzset_stbox_slice</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="stbox_8h_a1589afce4b4d6cfa68551685ef8ce380.html#a1589afce4b4d6cfa68551685ef8ce380">tstzspanset_stbox_slice</a></td></tr>
@@ -119,8 +120,8 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return true if two spatiotemporal boxes are valid for operations. </p>
-<p >The boxes are comparable when they state the same spatial reference system, which for a spatiotemporal box is its SRID together with whether its coordinates are geodetic. A box carrying no X states neither, so the pair is comparable whatever the other box holds. Which dimensions an operation needs is the operation's own question, asked after this one </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Ensure that two spatiotemporal boxes are valid for operations. </p>
+<p >As <a class="el" href="meos_2src_2geo_2stbox_8c_a15c6b602b2b94306ca01cffce090cb86.html#a15c6b602b2b94306ca01cffce090cb86" title="Return true if two spatiotemporal boxes are valid for operations.">stbox_stbox_is_valid</a> states </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box1,box2</td><td>Spatiotemporal boxes </td></tr>
   </table>

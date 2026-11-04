@@ -82,6 +82,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;postgres.h&gt;</code><br />
+<code>#include &lt;access/stratnum.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &quot;temporal/meos_catalog.h&quot;</code><br />
 </div>
@@ -123,6 +124,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aeea57253007c7a74769d62a4d45beb45"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bbox__index_8h_aeea57253007c7a74769d62a4d45beb45.html#aeea57253007c7a74769d62a4d45beb45">common_entry_cmp</a> (const void *i1, const void *i2)</td></tr>
 <tr class="memdesc:aeea57253007c7a74769d62a4d45beb45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare common entries by their deltas.  <a href="bbox__index_8h_aeea57253007c7a74769d62a4d45beb45.html#aeea57253007c7a74769d62a4d45beb45">More...</a><br /></td></tr>
 <tr class="separator:aeea57253007c7a74769d62a4d45beb45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ea661fcc85030fbd23420d657706cdb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bbox__index_8h_a1ea661fcc85030fbd23420d657706cdb.html#a1ea661fcc85030fbd23420d657706cdb">index_strategy_is_valid</a> (<a class="el" href="meos_2include_2temporal_2meos__catalog_8h_a05df1d1fd2c829ee784b125ed34e8401.html#a05df1d1fd2c829ee784b125ed34e8401">MeosType</a> bboxtype, StrategyNumber strategy, const void *box, const void *query)</td></tr>
+<tr class="memdesc:a1ea661fcc85030fbd23420d657706cdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return true if the operator of a strategy of a PostgreSQL index over bounding boxes applied to a stored box and a query raises no error.  <a href="bbox__index_8h_a1ea661fcc85030fbd23420d657706cdb.html#a1ea661fcc85030fbd23420d657706cdb">More...</a><br /></td></tr>
+<tr class="separator:a1ea661fcc85030fbd23420d657706cdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a021a801edbc0a75bc078ebd19be91ce8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="bbox__index_8h_a021a801edbc0a75bc078ebd19be91ce8.html#a021a801edbc0a75bc078ebd19be91ce8">pg_float8_cmp</a> (float8 a, float8 <a class="el" href="trgeo__distance_8txt_a348e5091b750380e4462dbd9f4b259b9.html#a348e5091b750380e4462dbd9f4b259b9">b</a>)</td></tr>
 <tr class="memdesc:a021a801edbc0a75bc078ebd19be91ce8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Splitting a set of bounding boxes in two for an index node.  <a href="bbox__index_8h_a021a801edbc0a75bc078ebd19be91ce8.html#a021a801edbc0a75bc078ebd19be91ce8">More...</a><br /></td></tr>
 <tr class="separator:a021a801edbc0a75bc078ebd19be91ce8"><td class="memSeparator" colspan="2">&#160;</td></tr>
