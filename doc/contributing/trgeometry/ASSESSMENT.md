@@ -135,8 +135,9 @@ Each is a call that should answer, or an error that misleads, so its pull reques
 
 | Call | What happens |
 |---|---|
-| `atValues`, `minusValues` over a `poseset` | All 58 calls fail: "Missing delimeter character ',': Point(N N)" |
-| `stops` | All 29 calls fail: "Sequence must have a spatial point base type", or the interpolation error; `CREATE FUNCTION` declares it |
+| A literal with an SRID before the pose | `Polygon(...);SRID=25832;Pose(...)` answers with no SRID, and a line break after the SRID is a parse error |
+| `atStbox`, `minusStbox` with a box of time alone | "The stbox must have X dimension" |
+| `stops` | All 29 calls fail: "Sequence must have a spatial point base type", or the interpolation error, and over a `tpose` too; `CREATE FUNCTION` declares it |
 | `tIntersects`, `tDisjoint` of a 3D surface | 208 calls fail with an internal message: "lwgeom_set_geodetic: unsupported geom type: PolyhedralSurface" |
 | `round(x, 1)` of a 3D rotation | "Rotation quaternion must be of unit norm", since each coordinate is rounded alone; 6 digits answer |
 | `tDistance` of a 3D value and a 3D `tgeompoint` | "The arguments must be of the same dimensionality", although both have Z |
@@ -155,7 +156,9 @@ Each is a call that should answer, or an error that misleads, so its pull reques
 
 | Text | What it says | The code |
 |---|---|---|
-| `doc/temporal_rigid_geometries.xml`, the chapter's opening | "a static 2D reference geometry" | Builds a 3D reference geometry with a quaternion pose |
+| `doc/temporal_rigid_geometries.xml`, Restrictions | "its centroid (antenna) at t lies in that region" | A restriction reads the body: a target over the body answers and one over the rotation centre answers NULL |
+| The same, six examples | `temporalTime`, `geom`, an SRID before the pose, `atStbox` with a box of time alone | Each gives an error |
+| The same, the chapter's opening | "a static 2D reference geometry" | Builds a 3D reference geometry with a quaternion pose |
 | The same, Input and Output | "any 2D polygon or polyhedral surface" | The same |
 | `doc/contributing/trgeometry_design_notes.md` | "2D-only reference geometry", "The type carries no 3D rigid-body representation" | `tbl_trgeometry3d` holds such values, `random_trgeom3d_inst` makes them, the index classes declare the operators on Z, and Chapter 4 uses them |
 | `trgeo_distance.c`, a comment | "A temporal rigid geometry has two dimensions" | The same |
