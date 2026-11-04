@@ -12,7 +12,8 @@ This plan is the one place for what `trgeometry` answers, what it does not, and 
 difference. A `trgeometry` accepts more than it answers: it takes a concave polygon, a polygon with
 holes, a polyhedral surface and a reference geometry in three dimensions, and a function then
 refuses some of them, or answers without reading Z. The manual states none of this and describes
-the type as 2D, while the code builds 3D values and indexes them.
+the type as 2D, while the code builds 3D values and indexes them, and Chapter 4 of MobilityBook Vol. 2
+uses them on the nuScenes dataset.
 
 This plan stands alone. It states every task on the type, with its own rows and its own state, so
 that it is read and carried out without another plan. A change another plan makes across every
@@ -37,6 +38,7 @@ family reaches `trgeometry` through a row here.
 | `meos/src/rgeo/trgeo_distance.txt` | The algorithm of the temporal distance |
 | Chapter 4 of MobilityBook Vol. 2 | The algorithms of the traversed area and the temporal distance, which govern the code |
 | `tools/trgeo_gaps.py` | The ledger and the known answers of the assessment |
+| `chapter4/` of MobilityDB/MobilityDataScienceBookVol2 | `load_nuscenes.sql` and `nuscenes_queries.sql`, the use case in three dimensions |
 | `mobilitydb/test/rgeo/` | The regression tests, `162_trgeo_indexes_tbl` for the indexes |
 
 ## Where things stand
@@ -45,7 +47,7 @@ Measured on master `78839117d9`: 316 functions, 50,411 calls, no backend lost.
 
 - **Calls that answer wrongly, with no error.** On a 3D value, `eIntersects`, `aDisjoint`,
   `eContains`, `eCovers`, `eTouches`, `eDisjoint`, `tIntersects`, `tDisjoint`, `atStbox`,
-  `minusStbox`, the merged `traversedArea` and `convexHull`. These come first: a refusal is visible
+  `minusStbox` and, in a turn, the merged `traversedArea`. These come first: a refusal is visible
   and these are not.
 - **Calls that refuse.** The distance family over a 3D value, a concave, holed or surface body, a
   static polygon that is concave or has holes, a collection and a curve; `atGeometry` and
