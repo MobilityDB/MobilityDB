@@ -78,4 +78,11 @@ SELECT asText(rotateZ(tpose '[Pose(Point(1 1),0.3)@2001-01-01,
   Pose(Point(3 2),1.1)@2001-01-02]', 0.7), 6);
 /* [Pose(POINT(0.120625 1.40906),1)@2001-01-01,
    Pose(POINT(1.006091 3.462337),1.8)@2001-01-02] */
+</pre></li><li class="listitem"><a name="tpose_force2D"></a><a class="indexterm" name="id10912"></a><p>Return a temporal pose projected to the ground <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</p><pre class="programlisting">
+force2D(tpose) → tpose
+</pre><p>Each instant keeps the x and the y of its position and the yaw of its orientation. The rotation of a segment in three dimensions takes the shortest arc between two quaternions, so the result agrees with the value at the instants, and between them where the rotation is about the vertical. A value in two dimensions stays as it is.</p><pre class="programlisting">
+SELECT asText(force2D(tpose '[Pose(Point(1 1 5),0.7071067811865476,0,0,0.7071067811865476)@2001-01-01,
+  Pose(Point(3 2 7),1,0,0,0)@2001-01-02]'), 6);
+-- [Pose(POINT(1 1),1.570796)@2001-01-01, Pose(POINT(3 2),0)@2001-01-02]
 </pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch13s09.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch13.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch13s11.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Accessors </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Modifications</td></tr></table></div></body></html>
