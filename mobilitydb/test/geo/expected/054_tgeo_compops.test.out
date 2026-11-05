@@ -25,7 +25,7 @@ SELECT geometry 'Point(1 1)' %<> tgeometry 'Point(1 1)@2001-01-01';
 SELECT geometry 'Polygon empty' ?= tgeometry 'Point(1 1)@2001-01-01';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT geography 'Point(1 1)' ?= tgeography 'Point(1 1)@2001-01-01';
@@ -204,27 +204,27 @@ SELECT geometry 'Point(1 1)' #= tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2
 (1 row)
 
 SELECT geometry 'Point empty' #= tgeometry 'Point(1 1)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geometry 'Point empty' #= tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geometry 'Point empty' #= tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geometry 'Point empty' #= tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT geometry 'Point(1 1)' #= tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]';
@@ -264,27 +264,27 @@ SELECT geometry 'Point(1 1 1)' #= tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 
 (1 row)
 
 SELECT geometry 'Point Z empty' #= tgeometry 'Point(1 1 1)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geometry 'Point Z empty' #= tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geometry 'Point Z empty' #= tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geometry 'Point Z empty' #= tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #= geometry 'Point(1 1)';
@@ -312,27 +312,27 @@ SELECT tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@200
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #= geometry 'Point empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' #= geometry 'Point empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' #= geometry 'Point empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' #= geometry 'Point empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #= geometry 'Point(1 1 1)';
@@ -360,27 +360,27 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
 (1 row)
 
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #= geometry 'Point Z empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' #= geometry 'Point Z empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' #= geometry 'Point Z empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' #= geometry 'Point Z empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #= tgeometry 'Point(1 1)@2001-01-01';
@@ -642,27 +642,27 @@ SELECT geography 'Point(1 1)' #= tgeography '{[Point(1.5 1.5)@2001-01-01, Point(
 (1 row)
 
 SELECT geography 'Point empty' #= tgeography 'Point(1.5 1.5)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geography 'Point empty' #= tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geography 'Point empty' #= tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geography 'Point empty' #= tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT geography 'Point(1 1 1)' #= tgeography 'Point(1.5 1.5 1.5)@2001-01-01';
@@ -690,27 +690,27 @@ SELECT geography 'Point(1 1 1)' #= tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, 
 (1 row)
 
 SELECT geography 'Point Z empty' #= tgeography 'Point(1.5 1.5 1.5)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geography 'Point Z empty' #= tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geography 'Point Z empty' #= tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geography 'Point Z empty' #= tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #= geography 'Point(1 1)';
@@ -738,27 +738,27 @@ SELECT tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #= geography 'Point empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}' #= geography 'Point empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]' #= geography 'Point empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}' #= geography 'Point empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5 1.5)@2001-01-01' #= geography 'Point(1 1 1)';
@@ -786,27 +786,27 @@ SELECT tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-0
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5 1.5)@2001-01-01' #= geography 'Point Z empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}' #= geography 'Point Z empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]' #= geography 'Point Z empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}' #= geography 'Point Z empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #= tgeography 'Point(1.5 1.5)@2001-01-01';
@@ -1026,27 +1026,27 @@ SELECT geometry 'Point(1 1)' #<> tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@
 (1 row)
 
 SELECT geometry 'Point empty' #<> tgeometry 'Point(1 1)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geometry 'Point empty' #<> tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geometry 'Point empty' #<> tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geometry 'Point empty' #<> tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT geometry 'Point(1 1)' #<> tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]';
@@ -1086,27 +1086,27 @@ SELECT geometry 'Point(1 1 1)' #<> tgeometry '{[Point(1 1 1)@2001-01-01, Point(2
 (1 row)
 
 SELECT geometry 'Point Z empty' #<> tgeometry 'Point(1 1 1)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geometry 'Point Z empty' #<> tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geometry 'Point Z empty' #<> tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geometry 'Point Z empty' #<> tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #<> geometry 'Point(1 1)';
@@ -1134,27 +1134,27 @@ SELECT tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@200
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #<> geometry 'Point empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' #<> geometry 'Point empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' #<> geometry 'Point empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' #<> geometry 'Point empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #<> geometry 'Point(1 1 1)';
@@ -1182,27 +1182,27 @@ SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 
 (1 row)
 
 SELECT tgeometry 'Point(1 1 1)@2001-01-01' #<> geometry 'Point Z empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}' #<> geometry 'Point Z empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]' #<> geometry 'Point Z empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03],[Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}' #<> geometry 'Point Z empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeometry 'Point(1 1)@2001-01-01' #<> tgeometry 'Point(1 1)@2001-01-01';
@@ -1434,27 +1434,27 @@ SELECT geography 'Point(1 1)' #<> tgeography '{[Point(1.5 1.5)@2001-01-01, Point
 (1 row)
 
 SELECT geography 'Point empty' #<> tgeography 'Point(1.5 1.5)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geography 'Point empty' #<> tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geography 'Point empty' #<> tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geography 'Point empty' #<> tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT geography 'Point(1 1 1)' #<> tgeography 'Point(1.5 1.5 1.5)@2001-01-01';
@@ -1482,27 +1482,27 @@ SELECT geography 'Point(1 1 1)' #<> tgeography '{[Point(1.5 1.5 1.5)@2001-01-01,
 (1 row)
 
 SELECT geography 'Point Z empty' #<> tgeography 'Point(1.5 1.5 1.5)@2001-01-01';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT geography 'Point Z empty' #<> tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT geography 'Point Z empty' #<> tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT geography 'Point Z empty' #<> tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #<> geography 'Point(1 1)';
@@ -1530,27 +1530,27 @@ SELECT tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #<> geography 'Point empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeography '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}' #<> geography 'Point empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeography '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]' #<> geography 'Point empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeography '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}' #<> geography 'Point empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5 1.5)@2001-01-01' #<> geography 'Point(1 1 1)';
@@ -1578,27 +1578,27 @@ SELECT tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-0
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5 1.5)@2001-01-01' #<> geography 'Point Z empty';
- ?column? 
-----------
- 
+            ?column?            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tgeography '{Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03}' #<> geography 'Point Z empty';
- ?column? 
-----------
- 
+                                             ?column?                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tgeography '[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03]' #<> geography 'Point Z empty';
- ?column? 
-----------
- 
+                             ?column?                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tgeography '{[Point(1.5 1.5 1.5)@2001-01-01, Point(2.5 2.5 2.5)@2001-01-02, Point(1.5 1.5 1.5)@2001-01-03],[Point(3.5 3.5 3.5)@2001-01-04, Point(3.5 3.5 3.5)@2001-01-05]}' #<> geography 'Point Z empty';
- ?column? 
-----------
- 
+                                                               ?column?                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tgeography 'Point(1.5 1.5)@2001-01-01' #<> tgeography 'Point(1.5 1.5)@2001-01-01';

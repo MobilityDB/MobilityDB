@@ -2,21 +2,21 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tContains(g, temp) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tContains(g, seq) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
   WHERE tContains(g, ss) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
@@ -44,28 +44,28 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tDisjoint(temp, g) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDisjoint(g, seq) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tDisjoint(g, ss) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
@@ -114,28 +114,28 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tIntersects(temp, g) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tIntersects(g, seq) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tIntersects(g, ss) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
@@ -184,28 +184,28 @@ SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
   WHERE tTouches(g, temp) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tTouches(temp, g) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seq
   WHERE tTouches(g, seq) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint_step_seqset
   WHERE tTouches(g, ss) IS NOT NULL;
  count 
 -------
- 15100
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom, tbl_tgeompoint
@@ -240,14 +240,14 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint
   WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint, tbl_geom_point
   WHERE tDwithin(temp, g, 10) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint t2
@@ -261,14 +261,14 @@ SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seq
   WHERE tDwithin(g, seq, 10) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geom_point, tbl_tgeompoint_step_seqset
   WHERE tDwithin(g, ss, 10) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeompoint t1, tbl_tgeompoint3D t2
@@ -289,14 +289,14 @@ SELECT COUNT(*) FROM tbl_geog_point, tbl_tgeogpoint
   WHERE tDwithin(g, temp, 500000) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint, tbl_geog_point
   WHERE tDwithin(temp, g, 500000, false) IS NOT NULL;
  count 
 -------
-  9900
+ 10000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tgeogpoint t1, tbl_tgeogpoint t2

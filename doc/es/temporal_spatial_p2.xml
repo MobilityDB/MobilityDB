@@ -239,6 +239,48 @@ SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=|
 		<para>Como la regla no produce ningún error, un valor al que le falta su Z por equivocación responde en 2D sin ningún aviso. Las funciones <xref linkend="tgeo_force"/> indican las dimensiones que se leen. Una columna declarada con dimensión Z, como <varname>tgeompoint(Sequence, PointZ)</varname>, no acepta un valor sin Z, de modo que una tabla no puede contenerlo.</para>
 	</sect1>
 
+	<sect1 xml:id="tgeo_empty_geometries">
+		<title>Geometrías vacías</title>
+		<para><emphasis role="strong">Una geometría vacía es el conjunto vacío de puntos: no está en ninguna parte.</emphasis> Como en PostGIS, una operación le da la respuesta que da el conjunto vacío, y no se produce ni un error ni un aviso, salvo donde la geometría debe ser la posición de un valor.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- It meets nothing
+SELECT eIntersects(geometry 'Point empty',
+  tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+-- f
+SELECT tDisjoint(geometry 'Point empty',
+  tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+-- [t@2001-01-01, t@2001-01-03]
+-- Nothing can be measured to it
+SELECT geometry 'Point empty' &lt;-&gt;
+  tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]';
+-- NULL
+-- It removes nothing and keeps nothing
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+-- [POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02, POINT(1 1)@2001-01-03]
+SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+-- NULL
+-- It cannot be the position of a value
+SELECT tgeompoint(geometry 'Point empty', timestamptz '2001-01-01');
+-- ERROR:  Only non-empty geometries accepted
+</programlisting>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis role="strong">No toca nada.</emphasis> Una relación que pide un punto común, como <varname>intersects</varname>, <varname>contains</varname>, <varname>covers</varname>, <varname>touches</varname>, la distancia dentro de un umbral y la igualdad, es falsa, mientras que <varname>disjoint</varname> y la desigualdad son verdaderas. Una relación o comparación temporal toma esta respuesta durante todo el tiempo del valor temporal, y las formas alguna vez y siempre responden lo mismo.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">Nada puede medirse hasta ella.</emphasis> Las distancias (<varname>|=|</varname>, <varname>&lt;-&gt;</varname>, <varname>nearestApproachInstant</varname>, <varname>shortestLine</varname>) y <varname>bearing</varname> son <varname>NULL</varname>. No tiene cuadro delimitador, de modo que <varname>stbox</varname>, <varname>expandSpace</varname>, <varname>stboxes</varname>, <varname>splitNStboxes</varname> y <varname>splitEachNStboxes</varname> son <varname>NULL</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">No quita nada y no conserva nada.</emphasis> Las restricciones <varname>atGeometry</varname> y <varname>atValue</varname> son <varname>NULL</varname>, ya que no queda ningún instante, y <varname>minusGeometry</varname> y <varname>minusValue</varname> devuelven el valor temporal sin cambios.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">No puede ser la posición de un valor.</emphasis> Construir un valor temporal o un conjunto a partir de ella, o darla como origen de <varname>rotate</varname> y <varname>scale</varname>, produce un error.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tgeo_spatial_bbox">
 		<title>Operaciones de cuadro delimitador</title>
 
