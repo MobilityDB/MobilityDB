@@ -486,6 +486,15 @@ SELECT deltaValue(tint '[5@2001-01-01, 2@2001-01-02]');
 SELECT deltaValue(tbigint '[5@2001-01-01, 2@2001-01-02]');
 SELECT deltaValue(tbigint '[-3@2001-01-01, 4@2001-01-02]');
 SELECT deltaValue(tbigint '[-3000000000@2001-01-01, 4000000000@2001-01-02]');
+-- A difference at the bound of the integers answers, one beyond raises an error
+SELECT deltaValue(tint '[2147483646@2001-01-01, -2@2001-01-02]');
+SELECT deltaValue(tint '[2147483646@2001-01-01, -3@2001-01-02]');
+SELECT deltaValue(tint '[-2147483648@2001-01-01, 1@2001-01-02]');
+SELECT deltaValue(tint '{[1@2001-01-01, 2@2001-01-02], [-2147483648@2001-01-03, 1@2001-01-04]}');
+SELECT deltaValue(tbigint '[9223372036854775806@2001-01-01, -2@2001-01-02]');
+SELECT deltaValue(tbigint '[9223372036854775806@2001-01-01, -3@2001-01-02]');
+SELECT deltaValue(tbigint '[-9223372036854775808@2001-01-01, 1@2001-01-02]');
+SELECT deltaValue(tbigint '{[1@2001-01-01, 2@2001-01-02], [-9223372036854775808@2001-01-03, 1@2001-01-04]}');
 -- The result takes the temporal type of the argument
 SELECT pg_typeof(deltaValue(tint '[5@2001-01-01, 2@2001-01-02]'));
 SELECT pg_typeof(deltaValue(tbigint '[5@2001-01-01, 2@2001-01-02]'));
