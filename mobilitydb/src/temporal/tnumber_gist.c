@@ -108,72 +108,6 @@ tnumber_gist_get_tbox(FunctionCallInfo fcinfo, TBox *result, MeosType type)
   return true;
 }
 
-PGDLLEXPORT Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tnumber_gist_consistent);
-/**
- * @brief GiST consistent method for temporal numbers
- */
-Datum
-Tnumber_gist_consistent(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid typid = PG_GETARG_OID(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  const TBox *key = DatumGetTboxP(entry->key);
-  if (! key)
-    PG_RETURN_BOOL(false);
-
-  /* Determine whether the index is lossy depending on the strategy */
-  *recheck = tbox_index_recheck(strategy);
-
-  /* Transform the query into a box */
-  TBox query;
-  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
-    PG_RETURN_BOOL(false);
-
-  bool result;
-  if (MEOS_FLAGS_GET_PARTS(key->flags))
-    /* A key over boxes of several structures bounds none of them */
-    result = true;
-  else if (! index_strategy_is_valid(T_TBOX, strategy, key, &query))
-  {
-    /* The operator raises its error on the boxes under the key, which the
-     * recheck applies it to */
-    *recheck = true;
-    result = true;
-  }
-  else if (GIST_LEAF(entry))
-    result = tbox_index_leaf_consistent(key, &query, strategy);
-  else
-    result = tbox_gist_inner_consistent(key, &query, strategy);
-
-  PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************
- * GiST union method
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tbox_gist_union(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_gist_union);
-/**
- * @brief GiST union method for temporal numbers
- * @details Return the minimal bounding box that encloses all the entries in
- * entryvec
- */
-Datum
-Tbox_gist_union(PG_FUNCTION_ARGS)
-{
-  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  GISTENTRY *ent = entryvec->vector;
-  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
-  for (int i = 1; i < entryvec->n; i++)
-    bbox_gist_adjust(T_TBOX, result, DatumGetPointer(ent[i].key),
-      &tbox_adjust);
-  PG_RETURN_TBOX_P(result);
-}
-
 /*****************************************************************************
  * GiST compress method
  *****************************************************************************/
@@ -198,29 +132,6 @@ Tnumber_gist_compress(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(retval);
   }
   PG_RETURN_POINTER(entry);
-}
-
-/*****************************************************************************
- * GiST penalty method
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tbox_gist_penalty(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
-/**
- * @brief GiST penalty method for temporal boxes
- * @note As in the R-tree paper, we use change in area as our penalty metric
- */
-Datum
-Tbox_gist_penalty(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
-  float *result = (float *) PG_GETARG_POINTER(2);
-  void *origbox = DatumGetPointer(origentry->key);
-  void *newbox = DatumGetPointer(newentry->key);
-  *result = (float) bbox_gist_penalty(T_TBOX, origbox, newbox,
-    &tbox_penalty);
-  PG_RETURN_POINTER(result);
 }
 
 /*****************************************************************************
@@ -388,15 +299,140 @@ bbox_gist_picksplit(FunctionCallInfo fcinfo, MeosType bboxtype,
   PG_RETURN_POINTER(v);
 }
 
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/* GENERATED-BOXGIST-BEGIN tbox — tools/codegen/inherited/generate.py from templates/boxgist.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxgist.yaml and re-run. */
+/*****************************************************************************
+ * GiST consistent method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tnumber_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tnumber_gist_consistent);
+/**
+ * @brief GiST consistent method for temporal boxes
+ */
+Datum
+Tnumber_gist_consistent(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  TBox *key = DatumGetTboxP(entry->key), query;
+  if (! key)
+    PG_RETURN_BOOL(false);
+
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = tbox_index_recheck(strategy);
+
+  /* Transform the query into a box */
+  if (! tnumber_gist_get_tbox(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_BOOL(false);
+
+  bool result;
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_TBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
+    result = tbox_index_leaf_consistent(key, &query, strategy);
+  else
+    result = tbox_gist_inner_consistent(key, &query, strategy);
+
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_gist_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_gist_union);
+/**
+ * @brief GiST union method for temporal boxes
+ * @details Return the minimal bounding box that encloses all the entries in
+ * entryvec
+ */
+Datum
+Tbox_gist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  TBox *result = tbox_copy(DatumGetTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    bbox_gist_adjust(T_TBOX, result, DatumGetTboxP(ent[i].key),
+      &tbox_adjust);
+  PG_RETURN_TBOX_P(result);
+}
+
+/*****************************************************************************
+ * GiST penalty method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tbox_gist_penalty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tbox_gist_penalty);
+/**
+ * @brief GiST penalty method for temporal boxes
+ * @note As in the R-tree paper, we use change in area as our penalty metric
+ */
+Datum
+Tbox_gist_penalty(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *result = (float *) PG_GETARG_POINTER(2);
+  void *origbox = DatumGetPointer(origentry->key);
+  void *newbox = DatumGetPointer(newentry->key);
+  *result = (float) bbox_gist_penalty(T_TBOX, origbox, newbox,
+    &tbox_penalty);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST picksplit method
+ *****************************************************************************/
+
 PGDLLEXPORT Datum Tbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_picksplit);
 /**
- * @brief GiST picksplit method for temporal numbers
+ * @brief GiST picksplit method for temporal boxes
+ * @details
+ * The algorithm finds split of boxes by considering splits along each axis.
+ * Each entry is first projected as an interval on the first axis, and
+ * different ways to split the intervals into two groups are considered,
+ * trying to minimize the overlap of the groups. Then the same is repeated for
+ * the other axes, and the overall best split is chosen. The quality of a split
+ * is determined by overlap along that axis and some other criteria (see
+ * bbox_gist_consider_split).
+ *
+ * After that, all the entries are divided into three groups:
+ *
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
+ *    of overlap along selected axis.
+ *
+ * The common entries are distributed by minimizing penalty.
+ *
+ * For details see:
+ * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
+ * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
  */
 Datum
 Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust, &tbox_penalty);
+  return bbox_gist_picksplit(fcinfo, T_TBOX, &tbox_adjust,
+    &tbox_penalty);
 }
 
 /*****************************************************************************
@@ -406,10 +442,11 @@ Tbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_same);
 /**
- * @brief GiST same method for temporal numbers
- * @details Return true only when boxes are exactly the same. Fuzzy comparisons
- * cannot be used here without breaking index consistency; therefore, this is
- * not equivalent to box_same().
+ * @brief GiST same method for temporal boxes
+ * @details Return true only when the boxes are exactly the same. Fuzzy
+ * comparisons cannot be used here without breaking index consistency, and an
+ * index method answers where the operator @p ~= refuses its arguments, so
+ * this is not that operator
  */
 Datum
 Tbox_gist_same(PG_FUNCTION_ARGS)
@@ -439,8 +476,8 @@ Tbox_gist_same(PG_FUNCTION_ARGS)
  * @brief Return the distance between the bounding box of an index entry and a
  * query, in the last argument whether the leaf entries must be rechecked
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] boxcolumn True when the index is built over a column of temporal
- *   boxes, so that a leaf key is the value itself
+ * @param[in] boxcolumn True when the index is built over a column of
+ *   temporal boxes, so that a leaf key is the value itself
  */
 static Datum
 tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
@@ -449,29 +486,28 @@ tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   Oid typid = PG_GETARG_OID(3);
   bool *recheck = (bool *) PG_GETARG_POINTER(4);
   TBox *key = (TBox *) DatumGetPointer(entry->key);
+  if (! key)
+    PG_RETURN_FLOAT8(DBL_MAX);
   MeosType type = oid_meostype(typid);
 
   /* A leaf key of a column of boxes is the value itself, so its distance to a
-   * query box is the one the operator computes. Every other pairing measures a
-   * bounding box against a value and bounds the distance from below, which the
-   * recheck of the leaf entries settles */
-  if (key && GIST_LEAF(entry))
+   * query box is the one the operator computes. Every other pairing measures
+   * a bounding box against a value and bounds the distance from below, which
+   * the recheck of the leaf entries settles */
+  if (GIST_LEAF(entry))
     *recheck = ! (boxcolumn && type == T_TBOX);
 
-  /* Transform the query into a box. The distance is unknown when there is no
-   * key or the query is not a box, and the maximum orders those entries after
-   * every candidate whose distance is known. A null cannot be returned here,
-   * as the GiST framework reads the result of its distance method as a
-   * double and rejects a null one */
+  /* Transform the query into a box. The distance is unknown when the query is
+   * not a box, and the maximum orders those entries after every candidate
+   * whose distance is known */
   TBox query;
-  if (! key || ! tnumber_gist_get_tbox(fcinfo, &query, type))
+  if (! tnumber_gist_get_tbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
   /* A key over boxes of several structures bounds none of them, and is
    * visited before every other one, since it may hold boxes on which the
    * distance raises its error */
   if (MEOS_FLAGS_GET_PARTS(key->flags))
     PG_RETURN_FLOAT8(-get_float8_infinity());
-
   /* Where the distance raises its error on the boxes under the key, the
    * entry is visited before every other one. A leaf the executor rechecks
    * leaves the error to the operator applied to its row; the exact leaf of a
@@ -484,20 +520,16 @@ tbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
     PG_RETURN_FLOAT8(-get_float8_infinity());
   }
 
-  /* Since we only have boxes we'll return the minimum possible distance,
-   * and let the recheck sort things out in the case of leaves. Since the
-   * GiST framework expects a double for the distance method, we need to
-   * convert the integer distance for temporal integer boxes into a double */
   double distance = distance_double(nad_tbox_tbox(key, &query),
     key->span.basetype);
+
   PG_RETURN_FLOAT8(distance);
 }
 
 PGDLLEXPORT Datum Tbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_distance);
 /**
- * @brief GiST distance for temporal boxes
- * @note Take in a query and an entry and return the "distance" between them
+ * @brief GiST distance method of a column of temporal boxes
  */
 Datum
 Tbox_gist_distance(PG_FUNCTION_ARGS)
@@ -508,8 +540,7 @@ Tbox_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tnumber_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tnumber_gist_distance);
 /**
- * @brief GiST distance for temporal numbers
- * @note Take in a query and an entry and return the "distance" between them
+ * @brief GiST distance method of a column of temporal numbers
  */
 Datum
 Tnumber_gist_distance(PG_FUNCTION_ARGS)
@@ -521,9 +552,8 @@ Tnumber_gist_distance(PG_FUNCTION_ARGS)
  * GiST sort support method
  *****************************************************************************/
 
-
 /**
- * @brief Convert a temporal box into its abbreviated key
+ * @brief Convert a box of the temporal boxes into its abbreviated key
  */
 static Datum
 Tbox_abbrev_convert(Datum original, SortSupport ssup)
@@ -533,7 +563,7 @@ Tbox_abbrev_convert(Datum original, SortSupport ssup)
 }
 
 /**
- * @brief Compare two temporal boxes for the sorted index build
+ * @brief Compare two boxes of the temporal boxes for the sorted index build
  */
 static int
 Tbox_cmp_full(Datum x, Datum y, SortSupport ssup)
@@ -555,7 +585,7 @@ Tbox_cmp_full(Datum x, Datum y, SortSupport ssup)
 PGDLLEXPORT Datum Tbox_gist_sortsupport(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tbox_gist_sortsupport);
 /**
- * @brief GiST sort support method for temporal numbers
+ * @brief GiST sort support method for temporal boxes
  */
 Datum
 Tbox_gist_sortsupport(PG_FUNCTION_ARGS)
@@ -574,5 +604,6 @@ Tbox_gist_sortsupport(PG_FUNCTION_ARGS)
   }
   PG_RETURN_VOID();
 }
+/* GENERATED-BOXGIST-END tbox */
 
 /*****************************************************************************/

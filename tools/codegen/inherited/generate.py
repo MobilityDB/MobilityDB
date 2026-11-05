@@ -5565,6 +5565,65 @@ def splice_indextree(filetext: str, tree: dict, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# --- C GiST support functions (box-type axis) -------------------------------
+# The GiST support functions of a box type, one set per entry of `boxes` in
+# manifest.d/boxgist.yaml, are generated into the region between the box's
+# markers in its `file`, as #render_indextree writes the index-tree
+# constructors; the function turning a query argument into a box, the compress
+# methods and the sort hash stay beside the region, written by hand, since they
+# read the temporal types of the family.
+def _boxgist_markers(box: str):
+    """BEGIN/END markers of a box type's GiST support functions, as
+    #_indextrees_markers names those of a tree"""
+    begin = (f"/* GENERATED-BOXGIST-BEGIN {box} — tools/codegen/inherited/"
+             "generate.py from templates/boxgist.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxgist.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXGIST-END {box} */\n"
+
+
+_BOXGIST_BOUND = """
+  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is lowered to stay under
+   * the distance the ordering operator computes. The exact leaf of a column of
+   * boxes reports the operator's own answer and keeps it */
+  if (! GIST_LEAF(entry) || *recheck)
+    distance = {SHARED}_index_distance_bound(distance, {SHAREDCAST}key,
+      {SHAREDCAST}&query);
+
+"""
+
+
+def render_boxgist(box: dict, samekinds: dict) -> str:
+    """The GiST support functions of a box type, rendered from its template as
+    #render_indextree renders a tree's constructors"""
+    fields = "".join(f"b1->{f} == b2->{f} && " for f in box.get("samefields") or [])
+    same = textwrap.indent(samekinds[box["same"]].replace("{FIELDS}", fields),
+                           "    ")
+    bound = _BOXGIST_BOUND if box["bound"] else "\n"
+    text = read_template("boxgist.c.tmpl").replace("{BOUND}", bound)
+    for key, val in (("{SAME}", same), ("{CONSISTENT}", box["consistent"]),
+                     ("{TEMPDISTANCE}", box["tempdistance"]),
+                     ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
+                     ("{GETARG}", box["getarg"]), ("{RETURN}", box["ret"]),
+                     ("{DISTANCE}", box["distance"]),
+                     ("{SHAREDCAST}", box["sharedcast"]),
+                     ("{SHARED}", box["shared"]), ("{PREFIX}", box["prefix"]),
+                     ("{CTYPE}", box["ctype"]), ("{MEOSTYPE}", box["meostype"]),
+                     ("{TEMPNOUN}", box["tempnoun"]), ("{NOUN}", box["noun"]),
+                     ("{BOX}", box["box"])):
+        text = text.replace(key, val)
+    return text
+
+
+def splice_boxgist(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's markers with `rendered`, as
+    #splice_indextree does for a tree"""
+    begin, end = _boxgist_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
@@ -6619,6 +6678,15 @@ def main() -> int:
         p.write_text(splice_indextree(p.read_text(), tree,
                                       render_indextree(tree, trees["boxes"])))
         print(f"spliced indextrees {tree['tree']} -> {tree['file']}")
+    gist = mf.get("boxgist") or {}
+    for box in gist.get("boxes", []):
+        p = ROOT / box["file"]
+        if args.check:
+            print(f"would splice boxgist {box['box']} -> {box['file']}")
+            continue
+        p.write_text(splice_boxgist(p.read_text(), box["box"],
+                                    render_boxgist(box, gist["samekinds"])))
+        print(f"spliced boxgist {box['box']} -> {box['file']}")
     return 0
 
 
