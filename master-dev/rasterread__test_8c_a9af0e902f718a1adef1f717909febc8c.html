@@ -123,7 +123,8 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Return whether a call raised one error and answered the error value, printing the verdict beside the name of the call. </p>
+<p>Return whether a call raised an error and answered the error value, printing the verdict beside the name of the call. </p>
+<p >The raster core reports its own reason through the MEOS error channel, as liblwgeom does through <a class="el" href="meos_8c_a12f1e57c0013148af6f8107fc1ac6e51.html#a12f1e57c0013148af6f8107fc1ac6e51" title="Report a liblwgeom error through the MEOS error channel.">meos_lwerror_handler</a>, before the reader reports the band it could not read, so a handler that returns sees more than one error for one call </p>
 
 </div>
 </div>
