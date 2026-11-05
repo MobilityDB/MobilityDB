@@ -1425,6 +1425,9 @@
 				<title>Constructors</title>
 				<itemizedlist>
 					<listitem>
+						<para><link linkend="geodpose"><varname>geodpose</varname></link>: Constructor for geodetic poses from a geography point</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="pose"><varname>pose</varname></link>: Constructor for poses</para>
 					</listitem>
 				</itemizedlist>
@@ -1436,7 +1439,10 @@
 						<para><link linkend="pose_stbox"><varname>::</varname>, <varname>stbox</varname></link>: Convert a pose and, optionally, a timestamp or a period, into a spatiotemporal box</para>
 					</listitem>
 					<listitem>
-						<para><link linkend="pose_geometry"><varname>::</varname></link>: Convert a pose into geometry point</para>
+						<para><link linkend="pose_geography"><varname>::</varname></link>: Convert a pose, planar or geodetic, into a geography point</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="pose_geometry"><varname>::</varname></link>: Convert a pose, planar or geodetic, into a geometry point</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

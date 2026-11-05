@@ -59,6 +59,40 @@ SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-
 SELECT round(pose 'Pose(Point(0 0 0), 1, 0, 0, 0)' |=| stbox 'STBOX Z((3,4,12),(3,4,12))', 6);
 SELECT round(nearestApproachDistance(tpose 'Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01', stbox 'STBOX Z((3,4,12),(3,4,12))'), 6);
 SELECT round(posechain 'PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))' <-> geometry 'Point(3 4 12)', 6);
+-- A geodetic pose and a geography, measured on the surface
+SELECT round(pose 'GeodPose(Point(0 0), 0)' <-> geography 'Point(1 0)', 3);
+SELECT round(geography 'Point(1 0)' <-> pose 'GeodPose(Point(0 0), 0)', 3);
+SELECT round(distance(pose 'GeodPose(Point(8 47 1500), 1, 0, 0, 0)', geography 'Point(8.5 47.2 0)'), 3);
+SELECT round(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]' <-> geography 'Point(1 1)', 3);
+SELECT round(tDistance(geography 'Point(1 1)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]'), 3);
+SELECT round(nearestApproachDistance(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
+SELECT round(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]' |=| geography 'Point(1 1)', 3);
+SELECT asText(nearestApproachInstant(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
+SELECT ST_AsText(shortestLine(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)')::geometry, 3);
+SELECT ST_AsText(shortestLine(tpose '[Pose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01, Pose(Point(2 0 0), 1, 0, 0, 0)@2001-01-03]', geometry 'Point(1 3 4)'), 3);
+SELECT round(posechain 'PoseChain(GeodPose(Point(0 0), 0))' <-> geography 'Point(1 0)', 3);
+SELECT round(nearestApproachDistance(tposechain '[PoseChain(GeodPose(Point(0 0), 0))@2001-01-01, PoseChain(GeodPose(Point(2 0), 0))@2001-01-03]', geography 'Point(1 1)'), 3);
+-- A geodetic pose reads SRID 4326 where no SRID is stated, and a stated one holds
+SELECT srid(pose 'GeodPose(Point(0 0), 0)');
+SELECT srid(tpose 'GeodPose(Point(0 0), 0)@2001-01-01');
+SELECT srid(pose 'SRID=4979;GeodPose(Point(0 0 0), 1, 0, 0, 0)');
+SELECT srid(tpose 'SRID=4979;[GeodPose(Point(0 0 0), 1, 0, 0, 0)@2001-01-01]');
+SELECT srid(pose 'Pose(Point(0 0), 0)');
+-- The pose of a geography and the geography of a pose
+SELECT asText(geodpose(geography 'Point(1 2)', 0.5));
+SELECT asText(geodpose(geography 'Point(1 2 3)', 1, 0, 0, 0));
+SELECT asText(geodpose(geography 'Point(1 2 3)', yaw := 0, pitch := 0, roll := 0));
+SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geography);
+SELECT ST_AsEWKT(pose 'Pose(Point(1 2), 0.5)'::geography);
+SELECT ST_AsEWKT(pose 'SRID=4326;Pose(Point(1 2 3), 1, 0, 0, 0)'::geography);
+SELECT ST_AsEWKT(pose 'GeodPose(Point(1 2), 0.5)'::geometry);
+SELECT ST_AsEWKT(pose 'Pose(Point(1 2), 0.5)'::geometry);
+SELECT pose 'GeodPose(Point(1 2), 0.5)'::geometry = geography(pose 'GeodPose(Point(1 2), 0.5)')::geometry;
+SELECT asText(pose('Point(1 1)', -1.5));
+SELECT pose 'SRID=3857;Pose(Point(1 2), 0.5)'::geography;
+-- A planar pose and a geography, two SRIDs
+SELECT pose 'SRID=4326;Pose(Point(0 0), 0)' <-> geography 'SRID=4326;Point(1 0)';
+SELECT pose 'SRID=4979;GeodPose(Point(0 0 0), 1, 0, 0, 0)' <-> geography 'SRID=4326;Point(1 0)';
 SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' <-> geometry 'SRID=4326;Point(1 0)', 6);
 SELECT round(nearestApproachDistance(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01', geometry 'SRID=4326;Point(1 0)'), 6);
 SELECT round(pose 'SRID=4326;GeodPose(Point(0 0), 0)' |=| stbox 'SRID=4326;GEODSTBOX X((1,0),(1,0))', 3);

@@ -204,6 +204,8 @@ subtypes:
     brief: "temporal poses"
     bin:   100
     category: tspatial
+    # A geodetic value answers these with a geography as with a geometry
+    geography: [distance, tDistance, nearestApproachInstant, nearestApproachDistance, shortestLine, eIntersects, aIntersects, eDisjoint, aDisjoint, eDwithin, '<->', '|=|']
     # tpose is 3-D-capable, so its position operators include the front/back (Z)
     # direction on top of the shared left/right/below/above/before/after set.
     front_back: true
@@ -235,6 +237,8 @@ subtypes:
     brief: "temporal pose chains"
     bin:   550
     category: tspatial
+    # A geodetic value answers these with a geography as with a geometry
+    geography: [distance, tDistance, nearestApproachInstant, nearestApproachDistance, shortestLine, eIntersects, aIntersects, eDisjoint, aDisjoint, eDwithin, '<->', '|=|']
     # A pose chain is 3-D-capable exactly as a pose is, so its position
     # operators carry the front/back (Z) direction as well.
     front_back: true

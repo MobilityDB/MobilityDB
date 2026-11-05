@@ -646,9 +646,9 @@ SELECT asText(pose 'GeodPose(Point(1 1 1),1,0,0,0)');
 (1 row)
 
 SELECT pose 'GeodPose(Point(1 1),0.5)';
-                            pose                            
-------------------------------------------------------------
- GEODPOSE (0101000000000000000000F03F000000000000F03F, 0.5)
+                                pose                                
+--------------------------------------------------------------------
+ GEODPOSE (0101000020E6100000000000000000F03F000000000000F03F, 0.5)
 (1 row)
 
 SELECT poseFromBinary(asBinary(pose 'GeodPose(Point(1 1),0.5)'));

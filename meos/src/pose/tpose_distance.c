@@ -335,9 +335,9 @@ shortestline_tpose_geo(const Temporal *temp, const GSERIALIZED *gs)
   if (! ensure_valid_tpose_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
-  GSERIALIZED *traj = tpose_trajectory(temp);
-  GSERIALIZED *result = geom_shortestline2d(traj, gs);
-  pfree(traj);
+  Temporal *tpoint = tpose_to_tpoint(temp);
+  GSERIALIZED *result = shortestline_tgeo_geo(tpoint, gs, true);
+  pfree(tpoint);
   return result;
 }
 
@@ -356,10 +356,11 @@ shortestline_tpose_pose(const Temporal *temp, const Pose *pose)
   if (! ensure_valid_tpose_pose(temp, pose))
     return NULL;
 
-  GSERIALIZED *geom = pose_to_point(pose);
-  GSERIALIZED *traj = tpose_trajectory(temp);
-  GSERIALIZED *result = geom_shortestline2d(traj, geom);
-  pfree(geom); pfree(traj);
+  GSERIALIZED *geom = DatumGetGserializedP(
+    datum_pose_geopoint(PointerGetDatum(pose)));
+  Temporal *tpoint = tpose_to_tpoint(temp);
+  GSERIALIZED *result = shortestline_tgeo_geo(tpoint, geom, true);
+  pfree(geom); pfree(tpoint);
   return result;
 }
 

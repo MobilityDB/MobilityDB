@@ -249,6 +249,30 @@ def subtype_selectivity(sub: dict) -> str:
     return family
 
 
+# A family whose value can be geodetic (`geography:` in its manifest entry) answers
+# the listed functions and operators with a geography as it does with a geometry:
+# each CREATE statement taking a geometry is followed by its geography twin, which
+# reaches the same C symbol, and which converts to the temporal geography point
+# where the original converts to the temporal geometry point.
+_GEOG_STATEMENT = re.compile(r"^CREATE (FUNCTION|OPERATOR) (\S+?)(\(| \().*?;\n",
+                             re.M | re.S)
+
+
+def _geography_twins(body: str, names) -> str:
+    """Insert after each statement of `names` taking a geometry its geography twin."""
+    if not names:
+        return body
+
+    def twin(m):
+        text = m.group(0)
+        head = text.split(")", 1)[0] if m.group(1) == "FUNCTION" else text
+        if m.group(2) not in names or not re.search(r"\bgeometry\b", head):
+            return text
+        return text + re.sub(r"\bgeometry\b", "geography",
+                             text.replace("tgeompoint", "tgeogpoint"))
+    return _GEOG_STATEMENT.sub(twin, body)
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -295,7 +319,8 @@ def render(behaviour: str, sub: dict) -> str:
                 .replace("{SEL}", subtype_selectivity(sub))
                 .replace("{GEO}", "geography" if sub.get("geodetic_target") else "geometry")
                 .replace("{BOUNDARY}", boundary))
-    return generated(body, f"{behaviour}.sql.tmpl")
+    return generated(_geography_twins(body, sub.get("geography")),
+                     f"{behaviour}.sql.tmpl")
 
 
 # --- C boxops (box-type axis) --------------------------------------------
@@ -1562,7 +1587,8 @@ def render_tempspatialrels(fam: dict) -> str:
     # states one, its `details`.
     return generated(tmpl.replace("{BRIEF}", fam["brief"])
                          .replace("{DETAILS}\n", details_lines(fam.get("details")))
-                         .replace("{BODY}", body), tmpl_name)
+                         .replace("{BODY}", _geography_twins(body, fam.get("geography"))),
+                     tmpl_name)
 
 
 # --- Ever/always spatial relationships (SQL, whole-file, native) -----------

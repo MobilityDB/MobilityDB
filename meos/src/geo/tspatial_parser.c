@@ -41,6 +41,10 @@
 #include "temporal/type_parser.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
+#if POSE
+  #include "pose/pose.h"
+  #include "pose/posechain.h"
+#endif /* POSE */
 #if RGEO
   #include "rgeo/trgeo_parser.h"
 #endif /* RGEO */
@@ -341,6 +345,24 @@ geo_parse(const char **str, MeosType basetype, char delim, int *srid,
 /*****************************************************************************/
 
 /**
+ * @brief Return true if a value is a geodetic pose or pose chain, to which
+ * #pose_parse gives the SRID of a geography when its text states none
+ */
+static bool
+spatial_is_geodetic_pose(Datum value, MeosType basetype)
+{
+#if POSE
+  if (basetype == T_POSE)
+    return MEOS_FLAGS_GET_GEODETIC(DatumGetPoseP(value)->flags);
+  if (basetype == T_POSECHAIN)
+    return MEOS_FLAGS_GET_GEODETIC(DatumGetPoseChainP(value)->flags);
+#else
+  (void) value; (void) basetype;
+#endif /* POSE */
+  return false;
+}
+
+/**
  * @brief Parse a spatial base value from the input buffer
  * @param[in] str Input string
  * @param[in] temptype Temporal type
@@ -369,7 +391,8 @@ spatial_parse_elem(const char **str, MeosType temptype, char delim,
   if (*temp_srid == SRID_UNKNOWN && base_srid != SRID_UNKNOWN)
     *temp_srid = base_srid;
   else if (*temp_srid != SRID_UNKNOWN && (base_srid == SRID_UNKNOWN ||
-    (basetype == T_GEOGRAPHY && ! srid_written && base_srid == SRID_DEFAULT)))
+    ((basetype == T_GEOGRAPHY || spatial_is_geodetic_pose(d, basetype)) &&
+      ! srid_written && base_srid == SRID_DEFAULT)))
   {
     if (! spatial_set_srid(d, basetype, *temp_srid))
     {
