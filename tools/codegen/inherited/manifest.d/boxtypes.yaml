@@ -21,13 +21,26 @@ boxtypes:
     reference: true
     # index operator classes (templates/boxopclass.sql.tmpl, strategies in
     # boxstrategies.yaml): each class in a region of its `file`, every strategy
-    # stating the box against itself and against each partner whose `axes` carry it
+    # stating the box against itself and against each partner whose `axes` carry it.
+    # A temporal partner with `files` has its own three classes there, in regions
+    # written by render_tempopclass on the same axes, its nearest approach distance
+    # also taking its `distwith` types; `tempclasses` states their functions
     opclasses:
+      tempclasses: {gistconsistent: own, gistcompress: tspatial_gist_compress,
+                    spgistcompress: tspatial_spgist_compress}
       partners:
-        - {type: tgeompoint, axes: [topo, x, y, z, t, dist]}
-        - {type: tgeogpoint, axes: [topo, t, dist]}
-        - {type: tgeometry, axes: [topo, x, y, z, t, dist]}
-        - {type: tgeography, axes: [topo, t, dist]}
+        - {type: tgeompoint, axes: [topo, x, y, z, t, dist], distwith: [geometry],
+           files: {gist: mobilitydb/sql/geo/073_tpoint_gist.in.sql,
+                   spgist: mobilitydb/sql/geo/074_tpoint_spgist.in.sql}}
+        - {type: tgeogpoint, axes: [topo, t, dist], distwith: [geography],
+           files: {gist: mobilitydb/sql/geo/073_tpoint_gist.in.sql,
+                   spgist: mobilitydb/sql/geo/074_tpoint_spgist.in.sql}}
+        - {type: tgeometry, axes: [topo, x, y, z, t, dist], distwith: [geometry],
+           files: {gist: mobilitydb/sql/geo/073_tgeo_gist.in.sql,
+                   spgist: mobilitydb/sql/geo/074_tgeo_spgist.in.sql}}
+        - {type: tgeography, axes: [topo, t, dist], distwith: [geography],
+           files: {gist: mobilitydb/sql/geo/073_tgeo_gist.in.sql,
+                   spgist: mobilitydb/sql/geo/074_tgeo_spgist.in.sql}}
         - {type: geometry, axes: [dist]}
         - {type: geography, axes: [dist]}
       classes:
@@ -347,11 +360,19 @@ boxtypes:
     reference: true
     # index operator classes (templates/boxopclass.sql.tmpl): the SP-GiST ones
     # take the support functions of the spatiotemporal box, a point cloud box being
-    # indexed as the spatiotemporal box it begins with, and compress to it
+    # indexed as the spatiotemporal box it begins with, and compress to it; the
+    # classes of a temporal point cloud take the GiST consistent function of the box
+    # and register its distance function for each operand pair
     opclasses:
+      tempclasses: {gistconsistent: box, gistcompress: tpc_gist_compress,
+                    spgistcompress: tpc_spgist_compress, distpairs: true}
       partners:
-        - {type: tpcpoint, axes: [topo, x, y, z, t, dist]}
-        - {type: tpcpatch, axes: [topo, x, y, z, t, dist]}
+        - {type: tpcpoint, axes: [topo, x, y, z, t, dist],
+           files: {gist: mobilitydb/sql/pointcloud/439_tpc_gist.in.sql,
+                   spgist: mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql}}
+        - {type: tpcpatch, axes: [topo, x, y, z, t, dist],
+           files: {gist: mobilitydb/sql/pointcloud/439_tpc_gist.in.sql,
+                   spgist: mobilitydb/sql/pointcloud/440_tpc_spgist.in.sql}}
       classes:
         - {name: tpcbox_rtree_ops, am: gist, default: true, storage: true, fn: tpcbox,
            file: mobilitydb/sql/pointcloud/439_tpc_gist.in.sql}

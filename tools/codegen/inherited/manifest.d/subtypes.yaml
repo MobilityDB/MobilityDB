@@ -5,7 +5,7 @@
 subtypes:
   # ---- POC: the new type driving this generator ----
   - temp:  tquadbin
-    # the (stbox, tquadbin) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the tquadbin index classes and of the (stbox, tquadbin) members
     boxmembers: [topo, x, y, t]
     base:  quadbin
     brief: "temporal QUADBIN cells"
@@ -44,7 +44,7 @@ subtypes:
 
   # ---- h3: convert the hand-written inherited surface to generated (mirror tquadbin) ----
   - temp:  th3index
-    # the (stbox, th3index) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the th3index index classes and of the (stbox, th3index) members
     boxmembers: [topo, x, y, t]
     base:  h3index
     # The h3 family directory is `h3`, not the base type name `h3index`.
@@ -85,7 +85,7 @@ subtypes:
 
   # ---- s2: the third cell index, geodetic like h3 ----
   - temp:  ts2cell
-    # the (stbox, ts2cell) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the ts2cell index classes and of the (stbox, ts2cell) members
     boxmembers: [topo, x, y, t]
     base:  s2cell
     brief: "temporal S2 cells"
@@ -118,8 +118,9 @@ subtypes:
 
   # ---- circular buffers: the four inherited files the templates were cut from ----
   - temp:  tcbuffer
-    # the (stbox, tcbuffer) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the tcbuffer index classes and of the (stbox, tcbuffer) members
     boxmembers: [topo, x, y, t, dist]
+    distwith: [geometry]
     base:  cbuffer
     brief: "temporal circular buffers"
     bin:   200
@@ -148,8 +149,9 @@ subtypes:
   # doc-comment header is normalised to the shared form). Their other inherited files
   # are still hand-maintained and will be migrated incrementally.
   - temp:  tnpoint
-    # the (stbox, tnpoint) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the tnpoint index classes and of the (stbox, tnpoint) members
     boxmembers: [topo, x, y, t, dist]
+    distwith: [geometry]
     base:  npoint
     brief: "temporal network points"
     bin:   300
@@ -210,8 +212,9 @@ subtypes:
     files: [compops, posops, topops, spatialrels, indexes]
 
   - temp:  tpose
-    # the (stbox, tpose) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the tpose index classes and of the (stbox, tpose) members
     boxmembers: [topo, x, y, z, t, dist]
+    distwith: [geometry]
     base:  pose
     brief: "temporal poses"
     bin:   100
@@ -245,8 +248,9 @@ subtypes:
     files: [compops, topops, posops, distance, spatialrels, indexes]
 
   - temp:  tposechain
-    # the (stbox, tposechain) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the tposechain index classes and of the (stbox, tposechain) members
     boxmembers: [topo, x, y, z, t, dist]
+    distwith: [geometry]
     base:  posechain
     brief: "temporal pose chains"
     bin:   550
@@ -280,8 +284,9 @@ subtypes:
     files: [compops, topops, posops, distance, spatialrels, indexes]
 
   - temp:  trgeometry
-    # the (stbox, trgeometry) operators index a column of spatiotemporal boxes on these axes
+    # the axes of the trgeometry index classes and of the (stbox, trgeometry) members
     boxmembers: [topo, x, y, z, t, dist]
+    distwith: [geometry]
     # The base-value comparison is against a `geometry` (the resolved geometry at an
     # instant); the C wrapper stem is `geo`, not `geometry`, so basesym overrides it.
     base:  geometry

@@ -65,10 +65,10 @@ CREATE OPERATOR CLASS tnpoint_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (tnpoint, tstzspan),
   OPERATOR  6    ~= (tnpoint, stbox),
   OPERATOR  6    ~= (tnpoint, tnpoint),
@@ -143,10 +143,10 @@ CREATE OPERATOR CLASS tnpoint_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (tnpoint, tstzspan),
   OPERATOR  6    ~= (tnpoint, stbox),
   OPERATOR  6    ~= (tnpoint, tnpoint),
@@ -219,10 +219,10 @@ CREATE OPERATOR CLASS tnpoint_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tnpoint, stbox),
   OPERATOR  4    &> (tnpoint, tnpoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tnpoint, stbox),
   OPERATOR  5    >> (tnpoint, tnpoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (tnpoint, tstzspan),
   OPERATOR  6    ~= (tnpoint, stbox),
   OPERATOR  6    ~= (tnpoint, tnpoint),

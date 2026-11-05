@@ -65,10 +65,10 @@ CREATE OPERATOR CLASS tcbuffer_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
-    -- same
+  -- same
   OPERATOR  6    ~= (tcbuffer, tstzspan),
   OPERATOR  6    ~= (tcbuffer, stbox),
   OPERATOR  6    ~= (tcbuffer, tcbuffer),
@@ -143,10 +143,10 @@ CREATE OPERATOR CLASS tcbuffer_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
-    -- same
+  -- same
   OPERATOR  6    ~= (tcbuffer, tstzspan),
   OPERATOR  6    ~= (tcbuffer, stbox),
   OPERATOR  6    ~= (tcbuffer, tcbuffer),
@@ -219,10 +219,10 @@ CREATE OPERATOR CLASS tcbuffer_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tcbuffer, stbox),
   OPERATOR  4    &> (tcbuffer, tcbuffer),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tcbuffer, stbox),
   OPERATOR  5    >> (tcbuffer, tcbuffer),
-    -- same
+  -- same
   OPERATOR  6    ~= (tcbuffer, tstzspan),
   OPERATOR  6    ~= (tcbuffer, stbox),
   OPERATOR  6    ~= (tcbuffer, tcbuffer),
