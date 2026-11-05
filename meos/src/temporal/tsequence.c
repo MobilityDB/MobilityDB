@@ -1270,7 +1270,8 @@ tsequence_make_free(TInstant **instants, int count, bool lower_inc,
  * @param[in] zcoords Array of z coordinates @nullable
  * @param[in] times Array of z timestamps
  * @param[in] count Number of elements in the arrays
- * @param[in] srid SRID of the spatial coordinates
+ * @param[in] srid SRID of the spatial coordinates; a geodetic sequence stating
+ * none (0 or less) is in WGS84 (EPSG:4326), as every geography is
  * @param[in] geodetic True for tgeogpoint, false for tgeompoint
  * @param[in] lower_inc,upper_inc True if the respective bound is inclusive
  * @param[in] interp Interpolation
@@ -1293,6 +1294,8 @@ tpointseq_make_coords(const double *xcoords, const double *ycoords,
       return NULL;
   bool hasz = (zcoords != NULL);
   MeosType temptype = geodetic ? T_TGEOGPOINT : T_TGEOMPOINT;
+  /* A geodetic sequence stating no SRID is in WGS84, as every geography is */
+  srid = srid_geodetic_default(srid, geodetic);
   TInstant **instants = palloc(sizeof(TInstant *) * count);
   for (int i = 0; i < count; i ++)
   {

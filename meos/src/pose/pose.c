@@ -796,8 +796,7 @@ pose_parse(const char **str, bool end)
 
   /* A geodetic pose that states no SRID has the one of a geography, as a
    * geodetic box has (#stbox_in) */
-  if (geodetic && srid == SRID_UNKNOWN)
-    srid = SRID_DEFAULT;
+  srid = srid_geodetic_default(srid, geodetic);
 
   if (! hasZ)
   {

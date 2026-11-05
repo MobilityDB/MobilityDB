@@ -18659,6 +18659,24 @@ geo_force3d_intl(const GSERIALIZED *gs, double zvalue)
  *****************************************************************************/
 
 /**
+ * @brief Return the SRID a value carries: the default SRID for a geodetic
+ * value that states none, the given SRID otherwise
+ * @details A geography is in WGS84 (EPSG:4326) by definition, so a geodetic
+ * value whose SRID is unknown (0 or less) takes `SRID_DEFAULT`, as the
+ * geography input of PostGIS does, while a planar one keeps its SRID. Every
+ * route that makes a geodetic value, #geog_from_lwgeom among them, reads its
+ * SRID through this function, beside #ensure_srid_is_latlong, which tests the
+ * SRID it answers.
+ * @param[in] srid SRID
+ * @param[in] geodetic True for a geodetic value
+ */
+int32_t
+srid_geodetic_default(int32_t srid, bool geodetic)
+{
+  return (geodetic && srid <= 0) ? SRID_DEFAULT : srid;
+}
+
+/**
  * @brief Ensure that an SRID is geodetic
  */
 bool
