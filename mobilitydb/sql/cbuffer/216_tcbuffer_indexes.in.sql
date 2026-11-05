@@ -361,4 +361,120 @@ CREATE OPERATOR CLASS cbufferset_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 spatialset_spgist_compress(internal);
 
+/* A column of spatiotemporal boxes is indexed for the queries of a tcbuffer */
+
+ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tcbuffer),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (stbox, tcbuffer),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tcbuffer),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (stbox, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (stbox, tcbuffer),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tcbuffer),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tcbuffer),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tcbuffer),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tcbuffer),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tcbuffer),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tcbuffer),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tcbuffer),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tcbuffer),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tcbuffer);
+
+ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tcbuffer),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (stbox, tcbuffer),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tcbuffer),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (stbox, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (stbox, tcbuffer),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tcbuffer),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tcbuffer),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tcbuffer),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tcbuffer),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tcbuffer),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tcbuffer),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tcbuffer),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tcbuffer),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tcbuffer);
+
+ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tcbuffer),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tcbuffer),
+  -- overlaps
+  OPERATOR  3    && (stbox, tcbuffer),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tcbuffer),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tcbuffer),
+  -- same
+  OPERATOR  6    ~= (stbox, tcbuffer),
+  -- contains
+  OPERATOR  7    @> (stbox, tcbuffer),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tcbuffer),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tcbuffer),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tcbuffer),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tcbuffer),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tcbuffer),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tcbuffer),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tcbuffer) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tcbuffer),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tcbuffer),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tcbuffer),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tcbuffer);
+
 /******************************************************************************/

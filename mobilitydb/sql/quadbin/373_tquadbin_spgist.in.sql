@@ -233,4 +233,78 @@ CREATE OPERATOR CLASS quadbinset_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 spatialset_spgist_compress(internal);
 
+/* A column of spatiotemporal boxes is indexed for the queries of a tquadbin */
+
+ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (stbox, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tquadbin),
+  -- same
+  OPERATOR  6    ~= (stbox, tquadbin),
+  -- contains
+  OPERATOR  7    @> (stbox, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tquadbin);
+
+ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tquadbin),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tquadbin),
+  -- overlaps
+  OPERATOR  3    && (stbox, tquadbin),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tquadbin),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tquadbin),
+  -- same
+  OPERATOR  6    ~= (stbox, tquadbin),
+  -- contains
+  OPERATOR  7    @> (stbox, tquadbin),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tquadbin),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tquadbin),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tquadbin),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tquadbin),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tquadbin),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tquadbin),
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tquadbin),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tquadbin),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tquadbin),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tquadbin);
+
 /******************************************************************************/
