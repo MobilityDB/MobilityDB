@@ -26,6 +26,8 @@ boxtypes:
       partners:
         - {type: tgeompoint, axes: [topo, x, y, z, t, dist]}
         - {type: tgeogpoint, axes: [topo, t, dist]}
+        - {type: tgeometry, axes: [topo, x, y, z, t, dist]}
+        - {type: tgeography, axes: [topo, t, dist]}
         - {type: geometry, axes: [dist]}
         - {type: geography, axes: [dist]}
       classes:
@@ -347,7 +349,9 @@ boxtypes:
     # take the support functions of the spatiotemporal box, a point cloud box being
     # indexed as the spatiotemporal box it begins with, and compress to it
     opclasses:
-      partners: []
+      partners:
+        - {type: tpcpoint, axes: [topo, x, y, z, t, dist]}
+        - {type: tpcpatch, axes: [topo, x, y, z, t, dist]}
       classes:
         - {name: tpcbox_rtree_ops, am: gist, default: true, storage: true, fn: tpcbox,
            file: mobilitydb/sql/pointcloud/439_tpc_gist.in.sql}

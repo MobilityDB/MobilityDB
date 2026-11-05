@@ -44,48 +44,92 @@ CREATE OPERATOR CLASS tpcbox_quadtree_ops
   DEFAULT FOR TYPE tpcbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (tpcbox, tpcbox),
+  OPERATOR  1    << (tpcbox, tpcpoint),
+  OPERATOR  1    << (tpcbox, tpcpatch),
   -- overlaps or left
   OPERATOR  2    &< (tpcbox, tpcbox),
+  OPERATOR  2    &< (tpcbox, tpcpoint),
+  OPERATOR  2    &< (tpcbox, tpcpatch),
   -- overlaps
   OPERATOR  3    && (tpcbox, tpcbox),
+  OPERATOR  3    && (tpcbox, tpcpoint),
+  OPERATOR  3    && (tpcbox, tpcpatch),
   -- overlaps or right
   OPERATOR  4    &> (tpcbox, tpcbox),
+  OPERATOR  4    &> (tpcbox, tpcpoint),
+  OPERATOR  4    &> (tpcbox, tpcpatch),
   -- strictly right
   OPERATOR  5    >> (tpcbox, tpcbox),
+  OPERATOR  5    >> (tpcbox, tpcpoint),
+  OPERATOR  5    >> (tpcbox, tpcpatch),
   -- same
   OPERATOR  6    ~= (tpcbox, tpcbox),
+  OPERATOR  6    ~= (tpcbox, tpcpoint),
+  OPERATOR  6    ~= (tpcbox, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcbox, tpcbox),
+  OPERATOR  7    @> (tpcbox, tpcpoint),
+  OPERATOR  7    @> (tpcbox, tpcpatch),
   -- contained by
   OPERATOR  8    <@ (tpcbox, tpcbox),
+  OPERATOR  8    <@ (tpcbox, tpcpoint),
+  OPERATOR  8    <@ (tpcbox, tpcpatch),
   -- overlaps or below
   OPERATOR  9    &<| (tpcbox, tpcbox),
+  OPERATOR  9    &<| (tpcbox, tpcpoint),
+  OPERATOR  9    &<| (tpcbox, tpcpatch),
   -- strictly below
   OPERATOR  10    <<| (tpcbox, tpcbox),
+  OPERATOR  10    <<| (tpcbox, tpcpoint),
+  OPERATOR  10    <<| (tpcbox, tpcpatch),
   -- strictly above
   OPERATOR  11    |>> (tpcbox, tpcbox),
+  OPERATOR  11    |>> (tpcbox, tpcpoint),
+  OPERATOR  11    |>> (tpcbox, tpcpatch),
   -- overlaps or above
   OPERATOR  12    |&> (tpcbox, tpcbox),
+  OPERATOR  12    |&> (tpcbox, tpcpoint),
+  OPERATOR  12    |&> (tpcbox, tpcpatch),
   -- adjacent
   OPERATOR  17    -|- (tpcbox, tpcbox),
+  OPERATOR  17    -|- (tpcbox, tpcpoint),
+  OPERATOR  17    -|- (tpcbox, tpcpatch),
   -- nearest approach distance
   OPERATOR  25    |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tpcbox, tpcbox),
+  OPERATOR  28    &<# (tpcbox, tpcpoint),
+  OPERATOR  28    &<# (tpcbox, tpcpatch),
   -- strictly before
   OPERATOR  29    <<# (tpcbox, tpcbox),
+  OPERATOR  29    <<# (tpcbox, tpcpoint),
+  OPERATOR  29    <<# (tpcbox, tpcpatch),
   -- strictly after
   OPERATOR  30    #>> (tpcbox, tpcbox),
+  OPERATOR  30    #>> (tpcbox, tpcpoint),
+  OPERATOR  30    #>> (tpcbox, tpcpatch),
   -- overlaps or after
   OPERATOR  31    #&> (tpcbox, tpcbox),
+  OPERATOR  31    #&> (tpcbox, tpcpoint),
+  OPERATOR  31    #&> (tpcbox, tpcpatch),
   -- overlaps or front
   OPERATOR  32    &</ (tpcbox, tpcbox),
+  OPERATOR  32    &</ (tpcbox, tpcpoint),
+  OPERATOR  32    &</ (tpcbox, tpcpatch),
   -- strictly front
   OPERATOR  33    <</ (tpcbox, tpcbox),
+  OPERATOR  33    <</ (tpcbox, tpcpoint),
+  OPERATOR  33    <</ (tpcbox, tpcpatch),
   -- strictly back
   OPERATOR  34    />> (tpcbox, tpcbox),
+  OPERATOR  34    />> (tpcbox, tpcpoint),
+  OPERATOR  34    />> (tpcbox, tpcpatch),
   -- overlaps or back
   OPERATOR  35    /&> (tpcbox, tpcbox),
+  OPERATOR  35    /&> (tpcbox, tpcpoint),
+  OPERATOR  35    /&> (tpcbox, tpcpatch),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
   FUNCTION  2  stbox_quadtree_choose(internal, internal),
@@ -101,48 +145,92 @@ CREATE OPERATOR CLASS tpcbox_kdtree_ops
   FOR TYPE tpcbox USING spgist AS
   -- strictly left
   OPERATOR  1    << (tpcbox, tpcbox),
+  OPERATOR  1    << (tpcbox, tpcpoint),
+  OPERATOR  1    << (tpcbox, tpcpatch),
   -- overlaps or left
   OPERATOR  2    &< (tpcbox, tpcbox),
+  OPERATOR  2    &< (tpcbox, tpcpoint),
+  OPERATOR  2    &< (tpcbox, tpcpatch),
   -- overlaps
   OPERATOR  3    && (tpcbox, tpcbox),
+  OPERATOR  3    && (tpcbox, tpcpoint),
+  OPERATOR  3    && (tpcbox, tpcpatch),
   -- overlaps or right
   OPERATOR  4    &> (tpcbox, tpcbox),
+  OPERATOR  4    &> (tpcbox, tpcpoint),
+  OPERATOR  4    &> (tpcbox, tpcpatch),
   -- strictly right
   OPERATOR  5    >> (tpcbox, tpcbox),
+  OPERATOR  5    >> (tpcbox, tpcpoint),
+  OPERATOR  5    >> (tpcbox, tpcpatch),
   -- same
   OPERATOR  6    ~= (tpcbox, tpcbox),
+  OPERATOR  6    ~= (tpcbox, tpcpoint),
+  OPERATOR  6    ~= (tpcbox, tpcpatch),
   -- contains
   OPERATOR  7    @> (tpcbox, tpcbox),
+  OPERATOR  7    @> (tpcbox, tpcpoint),
+  OPERATOR  7    @> (tpcbox, tpcpatch),
   -- contained by
   OPERATOR  8    <@ (tpcbox, tpcbox),
+  OPERATOR  8    <@ (tpcbox, tpcpoint),
+  OPERATOR  8    <@ (tpcbox, tpcpatch),
   -- overlaps or below
   OPERATOR  9    &<| (tpcbox, tpcbox),
+  OPERATOR  9    &<| (tpcbox, tpcpoint),
+  OPERATOR  9    &<| (tpcbox, tpcpatch),
   -- strictly below
   OPERATOR  10    <<| (tpcbox, tpcbox),
+  OPERATOR  10    <<| (tpcbox, tpcpoint),
+  OPERATOR  10    <<| (tpcbox, tpcpatch),
   -- strictly above
   OPERATOR  11    |>> (tpcbox, tpcbox),
+  OPERATOR  11    |>> (tpcbox, tpcpoint),
+  OPERATOR  11    |>> (tpcbox, tpcpatch),
   -- overlaps or above
   OPERATOR  12    |&> (tpcbox, tpcbox),
+  OPERATOR  12    |&> (tpcbox, tpcpoint),
+  OPERATOR  12    |&> (tpcbox, tpcpatch),
   -- adjacent
   OPERATOR  17    -|- (tpcbox, tpcbox),
+  OPERATOR  17    -|- (tpcbox, tpcpoint),
+  OPERATOR  17    -|- (tpcbox, tpcpatch),
   -- nearest approach distance
   OPERATOR  25    |=| (tpcbox, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcbox, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tpcbox, tpcbox),
+  OPERATOR  28    &<# (tpcbox, tpcpoint),
+  OPERATOR  28    &<# (tpcbox, tpcpatch),
   -- strictly before
   OPERATOR  29    <<# (tpcbox, tpcbox),
+  OPERATOR  29    <<# (tpcbox, tpcpoint),
+  OPERATOR  29    <<# (tpcbox, tpcpatch),
   -- strictly after
   OPERATOR  30    #>> (tpcbox, tpcbox),
+  OPERATOR  30    #>> (tpcbox, tpcpoint),
+  OPERATOR  30    #>> (tpcbox, tpcpatch),
   -- overlaps or after
   OPERATOR  31    #&> (tpcbox, tpcbox),
+  OPERATOR  31    #&> (tpcbox, tpcpoint),
+  OPERATOR  31    #&> (tpcbox, tpcpatch),
   -- overlaps or front
   OPERATOR  32    &</ (tpcbox, tpcbox),
+  OPERATOR  32    &</ (tpcbox, tpcpoint),
+  OPERATOR  32    &</ (tpcbox, tpcpatch),
   -- strictly front
   OPERATOR  33    <</ (tpcbox, tpcbox),
+  OPERATOR  33    <</ (tpcbox, tpcpoint),
+  OPERATOR  33    <</ (tpcbox, tpcpatch),
   -- strictly back
   OPERATOR  34    />> (tpcbox, tpcbox),
+  OPERATOR  34    />> (tpcbox, tpcpoint),
+  OPERATOR  34    />> (tpcbox, tpcpatch),
   -- overlaps or back
   OPERATOR  35    /&> (tpcbox, tpcbox),
+  OPERATOR  35    /&> (tpcbox, tpcpoint),
+  OPERATOR  35    /&> (tpcbox, tpcpatch),
   -- functions
   FUNCTION  1  stbox_spgist_config(internal, internal),
   FUNCTION  2  stbox_kdtree_choose(internal, internal),

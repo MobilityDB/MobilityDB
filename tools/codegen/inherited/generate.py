@@ -273,6 +273,47 @@ def _geography_twins(body: str, names) -> str:
     return _GEOG_STATEMENT.sub(twin, body)
 
 
+# The members a family adds to the index operator classes of the spatiotemporal
+# box: a column of boxes is indexed for the queries of the family's temporal type
+# on every strategy of manifest.d/boxstrategies.yaml whose axis the subtype's
+# `boxmembers` lists. The family states them in its own index file, as an
+# ALTER OPERATOR FAMILY of each class the file's access method carries, since a
+# build may leave the family out while the classes of the box are always there.
+BOXMEMBER_CLASSES = {
+    "gist": [("stbox_rtree_ops", "gist")],
+    "spgist": [("stbox_quadtree_ops", "spgist"), ("stbox_kdtree_ops", "spgist")],
+    "indexes": [("stbox_rtree_ops", "gist"), ("stbox_quadtree_ops", "spgist"),
+                ("stbox_kdtree_ops", "spgist")],
+}
+
+
+def render_boxmembers(behaviour: str, sub: dict) -> str:
+    """The members the subtype `sub` adds in its `behaviour` file to the index
+    operator classes of the spatiotemporal box, as the comment of
+    #BOXMEMBER_CLASSES states them, written as #render_boxopclass writes the
+    members of a class it declares; nothing when it lists no `boxmembers`."""
+    axes = set(sub.get("boxmembers") or [])
+    if not axes:
+        return ""
+    temp = sub["temp"]
+    strategies = load_manifest().get("boxstrategies", [])
+    out = []
+    for name, am in BOXMEMBER_CLASSES[behaviour]:
+        members = []
+        for s in strategies:
+            if s["axis"] not in axes:
+                continue
+            order = (" FOR ORDER BY pg_catalog.float_ops"
+                     if s["axis"] == "dist" else "")
+            members += [f"  -- {s['desc']}",
+                        f"  OPERATOR  {s['num']}    {s['sqlop']} (stbox, {temp}){order},"]
+        members[-1] = members[-1][:-1] + ";"
+        out.append(f"ALTER OPERATOR FAMILY {name} USING {am} ADD\n"
+                   + "\n".join(members) + "\n")
+    return ("/* A column of spatiotemporal boxes is indexed for the queries of a "
+            f"{temp} */\n\n" + "\n".join(out) + "\n")
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -308,6 +349,8 @@ def render(behaviour: str, sub: dict) -> str:
     if details:
         details = details.replace("{TEMP}", sub["temp"]).replace("{BOUNDARY}", boundary)
     body = (tmpl.replace("{DETAILS}\n", details_lines(details))
+                .replace("{BOXMEMBERS}", render_boxmembers(behaviour, sub)
+                         if behaviour in BOXMEMBER_CLASSES else "")
                 .replace("{TEMP}", sub["temp"])
                 .replace("{SET}", sub.get("set", sub["base"] + "set"))
                 .replace("{BASESYM}", basesym)
