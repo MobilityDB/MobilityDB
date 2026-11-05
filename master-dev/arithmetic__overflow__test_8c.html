@@ -81,7 +81,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A program that tests that the arithmetic of temporal numbers and the shift of spans report a result outside the range of their base type.  
+<p>A program that tests that a result outside the range of its type reports the error code of its class.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
@@ -90,13 +90,18 @@ $(function() {
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
+<code>#include &lt;pg_date.h&gt;</code><br />
+<code>#include &lt;pg_float.h&gt;</code><br />
+<code>#include &lt;pg_int.h&gt;</code><br />
+<code>#include &lt;pg_interval.h&gt;</code><br />
+<code>#include &lt;pg_timestamp.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ab4f137dd7639592885d510400eadf9a1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="arithmetic__overflow__test_8c_ab4f137dd7639592885d510400eadf9a1.html#ab4f137dd7639592885d510400eadf9a1">check</a> (const char *what, int expected)</td></tr>
+<tr class="separator:ab4f137dd7639592885d510400eadf9a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a840291bc02cba5474a4cb46a9b9566fe"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="arithmetic__overflow__test_8c_a840291bc02cba5474a4cb46a9b9566fe.html#a840291bc02cba5474a4cb46a9b9566fe">main</a> (void)</td></tr>
 <tr class="separator:a840291bc02cba5474a4cb46a9b9566fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afab08d25bc4223e9bbde74e5edd3b28f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="arithmetic__overflow__test_8c_afab08d25bc4223e9bbde74e5edd3b28f.html#afab08d25bc4223e9bbde74e5edd3b28f">ovfcheck_report</a> (const char *what, bool <a class="el" href="json__inout__validity__test_8c_afad69aeb151833bbc2039eaeeae1e0a0.html#afad69aeb151833bbc2039eaeeae1e0a0">expect_error</a>)</td></tr>
-<tr class="separator:afab08d25bc4223e9bbde74e5edd3b28f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -104,8 +109,8 @@ Variables</h2></td></tr>
 <tr class="separator:a5c7ba59d434acf5dafb8ec5fd28e9a1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >A program that tests that the arithmetic of temporal numbers and the shift of spans report a result outside the range of their base type. </p>
-<p >Each operation is called once with a result outside the range of its base type, which must report an error through meos_errno, and once with a result inside it, which must not: the addition, subtraction, multiplication and division of temporal integers and big integers, the multiplication of temporal floats reaching infinity from finite values, the division of the smallest integer by -1, and the shift of an integer span and of a date span, and the conversion of temporal floats to temporal integers and big integers.</p>
+<div class="textblock"><p >A program that tests that a result outside the range of its type reports the error code of its class. </p>
+<p >Each operation is called once with a result outside the range of its type, which must report through meos_errno the code PostgreSQL gives the same error, and once with a result inside it, which must report none: a number out of range reports <a class="el" href="meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a8dace0bf8ae50952172144aca21b5470">MEOS_ERR_VALUE_OUT_OF_RANGE</a> and a date, a timestamp or an interval out of range reports <a class="el" href="meos__error_8h_ab19a8e0fe3ea0ea5c7259400cb389056.html#ab19a8e0fe3ea0ea5c7259400cb389056a9e8b480a9cd31cf75e920c4325186754">MEOS_ERR_DATETIME_OUT_OF_RANGE</a>. The operations are the arithmetic of temporal integers, big integers and floats, the conversion of temporal floats to temporal integers and big integers, the shift of integer, date and timestamp spans, the input of integers, big integers, floats, dates, timestamps and intervals, and the addition of days to a date, of an interval to a timestamp and of two intervals.</p>
 <p >The program can be built as follows </p><div class="fragment"><div class="line">gcc -Wall -g -I/usr/local/<a class="code hl_function" href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a> -o arithmetic_overflow_test arithmetic_overflow_test.c -<a class="code hl_variable" href="trgeo__distance_8txt_a912268ab84e9ca487721bed51b5372aa.html#a912268ab84e9ca487721bed51b5372aa">L</a>/usr/local/lib -lmeos -lm</div>
 <div class="ttc" id="amobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56_html_a6e1b934a889b7b6fe98de44d12f49c56"><div class="ttname"><a href="mobilitydb_2datagen_2CMakeLists_8txt_a6e1b934a889b7b6fe98de44d12f49c56.html#a6e1b934a889b7b6fe98de44d12f49c56">include</a></div><div class="ttdeci">include(AssembleExtensionSql) configure_file(mobilitydb_datagen.in.control $</div><div class="ttdef"><b>Definition:</b> CMakeLists.txt:28</div></div>
 <div class="ttc" id="atrgeo__distance_8txt_a912268ab84e9ca487721bed51b5372aa_html_a912268ab84e9ca487721bed51b5372aa"><div class="ttname"><a href="trgeo__distance_8txt_a912268ab84e9ca487721bed51b5372aa.html#a912268ab84e9ca487721bed51b5372aa">L</a></div><div class="ttdeci">meos src rgeo trgeo_distance txt Temporal Distance for Rigid a temporal point or another temporal rigid geometry The algorithm follows the paper of Sakr and Zimanyi[1] It follows the pair of closest and it gets the distance from this pair This file adds three things to the the extrema of the distance and the times of contact *The solver finds all the roots of a with a proof for each part of the interval The paper uses a numerical method and assumes that the method finds all the roots *The two bodies can overlap Then the distance is zero The paper does not handle this case The walk over the closest features and the complexity results of the paper do not change Motion A rigid geometry is a reference polygon and a temporal pose In a segment of the temporal the time t goes from and the pose changes linearly A point a of body relative to the rotation center of moves as cA is the rotation center at dA is the displacement of the and wA is the rotation in the segment This is thus the lengths and directions of its edges and the radii of its vertices are constants The notation relative to the rotation center L</div><div class="ttdef"><b>Definition:</b> trgeo_distance.txt:48</div></div>
