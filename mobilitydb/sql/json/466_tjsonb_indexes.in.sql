@@ -45,13 +45,15 @@ CREATE FUNCTION tjsonb_gist_compress(internal)
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tjsonb_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tjsonb_rtree_ops
   DEFAULT FOR TYPE tjsonb USING gist AS
   STORAGE tstzspan,
   -- overlaps
   OPERATOR  3    && (tjsonb, tstzspan),
   OPERATOR  3    && (tjsonb, tjsonb),
-    -- same
+  -- same
   OPERATOR  6    ~= (tjsonb, tstzspan),
   OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contains
@@ -63,8 +65,6 @@ CREATE OPERATOR CLASS tjsonb_rtree_ops
   -- adjacent
   OPERATOR  17    -|- (tjsonb, tstzspan),
   OPERATOR  17    -|- (tjsonb, tjsonb),
-  -- nearest approach distance
---  OPERATOR  25    |=| (tjsonb, tstzspan) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tjsonb, tstzspan),
   OPERATOR  28    &<# (tjsonb, tjsonb),
@@ -84,16 +84,19 @@ CREATE OPERATOR CLASS tjsonb_rtree_ops
   FUNCTION  5 span_gist_penalty(internal, internal, internal),
   FUNCTION  6 span_gist_picksplit(internal, internal),
   FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION 11  span_gist_sortsupport(internal);
+  FUNCTION 11 span_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tjsonb_rtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tjsonb_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tjsonb_quadtree_ops
   DEFAULT FOR TYPE tjsonb USING spgist AS
   -- overlaps
   OPERATOR  3    && (tjsonb, tstzspan),
   OPERATOR  3    && (tjsonb, tjsonb),
-    -- same
+  -- same
   OPERATOR  6    ~= (tjsonb, tstzspan),
   OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contains
@@ -105,8 +108,6 @@ CREATE OPERATOR CLASS tjsonb_quadtree_ops
   -- adjacent
   OPERATOR  17    -|- (tjsonb, tstzspan),
   OPERATOR  17    -|- (tjsonb, tjsonb),
-  -- nearest approach distance
---  OPERATOR  25    |=| (tjsonb, tstzspan) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tjsonb, tstzspan),
   OPERATOR  28    &<# (tjsonb, tjsonb),
@@ -126,15 +127,18 @@ CREATE OPERATOR CLASS tjsonb_quadtree_ops
   FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
   FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tjsonb_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tjsonb_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tjsonb_kdtree_ops
   FOR TYPE tjsonb USING spgist AS
   -- overlaps
   OPERATOR  3    && (tjsonb, tstzspan),
   OPERATOR  3    && (tjsonb, tjsonb),
-    -- same
+  -- same
   OPERATOR  6    ~= (tjsonb, tstzspan),
   OPERATOR  6    ~= (tjsonb, tjsonb),
   -- contains
@@ -146,8 +150,6 @@ CREATE OPERATOR CLASS tjsonb_kdtree_ops
   -- adjacent
   OPERATOR  17    -|- (tjsonb, tstzspan),
   OPERATOR  17    -|- (tjsonb, tjsonb),
-  -- nearest approach distance
---  OPERATOR  25    |=| (tjsonb, tstzspan) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tjsonb, tstzspan),
   OPERATOR  28    &<# (tjsonb, tjsonb),
@@ -167,5 +169,6 @@ CREATE OPERATOR CLASS tjsonb_kdtree_ops
   FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
   FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tjsonb_kdtree_ops
 
 /******************************************************************************/

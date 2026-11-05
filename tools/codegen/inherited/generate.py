@@ -973,11 +973,19 @@ def _tempopclass_markers(name: str):
 
 
 def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
-                       strategies: list) -> str:
+                       strategies: list, valspan: str = None,
+                       opnames: dict = None) -> str:
     """The `kind` index operator class of the temporal type `temp` over the box
-    type `bt`, as the comment of #TEMPOPCLASS_KINDS states it."""
+    type `bt`, as the comment of #TEMPOPCLASS_KINDS states it, written as
+    #render_boxopclass writes a class of the box; `valspan` is the span of the
+    type's values, `opnames` the operators it declares in place of a strategy's."""
     box = bt["box"]
     tc = (bt.get("opclasses") or {}).get("tempclasses") or {}
+    gfn = tc.get("gistfn", box)
+    sfn = tc.get("spgistfn", "stbox")
+    gcompress = tc.get("gistcompress", "tspatial_gist_compress")
+    if gcompress == "own":
+        gcompress = f"{temp}_gist_compress"
     am = TEMPOPCLASS_KINDS[kind]
     axes = set(axes)
     members = []
@@ -985,23 +993,25 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
         if s["axis"] not in axes:
             continue
         order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
-        rights = (["tstzspan"] if s["axis"] in ("topo", "t") else []) + [box, temp]
+        rights = ((["tstzspan"] if s["axis"] in ("topo", "t") and box != "tstzspan"
+                   else []) + ([valspan] if valspan and s["axis"] != "t" else [])
+                  + [box, temp])
         if s["axis"] == "dist":
             rights += list(distwith or [])
+        op = (opnames or {}).get(s["sqlop"], s["sqlop"])
         members.append(f"  -- {s['desc']}")
-        members += [f"  OPERATOR  {s['num']}    {s['sqlop']} ({temp}, {r}){order},"
+        members += [f"  OPERATOR  {s['num']}    {op} ({temp}, {r}){order},"
                     for r in rights]
     if am == "gist":
         cons = (f"{temp}_gist_consistent(internal, {temp}, smallint, oid, internal)"
                 if tc.get("gistconsistent", "own") == "own" else
                 f"{box}_gist_consistent(internal, {box}, smallint, oid, internal)")
         funcs = [f"  FUNCTION  1 {cons}",
-                 f"  FUNCTION  2 {box}_gist_union(internal, internal)",
-                 f"  FUNCTION  3 {tc.get('gistcompress', 'tspatial_gist_compress')}"
-                 "(internal)",
-                 f"  FUNCTION  5 {box}_gist_penalty(internal, internal, internal)",
-                 f"  FUNCTION  6 {box}_gist_picksplit(internal, internal)",
-                 f"  FUNCTION  7 {box}_gist_same({box}, {box}, internal)"]
+                 f"  FUNCTION  2 {gfn}_gist_union(internal, internal)",
+                 f"  FUNCTION  3 {gcompress}(internal)",
+                 f"  FUNCTION  5 {gfn}_gist_penalty(internal, internal, internal)",
+                 f"  FUNCTION  6 {gfn}_gist_picksplit(internal, internal)",
+                 f"  FUNCTION  7 {gfn}_gist_same({box}, {box}, internal)"]
         if "dist" in axes:
             dist = f"{temp}_gist_distance(internal, {temp}, smallint, oid, internal)"
             if tc.get("distpairs"):
@@ -1009,15 +1019,16 @@ def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
                           for r in (box, temp)]
             else:
                 funcs.append(f"  FUNCTION  8 {dist}")
-        funcs.append(f"  FUNCTION 11 {box}_gist_sortsupport(internal)")
+        funcs.append(f"  FUNCTION 11 {gfn}_gist_sortsupport(internal)")
         head = (f"CREATE OPERATOR CLASS {temp}_{kind}_ops\n"
                 f"  DEFAULT FOR TYPE {temp} USING gist AS\n  STORAGE {box},\n")
     else:
-        funcs = [f"  FUNCTION  1 stbox_spgist_config(internal, internal)",
-                 f"  FUNCTION  2 stbox_{kind}_choose(internal, internal)",
-                 f"  FUNCTION  3 stbox_{kind}_picksplit(internal, internal)",
-                 f"  FUNCTION  4 stbox_{kind}_inner_consistent(internal, internal)",
-                 f"  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal)",
+        funcs = [f"  FUNCTION  1 {tc.get('spgistconfig', sfn)}_spgist_config"
+                 "(internal, internal)",
+                 f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
+                 f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
+                 f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  5 {sfn}_spgist_leaf_consistent(internal, internal)",
                  f"  FUNCTION  6 {tc.get('spgistcompress', 'tspatial_spgist_compress')}"
                  "(internal)"]
         default = "DEFAULT " if kind == "quadtree" else ""
@@ -6162,7 +6173,8 @@ def main() -> int:
                     continue
                 rendered = render_tempopclass(part["type"], bt, part["axes"],
                                               part.get("distwith") or [], kind,
-                                              mf.get("boxstrategies", []))
+                                              mf.get("boxstrategies", []),
+                                              part.get("valspan"), part.get("opnames"))
                 p.write_text(splice_tempopclass(p.read_text(), name, rendered))
                 print(f"spliced tempopclass {name} -> {path}")
 
