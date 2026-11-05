@@ -148,6 +148,20 @@ SELECT tavg(temp) FROM (VALUES
 SELECT tavg(temp) FROM (VALUES
 ('[1e308@2001-01-01, 1e308@2001-01-03]'::tfloat),('[1e308@2001-01-02, -1e308@2001-01-04]'::tfloat)) t(temp);
 
+-- A sum at the bound of the integers answers, one beyond raises an error
+SELECT tsum(temp) FROM (VALUES
+('1000000000@2001-01-01'::tint),('1147483646@2001-01-01'::tint)) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('2000000000@2001-01-01'::tint),('2000000000@2001-01-01'::tint)) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('[-2000000000@2001-01-01, -2000000000@2001-01-03]'::tint),('[-2000000000@2001-01-02, -2000000000@2001-01-04]'::tint)) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('5000000000000000000@2001-01-01'::tbigint),('4223372036854775806@2001-01-01'::tbigint)) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('5000000000000000000@2001-01-01'::tbigint),('5000000000000000000@2001-01-01'::tbigint)) t(temp);
+SELECT tsum(temp) FROM (VALUES
+('[-5000000000000000000@2001-01-01, -5000000000000000000@2001-01-03]'::tbigint),('[-5000000000000000000@2001-01-02, -5000000000000000000@2001-01-04]'::tbigint)) t(temp);
+
 -------------------------------------------------------------------------------
 
 SELECT tmin(temp) FROM (VALUES

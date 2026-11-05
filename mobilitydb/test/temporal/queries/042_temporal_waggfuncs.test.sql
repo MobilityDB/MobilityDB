@@ -113,6 +113,11 @@ SELECT wavg(temp, NULL) FROM (VALUES (NULL::tfloat),('1@2001-01-01'::tfloat)) t(
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),(NULL::tfloat)) t(temp);
 SELECT wavg(temp, interval '5 minutes') FROM (VALUES (NULL::tfloat),('1@2001-01-01'::tfloat)) t(temp);
 SELECT wavg(temp, interval '1 day') FROM (VALUES ('{1e308@2001-01-01, 1e308@2001-01-02}'::tfloat),('1e308@2001-01-01'::tfloat)) t(temp);
+-- A sum at the bound of the integers answers, one beyond raises an error
+SELECT wsum(temp, interval '1 day') FROM (VALUES ('{1000000000@2001-01-01, 1147483646@2001-01-02}'::tint)) t(temp);
+SELECT wsum(temp, interval '1 day') FROM (VALUES ('{2000000000@2001-01-01, 2000000000@2001-01-02}'::tint)) t(temp);
+SELECT wsum(temp, interval '1 day') FROM (VALUES ('{5000000000000000000@2001-01-01, 4223372036854775806@2001-01-02}'::tbigint)) t(temp);
+SELECT wsum(temp, interval '1 day') FROM (VALUES ('{5000000000000000000@2001-01-01, 5000000000000000000@2001-01-02}'::tbigint)) t(temp);
 
 -------------------------------------------------------------------------------
 
