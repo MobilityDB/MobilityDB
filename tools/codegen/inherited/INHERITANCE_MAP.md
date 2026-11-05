@@ -466,6 +466,12 @@ native kernel — its ever/always relationships cast-delegate to the temporal ge
 point, `eIntersects`/`eDwithin` through C wrappers with index support
 (`index_support`) and the others in pure SQL (§6, `320_tnpoint_spatialrels`).
 
+`rgeo_t_rels` (**rgeo**, `trgeo_spatialrels.c`) is a further `temporal` entry beside
+`rgeo_t_dwithin`: the temporal disjoint and intersects of the temporal rigid geometries, in
+the three directions. A temporal rigid geometry therefore answers `tDisjoint`, `tIntersects`
+and `tDwithin` natively, and only `tContains`, `tCovers` and `tTouches` convert it to
+tgeometry (`172_trgeo_tempspatialrels`).
+
 ## 4. `Temporal<T>` chapter — section-by-section
 
 | `<sect1>` | MEOS prefix | generated? | canonical generator / notes |

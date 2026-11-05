@@ -99,3 +99,23 @@ SELECT tDwithin(
   trgeometry 'Interp=Step;Polygon((0 0,1 0,1 1,0 1,0 0));[Pose(Point(2 0),0)@2001-01-01, Pose(Point(2 2),0)@2001-01-03]', 1.0);
 
 -------------------------------------------------------------------------------
+
+-- A body in linear motion: the times at which it passes over a polygon, to the microsecond
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT tIntersects(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT tDisjoint(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+-- The answer is that of tDwithin at the distance 0
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))') = tDwithin(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', 0.0);
+-- A point that a body slides along until its vertex passes
+SELECT tIntersects(trgeometry 'Polygon((-4 -4,4 -4,-2 2,-4 -4));[Pose(Point(-1 2),0)@2001-01-01,Pose(Point(2 -1),0)@2001-01-02,Pose(Point(8 -7),0)@2001-01-03]', geometry 'Point(1.5 -0.5)');
+SELECT round(tDistance(trgeometry 'Polygon((-4 -4,4 -4,-2 2,-4 -4));[Pose(Point(-1 2),0)@2001-01-01,Pose(Point(2 -1),0)@2001-01-02,Pose(Point(8 -7),0)@2001-01-03]', geometry 'Point(1.5 -0.5)'), 6);
+-- A distance that is an extremum of the walk keeps its value, the contact being elsewhere
+SELECT tDwithin(trgeometry 'Polygon((-3 0,3 -4,-3 3,-3 0));[Pose(Point(0 -3),0)@2001-01-01,Pose(Point(4 1),0)@2001-01-02,Pose(Point(0 1),0)@2001-01-03]', geometry 'Point(0 0)', 0.0);
+-- With step interpolation a body holds each pose
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))') = tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]'::tgeometry, geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');

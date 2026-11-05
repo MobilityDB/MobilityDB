@@ -764,10 +764,15 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
       least = fmin(least, convex_motion_nad_exact(ops->refxy, ops->nref,
         pose1->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
     int min = -1;
+    bool reached = false;
     for (int j = first; j < last; j++)
     {
       if (values[j] == ops->level)
+      {
+        /* The walk has put the least distance on a crossing of the level */
+        reached |= (values[j] == least);
         continue;
+      }
       if (values[j] < least)
       {
         values[j] = least;
@@ -776,7 +781,7 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
       if (min < 0 || values[j] < values[min])
         min = j;
     }
-    if (min < 0 || values[min] == least)
+    if (reached || min < 0 || values[min] == least)
       continue;
     double end1 = DBL_MAX, end2 = DBL_MAX;
     for (int j = 0; j < ops->nparts; j++)
