@@ -1281,6 +1281,11 @@ distwalk_segm(const DistSegm *seg, const DistRefPoly *ra,
       inside = true;
       continue;
     }
+    /* An edge whose function is zero on the interval is a contact that slides
+     * until the end of the interval, where the square root of the function of
+     * the next feature, a vertex, would give the rounding of its zero */
+    if (cur.kind != DISTPAIR_VV && distfun_is_zero(&f, ftol))
+      distevents_add(events, tnext, 0.0);
     if (tnext >= 1.0)
     {
       distevents_add(events, 1.0, fun_dist(&f, len, 1.0));

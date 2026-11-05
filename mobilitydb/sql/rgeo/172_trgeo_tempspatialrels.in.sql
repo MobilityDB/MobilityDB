@@ -77,17 +77,16 @@ CREATE FUNCTION tCovers(trgeometry, trgeometry)
 
 CREATE FUNCTION tDisjoint(geometry, trgeometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1, $2::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Tdisjoint_geo_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(trgeometry, geometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1::@extschema@.tgeometry, $2) $$;
+  AS 'MODULE_PATHNAME', 'Tdisjoint_trgeometry_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(trgeometry, trgeometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1::@extschema@.tgeometry,
-                          $2::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Tdisjoint_trgeometry_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tIntersects
@@ -95,17 +94,16 @@ CREATE FUNCTION tDisjoint(trgeometry, trgeometry)
 
 CREATE FUNCTION tIntersects(geometry, trgeometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1, $2::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Tintersects_geo_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tIntersects(trgeometry, geometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeometry, $2) $$;
+  AS 'MODULE_PATHNAME', 'Tintersects_trgeometry_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tIntersects(trgeometry, trgeometry)
   RETURNS tbool
-  LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeometry,
-                            $2::@extschema@.tgeometry) $$;
+  AS 'MODULE_PATHNAME', 'Tintersects_trgeometry_trgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 /*****************************************************************************
  * tTouches

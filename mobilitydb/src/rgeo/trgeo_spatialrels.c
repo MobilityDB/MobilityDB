@@ -659,4 +659,101 @@ Tdwithin_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 }
 /* GENERATED-SPATIALRELS-END rgeo_t_dwithin */
 
+/* GENERATED-SPATIALRELS-BEGIN rgeo_t_rels — tools/codegen/inherited/generate.py from templates/spatialrels.c.tmpl;
+ * DO NOT EDIT BY HAND; edit the template + manifest.d/spatialrel_families.yaml and re-run. */
+/*****************************************************************************
+ * Temporal disjoint
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tdisjoint_geo_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_geo_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal rigid geometry are disjoint
+ * @sqlfn tDisjoint()
+ */
+inline Datum
+Tdisjoint_geo_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_geo_tspatial(fcinfo, &tdisjoint_geo_trgeometry);
+}
+
+PGDLLEXPORT Datum Tdisjoint_trgeometry_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_trgeometry_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal rigid
+ * geometry and a geometry are disjoint
+ * @sqlfn tDisjoint()
+ */
+inline Datum
+Tdisjoint_trgeometry_geo(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_tspatial_geo(fcinfo, &tdisjoint_trgeometry_geo);
+}
+
+PGDLLEXPORT Datum Tdisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tdisjoint_trgeometry_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal rigid
+ * geometries are disjoint
+ * @sqlfn tDisjoint()
+ */
+inline Datum
+Tdisjoint_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_tspatial_tspatial(fcinfo,
+    &tdisjoint_trgeometry_trgeometry);
+}
+
+/*****************************************************************************
+ * Temporal intersects
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tintersects_geo_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_geo_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a geometry and a
+ * temporal rigid geometry intersect
+ * @sqlfn tIntersects()
+ */
+inline Datum
+Tintersects_geo_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_geo_tspatial(fcinfo, &tintersects_geo_trgeometry);
+}
+
+PGDLLEXPORT Datum Tintersects_trgeometry_geo(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_trgeometry_geo);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether a temporal rigid
+ * geometry and a geometry intersect
+ * @sqlfn tIntersects()
+ */
+inline Datum
+Tintersects_trgeometry_geo(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_tspatial_geo(fcinfo, &tintersects_trgeometry_geo);
+}
+
+PGDLLEXPORT Datum Tintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tintersects_trgeometry_trgeometry);
+/**
+ * @ingroup mobilitydb_geo_rel_temp
+ * @brief Return a temporal boolean that states whether two temporal rigid
+ * geometries intersect
+ * @sqlfn tIntersects()
+ */
+inline Datum
+Tintersects_trgeometry_trgeometry(PG_FUNCTION_ARGS)
+{
+  return Tspatialrel_tspatial_tspatial(fcinfo,
+    &tintersects_trgeometry_trgeometry);
+}
+/* GENERATED-SPATIALRELS-END rgeo_t_rels */
+
 /*****************************************************************************/

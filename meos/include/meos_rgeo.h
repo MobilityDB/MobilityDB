@@ -219,6 +219,12 @@ extern TInstant *nai_trgeometry_trgeometry(const Temporal *temp1, const Temporal
 extern GSERIALIZED *shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs);
 extern GSERIALIZED *shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2);
 extern GSERIALIZED *shortestline_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tdisjoint_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tdisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tdisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2);
+extern Temporal *tintersects_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp);
+extern Temporal *tintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs);
+extern Temporal *tintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *tdwithin_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, double dist);
 extern Temporal *tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double dist);
 extern Temporal *tdwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, double dist);

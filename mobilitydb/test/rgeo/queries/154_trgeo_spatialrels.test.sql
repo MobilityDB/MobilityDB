@@ -295,3 +295,32 @@ SELECT eTouches(
   trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));{Pose(Point(1 0),0)@2001-01-02, Pose(Point(1 0),0)@2001-01-04}');
 
 -------------------------------------------------------------------------------
+
+-- A body in linear motion answers between its instants as well: it passes over a
+-- polygon that it meets at neither instant
+SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT eIntersects(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+SELECT aIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT aIntersects(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT aIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT aIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+SELECT eDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT eDisjoint(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT eDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT eDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+SELECT aDisjoint(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+-- A long body that turns onto a polygon
+SELECT eIntersects(trgeometry 'Polygon((-5 -1,5 -1,5 1,-5 1,-5 -1));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(0 0),3)@2001-01-02]', geometry 'Polygon((0 4,1 4,1 5,0 5,0 4))');
+-- The same body with step interpolation holds each pose, and meets it at neither
+SELECT eIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+-- An empty geometry
+SELECT eIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon empty');
+SELECT aDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon empty');
+-- A body that the distance does not read
+/* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Point(5 2)');
+/* Errors */ SELECT eIntersects(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
