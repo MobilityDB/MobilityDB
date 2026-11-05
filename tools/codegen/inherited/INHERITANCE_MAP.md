@@ -269,6 +269,13 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `044_temporal_spgist`, `stbox` its three in `073_tpoint_gist` and
   `074_tpoint_spgist`, and `tpcbox` its three in `439_tpc_gist` and
   `440_tpc_spgist`, its SP-GiST classes over the functions of `stbox`.
+  A family a build can leave out adds its temporal type to the classes of
+  `stbox` in its own index file: the `{BOXMEMBERS}` token of the `indexes`,
+  `gist` and `spgist` templates writes, by `render_boxmembers`, one
+  `ALTER OPERATOR FAMILY` per class of the file's access method, carrying every
+  strategy whose axis the subtype's `boxmembers:` lists in `subtypes.yaml`
+  (tcbuffer, tnpoint, tpose, tposechain, trgeometry, th3index, tquadbin and
+  ts2cell).
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
