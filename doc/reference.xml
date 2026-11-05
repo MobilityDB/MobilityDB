@@ -1115,6 +1115,9 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construct a geometry/geography with M measure from a temporal point and a temporal float &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_force"><varname>force2D</varname>, <varname>force3D</varname></link>: Return a temporal geometry with no Z or with a Z, as the PostGIS functions <varname>ST_Force2D</varname> and <varname>ST_Force3D</varname> do for a geometry &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
 				</listitem>
 				<listitem>
@@ -1618,6 +1621,9 @@
 					</listitem>
 					<listitem>
 						<para><link linkend="tpose_rotateZ"><varname>rotateZ</varname></link>: Return a temporal value rotated counter-clockwise about the z axis &Z_support;</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpose_force2D"><varname>force2D</varname></link>: Return a temporal pose projected to the ground &Z_support;</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>
@@ -2583,6 +2589,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_rotateZ"><varname>rotateZ</varname></link>: Return a temporal value rotated counter-clockwise about the z axis &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_force2D"><varname>force2D</varname></link>: Return a temporal rigid geometry projected to the ground &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3758,6 +3767,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Convert a temporal point cloud point to a temporal geometry point</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convert a temporal point cloud point to its bounding box</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -3944,6 +3956,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convert a temporal patch into the temporal geometry of the multipoints its patches occupy</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convert a temporal point cloud patch to its bounding box</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

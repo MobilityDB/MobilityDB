@@ -199,3 +199,10 @@ SELECT
   (SELECT COALESCE(SUM(numPoints(temp)), 0) FROM tbl_tpcpatch);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The cast to tpcbox is the box the extent of each value answers
+-------------------------------------------------------------------------------
+
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE temp::tpcbox IS NOT NULL;
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE tpcbox(temp) <> extentTransition(NULL::tpcbox, temp);

@@ -233,3 +233,15 @@ SELECT
  t
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE temp::tpcbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpatch WHERE tpcbox(temp) <> extentTransition(NULL::tpcbox, temp);
+ count 
+-------
+     0
+(1 row)
+

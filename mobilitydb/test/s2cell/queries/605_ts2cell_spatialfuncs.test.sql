@@ -52,6 +52,10 @@ SELECT asText(cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 5))
 SELECT startValue(cellToParent(ts2cell '[47c3c3@2001-01-01]', 5))
   = cellToParent(s2cell '47c3c3', 5);
 
+-- A parent is no finer than any value
+/* Errors */
+SELECT cellToParent(ts2cell '[47c3c3@2001-01-01, 54b5c9@2001-01-02]', 30);
+
 -------------------------------------------------------------------------------
 -- Centre and boundary
 --

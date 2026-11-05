@@ -2247,3 +2247,51 @@ SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tge
  f
 (1 row)
 
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+ edisjoint 
+-----------
+ f
+(1 row)
+
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Linestring(1 1 1,1 1 5)');
+ eintersects 
+-------------
+ t
+(1 row)
+
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 5)');
+ eintersects 
+-------------
+ f
+(1 row)
+

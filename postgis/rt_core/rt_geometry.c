@@ -352,6 +352,8 @@ rt_errorstate rt_raster_get_perimeter(
  *
  * @return ES_NONE on success, ES_ERROR on error
  */
+/* MEOS */ extern LWGEOM *meos_unary_union(const LWGEOM *geom);
+
 rt_errorstate rt_raster_surface(rt_raster raster, int nband, LWMPOLY **surface) {
 	rt_band band = NULL;
 	LWGEOM *mpoly = NULL;
@@ -359,9 +361,8 @@ rt_errorstate rt_raster_surface(rt_raster raster, int nband, LWMPOLY **surface) 
 	LWGEOM *clone = NULL;
 	rt_geomval gv = NULL;
 	int gvcount = 0;
-	GEOSGeometry *gc = NULL;
-	GEOSGeometry *gunion = NULL;
-	GEOSGeometry **geoms = NULL;
+	/* MEOS */ LWGEOM **geoms = NULL;
+	/* MEOS */ LWCOLLECTION *gc = NULL;
 	int geomscount = 0;
 	int i = 0;
 
@@ -461,60 +462,22 @@ rt_errorstate rt_raster_surface(rt_raster raster, int nband, LWMPOLY **surface) 
 			}
 #endif
 
-			geoms[i] = LWGEOM2GEOS(lwpoly_as_lwgeom(gv[i].geom), 0);
-			lwpoly_free(gv[i].geom);
+			/* MEOS: the collection below owns the polygons */
+			geoms[i] = lwpoly_as_lwgeom(gv[i].geom);
 		}
 		rtdealloc(gv);
 
-		/* create geometry collection */
-		gc = GEOSGeom_createCollection(GEOS_GEOMETRYCOLLECTION, geoms, geomscount);
+		/* MEOS: the union of the pixel polygons is answered by the native engine,
+		 * which bounds its surfaces by construction */
+		gc = lwcollection_construct(MULTIPOLYGONTYPE, geoms[0]->srid, NULL,
+			geomscount, geoms);
+		mpoly = meos_unary_union(lwcollection_as_lwgeom(gc));
+		lwcollection_free(gc);
 
-		if (gc == NULL) {
-			rterror("rt_raster_surface: Could not create GEOS GEOMETRYCOLLECTION from set of pixel polygons");
-
-			for (i = 0; i < geomscount; i++)
-				GEOSGeom_destroy(geoms[i]);
-			rtdealloc(geoms);
+		if (mpoly == NULL) {
+			rterror("rt_raster_surface: Could not union the pixel polygons");
 			return ES_ERROR;
 		}
-
-		/* run the union */
-		gunion = GEOSUnaryUnion(gc);
-
-		GEOSGeom_destroy(gc);
-		rtdealloc(geoms);
-
-		if (gunion == NULL) {
-			rterror("rt_raster_surface: Could not union the pixel polygons using GEOSUnaryUnion()");
-			return ES_ERROR;
-		}
-
-		/* convert union result from GEOSGeometry to LWGEOM */
-		mpoly = GEOS2LWGEOM(gunion, 0);
-
-		/*
-			is geometry valid?
-			if not, try to make valid
-		*/
-		do {
-			LWGEOM *mpolyValid = NULL;
-
-			if (GEOSisValid(gunion))
-				break;
-
-			/* make geometry valid */
-			mpolyValid = lwgeom_make_valid(mpoly);
-			if (mpolyValid == NULL) {
-				rtwarn("Cannot fix invalid geometry");
-				break;
-			}
-
-			lwgeom_free(mpoly);
-			mpoly = mpolyValid;
-		}
-		while (0);
-
-		GEOSGeom_destroy(gunion);
 	}
 	else {
 		mpoly = lwpoly_as_lwgeom(gv[0].geom);
@@ -1195,8 +1158,7 @@ rt_raster_gdal_polygonize(
 		return NULL;
 	}
 
-	/* initialize GEOS */
-	initGEOS(rtinfo, lwgeom_geos_error);
+	/* MEOS: storing the polygons reaches no GEOS entry point, so none is started */
 
 	RASTER_DEBUGF(3, "storing polygons (%d)", nFeatureCount);
 

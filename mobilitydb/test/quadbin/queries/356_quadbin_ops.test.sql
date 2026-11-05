@@ -47,6 +47,10 @@ SELECT getResolution(quadbin '48a6227affffffff');  -- res 10
 SELECT cellToParent(quadbin '48427fffffffffff', 0) = quadbin '480fffffffffffff';
 SELECT getResolution(cellToParent(quadbin '48427fffffffffff', 2));
 
+-- A parent is no finer than its cell
+/* Errors */
+SELECT cellToParent(quadbin '48427fffffffffff', 5);
+
 -- Children: exactly 4 per finer level
 SELECT numValues(cellToChildren(quadbin '480fffffffffffff', 1));
 SELECT cellToChildren(quadbin '480fffffffffffff', 1);

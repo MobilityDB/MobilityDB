@@ -221,6 +221,16 @@ SELECT asText(tgeompoint(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(P
   asText(rotateY(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 0.7), 6);
 SELECT asText(tgeompoint(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3)), 6) =
   asText(translate(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 1, 2, 3), 6);
+-- The projection to the ground keeps the x, the y and the yaw of each instant
+SELECT asText(force2D(tpose '[Pose(Point(1 1 5),0.7071067811865476,0,0,0.7071067811865476)@2001-01-01, Pose(Point(3 2 7),1,0,0,0)@2001-01-02]'), 6);
+SELECT asText(force2D(tpose 'Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+SELECT asText(force2D(tpose '{Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02}'), 6);
+SELECT asText(force2D(tpose 'Interp=Step;[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02]'), 6);
+SELECT asText(force2D(tpose '{[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02], [Pose(Point(3 3 5),1,0,0,0)@2001-01-03]}'), 6);
+-- A value in 2D stays as it is
+SELECT asText(force2D(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
+-- The SRID stays
+SELECT asEWKT(force2D(tpose 'SRID=3812;Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 -- A motion is a planar map
 SELECT rotateZ(tpose 'SRID=4326;[GeodPose(Point Z(8 47 100), 1, 0, 0, 0)@2001-01-01, GeodPose(Point Z(9 47 100), 1, 0, 0, 0)@2001-01-02]', 0.7);
 

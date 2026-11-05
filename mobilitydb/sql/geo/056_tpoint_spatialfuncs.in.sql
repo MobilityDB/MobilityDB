@@ -114,6 +114,23 @@ CREATE FUNCTION transform(tgeogpoint, integer)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tspatial_transform'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE FUNCTION force2D(tgeompoint)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force3D(tgeompoint, zvalue float DEFAULT 0.0)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tgeo_force3d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force2D(tgeogpoint)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION force3D(tgeogpoint, zvalue float DEFAULT 0.0)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tgeo_force3d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION transformPipeline(tgeogpoint, text, srid integer DEFAULT 0,
     is_forward boolean DEFAULT true)
   RETURNS tgeogpoint

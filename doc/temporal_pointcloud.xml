@@ -905,6 +905,21 @@ SELECT ST_AsText(startValue(tpcpoint(pcpoint(1, 10.0, 20.0, 30.0),
 </programlisting>
 				</listitem>
 
+				<listitem xml:id="tpcpoint_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Convert a temporal point cloud point to its bounding box</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcbox(tpcpoint) &#8594; tpcbox
+tpcpoint::tpcbox
+</programlisting>
+					<para>The box is the one the extent of the value answers: the spatial extent of its points, its time span, the SRID its schema states and its <varname>pcid</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpoint(pcpoint(1, 10.0, 20.0, 30.0), '2024-01-01'::timestamptz)::tpcbox;
+-- TPCBOX(ZT(((10,20,30),(10,20,30)),[2024-01-01, 2024-01-01]), 1)
+</programlisting>
+				</listitem>
+
 			</itemizedlist>
 		</sect2>
 
@@ -1774,6 +1789,22 @@ tgeometry(tpcpatch) &#8594; tgeometry
 SELECT asText(tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
   pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)::tgeometry);
 -- MULTIPOINT Z ((1 1 1),(2 2 2))@2001-01-01
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="tpcpatch_tpcbox">
+					<indexterm significance="normal"><primary><varname>tpcbox</varname></primary></indexterm>
+					<indexterm significance="normal"><primary><varname>::</varname></primary></indexterm>
+					<para>Convert a temporal point cloud patch to its bounding box</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+tpcbox(tpcpatch) &#8594; tpcbox
+tpcpatch::tpcbox
+</programlisting>
+					<para>The box is the one the extent of the value answers: the spatial extent of its points, its time span, the SRID its schema states and its <varname>pcid</varname>.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT tpcpatch(pcpatch(pcpoint(1, 1, 1, 1),
+  pcpoint(1, 2, 2, 2)), '2001-01-01'::timestamptz)::tpcbox;
+-- TPCBOX(ZT(((1,1,1),(2,2,2)),[2001-01-01, 2001-01-01]), 1)
 </programlisting>
 				</listitem>
 			</itemizedlist>

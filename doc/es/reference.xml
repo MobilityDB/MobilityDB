@@ -1115,6 +1115,9 @@
 					<para><link linkend="tgeo_geoMeasure"><varname>geoMeasure</varname></link>: Construye una geometría/geografía con medida M a partir de un punto temporal y un número flotante temporal &Z_support; &geography_support;</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="tgeo_force"><varname>force2D</varname>, <varname>force3D</varname></link>: Devuelve una geometría temporal sin Z o con una Z, como lo hacen las funciones de PostGIS <varname>ST_Force2D</varname> y <varname>ST_Force3D</varname> para una geometría &Z_support; &geography_support;</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="tgeo_affine"><varname>affine</varname></link>: Devuelve la transformación afín 3D de una geometría temporal para traducirla, rotarla y/o escalarla en un solo paso &Z_support;</para>
 				</listitem>
 				<listitem>
@@ -1616,6 +1619,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="tpose_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="tpose_force2D"><varname>force2D</varname></link>: Devuelve una pose temporal proyectada sobre el suelo &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -2574,6 +2580,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="trgeometry_rotateZ"><varname>rotateZ</varname></link>: Devuelve un valor temporal rotado en sentido antihorario alrededor del eje z &Z_support;</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="trgeometry_force2D"><varname>force2D</varname></link>: Devuelve una geometría rígida temporal proyectada sobre el suelo &Z_support;</para>
 				</listitem>
 			</itemizedlist>
 		</sect2>
@@ -3749,6 +3758,9 @@
 					<listitem>
 						<para><link linkend="tpcpoint_tgeompoint"><varname>::</varname></link>: Convierte un punto de nube de puntos temporal a un punto de geometría temporal</para>
 					</listitem>
+					<listitem>
+						<para><link linkend="tpcpoint_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convierte un punto de nube de puntos temporal en su caja delimitadora</para>
+					</listitem>
 				</itemizedlist>
 			</sect3>
 			<sect3>
@@ -3935,6 +3947,9 @@
 				<itemizedlist>
 					<listitem>
 						<para><link linkend="tpcpatch_tgeometry"><varname>tgeometry</varname></link>: Convierte un parche temporal en la geometría temporal de los multipuntos que ocupan sus parches</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcpatch_tpcbox"><varname>tpcbox</varname>, <varname>::</varname></link>: Convierte un parche de nube de puntos temporal en su caja delimitadora</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

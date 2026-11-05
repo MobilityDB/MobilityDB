@@ -244,6 +244,7 @@ extern LWGEOM *meos_areal_difference(const LWGEOM *geom1,
   const LWGEOM *geom2);
 extern LWGEOM *meos_linear_union(const LWGEOM *geom);
 extern LWGEOM *meos_centroid(const LWGEOM *geom);
+extern LWGEOM *meos_unary_union(const LWGEOM *geom);
 extern double meos_area(const LWGEOM *geom);
 extern LWGEOM *meos_lift_ordinates(const LWGEOM *geom, const LWGEOM **geoms,
   int count);
@@ -729,6 +730,7 @@ extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
 extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
 extern GSERIALIZED *geo_force2d_intl(const GSERIALIZED *gs);
+extern GSERIALIZED *geo_force3d_intl(const GSERIALIZED *gs, double zvalue);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,

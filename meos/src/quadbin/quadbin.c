@@ -525,15 +525,21 @@ quadbin_get_resolution(Quadbin cell)
  * @brief Return the parent of a quadbin cell at a coarser resolution
  * @param[in] cell Quadbin cell
  * @param[in] parent_resolution Target resolution (<= resolution of @p cell)
- * @return The parent cell, or 0 if @p parent_resolution is invalid
+ * @return The parent cell
+ * @errval 0
  * @csqlfn #Quadbin_cell_to_parent()
  */
 Quadbin
 quadbin_cell_to_parent(Quadbin cell, uint32_t parent_resolution)
 {
+  /* Ensure the validity of the arguments */
   uint32_t resolution = quadbin_get_resolution(cell);
   if (parent_resolution > resolution)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "The parent resolution must not be finer than the resolution of the cell");
     return 0;
+  }
   return (cell & ~(UINT64_C(0x1F) << 52)) |
     ((uint64_t) parent_resolution << 52) |
     (QUADBIN_FOOTER >> (parent_resolution << 1));

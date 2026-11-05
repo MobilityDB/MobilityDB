@@ -83,6 +83,11 @@ CREATE FUNCTION rotateY(trgeometry, angle float)
   AS 'MODULE_PATHNAME', 'Trgeometry_rotate_y'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION force2D(trgeometry)
+  RETURNS trgeometry
+  AS 'MODULE_PATHNAME', 'Trgeometry_force2d'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
 CREATE FUNCTION rotateZ(trgeometry, angle float)
   RETURNS trgeometry
   AS 'MODULE_PATHNAME', 'Trgeometry_rotate_z'

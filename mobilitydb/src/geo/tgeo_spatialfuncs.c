@@ -338,6 +338,38 @@ Tgeo_affine(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tgeo_force2d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_force2d);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo with no Z
+ * @sqlfn force2D()
+ */
+Datum
+Tgeo_force2d(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_force2d(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tgeo_force3d(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tgeo_force3d);
+/**
+ * @ingroup mobilitydb_geo_transf
+ * @brief Return a temporal geo with a Z
+ * @sqlfn force3D()
+ */
+Datum
+Tgeo_force3d(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tgeo_force3d(temp, PG_GETARG_FLOAT8(1));
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Tgeo_scale_geo(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tgeo_scale_geo);
 /**

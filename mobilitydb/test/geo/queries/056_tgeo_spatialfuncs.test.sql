@@ -597,3 +597,13 @@ FROM temp;
 -- The weights of a meridian and a parallel segment differ between the spheroid and the sphere
 SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}'), 6);
 SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);
+
+-------------------------------------------------------------------------------
+-- force2D and force3D
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(force2D(tgeometry 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01'));
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01', 50));
+SELECT asEWKT(force2D(tgeography 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+SELECT asEWKT(force3D(tgeography 'Linestring(0 0,1 1)@2001-01-01', 50));

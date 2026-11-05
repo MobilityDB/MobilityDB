@@ -152,6 +152,7 @@ extern Temporal *tpose_inverse(const Temporal *temp);
 extern Temporal *tpose_rotate(const Temporal *temp, double angle, double x0, double y0);
 extern Temporal *tpose_rotate_x(const Temporal *temp, double angle);
 extern Temporal *tpose_rotate_y(const Temporal *temp, double angle);
+extern Temporal *tpose_force2d(const Temporal *temp);
 extern Temporal *tpose_rotate_z(const Temporal *temp, double angle);
 extern Temporal *tpose_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 

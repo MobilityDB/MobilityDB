@@ -1,0 +1,260 @@
+{
+  "type_label": "tpointcloud ",
+  "header": "meos_pointcloud.h",
+  "out": "tpointcloud_smoketest.c",
+  "extra_includes": "#include <meos_pointcloud.h>",
+  "csv_data": [
+    "pointcloud_schemas"
+  ],
+    "value_returns": [
+    "uint64"
+  ],
+  "arg_map": {
+    "Temporal *": "tpcpoint1",
+    "TPCBox *": "tpcbox1",
+    "Pcpoint *": "pcpoint1",
+    "Pcpatch *": "pcpatch1",
+    "Set *": "pcpointset1",
+    "Span *": "tstzspan1",
+    "SpanSet *": "tstzspanset1",
+    "GSERIALIZED *": "geom1",
+    "Interval *": "interv1",
+    "PCDimensionSpec *": "pcdims1",
+    "Pcpoint * *": "pcpointarr1",
+    "Pcpatch * *": "pcpatcharr1",
+    "TimestampTz": "tstz1",
+    "TimestampTz *": "&t_out",
+    "interpType": "STEP",
+    "SPTreeKind": "SPTREE_QUADTREE",
+    "char *": "pcpoint_hex1",
+    "uint8_t *": "tpcbox_wkb1",
+    "uint8_t": "0",
+    "size_t": "tpcbox_wkb1_size",
+    "size_t *": "&size_out",
+    "double *": "&d_out",
+    "bool *": "&b_out",
+    "int *": "&n_out",
+    "int": "1",
+    "int32_t": "0",
+    "uint32_t": "1",
+    "uint64": "1",
+    "double": "1.0",
+    "bool": "true"
+  },
+  "name_arg_map": {
+    "pcpatch": {
+      "Temporal *": "tpcpatch1",
+      "Set *": "pcpatchset1",
+      "char *": "pcpatch_hex1"
+    },
+    "tstzset$": {
+      "Set *": "tstzset1"
+    },
+    "^pcpoint_make$|^pcpatch_make_coords$": {
+      "double *": "pccoords1",
+      "int": "3"
+    },
+    "^pcpatch_make$": {
+      "Pcpoint * *": "(const Pcpoint **) pcpointarr1",
+      "int": "2"
+    },
+    "^pcpointset_make$|^pcpatchset_make$": {
+      "int": "2"
+    },
+    "^pcpoint_get_dim$": {
+      "char *": "\"X\""
+    },
+    "^meos_pc_schema_register_dims$": {
+      "char *": "\"none\"",
+      "int": "3"
+    },
+    "^pcpointset_in$": {
+      "char *": "\"{0101000000640000006400000064000000, 0101000000C8000000C8000000C8000000}\""
+    },
+    "^pcpatchset_in$": {
+      "char *": "\"{01010000000000000002000000640000006400000064000000C8000000C8000000C8000000}\""
+    },
+    "^tpcbox_in$": {
+      "char *": "\"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-03]), 1)\""
+    },
+    "^tpcbox_from_hexwkb$": {
+      "char *": "tpcbox_hexwkb1"
+    },
+    "^tpcpoint_in$|^tpcpointseq_in$": {
+      "char *": "\"[0101000000640000006400000064000000@2024-01-01, 0101000000C8000000C8000000C8000000@2024-01-03]\""
+    },
+    "^tpcpointinst_in$": {
+      "char *": "\"0101000000640000006400000064000000@2024-01-01\""
+    },
+    "^tpcpointseqset_in$": {
+      "char *": "\"{[0101000000640000006400000064000000@2024-01-01, 0101000000C8000000C8000000C8000000@2024-01-03]}\""
+    },
+    "^tpcpatch_in$|^tpcpatchseq_in$": {
+      "char *": "\"[01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01, 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-03]\""
+    },
+    "^tpcpatchinst_in$": {
+      "char *": "\"01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01\""
+    },
+    "^tpcpatchseqset_in$": {
+      "char *": "\"{[01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01, 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-03]}\""
+    },
+    "^tpcpoint_from_mfjson$": {
+      "char *": "tpcpoint_mfjson1"
+    },
+    "^tpcpatch_from_mfjson$": {
+      "char *": "tpcpatch_mfjson1"
+    },
+    "^tpcpoint_value$|^eintersects_tpcpoint_geo$|^nad_tpcpoint_geo$": {
+      "Temporal *": "tpcpoint_inst1"
+    },
+    "^tpcpatch_value$": {
+      "Temporal *": "tpcpatch_inst1"
+    }
+  },
+  "override_args": {
+    "meos_pc_schema_register_dims": {
+      "0": "4"
+    },
+    "inter_tpcbox_tpcbox": {
+      "2": "&tpcbox_res1"
+    }
+  },
+  "no_free": [
+    "meos_pc_schema"
+  ],
+  "manual": [
+    "meos_pc_schema_from_dims",
+    "meos_pc_schema_register",
+    "meos_pc_schema_register_xml",
+    "meos_pc_schema_clear",
+    "rtree_create_tpcbox",
+    "sptree_create_tpcbox",
+    "tpcpoint_unnest",
+    "tpcpatch_unnest",
+    "meos_set_pointcloud_schemas_xml",
+    "meos_initialize_pointcloud"
+  ],
+  "common_inputs": [
+    "  /* The values are laid out by schema 1 of the pointcloud_schemas.xml the",
+    "   * suite is pointed at above: three int32 dimensions X, Y and Z at scale",
+    "   * 0.01, so 0x64 reads 1.0 and 0xC8 reads 2.0. */",
+    "  TimestampTz tstz1 = timestamptz_in(\"2024-01-02\", -1);",
+    "  Span *tstzspan1 = tstzspan_in(\"[2024-01-01, 2024-01-03]\");",
+    "  Set *tstzset1 = tstzset_in(\"{2024-01-01, 2024-01-03}\");",
+    "  SpanSet *tstzspanset1 = tstzspanset_in(\"{[2024-01-01, 2024-01-02], [2024-01-03, 2024-01-04]}\");",
+    "  Interval *interv1 = interval_in(\"1 day\", -1);",
+    "  GSERIALIZED *geom1 = geom_in(\"Linestring(0 0, 3 3)\", -1);",
+    "  char *pcpoint_hex1 = \"0101000000640000006400000064000000\";",
+    "  char *pcpatch_hex1 = \"01010000000000000002000000640000006400000064000000C8000000C8000000C8000000\";",
+    "  Pcpoint *pcpoint1 = pcpoint_from_hexwkb(pcpoint_hex1);",
+    "  Pcpoint *pcpoint2 = pcpoint_from_hexwkb(\"0101000000C8000000C8000000C8000000\");",
+    "  Pcpatch *pcpatch1 = pcpatch_from_hexwkb(pcpatch_hex1);",
+    "  Pcpoint *pcpointarr1[] = { pcpoint1, pcpoint2 };",
+    "  Pcpatch *pcpatcharr1[] = { pcpatch1, pcpatch1 };",
+    "  Set *pcpointset1 = pcpointset_make(pcpointarr1, 2);",
+    "  Set *pcpatchset1 = pcpatchset_make(pcpatcharr1, 1);",
+    "  double pccoords1[] = { 1.0, 1.0, 1.0 };",
+    "  TPCBox *tpcbox1 = tpcbox_in(\"TPCBOX(ZT(((1,1,1),(2,2,2)),[2024-01-01, 2024-01-03]), 1)\");",
+    "  size_t size_out = 0;",
+    "  size_t tpcbox_wkb1_size = 0;",
+    "  uint8_t *tpcbox_wkb1 = tpcbox_as_wkb(tpcbox1, 0, &tpcbox_wkb1_size);",
+    "  char *tpcbox_hexwkb1 = tpcbox_as_hexwkb(tpcbox1, 0, &size_out);",
+    "  Temporal *tpcpoint1 = tpcpoint_in(\"[0101000000640000006400000064000000@2024-01-01, 0101000000C8000000C8000000C8000000@2024-01-03]\");",
+    "  Temporal *tpcpatch1 = tpcpatch_in(\"[01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01, 01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-03]\");",
+    "  /* The value of a temporal is read off an instant, and so is the position a",
+    "   * geometry is compared with. */",
+    "  Temporal *tpcpoint_inst1 = tpcpoint_in(\"0101000000640000006400000064000000@2024-01-01\");",
+    "  Temporal *tpcpatch_inst1 = tpcpatch_in(\"01010000000000000002000000640000006400000064000000C8000000C8000000C8000000@2024-01-01\");",
+    "  /* The box an intersection is written into, apart from the boxes it reads. */",
+    "  TPCBox tpcbox_res1;",
+    "  size_t mfjson_size = 0;",
+    "  char *tpcpoint_mfjson1 = temporal_as_mfjson(tpcpoint1, 0, 0, 15, NULL, &mfjson_size);",
+    "  char *tpcpatch_mfjson1 = temporal_as_mfjson(tpcpatch1, 0, 0, 15, NULL, &mfjson_size);",
+    "  PCDimensionSpec pcdims1[3] = {",
+    "    { \"X\", NULL, 1, \"int32_t\", 0.01, 0, true },",
+    "    { \"Y\", NULL, 2, \"int32_t\", 0.01, 0, true },",
+    "    { \"Z\", NULL, 3, \"int32_t\", 0.01, 0, true }",
+    "  };",
+    "  double d_out = 0;",
+    "  TimestampTz t_out = 0;",
+    "  bool b_out = false;",
+    "  int n_out = 0;"
+  ],
+  "cleanup": [
+    "  /* meos_set_pointcloud_schemas_xml is the setter the suite names its schema",
+    "   * document with, before the inputs above are read. The handlers",
+    "   * meos_initialize_pointcloud installs are installed once more here. */",
+    "  meos_initialize_pointcloud();",
+    "  printf(\"meos_initialize_pointcloud: ok\\n\");",
+    "  /* The unnest functions hand back their values through a non-final",
+    "   * Pcpoint *** or Pcpatch ***, which the generic emitter reads as an input",
+    "   * array, so they are called here and every result is released. */",
+    "  {",
+    "    Pcpoint **values = NULL;",
+    "    int count = 0;",
+    "    SpanSet **spans = tpcpoint_unnest(tpcpoint1, &values, &count);",
+    "    printf(\"tpcpoint_unnest: n=%d\\n\", count);",
+    "    for (int i = 0; spans && i < count; i++)",
+    "    {",
+    "      free(spans[i]);",
+    "      free(values[i]);",
+    "    }",
+    "    free(spans);",
+    "    free(values);",
+    "  }",
+    "  {",
+    "    Pcpatch **values = NULL;",
+    "    int count = 0;",
+    "    SpanSet **spans = tpcpatch_unnest(tpcpatch1, &values, &count);",
+    "    printf(\"tpcpatch_unnest: n=%d\\n\", count);",
+    "    for (int i = 0; spans && i < count; i++)",
+    "    {",
+    "      free(spans[i]);",
+    "      free(values[i]);",
+    "    }",
+    "    free(spans);",
+    "    free(values);",
+    "  }",
+    "  /* A tree owns its nodes, so it is released by its own free function. */",
+    "  {",
+    "    RTree *rtree = rtree_create_tpcbox();",
+    "    printf(\"rtree_create_tpcbox: %s\\n\", rtree ? \"OK\" : \"NULL\");",
+    "    rtree_free(rtree);",
+    "    SPTree *sptree = sptree_create_tpcbox(SPTREE_QUADTREE);",
+    "    printf(\"sptree_create_tpcbox: %s\\n\", sptree ? \"OK\" : \"NULL\");",
+    "    sptree_free(sptree);",
+    "  }",
+    "  /* A schema handed to the cache is owned by it, so each one registered",
+    "   * here is built for a pcid of its own and released by the clear. */",
+    "  {",
+    "    PCSCHEMA *schema2 = meos_pc_schema_from_dims(2, 0, \"none\", pcdims1, 3);",
+    "    printf(\"meos_pc_schema_from_dims: %s\\n\", schema2 ? \"OK\" : \"NULL\");",
+    "    meos_pc_schema_register(2, schema2);",
+    "    printf(\"meos_pc_schema_register: ndims=%d\\n\", meos_pc_schema_ndims(2));",
+    "    PCSCHEMA *schema3 = meos_pc_schema_from_dims(3, 0, \"none\", pcdims1, 3);",
+    "    meos_pc_schema_register_xml(3, schema3, meos_pc_schema_xml(1));",
+    "    printf(\"meos_pc_schema_register_xml: ndims=%d\\n\", meos_pc_schema_ndims(3));",
+    "  }",
+    "  free(tpcpoint_mfjson1);",
+    "  free(tpcpatch_mfjson1);",
+    "  free(tpcpoint_inst1);",
+    "  free(tpcpatch_inst1);",
+    "  free(tpcpoint1);",
+    "  free(tpcpatch1);",
+    "  free(tpcbox_hexwkb1);",
+    "  free(tpcbox_wkb1);",
+    "  free(tpcbox1);",
+    "  free(pcpatchset1);",
+    "  free(pcpointset1);",
+    "  free(pcpatch1);",
+    "  free(pcpoint2);",
+    "  free(pcpoint1);",
+    "  free(geom1);",
+    "  free(interv1);",
+    "  free(tstzspanset1);",
+    "  free(tstzset1);",
+    "  free(tstzspan1);",
+    "  meos_pc_schema_clear();",
+    "  printf(\"meos_pc_schema_clear: ndims=%d\\n\", meos_pc_schema_ndims(2));"
+  ]
+}

@@ -65,7 +65,11 @@ project_point_on_plane(const POINT3DZ *p, PLANE3D *pl, POINT3DZ *p0)
 	double f;
 
 	if (!get_3dvector_from_points(&(pl->pop), p, &v1))
+	{
+		/* The point defining the plane is in the plane */
+		*p0 = *p; // MEOS
 		return 0.0;
+	}
 
 	f = DOT(pl->pv, v1);
 	if (FP_IS_ZERO(f))

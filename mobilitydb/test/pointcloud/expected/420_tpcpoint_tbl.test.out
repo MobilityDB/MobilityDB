@@ -161,3 +161,15 @@ FROM tbl_tpcpoint;
  t
 (1 row)
 
+SELECT COUNT(*) FROM tbl_tpcpoint WHERE temp::tpcbox IS NOT NULL;
+ count 
+-------
+   100
+(1 row)
+
+SELECT COUNT(*) FROM tbl_tpcpoint WHERE tpcbox(temp) <> extentTransition(NULL::tpcbox, temp);
+ count 
+-------
+     0
+(1 row)
+

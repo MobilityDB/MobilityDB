@@ -34,8 +34,7 @@
  * between the two geometry models, and the vendored PostGIS reads them from
  * @p geos_c.h. MEOS does not link the library, so this file stands in its
  * place: it is put first on the include path of every build, so a build needs
- * no GEOS headers installed, and the vendored sources stay exactly as they
- * came.
+ * no GEOS headers installed.
  *
  * What stands in is the types and the constants alone. Every entry point of
  * the library itself is left out on purpose, so a call to one that the
@@ -43,9 +42,9 @@
  * the function rather than a link that quietly resolves against a GEOS the
  * build was told not to carry.
  *
- * The geometry MEOS answers with is the @p LWGEOM one, the
- * two models being the same there; @p meos/src/geo/geo_geos_none.c defines
- * the entry points the vendored raster core calls in those terms.
+ * MEOS defines none of these names either: PostGIS imports the GEOS C API in
+ * the same backend, so a definition under one of its names could answer a call
+ * of PostGIS. The vendored raster core calls #meos_unary_union() instead.
  */
 
 #ifndef __GEOS_C_H
@@ -105,34 +104,6 @@ enum GEOSBufJoinStyles
   GEOSBUF_JOIN_MITRE = 2,
   GEOSBUF_JOIN_BEVEL = 3
 };
-
-/*****************************************************************************
- * The entry points MEOS answers itself
- * @details These are the ones the vendored raster core calls, defined in
- * @p meos/src/geo/geo_geos_none.c from the native engines. They carry the
- * signatures of the GEOS library so the vendored sources call them exactly as
- * they call it. Every other entry point of the library is left out on
- * purpose: a call to one that the conditional compilation failed to leave out
- * is then a compilation error naming the function.
- *****************************************************************************/
-
-extern void initGEOS(GEOSMessageHandler notice_function,
-  GEOSMessageHandler error_function);
-
-extern void GEOSGeom_destroy(GEOSGeometry *geom);
-extern GEOSGeometry *GEOSGeom_createCollection(int type, GEOSGeometry **geoms,
-  unsigned int ngeoms);
-extern GEOSGeometry *GEOSUnaryUnion(const GEOSGeometry *geom);
-
-extern char GEOSisValid(const GEOSGeometry *geom);
-extern char GEOSRelatePattern(const GEOSGeometry *geom1,
-  const GEOSGeometry *geom2, const char *pattern);
-extern char GEOSContains(const GEOSGeometry *geom1, const GEOSGeometry *geom2);
-extern char GEOSWithin(const GEOSGeometry *geom1, const GEOSGeometry *geom2);
-extern char GEOSIntersects(const GEOSGeometry *geom1,
-  const GEOSGeometry *geom2);
-extern char GEOSTouches(const GEOSGeometry *geom1, const GEOSGeometry *geom2);
-extern char GEOSOverlaps(const GEOSGeometry *geom1, const GEOSGeometry *geom2);
 
 #ifdef __cplusplus
 }

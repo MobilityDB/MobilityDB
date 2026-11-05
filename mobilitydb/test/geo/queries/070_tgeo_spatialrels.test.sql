@@ -582,3 +582,14 @@ SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-
 SELECT eDwithin(tgeography '{Point(0 1)@2001-01-01, Linestring(0 2,1 2)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
 SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800);
 SELECT aDwithin(tgeography '{Point(0 1)@2001-01-01, Point(0 1)@2001-01-02}', tgeography '{Point(0 0)@2001-01-01, Point(0 0)@2001-01-02}', 110800, false);
+
+-- A point at the mean of the vertices of a polygon, which defines its plane, in a plane
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+-- A line that starts there, and a point off the plane above it
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Linestring(1 1 1,1 1 5)');
+SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 5)');

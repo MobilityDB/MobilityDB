@@ -1122,6 +1122,26 @@ ramp_color('RdYlBu', scale_linear(
 				</figure>
 			</listitem>
 
+			<listitem xml:id="tgeo_force">
+				<indexterm significance="normal"><primary><varname>force2D</varname></primary></indexterm>
+				<indexterm significance="normal"><primary><varname>force3D</varname></primary></indexterm>
+				<para>Return a temporal geometry with no Z or with a Z, as the PostGIS functions <varname>ST_Force2D</varname> and <varname>ST_Force3D</varname> do for a geometry &Z_support; &geography_support;</para>
+				<programlisting role="syntax" xml:space="preserve" format="linespecific">
+force2D(tgeo) → tgeo
+force3D(tgeo,zvalue float=0.0) → tgeo
+</programlisting>
+				<para>The type and the interpolation of the value stay. <varname>force3D</varname> gives the Z of a value with none, and a Z the value has stays. <varname>force2D</varname> may leave instants that a linear motion in two dimensions does not need, and the result is normalized, so it can hold fewer instants. These functions choose the dimensions that a relationship between two values reads, see <xref linkend="tgeo_different_dimensions"/>. Since a geography is measured on the surface of the earth, its Z does not move its distances.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]'));
+-- [POINT(0 0)@2001-01-01, POINT(2 0)@2001-01-03]
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
+-- [POINT Z (0 0 50)@2001-01-01, POINT Z (2 0 50)@2001-01-03]
+SELECT force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(10 0)@2001-01-02]') |=|
+  tgeompoint '[Point(0 0 10000)@2001-01-01, Point(10 0 10000)@2001-01-02]';
+-- 10000
+</programlisting>
+			</listitem>
+
 			<listitem xml:id="tgeo_affine">
 				<indexterm significance="normal"><primary><varname>affine</varname></primary></indexterm>
 				<para>Return the 3D affine transform of a temporal geometry to translate, rotate, and/or scale it in a single step &Z_support;</para>
