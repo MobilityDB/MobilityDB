@@ -167,7 +167,7 @@ pg_date_in(const char *str)
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm->tm_year, tm->tm_mon, tm->tm_mday))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: \"%s\"", (char *) str);
     return INT_MAX;
   }
@@ -177,7 +177,7 @@ pg_date_in(const char *str)
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: \"%s\"", (char *) str);
     return INT_MAX;
   }
@@ -255,7 +255,7 @@ pg_date_make(int year, int mon, int mday)
     bc = true;
     if (pg_neg_s32_overflow(year, &year))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "date field value out of range: %d-%02d-%02d",
         tm.tm_year, tm.tm_mon, tm.tm_mday);
       return INT_MAX;
@@ -266,7 +266,7 @@ pg_date_make(int year, int mon, int mday)
   int dterr = ValidateDate(DTK_DATE_M, false, false, bc, &tm);
   if (dterr != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date field value out of range: %d-%02d-%02d",
       tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
@@ -275,7 +275,7 @@ pg_date_make(int year, int mon, int mday)
   /* Prevent overflow in Julian-day routines */
   if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: %d-%02d-%02d",
       tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
@@ -287,7 +287,7 @@ pg_date_make(int year, int mon, int mday)
   /* Now check for just-out-of-range dates */
   if (!IS_VALID_DATE(date))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: %d-%02d-%02d",
       tm.tm_year, tm.tm_mon, tm.tm_mday);
     return INT_MAX;
@@ -499,7 +499,7 @@ add_date_int(DateADT date, int32 days)
   if ((days >= 0 ? (result < date) : (result > date)) ||
     !IS_VALID_DATE(result))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range");
     return DATEVAL_NOEND;
   }
@@ -524,7 +524,7 @@ minus_date_int(DateADT date, int32 days)
   if ((days >= 0 ? (result > date) : (result < date)) ||
     !IS_VALID_DATE(result))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range");
     return DATEVAL_NOEND;
   }
@@ -570,7 +570,7 @@ meos_date2timestamp_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "date out of range for timestamp");
         return DT_NOEND;
       }
@@ -629,7 +629,7 @@ date2timestamptz_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "date out of range for timestamp");
         return DT_NOEND;
       }
@@ -665,7 +665,7 @@ date2timestamptz_opt_overflow(DateADT date, int *overflow)
       }
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "date out of range for timestamp");
         return DT_NOEND;
       }
@@ -1288,7 +1288,7 @@ timestamp_to_date(Timestamp ts)
   {
     if (timestamp2tm(ts, NULL, tm, &fsec, NULL, NULL) != 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "timestamp out of range");
       return DATEVAL_NOEND;
     }
@@ -1329,7 +1329,7 @@ timestamptz_to_date(TimestampTz tstz)
   {
     if (timestamp2tm(tstz, &tz, tm, &fsec, NULL, NULL) != 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "timestamp out of range");
       return DATEVAL_NOEND;
     }
@@ -1517,7 +1517,7 @@ time_make(int hour, int min, double sec)
   /* Check for time overflow */
   if (float_time_overflows(hour, min, sec))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "time field value out of range: %d:%02d:%02g",
       hour, min, sec);
     return PG_INT64_MAX;
@@ -1866,7 +1866,7 @@ timestamp_to_time(Timestamp ts)
 
   if (timestamp2tm(ts, NULL, tm, &fsec, NULL, NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return PG_INT64_MAX;
   }
@@ -1898,7 +1898,7 @@ timestamptz_to_time(TimestampTz tstz)
 
   if (timestamp2tm(tstz, &tz, tm, &fsec, NULL, NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return PG_INT64_MAX;
   }
@@ -1926,7 +1926,7 @@ date_time_to_timestamp(DateADT date, TimeADT time)
     result += time;
     if (!IS_VALID_TIMESTAMP(result))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "timestamp out of range");
       return PG_INT64_MAX;
     }
@@ -2706,7 +2706,7 @@ timestamptz_to_timetz(TimestampTz tztz)
   fsec_t fsec;
   if (timestamp2tm(tztz, &tz, tm, &fsec, NULL, NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return NULL;
   }
@@ -2739,7 +2739,7 @@ date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz)
      */
     if (date >= (TIMESTAMP_END_JULIAN - POSTGRES_EPOCH_JDATE))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "date out of range for timestamp");
       return DT_NOEND;
     }
@@ -2753,7 +2753,7 @@ date_timetz_to_timestamptz(DateADT date, const TimeTzADT *timetz)
      */
     if (!IS_VALID_TIMESTAMP(result))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "date out of range for timestamp");
       return DT_NOEND;
     }
@@ -2948,7 +2948,7 @@ pg_timetz_zone(const TimeTzADT *timetz, const text *zone)
     fsec_t fsec;
     if (timestamp2tm(now, &tz, &tm, &fsec, NULL, tzp) != 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "timestamp out of range");
       return NULL;
     }
