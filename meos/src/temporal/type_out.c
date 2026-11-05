@@ -1458,7 +1458,7 @@ temporal_as_mfjson(const Temporal *temp, int option, int flags,
   size_t len;
   const char *json = json_object_to_json_string_length(jobj, flags,
     &len);
-  result = strndup(json, len);
+  result = pnstrdup(json, len);
   *size_out = len + 1;
   json_tokener_free(jstok);
   json_object_put(jobj);
