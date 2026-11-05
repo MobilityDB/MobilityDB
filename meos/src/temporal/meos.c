@@ -668,6 +668,9 @@ meos_lwnotice_handler(const char *fmt, va_list ap)
 /*****************************************************************************/
 
 extern void init_database_collation(void);
+#if RASTER
+extern void meos_initialize_raster(void);
+#endif
 
 /**
  * @ingroup meos_setup
@@ -696,6 +699,11 @@ meos_initialize(void)
    * touching a pgPointCloud schema-aware path do not dereference a
    * NULL handler (symmetric with the PG backend's mobilitydb_init). */
   meos_initialize_pointcloud();
+#endif
+#if RASTER
+  /* Route the raster core's messages into the MEOS error channel, symmetric
+   * with the PG backend's mobilitydb_init */
+  meos_initialize_raster();
 #endif
   return;
 }
