@@ -23,27 +23,27 @@ SELECT tContains(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Poin
 (1 row)
 
 SELECT tContains(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
- tcontains 
------------
- 
+           tcontains            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tContains(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
- tcontains 
------------
- 
+                                            tcontains                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tContains(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
- tcontains 
------------
- 
+                            tcontains                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tContains(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
- tcontains 
------------
- 
+                                                              tcontains                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tContains(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
@@ -86,27 +86,27 @@ SELECT tCovers(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point(
 (1 row)
 
 SELECT tCovers(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
- tcovers 
----------
- 
+            tcovers             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tCovers(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
- tcovers 
----------
- 
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tCovers(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
- tcovers 
----------
- 
+                             tcovers                              
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tCovers(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
- tcovers 
----------
- 
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tCovers(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
@@ -149,27 +149,27 @@ SELECT tCovers(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(
 (1 row)
 
 SELECT tCovers(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty');
- tcovers 
----------
- 
+            tcovers             
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tCovers(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty');
- tcovers 
----------
- 
+                                             tcovers                                              
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tCovers(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty');
- tcovers 
----------
- 
+                             tcovers                              
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tCovers(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty');
- tcovers 
----------
- 
+                                                               tcovers                                                                
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 /* Errors */
@@ -239,27 +239,27 @@ SELECT tDisjoint(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Poin
 (1 row)
 
 SELECT tDisjoint(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
- tdisjoint 
------------
- 
+           tdisjoint            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDisjoint(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
- tdisjoint 
------------
- 
+                                            tdisjoint                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDisjoint(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
- tdisjoint 
------------
- 
+                            tdisjoint                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDisjoint(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
- tdisjoint 
------------
- 
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)');
@@ -305,27 +305,27 @@ SELECT tDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(0 0)@2001-01-04]', geo
 (1 row)
 
 SELECT tDisjoint(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty');
- tdisjoint 
------------
- 
+           tdisjoint            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDisjoint(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty');
- tdisjoint 
------------
- 
+                                            tdisjoint                                             
+--------------------------------------------------------------------------------------------------
+ {t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDisjoint(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty');
- tdisjoint 
------------
- 
+                            tdisjoint                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDisjoint(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty');
- tdisjoint 
------------
- 
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST], [t@Thu Jan 04 00:00:00 2001 PST, t@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDisjoint(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(2 2 2)');
@@ -382,27 +382,27 @@ SELECT tIntersects(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Po
 (1 row)
 
 SELECT tIntersects(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
- tintersects 
--------------
- 
+          tintersects           
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tIntersects(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
- tintersects 
--------------
- 
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tIntersects(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
- tintersects 
--------------
- 
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tIntersects(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
- tintersects 
--------------
- 
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)');
@@ -448,27 +448,27 @@ SELECT tIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(0 0)@2001-01-04]', g
 (1 row)
 
 SELECT tIntersects(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty');
- tintersects 
--------------
- 
+          tintersects           
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tIntersects(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty');
- tintersects 
--------------
- 
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty');
- tintersects 
--------------
- 
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tIntersects(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty');
- tintersects 
--------------
- 
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tIntersects(tgeometry '[Point(1 1)@2001-01-01, Point(1 1)@2001-01-02]', geometry 'Linestring(1 1,2 2)');
@@ -549,27 +549,27 @@ SELECT tTouches(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point
 (1 row)
 
 SELECT tTouches(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01');
- ttouches 
-----------
- 
+            ttouches            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tTouches(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}');
- ttouches 
-----------
- 
+                                             ttouches                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tTouches(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
- ttouches 
-----------
- 
+                             ttouches                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tTouches(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}');
- ttouches 
-----------
- 
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tTouches(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)');
@@ -597,27 +597,27 @@ SELECT tTouches(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
 (1 row)
 
 SELECT tTouches(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty');
- ttouches 
-----------
- 
+            ttouches            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tTouches(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty');
- ttouches 
-----------
- 
+                                             ttouches                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tTouches(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty');
- ttouches 
-----------
- 
+                             ttouches                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tTouches(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty');
- ttouches 
-----------
- 
+                                                               ttouches                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tTouches(geometry 'Linestring(1 1,2 2)', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]');
@@ -660,27 +660,27 @@ SELECT tDwithin(geometry 'Point(1 1)', tgeometry '{[Point(1 1)@2001-01-01, Point
 (1 row)
 
 SELECT tDwithin(geometry 'Point empty', tgeometry 'Point(1 1)@2001-01-01', 2);
- tdwithin 
-----------
- 
+            tdwithin            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDwithin(geometry 'Point empty', tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', 2);
- tdwithin 
-----------
- 
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDwithin(geometry 'Point empty', tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', 2);
- tdwithin 
-----------
- 
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDwithin(geometry 'Point empty', tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', 2);
- tdwithin 
-----------
- 
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point(1 1)', 2);
@@ -708,27 +708,27 @@ SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point
 (1 row)
 
 SELECT tDwithin(tgeometry 'Point(1 1)@2001-01-01', geometry 'Point empty', 2);
- tdwithin 
-----------
- 
+            tdwithin            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDwithin(tgeometry '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}', geometry 'Point empty', 2);
- tdwithin 
-----------
- 
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDwithin(tgeometry '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]', geometry 'Point empty', 2);
- tdwithin 
-----------
- 
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDwithin(tgeometry '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03], [Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}', geometry 'Point empty', 2);
- tdwithin 
-----------
- 
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDwithin(NULL::tgeometry, geometry 'Point(1 1)', 2);
@@ -774,27 +774,27 @@ SELECT tDwithin(geometry 'Point(1 1 1)', tgeometry '{[Point(1 1 1)@2001-01-01, P
 (1 row)
 
 SELECT tDwithin(geometry 'Point Z empty', tgeometry 'Point(1 1 1)@2001-01-01', 2);
- tdwithin 
-----------
- 
+            tdwithin            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDwithin(geometry 'Point Z empty', tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', 2);
- tdwithin 
-----------
- 
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDwithin(geometry 'Point Z empty', tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', 2);
- tdwithin 
-----------
- 
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDwithin(geometry 'Point Z empty', tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', 2);
- tdwithin 
-----------
- 
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point(1 1 1)', 2);
@@ -822,27 +822,27 @@ SELECT tDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, P
 (1 row)
 
 SELECT tDwithin(tgeometry 'Point(1 1 1)@2001-01-01', geometry 'Point Z empty', 2);
- tdwithin 
-----------
- 
+            tdwithin            
+--------------------------------
+ f@Mon Jan 01 00:00:00 2001 PST
 (1 row)
 
 SELECT tDwithin(tgeometry '{Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03}', geometry 'Point Z empty', 2);
- tdwithin 
-----------
- 
+                                             tdwithin                                             
+--------------------------------------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST}
 (1 row)
 
 SELECT tDwithin(tgeometry '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03]', geometry 'Point Z empty', 2);
- tdwithin 
-----------
- 
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
 SELECT tDwithin(tgeometry '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02, Point(1 1 1)@2001-01-03], [Point(3 3 3)@2001-01-04, Point(3 3 3)@2001-01-05]}', geometry 'Point Z empty', 2);
- tdwithin 
-----------
- 
+                                                               tdwithin                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST], [f@Thu Jan 04 00:00:00 2001 PST, f@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
 SELECT tDwithin(tgeometry '(Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', geometry 'Point(0 1)', 1);

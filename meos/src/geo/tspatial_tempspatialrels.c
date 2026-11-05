@@ -463,8 +463,11 @@ Temporal *
 tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tgeo_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(! tinter), T_TBOOL, temp);
 
   /* Operands of different dimensions read the dimensions both have */
   const Temporal *t;
@@ -634,11 +637,14 @@ tspatialrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
  varfunc func, bool invert)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   return tspatialrel_tspatial_base(temp, PointerGetDatum(gs),
     NULL, func, 0, invert);
 }
@@ -723,10 +729,13 @@ Temporal *
 tcontains_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   Temporal *result;
   /* Temporal point case */
@@ -831,10 +840,13 @@ Temporal *
 tcovers_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   /* Temporal point case: a geometry covers a moving point when the point lies
    * in the closed geometry (interior together with boundary), which is exactly
@@ -999,11 +1011,14 @@ ttouches_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       /* The validity function ensures that both have the same geodetic flag */
       ! ensure_not_geodetic_geo(gs) || ! ensure_has_not_Z_geo(gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   Temporal *result;
   /* Temporal point case */
@@ -2154,11 +2169,14 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * routed through the polygonal buffer below. */
   if (! ensure_finite(dist))
     return NULL;
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE &&
         ! ensure_not_geodetic_geo(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   /* A temporal geography point moving along great circles and a geography
    * point are within the distance between the crossings of their geodetic

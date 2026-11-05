@@ -3373,49 +3373,49 @@ SELECT tgeompoint '[Point(1 1 1)@2001-01-01, Point(3 3 3)@2001-01-03]' ?= geomet
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' ?= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' ?= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' ?= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint 'Point(1.5 1.5)@2001-01-01' ?= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}' ?= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]' ?= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}' ?= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]' ?= geography 'POINT(1.49988573656168 1.5000570914792)';
@@ -3433,7 +3433,7 @@ SELECT tgeompoint 'Point(1 1)@2001-01-01' ?<> geometry 'Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?<> geometry 'Point empty';
  ?column? 
 ----------
- 
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2001-01-01' ?= geometry 'Linestring(1 1,2 2)';
@@ -3508,49 +3508,49 @@ SELECT tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point
 SELECT tgeompoint 'Point(1 1)@2001-01-01' %= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03}' %= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]' %= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03],[Point(3 3)@2001-01-04, Point(3 3)@2001-01-05]}' %= geometry 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint 'Point(1.5 1.5)@2001-01-01' %= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '{Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03}' %= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03]' %= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeogpoint '{[Point(1.5 1.5)@2001-01-01, Point(2.5 2.5)@2001-01-02, Point(1.5 1.5)@2001-01-03],[Point(3.5 3.5)@2001-01-04, Point(3.5 3.5)@2001-01-05]}' %= geography 'Point empty';
  ?column? 
 ----------
- 
+ f
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2001-01-01' %<> geometry 'Point(1 1)';
@@ -3562,7 +3562,7 @@ SELECT tgeompoint 'Point(1 1)@2001-01-01' %<> geometry 'Point(1 1)';
 SELECT tgeompoint 'Point(1 1)@2001-01-01' %<> geometry 'Point empty';
  ?column? 
 ----------
- 
+ t
 (1 row)
 
 SELECT tgeompoint 'Point(1 1)@2001-01-01' %= geometry 'Linestring(1 1,2 2)';

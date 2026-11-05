@@ -1562,6 +1562,9 @@ tdwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
       ! ensure_valid_trgeometry_geo(temp, gs) ||
       ! ensure_has_not_Z(temp->temptype, temp->flags))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
   Temporal *tdist = tdistance_trgeometry_geo_intl(temp, gs, dist);
   if (! tdist)
     return NULL;

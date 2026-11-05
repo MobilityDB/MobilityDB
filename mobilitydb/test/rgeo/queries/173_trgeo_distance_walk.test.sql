@@ -168,6 +168,10 @@ SELECT tDwithin(
 SELECT tDwithin(
   geometry 'Linestring(-5 4,5 4)',
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]', 2.5);
+-- An empty geometry has no point, so it is within no distance of the value
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Point empty', 2.5);
 SELECT tDwithin(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(0 4),-1)@2001-01-02]', 1);
