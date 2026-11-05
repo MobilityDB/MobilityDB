@@ -157,4 +157,42 @@ CREATE OPERATOR CLASS s2cellset_rtree_ops
   FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
 
+/* A column of spatiotemporal boxes is indexed for the queries of a ts2cell */
+
+ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, ts2cell),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, ts2cell),
+  -- overlaps
+  OPERATOR  3    && (stbox, ts2cell),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, ts2cell),
+  -- strictly right
+  OPERATOR  5    >> (stbox, ts2cell),
+  -- same
+  OPERATOR  6    ~= (stbox, ts2cell),
+  -- contains
+  OPERATOR  7    @> (stbox, ts2cell),
+  -- contained by
+  OPERATOR  8    <@ (stbox, ts2cell),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, ts2cell),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, ts2cell),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, ts2cell),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, ts2cell),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, ts2cell),
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, ts2cell),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, ts2cell),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, ts2cell),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, ts2cell);
+
 /******************************************************************************/

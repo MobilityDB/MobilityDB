@@ -314,4 +314,144 @@ CREATE OPERATOR CLASS trgeometry_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 tspatial_spgist_compress(internal);
 
+/* A column of spatiotemporal boxes is indexed for the queries of a trgeometry */
+
+ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (stbox, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (stbox, trgeometry),
+  -- same
+  OPERATOR  6    ~= (stbox, trgeometry),
+  -- contains
+  OPERATOR  7    @> (stbox, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (stbox, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (stbox, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, trgeometry);
+
+ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (stbox, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (stbox, trgeometry),
+  -- same
+  OPERATOR  6    ~= (stbox, trgeometry),
+  -- contains
+  OPERATOR  7    @> (stbox, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (stbox, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (stbox, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, trgeometry);
+
+ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, trgeometry),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, trgeometry),
+  -- overlaps
+  OPERATOR  3    && (stbox, trgeometry),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, trgeometry),
+  -- strictly right
+  OPERATOR  5    >> (stbox, trgeometry),
+  -- same
+  OPERATOR  6    ~= (stbox, trgeometry),
+  -- contains
+  OPERATOR  7    @> (stbox, trgeometry),
+  -- contained by
+  OPERATOR  8    <@ (stbox, trgeometry),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, trgeometry),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, trgeometry),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, trgeometry),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, trgeometry),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, trgeometry),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, trgeometry) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, trgeometry),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, trgeometry),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, trgeometry),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, trgeometry),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, trgeometry),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, trgeometry),
+  -- strictly back
+  OPERATOR  34    />> (stbox, trgeometry),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, trgeometry);
+
 /******************************************************************************/

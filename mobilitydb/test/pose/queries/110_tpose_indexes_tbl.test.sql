@@ -2024,3 +2024,117 @@ DROP TABLE tbl_tpose3d_idx;
 DROP FUNCTION test_probes_index(text);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A column of stbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tpose as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_stbox_tpose AS
+SELECT k, temp::stbox AS b FROM tbl_tpose3d WHERE temp IS NOT NULL;
+CREATE TABLE tbl_tpose_q AS
+SELECT temp AS q FROM tbl_tpose3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+CREATE FUNCTION stbox_tpose_answers() RETURNS text AS $$
+  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
+    SELECT 1, (SELECT count(*) FROM tbl_stbox_tpose WHERE b << q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 2, (SELECT count(*) FROM tbl_stbox_tpose WHERE b &< q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 3, (SELECT count(*) FROM tbl_stbox_tpose WHERE b && q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 4, (SELECT count(*) FROM tbl_stbox_tpose WHERE b &> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 5, (SELECT count(*) FROM tbl_stbox_tpose WHERE b >> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 6, (SELECT count(*) FROM tbl_stbox_tpose WHERE b ~= q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 7, (SELECT count(*) FROM tbl_stbox_tpose WHERE b @> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 8, (SELECT count(*) FROM tbl_stbox_tpose WHERE b <@ q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 9, (SELECT count(*) FROM tbl_stbox_tpose WHERE b &<| q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 10, (SELECT count(*) FROM tbl_stbox_tpose WHERE b <<| q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 11, (SELECT count(*) FROM tbl_stbox_tpose WHERE b |>> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 12, (SELECT count(*) FROM tbl_stbox_tpose WHERE b |&> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 13, (SELECT count(*) FROM tbl_stbox_tpose WHERE b -|- q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 14, (SELECT count(*) FROM tbl_stbox_tpose WHERE b &<# q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 15, (SELECT count(*) FROM tbl_stbox_tpose WHERE b <<# q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 16, (SELECT count(*) FROM tbl_stbox_tpose WHERE b #>> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 17, (SELECT count(*) FROM tbl_stbox_tpose WHERE b #&> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 18, (SELECT count(*) FROM tbl_stbox_tpose WHERE b &</ q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 19, (SELECT count(*) FROM tbl_stbox_tpose WHERE b <</ q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 20, (SELECT count(*) FROM tbl_stbox_tpose WHERE b />> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 21, (SELECT count(*) FROM tbl_stbox_tpose WHERE b /&> q) FROM tbl_tpose_q
+    UNION ALL
+    SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_stbox_tpose
+      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpose_q) t(o, c);
+$$ LANGUAGE SQL;
+CREATE FUNCTION stbox_tpose_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION stbox_tpose_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN stbox_tpose_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+  FROM (VALUES
+    (1, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b << (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (2, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b &< (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (3, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b && (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (4, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b &> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (5, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b >> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (6, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b ~= (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (7, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b @> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (8, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b <@ (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (9, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b &<| (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (10, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b <<| (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (11, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b |>> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (12, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b |&> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (13, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b -|- (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (14, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b &<# (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (15, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b <<# (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (16, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b #>> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (17, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b #&> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (18, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b &</ (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (19, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b <</ (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (20, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b />> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (21, 'SELECT count(*) FROM tbl_stbox_tpose WHERE b /&> (SELECT q FROM tbl_tpose_q LIMIT 1)'),
+    (22, 'SELECT k FROM tbl_stbox_tpose ORDER BY b |=| (SELECT q FROM tbl_tpose_q LIMIT 1) LIMIT 5')) t(o, query);
+$$ LANGUAGE SQL;
+CREATE TABLE tbl_stbox_tpose_seq AS SELECT stbox_tpose_answers() AS a;
+SELECT a FROM tbl_stbox_tpose_seq;
+SET enable_seqscan = off;
+CREATE INDEX tbl_stbox_tpose_gist_idx ON tbl_stbox_tpose USING gist(b);
+SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
+FROM tbl_stbox_tpose_seq;
+DROP INDEX tbl_stbox_tpose_gist_idx;
+CREATE INDEX tbl_stbox_tpose_quad_idx ON tbl_stbox_tpose USING spgist(b);
+SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
+FROM tbl_stbox_tpose_seq;
+DROP INDEX tbl_stbox_tpose_quad_idx;
+CREATE INDEX tbl_stbox_tpose_kd_idx ON tbl_stbox_tpose
+  USING spgist(b stbox_kdtree_ops);
+SELECT stbox_tpose_indexed(), stbox_tpose_answers() = a
+FROM tbl_stbox_tpose_seq;
+RESET enable_seqscan;
+DROP TABLE tbl_stbox_tpose, tbl_tpose_q, tbl_stbox_tpose_seq;
+DROP FUNCTION stbox_tpose_indexed(), stbox_tpose_answers(), stbox_tpose_probes_index(text);

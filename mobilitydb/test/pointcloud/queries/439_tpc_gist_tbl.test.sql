@@ -379,3 +379,231 @@ RESET enable_bitmapscan;
 DROP TABLE tbl_tpcpoint_far;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A column of tpcbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tpcpoint as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tpcbox_tpcpoint AS
+SELECT k, temp::tpcbox AS b FROM tbl_tpcpoint WHERE temp IS NOT NULL;
+CREATE TABLE tbl_tpcpoint_q AS
+SELECT temp AS q FROM tbl_tpcpoint WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+CREATE FUNCTION tpcbox_tpcpoint_answers() RETURNS text AS $$
+  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
+    SELECT 1, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b << q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 2, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &< q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 3, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b && q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 4, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 5, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b >> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 6, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b ~= q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 7, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b @> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 8, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <@ q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 9, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &<| q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 10, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <<| q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 11, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b |>> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 12, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b |&> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 13, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b -|- q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 14, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &<# q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 15, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <<# q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 16, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b #>> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 17, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b #&> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 18, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &</ q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 19, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <</ q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 20, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b />> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 21, (SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b /&> q) FROM tbl_tpcpoint_q
+    UNION ALL
+    SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_tpcbox_tpcpoint
+      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpcpoint_q) t(o, c);
+$$ LANGUAGE SQL;
+CREATE FUNCTION tpcbox_tpcpoint_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION tpcbox_tpcpoint_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN tpcbox_tpcpoint_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+  FROM (VALUES
+    (1, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b << (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (2, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &< (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (3, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b && (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (4, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (5, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b >> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (6, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b ~= (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (7, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b @> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (8, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <@ (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (9, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &<| (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (10, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <<| (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (11, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b |>> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (12, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b |&> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (13, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b -|- (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (14, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &<# (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (15, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <<# (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (16, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b #>> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (17, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b #&> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (18, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b &</ (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (19, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b <</ (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (20, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b />> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpoint WHERE b /&> (SELECT q FROM tbl_tpcpoint_q LIMIT 1)'),
+    (22, 'SELECT k FROM tbl_tpcbox_tpcpoint ORDER BY b |=| (SELECT q FROM tbl_tpcpoint_q LIMIT 1) LIMIT 5')) t(o, query);
+$$ LANGUAGE SQL;
+CREATE TABLE tbl_tpcbox_tpcpoint_seq AS SELECT tpcbox_tpcpoint_answers() AS a;
+SELECT a FROM tbl_tpcbox_tpcpoint_seq;
+SET enable_seqscan = off;
+CREATE INDEX tbl_tpcbox_tpcpoint_gist_idx ON tbl_tpcbox_tpcpoint USING gist(b);
+SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+FROM tbl_tpcbox_tpcpoint_seq;
+DROP INDEX tbl_tpcbox_tpcpoint_gist_idx;
+CREATE INDEX tbl_tpcbox_tpcpoint_quad_idx ON tbl_tpcbox_tpcpoint USING spgist(b);
+SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+FROM tbl_tpcbox_tpcpoint_seq;
+DROP INDEX tbl_tpcbox_tpcpoint_quad_idx;
+CREATE INDEX tbl_tpcbox_tpcpoint_kd_idx ON tbl_tpcbox_tpcpoint
+  USING spgist(b tpcbox_kdtree_ops);
+SELECT tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers() = a
+FROM tbl_tpcbox_tpcpoint_seq;
+RESET enable_seqscan;
+DROP TABLE tbl_tpcbox_tpcpoint, tbl_tpcpoint_q, tbl_tpcbox_tpcpoint_seq;
+DROP FUNCTION tpcbox_tpcpoint_indexed(), tpcbox_tpcpoint_answers(), tpcbox_tpcpoint_probes_index(text);
+
+-------------------------------------------------------------------------------
+-- A column of tpcbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tpcpatch as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_tpcbox_tpcpatch AS
+SELECT k, temp::tpcbox AS b FROM tbl_tpcpatch WHERE temp IS NOT NULL;
+CREATE TABLE tbl_tpcpatch_q AS
+SELECT temp AS q FROM tbl_tpcpatch WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+CREATE FUNCTION tpcbox_tpcpatch_answers() RETURNS text AS $$
+  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
+    SELECT 1, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b << q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 2, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &< q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 3, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b && q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 4, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 5, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b >> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 6, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b ~= q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 7, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b @> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 8, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <@ q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 9, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &<| q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 10, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <<| q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 11, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b |>> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 12, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b |&> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 13, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b -|- q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 14, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &<# q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 15, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <<# q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 16, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b #>> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 17, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b #&> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 18, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &</ q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 19, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <</ q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 20, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b />> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 21, (SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b /&> q) FROM tbl_tpcpatch_q
+    UNION ALL
+    SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_tpcbox_tpcpatch
+      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tpcpatch_q) t(o, c);
+$$ LANGUAGE SQL;
+CREATE FUNCTION tpcbox_tpcpatch_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION tpcbox_tpcpatch_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN tpcbox_tpcpatch_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+  FROM (VALUES
+    (1, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b << (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (2, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &< (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (3, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b && (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (4, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (5, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b >> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (6, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b ~= (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (7, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b @> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (8, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <@ (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (9, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &<| (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (10, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <<| (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (11, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b |>> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (12, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b |&> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (13, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b -|- (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (14, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &<# (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (15, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <<# (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (16, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b #>> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (17, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b #&> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (18, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b &</ (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (19, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b <</ (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (20, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b />> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (21, 'SELECT count(*) FROM tbl_tpcbox_tpcpatch WHERE b /&> (SELECT q FROM tbl_tpcpatch_q LIMIT 1)'),
+    (22, 'SELECT k FROM tbl_tpcbox_tpcpatch ORDER BY b |=| (SELECT q FROM tbl_tpcpatch_q LIMIT 1) LIMIT 5')) t(o, query);
+$$ LANGUAGE SQL;
+CREATE TABLE tbl_tpcbox_tpcpatch_seq AS SELECT tpcbox_tpcpatch_answers() AS a;
+SELECT a FROM tbl_tpcbox_tpcpatch_seq;
+SET enable_seqscan = off;
+CREATE INDEX tbl_tpcbox_tpcpatch_gist_idx ON tbl_tpcbox_tpcpatch USING gist(b);
+SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+FROM tbl_tpcbox_tpcpatch_seq;
+DROP INDEX tbl_tpcbox_tpcpatch_gist_idx;
+CREATE INDEX tbl_tpcbox_tpcpatch_quad_idx ON tbl_tpcbox_tpcpatch USING spgist(b);
+SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+FROM tbl_tpcbox_tpcpatch_seq;
+DROP INDEX tbl_tpcbox_tpcpatch_quad_idx;
+CREATE INDEX tbl_tpcbox_tpcpatch_kd_idx ON tbl_tpcbox_tpcpatch
+  USING spgist(b tpcbox_kdtree_ops);
+SELECT tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers() = a
+FROM tbl_tpcbox_tpcpatch_seq;
+RESET enable_seqscan;
+DROP TABLE tbl_tpcbox_tpcpatch, tbl_tpcpatch_q, tbl_tpcbox_tpcpatch_seq;
+DROP FUNCTION tpcbox_tpcpatch_indexed(), tpcbox_tpcpatch_answers(), tpcbox_tpcpatch_probes_index(text);

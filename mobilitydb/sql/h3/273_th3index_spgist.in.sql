@@ -233,4 +233,78 @@ CREATE OPERATOR CLASS h3indexset_kdtree_ops
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 spatialset_spgist_compress(internal);
 
+/* A column of spatiotemporal boxes is indexed for the queries of a th3index */
+
+ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, th3index),
+  -- overlaps
+  OPERATOR  3    && (stbox, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, th3index),
+  -- strictly right
+  OPERATOR  5    >> (stbox, th3index),
+  -- same
+  OPERATOR  6    ~= (stbox, th3index),
+  -- contains
+  OPERATOR  7    @> (stbox, th3index),
+  -- contained by
+  OPERATOR  8    <@ (stbox, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, th3index);
+
+ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, th3index),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, th3index),
+  -- overlaps
+  OPERATOR  3    && (stbox, th3index),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, th3index),
+  -- strictly right
+  OPERATOR  5    >> (stbox, th3index),
+  -- same
+  OPERATOR  6    ~= (stbox, th3index),
+  -- contains
+  OPERATOR  7    @> (stbox, th3index),
+  -- contained by
+  OPERATOR  8    <@ (stbox, th3index),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, th3index),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, th3index),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, th3index),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, th3index),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, th3index),
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, th3index),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, th3index),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, th3index),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, th3index);
+
 /******************************************************************************/
