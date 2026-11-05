@@ -2795,6 +2795,11 @@ SELECT asText(minusStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX 
 SELECT asText(minusStbox(tgeometry 'Linestring(1 1 1,3 3 3)@2001-01-01', 'STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])'));
 SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}'), 6);
 SELECT asText(centroid(tgeography '{Linestring(0 0,0 1,1 1)@2001-01-01}', false), 6);
+SELECT asEWKT(force2D(tgeometry 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01'));
+SELECT asEWKT(force3D(tgeometry 'Linestring(0 0,1 1)@2001-01-01', 50));
+SELECT asEWKT(force2D(tgeography 'Linestring Z(0 0 1,1 1 2)@2001-01-01'));
+SELECT asEWKT(force3D(tgeography 'Linestring(0 0,1 1)@2001-01-01', 50));
 -------------------------------------------------------------------------------
 -- Extracted from geo/queries/056_tgeo_spatialfuncs_tbl.test.sql
 -------------------------------------------------------------------------------
@@ -3093,6 +3098,17 @@ SELECT asText(atElevation(tgeogpoint 'SRID=4326;{Point(1 1 1)@2001-01-01, Point(
 SELECT asText(atElevation(tgeogpoint 'SRID=4326;Point(1 1 1)@2001-01-01', floatspan '[0,2]'), 6);
 SELECT asText(minusElevation(tgeogpoint 'SRID=4326;Point(1 1 1)@2001-01-01', floatspan '[5,6]'), 6);
 SELECT asText(atElevation(tgeogpoint 'SRID=4326;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]', floatspan '[0,2]'));
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 50)@2001-01-02, Point(2 2 0)@2001-01-03]'));
+SELECT asEWKT(force2D(tgeompoint '{[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-02), [Point(1 1 5)@2001-01-02, Point(2 2 5)@2001-01-03]}'));
+SELECT asEWKT(force2D(tgeompoint 'Interp=Step;[Point(0 0 1)@2001-01-01, Point(0 0 2)@2001-01-02]'));
+SELECT asEWKT(force2D(tgeompoint '{Point(0 0 1)@2001-01-01, Point(0 0 2)@2001-01-02}'));
+SELECT asEWKT(force2D(tgeogpoint 'SRID=4326;[Point(0 0 100)@2001-01-01, Point(1 1 200)@2001-01-02]'));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]'));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
+SELECT asEWKT(force3D(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', 50));
+SELECT asEWKT(force3D(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 50));
 -------------------------------------------------------------------------------
 -- Extracted from geo/queries/056_tpoint_spatialfuncs_tbl.test.sql
 -------------------------------------------------------------------------------
@@ -3488,6 +3504,8 @@ SELECT asText(nearestApproachInstant(tgeogpoint '[Point(0 1)@2001-01-01, Point(0
 SELECT asText(nearestApproachInstant(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Point(0 0)', false));
 SELECT asText(nearestApproachInstant(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]'));
 SELECT asText(nearestApproachInstant(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', false));
+SELECT asText(NearestApproachInstant(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
+SELECT asText(shortestLine(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
 -------------------------------------------------------------------------------
 -- Extracted from geo/queries/068_tgeo_aggfuncs.test.sql
 -------------------------------------------------------------------------------
@@ -5459,10 +5477,23 @@ SELECT asText(tgeompoint(rotateY(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(P
   asText(rotateY(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 0.7), 6);
 SELECT asText(tgeompoint(translate(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]', 1, 2, 3)), 6) =
   asText(translate(tgeompoint '[Point(1 1 0)@2001-01-01, Point(3 2 0)@2001-01-02]', 1, 2, 3), 6);
+SELECT asText(force2D(tpose '[Pose(Point(1 1 5),0.7071067811865476,0,0,0.7071067811865476)@2001-01-01, Pose(Point(3 2 7),1,0,0,0)@2001-01-02]'), 6);
+SELECT asText(force2D(tpose 'Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+SELECT asText(force2D(tpose '{Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02}'), 6);
+SELECT asText(force2D(tpose 'Interp=Step;[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02]'), 6);
+SELECT asText(force2D(tpose '{[Pose(Point(1 1 5),1,0,0,0)@2001-01-01, Pose(Point(2 2 5),1,0,0,0)@2001-01-02], [Pose(Point(3 3 5),1,0,0,0)@2001-01-03]}'), 6);
+SELECT asText(force2D(tpose '[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
+SELECT asEWKT(force2D(tpose 'SRID=3812;Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 -------------------------------------------------------------------------------
 -- Extracted from pose/queries/113_tpose_distance.test.sql
 -------------------------------------------------------------------------------
 
+SELECT asText(nearestApproachInstant(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 1)'), 3);
+SELECT asText(geodpose(geography 'Point(1 2)', 0.5));
+SELECT asText(geodpose(geography 'Point(1 2 3)', 1, 0, 0, 0));
+SELECT asText(geodpose(geography 'Point(1 2 3)', yaw := 0, pitch := 0, roll := 0));
+SELECT asText(pose('Point(1 1)', -1.5));
+SELECT asText(round(tpose 'SRID=4326;GeodPose(Point(0 0), 0)@2001-01-01' <-> pose 'SRID=4326;GeodPose(Point(1 0), 0)', 3));
 SELECT asText(nearestApproachInstant(geometry 'Point(2 0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
 SELECT asText(nearestApproachInstant(pose 'Pose(Point(2 0),0)', tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]'));
 SELECT asText(nearestApproachInstant(tpose '[Pose(Point(0 0),0)@2001-01-01, Pose(Point(4 0),0)@2001-01-05]', geometry 'Point(2 0)'));
@@ -5515,6 +5546,8 @@ SELECT
   asText(tIntersects(lin1, region)) = asText(tIntersects(lin1::tgeompoint, region)) AS ti_agrees,
   asText(tDwithin(lin1, region, 1.0)) = asText(tDwithin(lin1::tgeompoint, region, 1.0)) AS tdw_agrees
 FROM t;
+SELECT asText(tDwithin(tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', geography 'Point(1 0)', 1000));
+SELECT asText(tDwithin(geography 'Point(1 0)', tpose '[GeodPose(Point(0 0), 0)@2001-01-01, GeodPose(Point(2 0), 0)@2001-01-03]', 1000));
 -------------------------------------------------------------------------------
 -- Extracted from pose/queries/117_tpose_analytics.test.sql
 -------------------------------------------------------------------------------
@@ -7171,6 +7204,11 @@ SELECT asText(tgeometry(rotateY(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose
   asText(rotateY(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
 SELECT asText(tgeometry(rotateZ(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]', 0.7)), 6) =
   asText(rotateZ(tgeometry(trgeometry 'Polygon Z((0 0 0,2 0 0,2 1 0,0 1 0,0 0 0));[Pose(Point Z(1 1 0),0.988771077936042,0,0,0.149438132473599)@2001-01-01, Pose(Point Z(3 2 0),0.852524522059506,0,0,0.522687228930659)@2001-01-02]'), 0.7), 6);
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 0,2 -1 0,2 1 0,-2 1 0,-2 -1 0));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01, Pose(Point(10 0 0),0.7071067811865476,0,0,0.7071067811865476)@2001-01-02]'), 6);
+SELECT asText(force2D(trgeometry 'Polygon((-2 -1 3,2 -1 3,2 1 3,-2 1 3,-2 -1 3));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
+SELECT asText(force2D(trgeometry 'Polygon((0 0,2 0,2 1,0 1,0 0));[Pose(Point(1 1),0.3)@2001-01-01, Pose(Point(3 2),1.1)@2001-01-02]'), 6);
+SELECT asText(force2D(trgeometry 'PolyhedralSurface(((0 0,2 0,2 2,0 2,0 0)));Pose(Point(1 1),0.3)@2001-01-01'), 6);
+SELECT asEWKT(force2D(trgeometry 'SRID=3812;Polygon((0 0 0,2 0 0,2 1 0,0 0 0));Pose(Point(1 1 5),1,0,0,0)@2001-01-01'), 6);
 -------------------------------------------------------------------------------
 -- Extracted from rgeo/queries/164_trgeo_spatialfuncs.test.sql
 -------------------------------------------------------------------------------
@@ -7954,8 +7992,8 @@ WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER B
 -- textset, Output, over tbl_textset
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_textset t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, (v::varchar)::textset = v AS output_roundtrip FROM r ORDER BY k;
 
--- tjsonb, Text, over tbl_tjsonb_seq
-WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tjsonb_seq t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v), tjsonbFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
+-- tjsonb, Text, over tbl_tjsonb
+WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tjsonb t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asText(v), tjsonbFromText(asText(v)) = v AS roundtrip FROM r ORDER BY k;
 
 -- tpcbox, HexWKB, over tbl_tpcbox
 WITH r AS (SELECT DISTINCT ON (q) k, v FROM (SELECT k, v, ntile(4) OVER (ORDER BY k) AS q FROM tbl_tpcbox t(k, v) WHERE v IS NOT NULL) s ORDER BY q, k) SELECT k, asHexWKB(v, endian => 'NDR'), tpcboxFromHexWKB(asHexWKB(v)) = v AS roundtrip FROM r ORDER BY k;
