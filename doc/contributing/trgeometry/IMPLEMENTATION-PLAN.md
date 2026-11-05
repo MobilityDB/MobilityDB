@@ -22,11 +22,11 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | open, reads Z by decision 1 |
+| TG2 | The ever and always relationships of a 3D value: `eIntersects`, `aDisjoint`, `eDisjoint`, `eContains`, `eCovers`, `eTouches` | on #3347, by reading its kernel; not yet run on a 3D value |
 | TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, reads Z by decision 1 |
 | TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, reads Z by decision 1 |
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
-| TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | open |
+| TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | on #3347, whose witness shows the lifting compares poses; not yet run on that car |
 
 ## Defects
 
@@ -51,6 +51,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
+| TG25 | A point at the mean of the vertices of a polygon reads as away from it in 3D, in `eIntersects` and the distance, since `project_point_on_plane` of the vendored liblwgeom returns without setting its output; every temporal type measuring through it, and PostGIS itself | #3450, open |
 | TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | #3448, open |
 
 ## Regularity
@@ -63,11 +64,12 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 ## Decisions
 
-1. **What a relationship of two 3D values reads: Z, in every form.** Decided by the owner. A
+1. **What a relationship of two 3D values reads: Z, where a kernel in three dimensions exists.** Decided by the owner. A
    `trgeometry` has three dimensions, as Chapter 4 uses it, and the rule of
    `tgeo_different_dimensions` reads Z where both operands have it, so `eIntersects` and `tIntersects`
    agree. The nuScenes bodies at z = 0 and z = 0.8 then never meet in 3D, and a question about the road
-   goes through `force2D`, TG24.
+   goes through `force2D`, TG24. Containing, covering and touching have no such kernel, so they refuse Z
+   as `ea_touches_tgeo_geo` does.
 2. **`stops`.** Answer it over the body, or remove the declaration.
 3. **`transform`.** A rigid body is rigid only in a metric the target SRID keeps. Either refuse it
    and say why, or transform the reference geometry and the poses where the transformation is a
