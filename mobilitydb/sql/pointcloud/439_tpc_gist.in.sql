@@ -176,6 +176,8 @@ CREATE FUNCTION tpc_gist_compress(internal)
  * tpcpoint
  *****************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tpcpoint_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tpcpoint_rtree_ops
   DEFAULT FOR TYPE tpcpoint USING gist AS
   STORAGE tpcbox,
@@ -211,66 +213,69 @@ CREATE OPERATOR CLASS tpcpoint_rtree_ops
   OPERATOR  9    &<| (tpcpoint, tpcbox),
   OPERATOR  9    &<| (tpcpoint, tpcpoint),
   -- strictly below
-  OPERATOR  10   <<| (tpcpoint, tpcbox),
-  OPERATOR  10   <<| (tpcpoint, tpcpoint),
+  OPERATOR  10    <<| (tpcpoint, tpcbox),
+  OPERATOR  10    <<| (tpcpoint, tpcpoint),
   -- strictly above
-  OPERATOR  11   |>> (tpcpoint, tpcbox),
-  OPERATOR  11   |>> (tpcpoint, tpcpoint),
+  OPERATOR  11    |>> (tpcpoint, tpcbox),
+  OPERATOR  11    |>> (tpcpoint, tpcpoint),
   -- overlaps or above
-  OPERATOR  12   |&> (tpcpoint, tpcbox),
-  OPERATOR  12   |&> (tpcpoint, tpcpoint),
+  OPERATOR  12    |&> (tpcpoint, tpcbox),
+  OPERATOR  12    |&> (tpcpoint, tpcpoint),
   -- adjacent
-  OPERATOR  17   -|- (tpcpoint, tstzspan),
-  OPERATOR  17   -|- (tpcpoint, tpcbox),
-  OPERATOR  17   -|- (tpcpoint, tpcpoint),
-  -- overlaps or before
-  OPERATOR  28   &<# (tpcpoint, tstzspan),
-  OPERATOR  28   &<# (tpcpoint, tpcbox),
-  OPERATOR  28   &<# (tpcpoint, tpcpoint),
-  -- strictly before
-  OPERATOR  29   <<# (tpcpoint, tstzspan),
-  OPERATOR  29   <<# (tpcpoint, tpcbox),
-  OPERATOR  29   <<# (tpcpoint, tpcpoint),
-  -- strictly after
-  OPERATOR  30   #>> (tpcpoint, tstzspan),
-  OPERATOR  30   #>> (tpcpoint, tpcbox),
-  OPERATOR  30   #>> (tpcpoint, tpcpoint),
-  -- overlaps or after
-  OPERATOR  31   #&> (tpcpoint, tstzspan),
-  OPERATOR  31   #&> (tpcpoint, tpcbox),
-  OPERATOR  31   #&> (tpcpoint, tpcpoint),
-  -- overlaps or front
-  OPERATOR  32   &</ (tpcpoint, tpcbox),
-  OPERATOR  32   &</ (tpcpoint, tpcpoint),
-  -- strictly front
-  OPERATOR  33   <</ (tpcpoint, tpcbox),
-  OPERATOR  33   <</ (tpcpoint, tpcpoint),
-  -- strictly back
-  OPERATOR  34   />> (tpcpoint, tpcbox),
-  OPERATOR  34   />> (tpcpoint, tpcpoint),
-  -- overlaps or back
-  OPERATOR  35   /&> (tpcpoint, tpcbox),
-  OPERATOR  35   /&> (tpcpoint, tpcpoint),
+  OPERATOR  17    -|- (tpcpoint, tstzspan),
+  OPERATOR  17    -|- (tpcpoint, tpcbox),
+  OPERATOR  17    -|- (tpcpoint, tpcpoint),
   -- nearest approach distance
-  OPERATOR  25   |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25   |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcpoint, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcpoint, tpcpoint) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tpcpoint, tstzspan),
+  OPERATOR  28    &<# (tpcpoint, tpcbox),
+  OPERATOR  28    &<# (tpcpoint, tpcpoint),
+  -- strictly before
+  OPERATOR  29    <<# (tpcpoint, tstzspan),
+  OPERATOR  29    <<# (tpcpoint, tpcbox),
+  OPERATOR  29    <<# (tpcpoint, tpcpoint),
+  -- strictly after
+  OPERATOR  30    #>> (tpcpoint, tstzspan),
+  OPERATOR  30    #>> (tpcpoint, tpcbox),
+  OPERATOR  30    #>> (tpcpoint, tpcpoint),
+  -- overlaps or after
+  OPERATOR  31    #&> (tpcpoint, tstzspan),
+  OPERATOR  31    #&> (tpcpoint, tpcbox),
+  OPERATOR  31    #&> (tpcpoint, tpcpoint),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpcpoint, tpcbox),
+  OPERATOR  32    &</ (tpcpoint, tpcpoint),
+  -- strictly front
+  OPERATOR  33    <</ (tpcpoint, tpcbox),
+  OPERATOR  33    <</ (tpcpoint, tpcpoint),
+  -- strictly back
+  OPERATOR  34    />> (tpcpoint, tpcbox),
+  OPERATOR  34    />> (tpcpoint, tpcpoint),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpcpoint, tpcbox),
+  OPERATOR  35    /&> (tpcpoint, tpcpoint),
   -- functions
-  FUNCTION  1    tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
-  FUNCTION  2    tpcbox_gist_union(internal, internal),
-  FUNCTION  3    tpc_gist_compress(internal),
-  FUNCTION  5    tpcbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
-  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
+  FUNCTION  1 tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
+  FUNCTION  2 tpcbox_gist_union(internal, internal),
+  FUNCTION  3 tpc_gist_compress(internal),
+  FUNCTION  5 tpcbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 tpcbox_gist_picksplit(internal, internal),
+  FUNCTION  7 tpcbox_gist_same(tpcbox, tpcbox, internal),
   FUNCTION  8 (tpcpoint, tpcbox)
     tpcpoint_gist_distance(internal, tpcpoint, smallint, oid, internal),
   FUNCTION  8 (tpcpoint, tpcpoint)
     tpcpoint_gist_distance(internal, tpcpoint, smallint, oid, internal),
   FUNCTION 11 tpcbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tpcpoint_rtree_ops
 
 /*****************************************************************************
  * tpcpatch
  *****************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tpcpatch_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tpcpatch_rtree_ops
   DEFAULT FOR TYPE tpcpatch USING gist AS
   STORAGE tpcbox,
@@ -306,60 +311,61 @@ CREATE OPERATOR CLASS tpcpatch_rtree_ops
   OPERATOR  9    &<| (tpcpatch, tpcbox),
   OPERATOR  9    &<| (tpcpatch, tpcpatch),
   -- strictly below
-  OPERATOR  10   <<| (tpcpatch, tpcbox),
-  OPERATOR  10   <<| (tpcpatch, tpcpatch),
+  OPERATOR  10    <<| (tpcpatch, tpcbox),
+  OPERATOR  10    <<| (tpcpatch, tpcpatch),
   -- strictly above
-  OPERATOR  11   |>> (tpcpatch, tpcbox),
-  OPERATOR  11   |>> (tpcpatch, tpcpatch),
+  OPERATOR  11    |>> (tpcpatch, tpcbox),
+  OPERATOR  11    |>> (tpcpatch, tpcpatch),
   -- overlaps or above
-  OPERATOR  12   |&> (tpcpatch, tpcbox),
-  OPERATOR  12   |&> (tpcpatch, tpcpatch),
+  OPERATOR  12    |&> (tpcpatch, tpcbox),
+  OPERATOR  12    |&> (tpcpatch, tpcpatch),
   -- adjacent
-  OPERATOR  17   -|- (tpcpatch, tstzspan),
-  OPERATOR  17   -|- (tpcpatch, tpcbox),
-  OPERATOR  17   -|- (tpcpatch, tpcpatch),
-  -- overlaps or before
-  OPERATOR  28   &<# (tpcpatch, tstzspan),
-  OPERATOR  28   &<# (tpcpatch, tpcbox),
-  OPERATOR  28   &<# (tpcpatch, tpcpatch),
-  -- strictly before
-  OPERATOR  29   <<# (tpcpatch, tstzspan),
-  OPERATOR  29   <<# (tpcpatch, tpcbox),
-  OPERATOR  29   <<# (tpcpatch, tpcpatch),
-  -- strictly after
-  OPERATOR  30   #>> (tpcpatch, tstzspan),
-  OPERATOR  30   #>> (tpcpatch, tpcbox),
-  OPERATOR  30   #>> (tpcpatch, tpcpatch),
-  -- overlaps or after
-  OPERATOR  31   #&> (tpcpatch, tstzspan),
-  OPERATOR  31   #&> (tpcpatch, tpcbox),
-  OPERATOR  31   #&> (tpcpatch, tpcpatch),
-  -- overlaps or front
-  OPERATOR  32   &</ (tpcpatch, tpcbox),
-  OPERATOR  32   &</ (tpcpatch, tpcpatch),
-  -- strictly front
-  OPERATOR  33   <</ (tpcpatch, tpcbox),
-  OPERATOR  33   <</ (tpcpatch, tpcpatch),
-  -- strictly back
-  OPERATOR  34   />> (tpcpatch, tpcbox),
-  OPERATOR  34   />> (tpcpatch, tpcpatch),
-  -- overlaps or back
-  OPERATOR  35   /&> (tpcpatch, tpcbox),
-  OPERATOR  35   /&> (tpcpatch, tpcpatch),
+  OPERATOR  17    -|- (tpcpatch, tstzspan),
+  OPERATOR  17    -|- (tpcpatch, tpcbox),
+  OPERATOR  17    -|- (tpcpatch, tpcpatch),
   -- nearest approach distance
-  OPERATOR  25   |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
-  OPERATOR  25   |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcpatch, tpcbox) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tpcpatch, tpcpatch) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (tpcpatch, tstzspan),
+  OPERATOR  28    &<# (tpcpatch, tpcbox),
+  OPERATOR  28    &<# (tpcpatch, tpcpatch),
+  -- strictly before
+  OPERATOR  29    <<# (tpcpatch, tstzspan),
+  OPERATOR  29    <<# (tpcpatch, tpcbox),
+  OPERATOR  29    <<# (tpcpatch, tpcpatch),
+  -- strictly after
+  OPERATOR  30    #>> (tpcpatch, tstzspan),
+  OPERATOR  30    #>> (tpcpatch, tpcbox),
+  OPERATOR  30    #>> (tpcpatch, tpcpatch),
+  -- overlaps or after
+  OPERATOR  31    #&> (tpcpatch, tstzspan),
+  OPERATOR  31    #&> (tpcpatch, tpcbox),
+  OPERATOR  31    #&> (tpcpatch, tpcpatch),
+  -- overlaps or front
+  OPERATOR  32    &</ (tpcpatch, tpcbox),
+  OPERATOR  32    &</ (tpcpatch, tpcpatch),
+  -- strictly front
+  OPERATOR  33    <</ (tpcpatch, tpcbox),
+  OPERATOR  33    <</ (tpcpatch, tpcpatch),
+  -- strictly back
+  OPERATOR  34    />> (tpcpatch, tpcbox),
+  OPERATOR  34    />> (tpcpatch, tpcpatch),
+  -- overlaps or back
+  OPERATOR  35    /&> (tpcpatch, tpcbox),
+  OPERATOR  35    /&> (tpcpatch, tpcpatch),
   -- functions
-  FUNCTION  1    tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
-  FUNCTION  2    tpcbox_gist_union(internal, internal),
-  FUNCTION  3    tpc_gist_compress(internal),
-  FUNCTION  5    tpcbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6    tpcbox_gist_picksplit(internal, internal),
-  FUNCTION  7    tpcbox_gist_same(tpcbox, tpcbox, internal),
+  FUNCTION  1 tpcbox_gist_consistent(internal, tpcbox, smallint, oid, internal),
+  FUNCTION  2 tpcbox_gist_union(internal, internal),
+  FUNCTION  3 tpc_gist_compress(internal),
+  FUNCTION  5 tpcbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 tpcbox_gist_picksplit(internal, internal),
+  FUNCTION  7 tpcbox_gist_same(tpcbox, tpcbox, internal),
   FUNCTION  8 (tpcpatch, tpcbox)
     tpcpatch_gist_distance(internal, tpcpatch, smallint, oid, internal),
   FUNCTION  8 (tpcpatch, tpcpatch)
     tpcpatch_gist_distance(internal, tpcpatch, smallint, oid, internal),
   FUNCTION 11 tpcbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tpcpatch_rtree_ops
 
 /*****************************************************************************/

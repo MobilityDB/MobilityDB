@@ -178,6 +178,8 @@ CREATE FUNCTION tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, in
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeompoint_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeompoint_rtree_ops
   DEFAULT FOR TYPE tgeompoint USING gist AS
   STORAGE stbox,
@@ -194,10 +196,10 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tgeompoint, stbox),
   OPERATOR  4    &> (tgeompoint, tgeompoint),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tgeompoint, stbox),
   OPERATOR  5    >> (tgeompoint, tgeompoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeompoint, tstzspan),
   OPERATOR  6    ~= (tgeompoint, stbox),
   OPERATOR  6    ~= (tgeompoint, tgeompoint),
@@ -258,20 +260,23 @@ CREATE OPERATOR CLASS tgeompoint_rtree_ops
   OPERATOR  35    /&> (tgeompoint, stbox),
   OPERATOR  35    /&> (tgeompoint, tgeompoint),
   -- functions
-  FUNCTION  1  tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal),
-  FUNCTION  2  stbox_gist_union(internal, internal),
-  FUNCTION  3  tspatial_gist_compress(internal),
-  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION  1 tgeompoint_gist_consistent(internal, tgeompoint, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 tspatial_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tgeompoint_gist_distance(internal, tgeompoint, smallint, oid, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tgeompoint_rtree_ops
 
 CREATE FUNCTION tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeogpoint_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   DEFAULT FOR TYPE tgeogpoint USING gist AS
   STORAGE stbox,
@@ -279,7 +284,7 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   OPERATOR  3    && (tgeogpoint, tstzspan),
   OPERATOR  3    && (tgeogpoint, stbox),
   OPERATOR  3    && (tgeogpoint, tgeogpoint),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeogpoint, tstzspan),
   OPERATOR  6    ~= (tgeogpoint, stbox),
   OPERATOR  6    ~= (tgeogpoint, tgeogpoint),
@@ -295,7 +300,7 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   OPERATOR  17    -|- (tgeogpoint, tstzspan),
   OPERATOR  17    -|- (tgeogpoint, stbox),
   OPERATOR  17    -|- (tgeogpoint, tgeogpoint),
-  -- distance
+  -- nearest approach distance
   OPERATOR  25    |=| (tgeogpoint, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, tgeogpoint) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeogpoint, geography) FOR ORDER BY pg_catalog.float_ops,
@@ -316,13 +321,14 @@ CREATE OPERATOR CLASS tgeogpoint_rtree_ops
   OPERATOR  31    #&> (tgeogpoint, stbox),
   OPERATOR  31    #&> (tgeogpoint, tgeogpoint),
   -- functions
-  FUNCTION  1  tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal),
-  FUNCTION  2  stbox_gist_union(internal, internal),
-  FUNCTION  3  tspatial_gist_compress(internal),
-  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal),
+  FUNCTION  1 tgeogpoint_gist_consistent(internal, tgeogpoint, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 tspatial_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tgeogpoint_gist_distance(internal, tgeogpoint, smallint, oid, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tgeogpoint_rtree_ops
 
 /******************************************************************************/

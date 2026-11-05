@@ -314,6 +314,18 @@ def render_boxmembers(behaviour: str, sub: dict) -> str:
             f"{temp} */\n\n" + "\n".join(out) + "\n")
 
 
+def render_family_tempopclass(kind: str, sub: dict) -> str:
+    """The `kind` index operator class of the subtype `sub` over the
+    spatiotemporal box, written by #render_tempopclass on the axes its
+    `boxmembers` lists, its nearest approach distance also taking its
+    `distwith` types."""
+    mf = load_manifest()
+    bt = next(b for b in mf.get("boxtypes", []) if b["box"] == "stbox")
+    return render_tempopclass(sub["temp"], bt, sub.get("boxmembers") or [],
+                              sub.get("distwith") or [], kind,
+                              mf.get("boxstrategies", []))
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -350,8 +362,12 @@ def render(behaviour: str, sub: dict) -> str:
         details = details.replace("{TEMP}", sub["temp"]).replace("{BOUNDARY}", boundary)
     body = (tmpl.replace("{DETAILS}\n", details_lines(details))
                 .replace("{BOXMEMBERS}", render_boxmembers(behaviour, sub)
-                         if behaviour in BOXMEMBER_CLASSES else "")
-                .replace("{TEMP}", sub["temp"])
+                         if behaviour in BOXMEMBER_CLASSES else ""))
+    for kind in TEMPOPCLASS_KINDS:
+        token = "{TEMPOPCLASS_" + kind.upper() + "}"
+        if token in body:
+            body = body.replace(token, render_family_tempopclass(kind, sub))
+    body = (body.replace("{TEMP}", sub["temp"])
                 .replace("{SET}", sub.get("set", sub["base"] + "set"))
                 .replace("{BASESYM}", basesym)
                 .replace("{BASE}", sub["base"])
@@ -930,6 +946,91 @@ def splice_boxopclass(filetext: str, name: str, rendered: str) -> str:
     """Replace the text strictly between the class's markers with `rendered`, as
     #splice_boxbox_sql replaces its region."""
     begin, end = _boxopclass_markers(name)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+# The index operator classes of a temporal type over its box: per tree kind, every
+# strategy of boxstrategies.yaml whose axis the type carries, in strategy order,
+# stating the type against the time span on the topological and time strategies,
+# against its box and against itself, and on the nearest approach distance against
+# its `distwith` types, then the support functions. The `tempclasses` stanza of
+# the box type states those functions: the GiST consistent function of the
+# temporal type (`own`) or of the box, the GiST and SP-GiST compress functions,
+# and whether the GiST distance function is registered for each operand pair.
+TEMPOPCLASS_KINDS = {"rtree": "gist", "quadtree": "spgist", "kdtree": "spgist"}
+
+
+def _tempopclass_markers(name: str):
+    """BEGIN/END markers of an index operator class of a temporal type, as
+    #_boxopclass_markers marks one of a box type."""
+    begin = (f"-- GENERATED-TEMPOPCLASS-BEGIN {name} — "
+             "tools/codegen/inherited/generate.py;\n"
+             "-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or "
+             "manifest.d/subtypes.yaml and re-run.\n")
+    return begin, f"-- GENERATED-TEMPOPCLASS-END {name}\n"
+
+
+def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
+                       strategies: list) -> str:
+    """The `kind` index operator class of the temporal type `temp` over the box
+    type `bt`, as the comment of #TEMPOPCLASS_KINDS states it."""
+    box = bt["box"]
+    tc = (bt.get("opclasses") or {}).get("tempclasses") or {}
+    am = TEMPOPCLASS_KINDS[kind]
+    axes = set(axes)
+    members = []
+    for s in strategies:
+        if s["axis"] not in axes:
+            continue
+        order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
+        rights = (["tstzspan"] if s["axis"] in ("topo", "t") else []) + [box, temp]
+        if s["axis"] == "dist":
+            rights += list(distwith or [])
+        members.append(f"  -- {s['desc']}")
+        members += [f"  OPERATOR  {s['num']}    {s['sqlop']} ({temp}, {r}){order},"
+                    for r in rights]
+    if am == "gist":
+        cons = (f"{temp}_gist_consistent(internal, {temp}, smallint, oid, internal)"
+                if tc.get("gistconsistent", "own") == "own" else
+                f"{box}_gist_consistent(internal, {box}, smallint, oid, internal)")
+        funcs = [f"  FUNCTION  1 {cons}",
+                 f"  FUNCTION  2 {box}_gist_union(internal, internal)",
+                 f"  FUNCTION  3 {tc.get('gistcompress', 'tspatial_gist_compress')}"
+                 "(internal)",
+                 f"  FUNCTION  5 {box}_gist_penalty(internal, internal, internal)",
+                 f"  FUNCTION  6 {box}_gist_picksplit(internal, internal)",
+                 f"  FUNCTION  7 {box}_gist_same({box}, {box}, internal)"]
+        if "dist" in axes:
+            dist = f"{temp}_gist_distance(internal, {temp}, smallint, oid, internal)"
+            if tc.get("distpairs"):
+                funcs += [f"  FUNCTION  8 ({temp}, {r})\n    {dist}"
+                          for r in (box, temp)]
+            else:
+                funcs.append(f"  FUNCTION  8 {dist}")
+        funcs.append(f"  FUNCTION 11 {box}_gist_sortsupport(internal)")
+        head = (f"CREATE OPERATOR CLASS {temp}_{kind}_ops\n"
+                f"  DEFAULT FOR TYPE {temp} USING gist AS\n  STORAGE {box},\n")
+    else:
+        funcs = [f"  FUNCTION  1 stbox_spgist_config(internal, internal)",
+                 f"  FUNCTION  2 stbox_{kind}_choose(internal, internal)",
+                 f"  FUNCTION  3 stbox_{kind}_picksplit(internal, internal)",
+                 f"  FUNCTION  4 stbox_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal)",
+                 f"  FUNCTION  6 {tc.get('spgistcompress', 'tspatial_spgist_compress')}"
+                 "(internal)"]
+        default = "DEFAULT " if kind == "quadtree" else ""
+        head = (f"CREATE OPERATOR CLASS {temp}_{kind}_ops\n"
+                f"  {default}FOR TYPE {temp} USING spgist AS\n")
+    return (head + "\n".join(members) + "\n  -- functions\n"
+            + ",\n".join(funcs) + ";\n")
+
+
+def splice_tempopclass(filetext: str, name: str, rendered: str) -> str:
+    """Replace the text strictly between the class's markers with `rendered`, as
+    #splice_boxopclass replaces its region."""
+    begin, end = _tempopclass_markers(name)
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
@@ -6049,6 +6150,21 @@ def main() -> int:
             rendered = render_boxopclass(bt, cls, mf.get("boxstrategies", []))
             p.write_text(splice_boxopclass(p.read_text(), cls["name"], rendered))
             print(f"spliced boxopclass {cls['name']} -> {cls['file']}")
+        for part in (bt.get("opclasses") or {}).get("partners") or []:
+            for kind, am in TEMPOPCLASS_KINDS.items():
+                path = (part.get("files") or {}).get(am)
+                if not path:
+                    continue
+                name = f"{part['type']}_{kind}_ops"
+                p = ROOT / path
+                if args.check:
+                    print(f"would splice tempopclass {name} -> {path}")
+                    continue
+                rendered = render_tempopclass(part["type"], bt, part["axes"],
+                                              part.get("distwith") or [], kind,
+                                              mf.get("boxstrategies", []))
+                p.write_text(splice_tempopclass(p.read_text(), name, rendered))
+                print(f"spliced tempopclass {name} -> {path}")
 
     for bt in mf.get("boxtypes", []):
         for stanza in tempsql_stanzas(bt):

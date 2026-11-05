@@ -65,10 +65,10 @@ CREATE OPERATOR CLASS trgeometry_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (trgeometry, tstzspan),
   OPERATOR  6    ~= (trgeometry, stbox),
   OPERATOR  6    ~= (trgeometry, trgeometry),
@@ -155,10 +155,10 @@ CREATE OPERATOR CLASS trgeometry_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (trgeometry, tstzspan),
   OPERATOR  6    ~= (trgeometry, stbox),
   OPERATOR  6    ~= (trgeometry, trgeometry),
@@ -243,10 +243,10 @@ CREATE OPERATOR CLASS trgeometry_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (trgeometry, stbox),
   OPERATOR  4    &> (trgeometry, trgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (trgeometry, stbox),
   OPERATOR  5    >> (trgeometry, trgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (trgeometry, tstzspan),
   OPERATOR  6    ~= (trgeometry, stbox),
   OPERATOR  6    ~= (trgeometry, trgeometry),

@@ -80,6 +80,8 @@ CREATE FUNCTION tgeometry_gist_distance(internal, tgeometry, smallint, oid, inte
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeometry_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeometry_rtree_ops
   DEFAULT FOR TYPE tgeometry USING gist AS
   STORAGE stbox,
@@ -96,10 +98,10 @@ CREATE OPERATOR CLASS tgeometry_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeometry, tstzspan),
   OPERATOR  6    ~= (tgeometry, stbox),
   OPERATOR  6    ~= (tgeometry, tgeometry),
@@ -160,20 +162,23 @@ CREATE OPERATOR CLASS tgeometry_rtree_ops
   OPERATOR  35    /&> (tgeometry, stbox),
   OPERATOR  35    /&> (tgeometry, tgeometry),
   -- functions
-  FUNCTION  1  tgeometry_gist_consistent(internal, tgeometry, smallint, oid, internal),
-  FUNCTION  2  stbox_gist_union(internal, internal),
-  FUNCTION  3  tspatial_gist_compress(internal),
-  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeometry_gist_distance(internal, tgeometry, smallint, oid, internal),
+  FUNCTION  1 tgeometry_gist_consistent(internal, tgeometry, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 tspatial_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tgeometry_gist_distance(internal, tgeometry, smallint, oid, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tgeometry_rtree_ops
 
 CREATE FUNCTION tgeography_gist_distance(internal, tgeography, smallint, oid, internal)
   RETURNS float
   AS 'MODULE_PATHNAME', 'Tspatial_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeography_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeography_rtree_ops
   DEFAULT FOR TYPE tgeography USING gist AS
   STORAGE stbox,
@@ -181,7 +186,7 @@ CREATE OPERATOR CLASS tgeography_rtree_ops
   OPERATOR  3    && (tgeography, tstzspan),
   OPERATOR  3    && (tgeography, stbox),
   OPERATOR  3    && (tgeography, tgeography),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeography, tstzspan),
   OPERATOR  6    ~= (tgeography, stbox),
   OPERATOR  6    ~= (tgeography, tgeography),
@@ -197,7 +202,7 @@ CREATE OPERATOR CLASS tgeography_rtree_ops
   OPERATOR  17    -|- (tgeography, tstzspan),
   OPERATOR  17    -|- (tgeography, stbox),
   OPERATOR  17    -|- (tgeography, tgeography),
-  -- distance
+  -- nearest approach distance
   OPERATOR  25    |=| (tgeography, stbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, tgeography) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tgeography, geography) FOR ORDER BY pg_catalog.float_ops,
@@ -218,14 +223,15 @@ CREATE OPERATOR CLASS tgeography_rtree_ops
   OPERATOR  31    #&> (tgeography, stbox),
   OPERATOR  31    #&> (tgeography, tgeography),
   -- functions
-  FUNCTION  1  tgeography_gist_consistent(internal, tgeography, smallint, oid, internal),
-  FUNCTION  2  stbox_gist_union(internal, internal),
-  FUNCTION  3  tspatial_gist_compress(internal),
-  FUNCTION  5  stbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  stbox_gist_picksplit(internal, internal),
-  FUNCTION  7  stbox_gist_same(stbox, stbox, internal),
-  FUNCTION  8  tgeography_gist_distance(internal, tgeography, smallint, oid, internal),
+  FUNCTION  1 tgeography_gist_consistent(internal, tgeography, smallint, oid, internal),
+  FUNCTION  2 stbox_gist_union(internal, internal),
+  FUNCTION  3 tspatial_gist_compress(internal),
+  FUNCTION  5 stbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 stbox_gist_picksplit(internal, internal),
+  FUNCTION  7 stbox_gist_same(stbox, stbox, internal),
+  FUNCTION  8 tgeography_gist_distance(internal, tgeography, smallint, oid, internal),
   FUNCTION 11 stbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tgeography_rtree_ops
 
 /******************************************************************************/
 

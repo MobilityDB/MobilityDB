@@ -65,10 +65,10 @@ CREATE OPERATOR CLASS tpose_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),
@@ -155,10 +155,10 @@ CREATE OPERATOR CLASS tpose_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),
@@ -243,10 +243,10 @@ CREATE OPERATOR CLASS tpose_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),

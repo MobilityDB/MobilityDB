@@ -61,6 +61,8 @@ CREATE FUNCTION tspatial_spgist_compress(internal)
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeometry_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeometry_quadtree_ops
   DEFAULT FOR TYPE tgeometry USING spgist AS
   -- strictly left
@@ -76,10 +78,10 @@ CREATE OPERATOR CLASS tgeometry_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeometry, tstzspan),
   OPERATOR  6    ~= (tgeometry, stbox),
   OPERATOR  6    ~= (tgeometry, tgeometry),
@@ -140,12 +142,13 @@ CREATE OPERATOR CLASS tgeometry_quadtree_ops
   OPERATOR  35    /&> (tgeometry, stbox),
   OPERATOR  35    /&> (tgeometry, tgeometry),
   -- functions
-  FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_quadtree_choose(internal, internal),
-  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tspatial_spgist_compress(internal);
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tspatial_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tgeometry_quadtree_ops
 
 /******************************************************************************/
 
@@ -164,6 +167,8 @@ CREATE FUNCTION stbox_kdtree_inner_consistent(internal, internal)
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeometry_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeometry_kdtree_ops
   FOR TYPE tgeometry USING spgist AS
   -- strictly left
@@ -179,10 +184,10 @@ CREATE OPERATOR CLASS tgeometry_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tgeometry, stbox),
   OPERATOR  4    &> (tgeometry, tgeometry),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tgeometry, stbox),
   OPERATOR  5    >> (tgeometry, tgeometry),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeometry, tstzspan),
   OPERATOR  6    ~= (tgeometry, stbox),
   OPERATOR  6    ~= (tgeometry, tgeometry),
@@ -243,22 +248,25 @@ CREATE OPERATOR CLASS tgeometry_kdtree_ops
   OPERATOR  35    /&> (tgeometry, stbox),
   OPERATOR  35    /&> (tgeometry, tgeometry),
   -- functions
-  FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_kdtree_choose(internal, internal),
-  FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tspatial_spgist_compress(internal);
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_kdtree_choose(internal, internal),
+  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tspatial_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tgeometry_kdtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeography_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeography_quadtree_ops
   DEFAULT FOR TYPE tgeography USING spgist AS
   -- overlaps
   OPERATOR  3    && (tgeography, tstzspan),
   OPERATOR  3    && (tgeography, stbox),
   OPERATOR  3    && (tgeography, tgeography),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeography, tstzspan),
   OPERATOR  6    ~= (tgeography, stbox),
   OPERATOR  6    ~= (tgeography, tgeography),
@@ -295,22 +303,25 @@ CREATE OPERATOR CLASS tgeography_quadtree_ops
   OPERATOR  31    #&> (tgeography, stbox),
   OPERATOR  31    #&> (tgeography, tgeography),
   -- functions
-  FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_quadtree_choose(internal, internal),
-  FUNCTION  3  stbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4  stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tspatial_spgist_compress(internal);
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_quadtree_choose(internal, internal),
+  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tspatial_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tgeography_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tgeography_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tgeography_kdtree_ops
   FOR TYPE tgeography USING spgist AS
   -- overlaps
   OPERATOR  3    && (tgeography, tstzspan),
   OPERATOR  3    && (tgeography, stbox),
   OPERATOR  3    && (tgeography, tgeography),
-    -- same
+  -- same
   OPERATOR  6    ~= (tgeography, tstzspan),
   OPERATOR  6    ~= (tgeography, stbox),
   OPERATOR  6    ~= (tgeography, tgeography),
@@ -347,12 +358,13 @@ CREATE OPERATOR CLASS tgeography_kdtree_ops
   OPERATOR  31    #&> (tgeography, stbox),
   OPERATOR  31    #&> (tgeography, tgeography),
   -- functions
-  FUNCTION  1  stbox_spgist_config(internal, internal),
-  FUNCTION  2  stbox_kdtree_choose(internal, internal),
-  FUNCTION  3  stbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4  stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tspatial_spgist_compress(internal);
+  FUNCTION  1 stbox_spgist_config(internal, internal),
+  FUNCTION  2 stbox_kdtree_choose(internal, internal),
+  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tspatial_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tgeography_kdtree_ops
 
 /******************************************************************************/
 
