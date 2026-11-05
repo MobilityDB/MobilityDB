@@ -103,155 +103,6 @@ tpc_gist_get_tpcbox(FunctionCallInfo fcinfo, TPCBox *result, MeosType type)
   return true;
 }
 
-PGDLLEXPORT Datum Tpcbox_gist_consistent(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_consistent);
-/**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST consistent method for TPCBox
- * @sqlfn tpcbox_gist_consistent()
- */
-Datum
-Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid typid = PG_GETARG_OID(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  TPCBox *key = DatumGetTpcboxP(entry->key), query;
-  if (! key)
-    PG_RETURN_BOOL(false);
-
-  /* Determine whether the index is lossy depending on the strategy */
-  *recheck = tpcbox_index_recheck(strategy);
-
-  /* Transform the query into a box */
-  if (! tpc_gist_get_tpcbox(fcinfo, &query, oid_meostype(typid)))
-    PG_RETURN_BOOL(false);
-
-  bool result;
-  if (MEOS_FLAGS_GET_PARTS(key->flags))
-    /* A key over boxes of several structures bounds none of them */
-    result = true;
-  else if (! index_strategy_is_valid(T_TPCBOX, strategy, key, &query))
-  {
-    /* The operator raises its error on the boxes under the key, which the
-     * recheck applies it to */
-    *recheck = true;
-    result = true;
-  }
-  else if (GIST_LEAF(entry))
-    result = tpcbox_index_leaf_consistent(key, &query, strategy);
-  else
-    result = tpcbox_gist_inner_consistent(key, &query, strategy);
-
-  PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************
- * GiST union (and shared adjust helper)
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tpcbox_gist_union(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_union);
-/**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST union method — minimum bounding TPCBox over an entry vector
- * @sqlfn tpcbox_gist_union()
- */
-Datum
-Tpcbox_gist_union(PG_FUNCTION_ARGS)
-{
-  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  GISTENTRY *ent = entryvec->vector;
-  TPCBox *result = tpcbox_copy(DatumGetTpcboxP(ent[0].key));
-  for (int i = 1; i < entryvec->n; i++)
-    bbox_gist_adjust(T_TPCBOX, result, DatumGetTpcboxP(ent[i].key),
-      &stbox_adjust);
-  PG_RETURN_TPCBOX_P(result);
-}
-
-/*****************************************************************************
- * GiST penalty
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tpcbox_gist_penalty(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_penalty);
-/**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST penalty method
- * @sqlfn tpcbox_gist_penalty()
- */
-Datum
-Tpcbox_gist_penalty(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
-  float *result = (float *) PG_GETARG_POINTER(2);
-  void *origbox = (TPCBox *) DatumGetPointer(origentry->key);
-  void *newbox = (TPCBox *) DatumGetPointer(newentry->key);
-  *result = (float) bbox_gist_penalty(T_TPCBOX, origbox, newbox,
-    &stbox_penalty);
-  PG_RETURN_POINTER(result);
-}
-
-/*****************************************************************************
- * GiST picksplit
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tpcbox_gist_picksplit(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_picksplit);
-/**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST picksplit method — defers to the generic double-sorting
- *   helper, which knows the TPCBox layout via T_TPCBOX
- * @sqlfn tpcbox_gist_picksplit()
- */
-Datum
-Tpcbox_gist_picksplit(PG_FUNCTION_ARGS)
-{
-  /* A point cloud box shares the layout of a spatiotemporal box on the fields
-   * a split grows and measures */
-  return bbox_gist_picksplit(fcinfo, T_TPCBOX, &stbox_adjust, &stbox_penalty);
-}
-
-/*****************************************************************************
- * GiST same
- *****************************************************************************/
-
-PGDLLEXPORT Datum Tpcbox_gist_same(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpcbox_gist_same);
-/**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST same method, which tests exact equality
- * @details It is not the user-facing @c same_tpcbox_tpcbox, which refuses two
- *   boxes naming different schemas rather than answering false. An index
- *   method has to answer, so this one reads a differing schema as one more
- *   way for two keys to differ
- * @sqlfn tpcbox_gist_same()
- */
-Datum
-Tpcbox_gist_same(PG_FUNCTION_ARGS)
-{
-  TPCBox *b1 = PG_GETARG_TPCBOX_P(0);
-  TPCBox *b2 = PG_GETARG_TPCBOX_P(1);
-  bool *result = (bool *) PG_GETARG_POINTER(2);
-  if (b1 && b2)
-    /* A key over boxes of several structures bounds none of them */
-    *result = b1->flags == b2->flags && (MEOS_FLAGS_GET_PARTS(b1->flags) ||
-     (b1->pcid == b2->pcid && b1->srid == b2->srid &&
-      FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
-      FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
-      FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
-      /* The period is compared as a span, so that two keys ending on the same
-       * instant with a different inclusivity are NOT reported as the same */
-      MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
-      (! MEOS_FLAGS_GET_T(b1->flags) ||
-        span_eq(&b1->period, &b2->period))));
-  else
-    *result = (b1 == NULL && b2 == NULL);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * GiST compress — for opclasses keyed on tpcpoint / tpcpatch
  *
@@ -330,17 +181,187 @@ Tpcbox_spgist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
- * GiST distance — KNN ordering (strategy 25)
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/* GENERATED-BOXGIST-BEGIN tpcbox — tools/codegen/inherited/generate.py from templates/boxgist.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxgist.yaml and re-run. */
+/*****************************************************************************
+ * GiST consistent method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_consistent);
+/**
+ * @brief GiST consistent method for point cloud boxes
+ */
+Datum
+Tpcbox_gist_consistent(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  TPCBox *key = DatumGetTpcboxP(entry->key), query;
+  if (! key)
+    PG_RETURN_BOOL(false);
+
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = tpcbox_index_recheck(strategy);
+
+  /* Transform the query into a box */
+  if (! tpc_gist_get_tpcbox(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_BOOL(false);
+
+  bool result;
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_TPCBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
+    result = tpcbox_index_leaf_consistent(key, &query, strategy);
+  else
+    result = tpcbox_gist_inner_consistent(key, &query, strategy);
+
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_gist_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_union);
+/**
+ * @brief GiST union method for point cloud boxes
+ * @details Return the minimal bounding box that encloses all the entries in
+ * entryvec
+ */
+Datum
+Tpcbox_gist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  TPCBox *result = tpcbox_copy(DatumGetTpcboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    bbox_gist_adjust(T_TPCBOX, result, DatumGetTpcboxP(ent[i].key),
+      &stbox_adjust);
+  PG_RETURN_TPCBOX_P(result);
+}
+
+/*****************************************************************************
+ * GiST penalty method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_gist_penalty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_penalty);
+/**
+ * @brief GiST penalty method for point cloud boxes
+ * @note As in the R-tree paper, we use change in area as our penalty metric
+ */
+Datum
+Tpcbox_gist_penalty(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *result = (float *) PG_GETARG_POINTER(2);
+  void *origbox = DatumGetPointer(origentry->key);
+  void *newbox = DatumGetPointer(newentry->key);
+  *result = (float) bbox_gist_penalty(T_TPCBOX, origbox, newbox,
+    &stbox_penalty);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST picksplit method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_gist_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_picksplit);
+/**
+ * @brief GiST picksplit method for point cloud boxes
+ * @details
+ * The algorithm finds split of boxes by considering splits along each axis.
+ * Each entry is first projected as an interval on the first axis, and
+ * different ways to split the intervals into two groups are considered,
+ * trying to minimize the overlap of the groups. Then the same is repeated for
+ * the other axes, and the overall best split is chosen. The quality of a split
+ * is determined by overlap along that axis and some other criteria (see
+ * bbox_gist_consider_split).
+ *
+ * After that, all the entries are divided into three groups:
+ *
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
+ *    of overlap along selected axis.
+ *
+ * The common entries are distributed by minimizing penalty.
+ *
+ * For details see:
+ * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
+ * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
+ */
+Datum
+Tpcbox_gist_picksplit(PG_FUNCTION_ARGS)
+{
+  return bbox_gist_picksplit(fcinfo, T_TPCBOX, &stbox_adjust,
+    &stbox_penalty);
+}
+
+/*****************************************************************************
+ * GiST same method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Tpcbox_gist_same(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_gist_same);
+/**
+ * @brief GiST same method for point cloud boxes
+ * @details Return true only when the boxes are exactly the same. Fuzzy
+ * comparisons cannot be used here without breaking index consistency, and an
+ * index method answers where the operator @p ~= refuses its arguments, so
+ * this is not that operator
+ */
+Datum
+Tpcbox_gist_same(PG_FUNCTION_ARGS)
+{
+  TPCBox *b1 = PG_GETARG_TPCBOX_P(0);
+  TPCBox *b2 = PG_GETARG_TPCBOX_P(1);
+  bool *result = (bool *) PG_GETARG_POINTER(2);
+  if (b1 && b2)
+    /* A key over boxes of several structures bounds none of them */
+    *result = b1->flags == b2->flags && (MEOS_FLAGS_GET_PARTS(b1->flags) ||
+     (b1->pcid == b2->pcid && b1->srid == b2->srid &&
+      FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
+      FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
+      FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
+      /* The period is compared as a span, so that two keys ending on the same
+       * instant with a different inclusivity are NOT reported as the same */
+      MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+      (! MEOS_FLAGS_GET_T(b1->flags) ||
+        span_eq(&b1->period, &b2->period))));
+  else
+    *result = (! b1 && ! b2);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
  *****************************************************************************/
 
 /**
  * @brief Return the distance between the bounding box of an index entry and a
  * query, in the last argument whether the leaf entries must be rechecked
- * @details Returns DBL_MAX for a null key, a query of another type and a
- * distance the boxes cannot state
  * @param[in] fcinfo Catalog information about the external function
- * @param[in] boxcolumn True when the index is built over a column of point
- *   cloud boxes, so that a leaf key is the value itself
+ * @param[in] boxcolumn True when the index is built over a column of
+ *   point cloud boxes, so that a leaf key is the value itself
  */
 static Datum
 tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
@@ -351,28 +372,20 @@ tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   TPCBox *key = (TPCBox *) DatumGetPointer(entry->key);
   if (! key)
     PG_RETURN_FLOAT8(DBL_MAX);
-  MeosType qtype = oid_meostype(typid);
+  MeosType type = oid_meostype(typid);
 
   /* A leaf key of a column of boxes is the value itself, so its distance to a
-   * query box is the one the operator computes, and an index-only scan, which
-   * refuses a rechecked distance, can return it. Every other pairing measures
+   * query box is the one the operator computes. Every other pairing measures
    * a bounding box against a value and bounds the distance from below, which
    * the recheck of the leaf entries settles */
   if (GIST_LEAF(entry))
-    *recheck = ! (boxcolumn && qtype == T_TPCBOX);
+    *recheck = ! (boxcolumn && type == T_TPCBOX);
 
-  /* Derive a TPCBox from whatever query-type the user supplied. */
+  /* Transform the query into a box. The distance is unknown when the query is
+   * not a box, and the maximum orders those entries after every candidate
+   * whose distance is known */
   TPCBox query;
-  if (qtype == T_TPCBOX)
-  {
-    memcpy(&query, DatumGetTpcboxP(PG_GETARG_DATUM(1)), sizeof(TPCBox));
-  }
-  else if (qtype == T_TPCPOINT || qtype == T_TPCPATCH)
-  {
-    Temporal *temp = temporal_slice(PG_GETARG_DATUM(1));
-    temporal_set_bbox(temp, &query);
-  }
-  else
+  if (! tpc_gist_get_tpcbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
   /* A key over boxes of several structures bounds none of them, and is
    * visited before every other one, since it may hold boxes on which the
@@ -394,18 +407,12 @@ tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   double distance = nad_tpcbox_tpcbox(key, &query);
 
   /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
-   * box rather than the value, and the ordering operator of two temporal
-   * point cloud points measures their trajectories rather than their boxes,
-   * so what they report is lowered to stay under the distance the operator
-   * computes, as for the spatiotemporal boxes. The exact leaf of a column of
+   * box rather than the value, so what they report is lowered to stay under
+   * the distance the ordering operator computes. The exact leaf of a column of
    * boxes reports the operator's own answer and keeps it */
   if (! GIST_LEAF(entry) || *recheck)
-  {
-    STBox skey, squery;
-    tpcbox_set_stbox(key, &skey);
-    tpcbox_set_stbox(&query, &squery);
-    distance = stbox_index_distance_bound(distance, &skey, &squery);
-  }
+    distance = stbox_index_distance_bound(distance, (const STBox *) key,
+      (const STBox *) &query);
 
   PG_RETURN_FLOAT8(distance);
 }
@@ -413,11 +420,7 @@ tpcbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
 PGDLLEXPORT Datum Tpcbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_distance);
 /**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST distance method of a column of point cloud boxes: the minimum
- *   nearest-approach distance from the index key to the query (tpcbox /
- *   tpcpoint / tpcpatch), exact at a leaf the query is a box for
- * @sqlfn tpcbox_gist_distance()
+ * @brief GiST distance method of a column of point cloud boxes
  */
 Datum
 Tpcbox_gist_distance(PG_FUNCTION_ARGS)
@@ -428,11 +431,7 @@ Tpcbox_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tpointcloud_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpointcloud_gist_distance);
 /**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST distance method of a column of temporal point clouds: the
- *   minimum nearest-approach distance from the bounding box of the index key
- *   to the query, which the recheck of the leaf entries refines
- * @sqlfn tpcpoint_gist_distance(), tpcpatch_gist_distance()
+ * @brief GiST distance method of a column of temporal point clouds
  */
 Datum
 Tpointcloud_gist_distance(PG_FUNCTION_ARGS)
@@ -444,23 +443,18 @@ Tpointcloud_gist_distance(PG_FUNCTION_ARGS)
  * GiST sort support method
  *****************************************************************************/
 
-
 /**
- * @brief Convert a point cloud box into its abbreviated key
- * @details A `TPCBox` begins with a whole `STBox`, so it takes the
- * spatiotemporal key; the schema identifier it carries beyond that is not a
- * dimension and only settles the boxes the curve ties.
+ * @brief Convert a box of the point cloud boxes into its abbreviated key
  */
 static Datum
 Tpcbox_abbrev_convert(Datum original, SortSupport ssup)
 {
   (void) ssup;
-  return UInt64GetDatum(stbox_sort_hash((const STBox *)
-    DatumGetTpcboxP(original)));
+  return UInt64GetDatum(stbox_sort_hash((const STBox *) DatumGetTpcboxP(original)));
 }
 
 /**
- * @brief Compare two point cloud boxes for the sorted index build
+ * @brief Compare two boxes of the point cloud boxes for the sorted index build
  */
 static int
 Tpcbox_cmp_full(Datum x, Datum y, SortSupport ssup)
@@ -482,8 +476,7 @@ Tpcbox_cmp_full(Datum x, Datum y, SortSupport ssup)
 PGDLLEXPORT Datum Tpcbox_gist_sortsupport(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_gist_sortsupport);
 /**
- * @ingroup mobilitydb_pointcloud_index
- * @brief GiST sort support method for point cloud values
+ * @brief GiST sort support method for point cloud boxes
  */
 Datum
 Tpcbox_gist_sortsupport(PG_FUNCTION_ARGS)
@@ -502,5 +495,6 @@ Tpcbox_gist_sortsupport(PG_FUNCTION_ARGS)
   }
   PG_RETURN_VOID();
 }
+/* GENERATED-BOXGIST-END tpcbox */
 
 /*****************************************************************************/
