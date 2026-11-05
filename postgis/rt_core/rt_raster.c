@@ -68,6 +68,14 @@ rt_raster
 rt_raster_new(uint32_t width, uint32_t height) {
 	rt_raster ret = NULL;
 
+	/* MEOS: the dimensions are checked before the raster is allocated, since
+	 * rt_raster_destroy reads its bands, which are set only after the check,
+	 * and the error handler returns */
+	if (width > 65535 || height > 65535) {
+		rterror("rt_raster_new: Dimensions requested exceed the maximum (65535 x 65535) permitted for a raster");
+		return NULL;
+	}
+
 	ret = (rt_raster) rtalloc(sizeof (struct rt_raster_t));
 	if (!ret) {
 		rterror("rt_raster_new: Out of virtual memory creating an rt_raster");
@@ -75,12 +83,6 @@ rt_raster_new(uint32_t width, uint32_t height) {
 	}
 
 	RASTER_DEBUGF(3, "Created rt_raster @ %p", ret);
-
-	if (width > 65535 || height > 65535) {
-		rterror("rt_raster_new: Dimensions requested exceed the maximum (65535 x 65535) permitted for a raster");
-		rt_raster_destroy(ret);
-		return NULL;
-	}
 
 	ret->width = width;
 	ret->height = height;
