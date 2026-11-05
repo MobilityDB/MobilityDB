@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: rtree_load</title>
+<title>MobilityDB: rtree_part_load</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -141,14 +141,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga73e502d2d14e862a365b3c4262e9fcf8.html#ga73e502d2d14e862a365b3c4262e9fcf8">rtree_insert_temporal</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gad3b5adc11c020d2c242c6b72d984b30d.html#gad3b5adc11c020d2c242c6b72d984b30d">rtree_insert_temporal_split</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga1f61a6f0abad9190f60503ca71f56c5e.html#ga1f61a6f0abad9190f60503ca71f56c5e">rtree_join</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_ab85261a9b307e8bc809e00eea405fce3.html#ab85261a9b307e8bc809e00eea405fce3">rtree_load</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gab85261a9b307e8bc809e00eea405fce3.html#gab85261a9b307e8bc809e00eea405fce3">rtree_load</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga981c881a4c63edc8a84ed79a948fbf7f.html#ga981c881a4c63edc8a84ed79a948fbf7f">rtree_mem_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gae574d20453a63ce0d0a98ff8253f9979.html#gae574d20453a63ce0d0a98ff8253f9979">rtree_nn_cursor_close</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga2710d751d34537d6847ed6da1ef59867.html#ga2710d751d34537d6847ed6da1ef59867">rtree_nn_cursor_next</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gaa0c0a7cc751369700b9500e7190cd771.html#gaa0c0a7cc751369700b9500e7190cd771">rtree_nn_cursor_open</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_gab693184d39cd74c1907a19f3116a9061.html#gab693184d39cd74c1907a19f3116a9061">rtree_num_entries</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a9335f56bd8492f73f920d0ed738c1286.html#a9335f56bd8492f73f920d0ed738c1286">rtree_part</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga8d582a69f6afe98920b100a843662ab6.html#ga8d582a69f6afe98920b100a843662ab6">rtree_part_load</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="temporal__rtree_8c_a8d582a69f6afe98920b100a843662ab6.html#a8d582a69f6afe98920b100a843662ab6">rtree_part_load</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="temporal__rtree_8c_a013f11cad91d3771ce8747f340bc99a1.html#a013f11cad91d3771ce8747f340bc99a1">rtree_part_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__box__index_ga5aa659c83ca888f10910a85254c67b85.html#ga5aa659c83ca888f10910a85254c67b85">rtree_search</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__internal__box__index_gaeb30d4b04885c6e55bf0567f3df2adbf.html#gaeb30d4b04885c6e55bf0567f3df2adbf">rtree_search_intl</a></td></tr>
@@ -168,14 +168,17 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ab85261a9b307e8bc809e00eea405fce3" name="ab85261a9b307e8bc809e00eea405fce3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab85261a9b307e8bc809e00eea405fce3">&#9670;&#160;</a></span>rtree_load()</h2>
+<a id="a8d582a69f6afe98920b100a843662ab6" name="a8d582a69f6afe98920b100a843662ab6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d582a69f6afe98920b100a843662ab6">&#9670;&#160;</a></span>rtree_part_load()</h2>
 
 <div class="memitem">
 <div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool rtree_load </td>
+          <td class="memname">static void rtree_part_load </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structRTree.html">RTree</a> *&#160;</td>
           <td class="paramname"><em>rtree</em>, </td>
@@ -204,7 +207,14 @@ $(function() {
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
+
+<p>Pack the boxes of one structure into an empty tree of an <a class="el" href="structRTree.html" title="Rtree in-memory index basic structure.">RTree</a> index. </p>
 
 </div>
 </div>
