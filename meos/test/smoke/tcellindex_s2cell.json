@@ -1,0 +1,21 @@
+{
+  "type_label": "tcells2cell ",
+  "header": "meos_cellindex.h",
+  "out": "tcellindex_s2cell_smoketest.c",
+  "extra_includes": "#include <meos_s2cell.h>\n#include <meos_cellindex.h>",
+  "arg_map": {
+    "Temporal *": "ts2cell1",
+    "int32": "14"
+  },
+  "common_inputs": [
+    "  /* The functions of meos_cellindex.h read the grid off the temporal type,",
+    "   * so this suite hands them a temporal S2 cell of level 15. */",
+    "  TimestampTz tstzarr1[] = { timestamptz_in(\"2001-01-01\", -1), timestamptz_in(\"2001-01-03\", -1) };",
+    "  S2CellId s2cell1 = s2cell_in(\"47c3c444c0000000\");",
+    "  S2CellId s2arr_same1[] = { s2cell1, s2cell1 };",
+    "  Temporal *ts2cell1 = (Temporal *) ts2cellseq_make(s2arr_same1, tstzarr1, 2, true, true);"
+  ],
+  "cleanup": [
+    "  free(ts2cell1);"
+  ]
+}
