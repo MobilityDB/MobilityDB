@@ -54,6 +54,11 @@ SELECT getValues(cellToParent(
  t
 (1 row)
 
+/* Errors */
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 5);
+ERROR:  The parent resolution must not be finer than the resolution of the cell
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', -1);
+ERROR:  The resolution must be between 0 and 26
 SELECT cellToPoint(tquadbin '{48a6227affffffff@2001-01-01}');
                                     celltopoint                                    
 -----------------------------------------------------------------------------------

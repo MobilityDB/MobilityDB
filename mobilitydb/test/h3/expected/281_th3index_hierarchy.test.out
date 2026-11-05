@@ -21,7 +21,7 @@ SELECT getResolution(cellToParent(th3index
 
 /* Errors */
 SELECT cellToParent(th3index '831c02fffffffff@2001-01-01', 5);
-ERROR:  h3 library error
+ERROR:  The parent resolution must not be finer than the resolution of the cell
 SELECT getResolution(
   cellToParent(th3index '831c02fffffffff@2001-01-01'));
          getresolution          
