@@ -51,7 +51,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
-| TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | open, next |
+| TG24 | `force2D(trgeometry)` and `force2D(tpose)`, in MEOS `trgeometry_force2d` and `tpose_force2d`, in place of `EgoBody2D` and `ObjectTrip2D` of the companion, refusing a body with real height; decided by the owner | #3448, open |
 
 ## Regularity
 
@@ -59,7 +59,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 |---|---|---|
 | TG20 | The array forms of the relationships, and the relationships at the instants of their inputs | open, on #3347 |
 | TG21 | The portable names `geoRound`, `geoTransform`, `geoLength`, `geoTranslate`, `geoRotate` by the geometry a `trgeometry` answers at an instant | open |
-| TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | #3444, open |
+| TG22 | The index test `162_trgeo_indexes_tbl` at the level of every operator of the three classes | merged as #3444 |
 
 ## Decisions
 
