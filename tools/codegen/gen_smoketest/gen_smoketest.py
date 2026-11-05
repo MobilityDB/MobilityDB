@@ -80,10 +80,12 @@ SMOKE_DIR = os.path.join(ROOT, "smoke")
 # the library is installed somewhere other than the default prefix.
 HEADERS = os.environ.get("MEOS_INCLUDE_DIR", "/usr/local/include")
 
-# MEOS reads two CSV data files at run time: the spatial_ref_sys table behind
-# every reprojection, and the ways network behind npoint route resolution.
-# Both are installed next to the headers, in <prefix>/share, so the generated
-# test derives them from HEADERS and points MEOS at the very prefix it was
+# MEOS reads three data files at run time: the spatial_ref_sys table behind
+# every reprojection, the ways network behind npoint route resolution, and the
+# point cloud schemas a pcid resolves to, which MEOS reads only when a host
+# names the document. All are installed next to the headers, in
+# <prefix>/share, so the generated test derives them from HEADERS and points
+# MEOS at the very prefix it was
 # generated against instead of the library's compiled-in default path.
 DATA_DIR = os.path.normpath(os.path.join(HEADERS, os.pardir, "share"))
 
@@ -95,6 +97,8 @@ DATA_DIR = os.path.normpath(os.path.join(HEADERS, os.pardir, "share"))
 CSV_DATA = {
     "spatial_ref_sys": ("spatial_ref_sys.csv", "meos_set_spatial_ref_sys_csv"),
     "ways":            ("ways.csv",            "meos_set_ways_csv"),
+    "pointcloud_schemas": ("pointcloud_schemas.xml",
+                           "meos_set_pointcloud_schemas_xml"),
 }
 
 EXTERN_RE = re.compile(r"^extern\s+(.*?);\s*$", re.MULTILINE | re.DOTALL)
@@ -168,7 +172,8 @@ BY_VALUE_SCALAR_TYPES = {
 
 
 # State types a MEOS aggregate threads through its transition/final functions.
-AGG_STATE_TYPES = ("SkipList *", "Set *", "Span *", "SpanSet *", "TBox *", "STBox *")
+AGG_STATE_TYPES = ("SkipList *", "Set *", "Span *", "SpanSet *", "TBox *", "STBox *",
+                   "TPCBox *")
 
 # How to read back what a finalizer answers, so a combine can be compared
 # against the serial accumulation of the same values. A return type absent
