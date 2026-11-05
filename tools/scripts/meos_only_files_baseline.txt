@@ -25,8 +25,8 @@ meos/src/temporal/meos_catalog.c	ensure_tgeodetic_type(MeosType type)	file-scope
 meos/src/temporal/meos_catalog.c	ensure_timespanset_type(MeosType type)	file-scope conditional
 meos/src/temporal/meos_catalog.c	ensure_tspatial_type(MeosType type)	file-scope conditional
 meos/src/temporal/meos_error.c	default_error_handler(int errlevel, int errcode, const char *errmsg)	file-scope conditional
+meos/src/temporal/meos_error.c	meos_errcode_sqlstate(int code)	file-scope conditional
 meos/src/temporal/meos_error.c	meos_errno(void)	file-scope conditional
-meos/src/temporal/meos_error.c	pg_error(int errlevel, const char *errmsg)	file-scope conditional
 meos/src/temporal/skiplist.c	#define MaxAllocSize   ((Size) 0x3fffffff) /* 1 gigabyte - 1 */	file-scope conditional
 meos/src/temporal/skiplist.c	datum_func2 func, bool crossings, SkipListType sktype)	file-scope conditional
 meos/src/temporal/skiplist.c	extern FunctionCallInfo fetch_fcinfo(void);	file-scope conditional
