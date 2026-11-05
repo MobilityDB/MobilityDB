@@ -193,7 +193,7 @@ reviewer reads each one alone.
 | ED22 | Whether two static geometries carrying arcs are within a distance, in 2D | The geometry is read into points, segments and arcs from its doubles and every pair of edges is asked, past a box and a gap in doubles (`exact_arc_bound`), by the sign of a difference of square roots (`point_arc_within_exact`, `arcsegm_within_exact`, `arcarc_within_exact`, on the tower of `tower_sign_k`); a part inside a surface is read from the parity of a ray (`point_arc_ray_parity`). The tower keeps its signs outside the range of doubles, its last tier as many limbs as a value takes (`TowerWide`) | MobilityDB #3412, merged as `1eeae2920c`; CGAL (`Gmpq`, CORE square roots) on the head agrees on 440 refuting rows, 1440 random rows, 30 rows of real curves and 30 of those moved apart, each asked at 0, at half the distance, at the double nearest it and either side, and past it, where `lwgeom_mindistance2d_tolerance` disagrees on 147, 858, 0 and 30; 320 rows spreading from 1e-320 to 1e300, where CORE asserts, are judged in `Fraction` at 20000 bits, 0 of 1920 asks differing. Against that function called directly, by callgrind, near the distance, at twice it plus one and at half it: 0.955, 0.955 and 0.955 on the real curves, 0.755, 0.822 and 0.637 moved apart, 4.389, 1.395 and 1.540 on random pairs; witness, controls and probes in `oracle-kit`, `cpwork/dwithin-arc` |
 | ED23 | Whether a triangle, a TIN or a polyhedral surface is within a distance, in 2D | `geom_curve_parts` reads a triangle as a surface of one ring, and a TIN and a polyhedral surface as the surfaces of their faces, so no type of `geom_dwithin2d` reaches `lwgeom_mindistance2d_tolerance` | MobilityDB #3426, merged as `6aa79a7a2f`; CGAL (`Gmpq`, CORE square roots) on the head agrees on 320 refuting rows, 1320 random rows and 40 real outlines read as fans of triangles, where that function called directly disagrees on 52, 471 and 25. Against it, by callgrind, near the distance, at twice it plus one and at half it: 0.193, 0.040 and 0.290 on the outlines, 3.227, 1.925 and 1.300 on random pairs |
 | ED24 | Whether a triangle, a TIN or an exactly coplanar polygon or surface is within a distance, in 3D | A filtered exact coplanarity test on each polygon picks the route; [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) | not started |
-| ED25 | Whether a geometry carrying an arc is within a distance, in 3D | An error today, not a rounded answer; the reading of the arc is the open decision of [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) | not started |
+| ED25 | Whether a geometry carrying an arc is within a distance, in 3D | An error today, not a rounded answer; the owner decides the true 3D circle through the three points, in stages, as [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) states | not started |
 | ED26 | Whether a polygon not exactly coplanar, or a solid, is within a distance, in 3D | Left on `lwgeom_mindistance3d_tolerance` for the moment, by the decision of the owner, so its answers stay rounded | not started, deferred |
 | ED27 | The distance in 3D of a geometry carrying an arc | `geom_distance3d` raises an error where ED25 would answer `geom_dwithin3d`; a distance needs the nearest double, more than a sign | not started |
 | ED28 | The box of a geometry carrying an arc with Z or M | `lwcircstring_calculate_gbox_cartesian` set no flags on the box it fills, so `gbox_merge` refused every arc and the box stayed at its initial values, from 3.4e38 down to -3.4e38; the range of Z and M read only the ends of the arc. No box overlaps that one, so `edwithin_tgeo_geo` of a moving point with Z and an arc with Z answered false with no error at any distance. It raises the error of the 3D distance | MobilityDB #3427, merged as `7a02e7f9ab`; CGAL (`CORE::Expr` over `Gmpq`) agrees on the box of 1506 geometries with no further ordinate, with Z, with M and with both, where 874 are refused without it; witness, controls and corpus in `oracle-kit`, `cpwork/arc-box` |
@@ -315,12 +315,11 @@ Only calls that raise an error today change, so no answer moves:
 8. CGAL has no ready witness of a sloped segment against an arc, whose condition is a quartic: the
    algebraic kernel of CGAL 5.4 is to be tested, with a Sturm count in `Fraction` as second judge.
 
-### The decision open
+### The decision: A, in stages
 
-The owner chose C, then asked whether its low-bit error is the best strategy. It is not the best end
+The owner decides reading A, a true 3D circle, implemented in stages. C, its first choice, is not the best end
 state: a change of one bit in a height turns an answer into an error, where under reading A the same change
-moves the circle by a tiny amount and the answer stays defined. The recommendation awaiting the owner's
-decision is reading A as the definition, implemented in stages. This rests on a derivation neither coded nor
+moves the circle by a tiny amount and the answer stays defined. The stages rest on a derivation neither coded nor
 tested: in any plane the centre and the squared radius are rational, and so is the squared height
 `(n . (p - c))^2 / (n . n)`, so the tilted point and segment cases reduce to the forms of the level ones.
 
@@ -335,7 +334,7 @@ Level arcs answer the same under both, so nothing is lost against C. Low-bit sen
 near-level arcs whose planes are not exactly parallel, until the harder kernel. The cost falls on truly
 sloped arcs: their reading in 3D is a tilted circle whose shadow is an ellipse, while 2D drops Z from the
 vertices and PostGIS strokes the circle through them, a difference tiny on a near-level arc and real on a
-steep one. ED25 starts once the owner decides.
+steep one, which the specification states. ED25 is not started, behind the exact buffer.
 
 ## What other libraries reach, and what it leaves
 
