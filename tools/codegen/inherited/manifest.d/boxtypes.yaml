@@ -432,6 +432,25 @@ boxtypes:
     valdesc:   temporal value
     file:      mobilitydb/src/temporal/temporal_boxops.c
     reference: true
+    # index operator classes of the temporal types the span bounds alone, in regions
+    # of their `files` (render_tempopclass): their GiST classes take the support
+    # functions of the spans and their own consistent and compress functions, their
+    # SP-GiST ones those of the spans and the configuration of the timestamptz span;
+    # `opnames` names a strategy by the operator the type declares in its place
+    opclasses:
+      tempclasses: {gistconsistent: own, gistfn: span, gistcompress: own,
+                    spgistfn: span, spgistconfig: tstzspan,
+                    spgistcompress: temporal_spgist_compress}
+      partners:
+        - {type: tbool, axes: [topo, t],
+           files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
+                   spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
+        - {type: ttext, axes: [topo, t],
+           files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
+                   spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
+        - {type: tjsonb, axes: [topo, t], opnames: {"@>": "#@>", "<@": "<@#"},
+           files: {gist: mobilitydb/sql/json/466_tjsonb_indexes.in.sql,
+                   spgist: mobilitydb/sql/json/466_tjsonb_indexes.in.sql}}
     # position wrappers: a span names its one dimension x, so the time operations call
     # the x kernels (before -> left_span_span); a wrapper with a box operand backs the
     # SQL function of every class over a timestamptz span (spanBefore ... tpcboxBefore)
@@ -486,12 +505,23 @@ boxtypes:
     valdesc:   temporal number
     file:      mobilitydb/src/temporal/temporal_boxops.c
     reference: true
-    # index operator classes (templates/boxopclass.sql.tmpl)
+    # index operator classes (templates/boxopclass.sql.tmpl); the classes of a
+    # temporal number (render_tempopclass) also take its `valspan` on every strategy
+    # of the value axis, the topological ones and the nearest approach distance, and
+    # their own consistent, compress and distance functions
     opclasses:
+      tempclasses: {gistconsistent: own, gistcompress: own, spgistfn: tbox,
+                    spgistcompress: tnumber_spgist_compress}
       partners:
-        - {type: tint, axes: [topo, x, t, dist]}
-        - {type: tbigint, axes: [topo, x, t, dist]}
-        - {type: tfloat, axes: [topo, x, t, dist]}
+        - {type: tint, axes: [topo, x, t, dist], valspan: intspan,
+           files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
+                   spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
+        - {type: tbigint, axes: [topo, x, t, dist], valspan: bigintspan,
+           files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
+                   spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
+        - {type: tfloat, axes: [topo, x, t, dist], valspan: floatspan,
+           files: {gist: mobilitydb/sql/temporal/043_temporal_gist.in.sql,
+                   spgist: mobilitydb/sql/temporal/044_temporal_spgist.in.sql}}
       classes:
         - {name: tbox_rtree_ops, am: gist, default: true, fn: tbox,
            file: mobilitydb/sql/temporal/043_temporal_gist.in.sql}

@@ -327,6 +327,15 @@ uses the index, and nothing errors — so the omission is invisible without read
 `render_tempopclass` on the partner's `axes` and `distwith`; the box type's `tempclasses`
 states the support functions their classes share.
 
+**The operator classes of the temporal numbers, booleans, texts and JSONB values** are the
+`GENERATED-TEMPOPCLASS` regions of `043_temporal_gist`, `044_temporal_spgist` and
+`466_tjsonb_indexes`, written the same way from the partners of `tbox` and `tstzspan`. A
+temporal number's classes also take its `valspan` (`intspan`, `bigintspan`, `floatspan`) on
+every strategy but the time ones; a type the time span bounds alone carries the topological and
+time strategies against the span and itself, and `opnames` gives `tjsonb` its `#@>` and `<@#`,
+since `@>` and `<@` state the containment of its JSONB values. No temporal type's index
+operator class is written by hand.
+
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,
 Set<T>/Span<T> topological/position operators) and the `subtypes:` `files:` track
