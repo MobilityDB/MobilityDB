@@ -3891,9 +3891,8 @@ int main(void)
   free(lgeom); free(lgeog);
 
   /* A relationship is tested in 3D when both geometries have Z and in 2D
-   * otherwise, as the temporal relationships decide it at every instant; a
-   * distance and a shortest line refuse geometries of different dimensions,
-   * as the temporal distance does */
+   * otherwise, as the temporal relationships decide it at every instant, and
+   * so are a distance and a shortest line */
   GSERIALIZED *dz1 = geom_in("Point(0 0 0)", -1);
   GSERIALIZED *dz2 = geom_in("Point(0 1 5)", -1);
   GSERIALIZED *dz3 = geom_in("Point(0 0 5)", -1);
@@ -4028,8 +4027,7 @@ int main(void)
   printf("shortest line in 3D: %s\n", dline_wkt);
   assert(strcmp(dline_wkt, "LINESTRING Z (0 0 0,0 1 5)") == 0);
   assert(meos_errno() == 0);
-  assert(geom_distance(dz1, d2) == -1.0 && meos_errno() != 0);
-  meos_errno_reset();
+  assert(geom_distance(dz1, d2) == 1.0 && geom_distance(d2, dz1) == 1.0);
   /* A distance answers DBL_MAX where its operands have no distance, an empty
    * geometry or values sharing no time, with no error, and -1.0 where it
    * raises one, a value no distance has */
@@ -4055,8 +4053,9 @@ int main(void)
   printf("a distance with no answer: DBL_MAX, a distance raising an error: "
     "-1.0\n");
   free(dempty); free(tjan); free(tjun); free(t3857);
-  assert(geom_shortestline(dz1, d2) == NULL && meos_errno() != 0);
-  meos_errno_reset();
+  GSERIALIZED *dmix = geom_shortestline(dz1, d2);
+  assert(dmix && ! FLAGS_GET_Z(dmix->gflags) && meos_errno() == 0);
+  free(dmix);
   free(dline_wkt); free(dline);
   free(dz1); free(dz2); free(dz3); free(d2); free(d0);
 
@@ -4123,6 +4122,98 @@ int main(void)
   assert(temporal_lcss_distance(mt3, mt2, 6.0, true) == 2.0);
   printf("a distance over 2D and 3D operands is the 2D one in either order\n");
   free(mt2); free(mt3);
+
+  /* Operands of different dimensions read the dimensions both have: the answer
+   * is the one over the operand with no Z, in either order, with no error, and
+   * two operands with Z are read in 3D */
+  GSERIALIZED *r2 = geom_in("Point(1 1)", -1);
+  GSERIALIZED *r3 = geom_in("Point(1 1 9)", -1);
+  Temporal *c2 = tgeompoint_in("[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]");
+  Temporal *c3 = tgeompoint_in(
+    "[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]");
+  Temporal *p2 = tgeompoint_in("[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]");
+  Temporal *p3 = tgeompoint_in(
+    "[Point(0 1 9)@2001-01-01, Point(2 1 9)@2001-01-03]");
+  STBox *b2 = stbox_in("STBOX X((5,0),(6,1))");
+  STBox *b3 = stbox_in("STBOX Z((5,0,100),(6,1,200))");
+  assert(nad_tgeo_tgeo(c3, p3, true) == sqrt(5.0));
+  assert(nad_tgeo_tgeo(c2, p3, true) == 1.0);
+  assert(nad_tgeo_tgeo(p3, c2, true) == 1.0);
+  assert(nad_tgeo_geo(c3, r2, true) == 1.0);
+  assert(nad_tgeo_geo(c2, r3, true) == 1.0);
+  Temporal *wd2 = tdistance_tgeo_tgeo(c2, p2, true);
+  Temporal *wd1 = tdistance_tgeo_tgeo(c3, p2, true);
+  Temporal *wdb = tdistance_tgeo_tgeo(p2, c3, true);
+  assert(wd1 && wdb && temporal_eq(wd1, wd2) == 1 && temporal_eq(wdb, wd2) == 1);
+  free(wd1); free(wd2); free(wdb);
+  Temporal *wg2 = tdistance_tgeo_geo(c2, r2, true);
+  Temporal *wg1 = tdistance_tgeo_geo(c3, r2, true);
+  Temporal *wgb = tdistance_tgeo_geo(c2, r3, true);
+  assert(wg1 && wgb && temporal_eq(wg1, wg2) == 1 && temporal_eq(wgb, wg2) == 1);
+  free(wg1); free(wg2); free(wgb);
+  /* The nearest approach instant is one of the value given, with its Z */
+  TInstant *ni2 = nai_tgeo_geo(c2, r2, true);
+  TInstant *ni3 = nai_tgeo_geo(c3, r2, true);
+  TInstant *nig = nai_tgeo_geo(c2, r3, true);
+  assert(ni3 && ni3->t == ni2->t && MEOS_FLAGS_GET_Z(ni3->flags));
+  assert(nig && nig->t == ni2->t && ! MEOS_FLAGS_GET_Z(nig->flags));
+  free(ni2); free(ni3); free(nig);
+  TInstant *nit = nai_tgeo_tgeo(c3, p2, true);
+  assert(nit && MEOS_FLAGS_GET_Z(nit->flags));
+  free(nit);
+  /* A shortest line of operands of different dimensions has no Z */
+  GSERIALIZED *sl1 = shortestline_tgeo_tgeo(c3, p2, true);
+  GSERIALIZED *sl2 = shortestline_tgeo_geo(c3, r2, true);
+  GSERIALIZED *sl3 = shortestline_tgeo_geo(c2, r3, true);
+  assert(sl1 && sl2 && sl3 && ! FLAGS_GET_Z(sl1->gflags) &&
+    ! FLAGS_GET_Z(sl2->gflags) && ! FLAGS_GET_Z(sl3->gflags));
+  free(sl1); free(sl2); free(sl3);
+  /* The boxes, whose Z a box of no Z does not read */
+  assert(nad_stbox_stbox(b2, b3, true) == 0.0);
+  assert(nad_stbox_stbox(b3, b2, true) == 0.0);
+  assert(nad_tgeo_stbox(c3, b2, true) == 3.0);
+  assert(nad_tgeo_stbox(c2, b3, true) == 3.0);
+  assert(nad_stbox_geo(b3, r2, true) == 4.0);
+  assert(nad_stbox_geo(b2, r3, true) == 4.0);
+  /* The geometries, and the greatest distance */
+  GSERIALIZED *o2 = geom_in("Point(0 0)", -1);
+  assert(geom_max_distance(r3, o2) == sqrt(2.0));
+  assert(geom_max_distance(o2, r3) == sqrt(2.0));
+  free(o2);
+  /* A relationship between two temporal values */
+  assert(eintersects_tgeo_tgeo(c3, c2) == 1);
+  assert(eintersects_tgeo_tgeo(c2, c3) == 1);
+  assert(eintersects_tgeo_tgeo(c3, p2) == 0);
+  assert(edisjoint_tgeo_tgeo(c3, p2) == 1);
+  assert(edisjoint_tgeo_tgeo(p2, c3) == 1);
+  Temporal *ti2 = tintersects_tgeo_tgeo(c2, c2);
+  Temporal *ti1 = tintersects_tgeo_tgeo(c3, c2);
+  Temporal *tib = tintersects_tgeo_tgeo(c2, c3);
+  assert(ti1 && tib && temporal_eq(ti1, ti2) == 1 && temporal_eq(tib, ti2) == 1);
+  free(ti1); free(ti2); free(tib);
+  /* Two arrays, each of one dimension */
+  const Temporal *arr3[] = { c3 };
+  const Temporal *arr2[] = { p2 };
+  assert(mindistance_tgeoarr_tgeoarr(arr3, 1, arr2, 1, true) == 1.0);
+  assert(mindistance_tgeoarr_tgeoarr(arr2, 1, arr3, 1, true) == 1.0);
+  /* A temporal geometry, and a temporal geography */
+  Temporal *wg3 = tgeometry_in("Point(0 0 1)@2001-01-01");
+  assert(wg3 && nad_tgeo_geo(wg3, r2, true) == sqrt(2.0));
+  free(wg3);
+  Temporal *ga2 = tgeogpoint_in("Point(1 1)@2001-01-01");
+  Temporal *ga3 = tgeogpoint_in("Point(1 1 500)@2001-01-01");
+  assert(ga2 && ga3 && nad_tgeo_tgeo(ga3, ga2, true) == 0.0);
+  assert(nad_tgeo_tgeo(ga2, ga3, true) == 0.0);
+  free(ga2); free(ga3);
+  assert(meos_errno() == 0);
+  /* The rule reads dimensions, never reference systems */
+  Temporal *z3857 = tgeompoint_in(
+    "SRID=3857;[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]");
+  assert(nad_tgeo_tgeo(c3, z3857, true) == -1.0 && meos_errno() != 0);
+  meos_errno_reset();
+  free(z3857);
+  printf("operands of different dimensions read the dimensions both have\n");
+  free(r2); free(r3); free(c2); free(c3); free(p2); free(p3); free(b2); free(b3);
 
   /* Finalize MEOS */
   meos_finalize();

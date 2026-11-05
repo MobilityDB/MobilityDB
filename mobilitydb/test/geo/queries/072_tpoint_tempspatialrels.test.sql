@@ -444,3 +444,16 @@ SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tge
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Polygon((0 1,1 1,1 2,0 1))', 15000);
 
 -------------------------------------------------------------------------------
+
+-- Two temporal values of different dimensions read the dimensions both have
+SELECT tIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]');
+SELECT tIntersects(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]');
+SELECT tDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
+SELECT tIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 0)');
+SELECT tIntersects(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geometry 'Point(1 0 7)');
+SELECT tDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 0)');
+SELECT tDwithin(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)', 1);
+SELECT tDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geometry 'Point(1 1 9)', 1);
+SELECT tDwithin(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]', 1);
+
+-------------------------------------------------------------------------------

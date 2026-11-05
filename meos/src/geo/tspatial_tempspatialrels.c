@@ -466,6 +466,17 @@ tinterrel_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, bool tinter)
   if (! ensure_valid_tgeo_geo(temp, gs) || gserialized_is_empty(gs))
     return NULL;
 
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t;
+  const GSERIALIZED *g;
+  void *flat = tgeo_geo_common_dims(temp, gs, &t, &g);
+  if (flat)
+  {
+    Temporal *res = tinterrel_tgeo_geo(t, g, tinter);
+    pfree(flat);
+    return res;
+  }
+
   /* tintersects is tdwithin with a zero distance and tdisjoint is its
    * negation (as in the static case, geo_intersects =
    * geo_dwithin(., ., 0.0)). For geodetic coordinates the planar
@@ -531,6 +542,18 @@ tinterrel_tspatial_tspatial(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tspatial_tspatial(temp1, temp2))
     return NULL;
+  /* Operands of different dimensions read the dimensions both have */
+  if (tgeo_type_all(temp1->temptype) && tgeo_type_all(temp2->temptype))
+  {
+    const Temporal *t1, *t2;
+    Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+    if (flat)
+    {
+      Temporal *res = tinterrel_tspatial_tspatial(t1, t2, tinter);
+      pfree(flat);
+      return res;
+    }
+  }
   /* Two temporal points intersect exactly where they are equal */
   if (tpoint_type(temp1->temptype) && tpoint_type(temp2->temptype))
     return tinter ?

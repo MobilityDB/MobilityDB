@@ -462,7 +462,7 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 
 		<para>Another set of operators consider the relative position of the bounding boxes. The operators <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname>, and <varname>&amp;&gt;</varname> consider the value dimension for the <varname>tint</varname>, <varname>tbigint</varname>, and <varname>tfloat</varname> types and the X coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname>, and <varname>|&amp;&gt;</varname> consider the Y coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, the operators <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname>, and <varname>/&amp;&gt;</varname> consider the Z coordinates for the <varname>tgeompoint</varname> and <varname>tgeogpoint</varname> types, and the operators <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname>, and <varname>#&amp;&gt;</varname> consider the time dimension for all temporal types.</para>
 
-		<para>Finally, it is worth noting that the bounding box operators allow to mix 2D/3D geometries but in that case, the computation is only performed on 2D.</para>
+		<para>Finally, it is worth noting that the bounding box operators read the dimensions both operands have, see <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<para>We refer to <xref linkend="box_topo_pos"/> for the bounding box operators.</para>
 	</sect1>

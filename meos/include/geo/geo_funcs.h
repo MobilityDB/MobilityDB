@@ -360,6 +360,9 @@ extern bool point_motion_point_offset_bounds(const double *c1,
 extern bool point_motion_dwithin_only_at_end(const double *a0,
   const double *a1, const double *b0, const double *b1, int ndims,
   double ra0, double ra1, double rb0, double rb1, double d, bool start);
+extern int point_motion_gap_zero_exact(const double *a0, const double *a1,
+  const double *b0, const double *b1, int ndims, double ra0, double ra1,
+  double rb0, double rb1, int *s0, int *s1);
 
 /* A sum of up to EXACT_SUM_MAXTERMS doubles held exactly as an expansion,
  * with the double nearest to it and a bound on the error of that double */
@@ -661,8 +664,6 @@ ensure_same_geodetic(int16 flags1, int16 flags2)
 }
 extern bool ensure_same_geodetic_geo(const GSERIALIZED *gs1,
   const GSERIALIZED *gs2);
-extern bool ensure_same_dimensionality_geo(const GSERIALIZED *gs1,
-  const GSERIALIZED *gs2);
 extern bool ensure_srid_known(int32_t srid);
 extern bool ensure_srid_valid(int32_t srid);
 /**
@@ -727,6 +728,7 @@ extern GSERIALIZED *geopoint_make(double x, double y, double z, bool hasz,
   bool geodetic, int32_t srid);
 extern GSERIALIZED **geo_extract_elements(const GSERIALIZED *gs, int *count);
 extern GSERIALIZED *geo_serialize(const LWGEOM *geom);
+extern GSERIALIZED *geo_force2d_intl(const GSERIALIZED *gs);
 extern bool circle_type(const GSERIALIZED *gs);
 extern bool ensure_circle_type(const GSERIALIZED *gs);
 extern LWGEOM *lwcircle_make(double x, double y, double radius,

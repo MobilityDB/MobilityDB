@@ -1631,6 +1631,7 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p LWGEOM_shortestline2d(PG_FUNCTION_ARGS),
  * @p LWGEOM_shortestline3d(PG_FUNCTION_ARGS)
+ * @note Operands of different dimensions read the dimensions both have
  * @errval NULL
  */
 GSERIALIZED *
@@ -1638,9 +1639,7 @@ geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, NULL); VALIDATE_NOT_NULL(gs2, NULL);
-  if (! ensure_same_dimensionality_geo(gs1, gs2))
-    return NULL;
-  return FLAGS_GET_Z(gs1->gflags) ?
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_shortestline3d(gs1, gs2) : geom_shortestline2d(gs1, gs2);
 }
 
@@ -2991,6 +2990,7 @@ geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p ST_MaxDistance(PG_FUNCTION_ARGS),
  * @p ST_3DMaxDistance(PG_FUNCTION_ARGS)
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #Geom_max_distance()
  */
@@ -2999,9 +2999,7 @@ geom_max_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, -1.0); VALIDATE_NOT_NULL(gs2, -1.0);
-  if (! ensure_same_dimensionality_geo(gs1, gs2))
-    return -1.0;
-  return FLAGS_GET_Z(gs1->gflags) ?
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_max_distance3d(gs1, gs2) : geom_max_distance2d(gs1, gs2);
 }
 
@@ -3088,6 +3086,7 @@ geom_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
  * @p ST_3DDistance(PG_FUNCTION_ARGS)
  * @note An empty geometry has no point to measure from, so the answer is
  * DBL_MAX
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  */
 double
@@ -3095,9 +3094,7 @@ geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs1, -1.0); VALIDATE_NOT_NULL(gs2, -1.0);
-  if (! ensure_same_dimensionality_geo(gs1, gs2))
-    return -1.0;
-  return FLAGS_GET_Z(gs1->gflags) ?
+  return FLAGS_GET_Z(gs1->gflags) && FLAGS_GET_Z(gs2->gflags) ?
     geom_distance3d(gs1, gs2) : geom_distance2d(gs1, gs2);
 }
 

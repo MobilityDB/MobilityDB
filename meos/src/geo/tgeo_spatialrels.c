@@ -1468,6 +1468,16 @@ ea_disjoint_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2, bool ever)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    int result = ea_disjoint_tgeo_tgeo(t1, t2, ever);
+    pfree(flat);
+    return result;
+  }
   /* Two temporal geos sharing time whose boxes do not meet are apart at every
    * common instant, so they are ever and always disjoint
    * (#ea_intersects_tgeo_tgeo) */
@@ -1689,6 +1699,16 @@ ea_intersects_tgeo_tgeo(const Temporal *temp1, const Temporal *temp2,
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tgeo_tgeo(temp1, temp2))
     return -1;
+
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal *t1, *t2;
+  Temporal *flat = tgeo_tgeo_common_dims(temp1, temp2, &t1, &t2);
+  if (flat)
+  {
+    int result = ea_intersects_tgeo_tgeo(t1, t2, ever);
+    pfree(flat);
+    return result;
+  }
   int box = ea_intersects_tgeo_tgeo_box(temp1, temp2);
   if (box <= 0)
     return box;
@@ -2785,7 +2805,7 @@ tgeoarr_tgeoarr_init(const Temporal **arr1, int count1, const Temporal **arr2,
       return false;
   for (int j = 0; j < count2; j++)
     if (! ensure_same_srid(tspatial_srid(arr2[j]), srid) ||
-        ! ensure_same_dimensionality(arr2[j]->flags, flags) ||
+        ! ensure_same_dimensionality(arr2[j]->flags, arr2[0]->flags) ||
         ! ensure_same_geodetic(arr2[j]->flags, flags))
       return false;
   STBox *boxes1 = palloc(count1 * sizeof(STBox));
@@ -2961,6 +2981,20 @@ setset_ea_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal **a1, **a2;
+  Temporal **flat = tgeoarr_tgeoarr_common_dims(arr1, count1, arr2, count2, &a1,
+    &a2);
+  if (flat)
+  {
+    pfree(bb1); pfree(bb2);
+    int *res = setset_ea_pairs(a1, count1, a2, count2, dist, spheroid, pred, count);
+    int nflat = (a1 == (const Temporal **) flat) ? count1 : count2;
+    for (int i = 0; i < nflat; i++)
+      pfree(flat[i]);
+    pfree(flat);
+    return res;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   bool is_dwithin = (pred == SS_EDWITHIN || pred == SS_ADWITHIN);
   bool is_disjoint = (pred == SS_EDISJOINT || pred == SS_ADISJOINT);
@@ -3041,6 +3075,20 @@ setset_t_pairs(const Temporal **arr1, int count1, const Temporal **arr2,
   STBox *bb1, *bb2;
   if (! tgeoarr_tgeoarr_init(arr1, count1, arr2, count2, &bb1, &bb2))
     return NULL;
+  /* Operands of different dimensions read the dimensions both have */
+  const Temporal **a1, **a2;
+  Temporal **flat = tgeoarr_tgeoarr_common_dims(arr1, count1, arr2, count2, &a1,
+    &a2);
+  if (flat)
+  {
+    pfree(bb1); pfree(bb2);
+    int *res = setset_t_pairs(a1, count1, a2, count2, dist, spheroid, pred, count, periods);
+    int nflat = (a1 == (const Temporal **) flat) ? count1 : count2;
+    for (int i = 0; i < nflat; i++)
+      pfree(flat[i]);
+    pfree(flat);
+    return res;
+  }
   bool geodetic = MEOS_FLAGS_GET_GEODETIC(arr1[0]->flags);
   int *result = palloc((size_t) count1 * count2 * 2 * sizeof(int));
   SpanSet **ss = palloc((size_t) count1 * count2 * sizeof(SpanSet *));

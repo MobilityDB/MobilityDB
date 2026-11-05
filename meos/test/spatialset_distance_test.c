@@ -136,8 +136,9 @@ int main(void)
   REFUSED("distance_posechainset_posechainset(cbufferset)",
     distance_posechainset_posechainset(pc1, cb1) == -1.0, MEOS_ERR_INVALID_ARG_TYPE);
 
-  /* An empty geometry and values of different dimensions have no distance,
-   * which raises no error, while two SRIDs raise one */
+  /* An empty geometry has no distance, which raises no error, values of
+   * different dimensions read the dimensions both have, and two SRIDs raise an
+   * error */
   Pose *pose2d = pose_in("Pose(Point(0 0), 0)");
   PoseChain *pc2d = posechain_in("PoseChain(Pose(Point(0 0), 0))");
   PoseChain *pc3d = posechain_in("PoseChain(Pose(Point(0 0 0), 1, 0, 0, 0))");
@@ -147,9 +148,22 @@ int main(void)
   GSERIALIZED *g3857 = geom_in("SRID=3857;Point(1 1)", -1);
   assert(pose2d && pc2d && pc3d && pc3857 && gempty && g3d && g3857);
   assert(distance_pose_geo(pose2d, gempty) == DBL_MAX && meos_errno() == 0);
-  assert(distance_pose_geo(pose2d, g3d) == DBL_MAX && meos_errno() == 0);
-  assert(distance_posechain_posechain(pc2d, pc3d) == DBL_MAX &&
+  GSERIALIZED *g2d = geom_in("Point(1 1)", -1);
+  Pose *pose3d = pose_in("Pose(Point(0 0 0), 1, 0, 0, 0)");
+  Cbuffer *cb2d = cbuffer_in("Cbuffer(Point(0 0), 0.5)");
+  Temporal *tcb = tcbuffer_in("Cbuffer(Point(0 0), 0.5)@2001-01-01");
+  double d2d = distance_pose_geo(pose2d, g2d);
+  assert(d2d > 0.0 && d2d < DBL_MAX);
+  assert(distance_pose_geo(pose2d, g3d) == d2d && meos_errno() == 0);
+  assert(distance_pose_pose(pose2d, pose3d) == 0.0 && meos_errno() == 0);
+  assert(distance_posechain_posechain(pc2d, pc3d) == 0.0 &&
     meos_errno() == 0);
+  /* A circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  assert(distance_cbuffer_geo(cb2d, g3d) == distance_cbuffer_geo(cb2d, g2d) &&
+    meos_errno() == 0);
+  assert(nad_tcbuffer_geo(tcb, g3d) == nad_tcbuffer_geo(tcb, g2d) &&
+    meos_errno() == 0);
+  free(g2d); free(pose3d); free(cb2d); free(tcb);
   REFUSED("distance_pose_geo(mixed SRID)",
     distance_pose_geo(pose2d, g3857) == -1.0, MEOS_ERR_INVALID_ARG_VALUE);
   REFUSED("distance_posechain_posechain(mixed SRID)",

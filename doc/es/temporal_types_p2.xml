@@ -462,7 +462,7 @@ SELECT asText(afterTimestamp(tgeompoint '{[Point(1 1 1)@2001-01-01,
 
 		<para>Otro conjunto de operadores considera la posición relativa de los cuadros delimitadores. Los operadores <varname>&lt;&lt;</varname>, <varname>&gt;&gt;</varname>, <varname>&amp;&lt;</varname> y <varname>&amp;&gt;</varname> consideran la dimensión de valor para los tipos <varname>tint</varname> y <varname>tfloat</varname> y las coordenadas X para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;|</varname>, <varname>|&gt;&gt;</varname>, <varname>&amp;&lt;|</varname> y <varname>|&amp;&gt;</varname> consideran las coordenadas Y para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname>, los operadores <varname>&lt;&lt;/</varname>, <varname>/&gt;&gt;</varname>, <varname>&amp;&lt;/</varname> y <varname>/&amp;&gt;</varname> consideran las coordenadas Z para los tipos <varname>tgeompoint</varname> y <varname>tgeogpoint</varname> y los operadores <varname>&lt;&lt;#</varname>, <varname>#&gt;&gt;</varname>, <varname>#&amp;&lt;</varname> y <varname>#&amp;&gt;</varname> consideran la dimensión tiempo para todos los tipos temporales.</para>
 
-		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador permiten mezclar geometrías 2D/3D pero en ese caso, el cálculo sólo se realiza en 2D.</para>
+		<para>Finalmente, cabe destacar que los operadores de cuadro delimitador leen las dimensiones que ambos operandos tienen, véase <xref linkend="tgeo_different_dimensions"/>.</para>
 
 		<para>Refiérase a la <xref linkend="box_topo_pos" /> para los operadores de cuadro delimitador.</para>
 	</sect1>

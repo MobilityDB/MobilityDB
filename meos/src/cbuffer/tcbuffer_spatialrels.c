@@ -1996,10 +1996,20 @@ atouches_cbuffer_tcbuffer(const Cbuffer *cb, const Temporal *temp)
 
 /*****************************************************************************/
 
+static int ea_dwithin_touches_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever, bool touch);
+
 /**
  * @ingroup meos_internal_cbuffer_rel_ever
  * @brief Return 1 if a temporal circular buffer ever/always touches another
- * one, 0 if not, and -1 on error
+ * one, 0 if not, and -1 on error or if they do not intersect in time
+ * @details Two discs touch where they meet and their interiors are disjoint:
+ * where the gap of their centres less the sum of their radii is zero and
+ * they are not both points, a point having no boundary. The gap may be zero
+ * only strictly inside a segment, as when one disc leaves another, so both
+ * quantifiers are decided over continuous time by the walk of the within
+ * distance (#ea_dwithin_touches_tcbuffer_tcbuffer), discs that touch being
+ * within the distance 0
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] ever True for the ever semantics, false for the always semantics
  * @csqlfn #Etouches_tcbuffer_tcbuffer(), #Atouches_tcbuffer_tcbuffer()
@@ -2008,8 +2018,10 @@ int
 ea_touches_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
-  return ea_spatialrel_tcbuffer_tcbuffer(temp1, temp2, &datum_cbuffer_touches,
-    NULL, 0.0, ever, true);
+  /* Ensure the validity of the arguments */
+  if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2))
+    return -1;
+  return ea_dwithin_touches_tcbuffer_tcbuffer(temp1, temp2, 0.0, ever, true);
 }
 
 /**
@@ -2355,15 +2367,13 @@ tcbuffer_dwithin_whole(int result, int64 n1, int64 n2, int64 D,
 }
 
 /**
- * @brief Return 2, 1 or 0 as #point_motion_dwithin_period_exact does for the
- * discs of two synchronized circular buffer sequences from their instants
- * @p i to @p i + 1, a step value keeping the disc of instant @p i, writing in
- * @p whole whether they are within over the whole segment
- * (#tcbuffer_dwithin_whole) and in @p seg and @p rad the discs it reads
+ * @brief Set in @p seg and @p rad the discs of two synchronized circular
+ * buffer sequences at the ends of their segment from instant @p i to
+ * @p i + 1, a step value keeping the disc of instant @p i
  */
-static int
-tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
-  double dist, bool *whole, double seg[4][2], double rad[4])
+static void
+tcbufferseq_segm_discs(const TSequence *seq1, const TSequence *seq2, int i,
+  double seg[4][2], double rad[4])
 {
   bool linear1 = MEOS_FLAGS_LINEAR_INTERP(seq1->flags);
   bool linear2 = MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
@@ -2375,7 +2385,23 @@ tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
   tcbufferinst_disc(s2, seg[2], &rad[2]);
   tcbufferinst_disc(linear2 ? TSEQUENCE_INST_N(seq2, i + 1) : s2, seg[3],
     &rad[3]);
-  int64 n1, n2, D = TSEQUENCE_INST_N(seq1, i + 1)->t - s1->t;
+  return;
+}
+
+/**
+ * @brief Return 2, 1 or 0 as #point_motion_dwithin_period_exact does for the
+ * discs of two synchronized circular buffer sequences from their instants
+ * @p i to @p i + 1 (#tcbufferseq_segm_discs), writing in @p whole whether
+ * they are within over the whole segment (#tcbuffer_dwithin_whole) and in
+ * @p seg and @p rad the discs it reads
+ */
+static int
+tcbufferseq_segm_dwithin(const TSequence *seq1, const TSequence *seq2, int i,
+  double dist, bool *whole, double seg[4][2], double rad[4])
+{
+  tcbufferseq_segm_discs(seq1, seq2, i, seg, rad);
+  int64 n1, n2, D = TSEQUENCE_INST_N(seq1, i + 1)->t -
+    TSEQUENCE_INST_N(seq1, i)->t;
   int result = point_motion_dwithin_period_exact(seg[0], seg[1], seg[2],
     seg[3], 2, rad[0], rad[1], rad[2], rad[3], dist, D, &n1, &n2);
   *whole = tcbuffer_dwithin_whole(result, n1, n2, D, seg, rad, dist);
@@ -2525,17 +2551,200 @@ tcbufferseq_disc_at(const TSequence *seq, int k, TimestampTz t, double *c,
   return;
 }
 
+/**
+ * @brief Set in @p start_out and @p end_out whether the start and the end of
+ * an interval of #tcont_tcont_merge_walk are the first or the last instant of
+ * one of the sequences, which the sequence excludes, and so no instant of the
+ * time they share
+ */
+static void
+tcbuffer_interval_ends_out(const TSequence *seq1, const TSequence *seq2,
+  TimestampTz lower, TimestampTz upper, bool *start_out, bool *end_out)
+{
+  *start_out =
+    (lower == TSEQUENCE_INST_N(seq1, 0)->t && ! seq1->period.lower_inc) ||
+    (lower == TSEQUENCE_INST_N(seq2, 0)->t && ! seq2->period.lower_inc);
+  *end_out =
+    (upper == TSEQUENCE_INST_N(seq1, seq1->count - 1)->t &&
+      ! seq1->period.upper_inc) ||
+    (upper == TSEQUENCE_INST_N(seq2, seq2->count - 1)->t &&
+      ! seq2->period.upper_inc);
+  return;
+}
+
+/*****************************************************************************/
+
+/**
+ * @brief Return true if two discs at rest touch: the gap of their centres
+ * less the sum of their radii is zero, decided exactly
+ * (#point_motion_gap_zero_exact), and they are not both points, a point
+ * having no boundary
+ * @details The sibling of #tcbuffer_discs_dwithin_exact
+ */
+static bool
+tcbuffer_discs_touch_exact(const double *c1, double r1, const double *c2,
+  double r2)
+{
+  int s0, s1;
+  return (r1 > 0.0 || r2 > 0.0) &&
+    point_motion_gap_zero_exact(c1, c1, c2, c2, 2, r1, r1, r2, r2, &s0,
+      &s1) == 2;
+}
+
+/**
+ * @brief Return true if the discs of two circular buffer instants touch
+ * (#tcbuffer_discs_touch_exact), the sibling of #tcbufferinst_dwithin_exact
+ */
+static bool
+tcbufferinst_touch_exact(const TInstant *inst1, const TInstant *inst2)
+{
+  double c1[2], c2[2], r1, r2;
+  tcbufferinst_disc(inst1, c1, &r1);
+  tcbufferinst_disc(inst2, c2, &r2);
+  return tcbuffer_discs_touch_exact(c1, r1, c2, r2);
+}
+
+/**
+ * @brief Return true if two discs moving linearly over a segment touch at
+ * some instant of it (@p ever) or at every instant of it, its start and its
+ * end belonging to it where @p inc0 and @p inc1 say so
+ * @details The discs touch where the gap of their centres less the sum `L`
+ * of their radii is zero and `L` is positive, decided exactly
+ * (#point_motion_gap_zero_exact). `L` is affine and not negative over the
+ * segment, so it is positive strictly inside unless it is zero throughout,
+ * where both discs are points and touch nowhere. They touch at some instant
+ * where the gap is zero strictly inside, or at an end that belongs to the
+ * segment where it is zero and `L` is positive, and at every instant where
+ * the gap is zero throughout and `L` is positive at each end that belongs to
+ * it
+ */
+static bool
+tcbuffer_segm_touch(double seg[4][2], const double rad[4], bool inc0,
+  bool inc1, bool ever)
+{
+  bool pos0 = rad[0] > 0.0 || rad[2] > 0.0;
+  bool pos1 = rad[1] > 0.0 || rad[3] > 0.0;
+  if (! pos0 && ! pos1)
+    return false;
+  int s0, s1;
+  int zero = point_motion_gap_zero_exact(seg[0], seg[1], seg[2], seg[3], 2,
+    rad[0], rad[1], rad[2], rad[3], &s0, &s1);
+  if (ever)
+    return zero > 0 || (inc0 && pos0 && s0 == 0) || (inc1 && pos1 && s1 == 0);
+  return zero == 2 && (pos0 || ! inc0) && (pos1 || ! inc1);
+}
+
+/**
+ * @brief Return 1 if two synchronized circular buffer sequences ever
+ * (always) touch, 0 if not, decided exactly over continuous time
+ * @details The sibling of #ea_dwithin_tcbufferseq_tcbufferseq. A segment is
+ * read by #tcbuffer_segm_touch, its start belonging to the sequence unless it
+ * is the excluded lower bound, its end where the values are linear unless it
+ * is the excluded upper bound: a step value no longer holds at the end of its
+ * segment, and the last instant of a step sequence that includes it carries a
+ * disc of its own. A discrete sequence reads its instants.
+ */
+static int
+ea_touches_tcbufferseq_tcbufferseq(const TSequence *seq1,
+  const TSequence *seq2, bool ever)
+{
+  if (seq1->count == 1 || MEOS_FLAGS_DISCRETE_INTERP(seq1->flags))
+  {
+    for (int i = 0; i < seq1->count; i++)
+    {
+      bool touch = tcbufferinst_touch_exact(TSEQUENCE_INST_N(seq1, i),
+        TSEQUENCE_INST_N(seq2, i));
+      if (touch == ever)
+        return ever ? 1 : 0;
+    }
+    return ever ? 0 : 1;
+  }
+  bool linear = MEOS_FLAGS_LINEAR_INTERP(seq1->flags) &&
+    MEOS_FLAGS_LINEAR_INTERP(seq2->flags);
+  double seg[4][2], rad[4];
+  for (int i = 0; i < seq1->count - 1; i++)
+  {
+    tcbufferseq_segm_discs(seq1, seq2, i, seg, rad);
+    bool inc0 = i > 0 || seq1->period.lower_inc;
+    bool inc1 = linear && (i < seq1->count - 2 || seq1->period.upper_inc);
+    if (tcbuffer_segm_touch(seg, rad, inc0, inc1, ever) == ever)
+      return ever ? 1 : 0;
+  }
+  /* The last instant of a step value carries a disc of its own */
+  if (! linear && seq1->period.upper_inc)
+    return tcbufferinst_touch_exact(TSEQUENCE_INST_N(seq1, seq1->count - 1),
+      TSEQUENCE_INST_N(seq2, seq2->count - 1)) ? 1 : 0;
+  return ever ? 0 : 1;
+}
+
+/**
+ * @brief Return 1 if two synchronized temporal circular buffers ever
+ * (always) touch, 0 if not, decided exactly over continuous time
+ * (#ea_touches_tcbufferseq_tcbufferseq), the sibling of
+ * #ea_dwithin_tcbuffer_tcbuffer_sync
+ */
+static int
+ea_touches_tcbuffer_tcbuffer_sync(const Temporal *sync1,
+  const Temporal *sync2, bool ever)
+{
+  assert(sync1->subtype == sync2->subtype);
+  if (sync1->subtype == TINSTANT)
+    return tcbufferinst_touch_exact((const TInstant *) sync1,
+      (const TInstant *) sync2) ? 1 : 0;
+  if (sync1->subtype == TSEQUENCE)
+    return ea_touches_tcbufferseq_tcbufferseq((const TSequence *) sync1,
+      (const TSequence *) sync2, ever);
+  const TSequenceSet *ss1 = (const TSequenceSet *) sync1;
+  const TSequenceSet *ss2 = (const TSequenceSet *) sync2;
+  for (int i = 0; i < ss1->count; i++)
+  {
+    int result = ea_touches_tcbufferseq_tcbufferseq(TSEQUENCESET_SEQ_N(ss1, i),
+      TSEQUENCESET_SEQ_N(ss2, i), ever);
+    if (result == (ever ? 1 : 0))
+      return result;
+  }
+  return ever ? 0 : 1;
+}
+
+/**
+ * @brief Return true where the ever (always) touches of two linear circular
+ * buffer sequences is decided on one interval of #tcont_tcont_merge_walk,
+ * read by #tcbuffer_dwithin_interval for the touches
+ * @details An interval of a single instant reads its discs, and an end of the
+ * interval that one of the sequences excludes does not belong to the time
+ * they share (#tcbuffer_segm_touch)
+ */
+static bool
+tcbuffer_touch_interval(const TSequence *seq1, int k1, const TSequence *seq2,
+  int k2, TimestampTz lower, TimestampTz upper, bool ever)
+{
+  double seg[4][2], rad[4];
+  tcbufferseq_disc_at(seq1, k1, lower, seg[0], &rad[0]);
+  tcbufferseq_disc_at(seq2, k2, lower, seg[2], &rad[2]);
+  if (lower == upper)
+    return tcbuffer_discs_touch_exact(seg[0], rad[0], seg[2], rad[2]) == ever;
+  tcbufferseq_disc_at(seq1, k1, upper, seg[1], &rad[1]);
+  tcbufferseq_disc_at(seq2, k2, upper, seg[3], &rad[3]);
+  bool start_out, end_out;
+  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
+  return tcbuffer_segm_touch(seg, rad, ! start_out, ! end_out, ever) == ever;
+}
+
+/*****************************************************************************/
+
 /** State of #tcbuffer_dwithin_interval */
 typedef struct
 {
   double dist;   /**< Distance */
   bool ever;     /**< True for the ever semantics, false for the always one */
+  bool touch;    /**< True for the touches, the distance being 0 */
 } TcbufferDwithin;
 
 /**
- * @brief Decide the ever or always within a distance of two linear circular
- * buffer sequences on one interval of #tcont_tcont_merge_walk, returning
- * true where the interval decides it
+ * @brief Decide the ever or always within a distance, or the touches
+ * (#tcbuffer_touch_interval), of two linear circular buffer sequences on one
+ * interval of #tcont_tcont_merge_walk, returning true where the interval
+ * decides it
  * @details The interval is the segment of the two values synchronized
  * (#synchronize_tsequence_tsequence), its discs those the synchronization
  * interpolates, read as #ea_dwithin_tcbufferseq_tcbufferseq reads a segment:
@@ -2548,6 +2757,9 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
   int k2, TimestampTz lower, TimestampTz upper, void *state)
 {
   const TcbufferDwithin *st = (const TcbufferDwithin *) state;
+  if (st->touch)
+    return tcbuffer_touch_interval(seq1, k1, seq2, k2, lower, upper,
+      st->ever);
   double seg[4][2], rad[4];
   int64 n1, n2;
   tcbufferseq_disc_at(seq1, k1, lower, seg[0], &rad[0]);
@@ -2569,16 +2781,8 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
   if (result == 0)
     return false;
   /* Within at an end alone that no instant of the shared time reaches */
-  bool start_out =
-    (lower == DatumGetTimestampTz(seq1->period.lower) &&
-      ! seq1->period.lower_inc) ||
-    (lower == DatumGetTimestampTz(seq2->period.lower) &&
-      ! seq2->period.lower_inc);
-  bool end_out =
-    (upper == DatumGetTimestampTz(seq1->period.upper) &&
-      ! seq1->period.upper_inc) ||
-    (upper == DatumGetTimestampTz(seq2->period.upper) &&
-      ! seq2->period.upper_inc);
+  bool start_out, end_out;
+  tcbuffer_interval_ends_out(seq1, seq2, lower, upper, &start_out, &end_out);
   if ((start_out && point_motion_dwithin_only_at_end(seg[0], seg[1],
         seg[2], seg[3], 2, rad[0], rad[1], rad[2], rad[3], st->dist, true)) ||
       (end_out && point_motion_dwithin_only_at_end(seg[0], seg[1], seg[2],
@@ -2588,19 +2792,21 @@ tcbuffer_dwithin_interval(const TSequence *seq1, int k1, const TSequence *seq2,
 }
 
 /**
- * @ingroup meos_internal_cbuffer_spatial_rel_ever
- * @brief Return whether two temporal circular buffers are ever/always within
- * a distance
- * @details The function returns 1 if they are, 0 if not, and -1 on error or
- * if the temporal circular buffers do not intersect on time.
+ * @brief Return 1 if two temporal circular buffers are ever/always within a
+ * distance, or touch where @p touch is true and the distance is 0, 0 if not,
+ * and -1 on error or if they do not intersect on time
+ * @details Discs that touch are within the distance 0, so both relationships
+ * share the argument checks, the common time, the box test and the walk
+ * over continuous time, which reads each segment for the one asked
+ * (#tcbuffer_dwithin_interval, #ea_touches_tcbuffer_tcbuffer_sync)
  * @param[in] temp1,temp2 Temporal circular buffers
  * @param[in] dist Distance
  * @param[in] ever True for the ever semantics, false for the always semantics
- * @csqlfn #Edwithin_tcbuffer_tcbuffer(), #Adwithin_tcbuffer_tcbuffer()
+ * @param[in] touch True for the touches, false for the within distance
  */
-int 
-ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
-  double dist, bool ever)
+static int
+ea_dwithin_touches_tcbuffer_tcbuffer(const Temporal *temp1,
+  const Temporal *temp2, double dist, bool ever, bool touch)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tcbuffer_tcbuffer(temp1, temp2) ||
@@ -2647,7 +2853,7 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) &&
       MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
   {
-    TcbufferDwithin state = {dist, ever};
+    TcbufferDwithin state = {dist, ever, touch};
     bool shared;
     bool decided = tcont_tcont_merge_walk(temp1, temp2,
       /* cppcheck-suppress constParameterCallback */
@@ -2663,9 +2869,29 @@ ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
   if (! intersection_temporal_temporal(temp1, temp2, SYNCHRONIZE_NOCROSS,
       &sync1, &sync2))
     return -1;
-  int result = ea_dwithin_tcbuffer_tcbuffer_sync(sync1, sync2, dist, ever);
+  int result = touch ? ea_touches_tcbuffer_tcbuffer_sync(sync1, sync2, ever) :
+    ea_dwithin_tcbuffer_tcbuffer_sync(sync1, sync2, dist, ever);
   pfree(sync1); pfree(sync2);
   return result;
+}
+
+/**
+ * @ingroup meos_internal_cbuffer_spatial_rel_ever
+ * @brief Return whether two temporal circular buffers are ever/always within
+ * a distance
+ * @details The function returns 1 if they are, 0 if not, and -1 on error or
+ * if the temporal circular buffers do not intersect on time.
+ * @param[in] temp1,temp2 Temporal circular buffers
+ * @param[in] dist Distance
+ * @param[in] ever True for the ever semantics, false for the always semantics
+ * @csqlfn #Edwithin_tcbuffer_tcbuffer(), #Adwithin_tcbuffer_tcbuffer()
+ */
+int
+ea_dwithin_tcbuffer_tcbuffer(const Temporal *temp1, const Temporal *temp2,
+  double dist, bool ever)
+{
+  return ea_dwithin_touches_tcbuffer_tcbuffer(temp1, temp2, dist, ever,
+    false);
 }
 
 /**

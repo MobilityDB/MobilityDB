@@ -105,6 +105,10 @@ extern bool ensure_same_geodetic_set_geo(const Set *s,
 extern bool ensure_valid_geoset_geo(const Set *s, const GSERIALIZED *gs);
 extern bool same_dimensionality_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
+extern Temporal *tgeo_force2d_intl(const Temporal *temp);
+extern Temporal *tgeo_tgeo_common_dims(const Temporal *temp1, const Temporal *temp2, const Temporal **out1, const Temporal **out2);
+extern void *tgeo_geo_common_dims(const Temporal *temp, const GSERIALIZED *gs, const Temporal **outt, const GSERIALIZED **outg);
+extern Temporal **tgeoarr_tgeoarr_common_dims(const Temporal **arr1, int count1, const Temporal **arr2, int count2, const Temporal ***out1, const Temporal ***out2);
 extern bool ensure_same_dimensionality_tspatial_geo(const Temporal *temp,
   const GSERIALIZED *gs);
 extern bool ensure_same_spatial_dimensionality_stbox_geo(const STBox *box,

@@ -1226,6 +1226,16 @@ double
 distance_cbuffer_geo(const Cbuffer *cb, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(gs, -1.0);
+  /* A circular buffer has two dimensions, so a 3D geometry is read in 2D */
+  if (FLAGS_GET_Z(gs->gflags))
+  {
+    GSERIALIZED *flat = geo_force2d_intl(gs);
+    double result = distance_cbuffer_geo(cb, flat);
+    pfree(flat);
+    return result;
+  }
+  /* Ensure the validity of the arguments */
   if (! ensure_valid_cbuffer_geo(cb, gs))
     return -1.0;
   /* An empty geometry has no point to measure from, so the operands have no

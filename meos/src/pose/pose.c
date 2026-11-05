@@ -2715,6 +2715,7 @@ pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between two poses
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #Distance_pose_pose()
  */
@@ -2722,7 +2723,8 @@ double
 distance_pose_pose(const Pose *pose1, const Pose *pose2)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_pose_pose(pose1, pose2))
+  VALIDATE_NOT_NULL(pose1, -1.0); VALIDATE_NOT_NULL(pose2, -1.0);
+  if (! ensure_same_srid(pose_srid(pose1), pose_srid(pose2)))
     return -1.0;
   /* The following function assumes that all validity tests have been done */
   return DatumGetFloat8(pose_distance(PointerGetDatum(pose1),
@@ -2748,6 +2750,7 @@ datum_pose_distance(Datum pose1, Datum pose2)
 /**
  * @ingroup meos_pose_base_dist
  * @brief Return the distance between a pose and a geometry
+ * @note Operands of different dimensions read the dimensions both have
  * @errval -1.0
  * @csqlfn #Distance_pose_geo() #Distance_geo_pose()
  */
@@ -2757,11 +2760,9 @@ distance_pose_geo(const Pose *pose, const GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   if (! ensure_valid_pose_geo(pose, gs))
     return -1.0;
-  /* An empty geometry has no point to measure from and a geometry of another
-   * dimension is not measured here, so the operands have no distance, which
-   * is an answer */
-  if (gserialized_is_empty(gs) ||
-      MEOS_FLAGS_GET_Z(pose->flags) != FLAGS_GET_Z(gs->gflags))
+  /* An empty geometry has no point to measure from, so the operands have no
+   * distance, which is an answer */
+  if (gserialized_is_empty(gs))
     return DBL_MAX;
   if (MEOS_FLAGS_GET_GEODETIC(pose->flags) != FLAGS_GET_GEODETIC(gs->gflags))
   {

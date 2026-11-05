@@ -261,6 +261,26 @@ SELECT eTouches(tcbuffer '{[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(2 
 -- tcbuffer x tcbuffer (circles touch when distance between centers = sum of radii)
 SELECT eTouches(tcbuffer 'Cbuffer(Point(0 0),0.5)@2001-01-01', tcbuffer 'Cbuffer(Point(1 0),0.5)@2001-01-01');
 SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),0.5)@2001-01-01, Cbuffer(Point(1 0),0.5)@2001-01-02]', tcbuffer '[Cbuffer(Point(1 0),0.5)@2001-01-01, Cbuffer(Point(2 0),0.5)@2001-01-02]');
+-- A disc leaving another touches it once, strictly inside the segment
+SELECT eTouches(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(5 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT aTouches(tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(5 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+-- A disc passing tangent touches at its nearest approach, and passing one
+-- unit in the last place farther never touches
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-5 2),1)@2001-01-01, Cbuffer(Point(5 2),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT eTouches(tcbuffer '[Cbuffer(Point(-5 2.0000000000000004),1)@2001-01-01, Cbuffer(Point(5 2.0000000000000004),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+-- Moving away as the radius grows keeps the discs tangent throughout
+SELECT aTouches(tcbuffer '[Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(5 0),4)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT aTouches(tcbuffer '[Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(5 0),4.0000000000000009)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+-- A step value touches only where it holds a tangent disc
+SELECT eTouches(tcbuffer 'Interp=Step;[Cbuffer(Point(5 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-02]', tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+SELECT aTouches(tcbuffer 'Interp=Step;[Cbuffer(Point(5 0),1)@2001-01-01, Cbuffer(Point(2 0),1)@2001-01-02]', tcbuffer 'Interp=Step;[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+-- A contact at an excluded bound alone is no contact
+SELECT eTouches(tcbuffer '(Cbuffer(Point(2 0),1)@2001-01-01, Cbuffer(Point(5 0),1)@2001-01-02]', tcbuffer '[Cbuffer(Point(0 0),1)@2001-01-01, Cbuffer(Point(0 0),1)@2001-01-02]');
+-- A point touches a disc on its circle; two points never touch; internal
+-- tangency is not touching
+SELECT eTouches(tcbuffer 'Cbuffer(Point(3 4),0)@2001-01-01', tcbuffer 'Cbuffer(Point(0 0),5)@2001-01-01');
+SELECT eTouches(tcbuffer 'Cbuffer(Point(1 1),0)@2001-01-01', tcbuffer 'Cbuffer(Point(1 1),0)@2001-01-01');
+SELECT eTouches(tcbuffer 'Cbuffer(Point(2 0),3)@2001-01-01', tcbuffer 'Cbuffer(Point(0 0),5)@2001-01-01');
 
 -- Curve polygon (arc ring) input, native arc-exact; the ring is the circle of
 -- centre (0,0) and radius 5. The disc of radius 1 is externally tangent to the

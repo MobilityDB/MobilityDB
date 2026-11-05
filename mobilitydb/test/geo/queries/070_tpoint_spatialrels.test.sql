@@ -668,3 +668,13 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tge
 SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800, false);
 SELECT aDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800);
 SELECT aDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 1)@2001-01-02]', tgeogpoint '[Point(0 0)@2001-01-01, Point(0 0)@2001-01-02]', 110800, false);
+
+-- Two temporal values of different dimensions read the dimensions both have
+SELECT eIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]');
+SELECT eIntersects(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]');
+SELECT eIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
+SELECT eDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
+SELECT aIntersects(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]');
+SELECT aDisjoint(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]');
+
+-------------------------------------------------------------------------------

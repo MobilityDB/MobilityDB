@@ -139,6 +139,13 @@ WITH test AS (
 SELECT round(distance, 6) FROM test;
 DROP INDEX tbl_tpcpatch_knn_kdtree_idx;
 
+-- The scan with no index answers as the two indexes do
+WITH test AS (
+  SELECT temp |=| tpcboxXT(200, 200, 210, 210,
+  tstzspan '[2001-06-01, 2001-12-31]', 1) AS distance
+  FROM tbl_tpcpatch ORDER BY 1 LIMIT 3 )
+SELECT round(distance, 6) FROM test;
+
 -------------------------------------------------------------------------------
 -- Coverage of all the same and order by logic in SP-GiST indexes
 
