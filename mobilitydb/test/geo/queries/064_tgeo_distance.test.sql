@@ -887,3 +887,9 @@ SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{P
 SELECT ST_AsText(shortestLine(geography 'Linestring(0 0,0 -0.5)', tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', false), 6);
 SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)'));
 SELECT asText(nearestApproachInstant(tgeography '{Point(0 1)@2001-01-01, Point(0.998 0)@2001-01-02}', geography 'Linestring(0 0,0 -0.5)', false));
+
+-- A point at the mean of the vertices of a polygon, which defines its plane, in a plane
+SELECT nearestApproachDistance(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 1)');
+SELECT nearestApproachDistance(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-01,Polygon((0 0 0,2 0 0,2 0 2,0 0 2,0 0 0))@2001-01-02]', geometry 'SRID=5676;Point(1 0 1)');
+-- A point above it
+SELECT nearestApproachDistance(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 5)');
