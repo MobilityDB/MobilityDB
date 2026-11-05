@@ -332,6 +332,39 @@ tcellindex_is_valid_cell(const Temporal *temp)
 }
 
 /**
+ * @brief Ensure that a resolution lies in the range of the grid of a temporal
+ * cell index and is no finer than the resolution of any of its values, or
+ * raise an error
+ * @details A parent is coarser than its cell, so the resolution of the parent
+ * of every value of the temporal is checked once here, before lifting, and
+ * the kernel of each grid only reads a resolution it accepts
+ * @param[in] temp Temporal cell index
+ * @param[in] ops Operations descriptor of its grid
+ * @param[in] resolution Resolution of the parent
+ */
+static bool
+ensure_parent_resolution(const Temporal *temp, const DggsCellOps *ops,
+  int32 resolution)
+{
+  if (! ensure_valid_cell_resolution(temp->temptype, resolution))
+    return false;
+  int count;
+  Datum *values = temporal_values_p(temp, &count);
+  for (int i = 0; i < count; i++)
+  {
+    if (resolution > DatumGetInt32(ops->get_resolution(values[i])))
+    {
+      pfree(values);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "The parent resolution must not be finer than the resolution of the cell");
+      return false;
+    }
+  }
+  pfree(values);
+  return true;
+}
+
+/**
  * @ingroup meos_cellindex
  * @brief Return the temporal parent cell at the given resolution
  * @csqlfn #Tquadbin_cell_to_parent(), #Th3index_cell_to_parent(), #Ts2cell_cell_to_parent()
@@ -341,7 +374,7 @@ tcellindex_cell_to_parent(const Temporal *temp, int32 resolution)
 {
   VALIDATE_TCELLINDEX(temp, NULL);
   const DggsCellOps *ops = dggs_cellops(temp->temptype);
-  if (! ops)
+  if (! ops || ! ensure_parent_resolution(temp, ops, resolution))
     return NULL;
   return tcellindex_lift_param1(temp, ops->cell_to_parent, "cellToParent",
     Int32GetDatum(resolution), temp->temptype);

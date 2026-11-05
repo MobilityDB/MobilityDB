@@ -59,6 +59,12 @@ SELECT getValues(cellToParent(
   tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 0))
   = quadbinset '{480fffffffffffff}';
 
+-- A parent is no finer than any value, here the cell of resolution 4 beside
+-- the cell of resolution 10, and lies in the range of the grid
+/* Errors */
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', 5);
+SELECT cellToParent(tquadbin '{48427fffffffffff@2001-01-01, 48a6227affffffff@2001-01-02}', -1);
+
 -------------------------------------------------------------------------------
 -- Centroid point / boundary (lifted)
 -------------------------------------------------------------------------------

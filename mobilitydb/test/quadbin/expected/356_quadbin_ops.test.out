@@ -28,6 +28,9 @@ SELECT getResolution(cellToParent(quadbin '48427fffffffffff', 2));
              2
 (1 row)
 
+/* Errors */
+SELECT cellToParent(quadbin '48427fffffffffff', 5);
+ERROR:  The parent resolution must not be finer than the resolution of the cell
 SELECT numValues(cellToChildren(quadbin '480fffffffffffff', 1));
  numvalues 
 -----------
