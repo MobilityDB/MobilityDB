@@ -135,10 +135,10 @@ done
 # Refusing a skip leaves DELETION as the remaining way to stop running a suite,
 # and a deleted config or sidecar reports nothing anywhere: the COUNT is the
 # only thing that moves. The floor is the number of suites master runs -- the
-# generator's six in-file configs plus its four meos/test/smoke/*.json
+# generator's six in-file configs plus its five meos/test/smoke/*.json
 # sidecars -- so removing one reddens instead of quietly shrinking the run.
 # Raise it when a family is added.
-floor="${MEOS_SMOKE_FLOOR:-10}"
+floor="${MEOS_SMOKE_FLOOR:-11}"
 if [ "$ran" -lt "$floor" ]; then
   echo
   echo "[FAIL]  $ran smoke suite(s) ran, below the floor of $floor"
