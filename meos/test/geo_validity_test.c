@@ -41,7 +41,8 @@
  * The program verifies that #tpointseq_make_coords reports a null array of
  * coordinates or timestamps and a count that is not positive by returning
  * NULL and setting #meos_errno, and that a valid call still answers with no
- * error left behind. It also verifies that an empty geometry is reported by
+ * error left behind, a geodetic sequence stating no SRID being in WGS84 as a
+ * geography read from its text is. It also verifies that an empty geometry is reported by
  * the constructors of a temporal instant and of a sequence from a timestamptz
  * span, and a geometry that is not a point by the temporal point one. It
  * verifies as well that the elevation restriction refuses a temporal geometry
@@ -130,6 +131,28 @@ int main(void)
   assert(temporal_num_instants((Temporal *) seq) == 2);
   assert(meos_errno() == 0);
   free(seq);
+
+  /* A geodetic sequence stating no SRID is in WGS84, as a geography read from
+   * its text is, a geodetic one keeps the SRID it states, and a planar one
+   * keeps the unknown SRID */
+  static const struct { int32_t srid; bool geodetic; int32_t expected; }
+    srids[] = {{0, true, 4326}, {-1, true, 4326}, {4269, true, 4269},
+      {0, false, 0}};
+  for (int i = 0; i < 4; i++)
+  {
+    seq = tpointseq_make_coords(xs, ys, NULL, ts, 2, srids[i].srid,
+      srids[i].geodetic, true, true, LINEAR, true);
+    int32_t srid = seq ? tspatial_srid((Temporal *) seq) : -2;
+    printf("tpointseq_make_coords(..., srid %d, geodetic %s, ...): SRID %d\n",
+      srids[i].srid, srids[i].geodetic ? "true" : "false", srid);
+    assert(srid == srids[i].expected);
+    free(seq);
+  }
+  Temporal *geog = tgeogpoint_in("[POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02]");
+  printf("tgeogpoint_in(...): SRID %d\n", tspatial_srid(geog));
+  assert(tspatial_srid(geog) == 4326);
+  free(geog);
+  meos_errno_reset();
 
   /* An empty geometry is reported by every constructor of a temporal value,
    * as for a point read in place as for a geometry walked, and a point that

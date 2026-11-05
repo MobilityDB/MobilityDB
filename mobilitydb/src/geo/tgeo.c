@@ -55,6 +55,9 @@
   #include "pointcloud/meos_schema_hook.h"
   #include "pg_pointcloud/schema_cache.h"
 #endif
+#if RASTER
+  extern void meos_initialize_raster(void);
+#endif
 
 /*****************************************************************************
  * General functions
@@ -103,7 +106,7 @@ pg_info(const char *fmt, va_list ap)
 
 /**
  * @brief Set the handlers for initializing the liblwgeom library (and libpc.a
- * when POINTCLOUD=ON)
+ * when POINTCLOUD=ON, and the raster core when RASTER=ON)
  * @note When both libMobilityDB-1.4.so and pointcloud-1.2.so are
  *   loaded in the same backend, both bundle their own copy of
  *   libpc.a; ELF's global symbol interposition chooses one copy for
@@ -134,6 +137,11 @@ mobilitydb_init(void)
   /* Install the XML-parse hook so the MEOS WKB decoder can absorb
    * schema XML embedded in incoming cross-cluster WKB blobs. */
   meos_pc_parse_xml_fn = mobilitydb_pc_parse_xml;
+#endif
+#if RASTER
+  /* The raster core raises its errors and reports its warnings as notices,
+   * as PostGIS's own handlers of the raster core do */
+  meos_initialize_raster();
 #endif
   return;
 }

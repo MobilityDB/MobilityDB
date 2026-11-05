@@ -8625,8 +8625,7 @@ geog_from_lwgeom(LWGEOM *lwgeom, int32 typmod)
   lwgeom_force_geodetic(lwgeom);
 
   /* Force default SRID to the default */
-  if ((int) lwgeom->srid <= 0)
-    lwgeom->srid = SRID_DEFAULT;
+  lwgeom->srid = srid_geodetic_default(lwgeom->srid, true);
 
   /*
    * Serialize our lwgeom and set the geodetic flag so subsequent
@@ -8722,8 +8721,7 @@ geom_to_geog(const GSERIALIZED *gs)
     return NULL;
   }
   /* Force default SRID */
-  if ((int) lwgeom->srid <= 0)
-    lwgeom->srid = SRID_DEFAULT;
+  lwgeom->srid = srid_geodetic_default(lwgeom->srid, true);
 
   GSERIALIZED *result = NULL;
   /* Error on any SRID != default */
@@ -8765,8 +8763,7 @@ geog_to_geom(const GSERIALIZED *gs)
   /* We want "geometry" to think all our "geography" has an SRID, and the
      implied SRID is the default, so we fill that in if our SRID is actually
      unknown. */
-  if (lwgeom->srid <= 0)
-    lwgeom->srid = SRID_DEFAULT;
+  lwgeom->srid = srid_geodetic_default(lwgeom->srid, true);
 
   GSERIALIZED *result = geom_serialize(lwgeom);
   lwgeom_free(lwgeom);

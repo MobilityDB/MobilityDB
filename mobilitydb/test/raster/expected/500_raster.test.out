@@ -549,27 +549,27 @@ SELECT ST_BandPath(r, 1) AS band_path FROM tbl_outdb;
 
 SELECT rasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r)
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 SELECT rasterValue(tgeompoint 'SRID=4326;[POINT(0.5 1.5)@2001-01-01,
   POINT(2.5 1.5)@2001-01-02]', r)
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 SELECT atRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
   floatspan '[0, 100]')
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 SELECT minusRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
   floatspan '[0, 100]')
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 SELECT eRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
   floatspan '[0, 100]')
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 SELECT aRasterValue(tgeompoint 'SRID=4326;{POINT(1.5 1.5)@2001-01-01}', r,
   floatspan '[0, 100]')
 FROM tbl_outdb;
-ERROR:  Could not read band 1 of the raster from no_such_raster.tif
+ERROR:  rt_band_load_offline_data: Cannot open offline raster: no_such_raster.tif
 DROP TABLE tbl_outdb;
 DROP TABLE
 WITH rast AS (
@@ -1121,7 +1121,7 @@ FROM rast;
 (1 row)
 
 SELECT rasterFromHexWKB('0100');
-ERROR:  Could not parse the Well-Known Binary (WKB) representation of a raster
+ERROR:  rt_raster_from_wkb: wkb size (2) < min size (61)
 SELECT quadbin(tile), width(tile), height(tile), bandPixelType(tile), bandNoDataValue(tile)
 FROM (SELECT raquet('\x01020304'::bytea, 2, 2, quadbin '4817ffffffffffff',
         'UINT8') AS tile) t;
@@ -1720,7 +1720,7 @@ WITH rast AS (
 SELECT transform(r, 3857, 'NearestNeighbour'::text, 0.125::float8,
   1.0::float8, -1.0::float8)
 FROM rast;
-ERROR:  Could not warp the raster
+ERROR:  rt_raster_new: Dimensions requested exceed the maximum (65535 x 65535) permitted for a raster
 WITH rast AS (
   SELECT ST_SetValues(
     ST_AddBand(
@@ -1844,6 +1844,7 @@ WITH rast AS (
 )
 SELECT summaryStats(r) AS stats, ST_SummaryStats(r) AS postgis_stats FROM rast;
 NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
   stats   | postgis_stats 
 ----------+---------------
  (0,,,,,) | (0,,,,,)
@@ -1884,6 +1885,12 @@ WITH rast AS (
 SELECT summarystatsCount(s), summarystatsSum(s), summarystatsMean(s),
   summarystatsStddev(s), summarystatsMin(s), summarystatsMax(s)
 FROM (SELECT summaryStats(r) AS s FROM rast) t;
+NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
+NOTICE:  All pixels of band have the NODATA value
  summarystatscount | summarystatssum | summarystatsmean | summarystatsstddev | summarystatsmin | summarystatsmax 
 -------------------+-----------------+------------------+--------------------+-----------------+-----------------
                  0 |                 |                  |                    |                 |                
@@ -2889,6 +2896,7 @@ FROM tbl_union_tiles WHERE false;
 SELECT (summaryStatsAgg(r, 1, true)).*
 FROM (VALUES (ST_AddBand(ST_MakeEmptyRaster(2, 2, 0.0, 2.0, 1.0, -1.0, 0.0,
   0.0, 3857), '32BF'::text, -9999.0::float8, -9999.0::float8))) t(r);
+NOTICE:  All pixels of band have the NODATA value
  count | sum | mean | stddev | min | max 
 -------+-----+------+--------+-----+-----
      0 |     |      |        |     |    

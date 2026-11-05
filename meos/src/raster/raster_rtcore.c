@@ -71,6 +71,83 @@
 #include "temporal/type_util.h"
 
 /*****************************************************************************
+ * Message handlers of the raster core
+ *****************************************************************************/
+
+/* The length of a message of the raster core, RT_MSG_MAXLEN of PostGIS's
+ * raster/rt_pg/rtpostgis.c, as MEOS_LW_MSG_MAXLEN of meos.c is liblwgeom's */
+#define MEOS_RT_MSG_MAXLEN 256
+
+/**
+ * @brief Report an error of the raster core through the MEOS error channel
+ * @details The raster core reports through the handlers its embedder installs,
+ * and its own default writes the message to @c stdout and returns, so the
+ * message never reaches the caller, who reads only the error the MEOS function
+ * raises once the raster core has answered @p NULL. The error reaches the
+ * caller the way every other MEOS error does: the installed error handler
+ * decides what follows, and in a PostgreSQL backend it raises, as PostGIS's
+ * own handler of the raster core does.
+ */
+static void
+meos_rterror_handler(const char *fmt, va_list ap)
+{
+  char msg[MEOS_RT_MSG_MAXLEN + 1];
+  vsnprintf(msg, sizeof(msg), fmt, ap);
+  msg[MEOS_RT_MSG_MAXLEN] = '\0';
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE, "%s", msg);
+}
+
+/**
+ * @brief Report a warning of the raster core through the MEOS error channel
+ * @details A warning accompanies an answer, so it is reported at level
+ * @p NOTICE with no error code, as PostGIS reports it, and the handler returns
+ * as the raster core expects. The error number is left as it is.
+ */
+static void
+meos_rtwarn_handler(const char *fmt, va_list ap)
+{
+  char msg[MEOS_RT_MSG_MAXLEN + 1];
+  vsnprintf(msg, sizeof(msg), fmt, ap);
+  msg[MEOS_RT_MSG_MAXLEN] = '\0';
+  meos_error(NOTICE, MEOS_SUCCESS, "%s", msg);
+}
+
+/**
+ * @brief Report an information message of the raster core
+ * @details PostGIS reports it at level @p DEBUG1, which a PostgreSQL backend
+ * sends nowhere unless asked to; MEOS states no debug level, so a MEOS program
+ * does not receive it.
+ */
+static void
+meos_rtinfo_handler(const char *fmt, va_list ap)
+{
+#if MEOS
+  (void) fmt;
+  (void) ap;
+#else
+  char msg[MEOS_RT_MSG_MAXLEN + 1];
+  vsnprintf(msg, sizeof(msg), fmt, ap);
+  msg[MEOS_RT_MSG_MAXLEN] = '\0';
+  meos_error(DEBUG1, MEOS_SUCCESS, "%s", msg);
+#endif /* MEOS */
+}
+
+/**
+ * @brief Install the message handlers of the raster core
+ * @details The allocators stay the raster core's own, which every MEOS
+ * function releases through rtdealloc() or the destroy functions of the
+ * raster core. Called from @c meos_initialize in a MEOS program and from
+ * @c mobilitydb_init in a PostgreSQL backend.
+ */
+void
+meos_initialize_raster(void)
+{
+  rt_set_handlers(default_rt_allocator, default_rt_reallocator,
+    default_rt_deallocator, meos_rterror_handler, meos_rtinfo_handler,
+    meos_rtwarn_handler);
+}
+
+/*****************************************************************************
  * Input and output functions
  *
  * A `Raster` is the serialized form, while the interchange representation of

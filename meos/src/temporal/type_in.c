@@ -50,6 +50,7 @@
 #include "temporal/tbox.h"
 #include "temporal/temporal.h"
 #include "temporal/type_util.h"
+#include "geo/geo_funcs.h"
 #include "geo/postgis_funcs.h"
 #include "geo/stbox.h"
 #include "geo/tgeo_spatialfuncs.h"
@@ -2231,10 +2232,9 @@ geo_from_wkb_state(meos_wkb_parse_state *s)
     lwgeom_free(geo);
     return NULL;
   }
-  /* A geography is geodetic and in WGS84 (EPSG:4326) by definition, so default
-   * its SRID to 4326 when the Well-Known Binary carries none */
-  if (s->geodetic && geo->srid == SRID_UNKNOWN)
-    geo->srid = SRID_DEFAULT;
+  /* A geography is geodetic and in WGS84 (EPSG:4326) by definition, so its
+   * SRID defaults to 4326 when the Well-Known Binary carries none */
+  geo->srid = srid_geodetic_default(geo->srid, s->geodetic);
   /* Create the geometry. We cannot call gserialized_from_lwgeom since it does
    * not set the geodetic flag. Therefore we need to call the corresponding
    * MEOS function for doing this */
@@ -3034,8 +3034,7 @@ stbox_from_wkb_state(meos_wkb_parse_state *s)
    * #stbox_parse a geodetic box */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (s->geodetic)
-    s->srid = SRID_DEFAULT;
+  s->srid = srid_geodetic_default(s->srid, s->geodetic);
 
   /* Read and create the box */
   double xmin = 0, xmax = 0, ymin = 0, ymax = 0, zmin = 0, zmax = 0;
@@ -3268,11 +3267,11 @@ temporal_from_wkb_state(meos_wkb_parse_state *s)
   uint8_t wkb_flags = (uint8_t) byte_from_wkb_state(s);
   temporal_flags_from_wkb_state(s, wkb_flags);
 
-  /* Read the SRID, if necessary */
+  /* Read the SRID, if necessary; a geodetic value writing none is in WGS84
+   * (EPSG:4326) */
   if (s->has_srid)
     s->srid = int32_from_wkb_state(s);
-  else if (wkb_flags & MEOS_WKB_GEODETICFLAG)
-    s->srid = SRID_DEFAULT;
+  s->srid = srid_geodetic_default(s->srid, s->geodetic);
 
 #if RGEO
   GSERIALIZED *gs = NULL;
