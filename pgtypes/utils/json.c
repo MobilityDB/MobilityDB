@@ -240,7 +240,7 @@ JsonEncodeDateTime(char *buf, Datum value, Oid typid, const int *tzp)
           EncodeDateTime(&tm, fsec, false, 0, NULL, USE_XSD_DATES, buf);
         else
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "timestamp out of range");
           return NULL;
         }
@@ -278,7 +278,7 @@ JsonEncodeDateTime(char *buf, Datum value, Oid typid, const int *tzp)
         }
         else
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "timestamp out of range");
           return NULL;
         }

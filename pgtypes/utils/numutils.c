@@ -341,7 +341,7 @@ slow:
   return (int16) tmp;
 
 out_of_range:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value \"%s\" is out of range for type smallint", s);
   return SHRT_MAX;
 
@@ -607,7 +607,7 @@ slow:
   return (int32) tmp;
 
 out_of_range:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value \"%s\" is out of range for type integer", s);
   return INT_MAX;
 
@@ -860,7 +860,7 @@ slow:
   return (int64) tmp;
 
 out_of_range:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value \"%s\" is out of range for type bigint", s);
   return LONG_MAX;
 
@@ -910,7 +910,7 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
 
   if (errno == ERANGE)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "value \"%s\" is out of range for type %s", s, typname);
     return UINT_MAX ;
   }
@@ -951,7 +951,7 @@ uint32in_subr(const char *s, char **endloc, const char *typname,
   if (cvt != (unsigned long) result &&
     cvt != (unsigned long) ((int) result))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "value \"%s\" is out of range for type %s", s, typname);
     return UINT_MAX ;
   }
@@ -994,7 +994,7 @@ uint64in_subr(const char *s, char **endloc, const char *typname,
 
   if (errno == ERANGE)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "value \"%s\" is out of range for type %s", s, typname);
     return ULONG_MAX;
   }

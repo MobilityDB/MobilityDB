@@ -36,7 +36,7 @@ typedef enum
 
   MEOS_ERR_INTERNAL_ERROR             = 1,  // Unspecified internal error
   MEOS_ERR_INTERNAL_TYPE_ERROR        = 2,  // Internal type error
-  MEOS_ERR_VALUE_OUT_OF_RANGE         = 3,  // Internal out of range error
+  MEOS_ERR_VALUE_OUT_OF_RANGE         = 3,  // Numeric value out of range
   MEOS_ERR_DIVISION_BY_ZERO           = 4,  // Internal division by zero error
   MEOS_ERR_MEMORY_ALLOC_ERROR         = 5,  // Internal malloc error
   MEOS_ERR_AGGREGATION_ERROR          = 6,  // Internal aggregation error
@@ -62,6 +62,8 @@ typedef enum
   MEOS_ERR_GEOJSON_OUTPUT             = 27, // GEOJSON output error
   MEOS_ERR_SQL_JSON_ERROR             = 28, // SQL JSON error
   MEOS_ERR_INVALID_REGULAR_EXPRESSION = 29, // Regular expression error
+
+  MEOS_ERR_DATETIME_OUT_OF_RANGE      = 30, // Date or time value out of range
 } errorCode;
 
 /**

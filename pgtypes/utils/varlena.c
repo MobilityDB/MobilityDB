@@ -755,7 +755,7 @@ text_overlay(const text *txt1, const text *txt2, int from, int count)
   int sp_from_count;
   if (pg_add_s32_overflow(from, count, &sp_from_count))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return NULL;
   }
@@ -2578,7 +2578,7 @@ text_format_parse_digits(const char **ptr, const char *end_ptr, int *value)
     if (unlikely(pg_mul_s32_overflow(val, 10, &val)) ||
       unlikely(pg_add_s32_overflow(val, digit, &val)))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "number is out of range");
       return false;
     }
@@ -2757,7 +2757,7 @@ text_format_append_string(StringInfo buf, const char *str, int flags,
     /* -INT_MIN is undefined */
     if (width <= INT_MIN)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "number is out of range");
       return;
     }

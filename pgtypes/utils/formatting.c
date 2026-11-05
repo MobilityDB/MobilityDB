@@ -3922,7 +3922,7 @@ timestamp_to_char(Timestamp dt, text *fmt)
 
   if (timestamp2tm(dt, NULL, &tt, &tmtcFsec(&tmtc), NULL, NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return NULL;
   }
@@ -3963,7 +3963,7 @@ timestamptz_to_char(TimestampTz tstz, text *fmt)
 
   if (timestamp2tm(tstz, &tz, &tt, &tmtcFsec(&tmtc), &tmtcTzn(&tmtc), NULL) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return NULL;
   }
@@ -4047,7 +4047,7 @@ to_timestamp(text *date_txt, text *fmt, Oid collid)
 
   if (tm2timestamp(&tm, fsec, &tz, &result) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return DT_NOEND;
   }
@@ -4078,7 +4078,7 @@ pg_to_date(text *date_txt, text *fmt, Oid collid, DateADT *result)
   if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
   {
     char *tmp = pg_text_to_cstring(date_txt);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: \"%s\"", tmp);
     pfree(tmp);
     return false;
@@ -4091,7 +4091,7 @@ pg_to_date(text *date_txt, text *fmt, Oid collid, DateADT *result)
   if (! IS_VALID_DATE(*result))
   {
     char *tmp = pg_text_to_cstring(date_txt);
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "date out of range: \"%s\"", tmp);
     pfree(tmp);
     return false;
@@ -4150,7 +4150,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
         TimestampTz res;
         if (tm2timestamp(&tm, fsec, tz, &res) != 0)
         {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "timestamptz out of range");
           return false;
         }
@@ -4164,7 +4164,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
         Timestamp res;
         if (tm2timestamp(&tm, fsec, NULL, &res) != 0)
         {
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "timestamp out of range");
           return (Datum) 0;
         }
@@ -4188,7 +4188,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
         if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
         {
           char *tmp = pg_text_to_cstring(date_txt);
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "date out of range: \"%s\"", tmp);
           pfree(tmp);
           return false;
@@ -4201,7 +4201,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
         if (!IS_VALID_DATE(res))
         {
           char *tmp = pg_text_to_cstring(date_txt);
-          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+          meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
             "date out of range: \"%s\"", tmp);
           pfree(tmp);
           return false;
@@ -4236,7 +4236,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
       if (tm2timetz(&tm, fsec, *tz, res) != 0)
       {
         pfree(res);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "timetz out of range");
         return false;
       }
@@ -4250,7 +4250,7 @@ pg_parse_datetime(text *date_txt, text *fmt, Oid collid, bool strict,
       TimeADT res;
       if (tm2time(&tm, fsec, &res) != 0)
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "time out of range");
         return false;
       }

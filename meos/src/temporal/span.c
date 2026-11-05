@@ -267,7 +267,7 @@ ensure_span_bound_has_next(Datum value, MeosType basetype)
     case T_DATE:
       if (DatumGetDateADT(value) == DATEVAL_NOEND)
       {
-        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE, "date out of range");
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE, "date out of range");
         return false;
       }
       return true;
