@@ -1,0 +1,335 @@
+{
+  "type_label": "raster      ",
+  "header": "meos_raster.h",
+  "out": "raster_smoketest.c",
+  "extra_includes": "#include <meos_geo.h>\n#include <meos_quadbin.h>\n#include <meos_raster.h>",
+  "value_returns": [
+    "Quadbin",
+    "MeosPixType"
+  ],
+  "arg_map": {
+    "Raster *": "rast1",
+    "Raquet *": "rq1",
+    "Raquet * *": "(const Raquet **) rqarr1",
+    "Temporal *": "traj1",
+    "Span *": "vspan1",
+    "GSERIALIZED *": "geom1",
+    "BandStats *": "stats1",
+    "Quadbin": "qb1",
+    "MeosPixType": "MEOS_PT_UINT8",
+    "char *": "\"32BF\"",
+    "uint8_t *": "rast_wkb1",
+    "size_t": "rast_wkb1_size",
+    "size_t *": "&size_out",
+    "uint8_t": "0",
+    "double *": "&d_out",
+    "int *": "&n_out",
+    "int": "1",
+    "int32": "1",
+    "int32_t": "4326",
+    "uint64": "1",
+    "double": "1.0",
+    "bool": "true"
+  },
+  "name_arg_map": {
+    "^raquet_": {
+      "uint8_t *": "rq_wkb1",
+      "size_t": "rq_wkb1_size"
+    },
+    "^raquet_in$": {
+      "char *": "rq_text1"
+    },
+    "^raquet_from_hexwkb$": {
+      "char *": "rq_hexwkb1"
+    },
+    "^raster_from_hexwkb$": {
+      "char *": "rast_hexwkb1"
+    },
+    "^raquet_pixtype_from_string$": {
+      "char *": "\"uint8\""
+    },
+    "_gdal$": {
+      "char *": "grid_path1"
+    },
+    "^raster_value$": {
+      "char *": "\"nearest\""
+    }
+  },
+  "override_args": {
+    "add_raster_raster": {
+      "1": "rast2"
+    },
+    "div_raster_raster": {
+      "1": "rast2"
+    },
+    "mul_raster_raster": {
+      "1": "rast2"
+    },
+    "sub_raster_raster": {
+      "1": "rast2"
+    },
+    "raster_not_same_alignment_reason": {
+      "1": "rast2"
+    },
+    "raquet_make": {
+      "1": "2",
+      "2": "2",
+      "6": "rq_pixels1",
+      "7": "4"
+    },
+    "raquet_read": {
+      "0": "grid_path1",
+      "1": "qb1"
+    },
+    "raquet_read_bytes": {
+      "0": "grid_bytes1",
+      "1": "grid_bytes1_size",
+      "2": "qb1"
+    },
+    "raster_make": {
+      "0": "2",
+      "1": "2",
+      "9": "\"8BUI\"",
+      "12": "rq_pixels1",
+      "13": "4"
+    },
+    "raster_make_empty": {
+      "0": "2",
+      "1": "2"
+    },
+    "raster_add_band_raster": {
+      "1": "rast2"
+    },
+    "raster_tile_value_quadbin": {
+      "1": "rq_pixels1",
+      "2": "4",
+      "3": "2",
+      "4": "2",
+      "5": "qb1"
+    },
+    "raster_tile_value_array": {
+      "2": "2"
+    },
+    "raster_clip": {
+      "1": "clipbands1",
+      "4": "NULL",
+      "5": "0"
+    },
+    "raster_value_count": {
+      "3": "NULL",
+      "4": "0"
+    },
+    "raster_set_values": {
+      "4": "2",
+      "6": "setvals1",
+      "7": "NULL",
+      "8": "NULL",
+      "9": "0",
+      "10": "0",
+      "11": "2"
+    },
+    "raster_reclass": {
+      "2": "\"0-45:1, 45-100:2\"",
+      "3": "\"8BUI\""
+    },
+    "raster_transform": {
+      "1": "3857",
+      "2": "\"NearestNeighbour\"",
+      "3": "0.125",
+      "4": "150000.0",
+      "5": "-150000.0"
+    },
+    "raster_transform_pipeline": {
+      "1": "\"+proj=utm +zone=31 +ellps=WGS84\"",
+      "2": "32631",
+      "4": "\"NearestNeighbour\"",
+      "5": "0.125",
+      "6": "150000.0",
+      "7": "-150000.0"
+    },
+    "raster_transform_raster": {
+      "2": "\"NearestNeighbour\""
+    },
+    "raster_rescale": {
+      "3": "\"NearestNeighbour\""
+    },
+    "raster_map_algebra": {
+      "2": "\"MEAN\"",
+      "4": "\"FIRST\""
+    },
+    "raster_slope": {
+      "4": "\"DEGREES\""
+    }
+  },
+  "manual": [
+    "raster_dump_as_polygons",
+    "geomval_arr_free",
+    "raster_pixel_as_points",
+    "pixel_arr_free",
+    "raster_dump_values",
+    "raster_same_alignment_transfn",
+    "raster_same_alignment_combinefn",
+    "raster_same_alignment_finalfn",
+    "raster_summary_stats_transfn",
+    "raster_summary_stats_combinefn",
+    "raster_summary_stats_finalfn",
+    "raster_union_transfn",
+    "raster_union_combinefn",
+    "raster_union_finalfn",
+    "rasteralignstate_serialize",
+    "rasteralignstate_deserialize",
+    "rasterstatsstate_serialize",
+    "rasterstatsstate_deserialize",
+    "rasterunionstate_serialize",
+    "rasterunionstate_deserialize"
+  ],
+  "common_inputs": [
+    "  /* The 3x3 raster of 1 degree pixels from (0, 3) in SRID 4326 that the",
+    "   * rasterValue cases of raster_test.c read: a 32BF band holding 10, nodata,",
+    "   * 30 / 40, 50, 60 / 70, 80, 90 with -9999 as its nodata value. */",
+    "  char *rast_hexwkb1 =",
+    "    \"0100000100000000000000f03f000000000000f0bf0000000000000000000000000000\"",
+    "    \"084000000000000000000000000000000000e6100000030003004a003c1cc600002041\"",
+    "    \"003c1cc60000f04100002042000048420000704200008c420000a0420000b442\";",
+    "  /* A 32BF band of ones on the same grid one pixel to the east. */",
+    "  char *rast_hexwkb2 =",
+    "    \"0100000100000000000000f03f000000000000f0bf000000000000f03f000000000000\"",
+    "    \"084000000000000000000000000000000000e6100000030003000a000000000000803f\"",
+    "    \"0000803f0000803f0000803f0000803f0000803f0000803f0000803f0000803f\";",
+    "  Raster *rast1 = raster_from_hexwkb(rast_hexwkb1);",
+    "  Raster *rast2 = raster_from_hexwkb(rast_hexwkb2);",
+    "  size_t size_out = 0;",
+    "  size_t rast_wkb1_size = 0;",
+    "  uint8_t *rast_wkb1 = raster_as_wkb(rast1, 0, &rast_wkb1_size);",
+    "  /* A trip across the raster and the value span it is restricted to. */",
+    "  Temporal *traj1 = tgeompoint_in(\"SRID=4326;[POINT(0.5 2.5)@2001-01-01, POINT(2.5 0.5)@2001-01-02]\");",
+    "  Span *vspan1 = floatspan_in(\"[10, 60]\");",
+    "  GSERIALIZED *geom1 = geom_in(\"SRID=4326;Polygon((0 0, 2 0, 2 2, 0 2, 0 0))\", -1);",
+    "  /* The Raquet tile is the first QUADBIN cell the trip crosses at",
+    "   * resolution 8, holding four 8-bit pixels. */",
+    "  Temporal *traj_cells1 = tgeompoint_to_tquadbin(traj1, 8, true);",
+    "  int ncells1 = 0;",
+    "  Quadbin *cells1 = tquadbin_values(traj_cells1, &ncells1);",
+    "  Quadbin qb1 = cells1[0];",
+    "  uint8_t rq_pixels1[4] = { 7, 8, 9, 10 };",
+    "  uint8_t rq_pixels2[4] = { 1, 2, 3, 4 };",
+    "  Raquet *rq1 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels1, 4);",
+    "  Raquet *rq2 = raquet_make(qb1, 2, 2, MEOS_PT_UINT8, 0.0, false, rq_pixels2, 4);",
+    "  const Raquet *rqarr1[] = { rq1, rq2 };",
+    "  size_t rq_wkb1_size = 0;",
+    "  uint8_t *rq_wkb1 = raquet_as_wkb(rq1, 0, &rq_wkb1_size);",
+    "  char *rq_hexwkb1 = raquet_as_hexwkb(rq1, 0, &size_out);",
+    "  char *rq_text1 = raquet_out(rq1, &size_out);",
+    "  BandStats *stats1 = raster_summary_stats(rast1, 1, true);",
+    "  /* The GDAL entries read an ESRI ASCII grid of the same values, written",
+    "   * beside the program, and its bytes. */",
+    "  const char *grid_path1 = \"raster_smoketest.asc\";",
+    "  const char grid_text1[] =",
+    "    \"ncols 3\\nnrows 3\\nxllcorner 0\\nyllcorner 0\\ncellsize 1\\n\"",
+    "    \"NODATA_value -9999\\n10 -9999 30\\n40 50 60\\n70 80 90\\n\";",
+    "  FILE *grid_file1 = fopen(grid_path1, \"w\");",
+    "  if (grid_file1) { fputs(grid_text1, grid_file1); fclose(grid_file1); }",
+    "  const uint8_t *grid_bytes1 = (const uint8_t *) grid_text1;",
+    "  size_t grid_bytes1_size = sizeof(grid_text1) - 1;",
+    "  /* The band a clip keeps and the block of values a set writes. */",
+    "  int clipbands1[] = { 1 };",
+    "  double setvals1[] = { 11.0, 12.0 };",
+    "  double d_out = 0;",
+    "  int n_out = 0;"
+  ],
+  "cleanup": [
+    "  /* The rows of a band come back as arrays whose elements own a geometry,",
+    "   * so each is released by the free function of its own type. */",
+    "  {",
+    "    int count = 0;",
+    "    GeomVal *gv = raster_dump_as_polygons(rast1, 1, true, &count);",
+    "    printf(\"raster_dump_as_polygons: n=%d\\n\", count);",
+    "    geomval_arr_free(gv, count);",
+    "    printf(\"geomval_arr_free: ok\\n\");",
+    "    Pixel *px = raster_pixel_as_points(rast1, 1, true, &count);",
+    "    printf(\"raster_pixel_as_points: n=%d\\n\", count);",
+    "    pixel_arr_free(px, count);",
+    "    printf(\"pixel_arr_free: ok\\n\");",
+    "    bool *nodata = NULL;",
+    "    double *values = raster_dump_values(rast1, 1, false, &nodata, &count);",
+    "    printf(\"raster_dump_values: n=%d\\n\", count);",
+    "    free(values);",
+    "    free(nodata);",
+    "  }",
+    "  /* An aggregate state owns the rasters it holds and has no free function",
+    "   * of its own: its final function frees it. A combine keeps its second",
+    "   * state, which is finalized apart, and the serialized bytes of a state",
+    "   * read back as a state of their own. */",
+    "  {",
+    "    size_t n = 0;",
+    "    RasterAlignState *a1 = raster_same_alignment_transfn(NULL, rast1);",
+    "    a1 = raster_same_alignment_transfn(a1, rast2);",
+    "    RasterAlignState *a2 = raster_same_alignment_transfn(NULL, rast2);",
+    "    uint8_t *bytes = rasteralignstate_serialize(a2, &n);",
+    "    printf(\"rasteralignstate_serialize: %s\\n\", bytes ? \"OK\" : \"NULL\");",
+    "    RasterAlignState *a3 = rasteralignstate_deserialize(bytes, n);",
+    "    printf(\"rasteralignstate_deserialize: %s\\n\", a3 ? \"OK\" : \"NULL\");",
+    "    free(bytes);",
+    "    a1 = raster_same_alignment_combinefn(a1, a3);",
+    "    printf(\"raster_same_alignment_combinefn: %s\\n\", a1 ? \"OK\" : \"NULL\");",
+    "    printf(\"raster_same_alignment_transfn: ok\\n\");",
+    "    printf(\"raster_same_alignment_finalfn: %d\\n\",",
+    "      (int) raster_same_alignment_finalfn(a1));",
+    "    raster_same_alignment_finalfn(a2);",
+    "    raster_same_alignment_finalfn(a3);",
+    "  }",
+    "  {",
+    "    size_t n = 0;",
+    "    RasterStatsState *s1 = raster_summary_stats_transfn(NULL, rast1, 1, true);",
+    "    s1 = raster_summary_stats_transfn(s1, rast2, 1, true);",
+    "    RasterStatsState *s2 = raster_summary_stats_transfn(NULL, rast2, 1, true);",
+    "    uint8_t *bytes = rasterstatsstate_serialize(s2, &n);",
+    "    printf(\"rasterstatsstate_serialize: %s\\n\", bytes ? \"OK\" : \"NULL\");",
+    "    RasterStatsState *s3 = rasterstatsstate_deserialize(bytes, n);",
+    "    printf(\"rasterstatsstate_deserialize: %s\\n\", s3 ? \"OK\" : \"NULL\");",
+    "    free(bytes);",
+    "    s1 = raster_summary_stats_combinefn(s1, s3);",
+    "    printf(\"raster_summary_stats_combinefn: %s\\n\", s1 ? \"OK\" : \"NULL\");",
+    "    printf(\"raster_summary_stats_transfn: ok\\n\");",
+    "    BandStats *st = raster_summary_stats_finalfn(s1);",
+    "    printf(\"raster_summary_stats_finalfn: %s\\n\", st ? \"OK\" : \"NULL\");",
+    "    free(st);",
+    "    free(raster_summary_stats_finalfn(s2));",
+    "    free(raster_summary_stats_finalfn(s3));",
+    "  }",
+    "  {",
+    "    size_t n = 0;",
+    "    RasterUnionState *u1 = raster_union_transfn(NULL, rast1, 1, \"SUM\");",
+    "    u1 = raster_union_transfn(u1, rast2, 1, \"SUM\");",
+    "    RasterUnionState *u2 = raster_union_transfn(NULL, rast2, 1, \"SUM\");",
+    "    uint8_t *bytes = rasterunionstate_serialize(u2, &n);",
+    "    printf(\"rasterunionstate_serialize: %s\\n\", bytes ? \"OK\" : \"NULL\");",
+    "    RasterUnionState *u3 = rasterunionstate_deserialize(bytes, n);",
+    "    printf(\"rasterunionstate_deserialize: %s\\n\", u3 ? \"OK\" : \"NULL\");",
+    "    free(bytes);",
+    "    u1 = raster_union_combinefn(u1, u3);",
+    "    printf(\"raster_union_combinefn: %s\\n\", u1 ? \"OK\" : \"NULL\");",
+    "    printf(\"raster_union_transfn: ok\\n\");",
+    "    Raster *un = raster_union_finalfn(u1);",
+    "    printf(\"raster_union_finalfn: %s\\n\", un ? \"OK\" : \"NULL\");",
+    "    free(un);",
+    "    free(raster_union_finalfn(u2));",
+    "    free(raster_union_finalfn(u3));",
+    "  }",
+    "  remove(grid_path1);",
+    "  free(stats1);",
+    "  free(rq_text1);",
+    "  free(rq_hexwkb1);",
+    "  free(rq_wkb1);",
+    "  free(rq2);",
+    "  free(rq1);",
+    "  free(cells1);",
+    "  free(traj_cells1);",
+    "  free(geom1);",
+    "  free(vspan1);",
+    "  free(traj1);",
+    "  free(rast_wkb1);",
+    "  free(rast2);",
+    "  free(rast1);"
+  ]
+}
