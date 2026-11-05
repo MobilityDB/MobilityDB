@@ -635,6 +635,7 @@ extern int relate_point_in_area_index(double x, double y,
 extern int relate_arc_arc_points(const Edge *a, const Edge *b, double x[2],
   double y[2], bool *overlap);
 
+extern int32_t srid_geodetic_default(int32_t srid, bool geodetic);
 extern bool ensure_srid_is_latlong(int32_t srid);
 extern bool ensure_geodetic_geo(const GSERIALIZED *gs);
 extern bool ensure_not_geodetic_geo(const GSERIALIZED *gs);
