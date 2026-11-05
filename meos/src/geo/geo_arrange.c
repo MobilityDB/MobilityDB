@@ -348,6 +348,17 @@ arr_arc_ccw(const Edge *arc)
     arc->sy, arc->ex, arc->ey) > 0;
 }
 
+/* A pseudo-angle of quadrant k, k + n / d with n / d in [0, 1], kept there
+ * where the quotient of intervals holding zero leaves it unbounded */
+static inline Ival
+arr_quadrant_clamp(Ival p, double k)
+{
+  Ival r;
+  r.lo = (p.lo >= k) ? p.lo : k;
+  r.hi = (p.hi <= k + 1.0) ? p.hi : k + 1.0;
+  return r;
+}
+
 /**
  * @brief Return how far along an arc a point of its circle stands, as an
  * interval of a pseudo-angle that grows with the angle turned from its start
@@ -413,14 +424,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_div(vv, ival_add(uu, vv));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 0.0)); any = true;
   }
   /* v >= 0, u <= 0: 1 + (-u) / (v - u) in [1, 2] */
   if (v.hi >= 0.0 && u.lo <= 0.0)
   {
     Ival vv = {arr_fmax(v.lo, 0.0), v.hi}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(1.0), ival_div(ival_neg(uu), ival_sub(vv, uu)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 1.0)); any = true;
   }
   /* v <= 0, u <= 0: 2 + (-v) / (-u - v) in [2, 3] */
   if (v.lo <= 0.0 && u.lo <= 0.0 && v.lo < 0.0)
@@ -428,14 +439,14 @@ arr_arc_position(const Edge *arc, Ival cx, Ival cy, Ival px, Ival py)
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {u.lo, arr_fmin(u.hi, 0.0)};
     Ival p = ival_add(ival(2.0), ival_div(ival_neg(vv),
       ival_sub(ival_neg(uu), vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 2.0)); any = true;
   }
   /* v <= 0, u >= 0: 3 + u / (u - v) in [3, 4), unless it is the start */
   if (v.lo < 0.0 && u.hi >= 0.0 && v.hi < 0.0)
   {
     Ival vv = {v.lo, arr_fmin(v.hi, 0.0)}, uu = {arr_fmax(u.lo, 0.0), u.hi};
     Ival p = ival_add(ival(3.0), ival_div(uu, ival_sub(uu, vv)));
-    res = ival_hull(res, p); any = true;
+    res = ival_hull(res, arr_quadrant_clamp(p, 3.0)); any = true;
   }
   if (! any)
   {
@@ -743,9 +754,37 @@ arr_vertex(Arr *a, double x, double y)
   return id;
 }
 
+/* The position along a whole circle of a meeting on it that the intervals
+ * read where the circle starts: #arr_arc_position reads a point it cannot
+ * place on either side of the start just after it, while one across the
+ * radius (-r, 0) from the points after the start, decided exactly
+ * (#meet_point_y_side), stands just before the end. Its interval there is
+ * wide, the cuts it overlaps ordered exactly (#arr_cut_order) */
+static Ival
+arr_circle_start_side_exact(const Edge *e, Ival t, const ArrMeet *m)
+{
+  MeetPoint mp = arr_meet_point(m);
+  mp.p = m->p; mp.q = m->q;
+  int sy = meet_point_y_side(&mp, e->cy);
+  /* After the start a counterclockwise circle turns below its centre */
+  if (sy == 2 || sy == 0 || (sy > 0) != arr_arc_ccw(e))
+    return t;
+  return ival_out(4.0 - 4.0 * Max(t.hi, DBL_MIN), 4.0);
+}
+
+static inline Ival
+arr_circle_start_side(const Edge *e, Ival t, const ArrMeet *m)
+{
+  if (! e->centred || ! (t.lo <= 0.0) || isinf(t.hi) ||
+      m->kind == MEET_ORIGIN)
+    return t;
+  return arr_circle_start_side_exact(e, t, m);
+}
+
 static void
 arr_cut(Arr *a, uint32_t edge, uint32_t node, Ival pos, ArrMeet meet)
 {
+  pos = arr_circle_start_side(&a->e[edge], pos, &meet);
   if (a->ncuts == a->capcuts)
   {
     a->capcuts = a->capcuts ? 2 * a->capcuts : 64;
@@ -1164,6 +1203,8 @@ arr_offsets_cross_order(const Arr *a, uint32_t i, const ArrMeet *x,
   return (t->tp == e->from) ? 1 : -1;
 }
 
+static int arr_meet_circle_start(const Edge *e, const ArrMeet *m);
+
 /* Return how two points of the line of an edge are ordered along it, by
  * their positions and, where the intervals overlap, by
  * #arr_offsets_cross_order or #meets_order_exact: -1, 1, 0 for one point, 2
@@ -1179,6 +1220,23 @@ arr_line_order(const Arr *a, uint32_t i, Ival t1, const ArrMeet *m1, Ival t2,
   {
     if (m1->kind == m2->kind && m1->sigma == m2->sigma)
       return 0;
+    /* Another meeting at that point, read where the circle starts or, as
+     * the end of a stretch reaching it (#arr_end_position), where it ends,
+     * is that end, asked exactly (#arr_meet_circle_start) */
+    if (m1->kind != m2->kind && a->e[i].centred)
+    {
+      const ArrMeet *o = (m1->kind == MEET_ORIGIN) ? m1 : m2;
+      const ArrMeet *x = (o == m1) ? m2 : m1;
+      Ival tx = (o == m1) ? t2 : t1;
+      if (o->sigma ? isinf(tx.lo) : (tx.lo <= 0.0 && ! isinf(tx.hi)))
+      {
+        int at = arr_meet_circle_start(&a->e[i], x);
+        if (at == 2)
+          return 2;
+        if (at == 1)
+          return 0;
+      }
+    }
     if (m1->kind == MEET_ORIGIN)
       return m1->sigma ? 1 : -1;
     return m2->sigma ? -1 : 1;
@@ -1340,6 +1398,12 @@ arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
       if (at == 2)
         return ARR_UNTOLD;
     }
+    else if (t.lo <= 0.0 || t.hi >= 4.0)
+    {
+      at = arr_meet_circle_start(e, m);
+      if (at == 2)
+        return ARR_UNTOLD;
+    }
   }
   if (at)
   {
@@ -1364,6 +1428,7 @@ arr_stretch_where(const Arr *a, uint32_t i, Ival t, const ArrMeet *m)
     if (same == 1)
       return ARR_AT_TO;
   }
+  t = arr_circle_start_side(e, t, m);
   int c = arr_line_order(a, i, t, m, a->tfrom[i], &a->mfrom[i]);
   if (c == 2)
     return ARR_UNTOLD;
@@ -2530,7 +2595,10 @@ arr_segment_circle_off(const Arr *a, uint32_t s, uint32_t c)
     Ival px = ival_add(na->bx, ival_mul(t, vx));
     Ival py = ival_add(na->by, ival_mul(t, vy));
     Ival pc = arr_box_position(a, c, px, py);
-    if (pc.hi < a->tfrom[c].lo || pc.lo > a->tto[c].hi)
+    /* A point read where the circle starts may stand just before its end
+     * (#arr_circle_start_side) */
+    if (! (pc.lo <= 0.0) &&
+        (pc.hi < a->tfrom[c].lo || pc.lo > a->tto[c].hi))
       continue;
     return false;
   }
@@ -2608,6 +2676,10 @@ arr_crossing_off(const Arr *a, uint32_t i, uint32_t j, int sigma)
   for (int k = 0; k < 2; k++)
   {
     Ival t = arr_box_position(a, e[k], px, py);
+    /* A point read where a circle starts may stand just before its end
+     * (#arr_circle_start_side) */
+    if (a->e[e[k]].centred && t.lo <= 0.0)
+      continue;
     if (t.hi < a->tfrom[e[k]].lo || t.lo > a->tto[e[k]].hi)
       return true;
   }
@@ -2620,6 +2692,10 @@ arr_crossing_off(const Arr *a, uint32_t i, uint32_t j, int sigma)
 static inline int
 arr_ival_where(const Arr *a, uint32_t i, Ival t)
 {
+  /* A point of a whole circle read where it starts may stand just before
+   * its end (#arr_circle_start_side), which the intervals cannot tell */
+  if (a->e[i].centred && t.lo <= 0.0)
+    return 2;
   if (t.hi < a->tfrom[i].lo || t.lo > a->tto[i].hi)
     return 0;
   if (t.lo > a->tfrom[i].hi && t.hi < a->tto[i].lo)
@@ -7487,7 +7563,7 @@ arr_end_position(const Arr *a, uint32_t i, uint32_t node, const ArrMeet *m)
     return ival(m->sigma ? INFINITY : 0.0);
   const Edge *e = &a->e[i];
   if (e->centred || e->from)
-    return arr_tower_position(a, i, node);
+    return arr_circle_start_side(e, arr_tower_position(a, i, node), m);
   return arr_node_position(e, &a->nodes[node]);
 }
 

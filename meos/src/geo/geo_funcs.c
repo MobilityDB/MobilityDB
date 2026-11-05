@@ -3266,8 +3266,11 @@ wide_product(const uint64_t *x, const uint64_t *y, uint32_t *out)
 /** Number of 64-bit limbs of a #WideDyadic. The quantities
  * #point_motion_squares forms are products of up to six differences of
  * timestamps and four doubles, whose terms the exponents of the doubles spread
- * over at most about 9100 bits */
-#define WIDE_DYADIC_LIMBS 160
+ * over at most about 9100 bits; the signs of a tower of four square roots
+ * (#tower_sign_k), as where two segments between tangent points meet one
+ * circle, square their numbers once a root, to about 15400 bits on the line
+ * buffers of the AIS corpus */
+#define WIDE_DYADIC_LIMBS 320
 
 /**
  * @brief A dyadic rational `sign * magnitude * 2^exp`, the magnitude held in
@@ -9728,6 +9731,13 @@ arcseg_f_mul(ArcsegFilter a, ArcsegFilter b)
   r.v = a.v * b.v;
   r.e = fabs(a.v) * b.e + fabs(b.v) * a.e + a.e * b.e +
     DBL_EPSILON * fabs(r.v);
+  /* A product below the range of normal doubles, and the terms of its
+   * bound, lose less than DBL_MIN each to their rounding, which the bound
+   * then carries, unless a factor is exactly zero: an underflow to zero is
+   * no exact zero. A normal product carries its rounding already */
+  if (fabs(r.v) < DBL_MIN &&
+      ! ((a.v == 0.0 && a.e == 0.0) || (b.v == 0.0 && b.e == 0.0)))
+    r.e += 4.0 * DBL_MIN;
   return r;
 }
 
@@ -13149,7 +13159,22 @@ meets_order_tower_pred(TowerCtx *ctx, const void *arg)
   if (! e->centred)
   {
     TowerPoint e0, e1;
-    towerseg_ends(ctx, e, ox, oy, &e0, &e1);
+    const TangentPoint *f = e->from, *t = e->to;
+    /* The ends of a segment along one tangent of two circles of one radius
+     * are its centres moved by one vector, so the segment runs as they do,
+     * which no root holds: the question then stays in the roots of the two
+     * meetings */
+    if (f && t && f->r1 == f->r2 && f->side == t->side &&
+        f->c1x == t->c1x && f->c1y == t->c1y && f->r1 == t->r1 &&
+        f->c2x == t->c2x && f->c2y == t->c2y && f->r2 == t->r2)
+    {
+      tower_point_xy(ctx, f->k ? f->c2x : f->c1x, f->k ? f->c2y : f->c1y,
+        ox, oy, &e0);
+      tower_point_xy(ctx, t->k ? t->c2x : t->c1x, t->k ? t->c2y : t->c1y,
+        ox, oy, &e1);
+    }
+    else
+      towerseg_ends(ctx, e, ox, oy, &e0, &e1);
     int s = tower_dot(ctx, &pa, &pb, &e0, &e1);
     return (s == 2) ? 2 : -s;
   }

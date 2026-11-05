@@ -148,6 +148,19 @@ SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=flat'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0)', 1, 'endcap=square'), 6));
 
+-- A line from far away to a unit square holds, within half the root of two, a
+-- point at half that distance from its long edge, and not one a thousand times
+-- as far
+SELECT contains(b, ST_Point(2 ^ 39, 2 ^ 39)) AS near,
+  contains(b, ST_Point(2 ^ 39, 2 ^ 39 + 1024)) AS far
+FROM (SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 40, 2 ^ 40), ST_Point(1, 0),
+  ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5)) AS b) AS t;
+-- From further away the distance falls below the rounding of the
+-- coordinates, no ring written in doubles holds the line, and the buffer is
+-- declined
+SELECT buffer(ST_MakeLine(ARRAY[ST_Point(2 ^ 60, 2 ^ 60), ST_Point(1, 0),
+  ST_Point(1, 1), ST_Point(0, 1)]), sqrt(0.5));
+
 -- The outer side of a turn is filled by the join the style names
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=bevel'), 6));
 SELECT ST_AsText(round(buffer(geometry 'Linestring(0 0,10 0,10 10)', 1, 'join=mitre'), 6));
