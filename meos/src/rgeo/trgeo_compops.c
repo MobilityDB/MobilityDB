@@ -86,8 +86,11 @@ eacomp_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, MeosType), bool ever)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs))
     return -1;
+  /* An empty geometry has no point, so it equals no value at any instant */
+  if (gserialized_is_empty(gs))
+    return (func == &datum2_ne) ? 1 : 0;
   assert(func);
 
   if (temp->subtype == TINSTANT)
@@ -317,8 +320,12 @@ tcomp_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
   Datum (*func)(Datum, Datum, MeosType))
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_trgeometry_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_trgeometry_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it equals no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(func == &datum2_ne),
+      T_TBOOL, temp);
   assert(func);
 
   /* The generic lifting infrastructure cannot be used here because the base

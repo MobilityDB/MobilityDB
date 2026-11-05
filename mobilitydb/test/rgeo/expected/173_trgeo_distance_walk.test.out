@@ -219,6 +219,14 @@ SELECT tDwithin(
 
 SELECT tDwithin(
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
+  geometry 'Point empty', 2.5);
+                             tdwithin                             
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDwithin(
+  trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(-6 0),0)@2001-01-01, Pose(Point(6 0),1.5)@2001-01-02]',
   trgeometry 'Polygon((-1 -1,1 -1,1 1,-1 1,-1 -1));[Pose(Point(0 4),0)@2001-01-01, Pose(Point(0 4),-1)@2001-01-02]', 1);
                               tdwithin                              
 --------------------------------------------------------------------
