@@ -57,13 +57,24 @@ SELECT span(timestamptz '2001-01-02', '2001-01-01');
 -- An input that is not the text of a value of its type
 SELECT int4 'abc';
 SELECT tint 'abc';
+SELECT json '{"type":';
+SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+SELECT tgeompointFromMFJSON('{"type":"MovingPoint","coordinates":[[1,1]]}');
+SELECT poseFromGeoPose('{"position":{"lat":1}}');
+
+-- An input that is not the binary representation of a value of its type,
+-- which PostgreSQL raises in the receive functions SQL does not call
+SELECT tintFromBinary('\x00');
+SELECT intspanFromBinary('\x0102');
+SELECT tintFromHexWKB('0001');
 
 -- A feature not supported
 SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
   geometry 'Linestring(1e200 -1,1e200 1)';
 
--- An error with no class of its own raises the internal error
-SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+-- An error whose MEOS code has no class of its own raises the internal error:
+-- MEOS_ERR_SQL_JSON_ERROR stands for each of the SQL/JSON classes
+SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
 
 \set VERBOSITY default
 
