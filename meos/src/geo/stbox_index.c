@@ -86,14 +86,7 @@ stbox_index_leaf_consistent(const STBox *key, const STBox *query,
       retval = same_stbox_stbox(key, query);
       break;
     case RTAdjacentStrategyNumber:
-      /* A spatiotemporal box does not preserve, in its overlap/adjacency
-       * tests, whether a shared boundary belongs to the value or merely
-       * touches it. A leaf whose box overlaps the query may still be
-       * adjacent to it once the inclusive/exclusive bounds are taken into
-       * account, so the candidate set is broadened to overlapping boxes and
-       * filtered by the recheck against the actual operator. */
-      retval = adjacent_stbox_stbox(key, query) ||
-        overlaps_stbox_stbox(key, query);
+      retval = adjacent_stbox_stbox(key, query);
       break;
     case RTLeftStrategyNumber:
       retval = left_stbox_stbox(key, query);
@@ -245,15 +238,12 @@ stbox_gist_inner_consistent(const STBox *key, const STBox *query,
 bool
 stbox_index_recheck(StrategyNumber strategy)
 {
-  /* These operators are based on bounding boxes and do not consider
-   * inclusive or exclusive bounds.
-   * The adjacent strategy is excluded: bounding-box adjacency cannot
-   * distinguish a value whose extent lies strictly inside the query from
-   * one that merely touches its boundary (the bounds are not preserved in
-   * the box), so the leaf-consistent result is a superset that must be
-   * rechecked against the actual operator. */
+  /* These operators are based on bounding boxes. Adjacency is defined on the
+   * boxes, whose period keeps its bounds, so a leaf whose key is the box of
+   * its value answers it as the operator does, as #tbox_index_recheck states */
   switch (strategy)
   {
+    case RTAdjacentStrategyNumber:
     case RTLeftStrategyNumber:
     case RTOverLeftStrategyNumber:
     case RTRightStrategyNumber:
