@@ -5624,6 +5624,103 @@ def splice_boxgist(filetext: str, box: str, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# --- C SP-GiST support functions (box-type axis) ----------------------------
+# The SP-GiST support functions of a box type, one set per entry of `boxes` in
+# manifest.d/boxspgist.yaml, are generated into the region between the box's
+# markers in its `file`, as #render_boxgist writes the GiST ones; the median
+# centroid of its quad-tree pick-split and its compress functions stay beside
+# the region, written by hand, since they read the fields of the box and the
+# temporal types of the family.
+def _boxspgist_markers(box: str):
+    """BEGIN/END markers of a box type's SP-GiST support functions, as
+    #_boxgist_markers names its GiST ones"""
+    begin = (f"/* GENERATED-BOXSPGIST-BEGIN {box} — tools/codegen/inherited/"
+             "generate.py from templates/boxspgist.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxspgist.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXSPGIST-END {box} */\n"
+
+
+_BOXSPGIST_RECHECK = {
+    "all": "  /* Every strategy is rechecked */\n  out->recheck = true;\n",
+    "strategy": ("  /* Initialize the value to do not recheck, will be updated below */\n"
+                 "  out->recheck = false;\n"),
+}
+
+
+def _boxspgist_poscases(posaxes: list, posops: list, dims: str) -> str:
+    """The position strategies of the inner consistent function, those of
+    manifest.d/boxposops.yaml on the axes of the box. An axis states its
+    operations in the order low, overlow, high, overhigh, and a node can hold a
+    box answering one only where it is not wholly on the other side of the
+    query: low is refuted by overhigh, overlow by high, high by overlow and
+    overhigh by low"""
+    def strat(op):
+        return "Over" + op[4:].capitalize() if op.startswith("Over") else op
+
+    def kernel(op):
+        s = strat(op)
+        return s[0].lower() + s[1:] + dims
+
+    out = []
+    for axis in ("x", "y", "z", "t"):
+        if axis not in posaxes:
+            continue
+        low, overlow, high, overhigh = [o["op"] for o in posops if o["axis"] == axis]
+        for op, refuter in ((low, "Over" + high.lower()), (overlow, high),
+                            (high, "Over" + low.lower()), (overhigh, low)):
+            out.append(f"        case RT{strat(op)}StrategyNumber:\n"
+                       f"          flag = ! {kernel(refuter)}(&next_nodebox, &queries[i]);\n"
+                       "          break;\n")
+    return "".join(out)
+
+
+def _boxspgist_nodetest(test: str, box: dict) -> str:
+    """The overlap or containment test of a node, on the bound its level splits
+    on for a k-d tree when the box has such kernels"""
+    whole = f"{test}{box['dims']}(&next_nodebox, &queries[i])"
+    if not box["kdnode"]:
+        return whole
+    return (f"(idxtype == SPGIST_QUADTREE) ?\n            {whole} :\n"
+            f"            {test}KD(&next_nodebox, &queries[i], in->level)")
+
+
+def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
+    """The SP-GiST support functions of a box type, rendered from its template
+    as #render_boxgist renders the GiST ones"""
+    if box["bound"]:
+        distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
+                    "       * reports is lowered to stay under the operator's own distance */\n"
+                    f"      distances[i] = {box['box']}_index_distance_bound(\n"
+                    f"        {box['distance']}, &box, key);")
+    else:
+        distance = f"      distances[i] = {box['distance']};"
+    text = read_template("boxspgist.c.tmpl")
+    for key, val in (("{RECHECKINIT}", _BOXSPGIST_RECHECK[box["leafrecheck"]]),
+                     ("{LEAFEXTRA}", box.get("leafextra") or ""),
+                     ("{LEAFDISTANCE}", distance),
+                     ("{POSCASES}", _boxspgist_poscases(posaxes, posops,
+                                                        box["dims"])),
+                     ("{OVERLAP}", _boxspgist_nodetest("overlap", box)),
+                     ("{CONTAIN}", _boxspgist_nodetest("contain", box)),
+                     ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
+                     ("{PGETDATUM}", box["pgetdatum"]), ("{SORTED}", box["sorted"]),
+                     ("{NODE}", box["node"]), ("{DIMS}", box["dims"]),
+                     ("{PREFIX}", box["prefix"]), ("{CTYPE}", box["ctype"]),
+                     ("{MEOSTYPE}", box["meostype"]), ("{NOUN}", box["noun"]),
+                     ("{BOX}", box["box"])):
+        text = text.replace(key, val)
+    return text
+
+
+def splice_boxspgist(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's markers with `rendered`, as
+    #splice_boxgist does for the GiST ones"""
+    begin, end = _boxspgist_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
@@ -6687,6 +6784,16 @@ def main() -> int:
         p.write_text(splice_boxgist(p.read_text(), box["box"],
                                     render_boxgist(box, gist["samekinds"])))
         print(f"spliced boxgist {box['box']} -> {box['file']}")
+    posaxes = {bt["box"]: bt.get("posaxes", []) for bt in mf.get("boxtypes", [])}
+    for box in (mf.get("boxspgist") or {}).get("boxes", []):
+        p = ROOT / box["file"]
+        if args.check:
+            print(f"would splice boxspgist {box['box']} -> {box['file']}")
+            continue
+        p.write_text(splice_boxspgist(p.read_text(), box["box"],
+                                      render_boxspgist(box, posaxes[box["box"]],
+                                                       mf["boxposops"])))
+        print(f"spliced boxspgist {box['box']} -> {box['file']}")
     return 0
 
 

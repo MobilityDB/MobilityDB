@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------
+# SP-GiST support axis (C support function generator). The SP-GiST support
+# functions of a box type -- config, the quad-tree and k-d tree choose,
+# pick-split and inner consistent functions, and the leaf consistency function --
+# are the same for every box type, so each box renders them from
+# templates/boxspgist.c.tmpl into the region between its GENERATED-BOXSPGIST
+# markers in `file`, as manifest.d/boxgist.yaml does for the GiST ones. A point
+# cloud box is indexed by these of the spatiotemporal boxes, its bytes beginning
+# with a whole spatiotemporal box. A box states:
+#   box, ctype, meostype   its SQL name, C type and MeosType;
+#   prefix                 the prefix of its support functions (Prefix_*);
+#   dims                   the suffix of its quadrant and node kernels, the number
+#                          of bounds its quad-tree partitions on (getQuadrant4D);
+#   node, sorted           the C types of its traversal value and of its sorted
+#                          boxes;
+#   getbox                 the function turning a query argument into a box,
+#                          written in MEOS beside its other index kernels;
+#   datumget, pgetdatum    the macros reading and writing a box as a Datum;
+#   kdnode                 whether a k-d tree node tests overlap and containment
+#                          on the bound its level splits on (overlapKD) rather
+#                          than on all of them;
+#   leafrecheck            the recheck a leaf starts from: `strategy` for none,
+#                          the strategies it is lossy for adding theirs, or
+#                          `all`;
+#   leafextra              text the leaf adds for each query, before its box;
+#   distance, bound        the distance of a query box and a leaf key, and
+#                          whether a rechecked leaf lowers it to a bound of the
+#                          distance its ordering operator computes;
+#   noun                   the plural noun of its briefs.
+# Its position strategies are those of manifest.d/boxposops.yaml on the axes
+# manifest.d/boxtypes.yaml gives the box (`posaxes`).
+# ---------------------------------------------------------------------------
+boxspgist:
+  boxes:
+    - box:         tbox
+      file:        mobilitydb/src/temporal/tnumber_spgist.c
+      ctype:       TBox
+      meostype:    T_TBOX
+      prefix:      Tbox
+      dims:        4D
+      node:        TboxNode
+      sorted:      SortedTbox
+      getbox:      tnumber_spgist_get_tbox
+      datumget:    DatumGetTboxP
+      pgetdatum:   TboxPGetDatum
+      kdnode:      false
+      leafrecheck: all
+      distance: >-
+        distance_double(nad_tbox_tbox(&box, key),
+                key->span.basetype)
+      bound:       false
+      noun:        temporal numbers
+    - box:         stbox
+      file:        mobilitydb/src/geo/tspatial_spgist.c
+      ctype:       STBox
+      meostype:    T_STBOX
+      prefix:      Stbox
+      dims:        8D
+      node:        STboxNode
+      sorted:      SortedSTbox
+      getbox:      tspatial_spgist_get_stbox
+      datumget:    DatumGetSTboxP
+      pgetdatum:   STboxPGetDatum
+      kdnode:      true
+      leafrecheck: strategy
+      leafextra: |
+        #if POINTCLOUD
+            /* The leaf value of a point cloud box keeps its bounds and drops the
+             * schema identifier the operator also compares, so the answer is a
+             * superset of the operator's and every strategy is rechecked */
+            if (type == T_TPCBOX)
+              out->recheck = true;
+        #endif /* POINTCLOUD */
+      distance:    nad_stbox_stbox(&box, key, true)
+      bound:       true
+      noun:        spatiotemporal values
