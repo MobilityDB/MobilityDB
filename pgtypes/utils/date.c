@@ -69,7 +69,7 @@ anytime_typmod_check(bool istz, int32 typmod)
 {
   if (typmod < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "TIME(%d)%s precision must not be negative",
       typmod, (istz ? " WITH TIME ZONE" : ""));
     return INT_MAX;
@@ -474,7 +474,7 @@ minus_date_date(DateADT date1, DateADT date2)
 {
   if (DATE_NOT_FINITE(date1) || DATE_NOT_FINITE(date2))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot subtract infinite dates");
     return INT_MAX;
   }
@@ -1963,7 +1963,7 @@ interval_to_time(const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot convert infinite interval to time");
     return PG_INT64_MAX;
   }
@@ -1998,7 +1998,7 @@ plus_time_interval(TimeADT time, Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot add infinite interval to time");
     return PG_INT64_MAX;
   }
@@ -2020,7 +2020,7 @@ minus_time_interval(TimeADT time, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot subtract infinite interval from time");
     return PG_INT64_MAX;
   }
@@ -2570,7 +2570,7 @@ plus_timetz_interval(const TimeTzADT *timetz, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot add infinite interval to time");
     return NULL;
   }
@@ -2594,7 +2594,7 @@ minus_timetz_interval(const TimeTzADT *timetz, const Interval *interv)
 {
   if (INTERVAL_NOT_FINITE(interv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "cannot subtract infinite interval from time");
     return NULL;
   }
@@ -2983,14 +2983,14 @@ pg_timetz_izone(const TimeTzADT *timetz, const Interval *zone)
 {
   if (INTERVAL_NOT_FINITE(zone))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must be finite", 
       pg_interval_out(zone));
     return NULL;
   }
   if (zone->month != 0 || zone->day != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must not include months or days",
       pg_interval_out(zone));
     return NULL;

@@ -557,7 +557,7 @@ div_int32_int32(int32 num1, int32 num2)
 
   if (num2 == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -704,7 +704,7 @@ div_int16_int16(int16 num1, int16 num2)
 
   if (num2 == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return SHRT_MAX;
   }
@@ -801,7 +801,7 @@ div_int16_int32(int16 num1, int32 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -879,7 +879,7 @@ div_int32_int16(int32 num1, int16 num2)
 
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -919,7 +919,7 @@ int32_mod(int32 num1, int32 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -947,7 +947,7 @@ int16_mod(int16 num1, int16 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return SHRT_MAX;
   }

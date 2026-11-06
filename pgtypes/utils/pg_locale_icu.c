@@ -187,7 +187,7 @@ meos_create_pg_locale_icu(Oid collid UNUSED)
   return result;
 #else
   /* could get here if a collation was created by a build with ICU */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
     "ICU is not supported in this build");
   return NULL;
 #endif
@@ -237,7 +237,7 @@ pg_ucol_open(const char *loc_str)
     uloc_getLanguage(loc_str, lang, ULOC_LANG_CAPACITY, &status);
     if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "could not get language from locale \"%s\": %s",
         loc_str, u_errorName(status))));
       return NULL;
@@ -258,7 +258,7 @@ pg_ucol_open(const char *loc_str)
   if (U_FAILURE(status))
   {
     /* use original string for error report */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "could not open collator for locale \"%s\": %s",
       orig_str, u_errorName(status));
     return NULL;
@@ -276,7 +276,7 @@ pg_ucol_open(const char *loc_str)
     if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING)
     {
       ucol_close(collator);
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "could not open collator for locale \"%s\": %s", orig_str,
         u_errorName(status));
       return NULL;
@@ -325,7 +325,7 @@ make_icu_collator(const char *iculocstr, const char *icurules)
     if (!all_rules)
     {
       ucol_close(collator_std_rules);
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
         "out of memory");
       return NULL;
     }
@@ -338,7 +338,7 @@ make_icu_collator(const char *iculocstr, const char *icurules)
       UCOL_DEFAULT, UCOL_DEFAULT_STRENGTH, NULL, &status);
     if (U_FAILURE(status))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "could not open collator for locale \"%s\" with rules \"%s\": %s",
         iculocstr, icurules, u_errorName(status));
       return NULL;
@@ -746,7 +746,7 @@ init_icu_converter(void)
     get_encoding_name_for_icu(GetDatabaseEncoding());
   if (! icu_encoding_name)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "encoding \"%s\" not supported by ICU",
       pg_encoding_to_char(GetDatabaseEncoding()));
     return;

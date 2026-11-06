@@ -1196,7 +1196,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
 
   if (IS_EEEE(num) && n->key->id != NUM_E)
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
       "\"EEEE\" must be the last pattern used");
     return; // TODO
   }
@@ -1206,7 +1206,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_9:
       if (IS_BRACKET(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "\"9\" must be ahead of \"PR\"");
         return; // TODO
       }
@@ -1224,7 +1224,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_0:
       if (IS_BRACKET(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "\"0\" must be ahead of \"PR\"");
         return; // TODO
       }
@@ -1253,13 +1253,13 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_DEC:
       if (IS_DECIMAL(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "multiple decimal points");
         return; // TODO
       }
      if (IS_MULTI(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"V\" and decimal point together");
         return; // TODO
       }
@@ -1273,13 +1273,13 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_S:
       if (IS_LSIGN(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"S\" twice");
         return; // TODO
       }
       if (IS_PLUS(num) || IS_MINUS(num) || IS_BRACKET(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"S\" and \"PL\"/\"MI\"/\"SG\"/\"PR\" together");
         return; // TODO
       }
@@ -1301,7 +1301,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_MI:
       if (IS_LSIGN(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"S\" and \"MI\" together");
         return; // TODO
       }
@@ -1313,7 +1313,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_PL:
       if (IS_LSIGN(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"S\" and \"PL\" together");
         return; // TODO
       }
@@ -1325,7 +1325,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_SG:
       if (IS_LSIGN(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"S\" and \"SG\" together");
         return; // TODO
       }
@@ -1336,7 +1336,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_PR:
       if (IS_LSIGN(num) || IS_PLUS(num) || IS_MINUS(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"PR\" and \"S\"/\"PL\"/\"MI\"/\"SG\" together");
         return; // TODO
       }
@@ -1347,7 +1347,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_RN:
       if (IS_ROMAN(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"RN\" twice");
         return; // TODO
       }
@@ -1362,7 +1362,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_V:
       if (IS_DECIMAL(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"V\" and decimal point together");
         return; // TODO
       }
@@ -1372,7 +1372,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
     case NUM_E:
       if (IS_EEEE(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "cannot use \"EEEE\" twice");
         return; // TODO
       }
@@ -1380,7 +1380,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
         IS_BRACKET(num) || IS_MINUS(num) || IS_PLUS(num) ||
         IS_ROMAN(num) || IS_MULTI(num))
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "\"EEEE\" is incompatible with other formats");
         return; // TODO
       }
@@ -1391,7 +1391,7 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
   if (IS_ROMAN(num) &&
     (num->flag & ~(NUM_F_ROMAN | NUM_F_FILLMODE)) != 0)
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "\"RN\" is incompatible with other formats");
         return; // TODO
       }
@@ -1551,7 +1551,7 @@ get_th(char *num, int type)
   last = *(num + (len - 1));
   if (!isdigit((unsigned char) last))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
       "\"%s\" is not a number", num);
     return NULL;
   }
@@ -1633,7 +1633,7 @@ str_tolower(const char *buff, size_t nbytes, Oid collid)
      * This typically means that the parser could not resolve a conflict
      * of implicit collations, so report it that way.
      */
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for %s function",
       "lower()");
     return NULL;
@@ -1696,7 +1696,7 @@ str_toupper(const char *buff, size_t nbytes, Oid collid)
      * This typically means that the parser could not resolve a conflict
      * of implicit collations, so report it that way.
      */
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for %s function",
       "upper()");
     return NULL;
@@ -1759,7 +1759,7 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
      * This typically means that the parser could not resolve a conflict
      * of implicit collations, so report it that way.
      */
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for %s function",
       "initcap()");
     return NULL;
@@ -2632,7 +2632,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2654,7 +2654,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2676,7 +2676,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2698,7 +2698,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2720,7 +2720,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2742,7 +2742,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2768,7 +2768,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2788,7 +2788,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2808,7 +2808,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2829,7 +2829,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2848,7 +2848,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -2868,7 +2868,7 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
             strcpy(s, str);
           else
           {
-            meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+            meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
               "localized string format value too long");
             return; // TODO
           }
@@ -5630,7 +5630,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
   {
     if (!Np->is_to_char)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "\"EEEE\" not supported for input");
       return NULL;
     }
@@ -5886,7 +5886,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 
             if (roman_result < 0)
             {
-              meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+              meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
                 "invalid Roman numeral");
               return NULL;
             }

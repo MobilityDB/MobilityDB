@@ -145,7 +145,7 @@ InitializeClientEncoding(int client_encoding)
      * Oops, the requested conversion is not available. We couldn't fail
      * before, but we can now.
      */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "conversion between %s and %s is not supported",
       pg_enc2name_tbl[client_encoding].name, GetDatabaseEncodingName());
   }
@@ -354,13 +354,13 @@ pg_convert(const bytea *string, const char *src_encoding_name,
   int dest_encoding = pg_char_to_encoding(dest_encoding_name);
   if (src_encoding < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid source encoding name \"%s\"", src_encoding_name);
     return NULL;
   }
   if (dest_encoding < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid destination encoding name \"%s\"",
       dest_encoding_name);
     return NULL;
@@ -404,7 +404,7 @@ length_in_encoding(const bytea *string, char *src_encoding_name)
   int src_encoding = pg_char_to_encoding(src_encoding_name);
   if (src_encoding < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid encoding name \"%s\"", src_encoding_name);
     return -1;
   }
@@ -631,7 +631,7 @@ pg_unicode_to_server(pg_wchar c, unsigned char *s)
    */
   if (!is_valid_unicode_codepoint(c))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
       "invalid Unicode code point");
     return;
   }
@@ -656,7 +656,7 @@ pg_unicode_to_server(pg_wchar c, unsigned char *s)
   /* For all other cases, we must have a conversion function available */
   if (Utf8ToServerConvProc == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "conversion between %s and %s is not supported",
       pg_enc2name_tbl[PG_UTF8].name, GetDatabaseEncodingName());
     return;

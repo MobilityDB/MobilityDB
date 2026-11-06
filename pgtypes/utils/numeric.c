@@ -2243,7 +2243,7 @@ numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
         case 0:
           if (have_error)
             *have_error = true;
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2262,7 +2262,7 @@ numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
         case 0:
           if (have_error)
             *have_error = true;
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2351,7 +2351,7 @@ pg_numeric_div_trunc(Numeric num1, Numeric num2)
       switch (numeric_sign_internal(num2))
       {
         case 0:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2368,7 +2368,7 @@ pg_numeric_div_trunc(Numeric num1, Numeric num2)
       switch (numeric_sign_internal(num2))
       {
         case 0:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2459,7 +2459,7 @@ numeric_mod_opt_error(Numeric num1, Numeric num2, bool *have_error)
       {
         if (have_error)
           *have_error = true;
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
           "division by zero");
         return NULL;
       }
@@ -2720,7 +2720,7 @@ pg_numeric_fac(int64 num)
 
   if (num < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "factorial of a negative number is undefined");
     return NULL;
   }
@@ -3576,10 +3576,10 @@ pg_numeric_int4_opt_error(Numeric num, bool *have_error)
     else
     {
       if (NUMERIC_IS_NAN(num))
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "cannot convert NaN to %s", "integer");
       else
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "cannot convert infinity to %s", "integer");
       return INT_MAX;
     }
@@ -3642,10 +3642,10 @@ numeric_to_int16(Numeric num)
   if (NUMERIC_IS_SPECIAL(num))
   {
     if (NUMERIC_IS_NAN(num))
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "cannot convert NaN to %s", "smallint");
     else
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "cannot convert infinity to %s", "smallint");
     return INT16_MAX;
   }
@@ -5923,7 +5923,7 @@ div_var(const NumericVar *var1, const NumericVar *var2, NumericVar *result,
    */
   if (var2ndigits == 0 || var2->digits[0] == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -6448,7 +6448,7 @@ div_var_int(const NumericVar *var, int ival, int ival_weight,
   /* Guard against division by zero */
   if (ival == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -6565,7 +6565,7 @@ div_var_int64(const NumericVar *var, int64 ival, int ival_weight,
   /* Guard against division by zero */
   if (ival == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -8080,7 +8080,7 @@ power_var_int(const NumericVar *base, int exp, int exp_dscale,
   {
     if (exp < 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
         "division by zero");
       return;
     }

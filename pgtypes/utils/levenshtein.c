@@ -125,7 +125,7 @@ varstr_levenshtein(const char *source, int slen,
    */
   if (!trusted &&  (m > MAX_LEVENSHTEIN_STRLEN || n > MAX_LEVENSHTEIN_STRLEN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "levenshtein argument exceeds maximum length of %d characters",
       MAX_LEVENSHTEIN_STRLEN);
   }
