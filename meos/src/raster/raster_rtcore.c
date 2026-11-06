@@ -458,7 +458,8 @@ raster_as_wkb(const Raster *rast, uint8_t variant, size_t *size_out)
  * @param[in] rast Raster
  * @param[in] variant Output variant, whose WKB_NDR or WKB_XDR flag names the
  * byte order, the order of the machine when it names neither
- * @param[out] size_out Size of the output, not counting the null terminator
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @errval NULL
  * @csqlfn #Raster_as_hexwkb()
  */
@@ -480,7 +481,7 @@ raster_as_hexwkb(const Raster *rast, uint8_t variant, size_t *size_out)
   }
   result[2 * wkb_size] = '\0';
   pfree(wkb);
-  *size_out = 2 * wkb_size;
+  *size_out = 2 * wkb_size + 1;
   return result;
 }
 
