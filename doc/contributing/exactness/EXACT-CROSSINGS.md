@@ -396,7 +396,7 @@ detect a tie the same way, by the exact sign of the polynomial at `m + 0.5`.
 
 **How it is adopted: never as a sweep.** A convention the tree shares is never rewritten site by
 site, nor changed on its own without a fix that needs it. The nearest microsecond enters only
-through the shared primitive of steps 2–4 (section 9). It switches every form of a crossing at
+through the shared primitive of steps 2–5 (section 9). It switches every form of a crossing at
 once, in the pull requests whose removal of the bands moves expected outputs anyway. Each moved
 output is classified (dating only, or a correction) and moves by at most one microsecond.
 
@@ -458,13 +458,37 @@ diffs classified:
 3. **tpoint and circular buffer:** `tDwithin` and its ever/always forms, and the distance
    turning points, through the same primitive with the exact polynomial sign.
 4. **The remaining turning points:** unary functions, bearing, `tnumber_mathfuncs.c`.
+5. **The raster grid walks** of `raster_quadbin.c`: `tpointseq_raster_point_traverse` dates each
+   line of the grid a trip crosses as `inst1->t + (TimestampTz) (dt * s)` and reads the value at
+   the fraction `s`, not at the instant it states; the walks at its lines 891 and 1055–1059 date
+   their crossings alike. Witness, the second listing of Sect. "Nearest and Bilinear Values" of
+   chapter 5 of the Vol2 book, over the raster `Depth` of the companion's
+   `chapter5/map_algebra.sql`:
 
-Steps 2–4 carry the dating rule of section 7. If the committers keep truncation instead, the
+   ```sql
+   SELECT asText(rasterValue(tgeompoint '[SRID=25832;Point(600020 6400150)@2025-01-01 08:00,
+     SRID=25832;Point(600380 6400150)@2025-01-01 08:06]', Rast, 1, true, 'bilinear'))
+   FROM Depth;
+   ```
+
+   The trip runs along the centers of the third row, whose values 10, 12 and 14 lie on a line,
+   so the answer the book prints merges them: `[9@08:00:00, 9@08:00:30, 10@08:02:10,
+   14@08:05:30, 14@08:06:00]`. Master `c2fa764b22` dates the crossing of the center at exactly
+   08:03:50 one microsecond early and reads its value there, so the points stop being collinear
+   and stay: `[9@08:00:00, 9@08:00:30, 10@08:02:10, 11@08:03:00,
+   12.0000000000001@08:03:49.999999, 13.000000000000203@08:04:40, 14@08:05:30,
+   14@08:06:00]`. The turning-point listing that follows it in the book, whose crossings fall on
+   whole minutes of a trip of 4 minutes, already answers as printed. The companion's
+   `chapter5/expected/fields_along_trips.out` still holds the error this listing raised before
+   `rasterValue` read bilinear values along a trip; it takes the printed answer when this step
+   merges.
+
+Steps 2–5 carry the dating rule of section 7. If the committers keep truncation instead, the
 steps still apply with truncation computed exactly. The #2852 expected output then moves by one
 microsecond, to a result that is equally correct at every microsecond.
 
-**Schedule.** Steps 2–4 start only after the work of [Exact distance](EXACT-DISTANCE.md)
+**Schedule.** Steps 2–5 start only after the work of [Exact distance](EXACT-DISTANCE.md)
 is finished. They share their readers in `lifting.c` with
 [Any number of turning points in the lifting](N-TURNING-POINTS.md). The order is: that note's
-first pull request (one turning-point callback per arity, with the same results), then steps 2–4
+first pull request (one turning-point callback per arity, with the same results), then steps 2–5
 here on the merged readers, then that note's intervals of any number and its rigid geometries.
