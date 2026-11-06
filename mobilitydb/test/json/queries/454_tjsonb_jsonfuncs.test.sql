@@ -202,5 +202,12 @@ SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 
+-- An error whose MEOS code has no class of its own raises the internal error:
+-- MEOS_ERR_SQL_JSON_ERROR stands for each of the SQL/JSON classes, so only
+-- the state of the error is shown
+\set VERBOSITY sqlstate
+SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
+\set VERBOSITY default
+
 -------------------------------------------------------------------------------
 

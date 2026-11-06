@@ -714,3 +714,5 @@ SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01
   tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
   Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
 ERROR:  The temporal value must be of subtype Instant
+SELECT poseFromGeoPose('{"position":{"lat":1}}');
+ERROR:  22P02
