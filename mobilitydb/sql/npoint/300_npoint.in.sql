@@ -282,6 +282,10 @@ CREATE FUNCTION npoint(geometry)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Geompoint_to_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION npoint(geometry, tolerance float)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Geompoint_to_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);
 CREATE CAST (geometry AS npoint) WITH FUNCTION npoint(geometry);

@@ -48,6 +48,7 @@
 /* MEOS */
 #include <meos.h>
 #include "temporal/type_inout.h"
+#include "temporal/type_util.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/ways_cache.h"
@@ -283,57 +284,75 @@ route_geom(int64 rid)
  * Conversion functions
  *****************************************************************************/
 
-#define SQL_MAXLEN 1024
-
 /**
  * @ingroup meos_npoint_base_conversion
- * @brief Transform a geometry into a network point
+ * @brief Transform a geometry into a network point located on the route
+ * nearest to it within a tolerance
+ * @details The route is the nearest one among those whose distance to the
+ * point is at most the tolerance, the one with the least identifier among
+ * equally near routes, and the position is the one of the point projected on
+ * that route. The result is `NULL` when no route is within the tolerance.
  * @param[in] gs Geometry
+ * @param[in] tolerance Maximum distance between the point and the route, in
+ * the units of the spatial reference system of the ways network
  * @csqlfn #Geompoint_to_npoint()
  */
 Npoint *
-geompoint_to_npoint(const GSERIALIZED *gs)
+geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_finite(tolerance) ||
+      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
     return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
   int32_t srid_ways = get_srid_ways();
   if (srid_ways == SRID_INVALID || ! ensure_same_srid(srid_geom, srid_ways))
     return NULL;
 
-  char *geomstr = geo_as_wkt(gs, OUT_DEFAULT_DECIMAL_DIGITS, true, NULL);
-  char sql[SQL_MAXLEN];
-  snprintf(sql, sizeof(sql),
-    "SELECT npoint(gid, ST_LineLocatePoint(the_geom, '%s')) "
-    "FROM public.ways WHERE ST_DWithin(the_geom, '%s', %lf) "
-    "ORDER BY ST_Distance(the_geom, '%s') LIMIT 1", geomstr, geomstr,
-    MEOS_EPSILON, geomstr);
-  pfree(geomstr);
-  Npoint *result = palloc(sizeof(Npoint));
-  bool isNull = true;
+  /* The table answers the routes whose bounding box meets the square of the
+   * tolerance around the point, which a spatial index on the routes serves.
+   * The boxes of PostGIS are rounded outwards, so that these routes include
+   * every route within the tolerance, and the distance is then decided by
+   * #route_nearest_update, as the MEOS build decides it. The point is passed
+   * in binary, which keeps every bit of its coordinates. */
+  size_t size;
+  uint8_t *wkb = geo_as_ewkb(gs, "NDR", &size);
+  bytea *point = bstring2bytea(wkb, size);
+  pfree(wkb);
+  Oid argtypes[2] = {BYTEAOID, FLOAT8OID};
+  Datum values[2] = {PointerGetDatum(point), Float8GetDatum(tolerance)};
+  const char *sql =
+    "SELECT gid, the_geom FROM public.ways "
+    "WHERE the_geom && ST_Expand(ST_GeomFromEWKB($1), $2)";
+
+  /* Route, distance and position of the nearest route */
+  int64 min_gid = 0;
+  double min_dist = DBL_MAX, min_pos = 0.0;
   SPI_connect();
-  int ret = SPI_execute(sql, true, 1);
-  uint64 proc = SPI_processed;
-  if (ret > 0 && proc > 0 && SPI_tuptable)
+  int ret = SPI_execute_with_args(sql, 2, argtypes, values, NULL, true, 0);
+  if (ret == SPI_OK_SELECT && SPI_tuptable)
   {
     SPITupleTable *tuptable = SPI_tuptable;
-    Datum value = SPI_getbinval(tuptable->vals[0], tuptable->tupdesc, 1, &isNull);
-    if (! isNull)
+    for (uint64 i = 0; i < SPI_processed; i++)
     {
-      /* Must allocate this in upper executor context to keep it alive after SPI_finish() */
-      Npoint *np = DatumGetNpointP(value);
-      memcpy(result, np, sizeof(Npoint));
+      bool gid_isnull, geom_isnull;
+      Datum gid = SPI_getbinval(tuptable->vals[i], tuptable->tupdesc, 1,
+        &gid_isnull);
+      Datum geom = SPI_getbinval(tuptable->vals[i], tuptable->tupdesc, 2,
+        &geom_isnull);
+      if (gid_isnull || geom_isnull)
+        continue;
+      GSERIALIZED *line = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+      route_nearest_update(gs, DatumGetInt64(gid), line, tolerance, &min_gid,
+        &min_dist, &min_pos);
     }
   }
   SPI_finish();
-  if (isNull)
-  {
-    pfree(result);
-    return NULL;
-  }
-  return result;
+  pfree(point);
+  /* The result is made after SPI_finish(), in the context of the caller */
+  return (min_dist == DBL_MAX) ? NULL : npoint_make(min_gid, min_pos);
 }
 
 /*****************************************************************************/

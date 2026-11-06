@@ -425,6 +425,30 @@ SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::npoint;
  
 (1 row)
 
+SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5)::npoint;
+ st_translate 
+--------------
+ 
+(1 row)
+
+SELECT npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.3);
+ npoint 
+--------
+ 
+(1 row)
+
+SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.45), 6);
+        round        
+---------------------
+ NPoint(29,0.431073)
+(1 row)
+
+SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 10), 6);
+        round        
+---------------------
+ NPoint(29,0.431073)
+(1 row)
+
 SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.625699095428 97.5346013903618)'::nsegment;
  nsegment 
 ----------
@@ -442,6 +466,12 @@ SELECT geometry 'Point empty'::npoint;
 ERROR:  Only non-empty geometries accepted
 SELECT geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'::nsegment;
 ERROR:  Only point or line geometries accepted
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, -1);
+ERROR:  The value cannot be negative: -1.000000
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'NaN');
+ERROR:  The value must be finite
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'Infinity');
+ERROR:  The value must be finite
 SELECT npoint 'npoint(1,0.5)' = npoint 'npoint(1,0.5)';
  ?column? 
 ----------
