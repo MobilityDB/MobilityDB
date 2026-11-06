@@ -663,7 +663,7 @@ db_encoding_convert(int encoding, char **str)
   char *mstr = strdup(pstr);
   if (mstr == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
   }
 
@@ -739,7 +739,7 @@ PGLC_localeconv(void)
   /* If any of the preceding strdup calls failed, complain now. */
   if (! struct_lconv_is_valid(&worklconv))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
     return NULL;
   }
@@ -1751,7 +1751,7 @@ icu_language_tag(const char *loc_str UNUSED, int elevel UNUSED)
 
   return langtag;
 #else              /* not USE_ICU */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
     "ICU is not supported in this build");
   return NULL;        /* keep compiler quiet */
 #endif              /* not USE_ICU */
@@ -1820,7 +1820,7 @@ icu_validate_locale(const char *loc_str UNUSED)
   ucol_close(collator);
 #else              /* not USE_ICU */
   /* could get here if a collation was created by a build with ICU */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
     "ICU is not supported in this build");
 #endif              /* not USE_ICU */
 }

@@ -3507,7 +3507,7 @@ setPathArray(JsonbIterator **it, Datum *path_elems, bool *path_nulls,
     idx = strtoint(c, &badp, 10);
     if (badp == c || *badp != '\0' || errno != 0)
     {
-      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      meos_error(ERROR, MEOS_ERR_TEXT_INPUT,
         "path element at position %d is not an integer: \"%s\"", level + 1, c);
       pfree(path_str); /* MEOS */
       return false;

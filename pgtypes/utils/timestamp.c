@@ -328,7 +328,7 @@ AdjustTimestampForTypmod(Timestamp *time, int32 typmod, Node *escontext UNUSED)
   {
     if (typmod < 0 || typmod > MAX_TIMESTAMP_PRECISION)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "timestamp(%d) precision must be between %d and %d",
         typmod, 0, MAX_TIMESTAMP_PRECISION);
       return false;
@@ -649,7 +649,7 @@ float8_to_timestamptz(float8 secs)
   /* Deal with NaN and infinite inputs ... */
   if (isnan(secs))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp cannot be NaN");
     return DT_NOEND;
   }
@@ -1214,7 +1214,7 @@ AdjustIntervalForTypmod(Interval *interval, int32 typmod,
     {
       if (precision < 0 || precision > MAX_INTERVAL_PRECISION)
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "interval(%d) precision must be between %d and %d",
           precision, 0, MAX_INTERVAL_PRECISION);
         return false;
@@ -3597,7 +3597,7 @@ div_interval_float8(const Interval *interv, float8 factor)
 {
   if (factor == 0.0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return NULL;
   }
@@ -4018,14 +4018,14 @@ pg_timestamp_bin(Timestamp ts, const Interval *stride, Timestamp origin)
 
   if (INTERVAL_NOT_FINITE(stride))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamps cannot be binned into infinite intervals");
     return DT_NOEND;
   }
 
   if (stride->month != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "timestamps cannot be binned into intervals containing months or years");
     return DT_NOEND;
   }
@@ -4038,7 +4038,7 @@ pg_timestamp_bin(Timestamp ts, const Interval *stride, Timestamp origin)
   }
   if (stride_usecs <= 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "stride must be greater than zero");
     return DT_NOEND;
   }
@@ -4122,7 +4122,7 @@ pg_timestamp_trunc(Timestamp ts, const text *units)
           return ts;
           break;
         default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
             "unit \"%s\" not supported for type %s",
             // lowunits, format_type_be(TIMESTAMPOID));
             lowunits, "timestamp without time zone");
@@ -4216,7 +4216,7 @@ pg_timestamp_trunc(Timestamp ts, const text *units)
         break;
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPOID));
           lowunits, "timestamp without time zone");
@@ -4233,7 +4233,7 @@ pg_timestamp_trunc(Timestamp ts, const text *units)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMESTAMPOID));
       lowunits, "timestamp without time zone");
@@ -4273,13 +4273,13 @@ pg_timestamptz_bin(TimestampTz ts, const Interval *stride, TimestampTz origin)
   }
   if (INTERVAL_NOT_FINITE(stride))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamps cannot be binned into infinite intervals");
     return DT_NOEND;
   }
   if (stride->month != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "timestamps cannot be binned into intervals containing months or years");
     return DT_NOEND;
   }
@@ -4292,7 +4292,7 @@ pg_timestamptz_bin(TimestampTz ts, const Interval *stride, TimestampTz origin)
   }
   if (stride_usecs <= 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "stride must be greater than zero");
     return DT_NOEND;
   }
@@ -4376,7 +4376,7 @@ timestamptz_trunc_internal(TimestampTz ts, const text *units, pg_tz *tzp)
           break;
 
         default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
             "unit \"%s\" not supported for type %s",
             // lowunits, format_type_be(TIMESTAMPTZOID));
             lowunits, "timestamp with time zone");
@@ -4478,7 +4478,7 @@ timestamptz_trunc_internal(TimestampTz ts, const text *units, pg_tz *tzp)
         break;
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPTZOID));
           lowunits, "timestamp with time zone");
@@ -4497,7 +4497,7 @@ timestamptz_trunc_internal(TimestampTz ts, const text *units, pg_tz *tzp)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMESTAMPTZOID));
       lowunits, "timestamp with time zone");
@@ -4604,7 +4604,7 @@ pg_interval_trunc(const Interval *interv, const text *units)
           break;
 
         default:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
             "unit \"%s\" not supported for type %s",
             // lowunits, format_type_be(INTERVALOID));
             lowunits, "interval");
@@ -4657,7 +4657,7 @@ pg_interval_trunc(const Interval *interv, const text *units)
 
       default:
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(INTERVALOID));
           lowunits, "interval");
@@ -4676,7 +4676,7 @@ pg_interval_trunc(const Interval *interv, const text *units)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(INTERVALOID));
       lowunits, "interval");
@@ -4862,7 +4862,7 @@ NonFiniteTimestampTzPart(int type, int unit, char *lowunits, bool isNegative,
 {
   if ((type != UNITS) && (type != RESERV))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s", lowunits,
       // format_type_be(isTz ? TIMESTAMPTZOID : TIMESTAMPOID));
       isTz ? "timestamp with time zone" : "timestamp without time zone");
@@ -4903,7 +4903,7 @@ NonFiniteTimestampTzPart(int type, int unit, char *lowunits, bool isNegative,
         return get_float8_infinity();
 
     default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "unit \"%s\" not supported for type %s", lowunits,
         // format_type_be(isTz ? TIMESTAMPTZOID : TIMESTAMPOID));
         isTz ? "timestamp with time zone" : "timestamp without time zone");
@@ -5095,7 +5095,7 @@ timestamp_part_common(text *units, Timestamp timestamp, bool retnumeric)
       case DTK_TZ_MINUTE:
       case DTK_TZ_HOUR:
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPOID));
           lowunits, "timestamp without time zone");
@@ -5137,7 +5137,7 @@ timestamp_part_common(text *units, Timestamp timestamp, bool retnumeric)
         }
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPOID));
           lowunits, "timestamp without time zone");
@@ -5146,7 +5146,7 @@ timestamp_part_common(text *units, Timestamp timestamp, bool retnumeric)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMESTAMPOID));
       lowunits, "timestamp without time zone");
@@ -5374,7 +5374,7 @@ timestamptz_part_common(TimestampTz timestamp, text *units, bool retnumeric)
         break;
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPTZOID));
           lowunits, "timestamp with time zone");
@@ -5415,7 +5415,7 @@ timestamptz_part_common(TimestampTz timestamp, text *units, bool retnumeric)
         }
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(TIMESTAMPTZOID));
           lowunits, "timestamp with time zone");
@@ -5424,7 +5424,7 @@ timestamptz_part_common(TimestampTz timestamp, text *units, bool retnumeric)
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(TIMESTAMPTZOID));
       lowunits, "timestamp with time zone");
@@ -5485,7 +5485,7 @@ NonFiniteIntervalPart(int type, int unit, char *lowunits, bool isNegative)
 {
   if ((type != UNITS) && (type != RESERV))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(INTERVALOID));
       lowunits, "interval");
@@ -5518,7 +5518,7 @@ NonFiniteIntervalPart(int type, int unit, char *lowunits, bool isNegative)
         return get_float8_infinity();
 
     default:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "unit \"%s\" not supported for type %s",
         // lowunits, format_type_be(INTERVALOID));
         lowunits, "interval");
@@ -5654,7 +5654,7 @@ interval_part_common(const Interval *interval, const text *units,
         break;
 
       default:
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "unit \"%s\" not supported for type %s",
           // lowunits, format_type_be(INTERVALOID));
           lowunits, "interval");
@@ -5714,7 +5714,7 @@ interval_part_common(const Interval *interval, const text *units,
   }
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "unit \"%s\" not recognized for type %s",
       // lowunits, format_type_be(INTERVALOID));
       lowunits, "interval");
@@ -5862,14 +5862,14 @@ pg_timestamp_izone(Timestamp ts, const Interval *zone)
     return ts;
   if (INTERVAL_NOT_FINITE(zone))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must be finite",
       pg_interval_out(zone));
     return DT_NOEND;
   }
   if (zone->month != 0 || zone->day != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must not include months or days",
       pg_interval_out(zone));
     return DT_NOEND;
@@ -6102,7 +6102,7 @@ pg_timestamptz_izone(TimestampTz tstz, const Interval *zone)
 
   if (INTERVAL_NOT_FINITE(zone))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must be finite",
       pg_interval_out(zone));
     return DT_NOEND;
@@ -6110,7 +6110,7 @@ pg_timestamptz_izone(TimestampTz tstz, const Interval *zone)
 
   if (zone->month != 0 || zone->day != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "interval time zone \"%s\" must not include months or days",
       pg_interval_out(zone));
     return DT_NOEND;

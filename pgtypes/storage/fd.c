@@ -869,7 +869,7 @@ InitFileAccess(void)
   VfdCache = (Vfd *) malloc(sizeof(Vfd));
   if (VfdCache == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
     return;
   }
@@ -1385,7 +1385,7 @@ AllocateVfd(void)
     newVfdCache = (Vfd *) realloc(VfdCache, sizeof(Vfd) * newCacheSize);
     if (newVfdCache == NULL)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
         "out of memory");
     }
     VfdCache = newVfdCache;
@@ -1547,7 +1547,7 @@ PathNameOpenFilePerm(const char *fileName, int fileFlags, mode_t fileMode)
   char *fnamecopy = strdup(fileName);
   if (fnamecopy == NULL)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
   }
 
@@ -2474,7 +2474,7 @@ reserveAllocatedDesc(void)
     newDescs = (AllocateDesc *) malloc(newMax * sizeof(AllocateDesc));
     /* Out of memory already?  Treat as fatal error. */
     if (newDescs == NULL)
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
         "out of memory");
     allocatedDescs = newDescs;
     maxAllocatedDescs = newMax;

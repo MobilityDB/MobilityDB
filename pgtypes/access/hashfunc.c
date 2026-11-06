@@ -256,7 +256,7 @@ text_hash(const text *txt, Oid collid)
 {
   if (!collid)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for string hashing");
     return UINT_MAX;
   }
@@ -306,7 +306,7 @@ text_hash_extended(const text *txt, uint64 seed, Oid collid)
 {
   if (!collid)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for string hashing");
     return ULONG_MAX;
   }

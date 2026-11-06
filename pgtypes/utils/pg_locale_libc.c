@@ -210,7 +210,7 @@ strlower_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t)(srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
     return 0;
   }
@@ -306,7 +306,7 @@ strtitle_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t)(srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
     return 0;
   }
@@ -389,7 +389,7 @@ strupper_libc_mb(char *dest, size_t destsize, const char *src, ssize_t srclen,
   /* Overflow paranoia */
   if ((size_t) (srclen + 1) > (INT_MAX / sizeof(wchar_t)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
       "out of memory");
     return 0;
   }
@@ -528,7 +528,7 @@ make_libc_collator(const char *collate, const char *ctype)
      * separate fields.
      */
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "collations with different collate and ctype values are not supported on this platform");
   }
 #endif
@@ -801,7 +801,7 @@ report_newlocale_failure(const char *localename)
    * errno with an errdetail message.
    */
   // int save_errno = errno;      /* auxiliary funcs might change errno */
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
     "could not create locale \"%s\": %m", localename);
 }
 

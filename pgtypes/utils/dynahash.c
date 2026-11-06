@@ -626,7 +626,7 @@ hash_create(const char *tabname, long nelem, const HASHCTL *info, int flags)
   {
     if (!element_alloc(hashp, nelem))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
         "out of memory");
       return NULL;
     }
@@ -1027,7 +1027,7 @@ hash_search_with_hash_value(HTAB *hashp, const void *keyPtr, uint32 hashvalue,
         if (action == HASH_ENTER_NULL)
           return NULL;
         /* report a generic message */
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_OUT_OF_MEMORY,
           "out of memory");
         return NULL;
       }
