@@ -814,4 +814,133 @@ tspatial_spgist_get_stbox(Datum value, MeosType type, STBox *result)
   }
 }
 
+/**
+ * @brief Comparator of spatiotemporal boxes based on their xmin value
+ */
+int
+stbox_xmin_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->xmin == box2->xmin)
+    return 0;
+  return (box1->xmin > box2->xmin) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their xmax value
+ */
+int
+stbox_xmax_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->xmax == box2->xmax)
+    return 0;
+  return (box1->xmax > box2->xmax) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their ymin value
+ */
+int
+stbox_ymin_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->ymin == box2->ymin)
+    return 0;
+  return (box1->ymin > box2->ymin) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their ymax value
+ */
+int
+stbox_ymax_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->ymax == box2->ymax)
+    return 0;
+  return (box1->ymax > box2->ymax) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their zmin value
+ */
+int
+stbox_zmin_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->zmin == box2->zmin)
+    return 0;
+  return (box1->zmin > box2->zmin) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their zmax value
+ */
+int
+stbox_zmax_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
+  if (box1->zmax == box2->zmax)
+    return 0;
+  return (box1->zmax > box2->zmax) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their tmin value
+ */
+int
+stbox_tmin_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
+  if (datum_eq(box1->period.lower, box2->period.lower, box1->period.basetype))
+    return 0;
+  return datum_gt(box1->period.lower, box2->period.lower,
+    box1->period.basetype) ? 1 : -1;
+}
+
+/**
+ * @brief Comparator of spatiotemporal boxes based on their tmax value
+ */
+int
+stbox_tmax_cmp(const STBox *box1, const STBox *box2)
+{
+  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
+  if (datum_eq(box1->period.upper, box2->period.upper, box1->period.basetype))
+    return 0;
+  return datum_gt(box1->period.upper, box2->period.upper,
+    box1->period.basetype) ? 1 : -1;
+}
+
+/**
+ * @brief Return the comparator of spatiotemporal boxes on a bound
+ */
+qsort_comparator
+stbox_dim_cmp(STboxDim dim)
+{
+  switch (dim)
+  {
+    case STBOX_XMIN: return (qsort_comparator) &stbox_xmin_cmp;
+    case STBOX_XMAX: return (qsort_comparator) &stbox_xmax_cmp;
+    case STBOX_YMIN: return (qsort_comparator) &stbox_ymin_cmp;
+    case STBOX_YMAX: return (qsort_comparator) &stbox_ymax_cmp;
+    case STBOX_ZMIN: return (qsort_comparator) &stbox_zmin_cmp;
+    case STBOX_ZMAX: return (qsort_comparator) &stbox_zmax_cmp;
+    case STBOX_TMIN: return (qsort_comparator) &stbox_tmin_cmp;
+    case STBOX_TMAX: return (qsort_comparator) &stbox_tmax_cmp;
+  }
+  return NULL;
+}
+
+/**
+ * @brief Compare a box with the centroid of a k-d tree level on the bound the
+ * level splits on (#stbox_kd_dim)
+ */
+int
+stbox_level_cmp(const STBox *centroid, const STBox *query, int level)
+{
+  qsort_comparator cmp = stbox_dim_cmp(stbox_kd_dim(centroid->flags, level));
+  return cmp(query, centroid);
+}
+
 /*****************************************************************************/
