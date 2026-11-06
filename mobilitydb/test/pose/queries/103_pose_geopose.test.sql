@@ -627,3 +627,9 @@ SELECT asGeoPoseStreamElement(tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01
   tpose '[Geodpose(Point(0 0 0), 1, 0, 0, 0)@2026-01-01,
   Geodpose(Point(0 0 0), 0.707107, 0, 0, 0.707107)@2026-01-02]', 6);
 \set VERBOSITY default
+
+-- A text that is not a GeoPose raises the invalid text representation, as
+-- SELECT json '{"type":' does
+\set VERBOSITY sqlstate
+SELECT poseFromGeoPose('{"position":{"lat":1}}');
+\set VERBOSITY default
