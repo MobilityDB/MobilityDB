@@ -476,14 +476,8 @@ Tbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   }
   /* The boxes are ordered on the bound the level splits on, read from the
    * axes they carry (#tbox_kd_dim) */
-  qsort_comparator qsortfn = NULL;
-  switch (tbox_kd_dim(sorted[0].box.flags, in->level))
-  {
-    case TBOX_XMIN: qsortfn = (qsort_comparator) &tbox_xmin_cmp; break;
-    case TBOX_XMAX: qsortfn = (qsort_comparator) &tbox_xmax_cmp; break;
-    case TBOX_TMIN: qsortfn = (qsort_comparator) &tbox_tmin_cmp; break;
-    case TBOX_TMAX: qsortfn = (qsort_comparator) &tbox_tmax_cmp; break;
-  }
+  qsort_comparator qsortfn =
+    tbox_dim_cmp(tbox_kd_dim(sorted[0].box.flags, in->level));
   qsort(sorted, in->nTuples, sizeof(SortedTbox), qsortfn);
   int median = in->nTuples >> 1;
   TBox *centroid = tbox_copy(&sorted[median].box);

@@ -741,20 +741,30 @@ tbox_tmax_cmp(const TBox *box1, const TBox *box2)
 }
 
 /**
+ * @brief Return the comparator of temporal boxes on a bound
+ */
+qsort_comparator
+tbox_dim_cmp(TboxDim dim)
+{
+  switch (dim)
+  {
+    case TBOX_XMIN: return (qsort_comparator) &tbox_xmin_cmp;
+    case TBOX_XMAX: return (qsort_comparator) &tbox_xmax_cmp;
+    case TBOX_TMIN: return (qsort_comparator) &tbox_tmin_cmp;
+    case TBOX_TMAX: return (qsort_comparator) &tbox_tmax_cmp;
+  }
+  return NULL;
+}
+
+/**
  * @brief Compare a box with the centroid of a k-d tree level on the bound the
  * level splits on (#tbox_kd_dim)
  */
 int
 tbox_level_cmp(const TBox *centroid, const TBox *query, int level)
 {
-  switch (tbox_kd_dim(centroid->flags, level))
-  {
-    case TBOX_XMIN: return tbox_xmin_cmp(query, centroid);
-    case TBOX_XMAX: return tbox_xmax_cmp(query, centroid);
-    case TBOX_TMIN: return tbox_tmin_cmp(query, centroid);
-    case TBOX_TMAX: return tbox_tmax_cmp(query, centroid);
-  }
-  return 0;
+  qsort_comparator cmp = tbox_dim_cmp(tbox_kd_dim(centroid->flags, level));
+  return cmp(query, centroid);
 }
 
 /*****************************************************************************/

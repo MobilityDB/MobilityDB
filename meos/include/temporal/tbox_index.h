@@ -145,6 +145,7 @@ extern int tbox_xmin_cmp(const TBox *box1, const TBox *box2);
 extern int tbox_xmax_cmp(const TBox *box1, const TBox *box2);
 extern int tbox_tmin_cmp(const TBox *box1, const TBox *box2);
 extern int tbox_tmax_cmp(const TBox *box1, const TBox *box2);
+extern qsort_comparator tbox_dim_cmp(TboxDim dim);
 extern int tbox_level_cmp(const TBox *centroid, const TBox *query, int level);
 extern void tbox_adjust(void *bbox1, void *bbox2);
 extern double tbox_penalty(void *bbox1, void *bbox2);
