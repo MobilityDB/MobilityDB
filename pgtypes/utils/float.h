@@ -239,7 +239,7 @@ float4_div(const float4 val1, const float4 val2)
 {
   if (unlikely(val2 == 0.0f) && !isnan(val1))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return FLT_MAX;
   }
@@ -264,7 +264,7 @@ float8_div(const float8 val1, const float8 val2)
 {
   if (unlikely(val2 == 0.0) && !isnan(val1))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return DBL_MAX;
   }

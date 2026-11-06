@@ -1,0 +1,289 @@
+/*****************************************************************************
+ * GiST consistent method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {CONSISTENT}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({CONSISTENT});
+/**
+ * @brief GiST consistent method for {NOUN}
+ */
+Datum
+{CONSISTENT}(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  {CTYPE} *key = {DATUMGET}(entry->key), query;
+  if (! key)
+    PG_RETURN_BOOL(false);
+
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = {BOX}_index_recheck(strategy);
+
+  /* Transform the query into a box */
+  if (! {GETBOX}(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_BOOL(false);
+
+  bool result;
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid({MEOSTYPE}, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
+    result = {BOX}_index_leaf_consistent(key, &query, strategy);
+  else
+    result = {BOX}_gist_inner_consistent(key, &query, strategy);
+
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_gist_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_union);
+/**
+ * @brief GiST union method for {NOUN}
+ * @details Return the minimal bounding box that encloses all the entries in
+ * entryvec
+ */
+Datum
+{PREFIX}_gist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  {CTYPE} *result = {BOX}_copy({DATUMGET}(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    bbox_gist_adjust({MEOSTYPE}, result, {DATUMGET}(ent[i].key),
+      &{SHARED}_adjust);
+  {RETURN}(result);
+}
+
+/*****************************************************************************
+ * GiST penalty method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_gist_penalty(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_penalty);
+/**
+ * @brief GiST penalty method for {NOUN}
+ * @note As in the R-tree paper, we use change in area as our penalty metric
+ */
+Datum
+{PREFIX}_gist_penalty(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
+  float *result = (float *) PG_GETARG_POINTER(2);
+  void *origbox = DatumGetPointer(origentry->key);
+  void *newbox = DatumGetPointer(newentry->key);
+  *result = (float) bbox_gist_penalty({MEOSTYPE}, origbox, newbox,
+    &{SHARED}_penalty);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST picksplit method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_gist_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_picksplit);
+/**
+ * @brief GiST picksplit method for {NOUN}
+ * @details
+ * The algorithm finds split of boxes by considering splits along each axis.
+ * Each entry is first projected as an interval on the first axis, and
+ * different ways to split the intervals into two groups are considered,
+ * trying to minimize the overlap of the groups. Then the same is repeated for
+ * the other axes, and the overall best split is chosen. The quality of a split
+ * is determined by overlap along that axis and some other criteria (see
+ * bbox_gist_consider_split).
+ *
+ * After that, all the entries are divided into three groups:
+ *
+ * 1. Entries which should be placed to the left group
+ * 2. Entries which should be placed to the right group
+ * 3. "Common entries" which can be placed to any of groups without affecting
+ *    of overlap along selected axis.
+ *
+ * The common entries are distributed by minimizing penalty.
+ *
+ * For details see:
+ * "A new double sorting-based node splitting algorithm for R-tree", A. Korotkov
+ * http://syrcose.ispras.ru/2011/files/SYRCoSE2011_Proceedings.pdf#page=36
+ */
+Datum
+{PREFIX}_gist_picksplit(PG_FUNCTION_ARGS)
+{
+  return bbox_gist_picksplit(fcinfo, {MEOSTYPE}, &{SHARED}_adjust,
+    &{SHARED}_penalty);
+}
+
+/*****************************************************************************
+ * GiST same method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_gist_same(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_same);
+/**
+ * @brief GiST same method for {NOUN}
+ * @details Return true only when the boxes are exactly the same. Fuzzy
+ * comparisons cannot be used here without breaking index consistency, and an
+ * index method answers where the operator @p ~= refuses its arguments, so
+ * this is not that operator
+ */
+Datum
+{PREFIX}_gist_same(PG_FUNCTION_ARGS)
+{
+  {CTYPE} *b1 = {GETARG}(0);
+  {CTYPE} *b2 = {GETARG}(1);
+  bool *result = (bool *) PG_GETARG_POINTER(2);
+  if (b1 && b2)
+{SAME}
+  else
+    *result = (! b1 && ! b2);
+  PG_RETURN_POINTER(result);
+}
+
+/*****************************************************************************
+ * GiST distance method
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance between the bounding box of an index entry and a
+ * query, in the last argument whether the leaf entries must be rechecked
+ * @param[in] fcinfo Catalog information about the external function
+ * @param[in] boxcolumn True when the index is built over a column of
+ *   {NOUN}, so that a leaf key is the value itself
+ */
+static Datum
+{BOX}_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  {CTYPE} *key = ({CTYPE} *) DatumGetPointer(entry->key);
+  if (! key)
+    PG_RETURN_FLOAT8(DBL_MAX);
+  MeosType type = oid_meostype(typid);
+
+  /* A leaf key of a column of boxes is the value itself, so its distance to a
+   * query box is the one the operator computes. Every other pairing measures
+   * a bounding box against a value and bounds the distance from below, which
+   * the recheck of the leaf entries settles */
+  if (GIST_LEAF(entry))
+    *recheck = ! (boxcolumn && type == {MEOSTYPE});
+
+  /* Transform the query into a box. The distance is unknown when the query is
+   * not a box, and the maximum orders those entries after every candidate
+   * whose distance is known */
+  {CTYPE} query;
+  if (! {GETBOX}(fcinfo, &query, type))
+    PG_RETURN_FLOAT8(DBL_MAX);
+  /* A key over boxes of several structures bounds none of them, and is
+   * visited before every other one, since it may hold boxes on which the
+   * distance raises its error */
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  /* Where the distance raises its error on the boxes under the key, the
+   * entry is visited before every other one. A leaf the executor rechecks
+   * leaves the error to the operator applied to its row; the exact leaf of a
+   * column of boxes is the value itself, which an index-only scan returns
+   * without a recheck, so the distance applied to it raises the error */
+  if (! index_distance_is_valid({MEOSTYPE}, key, &query))
+  {
+    if (GIST_LEAF(entry) && ! *recheck)
+      PG_RETURN_FLOAT8(index_distance_apply({MEOSTYPE}, key, &query));
+    PG_RETURN_FLOAT8(-get_float8_infinity());
+  }
+
+  double distance = {DISTANCE};
+{BOUND}  PG_RETURN_FLOAT8(distance);
+}
+
+PGDLLEXPORT Datum {PREFIX}_gist_distance(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_distance);
+/**
+ * @brief GiST distance method of a column of {NOUN}
+ */
+Datum
+{PREFIX}_gist_distance(PG_FUNCTION_ARGS)
+{
+  return {BOX}_gist_distance(fcinfo, true);
+}
+
+PGDLLEXPORT Datum {TEMPDISTANCE}(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({TEMPDISTANCE});
+/**
+ * @brief GiST distance method of a column of {TEMPNOUN}
+ */
+Datum
+{TEMPDISTANCE}(PG_FUNCTION_ARGS)
+{
+  return {BOX}_gist_distance(fcinfo, false);
+}
+
+/*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+/**
+ * @brief Convert a box of the {NOUN} into its abbreviated key
+ */
+static Datum
+{PREFIX}_abbrev_convert(Datum original, SortSupport ssup)
+{
+  (void) ssup;
+  return UInt64GetDatum({SHARED}_sort_hash({SHAREDCAST}{DATUMGET}(original)));
+}
+
+/**
+ * @brief Compare two boxes of the {NOUN} for the sorted index build
+ */
+static int
+{PREFIX}_cmp_full(Datum x, Datum y, SortSupport ssup)
+{
+  const {CTYPE} *box1 = {DATUMGET}(x);
+  const {CTYPE} *box2 = {DATUMGET}(y);
+  uint64 hash1 = {SHARED}_sort_hash({SHAREDCAST}box1);
+  uint64 hash2 = {SHARED}_sort_hash({SHAREDCAST}box2);
+  (void) ssup;
+  if (hash1 > hash2)
+    return 1;
+  if (hash1 < hash2)
+    return -1;
+  /* Boxes on the same point of the curve are ordered by their own comparison,
+   * so that the sort is deterministic */
+  return {BOX}_cmp(box1, box2);
+}
+
+PGDLLEXPORT Datum {PREFIX}_gist_sortsupport(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_gist_sortsupport);
+/**
+ * @brief GiST sort support method for {NOUN}
+ */
+Datum
+{PREFIX}_gist_sortsupport(PG_FUNCTION_ARGS)
+{
+  SortSupport ssup = (SortSupport) PG_GETARG_POINTER(0);
+  ssup->comparator = {PREFIX}_cmp_full;
+  ssup->ssup_extra = NULL;
+  /* An abbreviated key is a whole Datum, so it is only available where a
+   * Datum is 64 bits wide */
+  if (ssup->abbreviate && sizeof(Datum) == 8)
+  {
+    ssup->comparator = sortsupport_abbrev_cmp;
+    ssup->abbrev_converter = {PREFIX}_abbrev_convert;
+    ssup->abbrev_abort = sortsupport_abbrev_abort;
+    ssup->abbrev_full_comparator = {PREFIX}_cmp_full;
+  }
+  PG_RETURN_VOID();
+}

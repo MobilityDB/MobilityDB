@@ -1,0 +1,30 @@
+SELECT 2000000000 + 2000000000;
+ERROR:  22003
+SELECT tsum(temp) FROM (VALUES
+('2000000000@2001-01-01'::tint),('2000000000@2001-01-01'::tint)) t(temp);
+ERROR:  22003
+SELECT 1e300::float8 * 1e300::float8;
+ERROR:  22003
+SELECT integral(tfloat '[1e308@2001-01-01, 1e308@2001-01-03]');
+ERROR:  22003
+SELECT timestamptz '294277-01-01 00:00:00+00';
+ERROR:  22008
+SELECT tstzspan '[294277-01-01 00:00:00+00, 294277-01-02 00:00:00+00]';
+ERROR:  22008
+SELECT 1 / 0;
+ERROR:  22012
+SELECT tint '[1@2001-01-01, 2@2001-01-02]' / 0;
+ERROR:  22012
+SELECT generate_series(1, 2, 0);
+ERROR:  22023
+SELECT span(timestamptz '2001-01-02', '2001-01-01');
+ERROR:  22023
+SELECT int4 'abc';
+ERROR:  22P02
+SELECT tint 'abc';
+ERROR:  22P02
+SELECT tgeompoint '[Point(-1e200 0)@2001-01-01, Point(-1e200 4)@2001-01-02]' <->
+  geometry 'Linestring(1e200 -1,1e200 1)';
+ERROR:  0A000
+SELECT tintFromMFJSON('{"type":"MovingInteger"}');
+ERROR:  XX000

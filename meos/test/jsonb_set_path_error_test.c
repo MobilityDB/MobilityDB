@@ -134,9 +134,9 @@ int main(void)
 
   /* An array index that is not an integer */
   expect_error(jsonb_set(jb, d_x, 2, three, true),
-    MEOS_ERR_INVALID_ARG_VALUE, "jsonb_set({d, x})");
+    MEOS_ERR_TEXT_INPUT, "jsonb_set({d, x})");
   expect_error(jsonb_delete_path(jb, d_x, 2),
-    MEOS_ERR_INVALID_ARG_VALUE, "jsonb_delete_path({d, x})");
+    MEOS_ERR_TEXT_INPUT, "jsonb_delete_path({d, x})");
 
   /* An insertion that would replace an existing key */
   expect_error(jsonb_insert(jb, a_b, 2, three, false),

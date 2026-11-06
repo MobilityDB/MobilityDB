@@ -513,7 +513,7 @@ flattenJsonPathParseItem(StringInfo buf, int *result, struct Node *escontext,
     case jpiCurrent:
       if (nestingLevel <= 0)
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "@ is not allowed in root expressions");
         return NULL;
       }
@@ -521,7 +521,7 @@ flattenJsonPathParseItem(StringInfo buf, int *result, struct Node *escontext,
     case jpiLast:
       if (! insideArraySubscript)
       {
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "LAST is allowed only in array subscripts");
         return false;
       };

@@ -1,0 +1,109 @@
+# ---------------------------------------------------------------------------
+# GiST support axis (C support function generator). The GiST support functions
+# of a box type -- consistent, union, penalty, picksplit, same, distance and sort
+# support -- are the same for every box type, so each box renders them from
+# templates/boxgist.c.tmpl into the region between its GENERATED-BOXGIST markers
+# in `file`. A box states:
+#   box, ctype, meostype   its SQL name, C type and MeosType;
+#   prefix                 the prefix of its support functions (Prefix_gist_*);
+#   consistent             the C function of its consistent method;
+#   tempdistance           the distance method of a column of its temporal types;
+#   getbox                 the function turning a query argument into a box,
+#                          written by hand beside the region, since the query
+#                          types are those of its temporal family;
+#   datumget, getarg, ret  the macros reading and returning a box;
+#   shared, sharedcast     the box type whose growth, penalty, sort hash and
+#                          distance bound it uses, and the cast reaching them: a
+#                          point cloud box begins with a whole spatiotemporal box,
+#                          so it uses those of the spatiotemporal boxes;
+#   same, samefields       the comparison of two keys (see samekinds) and the
+#                          fields beyond it the box carries;
+#   distance, bound        the distance of two boxes, and whether an inner entry
+#                          or a rechecked leaf lowers it to a bound of the
+#                          distance its ordering operator computes;
+#   noun, tempnoun         the plural nouns of its briefs.
+# ---------------------------------------------------------------------------
+boxgist:
+  samekinds:
+    # Two keys of temporal boxes: each span is compared as a span
+    span: |-
+          /* Each span is compared as a span, so that two keys ending on the same
+           * bound with a different inclusivity are NOT reported as the same */
+          *result = MEOS_FLAGS_GET_X(b1->flags) == MEOS_FLAGS_GET_X(b2->flags) &&
+            MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+            MEOS_FLAGS_GET_PARTS(b1->flags) == MEOS_FLAGS_GET_PARTS(b2->flags) &&
+            (MEOS_FLAGS_GET_PARTS(b1->flags) || ((
+            (! MEOS_FLAGS_GET_X(b1->flags) || span_eq(&b1->span, &b2->span)) &&
+            (! MEOS_FLAGS_GET_T(b1->flags) || span_eq(&b1->period, &b2->period)))));
+    # Two keys of spatiotemporal boxes: the closed extents as doubles, the
+    # period as a span; {FIELDS} are the fields the box carries beyond them
+    extent: |-
+          /* A key over boxes of several structures bounds none of them */
+          *result = b1->flags == b2->flags && (MEOS_FLAGS_GET_PARTS(b1->flags) ||
+           ({FIELDS}b1->srid == b2->srid &&
+            FLOAT8_EQ(b1->xmin, b2->xmin) && FLOAT8_EQ(b1->ymin, b2->ymin) &&
+            FLOAT8_EQ(b1->zmin, b2->zmin) && FLOAT8_EQ(b1->xmax, b2->xmax) &&
+            FLOAT8_EQ(b1->ymax, b2->ymax) && FLOAT8_EQ(b1->zmax, b2->zmax) &&
+            /* The period is compared as a span, so that two keys ending on the same
+             * instant with a different inclusivity are NOT reported as the same */
+            MEOS_FLAGS_GET_T(b1->flags) == MEOS_FLAGS_GET_T(b2->flags) &&
+            (! MEOS_FLAGS_GET_T(b1->flags) ||
+              span_eq(&b1->period, &b2->period))));
+  boxes:
+    - box:          tbox
+      file:         mobilitydb/src/temporal/tnumber_gist.c
+      ctype:        TBox
+      meostype:     T_TBOX
+      prefix:       Tbox
+      consistent:   Tnumber_gist_consistent
+      tempdistance: Tnumber_gist_distance
+      getbox:       tnumber_gist_get_tbox
+      datumget:     DatumGetTboxP
+      getarg:       PG_GETARG_TBOX_P
+      ret:          PG_RETURN_TBOX_P
+      shared:       tbox
+      sharedcast:   ""
+      same:         span
+      distance: >-
+        distance_double(nad_tbox_tbox(key, &query),
+            key->span.basetype)
+      bound:        false
+      noun:         temporal boxes
+      tempnoun:     temporal numbers
+    - box:          stbox
+      file:         mobilitydb/src/geo/tspatial_gist.c
+      ctype:        STBox
+      meostype:     T_STBOX
+      prefix:       Stbox
+      consistent:   Stbox_gist_consistent
+      tempdistance: Tspatial_gist_distance
+      getbox:       tspatial_gist_get_stbox
+      datumget:     DatumGetSTboxP
+      getarg:       PG_GETARG_STBOX_P
+      ret:          PG_RETURN_STBOX_P
+      shared:       stbox
+      sharedcast:   ""
+      same:         extent
+      distance:     nad_stbox_stbox(key, &query, true)
+      bound:        true
+      noun:         spatiotemporal boxes
+      tempnoun:     spatiotemporal values
+    - box:          tpcbox
+      file:         mobilitydb/src/pointcloud/tpcbox_gist.c
+      ctype:        TPCBox
+      meostype:     T_TPCBOX
+      prefix:       Tpcbox
+      consistent:   Tpcbox_gist_consistent
+      tempdistance: Tpointcloud_gist_distance
+      getbox:       tpc_gist_get_tpcbox
+      datumget:     DatumGetTpcboxP
+      getarg:       PG_GETARG_TPCBOX_P
+      ret:          PG_RETURN_TPCBOX_P
+      shared:       stbox
+      sharedcast:   "(const STBox *) "
+      same:         extent
+      samefields:   [pcid]
+      distance:     nad_tpcbox_tpcbox(key, &query)
+      bound:        true
+      noun:         point cloud boxes
+      tempnoun:     temporal point clouds
