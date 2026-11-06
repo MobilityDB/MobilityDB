@@ -99,6 +99,10 @@ extern long double npointsegm_locate(const Npoint *start, const Npoint *end,
 
 /* General functions */
 
+extern double geompoint_route_band(const GSERIALIZED *gs);
+extern void route_nearest_update(const GSERIALIZED *gs, int64 gid,
+  const GSERIALIZED *line, double tolerance, int64 *min_gid,
+  double *min_dist, double *min_pos);
 extern GSERIALIZED *npointarr_geom(Npoint **points, int count);
 extern GSERIALIZED *nsegmentarr_geom(Nsegment **segments, int count);
 extern Nsegment **nsegmentarr_normalize(Nsegment **segments, int *count);

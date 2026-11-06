@@ -257,16 +257,25 @@ get_srid_ways(void)
 
 /**
  * @ingroup meos_npoint_base_conversion
- * @brief Transform a geometry into a network point
+ * @brief Transform a geometry into a network point located on the route
+ * nearest to it within a tolerance
+ * @details The route is the nearest one among those whose distance to the
+ * point is at most the tolerance, the one with the least identifier among
+ * equally near routes, and the position is the one of the point projected on
+ * that route. The result is `NULL` when no route is within the tolerance.
  * @param[in] gs Geometry
+ * @param[in] tolerance Maximum distance between the point and the route, in
+ * the units of the spatial reference system of the ways network
  * @csqlfn #Geompoint_to_npoint()
  */
 Npoint *
-geompoint_to_npoint(const GSERIALIZED *gs)
+geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_finite(tolerance) ||
+      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
     return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
   int32_t srid_ways = get_srid_ways();
@@ -285,21 +294,12 @@ geompoint_to_npoint(const GSERIALIZED *gs)
 
   /* Record holding one line of the file */
   ways_record rec;
-  /* Minimum distance */
-  double min_dist = DBL_MAX;
-  /* Route and position of the shortest distance so far */
+  /* Route, distance and position of the nearest route */
   int64 min_gid = 0;
-  double min_pos = 0;
-  /* Position of the point in the route of the line being read */
-  double pos = 0;
+  double min_dist = DBL_MAX, min_pos = 0.0;
   /* Read the file */
   do
   {
-    /* We need to reproduce the following SQL query for a given geometry geo
-     *   SELECT npoint(gid, ST_LineLocatePoint(the_geom, geo))
-     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, MEOS_EPSILON)
-     *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
-     */
     /* Buffer for reading the geometry string */
     char geo_buffer[MAX_LEN_GEOM];
     long long gidbuf; /* MEOS: %ld mismatches int64 on LLP64 (Windows) */
@@ -317,30 +317,9 @@ geompoint_to_npoint(const GSERIALIZED *gs)
     {
       /* Transform the geometry string into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
-      /* Continue if the geometry is empty */
-      if (geo_is_empty(rec.the_geom))
-      {
-        free(rec.the_geom);
-        continue;
-      }
-      /* Continue if the point is not in the line */
-      pos = line_locate_point(rec.the_geom, gs);
-      if (pos < 0)
-      {
-        free(rec.the_geom);
-        continue;
-      }
-      /* Compute minimal distance */
-      double dist = geom_distance2d(rec.the_geom, gs);
-      /* A distance raising an error, -1.0, makes no candidate, as a position
-       * raising one does above */
-      if (dist >= 0.0 && dist < min_dist)
-      {
-        min_dist = dist;
-        min_gid = rec.gid;
-        min_pos = pos;
-      }
-      free(rec.the_geom);
+      route_nearest_update(gs, rec.gid, rec.the_geom, tolerance, &min_gid,
+        &min_dist, &min_pos);
+      pfree(rec.the_geom);
     }
   } while (! feof(file));
 
