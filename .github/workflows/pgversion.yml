@@ -45,15 +45,25 @@ jobs:
           # postgresql-19-h3 and postgresql-19-pointcloud. A job that built the
           # families those packages carry and left the rest out would report that
           # MobilityDB builds on 19 while building a smaller MobilityDB.
+          # The compiler is an axis of the same build, so the clang job runs on
+          # the runner, the PostgreSQL and the families of the gcc jobs, its
+          # compiler the only difference; it takes the newest PostgreSQL.
           psql: [16, 17, 18]
           postgis: [3]
           os: ["ubuntu-24.04"]
           coverage: [0]
+          cc: [gcc]
           include:
             - psql: 17
               postgis: 3
               os: "ubuntu-24.04"
               coverage: 1
+              cc: gcc
+            - psql: 18
+              postgis: 3
+              os: "ubuntu-24.04"
+              coverage: 0
+              cc: clang
 
     steps:
       - uses: actions/checkout@v7
@@ -90,6 +100,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            ${{ matrix.cc }} \
             libproj-dev \
             libgdal-dev \
             libjson-c-dev \
@@ -136,29 +147,21 @@ jobs:
           sudo apt-get -y install autoconf automake libtool \
             libxml2-dev zlib1g-dev
 
-      - name: Configure for gcc
+      - name: Configure for ${{ matrix.cc }}
         run: |
           export PATH=/usr/lib/postgresql/${{ matrix.psql }}/bin:$PATH
           mkdir build
           cd build
-          # The coverage build takes ALL, which enables every family from the
-          # list in CMakeLists.txt, so a family added later is exercised by the
-          # suite without editing this workflow. Its dependencies are installed
-          # and located above, on this build only: H3 needs libh3, POINTCLOUD
-          # pgPointCloud's libpc.a, RASTER PostGIS raster. The libh3 paths stay
-          # pinned because the pgdg package layout differs between releases.
-          # The same build checks the assertions (CASSERT=ON), so that the
-          # preconditions the internal functions trust are verified over the
-          # whole surface. It is the only job that both compiles every family
-          # and runs the regression suite; the others keep a release build,
-          # where the assertions are compiled out.
-          #
-          # The version builds take the families that need no package of their
-          # own, and cover PostgreSQL 16 to 19. They cannot take ALL until
-          # apt.postgresql.org carries h3 and pointcloud for every version in
-          # the matrix, which it does for 16 to 18 but not yet for 19, and
-          # MobilityDB requires those extensions when their family is on.
-          cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
+          # Every build takes ALL, which enables every family from the list in
+          # CMakeLists.txt, so a family added later is exercised by the suite
+          # without editing this workflow. Its dependencies are installed and
+          # located above: H3 needs libh3, POINTCLOUD pgPointCloud's libpc.a,
+          # RASTER PostGIS raster. The libh3 paths stay pinned because the pgdg
+          # package layout differs between releases. The coverage build also
+          # checks the assertions (CASSERT=ON), so that the preconditions the
+          # internal functions trust are verified over the whole surface; the
+          # others keep a release build, where the assertions are compiled out.
+          CC=${{ matrix.cc }} cmake -DCMAKE_BUILD_TYPE=Release -DWITH_COVERAGE=${{ matrix.coverage }} \
             -DALL=ON -DH3_INCLUDE_DIR=${{ env.H3_INCLUDE_DIR }} \
             -DH3_LIBRARY=${{ env.H3_LIBRARY }} \
             ${{ matrix.coverage == '1' && '-DCASSERT=ON' || '' }} \
