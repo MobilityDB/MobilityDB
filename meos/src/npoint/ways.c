@@ -50,6 +50,7 @@
 #include "temporal/type_inout.h"
 #include "geo/postgis_funcs.h"
 #include "geo/tgeo_spatialfuncs.h"
+#include "npoint/ways_cache.h"
 
 #define SQL_ROUTE_MAXLEN  128
 
@@ -59,12 +60,12 @@ static int32_t SRID_WAYS = SRID_INVALID;
 /*****************************************************************************
  * Ways cache
  *
- * The routes read from the ways table are kept in a cache for the life of the
- * backend, as the MEOS build keeps the routes read from the ways CSV file in
- * ways_meos.c. Without it every network point answers its geometry, its
- * length or its existence with a statement of its own, which is parsed,
- * planned and executed anew, where the network it reads is the same for the
- * whole session.
+ * The routes read from the ways table are kept in the ways cache of
+ * ways_cache.c for the life of the backend, as the MEOS build keeps the
+ * routes read from the ways CSV file in ways_meos.c. Without it every network
+ * point answers its geometry, its length or its existence with a statement
+ * of its own, which is parsed, planned and executed anew, where the network
+ * it reads is the same for the whole session.
  *
  * The cache lies in a child of the CacheMemoryContext, as the PROJ cache of
  * PostGIS does in postgis/libpgcommon/lwgeom_transform.c, and holds the
@@ -72,46 +73,10 @@ static int32_t SRID_WAYS = SRID_INVALID;
  * context releases them with it.
  *****************************************************************************/
 
-/**
- * @brief Structure to represent a record of the ways table
- */
-typedef struct
-{
-  int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route, DBL_MAX when it states
-                               none */
-} ways_record;
-
-/**
- * @brief Structure to represent an entry in the ways cache
- */
-typedef struct struct_WaysCacheEntry
-{
-  int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route */
-  uint64_t hits;          /**< Number of hits of the route */
-} WaysCacheEntry;
-
-/* Number of items stored in the ways cache */
-#define WAYS_CACHE_SIZE 128
-
-/**
- * @brief The ways cache holds a fixed number of ways records read from the
- * ways table
- * @note In normal usage we do not expect it to have many entries, so we
- * linearly scan the list
- */
-typedef struct struct_WaysCache
-{
-  WaysCacheEntry routes[WAYS_CACHE_SIZE];
-  uint32_t count;
-  MemoryContext context;  /**< Context holding the cache and its geometries */
-} WaysCache;
-
 /* Global variable to hold the ways cache */
 static WaysCache *WAYS_CACHE = NULL;
+/* Global variable to hold the context of the ways cache */
+static MemoryContext WAYS_CONTEXT = NULL;
 
 /*****************************************************************************
  * Cache management functions
@@ -119,14 +84,17 @@ static WaysCache *WAYS_CACHE = NULL;
 
 /**
  * @brief Forget the ways cache when the context holding it is reset
- * @details The geometries of the routes lie in that same context, so the
- * reset releases them and only the global variable naming the cache is left
- * to drop. The next route read then builds the cache anew.
+ * @details The callback of the reset, as #PROJSRSDestroyPortalCache is for
+ * the PROJ cache of PostGIS. The cache and the geometries of the routes lie
+ * in that context, so the reset releases them and only the global variables
+ * naming them are left to drop. The next route read then builds the cache
+ * anew.
  */
 static void
 ForgetWaysCache(void *cache UNUSED)
 {
   WAYS_CACHE = NULL;
+  WAYS_CONTEXT = NULL;
   return;
 }
 
@@ -137,110 +105,34 @@ ForgetWaysCache(void *cache UNUSED)
 static WaysCache *
 GetWaysCache(void)
 {
-  WaysCache *ways_cache = WAYS_CACHE;
-  if (! ways_cache)
+  if (! WAYS_CACHE)
   {
     /* Put the ways cache in a child of the CacheMemoryContext */
     MemoryContext context = AllocSetContextCreate(CacheMemoryContext,
       "Ways Context", ALLOCSET_SMALL_SIZES);
-    /* Allocate in the context, which holds the cache and its geometries */
-    ways_cache = (WaysCache *) MemoryContextAllocZero(context,
-      sizeof(WaysCache));
-    ways_cache->context = context;
     /* Use this to forget the cache in the event of a MemoryContext reset */
     MemoryContextCallback *callback = (MemoryContextCallback *)
       MemoryContextAlloc(context, sizeof(MemoryContextCallback));
     callback->func = ForgetWaysCache;
     callback->arg = NULL;
     MemoryContextRegisterResetCallback(context, callback);
-    WAYS_CACHE = ways_cache;
+    /* Allocate in the context, which holds the cache and its geometries */
+    MemoryContext oldcontext = MemoryContextSwitchTo(context);
+    WAYS_CACHE = ways_cache_make();
+    MemoryContextSwitchTo(oldcontext);
+    WAYS_CONTEXT = context;
   }
-  return ways_cache;
-}
-
-/**
- * @brief Get a route from the ways cache, if not found return `NULL`
- */
-static WaysCacheEntry *
-GetRouteFromWaysCache(WaysCache *ways_cache, int64 gid, bool any_gid)
-{
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-  for (uint32_t i = 0; i < ways_cache->count; i++)
-  {
-    if (any_gid || ways_cache->routes[i].gid == gid)
-    {
-      ways_cache->routes[i].hits++;
-      return &ways_cache->routes[i];
-    }
-  }
-  return NULL;
-}
-
-/**
- * @brief Remove from the ways cache the route in a given position
- */
-static void
-DeleteRouteFromWaysCache(WaysCache *ways_cache, uint32_t position)
-{
-  if (ways_cache->routes[position].the_geom)
-    pfree(ways_cache->routes[position].the_geom);
-  memset(&ways_cache->routes[position], 0, sizeof(WaysCacheEntry));
-  return;
-}
-
-/**
- * @brief Add a route to the ways cache
- */
-static WaysCacheEntry *
-AddRouteToWaysCache(WaysCache *ways_cache, ways_record *rec)
-{
-  assert(ways_cache); assert(rec);
-
-  /* If the cache is full, find the least used element and delete it */
-  uint32_t cache_position = ways_cache->count;
-  uint64_t hits = 1;
-  if (cache_position == WAYS_CACHE_SIZE)
-  {
-    cache_position = 0;
-    hits = ways_cache->routes[0].hits;
-    for (uint32_t i = 1; i < WAYS_CACHE_SIZE; i++)
-    {
-      if (ways_cache->routes[i].hits < hits)
-      {
-        cache_position = i;
-        hits = ways_cache->routes[i].hits;
-      }
-    }
-    DeleteRouteFromWaysCache(ways_cache, cache_position);
-    /* To avoid the element we are introduced now being evicted next (as it
-     * would have 1 hit, being most likely the lower one) we reuse the hits
-     * from the evicted position and add some extra buffer */
-    hits += 5;
-  }
-  else
-    ways_cache->count++;
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-
-  /* Store everything in new cache entry */
-  assert(cache_position < WAYS_CACHE_SIZE);
-  ways_cache->routes[cache_position].gid = rec->gid;
-  ways_cache->routes[cache_position].the_geom = rec->the_geom;
-  ways_cache->routes[cache_position].length = rec->length;
-  ways_cache->routes[cache_position].hits = hits;
-
-  return &ways_cache->routes[cache_position];
+  return WAYS_CACHE;
 }
 
 /**
  * @brief Access the ways table to get the record of a route
  * @param[in] rid Route identifier
  * @param[in] any_gid True when the record of any route is asked for
- * @param[in] context Context the geometry of the route is copied into
  * @param[out] rec Record to store on the cache
  */
 static bool
-get_ways_record(int64 rid, bool any_gid, MemoryContext context,
-  ways_record *rec)
+get_ways_record(int64 rid, bool any_gid, ways_record *rec)
 {
   char sql[SQL_ROUTE_MAXLEN];
   if (any_gid)
@@ -271,7 +163,7 @@ get_ways_record(int64 rid, bool any_gid, MemoryContext context,
       /* The geometry is copied into the context of the cache, which keeps it
        * after SPI_finish() and for the life of the backend */
       GSERIALIZED *gs = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
-      MemoryContext oldcontext = MemoryContextSwitchTo(context);
+      MemoryContext oldcontext = MemoryContextSwitchTo(WAYS_CONTEXT);
       rec->the_geom = geo_copy(gs);
       MemoryContextSwitchTo(oldcontext);
       /* A route stating no length answers DBL_MAX, as route_length does */
@@ -284,28 +176,22 @@ get_ways_record(int64 rid, bool any_gid, MemoryContext context,
 }
 
 /**
- * @brief Return true if the record of a route was read from the ways cache,
- * return false otherwise
+ * @brief Return in the last argument the record of a route read from the
+ * ways cache, and return false when there is no such route
+ * @details The twin of the function of the MEOS build in ways_meos.c, both
+ * calling #ways_cache_lookup with their own reading of the network.
  */
 static bool
 route_lookup(int64 gid, bool any_gid, ways_record *rec)
 {
   /* Get or initialize the cache for this round */
   WaysCache *ways_cache = GetWaysCache();
-
-  /* Add the route to the cache if it is not already there */
-  WaysCacheEntry *ways_entry = GetRouteFromWaysCache(ways_cache, gid, any_gid);
-  if (ways_entry == NULL)
-  {
-    if (! get_ways_record(gid, any_gid, ways_cache->context, rec))
-      return false;
-    AddRouteToWaysCache(ways_cache, rec);
-    return true;
-  }
-  /* The route was found in the cache */
-  rec->gid = ways_entry->gid; rec->the_geom = ways_entry->the_geom;
-  rec->length = ways_entry->length;
-  return true;
+  /* The cache grows its arrays in its own context */
+  MemoryContext oldcontext = MemoryContextSwitchTo(WAYS_CONTEXT);
+  bool result = ways_cache_lookup(ways_cache, gid, any_gid, get_ways_record,
+    rec);
+  MemoryContextSwitchTo(oldcontext);
+  return result;
 }
 
 /*****************************************************************************

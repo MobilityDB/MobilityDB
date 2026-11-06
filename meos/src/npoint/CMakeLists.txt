@@ -35,6 +35,7 @@ set(NPOINT_SOURCES
   tnpoint_distance.c
   tnpoint_routeops.c
   tnpoint_spatialfuncs.c
+  ways_cache.c
 )
 
 if(MEOS)

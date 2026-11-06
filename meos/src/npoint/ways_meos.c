@@ -45,6 +45,7 @@
 #include <meos.h>
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"
+#include "npoint/ways_cache.h"
 
 /*****************************************************************************
  * Definitions for reading the ways CSV file
@@ -80,42 +81,6 @@ meos_set_ways_csv(const char *path)
   WAYS_CSV = copy;
 }
 
-/**
- * @brief Structure to represent a record in the ways CSV file
- */
-typedef struct
-{
-  int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route */
-} ways_record;
-
-/**
- * @brief Structure to represent an entry in the ways cache
- */
-typedef struct struct_WaysCacheEntry
-{
-  int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route */
-  uint64_t hits;          /**< Number of hits of the route */
-} WaysCacheEntry;
-
-/* Number of items stored in the ways cache */
-#define WAYS_CACHE_SIZE 128
-
-/**
- * @brief The ways cache holds a fixed number of ways records read from the
- * ways CSV file
- * @note In normal usage we do not expect it to have many entries, so we
- * linearly scan the list
- */
-typedef struct struct_WaysCache
-{
-  WaysCacheEntry routes[WAYS_CACHE_SIZE];
-  uint32_t count;
-} WaysCache;
-
 /* Global variable to hold the ways cache */
 static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
 
@@ -124,45 +89,15 @@ static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
  *****************************************************************************/
 
 /**
- * @brief Free all the malloc'ed geometries stored in the ways cache and free
- * the cache
- */
-static void
-DestroyWaysCache(WaysCache *ways_cache)
-{
-  if (ways_cache)
-  {
-    for (uint32_t i = 0; i < ways_cache->count; i++)
-    {
-      if (ways_cache->routes[i].the_geom)
-        pfree(ways_cache->routes[i].the_geom);
-    }
-  }
-  pfree(ways_cache);
-  return;
-}
-
-/**
- * @brief Get the ways cache variable from the global variable
+ * @brief Get the ways cache from the global variable
  * @details If it does not exist, a new blank one is made and returned.
  */
 static WaysCache *
 GetWaysCache(void)
 {
-  WaysCache *ways_cache = MEOS_WAYS_CACHE;
-  if (! ways_cache)
-  {
-    /* Allocate memory */
-    ways_cache = palloc0(sizeof(WaysCache));
-    if (! ways_cache)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unable to allocate space for the ways cache");
-      return NULL;
-    }
-  }
-  MEOS_WAYS_CACHE = ways_cache;
-  return ways_cache;
+  if (! MEOS_WAYS_CACHE)
+    MEOS_WAYS_CACHE = ways_cache_make();
+  return MEOS_WAYS_CACHE;
 }
 
 /**
@@ -177,91 +112,21 @@ meos_finalize_ways(void)
    * stored geometries. */
   if (! MEOS_WAYS_CACHE)
     return;
-  DestroyWaysCache(MEOS_WAYS_CACHE);
+  ways_cache_free(MEOS_WAYS_CACHE);
   MEOS_WAYS_CACHE = NULL;
 }
 
 /**
- * @brief Get a route from the ways cache, if not found return `NULL`
- */
-static WaysCacheEntry *
-GetRouteFromWaysCache(WaysCache *ways_cache, int64 gid, bool any_gid)
-{
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-  for (uint32_t i = 0; i < ways_cache->count; i++)
-  {
-    if (any_gid || ways_cache->routes[i].gid == gid)
-    {
-      ways_cache->routes[i].hits++;
-      return &ways_cache->routes[i];
-    }
-  }
-  return NULL;
-}
-
-/**
- * @brief Remove from the ways cache the route in a given position 
- */
-static void
-DeleteRouteFromWaysCache(WaysCache *ways_cache, uint32_t position)
-{
-  if (ways_cache->routes[position].the_geom)
-    pfree(ways_cache->routes[position].the_geom);
-  memset(&ways_cache->routes[position], 0, sizeof(WaysCacheEntry));
-  return;
-}
-
-/**
- * @brief Add a route to the ways cache
- */
-static WaysCacheEntry *
-AddRouteToWaysCache(WaysCache *ways_cache, ways_record *rec)
-{
-  assert(ways_cache); assert(rec);
-
-  /* If the cache is full, find the least used element and delete it */
-  uint32_t cache_position = ways_cache->count;
-  uint32_t hits = 1;
-  if (cache_position == WAYS_CACHE_SIZE)
-  {
-    cache_position = 0;
-    hits = ways_cache->routes[0].hits;
-    for (uint32_t i = 1; i < WAYS_CACHE_SIZE; i++)
-    {
-      if (ways_cache->routes[i].hits < hits)
-      {
-        cache_position = i;
-        hits = ways_cache->routes[i].hits;
-      }
-    }
-    DeleteRouteFromWaysCache(ways_cache, cache_position);
-    /* To avoid the element we are introduced now being evicted next (as it
-     * would have 1 hit, being most likely the lower one) we reuse the hits
-     * from the evicted position and add some extra buffer */
-    hits += 5;
-  }
-  else
-    ways_cache->count++;
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-
-  /* Store everything in new cache entry */
-  assert(cache_position < WAYS_CACHE_SIZE);
-  ways_cache->routes[cache_position].gid = rec->gid;
-  ways_cache->routes[cache_position].the_geom = rec->the_geom;
-  ways_cache->routes[cache_position].length = rec->length;
-  ways_cache->routes[cache_position].hits = hits;
-
-  return &ways_cache->routes[cache_position];
-}
-
-/**
  * @brief Access the ways CSV file to get the geometry of a route and compute
- * its length 
+ * its length
+ * @details The reading of the network the MEOS build gives to
+ * #ways_cache_lookup, as the PostgreSQL build reads the ways table.
  * @param[in] rid Route identifier
+ * @param[in] any_gid True when the record of any route is asked for
  * @param[out] rec Record to store on the cache
  */
 static bool
-get_ways_record(int64 rid, ways_record *rec)
+get_ways_record(int64 rid, bool any_gid, ways_record *rec)
 {
   /* The full file path in the first argument is defined in a global variable*/
   FILE *file = fopen(WAYS_CSV, "r");
@@ -289,20 +154,17 @@ get_ways_record(int64 rid, ways_record *rec)
     }
 
     /* Ignore the records with NULL values or empty geometries */
-    if (read == 2 && rid == rec->gid)
+    if (read == 2 && (any_gid || rid == rec->gid))
     {
       /* Transform the geometry string into a geometry value */
       rec->the_geom = geom_in(geo_buffer, -1);
       if (! geo_is_empty(rec->the_geom))
       {
-        if (rec->gid == rid)
-        {
-          rec->length = geom_length(rec->the_geom);
-          result = true;
-          break;
-        }
+        rec->length = geom_length(rec->the_geom);
+        result = true;
+        break;
       }
-      free(rec->the_geom);
+      pfree(rec->the_geom);
     }
   } while (! feof(file));
 
@@ -313,30 +175,17 @@ get_ways_record(int64 rid, ways_record *rec)
 }
 
 /**
- * @brief Return true if a Ways entry was read from the ways cache,
- * return false otherwise
+ * @brief Return in the last argument the record of a route read from the
+ * ways cache, and return false when there is no such route
+ * @details The twin of the function of the PostgreSQL build in ways.c, both
+ * calling #ways_cache_lookup with their own reading of the network.
  */
 static bool
 route_lookup(int64 gid, bool any_gid, ways_record *rec)
 {
   /* Get or initialize the cache for this round */
-  WaysCache* ways_cache = GetWaysCache();
-  if (! ways_cache)
-    return false;
-
-  /* Add the route to the cache if it is not already there */
-  WaysCacheEntry *ways_entry = GetRouteFromWaysCache(ways_cache, gid, any_gid);
-  if (ways_entry == NULL)
-  {
-    if (! get_ways_record(gid, rec))
-      return false;
-    AddRouteToWaysCache(ways_cache, rec);
-    return true;
-  }
-  /* The route was found in the cache */
-  rec->gid = gid; rec->the_geom = ways_entry->the_geom;
-  rec->length = ways_entry->length;
-  return true;
+  WaysCache *ways_cache = GetWaysCache();
+  return ways_cache_lookup(ways_cache, gid, any_gid, get_ways_record, rec);
 }
 
 /*****************************************************************************
