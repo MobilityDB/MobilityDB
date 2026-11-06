@@ -438,9 +438,10 @@ geompoint_to_npoint(const GSERIALIZED *gs)
   ways_record rec;
   /* Minimum distance */
   double min_dist = DBL_MAX;
-  /* Geometry with the shortest distance */
-  GSERIALIZED *the_geom = NULL;
-  /* Position in the geometry with the shortest distance */
+  /* Route and position of the shortest distance so far */
+  int64 min_gid = 0;
+  double min_pos = 0;
+  /* Position of the point in the route of the line being read */
   double pos = 0;
   /* Read the file */
   do
@@ -487,13 +488,10 @@ geompoint_to_npoint(const GSERIALIZED *gs)
       if (dist >= 0.0 && dist < min_dist)
       {
         min_dist = dist;
-        /* Previous previous candidate to shortest distance */
-        if (the_geom)
-          free(the_geom);
-        the_geom = rec.the_geom;
+        min_gid = rec.gid;
+        min_pos = pos;
       }
-      else
-        free(rec.the_geom);
+      free(rec.the_geom);
     }
   } while (! feof(file));
 
@@ -504,9 +502,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
   if (min_dist == DBL_MAX)
     return NULL;
 
-  Npoint *result = npoint_make(rec.gid, pos);
-  free(the_geom);
-  return result;
+  return npoint_make(min_gid, min_pos);
 }
 
 /*****************************************************************************/
