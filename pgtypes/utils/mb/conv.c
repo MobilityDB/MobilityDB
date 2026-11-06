@@ -517,7 +517,7 @@ UtfToLocal(const unsigned char *utf, int len,
 
   if (!PG_VALID_ENCODING(encoding))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid encoding number: %d", encoding);
     return -1;
   }
@@ -732,7 +732,7 @@ LocalToUtf(const unsigned char *iso, int len,
 
   if (!PG_VALID_ENCODING(encoding))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid encoding number: %d", encoding);
     return -1;
   }

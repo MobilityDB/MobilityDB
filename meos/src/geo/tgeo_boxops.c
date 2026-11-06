@@ -1248,7 +1248,10 @@ geo_stboxes(const GSERIALIZED *gs, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_mline_type(gs))
+  if (! ensure_mline_type(gs))
+    return NULL;
+  /* An empty geometry has no point, so it has no box */
+  if (gserialized_is_empty(gs))
     return NULL;
   
   GBOX *gboxes = geo_gboxes(gs, count);
@@ -1498,8 +1501,10 @@ geo_split_n_stboxes(const GSERIALIZED *gs, int box_count, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_positive(box_count) ||
-      ! ensure_mline_type(gs))
+  if (! ensure_positive(box_count) || ! ensure_mline_type(gs))
+    return NULL;
+  /* An empty geometry has no point, so it has no box */
+  if (gserialized_is_empty(gs))
     return NULL;
 
   GBOX *gboxes = geo_split_n_gboxes(gs, box_count, count);
@@ -1687,8 +1692,10 @@ geo_split_each_n_stboxes(const GSERIALIZED *gs, int elems_per_box, int *count)
   *count = 0;
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(count, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_positive(elems_per_box) || 
-      ! ensure_mline_type(gs))
+  if (! ensure_positive(elems_per_box) || ! ensure_mline_type(gs))
+    return NULL;
+  /* An empty geometry has no point, so it has no box */
+  if (gserialized_is_empty(gs))
     return NULL;
 
   GBOX *gboxes = geo_split_each_n_gboxes(gs, elems_per_box, count);

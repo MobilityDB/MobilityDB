@@ -65,10 +65,10 @@ CREATE OPERATOR CLASS tpose_rtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),
@@ -155,10 +155,10 @@ CREATE OPERATOR CLASS tpose_quadtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),
@@ -243,10 +243,10 @@ CREATE OPERATOR CLASS tpose_kdtree_ops
   -- overlaps or right
   OPERATOR  4    &> (tpose, stbox),
   OPERATOR  4    &> (tpose, tpose),
-    -- strictly right
+  -- strictly right
   OPERATOR  5    >> (tpose, stbox),
   OPERATOR  5    >> (tpose, tpose),
-    -- same
+  -- same
   OPERATOR  6    ~= (tpose, tstzspan),
   OPERATOR  6    ~= (tpose, stbox),
   OPERATOR  6    ~= (tpose, tpose),
@@ -396,5 +396,145 @@ CREATE OPERATOR CLASS poseset_kdtree_ops
   FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
   FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
   FUNCTION  6 spatialset_spgist_compress(internal);
+
+/* A column of spatiotemporal boxes is indexed for the queries of a tpose */
+
+ALTER OPERATOR FAMILY stbox_rtree_ops USING gist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tpose),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tpose),
+  -- overlaps
+  OPERATOR  3    && (stbox, tpose),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tpose),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tpose),
+  -- same
+  OPERATOR  6    ~= (stbox, tpose),
+  -- contains
+  OPERATOR  7    @> (stbox, tpose),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tpose),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tpose),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tpose),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tpose),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tpose),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tpose) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tpose),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tpose),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tpose),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, tpose),
+  -- strictly back
+  OPERATOR  34    />> (stbox, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, tpose);
+
+ALTER OPERATOR FAMILY stbox_quadtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tpose),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tpose),
+  -- overlaps
+  OPERATOR  3    && (stbox, tpose),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tpose),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tpose),
+  -- same
+  OPERATOR  6    ~= (stbox, tpose),
+  -- contains
+  OPERATOR  7    @> (stbox, tpose),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tpose),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tpose),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tpose),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tpose),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tpose),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tpose) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tpose),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tpose),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tpose),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, tpose),
+  -- strictly back
+  OPERATOR  34    />> (stbox, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, tpose);
+
+ALTER OPERATOR FAMILY stbox_kdtree_ops USING spgist ADD
+  -- strictly left
+  OPERATOR  1    << (stbox, tpose),
+  -- overlaps or left
+  OPERATOR  2    &< (stbox, tpose),
+  -- overlaps
+  OPERATOR  3    && (stbox, tpose),
+  -- overlaps or right
+  OPERATOR  4    &> (stbox, tpose),
+  -- strictly right
+  OPERATOR  5    >> (stbox, tpose),
+  -- same
+  OPERATOR  6    ~= (stbox, tpose),
+  -- contains
+  OPERATOR  7    @> (stbox, tpose),
+  -- contained by
+  OPERATOR  8    <@ (stbox, tpose),
+  -- overlaps or below
+  OPERATOR  9    &<| (stbox, tpose),
+  -- strictly below
+  OPERATOR  10    <<| (stbox, tpose),
+  -- strictly above
+  OPERATOR  11    |>> (stbox, tpose),
+  -- overlaps or above
+  OPERATOR  12    |&> (stbox, tpose),
+  -- adjacent
+  OPERATOR  17    -|- (stbox, tpose),
+  -- nearest approach distance
+  OPERATOR  25    |=| (stbox, tpose) FOR ORDER BY pg_catalog.float_ops,
+  -- overlaps or before
+  OPERATOR  28    &<# (stbox, tpose),
+  -- strictly before
+  OPERATOR  29    <<# (stbox, tpose),
+  -- strictly after
+  OPERATOR  30    #>> (stbox, tpose),
+  -- overlaps or after
+  OPERATOR  31    #&> (stbox, tpose),
+  -- overlaps or front
+  OPERATOR  32    &</ (stbox, tpose),
+  -- strictly front
+  OPERATOR  33    <</ (stbox, tpose),
+  -- strictly back
+  OPERATOR  34    />> (stbox, tpose),
+  -- overlaps or back
+  OPERATOR  35    /&> (stbox, tpose);
 
 /******************************************************************************/

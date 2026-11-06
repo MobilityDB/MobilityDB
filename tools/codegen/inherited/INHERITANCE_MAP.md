@@ -259,6 +259,31 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `temporal_rtree.c` and `templates/sptree_create.c.tmpl` the 8
   `sptree_create_<box>(SPTreeKind)` of `temporal_sptree.c`, over the five span
   types, `tbox`, `stbox` and `tpcbox`, the last under `POINTCLOUD`.
+  The GiST support functions of a box type -- consistent, union, penalty,
+  picksplit, same, distance and sort support -- take their bodies from the
+  `boxgist:` axis (`manifest.d/boxgist.yaml`): each box renders
+  `templates/boxgist.c.tmpl` into the region between its
+  `GENERATED-BOXGIST-BEGIN/END` markers in `tnumber_gist.c`, `tspatial_gist.c`
+  and `tpcbox_gist.c`. A box states its C type and macros, its consistent and
+  temporal distance functions, the function turning a query into a box, its
+  key comparison and its distance; a point cloud box begins with a whole
+  spatiotemporal box, so it grows, splits, sorts and bounds its distance with
+  the spatiotemporal helpers through a cast and compares its pcid beyond them.
+  The query function, the compress methods and the sort hash stay beside the
+  region, written by hand, since they read the temporal types of the family.
+  The SP-GiST support functions of a box type -- config, the quad-tree and k-d
+  tree choose, pick-split and inner consistent functions, and the leaf
+  consistency function -- take their bodies from the `boxspgist:` axis
+  (`manifest.d/boxspgist.yaml`): each box renders `templates/boxspgist.c.tmpl`
+  into the region between its `GENERATED-BOXSPGIST-BEGIN/END` markers in
+  `tnumber_spgist.c` and `tspatial_spgist.c`. A box states its C types and
+  macros, the suffix of its quadrant and node kernels, the function turning a
+  query into a box, the recheck its leaf starts from and its distance; its
+  position strategies are those of `boxposops.yaml` on the axes `boxtypes.yaml`
+  gives it. A point cloud box is indexed by the functions of the
+  spatiotemporal boxes. The median centroid of the quad-tree pick-split and the
+  compress functions stay beside the region, written by hand, since they read
+  the fields of the box and the temporal types of the family.
   The index operator classes of a box type are the regions between its
   `GENERATED-BOXOPCLASS-BEGIN/END` markers, one per class of its `opclasses:`
   stanza in `boxtypes.yaml` (`templates/boxopclass.sql.tmpl`): every strategy of
@@ -269,6 +294,13 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   `044_temporal_spgist`, `stbox` its three in `073_tpoint_gist` and
   `074_tpoint_spgist`, and `tpcbox` its three in `439_tpc_gist` and
   `440_tpc_spgist`, its SP-GiST classes over the functions of `stbox`.
+  A family a build can leave out adds its temporal type to the classes of
+  `stbox` in its own index file: the `{BOXMEMBERS}` token of the `indexes`,
+  `gist` and `spgist` templates writes, by `render_boxmembers`, one
+  `ALTER OPERATOR FAMILY` per class of the file's access method, carrying every
+  strategy whose axis the subtype's `boxmembers:` lists in `subtypes.yaml`
+  (tcbuffer, tnpoint, tpose, tposechain, trgeometry, th3index, tquadbin and
+  ts2cell).
 
 **Every whole-file template opens the same way**, so every generated file does:
 - its first line is `@LICENSE@`, which `read_template` replaces with the licence banner
@@ -299,18 +331,37 @@ no subtype currently routes `aggfuncs` through the `subtypes:` track. Live templ
 | spatialrels | `spatialrels.c.tmpl` + `spatialrels.sql.tmpl` | **GENERATED** (ever/always) |
 | boxops (C) | `boxops.c.tmpl` | **GENERATED** (box-type axis) |
 | indextrees (C) | `rtree_create.c.tmpl` + `sptree_create.c.tmpl` | **GENERATED** (the constructors of the in-memory trees, one per box type) |
-| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — `indexes.sql.tmpl` carries the Z-axis strategies 32-35 under `-- @IF front_back`, the same additive flag `posops.sql.tmpl` uses to declare the Z operators, so a family declares and indexes that axis from one manifest key. It also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the three templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
+| boxgist (C) | `boxgist.c.tmpl` | **GENERATED** (the GiST support functions of `tbox`, `stbox` and `tpcbox`, one set per box type) |
+| boxspgist (C) | `boxspgist.c.tmpl` | **GENERATED** (the SP-GiST support functions of `tbox` and `stbox`, one set per box type; `tpcbox` is indexed by those of `stbox`) |
+| gist / spgist / indexes | `gist/spgist/indexes.sql.tmpl` | **GENERATED** (index infra) — the three templates write the family's operator classes through the `{TEMPOPCLASS_RTREE}`, `{TEMPOPCLASS_QUADTREE}` and `{TEMPOPCLASS_KDTREE}` tokens, which `render_tempopclass` fills from `boxstrategies.yaml` with every strategy whose axis the family's `boxmembers:` lists, the Z-axis strategies 32-35 included when it lists `z`, and with its `distwith:` types on the nearest approach distance. `indexes.sql.tmpl` also declares the family's own consistent and distance support functions, `{TEMP}_gist_consistent` and `{TEMP}_gist_distance`, each over the implementation the spatiotemporal families share. Both it and `gist.sql.tmpl` carry `FUNCTION 11 stbox_gist_sortsupport(internal)`, so an opclass a family is born with builds its index by sorting the entries rather than inserting them one at a time. Under the additive flag `setindex` the three templates also write the GiST and SP-GiST classes of the family's set of base values, keyed by the `stbox` the set stores and rechecked on the set, in the temporal type's index file, since a set file's end belongs to its whole-file generated regions; `setmetric` adds the `<->` ordering operator where the set has a distance |
 | aggfuncs | `aggregates.sql.tmpl` | **GENERATED** — whole-file per family via the separate `aggregate_families` axis (§4b), not the `subtypes:` track |
 | spatialfuncs | — | reserved position, **HAND** |
 | distance | `distance.sql.tmpl` | **GENERATED** for `tpose` (`110_tpose_distance`) and `tposechain` (`560_tposechain_distance`); the temporal numbers' `036_tnumber_distance` the temporal geometries' `064_tgeo_distance`, the temporal points' `064_tpoint_distance`, the temporal rigid geometries' `164_trgeo_distance`, the temporal circular buffers' `210_tcbuffer_distance`, the temporal network points' `312_tnpoint_distance`, the temporal point clouds' `438_tpc_distance` and the temporal point cloud points' `447_tpcpoint_distance` are generated by the `distance_families` axis (§7); every other family's distance file is hand-written |
 
-⛔ **`front_back` reaches BOTH the operator declaration and the operator class.** It is an
-additive flag (`DEFAULT_FALSE_FLAGS` in `generate.py`), so a family opts in and every other
-family omits the block. The three-dimensional spatial families — `tpose`, `tposechain`,
-`trgeometry` — set it; `tgeometry`/`tgeompoint` carry the same strategies as the hand-written
-reference. A family that declares the Z operators without its opclass listing strategies
-32-35 keeps those predicates as a FILTER: the operator resolves, the plan never uses the
-index, and nothing errors — so the omission is invisible without reading `pg_amop`.
+⛔ **The Z axis is stated twice: `front_back` declares the operators, `z` in `boxmembers:`
+indexes them.** `front_back` is an additive flag (`DEFAULT_FALSE_FLAGS` in `generate.py`)
+under which `posops.sql.tmpl` declares the Z operators; the operator classes carry strategies
+32-35 when `boxmembers:` lists `z`. The three-dimensional spatial families — `tpose`,
+`tposechain`, `trgeometry` — state both, as `tgeometry`/`tgeompoint` carry both in
+`boxtypes.yaml`. A family that declares the Z operators without its classes listing
+strategies 32-35 keeps those predicates as a FILTER: the operator resolves, the plan never
+uses the index, and nothing errors — so the omission is invisible without reading `pg_amop`.
+
+**The operator classes of the temporal geometries, points and point clouds** are the
+`GENERATED-TEMPOPCLASS` regions of `073_tgeo_gist`, `074_tgeo_spgist`, `073_tpoint_gist`,
+`074_tpoint_spgist`, `439_tpc_gist` and `440_tpc_spgist`, one per class of each partner of
+`stbox` and `tpcbox` in `boxtypes.yaml` that states `files:`, written by the same
+`render_tempopclass` on the partner's `axes` and `distwith`; the box type's `tempclasses`
+states the support functions their classes share.
+
+**The operator classes of the temporal numbers, booleans, texts and JSONB values** are the
+`GENERATED-TEMPOPCLASS` regions of `043_temporal_gist`, `044_temporal_spgist` and
+`466_tjsonb_indexes`, written the same way from the partners of `tbox` and `tstzspan`. A
+temporal number's classes also take its `valspan` (`intspan`, `bigintspan`, `floatspan`) on
+every strategy but the time ones; a type the time span bounds alone carries the topological and
+time strategies against the span and itself, and `opnames` gives `tjsonb` its `#@>` and `<@#`,
+since `@>` and `<@` state the containment of its JSONB values. No temporal type's index
+operator class is written by hand.
 
 **`topops.sql.tmpl`/`posops.sql.tmpl` serve two independent manifest tracks** that
 happen to share a template name: the `topop_families`/`posop_families` axes (§9,
@@ -1452,7 +1503,7 @@ Three facts bound which declarations carry the clause:
   question.
 - **A family whose opclass does not index a strategy keeps the predicate as a
   filter**, the operator lookup finding no member. The Z-axis strategies reach
-  the opclass of a three-dimensional family through the `front_back` key of §6,
+  the opclass of a three-dimensional family through `z` in its `boxmembers:` key of §6,
   so `tpose` and `trgeometry` answer their Z predicates from the index.
 - **An operator the bounding box cannot bound stays a filter by design.** A
   `tjsonb` value answers JSONB containment `@>` and `<@` after jsonb itself,

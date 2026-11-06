@@ -59,6 +59,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 
 #if ! MEOS
   extern FunctionCallInfo fetch_fcinfo(void);
@@ -145,20 +146,24 @@ datum_max_text(Datum l, Datum r)
 
 /**
  * @brief Return the sum of the two arguments
+ * @details The sum of two integers can exceed the largest one, which raises
+ * an error, as PostgreSQL does (#add_int32_int32)
  */
 Datum
 datum_sum_int32(Datum l, Datum r)
 {
-  return Int32GetDatum(DatumGetInt32(l) + DatumGetInt32(r));
+  return Int32GetDatum(add_int32_int32(DatumGetInt32(l), DatumGetInt32(r)));
 }
 
 /**
  * @brief Return the sum of the two arguments
+ * @details The sum of two big integers can exceed the largest one, which
+ * raises an error, as PostgreSQL does (#add_int64_int64)
  */
 Datum
 datum_sum_int64(Datum l, Datum r)
 {
-  return Int64GetDatum(DatumGetInt64(l) + DatumGetInt64(r));
+  return Int64GetDatum(add_int64_int64(DatumGetInt64(l), DatumGetInt64(r)));
 }
 
 /**

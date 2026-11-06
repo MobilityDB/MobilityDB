@@ -238,6 +238,48 @@ SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=|
 		<para>Since the rule raises no error, a value that lacks its Z by mistake answers in 2D with no warning. The functions <xref linkend="tgeo_force"/> state the dimensions to read. A column declared with a Z dimension, such as <varname>tgeompoint(Sequence, PointZ)</varname>, accepts no value with no Z, so that a table cannot hold one.</para>
 	</sect1>
 
+	<sect1 xml:id="tgeo_empty_geometries">
+		<title>Empty Geometries</title>
+		<para><emphasis role="strong">An empty geometry is the empty set of points: it is nowhere.</emphasis> As in PostGIS, an operation gives it the answer the empty set gives, and neither an error nor a notice is raised, except where the geometry must be the position of a value.</para>
+				<programlisting language="sql" xml:space="preserve" format="linespecific">
+-- It meets nothing
+SELECT eIntersects(geometry 'Point empty',
+  tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+-- f
+SELECT tDisjoint(geometry 'Point empty',
+  tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02, Point(1 1)@2001-01-03]');
+-- [t@2001-01-01, t@2001-01-03]
+-- Nothing can be measured to it
+SELECT geometry 'Point empty' &lt;-&gt;
+  tgeompoint '[Point(2 2)@2001-01-01, Point(1 1)@2001-01-02, Point(2 2)@2001-01-03]';
+-- NULL
+-- It removes nothing and keeps nothing
+SELECT asText(minusGeometry(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+-- [POINT(1 1)@2001-01-01, POINT(2 2)@2001-01-02, POINT(1 1)@2001-01-03]
+SELECT asText(atGeometry(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
+  Point(1 1)@2001-01-03]', geometry 'Linestring empty'));
+-- NULL
+-- It cannot be the position of a value
+SELECT tgeompoint(geometry 'Point empty', timestamptz '2001-01-01');
+-- ERROR:  Only non-empty geometries accepted
+</programlisting>
+		<itemizedlist>
+			<listitem>
+				<para><emphasis role="strong">It meets nothing.</emphasis> A relationship asking for a common point, such as <varname>intersects</varname>, <varname>contains</varname>, <varname>covers</varname>, <varname>touches</varname>, the distance within, and the equality, is false, while <varname>disjoint</varname> and the inequality are true. A temporal relationship or comparison takes this answer over the whole time of the temporal value, and the ever and always forms answer the same.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">Nothing can be measured to it.</emphasis> The distances (<varname>|=|</varname>, <varname>&lt;-&gt;</varname>, <varname>nearestApproachInstant</varname>, <varname>shortestLine</varname>) and <varname>bearing</varname> are <varname>NULL</varname>. It has no bounding box, so that <varname>stbox</varname>, <varname>expandSpace</varname>, <varname>stboxes</varname>, <varname>splitNStboxes</varname>, and <varname>splitEachNStboxes</varname> are <varname>NULL</varname>.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">It removes nothing and keeps nothing.</emphasis> The restrictions <varname>atGeometry</varname> and <varname>atValue</varname> are <varname>NULL</varname>, since no instant is left, and <varname>minusGeometry</varname> and <varname>minusValue</varname> return the temporal value unchanged.</para>
+			</listitem>
+			<listitem>
+				<para><emphasis role="strong">It cannot be the position of a value.</emphasis> Building a temporal value or a set from it, or giving it as the origin of <varname>rotate</varname> and <varname>scale</varname>, raises an error.</para>
+			</listitem>
+		</itemizedlist>
+	</sect1>
+
 	<sect1 xml:id="tgeo_spatial_bbox">
 		<title>Bounding Box Operations</title>
 

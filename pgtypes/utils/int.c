@@ -128,7 +128,7 @@ int32_to_int16(int32 num)
 {
   if (unlikely(num < SHRT_MIN) || unlikely(num > SHRT_MAX))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -470,7 +470,7 @@ int32_uminus(int32 num)
 {
   if (unlikely(num == PG_INT32_MIN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -500,7 +500,7 @@ add_int32_int32(int32 num1, int32 num2)
 
   if (unlikely(pg_add_s32_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -519,7 +519,7 @@ minus_int32_int32(int32 num1, int32 num2)
 
   if (unlikely(pg_sub_s32_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -538,7 +538,7 @@ mul_int32_int32(int32 num1, int32 num2)
 
   if (unlikely(pg_mul_s32_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -557,7 +557,7 @@ div_int32_int32(int32 num1, int32 num2)
 
   if (num2 == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -572,7 +572,7 @@ div_int32_int32(int32 num1, int32 num2)
   {
     if (unlikely(num1 == PG_INT32_MIN))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "integer out of range");
       return INT_MAX;
     }
@@ -598,7 +598,7 @@ int32_inc(int32 num)
   int32 result;
   if (unlikely(pg_add_s32_overflow(num, 1, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -616,7 +616,7 @@ int16_uminus(int16 num)
 {
   if (unlikely(num == PG_INT16_MIN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -646,7 +646,7 @@ add_int16_int16(int16 num1, int16 num2)
 
   if (unlikely(pg_add_s16_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -665,7 +665,7 @@ minus_int16_int16(int16 num1, int16 num2)
 
   if (unlikely(pg_sub_s16_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -684,7 +684,7 @@ mul_int16_int16(int16 num1, int16 num2)
 
   if (unlikely(pg_mul_s16_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -704,7 +704,7 @@ div_int16_int16(int16 num1, int16 num2)
 
   if (num2 == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return SHRT_MAX;
   }
@@ -719,7 +719,7 @@ div_int16_int16(int16 num1, int16 num2)
   {
     if (unlikely(num1 == PG_INT16_MIN))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "smallint out of range");
       return SHRT_MAX;
     }
@@ -746,7 +746,7 @@ add_int16_int32(int16 num1, int32 num2)
 
   if (unlikely(pg_add_s32_overflow((int32) num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -765,7 +765,7 @@ minus_int16_int32(int16 num1, int32 num2)
 
   if (unlikely(pg_sub_s32_overflow((int32) num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -784,7 +784,7 @@ mul_int16_int32(int16 num1, int32 num2)
 
   if (unlikely(pg_mul_s32_overflow((int32) num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -801,7 +801,7 @@ div_int16_int32(int16 num1, int32 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -822,7 +822,7 @@ add_int32_int16(int32 num1, int16 num2)
 
   if (unlikely(pg_add_s32_overflow(num1, (int32) num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -841,7 +841,7 @@ minus_int32_int16(int32 num1, int16 num2)
 
   if (unlikely(pg_sub_s32_overflow(num1, (int32) num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -860,7 +860,7 @@ mul_int32_int16(int32 num1, int16 num2)
 
   if (unlikely(pg_mul_s32_overflow(num1, (int32) num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -879,7 +879,7 @@ div_int32_int16(int32 num1, int16 num2)
 
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -894,7 +894,7 @@ div_int32_int16(int32 num1, int16 num2)
   {
     if (unlikely(num1 == PG_INT32_MIN))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "integer out of range");
       return INT_MAX;
     }
@@ -919,7 +919,7 @@ int32_mod(int32 num1, int32 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return INT_MAX;
   }
@@ -947,7 +947,7 @@ int16_mod(int16 num1, int16 num2)
 {
   if (unlikely(num2 == 0))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return SHRT_MAX;
   }
@@ -978,7 +978,7 @@ int32_abs(int32 num)
 
   if (unlikely(num == PG_INT32_MIN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -998,7 +998,7 @@ int16_abs(int16 num)
 
   if (unlikely(num == PG_INT16_MIN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return SHRT_MAX;
   }
@@ -1050,7 +1050,7 @@ int4gcd_internal(int32 num1, int32 num2)
   {
     if (num2 == 0 || num2 == PG_INT32_MIN)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "integer out of range");
       return INT_MAX;
     }
@@ -1120,7 +1120,7 @@ int32_lcm(int32 num1, int32 num2)
 
   if (unlikely(pg_mul_s32_overflow(num1, num2, &result)))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -1128,7 +1128,7 @@ int32_lcm(int32 num1, int32 num2)
   /* If the result is INT_MIN, it cannot be represented. */
   if (unlikely(result == PG_INT32_MIN))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }

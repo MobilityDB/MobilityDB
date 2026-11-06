@@ -680,7 +680,7 @@ pg_numeric_in(const char *str, int32 typmod)
     res = make_result_opt_error(&value, &have_error);
     if (have_error)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "value overflows numeric format");
       return NULL;
     }
@@ -1534,7 +1534,7 @@ numeric_width_bucket(Numeric operand, Numeric bound1, Numeric bound2,
   int32 result;
   if (! numericvar_to_int32(&result_var, &result))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return INT_MAX;
   }
@@ -2243,7 +2243,7 @@ numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
         case 0:
           if (have_error)
             *have_error = true;
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2262,7 +2262,7 @@ numeric_div_opt_error(Numeric num1, Numeric num2, bool *have_error)
         case 0:
           if (have_error)
             *have_error = true;
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2351,7 +2351,7 @@ pg_numeric_div_trunc(Numeric num1, Numeric num2)
       switch (numeric_sign_internal(num2))
       {
         case 0:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2368,7 +2368,7 @@ pg_numeric_div_trunc(Numeric num1, Numeric num2)
       switch (numeric_sign_internal(num2))
       {
         case 0:
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
             "division by zero");
           return NULL;
         case 1:
@@ -2459,7 +2459,7 @@ numeric_mod_opt_error(Numeric num1, Numeric num2, bool *have_error)
       {
         if (have_error)
           *have_error = true;
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
           "division by zero");
         return NULL;
       }
@@ -2720,7 +2720,7 @@ pg_numeric_fac(int64 num)
 
   if (num < 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "factorial of a negative number is undefined");
     return NULL;
   }
@@ -2732,7 +2732,7 @@ pg_numeric_fac(int64 num)
   /* Fail immediately if the result would overflow */
   if (num > 32177)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "value overflows numeric format");
     return NULL;
   }
@@ -3509,7 +3509,7 @@ pg_numeric_int8_opt_error(Numeric num, bool *have_error)
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "bigint out of range");
       return LONG_MAX;
     }
@@ -3576,10 +3576,10 @@ pg_numeric_int4_opt_error(Numeric num, bool *have_error)
     else
     {
       if (NUMERIC_IS_NAN(num))
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "cannot convert NaN to %s", "integer");
       else
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
           "cannot convert infinity to %s", "integer");
       return INT_MAX;
     }
@@ -3597,7 +3597,7 @@ pg_numeric_int4_opt_error(Numeric num, bool *have_error)
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "integer out of range");
       return INT_MAX;
     }
@@ -3642,10 +3642,10 @@ numeric_to_int16(Numeric num)
   if (NUMERIC_IS_SPECIAL(num))
   {
     if (NUMERIC_IS_NAN(num))
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "cannot convert NaN to %s", "smallint");
     else
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
         "cannot convert infinity to %s", "smallint");
     return INT16_MAX;
   }
@@ -3653,13 +3653,13 @@ numeric_to_int16(Numeric num)
   init_var_from_num(num, &x);
   if (! numericvar_to_int64(&x, &val))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return INT16_MAX;
   }
   if (unlikely(val < PG_INT16_MIN) || unlikely(val > PG_INT16_MAX))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "smallint out of range");
     return INT16_MAX;
   }
@@ -4062,7 +4062,7 @@ set_var_from_str(const char *str, const char *cp,
   return true;
 
 out_of_range:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value overflows numeric format");
   return false;
 
@@ -4263,7 +4263,7 @@ set_var_from_non_decimal_integer_str(const char *str, const char *cp, int sign,
   return true;
 
 out_of_range:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "value overflows numeric format");
   return false;
 
@@ -4684,7 +4684,7 @@ make_result_opt_error(const NumericVar *var, bool *have_error)
     }
     else
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "value overflows numeric format");
       return NULL;
     }
@@ -4773,7 +4773,7 @@ apply_typmod(NumericVar *var, int32 typmod)
 #endif
         if (ddigits > maxdigits)
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
             "numeric field overflow");
           return false;
         }
@@ -4813,7 +4813,7 @@ apply_typmod_special(Numeric num, int32 typmod)
   if (!is_valid_numeric_typmod(typmod))
     return true;
 
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
     "numeric field overflow");
   return false;
 }
@@ -5923,7 +5923,7 @@ div_var(const NumericVar *var1, const NumericVar *var2, NumericVar *result,
    */
   if (var2ndigits == 0 || var2->digits[0] == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -6448,7 +6448,7 @@ div_var_int(const NumericVar *var, int ival, int ival_weight,
   /* Guard against division by zero */
   if (ival == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -6565,7 +6565,7 @@ div_var_int64(const NumericVar *var, int64 ival, int ival_weight,
   /* Guard against division by zero */
   if (ival == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
       "division by zero");
     return;
   }
@@ -7450,7 +7450,7 @@ exp_var(const NumericVar *arg, NumericVar *result, int rscale)
   {
     if (val > 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "value overflows numeric format");
       return;
     }
@@ -7929,7 +7929,7 @@ power_var(const NumericVar *base, const NumericVar *exp, NumericVar *result)
   {
     if (val > 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "value overflows numeric format");
       return;
     }
@@ -8025,7 +8025,7 @@ power_var_int(const NumericVar *base, int exp, int exp_dscale,
   /* overflow/underflow tests with fuzz factors */
   if (f > (NUMERIC_WEIGHT_MAX + 1) * DEC_DIGITS)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "value overflows numeric format");
     return;
   }
@@ -8080,7 +8080,7 @@ power_var_int(const NumericVar *base, int exp, int exp_dscale,
   {
     if (exp < 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DIVISION_BY_ZERO,
         "division by zero");
       return;
     }
@@ -8164,7 +8164,7 @@ power_var_int(const NumericVar *base, int exp, int exp_dscale,
       /* overflow, unless neg, in which case result should be 0 */
       if (!neg)
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
           "value overflows numeric format");
         return;
       }

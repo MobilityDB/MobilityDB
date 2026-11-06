@@ -1682,6 +1682,17 @@ WITH rast AS (
 SELECT transform(r, ST_MakeEmptyRaster(1, 1, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0))
 FROM rast;
 
+-- A pixel size giving the result more than 65535 columns or rows, the most a
+-- raster holds, states no raster: a pixel of 1 metre over 3 degrees.
+WITH rast AS (
+  SELECT ST_AddBand(
+    ST_MakeEmptyRaster(3, 3, 0.0, 3.0, 1.0, -1.0, 0.0, 0.0, 4326),
+    '32BF'::text, 0.0::float8, NULL::float8) AS r
+)
+SELECT transform(r, 3857, 'NearestNeighbour'::text, 0.125::float8,
+  1.0::float8, -1.0::float8)
+FROM rast;
+
 -------------------------------------------------------------------------------
 -- transformPipeline
 -------------------------------------------------------------------------------

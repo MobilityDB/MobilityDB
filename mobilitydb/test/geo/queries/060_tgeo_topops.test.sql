@@ -275,9 +275,11 @@ SELECT stboxes(geometry 'Multilinestring((1 1,2 2,3 1,4 2,5 1,6 2,7 1,8 2,9 1,10
 -- 3D
 SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))');
 
+-- An empty geometry has no point, so it has no box
+SELECT stboxes(geometry 'Linestring empty');
+
 /* Errors */
 SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
-SELECT stboxes(geometry 'Linestring empty');
 
 -------------------------------------------------------------------------------
 
@@ -343,10 +345,12 @@ SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 
 SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
 SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
 
+-- An empty geometry has no point, so it has no box
+SELECT splitNStboxes(geometry 'Linestring empty', 1);
+
 /* Errors */
 SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
-SELECT splitNStboxes(geometry 'Linestring empty', 1);
 
 -------------------------------------------------------------------------------
 
@@ -412,10 +416,12 @@ SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 
 SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 6);
 SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 1 1,8 2 1,9 1 1,10 2 1))', 12);
 
+-- An empty geometry has no point, so it has no box
+SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
+
 /* Errors */
 SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
-SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
 
 -------------------------------------------------------------------------------
 

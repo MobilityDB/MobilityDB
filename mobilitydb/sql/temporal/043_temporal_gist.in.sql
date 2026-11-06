@@ -198,13 +198,15 @@ CREATE OPERATOR CLASS tbox_rtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbool_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbool_rtree_ops
   DEFAULT FOR TYPE tbool USING gist AS
   STORAGE tstzspan,
   -- overlaps
   OPERATOR  3    && (tbool, tstzspan),
   OPERATOR  3    && (tbool, tbool),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbool, tstzspan),
   OPERATOR  6    ~= (tbool, tbool),
   -- contains
@@ -229,13 +231,14 @@ CREATE OPERATOR CLASS tbool_rtree_ops
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  tbool_gist_consistent(internal, tbool, smallint, oid, internal),
-  FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  tbool_gist_compress(internal),
-  FUNCTION  5  span_gist_penalty(internal, internal, internal),
-  FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION 11  span_gist_sortsupport(internal);
+  FUNCTION  1 tbool_gist_consistent(internal, tbool, smallint, oid, internal),
+  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  3 tbool_gist_compress(internal),
+  FUNCTION  5 span_gist_penalty(internal, internal, internal),
+  FUNCTION  6 span_gist_picksplit(internal, internal),
+  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 11 span_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tbool_rtree_ops
 
 /******************************************************************************/
 
@@ -244,6 +247,8 @@ CREATE FUNCTION tint_gist_distance(internal, tint, smallint, oid, internal)
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tint_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tint_rtree_ops
   DEFAULT FOR TYPE tint USING gist AS
   STORAGE tbox,
@@ -251,13 +256,13 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  1    << (tint, intspan),
   OPERATOR  1    << (tint, tbox),
   OPERATOR  1    << (tint, tint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
   -- overlaps
-  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
   -- overlaps or right
@@ -268,29 +273,29 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
-    -- same
-  OPERATOR  6    ~= (tint, intspan),
+  -- same
   OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
   OPERATOR  6    ~= (tint, tbox),
   OPERATOR  6    ~= (tint, tint),
   -- contains
-  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tbox),
   OPERATOR  7    @> (tint, tint),
   -- contained by
-  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
   -- adjacent
-  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tstzspan),
@@ -309,14 +314,15 @@ CREATE OPERATOR CLASS tint_rtree_ops
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
   -- functions
-  FUNCTION  1  tint_gist_consistent(internal, tint, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  3  tint_gist_compress(internal),
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tint_gist_distance(internal, tint, smallint, oid, internal),
+  FUNCTION  1 tint_gist_consistent(internal, tint, smallint, oid, internal),
+  FUNCTION  2 tbox_gist_union(internal, internal),
+  FUNCTION  3 tint_gist_compress(internal),
+  FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 tbox_gist_picksplit(internal, internal),
+  FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tint_gist_distance(internal, tint, smallint, oid, internal),
   FUNCTION 11 tbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tint_rtree_ops
 
 /******************************************************************************/
 
@@ -325,6 +331,8 @@ CREATE FUNCTION tbigint_gist_distance(internal, tbigint, smallint, oid, internal
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbigint_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbigint_rtree_ops
   DEFAULT FOR TYPE tbigint USING gist AS
   STORAGE tbox,
@@ -332,13 +340,13 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   OPERATOR  1    << (tbigint, bigintspan),
   OPERATOR  1    << (tbigint, tbox),
   OPERATOR  1    << (tbigint, tbigint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
   -- overlaps
-  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tbox),
   OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
@@ -349,29 +357,29 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
-    -- same
-  OPERATOR  6    ~= (tbigint, bigintspan),
+  -- same
   OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
   OPERATOR  6    ~= (tbigint, tbox),
   OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
-  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tbox),
   OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
-  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
   -- adjacent
-  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tbox),
   OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbigint, tstzspan),
@@ -390,14 +398,15 @@ CREATE OPERATOR CLASS tbigint_rtree_ops
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
   -- functions
-  FUNCTION  1  tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  3  tbigint_gist_compress(internal),
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
+  FUNCTION  1 tbigint_gist_consistent(internal, tbigint, smallint, oid, internal),
+  FUNCTION  2 tbox_gist_union(internal, internal),
+  FUNCTION  3 tbigint_gist_compress(internal),
+  FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 tbox_gist_picksplit(internal, internal),
+  FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tbigint_gist_distance(internal, tbigint, smallint, oid, internal),
   FUNCTION 11 tbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tbigint_rtree_ops
 
 /******************************************************************************/
 
@@ -406,6 +415,8 @@ CREATE FUNCTION tfloat_gist_distance(internal, tfloat, smallint, oid, internal)
   AS 'MODULE_PATHNAME', 'Tnumber_gist_distance'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+-- GENERATED-TEMPOPCLASS-BEGIN tfloat_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tfloat_rtree_ops
   DEFAULT FOR TYPE tfloat USING gist AS
   STORAGE tbox,
@@ -413,13 +424,13 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   OPERATOR  1    << (tfloat, floatspan),
   OPERATOR  1    << (tfloat, tbox),
   OPERATOR  1    << (tfloat, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
-  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
@@ -430,29 +441,29 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
-    -- same
-  OPERATOR  6    ~= (tfloat, floatspan),
+  -- same
   OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
   OPERATOR  6    ~= (tfloat, tbox),
   OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
-  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tbox),
   OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
-  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
   -- adjacent
-  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
-  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tstzspan),
@@ -471,24 +482,27 @@ CREATE OPERATOR CLASS tfloat_rtree_ops
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
-  FUNCTION  1  tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
-  FUNCTION  2  tbox_gist_union(internal, internal),
-  FUNCTION  3  tfloat_gist_compress(internal),
-  FUNCTION  5  tbox_gist_penalty(internal, internal, internal),
-  FUNCTION  6  tbox_gist_picksplit(internal, internal),
-  FUNCTION  7  tbox_gist_same(tbox, tbox, internal),
-  FUNCTION  8  tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
+  FUNCTION  1 tfloat_gist_consistent(internal, tfloat, smallint, oid, internal),
+  FUNCTION  2 tbox_gist_union(internal, internal),
+  FUNCTION  3 tfloat_gist_compress(internal),
+  FUNCTION  5 tbox_gist_penalty(internal, internal, internal),
+  FUNCTION  6 tbox_gist_picksplit(internal, internal),
+  FUNCTION  7 tbox_gist_same(tbox, tbox, internal),
+  FUNCTION  8 tfloat_gist_distance(internal, tfloat, smallint, oid, internal),
   FUNCTION 11 tbox_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END tfloat_rtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN ttext_rtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS ttext_rtree_ops
   DEFAULT FOR TYPE ttext USING gist AS
   STORAGE tstzspan,
   -- overlaps
   OPERATOR  3    && (ttext, tstzspan),
   OPERATOR  3    && (ttext, ttext),
-    -- same
+  -- same
   OPERATOR  6    ~= (ttext, tstzspan),
   OPERATOR  6    ~= (ttext, ttext),
   -- contains
@@ -513,12 +527,13 @@ CREATE OPERATOR CLASS ttext_rtree_ops
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  ttext_gist_consistent(internal, ttext, smallint, oid, internal),
-  FUNCTION  2  span_gist_union(internal, internal),
-  FUNCTION  3  ttext_gist_compress(internal),
-  FUNCTION  5  span_gist_penalty(internal, internal, internal),
-  FUNCTION  6  span_gist_picksplit(internal, internal),
-  FUNCTION  7  span_gist_same(tstzspan, tstzspan, internal),
-  FUNCTION 11  span_gist_sortsupport(internal);
+  FUNCTION  1 ttext_gist_consistent(internal, ttext, smallint, oid, internal),
+  FUNCTION  2 span_gist_union(internal, internal),
+  FUNCTION  3 ttext_gist_compress(internal),
+  FUNCTION  5 span_gist_penalty(internal, internal, internal),
+  FUNCTION  6 span_gist_picksplit(internal, internal),
+  FUNCTION  7 span_gist_same(tstzspan, tstzspan, internal),
+  FUNCTION 11 span_gist_sortsupport(internal);
+-- GENERATED-TEMPOPCLASS-END ttext_rtree_ops
 
 /******************************************************************************/

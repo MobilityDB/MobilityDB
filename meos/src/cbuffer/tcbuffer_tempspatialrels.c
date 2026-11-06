@@ -144,8 +144,11 @@ tspatialrel_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs,
   bool invert, datum_func2 func)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   assert(temptype_subtype(temp->subtype));
   if (temp->subtype == TINSTANT)
@@ -1065,8 +1068,11 @@ tinterrel_tcbuffer_geo_dist(const Temporal *temp, const GSERIALIZED *gs,
   bool tinter, double dist)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(! tinter), T_TBOOL, temp);
 
   /* A value composed of discs of a zero radius is a temporal point, whose
    * conversion is exact, and the temporal point relationships of the geo
@@ -2164,8 +2170,11 @@ tcontains_geo_tcbuffer_native(const Temporal *temp, const GSERIALIZED *gs,
   bool strict)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   /* Bounding box test: a moving disk whose radius-aware bounding box is
    * disjoint from the geometry is never inside it, so it never contains/covers.
@@ -2659,8 +2668,11 @@ Temporal *
 ttouches_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs))
+  if (! ensure_valid_tcbuffer_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   /* A value composed of discs of a zero radius is a temporal point, whose
    * conversion is exact. A disc of a strictly positive radius carries an
@@ -2802,9 +2814,12 @@ tdwithin_tcbuffer_geo(const Temporal *temp, const GSERIALIZED *gs, double dist)
   /* Ensure the validity of the arguments */
   if (! ensure_finite(dist))
     return NULL;
-  if (! ensure_valid_tcbuffer_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tcbuffer_geo(temp, gs) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
+  /* An empty geometry has no point, so it meets no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(false), T_TBOOL, temp);
 
   /* A point is the circular buffer of radius 0 at it, the same set, against
    * which the period within the distance is decided exactly over continuous

@@ -251,12 +251,14 @@ CREATE FUNCTION temporal_spgist_compress(internal)
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbool_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbool_quadtree_ops
   DEFAULT FOR TYPE tbool USING spgist AS
   -- overlaps
   OPERATOR  3    && (tbool, tstzspan),
   OPERATOR  3    && (tbool, tbool),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbool, tstzspan),
   OPERATOR  6    ~= (tbool, tbool),
   -- contains
@@ -281,21 +283,24 @@ CREATE OPERATOR CLASS tbool_quadtree_ops
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  tstzspan_spgist_config(internal, internal),
-  FUNCTION  2  span_quadtree_choose(internal, internal),
-  FUNCTION  3  span_quadtree_picksplit(internal, internal),
-  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  temporal_spgist_compress(internal);
+  FUNCTION  1 tstzspan_spgist_config(internal, internal),
+  FUNCTION  2 span_quadtree_choose(internal, internal),
+  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tbool_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbool_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbool_kdtree_ops
   FOR TYPE tbool USING spgist AS
   -- overlaps
   OPERATOR  3    && (tbool, tstzspan),
   OPERATOR  3    && (tbool, tbool),
-    -- same
+  -- same
   OPERATOR  6    ~= (tbool, tstzspan),
   OPERATOR  6    ~= (tbool, tbool),
   -- contains
@@ -320,28 +325,31 @@ CREATE OPERATOR CLASS tbool_kdtree_ops
   OPERATOR  31    #&> (tbool, tstzspan),
   OPERATOR  31    #&> (tbool, tbool),
   -- functions
-  FUNCTION  1  tstzspan_spgist_config(internal, internal),
-  FUNCTION  2  span_kdtree_choose(internal, internal),
-  FUNCTION  3  span_kdtree_picksplit(internal, internal),
-  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  temporal_spgist_compress(internal);
+  FUNCTION  1 tstzspan_spgist_config(internal, internal),
+  FUNCTION  2 span_kdtree_choose(internal, internal),
+  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tbool_kdtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tint_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tint_quadtree_ops
   DEFAULT FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, intspan),
   OPERATOR  1    << (tint, tbox),
   OPERATOR  1    << (tint, tint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
   -- overlaps
-  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
   -- overlaps or right
@@ -352,29 +360,29 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
-    -- same
-  OPERATOR  6    ~= (tint, intspan),
+  -- same
   OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
   OPERATOR  6    ~= (tint, tbox),
   OPERATOR  6    ~= (tint, tint),
   -- contains
-  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tbox),
   OPERATOR  7    @> (tint, tint),
   -- contained by
-  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
   -- adjacent
-  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tstzspan),
@@ -393,28 +401,31 @@ CREATE OPERATOR CLASS tint_quadtree_ops
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_quadtree_choose(internal, internal),
-  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_quadtree_choose(internal, internal),
+  FUNCTION  3 tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tint_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tint_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tint_kdtree_ops
   FOR TYPE tint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tint, intspan),
   OPERATOR  1    << (tint, tbox),
   OPERATOR  1    << (tint, tint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tint, intspan),
   OPERATOR  2    &< (tint, tbox),
   OPERATOR  2    &< (tint, tint),
   -- overlaps
-  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tstzspan),
+  OPERATOR  3    && (tint, intspan),
   OPERATOR  3    && (tint, tbox),
   OPERATOR  3    && (tint, tint),
   -- overlaps or right
@@ -425,29 +436,29 @@ CREATE OPERATOR CLASS tint_kdtree_ops
   OPERATOR  5    >> (tint, intspan),
   OPERATOR  5    >> (tint, tbox),
   OPERATOR  5    >> (tint, tint),
-    -- same
-  OPERATOR  6    ~= (tint, intspan),
+  -- same
   OPERATOR  6    ~= (tint, tstzspan),
+  OPERATOR  6    ~= (tint, intspan),
   OPERATOR  6    ~= (tint, tbox),
   OPERATOR  6    ~= (tint, tint),
   -- contains
-  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tstzspan),
+  OPERATOR  7    @> (tint, intspan),
   OPERATOR  7    @> (tint, tbox),
   OPERATOR  7    @> (tint, tint),
   -- contained by
-  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tstzspan),
+  OPERATOR  8    <@ (tint, intspan),
   OPERATOR  8    <@ (tint, tbox),
   OPERATOR  8    <@ (tint, tint),
   -- adjacent
-  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tstzspan),
+  OPERATOR  17    -|- (tint, intspan),
   OPERATOR  17    -|- (tint, tbox),
   OPERATOR  17    -|- (tint, tint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, intspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tint, tint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tint, tstzspan),
@@ -466,28 +477,31 @@ CREATE OPERATOR CLASS tint_kdtree_ops
   OPERATOR  31    #&> (tint, tbox),
   OPERATOR  31    #&> (tint, tint),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_kdtree_choose(internal, internal),
-  FUNCTION  3  tbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_kdtree_choose(internal, internal),
+  FUNCTION  3 tbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tint_kdtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbigint_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbigint_quadtree_ops
   DEFAULT FOR TYPE tbigint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tbigint, bigintspan),
   OPERATOR  1    << (tbigint, tbox),
   OPERATOR  1    << (tbigint, tbigint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
   -- overlaps
-  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tbox),
   OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
@@ -498,29 +512,29 @@ CREATE OPERATOR CLASS tbigint_quadtree_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
-    -- same
-  OPERATOR  6    ~= (tbigint, bigintspan),
+  -- same
   OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
   OPERATOR  6    ~= (tbigint, tbox),
   OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
-  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tbox),
   OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
-  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
   -- adjacent
-  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tbox),
   OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbigint, tstzspan),
@@ -539,28 +553,31 @@ CREATE OPERATOR CLASS tbigint_quadtree_ops
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_quadtree_choose(internal, internal),
-  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_quadtree_choose(internal, internal),
+  FUNCTION  3 tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tbigint_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tbigint_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tbigint_kdtree_ops
   FOR TYPE tbigint USING spgist AS
   -- strictly left
   OPERATOR  1    << (tbigint, bigintspan),
   OPERATOR  1    << (tbigint, tbox),
   OPERATOR  1    << (tbigint, tbigint),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tbigint, bigintspan),
   OPERATOR  2    &< (tbigint, tbox),
   OPERATOR  2    &< (tbigint, tbigint),
   -- overlaps
-  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tstzspan),
+  OPERATOR  3    && (tbigint, bigintspan),
   OPERATOR  3    && (tbigint, tbox),
   OPERATOR  3    && (tbigint, tbigint),
   -- overlaps or right
@@ -571,29 +588,29 @@ CREATE OPERATOR CLASS tbigint_kdtree_ops
   OPERATOR  5    >> (tbigint, bigintspan),
   OPERATOR  5    >> (tbigint, tbox),
   OPERATOR  5    >> (tbigint, tbigint),
-    -- same
-  OPERATOR  6    ~= (tbigint, bigintspan),
+  -- same
   OPERATOR  6    ~= (tbigint, tstzspan),
+  OPERATOR  6    ~= (tbigint, bigintspan),
   OPERATOR  6    ~= (tbigint, tbox),
   OPERATOR  6    ~= (tbigint, tbigint),
   -- contains
-  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tstzspan),
+  OPERATOR  7    @> (tbigint, bigintspan),
   OPERATOR  7    @> (tbigint, tbox),
   OPERATOR  7    @> (tbigint, tbigint),
   -- contained by
-  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tstzspan),
+  OPERATOR  8    <@ (tbigint, bigintspan),
   OPERATOR  8    <@ (tbigint, tbox),
   OPERATOR  8    <@ (tbigint, tbigint),
   -- adjacent
-  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tstzspan),
+  OPERATOR  17    -|- (tbigint, bigintspan),
   OPERATOR  17    -|- (tbigint, tbox),
   OPERATOR  17    -|- (tbigint, tbigint),
   -- nearest approach distance
-  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, bigintspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tbigint, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tbigint, tbigint) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tbigint, tstzspan),
@@ -612,28 +629,31 @@ CREATE OPERATOR CLASS tbigint_kdtree_ops
   OPERATOR  31    #&> (tbigint, tbox),
   OPERATOR  31    #&> (tbigint, tbigint),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_kdtree_choose(internal, internal),
-  FUNCTION  3  tbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_kdtree_choose(internal, internal),
+  FUNCTION  3 tbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tbigint_kdtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tfloat_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tfloat_quadtree_ops
   DEFAULT FOR TYPE tfloat USING spgist AS
   -- strictly left
   OPERATOR  1    << (tfloat, floatspan),
   OPERATOR  1    << (tfloat, tbox),
   OPERATOR  1    << (tfloat, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
-  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
@@ -644,29 +664,29 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
-    -- same
-  OPERATOR  6    ~= (tfloat, floatspan),
+  -- same
   OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
   OPERATOR  6    ~= (tfloat, tbox),
   OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
-  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tbox),
   OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
-  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
   -- adjacent
-  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
-  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tstzspan),
@@ -685,28 +705,31 @@ CREATE OPERATOR CLASS tfloat_quadtree_ops
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_quadtree_choose(internal, internal),
-  FUNCTION  3  tbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_quadtree_choose(internal, internal),
+  FUNCTION  3 tbox_quadtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tfloat_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN tfloat_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS tfloat_kdtree_ops
   FOR TYPE tfloat USING spgist AS
   -- strictly left
   OPERATOR  1    << (tfloat, floatspan),
   OPERATOR  1    << (tfloat, tbox),
   OPERATOR  1    << (tfloat, tfloat),
-   -- overlaps or left
+  -- overlaps or left
   OPERATOR  2    &< (tfloat, floatspan),
   OPERATOR  2    &< (tfloat, tbox),
   OPERATOR  2    &< (tfloat, tfloat),
   -- overlaps
-  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tstzspan),
+  OPERATOR  3    && (tfloat, floatspan),
   OPERATOR  3    && (tfloat, tbox),
   OPERATOR  3    && (tfloat, tfloat),
   -- overlaps or right
@@ -717,29 +740,29 @@ CREATE OPERATOR CLASS tfloat_kdtree_ops
   OPERATOR  5    >> (tfloat, floatspan),
   OPERATOR  5    >> (tfloat, tbox),
   OPERATOR  5    >> (tfloat, tfloat),
-    -- same
-  OPERATOR  6    ~= (tfloat, floatspan),
+  -- same
   OPERATOR  6    ~= (tfloat, tstzspan),
+  OPERATOR  6    ~= (tfloat, floatspan),
   OPERATOR  6    ~= (tfloat, tbox),
   OPERATOR  6    ~= (tfloat, tfloat),
   -- contains
-  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tstzspan),
+  OPERATOR  7    @> (tfloat, floatspan),
   OPERATOR  7    @> (tfloat, tbox),
   OPERATOR  7    @> (tfloat, tfloat),
   -- contained by
-  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tstzspan),
+  OPERATOR  8    <@ (tfloat, floatspan),
   OPERATOR  8    <@ (tfloat, tbox),
   OPERATOR  8    <@ (tfloat, tfloat),
   -- adjacent
-  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tstzspan),
+  OPERATOR  17    -|- (tfloat, floatspan),
   OPERATOR  17    -|- (tfloat, tbox),
   OPERATOR  17    -|- (tfloat, tfloat),
   -- nearest approach distance
-  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, floatspan) FOR ORDER BY pg_catalog.float_ops,
+  OPERATOR  25    |=| (tfloat, tbox) FOR ORDER BY pg_catalog.float_ops,
   OPERATOR  25    |=| (tfloat, tfloat) FOR ORDER BY pg_catalog.float_ops,
   -- overlaps or before
   OPERATOR  28    &<# (tfloat, tstzspan),
@@ -758,21 +781,24 @@ CREATE OPERATOR CLASS tfloat_kdtree_ops
   OPERATOR  31    #&> (tfloat, tbox),
   OPERATOR  31    #&> (tfloat, tfloat),
   -- functions
-  FUNCTION  1  tbox_spgist_config(internal, internal),
-  FUNCTION  2  tbox_kdtree_choose(internal, internal),
-  FUNCTION  3  tbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4  tbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  tbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  tnumber_spgist_compress(internal);
+  FUNCTION  1 tbox_spgist_config(internal, internal),
+  FUNCTION  2 tbox_kdtree_choose(internal, internal),
+  FUNCTION  3 tbox_kdtree_picksplit(internal, internal),
+  FUNCTION  4 tbox_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 tbox_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 tnumber_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END tfloat_kdtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN ttext_quadtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS ttext_quadtree_ops
   DEFAULT FOR TYPE ttext USING spgist AS
   -- overlaps
   OPERATOR  3    && (ttext, tstzspan),
   OPERATOR  3    && (ttext, ttext),
-    -- same
+  -- same
   OPERATOR  6    ~= (ttext, tstzspan),
   OPERATOR  6    ~= (ttext, ttext),
   -- contains
@@ -797,21 +823,24 @@ CREATE OPERATOR CLASS ttext_quadtree_ops
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  tstzspan_spgist_config(internal, internal),
-  FUNCTION  2  span_quadtree_choose(internal, internal),
-  FUNCTION  3  span_quadtree_picksplit(internal, internal),
-  FUNCTION  4  span_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  temporal_spgist_compress(internal);
+  FUNCTION  1 tstzspan_spgist_config(internal, internal),
+  FUNCTION  2 span_quadtree_choose(internal, internal),
+  FUNCTION  3 span_quadtree_picksplit(internal, internal),
+  FUNCTION  4 span_quadtree_inner_consistent(internal, internal),
+  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END ttext_quadtree_ops
 
 /******************************************************************************/
 
+-- GENERATED-TEMPOPCLASS-BEGIN ttext_kdtree_ops — tools/codegen/inherited/generate.py;
+-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or manifest.d/subtypes.yaml and re-run.
 CREATE OPERATOR CLASS ttext_kdtree_ops
   FOR TYPE ttext USING spgist AS
   -- overlaps
   OPERATOR  3    && (ttext, tstzspan),
   OPERATOR  3    && (ttext, ttext),
-    -- same
+  -- same
   OPERATOR  6    ~= (ttext, tstzspan),
   OPERATOR  6    ~= (ttext, ttext),
   -- contains
@@ -836,11 +865,12 @@ CREATE OPERATOR CLASS ttext_kdtree_ops
   OPERATOR  31    #&> (ttext, tstzspan),
   OPERATOR  31    #&> (ttext, ttext),
   -- functions
-  FUNCTION  1  tstzspan_spgist_config(internal, internal),
-  FUNCTION  2  span_kdtree_choose(internal, internal),
-  FUNCTION  3  span_kdtree_picksplit(internal, internal),
-  FUNCTION  4  span_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5  span_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6  temporal_spgist_compress(internal);
+  FUNCTION  1 tstzspan_spgist_config(internal, internal),
+  FUNCTION  2 span_kdtree_choose(internal, internal),
+  FUNCTION  3 span_kdtree_picksplit(internal, internal),
+  FUNCTION  4 span_kdtree_inner_consistent(internal, internal),
+  FUNCTION  5 span_spgist_leaf_consistent(internal, internal),
+  FUNCTION  6 temporal_spgist_compress(internal);
+-- GENERATED-TEMPOPCLASS-END ttext_kdtree_ops
 
 /******************************************************************************/

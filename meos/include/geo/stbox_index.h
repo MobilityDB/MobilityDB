@@ -127,6 +127,17 @@ extern double distance_stbox_nodebox(const STBox *query,
   const STboxNode *nodebox);
 extern void tspatial_spgist_get_stbox(Datum value, MeosType type,
   STBox *result);
+extern int stbox_xmin_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_xmax_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_ymin_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_ymax_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_zmin_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_zmax_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_tmin_cmp(const STBox *box1, const STBox *box2);
+extern int stbox_tmax_cmp(const STBox *box1, const STBox *box2);
+extern qsort_comparator stbox_dim_cmp(STboxDim dim);
+extern int stbox_level_cmp(const STBox *centroid, const STBox *query,
+  int level);
 
 /*****************************************************************************/
 

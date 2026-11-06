@@ -119,6 +119,92 @@
 #include "pg_temporal/tnumber_spgist.h"
 
 /*****************************************************************************
+ * Centroid of the quad-tree pick-split
+ *****************************************************************************/
+
+/**
+ * @brief Return the centroid of a quad-tree pick-split of spatiotemporal boxes,
+ * the median of each bound of the boxes on the axes they carry
+ */
+static STBox *
+stbox_quadtree_centroid(spgPickSplitIn *in)
+{
+  STBox *box = DatumGetSTboxP(in->datums[0]);
+  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
+  STBox *centroid = palloc0(sizeof(STBox));
+  centroid->srid = box->srid;
+  centroid->flags = box->flags;
+  int  median, i;
+  double *lowXs = palloc(sizeof(double) * in->nTuples);
+  double *highXs = palloc(sizeof(double) * in->nTuples);
+  double *lowYs = palloc(sizeof(double) * in->nTuples);
+  double *highYs = palloc(sizeof(double) * in->nTuples);
+  double *lowZs = NULL, *highZs = NULL; /* make compiler quiet */
+  if (hasz)
+  {
+    lowZs = palloc(sizeof(double) * in->nTuples);
+    highZs = palloc(sizeof(double) * in->nTuples);
+  }
+  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
+  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
+
+  /* Calculate median of all 8D coordinates */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    box = DatumGetSTboxP(in->datums[i]);
+    lowXs[i] = box->xmin;
+    highXs[i] = box->xmax;
+    lowYs[i] = box->ymin;
+    highYs[i] = box->ymax;
+    if (hasz)
+    {
+      lowZs[i] = box->zmin;
+      highZs[i] = box->zmax;
+    }
+    lowTs[i] = DatumGetTimestampTz(box->period.lower);
+    highTs[i] = DatumGetTimestampTz(box->period.upper);
+  }
+
+  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  qsort(highYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  if (hasz)
+  {
+    qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+    qsort(highZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
+  }
+  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
+
+  median = in->nTuples / 2;
+
+  centroid->xmin = lowXs[median];
+  centroid->xmax = highXs[median];
+  centroid->ymin = lowYs[median];
+  centroid->ymax = highYs[median];
+  if (hasz)
+  {
+    centroid->zmin = lowZs[median];
+    centroid->zmax = highZs[median];
+  }
+  span_set(TimestampTzGetDatum(lowTs[median]),
+    TimestampTzGetDatum(highTs[median]), true, true, T_TIMESTAMPTZ,
+    T_TSTZSPAN, &centroid->period);
+
+  pfree(lowXs); pfree(highXs);
+  pfree(lowYs); pfree(highYs);
+  if (hasz)
+  {
+    pfree(lowZs); pfree(highZs);
+  }
+  pfree(lowTs); pfree(highTs);
+  return centroid;
+}
+
+/* GENERATED-BOXSPGIST-BEGIN stbox — tools/codegen/inherited/generate.py from templates/boxspgist.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxspgist.yaml and re-run. */
+/*****************************************************************************
  * SP-GiST config function
  *****************************************************************************/
 
@@ -131,10 +217,10 @@ Datum
 Stbox_spgist_config(PG_FUNCTION_ARGS)
 {
   spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
-  Oid stbox_oid = meostype_oid(T_STBOX);
-  cfg->prefixType = stbox_oid;  /* A type represented by its bounding box */
-  cfg->labelType = VOIDOID;     /* We don't need node labels. */
-  cfg->leafType = stbox_oid;
+  Oid box_oid = meostype_oid(T_STBOX);
+  cfg->prefixType = box_oid;  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;   /* We don't need node labels */
+  cfg->leafType = box_oid;
   cfg->canReturnData = false;
   cfg->longValuesOK = false;
   PG_RETURN_VOID();
@@ -243,8 +329,8 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
   out->resultType = spgMatchNode;
   out->result.matchNode.restDatum = PointerGetDatum(box);
 
-  /* nodeN will be set by core, when allTheSame. */
-  if (!in->allTheSame)
+  /* nodeN will be set by core, when allTheSame */
+  if (! in->allTheSame)
     out->result.matchNode.nodeN = (int) getQuadrant8D(centroid, box);
 
   PG_RETURN_VOID();
@@ -254,168 +340,18 @@ Stbox_quadtree_choose(PG_FUNCTION_ARGS)
  * K-d tree choose function
  *****************************************************************************/
 
-/**
- * @brief Determine which half a 4D-mapped temporal box falls into, relative to
- * the centroid and the level number
- *
- * Halves are numbered 0 and 1, and depending on the value of level number
- * modulo 4 is even or odd, the halves will be as follows:
- * @code
- * ----+----
- *  0  |  1
- * ----+----
- * @endcode
- * or
- * @code
- * ---------
- *    1
- * ---------
- *    0
- * ---------
- * @endcode
- * where the lower bound of the splitting dimension is the horizontal axis and
- * the upper bound is the vertical axis.
- *
- * Boxes whose lower/upper bound of the splitting dimension is equal to the
- * centroid bound (including their inclusive flag) may get classified into
- * either node depending on where they happen to fall in the sorted list.
- * This is okay as long as the inner_consistent function descends into both
- * sides for such cases. This is better than the alternative of trying to
- * have an exact boundary, because it keeps the tree balanced even when we
- * have many instances of the same box value. In this way, we should never
- * trigger the allTheSame logic.
+/*
+ * The k-d tree splits a node in two halves on one bound of the boxes, cycling
+ * over the bounds of the axes they carry from one level to the next
+ * (#stbox_kd_dim). Boxes whose bound is equal to the one of the centroid
+ * (including their inclusive flag) may get classified into either node
+ * depending on where they happen to fall in the sorted list. This is okay as
+ * long as the inner_consistent function descends into both sides for such
+ * cases. This is better than the alternative of trying to have an exact
+ * boundary, because it keeps the tree balanced even when we have many
+ * instances of the same box value. In this way, we should never trigger the
+ * allTheSame logic.
  */
-
-/**
- * @brief Comparator of temporal boxes based on their xmin value
- */
-static int
-stbox_xmin_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->xmin == box2->xmin)
-    return 0;
-  return (box1->xmin > box2->xmin) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their xmax value
- */
-static int
-stbox_xmax_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->xmax == box2->xmax)
-    return 0;
-  return (box1->xmax > box2->xmax) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their ymin value
- */
-static int
-stbox_ymin_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->ymin == box2->ymin)
-    return 0;
-  return (box1->ymin > box2->ymin) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their ymax value
- */
-static int
-stbox_ymax_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->ymax == box2->ymax)
-    return 0;
-  return (box1->ymax > box2->ymax) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their zmin value
- */
-static int
-stbox_zmin_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->zmin == box2->zmin)
-    return 0;
-  return (box1->zmin > box2->zmin) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their zmax value
- */
-static int
-stbox_zmax_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_X(box1->flags) && MEOS_FLAGS_GET_X(box2->flags));
-  if (box1->zmax == box2->zmax)
-    return 0;
-  return (box1->zmax > box2->zmax) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their tmin value
- */
-static int
-stbox_tmin_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq(box1->period.lower, box2->period.lower, box1->period.basetype))
-    return 0;
-  return datum_gt(box1->period.lower, box2->period.lower,
-    box1->period.basetype) ? 1 : -1;
-}
-
-/**
- * @brief Comparator of temporal boxes based on their tmax value
- */
-static int
-stbox_tmax_cmp(const STBox *box1, const STBox *box2)
-{
-  assert(MEOS_FLAGS_GET_T(box1->flags) && MEOS_FLAGS_GET_T(box2->flags));
-  if (datum_eq(box1->period.upper, box2->period.upper, box1->period.basetype))
-    return 0;
-  return datum_gt(box1->period.upper, box2->period.upper,
-    box1->period.basetype) ? 1 : -1;
-}
-
-/*****************************************************************************/
-
-/**
- * @brief Return the comparator of spatiotemporal boxes on a bound
- */
-static qsort_comparator
-stbox_dim_cmp(STboxDim dim)
-{
-  switch (dim)
-  {
-    case STBOX_XMIN: return (qsort_comparator) &stbox_xmin_cmp;
-    case STBOX_XMAX: return (qsort_comparator) &stbox_xmax_cmp;
-    case STBOX_YMIN: return (qsort_comparator) &stbox_ymin_cmp;
-    case STBOX_YMAX: return (qsort_comparator) &stbox_ymax_cmp;
-    case STBOX_ZMIN: return (qsort_comparator) &stbox_zmin_cmp;
-    case STBOX_ZMAX: return (qsort_comparator) &stbox_zmax_cmp;
-    case STBOX_TMIN: return (qsort_comparator) &stbox_tmin_cmp;
-    case STBOX_TMAX: return (qsort_comparator) &stbox_tmax_cmp;
-  }
-  return NULL;
-}
-
-/**
- * @brief Compare a box with the centroid of a k-d tree level on the bound the
- * level splits on (#stbox_kd_dim)
- */
-static int
-stbox_level_cmp(STBox *centroid, STBox *query, int level)
-{
-  qsort_comparator cmp = stbox_dim_cmp(stbox_kd_dim(centroid->flags, level));
-  return cmp(query, centroid);
-}
 
 PGDLLEXPORT Datum Stbox_kdtree_choose(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_choose);
@@ -449,8 +385,8 @@ PGDLLEXPORT Datum Stbox_quadtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_quadtree_picksplit);
 /**
  * @brief SP-GiST pick-split function for spatiotemporal values
- * @details It splits a list of boxes into quadrants by choosing a central 8D
- * point as the median of the coordinates of the boxes.
+ * @details It splits a list of boxes into quadrants by choosing as centroid
+ * the median of each bound of the boxes (#stbox_quadtree_centroid)
  */
 Datum
 Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
@@ -459,97 +395,28 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
   spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
   if (stbox_spgist_picksplit_parts(in, out))
     PG_RETURN_VOID();
-  STBox *box = DatumGetSTboxP(in->datums[0]);
-  bool hasz = MEOS_FLAGS_GET_Z(box->flags);
-  STBox *centroid = palloc0(sizeof(STBox));
-  centroid->srid = box->srid;
-  centroid->flags = box->flags;
-  int  median, i;
-  double *lowXs = palloc(sizeof(double) * in->nTuples);
-  double *highXs = palloc(sizeof(double) * in->nTuples);
-  double *lowYs = palloc(sizeof(double) * in->nTuples);
-  double *highYs = palloc(sizeof(double) * in->nTuples);
-  double *lowZs = NULL, *highZs = NULL; /* make compiler quiet */
-  if (hasz)
-  {
-    lowZs = palloc(sizeof(double) * in->nTuples);
-    highZs = palloc(sizeof(double) * in->nTuples);
-  }
-  TimestampTz *lowTs = palloc(sizeof(TimestampTz) * in->nTuples);
-  TimestampTz *highTs = palloc(sizeof(TimestampTz) * in->nTuples);
-
-  /* Calculate median of all 8D coordinates */
-  for (i = 0; i < in->nTuples; i++)
-  {
-    box = DatumGetSTboxP(in->datums[i]);
-    lowXs[i] = box->xmin;
-    highXs[i] = box->xmax;
-    lowYs[i] = box->ymin;
-    highYs[i] = box->ymax;
-    if (hasz)
-    {
-      lowZs[i] = box->zmin;
-      highZs[i] = box->zmax;
-    }
-    lowTs[i] = DatumGetTimestampTz(box->period.lower);
-    highTs[i] = DatumGetTimestampTz(box->period.upper);
-  }
-
-  qsort(lowXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-  qsort(highXs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-  qsort(lowYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-  qsort(highYs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-  if (hasz)
-  {
-    qsort(lowZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-    qsort(highZs, (size_t) in->nTuples, sizeof(double), compareFloat8);
-  }
-  qsort(lowTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
-  qsort(highTs, (size_t) in->nTuples, sizeof(TimestampTz), compareTimestampTz);
-
-  median = in->nTuples / 2;
-
-  centroid->xmin = lowXs[median];
-  centroid->xmax = highXs[median];
-  centroid->ymin = lowYs[median];
-  centroid->ymax = highYs[median];
-  if (hasz)
-  {
-    centroid->zmin = lowZs[median];
-    centroid->zmax = highZs[median];
-  }
-  span_set(TimestampTzGetDatum(lowTs[median]),
-    TimestampTzGetDatum(highTs[median]), true, true, T_TIMESTAMPTZ,
-    T_TSTZSPAN, &centroid->period);
+  STBox *centroid = stbox_quadtree_centroid(in);
 
   /* Fill the output */
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
   /* One node per combination of the bounds the centroid carries */
   out->nNodes = 1 << stbox_index_dims(centroid->flags);
-  out->nodeLabels = NULL;    /* We don't need node labels. */
+  out->nodeLabels = NULL;    /* We don't need node labels */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
 
   /*
-   * Assign ranges to corresponding nodes according to quadrants relative to
-   * the "centroid" range
+   * Assign the boxes to the nodes according to their quadrant relative to the
+   * centroid
    */
-  for (i = 0; i < in->nTuples; i++)
+  for (int i = 0; i < in->nTuples; i++)
   {
-    box = DatumGetSTboxP(in->datums[i]);
+    STBox *box = DatumGetSTboxP(in->datums[i]);
     uint8 quadrant = getQuadrant8D(centroid, box);
     out->leafTupleDatums[i] = STboxPGetDatum(box);
     out->mapTuplesToNodes[i] = (int) quadrant;
   }
-
-  pfree(lowXs); pfree(highXs);
-  pfree(lowYs); pfree(highYs);
-  if (hasz)
-  {
-    pfree(lowZs); pfree(highZs);
-  }
-  pfree(lowTs); pfree(highTs);
 
   PG_RETURN_VOID();
 }
@@ -559,7 +426,7 @@ Stbox_quadtree_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_kdtree_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_kdtree_picksplit);
 /**
- * @brief K-d tree pick-split function for spatiotemporal boxes
+ * @brief K-d tree pick-split function for spatiotemporal values
  */
 Datum
 Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
@@ -589,16 +456,16 @@ Stbox_kdtree_picksplit(PG_FUNCTION_ARGS)
   out->hasPrefix = true;
   out->prefixDatum = STboxPGetDatum(centroid);
   out->nNodes = 2;
-  out->nodeLabels = NULL;    /* we don't need node labels */
+  out->nodeLabels = NULL;    /* We don't need node labels */
   out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
   out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
   /*
-   * Note: points that have coordinates exactly equal to centroid may get
-   * classified into either node, depending on where they happen to fall in
-   * the sorted list.  This is okay as long as the inner_consistent function
-   * descends into both sides for such cases.  This is better than the
+   * Note: boxes that have a bound exactly equal to the one of the centroid may
+   * get classified into either node, depending on where they happen to fall in
+   * the sorted list. This is okay as long as the inner_consistent function
+   * descends into both sides for such cases. This is better than the
    * alternative of trying to have an exact boundary, because it keeps the
-   * tree balanced even when we have many instances of the same point value.
+   * tree balanced even when we have many instances of the same box value.
    * So we should never trigger the allTheSame logic.
    */
   for (i = 0; i < in->nTuples; i++)
@@ -635,7 +502,10 @@ stbox_spgist_node_distance(const STBox *orderby, const STBox *centroid,
   return distance_stbox_nodebox(orderby, nodebox);
 }
 
-Datum
+/**
+ * @brief Generic SP-GiST inner consistent function for spatiotemporal values
+ */
+static Datum
 stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
 {
   spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
@@ -645,7 +515,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   STBox *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
   STboxNode *nodebox, infbox, next_nodebox;
 
-  /* Fetch the centroid of this node. */
+  /* Fetch the centroid of this node */
   assert(in->hasPrefix);
   centroid = DatumGetSTboxP(in->prefixDatum);
 
@@ -691,14 +561,14 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
    * Transform the orderbys into bounding boxes initializing the dimensions
    * that must not be taken into account for the operators to infinity.
    * This transformation is done here to avoid doing it for all nodes
-   * in the loop below.
+   * in the loop below. The boxes are zeroed, so that an argument for which
+   * #tspatial_spgist_get_stbox writes nothing, such as an empty geometry, has an empty box.
    */
   if (in->norderbys > 0)
   {
     orderbys = palloc0(sizeof(STBox) * in->norderbys);
     for (i = 0; i < in->norderbys; i++)
     {
-      /* If the argument is an empty geometry the following call will do nothing */
       const ScanKeyData *scankey = &in->orderbys[i];
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
@@ -751,7 +621,9 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
    * here to avoid doing it for all nodes in the loop below. The boxes of the
    * tree share the structure of the centroid: a query whose operator raises
    * its error on them restricts no node, the recheck applying the operator to
-   * the rows, and any other query is compared on the axes they carry.
+   * the rows, and any other query is compared on the axes they carry. A query
+   * box is zeroed, so that an argument for which #tspatial_spgist_get_stbox writes nothing,
+   * such as an empty geometry, has an empty box.
    */
   bool *raises = NULL;
   if (in->nkeys > 0)
@@ -760,7 +632,6 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
     raises = palloc(sizeof(bool) * in->nkeys);
     for (i = 0; i < in->nkeys; i++)
     {
-      /* The following call will do nothing for an empty geometry */
       const ScanKeyData *scankey = &in->scankeys[i];
       Datum value = scankey->sk_argument;
       MeosType type = oid_meostype(scankey->sk_subtype);
@@ -784,7 +655,7 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
   /*
    * Switch memory context to allocate memory for new traversal values
    * (next_nodebox) and pass these pieces of memory to further calls of
-   * this function.
+   * this function
    */
   old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
 
@@ -830,6 +701,18 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverRightStrategyNumber:
           flag = ! left8D(&next_nodebox, &queries[i]);
           break;
+        case RTBelowStrategyNumber:
+          flag = ! overAbove8D(&next_nodebox, &queries[i]);
+          break;
+        case RTOverBelowStrategyNumber:
+          flag = ! above8D(&next_nodebox, &queries[i]);
+          break;
+        case RTAboveStrategyNumber:
+          flag = ! overBelow8D(&next_nodebox, &queries[i]);
+          break;
+        case RTOverAboveStrategyNumber:
+          flag = ! below8D(&next_nodebox, &queries[i]);
+          break;
         case RTFrontStrategyNumber:
           flag = ! overBack8D(&next_nodebox, &queries[i]);
           break;
@@ -842,17 +725,11 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverBackStrategyNumber:
           flag = ! front8D(&next_nodebox, &queries[i]);
           break;
-        case RTAboveStrategyNumber:
-          flag = ! overBelow8D(&next_nodebox, &queries[i]);
+        case RTBeforeStrategyNumber:
+          flag = ! overAfter8D(&next_nodebox, &queries[i]);
           break;
-        case RTOverAboveStrategyNumber:
-          flag = ! below8D(&next_nodebox, &queries[i]);
-          break;
-        case RTBelowStrategyNumber:
-          flag = ! overAbove8D(&next_nodebox, &queries[i]);
-          break;
-        case RTOverBelowStrategyNumber:
-          flag = ! above8D(&next_nodebox, &queries[i]);
+        case RTOverBeforeStrategyNumber:
+          flag = ! after8D(&next_nodebox, &queries[i]);
           break;
         case RTAfterStrategyNumber:
           flag = ! overBefore8D(&next_nodebox, &queries[i]);
@@ -860,17 +737,11 @@ stbox_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
         case RTOverAfterStrategyNumber:
           flag = ! before8D(&next_nodebox, &queries[i]);
           break;
-        case RTBeforeStrategyNumber:
-          flag = ! overAfter8D(&next_nodebox, &queries[i]);
-          break;
-        case RTOverBeforeStrategyNumber:
-          flag = ! after8D(&next_nodebox, &queries[i]);
-          break;
         default:
           elog(ERROR, "unrecognized strategy: %d", strategy);
       }
-      /* If any check is failed, we have found our answer. */
-      if (!flag)
+      /* If any check is failed, we have found our answer */
+      if (! flag)
         break;
     }
 
@@ -970,9 +841,9 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     if (type == T_TPCBOX)
       out->recheck = true;
 #endif /* POINTCLOUD */
-    /* The query can be an empty geometry, for which
-     * #tspatial_spgist_get_stbox writes nothing, so the box is zeroed before
-     * each call rather than carrying the stack or the previous key */
+    /* The box is zeroed before each call, so that a query for which
+     * #tspatial_spgist_get_stbox writes nothing, such as an empty geometry, carries neither the
+     * stack nor the previous key */
     memset(&box, 0, sizeof(STBox));
     tspatial_spgist_get_stbox(value, type, &box);
     /* Where the operator raises its error on the box, the recheck applies it
@@ -984,7 +855,7 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
     }
     result = stbox_index_leaf_consistent(key, &box, strategy);
 
-    /* If any check is failed, we have found our answer. */
+    /* If any check is failed, we have found our answer */
     if (! result)
       break;
   }
@@ -1021,6 +892,8 @@ Stbox_spgist_leaf_consistent(PG_FUNCTION_ARGS)
 
   PG_RETURN_BOOL(result);
 }
+
+/* GENERATED-BOXSPGIST-END stbox */
 
 /*****************************************************************************
  * SP-GiST compress functions

@@ -698,11 +698,15 @@ SELECT stboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 2 1,7 
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
 (1 row)
 
+SELECT stboxes(geometry 'Linestring empty');
+ stboxes 
+---------
+ 
+(1 row)
+
 /* Errors */
 SELECT stboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))');
 ERROR:  Only (multi)line geometries accepted
-SELECT stboxes(geometry 'Linestring empty');
-ERROR:  Only non-empty geometries accepted
 SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
       splitnstboxes       
 --------------------------
@@ -1003,13 +1007,17 @@ SELECT splitNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 1,6 
  {"STBOX Z((1,1,1),(2,2,1))","STBOX Z((2,1,1),(3,2,1))","STBOX Z((3,1,1),(4,2,1))","STBOX Z((4,1,1),(5,2,1))","STBOX Z((5,1,1),(6,2,1))","STBOX Z((6,1,1),(7,2,1))","STBOX Z((7,1,1),(8,2,1))","STBOX Z((8,1,1),(9,2,1))","STBOX Z((9,1,1),(10,2,1))"}
 (1 row)
 
+SELECT splitNStboxes(geometry 'Linestring empty', 1);
+ splitnstboxes 
+---------------
+ 
+(1 row)
+
 /* Errors */
 SELECT splitNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 ERROR:  Only (multi)line geometries accepted
 SELECT splitNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
-SELECT splitNStboxes(geometry 'Linestring empty', 1);
-ERROR:  Only non-empty geometries accepted
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
                                        spliteachnstboxes                                       
 -----------------------------------------------------------------------------------------------
@@ -1310,13 +1318,17 @@ SELECT splitEachNStboxes(geometry 'Multilinestring((1 1 1,2 2 1,3 1 1,4 2 1,5 1 
  {"STBOX Z((1,1,1),(10,2,1))"}
 (1 row)
 
+SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
+ spliteachnstboxes 
+-------------------
+ 
+(1 row)
+
 /* Errors */
 SELECT splitEachNStboxes(geometry 'Polygon((1 1,1 2,2 2,2 1,1 1))', 1);
 ERROR:  Only (multi)line geometries accepted
 SELECT splitEachNStboxes(geometry 'Linestring(1 1,1 2,2 2,2 1,1 1)', -1);
 ERROR:  The value must be strictly positive: -1
-SELECT splitEachNStboxes(geometry 'Linestring empty', 1);
-ERROR:  Only non-empty geometries accepted
 SELECT COUNT(*) FROM tbl_tgeometry WHERE temp::stbox IS NOT NULL;
  count 
 -------

@@ -1,13 +1,13 @@
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tContains(g, temp) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tContains(temp, g) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE tContains(cb, temp) IS NOT NULL;
@@ -43,13 +43,13 @@ SELECT COUNT(*) FROM tbl_cbuffer, tbl_tcbuffer WHERE tContains(cb, temp) ?= true
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tCovers(g, temp) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tCovers(temp, g) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tCovers(t1.temp, t2.temp) IS NOT NULL;
@@ -67,13 +67,13 @@ SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tCovers(g, temp) ?= true <
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDisjoint(g, temp) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tDisjoint(temp, g) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tDisjoint(t1.temp, t2.temp) IS NOT NULL;
@@ -104,19 +104,19 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tIntersects(g, temp) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tIntersects(temp, g) ?= true <> eDisjoint(temp, g);
  count 
 -------
- 10260
+ 10860
 (1 row)
 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tIntersects(g, temp) ?= true <> eIntersects(g, temp);
@@ -141,13 +141,13 @@ SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tTouches(g, temp) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tTouches(temp, g) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tTouches(t1.temp, t2.temp) IS NOT NULL;
@@ -171,13 +171,13 @@ SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tTouches(temp, g) ?= true 
 SELECT COUNT(*) FROM tbl_geometry, tbl_tcbuffer WHERE tDwithin(g, temp, 10) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer, tbl_geometry WHERE tDwithin(temp, g, 10) IS NOT NULL;
  count 
 -------
- 15400
+ 16000
 (1 row)
 
 SELECT COUNT(*) FROM tbl_tcbuffer t1, tbl_tcbuffer t2 WHERE tDwithin(t1.temp, t2.temp, 10) IS NOT NULL;

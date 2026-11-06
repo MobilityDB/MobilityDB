@@ -273,6 +273,59 @@ def _geography_twins(body: str, names) -> str:
     return _GEOG_STATEMENT.sub(twin, body)
 
 
+# The members a family adds to the index operator classes of the spatiotemporal
+# box: a column of boxes is indexed for the queries of the family's temporal type
+# on every strategy of manifest.d/boxstrategies.yaml whose axis the subtype's
+# `boxmembers` lists. The family states them in its own index file, as an
+# ALTER OPERATOR FAMILY of each class the file's access method carries, since a
+# build may leave the family out while the classes of the box are always there.
+BOXMEMBER_CLASSES = {
+    "gist": [("stbox_rtree_ops", "gist")],
+    "spgist": [("stbox_quadtree_ops", "spgist"), ("stbox_kdtree_ops", "spgist")],
+    "indexes": [("stbox_rtree_ops", "gist"), ("stbox_quadtree_ops", "spgist"),
+                ("stbox_kdtree_ops", "spgist")],
+}
+
+
+def render_boxmembers(behaviour: str, sub: dict) -> str:
+    """The members the subtype `sub` adds in its `behaviour` file to the index
+    operator classes of the spatiotemporal box, as the comment of
+    #BOXMEMBER_CLASSES states them, written as #render_boxopclass writes the
+    members of a class it declares; nothing when it lists no `boxmembers`."""
+    axes = set(sub.get("boxmembers") or [])
+    if not axes:
+        return ""
+    temp = sub["temp"]
+    strategies = load_manifest().get("boxstrategies", [])
+    out = []
+    for name, am in BOXMEMBER_CLASSES[behaviour]:
+        members = []
+        for s in strategies:
+            if s["axis"] not in axes:
+                continue
+            order = (" FOR ORDER BY pg_catalog.float_ops"
+                     if s["axis"] == "dist" else "")
+            members += [f"  -- {s['desc']}",
+                        f"  OPERATOR  {s['num']}    {s['sqlop']} (stbox, {temp}){order},"]
+        members[-1] = members[-1][:-1] + ";"
+        out.append(f"ALTER OPERATOR FAMILY {name} USING {am} ADD\n"
+                   + "\n".join(members) + "\n")
+    return ("/* A column of spatiotemporal boxes is indexed for the queries of a "
+            f"{temp} */\n\n" + "\n".join(out) + "\n")
+
+
+def render_family_tempopclass(kind: str, sub: dict) -> str:
+    """The `kind` index operator class of the subtype `sub` over the
+    spatiotemporal box, written by #render_tempopclass on the axes its
+    `boxmembers` lists, its nearest approach distance also taking its
+    `distwith` types."""
+    mf = load_manifest()
+    bt = next(b for b in mf.get("boxtypes", []) if b["box"] == "stbox")
+    return render_tempopclass(sub["temp"], bt, sub.get("boxmembers") or [],
+                              sub.get("distwith") or [], kind,
+                              mf.get("boxstrategies", []))
+
+
 def render(behaviour: str, sub: dict) -> str:
     if behaviour == "compops":
         # compops is not a flat {TOKEN}-substitution template like the other
@@ -308,7 +361,13 @@ def render(behaviour: str, sub: dict) -> str:
     if details:
         details = details.replace("{TEMP}", sub["temp"]).replace("{BOUNDARY}", boundary)
     body = (tmpl.replace("{DETAILS}\n", details_lines(details))
-                .replace("{TEMP}", sub["temp"])
+                .replace("{BOXMEMBERS}", render_boxmembers(behaviour, sub)
+                         if behaviour in BOXMEMBER_CLASSES else ""))
+    for kind in TEMPOPCLASS_KINDS:
+        token = "{TEMPOPCLASS_" + kind.upper() + "}"
+        if token in body:
+            body = body.replace(token, render_family_tempopclass(kind, sub))
+    body = (body.replace("{TEMP}", sub["temp"])
                 .replace("{SET}", sub.get("set", sub["base"] + "set"))
                 .replace("{BASESYM}", basesym)
                 .replace("{BASE}", sub["base"])
@@ -887,6 +946,102 @@ def splice_boxopclass(filetext: str, name: str, rendered: str) -> str:
     """Replace the text strictly between the class's markers with `rendered`, as
     #splice_boxbox_sql replaces its region."""
     begin, end = _boxopclass_markers(name)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+# The index operator classes of a temporal type over its box: per tree kind, every
+# strategy of boxstrategies.yaml whose axis the type carries, in strategy order,
+# stating the type against the time span on the topological and time strategies,
+# against its box and against itself, and on the nearest approach distance against
+# its `distwith` types, then the support functions. The `tempclasses` stanza of
+# the box type states those functions: the GiST consistent function of the
+# temporal type (`own`) or of the box, the GiST and SP-GiST compress functions,
+# and whether the GiST distance function is registered for each operand pair.
+TEMPOPCLASS_KINDS = {"rtree": "gist", "quadtree": "spgist", "kdtree": "spgist"}
+
+
+def _tempopclass_markers(name: str):
+    """BEGIN/END markers of an index operator class of a temporal type, as
+    #_boxopclass_markers marks one of a box type."""
+    begin = (f"-- GENERATED-TEMPOPCLASS-BEGIN {name} — "
+             "tools/codegen/inherited/generate.py;\n"
+             "-- DO NOT EDIT BY HAND; edit manifest.d/boxtypes.yaml or "
+             "manifest.d/subtypes.yaml and re-run.\n")
+    return begin, f"-- GENERATED-TEMPOPCLASS-END {name}\n"
+
+
+def render_tempopclass(temp: str, bt: dict, axes, distwith, kind: str,
+                       strategies: list, valspan: str = None,
+                       opnames: dict = None) -> str:
+    """The `kind` index operator class of the temporal type `temp` over the box
+    type `bt`, as the comment of #TEMPOPCLASS_KINDS states it, written as
+    #render_boxopclass writes a class of the box; `valspan` is the span of the
+    type's values, `opnames` the operators it declares in place of a strategy's."""
+    box = bt["box"]
+    tc = (bt.get("opclasses") or {}).get("tempclasses") or {}
+    gfn = tc.get("gistfn", box)
+    sfn = tc.get("spgistfn", "stbox")
+    gcompress = tc.get("gistcompress", "tspatial_gist_compress")
+    if gcompress == "own":
+        gcompress = f"{temp}_gist_compress"
+    am = TEMPOPCLASS_KINDS[kind]
+    axes = set(axes)
+    members = []
+    for s in strategies:
+        if s["axis"] not in axes:
+            continue
+        order = " FOR ORDER BY pg_catalog.float_ops" if s["axis"] == "dist" else ""
+        rights = ((["tstzspan"] if s["axis"] in ("topo", "t") and box != "tstzspan"
+                   else []) + ([valspan] if valspan and s["axis"] != "t" else [])
+                  + [box, temp])
+        if s["axis"] == "dist":
+            rights += list(distwith or [])
+        op = (opnames or {}).get(s["sqlop"], s["sqlop"])
+        members.append(f"  -- {s['desc']}")
+        members += [f"  OPERATOR  {s['num']}    {op} ({temp}, {r}){order},"
+                    for r in rights]
+    if am == "gist":
+        cons = (f"{temp}_gist_consistent(internal, {temp}, smallint, oid, internal)"
+                if tc.get("gistconsistent", "own") == "own" else
+                f"{box}_gist_consistent(internal, {box}, smallint, oid, internal)")
+        funcs = [f"  FUNCTION  1 {cons}",
+                 f"  FUNCTION  2 {gfn}_gist_union(internal, internal)",
+                 f"  FUNCTION  3 {gcompress}(internal)",
+                 f"  FUNCTION  5 {gfn}_gist_penalty(internal, internal, internal)",
+                 f"  FUNCTION  6 {gfn}_gist_picksplit(internal, internal)",
+                 f"  FUNCTION  7 {gfn}_gist_same({box}, {box}, internal)"]
+        if "dist" in axes:
+            dist = f"{temp}_gist_distance(internal, {temp}, smallint, oid, internal)"
+            if tc.get("distpairs"):
+                funcs += [f"  FUNCTION  8 ({temp}, {r})\n    {dist}"
+                          for r in (box, temp)]
+            else:
+                funcs.append(f"  FUNCTION  8 {dist}")
+        funcs.append(f"  FUNCTION 11 {gfn}_gist_sortsupport(internal)")
+        head = (f"CREATE OPERATOR CLASS {temp}_{kind}_ops\n"
+                f"  DEFAULT FOR TYPE {temp} USING gist AS\n  STORAGE {box},\n")
+    else:
+        funcs = [f"  FUNCTION  1 {tc.get('spgistconfig', sfn)}_spgist_config"
+                 "(internal, internal)",
+                 f"  FUNCTION  2 {sfn}_{kind}_choose(internal, internal)",
+                 f"  FUNCTION  3 {sfn}_{kind}_picksplit(internal, internal)",
+                 f"  FUNCTION  4 {sfn}_{kind}_inner_consistent(internal, internal)",
+                 f"  FUNCTION  5 {sfn}_spgist_leaf_consistent(internal, internal)",
+                 f"  FUNCTION  6 {tc.get('spgistcompress', 'tspatial_spgist_compress')}"
+                 "(internal)"]
+        default = "DEFAULT " if kind == "quadtree" else ""
+        head = (f"CREATE OPERATOR CLASS {temp}_{kind}_ops\n"
+                f"  {default}FOR TYPE {temp} USING spgist AS\n")
+    return (head + "\n".join(members) + "\n  -- functions\n"
+            + ",\n".join(funcs) + ";\n")
+
+
+def splice_tempopclass(filetext: str, name: str, rendered: str) -> str:
+    """Replace the text strictly between the class's markers with `rendered`, as
+    #splice_boxopclass replaces its region."""
+    begin, end = _tempopclass_markers(name)
     b = filetext.index(begin) + len(begin)
     e = filetext.index(end)
     return filetext[:b] + rendered + filetext[e:]
@@ -5410,6 +5565,162 @@ def splice_indextree(filetext: str, tree: dict, rendered: str) -> str:
     return filetext[:b] + rendered + filetext[e:]
 
 
+# --- C GiST support functions (box-type axis) -------------------------------
+# The GiST support functions of a box type, one set per entry of `boxes` in
+# manifest.d/boxgist.yaml, are generated into the region between the box's
+# markers in its `file`, as #render_indextree writes the index-tree
+# constructors; the function turning a query argument into a box, the compress
+# methods and the sort hash stay beside the region, written by hand, since they
+# read the temporal types of the family.
+def _boxgist_markers(box: str):
+    """BEGIN/END markers of a box type's GiST support functions, as
+    #_indextrees_markers names those of a tree"""
+    begin = (f"/* GENERATED-BOXGIST-BEGIN {box} — tools/codegen/inherited/"
+             "generate.py from templates/boxgist.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxgist.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXGIST-END {box} */\n"
+
+
+_BOXGIST_BOUND = """
+  /* An inner entry, and a leaf entry the executor rechecks, carry a bounding
+   * box rather than the value, so what they report is lowered to stay under
+   * the distance the ordering operator computes. The exact leaf of a column of
+   * boxes reports the operator's own answer and keeps it */
+  if (! GIST_LEAF(entry) || *recheck)
+    distance = {SHARED}_index_distance_bound(distance, {SHAREDCAST}key,
+      {SHAREDCAST}&query);
+
+"""
+
+
+def render_boxgist(box: dict, samekinds: dict) -> str:
+    """The GiST support functions of a box type, rendered from its template as
+    #render_indextree renders a tree's constructors"""
+    fields = "".join(f"b1->{f} == b2->{f} && " for f in box.get("samefields") or [])
+    same = textwrap.indent(samekinds[box["same"]].replace("{FIELDS}", fields),
+                           "    ")
+    bound = _BOXGIST_BOUND if box["bound"] else "\n"
+    text = read_template("boxgist.c.tmpl").replace("{BOUND}", bound)
+    for key, val in (("{SAME}", same), ("{CONSISTENT}", box["consistent"]),
+                     ("{TEMPDISTANCE}", box["tempdistance"]),
+                     ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
+                     ("{GETARG}", box["getarg"]), ("{RETURN}", box["ret"]),
+                     ("{DISTANCE}", box["distance"]),
+                     ("{SHAREDCAST}", box["sharedcast"]),
+                     ("{SHARED}", box["shared"]), ("{PREFIX}", box["prefix"]),
+                     ("{CTYPE}", box["ctype"]), ("{MEOSTYPE}", box["meostype"]),
+                     ("{TEMPNOUN}", box["tempnoun"]), ("{NOUN}", box["noun"]),
+                     ("{BOX}", box["box"])):
+        text = text.replace(key, val)
+    return text
+
+
+def splice_boxgist(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's markers with `rendered`, as
+    #splice_indextree does for a tree"""
+    begin, end = _boxgist_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
+# --- C SP-GiST support functions (box-type axis) ----------------------------
+# The SP-GiST support functions of a box type, one set per entry of `boxes` in
+# manifest.d/boxspgist.yaml, are generated into the region between the box's
+# markers in its `file`, as #render_boxgist writes the GiST ones; the median
+# centroid of its quad-tree pick-split and its compress functions stay beside
+# the region, written by hand, since they read the fields of the box and the
+# temporal types of the family.
+def _boxspgist_markers(box: str):
+    """BEGIN/END markers of a box type's SP-GiST support functions, as
+    #_boxgist_markers names its GiST ones"""
+    begin = (f"/* GENERATED-BOXSPGIST-BEGIN {box} — tools/codegen/inherited/"
+             "generate.py from templates/boxspgist.c.tmpl; DO NOT EDIT BY HAND;\n"
+             " * edit the template + manifest.d/boxspgist.yaml and re-run. */\n")
+    return begin, f"/* GENERATED-BOXSPGIST-END {box} */\n"
+
+
+_BOXSPGIST_RECHECK = {
+    "all": "  /* Every strategy is rechecked */\n  out->recheck = true;\n",
+    "strategy": ("  /* Initialize the value to do not recheck, will be updated below */\n"
+                 "  out->recheck = false;\n"),
+}
+
+
+def _boxspgist_poscases(posaxes: list, posops: list, dims: str) -> str:
+    """The position strategies of the inner consistent function, those of
+    manifest.d/boxposops.yaml on the axes of the box. An axis states its
+    operations in the order low, overlow, high, overhigh, and a node can hold a
+    box answering one only where it is not wholly on the other side of the
+    query: low is refuted by overhigh, overlow by high, high by overlow and
+    overhigh by low"""
+    def strat(op):
+        return "Over" + op[4:].capitalize() if op.startswith("Over") else op
+
+    def kernel(op):
+        s = strat(op)
+        return s[0].lower() + s[1:] + dims
+
+    out = []
+    for axis in ("x", "y", "z", "t"):
+        if axis not in posaxes:
+            continue
+        low, overlow, high, overhigh = [o["op"] for o in posops if o["axis"] == axis]
+        for op, refuter in ((low, "Over" + high.lower()), (overlow, high),
+                            (high, "Over" + low.lower()), (overhigh, low)):
+            out.append(f"        case RT{strat(op)}StrategyNumber:\n"
+                       f"          flag = ! {kernel(refuter)}(&next_nodebox, &queries[i]);\n"
+                       "          break;\n")
+    return "".join(out)
+
+
+def _boxspgist_nodetest(test: str, box: dict) -> str:
+    """The overlap or containment test of a node, on the bound its level splits
+    on for a k-d tree when the box has such kernels"""
+    whole = f"{test}{box['dims']}(&next_nodebox, &queries[i])"
+    if not box["kdnode"]:
+        return whole
+    return (f"(idxtype == SPGIST_QUADTREE) ?\n            {whole} :\n"
+            f"            {test}KD(&next_nodebox, &queries[i], in->level)")
+
+
+def render_boxspgist(box: dict, posaxes: list, posops: list) -> str:
+    """The SP-GiST support functions of a box type, rendered from its template
+    as #render_boxgist renders the GiST ones"""
+    if box["bound"]:
+        distance = ("      /* A leaf key is a bounding box the executor rechecks, so what it\n"
+                    "       * reports is lowered to stay under the operator's own distance */\n"
+                    f"      distances[i] = {box['box']}_index_distance_bound(\n"
+                    f"        {box['distance']}, &box, key);")
+    else:
+        distance = f"      distances[i] = {box['distance']};"
+    text = read_template("boxspgist.c.tmpl")
+    for key, val in (("{RECHECKINIT}", _BOXSPGIST_RECHECK[box["leafrecheck"]]),
+                     ("{LEAFEXTRA}", box.get("leafextra") or ""),
+                     ("{LEAFDISTANCE}", distance),
+                     ("{POSCASES}", _boxspgist_poscases(posaxes, posops,
+                                                        box["dims"])),
+                     ("{OVERLAP}", _boxspgist_nodetest("overlap", box)),
+                     ("{CONTAIN}", _boxspgist_nodetest("contain", box)),
+                     ("{GETBOX}", box["getbox"]), ("{DATUMGET}", box["datumget"]),
+                     ("{PGETDATUM}", box["pgetdatum"]), ("{SORTED}", box["sorted"]),
+                     ("{NODE}", box["node"]), ("{DIMS}", box["dims"]),
+                     ("{PREFIX}", box["prefix"]), ("{CTYPE}", box["ctype"]),
+                     ("{MEOSTYPE}", box["meostype"]), ("{NOUN}", box["noun"]),
+                     ("{BOX}", box["box"])):
+        text = text.replace(key, val)
+    return text
+
+
+def splice_boxspgist(filetext: str, box: str, rendered: str) -> str:
+    """Replace the text strictly between the box's markers with `rendered`, as
+    #splice_boxgist does for the GiST ones"""
+    begin, end = _boxspgist_markers(box)
+    b = filetext.index(begin) + len(begin)
+    e = filetext.index(end)
+    return filetext[:b] + rendered + filetext[e:]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--check", action="store_true", help="dry-run: list target paths")
@@ -6006,6 +6317,22 @@ def main() -> int:
             rendered = render_boxopclass(bt, cls, mf.get("boxstrategies", []))
             p.write_text(splice_boxopclass(p.read_text(), cls["name"], rendered))
             print(f"spliced boxopclass {cls['name']} -> {cls['file']}")
+        for part in (bt.get("opclasses") or {}).get("partners") or []:
+            for kind, am in TEMPOPCLASS_KINDS.items():
+                path = (part.get("files") or {}).get(am)
+                if not path:
+                    continue
+                name = f"{part['type']}_{kind}_ops"
+                p = ROOT / path
+                if args.check:
+                    print(f"would splice tempopclass {name} -> {path}")
+                    continue
+                rendered = render_tempopclass(part["type"], bt, part["axes"],
+                                              part.get("distwith") or [], kind,
+                                              mf.get("boxstrategies", []),
+                                              part.get("valspan"), part.get("opnames"))
+                p.write_text(splice_tempopclass(p.read_text(), name, rendered))
+                print(f"spliced tempopclass {name} -> {path}")
 
     for bt in mf.get("boxtypes", []):
         for stanza in tempsql_stanzas(bt):
@@ -6448,6 +6775,25 @@ def main() -> int:
         p.write_text(splice_indextree(p.read_text(), tree,
                                       render_indextree(tree, trees["boxes"])))
         print(f"spliced indextrees {tree['tree']} -> {tree['file']}")
+    gist = mf.get("boxgist") or {}
+    for box in gist.get("boxes", []):
+        p = ROOT / box["file"]
+        if args.check:
+            print(f"would splice boxgist {box['box']} -> {box['file']}")
+            continue
+        p.write_text(splice_boxgist(p.read_text(), box["box"],
+                                    render_boxgist(box, gist["samekinds"])))
+        print(f"spliced boxgist {box['box']} -> {box['file']}")
+    posaxes = {bt["box"]: bt.get("posaxes", []) for bt in mf.get("boxtypes", [])}
+    for box in (mf.get("boxspgist") or {}).get("boxes", []):
+        p = ROOT / box["file"]
+        if args.check:
+            print(f"would splice boxspgist {box['box']} -> {box['file']}")
+            continue
+        p.write_text(splice_boxspgist(p.read_text(), box["box"],
+                                      render_boxspgist(box, posaxes[box["box"]],
+                                                       mf["boxposops"])))
+        print(f"spliced boxspgist {box['box']} -> {box['file']}")
     return 0
 
 

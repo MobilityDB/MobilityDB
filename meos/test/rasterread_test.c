@@ -76,13 +76,17 @@ count_error(int errlevel, int errcode, const char *errmsg)
 }
 
 /**
- * @brief Return whether a call raised one error and answered the error
- * value, printing the verdict beside the name of the call
+ * @brief Return whether a call raised an error and answered the error value,
+ * printing the verdict beside the name of the call
+ * @details The raster core reports its own reason through the MEOS error
+ * channel, as liblwgeom does through #meos_lwerror_handler, before the reader
+ * reports the band it could not read, so a handler that returns sees more
+ * than one error for one call
  */
 static bool
 raised(const char *what, bool errval)
 {
-  bool ok = nerrors == 1 && errval;
+  bool ok = nerrors >= 1 && errval;
   printf("%-34s %s\n", what, ok ? "raises" : "ANSWERS WITHOUT RAISING");
   nerrors = 0;
   return ok;

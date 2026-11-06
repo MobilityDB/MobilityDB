@@ -323,12 +323,56 @@ meos_check_for_interrupts(void)
 
 #if ! MEOS
 /**
- * @brief Output an error message in MobilityDB
+ * @brief Return the SQLSTATE PostgreSQL raises for an error of the class of a
+ * MEOS error code
+ * @details A code with no class of its own, such as
+ * @p MEOS_ERR_INTERNAL_ERROR, answers the internal error XX000, the state
+ * PostgreSQL gives an error raised without one
+ */
+static int
+meos_errcode_sqlstate(int code)
+{
+  switch (code)
+  {
+    case MEOS_ERR_VALUE_OUT_OF_RANGE:
+      return ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE;
+    case MEOS_ERR_DATETIME_OUT_OF_RANGE:
+      return ERRCODE_DATETIME_VALUE_OUT_OF_RANGE;
+    case MEOS_ERR_DIVISION_BY_ZERO:
+      return ERRCODE_DIVISION_BY_ZERO;
+    case MEOS_ERR_INVALID_ARG_VALUE:
+      return ERRCODE_INVALID_PARAMETER_VALUE;
+    case MEOS_ERR_FEATURE_NOT_SUPPORTED:
+      return ERRCODE_FEATURE_NOT_SUPPORTED;
+    case MEOS_ERR_INDETERMINATE_COLLATION:
+      return ERRCODE_INDETERMINATE_COLLATION;
+    case MEOS_ERR_INVALID_REGULAR_EXPRESSION:
+      return ERRCODE_INVALID_REGULAR_EXPRESSION;
+    case MEOS_ERR_TEXT_INPUT:
+      return ERRCODE_INVALID_TEXT_REPRESENTATION;
+    case MEOS_ERR_MEMORY_ALLOC_ERROR:
+    case MEOS_ERR_OUT_OF_MEMORY:
+      return ERRCODE_OUT_OF_MEMORY;
+    default:
+      return ERRCODE_INTERNAL_ERROR;
+  }
+}
+
+/**
+ * @brief Output a message in MobilityDB
+ * @details An error carries the SQLSTATE of the class of its MEOS code, so
+ * that a client tells the error from its state as it does for the errors of
+ * PostgreSQL. A message of a lower level accompanies an answer and keeps the
+ * state PostgreSQL gives its level.
  */
 static void
-pg_error(int errlevel, const char *errmsg)
+pg_error(int errlevel, int code, const char *errmsg)
 {
-  ereport(errlevel, (errmsg_internal("%s", errmsg)));
+  if (errlevel >= ERROR)
+    ereport(errlevel, (errcode(meos_errcode_sqlstate(code)),
+      errmsg_internal("%s", errmsg)));
+  else
+    ereport(errlevel, (errmsg_internal("%s", errmsg)));
   return;
 }
 #endif /* ! MEOS */
@@ -371,7 +415,7 @@ meos_error(int errlevel, int errcode, const char *format, ...)
       exit(EXIT_FAILURE);
   }
 #else
-    pg_error(errlevel, strdup(buffer));
+    pg_error(errlevel, errcode, buffer);
 #endif /* MEOS */
   return;
 }

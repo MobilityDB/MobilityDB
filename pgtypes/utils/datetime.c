@@ -453,7 +453,7 @@ GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
     if (timestamp2tm(cur_ts, &cache_tz, &cache_tm, &cache_fsec,
              NULL, session_timezone) != 0)
    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "timestamp out of range");
       return; // TODO
    }
@@ -1802,7 +1802,7 @@ DetermineTimeZoneAbbrevOffsetTS(TimestampTz ts, const char *abbr,
    */
   if (timestamp2tm(ts, &tz, &tm, &fsec, NULL, tzp) != 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
       "timestamp out of range");
     return INT_MAX;
   }
@@ -4115,20 +4115,20 @@ pg_DateTimeParseError(int dterr, DateTimeErrorExtra *extra, const char *str,
   switch (dterr)
   {
     case DTERR_FIELD_OVERFLOW:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_MD_FIELD_OVERFLOW:
       /* <nanny>same as above, but add hint about DateStyle</nanny> */
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "date/time field value out of range: \"%s\"", str);
       break;
     case DTERR_INTERVAL_OVERFLOW:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
         "interval field value out of range: \"%s\"", str);
       break;
     case DTERR_TZDISP_OVERFLOW:
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "time zone displacement out of range: \"%s\"", str);
       break;
     case DTERR_BAD_TIMEZONE:

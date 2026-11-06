@@ -111,71 +111,6 @@ tspatial_gist_get_stbox(FunctionCallInfo fcinfo, STBox *result, MeosType type)
   return true;
 }
 
-PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
-/**
- * @brief GiST consistent method for spatiotemporal values
- */
-Datum
-Stbox_gist_consistent(PG_FUNCTION_ARGS)
-{
-  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
-  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
-  Oid typid = PG_GETARG_OID(3);
-  bool *recheck = (bool *) PG_GETARG_POINTER(4);
-  STBox *key = DatumGetSTboxP(entry->key), query;
-  if (! key)
-    PG_RETURN_BOOL(false);
-
-  /* Determine whether the index is lossy depending on the strategy */
-  *recheck = stbox_index_recheck(strategy);
-
-  /* Transform the query into a box */
-  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_meostype(typid)))
-    PG_RETURN_BOOL(false);
-
-  bool result;
-  if (MEOS_FLAGS_GET_PARTS(key->flags))
-    /* A key over boxes of several structures bounds none of them */
-    result = true;
-  else if (! index_strategy_is_valid(T_STBOX, strategy, key, &query))
-  {
-    /* The operator raises its error on the boxes under the key, which the
-     * recheck applies it to */
-    *recheck = true;
-    result = true;
-  }
-  else if (GIST_LEAF(entry))
-    result = stbox_index_leaf_consistent(key, &query, strategy);
-  else
-    result = stbox_gist_inner_consistent(key, &query, strategy);
-
-  PG_RETURN_BOOL(result);
-}
-
-/*****************************************************************************
- * GiST union method
- *****************************************************************************/
-
-PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Stbox_gist_union);
-/**
- * @brief GiST union method for spatiotemporal values
- * @details Return the minimal bounding box that encloses all the entries in 
- * entryvec
- */
-Datum
-Stbox_gist_union(PG_FUNCTION_ARGS)
-{
-  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
-  GISTENTRY *ent = entryvec->vector;
-  STBox *result = stbox_copy(DatumGetSTboxP(ent[0].key));
-  for (int i = 1; i < entryvec->n; i++)
-    bbox_gist_adjust(T_STBOX, result, DatumGetSTboxP(ent[i].key),
-      &stbox_adjust);
-  PG_RETURN_SPAN_P(result);
-}
-
 /*****************************************************************************
  * GiST compress methods
  *****************************************************************************/
@@ -226,13 +161,116 @@ Spatialset_gist_compress(PG_FUNCTION_ARGS)
 }
 
 /*****************************************************************************
+ * GiST sort support method
+ *****************************************************************************/
+
+
+/**
+ * @brief Return the sort key of a spatiotemporal box
+ * @details The spatial half is the hash PostGIS sorts a geometry column by and
+ * the temporal half is the rank of the period, composed on a Hilbert curve so
+ * that neither of them leads the other.
+ */
+uint64
+stbox_sort_hash(const STBox *box)
+{
+  uint32 space = 0, time = 0;
+  if (MEOS_FLAGS_GET_X(box->flags))
+  {
+    GBOX gbox;
+    stbox_set_gbox(box, &gbox);
+    /* A geodetic spatiotemporal box keeps longitude and latitude in degrees
+     * while a geodetic GBOX keeps coordinates on the unit sphere, as
+     * #geo_set_stbox() states. The box is therefore hashed as a planar one,
+     * where the normalization PostGIS applies to the SRID it carries is the
+     * one that fits the degrees it holds */
+    FLAGS_SET_GEODETIC(gbox.flags, false);
+    space = (uint32) (gbox_get_sortable_hash(&gbox, box->srid) >> 32);
+  }
+  if (MEOS_FLAGS_GET_T(box->flags))
+    time = sortsupport_rank_span_center(&box->period);
+  return sortsupport_hilbert(space, time);
+}
+
+/* GENERATED-BOXGIST-BEGIN stbox — tools/codegen/inherited/generate.py from templates/boxgist.c.tmpl; DO NOT EDIT BY HAND;
+ * edit the template + manifest.d/boxgist.yaml and re-run. */
+/*****************************************************************************
+ * GiST consistent method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_gist_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_gist_consistent);
+/**
+ * @brief GiST consistent method for spatiotemporal boxes
+ */
+Datum
+Stbox_gist_consistent(PG_FUNCTION_ARGS)
+{
+  GISTENTRY *entry = (GISTENTRY *) PG_GETARG_POINTER(0);
+  StrategyNumber strategy = (StrategyNumber) PG_GETARG_UINT16(2);
+  Oid typid = PG_GETARG_OID(3);
+  bool *recheck = (bool *) PG_GETARG_POINTER(4);
+  STBox *key = DatumGetSTboxP(entry->key), query;
+  if (! key)
+    PG_RETURN_BOOL(false);
+
+  /* Determine whether the index is lossy depending on the strategy */
+  *recheck = stbox_index_recheck(strategy);
+
+  /* Transform the query into a box */
+  if (! tspatial_gist_get_stbox(fcinfo, &query, oid_meostype(typid)))
+    PG_RETURN_BOOL(false);
+
+  bool result;
+  if (MEOS_FLAGS_GET_PARTS(key->flags))
+    /* A key over boxes of several structures bounds none of them */
+    result = true;
+  else if (! index_strategy_is_valid(T_STBOX, strategy, key, &query))
+  {
+    /* The operator raises its error on the boxes under the key, which the
+     * recheck applies it to */
+    *recheck = true;
+    result = true;
+  }
+  else if (GIST_LEAF(entry))
+    result = stbox_index_leaf_consistent(key, &query, strategy);
+  else
+    result = stbox_gist_inner_consistent(key, &query, strategy);
+
+  PG_RETURN_BOOL(result);
+}
+
+/*****************************************************************************
+ * GiST union method
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Stbox_gist_union(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_gist_union);
+/**
+ * @brief GiST union method for spatiotemporal boxes
+ * @details Return the minimal bounding box that encloses all the entries in
+ * entryvec
+ */
+Datum
+Stbox_gist_union(PG_FUNCTION_ARGS)
+{
+  GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+  GISTENTRY *ent = entryvec->vector;
+  STBox *result = stbox_copy(DatumGetSTboxP(ent[0].key));
+  for (int i = 1; i < entryvec->n; i++)
+    bbox_gist_adjust(T_STBOX, result, DatumGetSTboxP(ent[i].key),
+      &stbox_adjust);
+  PG_RETURN_STBOX_P(result);
+}
+
+/*****************************************************************************
  * GiST penalty method
  *****************************************************************************/
 
 PGDLLEXPORT Datum Stbox_gist_penalty(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_penalty);
 /**
- * @brief GiST penalty method for spatiotemporal values
+ * @brief GiST penalty method for spatiotemporal boxes
  * @note As in the R-tree paper, we use change in area as our penalty metric
  */
 Datum
@@ -241,9 +279,9 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
   GISTENTRY *origentry = (GISTENTRY *) PG_GETARG_POINTER(0);
   GISTENTRY *newentry = (GISTENTRY *) PG_GETARG_POINTER(1);
   float *result = (float *) PG_GETARG_POINTER(2);
-  void *origstbox = (STBox *) DatumGetPointer(origentry->key);
-  void *newbox = (STBox *) DatumGetPointer(newentry->key);
-  *result = (float) bbox_gist_penalty(T_STBOX, origstbox, newbox,
+  void *origbox = DatumGetPointer(origentry->key);
+  void *newbox = DatumGetPointer(newentry->key);
+  *result = (float) bbox_gist_penalty(T_STBOX, origbox, newbox,
     &stbox_penalty);
   PG_RETURN_POINTER(result);
 }
@@ -255,15 +293,15 @@ Stbox_gist_penalty(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_picksplit(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 /**
- * @brief GiST picksplit method for spatiotemporal values
+ * @brief GiST picksplit method for spatiotemporal boxes
  * @details
  * The algorithm finds split of boxes by considering splits along each axis.
- * Each entry is first projected as an interval on the X-axis, and different
- * ways to split the intervals into two groups are considered, trying to
- * minimize the overlap of the groups. Then the same is repeated for the
- * Y-axis and the Z-axis, and the overall best split is chosen.
- * The quality of a split is determined by overlap along that axis and some
- * other criteria (see bbox_gist_consider_split).
+ * Each entry is first projected as an interval on the first axis, and
+ * different ways to split the intervals into two groups are considered,
+ * trying to minimize the overlap of the groups. Then the same is repeated for
+ * the other axes, and the overall best split is chosen. The quality of a split
+ * is determined by overlap along that axis and some other criteria (see
+ * bbox_gist_consider_split).
  *
  * After that, all the entries are divided into three groups:
  *
@@ -281,8 +319,10 @@ PG_FUNCTION_INFO_V1(Stbox_gist_picksplit);
 Datum
 Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 {
-  return bbox_gist_picksplit(fcinfo, T_STBOX, &stbox_adjust, &stbox_penalty);
+  return bbox_gist_picksplit(fcinfo, T_STBOX, &stbox_adjust,
+    &stbox_penalty);
 }
+
 /*****************************************************************************
  * GiST same method
  *****************************************************************************/
@@ -290,10 +330,11 @@ Stbox_gist_picksplit(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Stbox_gist_same(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_same);
 /**
- * @brief GiST same method for spatiotemporal values
- * @details Return true only when boxes are exactly the same.  We can't use 
- * fuzzy comparisons here without breaking index consistency; therefore, this 
- * isn't equivalent to #same_stbox_stbox().
+ * @brief GiST same method for spatiotemporal boxes
+ * @details Return true only when the boxes are exactly the same. Fuzzy
+ * comparisons cannot be used here without breaking index consistency, and an
+ * index method answers where the operator @p ~= refuses its arguments, so
+ * this is not that operator
  */
 Datum
 Stbox_gist_same(PG_FUNCTION_ARGS)
@@ -314,7 +355,7 @@ Stbox_gist_same(PG_FUNCTION_ARGS)
       (! MEOS_FLAGS_GET_T(b1->flags) ||
         span_eq(&b1->period, &b2->period))));
   else
-    *result = (b1 == NULL && b2 == NULL);
+    *result = (! b1 && ! b2);
   PG_RETURN_POINTER(result);
 }
 
@@ -347,7 +388,9 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
   if (GIST_LEAF(entry))
     *recheck = ! (boxcolumn && type == T_STBOX);
 
-  /* Transform the query into a box */
+  /* Transform the query into a box. The distance is unknown when the query is
+   * not a box, and the maximum orders those entries after every candidate
+   * whose distance is known */
   STBox query;
   if (! tspatial_gist_get_stbox(fcinfo, &query, type))
     PG_RETURN_FLOAT8(DBL_MAX);
@@ -375,7 +418,8 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
    * the distance the ordering operator computes. The exact leaf of a column of
    * boxes reports the operator's own answer and keeps it */
   if (! GIST_LEAF(entry) || *recheck)
-    distance = stbox_index_distance_bound(distance, key, &query);
+    distance = stbox_index_distance_bound(distance, key,
+      &query);
 
   PG_RETURN_FLOAT8(distance);
 }
@@ -383,8 +427,7 @@ stbox_gist_distance(FunctionCallInfo fcinfo, bool boxcolumn)
 PGDLLEXPORT Datum Stbox_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_distance);
 /**
- * @brief GiST distance for spatiotemporal boxes
- * @note Take in a query and an entry and return the "distance" between them
+ * @brief GiST distance method of a column of spatiotemporal boxes
  */
 Datum
 Stbox_gist_distance(PG_FUNCTION_ARGS)
@@ -395,8 +438,7 @@ Stbox_gist_distance(PG_FUNCTION_ARGS)
 PGDLLEXPORT Datum Tspatial_gist_distance(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tspatial_gist_distance);
 /**
- * @brief GiST distance for spatiotemporal values
- * @note Take in a query and an entry and return the "distance" between them
+ * @brief GiST distance method of a column of spatiotemporal values
  */
 Datum
 Tspatial_gist_distance(PG_FUNCTION_ARGS)
@@ -408,36 +450,8 @@ Tspatial_gist_distance(PG_FUNCTION_ARGS)
  * GiST sort support method
  *****************************************************************************/
 
-
 /**
- * @brief Return the sort key of a spatiotemporal box
- * @details The spatial half is the hash PostGIS sorts a geometry column by and
- * the temporal half is the rank of the period, composed on a Hilbert curve so
- * that neither of them leads the other.
- */
-uint64
-stbox_sort_hash(const STBox *box)
-{
-  uint32 space = 0, time = 0;
-  if (MEOS_FLAGS_GET_X(box->flags))
-  {
-    GBOX gbox;
-    stbox_set_gbox(box, &gbox);
-    /* A geodetic spatiotemporal box keeps longitude and latitude in degrees
-     * while a geodetic GBOX keeps coordinates on the unit sphere, as
-     * #geo_set_stbox() states. The box is therefore hashed as a planar one,
-     * where the normalization PostGIS applies to the SRID it carries is the
-     * one that fits the degrees it holds */
-    FLAGS_SET_GEODETIC(gbox.flags, false);
-    space = (uint32) (gbox_get_sortable_hash(&gbox, box->srid) >> 32);
-  }
-  if (MEOS_FLAGS_GET_T(box->flags))
-    time = sortsupport_rank_span_center(&box->period);
-  return sortsupport_hilbert(space, time);
-}
-
-/**
- * @brief Convert a spatiotemporal box into its abbreviated key
+ * @brief Convert a box of the spatiotemporal boxes into its abbreviated key
  */
 static Datum
 Stbox_abbrev_convert(Datum original, SortSupport ssup)
@@ -447,7 +461,7 @@ Stbox_abbrev_convert(Datum original, SortSupport ssup)
 }
 
 /**
- * @brief Compare two spatiotemporal boxes for the sorted index build
+ * @brief Compare two boxes of the spatiotemporal boxes for the sorted index build
  */
 static int
 Stbox_cmp_full(Datum x, Datum y, SortSupport ssup)
@@ -469,7 +483,7 @@ Stbox_cmp_full(Datum x, Datum y, SortSupport ssup)
 PGDLLEXPORT Datum Stbox_gist_sortsupport(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_gist_sortsupport);
 /**
- * @brief GiST sort support method for spatiotemporal values
+ * @brief GiST sort support method for spatiotemporal boxes
  */
 Datum
 Stbox_gist_sortsupport(PG_FUNCTION_ARGS)
@@ -488,5 +502,6 @@ Stbox_gist_sortsupport(PG_FUNCTION_ARGS)
   }
   PG_RETURN_VOID();
 }
+/* GENERATED-BOXGIST-END stbox */
 
 /*****************************************************************************/

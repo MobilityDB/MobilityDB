@@ -1,0 +1,21 @@
+{
+  "type_label": "tcellquadbin",
+  "header": "meos_cellindex.h",
+  "out": "tcellindex_quadbin_smoketest.c",
+  "extra_includes": "#include <meos_quadbin.h>\n#include <meos_cellindex.h>",
+  "arg_map": {
+    "Temporal *": "tquadbin1",
+    "int32": "3"
+  },
+  "common_inputs": [
+    "  /* The functions of meos_cellindex.h read the grid off the temporal type,",
+    "   * so this suite hands them a temporal QUADBIN cell of resolution 4. */",
+    "  TimestampTz tstzarr1[] = { timestamptz_in(\"2001-01-01\", -1), timestamptz_in(\"2001-01-03\", -1) };",
+    "  Quadbin qcell1 = quadbin_in(\"48427fffffffffff\");",
+    "  Quadbin qarr_same1[] = { qcell1, qcell1 };",
+    "  Temporal *tquadbin1 = (Temporal *) tquadbinseq_make(qarr_same1, tstzarr1, 2, true, true);"
+  ],
+  "cleanup": [
+    "  free(tquadbin1);"
+  ]
+}

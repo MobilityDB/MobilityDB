@@ -94,6 +94,8 @@ Geo_stboxes(PG_FUNCTION_ARGS)
   int count;
   STBox *boxes = geo_stboxes(gs, &count);
   PG_FREE_IF_COPY(gs, 0);
+  if (! boxes)
+    PG_RETURN_NULL();
   ArrayType *result = stboxarr_to_array(boxes, count);
   pfree(boxes);
   PG_RETURN_ARRAYTYPE_P(result);

@@ -16,150 +16,12 @@
  * Quadtree operator class
  ******************************************************************************/
 
-CREATE OPERATOR CLASS {TEMP}_quadtree_ops
-  DEFAULT FOR TYPE {TEMP} USING spgist AS
-  -- strictly left
-  OPERATOR  1    << ({TEMP}, stbox),
-  OPERATOR  1    << ({TEMP}, {TEMP}),
-  -- overlaps or left
-  OPERATOR  2    &< ({TEMP}, stbox),
-  OPERATOR  2    &< ({TEMP}, {TEMP}),
-  -- overlaps
-  OPERATOR  3    && ({TEMP}, tstzspan),
-  OPERATOR  3    && ({TEMP}, stbox),
-  OPERATOR  3    && ({TEMP}, {TEMP}),
-  -- overlaps or right
-  OPERATOR  4    &> ({TEMP}, stbox),
-  OPERATOR  4    &> ({TEMP}, {TEMP}),
-  -- strictly right
-  OPERATOR  5    >> ({TEMP}, stbox),
-  OPERATOR  5    >> ({TEMP}, {TEMP}),
-  -- same
-  OPERATOR  6    ~= ({TEMP}, tstzspan),
-  OPERATOR  6    ~= ({TEMP}, stbox),
-  OPERATOR  6    ~= ({TEMP}, {TEMP}),
-  -- contains
-  OPERATOR  7    @> ({TEMP}, tstzspan),
-  OPERATOR  7    @> ({TEMP}, stbox),
-  OPERATOR  7    @> ({TEMP}, {TEMP}),
-  -- contained by
-  OPERATOR  8    <@ ({TEMP}, tstzspan),
-  OPERATOR  8    <@ ({TEMP}, stbox),
-  OPERATOR  8    <@ ({TEMP}, {TEMP}),
-  -- overlaps or below
-  OPERATOR  9    &<| ({TEMP}, stbox),
-  OPERATOR  9    &<| ({TEMP}, {TEMP}),
-  -- strictly below
-  OPERATOR  10    <<| ({TEMP}, stbox),
-  OPERATOR  10    <<| ({TEMP}, {TEMP}),
-  -- strictly above
-  OPERATOR  11    |>> ({TEMP}, stbox),
-  OPERATOR  11    |>> ({TEMP}, {TEMP}),
-  -- overlaps or above
-  OPERATOR  12    |&> ({TEMP}, stbox),
-  OPERATOR  12    |&> ({TEMP}, {TEMP}),
-  -- adjacent
-  OPERATOR  17    -|- ({TEMP}, tstzspan),
-  OPERATOR  17    -|- ({TEMP}, stbox),
-  OPERATOR  17    -|- ({TEMP}, {TEMP}),
-  -- overlaps or before
-  OPERATOR  28    &<# ({TEMP}, tstzspan),
-  OPERATOR  28    &<# ({TEMP}, stbox),
-  OPERATOR  28    &<# ({TEMP}, {TEMP}),
-  -- strictly before
-  OPERATOR  29    <<# ({TEMP}, tstzspan),
-  OPERATOR  29    <<# ({TEMP}, stbox),
-  OPERATOR  29    <<# ({TEMP}, {TEMP}),
-  -- strictly after
-  OPERATOR  30    #>> ({TEMP}, tstzspan),
-  OPERATOR  30    #>> ({TEMP}, stbox),
-  OPERATOR  30    #>> ({TEMP}, {TEMP}),
-  -- overlaps or after
-  OPERATOR  31    #&> ({TEMP}, tstzspan),
-  OPERATOR  31    #&> ({TEMP}, stbox),
-  OPERATOR  31    #&> ({TEMP}, {TEMP}),
-  -- functions
-  FUNCTION  1 stbox_spgist_config(internal, internal),
-  FUNCTION  2 stbox_quadtree_choose(internal, internal),
-  FUNCTION  3 stbox_quadtree_picksplit(internal, internal),
-  FUNCTION  4 stbox_quadtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6 tspatial_spgist_compress(internal);
-
+{TEMPOPCLASS_QUADTREE}
 /******************************************************************************
  * K-d tree operator class
  ******************************************************************************/
 
-CREATE OPERATOR CLASS {TEMP}_kdtree_ops
-  FOR TYPE {TEMP} USING spgist AS
-  -- strictly left
-  OPERATOR  1    << ({TEMP}, stbox),
-  OPERATOR  1    << ({TEMP}, {TEMP}),
-  -- overlaps or left
-  OPERATOR  2    &< ({TEMP}, stbox),
-  OPERATOR  2    &< ({TEMP}, {TEMP}),
-  -- overlaps
-  OPERATOR  3    && ({TEMP}, tstzspan),
-  OPERATOR  3    && ({TEMP}, stbox),
-  OPERATOR  3    && ({TEMP}, {TEMP}),
-  -- overlaps or right
-  OPERATOR  4    &> ({TEMP}, stbox),
-  OPERATOR  4    &> ({TEMP}, {TEMP}),
-  -- strictly right
-  OPERATOR  5    >> ({TEMP}, stbox),
-  OPERATOR  5    >> ({TEMP}, {TEMP}),
-  -- same
-  OPERATOR  6    ~= ({TEMP}, tstzspan),
-  OPERATOR  6    ~= ({TEMP}, stbox),
-  OPERATOR  6    ~= ({TEMP}, {TEMP}),
-  -- contains
-  OPERATOR  7    @> ({TEMP}, tstzspan),
-  OPERATOR  7    @> ({TEMP}, stbox),
-  OPERATOR  7    @> ({TEMP}, {TEMP}),
-  -- contained by
-  OPERATOR  8    <@ ({TEMP}, tstzspan),
-  OPERATOR  8    <@ ({TEMP}, stbox),
-  OPERATOR  8    <@ ({TEMP}, {TEMP}),
-  -- overlaps or below
-  OPERATOR  9    &<| ({TEMP}, stbox),
-  OPERATOR  9    &<| ({TEMP}, {TEMP}),
-  -- strictly below
-  OPERATOR  10    <<| ({TEMP}, stbox),
-  OPERATOR  10    <<| ({TEMP}, {TEMP}),
-  -- strictly above
-  OPERATOR  11    |>> ({TEMP}, stbox),
-  OPERATOR  11    |>> ({TEMP}, {TEMP}),
-  -- overlaps or above
-  OPERATOR  12    |&> ({TEMP}, stbox),
-  OPERATOR  12    |&> ({TEMP}, {TEMP}),
-  -- adjacent
-  OPERATOR  17    -|- ({TEMP}, tstzspan),
-  OPERATOR  17    -|- ({TEMP}, stbox),
-  OPERATOR  17    -|- ({TEMP}, {TEMP}),
-  -- overlaps or before
-  OPERATOR  28    &<# ({TEMP}, tstzspan),
-  OPERATOR  28    &<# ({TEMP}, stbox),
-  OPERATOR  28    &<# ({TEMP}, {TEMP}),
-  -- strictly before
-  OPERATOR  29    <<# ({TEMP}, tstzspan),
-  OPERATOR  29    <<# ({TEMP}, stbox),
-  OPERATOR  29    <<# ({TEMP}, {TEMP}),
-  -- strictly after
-  OPERATOR  30    #>> ({TEMP}, tstzspan),
-  OPERATOR  30    #>> ({TEMP}, stbox),
-  OPERATOR  30    #>> ({TEMP}, {TEMP}),
-  -- overlaps or after
-  OPERATOR  31    #&> ({TEMP}, tstzspan),
-  OPERATOR  31    #&> ({TEMP}, stbox),
-  OPERATOR  31    #&> ({TEMP}, {TEMP}),
-  -- functions
-  FUNCTION  1 stbox_spgist_config(internal, internal),
-  FUNCTION  2 stbox_kdtree_choose(internal, internal),
-  FUNCTION  3 stbox_kdtree_picksplit(internal, internal),
-  FUNCTION  4 stbox_kdtree_inner_consistent(internal, internal),
-  FUNCTION  5 stbox_spgist_leaf_consistent(internal, internal),
-  FUNCTION  6 tspatial_spgist_compress(internal);
-
+{TEMPOPCLASS_KDTREE}
 -- @IF setindex
 /******************************************************************************
  * Sets of the base values, keyed by the box they store, the set operators
@@ -215,4 +77,4 @@ CREATE OPERATOR CLASS {SET}_kdtree_ops
   FUNCTION  6 spatialset_spgist_compress(internal);
 
 -- @ENDIF
-/******************************************************************************/
+{BOXMEMBERS}/******************************************************************************/

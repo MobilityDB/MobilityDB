@@ -755,7 +755,7 @@ text_overlay(const text *txt1, const text *txt2, int from, int count)
   int sp_from_count;
   if (pg_add_s32_overflow(from, count, &sp_from_count))
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
       "integer out of range");
     return NULL;
   }
@@ -1213,7 +1213,7 @@ check_collation_set(Oid collid)
      * This typically means that the parser could not resolve a conflict
      * of implicit collations, so report it that way.
      */
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INDETERMINATE_COLLATION,
       "could not determine which collation to use for string comparison");
   }
 }
@@ -1434,7 +1434,7 @@ pg_text_starts_with(const text *txt1, const text *txt2)
   pg_locale_t mylocale = meos_pg_newlocale_from_collation(collid);
   if (!mylocale->deterministic)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_FEATURE_NOT_SUPPORTED,
       "nondeterministic collations are not supported for substring searches");
     return false;
   }
@@ -1953,7 +1953,7 @@ text_split_part(const text *txt, const text *sep, int fldnum)
   /* field number is 1 based */
   if (fldnum == 0)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "field position must not be zero");
     return NULL;
   }
@@ -2425,7 +2425,7 @@ pg_text_format(Datum *elements, int nitems, const text *fmt)
      */
     if (strchr("sIL", *cp) == NULL)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "unrecognized format() type specifier \"%.*s\"",
         pg_mblen(cp), cp);
       return NULL;
@@ -2439,7 +2439,7 @@ pg_text_format(Datum *elements, int nitems, const text *fmt)
         arg = widthpos;
       if (arg >= nargs)
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "too few arguments for format()");
         return NULL;
       }
@@ -2488,7 +2488,7 @@ pg_text_format(Datum *elements, int nitems, const text *fmt)
       arg = argpos;
     if (arg >= nargs)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "too few arguments for format()");
       return NULL;
     }
@@ -2534,7 +2534,7 @@ pg_text_format(Datum *elements, int nitems, const text *fmt)
         break;
       default:
         /* should not get here, because of previous check */
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "unrecognized format() type specifier \"%.*s\"",
           pg_mblen(cp), cp);
         return NULL;
@@ -2578,7 +2578,7 @@ text_format_parse_digits(const char **ptr, const char *end_ptr, int *value)
     if (unlikely(pg_mul_s32_overflow(val, 10, &val)) ||
       unlikely(pg_add_s32_overflow(val, digit, &val)))
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "number is out of range");
       return false;
     }
@@ -2639,7 +2639,7 @@ text_format_parse_format(const char *start_ptr, const char *end_ptr,
     /* Explicit 0 for argument index is immediately refused */
     if (n == 0)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
         "format specifies argument 0, but arguments are numbered from 1");
       return NULL;
     }
@@ -2662,7 +2662,7 @@ text_format_parse_format(const char *start_ptr, const char *end_ptr,
       /* number in this position must be closed by $ */
       if (*cp != '$')
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "width argument position must be ended by \"$\"");
         return NULL;
       }
@@ -2671,7 +2671,7 @@ text_format_parse_format(const char *start_ptr, const char *end_ptr,
       /* Explicit 0 for argument index is immediately refused */
       if (n == 0)
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
           "format specifies argument 0, but arguments are numbered from 1");
         return NULL;
       }
@@ -2757,7 +2757,7 @@ text_format_append_string(StringInfo buf, const char *str, int flags,
     /* -INT_MIN is undefined */
     if (width <= INT_MIN)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
         "number is out of range");
       return;
     }
@@ -2799,7 +2799,7 @@ unicode_norm_form_from_string(const char *formstr)
    */
   if (GetDatabaseEncoding() != PG_UTF8)
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
       "Unicode normalization can only be performed if server encoding is UTF8");
     return -1;
   }
@@ -2814,7 +2814,7 @@ unicode_norm_form_from_string(const char *formstr)
     form = UNICODE_NFKD;
   else
   {
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
       "invalid normalization form: %s", formstr);
     return -1;
   }
@@ -3100,7 +3100,7 @@ pg_unistr(const text *txt)
         unicode = hexval_n(instr + offset, 4);
         if (!is_valid_unicode_codepoint(unicode))
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "invalid Unicode code point: %04X", unicode);
           return NULL;
         }
@@ -3135,7 +3135,7 @@ pg_unistr(const text *txt)
         unicode = hexval_n(instr + 2, 6);
         if (!is_valid_unicode_codepoint(unicode))
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "invalid Unicode code point: %04X", unicode);
           return NULL;
         }
@@ -3170,7 +3170,7 @@ pg_unistr(const text *txt)
         unicode = hexval_n(instr + 2, 8);
         if (!is_valid_unicode_codepoint(unicode))
         {
-          meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+          meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
             "invalid Unicode code point: %04X", unicode);
           return NULL;
         }
@@ -3200,7 +3200,7 @@ pg_unistr(const text *txt)
       }
       else
       {
-        meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+        meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
           "invalid Unicode escape");
         return NULL;
       }
@@ -3223,7 +3223,7 @@ pg_unistr(const text *txt)
   return result;
 
 invalid_pair:
-  meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+  meos_error(ERROR, MEOS_ERR_SYNTAX_ERROR,
     "invalid Unicode surrogate pair");
   return NULL;
 }

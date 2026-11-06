@@ -65,9 +65,12 @@ eacomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, -1); VALIDATE_NOT_NULL(gs, -1);
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return -1;
+  /* An empty geometry has no point, so it equals no value at any instant */
+  if (gserialized_is_empty(gs))
+    return (func == &datum2_ne) ? 1 : 0;
   return eacomp_temporal_base(temp, PointerGetDatum(gs), func, ever);
 }
 
@@ -261,9 +264,13 @@ tcomp_geo_tgeo(const GSERIALIZED *gs, const Temporal *temp,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it equals no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(func == &datum2_ne),
+      T_TBOOL, temp);
   return tcomp_base_temporal(PointerGetDatum(gs), temp, func);
 }
 
@@ -279,9 +286,13 @@ tcomp_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs,
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_valid_tspatial_geo(temp, gs) || gserialized_is_empty(gs) ||
+  if (! ensure_valid_tspatial_geo(temp, gs) ||
       ! ensure_same_dimensionality_tspatial_geo(temp, gs))
     return NULL;
+  /* An empty geometry has no point, so it equals no value at any instant */
+  if (gserialized_is_empty(gs))
+    return temporal_from_base_temp(BoolGetDatum(func == &datum2_ne),
+      T_TBOOL, temp);
   return tcomp_temporal_base(temp, PointerGetDatum(gs), func);
 }
 

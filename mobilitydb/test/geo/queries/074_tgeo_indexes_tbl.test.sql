@@ -362,3 +362,194 @@ DROP TABLE tbl_tgeometry3D_big_allthesame;
 
 -------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- A column of stbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tgeometry as the scan does: <<, &<, &&, &>, >>, ~=, @>, <@, &<|, <<|, |>>, |&>, -|-, &<#, <<#, #>>, #&>, &</, <</, />>, /&>, |=|
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_stbox_tgeometry AS
+SELECT k, temp::stbox AS b FROM tbl_tgeometry3d WHERE temp IS NOT NULL;
+CREATE TABLE tbl_tgeometry_q AS
+SELECT temp AS q FROM tbl_tgeometry3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+CREATE FUNCTION stbox_tgeometry_answers() RETURNS text AS $$
+  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
+    SELECT 1, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b << q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 2, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &< q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 3, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b && q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 4, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 5, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b >> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 6, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b ~= q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 7, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b @> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 8, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <@ q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 9, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &<| q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 10, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <<| q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 11, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b |>> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 12, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b |&> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 13, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b -|- q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 14, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &<# q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 15, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <<# q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 16, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b #>> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 17, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b #&> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 18, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &</ q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 19, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <</ q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 20, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b />> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 21, (SELECT count(*) FROM tbl_stbox_tgeometry WHERE b /&> q) FROM tbl_tgeometry_q
+    UNION ALL
+    SELECT 22, (SELECT sum(k) FROM (SELECT k FROM tbl_stbox_tgeometry
+      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tgeometry_q) t(o, c);
+$$ LANGUAGE SQL;
+CREATE FUNCTION stbox_tgeometry_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION stbox_tgeometry_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN stbox_tgeometry_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+  FROM (VALUES
+    (1, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b << (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (2, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &< (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (3, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b && (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (4, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (5, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b >> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (6, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b ~= (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (7, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b @> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (8, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <@ (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (9, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &<| (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (10, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <<| (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (11, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b |>> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (12, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b |&> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (13, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b -|- (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (14, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &<# (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (15, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <<# (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (16, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b #>> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (17, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b #&> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (18, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b &</ (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (19, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b <</ (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (20, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b />> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (21, 'SELECT count(*) FROM tbl_stbox_tgeometry WHERE b /&> (SELECT q FROM tbl_tgeometry_q LIMIT 1)'),
+    (22, 'SELECT k FROM tbl_stbox_tgeometry ORDER BY b |=| (SELECT q FROM tbl_tgeometry_q LIMIT 1) LIMIT 5')) t(o, query);
+$$ LANGUAGE SQL;
+CREATE TABLE tbl_stbox_tgeometry_seq AS SELECT stbox_tgeometry_answers() AS a;
+SELECT a FROM tbl_stbox_tgeometry_seq;
+SET enable_seqscan = off;
+CREATE INDEX tbl_stbox_tgeometry_gist_idx ON tbl_stbox_tgeometry USING gist(b);
+SELECT stbox_tgeometry_indexed(), stbox_tgeometry_answers() = a
+FROM tbl_stbox_tgeometry_seq;
+DROP INDEX tbl_stbox_tgeometry_gist_idx;
+CREATE INDEX tbl_stbox_tgeometry_quad_idx ON tbl_stbox_tgeometry USING spgist(b);
+SELECT stbox_tgeometry_indexed(), stbox_tgeometry_answers() = a
+FROM tbl_stbox_tgeometry_seq;
+DROP INDEX tbl_stbox_tgeometry_quad_idx;
+CREATE INDEX tbl_stbox_tgeometry_kd_idx ON tbl_stbox_tgeometry
+  USING spgist(b stbox_kdtree_ops);
+SELECT stbox_tgeometry_indexed(), stbox_tgeometry_answers() = a
+FROM tbl_stbox_tgeometry_seq;
+RESET enable_seqscan;
+DROP TABLE tbl_stbox_tgeometry, tbl_tgeometry_q, tbl_stbox_tgeometry_seq;
+DROP FUNCTION stbox_tgeometry_indexed(), stbox_tgeometry_answers(), stbox_tgeometry_probes_index(text);
+
+-------------------------------------------------------------------------------
+-- A column of stbox values indexed by GiST, quad-tree and k-d tree answers the
+-- queries of a tgeography as the scan does: &&, ~=, @>, <@, -|-, &<#, <<#, #>>, #&>, |=|
+-------------------------------------------------------------------------------
+
+CREATE TABLE tbl_stbox_tgeography AS
+SELECT k, temp::stbox AS b FROM tbl_tgeography3d WHERE temp IS NOT NULL;
+CREATE TABLE tbl_tgeography_q AS
+SELECT temp AS q FROM tbl_tgeography3d WHERE temp IS NOT NULL ORDER BY k LIMIT 3;
+CREATE FUNCTION stbox_tgeography_answers() RETURNS text AS $$
+  SELECT string_agg(coalesce(c::text, 'null'), ',' ORDER BY o) FROM (
+    SELECT 1, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b && q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 2, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b ~= q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 3, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b @> q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 4, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b <@ q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 5, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b -|- q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 6, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b &<# q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 7, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b <<# q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 8, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b #>> q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 9, (SELECT count(*) FROM tbl_stbox_tgeography WHERE b #&> q) FROM tbl_tgeography_q
+    UNION ALL
+    SELECT 10, (SELECT sum(k) FROM (SELECT k FROM tbl_stbox_tgeography
+      ORDER BY b |=| q, k LIMIT 5) s) FROM tbl_tgeography_q) t(o, c);
+$$ LANGUAGE SQL;
+CREATE FUNCTION stbox_tgeography_probes_index(query text)
+RETURNS boolean LANGUAGE plpgsql AS $$
+DECLARE
+  line text;
+BEGIN
+  FOR line IN EXECUTE 'EXPLAIN (COSTS OFF) ' || query LOOP
+    IF line LIKE '%Index Cond%' OR line LIKE '%Order By%' THEN
+      RETURN true;
+    END IF;
+  END LOOP;
+  RETURN false;
+END;
+$$;
+CREATE FUNCTION stbox_tgeography_indexed() RETURNS text AS $$
+  SELECT string_agg(CASE WHEN stbox_tgeography_probes_index(query) THEN 't' ELSE 'f' END, '' ORDER BY o)
+  FROM (VALUES
+    (1, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b && (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (2, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b ~= (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (3, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b @> (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (4, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b <@ (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (5, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b -|- (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (6, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b &<# (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (7, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b <<# (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (8, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b #>> (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (9, 'SELECT count(*) FROM tbl_stbox_tgeography WHERE b #&> (SELECT q FROM tbl_tgeography_q LIMIT 1)'),
+    (10, 'SELECT k FROM tbl_stbox_tgeography ORDER BY b |=| (SELECT q FROM tbl_tgeography_q LIMIT 1) LIMIT 5')) t(o, query);
+$$ LANGUAGE SQL;
+CREATE TABLE tbl_stbox_tgeography_seq AS SELECT stbox_tgeography_answers() AS a;
+SELECT a FROM tbl_stbox_tgeography_seq;
+SET enable_seqscan = off;
+CREATE INDEX tbl_stbox_tgeography_gist_idx ON tbl_stbox_tgeography USING gist(b);
+SELECT stbox_tgeography_indexed(), stbox_tgeography_answers() = a
+FROM tbl_stbox_tgeography_seq;
+DROP INDEX tbl_stbox_tgeography_gist_idx;
+CREATE INDEX tbl_stbox_tgeography_quad_idx ON tbl_stbox_tgeography USING spgist(b);
+SELECT stbox_tgeography_indexed(), stbox_tgeography_answers() = a
+FROM tbl_stbox_tgeography_seq;
+DROP INDEX tbl_stbox_tgeography_quad_idx;
+CREATE INDEX tbl_stbox_tgeography_kd_idx ON tbl_stbox_tgeography
+  USING spgist(b stbox_kdtree_ops);
+SELECT stbox_tgeography_indexed(), stbox_tgeography_answers() = a
+FROM tbl_stbox_tgeography_seq;
+RESET enable_seqscan;
+DROP TABLE tbl_stbox_tgeography, tbl_tgeography_q, tbl_stbox_tgeography_seq;
+DROP FUNCTION stbox_tgeography_indexed(), stbox_tgeography_answers(), stbox_tgeography_probes_index(text);

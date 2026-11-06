@@ -313,6 +313,32 @@ SELECT tavg(temp) FROM (VALUES
  {[1e+308@Mon Jan 01 00:00:00 2001 PST, 1e+308@Tue Jan 02 00:00:00 2001 PST, 5e+307@Wed Jan 03 00:00:00 2001 PST], (0@Wed Jan 03 00:00:00 2001 PST, -1e+308@Thu Jan 04 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tsum(temp) FROM (VALUES
+('1000000000@2001-01-01'::tint),('1147483646@2001-01-01'::tint)) t(temp);
+                   tsum                    
+-------------------------------------------
+ {2147483646@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+('2000000000@2001-01-01'::tint),('2000000000@2001-01-01'::tint)) t(temp);
+ERROR:  integer out of range
+SELECT tsum(temp) FROM (VALUES
+('[-2000000000@2001-01-01, -2000000000@2001-01-03]'::tint),('[-2000000000@2001-01-02, -2000000000@2001-01-04]'::tint)) t(temp);
+ERROR:  integer out of range
+SELECT tsum(temp) FROM (VALUES
+('5000000000000000000@2001-01-01'::tbigint),('4223372036854775806@2001-01-01'::tbigint)) t(temp);
+                        tsum                        
+----------------------------------------------------
+ {9223372036854775806@Mon Jan 01 00:00:00 2001 PST}
+(1 row)
+
+SELECT tsum(temp) FROM (VALUES
+('5000000000000000000@2001-01-01'::tbigint),('5000000000000000000@2001-01-01'::tbigint)) t(temp);
+ERROR:  bigint out of range
+SELECT tsum(temp) FROM (VALUES
+('[-5000000000000000000@2001-01-01, -5000000000000000000@2001-01-03]'::tbigint),('[-5000000000000000000@2001-01-02, -5000000000000000000@2001-01-04]'::tbigint)) t(temp);
+ERROR:  bigint out of range
 SELECT tmin(temp) FROM (VALUES
 (NULL::ttext),(NULL::ttext)) t(temp);
  tmin 

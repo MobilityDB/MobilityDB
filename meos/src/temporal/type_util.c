@@ -454,7 +454,7 @@ datum_add(Datum l, Datum r, MeosType type)
       if (unlikely(pg_add_s64_overflow(t, DatumGetInt64(r), &result)) ||
           ! IS_VALID_TIMESTAMP(result))
       {
-        meos_error(ERROR, MEOS_ERR_VALUE_OUT_OF_RANGE,
+        meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
           "timestamp out of range");
         return TimestampTzGetDatum(DT_NOEND);
       }

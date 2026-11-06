@@ -53,6 +53,7 @@
 #include <utils/jsonb.h>
 #include <utils/numeric.h>
 #include <pgtypes.h>
+#include <pg_int.h>
 
 /*****************************************************************************
  * General functions on datums
@@ -865,15 +866,19 @@ tnumber_abs(const Temporal *temp)
 
 /**
  * @brief Return the delta value of two numbers
+ * @details The difference of two numbers can exceed the largest one, which
+ * raises an error, as PostgreSQL does and as #datum_sub does
  */
 static Datum
 delta_value(Datum value1, Datum value2, MeosType basetype)
 {
   assert(basetype == T_INT4 || basetype == T_INT8 || basetype == T_FLOAT8);
   if (basetype == T_INT4)
-    return Int32GetDatum(DatumGetInt32(value2) - DatumGetInt32(value1));
+    return Int32GetDatum(minus_int32_int32(DatumGetInt32(value2),
+      DatumGetInt32(value1)));
   else if (basetype == T_INT8)
-    return Int64GetDatum(DatumGetInt64(value2) - DatumGetInt64(value1));
+    return Int64GetDatum(minus_int64_int64(DatumGetInt64(value2),
+      DatumGetInt64(value1)));
   /* basetype == T_FLOAT8: the difference of two finite floats can exceed the
    * largest one */
   double result = DatumGetFloat8(value2) - DatumGetFloat8(value1);
