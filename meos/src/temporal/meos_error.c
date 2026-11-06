@@ -415,7 +415,7 @@ meos_error(int errlevel, int errcode, const char *format, ...)
       exit(EXIT_FAILURE);
   }
 #else
-    pg_error(errlevel, errcode, strdup(buffer));
+    pg_error(errlevel, errcode, buffer);
 #endif /* MEOS */
   return;
 }
