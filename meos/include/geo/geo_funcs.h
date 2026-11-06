@@ -310,6 +310,15 @@ extern int point_segment_offset_sign(const double *p, const double *a,
   const double *b, int ndims, double r);
 extern int segment_interior_offset_sign(const double *a, const double *b,
   const double *c, const double *d, double r);
+extern int vector_triple_sign(const double *a0, const double *a1,
+  const double *b0, const double *b1, const double *c0, const double *c1);
+extern void vector_cross_signs(const double *b0, const double *b1,
+  const double *c0, const double *c1, int *sn);
+extern int plane_cross_dot_sign(const double *a, const double *b,
+  const double *c, const double *x0, const double *x1, const double *y0,
+  const double *y1);
+extern int plane_point_offset_sign(const double *a, const double *b,
+  const double *c, const double *p, double d);
 extern int point_arc_offset_sign(const double *p, const Edge *e, double r);
 extern double point_seg_dist2(double px, double py, double x1, double y1,
   double x2, double y2);

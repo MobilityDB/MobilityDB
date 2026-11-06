@@ -8476,6 +8476,232 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
   return wide_dyadic_product_cmp(&en, &en, &r2, &nn);
 }
 
+/**
+ * @brief Set the three coordinates of `q - p`, exactly
+ */
+static void
+wide_diff3(const double *q, const double *p, WideDyadic *r)
+{
+  for (int k = 0; k < 3; k++)
+  {
+    WideDyadic wq, wp;
+    wide_dyadic_set_double(&wq, q[k]);
+    wide_dyadic_set_double(&wp, p[k]);
+    wide_dyadic_sub(&wq, &wp, &r[k]);
+  }
+  return;
+}
+
+/**
+ * @brief Set the cross product of two vectors of three #WideDyadic, exactly
+ */
+static void
+wide_cross3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
+{
+  for (int k = 0; k < 3; k++)
+  {
+    int i = (k + 1) % 3, j = (k + 2) % 3;
+    WideDyadic t1, t2;
+    wide_dyadic_mul(&u[i], &v[j], &t1);
+    wide_dyadic_mul(&u[j], &v[i], &t2);
+    wide_dyadic_sub(&t1, &t2, &r[k]);
+  }
+  return;
+}
+
+/**
+ * @brief Set the dot product of two vectors of three #WideDyadic, exactly
+ */
+static void
+wide_dot3(const WideDyadic *u, const WideDyadic *v, WideDyadic *r)
+{
+  WideDyadic x, y;
+  r->sign = 0; r->len = 0; r->exp = 0;
+  for (int k = 0; k < 3; k++)
+  {
+    wide_dyadic_mul(&u[k], &v[k], &x);
+    wide_dyadic_add(r, &x, &y);
+    *r = y;
+  }
+  return;
+}
+
+/**
+ * @brief Return the sign of the determinant of three vectors in 3D, each the
+ * difference of two points, computed exactly for any finite doubles
+ * @details The determinant `(a1 - a0) . ((b1 - b0) x (c1 - c0))`, of degree
+ * three, is first evaluated in pairs of doubles with a bound on its error
+ * (#DDBound), and where the bound cannot tell its sign, on #WideDyadic. With
+ * `a0 = b0 = c0` it is the orientation of four points: 0 exactly where they
+ * are coplanar
+ * @param[in] a0,a1,b0,b1,c0,c1 Points, three coordinates each
+ * @return -1, 0 or 1
+ */
+int
+vector_triple_sign(const double *a0, const double *a1, const double *b0,
+  const double *b1, const double *c0, const double *c1)
+{
+  DDBound u[3], v[3], w[3], x[3];
+  ddb_diff3(a1, a0, u);
+  ddb_diff3(b1, b0, v);
+  ddb_diff3(c1, c0, w);
+  ddb_cross3(v, w, x);
+  /* A bounded value with no error that is zero is an exact zero, which the
+   * filter does not tell: the orientation of a vertex of a face with three that
+   * span its plane is one */
+  DDBound det = ddb_dot3(u, x);
+  if (ddb_is_zero(det))
+    return 0;
+  int sign = ddb_sign(det);
+  if (sign != 0)
+    return sign;
+  /* Where every difference is a double held exactly, each one zero or within
+   * 2^-200 and 2^200, it is a multiple of 2^-252, so every product of three of
+   * them and every part of its exact expansion is a multiple of 2^-756 below
+   * 2^600: no step leaves the normal doubles, and the determinant of those
+   * doubles is exact in expansions (#triple_product_sign_exact), as the
+   * orientation of a vertex of a face lying in a plane needs where its
+   * coordinates sit on a common grid */
+  bool doubles = true;
+  const DDBound *vec[3] = {u, v, w};
+  for (int i = 0; i < 3 && doubles; i++)
+    for (int k = 0; k < 3 && doubles; k++)
+    {
+      double m = fabs(vec[i][k].hi);
+      doubles = vec[i][k].lo == 0.0 &&
+        (m == 0.0 || (m >= 0x1p-200 && m <= 0x1p200));
+    }
+  if (doubles)
+  {
+    POINT3D pu = {u[0].hi, u[1].hi, u[2].hi},
+      pv = {v[0].hi, v[1].hi, v[2].hi}, pw = {w[0].hi, w[1].hi, w[2].hi};
+    return triple_product_sign_exact(&pu, &pv, &pw);
+  }
+  WideDyadic wu[3], wv[3], ww[3], wx[3], r;
+  wide_diff3(a1, a0, wu);
+  wide_diff3(b1, b0, wv);
+  wide_diff3(c1, c0, ww);
+  wide_cross3(wv, ww, wx);
+  wide_dot3(wu, wx, &r);
+  return r.sign;
+}
+
+/**
+ * @brief Set the signs of the three components of the cross product of two
+ * vectors in 3D, each the difference of two points, computed exactly for any
+ * finite doubles
+ * @details The cross product is formed once in pairs of doubles with a bound
+ * on its error (#DDBound); a component the bound decides, or one that is an
+ * exact zero, is read there, and another is the determinant of the unit
+ * vector of its axis and the two vectors (#vector_triple_sign). All three are
+ * zero exactly where the two vectors are parallel
+ * @param[in] b0,b1,c0,c1 Points, three coordinates each
+ * @param[out] sn Signs of the three components, -1, 0 or 1
+ */
+void
+vector_cross_signs(const double *b0, const double *b1, const double *c0,
+  const double *c1, int *sn)
+{
+  static const double origin[3] = {0.0, 0.0, 0.0};
+  static const double axis[3][3] = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0},
+    {0.0, 0.0, 1.0}};
+  DDBound v[3], w[3], x[3];
+  ddb_diff3(b1, b0, v);
+  ddb_diff3(c1, c0, w);
+  ddb_cross3(v, w, x);
+  for (int k = 0; k < 3; k++)
+  {
+    if (ddb_is_zero(x[k]))
+      sn[k] = 0;
+    else if ((sn[k] = ddb_sign(x[k])) == 0)
+      sn[k] = vector_triple_sign(origin, axis[k], b0, b1, c0, c1);
+  }
+  return;
+}
+
+/**
+ * @brief Return the sign of the dot product of the normal of a plane and of
+ * the cross product of two vectors, computed exactly for any finite doubles
+ * @details The sign of `((b - a) x (c - a)) . ((x1 - x0) x (y1 - y0))`, of
+ * degree four, first in pairs of doubles with a bound on its error
+ * (#DDBound), then on #WideDyadic where the bound cannot tell it
+ * @param[in] a,b,c Three points spanning the plane, three coordinates each
+ * @param[in] x0,x1,y0,y1 Points, three coordinates each
+ * @return -1, 0 or 1
+ */
+int
+plane_cross_dot_sign(const double *a, const double *b, const double *c,
+  const double *x0, const double *x1, const double *y0, const double *y1)
+{
+  DDBound u[3], v[3], n[3], p[3], q[3], m[3];
+  ddb_diff3(b, a, u);
+  ddb_diff3(c, a, v);
+  ddb_cross3(u, v, n);
+  ddb_diff3(x1, x0, p);
+  ddb_diff3(y1, y0, q);
+  ddb_cross3(p, q, m);
+  /* An exact zero, which the filter does not tell (#vector_triple_sign) */
+  DDBound dot = ddb_dot3(n, m);
+  if (ddb_is_zero(dot))
+    return 0;
+  int sign = ddb_sign(dot);
+  if (sign != 0)
+    return sign;
+  WideDyadic wu[3], wv[3], wn[3], wp[3], wq[3], wm[3], r;
+  wide_diff3(b, a, wu);
+  wide_diff3(c, a, wv);
+  wide_cross3(wu, wv, wn);
+  wide_diff3(x1, x0, wp);
+  wide_diff3(y1, y0, wq);
+  wide_cross3(wp, wq, wm);
+  wide_dot3(wn, wm, &r);
+  return r.sign;
+}
+
+/**
+ * @brief Return the sign of the distance of a point to a plane less a
+ * distance, computed exactly for any finite doubles
+ * @details With `n = (b - a) x (c - a)`, the sign of
+ * `(n . (p - a))^2 - d^2 (n . n)`, of degree six, first in pairs of doubles
+ * with a bound on its error (#DDBound), then as a comparison of two products
+ * of #WideDyadic of degree at most four (#wide_dyadic_product_cmp)
+ * @param[in] a,b,c Three points spanning the plane, not collinear, three
+ * coordinates each
+ * @param[in] p Point, three coordinates
+ * @param[in] d Distance, not negative
+ * @return -1, 0 or 1
+ */
+int
+plane_point_offset_sign(const double *a, const double *b, const double *c,
+  const double *p, double d)
+{
+  assert(d >= 0.0);
+  DDBound u[3], v[3], w[3], n[3], dd;
+  ddb_diff3(b, a, u);
+  ddb_diff3(c, a, v);
+  ddb_diff3(p, a, w);
+  ddb_cross3(u, v, n);
+  DDBound en = ddb_dot3(n, w), nn = ddb_dot3(n, n);
+  dd.hi = d; dd.lo = 0.0; dd.e = 0.0;
+  /* An exact zero, which the filter does not tell (#vector_triple_sign) */
+  DDBound val = ddb_sub(ddb_mul(en, en), ddb_mul(ddb_mul(dd, dd), nn));
+  if (ddb_is_zero(val))
+    return 0;
+  int sign = ddb_sign(val);
+  if (sign != 0)
+    return sign;
+  WideDyadic wu[3], wv[3], ww[3], wn[3], wen, wnn, wd, wd2;
+  wide_diff3(b, a, wu);
+  wide_diff3(c, a, wv);
+  wide_diff3(p, a, ww);
+  wide_cross3(wu, wv, wn);
+  wide_dot3(wn, ww, &wen);
+  wide_dot3(wn, wn, &wnn);
+  wide_dyadic_set_double(&wd, d);
+  wide_dyadic_mul(&wd, &wd, &wd2);
+  return wide_dyadic_product_cmp(&wen, &wen, &wd2, &wnn);
+}
+
 
 /**
  * @brief Return the sign of `(e . n)^2 - m^2 (n . n)` at a midpoint `m` given

@@ -308,6 +308,15 @@ SELECT dwithin(geometry 'Linestring(0 0 0,2 0 0)',
     geometry 'Linestring(1 -1 3,1 1 3)', 2.9999999999999996),
   dwithin(geometry 'Linestring(-1 0 -2,1 0 2)',
     geometry 'Linestring(0 -1 4.9406564584124654e-324,0 1 4.9406564584124654e-324)', 0);
+SELECT dwithin(geometry 'Point(0 0 0)',
+    geometry 'Triangle((1 0 0,0 1 0,0 0 1,1 0 0))', 0.5773502691896257),
+  dwithin(geometry 'Point(0 0 0)',
+    geometry 'Triangle((1 0 0,0 1 0,0 0 1,1 0 0))', 0.5773502691896258),
+  dwithin(geometry 'Polygon((0 0 0,9 0 0,9 9 0,0 9 0,0 0 0))',
+    geometry 'Triangle((-1 -1 3,20 -1 3,-1 20 3,-1 -1 3))', 3),
+  dwithin(geometry 'Point(4.5 4.5 1)',
+    geometry 'Polygon((0 0 0,9 0 0,9 9 0,0 9 0,0 0 0),(3 3 0,6 3 0,6 6 0,3 6 0,3 3 0))',
+    1.8027756377319946);
 SELECT dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.5857864376269046),
   dwithin(geometry 'Point(1 1)', geometry 'CircularString(5 0,3 4,0 5)', 3.585786437626905),
   dwithin(geometry 'Point(3.0000000000000004 4)', geometry 'CircularString(5 0,3 4,0 5)', 0);
