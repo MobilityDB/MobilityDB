@@ -194,7 +194,7 @@ reviewer reads each one alone.
 | ED23 | Whether a triangle, a TIN or a polyhedral surface is within a distance, in 2D | `geom_curve_parts` reads a triangle as a surface of one ring, and a TIN and a polyhedral surface as the surfaces of their faces, so no type of `geom_dwithin2d` reaches `lwgeom_mindistance2d_tolerance` | MobilityDB #3426, merged as `6aa79a7a2f`; CGAL (`Gmpq`, CORE square roots) on the head agrees on 320 refuting rows, 1320 random rows and 40 real outlines read as fans of triangles, where that function called directly disagrees on 52, 471 and 25. Against it, by callgrind, near the distance, at twice it plus one and at half it: 0.193, 0.040 and 0.290 on the outlines, 3.227, 1.925 and 1.300 on random pairs |
 | ED24 | Whether a triangle, a TIN or an exactly coplanar polygon or surface is within a distance, in 3D | A filtered exact coplanarity test on each polygon picks the route; [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) | not started |
 | ED25 | Whether a geometry carrying an arc is within a distance, in 3D | An error today, not a rounded answer; the owner decides the true 3D circle through the three points, in stages, as [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) states | not started |
-| ED26 | Whether a polygon not exactly coplanar, or a solid, is within a distance, in 3D | Left on `lwgeom_mindistance3d_tolerance` for the moment, by the decision of the owner, so its answers stay rounded | not started, deferred |
+| ED26 | Whether a polygon not exactly coplanar, or a solid, is within a distance, in 3D | Left on `lwgeom_mindistance3d_tolerance` for the moment, by the decision of the owner, so its answers stay rounded; the reading the owner decides is the region the rings project to on the Newell plane, as [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) states | not started, deferred |
 | ED27 | The distance in 3D of a geometry carrying an arc | `geom_distance3d` raises an error where ED25 would answer `geom_dwithin3d`; a distance needs the nearest double, more than a sign | not started |
 | ED28 | The box of a geometry carrying an arc with Z or M | `lwcircstring_calculate_gbox_cartesian` set no flags on the box it fills, so `gbox_merge` refused every arc and the box stayed at its initial values, from 3.4e38 down to -3.4e38; the range of Z and M read only the ends of the arc. No box overlaps that one, so `edwithin_tgeo_geo` of a moving point with Z and an arc with Z answered false with no error at any distance. It raises the error of the 3D distance | MobilityDB #3427, merged as `7a02e7f9ab`; CGAL (`CORE::Expr` over `Gmpq`) agrees on the box of 1506 geometries with no further ordinate, with Z, with M and with both, where 874 are refused without it; witness, controls and corpus in `oracle-kit`, `cpwork/arc-box` |
 | ED29 | The temporal distance of a moving point to a fixed point, the turning point off its segment | The lift placed the turning point in doubles, so it could fall off the segment it belongs to. `tgeompoint_distance_point` walks the segments of a planar point, and `point_segment_nearest_microsecond` dates the turning point by its parameter on the segment, with exact signs and no band. A `tgeogpoint` stays on the lift, in doubles. A geometry that is not a point stays on `tpoint_linear_distance_geom`, whose kernel fails `cgal_tdist_envelope` on 1 row of 64, which ED17's follow-up owns. An instant stays truncated to the microsecond until [Exact crossings](EXACT-CROSSINGS.md) | MobilityDB #3436, merged as `c2d99ab7c8`; CGAL `cgal_tdist_envelope` agrees on 934 of 934 rows of random trips at four scales; manifest and judge in `cpwork/turnpt` |
@@ -258,16 +258,22 @@ triangles, TINs and exactly coplanar polygons; a polygon that is not, or a polyh
 face, and a solid, stay on `lwgeom_mindistance3d_tolerance`. Two nearly identical tilted polygons may then
 take different routes on their low bits, their answers differing only where a distance lies within
 rounding of the given one. This falls short of [the rule](#the-oracle) that every question has one exact
-answer, so ED26 stays in the plan. The readings ED26 will choose from:
+answer, so ED26 stays in the plan.
 
-1. The Newell plane, exact: the plane through the average of the vertices with the Newell normal, the
-   region the ring projected on it. Independent of the first vertex, its normal of degree two, so a filter
-   in doubles and the exact signs stay cheap. CGAL builds the plane of a facet so (`normal_vector_newell_3`
-   in `polygon_mesh_to_nef_3.h`). On a coplanar polygon this is its own plane; on a warped one it can
-   differ from PostGIS. This is the reading recommended.
-2. The plane of `define_plane`, computed exactly: closest to PostGIS on a warped polygon, but its normal
-   divides by squared lengths, which costs far more in both layers, and it depends on where the samples
-   land.
+The owner decides the reading of ED26: a polygon is the region its rings, holes included, project to on
+its Newell plane, the plane through the average of the vertices with the Newell normal, the sum of the
+cross products of consecutive vertices. The normal reads every vertex, does not depend on the vertex a
+ring starts at, and is of degree two with no division, so a filter in doubles and the exact signs stay
+cheap. CGAL builds the plane of a facet so (`normal_vector_newell_3` in `polygon_mesh_to_nef_3.h`). On an
+exactly coplanar polygon this is its own plane, so the answer of ED24 is the answer of ED26 there and the
+two routes state one reading. On a warped polygon it can differ from PostGIS, and a vertex off the plane
+lies at its height from the region.
+
+The plane of `define_plane` is not taken: it samples three pairs of vertices at positions counted from
+the first one, so the same ring started elsewhere has another plane; the other vertices play no part; a
+flat polygon whose samples are collinear with the average has no plane and is measured as a ring; the
+test of that case is a tolerance (`FP_IS_ZERO`); and its normal divides by squared lengths, which costs
+far more in both layers.
 
 ### Arcs: what a Z on an arc means
 
