@@ -1,0 +1,625 @@
+/*****************************************************************************
+ * SP-GiST config function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_spgist_config(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_spgist_config);
+/**
+ * @brief SP-GiST config function for {NOUN}
+ */
+Datum
+{PREFIX}_spgist_config(PG_FUNCTION_ARGS)
+{
+  spgConfigOut *cfg = (spgConfigOut *) PG_GETARG_POINTER(1);
+  Oid box_oid = meostype_oid({MEOSTYPE});
+  cfg->prefixType = box_oid;  /* A type represented by its bounding box */
+  cfg->labelType = VOIDOID;   /* We don't need node labels */
+  cfg->leafType = box_oid;
+  cfg->canReturnData = false;
+  cfg->longValuesOK = false;
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * Boxes of several structures
+ *****************************************************************************/
+
+/**
+ * @brief Choose the node of an inner tuple for boxes of several structures
+ * @details The quad-tree and the k-d tree partition boxes on the axes they
+ * carry, so the boxes of each structure, see #bbox_same_structure, are kept
+ * in a tree of their own. An inner tuple whose prefix carries the flag
+ * @p MEOS_FLAG_PARTS sends the boxes of the structure of its prefix to its
+ * first node and the others to its second one, without adding a level. A box
+ * reaching an inner tuple of another structure splits it: a tuple of the
+ * structure of the inner tuple is placed above it, the inner tuple becoming its
+ * first node
+ * @return True when the box is placed by this function
+ */
+static bool
+{BOX}_spgist_choose_parts(spgChooseIn *in, spgChooseOut *out)
+{
+  {CTYPE} *centroid = {DATUMGET}(in->prefixDatum),
+    *box = {DATUMGET}(in->leafDatum);
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+  {
+    out->resultType = spgMatchNode;
+    out->result.matchNode.nodeN =
+      bbox_same_structure({MEOSTYPE}, centroid, box) ? 0 : 1;
+    out->result.matchNode.levelAdd = 0;
+    out->result.matchNode.restDatum = PointerGetDatum(box);
+    return true;
+  }
+  if (bbox_same_structure({MEOSTYPE}, centroid, box))
+    return false;
+  {CTYPE} *parts = {BOX}_copy(centroid);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->resultType = spgSplitTuple;
+  out->result.splitTuple.prefixHasPrefix = true;
+  out->result.splitTuple.prefixPrefixDatum = PointerGetDatum(parts);
+  out->result.splitTuple.prefixNNodes = 2;
+  out->result.splitTuple.prefixNodeLabels = NULL;
+  out->result.splitTuple.childNodeN = 0;
+  out->result.splitTuple.postfixHasPrefix = true;
+  out->result.splitTuple.postfixPrefixDatum =
+    PointerGetDatum({BOX}_copy(centroid));
+  return true;
+}
+
+/**
+ * @brief Split the boxes of a leaf page when they have several structures
+ * @details The boxes of the structure of the first one go to the first node of
+ * an inner tuple carrying the flag @p MEOS_FLAG_PARTS, the others to the
+ * second one, see #{BOX}_spgist_choose_parts
+ * @return True when the boxes have several structures and are split by this
+ * function
+ */
+static bool
+{BOX}_spgist_picksplit_parts(spgPickSplitIn *in, spgPickSplitOut *out)
+{
+  {CTYPE} *first = {DATUMGET}(in->datums[0]);
+  int i;
+  for (i = 1; i < in->nTuples; i++)
+    if (! bbox_same_structure({MEOSTYPE}, first, {DATUMGET}(in->datums[i])))
+      break;
+  if (i == in->nTuples)
+    return false;
+  {CTYPE} *parts = {BOX}_copy(first);
+  MEOS_FLAGS_SET_PARTS(parts->flags, true);
+  out->hasPrefix = true;
+  out->prefixDatum = PointerGetDatum(parts);
+  out->nNodes = 2;
+  out->nodeLabels = NULL;
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  for (i = 0; i < in->nTuples; i++)
+  {
+    out->leafTupleDatums[i] = in->datums[i];
+    out->mapTuplesToNodes[i] = bbox_same_structure({MEOSTYPE}, first,
+      {DATUMGET}(in->datums[i])) ? 0 : 1;
+  }
+  return true;
+}
+
+/*****************************************************************************
+ * SP-GiST choose function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_quadtree_choose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_quadtree_choose);
+/**
+ * @brief SP-GiST choose function for {NOUN}
+ */
+Datum
+{PREFIX}_quadtree_choose(PG_FUNCTION_ARGS)
+{
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  if ({BOX}_spgist_choose_parts(in, out))
+    PG_RETURN_VOID();
+  {CTYPE} *centroid = {DATUMGET}(in->prefixDatum),
+    *box = {DATUMGET}(in->leafDatum);
+
+  out->resultType = spgMatchNode;
+  out->result.matchNode.restDatum = PointerGetDatum(box);
+
+  /* nodeN will be set by core, when allTheSame */
+  if (! in->allTheSame)
+    out->result.matchNode.nodeN = (int) getQuadrant{DIMS}(centroid, box);
+
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * K-d tree choose function
+ *****************************************************************************/
+
+/*
+ * The k-d tree splits a node in two halves on one bound of the boxes, cycling
+ * over the bounds of the axes they carry from one level to the next
+ * (#{BOX}_kd_dim). Boxes whose bound is equal to the one of the centroid
+ * (including their inclusive flag) may get classified into either node
+ * depending on where they happen to fall in the sorted list. This is okay as
+ * long as the inner_consistent function descends into both sides for such
+ * cases. This is better than the alternative of trying to have an exact
+ * boundary, because it keeps the tree balanced even when we have many
+ * instances of the same box value. In this way, we should never trigger the
+ * allTheSame logic.
+ */
+
+PGDLLEXPORT Datum {PREFIX}_kdtree_choose(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_kdtree_choose);
+/**
+ * @brief K-d tree choose function for {NOUN}
+ */
+Datum
+{PREFIX}_kdtree_choose(PG_FUNCTION_ARGS)
+{
+  spgChooseIn *in = (spgChooseIn *) PG_GETARG_POINTER(0);
+  spgChooseOut *out = (spgChooseOut *) PG_GETARG_POINTER(1);
+  {CTYPE} *query = {DATUMGET}(in->leafDatum), *centroid;
+  assert(in->hasPrefix);
+  if ({BOX}_spgist_choose_parts(in, out))
+    PG_RETURN_VOID();
+  centroid = {DATUMGET}(in->prefixDatum);
+  assert(in->nNodes == 2);
+  out->resultType = spgMatchNode;
+  out->result.matchNode.nodeN =
+    ({BOX}_level_cmp(centroid, query, in->level) < 0) ? 0 : 1;
+  out->result.matchNode.levelAdd = 1;
+  out->result.matchNode.restDatum = {PGETDATUM}(query);
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * SP-GiST pick-split function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_quadtree_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_quadtree_picksplit);
+/**
+ * @brief SP-GiST pick-split function for {NOUN}
+ * @details It splits a list of boxes into quadrants by choosing as centroid
+ * the median of each bound of the boxes (#{BOX}_quadtree_centroid)
+ */
+Datum
+{PREFIX}_quadtree_picksplit(PG_FUNCTION_ARGS)
+{
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  if ({BOX}_spgist_picksplit_parts(in, out))
+    PG_RETURN_VOID();
+  {CTYPE} *centroid = {BOX}_quadtree_centroid(in);
+
+  /* Fill the output */
+  out->hasPrefix = true;
+  out->prefixDatum = {PGETDATUM}(centroid);
+  /* One node per combination of the bounds the centroid carries */
+  out->nNodes = 1 << {BOX}_index_dims(centroid->flags);
+  out->nodeLabels = NULL;    /* We don't need node labels */
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+
+  /*
+   * Assign the boxes to the nodes according to their quadrant relative to the
+   * centroid
+   */
+  for (int i = 0; i < in->nTuples; i++)
+  {
+    {CTYPE} *box = {DATUMGET}(in->datums[i]);
+    uint8 quadrant = getQuadrant{DIMS}(centroid, box);
+    out->leafTupleDatums[i] = {PGETDATUM}(box);
+    out->mapTuplesToNodes[i] = (int) quadrant;
+  }
+
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_kdtree_picksplit(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_kdtree_picksplit);
+/**
+ * @brief K-d tree pick-split function for {NOUN}
+ */
+Datum
+{PREFIX}_kdtree_picksplit(PG_FUNCTION_ARGS)
+{
+  spgPickSplitIn *in = (spgPickSplitIn *) PG_GETARG_POINTER(0);
+  spgPickSplitOut *out = (spgPickSplitOut *) PG_GETARG_POINTER(1);
+  int i;
+  if ({BOX}_spgist_picksplit_parts(in, out))
+    PG_RETURN_VOID();
+
+  /* Sort the boxes and determine the centroid */
+  {SORTED} *sorted = palloc(sizeof({SORTED}) * in->nTuples);
+  for (i = 0; i < in->nTuples; i++)
+  {
+    memcpy(&sorted[i].box, {DATUMGET}(in->datums[i]), sizeof({CTYPE}));
+    sorted[i].i = i;
+  }
+  /* The boxes are ordered on the bound the level splits on, read from the
+   * axes they carry (#{BOX}_kd_dim) */
+  qsort_comparator qsortfn =
+    {BOX}_dim_cmp({BOX}_kd_dim(sorted[0].box.flags, in->level));
+  qsort(sorted, in->nTuples, sizeof({SORTED}), qsortfn);
+  int median = in->nTuples >> 1;
+  {CTYPE} *centroid = {BOX}_copy(&sorted[median].box);
+
+  /* Fill the output data structure */
+  out->hasPrefix = true;
+  out->prefixDatum = {PGETDATUM}(centroid);
+  out->nNodes = 2;
+  out->nodeLabels = NULL;    /* We don't need node labels */
+  out->mapTuplesToNodes = palloc(sizeof(int) * in->nTuples);
+  out->leafTupleDatums = palloc(sizeof(Datum) * in->nTuples);
+  /*
+   * Note: boxes that have a bound exactly equal to the one of the centroid may
+   * get classified into either node, depending on where they happen to fall in
+   * the sorted list. This is okay as long as the inner_consistent function
+   * descends into both sides for such cases. This is better than the
+   * alternative of trying to have an exact boundary, because it keeps the
+   * tree balanced even when we have many instances of the same box value.
+   * So we should never trigger the allTheSame logic.
+   */
+  for (i = 0; i < in->nTuples; i++)
+  {
+    {CTYPE} *box = {BOX}_copy(&sorted[i].box);
+    int n = sorted[i].i;
+    out->mapTuplesToNodes[n] = (i < median) ? 0 : 1;
+    out->leafTupleDatums[n] = {PGETDATUM}(box);
+  }
+  pfree(sorted);
+  PG_RETURN_VOID();
+}
+
+/*****************************************************************************
+ * SP-GiST inner consistent functions
+ *****************************************************************************/
+
+/**
+ * @brief Return the distance of a node of an SP-GiST index to an order by
+ * @details Where the distance raises its error on the boxes of the structure
+ * of the centroid, the node is visited before every other one, and the
+ * recheck of its leaf entries applies the operator to the rows, which raises
+ * it
+ * @param[in] orderby Box of the order by
+ * @param[in] centroid Centroid of the inner tuple
+ * @param[in] nodebox Box of the node
+ */
+static double
+{BOX}_spgist_node_distance(const {CTYPE} *orderby, const {CTYPE} *centroid,
+  const {NODE} *nodebox)
+{
+  if (! index_distance_is_valid({MEOSTYPE}, centroid, orderby))
+    return -get_float8_infinity();
+  return distance_{BOX}_nodebox(orderby, nodebox);
+}
+
+/**
+ * @brief Generic SP-GiST inner consistent function for {NOUN}
+ */
+static Datum
+{BOX}_spgist_inner_consistent(FunctionCallInfo fcinfo, SPGistIndexType idxtype)
+{
+  spgInnerConsistentIn *in = (spgInnerConsistentIn *) PG_GETARG_POINTER(0);
+  spgInnerConsistentOut *out = (spgInnerConsistentOut *) PG_GETARG_POINTER(1);
+  int i;
+  MemoryContext old_ctx;
+  {CTYPE} *centroid, *queries = NULL, *orderbys = NULL; /* make compiler quiet */
+  {NODE} *nodebox, infbox, next_nodebox;
+
+  /* Fetch the centroid of this node */
+  assert(in->hasPrefix);
+  centroid = {DATUMGET}(in->prefixDatum);
+
+  /* An inner tuple over boxes of several structures sends the search to both
+   * of its nodes, where the trees of the structures start without a traversal
+   * value, see #{BOX}_spgist_choose_parts */
+  if (MEOS_FLAGS_GET_PARTS(centroid->flags))
+  {
+    out->nNodes = in->nNodes;
+    out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+    out->levelAdds = palloc0(sizeof(int) * in->nNodes);
+    out->traversalValues = palloc0(sizeof(void *) * in->nNodes);
+    if (in->norderbys > 0)
+      out->distances = palloc(sizeof(double *) * in->nNodes);
+    for (i = 0; i < in->nNodes; i++)
+    {
+      out->nodeNumbers[i] = i;
+      if (in->norderbys > 0)
+      {
+        /* Either node may hold boxes on which the distance raises its
+         * error, so both are visited before every other one */
+        out->distances[i] = palloc(sizeof(double) * in->norderbys);
+        for (int j = 0; j < in->norderbys; j++)
+          out->distances[i][j] = -get_float8_infinity();
+      }
+    }
+    PG_RETURN_VOID();
+  }
+
+  /*
+   * We are saving the traversal value or initialize it an unbounded one, if
+   * we have just begun to walk the tree.
+   */
+  if (in->traversalValue)
+    nodebox = in->traversalValue;
+  else
+  {
+    {BOX}node_init(centroid, &infbox);
+    nodebox = &infbox;
+  }
+
+  /*
+   * Transform the orderbys into bounding boxes initializing the dimensions
+   * that must not be taken into account for the operators to infinity.
+   * This transformation is done here to avoid doing it for all nodes
+   * in the loop below. The boxes are zeroed, so that an argument for which
+   * #{GETBOX} writes nothing, such as an empty geometry, has an empty box.
+   */
+  if (in->norderbys > 0)
+  {
+    orderbys = palloc0(sizeof({CTYPE}) * in->norderbys);
+    for (i = 0; i < in->norderbys; i++)
+    {
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      {GETBOX}(value, type, &orderbys[i]);
+    }
+  }
+
+  if (in->allTheSame)
+  {
+    if (idxtype == SPGIST_QUADTREE)
+    {
+      /* Report that all nodes should be visited */
+      out->nNodes = in->nNodes;
+      out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+      if (in->norderbys > 0)
+      {
+        out->traversalValues = palloc(sizeof(void *) * in->nNodes);
+        out->distances = palloc(sizeof(double *) * in->nNodes);
+      }
+      for (i = 0; i < in->nNodes; i++)
+      {
+        out->nodeNumbers[i] = i;
+        if (in->norderbys > 0)
+        {
+          /* Use parent node box as traversalValue */
+          old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+          out->traversalValues[i] = {BOX}node_copy(nodebox);
+          MemoryContextSwitchTo(old_ctx);
+
+          /* Compute the distances */
+          double *distances = palloc0(sizeof(double) * in->norderbys);
+          out->distances[i] = distances;
+          for (int j = 0; j < in->norderbys; j++)
+            distances[j] = {BOX}_spgist_node_distance(&orderbys[j],
+              centroid, nodebox);
+        }
+      }
+
+      if (in->norderbys > 0)
+        pfree(orderbys);
+
+      PG_RETURN_VOID();
+    }
+    else
+      elog(ERROR, "allTheSame should not occur for k-d trees");
+  }
+
+  /*
+   * Transform the queries into bounding boxes. This transformation is done
+   * here to avoid doing it for all nodes in the loop below. The boxes of the
+   * tree share the structure of the centroid: a query whose operator raises
+   * its error on them restricts no node, the recheck applying the operator to
+   * the rows, and any other query is compared on the axes they carry. A query
+   * box is zeroed, so that an argument for which #{GETBOX} writes nothing,
+   * such as an empty geometry, has an empty box.
+   */
+  bool *raises = NULL;
+  if (in->nkeys > 0)
+  {
+    queries = palloc0(sizeof({CTYPE}) * in->nkeys);
+    raises = palloc(sizeof(bool) * in->nkeys);
+    for (i = 0; i < in->nkeys; i++)
+    {
+      const ScanKeyData *scankey = &in->scankeys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      {CTYPE} query;
+      memset(&query, 0, sizeof({CTYPE}));
+      {GETBOX}(value, type, &query);
+      raises[i] = ! index_strategy_is_valid({MEOSTYPE}, scankey->sk_strategy,
+        centroid, &query);
+      index_query_project({MEOSTYPE}, &query, centroid, &queries[i]);
+    }
+  }
+
+  /* Allocate enough memory for nodes */
+  out->nNodes = 0;
+  out->nodeNumbers = palloc(sizeof(int) * in->nNodes);
+  out->levelAdds = palloc(sizeof(int) * in->nNodes);
+  out->traversalValues = palloc(sizeof(void *) * in->nNodes);
+  if (in->norderbys > 0)
+    out->distances = palloc(sizeof(double *) * in->nNodes);
+
+  /*
+   * Switch memory context to allocate memory for new traversal values
+   * (next_nodebox) and pass these pieces of memory to further calls of
+   * this function
+   */
+  old_ctx = MemoryContextSwitchTo(in->traversalMemoryContext);
+
+  /* Loop for each child */
+  for (uint16 node = 0; node < (uint16) in->nNodes; node++)
+  {
+    /* Compute the bounding box of the child */
+    if (idxtype == SPGIST_QUADTREE)
+      {BOX}node_quadtree_next(nodebox, centroid, (uint8) node, &next_nodebox);
+    else
+      {BOX}node_kdtree_next(nodebox, centroid, (uint8) node, in->level,
+        &next_nodebox);
+    bool flag = true;
+    for (i = 0; i < in->nkeys; i++)
+    {
+      if (raises[i])
+        continue;
+      StrategyNumber strategy = in->scankeys[i].sk_strategy;
+      switch (strategy)
+      {
+        case RTOverlapStrategyNumber:
+        case RTContainedByStrategyNumber:
+        case RTAdjacentStrategyNumber:
+          flag = {OVERLAP};
+          break;
+        case RTContainsStrategyNumber:
+        case RTSameStrategyNumber:
+          flag = {CONTAIN};
+          break;
+{POSCASES}        default:
+          elog(ERROR, "unrecognized strategy: %d", strategy);
+      }
+      /* If any check is failed, we have found our answer */
+      if (! flag)
+        break;
+    }
+
+    if (flag)
+    {
+      /* Pass traversalValue and node */
+      out->traversalValues[out->nNodes] = {BOX}node_copy(&next_nodebox);
+      out->nodeNumbers[out->nNodes] = (int) node;
+      /* Increase level */
+      out->levelAdds[out->nNodes] = 1;
+      /* Pass distances */
+      if (in->norderbys > 0)
+      {
+        double *distances = palloc(sizeof(double) * in->norderbys);
+        out->distances[out->nNodes] = distances;
+        for (int j = 0; j < in->norderbys; j++)
+          distances[j] = {BOX}_spgist_node_distance(&orderbys[j], centroid,
+            &next_nodebox);
+      }
+      out->nNodes++;
+    }
+  } /* Loop for every child */
+
+  /* Switch back to initial memory context */
+  MemoryContextSwitchTo(old_ctx);
+
+  if (in->nkeys > 0)
+  {
+    pfree(queries); pfree(raises);
+  }
+  if (in->norderbys > 0)
+    pfree(orderbys);
+
+  PG_RETURN_VOID();
+}
+
+PGDLLEXPORT Datum {PREFIX}_quadtree_inner_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_quadtree_inner_consistent);
+/**
+ * @brief Quad-tree inner consistent function for {NOUN}
+ */
+Datum
+{PREFIX}_quadtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return {BOX}_spgist_inner_consistent(fcinfo, SPGIST_QUADTREE);
+}
+
+PGDLLEXPORT Datum {PREFIX}_kdtree_inner_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_kdtree_inner_consistent);
+/**
+ * @brief Kd-tree inner consistent function for {NOUN}
+ */
+Datum
+{PREFIX}_kdtree_inner_consistent(PG_FUNCTION_ARGS)
+{
+  return {BOX}_spgist_inner_consistent(fcinfo, SPGIST_KDTREE);
+}
+
+/*****************************************************************************
+ * SP-GiST leaf consistency function
+ *****************************************************************************/
+
+PGDLLEXPORT Datum {PREFIX}_spgist_leaf_consistent(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1({PREFIX}_spgist_leaf_consistent);
+/**
+ * @brief SP-GiST leaf consistency function for {NOUN}
+ */
+Datum
+{PREFIX}_spgist_leaf_consistent(PG_FUNCTION_ARGS)
+{
+  spgLeafConsistentIn *in = (spgLeafConsistentIn *) PG_GETARG_POINTER(0);
+  spgLeafConsistentOut *out = (spgLeafConsistentOut *) PG_GETARG_POINTER(1);
+  {CTYPE} *key = {DATUMGET}(in->leafDatum), box;
+  bool result = true;
+  int i;
+
+{RECHECKINIT}
+  /* leafDatum is what it is... */
+  out->leafValue = in->leafDatum;
+
+  /* Perform the required comparison(s) */
+  for (i = 0; i < in->nkeys; i++)
+  {
+    StrategyNumber strategy = in->scankeys[i].sk_strategy;
+    /* Update the recheck flag according to the strategy */
+    out->recheck |= {BOX}_index_recheck(strategy);
+
+    const ScanKeyData *scankey = &in->scankeys[i];
+    Datum value = scankey->sk_argument;
+    MeosType type = oid_meostype(scankey->sk_subtype);
+{LEAFEXTRA}    /* The box is zeroed before each call, so that a query for which
+     * #{GETBOX} writes nothing, such as an empty geometry, carries neither the
+     * stack nor the previous key */
+    memset(&box, 0, sizeof({CTYPE}));
+    {GETBOX}(value, type, &box);
+    /* Where the operator raises its error on the box, the recheck applies it
+     * to the row */
+    if (! index_strategy_is_valid({MEOSTYPE}, strategy, key, &box))
+    {
+      out->recheck = true;
+      continue;
+    }
+    result = {BOX}_index_leaf_consistent(key, &box, strategy);
+
+    /* If any check is failed, we have found our answer */
+    if (! result)
+      break;
+  }
+
+  if (result && in->norderbys > 0)
+  {
+    /* Recheck is necessary when computing distance with bounding boxes */
+    out->recheckDistances = true;
+    double *distances = palloc(sizeof(double) * in->norderbys);
+    out->distances = distances;
+    for (i = 0; i < in->norderbys; i++)
+    {
+      /* Convert the order by argument to a box and perform the test */
+      const ScanKeyData *scankey = &in->orderbys[i];
+      Datum value = scankey->sk_argument;
+      MeosType type = oid_meostype(scankey->sk_subtype);
+      memset(&box, 0, sizeof({CTYPE}));
+      {GETBOX}(value, type, &box);
+      /* Where the distance raises its error on the key, the entry is
+       * visited before every other one, and the recheck applies the operator
+       * to the row, which raises it or, for an empty geometry, answers no
+       * distance */
+      if (! index_distance_is_valid({MEOSTYPE}, key, &box))
+      {
+        distances[i] = -get_float8_infinity();
+        continue;
+      }
+{LEAFDISTANCE}
+    }
+  }
+
+  PG_RETURN_BOOL(result);
+}
+
