@@ -110,27 +110,30 @@ nsegment(bigint,float,float) → nsegment
 </pre><pre class="programlisting">
 SELECT npoint(76, 0.3);
 SELECT nsegment(76, 0.3, 0.5);
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_conversion_functions"></a>Conversions</h3></div></div></div><p>Values of the <code class="varname">npoint</code> and <code class="varname">nsegment</code> types can be converted to the <code class="varname">geometry</code> type using an explicit <code class="varname">CAST</code> or using the <code class="varname">::</code> notation as shown below. Similarly, <code class="varname">geometry</code> values of subtype <code class="varname">point</code> or <code class="varname">linestring</code> (restricted to two points) can be converted, respectively, to <code class="varname">npoint</code> and <code class="varname">nsegment</code> values. For this, the route that intersects the given points must be found, where a tolerance of 0.00001 units (depending on the coordinate system) is assumed so a point and a route that are close are considered to intersect. If no such route is found, a null value is returned.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id8656"></a><p>Convert between a network point or segment and a geometry</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_conversion_functions"></a>Conversions</h3></div></div></div><p>Values of the <code class="varname">npoint</code> and <code class="varname">nsegment</code> types can be converted to the <code class="varname">geometry</code> type using an explicit <code class="varname">CAST</code> or using the <code class="varname">::</code> notation as shown below. Similarly, <code class="varname">geometry</code> values of subtype <code class="varname">point</code> or <code class="varname">linestring</code> (restricted to two points) can be converted, respectively, to <code class="varname">npoint</code> and <code class="varname">nsegment</code> values. For this, the route on which the given points lie must be found, up to the rounding of a point computed on a route, about 1e-13 for coordinates of 100, so that a point taken from a network point maps back to it while a point lying off the network does not. If no such route is found, a null value is returned. A point measured near the network, such as a GPS position, is mapped with the function <code class="varname">npoint(geometry,float)</code>, whose second argument is the maximum distance between the point and the route: the result is located on the nearest route within that distance, the one with the least identifier among equally near routes, and it is null when no route is within that distance. A spatial index on the <code class="varname">the_geom</code> column of the <code class="varname">ways</code> table serves this search.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_geometry"></a><a class="indexterm" name="id8659"></a><p>Convert between a network point or segment and a geometry</p><pre class="programlisting">
 {npoint,nsegment}::geometry
 geometry::{npoint,nsegment}
+npoint(geometry,float) → npoint
 </pre><pre class="programlisting">
-SELECT ST_AsText(npoint(76, 0.33)::geometry);
--- POINT(21.6338731332283 50.0545869554067)
-SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry);
--- LINESTRING(21.6338731332283 50.0545869554067,30.7475989651999 53.9185062927473)
-SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry);
--- POINT(21.6338731332283 50.0545869554067)
+SELECT ST_AsText(npoint(76, 0.33)::geometry, 6);
+-- POINT(27.842471 43.855103)
+SELECT ST_AsText(nsegment(76, 0.33, 0.66)::geometry, 6);
+-- LINESTRING(27.842471 43.855103,45.316951 45.399688)
+SELECT ST_AsText(nsegment(76, 0.33, 0.33)::geometry, 6);
+-- POINT(27.842471 43.855103)
 </pre><pre class="programlisting">
-SELECT geometry 'SRID=5676;Point(279.269156511873 811.497076880187)'::npoint;
--- NPoint(3,0.781413)
-SELECT geometry 'SRID=5676;LINESTRING(406.729536784738 702.58583437902,
-  383.570801314823 845.137059419277)'::nsegment;
--- NSegment(3,0.6,0.9)
-SELECT geometry 'SRID=5676;Point(279.3 811.5)'::npoint;
+SELECT round(geometry 'SRID=5676;Point(27.842471 43.855103)'::npoint, 6);
+-- NPoint(76,0.33)
+SELECT round(geometry 'SRID=5676;LINESTRING(27.842471 43.855103,
+  45.316951 45.399688)'::nsegment, 6);
+-- NSegment(76,0.33,0.66)
+SELECT geometry 'SRID=5676;Point(28 44)'::npoint;
 -- NULL
-SELECT geometry 'SRID=5676;LINESTRING(406.7 702.6,383.6 845.1)'::nsegment;
+SELECT npoint(geometry 'SRID=5676;Point(28 44)', 0.1);
 -- NULL
-</pre></li><li class="listitem"><a name="npoint_stbox"></a><a class="indexterm" name="id8664"></a><p>Construct a spatiotemporal box from a network point and, optionally, a timestamp or a period</p><pre class="programlisting">
+SELECT round(npoint(geometry 'SRID=5676;Point(28 44)', 0.5), 6);
+-- NPoint(76,0.333192)
+</pre></li><li class="listitem"><a name="npoint_stbox"></a><a class="indexterm" name="id8667"></a><p>Construct a spatiotemporal box from a network point and, optionally, a timestamp or a period</p><pre class="programlisting">
 stbox(npoint) → stbox
 stbox(npoint,{timestamptz,tstzspan}) → stbox
 </pre><pre class="programlisting">
@@ -142,19 +145,19 @@ SELECT stbox(npoint 'NPoint(1,0.3)', timestamptz '2001-01-01');
 SELECT stbox(npoint 'NPoint(1,0.3)', tstzspan '[2001-01-01,2001-01-02]');
 /* SRID=5676;STBOX XT(((62.786633,80.143556),(62.786633,80.143556)),[2001-01-01,
    2001-01-02]) */
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id8674"></a><p>Return the route identifier</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_accessor_functions"></a>Accessors</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_route"></a><a class="indexterm" name="id8677"></a><p>Return the route identifier</p><pre class="programlisting">
 route({npoint,nsegment}) → bigint
 </pre><pre class="programlisting">
 SELECT route(npoint 'Npoint(63, 0.3)');
 -- 63
 SELECT route(nsegment 'Nsegment(76, 0.3, 0.3)');
 -- 76
-</pre></li><li class="listitem"><a name="npoint_getPosition"></a><a class="indexterm" name="id8681"></a><p>Return the position</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_getPosition"></a><a class="indexterm" name="id8684"></a><p>Return the position</p><pre class="programlisting">
 getPosition(npoint) → float
 </pre><pre class="programlisting">
 SELECT getPosition(npoint 'Npoint(63, 0.3)');
 -- 0.3
-</pre></li><li class="listitem"><a name="npoint_startPosition"></a><a class="indexterm" name="id8688"></a><a class="indexterm" name="id8691"></a><p>Return the start/end position</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="npoint_startPosition"></a><a class="indexterm" name="id8691"></a><a class="indexterm" name="id8694"></a><p>Return the start/end position</p><pre class="programlisting">
 startPosition(nsegment) → float
 endPosition(nsegment) → float
 </pre><pre class="programlisting">
@@ -162,14 +165,14 @@ SELECT startPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.3
 SELECT endPosition(nsegment 'Nsegment(76, 0.3, 0.5)');
 -- 0.5
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_transformation_functions"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id8701"></a><p>Round the position(s) of the network point or the network segment to the number of decimal places</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_transformation_functions"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_round"></a><a class="indexterm" name="id8704"></a><p>Round the position(s) of the network point or the network segment to the number of decimal places</p><pre class="programlisting">
 round({npoint,nsegment},integer=0) → {npoint,nsegment}
 </pre><pre class="programlisting">
 SELECT round(npoint(76, 0.123456789), 6);
 --  NPoint(76,0.123457)
 SELECT round(nsegment(76, 0.123456789, 0.223456789), 6);
 --  NSegment(76,0.123457,0.223457)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_spatial_operations"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id8711"></a><p>Return the spatial reference identifier</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_spatial_operations"></a>Spatial Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_srid"></a><a class="indexterm" name="id8714"></a><p>Return the spatial reference identifier</p><pre class="programlisting">
 SRID({npoint,nsegment}) → integer
 </pre><pre class="programlisting">
 SELECT SRID(npoint 'Npoint(76, 0.3)');
@@ -186,7 +189,7 @@ SELECT npoint(1, f1) = npoint(2, f2) FROM fractions;
 -- false
 SELECT ST_DWithin(npoint(1, f1)::geometry, npoint(2, f2)::geometry, 1e-9) FROM fractions;
 -- true
-</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id8727"></a><a class="indexterm" name="id8730"></a><a class="indexterm" name="id8733"></a><a class="indexterm" name="id8736"></a><a class="indexterm" name="id8739"></a><a class="indexterm" name="id8742"></a><p>Traditional comparisons</p><pre class="programlisting">
+</pre></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="npoint_comparisons"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) for static network types require that the left and right arguments be of the same type. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on static network types.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="npoint_eq"></a><a class="indexterm" name="id8730"></a><a class="indexterm" name="id8733"></a><a class="indexterm" name="id8736"></a><a class="indexterm" name="id8739"></a><a class="indexterm" name="id8742"></a><a class="indexterm" name="id8745"></a><p>Traditional comparisons</p><pre class="programlisting">
 npoint {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} npoint
 nsegment {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} nsegment
 </pre><pre class="programlisting">
