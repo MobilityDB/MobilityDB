@@ -66,6 +66,10 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 /**
  * @brief Return in the last argument a spatiotemporal box constructed from
  * an array of temporal network point instants
+ * @details The spatial box is the one of the network points of the instants
+ * as #npointarr_set_stbox computes it for a set, reading a route once for
+ * each run of points on it, and the period goes from the first instant to
+ * the last
  * @param[in] instants Temporal network point values
  * @param[in] count Number of elements in the array
  * @param[out] box Spatiotemporal box
@@ -73,13 +77,15 @@ tnpointinst_set_stbox(const TInstant *inst, STBox *box)
 void
 tnpointinstarr_step_set_stbox(TInstant **instants, int count, STBox *box)
 {
-  tnpointinst_set_stbox(instants[0], box);
-  for (int i = 1; i < count; i++)
-  {
-    STBox box1;
-    tnpointinst_set_stbox(instants[i], &box1);
-    stbox_expand(&box1, box);
-  }
+  Datum *values = palloc(sizeof(Datum) * count);
+  for (int i = 0; i < count; i++)
+    values[i] = tinstant_value_p(instants[i]);
+  npointarr_set_stbox(values, count, box);
+  pfree(values);
+  span_set(TimestampTzGetDatum(instants[0]->t),
+    TimestampTzGetDatum(instants[count - 1]->t), true, true, T_TIMESTAMPTZ,
+    T_TSTZSPAN, &box->period);
+  MEOS_FLAGS_SET_T(box->flags, true);
   return;
 }
 
