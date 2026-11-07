@@ -61,6 +61,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
   `route_point_tinstant` of `meos/src/npoint/tnpoint.c` and its calls, which take the point
   located on the route instead of a point array, the conversion along the route unchanged.
+  MERGED as MobilityDB #3491 (`dd6c9ed0ef`).
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
