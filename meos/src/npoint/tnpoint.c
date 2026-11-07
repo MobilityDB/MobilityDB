@@ -426,21 +426,88 @@ tnpointseq_tgeompointseq_disc(const TSequence *seq)
 }
 
 /**
- * @brief Return a temporal geometry point instant located at the point of a
- * point array, which the function consumes
+ * @brief Return a temporal geometry point instant located at a point of a
+ * route
  * @details The instant a point of a route makes, as
- * #tnpointinst_tgeompointinst makes it for a network point
+ * #tnpointinst_tgeompointinst makes it for a network point. The point, its
+ * point array and its coordinates are in the stack, as #geopoint_make keeps
+ * them, since only the serialized point outlives the function
  * @param[in] srid SRID of the route
- * @param[in] opa Point array holding one point
+ * @param[in] flags Dimensions of the point, Z and M
+ * @param[in] pt Point
  * @param[in] t Timestamp
  */
 static TInstant *
-route_point_tinstant(int32_t srid, POINTARRAY *opa, TimestampTz t)
+route_point_tinstant(int32_t srid, lwflags_t flags, const POINT4D *pt,
+  TimestampTz t)
 {
-  LWGEOM *lwpoint = lwpoint_as_lwgeom(lwpoint_construct(srid, NULL, opa));
-  Datum point = PointerGetDatum(geo_serialize(lwpoint));
-  lwgeom_free(lwpoint);
-  return tinstant_make_free(point, T_TGEOMPOINT, t);
+  double coords[4];
+  int ncoords = 0;
+  coords[ncoords++] = pt->x;
+  coords[ncoords++] = pt->y;
+  if (FLAGS_GET_Z(flags))
+    coords[ncoords++] = pt->z;
+  if (FLAGS_GET_M(flags))
+    coords[ncoords++] = pt->m;
+  POINTARRAY pa;
+  pa.npoints = pa.maxpoints = 1;
+  pa.flags = flags;
+  pa.serialized_pointlist = (uint8_t *) coords;
+  LWPOINT point;
+  point.bbox = NULL;
+  point.point = &pa;
+  point.srid = srid;
+  point.flags = flags;
+  point.type = POINTTYPE;
+  Datum value = PointerGetDatum(geo_serialize((LWGEOM *) &point));
+  return tinstant_make_free(value, T_TGEOMPOINT, t);
+}
+
+/**
+ * @brief Return in the last argument the point of a route at a fraction of
+ * its length
+ * @details The point `lwline_interpolate_points` returns for one fraction,
+ * computed by the same expressions in the same order, given the length of
+ * the route instead of measuring it again, and written in place instead of
+ * in a new point array
+ * @param[in] pa Points of the route, not empty
+ * @param[in] length Length of the route, `ptarray_length_2d` of the points
+ * @param[in] fraction Fraction of the length
+ * @param[out] pt Point
+ */
+static void
+route_point_at(const POINTARRAY *pa, double length, double fraction,
+  POINT4D *pt)
+{
+  if (fraction == 0.0)
+  {
+    getPoint4d_p(pa, 0, pt);
+    return;
+  }
+  if (fraction == 1.0)
+  {
+    getPoint4d_p(pa, pa->npoints - 1, pt);
+    return;
+  }
+  double consumed = 0.0;
+  const POINT2D *p1 = getPoint2d_cp(pa, 0);
+  for (uint32_t i = 0; i < pa->npoints - 1; i++)
+  {
+    const POINT2D *p2 = getPoint2d_cp(pa, i + 1);
+    double segment = distance2d_pt_pt(p1, p2) / length;
+    if (fraction < consumed + segment)
+    {
+      POINT4D a = getPoint4d(pa, i);
+      POINT4D b = getPoint4d(pa, i + 1);
+      interpolate_point4d(&a, &b, pt, (fraction - consumed) / segment);
+      return;
+    }
+    consumed += segment;
+    p1 = p2;
+  }
+  /* The last point of the route, which rounding can leave a fraction short
+   * of 1 reaching */
+  getPoint4d_p(pa, pa->npoints - 1, pt);
 }
 
 /**
@@ -495,10 +562,17 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   int32_t srid = gserialized_get_srid(line);
   LWLINE *lwline = (LWLINE *) lwgeom_from_gserialized(line);
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
+  /* The points located on the route have its dimensions, the vertices it
+   * passes have two */
+  lwflags_t flags = 0;
+  FLAGS_SET_Z(flags, FLAGS_GET_Z(lwline->flags));
+  FLAGS_SET_M(flags, FLAGS_GET_M(lwline->flags));
+  const lwflags_t flags2d = 0;
 
   /* Positions of the interior vertices of the route, which a linear segment
    * passes and a step segment does not */
   const POINTARRAY *pa = lwline->points;
+  double length = ptarray_length_2d(pa);
   int nfracs = 0;
   double *fracs = (interp == LINEAR) ?
     route_vertex_positions(pa, &nfracs) : NULL;
@@ -547,14 +621,13 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
          * representable at microsecond resolution */
         if (t <= instants[ninsts - 1]->t || t >= inst->t)
           continue;
-        POINTARRAY *opa = ptarray_construct_empty(0, 0, 1);
-        ptarray_append_point(opa, getPoint4d_cp(pa, k + 1), LW_TRUE);
-        instants[ninsts++] = route_point_tinstant(srid, opa, t);
+        instants[ninsts++] = route_point_tinstant(srid, flags2d,
+          getPoint4d_cp(pa, k + 1), t);
       }
     }
-    POINTARRAY *opa = lwline_interpolate_points(lwline, np->pos, 0);
-    assert(opa->npoints <= 1);
-    instants[ninsts++] = route_point_tinstant(srid, opa, inst->t);
+    POINT4D pt;
+    route_point_at(pa, length, np->pos, &pt);
+    instants[ninsts++] = route_point_tinstant(srid, flags, &pt, inst->t);
   }
 
   if (fracs)
