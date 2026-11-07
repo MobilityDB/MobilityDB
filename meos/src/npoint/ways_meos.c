@@ -60,11 +60,15 @@
  * `meos_set_spatial_ref_sys_csv()`, so that a MEOS embedder points at a
  * deployment-specific network file. */
 char *WAYS_CSV = MEOS_DATAROOTDIR "/ways1000.csv";
+/* Copy of the path given to the last call of `meos_set_ways_csv()` */
+static char *WAYS_CSV_COPY = NULL;
 
 /**
  * @ingroup meos_setup
  * @brief Set the location of the ways CSV file used to resolve npoint route
  * geometries
+ * @details The function keeps a copy of the path and frees the copy it kept
+ * for an earlier call, as #meos_set_spatial_ref_sys_csv does.
  * @param[in] path Full path to the ways CSV file
  */
 void
@@ -78,6 +82,8 @@ meos_set_ways_csv(const char *path)
     return;
   }
   strcpy(copy, path);
+  free(WAYS_CSV_COPY);
+  WAYS_CSV_COPY = copy;
   WAYS_CSV = copy;
 }
 
