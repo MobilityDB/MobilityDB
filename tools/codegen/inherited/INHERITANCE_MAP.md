@@ -250,7 +250,12 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   may override side keys (`sides:`); a side the kernel names by another token
   says it in `token:`, a side holding a `Datum` is `byval:`, and under
   `nadearth:` the temporal distance alone is followed by the procedure of its
-  operator.
+  operator. Every wrapper of these three templates whose two sides are temporal
+  values (35 over the temporal numbers, geometries, circular buffers, network
+  points, poses, pose chains, rigid geometries and point clouds) answers NULL
+  first where `temporal_slices_share_no_time` reads in their headers that they
+  share no time, for operands of one type, geodetic flag, Z flag and SRID, so
+  such values are not decompressed; other operands are read in full.
   The in-memory trees of MEOS take their constructors from the `indextrees:`
   axis (`manifest.d/indextrees.yaml`): each tree renders one constructor per
   box type of `boxes` from its template into the region between its
