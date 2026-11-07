@@ -1810,9 +1810,11 @@ raster_read_band(const Raster *rast, int band, rt_raster *raster)
 
 /**
  * @ingroup meos_raster_base_transf
- * @brief Free an array of pixels
- * @param[in] pixarr Array of pixels @nullable
+ * @brief Release an array of pixels and the points they carry
+ * @param[in] pixarr Array answered by #raster_pixel_as_points() @nullable
  * @param[in] count Number of elements in the array
+ * @note Each point is released with it, so a caller keeping one copies it
+ * first
  */
 void
 pixel_arr_free(Pixel *pixarr, int count)
