@@ -8,9 +8,11 @@ var searchData=
   ['geomcurvepart_5',['GeomCurvePart',['../structGeomCurvePart.html',1,'']]],
   ['geomcurveparts_6',['GeomCurveParts',['../structGeomCurveParts.html',1,'']]],
   ['geomdistancecand_7',['GeomDistanceCand',['../structGeomDistanceCand.html',1,'']]],
-  ['geomval_8',['GeomVal',['../structGeomVal.html',1,'']]],
-  ['geoposeanchor_9',['GeoPoseAnchor',['../structGeoPoseAnchor.html',1,'']]],
-  ['geoposeframe_10',['GeoPoseFrame',['../structGeoPoseFrame.html',1,'']]],
-  ['grid_11',['Grid',['../structGrid.html',1,'']]],
-  ['gserialized_12',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
+  ['geomface_8',['GeomFace',['../structGeomFace.html',1,'']]],
+  ['geomfaces_9',['GeomFaces',['../structGeomFaces.html',1,'']]],
+  ['geomval_10',['GeomVal',['../structGeomVal.html',1,'']]],
+  ['geoposeanchor_11',['GeoPoseAnchor',['../structGeoPoseAnchor.html',1,'']]],
+  ['geoposeframe_12',['GeoPoseFrame',['../structGeoPoseFrame.html',1,'']]],
+  ['grid_13',['Grid',['../structGrid.html',1,'']]],
+  ['gserialized_14',['GSERIALIZED',['../structGSERIALIZED.html',1,'']]]
 ];
