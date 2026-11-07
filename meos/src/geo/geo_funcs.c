@@ -2768,6 +2768,34 @@ static int
 point_distance_offset_pair_side_sign(const double *p, const double *q,
   int ndims, double r, double rlo, double c, double g)
 {
+  /* In pairs of doubles first, as #segment_interior_mid_sign reads its own: the
+   * differences of the coordinates exact as pairs (#two_diff), the squared
+   * distance and the square of `r + rlo + c + g/2` within 2^-104 of their
+   * operands at each of about ten steps, so the value lies within 2^-96 of the
+   * squared distance plus the square, where that sum lies inside 2^-900 and
+   * 2^900 and half the gap is exact */
+  double hg = g / 2.0;
+  if (hg * 2.0 == g)
+  {
+    double sh = 0.0, sl = 0.0, mag = 0.0;
+    for (int i = 0; i < ndims; i++)
+    {
+      double dh, dl, qh, ql;
+      two_diff(q[i], p[i], &dh, &dl);
+      pair_mul(dh, dl, dh, dl, &qh, &ql);
+      pair_add(sh, sl, qh, ql, &sh, &sl);
+      mag += dh * dh;
+    }
+    double th, tl, t2h, t2l, vh, vl;
+    pair_add(r, rlo, c, 0.0, &th, &tl);
+    pair_add(th, tl, hg, 0.0, &th, &tl);
+    pair_mul(th, tl, th, tl, &t2h, &t2l);
+    pair_add(sh, sl, - t2h, - t2l, &vh, &vl);
+    mag += th * th;
+    double bound = 0x1p-96 * mag;
+    if (mag >= 0x1p-900 && mag <= 0x1p900 && isfinite(vh) && fabs(vh) > bound)
+      return (vh > 0.0) ? 1 : -1;
+  }
   double left[19], right[19], factor[19];
   int n = 0;
   for (int i = 0; i < ndims; i++)
@@ -10070,10 +10098,14 @@ ddb_sign_known(DDBound x)
   return (sign != 0) ? sign : 2;
 }
 
+static inline void dbl_cross3(const double *a0, const double *a1,
+  const double *b0, const double *b1, double *x, double *mx);
+
 /**
  * @brief Return the sign #segment_interior_offset_sign answers where its
- * evaluation in pairs of doubles decides it, and 2 otherwise
- * @details The values #segment_interior_wide_values forms on #WideDyadic,
+ * evaluation in doubles, then in pairs of doubles, decides it, and 2 otherwise
+ * @details The signs placing the nearest points are read first in doubles
+ * (#dbl_cross3), one known on the wrong side answering 1. The values #segment_interior_wide_values forms on #WideDyadic,
  * with `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, formed on pairs
  * of doubles carrying a bound on their error (#DDBound), as
  * #plane_point_offset_sign reads its value ahead of #WideDyadic. The nearest
@@ -10091,6 +10123,41 @@ static int
 segment_interior_offset_filter(const double *a, const double *b,
   const double *c, const double *d, double r)
 {
+  /* In doubles first: each component of the three cross products lies within
+   * 2^-50 of the sum of the magnitudes of its products (#dbl_cross3), so each
+   * dot product of two of them lies within 2^-48 of the sum of the products of
+   * those sums, and a difference of two within 2^-47 of the sum of theirs; a
+   * sign they place on the wrong side is the answer 1, where every sum lies
+   * inside 2^-900 and 2^900 */
+  {
+    double xn[3], mn[3], xev[3], mev[3], xeu[3], meu[3];
+    dbl_cross3(a, b, c, d, xn, mn);
+    dbl_cross3(a, c, c, d, xev, mev);
+    dbl_cross3(a, c, a, b, xeu, meu);
+    double nnd = 0.0, sd = 0.0, td = 0.0, bnn = 0.0, bs = 0.0, bt = 0.0;
+    for (int k = 0; k < 3; k++)
+    {
+      nnd += xn[k] * xn[k];
+      sd += xev[k] * xn[k];
+      td += xeu[k] * xn[k];
+      bnn += mn[k] * mn[k];
+      bs += mev[k] * mn[k];
+      bt += meu[k] * mn[k];
+    }
+    if (bnn >= 0x1p-900 && bnn <= 0x1p900 && bs >= 0x1p-900 &&
+        bs <= 0x1p900 && bt >= 0x1p-900 && bt <= 0x1p900)
+    {
+      const double vals[4] = {sd, sd - nnd, td, td - nnd};
+      const double bnds[4] = {0x1p-48 * bs, 0x1p-47 * (bs + bnn), 0x1p-48 * bt,
+        0x1p-47 * (bt + bnn)};
+      /* The sign each must have for the nearest points to lie inside both */
+      static const int inside[4] = {1, -1, 1, -1};
+      for (int k = 0; k < 4; k++)
+        if ((inside[k] > 0 && vals[k] < - bnds[k]) ||
+            (inside[k] < 0 && vals[k] > bnds[k]))
+          return 1;
+    }
+  }
   DDBound u[3], v[3], e[3], n[3], ev[3], eu[3], rr;
   ddb_diff3(b, a, u);
   ddb_diff3(d, c, v);
