@@ -54,14 +54,14 @@ CREATE TABLE tbl_tnpoint_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tnpoint_big
   UNION ALL
-  SELECT k + 1000, inst FROM tbl_tnpoint_inst
+  SELECT k + 10100, inst FROM tbl_tnpoint_inst
   UNION ALL
-  SELECT k + 1100, ti FROM tbl_tnpoint_discseq
+  SELECT k + 10200, ti FROM tbl_tnpoint_discseq
   UNION ALL
-  SELECT k + 1200, seq FROM tbl_tnpoint_seq
+  SELECT k + 10300, seq FROM tbl_tnpoint_seq
   UNION ALL
-  SELECT k + 1300, ss FROM tbl_tnpoint_seqset )
-SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, ss FROM tbl_tnpoint_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
 ANALYZE tbl_tnpoint_idx;
 
@@ -71,7 +71,7 @@ ANALYZE tbl_tnpoint_idx;
 DROP TABLE IF EXISTS tbl_tnpoint_src;
 CREATE TABLE tbl_tnpoint_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
-FROM tbl_tnpoint_idx WHERE k % 200 = 0 AND temp IS NOT NULL;
+FROM tbl_tnpoint_idx WHERE k % 1000 = 0 AND temp IS NOT NULL;
 
 -- A value of the fixture, a value of the table, and one whose period ends where
 -- that of the value starts. The search for the nearest values, whose distance

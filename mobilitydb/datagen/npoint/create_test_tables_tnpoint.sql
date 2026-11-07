@@ -118,6 +118,28 @@ CREATE TABLE tbl_tnpoint(k, temp) AS
 (SELECT k + size / 2, seq FROM tbl_tnpoint_seq LIMIT size / 4) UNION ALL
 (SELECT k + size / 4 * 3, ss FROM tbl_tnpoint_seqset LIMIT size / 4);
 
+------------------------------------------------------------------------------
+-- The table of the index tests, as tbl_th3index_big in
+-- create_test_tables_th3index.sql: it must be big enough that the planner
+-- chooses a GiST/SP-GiST index scan over a sequential scan, otherwise the
+-- index tests exercise nothing. The threshold is around 10 000 rows;
+-- size * 100 + 100 keeps a small margin above it (10 100 at the default size
+-- of 100). Its four quarters are the four subtypes, as in tbl_tnpoint.
+------------------------------------------------------------------------------
+
+DROP TABLE IF EXISTS tbl_tnpoint_big;
+CREATE TABLE tbl_tnpoint_big(k, temp) AS
+SELECT k, CASE (k - 1) * 4 / (size * 100 + 100)
+  WHEN 0 THEN random_tnpoint_inst(lown, highn, '2001-01-01', '2001-12-31')
+  WHEN 1 THEN random_tnpoint_discseq(lown, highn, '2001-01-01', '2001-12-31',
+    10, 1, 10)
+  WHEN 2 THEN random_tnpoint_contseq(lown, highn, '2001-01-01', '2001-12-31',
+    10, 1, 10)
+  ELSE random_tnpoint_seqset(lown, highn, '2001-01-01', '2001-12-31', 10, 1, 10,
+    1, 10)
+  END AS temp
+FROM generate_series(1, size * 100 + 100) k;
+
 -------------------------------------------------------------------------------
 RETURN 'The End';
 END;

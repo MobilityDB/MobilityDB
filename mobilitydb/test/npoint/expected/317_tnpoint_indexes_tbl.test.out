@@ -19,16 +19,16 @@ CREATE TABLE tbl_tnpoint_idx AS
 WITH base(k, temp) AS (
   SELECT k, temp FROM tbl_tnpoint_big
   UNION ALL
-  SELECT k + 1000, inst FROM tbl_tnpoint_inst
+  SELECT k + 10100, inst FROM tbl_tnpoint_inst
   UNION ALL
-  SELECT k + 1100, ti FROM tbl_tnpoint_discseq
+  SELECT k + 10200, ti FROM tbl_tnpoint_discseq
   UNION ALL
-  SELECT k + 1200, seq FROM tbl_tnpoint_seq
+  SELECT k + 10300, seq FROM tbl_tnpoint_seq
   UNION ALL
-  SELECT k + 1300, ss FROM tbl_tnpoint_seqset )
-SELECT k + n * 1400 AS k, shiftTime(temp, n * interval '1 week') AS temp
+  SELECT k + 10400, ss FROM tbl_tnpoint_seqset )
+SELECT k + n * 10500 AS k, shiftTime(temp, n * interval '1 week') AS temp
 FROM base, generate_series(0, 0) AS n;
-SELECT 1400
+SELECT 10500
 ANALYZE tbl_tnpoint_idx;
 ANALYZE
 DROP TABLE IF EXISTS tbl_tnpoint_src;
@@ -36,8 +36,8 @@ NOTICE:  table "tbl_tnpoint_src" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tnpoint_src AS
 SELECT k, temp, temp::stbox AS b, temp::tstzspan AS t
-FROM tbl_tnpoint_idx WHERE k % 200 = 0 AND temp IS NOT NULL;
-SELECT 7
+FROM tbl_tnpoint_idx WHERE k % 1000 = 0 AND temp IS NOT NULL;
+SELECT 10
 DROP TABLE IF EXISTS tbl_tnpoint_val;
 NOTICE:  table "tbl_tnpoint_val" does not exist, skipping
 DROP TABLE
@@ -47,7 +47,7 @@ UNION ALL
 SELECT temp, true FROM tbl_tnpoint_src
 UNION ALL
 SELECT shiftTime(temp, lower(t) - upper(t)), false FROM tbl_tnpoint_src;
-SELECT 19
+SELECT 25
 ANALYZE tbl_tnpoint_val;
 ANALYZE
 DROP TABLE IF EXISTS tbl_tnpoint_box;
@@ -69,7 +69,7 @@ SELECT stbox(format('SRID=5676;STBOX XT(((%s,%s),(%s,%s)),[%s,%s%s)',
     xmin(b), ymin(b), xmax(b), ymax(b), lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END)), false
 FROM tbl_tnpoint_src;
-SELECT 33
+SELECT 45
 ANALYZE tbl_tnpoint_box;
 ANALYZE
 DROP TABLE IF EXISTS tbl_tnpoint_xbox;
@@ -91,7 +91,7 @@ UNION ALL
 SELECT stbox(format('SRID=5676;STBOX X((%s,%s),(%s,%s))',
     xmax(b), ymin(b), xmax(b) + 0.1, ymax(b))) AS b
 FROM tbl_tnpoint_src;
-SELECT 28
+SELECT 40
 ANALYZE tbl_tnpoint_xbox;
 ANALYZE
 DROP TABLE IF EXISTS tbl_tnpoint_span;
@@ -111,7 +111,7 @@ UNION ALL
 SELECT tstzspan(format('[%s, %s%s', lower(t) - interval '1 hour', lower(t),
     CASE WHEN lowerInc(t) THEN ')' ELSE ']' END))
 FROM tbl_tnpoint_src;
-SELECT 33
+SELECT 45
 ANALYZE tbl_tnpoint_span;
 ANALYZE
 DROP TABLE IF EXISTS tbl_tnpoint_geo;
@@ -119,7 +119,7 @@ NOTICE:  table "tbl_tnpoint_geo" does not exist, skipping
 DROP TABLE
 CREATE TABLE tbl_tnpoint_geo AS
 SELECT ST_SetSRID(ST_MakePoint(xmin(b), ymin(b)), 5676) AS g, true AS knn FROM tbl_tnpoint_src;
-SELECT 7
+SELECT 10
 ANALYZE tbl_tnpoint_geo;
 ANALYZE
 DROP TABLE IF EXISTS test_tnpoint_idx;
@@ -1280,7 +1280,7 @@ DROP INDEX
 SELECT COUNT(*) FROM tbl_tnpoint_idx;
  count 
 -------
-  1400
+ 10500
 (1 row)
 
 SELECT COUNT(*) FROM test_tnpoint_idx;
@@ -1292,80 +1292,80 @@ SELECT COUNT(*) FROM test_tnpoint_idx;
 SELECT op, no_idx FROM test_tnpoint_idx WHERE op NOT LIKE '%|=|%' ORDER BY op;
           op          | no_idx 
 ----------------------+--------
- #&> stbox            | 19018
- #&> tnpoint          | 11438
- #&> tstzspan         | 20509
- #>> stbox            | 18917
- #>> tnpoint          | 11415
- #>> tstzspan         | 20413
- && stbox             | 91
- && stbox x           | 20019
- && tnpoint           | 25
- && tstzspan          | 102
- &< stbox             | 20412
- &< stbox x           | 17178
- &< tnpoint           | 13185
- &<# stbox            | 27144
- &<# tnpoint          | 15106
- &<# tstzspan         | 25648
- &<| stbox            | 22484
- &<| stbox x          | 18348
- &<| tnpoint          | 14890
- &> stbox             | 22110
- &> stbox x           | 14351
- &> tnpoint           | 14315
- -|- stbox            | 13
- -|- stbox x          | 20
- -|- tnpoint          | 11
- -|- tstzspan         | 11
- << stbox             | 5785
- << stbox x           | 9039
- << tnpoint           | 2624
- <<# stbox            | 27043
- <<# tnpoint          | 15083
- <<# tstzspan         | 25553
- <<| stbox            | 6516
- <<| stbox x          | 4753
- <<| tnpoint          | 3473
- <@ stbox             | 42
- <@ stbox x           | 3692
- <@ tnpoint           | 16
- <@ tstzspan          | 95
- >> stbox             | 8687
- >> stbox x           | 7559
- >> tnpoint           | 4295
- @> stbox             | 18
- @> stbox x           | 7789
- @> tnpoint           | 14
- @> tstzspan          | 15
- stbox #>> tnpoint    | 27043
- stbox && tnpoint     | 91
- stbox -|- tnpoint    | 13
- stbox << tnpoint     | 8687
- stbox <<# tnpoint    | 18917
- stbox <<| tnpoint    | 6994
- stbox <@ tnpoint     | 18
- stbox >> tnpoint     | 5785
- stbox @> tnpoint     | 42
- stbox |>> tnpoint    | 6516
- stbox ~= tnpoint     | 12
- tstzspan #>> tnpoint | 25553
- tstzspan && tnpoint  | 102
- tstzspan -|- tnpoint | 11
- tstzspan <<# tnpoint | 20413
- tstzspan <@ tnpoint  | 15
- tstzspan @> tnpoint  | 95
- tstzspan ~= tnpoint  | 9
- |&> stbox            | 24310
- |&> stbox x          | 21416
- |&> tnpoint          | 15236
- |>> stbox            | 6994
- |>> stbox x          | 6476
- |>> tnpoint          | 2916
- ~= stbox             | 12
- ~= stbox x           | 7
- ~= tnpoint           | 14
- ~= tstzspan          | 9
+ #&> stbox            | 291343
+ #&> tnpoint          | 160029
+ #&> tstzspan         | 302756
+ #>> stbox            | 290727
+ #>> tnpoint          | 159984
+ #>> tstzspan         | 302150
+ && stbox             | 471
+ && stbox x           | 202287
+ && tnpoint           | 75
+ && tstzspan          | 665
+ &< stbox             | 246843
+ &< stbox x           | 224368
+ &< tnpoint           | 149955
+ &<# stbox            | 181533
+ &<# tnpoint          | 102379
+ &<# tstzspan         | 170115
+ &<| stbox            | 180078
+ &<| stbox x          | 149682
+ &<| tnpoint          | 117540
+ &> stbox             | 164641
+ &> stbox x           | 99874
+ &> tnpoint           | 109460
+ -|- stbox            | 16
+ -|- stbox x          | 14
+ -|- tnpoint          | 14
+ -|- tstzspan         | 15
+ << stbox             | 98305
+ << stbox x           | 136695
+ << tnpoint           | 45287
+ <<# stbox            | 180913
+ <<# tnpoint          | 102339
+ <<# tstzspan         | 169505
+ <<| stbox            | 52493
+ <<| stbox x          | 39834
+ <<| tnpoint          | 26685
+ <@ stbox             | 112
+ <@ stbox x           | 28714
+ <@ tnpoint           | 24
+ <@ tstzspan          | 591
+ >> stbox             | 41912
+ >> stbox x           | 34199
+ >> tnpoint           | 19634
+ @> stbox             | 47
+ @> stbox x           | 95105
+ @> tnpoint           | 31
+ @> tstzspan          | 52
+ stbox #>> tnpoint    | 180913
+ stbox && tnpoint     | 471
+ stbox -|- tnpoint    | 16
+ stbox << tnpoint     | 41912
+ stbox <<# tnpoint    | 290727
+ stbox <<| tnpoint    | 111996
+ stbox <@ tnpoint     | 47
+ stbox >> tnpoint     | 98305
+ stbox @> tnpoint     | 112
+ stbox |>> tnpoint    | 52493
+ stbox ~= tnpoint     | 15
+ tstzspan #>> tnpoint | 169505
+ tstzspan && tnpoint  | 665
+ tstzspan -|- tnpoint | 15
+ tstzspan <<# tnpoint | 302150
+ tstzspan <@ tnpoint  | 52
+ tstzspan @> tnpoint  | 591
+ tstzspan ~= tnpoint  | 12
+ |&> stbox            | 228562
+ |&> stbox x          | 207909
+ |&> tnpoint          | 135203
+ |>> stbox            | 111996
+ |>> stbox x          | 108676
+ |>> tnpoint          | 51918
+ ~= stbox             | 15
+ ~= stbox x           | 10
+ ~= tnpoint           | 17
+ ~= tstzspan          | 12
 (74 rows)
 
 SELECT op FROM test_tnpoint_idx WHERE op LIKE '%|=|%' AND no_idx IS NULL ORDER BY op;
