@@ -197,8 +197,8 @@ pcschema_string_copy(const char *str)
  *   carries
  * @param[in] compression Name of the compression applied to the data,
  *   @p NULL for none
- * @param[in] dims Dimensions the schema states, in any order
- * @param[in] ndims Number of dimensions
+ * @param[in] dims Array of the dimensions the schema states, in any order
+ * @param[in] ndims Number of elements in the array
  * @return A newly allocated schema
  * @errval NULL
  * @note The schema is built through the constructor of the point cloud
@@ -293,8 +293,8 @@ meos_pc_schema_from_dims(uint32_t pcid, int32_t srid,
  *   carries
  * @param[in] compression Name of the compression applied to the data,
  *   @p NULL for none
- * @param[in] dims Dimensions the schema states, in any order
- * @param[in] ndims Number of dimensions
+ * @param[in] dims Array of the dimensions the schema states, in any order
+ * @param[in] ndims Number of elements in the array
  * @return True when the schema is registered
  * @errval false
  * @sqlfn pointCloudSchemaRegister()
