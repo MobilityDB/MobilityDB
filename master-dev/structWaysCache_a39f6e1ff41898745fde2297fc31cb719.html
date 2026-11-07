@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: struct_WaysCacheEntry::hits</title>
+<title>MobilityDB: WaysCache::tail</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structstruct__WaysCacheEntry.html">struct_WaysCacheEntry</a></li>  </ul>
+<li class="navelem"><a class="el" href="structWaysCache.html">WaysCache</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,27 +79,30 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtab"><a class="navtab" href="structstruct__WaysCacheEntry_a31d4d45e0f57a200e536f974912467e0.html#a31d4d45e0f57a200e536f974912467e0">gid</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="structstruct__WaysCacheEntry_af6d99409f0b4c52b7c3dca69f433da28.html#af6d99409f0b4c52b7c3dca69f433da28">hits</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structstruct__WaysCacheEntry_a2afbe8e1018dd7c02f398856471c4f68.html#a2afbe8e1018dd7c02f398856471c4f68">length</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structstruct__WaysCacheEntry_a795e5e444b726adf60c71b8a573163f0.html#a795e5e444b726adf60c71b8a573163f0">the_geom</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_ab7dc66b75347f0b423a2862c07b7eb3c.html#ab7dc66b75347f0b423a2862c07b7eb3c">capacity</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_acf3f48bd8e7db6ca498777e566dd9371.html#acf3f48bd8e7db6ca498777e566dd9371">count</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_ad7bb9a3d6c8f487d902d30bffbe91c72.html#ad7bb9a3d6c8f487d902d30bffbe91c72">entries</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_aaddded7a52b90890591a50c0029a7224.html#aaddded7a52b90890591a50c0029a7224">geombytes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_a74e446098c61ebb27d3066163efb80ae.html#a74e446098c61ebb27d3066163efb80ae">head</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCache_a2bf9fa3035f053da76964da48e76496b.html#a2bf9fa3035f053da76964da48e76496b">slots</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structWaysCache_a39f6e1ff41898745fde2297fc31cb719.html#a39f6e1ff41898745fde2297fc31cb719">tail</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="af6d99409f0b4c52b7c3dca69f433da28" name="af6d99409f0b4c52b7c3dca69f433da28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af6d99409f0b4c52b7c3dca69f433da28">&#9670;&#160;</a></span>hits</h2>
+<a id="a39f6e1ff41898745fde2297fc31cb719" name="a39f6e1ff41898745fde2297fc31cb719"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39f6e1ff41898745fde2297fc31cb719">&#9670;&#160;</a></span>tail</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint64_t struct_WaysCacheEntry::hits</td>
+          <td class="memname">int32 WaysCache::tail</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Number of hits of the route. </p>
+<p>Entry used least recently. </p>
 
 </div>
 </div>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: struct_WaysCache Struct Reference</title>
+<title>MobilityDB: WaysCacheEntry::next</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,30 +68,45 @@ $(function() {
 </div>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="structWaysCacheEntry.html">WaysCacheEntry</a></li>  </ul>
+</div>
 </div><!-- top -->
-<div class="header">
-  <div class="summary">
-<a href="#pub-attribs">Data Fields</a>  </div>
-  <div class="headertitle"><div class="title">struct_WaysCache Struct Reference</div></div>
-</div><!--header-->
 <div class="contents">
+<table cellspacing="0" cellpadding="0" border="0">
+  <tr>
+   <td valign="top">
+      <div class="navtab">
+        <table>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCacheEntry_ac2acc498a5922f87bb973cb35eea832a.html#ac2acc498a5922f87bb973cb35eea832a">gid</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCacheEntry_afc332c8cbf66679723980002832ac3b4.html#afc332c8cbf66679723980002832ac3b4">length</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="structWaysCacheEntry_aab55ceda9a2a35d8d108ba090c6c54af.html#aab55ceda9a2a35d8d108ba090c6c54af">next</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCacheEntry_a5563b7513eb8c04157b2ed287a022930.html#a5563b7513eb8c04157b2ed287a022930">prev</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="structWaysCacheEntry_a55512ad566644023652816bb89dc5ba0.html#a55512ad566644023652816bb89dc5ba0">the_geom</a></td></tr>
+        </table>
+      </div>
+   </td>
+   <td valign="top" class="mempage">
+<a id="aab55ceda9a2a35d8d108ba090c6c54af" name="aab55ceda9a2a35d8d108ba090c6c54af"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aab55ceda9a2a35d8d108ba090c6c54af">&#9670;&#160;</a></span>next</h2>
 
-<p>The ways cache holds a fixed number of ways records read from the ways CSV file.  
- <a href="structstruct__WaysCache.html#details">More...</a></p>
-<table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
-Data Fields</h2></td></tr>
-<tr class="memitem:a4f4e9342ffa656fb98a1adaca2d7ac07"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstruct__WaysCache_a4f4e9342ffa656fb98a1adaca2d7ac07.html#a4f4e9342ffa656fb98a1adaca2d7ac07">count</a></td></tr>
-<tr class="separator:a4f4e9342ffa656fb98a1adaca2d7ac07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11662000ecd53ae2f3c87db4197273e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="ways__meos_8c_adffa6f8b7789630df1f264fe5abc0b19.html#adffa6f8b7789630df1f264fe5abc0b19">WaysCacheEntry</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6">routes</a> [<a class="el" href="ways__meos_8c_a9797b4da055a66d65a32c08217ea10f5.html#a9797b4da055a66d65a32c08217ea10f5">WAYS_CACHE_SIZE</a>]</td></tr>
-<tr class="separator:a11662000ecd53ae2f3c87db4197273e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int32 WaysCacheEntry::next</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Next entry holding a geometry. </p>
+
+</div>
+</div>
+    </td>
+  </tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p >The ways cache holds a fixed number of ways records read from the ways CSV file. </p>
-<dl class="section note"><dt>Note</dt><dd>In normal usage we do not expect it to have many entries, so we linearly scan the list </dd></dl>
-</div><hr/>The documentation for this struct was generated from the following file:<ul>
-<li>meos/src/npoint/<a class="el" href="ways__meos_8c.html">ways_meos.c</a></li>
-</ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

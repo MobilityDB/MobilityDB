@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: struct_WaysCache::count</title>
+<title>MobilityDB: ways_cache_make</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,7 +70,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="structstruct__WaysCache.html">struct_WaysCache</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_0fff62ca9c7e6b49d869dbbeba2dc9ed.html">meos</a></li><li class="navelem"><a class="el" href="dir_87ff05107218c94eb54c7d49f556ada2.html">include</a></li><li class="navelem"><a class="el" href="dir_6bb3d98d18b561aa17c27b4e01ddcff3.html">npoint</a></li><li class="navelem"><a class="el" href="ways__cache_8h.html">ways_cache.h</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="contents">
@@ -79,23 +79,33 @@ $(function() {
    <td valign="top">
       <div class="navtab">
         <table>
-          <tr><td class="navtabHL"><a class="navtab" href="structstruct__WaysCache_a4f4e9342ffa656fb98a1adaca2d7ac07.html#a4f4e9342ffa656fb98a1adaca2d7ac07">count</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="structstruct__WaysCache_a11662000ecd53ae2f3c87db4197273e6.html#a11662000ecd53ae2f3c87db4197273e6">routes</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__cache_8h_a5a490be40aeee091a1d53f003f8fa54e.html#a5a490be40aeee091a1d53f003f8fa54e">ways_cache_free</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__cache_8h_a2c04b22fb84a5724a0ac5d0337e8637e.html#a2c04b22fb84a5724a0ac5d0337e8637e">ways_cache_lookup</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="ways__cache_8h_a1530ec6162b4897b8e617aef783eed23.html#a1530ec6162b4897b8e617aef783eed23">ways_cache_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__cache_8h_ae6483a5f71847f4fa3a6d6feff810b97.html#ae6483a5f71847f4fa3a6d6feff810b97">ways_fetch_fn</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__cache_8h_adef101238089b051982dc0bb5e54ae89.html#adef101238089b051982dc0bb5e54ae89">WaysCache</a></td></tr>
         </table>
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a4f4e9342ffa656fb98a1adaca2d7ac07" name="a4f4e9342ffa656fb98a1adaca2d7ac07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4f4e9342ffa656fb98a1adaca2d7ac07">&#9670;&#160;</a></span>count</h2>
+<a id="a1530ec6162b4897b8e617aef783eed23" name="a1530ec6162b4897b8e617aef783eed23"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1530ec6162b4897b8e617aef783eed23">&#9670;&#160;</a></span>ways_cache_make()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">uint32_t struct_WaysCache::count</td>
+          <td class="memname"><a class="el" href="structWaysCache.html">WaysCache</a> * ways_cache_make </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Return a new empty ways cache. </p>
+<p >The cache and its arrays are allocated with <code>palloc</code>, so that a caller giving the cache a memory context of its own makes it the current context around every call of this file. </p>
 
 </div>
 </div>
