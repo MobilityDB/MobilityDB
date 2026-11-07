@@ -90,6 +90,30 @@ meos_set_ways_csv(const char *path)
 /* Global variable to hold the ways cache */
 static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
 
+/**
+ * @brief Structure to represent the position of a route in the ways CSV file
+ */
+typedef struct
+{
+  int64 gid;              /**< Identifier of the route */
+  long offset;            /**< Position of its line in the file */
+} WaysOffset;
+
+/**
+ * @brief Structure to represent the index of the ways CSV file: the position
+ * of the line of every route, sorted by identifier and then by position, so
+ * that a route is read with one seek instead of a scan of the file
+ */
+typedef struct
+{
+  char *path;             /**< File the index was built from */
+  WaysOffset *offsets;    /**< Positions of the routes */
+  int count;              /**< Number of routes */
+} WaysIndex;
+
+/* Global variable to hold the index of the ways CSV file */
+static MEOS_TLS WaysIndex *MEOS_WAYS_INDEX = NULL;
+
 /*****************************************************************************
  * Cache management functions
  *****************************************************************************/
@@ -116,10 +140,98 @@ meos_finalize_ways(void)
   /* Idempotency: only destroy a live cache, and null the slot so a
    * second finalize call does not double-free the cache and its
    * stored geometries. */
+  if (MEOS_WAYS_INDEX)
+  {
+    free(MEOS_WAYS_INDEX->path);
+    free(MEOS_WAYS_INDEX->offsets);
+    free(MEOS_WAYS_INDEX);
+    MEOS_WAYS_INDEX = NULL;
+  }
   if (! MEOS_WAYS_CACHE)
     return;
   ways_cache_free(MEOS_WAYS_CACHE);
   MEOS_WAYS_CACHE = NULL;
+}
+
+/**
+ * @brief Comparison of the positions of two routes, by identifier and then
+ * by position in the file
+ */
+static int
+ways_offset_cmp(const void *a, const void *b)
+{
+  const WaysOffset *wa = a, *wb = b;
+  if (wa->gid != wb->gid)
+    return wa->gid < wb->gid ? -1 : 1;
+  return wa->offset < wb->offset ? -1 : (wa->offset > wb->offset ? 1 : 0);
+}
+
+/**
+ * @brief Get the index of the ways CSV file, built with one scan of the file
+ * the first time a route is read from it and again when
+ * #meos_set_ways_csv names another file, as #GetWaysCache gets the cache
+ * @details The identifier of a line is read as #get_ways_record reads it,
+ * into a long long, which %lld fills on every data model
+ */
+static WaysIndex *
+GetWaysIndex(FILE *file)
+{
+  if (MEOS_WAYS_INDEX && strcmp(MEOS_WAYS_INDEX->path, WAYS_CSV) == 0)
+    return MEOS_WAYS_INDEX;
+  if (MEOS_WAYS_INDEX)
+  {
+    free(MEOS_WAYS_INDEX->path);
+    free(MEOS_WAYS_INDEX->offsets);
+    free(MEOS_WAYS_INDEX);
+    MEOS_WAYS_INDEX = NULL;
+  }
+  WaysIndex *index = calloc(1, sizeof(WaysIndex));
+  int capacity = 1024;
+  index->offsets = malloc(sizeof(WaysOffset) * capacity);
+  index->path = malloc(strlen(WAYS_CSV) + 1);
+  if (! index->offsets || ! index->path)
+  {
+    free(index->offsets); free(index->path); free(index);
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the index of the ways file");
+    return NULL;
+  }
+  strcpy(index->path, WAYS_CSV);
+  rewind(file);
+  /* The line of a route starts with its identifier, the geometry being
+   * skipped up to the end of the line */
+  while (true)
+  {
+    long offset = ftell(file);
+    long long gidbuf;
+    if (fscanf(file, "%lld,", &gidbuf) != 1)
+      break;
+    int c;
+    while ((c = fgetc(file)) != EOF && c != '\n')
+      ;
+    if (index->count == capacity)
+    {
+      capacity *= 2;
+      WaysOffset *offsets = realloc(index->offsets,
+        sizeof(WaysOffset) * capacity);
+      if (! offsets)
+      {
+        free(index->offsets); free(index->path); free(index);
+        meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+          "Cannot allocate the index of the ways file");
+        return NULL;
+      }
+      index->offsets = offsets;
+    }
+    index->offsets[index->count].gid = gidbuf;
+    index->offsets[index->count].offset = offset;
+    index->count++;
+    if (c == EOF)
+      break;
+  }
+  qsort(index->offsets, index->count, sizeof(WaysOffset), ways_offset_cmp);
+  MEOS_WAYS_INDEX = index;
+  return index;
 }
 
 /**
@@ -145,7 +257,49 @@ get_ways_record(int64 rid, bool any_gid, ways_record *rec)
   }
 
   bool result = false;
-  /* Continue reading the file */
+  /* A route of the file is read at its position, the first line of the
+   * route with a geometry that is not empty answering, as the scan below
+   * answers it */
+  if (! any_gid)
+  {
+    const WaysIndex *index = GetWaysIndex(file);
+    if (! index)
+    {
+      fclose(file);
+      return false;
+    }
+    int lo = 0, hi = index->count;
+    while (lo < hi)
+    {
+      int mid = lo + (hi - lo) / 2;
+      if (index->offsets[mid].gid < rid)
+        lo = mid + 1;
+      else
+        hi = mid;
+    }
+    for (int i = lo; i < index->count && index->offsets[i].gid == rid; i++)
+    {
+      char geo_buffer[MAX_LEN_GEOM];
+      long long gidbuf;
+      if (fseek(file, index->offsets[i].offset, SEEK_SET) != 0 ||
+          fscanf(file, "%lld,%100000s\n", &gidbuf, geo_buffer) != 2)
+        continue;
+      rec->gid = rid;
+      rec->the_geom = geom_in(geo_buffer, -1);
+      if (! geo_is_empty(rec->the_geom))
+      {
+        rec->length = geom_length(rec->the_geom);
+        result = true;
+        break;
+      }
+      pfree(rec->the_geom);
+    }
+    fclose(file);
+    return result;
+  }
+
+  /* The record of any route is the first line of the file with a geometry
+   * that is not empty */
   do
   {
     char geo_buffer[MAX_LEN_GEOM];
@@ -160,7 +314,7 @@ get_ways_record(int64 rid, bool any_gid, ways_record *rec)
     }
 
     /* Ignore the records with NULL values or empty geometries */
-    if (read == 2 && (any_gid || rid == rec->gid))
+    if (read == 2)
     {
       /* Transform the geometry string into a geometry value */
       rec->the_geom = geom_in(geo_buffer, -1);
