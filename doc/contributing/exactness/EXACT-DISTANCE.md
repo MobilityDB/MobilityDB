@@ -197,6 +197,7 @@ reviewer reads each one alone.
 | ED26 | Whether a polygon not exactly coplanar, or a solid, is within a distance, in 3D | Left on `lwgeom_mindistance3d_tolerance` for the moment, by the decision of the owner, so its answers stay rounded; the reading the owner decides is the region the rings project to on the Newell plane, as [Surfaces and arcs in 3D](#surfaces-and-arcs-in-3d) states | not started, deferred |
 | ED27 | The distance in 3D of a geometry carrying an arc | `geom_distance3d` raises an error where ED25 would answer `geom_dwithin3d`; a distance needs the nearest double, more than a sign | not started |
 | ED28 | The box of a geometry carrying an arc with Z or M | `lwcircstring_calculate_gbox_cartesian` set no flags on the box it fills, so `gbox_merge` refused every arc and the box stayed at its initial values, from 3.4e38 down to -3.4e38; the range of Z and M read only the ends of the arc. No box overlaps that one, so `edwithin_tgeo_geo` of a moving point with Z and an arc with Z answered false with no error at any distance. It raises the error of the 3D distance | MobilityDB #3427, merged as `7a02e7f9ab`; CGAL (`CORE::Expr` over `Gmpq`) agrees on the box of 1506 geometries with no further ordinate, with Z, with M and with both, where 874 are refused without it; witness, controls and corpus in `oracle-kit`, `cpwork/arc-box` |
+| ED30 | A point mapped onto a road network, within a distance the caller states and by the cast | the PostgreSQL build mapped a point by `ST_DWithin` and `ST_Distance` in SQL on a WKT string of 15 digits, which does not round-trip a double, within `MEOS_EPSILON`, and the MEOS build answered the nearest route of the whole network however far; the two builds answered differently for one point. Both decide by `route_nearest_update`, the distance of MEOS within a tolerance, the nearest route and the least identifier among equally near ones; the PostgreSQL build sends the point to the ways table in binary and reads only the routes whose box meets the square of the tolerance, a filter (rule 5). `npoint(geometry, float)` takes the tolerance from the caller; the casts take the band of a constructed point, [A point mapped onto a network](#a-point-mapped-onto-a-network) | the nearest route of the MEOS build, MobilityDB #3482, merged as `073ad32593`; the cache of the routes it reads, MobilityDB #3483, merged as `04870bd23a` and `c8b4ebf9ae`; the tolerance, branch `feat/npoint-geometry-tolerance`, head `508d3043b2` on master `c8b4ebf9ae`, its cast still at `MEOS_EPSILON`, the band of a constructed point (the owner's decision of 2026-11-07) not yet written; CGAL (`cgal_npoint_nearest`: the routes within the tolerance, the nearest and a tie in `Gmpq`, the position in CORE square roots within 1e-12) agrees with all 4040 answers of its head over points along every tenth route of `ways1000.csv` at tolerances 0 to 20, and with all 12120 answers at the three bands of the cast; judges, corpora and controls in `cpwork/npoint-oracle` |
 | ED29 | The temporal distance of a moving point to a fixed point, the turning point off its segment | The lift placed the turning point in doubles, so it could fall off the segment it belongs to. `tgeompoint_distance_point` walks the segments of a planar point, and `point_segment_nearest_microsecond` dates the turning point by its parameter on the segment, with exact signs and no band. A `tgeogpoint` stays on the lift, in doubles. A geometry that is not a point stays on `tpoint_linear_distance_geom`, whose kernel fails `cgal_tdist_envelope` on 1 row of 64, which ED17's follow-up owns. An instant stays truncated to the microsecond until [Exact crossings](EXACT-CROSSINGS.md) | MobilityDB #3436, merged as `c2d99ab7c8`; CGAL `cgal_tdist_envelope` agrees on 934 of 934 rows of random trips at four scales; manifest and judge in `cpwork/turnpt` |
 
 The geodetic distances are not in the plan: an exact answer on the spheroid needs a definition
@@ -341,6 +342,64 @@ near-level arcs whose planes are not exactly parallel, until the harder kernel. 
 sloped arcs: their reading in 3D is a tilted circle whose shadow is an ellipse, while 2D drops Z from the
 vertices and PostGIS strokes the circle through them, a difference tiny on a near-level arc and real on a
 steep one, which the specification states. ED25 is not started, behind the exact buffer.
+
+## A point mapped onto a network
+
+A network point is a route of the `ways` network and a position along it, and a point of space
+is mapped onto it by the route nearest to the point and the position of the point projected on
+that route. Two questions take that form, and they differ in who states how near is near enough.
+
+**With a tolerance the caller states.** `npoint(geometry, float)` asks which route lies at a
+distance at most the tolerance from the point, the nearest of them, and of two equally near the
+one with the least identifier. The tolerance is part of the question, as the distance of
+`ST_DWithin` is, not a band the engine adds, and the question has one exact answer about the
+doubles: the squared distance of the point to a segment is the squared distance to the foot of
+its perpendicular, read as its parameter on the input segment and clamped to it, a rational of
+the coordinates, compared with the square of the tolerance; the position is a ratio of sums of
+square roots. Both builds decide it with `route_nearest_update`, the MEOS build over the routes
+of the ways CSV file and the PostgreSQL build over the routes the ways table returns for the box
+of the tolerance about the point, which only admits candidates (rule 5 of the exact geometry).
+PostGIS's `ST_Distance` rounds to 0 the distance of some points lying off a route, where
+`ST_Intersects` says they are off it: on the 8080 points of the npoint test network, the
+PostGIS reading and MEOS differ at a tolerance of 0 on 102 points, each such a point, and on no
+point at any other tolerance from 1e-7 to 1000.
+
+**By the cast, which takes no argument.** `geometry::npoint`, and `geometry::nsegment` through
+it, has only the point, so the cast itself states what lying on a route means. Read exactly, a
+point lies on a route where its distance to it is zero. But the round trip
+`np::geometry::npoint` asks it of a point the engine constructs: the point at a position along a
+route is computed in doubles, so it lies off its route by the rounding of its coordinates, and
+"is it on its own route" has the exact answer no (rule 2 of the exact geometry). Measured on
+points constructed along routes of `ways1000.csv`, their exact distances to their routes:
+
+| Point along | Exact distance to its route |
+|---|---|
+| route 0, the first | 0 |
+| route 0, the second | 6.44e-17 |
+| route 0, the fourth | 5.17e-16 |
+| route 10, the second | 2.4e-15 |
+| route 10, the third | 4.79e-15 |
+
+The exact geometry admits a band at such a point and at no other, sized to the rounding of the
+construction (rule 4): `MEOS_GEOM_TOLERANCE + 4 * DBL_EPSILON * max|coord|`, about 1e-13 for
+coordinates of 100, with no absolute floor beside it. `MEOS_EPSILON`, the tolerance of the cast
+on master, is the constant of modelled equality, pinned by the microsecond of a timestamp, and
+not a distance in the units of the reference system. The three readings over the 4040 points of
+the oracle corpus, 1010 of them constructed on a route and 3030 moved off it by 1e-7, 1 and 10,
+each answer agreed by CGAL (12120 of 12120):
+
+| Band of the cast | Constructed points mapped back | Points off a route mapped |
+|---|---|---|
+| 0, the exact reading | 364 of 1010 | 0 of 3030 |
+| the rounding of the construction (rule 4) | 1010 of 1010 | 0 of 3030 |
+| `MEOS_EPSILON` | 1010 of 1010 | 1010 of 3030 |
+
+The band of the construction tells the two apart: it maps back every point the engine places on
+a route and no point lying off one, by 1e-7 or more. The owner's decision, 2026-11-07: the
+casts read that band, and a measured position, such as a GPS fix, is mapped with the tolerance
+of the measurement through `npoint(geometry, float)`. The internal conversions of MEOS that map a
+geometry, `geom_to_nsegment` and the conversion of a temporal point to a temporal network point,
+read the band as the cast does.
 
 ## What other libraries reach, and what it leaves
 
