@@ -101,9 +101,9 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ga5d003d97008b6ad32f579780296dcebe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNpoint.html">Npoint</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga5d003d97008b6ad32f579780296dcebe.html#ga5d003d97008b6ad32f579780296dcebe">geompoint_to_npoint</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs)</td></tr>
-<tr class="memdesc:ga5d003d97008b6ad32f579780296dcebe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a geometry into a network point.  <a href="group__meos__npoint__base__conversion_ga5d003d97008b6ad32f579780296dcebe.html#ga5d003d97008b6ad32f579780296dcebe">More...</a><br /></td></tr>
-<tr class="separator:ga5d003d97008b6ad32f579780296dcebe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga975184e07f2bd12b79070098d745feca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structNpoint.html">Npoint</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__conversion_ga975184e07f2bd12b79070098d745feca.html#ga975184e07f2bd12b79070098d745feca">geompoint_to_npoint</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, double tolerance)</td></tr>
+<tr class="memdesc:ga975184e07f2bd12b79070098d745feca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform a geometry into a network point located on the route nearest to it within a tolerance.  <a href="group__meos__npoint__base__conversion_ga975184e07f2bd12b79070098d745feca.html#ga975184e07f2bd12b79070098d745feca">More...</a><br /></td></tr>
+<tr class="separator:ga975184e07f2bd12b79070098d745feca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf672d585a8970909c535e8a814642169"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__npoint__base__srid_gaf672d585a8970909c535e8a814642169.html#gaf672d585a8970909c535e8a814642169">get_srid_ways</a> (void)</td></tr>
 <tr class="memdesc:gaf672d585a8970909c535e8a814642169"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the SRID of the routes in the ways table.  <a href="group__meos__npoint__base__srid_gaf672d585a8970909c535e8a814642169.html#gaf672d585a8970909c535e8a814642169">More...</a><br /></td></tr>
 <tr class="separator:gaf672d585a8970909c535e8a814642169"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -138,6 +138,8 @@ Variables</h2></td></tr>
 <tr class="separator:a3ad85229cae509521301f1ab1fe358b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad20300cb9b30cb8c7afde8657a69c23d"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d">WAYS_CSV</a> = MEOS_DATAROOTDIR &quot;/ways1000.csv&quot;</td></tr>
 <tr class="separator:ad20300cb9b30cb8c7afde8657a69c23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d58a553527588072ef613c885aa7aed"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a7d58a553527588072ef613c885aa7aed.html#a7d58a553527588072ef613c885aa7aed">WAYS_CSV_COPY</a> = NULL</td></tr>
+<tr class="separator:a7d58a553527588072ef613c885aa7aed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Implementation of a cache storing the route records read from a ways CSV file. </p>

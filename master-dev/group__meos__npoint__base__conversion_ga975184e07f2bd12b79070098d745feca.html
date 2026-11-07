@@ -80,7 +80,7 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga45960847cbdb958dbd708b642b98da05.html#ga45960847cbdb958dbd708b642b98da05">geom_to_nsegment</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__npoint__base__conversion_ga5d003d97008b6ad32f579780296dcebe.html#ga5d003d97008b6ad32f579780296dcebe">geompoint_to_npoint</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__npoint__base__conversion_ga975184e07f2bd12b79070098d745feca.html#ga975184e07f2bd12b79070098d745feca">geompoint_to_npoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga58adc6bffb2a00164c7082f3078fec4f.html#ga58adc6bffb2a00164c7082f3078fec4f">npoint_to_geompoint</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_ga9617872c0054f0747cde61d2d8349c06.html#ga9617872c0054f0747cde61d2d8349c06">npoint_to_nsegment</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__npoint__base__conversion_gab097c36db480fda9b6f9568ee718ac6b.html#gab097c36db480fda9b6f9568ee718ac6b">npoint_to_stbox</a></td></tr>
@@ -90,8 +90,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="ga5d003d97008b6ad32f579780296dcebe" name="ga5d003d97008b6ad32f579780296dcebe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga5d003d97008b6ad32f579780296dcebe">&#9670;&#160;</a></span>geompoint_to_npoint()</h2>
+<a id="ga975184e07f2bd12b79070098d745feca" name="ga975184e07f2bd12b79070098d745feca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga975184e07f2bd12b79070098d745feca">&#9670;&#160;</a></span>geompoint_to_npoint()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -100,16 +100,27 @@ $(function() {
           <td class="memname"><a class="el" href="structNpoint.html">Npoint</a> * geompoint_to_npoint </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *&#160;</td>
-          <td class="paramname"><em>gs</em></td><td>)</td>
+          <td class="paramname"><em>gs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>tolerance</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Transform a geometry into a network point. </p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Transform a geometry into a network point located on the route nearest to it within a tolerance. </p>
+<p >The route is the nearest one among those whose distance to the point is at most the tolerance, the one with the least identifier among equally near routes, and the position is the one of the point projected on that route. The result is <code>NULL</code> when no route is within the tolerance. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry @csqlfn <a class="el" href="group__mobilitydb__npoint__base__conversion_ga7127ed2ee248159fe1a5179c986a8051.html#ga7127ed2ee248159fe1a5179c986a8051" title="Convert a geometry into a network point @sqlfn npoint()">Geompoint_to_npoint()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gs</td><td>Geometry </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tolerance</td><td>Maximum distance between the point and the route, in the units of the spatial reference system of the ways network @csqlfn <a class="el" href="group__mobilitydb__npoint__base__conversion_ga7127ed2ee248159fe1a5179c986a8051.html#ga7127ed2ee248159fe1a5179c986a8051" title="Convert a geometry into a network point located on the route nearest to it within a tolerance.">Geompoint_to_npoint()</a> </td></tr>
   </table>
   </dd>
 </dl>
