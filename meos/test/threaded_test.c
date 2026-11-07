@@ -74,6 +74,41 @@
 #include <meos_geo.h>
 #include <pg_timestamp.h>
 
+/* ThreadSanitizer reports a race in the PROJ library that the C++ standard
+ * rules out, because the edge ordering it lies in a library TSan does not see
+ * into. `pj_get_relative_share_proj` (PROJ src/filemanager.cpp) answers from a
+ * function-local static, whose initialization C++11 runs once and orders
+ * before every later read; the guard doing so lives in libproj, which the
+ * build of this test leaves uninstrumented, so TSan sees the write of the
+ * initialization against the reads of the cached string and reports them as
+ * concurrent. Compiling PROJ 9.8.1 with `-fsanitize=thread` and running this
+ * program against it answers clean, which is how the report is read as a blind
+ * spot rather than a race: the same MEOS library and the same program report
+ * it with the distributed PROJ and never with the instrumented one. The
+ * pattern names that one function, so a race anywhere else in PROJ, or one
+ * MEOS reaches through it, is still reported.
+ *
+ * The suppression travels with the program rather than with the command that
+ * runs it, so every caller -- the workflow, a local run -- reads the same one.
+ */
+#if defined(__SANITIZE_THREAD__)
+#define MEOS_THREAD_SANITIZER 1
+#elif defined(__has_feature)
+#if __has_feature(thread_sanitizer)
+#define MEOS_THREAD_SANITIZER 1
+#endif
+#endif
+
+#if defined(MEOS_THREAD_SANITIZER)
+const char *__tsan_default_suppressions(void);
+
+const char *
+__tsan_default_suppressions(void)
+{
+  return "race:pj_get_relative_share_proj\n";
+}
+#endif /* ThreadSanitizer */
+
 typedef struct
 {
   int id;

@@ -3947,6 +3947,31 @@ int main(void)
   assert(geom_dwithin3d(dz1, d2, 1.2) && geom_dwithin3d(d2, dz1, 1.2));
   free(f122); free(f230); free(fs1); free(fs2); free(ft1); free(ft2);
 
+  /* Faces lying in a plane: the origin is 1/sqrt(3) from the triangle on the
+   * plane x + y + z = 1, its foot inside; a square lies 3 below a larger
+   * triangle parallel to it; a point above a hole is sqrt(3.25) from its edge;
+   * a segment crossing a triangle meets it */
+  GSERIALIZED *go = geom_in("Point(0 0 0)", -1);
+  GSERIALIZED *gdiag = geom_in("Triangle((1 0 0,0 1 0,0 0 1,1 0 0))", -1);
+  GSERIALIZED *gsq = geom_in("Polygon((0 0 0,9 0 0,9 9 0,0 9 0,0 0 0))", -1);
+  GSERIALIZED *groof = geom_in("Triangle((-1 -1 3,20 -1 3,-1 20 3,-1 -1 3))",
+    -1);
+  GSERIALIZED *gholed = geom_in("Polygon((0 0 0,9 0 0,9 9 0,0 9 0,0 0 0),"
+    "(3 3 0,6 3 0,6 6 0,3 6 0,3 3 0))", -1);
+  GSERIALIZED *gabove = geom_in("Point(4.5 4.5 1)", -1);
+  GSERIALIZED *gtri = geom_in("Triangle((0 0 0,4 0 0,0 4 0,0 0 0))", -1);
+  GSERIALIZED *gpierce = geom_in("Linestring(1 1 -5,1 1 5)", -1);
+  assert(go && gdiag && gsq && groof && gholed && gabove && gtri && gpierce);
+  assert(! geom_dwithin3d(go, gdiag, 0.5773502691896257));
+  assert(geom_dwithin3d(go, gdiag, 0.5773502691896258));
+  assert(geom_dwithin3d(gsq, groof, 3.0));
+  assert(! geom_dwithin3d(gsq, groof, 2.9999999999999996));
+  assert(! geom_dwithin3d(gabove, gholed, 1.8027756377319946));
+  assert(geom_dwithin3d(gholed, gabove, 1.8027756377319948));
+  assert(geom_dwithin3d(gpierce, gtri, 0.0));
+  free(go); free(gdiag); free(gsq); free(groof); free(gholed); free(gabove);
+  free(gtri); free(gpierce);
+
   /* An arc of radius 5 about the origin in the first quadrant. A point inside
    * the disk lies 5 - sqrt(2) from it, a segment on the far side 5 sqrt(2) - 5,
    * another arc 10 sqrt(2) - 10 and an arc about the same centre exactly 4 */
