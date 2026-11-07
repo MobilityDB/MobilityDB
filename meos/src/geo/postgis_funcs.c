@@ -2095,10 +2095,14 @@ geom_dwithin_segs(const double *a, const double *b, const double *c,
       fmax(fabs(c[k]), fabs(d[k]))));
   }
   double margin = (big >= 0x1p-400 && big <= 0x1p400) ? 0x1p-40 * big : -1.0;
+  /* A segment of no length is a point, nearest the other segment at itself,
+   * which the ends read: its pair has no nearest points inside both */
+  bool point = (a[0] == b[0] && a[1] == b[1] && a[2 % ndims] == b[2 % ndims]) ||
+    (c[0] == d[0] && c[1] == d[1] && c[2 % ndims] == d[2 % ndims]);
   bool inner = (ndims == 2) ?
     linesegm_intersect(a[0], a[1], b[0], b[1], c[0], c[1], d[0],
       d[1]).type != INTERSECT_NONE :
-    segment_interior_offset_sign(a, b, c, d, dist) <= 0;
+    (! point && segment_interior_offset_sign(a, b, c, d, dist) <= 0);
   return inner || geom_dwithin_end(a, c, d, ndims, dist, margin) ||
     geom_dwithin_end(b, c, d, ndims, dist, margin) ||
     geom_dwithin_end(c, a, b, ndims, dist, margin) ||
