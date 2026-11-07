@@ -75,6 +75,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
@@ -94,6 +95,15 @@ $(function() {
 <code>#include &quot;<a class="el" href="tnpoint_8h_source.html">npoint/tnpoint.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="ways__cache_8h_source.html">npoint/ways_cache.h</a>&quot;</code><br />
 </div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWaysIndex.html">WaysIndex</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent the index of the ways CSV file: the position of the line of every route, sorted by identifier and then by position, so that a route is read with one seek instead of a scan of the file.  <a href="structWaysIndex.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWaysOffset.html">WaysOffset</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Structure to represent the position of a route in the ways CSV file.  <a href="structWaysOffset.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a34b326b90768a8a89e69d6bf367ed948"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a34b326b90768a8a89e69d6bf367ed948.html#a34b326b90768a8a89e69d6bf367ed948">MAX_LEN_GEOM</a>&#160;&#160;&#160;100001</td></tr>
@@ -113,6 +123,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a2e42dd954555419f61943bbdae8b31a9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structWaysCache.html">WaysCache</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a2e42dd954555419f61943bbdae8b31a9.html#a2e42dd954555419f61943bbdae8b31a9">GetWaysCache</a> (void)</td></tr>
 <tr class="memdesc:a2e42dd954555419f61943bbdae8b31a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the ways cache from the global variable.  <a href="ways__meos_8c_a2e42dd954555419f61943bbdae8b31a9.html#a2e42dd954555419f61943bbdae8b31a9">More...</a><br /></td></tr>
 <tr class="separator:a2e42dd954555419f61943bbdae8b31a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a75a86d0912344ffb4e3c12a223d41dd7"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structWaysIndex.html">WaysIndex</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a75a86d0912344ffb4e3c12a223d41dd7.html#a75a86d0912344ffb4e3c12a223d41dd7">GetWaysIndex</a> (FILE *<a class="el" href="mobilitydb_2test_2cbuffer_2CMakeLists_8txt_a280f355a51da68665898101b95788893.html#a280f355a51da68665898101b95788893">file</a>)</td></tr>
+<tr class="memdesc:a75a86d0912344ffb4e3c12a223d41dd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the index of the ways CSV file, built with one scan of the file the first time a route is read from it and again when <a class="el" href="group__meos__setup_ga365066326ec7852c1f7171195fbfff09.html#ga365066326ec7852c1f7171195fbfff09" title="Set the location of the ways CSV file used to resolve npoint route geometries.">meos_set_ways_csv</a> names another file, as <a class="el" href="ways__meos_8c_a2e42dd954555419f61943bbdae8b31a9.html#a2e42dd954555419f61943bbdae8b31a9" title="Get the ways cache from the global variable.">GetWaysCache</a> gets the cache.  <a href="ways__meos_8c_a75a86d0912344ffb4e3c12a223d41dd7.html#a75a86d0912344ffb4e3c12a223d41dd7">More...</a><br /></td></tr>
+<tr class="separator:a75a86d0912344ffb4e3c12a223d41dd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga48375cdf2e1f9241f167724255f9981b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__setup_ga48375cdf2e1f9241f167724255f9981b.html#ga48375cdf2e1f9241f167724255f9981b">meos_finalize_ways</a> (void)</td></tr>
 <tr class="memdesc:ga48375cdf2e1f9241f167724255f9981b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the ways cache.  <a href="group__meos__setup_ga48375cdf2e1f9241f167724255f9981b.html#ga48375cdf2e1f9241f167724255f9981b">More...</a><br /></td></tr>
 <tr class="separator:ga48375cdf2e1f9241f167724255f9981b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -131,11 +144,16 @@ Functions</h2></td></tr>
 <tr class="memitem:af1fed75bc0587c5465e98e7a19e25923"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_af1fed75bc0587c5465e98e7a19e25923.html#af1fed75bc0587c5465e98e7a19e25923">route_lookup</a> (int64 gid, bool any_gid, <a class="el" href="structways__record.html">ways_record</a> *rec)</td></tr>
 <tr class="memdesc:af1fed75bc0587c5465e98e7a19e25923"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return in the last argument the record of a route read from the ways cache, and return false when there is no such route.  <a href="ways__meos_8c_af1fed75bc0587c5465e98e7a19e25923.html#af1fed75bc0587c5465e98e7a19e25923">More...</a><br /></td></tr>
 <tr class="separator:af1fed75bc0587c5465e98e7a19e25923"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae89f05fa1ce9bf4b1feef69cf4eee1d1"><td class="memItemLeft" align="right" valign="top">static int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_ae89f05fa1ce9bf4b1feef69cf4eee1d1.html#ae89f05fa1ce9bf4b1feef69cf4eee1d1">ways_offset_cmp</a> (const void *a, const void *<a class="el" href="trgeo__distance_8txt_a348e5091b750380e4462dbd9f4b259b9.html#a348e5091b750380e4462dbd9f4b259b9">b</a>)</td></tr>
+<tr class="memdesc:ae89f05fa1ce9bf4b1feef69cf4eee1d1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Comparison of the positions of two routes, by identifier and then by position in the file.  <a href="ways__meos_8c_ae89f05fa1ce9bf4b1feef69cf4eee1d1.html#ae89f05fa1ce9bf4b1feef69cf4eee1d1">More...</a><br /></td></tr>
+<tr class="separator:ae89f05fa1ce9bf4b1feef69cf4eee1d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a3ad85229cae509521301f1ab1fe358b2"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> <a class="el" href="structWaysCache.html">WaysCache</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a3ad85229cae509521301f1ab1fe358b2.html#a3ad85229cae509521301f1ab1fe358b2">MEOS_WAYS_CACHE</a> = NULL</td></tr>
 <tr class="separator:a3ad85229cae509521301f1ab1fe358b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3350f9380b24ca27afd2c87854500a7f"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="meos__tls_8h_a4f938531e64b0b1babd66b9a29301ff6.html#a4f938531e64b0b1babd66b9a29301ff6">MEOS_TLS</a> <a class="el" href="structWaysIndex.html">WaysIndex</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a3350f9380b24ca27afd2c87854500a7f.html#a3350f9380b24ca27afd2c87854500a7f">MEOS_WAYS_INDEX</a> = NULL</td></tr>
+<tr class="separator:a3350f9380b24ca27afd2c87854500a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad20300cb9b30cb8c7afde8657a69c23d"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d">WAYS_CSV</a> = MEOS_DATAROOTDIR &quot;/ways1000.csv&quot;</td></tr>
 <tr class="separator:ad20300cb9b30cb8c7afde8657a69c23d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d58a553527588072ef613c885aa7aed"><td class="memItemLeft" align="right" valign="top">static char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ways__meos_8c_a7d58a553527588072ef613c885aa7aed.html#a7d58a553527588072ef613c885aa7aed">WAYS_CSV_COPY</a> = NULL</td></tr>
