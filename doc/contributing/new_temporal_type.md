@@ -170,7 +170,9 @@ Squash + merge. Then **trim aggressively**: drop `doc/`, `.github/`, `tools/`, `
 
 ### 3.1 Catalog & build wiring
 
-- Add `T_FOO`, `T_TFOO`, `T_FOOSET` to `meos/src/temporal/meos_catalog.c`. Add family predicates: `is_temporal_foo_type(t)`, `tspatial_type` membership where applicable.
+- Add `T_FOO`, `T_TFOO`, `T_FOOSET` to `meos/src/temporal/meos_catalog.c`, each with its row in
+  `MEOS_TYPE_NAMES`: its name and its CamelCase name, in which each capital starts one word
+  (`[T_TFOO] = { "tfoo", "TFoo" }`). Add family predicates: `is_temporal_foo_type(t)`, `tspatial_type` membership where applicable.
 - Gate behind a CMake option `-DFOO=ON`. Off by default while in-flight; on by default once production-ready.
 - `meos/src/foo/CMakeLists.txt` builds an OBJECT library; link it from the parent.
 - `mobilitydb/src/foo/CMakeLists.txt` ditto for the PG wrappers.
