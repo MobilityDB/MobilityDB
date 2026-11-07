@@ -5115,7 +5115,7 @@ CATALOG_NAMES = "meos/src/temporal/meos_catalog.c"
 def catalog_type_names() -> dict:
     """`T_<X>` -> the canonical lowercase type name from the catalog name array."""
     src = (ROOT / CATALOG_NAMES).read_text()
-    return dict(re.findall(r'\[(T_[A-Z0-9_]+)\]\s*=\s*"([^"]+)"', src))
+    return dict(re.findall(r'\[(T_[A-Z0-9_]+)\]\s*=\s*\{\s*"([^"]+)"', src))
 
 
 # meos_catalog.c's `MEOS_TYPE_NAMES` spells the five scalar catalog base types

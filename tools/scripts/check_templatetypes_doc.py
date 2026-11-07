@@ -98,7 +98,7 @@ def type_names(text):
     block = re.search(r'MEOS_TYPE_NAMES\[\]\s*=\s*\{(.*?)\n\};', text, re.S)
     if not block:
         sys.exit('the array MEOS_TYPE_NAMES was not found in ' + CATALOG)
-    return dict(re.findall(r'\[(T_\w+)\]\s*=\s*"([^"]*)"', block.group(1)))
+    return dict(re.findall(r'\[(T_\w+)\]\s*=\s*\{\s*"([^"]*)"', block.group(1)))
 
 
 def catalog_table(text, names):

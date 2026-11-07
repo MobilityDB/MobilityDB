@@ -82,99 +82,108 @@
  */
 
 /**
- * @brief Global constant array containing the type names corresponding to the
- * enumeration MeosType defined in file `meos_catalog.h`
+ * @brief Global constant array containing, for each type of the enumeration
+ * MeosType defined in file `meos_catalog.h`, its name and its CamelCase name
+ * @details The name is the one of the SQL type of MobilityDB. The CamelCase
+ * name is the one the bindings give the class of the type, in which each
+ * capital starts one word: `TRGeometry` is temporal rigid geometry, `TPCBox`
+ * is temporal point cloud box. A type no binding names, such as a PostgreSQL
+ * range type, has no CamelCase name.
  */
-static const char *MEOS_TYPE_NAMES[] =
+static const struct
 {
-  [T_UNKNOWN] = "unknown",
-  [T_BOOL] = "bool",
-  [T_DATE] = "date",
-  [T_DATEMULTIRANGE] = "datemultirange",
-  [T_DATERANGE] = "daterange",
-  [T_DATESET] = "dateset",
-  [T_DATESPAN] = "datespan",
-  [T_DATESPANSET] = "datespanset",
-  [T_DOUBLE2] = "double2",
-  [T_DOUBLE3] = "double3",
-  [T_DOUBLE4] = "double4",
-  [T_FLOAT8] = "float8",
-  [T_FLOATSET] = "floatset",
-  [T_FLOATSPAN] = "floatspan",
-  [T_FLOATSPANSET] = "floatspanset",
-  [T_INT4] = "int4",
-  [T_INT4MULTIRANGE] = "int4multirange",
-  [T_INT4RANGE] = "int4range",
-  [T_INTSET] = "intset",
-  [T_INTSPAN] = "intspan",
-  [T_INTSPANSET] = "intspanset",
-  [T_INT8] = "int8",
-  [T_INT8MULTIRANGE] = "int8multirange",
-  [T_INT8RANGE] = "int8range",
-  [T_BIGINTSET] = "bigintset",
-  [T_BIGINTSPAN] = "bigintspan",
-  [T_BIGINTSPANSET] = "bigintspanset",
-  [T_STBOX] = "stbox",
-  [T_TBOOL] = "tbool",
-  [T_TBOX] = "tbox",
-  [T_TDOUBLE2] = "tdouble2",
-  [T_TDOUBLE3] = "tdouble3",
-  [T_TDOUBLE4] = "tdouble4",
-  [T_TEXT] = "text",
-  [T_TEXTSET] = "textset",
-  [T_TFLOAT] = "tfloat",
-  [T_TIMESTAMPTZ] = "timestamptz",
-  [T_TINT] = "tint",
-  [T_TSTZMULTIRANGE] = "tstzmultirange",
-  [T_TSTZRANGE] = "tstzrange",
-  [T_TSTZSET] = "tstzset",
-  [T_TSTZSPAN] = "tstzspan",
-  [T_TSTZSPANSET] = "tstzspanset",
-  [T_TTEXT] = "ttext",
-  [T_GEOMETRY] = "geometry",
-  [T_GEOMSET] = "geomset",
-  [T_GEOGRAPHY] = "geography",
-  [T_GEOGSET] = "geogset",
-  [T_TGEOMPOINT] = "tgeompoint",
-  [T_TGEOGPOINT] = "tgeogpoint",
-  [T_NPOINT] = "npoint",
-  [T_NPOINTSET] = "npointset",
-  [T_NSEGMENT] = "nsegment",
-  [T_TNPOINT] = "tnpoint",
-  [T_POSE] = "pose",
-  [T_POSESET] = "poseset",
-  [T_TPOSE] = "tpose",
-  [T_CBUFFER] = "cbuffer",
-  [T_CBUFFERSET] = "cbufferset",
-  [T_TCBUFFER] = "tcbuffer",
-  [T_TGEOMETRY] = "tgeometry",
-  [T_TGEOGRAPHY] = "tgeography",
-  [T_TRGEOMETRY] = "trgeometry",
-  [T_JSONB]      = "jsonb",      /**< PostgreSQL jsonb base type */
-  [T_JSONPATH]   = "jsonpath",   /**< PostgreSQL json path */
-  [T_JSONBSET]   = "jsonbset",   /**< static set of JSONB values */
-  [T_TJSONB]     = "tjsonb",     /**< temporal JSONB trajectory */
-  [T_TBIGINT] = "tbigint",
-  [T_H3INDEX] = "h3index",
-  [T_H3INDEXSET] = "h3indexset",
-  [T_TH3INDEX] = "th3index",
-  [T_QUADBIN] = "quadbin",
-  [T_QUADBINSET] = "quadbinset",
-  [T_TQUADBIN] = "tquadbin",
-  [T_S2CELL] = "s2cell",
-  [T_S2CELLSET] = "s2cellset",
-  [T_TS2CELL] = "ts2cell",
-  [T_PCPOINT] = "pcpoint",
-  [T_PCPOINTSET] = "pcpointset",
-  [T_TPCPOINT] = "tpcpoint",
-  [T_PCPATCH] = "pcpatch",
-  [T_PCPATCHSET] = "pcpatchset",
-  [T_TPCPATCH] = "tpcpatch",
-  [T_TPCBOX] = "tpcbox",
-  [T_RAQUET] = "raquet",
-  [T_POSECHAIN] = "posechain",
-  [T_POSECHAINSET] = "posechainset",
-  [T_TPOSECHAIN] = "tposechain",
+  const char *name;   /**< Name of the type */
+  const char *camel;  /**< CamelCase name of the type */
+} MEOS_TYPE_NAMES[] =
+{
+  [T_UNKNOWN]         = { "unknown",        NULL },
+  [T_BOOL]            = { "bool",           "Bool" },
+  [T_DATE]            = { "date",           "Date" },
+  [T_DATEMULTIRANGE]  = { "datemultirange", NULL },
+  [T_DATERANGE]       = { "daterange",      NULL },
+  [T_DATESET]         = { "dateset",        "DateSet" },
+  [T_DATESPAN]        = { "datespan",       "DateSpan" },
+  [T_DATESPANSET]     = { "datespanset",    "DateSpanSet" },
+  [T_DOUBLE2]         = { "double2",        NULL },
+  [T_DOUBLE3]         = { "double3",        NULL },
+  [T_DOUBLE4]         = { "double4",        NULL },
+  [T_FLOAT8]          = { "float8",         "Float" },
+  [T_FLOATSET]        = { "floatset",       "FloatSet" },
+  [T_FLOATSPAN]       = { "floatspan",      "FloatSpan" },
+  [T_FLOATSPANSET]    = { "floatspanset",   "FloatSpanSet" },
+  [T_INT4]            = { "int4",           "Int" },
+  [T_INT4MULTIRANGE]  = { "int4multirange", NULL },
+  [T_INT4RANGE]       = { "int4range",      NULL },
+  [T_INTSET]          = { "intset",         "IntSet" },
+  [T_INTSPAN]         = { "intspan",        "IntSpan" },
+  [T_INTSPANSET]      = { "intspanset",     "IntSpanSet" },
+  [T_INT8]            = { "int8",           "BigInt" },
+  [T_INT8MULTIRANGE]  = { "int8multirange", NULL },
+  [T_INT8RANGE]       = { "int8range",      NULL },
+  [T_BIGINTSET]       = { "bigintset",      "BigIntSet" },
+  [T_BIGINTSPAN]      = { "bigintspan",     "BigIntSpan" },
+  [T_BIGINTSPANSET]   = { "bigintspanset",  "BigIntSpanSet" },
+  [T_STBOX]           = { "stbox",          "STBox" },
+  [T_TBOOL]           = { "tbool",          "TBool" },
+  [T_TBOX]            = { "tbox",           "TBox" },
+  [T_TDOUBLE2]        = { "tdouble2",       NULL },
+  [T_TDOUBLE3]        = { "tdouble3",       NULL },
+  [T_TDOUBLE4]        = { "tdouble4",       NULL },
+  [T_TEXT]            = { "text",           "Text" },
+  [T_TEXTSET]         = { "textset",        "TextSet" },
+  [T_TFLOAT]          = { "tfloat",         "TFloat" },
+  [T_TIMESTAMPTZ]     = { "timestamptz",    "TimestampTz" },
+  [T_TINT]            = { "tint",           "TInt" },
+  [T_TSTZMULTIRANGE]  = { "tstzmultirange", NULL },
+  [T_TSTZRANGE]       = { "tstzrange",      NULL },
+  [T_TSTZSET]         = { "tstzset",        "TsTzSet" },
+  [T_TSTZSPAN]        = { "tstzspan",       "TsTzSpan" },
+  [T_TSTZSPANSET]     = { "tstzspanset",    "TsTzSpanSet" },
+  [T_TTEXT]           = { "ttext",          "TText" },
+  [T_GEOMETRY]        = { "geometry",       "Geometry" },
+  [T_GEOMSET]         = { "geomset",        "GeomSet" },
+  [T_GEOGRAPHY]       = { "geography",      "Geography" },
+  [T_GEOGSET]         = { "geogset",        "GeogSet" },
+  [T_TGEOMPOINT]      = { "tgeompoint",     "TGeomPoint" },
+  [T_TGEOGPOINT]      = { "tgeogpoint",     "TGeogPoint" },
+  [T_NPOINT]          = { "npoint",         "NPoint" },
+  [T_NPOINTSET]       = { "npointset",      "NPointSet" },
+  [T_NSEGMENT]        = { "nsegment",       "NSegment" },
+  [T_TNPOINT]         = { "tnpoint",        "TNPoint" },
+  [T_POSE]            = { "pose",           "Pose" },
+  [T_POSESET]         = { "poseset",        "PoseSet" },
+  [T_TPOSE]           = { "tpose",          "TPose" },
+  [T_CBUFFER]         = { "cbuffer",        "CBuffer" },
+  [T_CBUFFERSET]      = { "cbufferset",     "CBufferSet" },
+  [T_TCBUFFER]        = { "tcbuffer",       "TCBuffer" },
+  [T_TGEOMETRY]       = { "tgeometry",      "TGeometry" },
+  [T_TGEOGRAPHY]      = { "tgeography",     "TGeography" },
+  [T_TRGEOMETRY]      = { "trgeometry",     "TRGeometry" },
+  [T_JSONB]           = { "jsonb",          "Jsonb" },
+  [T_JSONPATH]        = { "jsonpath",       "JsonPath" },
+  [T_JSONBSET]        = { "jsonbset",       "JsonbSet" },
+  [T_TJSONB]          = { "tjsonb",         "TJsonb" },
+  [T_TBIGINT]         = { "tbigint",        "TBigInt" },
+  [T_H3INDEX]         = { "h3index",        "H3Index" },
+  [T_H3INDEXSET]      = { "h3indexset",     "H3IndexSet" },
+  [T_TH3INDEX]        = { "th3index",       "TH3Index" },
+  [T_QUADBIN]         = { "quadbin",        "Quadbin" },
+  [T_QUADBINSET]      = { "quadbinset",     "QuadbinSet" },
+  [T_TQUADBIN]        = { "tquadbin",       "TQuadbin" },
+  [T_S2CELL]          = { "s2cell",         "S2Cell" },
+  [T_S2CELLSET]       = { "s2cellset",      "S2CellSet" },
+  [T_TS2CELL]         = { "ts2cell",        "TS2Cell" },
+  [T_PCPOINT]         = { "pcpoint",        "PCPoint" },
+  [T_PCPOINTSET]      = { "pcpointset",     "PCPointSet" },
+  [T_TPCPOINT]        = { "tpcpoint",       "TPCPoint" },
+  [T_PCPATCH]         = { "pcpatch",        "PCPatch" },
+  [T_PCPATCHSET]      = { "pcpatchset",     "PCPatchSet" },
+  [T_TPCPATCH]        = { "tpcpatch",       "TPCPatch" },
+  [T_TPCBOX]          = { "tpcbox",         "TPCBox" },
+  [T_RAQUET]          = { "raquet",         "RaQuet" },
+  [T_POSECHAIN]       = { "posechain",      "PoseChain" },
+  [T_POSECHAINSET]    = { "posechainset",   "PoseChainSet" },
+  [T_TPOSECHAIN]      = { "tposechain",     "TPoseChain" },
 };
 
 /**
@@ -378,9 +387,26 @@ meostype_name(MeosType type)
    * meos_error's %s segfaults inside __strlen_avx2. Return a sentinel
    * string instead so the caller's error message survives. */
   const int n = (int) (sizeof(MEOS_TYPE_NAMES) / sizeof(MEOS_TYPE_NAMES[0]));
-  if ((int) type < 0 || (int) type >= n || MEOS_TYPE_NAMES[type] == NULL)
+  if ((int) type < 0 || (int) type >= n || MEOS_TYPE_NAMES[type].name == NULL)
     return "unknown";
-  return MEOS_TYPE_NAMES[type];
+  return MEOS_TYPE_NAMES[type].name;
+}
+
+/**
+ * @brief Return the CamelCase name of the MEOS type, the name that the
+ * bindings give its class, or NULL when the type has none
+ * @details In a function name, the type is written with this name with only
+ * its first letter in uppercase: `toTstzspanset`, `expandBigint`.
+ * @param[in] type Type
+ * @see #meostype_name
+ */
+const char *
+meostype_camel_name(MeosType type)
+{
+  const int n = (int) (sizeof(MEOS_TYPE_NAMES) / sizeof(MEOS_TYPE_NAMES[0]));
+  if ((int) type < 0 || (int) type >= n)
+    return NULL;
+  return MEOS_TYPE_NAMES[type].camel;
 }
 
 /*****************************************************************************/
@@ -495,7 +521,7 @@ meostype_from_string(const char *name)
   int n = (int) (sizeof(MEOS_TYPE_NAMES) / sizeof(MEOS_TYPE_NAMES[0]));
   for (int i = 0; i < n; i++)
   {
-    if (MEOS_TYPE_NAMES[i] && strcmp(MEOS_TYPE_NAMES[i], name) == 0)
+    if (MEOS_TYPE_NAMES[i].name && strcmp(MEOS_TYPE_NAMES[i].name, name) == 0)
       return (MeosType) i;
   }
   return T_UNKNOWN;
