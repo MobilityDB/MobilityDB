@@ -192,6 +192,7 @@ extern Datum Tcomp_temporal_base(FunctionCallInfo fcinfo,
 /* Indexing functions */
 
 extern Temporal *temporal_slice(Datum tempdatum);
+extern bool temporal_slices_share_no_time(Datum tempdatum1, Datum tempdatum2);
 
 /*****************************************************************************/
 

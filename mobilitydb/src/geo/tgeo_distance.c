@@ -46,6 +46,7 @@
 /* MobilityDB */
 #include "pg_geo/postgis.h"
 #include "pg_geo/tspatial.h"
+#include "pg_temporal/temporal.h"
 #include "pg_temporal/type_util.h"
 
 /*****************************************************************************
@@ -153,6 +154,9 @@ PG_FUNCTION_INFO_V1(Tdistance_tgeo_tgeo);
 Datum
 Tdistance_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool spheroid = true;
@@ -250,6 +254,9 @@ PG_FUNCTION_INFO_V1(NAI_tgeo_tgeo);
 Datum
 NAI_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool spheroid = true;
@@ -582,6 +589,9 @@ PG_FUNCTION_INFO_V1(NAD_tgeo_tgeo);
 Datum
 NAD_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool spheroid = true;
@@ -680,6 +690,9 @@ PG_FUNCTION_INFO_V1(Shortestline_tgeo_tgeo);
 Datum
 Shortestline_tgeo_tgeo(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   bool spheroid = true;

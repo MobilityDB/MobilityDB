@@ -212,6 +212,9 @@ PG_FUNCTION_INFO_V1(Tdistance_tcbuffer_tcbuffer);
 Datum
 Tdistance_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tcbuffer_tcbuffer(temp1, temp2);
@@ -322,6 +325,9 @@ PG_FUNCTION_INFO_V1(NAI_tcbuffer_tcbuffer);
 Datum
 NAI_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   TInstant *result = nai_tcbuffer_tcbuffer(temp1, temp2);
@@ -527,6 +533,9 @@ PG_FUNCTION_INFO_V1(NAD_tcbuffer_tcbuffer);
 Datum
 NAD_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tcbuffer_tcbuffer(temp1, temp2);
@@ -637,6 +646,9 @@ PG_FUNCTION_INFO_V1(Shortestline_tcbuffer_tcbuffer);
 Datum
 Shortestline_tcbuffer_tcbuffer(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tcbuffer_tcbuffer(temp1, temp2);

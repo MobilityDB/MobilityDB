@@ -147,6 +147,9 @@ PG_FUNCTION_INFO_V1(Tdistance_tnpoint_tnpoint);
 Datum
 Tdistance_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tnpoint_tnpoint(temp1, temp2);
@@ -257,6 +260,9 @@ PG_FUNCTION_INFO_V1(NAI_tnpoint_tnpoint);
 Datum
 NAI_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   TInstant *result = nai_tnpoint_tnpoint(temp1, temp2);
@@ -414,6 +420,9 @@ PG_FUNCTION_INFO_V1(NAD_tnpoint_tnpoint);
 Datum
 NAD_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tnpoint_tnpoint(temp1, temp2);
@@ -524,6 +533,9 @@ PG_FUNCTION_INFO_V1(Shortestline_tnpoint_tnpoint);
 Datum
 Shortestline_tnpoint_tnpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   GSERIALIZED *result = shortestline_tnpoint_tnpoint(temp1, temp2);

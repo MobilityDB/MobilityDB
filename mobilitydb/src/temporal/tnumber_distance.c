@@ -47,6 +47,7 @@
 #include "temporal/type_util.h"
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
+#include "pg_temporal/temporal.h"
 
 /*****************************************************************************
  * Temporal distance
@@ -105,6 +106,9 @@ PG_FUNCTION_INFO_V1(Tdistance_tnumber_tnumber);
 Datum
 Tdistance_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   Temporal *result = tdistance_tnumber_tnumber(temp1, temp2);
@@ -549,6 +553,9 @@ PG_FUNCTION_INFO_V1(NAD_tnumber_tnumber);
 Datum
 NAD_tnumber_tnumber(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   MeosType basetype = temptype_basetype(temp1->temptype);

@@ -252,6 +252,44 @@ temporal_slice(Datum tempdatum)
   return result;
 }
 
+/**
+ * @brief Return true when the headers of two temporal datums tell that the
+ * values share no time and that a function of the two would accept them
+ * @details The headers are read as #temporal_slice reads them, so a value
+ * stored compressed or out of line is not decompressed. The values are
+ * accepted together where their temporal types, their geodetic flags and
+ * their Z flags are equal and, for spatial types, their SRIDs, read from
+ * their bounding boxes:
+ * values the function would refuse are left to it, which raises the error.
+ * A function of two temporal values answers no value where they share no
+ * time, which the bounding periods of the headers tell
+ * @param[in] tempdatum1,tempdatum2 Temporal datums
+ */
+bool
+temporal_slices_share_no_time(Datum tempdatum1, Datum tempdatum2)
+{
+  Temporal *temp1 = temporal_slice(tempdatum1);
+  Temporal *temp2 = temporal_slice(tempdatum2);
+  bool result = false;
+  if (temp1->temptype == temp2->temptype &&
+      MEOS_FLAGS_GET_GEODETIC(temp1->flags) ==
+        MEOS_FLAGS_GET_GEODETIC(temp2->flags) &&
+      MEOS_FLAGS_GET_Z(temp1->flags) == MEOS_FLAGS_GET_Z(temp2->flags))
+  {
+    Span s1, s2;
+    temporal_set_tstzspan(temp1, &s1);
+    temporal_set_tstzspan(temp2, &s2);
+    result = ! overlaps_span_span(&s1, &s2) &&
+      (! tspatial_type(temp1->temptype) ||
+       tspatial_srid(temp1) == tspatial_srid(temp2));
+  }
+  if ((Pointer) temp1 != DatumGetPointer(tempdatum1))
+    pfree(temp1);
+  if ((Pointer) temp2 != DatumGetPointer(tempdatum2))
+    pfree(temp2);
+  return result;
+}
+
 /*****************************************************************************
  * Version functions
  *****************************************************************************/
