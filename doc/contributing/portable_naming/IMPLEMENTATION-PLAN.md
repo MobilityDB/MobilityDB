@@ -56,6 +56,11 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   owner decided on 2026-10-27: `tools/scripts/check_strict_nullable.py` checks it with a baseline,
   MERGED as MobilityDB #3215 (`db1109b935`), its baseline of 203 findings fixed one topic at a time:
   178 after G86 to G89, with no unchecked read left; G90 and G91 carry the rest.
+- **The conversion of a temporal network point to a temporal geometry point builds each point in
+  the stack**, outside the plan, as the owner decided on 2026-11-07 ("approve the rewrite"):
+  branch `perf/tnpoint-to-tgeompoint-points` rewrites `842c640e83` there, the
+  `route_point_tinstant` of `meos/src/npoint/tnpoint.c` and its calls, which take the point
+  located on the route instead of a point array, the conversion along the route unchanged.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
