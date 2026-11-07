@@ -7305,6 +7305,46 @@ point_segment_distance_offset_exact(const double *p, const double *a,
 }
 
 /**
+ * @brief Return the sign of `(u . u)(w . w - r^2) - (w . u)^2` where its
+ * evaluation in pairs of doubles decides it, and 2 otherwise
+ * @details The value #point_segment_side_sign_inputs decides exactly, with
+ * `w = p - a` and `u = b - a`, evaluated on pairs of doubles carrying a bound
+ * on their error (#DDBound), as #plane_point_offset_sign reads its value ahead
+ * of #WideDyadic and as #point_segment_offset_filter_sign filters the rounding
+ * of the same quantity. A value whose bound leaves it on one side of zero has
+ * that sign, and a value with no error that is zero is an exact zero
+ * @param[in] p,a,b The point and the two ends of the segment
+ * @param[in] ndims Number of coordinates, 2 or 3
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1, or 2 where the bound cannot tell
+ */
+static int
+point_segment_side_sign_filter(const double *p, const double *a,
+  const double *b, int ndims, double r)
+{
+  DDBound u[3], w[3], rr;
+  for (int k = 0; k < 3; k++)
+  {
+    if (k < ndims)
+    {
+      two_diff(b[k], a[k], &u[k].hi, &u[k].lo);
+      two_diff(p[k], a[k], &w[k].hi, &w[k].lo);
+    }
+    else
+      u[k].hi = u[k].lo = w[k].hi = w[k].lo = 0.0;
+    u[k].e = w[k].e = 0.0;
+  }
+  rr.hi = r; rr.lo = 0.0; rr.e = 0.0;
+  DDBound uu = ddb_dot3(u, u), ww = ddb_dot3(w, w), wu = ddb_dot3(w, u);
+  DDBound val = ddb_sub(ddb_mul(uu, ddb_sub(ww, ddb_mul(rr, rr))),
+    ddb_mul(wu, wu));
+  if (ddb_is_zero(val))
+    return 0;
+  int sign = ddb_sign(val);
+  return (sign != 0) ? sign : 2;
+}
+
+/**
  * @brief Return the sign of the distance of a point to a segment less a
  * radius, computed exactly for any finite doubles
  * @details The sign #point_segment_distance_offset_exact rounds its answer
@@ -7312,9 +7352,11 @@ point_segment_distance_offset_exact(const double *p, const double *a,
  * #point_segment_dot_sign_inputs says so, and the sign is then that of the
  * squared distance of the two points less the squared radius
  * (#point_distance_offset_side_sign); otherwise it is that of
- * `(w x u)^2 - r^2 (u . u)` (#point_segment_side_sign_inputs). Each is a sum
- * of products of the input doubles decided exactly, so the answer is 0
- * exactly where the disc of the radius is tangent to the segment
+ * `(w x u)^2 - r^2 (u . u)`, read first in pairs of doubles
+ * (#point_segment_side_sign_filter) and exactly where they cannot tell
+ * (#point_segment_side_sign_inputs). Each is a sum of products of the input
+ * doubles decided exactly, so the answer is 0 exactly where the disc of the
+ * radius is tangent to the segment
  * @param[in] p,a,b The point and the two ends of the segment
  * @param[in] ndims Number of coordinates, 2 or 3
  * @param[in] r Radius, not negative
@@ -7330,6 +7372,9 @@ point_segment_offset_sign(const double *p, const double *a, const double *b,
     return point_distance_offset_side_sign(p, a, ndims, r, 0.0, 0.0);
   if (point_segment_dot_sign_inputs(p, b, a, b, ndims) >= 0)
     return point_distance_offset_side_sign(p, b, ndims, r, 0.0, 0.0);
+  int sign = point_segment_side_sign_filter(p, a, b, ndims, r);
+  if (sign != 2)
+    return sign;
   return point_segment_side_sign_inputs(p, a, b, ndims, r, 0.0, 0.0);
 }
 
@@ -8451,12 +8496,77 @@ segment_interior_wide(const double *a, const double *b, const double *c,
 }
 
 /**
+ * @brief Return the sign of a bounded value where its bound decides it, 0 for
+ * an exact zero, and 2 where the bound cannot tell
+ */
+static pg_attribute_always_inline int
+ddb_sign_known(DDBound x)
+{
+  if (ddb_is_zero(x))
+    return 0;
+  int sign = ddb_sign(x);
+  return (sign != 0) ? sign : 2;
+}
+
+/**
+ * @brief Return the sign #segment_interior_offset_sign answers where its
+ * evaluation in pairs of doubles decides it, and 2 otherwise
+ * @details The values #segment_interior_wide_values forms on #WideDyadic,
+ * with `u = b - a`, `v = d - c`, `e = c - a` and `n = u x v`, formed on pairs
+ * of doubles carrying a bound on their error (#DDBound), as
+ * #plane_point_offset_sign reads its value ahead of #WideDyadic. The nearest
+ * points lie outside a segment, the answer 1, where one of the signs that
+ * place them is known on the wrong side (#SEGMENT_INSIDE); they lie inside
+ * both where all are known on the right side, and the answer is then the sign
+ * of `(e . n)^2 - r^2 (n . n)` where its bound decides it. A value with no
+ * error that is zero is an exact zero (#ddb_sign_known)
+ * @param[in] a,b The two ends of the first segment, three coordinates each
+ * @param[in] c,d The two ends of the second segment, three coordinates each
+ * @param[in] r Radius, not negative
+ * @return -1, 0 or 1, or 2 where the bounds cannot tell
+ */
+static int
+segment_interior_offset_filter(const double *a, const double *b,
+  const double *c, const double *d, double r)
+{
+  DDBound u[3], v[3], e[3], n[3], ev[3], eu[3], rr;
+  ddb_diff3(b, a, u);
+  ddb_diff3(d, c, v);
+  ddb_diff3(c, a, e);
+  ddb_cross3(u, v, n);
+  ddb_cross3(e, v, ev);
+  ddb_cross3(e, u, eu);
+  DDBound nn = ddb_dot3(n, n), s = ddb_dot3(ev, n), t = ddb_dot3(eu, n);
+  const int q[5] = {ddb_sign_known(nn), ddb_sign_known(s),
+    ddb_sign_known(ddb_sub(s, nn)), ddb_sign_known(t),
+    ddb_sign_known(ddb_sub(t, nn))};
+  /* The sign each must have for the nearest points to lie inside both */
+  static const int inside[5] = {1, 1, -1, 1, -1};
+  bool known = true;
+  for (int k = 0; k < 5; k++)
+  {
+    if (q[k] == 2)
+      known = false;
+    else if (q[k] != inside[k])
+      return 1;
+  }
+  if (! known)
+    return 2;
+  rr.hi = r; rr.lo = 0.0; rr.e = 0.0;
+  DDBound en = ddb_dot3(e, n);
+  return ddb_sign_known(ddb_sub(ddb_mul(en, en),
+    ddb_mul(ddb_mul(rr, rr), nn)));
+}
+
+/**
  * @brief Return the sign of the distance of two segments in 3D less a radius
  * where their nearest points lie inside both, computed exactly for any finite
  * doubles, and 1 otherwise
  * @details The sign of `(e . n)^2 - r^2 (n . n)`, as #nearest_lines_side reads
- * it for a midpoint (#segment_interior_wide_values). Where the nearest points
- * do not lie inside both, an end of one of the segments is the nearest, which
+ * it for a midpoint, read first in pairs of doubles
+ * (#segment_interior_offset_filter) and on #WideDyadic where they cannot tell
+ * (#segment_interior_wide_values). Where the nearest points do not lie inside
+ * both, an end of one of the segments is the nearest, which
  * #point_segment_offset_sign answers
  * @param[in] a,b The two ends of the first segment, three coordinates each
  * @param[in] c,d The two ends of the second segment, three coordinates each
@@ -8468,6 +8578,9 @@ segment_interior_offset_sign(const double *a, const double *b, const double *c,
   const double *d, double r)
 {
   assert(r >= 0.0);
+  int sign = segment_interior_offset_filter(a, b, c, d, r);
+  if (sign != 2)
+    return sign;
   WideDyadic en, nn, wr, r2;
   if (! segment_interior_wide_values(a, b, c, d, &en, &nn))
     return 1;
