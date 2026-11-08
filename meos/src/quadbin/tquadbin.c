@@ -37,8 +37,8 @@
  * - argument validators for every supported operand pair,
  * - type-specific input parsers that delegate to the generic
  * int-8 parser but tag the result with `T_TQUADBIN`,
- * - type-specific constructors (`tquadbin_make`, `tquadbininst_make`,
- * `tquadbinseq_make`, `tquadbinseqset_make`),
+ * - type-specific constructors (`tquadbininst_make`, `tquadbinseq_make`,
+ * `tquadbinseqset_make`),
  * - type-specific accessors (`tquadbin_start_value`,
  * `tquadbin_end_value`, `tquadbin_value_n`, `tquadbin_values`,
  * `tquadbin_value_at_timestamptz`) that hide the Datum-packing
@@ -356,17 +356,6 @@ TSequenceSet *
 tquadbinseqset_make(const TSequence **sequences, int count)
 {
   return tsequenceset_make((TSequence **) sequences, count, NORMALIZE);
-}
-
-/**
- * @ingroup meos_quadbin_constructor
- * @brief Shorthand constructor: the single-instant temporal quadbin cell
- * @details Alias for `tquadbininst_make`.
- */
-Temporal *
-tquadbin_make(Quadbin value, TimestampTz t)
-{
-  return (Temporal *) tquadbininst_make(value, t);
 }
 
 /*****************************************************************************
