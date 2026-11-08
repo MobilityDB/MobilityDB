@@ -110,6 +110,30 @@ extern Datum datum_geo_round(Datum value, Datum size);
 extern GSERIALIZED *point_round(const GSERIALIZED *gs, int maxdd);
 
 /*****************************************************************************
+ * Base geometry functions a public function chooses between: the planar
+ * and the geodetic computation of geo_area, geo_centroid, geo_length,
+ * geo_perimeter and geo_shortestline, and the 2D and the 3D computation of
+ * geom_dwithin, geom_intersects and geom_max_distance
+ *****************************************************************************/
+
+extern GSERIALIZED *geog_centroid(const GSERIALIZED *gs, bool use_spheroid);
+extern GSERIALIZED *geog_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2, bool use_spheroid);
+extern GSERIALIZED *geom_centroid(const GSERIALIZED *gs);
+extern GSERIALIZED *geom_shortestline(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_dwithin2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist);
+extern bool geom_dwithin3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2, double dist);
+extern bool geom_intersects2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern bool geom_intersects3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geog_area(const GSERIALIZED *gs, bool use_spheroid);
+extern double geog_length(const GSERIALIZED *gs, bool use_spheroid);
+extern double geog_perimeter(const GSERIALIZED *gs, bool use_spheroid);
+extern double geom_area(const GSERIALIZED *gs);
+extern double geom_length(const GSERIALIZED *gs);
+extern double geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_max_distance3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
+extern double geom_perimeter(const GSERIALIZED *gs);
+
+/*****************************************************************************
  * Transformation functions
  *****************************************************************************/
 

@@ -152,6 +152,10 @@
  * @ingroup meos_internal_geo_base
  * @brief Spatial relationship functions for static geometries
  *
+ * @defgroup meos_internal_geo_base_dist Distance functions
+ * @ingroup meos_internal_geo_base
+ * @brief Distance functions for static geometries
+ *
  * @defgroup meos_internal_geo_base_bbox Bounding box functions
  * @ingroup meos_internal_geo_base
  * @brief Bounding box functions for static geometries
