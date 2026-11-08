@@ -1847,9 +1847,9 @@ TGEOMETRY_CONFIG = dict(
     # SpanSet*, on top of the `int *` flat-array return this family already
     # returns. That combination is not one of emit_call's generic shapes, so
     # these four are exercised by hand in the cleanup block instead, matching
-    # trgeometry_value_n. tpoint_as_mvtgeom returns a bool and hands back an
-    # owned geometry and an owned timestamp array through out-parameters, so
-    # the cleanup block calls it and frees both the same way.
+    # trgeometry_value_n. tpoint_as_mvtgeom returns an owned geometry and
+    # hands back an owned timestamp array through an out-parameter, so the
+    # cleanup block calls it and frees both the same way.
     manual=[r"re:^t(dwithin|intersects|touches|disjoint)_tgeoarr_tgeoarr$",
             "tpoint_as_mvtgeom"],
     common_inputs="""\
@@ -2087,12 +2087,11 @@ TGEOMETRY_CONFIG = dict(
   /* A zero extent is rejected ("Extent must be greater than 0"); a real MVT
    * tile extent and buffer make the conversion allocate its outputs. */
   {
-    GSERIALIZED *mvt_geom = NULL;
     int64 *mvt_times = NULL;
     int mvt_count = 0;
-    bool r = tpoint_as_mvtgeom(tpoint1, stbox1, 4096, 256, true, &mvt_geom,
-      &mvt_times, &mvt_count);
-    printf("tpoint_as_mvtgeom: %d n=%d\\n", (int) r, mvt_count);
+    GSERIALIZED *mvt_geom = tpoint_as_mvtgeom(tpoint1, stbox1, 4096, 256,
+      true, &mvt_times, &mvt_count);
+    printf("tpoint_as_mvtgeom: %d n=%d\\n", (int) (mvt_geom != NULL), mvt_count);
     if (mvt_geom) free(mvt_geom);
     if (mvt_times) free(mvt_times);
   }

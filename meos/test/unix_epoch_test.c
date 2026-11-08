@@ -131,19 +131,18 @@ int main(void)
   for (int i = 0; i < 2; i++)
   {
     Temporal *temp = tgeompoint_in(points[i]);
-    GSERIALIZED *gs;
     int64 *timesarr;
     int count;
-    bool found = tpoint_as_mvtgeom(temp, bounds, 4096, 256, true, &gs,
+    GSERIALIZED *gs = tpoint_as_mvtgeom(temp, bounds, 4096, 256, true,
       &timesarr, &count);
     printf("tpoint_as_mvtgeom(%s): %lld\n", points[i],
-      found && count == 1 ? (long long) timesarr[0] : -1LL);
-    if (! found || count != 1 || timesarr[0] != seconds[i])
+      gs && count == 1 ? (long long) timesarr[0] : -1LL);
+    if (! gs || count != 1 || timesarr[0] != seconds[i])
     {
       printf("  expected %lld\n", (long long) seconds[i]);
       failures++;
     }
-    if (found)
+    if (gs)
     {
       free(gs); free(timesarr);
     }
