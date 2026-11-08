@@ -67,6 +67,12 @@ a version, is measured once in MEOS (`cstring_size`). No SQL function changes, a
 object layer of each binding keeps its surface: the wrapper consumes the size and answers the
 string alone.
 
+The rule binds the public functions, the ones a binding reaches through the catalog: all 144
+public `char *` returns state their size. Seven internal ones write none, `text_to_cstring`,
+`float4_out`, `int16_out` and the point-cloud writers `pc_hexbytes_from_bytes`,
+`pc_schema_to_json`, `pc_point_to_string` and `pc_patch_to_string`, and a binding that reads one
+of them scans for the terminator.
+
 DECIDED BY THE OWNER 2026-11-04: PyMEOS-CFFI keeps the scan. Its wrapper passes `size_out`, which
 the C signature requires, and reads the string with `_ffi.string`, since reading it with its size
 gains nothing on AIS and costs a short string more. The ratios are of the sized read to the scan,
