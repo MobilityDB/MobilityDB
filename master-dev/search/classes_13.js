@@ -34,11 +34,12 @@ var searchData=
   ['toweryarg_31',['TowerYArg',['../structTowerYArg.html',1,'']]],
   ['tpcbox_32',['TPCBox',['../structTPCBox.html',1,'']]],
   ['tpcpatchpointsstate_33',['TpcpatchPointsState',['../structTpcpatchPointsState.html',1,'']]],
-  ['trip_5frecord_34',['trip_record',['../structtrip__record.html',1,'']]],
-  ['trip_5ft_35',['trip_t',['../structtrip__t.html',1,'']]],
-  ['tsequence_36',['TSequence',['../structTSequence.html',1,'']]],
-  ['tsequenceset_37',['TSequenceSet',['../structTSequenceSet.html',1,'']]],
-  ['tspatialarrpair_38',['TspatialarrPair',['../structTspatialarrPair.html',1,'']]],
-  ['tucheck_39',['TuCheck',['../structTuCheck.html',1,'']]],
-  ['type_5fcamel_40',['type_camel',['../structtype__camel.html',1,'']]]
+  ['trgeoplacements_34',['TrgeoPlacements',['../structTrgeoPlacements.html',1,'']]],
+  ['trip_5frecord_35',['trip_record',['../structtrip__record.html',1,'']]],
+  ['trip_5ft_36',['trip_t',['../structtrip__t.html',1,'']]],
+  ['tsequence_37',['TSequence',['../structTSequence.html',1,'']]],
+  ['tsequenceset_38',['TSequenceSet',['../structTSequenceSet.html',1,'']]],
+  ['tspatialarrpair_39',['TspatialarrPair',['../structTspatialarrPair.html',1,'']]],
+  ['tucheck_40',['TuCheck',['../structTuCheck.html',1,'']]],
+  ['type_5fcamel_41',['type_camel',['../structtype__camel.html',1,'']]]
 ];
