@@ -97,6 +97,8 @@ typedef struct struct_MEOSPROJSRSCache
 
 /* Global variable to hold the Proj object cache */
 static MEOS_TLS MEOSPROJSRSCache *MEOS_PROJ_CACHE = NULL;
+/* File the systems of the Proj object cache were read from */
+static MEOS_TLS char *MEOS_PROJ_CACHE_PATH = NULL;
 
 /**
  * @brief Utility structure to get many potential string representations
@@ -168,11 +170,29 @@ PROJSRSDestroyPJ(void *projection)
 
 /**
  * @brief Get the Proj cache entry from the global variable if one exists
- * @details If it doesn't exist, make a new blank one and return it.
+ * @details If it doesn't exist, or holds the systems of a file other than
+ * the one #meos_set_spatial_ref_sys_csv names last, make a new blank one and
+ * return it, as GetWaysCache of ways_meos.c makes its cache anew: the systems
+ * of a file answer for that file alone. The path of the file is held per
+ * thread with the cache, so each thread's cache follows the file it reads.
  */
 MEOSPROJSRSCache *
 GetMEOSPROJSRSCache(void)
 {
+  if (MEOS_PROJ_CACHE && MEOS_PROJ_CACHE_PATH &&
+      strcmp(MEOS_PROJ_CACHE_PATH, SPATIAL_REF_SYS_CSV) == 0)
+    return MEOS_PROJ_CACHE;
+  char *path = malloc(strlen(SPATIAL_REF_SYS_CSV) + 1);
+  if (! path)
+  {
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the path of the Proj object cache");
+    return NULL;
+  }
+  strcpy(path, SPATIAL_REF_SYS_CSV);
+  /* Free the systems and the path of another file */
+  meos_finalize_projsrs();
+  MEOS_PROJ_CACHE_PATH = path;
   MEOSPROJSRSCache* cache = MEOS_PROJ_CACHE;
   if (! cache)
   {
@@ -200,6 +220,8 @@ meos_finalize_projsrs(void)
   /* Idempotency: only destroy a live cache, and null the slot so a
    * second finalize call does not double-free the cache and its
    * stored projections. */
+  free(MEOS_PROJ_CACHE_PATH);
+  MEOS_PROJ_CACHE_PATH = NULL;
   MEOSPROJSRSCache *cache = MEOS_PROJ_CACHE;
   if (! cache)
     return;
