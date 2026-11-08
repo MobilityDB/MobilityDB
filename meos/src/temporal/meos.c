@@ -730,6 +730,10 @@ meos_finalize(void)
   /* Finalize Ways cache */
   meos_finalize_ways();
 #endif
+#if POINTCLOUD
+  /* Free the schemas the pointcloud schema cache of this thread holds */
+  meos_pc_schema_clear();
+#endif
   /* Finalize PROJ */
   proj_finalize();
   /* Finalize the PostgreSQL pseudo-random number generators */
