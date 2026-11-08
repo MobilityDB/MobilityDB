@@ -26,6 +26,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG3 | The temporal relationships of a 3D value: `tIntersects`, `tDisjoint` | open, reads Z by decision 1 |
 | TG4 | The restrictions by a box of a 3D value: `atStbox`, `minusStbox` | open, reads Z by decision 1 |
 | TG5 | The merged `traversedArea` of a 3D value answers the ground its 2D projection covers, which it does not in a turn | open |
+| TG26 | The merged `traversedArea` of a 2D body that turns joins placements 0.05 rad apart by their hull, which is the ground it covers only when it does not turn: on rows 1094 and 1153 of the corpus of the exact rigid distance it reaches a geometry the body stays 0.042 and 0.045 from, and `trgeometry_convex_sweep` states the hull as what the body covers. A translating body is exact: a contact through a vertex the union constructs reads as apart in doubles, as any region of rounded vertices does | open |
 | TG23 | `eIntersects` and `tIntersects` of two 2D values agree on the car of nuScenes that touches the ego vehicle | on #3347, whose witness shows the lifting compares poses; not yet run on that car |
 
 ## Defects
