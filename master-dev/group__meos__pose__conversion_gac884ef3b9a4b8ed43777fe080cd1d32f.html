@@ -80,6 +80,8 @@ $(function() {
       <div class="navtab">
         <table>
           <tr><td class="navtab"><a class="navtab" href="group__meos__pose__conversion_gae227ce951bd0680a2bf8fcff36ac9f62.html#gae227ce951bd0680a2bf8fcff36ac9f62">tpose_make</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__conversion_ga4acf5f2e433ec6442075060cee55f5eb.html#ga4acf5f2e433ec6442075060cee55f5eb">tpose_to_tgeogpoint</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__pose__conversion_ga99933350772606047660e33b5dbe27e5.html#ga99933350772606047660e33b5dbe27e5">tpose_to_tgeompoint</a></td></tr>
           <tr><td class="navtabHL"><a class="navtab" href="group__meos__pose__conversion_gac884ef3b9a4b8ed43777fe080cd1d32f.html#gac884ef3b9a4b8ed43777fe080cd1d32f">tpose_to_tpoint</a></td></tr>
         </table>
       </div>
@@ -104,10 +106,11 @@ $(function() {
 <p>Return a temporal point from a temporal pose. </p>
 <p >The result is a temporal geometry point for a planar pose and a temporal geography point for a geodetic pose </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose @csqlfn <a class="el" href="group__mobilitydb__pose__conversion_ga69dbf6c7611d62b0ff4f5fe76ed4df14.html#ga69dbf6c7611d62b0ff4f5fe76ed4df14" title="Convert a temporal pose into a temporal point @sqlfn tgeompoint(), tgeogpoint()">Tpose_to_tpoint()</a> </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">temp</td><td><a class="el" href="structTemporal.html" title="Structure to represent the common structure of temporal values of any temporal subtype.">Temporal</a> pose </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>The type of the result follows the pose, unlike <a class="el" href="group__meos__pose__conversion_ga99933350772606047660e33b5dbe27e5.html#ga99933350772606047660e33b5dbe27e5" title="Convert a temporal pose, planar or geodetic, into a temporal geometry point.">tpose_to_tgeompoint</a> and <a class="el" href="group__meos__pose__conversion_ga4acf5f2e433ec6442075060cee55f5eb.html#ga4acf5f2e433ec6442075060cee55f5eb" title="Convert a temporal pose, planar or geodetic, into a temporal geography point.">tpose_to_tgeogpoint</a> </dd></dl>
 
 </div>
 </div>
