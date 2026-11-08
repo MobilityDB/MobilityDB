@@ -51,6 +51,7 @@
 /* MobilityDB */
 #include "pg_temporal/meos_catalog.h"
 #include "pg_temporal/skiplist.h"
+#include "pg_temporal/temporal.h" /* For input_interp_string */
 
 /*****************************************************************************
  * Generic aggregate functions for TInstant and TSequence
@@ -767,13 +768,8 @@ Temporal_app_tinst_transfn(PG_FUNCTION_ARGS)
     interp = temptype_supports_linear(temptype) ? LINEAR : STEP;
   }
   else
-  {
     /* Input interpolation */
-    text *interp_txt = PG_GETARG_TEXT_P(2);
-    char *interp_str = text_to_cstring(interp_txt);
-    interp = interptype_from_string(interp_str);
-    pfree(interp_str);
-  }
+    interp = input_interp_string(fcinfo, 2);
 
   /* Take into account the arguments for the gaps */
   double maxdist = -1.0;
