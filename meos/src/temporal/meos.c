@@ -39,6 +39,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <common/pg_prng.h>
+#include <utils/formatting.h>
 #include <utils/jsonb.h>
 /* Proj */
 #include <proj.h>
@@ -722,6 +723,8 @@ meos_finalize(void)
   meos_finalize_relate();
   /* Finalize collation */
   meos_finalize_collation();
+  /* Free the date/time and number format picture caches */
+  formatting_destroy_cache();
 #if JSON
   /* Finalize the list keeping the items to be freed after a JSON parsing */
   json_destroy_tofree();
