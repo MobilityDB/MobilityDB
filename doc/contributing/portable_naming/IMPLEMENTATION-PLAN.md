@@ -64,9 +64,12 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   MERGED as MobilityDB #3491 (`dd6c9ed0ef`).
 - **The conversion of a temporal network point sequence to a temporal geometry point builds its
   sequence without validating its instants again**, outside the plan, as the owner decided on
-  2026-11-08 ("approve the rewrite"): branch `perf/tnpoint-conversion-unchecked-sequence` rewrites
-  `842c640e83` there, the closing `tsequence_make_free` of `tnpointseq_tgeompointseq_cont` in
-  `meos/src/npoint/tnpoint.c`, which `tsequence_make_exp1` replaces with its conditions as asserts.
+  2026-11-08 ("approve the rewrite"):
+  branch `perf/tnpoint-conversion-unchecked-sequence` rewrites `842c640e83` there, the closing
+  `tsequence_make_free` of `tnpointseq_tgeompointseq_cont` in `meos/src/npoint/tnpoint.c`, which
+  `tsequence_make_exp1` replaces with its conditions as asserts. Head `9c9f69b93c` on master
+  `cb53e29b35` holds its seven receipts (strict, Windows, cppcheck, valgrind, smoke, speed, and
+  the CGAL oracle 1111 of 1111); its pull request opens with this push.
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
