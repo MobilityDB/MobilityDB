@@ -62,6 +62,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_cbuffer.h>
+#include <meos_internal_geo.h>
 
 /* Whether the traversed area as one geometry holds the point */
 static bool

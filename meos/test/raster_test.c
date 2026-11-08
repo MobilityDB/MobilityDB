@@ -60,6 +60,7 @@
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_raster.h>
+#include <meos_internal_geo.h>
 
 /* A 3x3 raster with a single 32BF band */
 static const char *raster_one_band =

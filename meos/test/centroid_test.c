@@ -58,6 +58,7 @@
 #include <stdlib.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_internal_geo.h>
 
 /* Whether the centroid of the geometry stands within tol of (x, y) */
 static bool

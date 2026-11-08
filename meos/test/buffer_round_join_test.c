@@ -60,6 +60,7 @@
 #include <stdlib.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_internal_geo.h>
 
 /* The buffer of @p wkt by 1, asserted to be a surface covering @p cover */
 static void

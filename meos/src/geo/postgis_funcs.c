@@ -1404,7 +1404,7 @@ geom_measure(const GSERIALIZED *gs, WalkMeasure measure)
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the area of a geometry
  * @details Defined by
  *   - area(point) = 0
@@ -1431,7 +1431,7 @@ geom_area(const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the length of a geometry
  * @details Defined by
  *   - length(point) = 0
@@ -1457,7 +1457,7 @@ geom_length(const GSERIALIZED *gs)
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the perimeter of a geometry
  * @details Defined by
  *   - perimeter(point) = 0
@@ -1622,7 +1622,7 @@ geom_shortestline3d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_spatial
+ * @ingroup meos_internal_geo_base_spatial
  * @brief Return the shortest line between two geometries
  * @details The line is computed in 3D when the geometries have Z and in 2D
  * otherwise, as #geo_distance_fn selects the temporal distance, which refuses
@@ -2915,7 +2915,7 @@ geom_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_dist
+ * @ingroup meos_internal_geo_base_dist
  * @brief Return the maximum distance between two geometries
  * @details The maximum distance is the distance between the two points, one
  * on each geometry, that are farthest from each other
@@ -2948,7 +2948,7 @@ geom_max_distance2d(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_dist
+ * @ingroup meos_internal_geo_base_dist
  * @brief Return the maximum distance between two geometries in 3D
  * @details The maximum distance is the distance between the two points, one
  * on each geometry, that are farthest from each other
@@ -3099,7 +3099,7 @@ geom_distance(const GSERIALIZED *gs1, const GSERIALIZED *gs2)
 }
 
 /**
- * @ingroup meos_geo_base_rel
+ * @ingroup meos_internal_geo_base_rel
  * @brief Return true if the 3D geometries intersect
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS function: @p ST_3DIntersects(PG_FUNCTION_ARGS)
@@ -3552,7 +3552,7 @@ geom_dwithin_curves(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
 }
 
 /**
- * @ingroup meos_geo_base_rel
+ * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries are within a distance
  * @details Two geometries are answered exactly: the answer is that of their
  * exact distance, whatever double that distance rounds to. Those of straight
@@ -4013,7 +4013,7 @@ geom_dwithin3d_faces(const LWGEOM *geom1, const LWGEOM *geom2, double dist,
 }
 
 /**
- * @ingroup meos_geo_base_rel
+ * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries are within a distance
  * @details Two geometries with Z of points and segments are answered exactly:
  * the answer is that of their exact distance, whatever double that distance
@@ -4597,7 +4597,7 @@ geo_geo_n(const GSERIALIZED *gs, int n)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_base_spatial
+ * @ingroup meos_internal_geo_base_spatial
  * @brief Return the centroid of a geometry
  * @details The answer carries the ordinates of its input: the centroid is a
  * mean, and a mean is taken in every dimension the geometry states. PostGIS
@@ -5082,7 +5082,7 @@ geom_spatialrel(const GSERIALIZED *gs1, const GSERIALIZED *gs2, spatialRel rel)
 }
 
 /**
- * @ingroup meos_geo_base_rel
+ * @ingroup meos_internal_geo_base_rel
  * @brief Return true if two geometries intersects
  * @param[in] gs1,gs2 Geometries
  * @note PostGIS functions: @p ST_Intersects(PG_FUNCTION_ARGS)
@@ -7660,7 +7660,7 @@ geography_centroid_from_mpoly(const LWMPOLY* mpoly, bool use_spheroid,
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the centroid of a geometry
  * @note PostGIS function: @p geography_centroid(PG_FUNCTION_ARGS).
  */
@@ -7788,7 +7788,7 @@ geog_centroid(const GSERIALIZED *gs, bool use_spheroid)
  *****************************************************************************/
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the area of a geography in square meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
@@ -7864,7 +7864,7 @@ geog_area(const GSERIALIZED *gs, bool use_spheroid)
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return the perimeter of a geography in meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid
@@ -7922,7 +7922,7 @@ geog_perimeter(const GSERIALIZED *gs, bool use_spheroid)
 }
 
 /**
- * @ingroup meos_geo_base_accessor
+ * @ingroup meos_internal_geo_base_accessor
  * @brief Return double length in meters
  * @param[in] gs Geography
  * @param[in] use_spheroid True when using a spheroid

@@ -68,6 +68,7 @@
 #include <string.h>
 #include <meos.h>
 #include <meos_geo.h>
+#include <meos_internal_geo.h>
 
 typedef struct
 {
