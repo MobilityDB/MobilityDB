@@ -100,10 +100,15 @@ items).
   polygons narrower than an ulp, 16 of 16 wrong answers the certificate reads fail it and 8 right
   ones are certified, while 28 wrong and 2 right answers come from the older path, which
   `geom_buffer` takes where the arrangement declines and no certificate reads (step 24). No answer
-  CGAL finds wrong is certified. **Owed: speed.** On #3259 and step 17, with the pieces of each edge
-  swept by their boxes, native over GEOS called directly reads 1.484 and 1.185 on natural areas at
-  distances 1 and 50, 1.119 on the joints, 1.034 on the jittered holes and 5.151 on lines at distance
-  1; the arrangement alone reads 0.944 on natural areas at distance 1. Filters cannot close it: with
+  CGAL finds wrong is certified. An arc's bound includes a third form, H3: its distance to the
+  exact circle interpolated over its three written points, which clears 16 of the 40 places of
+  natural areas at distance 1 that the exact tests decided; CGAL's circle-segment traits still
+  find 1 199 of 1 199 natural areas right and certified, and no wrong answer certified.
+  **Owed: speed.** GEOS is only the speed arm here, the answers being CGAL's to judge. On #3259
+  and step 17, with the pieces of each edge swept by their boxes, the native time over the time of
+  GEOS called directly reads 1.355 and 1.136 on natural areas at distances 1 and 50, 1.067 on the
+  joints, 1.020 on the jittered holes and 5.160 on lines at distance 1; the arrangement alone
+  reads 0.944 on natural areas at distance 1. Filters cannot close it: with
   every test of the certificate switched off, its separate pass over the written pieces, the second
   pairing of their edges and the checks on rings meeting and keeping their sense still read 1.11.
   The owner's direction is both halves together: the certificate's tests run inside the
