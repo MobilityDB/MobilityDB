@@ -162,35 +162,6 @@ Tpose_to_tgeogpoint(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
-PGDLLEXPORT Datum Tpose_to_tpoint_opr(PG_FUNCTION_ARGS);
-PG_FUNCTION_INFO_V1(Tpose_to_tpoint_opr);
-/**
- * @brief Return the temporal point a relationship of a temporal pose delegates to,
- * which raises an error on a pose of the other kind where the conversions answer
- */
-Datum
-Tpose_to_tpoint_opr(PG_FUNCTION_ARGS)
-{
-  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  /* A pose carries its own reference frame, so the pose decides the type of the
-   * point: a planar pose yields a temporal geometry point and a geodetic one a
-   * temporal geography point. Both conversions share this function, so the frame
-   * of the argument must agree with the type the caller asked for — converting
-   * to the other one returns a value whose declared type contradicts its
-   * coordinates, which every operator dispatching on that type then misreads */
-  MeosType restype = oid_meostype(get_fn_expr_rettype(fcinfo->flinfo));
-  bool valid = (restype == T_TGEOGPOINT) ?
-    ensure_geodetic(temp->flags) : ensure_not_geodetic(temp->flags);
-  if (! valid)
-  {
-    PG_FREE_IF_COPY(temp, 0);
-    PG_RETURN_NULL();
-  }
-  Temporal *result = tpose_to_tpoint(temp);
-  PG_FREE_IF_COPY(temp, 0);
-  PG_RETURN_POINTER(result);
-}
-
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

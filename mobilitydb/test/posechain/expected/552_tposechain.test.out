@@ -299,5 +299,8 @@ SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeog
 (1 row)
 
 SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "econtains" statement 1
+ econtains 
+-----------
+ t
+(1 row)
+

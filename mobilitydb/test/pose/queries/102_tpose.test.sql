@@ -774,7 +774,7 @@ SELECT asEWKT(tpose 'Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
 SELECT tpose 'SRID=3857;Pose(Point(1 2),0.5)@2001-01-01'::tgeogpoint;
 SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeompoint);
 SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
--- A relationship with no definition on the ellipsoid keeps refusing a geodetic pose
+-- A relationship converts a pose of the other kind, as the casts convert it
 SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
 SELECT eTouches(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
 SELECT tContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
