@@ -234,7 +234,7 @@ subtypes:
     # SUPPORT tspatial_supportfn (tpose_spatialrels.c), and the other
     # relationships stay SQL cast-compositions.
     index_support: true
-    convert: "@extschema@.tgeompointOpr(@N@)"
+    convert: "@N@::@extschema@.tgeompoint"
     point_target: true
     details:
       spatialrels: |-
@@ -272,7 +272,7 @@ subtypes:
     # wrappers with SUPPORT tspatial_supportfn (tposechain_spatialrels.c), as
     # those of a temporal pose are.
     index_support: true
-    convert: "@extschema@.tgeompointOpr(@N@::@extschema@.tpose)"
+    convert: "@N@::@extschema@.tpose::@extschema@.tgeompoint"
     point_target: true
     details:
       spatialrels: |-

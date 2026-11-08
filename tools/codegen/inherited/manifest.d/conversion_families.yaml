@@ -88,8 +88,6 @@ conversion_families:
   - fns:
     - {sig: "tgeompoint(tpose)", ret: tgeompoint, sym: Tpose_to_tgeompoint}
     - {sig: "tgeogpoint(tpose)", ret: tgeogpoint, sym: Tpose_to_tgeogpoint}
-    - {sig: "tgeompointOpr(tpose)", ret: tgeompoint, sym: Tpose_to_tpoint_opr}
-    - {sig: "tgeogpointOpr(tpose)", ret: tgeogpoint, sym: Tpose_to_tpoint_opr}
   - lit: "\nCREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);\nCREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);\n\n"
 - family: rgeo
   file: mobilitydb/sql/rgeo/150_trgeo.in.sql

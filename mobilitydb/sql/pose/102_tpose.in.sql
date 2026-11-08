@@ -298,14 +298,6 @@ CREATE FUNCTION tgeogpoint(tpose)
   RETURNS tgeogpoint
   AS 'MODULE_PATHNAME', 'Tpose_to_tgeogpoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeompointOpr(tpose)
-  RETURNS tgeompoint
-  AS 'MODULE_PATHNAME', 'Tpose_to_tpoint_opr'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
-CREATE FUNCTION tgeogpointOpr(tpose)
-  RETURNS tgeogpoint
-  AS 'MODULE_PATHNAME', 'Tpose_to_tpoint_opr'
-  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tpose AS tgeompoint) WITH FUNCTION tgeompoint(tpose);
 CREATE CAST (tpose AS tgeogpoint) WITH FUNCTION tgeogpoint(tpose);
