@@ -1047,22 +1047,45 @@ trgeometry_twcentroid(const Temporal *temp)
 #define TRGEO_TRAVERSED_AREA_ANGLE_TOL    0.05
 
 /**
- * @brief Append the materialised polygon at timestamp @p t to the running geom
- * array, growing it as needed
+ * @brief The placements a temporal rigid geometry passes through, in time
+ * order, each with its timestamp and whether the body turns on its way to it
+ */
+typedef struct
+{
+  GSERIALIZED **geoms;  /**< The placements */
+  TimestampTz *times;   /**< The timestamp of each placement */
+  bool *turns;          /**< True at k if the body turns from placement k - 1 */
+  int count;            /**< Number of placements */
+  int cap;              /**< Capacity of the arrays */
+  double radius;        /**< The greatest distance of a vertex of the body
+                             from the point its pose places */
+} TrgeoPlacements;
+
+/**
+ * @brief Append the materialised polygon at timestamp @p t to the running
+ * placements, growing them as needed
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] t Timestamp
+ * @param[in] turn True if the body turns on its way to this placement
+ * @param[in,out] pl Placements
  */
 static void
-trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t,
-  GSERIALIZED ***buf, int *buf_n, int *buf_cap)
+trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t, bool turn,
+  TrgeoPlacements *pl)
 {
   Datum value;
   if (! trgeometry_value_at_timestamptz_intl(temp, t, false, &value))
     return;
-  if (*buf_n == *buf_cap)
+  if (pl->count == pl->cap)
   {
-    *buf_cap *= 2;
-    *buf = repalloc(*buf, sizeof(GSERIALIZED *) * (*buf_cap));
+    pl->cap *= 2;
+    pl->geoms = repalloc(pl->geoms, sizeof(GSERIALIZED *) * pl->cap);
+    pl->times = repalloc(pl->times, sizeof(TimestampTz) * pl->cap);
+    pl->turns = repalloc(pl->turns, sizeof(bool) * pl->cap);
   }
-  (*buf)[(*buf_n)++] = DatumGetGserializedP(value);
+  pl->geoms[pl->count] = DatumGetGserializedP(value);
+  pl->times[pl->count] = t;
+  pl->turns[pl->count++] = turn;
 }
 
 /**
@@ -1073,11 +1096,13 @@ trgeometry_trav_emit_at(const Temporal *temp, TimestampTz t,
  * `ceil(rotation / tolerance) - 1` intermediate ones. A segment the body
  * only translates along asks for none, its two placements bounding
  * everything it covers. The placement at @p inst_a is appended by the
- * caller, as the previous segment's end or as the first instant.
+ * caller, as the previous segment's end or as the first instant. Each
+ * placement it appends records whether the body turns on the segment, which
+ * #trgeometry_traversed_area reads to sweep the pair that ends there.
  */
 static void
 trgeometry_trav_segment(const Temporal *temp, const TInstant *inst_a,
-  const TInstant *inst_b, GSERIALIZED ***buf, int *buf_n, int *buf_cap)
+  const TInstant *inst_b, TrgeoPlacements *pl)
 {
   Pose *pose_a = DatumGetPoseP(tinstant_value_p((TInstant *) inst_a));
   Pose *pose_b = DatumGetPoseP(tinstant_value_p((TInstant *) inst_b));
@@ -1086,7 +1111,21 @@ trgeometry_trav_segment(const Temporal *temp, const TInstant *inst_a,
   const double TWOPI = 2.0 * M_PI;
   while (dtheta > M_PI)  dtheta -= TWOPI;
   while (dtheta < -M_PI) dtheta += TWOPI;
+  bool turn = (dtheta != 0.0);
   int n = (int) ceil(fabs(dtheta) / TRGEO_TRAVERSED_AREA_ANGLE_TOL) - 1;
+  /* An edge turning while it travels bulges past its straight sweep by
+   * about the travel times the turn of an interval over 8, which the
+   * intervals keep within the sagitta of a turn of the step at the radius of
+   * the body, the radius times the step squared over 8 */
+  if (turn && pl->radius > 0.0)
+  {
+    double travel = hypot(pose_b->data[0] - pose_a->data[0],
+      pose_b->data[1] - pose_a->data[1]);
+    int m = (int) ceil(sqrt(travel * fabs(dtheta) / pl->radius) /
+      TRGEO_TRAVERSED_AREA_ANGLE_TOL) - 1;
+    if (m > n)
+      n = m;
+  }
   if (n > 0)
   {
     /* An interval shorter than the timestamp resolution carries no
@@ -1094,10 +1133,10 @@ trgeometry_trav_segment(const Temporal *temp, const TInstant *inst_a,
     TimestampTz span = inst_b->t - inst_a->t;
     if (span > n)
       for (int i = 1; i <= n; i++)
-        trgeometry_trav_emit_at(temp, inst_a->t + (TimestampTz) (span * i / (n + 1)),
-          buf, buf_n, buf_cap);
+        trgeometry_trav_emit_at(temp,
+          inst_a->t + (TimestampTz) (span * i / (n + 1)), turn, pl);
   }
-  trgeometry_trav_emit_at(temp, inst_b->t, buf, buf_n, buf_cap);
+  trgeometry_trav_emit_at(temp, inst_b->t, turn, pl);
 }
 
 /**
@@ -1119,11 +1158,13 @@ trgeometry_ref_is_convex(const GSERIALIZED *gs)
 }
 
 /**
- * @brief Return the region a convex body covers between two of its placements
- * @details Every point of a convex body travels within the hull of the two
- * placements, each vertex moving along a straight segment, so that hull is
- * what the body covers between them. The hull also contains the two
- * placements it spans, so a sweep replaces them rather than joining them.
+ * @brief Return the hull of two placements of a convex body
+ * @details A convex body that translates moves every point along a straight
+ * segment, so the hull of the two placements is exactly what it covers
+ * between them. A body that turns covers the hull where none of its edges
+ * crosses itself between the two, see #trgeometry_turn_sweep. The hull
+ * contains the two placements it spans, so it replaces them rather than
+ * joining them.
  */
 static GSERIALIZED *
 trgeometry_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
@@ -1157,6 +1198,285 @@ trgeometry_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
 }
 
 /**
+ * @brief Append a geometry to an array of geometries, growing it as needed,
+ * as #trgeometry_trav_emit_at grows the placements
+ */
+static void
+trgeometry_pieces_append(GSERIALIZED *gs, GSERIALIZED ***buf, int *count,
+  int *cap)
+{
+  if (! gs)
+    return;
+  if (*count == *cap)
+  {
+    *cap *= 2;
+    *buf = repalloc(*buf, sizeof(GSERIALIZED *) * (*cap));
+  }
+  (*buf)[(*count)++] = gs;
+}
+
+/**
+ * @brief Return true if the segments @p p1 @p p2 and @p p3 @p p4 cross at a
+ * point interior to both
+ * @details The crossing is decided by the exact signs of the four
+ * orientations, as #relate_segments_intersect decides a proper crossing; a
+ * shared endpoint, a touch or a collinear overlap is no crossing
+ */
+static bool
+trgeometry_segm_cross(const POINT2D *p1, const POINT2D *p2, const POINT2D *p3,
+  const POINT2D *p4)
+{
+  int s1 = cross_product_sign(p3->x, p3->y, p4->x, p4->y, p3->x, p3->y,
+    p1->x, p1->y);
+  int s2 = cross_product_sign(p3->x, p3->y, p4->x, p4->y, p3->x, p3->y,
+    p2->x, p2->y);
+  if (s1 * s2 >= 0)
+    return false;
+  int s3 = cross_product_sign(p1->x, p1->y, p2->x, p2->y, p1->x, p1->y,
+    p3->x, p3->y);
+  int s4 = cross_product_sign(p1->x, p1->y, p2->x, p2->y, p1->x, p1->y,
+    p4->x, p4->y);
+  return s3 * s4 < 0;
+}
+
+/**
+ * @brief Append the triangle @p a @p b @p c as a counter-clockwise polygon,
+ * nothing for three collinear points
+ * @details A triangle goes into the union as the polygon it draws, as
+ * #buffer_triangle_as_poly writes one, the readers of a collection taking no
+ * other surface type alike
+ */
+static void
+trgeometry_triangle_append(int32_t srid, const POINT2D *a, const POINT2D *b,
+  const POINT2D *c, GSERIALIZED ***buf, int *count, int *cap)
+{
+  int o = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, c->x, c->y);
+  if (o == 0)
+    return;
+  const POINT2D *corner[4] = {a, o > 0 ? b : c, o > 0 ? c : b, a};
+  POINTARRAY *pa = ptarray_construct_empty(0, 0, 4);
+  POINT4D p = {0, 0, 0, 0};
+  for (int i = 0; i < 4; i++)
+  {
+    p.x = corner[i]->x; p.y = corner[i]->y;
+    ptarray_append_point(pa, &p, LW_TRUE);
+  }
+  POINTARRAY **rings = lwalloc(sizeof(POINTARRAY *));
+  rings[0] = pa;
+  LWGEOM *poly = lwpoly_as_lwgeom(lwpoly_construct(srid, NULL, 1, rings));
+  GSERIALIZED *gs = geo_serialize(poly);
+  lwgeom_free(poly);
+  trgeometry_pieces_append(gs, buf, count, cap);
+}
+
+/**
+ * @brief Append the region the edge @p a0 @p b0 sweeps to @p a1 @p b1 when
+ * its two ends move straight and it does not cross itself, as two triangles
+ * @details The region is the quadrilateral the two positions of the edge and
+ * the paths of its ends bound, the four corners of #trgeometry_convex_sweep
+ * read in order rather than hulled, split along the diagonal lying inside
+ * it, the one that separates the two other corners. Every corner is a vertex
+ * of a placement, so no point is constructed
+ */
+static void
+trgeometry_edge_sweep(int32_t srid, const POINT2D *a0, const POINT2D *b0,
+  const POINT2D *a1, const POINT2D *b1, GSERIALIZED ***buf, int *count,
+  int *cap)
+{
+  int s1 = cross_product_sign(b0->x, b0->y, a1->x, a1->y, b0->x, b0->y,
+    a0->x, a0->y);
+  int s2 = cross_product_sign(b0->x, b0->y, a1->x, a1->y, b0->x, b0->y,
+    b1->x, b1->y);
+  if (s1 * s2 < 0)
+  {
+    trgeometry_triangle_append(srid, a0, b0, a1, buf, count, cap);
+    trgeometry_triangle_append(srid, b0, b1, a1, buf, count, cap);
+  }
+  else
+  {
+    trgeometry_triangle_append(srid, a0, b0, b1, buf, count, cap);
+    trgeometry_triangle_append(srid, a0, b1, a1, buf, count, cap);
+  }
+}
+
+/* The times an interval holding an edge pivoting between two placements is
+ * read in halves, the positions of the edge bulging past the two triangles
+ * of its sweep (#trgeometry_turn_sweep_halves) */
+#define TRGEO_TURN_SPLITS 1
+/* The times an interval holding an edge the sweep cannot read is halved */
+#define TRGEO_TURN_DEPTH 8
+
+/**
+ * @brief Return true if a point lies strictly inside a convex ring, decided
+ * by the exact signs of its side of every edge (#cross_product_sign)
+ */
+static bool
+trgeometry_strictly_inside(const POINTARRAY *ring, double x, double y)
+{
+  uint32_t n = ring->npoints - 1;
+  int side = 0;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(ring, i), *b = getPoint2d_cp(ring, i + 1);
+    int s = cross_product_sign(a->x, a->y, b->x, b->y, a->x, a->y, x, y);
+    if (s == 0)
+      return false;
+    if (side == 0)
+      side = s;
+    else if (s != side)
+      return false;
+  }
+  return true;
+}
+
+/**
+ * @brief Set @p anchor to a point strictly inside two placements of a convex
+ * body: the mean of the vertices of the first, of the second, or the point
+ * between the two; false where none of them is
+ */
+static bool
+trgeometry_turn_anchor(const POINTARRAY *ra, const POINTARRAY *rb,
+  POINT2D *anchor)
+{
+  uint32_t n = ra->npoints - 1;
+  POINT2D c[3] = {{0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}};
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *a = getPoint2d_cp(ra, i), *b = getPoint2d_cp(rb, i);
+    c[0].x += a->x / n; c[0].y += a->y / n;
+    c[1].x += b->x / n; c[1].y += b->y / n;
+  }
+  c[2].x = (c[0].x + c[1].x) / 2.0; c[2].y = (c[0].y + c[1].y) / 2.0;
+  for (int k = 0; k < 3; k++)
+    if (trgeometry_strictly_inside(ra, c[k].x, c[k].y) &&
+        trgeometry_strictly_inside(rb, c[k].x, c[k].y))
+    {
+      *anchor = c[k];
+      return true;
+    }
+  return false;
+}
+
+/**
+ * @brief Append the region a convex body covers between two placements it
+ * takes while it turns, halving the interval where it asks for it
+ * @details The region the body sweeps between two placements is the two
+ * placements together with what each edge sweeps, every vertex moving along
+ * the chord of its arc. An edge whose two positions and the paths of its ends
+ * keep apart sweeps the quadrilateral they bound (#trgeometry_edge_sweep).
+ * An edge whose two positions cross pivots about their crossing Y, and sweeps
+ * the two triangles meeting there, which no double holds. They are read from
+ * a point Y' strictly inside both placements instead: the triangle from the
+ * path of one end to Y' lies within that end's triangle and the two
+ * placements, Y lying on an edge of each, and the two placements and the two
+ * triangles from Y' hold the same ground as the two placements and the two
+ * triangles from Y. Y' lies inside both placements, so no piece puts a point
+ * near an edge it is not on. An interval holding such an edge is read in
+ * halves #TRGEO_TURN_SPLITS times, since the positions of a pivoting edge
+ * bulge past its two triangles; one holding an edge whose end paths cross,
+ * or two placements with no point inside both, is halved until it does not,
+ * #TRGEO_TURN_DEPTH times at most, each half at the placement the body takes
+ * there. Every piece is ground the body covers.
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] a,b The two placements
+ * @param[in] ta,tb Their timestamps
+ * @param[in] depth,split The halvings left
+ * @param[in,out] buf,count,cap Pieces
+ */
+static void
+trgeometry_turn_sweep_halves(const Temporal *temp, const GSERIALIZED *a,
+  const GSERIALIZED *b, TimestampTz ta, TimestampTz tb, int depth, int split,
+  GSERIALIZED ***buf, int *count, int *cap)
+{
+  LWGEOM *lw_a = lwgeom_from_gserialized(a);
+  LWGEOM *lw_b = lwgeom_from_gserialized(b);
+  POINTARRAY *ra = ((LWPOLY *) lw_a)->rings[0];
+  POINTARRAY *rb = ((LWPOLY *) lw_b)->rings[0];
+  uint32_t n = ra->npoints - 1;
+  POINT2D anchor;
+  bool anchored = trgeometry_turn_anchor(ra, rb, &anchor);
+  /* What each edge sweeps: 0 its quadrilateral, 1 its two triangles from the
+   * anchor, 2 nothing this interval can read */
+  int *kind = palloc(sizeof(int) * n);
+  bool pivot = false, unread = false;
+  for (uint32_t i = 0; i < n; i++)
+  {
+    const POINT2D *a0 = getPoint2d_cp(ra, i), *b0 = getPoint2d_cp(ra, i + 1);
+    const POINT2D *a1 = getPoint2d_cp(rb, i), *b1 = getPoint2d_cp(rb, i + 1);
+    bool paths = trgeometry_segm_cross(a0, a1, b0, b1);
+    bool positions = trgeometry_segm_cross(a0, b0, a1, b1);
+    if (paths)
+      kind[i] = 2;
+    else if (! positions)
+      kind[i] = 0;
+    else
+      kind[i] = anchored ? 1 : 2;
+    pivot |= (kind[i] == 1);
+    unread |= (kind[i] == 2);
+  }
+  /* The interval in halves, at the placement the body takes halfway */
+  bool halve = (pivot && split > 0) || (unread && depth > 0);
+  Datum value;
+  if (halve && tb - ta > 1 &&
+      trgeometry_value_at_timestamptz_intl(temp, ta + (tb - ta) / 2, false,
+        &value))
+  {
+    GSERIALIZED *mid = DatumGetGserializedP(value);
+    TimestampTz tm = ta + (tb - ta) / 2;
+    int d = (pivot && split > 0) ? depth : depth - 1;
+    int s = (pivot && split > 0) ? split - 1 : split;
+    trgeometry_turn_sweep_halves(temp, a, mid, ta, tm, d, s, buf, count, cap);
+    trgeometry_turn_sweep_halves(temp, mid, b, tm, tb, d, s, buf, count, cap);
+    pfree(mid);
+  }
+  else
+  {
+    int32_t srid = gserialized_get_srid(a);
+    trgeometry_pieces_append(geo_copy(b), buf, count, cap);
+    for (uint32_t i = 0; i < n; i++)
+    {
+      const POINT2D *a0 = getPoint2d_cp(ra, i), *b0 = getPoint2d_cp(ra, i + 1);
+      const POINT2D *a1 = getPoint2d_cp(rb, i), *b1 = getPoint2d_cp(rb, i + 1);
+      if (kind[i] == 0)
+        trgeometry_edge_sweep(srid, a0, b0, a1, b1, buf, count, cap);
+      else if (kind[i] == 1)
+      {
+        trgeometry_triangle_append(srid, a0, a1, &anchor, buf, count, cap);
+        trgeometry_triangle_append(srid, b0, b1, &anchor, buf, count, cap);
+      }
+    }
+  }
+  pfree(kind);
+  lwgeom_free(lw_a); lwgeom_free(lw_b);
+}
+
+/**
+ * @brief Append the region a convex body covers between two placements it
+ * takes while it turns (#trgeometry_turn_sweep_halves)
+ * @details Every vertex is read as moving along the chord of its arc, and
+ * every piece is ground the body covers: the area holds no point the body
+ * never reaches. What the chords leave out is the bulge of the arcs past
+ * them, which the step of the placements bounds
+ * (#trgeometry_trav_segment)
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] a,b The two placements
+ * @param[in] ta,tb Their timestamps
+ * @param[in] with_a True to append the placement @p a as well, which no
+ * earlier piece holds
+ * @param[in,out] buf,count,cap Pieces
+ */
+static void
+trgeometry_turn_sweep(const Temporal *temp, const GSERIALIZED *a,
+  const GSERIALIZED *b, TimestampTz ta, TimestampTz tb, bool with_a,
+  GSERIALIZED ***buf, int *count, int *cap)
+{
+  if (with_a)
+    trgeometry_pieces_append(geo_copy(a), buf, count, cap);
+  trgeometry_turn_sweep_halves(temp, a, b, ta, tb, TRGEO_TURN_DEPTH,
+    TRGEO_TURN_SPLITS, buf, count, cap);
+}
+
+/**
  * @brief Return the placements a temporal rigid geometry passes through
  * @details Every input instant contributes its placement, and a segment
  * carries as many placements between two of them as its rotation asks for at
@@ -1164,11 +1484,11 @@ trgeometry_convex_sweep(const GSERIALIZED *a, const GSERIALIZED *b)
  * is materialising the reference geometry at every emitted sample via
  * `pose_apply_geo`
  * @param[in] temp Temporal rigid geometry
- * @param[out] count Number of placements returned
- * @errval NULL
+ * @param[out] pl Placements, each with its timestamp and turn
+ * @return False if the value has no instant
  */
-static GSERIALIZED **
-trgeometry_placement_array(const Temporal *temp, int *count)
+static bool
+trgeometry_placement_array(const Temporal *temp, TrgeoPlacements *pl)
 {
   int n_insts = 0;
   /* temporal_insts_p returns a pointer-to-array of in-place instants;
@@ -1176,25 +1496,35 @@ trgeometry_placement_array(const Temporal *temp, int *count)
    * we only pfree the array wrapper at the end. */
   const TInstant **insts = temporal_insts_p(temp, &n_insts);
   if (! insts || n_insts <= 0)
-    return NULL;
+    return false;
 
   /* Initial capacity is generous — bisection rarely goes deep. */
-  int cap = (n_insts > 1) ? n_insts * 4 : n_insts;
-  GSERIALIZED **geoms = palloc(sizeof(GSERIALIZED *) * cap);
-  int n_geoms = 0;
+  pl->cap = (n_insts > 1) ? n_insts * 4 : n_insts;
+  pl->geoms = palloc(sizeof(GSERIALIZED *) * pl->cap);
+  pl->times = palloc(sizeof(TimestampTz) * pl->cap);
+  pl->turns = palloc(sizeof(bool) * pl->cap);
+  pl->count = 0;
+  /* The reference geometry is the body about the point its pose places, so
+   * the radius is the greatest distance of a vertex from the origin */
+  pl->radius = 0.0;
+  LWGEOM *ref = lwgeom_from_gserialized(trgeometry_geom_p(temp));
+  LWPOINTITERATOR *it = lwpointiterator_create(ref);
+  POINT4D p;
+  while (lwpointiterator_next(it, &p) == LW_SUCCESS)
+    pl->radius = fmax(pl->radius, hypot(p.x, p.y));
+  lwpointiterator_destroy(it);
+  lwgeom_free(ref);
 
   /* Emit the first instant. */
-  trgeometry_trav_emit_at(temp, insts[0]->t, &geoms, &n_geoms, &cap);
+  trgeometry_trav_emit_at(temp, insts[0]->t, false, pl);
   /* Per inter-instant segment, recursively bisect. The recursion
    * appends samples on (t_m, t_b], reusing the t_a sample emitted by
    * the previous iteration. */
   for (int i = 0; i + 1 < n_insts; i++)
-    trgeometry_trav_segment(temp, insts[i], insts[i + 1],
-      &geoms, &n_geoms, &cap);
+    trgeometry_trav_segment(temp, insts[i], insts[i + 1], pl);
 
   pfree(insts);
-  *count = n_geoms;
-  return geoms;
+  return true;
 }
 
 /**
@@ -1245,11 +1575,11 @@ GSERIALIZED *
 trgeometry_placements(const Temporal *temp)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
-  int n_geoms = 0;
-  GSERIALIZED **geoms = trgeometry_placement_array(temp, &n_geoms);
-  if (! geoms)
+  TrgeoPlacements pl;
+  if (! trgeometry_placement_array(temp, &pl))
     return NULL;
-  return trgeometry_geoms_merge(geoms, n_geoms, UNARY_UNION_NO);
+  pfree(pl.times); pfree(pl.turns);
+  return trgeometry_geoms_merge(pl.geoms, pl.count, UNARY_UNION_NO);
 }
 
 /**
@@ -1263,23 +1593,34 @@ trgeometry_placements(const Temporal *temp)
  *
  * @note Mirrors the collect-then-union pattern of `tgeo_traversed_area`
  * for general temporal geometries. The placements the body passes through
- * come from #trgeometry_placements(); a convex body then covers the hull of every
- * consecutive pair, and the unary union dissolves the overlap the hulls share
+ * come from #trgeometry_placements(); a convex body then covers what it
+ * sweeps between every consecutive pair, and the unary union dissolves the
+ * overlap the pieces share. The united form of a body that translates is
+ * exact. Where the body turns, every vertex is read as moving along the chord
+ * of its arc between two placements a turn of
+ * `TRGEO_TRAVERSED_AREA_ANGLE_TOL` apart, and nearer where the body travels
+ * far while it turns (#trgeometry_trav_segment), so the area holds only
+ * ground the body covers and leaves out the bulge of the arcs past their
+ * chords, at most 5.8e-4 of the diameter of the body over the 400 turning
+ * rows of the corpus of the exact rigid distance (#trgeometry_turn_sweep)
  */
 GSERIALIZED *
 trgeometry_traversed_area(const Temporal *temp, bool unary_union)
 {
   VALIDATE_TRGEOMETRY(temp, NULL);
-  int n_geoms = 0;
-  GSERIALIZED **geoms = trgeometry_placement_array(temp, &n_geoms);
-  if (! geoms)
+  TrgeoPlacements pl;
+  if (! trgeometry_placement_array(temp, &pl))
     return NULL;
+  GSERIALIZED **geoms = pl.geoms;
+  int n_geoms = pl.count;
 
   /* The samples are the placements the body passes through; the area it
    * traverses is what it covers BETWEEN them as well. A convex body covers
-   * the hull of each consecutive pair, which is the case the traversed area
-   * is defined for; a body with a concavity keeps the placements alone, as
-   * its hull would close a concavity the body never reaches.
+   * what it sweeps between each consecutive pair, the hull of the pair where
+   * it translates and #trgeometry_turn_sweep where it turns, which is the
+   * case the traversed area is defined for; a body with a concavity keeps the
+   * placements alone, as its hull would close a concavity the body never
+   * reaches.
    * A body that does not interpolate covers nothing between its placements:
    * it holds each of them for the whole of its own interval and then stands
    * at the next, so the placements ARE the area it traverses and a hull
@@ -1289,13 +1630,19 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
   if (unary_union && n_geoms > 1 && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
       trgeometry_ref_is_convex(trgeometry_geom_p(temp)))
   {
-    GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * (n_geoms - 1));
-    int n_swept = 0;
+    int cap = n_geoms * 2, n_swept = 0;
+    GSERIALIZED **swept = palloc(sizeof(GSERIALIZED *) * cap);
     for (int i = 0; i + 1 < n_geoms; i++)
     {
-      GSERIALIZED *hull = trgeometry_convex_sweep(geoms[i], geoms[i + 1]);
-      if (hull)
-        swept[n_swept++] = hull;
+      /* A pair the body turns between; the first placement is held by no
+       * earlier piece only at the start, each later one ending the pair
+       * before it */
+      if (pl.turns[i + 1])
+        trgeometry_turn_sweep(temp, geoms[i], geoms[i + 1], pl.times[i],
+          pl.times[i + 1], i == 0, &swept, &n_swept, &cap);
+      else
+        trgeometry_pieces_append(trgeometry_convex_sweep(geoms[i],
+          geoms[i + 1]), &swept, &n_swept, &cap);
     }
     if (n_swept > 0)
     {
@@ -1309,6 +1656,7 @@ trgeometry_traversed_area(const Temporal *temp, bool unary_union)
       pfree(swept);
   }
 
+  pfree(pl.times); pfree(pl.turns);
   return trgeometry_geoms_merge(geoms, n_geoms, unary_union);
 }
 
