@@ -511,6 +511,89 @@ Temporal_ext_kalman_filter(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+/*****************************************************************************
+ * Reachability filter
+ *****************************************************************************/
+
+PGDLLEXPORT Datum Temporal_reachability_filter(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_reachability_filter);
+/**
+ * @ingroup mobilitydb_temporal_analytics_simplify
+ * @brief Return a temporal value with the instants a reachability walk keeps
+ * @details As #Temporal_ext_kalman_filter, with NULL when the value is
+ * dropped whole
+ * @sqlfn reachabilityFilter()
+ */
+Datum
+Temporal_reachability_filter(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  double maxspeed = PG_GETARG_FLOAT8(1);
+  Temporal *result = temporal_reachability_filter(temp, maxspeed);
+  PG_FREE_IF_COPY(temp, 0);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Temporal_reachability_filter_transfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_reachability_filter_transfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Transition function of the reachability filter aggregate
+ * @details As #Temporal_app_tinst_transfn, over a state of its own. The
+ * aggregate takes the Agg name in PostgreSQL as well, since the function
+ * reachabilityFilter() holds the same arguments
+ * @sqlfn reachabilityFilterAggTransition()
+ * @sqlaggfn reachabilityFilterAgg()
+ */
+Datum
+Temporal_reachability_filter_transfn(PG_FUNCTION_ARGS)
+{
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  ReachabilityState *state = PG_ARGISNULL(0) ? NULL :
+    (ReachabilityState *) PG_GETARG_POINTER(0);
+  if (PG_ARGISNULL(1) || PG_ARGISNULL(2))
+  {
+    unset_aggregation_context(ctx);
+    if (state)
+      PG_RETURN_POINTER(state);
+    PG_RETURN_NULL();
+  }
+  Temporal *inst = PG_GETARG_TEMPORAL_P(1);
+  double maxspeed = PG_GETARG_FLOAT8(2);
+  store_fcinfo(fcinfo);
+  state = temporal_reachability_filter_transfn(state, (TInstant *) inst,
+    maxspeed);
+  PG_FREE_IF_COPY(inst, 1);
+  unset_aggregation_context(ctx);
+  PG_RETURN_POINTER(state);
+}
+
+PGDLLEXPORT Datum Temporal_reachability_filter_finalfn(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Temporal_reachability_filter_finalfn);
+/**
+ * @ingroup mobilitydb_temporal_agg
+ * @brief Final function of the reachability filter aggregate
+ * @details As #Temporal_append_finalfn, the final function releasing the
+ * state
+ * @sqlfn reachabilityFilterAggFinal()
+ * @sqlaggfn reachabilityFilterAgg()
+ */
+Datum
+Temporal_reachability_filter_finalfn(PG_FUNCTION_ARGS)
+{
+  if (PG_ARGISNULL(0))
+    PG_RETURN_NULL();
+  MemoryContext ctx = set_aggregation_context(fcinfo);
+  ReachabilityState *state = (ReachabilityState *) PG_GETARG_POINTER(0);
+  Temporal *result = temporal_reachability_filter_finalfn(state);
+  unset_aggregation_context(ctx);
+  if (! result)
+    PG_RETURN_NULL();
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************/
 
 PGDLLEXPORT Datum Temporal_average_hausdorff_distance(PG_FUNCTION_ARGS);

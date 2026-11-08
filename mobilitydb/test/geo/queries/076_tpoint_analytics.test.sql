@@ -463,6 +463,43 @@ SELECT asMVTGeom(tgeompoint '[Point(0 0)@2001-01-01, Point(100 100)@2001-04-10]'
   SELECT asEWKT(extendedKalmanFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(1000 0)@2001-01-01 00:00:10, Point(0 0)@2001-01-01 00:00:20]', 1.0, 0, 1, false));
 
 -------------------------------------------------------------------------------
+-- Reachability filter
+
+-- A teleport: the third report is 5 km away one second later at 100 m/s
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03]', 100));
+SELECT asText(reachabilityFilter(tgeompoint '{Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03}', 100));
+SELECT asText(reachabilityFilter(tgeompoint '{[Point(0 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01], [Point(5000 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03]}', 100));
+SELECT asText(reachabilityFilter(tgeompoint 'Point(1 1)@2001-01-01', 100));
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0 0)@2001-01-01 00:00:00, Point(0 0 10)@2001-01-01 00:00:01, Point(0 0 5000)@2001-01-01 00:00:02, Point(0 0 30)@2001-01-01 00:00:03]', 100));
+-- The same teleport on the spheroid at 400 m/s: 0.001 degrees of longitude are about 70 m at this latitude
+SELECT asText(reachabilityFilter(tgeogpoint '[Point(4.350 50.85)@2001-01-01 00:00:00, Point(4.351 50.85)@2001-01-01 00:00:01, Point(5.350 50.85)@2001-01-01 00:00:02, Point(4.353 50.85)@2001-01-01 00:00:03]', 400), 3);
+SELECT asText(reachabilityFilter(tfloat '[1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03]', 5));
+-- The seed is the earliest of the first eleven reports a majority of them can reach, so a first
+-- report off the track is dropped; a discrete sequence keeps its twelve reports, which the
+-- normalization of a linear one would merge
+SELECT asText(reachabilityFilter(tgeompoint '{Point(5000 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(20 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03, Point(40 0)@2001-01-01 00:00:04, Point(50 0)@2001-01-01 00:00:05, Point(60 0)@2001-01-01 00:00:06, Point(70 0)@2001-01-01 00:00:07, Point(80 0)@2001-01-01 00:00:08, Point(90 0)@2001-01-01 00:00:09, Point(100 0)@2001-01-01 00:00:10, Point(110 0)@2001-01-01 00:00:11}', 100));
+-- More than half of the reports unreachable from the one before: dropped whole
+SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00, Point(5000 0)@2001-01-01 00:00:01, Point(0 0)@2001-01-01 00:00:02, Point(5000 0)@2001-01-01 00:00:03]', 100) IS NULL;
+
+-- The aggregate walks the instants one at a time and answers what the function answers
+SELECT asText(reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tgeompoint '{Point(5000 0)@2001-01-01 00:00:00, Point(10 0)@2001-01-01 00:00:01, Point(20 0)@2001-01-01 00:00:02, Point(30 0)@2001-01-01 00:00:03, Point(40 0)@2001-01-01 00:00:04, Point(50 0)@2001-01-01 00:00:05, Point(60 0)@2001-01-01 00:00:06, Point(70 0)@2001-01-01 00:00:07, Point(80 0)@2001-01-01 00:00:08, Point(90 0)@2001-01-01 00:00:09, Point(100 0)@2001-01-01 00:00:10, Point(5000 0)@2001-01-01 00:00:11, Point(120 0)@2001-01-01 00:00:12}')) AS inst;
+SELECT asText(reachabilityFilterAgg(inst, 400 ORDER BY getTimestamp(inst)), 3)
+FROM unnest(instants(tgeogpoint '{Point(4.350 50.85)@2001-01-01 00:00:00, Point(4.351 50.85)@2001-01-01 00:00:01, Point(5.350 50.85)@2001-01-01 00:00:02, Point(4.353 50.85)@2001-01-01 00:00:03}')) AS inst;
+SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03}')) AS inst;
+SELECT reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)) IS NULL
+FROM unnest(instants(tgeompoint '{Point(0 0)@2001-01-01 00:00:00, Point(5000 0)@2001-01-01 00:00:01, Point(0 0)@2001-01-01 00:00:02, Point(5000 0)@2001-01-01 00:00:03}')) AS inst;
+
+/* Errors */
+SELECT reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst) DESC)
+FROM unnest(instants(tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02}')) AS inst;
+SELECT reachabilityFilterAgg(temp, 100)
+FROM (VALUES (tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]')) AS t(temp);
+SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', 0);
+SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01, Point(1 1)@2001-01-02]', -1);
+
+-------------------------------------------------------------------------------
 -- Granularity modification with tsample and tprecision
 
 SELECT asText(tsample(tgeompoint '[Point(1 1)@2001-01-01, Point(5 5)@2001-01-05]', interval '2 days', '2001-01-01'));
