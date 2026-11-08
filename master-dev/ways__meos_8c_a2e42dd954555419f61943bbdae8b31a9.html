@@ -87,6 +87,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_ga48375cdf2e1f9241f167724255f9981b.html#ga48375cdf2e1f9241f167724255f9981b">meos_finalize_ways</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__setup_ga365066326ec7852c1f7171195fbfff09.html#ga365066326ec7852c1f7171195fbfff09">meos_set_ways_csv</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__meos_8c_a3ad85229cae509521301f1ab1fe358b2.html#a3ad85229cae509521301f1ab1fe358b2">MEOS_WAYS_CACHE</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="ways__meos_8c_aaa2936c094f3c3f2e8a6937e56fc14bb.html#aaa2936c094f3c3f2e8a6937e56fc14bb">MEOS_WAYS_CACHE_PATH</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__meos_8c_a3350f9380b24ca27afd2c87854500a7f.html#a3350f9380b24ca27afd2c87854500a7f">MEOS_WAYS_INDEX</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__meos_8c_af1fed75bc0587c5465e98e7a19e25923.html#af1fed75bc0587c5465e98e7a19e25923">route_lookup</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="ways__meos_8c_ad20300cb9b30cb8c7afde8657a69c23d.html#ad20300cb9b30cb8c7afde8657a69c23d">WAYS_CSV</a></td></tr>
@@ -121,7 +122,7 @@ $(function() {
 </div><div class="memdoc">
 
 <p>Get the ways cache from the global variable. </p>
-<p >If it does not exist, a new blank one is made and returned. </p>
+<p >If it does not exist, or holds the routes of a file other than the one <a class="el" href="group__meos__setup_ga365066326ec7852c1f7171195fbfff09.html#ga365066326ec7852c1f7171195fbfff09" title="Set the location of the ways CSV file used to resolve npoint route geometries.">meos_set_ways_csv</a> names last, a new blank one is made and returned, as <a class="el" href="ways__meos_8c_a75a86d0912344ffb4e3c12a223d41dd7.html#a75a86d0912344ffb4e3c12a223d41dd7" title="Get the index of the ways CSV file, built with one scan of the file the first time a route is read fr...">GetWaysIndex</a> rebuilds the index: the routes of a file and the SRID of its first route answer for that file alone. The path of the file is held per thread with the cache, so each thread's cache follows the file it reads. </p>
 
 </div>
 </div>
