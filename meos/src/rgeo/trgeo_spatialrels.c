@@ -707,8 +707,11 @@ ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double di
       ! ensure_has_not_Z(temp->temptype, temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, ever ? -1.0 : dist),
-    dist, ever);
+  /* The ever semantics stops at the first distance within the bound */
+  if (ever)
+    return edwithin_trgeometry_geo_intl(temp, gs, dist);
+  return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, dist), dist,
+    ever);
 }
 
 /**
