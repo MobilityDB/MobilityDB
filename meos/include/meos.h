@@ -395,6 +395,9 @@ typedef enum
   INDEX_ADJACENT       /**< Find stored boxes that share a boundary with the query, `-|-` operator */
 } IndexSearchOp;
 
+extern const char *indexsearchop_name(IndexSearchOp op);
+extern IndexSearchOp indexsearchop_from_string(const char *str);
+
 /* Functions for the ids an in-memory index answers */
 
 extern MeosArray *index_result_create(void);
@@ -445,6 +448,9 @@ typedef enum
   SPTREE_QUADTREE,   /**< Quad-tree (2^dims children per node) */
   SPTREE_KDTREE      /**< K-d tree (two children per node) */
 } SPTreeKind;
+
+extern const char *sptreekind_name(SPTreeKind kind);
+extern SPTreeKind sptreekind_from_string(const char *str);
 
 /**
  * Structure for the in-memory space-partitioning index (quad-tree, k-d tree)
@@ -1467,6 +1473,7 @@ extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *s
 extern char *temporal_as_mfjson(const Temporal *temp, int option, int flags, int precision, const char *srs, size_t *size_out);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern uint8_t wkb_variant_from_endian(const char *endian);
+extern const char *interptype_name(interpType interp);
 extern interpType interptype_from_string(const char *str);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);

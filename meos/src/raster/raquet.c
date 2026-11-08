@@ -196,6 +196,7 @@ raquet_pixtype_size(MeosPixType pixtype)
 }
 
 /**
+ * @ingroup meos_raster_base_accessor
  * @brief Return the name the RaQuet specification gives a pixel data type
  * @param[in] pixtype Pixel data type
  * @errval NULL
@@ -205,7 +206,7 @@ raquet_pixtype_size(MeosPixType pixtype)
  * mapping of its own
  */
 const char *
-raquet_pixtype_name(MeosPixType pixtype)
+meospixtype_name(MeosPixType pixtype)
 {
   return pixtype_known((uint8) pixtype) ?
     MEOS_PIXTYPE_CATALOG[pixtype].name : NULL;
@@ -437,7 +438,7 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
  * @ingroup meos_raster_base_accessor
  * @brief Return the pixel data type corresponding to a name
  * @param[in] str Pixel type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64
- * @note This is the parser counterpart of #raquet_band_pixel_type()
+ * @note This is the parser counterpart of #meospixtype_name()
  * @note The name is read without regard to case, so a name written either way
  * carries into the constructors. The name #raquet_band_pixel_type() returns is the one
  * the RaQuet specification writes, in lower case, so it compares equal to the
@@ -448,7 +449,7 @@ raquet_pixels_from_host(uint8 *pixels, size_t count, MeosPixType pixtype)
  * less than a byte while occupying one, so they name a `uint8` band
  */
 MeosPixType
-raquet_pixtype_from_string(const char *str)
+meospixtype_from_string(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, MEOS_PT_UINT8);

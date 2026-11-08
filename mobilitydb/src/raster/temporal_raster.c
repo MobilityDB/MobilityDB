@@ -1766,7 +1766,7 @@ static MeosPixType
 text_to_pixtype(const text *pt)
 {
   char *s = text_to_cstring(pt);
-  MeosPixType result = raquet_pixtype_from_string(s);
+  MeosPixType result = meospixtype_from_string(s);
   pfree(s);
   return result;
 }

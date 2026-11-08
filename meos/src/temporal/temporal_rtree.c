@@ -2721,3 +2721,88 @@ rtree_free(RTree *rtree)
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Global constant array of the names of the search operators of an
+ * in-memory index, the names of the SQL functions of the operators the
+ * enumeration IndexSearchOp defined in file `meos.h` stands for
+ */
+static const char *MEOS_INDEXSEARCHOP_NAMES[] =
+{
+  [INDEX_OVERLAPS] = "overlaps",
+  [INDEX_CONTAINS] = "contains",
+  [INDEX_CONTAINED_BY] = "contained",
+  [INDEX_LEFT] = "left",
+  [INDEX_OVERLEFT] = "overleft",
+  [INDEX_RIGHT] = "right",
+  [INDEX_OVERRIGHT] = "overright",
+  [INDEX_BELOW] = "below",
+  [INDEX_OVERBELOW] = "overbelow",
+  [INDEX_ABOVE] = "above",
+  [INDEX_OVERABOVE] = "overabove",
+  [INDEX_FRONT] = "front",
+  [INDEX_OVERFRONT] = "overfront",
+  [INDEX_BACK] = "back",
+  [INDEX_OVERBACK] = "overback",
+  [INDEX_BEFORE] = "before",
+  [INDEX_OVERBEFORE] = "overbefore",
+  [INDEX_AFTER] = "after",
+  [INDEX_OVERAFTER] = "overafter",
+  [INDEX_SAME] = "same",
+  [INDEX_ADJACENT] = "adjacent"
+};
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the name of a search operator of an in-memory index, the name
+ * of the SQL function of the operator, such as `overlaps` for `&&`
+ * @param[in] op Search operator
+ * @note This is the counterpart of #indexsearchop_from_string()
+ * @errval NULL
+ */
+const char *
+indexsearchop_name(IndexSearchOp op)
+{
+  const int n = (int) (sizeof(MEOS_INDEXSEARCHOP_NAMES) / sizeof(char *));
+  if ((int) op < 0 || (int) op >= n)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown index search operator: %d", (int) op);
+    return NULL;
+  }
+  return MEOS_INDEXSEARCHOP_NAMES[op];
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the search operator of an in-memory index corresponding to
+ * its name
+ * @details The name is read without regard to case, so a host passing the
+ * operator as text reaches the value the C function takes
+ * @param[in] str Name of the SQL function of the operator: `overlaps`,
+ * `contains`, `contained`, `left`, `overleft`, `right`, `overright`, `below`,
+ * `overbelow`, `above`, `overabove`, `front`, `overfront`, `back`,
+ * `overback`, `before`, `overbefore`, `after`, `overafter`, `same` or
+ * `adjacent`
+ * @note This is the parser counterpart of #indexsearchop_name()
+ * @errval -1
+ */
+IndexSearchOp
+indexsearchop_from_string(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, (IndexSearchOp) -1);
+
+  const int n = (int) (sizeof(MEOS_INDEXSEARCHOP_NAMES) / sizeof(char *));
+  for (int i = 0; i < n; i++)
+  {
+    if (pg_strcasecmp(str, MEOS_INDEXSEARCHOP_NAMES[i]) == 0)
+      return (IndexSearchOp) i;
+  }
+  /* Error */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown index search operator: %s", str);
+  return (IndexSearchOp) -1;
+}
+
+/*****************************************************************************/

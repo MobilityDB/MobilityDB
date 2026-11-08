@@ -45,7 +45,7 @@
     "^raster_from_hexwkb$": {
       "char *": "rast_hexwkb1"
     },
-    "^raquet_pixtype_from_string$": {
+    "^meospixtype_from_string$": {
       "char *": "\"uint8\""
     },
     "_gdal$": {

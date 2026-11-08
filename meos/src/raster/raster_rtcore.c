@@ -811,7 +811,7 @@ raster_skew_y(const Raster *rast)
  * @note The name returned is the one the RaQuet specification writes, which is
  * what #raquet_band_pixel_type() answers for a tile, so a band and a tile of
  * the same type report the same name. The PostGIS spelling is read through
- * #raquet_pixtype_from_string(), so the one catalog states both vocabularies
+ * #meospixtype_from_string(), so the one catalog states both vocabularies
  * and `1BB`, `2BUI` and `4BUI` report the `uint8` their bytes already are
  * @csqlfn #Raster_band_pixel_type()
  */
@@ -834,7 +834,7 @@ raster_band_pixel_type(const Raster *rast, int band, size_t *size_out)
       "Band %d of the raster has no known pixel type", band);
     return NULL;
   }
-  const char *name = raquet_pixtype_name(raquet_pixtype_from_string(pgname));
+  const char *name = meospixtype_name(meospixtype_from_string(pgname));
   return cstring_size(name ? pstrdup(name) : NULL, size_out);
 }
 
@@ -1994,7 +1994,7 @@ raster_pixtype(const char *name)
     return result;
   for (int i = 0; i <= (int) MEOS_PT_FLOAT16; i++)
   {
-    const char *rqname = raquet_pixtype_name((MeosPixType) i);
+    const char *rqname = meospixtype_name((MeosPixType) i);
     if (! rqname || pg_strcasecmp(name, rqname) != 0)
       continue;
     switch ((MeosPixType) i)

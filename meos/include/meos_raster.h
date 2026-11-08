@@ -80,7 +80,8 @@ typedef enum
 /* Pixel type utility functions */
 
 extern size_t raquet_pixtype_size(MeosPixType pixtype);
-extern MeosPixType raquet_pixtype_from_string(const char *str);
+extern const char *meospixtype_name(MeosPixType pixtype);
+extern MeosPixType meospixtype_from_string(const char *str);
 
 /* Opaque structure to represent a Raquet raster tile */
 
