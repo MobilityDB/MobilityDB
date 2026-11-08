@@ -546,12 +546,24 @@ meosoper_from_string(const char *str)
 /*****************************************************************************/
 
 /**
- * @brief Return the string representation of the subtype of the temporal type
- * corresponding to the enum value
+ * @ingroup meos_temporal_inout
+ * @brief Return the name of an interpolation: `None`, `Discrete`, `Step` or
+ * `Linear`
+ * @param[in] interp Interpolation
+ * @note This is the counterpart of #interptype_from_string(), so a host
+ * passes an interpolation and reads it back as text, as the SQL functions do
+ * @errval NULL
  */
 const char *
 interptype_name(interpType interp)
 {
+  const int n = (int) (sizeof(MEOS_INTERPTYPE_NAMES) / sizeof(char *));
+  if ((int) interp < 0 || (int) interp >= n)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown interpolation type: %d", (int) interp);
+    return NULL;
+  }
   return MEOS_INTERPTYPE_NAMES[interp];
 }
 

@@ -45,7 +45,7 @@
  * #tjsonb_to_tint, #tjsonb_to_tfloat and #tjsonb_to_ttext_key report a null
  * argument and an argument of another type by returning NULL and setting
  * #meos_errno, that #jsonbset_to_alphanumset reports a result base type that
- * is not alphanumeric the same way, that #null_handle_type_from_string reports
+ * is not alphanumeric the same way, that #nullhandletype_from_string reports
  * a null string by answering NULL_INVALID and setting #meos_errno, and that a
  * valid call still answers with no error left behind.
  *
@@ -181,8 +181,8 @@ int main(void)
   expect_error(tjsonb_to_ttext_key(tjsonb, NULL, NULL_RETURN),
     MEOS_ERR_INVALID_ARG, "tjsonb_to_ttext_key(tjsonb, NULL)");
   /* A null string is reported rather than compared with the names */
-  nullHandleType nh = null_handle_type_from_string(NULL);
-  printf("null_handle_type_from_string(NULL): %d, errno %d\n", (int) nh,
+  nullHandleType nh = nullhandletype_from_string(NULL);
+  printf("nullhandletype_from_string(NULL): %d, errno %d\n", (int) nh,
     meos_errno());
   assert(nh == NULL_INVALID);
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
@@ -258,8 +258,8 @@ int main(void)
   assert(set_eq(back, jsonbset));
   assert(meos_errno() == 0);
   free(textset); free(textset_str); free(back);
-  nh = null_handle_type_from_string("return_null");
-  printf("null_handle_type_from_string(return_null): %d, errno %d\n", (int) nh,
+  nh = nullhandletype_from_string("return_null");
+  printf("nullhandletype_from_string(return_null): %d, errno %d\n", (int) nh,
     meos_errno());
   assert(nh == NULL_RETURN);
   assert(meos_errno() == 0);

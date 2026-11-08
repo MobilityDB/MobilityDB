@@ -222,7 +222,6 @@ extern const char *tempsubtype_name(tempSubtype subtype);
 extern bool tempsubtype_from_string(const char *str, int16 *subtype);
 extern const char *meosoper_name(MeosOper oper);
 extern MeosOper meosoper_from_string(const char *name);
-extern const char *interptype_name(interpType interp);
 
 /* Type conversion functions */
 

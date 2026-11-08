@@ -93,7 +93,6 @@ extern void raquet_set_stbox(const Raquet *rq, STBox *box);
  * Pixel type catalog
  *****************************************************************************/
 
-extern const char *raquet_pixtype_name(MeosPixType pixtype);
 
 /*****************************************************************************
  * Pixel payload codec

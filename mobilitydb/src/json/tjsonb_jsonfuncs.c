@@ -63,7 +63,7 @@ input_null_handle_text(FunctionCallInfo fcinfo, int argno)
   text *null_handle_txt = PG_GETARG_TEXT_P(argno);
   assert(null_handle_txt);
   char *null_handle_str = pg_text_to_cstring(null_handle_txt);
-  nullHandleType result = null_handle_type_from_string(null_handle_str);
+  nullHandleType result = nullhandletype_from_string(null_handle_str);
   pfree(null_handle_str);
   PG_FREE_IF_COPY(null_handle_txt, argno);
   return result;

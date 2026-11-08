@@ -350,7 +350,8 @@ extern Temporal *concat_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool
 extern Temporal *concat_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
 extern Temporal *contains_tjsonb_jsonb(const Temporal *temp, const Jsonb *jb, bool invert);
 extern Temporal *contains_tjsonb_tjsonb(const Temporal *temp1, const Temporal *temp2);
-extern nullHandleType null_handle_type_from_string(const char *str);
+extern const char *nullhandletype_name(nullHandleType type);
+extern nullHandleType nullhandletype_from_string(const char *str);
 
 extern Temporal *tjson_array_element(const Temporal *temp, int idx, nullHandleType null_handle);
 extern Temporal *tjson_array_length(const Temporal *temp);

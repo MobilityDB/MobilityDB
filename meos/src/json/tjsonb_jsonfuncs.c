@@ -75,11 +75,36 @@ static const char * MEOS_NULLHANDLETYPE_NAMES[] =
 
 /**
  * @ingroup meos_json_json
- * @brief Get a nullHandleType value from a string
- * @param[in] str String
+ * @brief Return the name of the handling of a SQL NULL: `invalid_value`,
+ * `raise_exception`, `use_json_null`, `delete_key` or `return_null`
+ * @param[in] type Handling of a SQL NULL
+ * @note This is the counterpart of #nullhandletype_from_string()
+ * @errval NULL
+ */
+const char *
+nullhandletype_name(nullHandleType type)
+{
+  const int n = (int) (sizeof(MEOS_NULLHANDLETYPE_NAMES) / sizeof(char *));
+  if ((int) type < 0 || (int) type >= n)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown null handling type: %d", (int) type);
+    return NULL;
+  }
+  return MEOS_NULLHANDLETYPE_NAMES[type];
+}
+
+/**
+ * @ingroup meos_json_json
+ * @brief Return the handling of a SQL NULL corresponding to its name
+ * @details The name is read without regard to case
+ * @param[in] str Name: `raise_exception`, `use_json_null`, `delete_key` or
+ * `return_null`
+ * @note This is the parser counterpart of #nullhandletype_name()
+ * @errval NULL_INVALID
  */
 nullHandleType
-null_handle_type_from_string(const char *str)
+nullhandletype_from_string(const char *str)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(str, NULL_INVALID);
