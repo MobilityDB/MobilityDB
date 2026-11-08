@@ -2166,15 +2166,45 @@ SELECT tfloatSeq(tfloat '{1@2001-01-01}', 'Linear');
  [1@Mon Jan 01 00:00:00 2001 PST]
 (1 row)
 
+SELECT tfloatSeq(tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02]', 'Linear');
+                            tfloatseq                             
+------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 1@2001-01-02]}', 'Linear');
+                            tfloatseq                             
+------------------------------------------------------------------
+ [1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]}');
+                                                  tfloatseq                                                   
+--------------------------------------------------------------------------------------------------------------
+ Interp=Step;[1@Mon Jan 01 00:00:00 2001 PST, 2@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
 SELECT tfloatSeqSet(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Linear');
                              tfloatseqset                             
 ----------------------------------------------------------------------
  {[1@Mon Jan 01 00:00:00 2001 PST], [2@Tue Jan 02 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tfloatSeqSet(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]', 'Linear');
+                                                             tfloatseqset                                                             
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[1@Mon Jan 01 00:00:00 2001 PST, 1@Tue Jan 02 00:00:00 2001 PST), [2@Tue Jan 02 00:00:00 2001 PST, 2@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
 /* Errors */
 SELECT tfloatSeq(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Linear');
 ERROR:  Cannot transform input value to a temporal sequence with linear interpolation
+SELECT tfloatSeq(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]', 'Linear');
+ERROR:  Cannot transform input value to a temporal sequence with linear interpolation
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]}', 'Linear');
+ERROR:  Cannot transform input value to a temporal sequence with linear interpolation
+SELECT tfloatSeq(tfloat '{[1@2001-01-01, 2@2001-01-02]}', 'Step');
+ERROR:  Cannot transform input value to step interpolation
 SELECT ttextInst(ttext 'AAA@2001-01-01');
              ttextinst              
 ------------------------------------
