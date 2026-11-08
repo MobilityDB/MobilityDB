@@ -41,6 +41,16 @@ SELECT ST_AsText(round(traversedArea(
 SELECT ST_AsText(round(traversedArea(
   trgeometry 'Polygon((0 0, 1 0, 1 1, 0 1, 0 0));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(2 0),0)@2026-01-02]', TRUE), 6));
 
+-- A rod turning 0.04 rad about its centre pivots there, so its top edge
+-- crosses itself: no position of the rod reaches (0 0.12), which the hull of
+-- its two positions would cover, and its last position covers (1.99 0.15).
+SELECT ST_Covers(traversedArea(
+  trgeometry 'Polygon((-2 -0.1, 2 -0.1, 2 0.1, -2 0.1, -2 -0.1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(0 0),0.04)@2026-01-02]', TRUE),
+  geometry 'Point(0 0.12)');
+SELECT ST_Covers(traversedArea(
+  trgeometry 'Polygon((-2 -0.1, 2 -0.1, 2 0.1, -2 0.1, -2 -0.1));[Pose(Point(0 0),0)@2026-01-01, Pose(Point(0 0),0.04)@2026-01-02]', TRUE),
+  geometry 'Point(1.99 0.15)');
+
 -- A body that does not interpolate stands at each of its placements and covers
 -- nothing between them, so the united form answers the placements themselves
 -- and not the corridor between them.

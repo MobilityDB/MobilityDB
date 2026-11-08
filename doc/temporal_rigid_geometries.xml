@@ -344,7 +344,7 @@ SELECT ST_AsText(traversedArea( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 -- POLYGON((0 0,0 1,11 1,11 0,0 0))
 </programlisting>
 				<para>The argument is false unless it is given, and the function then answers the placements themselves gathered into one geometry, a multipolygon for a body that is a polygon, which is what a caller that does its own post-processing wants. With <varname>unary_union = true</varname> they are dissolved into the region they cover.</para>
-				<para><emphasis>Sampling caveat:</emphasis> the implementation samples at the input instants, so pure-translation segments are exact but the swept ribbon between two instants where a rotation happens is approximated by the convex hull of the two endpoint polygons. Up-sampling the <varname>tpose</varname> before constructing the <varname>trgeometry</varname> tightens the approximation.</para>
+				<para><emphasis>Sampling note:</emphasis> the merged form of a convex body that translates is exact. Where the body turns, it is read at placements no more than 0.05 radians of turn apart, and nearer where it travels far while it turns, each vertex moving along the chord of its arc between two of them. The region then holds only ground the body covers and leaves out the bulge of the arcs past their chords: over a corpus of turning bodies, at most 5.8e-4 of the diameter of the body.</para>
 				<para>The merged form of a value in three dimensions is the region on the ground, with no Z. Where the body turns, its area is not yet the one the same value has in two dimensions.</para>
 			</listitem>
 		</itemizedlist>
