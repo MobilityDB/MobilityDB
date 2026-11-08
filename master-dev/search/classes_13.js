@@ -39,5 +39,6 @@ var searchData=
   ['tsequence_36',['TSequence',['../structTSequence.html',1,'']]],
   ['tsequenceset_37',['TSequenceSet',['../structTSequenceSet.html',1,'']]],
   ['tspatialarrpair_38',['TspatialarrPair',['../structTspatialarrPair.html',1,'']]],
-  ['tucheck_39',['TuCheck',['../structTuCheck.html',1,'']]]
+  ['tucheck_39',['TuCheck',['../structTuCheck.html',1,'']]],
+  ['type_5fcamel_40',['type_camel',['../structtype__camel.html',1,'']]]
 ];
