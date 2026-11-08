@@ -542,7 +542,7 @@ SELECT round(tDistance(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02
 				<para>Una operación está disponible para las geografías cuando está definida sobre el elipsoide. Es el caso de las operaciones métricas, como la distancia, la distancia dentro de un umbral, la longitud, el área, el acimut o el centroide, que se calculan sobre el esferoide WGS 84, o sobre la esfera, más rápido, cuando su argumento <varname>spheroid</varname> es falso. Es también el caso de la intersección y de la disyunción, ya que dos geografías se intersecan cuando su distancia es cero. No es el caso de <varname>contains</varname>, <varname>covers</varname> y <varname>touches</varname>, que se definen mediante el modelo de nueve intersecciones extendido dimensionalmente de la topología plana, ni de las construcciones planas, como la unión o la intersección de dos geometrías, que PostGIS tampoco define para las geografías. Estas funciones producen un error para las geografías.</para>
 			</listitem>
 			<listitem>
-				<para>Las versiones alguna vez, siempre y temporal de una operación disponible para las geografías se calculan de forma exacta. El valor de una geografía temporal, y el de un punto geográfico temporal con interpolación discreta o escalonada, es constante entre dos instantes, por lo que la operación se evalúa en cada instante. Un punto geográfico temporal con interpolación lineal se desplaza a lo largo de un círculo máximo entre dos instantes, y el resultado de una relación temporal cambia en los instantes en que su distancia geodésica al otro argumento cruza la distancia dada. Estos instantes se calculan cuando el otro argumento es un punto geográfico o un punto geográfico temporal. Para otras geografías, como líneas y polígonos, las relaciones temporales <varname>tIntersects</varname>, <varname>tDisjoint</varname> y <varname>tDwithin</varname> de un punto geográfico temporal con interpolación lineal producen un error.</para>
+				<para>Las versiones alguna vez, siempre y temporal de una operación disponible para las geografías se calculan de forma exacta. El valor de una geografía temporal, y el de un punto geográfico temporal con interpolación discreta o escalonada, es constante entre dos instantes, por lo que la operación se evalúa en cada instante. Un punto geográfico temporal con interpolación lineal se desplaza a lo largo de un círculo máximo entre dos instantes, y el resultado de una relación temporal cambia en los instantes en que su distancia geodésica al otro argumento cruza la distancia dada. Estos instantes se calculan cuando el otro argumento es un punto geográfico o un punto geográfico temporal. Para otras geografías, como líneas y polígonos, las relaciones temporales <varname>tIntersects</varname>, <varname>tDisjoint</varname> y <varname>tDwithin</varname>, y la relación <varname>aDwithin</varname>, de un punto geográfico temporal con interpolación lineal producen un error.</para>
 			</listitem>
 			<listitem>
 				<para>Una relación temporal disponible para las geografías acepta una geografía o una geografía temporal en cualquiera de sus argumentos, como su versión plana acepta una geometría o una geometría temporal.</para>
@@ -638,9 +638,9 @@ SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
-aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
+aDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
 </programlisting>
-					<para>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido.</para>
+					<para>Para geografías, el cálculo se realiza en el esferoide WGS 84 por defecto. Si el último argumento es falso, se utiliza un cálculo esférico más rápido. Las geografías se admiten según lo indicado en <xref linkend="tgeo_geodetic"/>, por lo que <varname>aDwithin</varname> de un punto geográfico temporal con interpolación lineal y una geografía que no es un punto produce un error.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT eDwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
@@ -654,6 +654,9 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
 SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
   geography 'Point(0 0)', 110800, false);
 -- false
+SELECT aDwithin(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]',
+  geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
+-- true
 </programlisting>
 				</listitem>
 				<listitem xml:id="tgeo_eIntersects">

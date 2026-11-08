@@ -113,6 +113,8 @@ tempspatialrel_families:
           - {l: tgeompoint, r: geometry}
           - {l: tgeompoint, r: tgeompoint,
              comment: "Alias for temporal not equals, that is, tgeo_tne or #<>"}
+          - {l: geography,  r: tgeogpoint}
+          - {l: tgeogpoint, r: geography}
           - {l: tgeogpoint, r: tgeogpoint}
       - name: tIntersects
         directions:
@@ -120,6 +122,8 @@ tempspatialrel_families:
           - {l: tgeompoint, r: geometry}
           - {l: tgeompoint, r: tgeompoint,
              comment: "Alias for temporal equals, that is, tgeo_teq or #="}
+          - {l: geography,  r: tgeogpoint}
+          - {l: tgeogpoint, r: geography}
           - {l: tgeogpoint, r: tgeogpoint}
       - name: tTouches
         directions:

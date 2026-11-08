@@ -457,3 +457,18 @@ SELECT tDwithin(tgeompoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geo
 SELECT tDwithin(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', tgeompoint '[Point(0 1)@2001-01-01, Point(2 1)@2001-01-03]', 1);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- tIntersects and tDisjoint of a temporal geography point and a geography
+-------------------------------------------------------------------------------
+
+SELECT tIntersects(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+SELECT tIntersects(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]');
+SELECT tDisjoint(tgeogpoint '{Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02}', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+SELECT tDisjoint(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint '{Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02}');
+SELECT tIntersects(tgeogpoint '[Point(1.5 0)@2001-01-01, Point(1.5 1)@2001-01-02]', geography 'Point(1.5 0.5)');
+SELECT tDisjoint(geography 'Point(1.5 0.5)', tgeogpoint '[Point(1.5 0)@2001-01-01, Point(1.5 1)@2001-01-02]');
+SELECT tDwithin(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02]', geography 'Linestring(0 0,0 3)', 60000);
+/* A linear temporal geography point against a polygon is refused, as no kernel finds where a great circle crosses a geodesic edge */
+SELECT tIntersects(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+

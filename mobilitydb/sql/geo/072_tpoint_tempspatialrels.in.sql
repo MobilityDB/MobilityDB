@@ -70,6 +70,14 @@ CREATE FUNCTION tDisjoint(tgeompoint, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(geography, tgeogpoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdisjoint_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tDisjoint(tgeogpoint, geography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_geo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tDisjoint(tgeogpoint, tgeogpoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tdisjoint_tgeo_tgeo'
@@ -91,6 +99,14 @@ CREATE FUNCTION tIntersects(tgeompoint, geometry)
 CREATE FUNCTION tIntersects(tgeompoint, tgeompoint)
   RETURNS tbool
   AS 'MODULE_PATHNAME', 'Tintersects_tgeo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(geography, tgeogpoint)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tintersects_geo_tgeo'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tIntersects(tgeogpoint, geography)
+  RETURNS tbool
+  AS 'MODULE_PATHNAME', 'Tintersects_tgeo_geo'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tIntersects(tgeogpoint, tgeogpoint)
   RETURNS tbool

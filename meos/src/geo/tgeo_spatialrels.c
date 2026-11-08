@@ -2083,33 +2083,22 @@ ea_dwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
 
-  /* For geodetic coordinates the planar `geom_buffer` + `covers` machinery
-   * (the ALWAYS branch below) is not applicable. The EVER case is exactly
-   * "the trajectory ever comes within `dist` of the geo", i.e. the minimum
-   * geodesic distance between the trajectory and the geo is <= dist, which the
-   * trajectory-based `spatialrel_tgeo_geo` EVER path below computes: its
-   * `geo_dwithin_fn_geo` selector returns `datum_geog_dwithin` for geodetic
-   * input, and `datum_geog_dwithin` measures the true geodesic distance to the
-   * trajectory linestring, so a segment that enters the geo with both endpoints
-   * outside is detected. The ALWAYS case uses the lifted temporal-base helper
-   * `eafunc_temporal_base`, which for geodetic samples instants. */
+  /* A geodetic value and a geography are always within the distance when
+   * their temporal within-distance is always true, which #tdwithin_tgeo_geo
+   * computes at each instant of a value constant between its instants and
+   * from the crossings of the geodetic distance for a temporal geography point
+   * moving along great circles against a geography point. A temporal
+   * geography point moving against another geography it refuses. The ever
+   * case reads the trajectory below, whose geodetic distance a segment that
+   * enters the geography with both endpoints outside meets. */
   if (MEOS_FLAGS_GET_GEODETIC(temp->flags) && ! ever)
   {
-    LiftedFunctionInfo lfinfo;
-    memset(&lfinfo, 0, sizeof(LiftedFunctionInfo));
-    geo_dwithin_lfinfo_geo(temp->flags, gs->gflags, dist, spheroid, &lfinfo);
-    lfinfo.argtype[0] = temp->temptype;
-    lfinfo.argtype[1] = temptype_basetype(temp->temptype);
-    lfinfo.restype = T_TBOOL;
-    lfinfo.invert = INVERT_NO;
-    lfinfo.discont = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
-    lfinfo.ever = ever;
-    /* No tpfn_base for the temporal-base dwithin turning point yet --
-     * the continuous-segment crossing detection is pre-existing
-     * planar-only at this layer (cf. #1087); instant/discrete cases
-     * are exact, continuous segments fall back to endpoint sampling. */
-    lfinfo.tpfn_base = NULL;
-    return eafunc_temporal_base(temp, PointerGetDatum(gs), &lfinfo);
+    Temporal *within = tdwithin_tgeo_geo(temp, gs, dist, spheroid);
+    if (! within)
+      return -1;
+    int result = always_eq_tbool_bool(within, true);
+    pfree(within);
+    return result;
   }
 
   /* Bounding box prefilter (planar only): for EVER the boxes must overlap;
