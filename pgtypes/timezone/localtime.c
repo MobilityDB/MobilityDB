@@ -106,6 +106,24 @@ static bool typesequiv(struct state const *sp, int a, int b);
  * pointer to it); concurrent calls must not share it. */
 static MEOS_TLS struct pg_tm tm;
 
+/* GMT timezone state data is kept here. MEOS: per-thread so the
+ * check-then-allocate and the cached state do not race across threads, and
+ * freed by #localtime_destroy_gmt */
+static MEOS_TLS struct state *gmtptr = NULL;
+
+#if MEOS
+/*
+ * MEOS: Free the GMT timezone state of this thread, which
+ * #meos_finalize_timezone calls as it frees the timezone cache
+ */
+void
+localtime_destroy_gmt(void)
+{
+  free(gmtptr);
+  gmtptr = NULL;
+}
+#endif /* MEOS */
+
 /* Initialize *S to a value based on UTOFF, ISDST, and DESIGIDX.  */
 static void
 init_ttinfo(struct ttinfo *s, int32 utoff, bool isdst, int desigidx)
@@ -1387,10 +1405,6 @@ gmtsub(pg_time_t const *timep, int32 offset,
      struct pg_tm *tmp)
 {
   struct pg_tm *result;
-
-  /* GMT timezone state data is kept here. MEOS: per-thread so the
-   * check-then-allocate and the cached state do not race across threads. */
-  static MEOS_TLS struct state *gmtptr = NULL;
 
   if (gmtptr == NULL)
   {
