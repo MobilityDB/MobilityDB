@@ -41,7 +41,8 @@ var searchData=
   ['stritem_38',['STRItem',['../structSTRItem.html',1,'']]],
   ['struct_5fmeosprojsrscache_39',['struct_MEOSPROJSRSCache',['../structstruct__MEOSPROJSRSCache.html',1,'']]],
   ['struct_5fprojsrscacheitem_40',['struct_PROJSRSCacheItem',['../structstruct__PROJSRSCacheItem.html',1,'']]],
-  ['sweepdisc_41',['SweepDisc',['../structSweepDisc.html',1,'']]],
-  ['sweepend_42',['SweepEnd',['../structSweepEnd.html',1,'']]],
-  ['sweeppair_43',['SweepPair',['../structSweepPair.html',1,'']]]
+  ['sumpoint_41',['SumPoint',['../structSumPoint.html',1,'']]],
+  ['sweepdisc_42',['SweepDisc',['../structSweepDisc.html',1,'']]],
+  ['sweepend_43',['SweepEnd',['../structSweepEnd.html',1,'']]],
+  ['sweeppair_44',['SweepPair',['../structSweepPair.html',1,'']]]
 ];
