@@ -132,9 +132,10 @@ static const char *
 pg_TZDIR(void)
 {
 #ifndef SYSTEMTZDIR
-  /* normal case: timezone stuff is under our share dir */
-  static bool done_tzdir = false;
-  static char tzdir[MAXPGPATH];
+  /* normal case: timezone stuff is under our share dir
+   * MEOS: per thread (MEOS_TLS), as the other caches of this file */
+  static MEOS_TLS bool done_tzdir = false;
+  static MEOS_TLS char tzdir[MAXPGPATH];
 
   if (done_tzdir)
     return tzdir;
