@@ -395,6 +395,16 @@ WITH temp(inst) AS (
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
 SELECT numInstants(appendInstant(inst ORDER BY inst)) FROM temp;
 
+-- A gap starts a sequence, and the instants appended to it after the gap
+-- count in the sequence set they build
+WITH temp(inst) AS (
+  SELECT tfloat '1@2001-01-01' UNION SELECT tfloat '2@2001-01-02' UNION
+  SELECT tfloat '3@2001-01-05' UNION SELECT tfloat '5@2001-01-06' UNION
+  SELECT tfloat '4@2001-01-07' ),
+agg(seqset) AS (
+  SELECT appendInstant(inst, 'linear', NULL, interval '1 day' ORDER BY inst) FROM temp )
+SELECT numInstants(seqset), tfloatFromBinary(asBinary(seqset)) = seqset FROM agg;
+
 WITH temp(inst) AS (
   SELECT tintSeq(tint(extract(day from d)::int % 2, d))
   FROM generate_series(timestamptz '1900-01-01', '2001-01-10', interval '1 day') AS d )
