@@ -76,7 +76,7 @@ interpolation.
 
 **The distance at zero.** `intersects` and `disjoint` are `dwithin` at distance 0, so they need
 the rigid temporal distance to be the double nearest the exact distance and a contact on the
-boundary to read as 0. On the head of #3497 (`9ab3b8256c`) the witnesses read so, each as an
+boundary to read as 0. On master since #3497 (`59f3e1305a`) the witnesses read so, each as an
 instant and as a sequence that keeps the pose for a day:
 
 | Witness | Exact | `tDistance` |
@@ -86,7 +86,7 @@ instant and as a sequence that keeps the pose for a day:
 | the same at pose `(0 0)`, the point on an edge | 0 | `0` |
 | a 4x4 square at pose `(3 0)`, the point `(3 4)` on its top edge | 0 | `0` |
 
-Two defects of the temporal distance at a contact, which a threshold of 0 meets, are fixed in
+Two defects of the temporal distance at a contact, which a threshold of 0 meets, are fixed by
 #3497. `dist_seq_least` gave the instant of least value inside a segment the least distance and
 skipped the instants at the threshold, so with the least distance at the threshold it overwrote an
 unrelated extremum with 0. A contact that slides along an edge ended in the square root of the
@@ -229,13 +229,13 @@ In order, each in place of the refusal it answers:
 
 1. **`intersects` and `disjoint`** for linear motion from the temporal distance at 0, in the three
    orders and the ever, always and temporal forms, with the two defects of the distance at a
-   contact of section 3: #3497, based on master. `dwithin` already reads the distance; in #3497
+   contact of section 3: merged as #3497. `dwithin` already reads the distance; since #3497
    `eDwithin` against a geometry stops at the first segment within the distance. CGAL judges the
    1107 rows whose body does not turn and the bounded search of section 6 the 693 that turn;
    `eIntersects` on the 1000 rows of a translating body costs 0.52 of GEOS 3.14 answering them
    from the placed bodies.
 2. **The rigid-geometry commits of #3347**, the step and discrete path of the relationships at an
-   instant, rebased onto #3497, so the linear path and the path at the instants meet in one
+   instant, rebased onto master, which carries #3497, so the linear path and the path at the instants meet in one
    `trgeo_spatialrels.c`.
 3. **`contains`, `covers` and `touches`**: the incidence functions, the stretch decision, the
    event rules, the chapter and the manual, the judge and the tests.
