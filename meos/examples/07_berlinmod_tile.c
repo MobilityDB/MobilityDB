@@ -53,6 +53,7 @@
 #include <string.h>
 #include <time.h>
 #include <meos.h>
+#include <pg_interval.h>
 #include <meos_geo.h>
 
 /**

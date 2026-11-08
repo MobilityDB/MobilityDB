@@ -392,7 +392,7 @@ int main(int argc, char **argv)
         }
         {
           /* Removed point: write row */
-          char *ts = timestamptz_out(tr);
+          char *ts = timestamptz_out(tr, &size_out);
           /* Get EWKT for the single instant and parse point coords */
           char *wkt = tspatial_as_ewkt((Temporal *) ir, 10,
             &size_out); /* e.g., SRID=4326;POINT(x y)@time */

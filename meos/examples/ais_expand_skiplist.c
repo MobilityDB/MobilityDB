@@ -61,6 +61,7 @@
 #include <string.h> /* For memset */
 #include <time.h>
 #include <meos.h>
+#include <pg_int.h>
 #include <meos_geo.h>
 /* The expandable functions are in the internal MEOS API */
 #include <meos_internal.h>
