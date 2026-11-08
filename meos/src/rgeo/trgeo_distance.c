@@ -1622,8 +1622,12 @@ Temporal *
 tdistance_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D geometry is read in 2D */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the geometry */
+  if (! ensure_has_not_Z(temp->temptype, temp->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D */
   if (FLAGS_GET_Z(gs->gflags))
   {
     GSERIALIZED *flat = geo_force2d_intl(gs);
@@ -1649,9 +1653,12 @@ Temporal *
 tdistance_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp2, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D temporal point is
-   * read in 2D */
+  VALIDATE_TRGEOMETRY(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the temporal point */
+  if (! ensure_has_not_Z(temp1->temptype, temp1->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D temporal point in 2D */
   if (tpoint_type(temp2->temptype) && MEOS_FLAGS_GET_Z(temp2->flags))
   {
     Temporal *flat = tgeo_force2d_intl(temp2);
@@ -1777,8 +1784,12 @@ TInstant *
 nai_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D geometry is read in 2D */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the geometry */
+  if (! ensure_has_not_Z(temp->temptype, temp->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D */
   if (FLAGS_GET_Z(gs->gflags))
   {
     GSERIALIZED *flat = geo_force2d_intl(gs);
@@ -1820,9 +1831,12 @@ TInstant *
 nai_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp2, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D temporal point is
-   * read in 2D */
+  VALIDATE_TRGEOMETRY(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the temporal point */
+  if (! ensure_has_not_Z(temp1->temptype, temp1->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D temporal point in 2D */
   if (tpoint_type(temp2->temptype) && MEOS_FLAGS_GET_Z(temp2->flags))
   {
     Temporal *flat = tgeo_force2d_intl(temp2);
@@ -1899,8 +1913,12 @@ double
 nad_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, -1.0);
-  /* A temporal rigid geometry has two dimensions, so a 3D geometry is read in 2D */
+  VALIDATE_TRGEOMETRY(temp, -1.0); VALIDATE_NOT_NULL(gs, -1.0);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the geometry */
+  if (! ensure_has_not_Z(temp->temptype, temp->flags))
+    return -1.0;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D */
   if (FLAGS_GET_Z(gs->gflags))
   {
     GSERIALIZED *flat = geo_force2d_intl(gs);
@@ -1999,9 +2017,12 @@ double
 nad_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp2, -1.0);
-  /* A temporal rigid geometry has two dimensions, so a 3D temporal point is
-   * read in 2D */
+  VALIDATE_TRGEOMETRY(temp1, -1.0); VALIDATE_NOT_NULL(temp2, -1.0);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the temporal point */
+  if (! ensure_has_not_Z(temp1->temptype, temp1->flags))
+    return -1.0;
+  /* A 2D temporal rigid geometry reads a 3D temporal point in 2D */
   if (tpoint_type(temp2->temptype) && MEOS_FLAGS_GET_Z(temp2->flags))
   {
     Temporal *flat = tgeo_force2d_intl(temp2);
@@ -2072,8 +2093,12 @@ GSERIALIZED *
 shortestline_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(gs, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D geometry is read in 2D */
+  VALIDATE_TRGEOMETRY(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the geometry */
+  if (! ensure_has_not_Z(temp->temptype, temp->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D geometry in 2D */
   if (FLAGS_GET_Z(gs->gflags))
   {
     GSERIALIZED *flat = geo_force2d_intl(gs);
@@ -2110,9 +2135,12 @@ GSERIALIZED *
 shortestline_trgeometry_tpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(temp2, NULL);
-  /* A temporal rigid geometry has two dimensions, so a 3D temporal point is
-   * read in 2D */
+  VALIDATE_TRGEOMETRY(temp1, NULL); VALIDATE_NOT_NULL(temp2, NULL);
+  /* The distance of a temporal rigid geometry in three dimensions is not
+   * yet supported, whatever the dimensions of the temporal point */
+  if (! ensure_has_not_Z(temp1->temptype, temp1->flags))
+    return NULL;
+  /* A 2D temporal rigid geometry reads a 3D temporal point in 2D */
   if (tpoint_type(temp2->temptype) && MEOS_FLAGS_GET_Z(temp2->flags))
   {
     Temporal *flat = tgeo_force2d_intl(temp2);
