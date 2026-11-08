@@ -345,6 +345,11 @@ typedef struct
  */
 typedef struct SkipList SkipList;
 
+/**
+ * Structure for the state of the reachability filter of a stream of reports
+ */
+typedef struct ReachabilityState ReachabilityState;
+
 /*****************************************************************************/
 
 /**
@@ -2197,6 +2202,18 @@ extern double temporal_lcss_distance(const Temporal *temp1, const Temporal *temp
 
 extern Temporal *temporal_ext_kalman_filter(const Temporal *temp, double gate,
   double q, double variance, bool to_drop);
+
+/* Reachability filter */
+
+extern Temporal *temporal_reachability_filter(const Temporal *temp, double maxspeed);
+extern ReachabilityState *temporal_reachability_filter_transfn(ReachabilityState *state, const TInstant *inst, double maxspeed);
+extern Temporal *temporal_reachability_filter_finalfn(ReachabilityState *state);
+extern TInstant **reachabilitystate_instants(ReachabilityState *state, int *count);
+extern int reachabilitystate_kept(const ReachabilityState *state);
+extern int reachabilitystate_reports(const ReachabilityState *state);
+extern int reachabilitystate_unreachable(const ReachabilityState *state);
+extern ReachabilityState *reachabilitystate_deserialize(const uint8_t *bytes, size_t size);
+extern uint8_t *reachabilitystate_serialize(const ReachabilityState *state, size_t *size_out);
 
 /*****************************************************************************/
 
