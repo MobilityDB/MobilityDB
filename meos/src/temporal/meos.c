@@ -42,6 +42,7 @@
 #include <utils/formatting.h>
 #include <utils/jsonb.h>
 #if JSON
+  #include <regex/regex.h>
   #include <utils/jsonpath.h>
 #endif
 /* Proj */
@@ -733,6 +734,8 @@ meos_finalize(void)
   json_destroy_tofree();
   /* Free the format texts the .datetime() method of a JSON path reads */
   jsonpath_destroy_datetime_formats();
+  /* Free the regular expressions a like_regex of a JSON path compiles */
+  regexp_destroy_cache();
 #endif
 #if NPOINT
   /* Finalize Ways cache */

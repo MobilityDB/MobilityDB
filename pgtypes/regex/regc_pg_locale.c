@@ -21,6 +21,7 @@
 #include "common/unicode_case.h"
 #include "common/unicode_category.h"
 #include "utils/pg_locale.h"
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /*
  * For the libc provider, to provide as much functionality as possible on a
@@ -71,8 +72,10 @@ typedef enum
   PG_REGEX_STRATEGY_ICU,    /* Use ICU uchar.h functions */
 } PG_Locale_Strategy;
 
-static PG_Locale_Strategy pg_regex_strategy;
-static pg_locale_t pg_regex_locale;
+/* MEOS: per thread (MEOS_TLS), as each thread compiles its own regular
+ * expressions under the collation it sets here */
+static MEOS_TLS PG_Locale_Strategy pg_regex_strategy;
+static MEOS_TLS pg_locale_t pg_regex_locale;
 
 /*
  * Hard-wired character properties for C locale
@@ -642,7 +645,29 @@ typedef struct pg_ctype_cache
   struct pg_ctype_cache *next;  /* chain link */
 } pg_ctype_cache;
 
-static pg_ctype_cache *pg_ctype_cache_list = NULL;
+/* MEOS: per thread (MEOS_TLS), freed by #pg_ctype_destroy_cache */
+static MEOS_TLS pg_ctype_cache *pg_ctype_cache_list = NULL;
+
+#if MEOS
+/*
+ * MEOS: Free the character classes the cache of this thread holds, which
+ * #regexp_destroy_cache calls with the regular expressions they serve
+ */
+void
+pg_ctype_destroy_cache(void)
+{
+  pg_ctype_cache *pcc = pg_ctype_cache_list;
+  while (pcc != NULL)
+  {
+    pg_ctype_cache *next = pcc->next;
+    free(pcc->cv.chrs);
+    free(pcc->cv.ranges);
+    free(pcc);
+    pcc = next;
+  }
+  pg_ctype_cache_list = NULL;
+}
+#endif /* MEOS */
 
 /*
  * Add a chr or range to pcc->cv; return false if run out of memory
