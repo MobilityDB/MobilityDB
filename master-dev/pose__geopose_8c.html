@@ -89,6 +89,7 @@ $(function() {
 <code>#include &lt;json-c/json.h&gt;</code><br />
 <code>#include &lt;postgres.h&gt;</code><br />
 <code>#include &lt;varatt.h&gt;</code><br />
+<code>#include &lt;common/int.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__pose_8h_source.html">meos_pose.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
@@ -134,8 +135,6 @@ Macros</h2></td></tr>
 <tr class="separator:aeaa87416eef9e32803f76859caa32bd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28911f266f2c47ab227e1a09f4f41d3e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a28911f266f2c47ab227e1a09f4f41d3e.html#a28911f266f2c47ab227e1a09f4f41d3e">GEOPOSE_TM_PARAM_KEY</a>&#160;&#160;&#160;&quot;interpolation&quot;</td></tr>
 <tr class="separator:a28911f266f2c47ab227e1a09f4f41d3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3a9d1fb8345ecdda6ba6501ed27f790"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_ab3a9d1fb8345ecdda6ba6501ed27f790.html#ab3a9d1fb8345ecdda6ba6501ed27f790">GEOPOSE_UNIX_EPOCH_OFFSET_MS</a>&#160;&#160;&#160;  (((int64) <a class="el" href="meos_2include_2temporal_2temporal_8h_a9e2e6c0d74336fd387f1805faa853229.html#a9e2e6c0d74336fd387f1805faa853229">DELTA_UNIX_POSTGRES_EPOCH</a>) * 1000)</td></tr>
-<tr class="separator:ab3a9d1fb8345ecdda6ba6501ed27f790"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad93a3b4cda4c13dcb1ea8ba7cd4ab487"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_ad93a3b4cda4c13dcb1ea8ba7cd4ab487.html#ad93a3b4cda4c13dcb1ea8ba7cd4ab487">GEOPOSE_WGS84_A</a>&#160;&#160;&#160;6378137.0</td></tr>
 <tr class="separator:ad93a3b4cda4c13dcb1ea8ba7cd4ab487"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89ecbfcb6b922dd44779c9a74afebb9c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pose__geopose_8c_a89ecbfcb6b922dd44779c9a74afebb9c.html#a89ecbfcb6b922dd44779c9a74afebb9c">GEOPOSE_WGS84_E2</a>&#160;&#160;&#160;(<a class="el" href="pose__geopose_8c_af24a106cefc61d973d9f08b0489d72a9.html#af24a106cefc61d973d9f08b0489d72a9">GEOPOSE_WGS84_F</a> * (2.0 - <a class="el" href="pose__geopose_8c_af24a106cefc61d973d9f08b0489d72a9.html#af24a106cefc61d973d9f08b0489d72a9">GEOPOSE_WGS84_F</a>))</td></tr>
