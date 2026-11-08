@@ -69,12 +69,37 @@ the sibling that reads the same SQL and headers: its #strip_sql_comments is
 called, and #sql_files, #header_files and #declared_types are its selection of
 the SQL sources, the public headers and the declared types.
 
+With `--repo NAME=PATH:ROOT[,ROOT...]`, once per binding, the tool builds the
+table "Every binding, every format" instead: one row per binding, read from
+the files git tracks under each ROOT of the checkout PATH, at the commit that
+checkout holds.  The roots name the binding's object layer; its FFI layer
+names every MEOS function the catalog lists, so it is left out by not naming
+it.  A binding reaches a format through the names of chapter 18 of the
+manual (`portable_sql_porting_io`), the counterparts of the four functions a
+PostgreSQL type declares: the reader `<type>From<Format>` and the writer
+`as<Format>`, for the formats Text, EWKT, Binary, EWKB, HexWKB, HexEWKB and
+MFJSON.  A name is matched in any of the casings a language takes, its case
+and underscores ignored (`asHexWKB`, `AsHexWKB`, `as_hexwkb`).  Each format
+cell reads `<writer> / <readers>`: the writer is `yes` when the object layer
+names `as<Format>` and `**no**` otherwise, and the readers are the types whose
+reader the object layer names, out of the types whose reader the SQL
+declares.  A type's reader is named either as `<type>From<Format>`, the type
+spelled as its SQL name in any casing (`TGeomPointFromEWKB`,
+`tgeompoint_from_ewkb`), or as `From<Format>` in a file named after the type
+(`TGeomPoint.cs`, `tgeompoint.py`) or after its family (`Temporal.cs`,
+`set.py`), whose class the type's class inherits it from.  The last column lists the type support
+functions the object layer names under their C name, `<type>_in`, `<type>_out`,
+`<type>_recv` and `<type>_send` for a type of the SQL, which the portable
+surface replaces.
+
 Usage:
   io_matrix.py [--root DIR] [--catalog FILE]
       print the table as Markdown
   io_matrix.py [--root DIR] [--catalog FILE] --check IO-PLAN.md
       compare the table with the one in IO-PLAN.md; print every cell that
       differs and exit non-zero when one does
+  io_matrix.py [--root DIR] --repo NAME=PATH:ROOT[,ROOT...] ... [--check FILE]
+      print, or compare with FILE, the table of the bindings
 """
 
 import argparse
@@ -82,6 +107,7 @@ import glob
 import json
 import os
 import re
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -378,18 +404,170 @@ def check(rows, with_catalog, path):
   return differences
 
 
+BINDING_FORMATS = ('Text', 'EWKT', 'Binary', 'EWKB', 'HexWKB', 'HexEWKB',
+  'MFJSON')
+BINDING_COLUMNS = ('Binding', 'commit') + BINDING_FORMATS + \
+  ('C-named type support functions',)
+SUPPORT_SUFFIXES = ('in', 'out', 'recv', 'send')
+NO_SURFACE = '(no generated surface under the roots)'
+# The name a file defines, in the forms the bindings' languages take: after
+# `func` (Go, a method's receiver included), `def` (Python), `fn` (Rust) or
+# `function` (JavaScript); before a parameter list a body opens (Java, C#,
+# C++, TypeScript, its return type included) or an expression body follows
+# (`=>`, C#); or as a string literal, the form
+# an engine registers a SQL function under.  A call is none of these, so a
+# name the object layer only calls, such as the MEOS function a method
+# forwards to, is not one it defines.
+NAME = r'([A-Za-z_][A-Za-z0-9_]*)'
+DEFINITION_RE = re.compile(
+  r'\b(?:func|def|fn|function)\s+(?:\([^)]*\)\s*)?' + NAME + r'\s*[(<]'
+  r'|\b' + NAME + r'\s*\([^;{}()]*\)\s*(?::\s*[^;{}=]+)?(?:throws[^;{]*)?'
+  r'(?:\{|=>)'
+  r'|["\']' + NAME + r'["\']')
+
+
+def normal(name):
+  """Return a name with its case and underscores removed."""
+  return name.replace('_', '').lower()
+
+
+def parse_repo(spec):
+  """Return (name, path, roots) of a `NAME=PATH:ROOT[,ROOT...]` argument."""
+  name, sep, rest = spec.partition('=')
+  path, sep2, roots = rest.rpartition(':')
+  if not sep or not sep2 or not name or not path or not roots:
+    sys.exit('io_matrix: --repo %s is not NAME=PATH:ROOT[,ROOT...]' % spec)
+  return name, os.path.expanduser(path), roots.split(',')
+
+
+def git(path, *args):
+  """Return the output of a git command run in the checkout `path`."""
+  result = subprocess.run(['git', '-C', path] + list(args),
+    capture_output=True, text=True)
+  if result.returncode != 0:
+    sys.exit('io_matrix: git %s in %s: %s' % (' '.join(args), path,
+      result.stderr.strip()))
+  return result.stdout
+
+
+def binding_names(path, roots):
+  """Return [(file stem, names)] of every file git tracks under the roots.
+
+  The names are those a file defines (#DEFINITION_RE), normalized by #normal.
+  """
+  result = []
+  for f in git(path, 'ls-files', '--', *roots).split('\n'):
+    if not f:
+      continue
+    try:
+      with open(os.path.join(path, f), encoding='utf-8',
+          errors='replace') as handle:
+        text = handle.read()
+    except (OSError, IsADirectoryError):
+      continue
+    stem = normal(os.path.basename(f).split('.')[0])
+    result.append((stem, {normal(next(g for g in groups if g))
+      for groups in DEFINITION_RE.findall(text)}))
+  return result
+
+
+def binding_row(name, path, roots, types, functions):
+  """Return the cells of the row of one binding."""
+  files = binding_names(path, roots)
+  every = set().union(*(names for _, names in files)) if files else set()
+  by_stem = {}
+  for stem, names in files:
+    by_stem.setdefault(stem, set()).update(names)
+  cells = ['%s' % name, '`%s`' % git(path, 'rev-parse', '--short=10',
+    'HEAD').strip()]
+  canonical = {normal('as' + fmt) for fmt in BINDING_FORMATS} | \
+    {normal('from' + fmt) for fmt in BINDING_FORMATS}
+  if not any(n in canonical or n.endswith(tuple(canonical)) for n in every):
+    return cells + [NO_SURFACE] * (len(BINDING_COLUMNS) - 2)
+  for fmt in BINDING_FORMATS:
+    reader = normal('from' + fmt)
+    declared = [t for t in sorted(types)
+      if TypeSurface(t, functions).reader(fmt)]
+    found = [t for t in declared if normal(t) + reader in every or
+      reader in by_stem.get(normal(t), ()) or
+      reader in by_stem.get(family(t, types[t]) or normal(t), ())]
+    cells.append('%s / %d of %d' % (yes_no(normal('as' + fmt) in every),
+      len(found), len(declared)))
+  support = sorted(t + '_' + s for t in sorted(types) for s in SUPPORT_SUFFIXES
+    if normal(t + '_' + s) in every)
+  cells.append('none' if not support else '%d: %s' % (len(support),
+    ', '.join('`%s`' % s for s in support[:6]) +
+    (', ...' if len(support) > 6 else '')))
+  return cells
+
+
+def build_bindings(root, specs):
+  """Return the rows of the table of the bindings, in the order given."""
+  types, functions = read_sql(root)
+  return [binding_row(name, path, roots, types, functions)
+    for name, path, roots in map(parse_repo, specs)]
+
+
+def render_bindings(rows):
+  """Return the table of the bindings as Markdown."""
+  lines = ['| %s |' % ' | '.join(BINDING_COLUMNS),
+    '|%s' % ('---|' * len(BINDING_COLUMNS))]
+  lines += ['| %s |' % ' | '.join(cells) for cells in rows]
+  return '\n'.join(lines) + '\n'
+
+
+def check_bindings(rows, path):
+  """Print every cell differing from the bindings' table in `path`."""
+  with open(path, encoding='utf-8') as handle:
+    lines = handle.read().splitlines()
+  header = '| %s |' % ' | '.join(BINDING_COLUMNS)
+  if header not in lines:
+    sys.exit('io_matrix: %s holds no table headed %s' % (path, header))
+  documented = {}
+  for line in lines[lines.index(header) + 2:]:
+    if not line.startswith('|'):
+      break
+    cells = [cell.strip() for cell in line.strip().strip('|').split('|')]
+    documented[cells[0]] = cells
+  differences = 0
+  for cells in rows:
+    old = documented.get(cells[0])
+    if old is None:
+      print('%s: a binding given, no row of the document' % cells[0])
+      differences += 1
+      continue
+    for index, column in enumerate(BINDING_COLUMNS):
+      if index < len(old) and old[index] != cells[index]:
+        print('%s | %s: document %s, generated %s' % (cells[0], column,
+          old[index], cells[index]))
+        differences += 1
+  if differences:
+    print('\nio_matrix: %d cell(s) differ from %s' % (differences, path))
+  return differences
+
+
 def main():
   parser = argparse.ArgumentParser(
     description='Rebuild the table "Every type, at the three layers" of '
-    'IO-PLAN.md from the SQL, the public MEOS headers and the catalog.')
+    'IO-PLAN.md from the SQL, the public MEOS headers and the catalog, or '
+    'with --repo the table of the bindings.')
   parser.add_argument('--root', default=ROOT,
     help='the MobilityDB tree to read (default: the one holding this tool)')
   parser.add_argument('--catalog',
     help='a MEOS-API catalog JSON (meos-idl.json) for the catalog column')
   parser.add_argument('--check', metavar='IO_PLAN_MD',
     help='compare with the table in this document instead of printing it')
+  parser.add_argument('--repo', action='append', metavar='NAME=PATH:ROOTS',
+    help='a binding checkout and the roots of its object layer; given once '
+    'per binding, it builds the table of the bindings')
   args = parser.parse_args()
 
+  if args.repo:
+    rows = build_bindings(args.root, args.repo)
+    if args.check:
+      return 1 if check_bindings(rows, args.check) else 0
+    sys.stdout.write(render_bindings(rows))
+    return 0
   rows, with_catalog = build(args.root, args.catalog)
   if not rows:
     print('io_matrix: no CREATE TYPE found under %s' %
