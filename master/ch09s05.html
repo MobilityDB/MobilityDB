@@ -1,174 +1,26 @@
-<html><head><meta charset="UTF-8"><title>Splitting Operations</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch09.html" title="Chapter 9. Temporal Types: Analytics Operations"><link rel="prev" href="ch09s04.html" title="Extended Kalman Filter"><link rel="next" href="ch09s06.html" title="Multidimensional Tiling"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Splitting Operations</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch09s04.html">Prev</a> </td><th width="60%" align="center">Chapter 9. Temporal Types: Analytics Operations</th><td width="20%" align="right"> <a accesskey="n" href="ch09s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_splitting"></a>Splitting Operations</h2></div></div></div><p>
-			When creating indexes for temporal types, what is stored in the index is not the actual value but instead, a bounding box that <span class="emphasis"><em>represents</em></span> the value. In this case, the index will provide a list of candidate values that <span class="emphasis"><em>may</em></span> satisfy the query predicate, and a second step is needed to filter out candidate values by computing the query predicate on the actual values.
-		</p><p>
-			However, when the bounding boxes have a large empty space not covered by the actual values, the index will generate many candidate values that do not satisfy the query predicate, which reduces the efficiency of the index. In these situations, it may be better to represent a value not with a <span class="emphasis"><em>single</em></span> bounding box, but instead with <span class="emphasis"><em>multiple</em></span> bounding boxes. This increases considerably the efficiency of the index, provided that the index is able to manage multiple bounding boxes per value. The following functions are used for generating multiple bounding boxes for a single temporal value.
-		</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_splitNSpans"></a><a class="indexterm" name="id7737"></a><p>Return an array of N time spans obtained by merging the instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
-
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-
-</p><pre class="programlisting">
-splitNSpans(ttype,integer) → tstzspan[]
-</pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output spans. If the number of instants or segments is less than or equal to the given number, the resulting array will have one span per instant or segment of the temporal value. Otherwise, the given number of spans will be obtained by merging consecutive instants or segments.</p><pre class="programlisting">
-SELECT splitNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
-  A@2001-01-05}', 1);
--- {"[2001-01-01, 2001-01-05]"}
-SELECT splitNSpans(tfloat '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
-  1@2001-01-05}', 2);
--- {"[2001-01-01, 2001-01-03]","[2001-01-04, 2001-01-05]"}
-SELECT splitNSpans(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(1 1)@2001-01-03, Point(2 2)@2001-01-04, Point(1 1)@2001-01-05]', 2);
--- {"[2001-01-01, 2001-01-03]","[2001-01-03, 2001-01-05]"}
-SELECT splitNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
-  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 2);
--- {"[2001-01-01, 2001-01-04]","[2001-01-05, 2001-01-05]"}
-SELECT splitNSpans(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
-  2@2001-01-05}', 6);
-/* {"[2001-01-01, 2001-01-01]","[2001-01-02, 2001-01-02]","[2001-01-03,
-   2001-01-03]","[2001-01-04, 2001-01-04]","[2001-01-05, 2001-01-05]"} */
-SELECT splitNSpans(ttext '[A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
-  A@2001-01-05]', 6);
-/* {"[2001-01-01, 2001-01-02]","[2001-01-02, 2001-01-03]","[2001-01-03,
-   2001-01-04]","[2001-01-04, 2001-01-05]"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNSpans"></a><a class="indexterm" name="id7759"></a><p>Return an array of time spans obtained by merging N consecutive instants or segments of a temporal value <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
-
- <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
-
-</p><pre class="programlisting">
-splitEachNSpans(ttype,integer) → tstzspan[]
-</pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output span. If the number of input elements is less than or equal to the given number, the resulting array will have a single span per sequence. Otherwise, the given number of consecutive instants or segments will be merged into each output span. Notice that, contrary to the <a class="link" href="ch09s05.html#ttype_splitNSpans"><code class="varname">splitNSpans</code></a> function, the number of spans in the result depends on the number of input instants or segments.</p><pre class="programlisting">
-SELECT splitEachNSpans(ttext '{A@2001-01-01, B@2001-01-02, A@2001-01-03, B@2001-01-04,
-  A@2001-01-05}', 1);
-/* {"[2001-01-01, 2001-01-01]","[2001-01-02, 2001-01-02]","[2001-01-03,
-   2001-01-03]","[2001-01-04, 2001-01-04]","[2001-01-05, 2001-01-05]"} */
-SELECT splitEachNSpans(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 2@2001-01-04,
-  1@2001-01-05]', 2);
--- {"[2001-01-01, 2001-01-03]","[2001-01-03, 2001-01-05]"}
-SELECT splitEachNSpans(tgeompoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
-  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 2);
--- {"[2001-01-01, 2001-01-02]","[2001-01-03, 2001-01-04]","[2001-01-05, 2001-01-05]"}
-SELECT splitEachNSpans(tgeogpoint '[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02,
-  Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04, Point(1 1 1)@2001-01-05]', 6);
--- {"[2001-01-01, 2001-01-05]"}
-SELECT splitEachNSpans(tgeogpoint '{[Point(1 1 1)@2001-01-01, Point(2 2 2)@2001-01-02],
-  [Point(1 1 1)@2001-01-03, Point(2 2 2)@2001-01-04], [Point(1 1 1)@2001-01-05]}', 6);
--- {"[2001-01-01, 2001-01-02]","[2001-01-03, 2001-01-04]","[2001-01-05, 2001-01-05]"}
-</pre></li><li class="listitem"><a name="ttype_splitNTboxes"></a><a class="indexterm" name="id7783"></a><p>Return an array of N temporal boxes obtained by merging the instants or segments of a temporal number</p><pre class="programlisting">
-splitNTboxes(tnumber,integer) → tbox[]
-</pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output boxes. If the number of input instants or segments is less than or equal to the given number, the resulting array will have one box per instant or segment of the temporal number. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</p><pre class="programlisting">
-SELECT splitNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05}', 1);
--- {"TBOXINT XT([1, 5),[2001-01-01, 2001-01-05])"}
-SELECT splitNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02], [1@2001-01-03, 4@2001-01-04],
-  [1@2001-01-05]}', 2);
-/* {"TBOXFLOAT XT([1, 4],[2001-01-01, 2001-01-04])","TBOXFLOAT XT([1, 1],[2001-01-05,
-   2001-01-05])"} */
-SELECT splitNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05]', 3);
-/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-03])","TBOXFLOAT XT([1, 4],[2001-01-03,
-   2001-01-04])","TBOXFLOAT XT([1, 4],[2001-01-04, 2001-01-05])"} */
-SELECT splitNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05}', 6);
-/* {"TBOXINT XT([1, 2),[2001-01-01, 2001-01-01])","TBOXINT XT([2, 3),[2001-01-02,
-   2001-01-02])","TBOXINT XT([1, 2),[2001-01-03, 2001-01-03])","TBOXINT XT([4,
-   5),[2001-01-04, 2001-01-04])","TBOXINT XT([1, 2),[2001-01-05, 2001-01-05])"} */
-SELECT splitNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05]', 6);
-/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])","TBOXINT XT([1, 3),[2001-01-02,
-   2001-01-03])","TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])","TBOXINT XT([1,
-   5),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNTboxes"></a><a class="indexterm" name="id7791"></a><p>Return an array of temporal boxes obtained by merging N consecutive instants or segments of a temporal number</p><pre class="programlisting">
-splitEachNTboxes(tnumber,integer) → tbox[]
-</pre><p>The choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output box. If the number of input instants or segments is less than or equal to the given number, the resulting array will have a single box per sequence. Otherwise, the specified number of consecutive instants or segments will be merged into each output box. Notice that, contrary to the <a class="link" href="ch09s05.html#ttype_splitNTboxes"><code class="varname">splitNTboxes</code></a> function, the number of boxes in the result depends on the number of input instants or segments.</p><pre class="programlisting">
-SELECT splitEachNTboxes(tint '{1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05}', 1);
-/* {"TBOXINT XT([1, 2),[2001-01-01, 2001-01-01])","TBOXINT XT([2, 3),[2001-01-02,
-   2001-01-02])","TBOXINT XT([1, 2),[2001-01-03, 2001-01-03])","TBOXINT XT([4,
-   5),[2001-01-04, 2001-01-04])","TBOXINT XT([1, 2),[2001-01-05, 2001-01-05])"} */
-SELECT splitEachNTboxes(tint '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05]', 1);
-/* {"TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])","TBOXINT XT([1, 3),[2001-01-02,
-   2001-01-03])","TBOXINT XT([1, 5),[2001-01-03, 2001-01-04])","TBOXINT XT([1,
-   5),[2001-01-04, 2001-01-05])"} */
-SELECT splitEachNTboxes(tfloat '[1@2001-01-01, 2@2001-01-02, 1@2001-01-03, 4@2001-01-04,
-  1@2001-01-05]', 3);
-/* {"TBOXFLOAT XT([1, 4],[2001-01-01, 2001-01-04])","TBOXFLOAT XT([1, 4],[2001-01-04,
-   2001-01-05])"} */
-SELECT splitEachNTboxes(tfloat '{[1@2001-01-01, 2@2001-01-02],
-  [1@2001-01-03, 4@2001-01-04], [1@2001-01-05]}', 6);
-/* {"TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])","TBOXFLOAT XT([1, 4],[2001-01-03,
-   2001-01-04])","TBOXFLOAT XT([1, 1],[2001-01-05, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_splitNStboxes"></a><a class="indexterm" name="id7801"></a><p>Return either an array of N spatial boxes obtained by merging the segments of a (multi)line or an array of N spatiotemporal boxes obtained by merging the instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
-
+<html><head><meta charset="UTF-8"><title>Reachability Filter</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch09.html" title="Chapter 9. Temporal Types: Analytics Operations"><link rel="prev" href="ch09s04.html" title="Extended Kalman Filter"><link rel="next" href="ch09s06.html" title="Splitting Operations"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Reachability Filter</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch09s04.html">Prev</a> </td><th width="60%" align="center">Chapter 9. Temporal Types: Analytics Operations</th><td width="20%" align="right"> <a accesskey="n" href="ch09s06.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="ttype_reachability"></a>Reachability Filter</h2></div></div></div><p>The reachability filter removes the reports of a moving object that it could not have reached: a report is kept when the last kept report could reach it at a maximum speed, given in units of the values per second, which are meters per second for a geography. The distance is the difference of two floats, the planar distance of two geometry points, or the distance of two geography points on the spheroid. The filter trusts its first report, so the walk starts from a seed, the earliest of the first eleven reports that a majority of them can reach, and walks the reports before the seed backwards from it. A value whose share of reports unreachable from the report before exceeds one half is dropped whole.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="ttype_reachabilityFilter"></a><a class="indexterm" name="id7733"></a><p>Return a temporal float or temporal point with the instants the reachability filter keeps <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
-splitNStboxes({lines,tpoint},integer) → stbox[]
-</pre><p>For temporal points, the choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of output boxes. If the number of instants or segments is less than or equal to the given number, the resulting array will have either one box per segment of the (multi)line or one box per instant or segment of the temporal point. Otherwise, the specified number of boxes will be obtained by merging consecutive instants or segments.</p><pre class="programlisting">
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
--- {"STBOX X((1,1),(5,2))"}
-SELECT splitNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
--- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
-SELECT splitNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
-/* {"SRID=4326;GEODSTBOX Z((1,1,1),(2,2,1))","SRID=4326;GEODSTBOX
-   Z((2,1,1),(3,2,1))","SRID=4326;GEODSTBOX Z((3,1,1),(4,2,1))","SRID=4326;GEODSTBOX
-   Z((4,1,1),(5,2,1))"} */
-SELECT splitNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
--- {"STBOX X((1,1),(4,2))","STBOX X((5,1),(6,2))"}
-</pre><pre class="programlisting">
-SELECT splitNStboxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05}', 1);
--- {"STBOX XT(((1,1),(5,2)),[2001-01-01, 2001-01-05])"}
-SELECT splitNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 4);
-/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])",
-   "STBOX XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])",
-   "STBOX XT(((3,1),(4,2)),[2001-01-03, 2001-01-04])",
-   "STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
-SELECT splitNStboxes(tgeompoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
-  [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
-/* {"STBOX XT(((1,1),(4,2)),[2001-01-01, 2001-01-04])","STBOX
-   XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
-SELECT splitNStboxes(tgeogpoint '{Point(1 1 1)@2001-01-01, Point(2 2 1)@2001-01-02,
-  Point(3 1 1)@2001-01-03, Point(4 2 1)@2001-01-04, Point(5 1 1)@2001-01-05}', 6);
-/* {"SRID=4326;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01,
-   2001-01-01])","SRID=4326;GEODSTBOX ZT(((2,2,1),(2,2,1)),[2001-01-02,
-   2001-01-02])","SRID=4326;GEODSTBOX ZT(((3,1,1),(3,1,1)),[2001-01-03,
-   2001-01-03])","SRID=4326;GEODSTBOX ZT(((4,2,1),(4,2,1)),[2001-01-04,
-   2001-01-04])","SRID=4326;GEODSTBOX ZT(((5,1,1),(5,1,1)),[2001-01-05, 2001-01-05])"} */
-SELECT splitNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 6);
-/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])","STBOX
-   XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])","STBOX XT(((3,1),(4,2)),[2001-01-03,
-   2001-01-04])","STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
-</pre></li><li class="listitem"><a name="ttype_splitEachNStboxes"></a><a class="indexterm" name="id7824"></a><p>Return either an array of spatial boxes obtained by merging N consecutive segments of a (multi)line or an array of spatiotemporal boxes obtained by merging N consecutive instants or segments of a temporal point <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
-
+reachabilityFilter({tfloat,tgeompoint,tgeogpoint},maxspeed float)
+  → {tfloat,tgeompoint,tgeogpoint}
+</pre><p>The kept instants keep their sequences and the interpolation of the value. The function returns NULL when the value is dropped whole.</p><pre class="programlisting">
+SELECT asText(reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00,
+  Point(10 0)@2001-01-01 00:00:01, Point(5000 0)@2001-01-01 00:00:02,
+  Point(30 0)@2001-01-01 00:00:03]', 100));
+-- [POINT(0 0)@2001-01-01 00:00:00, POINT(10 0)@2001-01-01 00:00:01,
+   POINT(30 0)@2001-01-01 00:00:03]
+SELECT reachabilityFilter(tgeompoint '[Point(0 0)@2001-01-01 00:00:00,
+  Point(5000 0)@2001-01-01 00:00:01, Point(0 0)@2001-01-01 00:00:02,
+  Point(5000 0)@2001-01-01 00:00:03]', 100) IS NULL;
+-- true
+</pre></li><li class="listitem"><a name="ttype_reachabilityFilterAgg"></a><a class="indexterm" name="id7755"></a><p>Return a temporal float or temporal point with the instants the reachability filter keeps among the instants of a group <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
-splitEachNStboxes({lines,tpoint},integer) → stbox[]
-</pre><p>For temporal points, the choice between instants or segments depends on whether the interpolation is discrete or continuous. The last argument specifies the number of input instants or segments that are merged to produce an output box. If the number of instants or segments is less than or equal to the given number, the resulting array will have a single box per sequence. Otherwise, the specified number of consecutive instants or segments will be merged into each output box. Notice that, contrary to the <a class="link" href="ch09s05.html#ttype_splitNStboxes"><code class="varname">splitNStboxes</code></a> function, the number of boxes in the result depends on the number of input instants or segments.</p><pre class="programlisting">
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 1);
-/* {"STBOX X((1,1),(2,2))","STBOX X((2,1),(3,2))","STBOX X((3,1),(4,2))","STBOX
-   X((4,1),(5,2))"} */
-SELECT splitEachNStboxes(geometry 'Linestring(1 1,2 2,3 1,4 2,5 1)', 2);
--- {"STBOX X((1,1),(3,2))","STBOX X((3,1),(5,2))"}
-SELECT splitEachNStboxes(geography 'Linestring(1 1 1,2 2 1,3 1 1,4 2 1,5 1 1)', 6);
--- {"SRID=4326;GEODSTBOX Z((1,1,1),(5,2,1))"}
-SELECT splitEachNStboxes(geometry 'MultiLinestring((1 1,2 2),(3 1,4 2),(5 1,6 2))', 2);
--- {"STBOX X((1,1),(2,2))","STBOX X((3,1),(4,2))","STBOX X((5,1),(6,2))"}
-</pre><pre class="programlisting">
-SELECT splitEachNStboxes(tgeompoint '{Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05}', 1);
-/* {"STBOX XT(((1,1),(1,1)),[2001-01-01, 2001-01-01])","STBOX
-   XT(((2,2),(2,2)),[2001-01-02, 2001-01-02])","STBOX XT(((3,1),(3,1)),[2001-01-03,
-   2001-01-03])","STBOX XT(((4,2),(4,2)),[2001-01-04, 2001-01-04])","STBOX
-   XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
-SELECT splitEachNStboxes(tgeompoint '[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02,
-  Point(3 1)@2001-01-03, Point(4 2)@2001-01-04, Point(5 1)@2001-01-05]', 1);
-/* {"STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])","STBOX
-   XT(((2,1),(3,2)),[2001-01-02, 2001-01-03])","STBOX XT(((3,1),(4,2)),[2001-01-03,
-   2001-01-04])","STBOX XT(((4,1),(5,2)),[2001-01-04, 2001-01-05])"} */
-SELECT splitEachNStboxes(tgeogpoint '{[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02],
-  [Point(3 1)@2001-01-03, Point(4 2)@2001-01-04], [Point(5 1)@2001-01-05]}', 2);
-/* {"SRID=4326;GEODSTBOX XT(((1,1),(2,2)),[2001-01-01,
-   2001-01-02])","SRID=4326;GEODSTBOX XT(((3,1),(4,2)),[2001-01-03,
-   2001-01-04])","SRID=4326;GEODSTBOX XT(((5,1),(5,1)),[2001-01-05, 2001-01-05])"} */
-</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch09.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch09s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Extended Kalman Filter </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Multidimensional Tiling</td></tr></table></div></body></html>
+reachabilityFilterAgg({tfloat,tgeompoint,tgeogpoint},maxspeed float)
+  → {tfloat,tgeompoint,tgeogpoint}
+</pre><p>The aggregate takes the instants in the order of their times, which the query states with <code class="varname">ORDER BY</code>, and decides each one as it arrives, as a stream does. It returns a sequence with the default interpolation of the type, and NULL when the instants are dropped whole. Its name differs from that of the function, since PostgreSQL does not hold a function and an aggregate of the same name and arguments.</p><pre class="programlisting">
+SELECT asText(reachabilityFilterAgg(inst, 5 ORDER BY getTimestamp(inst)))
+FROM unnest(instants(tfloat '{1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01,
+  1000@2001-01-01 00:00:02, 3@2001-01-01 00:00:03}')) AS inst;
+-- [1@2001-01-01 00:00:00, 2@2001-01-01 00:00:01, 3@2001-01-01 00:00:03]
+</pre></li></ul></div></div><div class="navfooter"><hr><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ch09s04.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ch09.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ch09s06.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Extended Kalman Filter </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Splitting Operations</td></tr></table></div></body></html>
