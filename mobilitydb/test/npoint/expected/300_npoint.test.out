@@ -758,3 +758,22 @@ SELECT npoint 'Npoint(1, 0.5)'::geography;
 ERROR:  Only lon/lat coordinate systems are supported
 SELECT nsegment 'Nsegment(1, 0.5, 0.7)'::geography;
 ERROR:  Only lon/lat coordinate systems are supported
+INSERT INTO ways(gid, the_geom, length) VALUES
+  (9001, 'SRID=5676;LINESTRING Z(0 0 0,3 4 0)', 5),
+  (9002, 'SRID=5676;LINESTRING M(0 0 0,3 4 0)', 5),
+  (9003, 'SRID=5676;MULTILINESTRING((0 0,3 4))', 5),
+  (9004, 'SRID=4326;LINESTRING(0 0,3 4)', 5);
+INSERT 0 4
+/* Errors */
+SELECT npoint(9001, 0.5);
+ERROR:  The geometry cannot have Z dimension
+SELECT npoint(9002, 0.5);
+ERROR:  The geometry cannot have M dimension
+SELECT npoint(9003, 0.5);
+ERROR:  Only line geometries accepted
+SELECT npoint(9004, 0.5);
+ERROR:  Operation on mixed SRID
+SELECT npoint(geometry 'SRID=5676;POINT(1 1)', 10);
+ERROR:  The geometry cannot have Z dimension
+DELETE FROM ways WHERE gid > 9000;
+DELETE 4

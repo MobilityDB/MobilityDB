@@ -19354,6 +19354,20 @@ ensure_point_type(const GSERIALIZED *gs)
   return false;
 }
 /**
+ * @brief Ensure that the geometry/geography is a line
+ * @details The line twin of #ensure_point_type
+ */
+bool
+ensure_line_type(const GSERIALIZED *gs)
+{
+  if (gserialized_get_type(gs) == LINETYPE)
+    return true;
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Only line geometries accepted");
+  return false;
+}
+
+/**
  * @brief Ensure that the geometry/geography is a (multi)line
  */
 bool
