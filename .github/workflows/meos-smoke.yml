@@ -85,7 +85,7 @@ jobs:
             [ -e "$src" ] || continue
             t="${src%.c}"
             echo "[valgrind] $t"
-            gcc -Wall -Werror=implicit-function-declaration -g \
+            gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g \
               -I/usr/local/include -o $t $src -L/usr/local/lib -lmeos -lm
             valgrind --leak-check=full --errors-for-leak-kinds=definite \
               --error-exitcode=1 ./$t
