@@ -31,7 +31,7 @@
  * @file
  * @brief Test how the MEOS build reads a route of the ways CSV file
  * @details A program that tests which line of the ways CSV file answers a
- * route, on three files it writes byte for byte in the current directory and
+ * route, on six files it writes byte for byte in the current directory and
  * removes at the end, as tnpoint_stops_test.c writes its network: the first,
  * whose lines end in a newline alone, holds a route of length 5, a route
  * whose only line has an empty geometry, a route whose first line is empty
@@ -39,7 +39,10 @@
  * without its newline; the second holds a route of length 1; the third,
  * whose lines end in a carriage return and a newline, holds two routes of
  * lengths 5 and 2; the fourth, whose lines end in a newline alone, holds
- * WAYS_D_COUNT routes, on line i the route WAYS_D_FIRST + i of length i.
+ * WAYS_D_COUNT routes, on line i the route WAYS_D_FIRST + i of length i; the
+ * fifth holds a route 1 of length 3, an identifier the first file also
+ * holds; the sixth holds a route of length 4 in SRID 3812, where the others
+ * are in SRID 5676.
  *
  * The program verifies that #route_exists and #route_length answer the route
  * of each line, the first line with a geometry that is not empty for a route
@@ -48,7 +51,9 @@
  * first file again after #meos_finalize_ways, and every route of the third
  * and of the fourth file. A route is read at the position of its line, so
  * the routes of the fourth file, one on each line, are read at as many
- * positions.
+ * positions. A route of the file #meos_set_ways_csv names last is the one
+ * answered: route 1 of the fifth file once it is named, though the first
+ * file's was read before, and the route of the sixth file in its own SRID.
  *
  * The program can be build as follows
  * @code
@@ -64,11 +69,13 @@
 #include <meos_geo.h>
 #include <meos_npoint.h>
 
-/* The four network files the program writes */
+/* The six network files the program writes */
 static const char *WAYS_A = "ways_index_test_a.csv";
 static const char *WAYS_B = "ways_index_test_b.csv";
 static const char *WAYS_C = "ways_index_test_c.csv";
 static const char *WAYS_D = "ways_index_test_d.csv";
+static const char *WAYS_E = "ways_index_test_e.csv";
+static const char *WAYS_F = "ways_index_test_f.csv";
 /* The number of routes of the fourth file, and the identifier before its
  * first, which no route of the other files has */
 #define WAYS_D_COUNT 30
@@ -120,10 +127,37 @@ write_file(const char *path, const char *text)
   return true;
 }
 
-/* Write the fourth file as #write_file writes the others: on line i the route
- * WAYS_D_FIRST + i, the segment from (0, 0) to (i, 0) in SRID 5676, of length
- * i, in the hex EWKB that #geo_as_hexewkb answers, as
+/* Write the line of route gid, the segment from (0, 0) to (length, 0) in
+ * srid, in the hex EWKB that #geo_as_hexewkb answers, as
  * meos/examples/geo_inout.c writes it */
+static void
+write_route(FILE *file, int gid, int length, int srid)
+{
+  char wkt[64];
+  snprintf(wkt, sizeof(wkt), "SRID=%d;LINESTRING(0 0,%d 0)", srid, length);
+  GSERIALIZED *gs = geom_in(wkt, -1);
+  size_t size_out;
+  char *hex = geo_as_hexewkb(gs, "NDR", &size_out);
+  fprintf(file, "%d,%s\n", gid, hex);
+  free(hex);
+  free(gs);
+}
+
+/* Write a file of one route with #write_route, as #write_file writes the
+ * others */
+static bool
+write_one_route(const char *path, int gid, int length, int srid)
+{
+  FILE *file = fopen(path, "wb");
+  if (! file)
+    return false;
+  write_route(file, gid, length, srid);
+  fclose(file);
+  return true;
+}
+
+/* Write the fourth file as #write_file writes the others: on line i the route
+ * WAYS_D_FIRST + i of length i in SRID 5676 */
 static bool
 write_routes_d(void)
 {
@@ -131,16 +165,7 @@ write_routes_d(void)
   if (! file)
     return false;
   for (int i = 1; i <= WAYS_D_COUNT; i++)
-  {
-    char wkt[64];
-    snprintf(wkt, sizeof(wkt), "SRID=5676;LINESTRING(0 0,%d 0)", i);
-    GSERIALIZED *gs = geom_in(wkt, -1);
-    size_t size_out;
-    char *hex = geo_as_hexewkb(gs, "NDR", &size_out);
-    fprintf(file, "%d,%s\n", WAYS_D_FIRST + i, hex);
-    free(hex);
-    free(gs);
-  }
+    write_route(file, WAYS_D_FIRST + i, i, 5676);
   fclose(file);
   return true;
 }
@@ -179,12 +204,28 @@ main(void)
       WAYS_D_FIRST + i, i, i);
     check(what, WAYS_D_FIRST + i, true, (double) i);
   }
+  /* A route of the file named last is the one answered, also for an
+   * identifier a file named before holds, and the routes of a network in
+   * another SRID are read in that SRID */
+  meos_set_ways_csv(WAYS_A);
+  check("route 1 of the first file, read again", 1, true, 5.0);
+  if (! write_one_route(WAYS_E, 1, 3, 5676) ||
+      ! write_one_route(WAYS_F, 60, 4, 3812))
+    return 1;
+  meos_set_ways_csv(WAYS_E);
+  check("route 1 of a file named after another holding route 1", 1, true,
+    3.0);
+  meos_set_ways_csv(WAYS_F);
+  check("route 60 of a file in SRID 3812, named after files in SRID 5676",
+    60, true, 4.0);
   meos_finalize();
 
   remove(WAYS_A);
   remove(WAYS_B);
   remove(WAYS_C);
   remove(WAYS_D);
+  remove(WAYS_E);
+  remove(WAYS_F);
   printf("%d failure(s)\n", failures);
   return failures ? 1 : 0;
 }

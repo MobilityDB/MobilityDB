@@ -89,6 +89,8 @@ meos_set_ways_csv(const char *path)
 
 /* Global variable to hold the ways cache */
 static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
+/* File the routes of the ways cache were read from */
+static MEOS_TLS char *MEOS_WAYS_CACHE_PATH = NULL;
 
 /**
  * @brief Structure to represent the position of a route in the ways CSV file
@@ -120,13 +122,31 @@ static MEOS_TLS WaysIndex *MEOS_WAYS_INDEX = NULL;
 
 /**
  * @brief Get the ways cache from the global variable
- * @details If it does not exist, a new blank one is made and returned.
+ * @details If it does not exist, or holds the routes of a file other than the
+ * one #meos_set_ways_csv names last, a new blank one is made and returned, as
+ * #GetWaysIndex rebuilds the index: the routes of a file and the SRID of its
+ * first route answer for that file alone. The path of the file is held per
+ * thread with the cache, so each thread's cache follows the file it reads.
  */
 static WaysCache *
 GetWaysCache(void)
 {
-  if (! MEOS_WAYS_CACHE)
-    MEOS_WAYS_CACHE = ways_cache_make();
+  if (MEOS_WAYS_CACHE && MEOS_WAYS_CACHE_PATH &&
+      strcmp(MEOS_WAYS_CACHE_PATH, WAYS_CSV) == 0)
+    return MEOS_WAYS_CACHE;
+  char *path = malloc(strlen(WAYS_CSV) + 1);
+  if (! path)
+  {
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the path of the ways cache");
+    return NULL;
+  }
+  strcpy(path, WAYS_CSV);
+  if (MEOS_WAYS_CACHE)
+    ways_cache_free(MEOS_WAYS_CACHE);
+  free(MEOS_WAYS_CACHE_PATH);
+  MEOS_WAYS_CACHE = ways_cache_make();
+  MEOS_WAYS_CACHE_PATH = path;
   return MEOS_WAYS_CACHE;
 }
 
@@ -147,6 +167,8 @@ meos_finalize_ways(void)
     free(MEOS_WAYS_INDEX);
     MEOS_WAYS_INDEX = NULL;
   }
+  free(MEOS_WAYS_CACHE_PATH);
+  MEOS_WAYS_CACHE_PATH = NULL;
   if (! MEOS_WAYS_CACHE)
     return;
   ways_cache_free(MEOS_WAYS_CACHE);
@@ -351,6 +373,8 @@ route_lookup(int64 gid, bool any_gid, ways_record *rec)
 {
   /* Get or initialize the cache for this round */
   WaysCache *ways_cache = GetWaysCache();
+  if (! ways_cache)
+    return false;
   return ways_cache_lookup(ways_cache, gid, any_gid, get_ways_record, rec);
 }
 
