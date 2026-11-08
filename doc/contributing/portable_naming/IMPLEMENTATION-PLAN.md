@@ -81,9 +81,10 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   (the note of `raster_band_pixel_type`, its call, and the call in `raster_pixtype`), which
   `meospixtype_name` / `meospixtype_from_string` replace. The catalog states the pair of each
   enumeration (`enums[].text`, MEOS-API #263), and a binding passes the values as text through it.
-  OPEN as MobilityDB #3504, head `7f64a1a2c3` on master `59613cef23`, holding its five receipts
-  (strict, cppcheck, Windows, valgrind with `enum_token_test`, and the smoke suites, 15 of 15
-  built against GDAL 3.13).
+  MERGED as MobilityDB #3504 (`6f329a98d0`), its five receipts held on head `7f64a1a2c3` (strict,
+  cppcheck, Windows, valgrind with `enum_token_test`, and the smoke suites, 15 of 15 built against
+  GDAL 3.13). The bindings pass the values as text through the pairs: MEOS.js #50 (`00e101367d`,
+  58 arguments) and MEOS.NET #62 (`ac275c4bd7`, 70 parameters), both MERGED.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
