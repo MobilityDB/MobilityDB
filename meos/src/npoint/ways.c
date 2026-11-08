@@ -345,6 +345,12 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
       if (gid_isnull || geom_isnull)
         continue;
       GSERIALIZED *line = (GSERIALIZED *) PG_DETOAST_DATUM(geom);
+      if (! ensure_valid_route(line, srid_ways))
+      {
+        SPI_finish();
+        pfree(point);
+        return NULL;
+      }
       route_nearest_update(gs, DatumGetInt64(gid), line, tolerance, &min_gid,
         &min_dist, &min_pos);
     }

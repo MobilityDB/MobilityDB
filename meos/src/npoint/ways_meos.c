@@ -477,6 +477,12 @@ geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
     {
       /* Transform the geometry string into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
+      if (! ensure_valid_route(rec.the_geom, srid_ways))
+      {
+        pfree(rec.the_geom);
+        fclose(file);
+        return NULL;
+      }
       route_nearest_update(gs, rec.gid, rec.the_geom, tolerance, &min_gid,
         &min_dist, &min_pos);
       pfree(rec.the_geom);

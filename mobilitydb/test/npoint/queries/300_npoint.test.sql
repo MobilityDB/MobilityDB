@@ -258,3 +258,20 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(2,0.3,0.5)';
 
 SELECT npoint 'Npoint(1, 0.5)'::geography;
 SELECT nsegment 'Nsegment(1, 0.5, 0.7)'::geography;
+
+-------------------------------------------------------------------------------
+-- A route of the ways table is read as a planar line in the SRID of the network
+-------------------------------------------------------------------------------
+
+INSERT INTO ways(gid, the_geom, length) VALUES
+  (9001, 'SRID=5676;LINESTRING Z(0 0 0,3 4 0)', 5),
+  (9002, 'SRID=5676;LINESTRING M(0 0 0,3 4 0)', 5),
+  (9003, 'SRID=5676;MULTILINESTRING((0 0,3 4))', 5),
+  (9004, 'SRID=4326;LINESTRING(0 0,3 4)', 5);
+/* Errors */
+SELECT npoint(9001, 0.5);
+SELECT npoint(9002, 0.5);
+SELECT npoint(9003, 0.5);
+SELECT npoint(9004, 0.5);
+SELECT npoint(geometry 'SRID=5676;POINT(1 1)', 10);
+DELETE FROM ways WHERE gid > 9000;
