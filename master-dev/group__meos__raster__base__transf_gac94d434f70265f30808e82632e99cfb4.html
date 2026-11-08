@@ -125,14 +125,15 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Free an array of pixels. </p>
+<p>Release an array of pixels and the points they carry. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">pixarr</td><td>Array of pixels (accepts <code>NULL</code>) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixarr</td><td>Array answered by <a class="el" href="group__meos__raster__base__transf_gae4011172b4fb2e5a6d65cb369057e215.html#gae4011172b4fb2e5a6d65cb369057e215" title="Return the pixels of a raster band as points.">raster_pixel_as_points()</a> (accepts <code>NULL</code>) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">count</td><td>Number of elements in the array </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>Each point is released with it, so a caller keeping one copies it first </dd></dl>
 
 </div>
 </div>
