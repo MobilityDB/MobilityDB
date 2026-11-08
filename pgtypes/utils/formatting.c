@@ -79,6 +79,7 @@
 #include "utils/pg_locale.h"
 #include "utils/timestamp.h"
 #include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextAllocZero (backend build) */
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 // #include "varatt.h"
 
 /* MEOS: the vendored memutils.h omits this backend global; declare it locally,
@@ -447,15 +448,42 @@ typedef struct
   NUMDesc    Num;
 } NUMCacheEntry;
 
-/* global cache for date/time format pictures */
-static DCHCacheEntry *DCHCache[DCH_CACHE_ENTRIES];
-static int  n_DCHCache = 0;    /* current number of entries */
-static int  DCHCounter = 0;    /* aging-event counter */
+/* global cache for date/time format pictures
+ * MEOS: per thread (MEOS_TLS), freed by #formatting_destroy_cache */
+static MEOS_TLS DCHCacheEntry *DCHCache[DCH_CACHE_ENTRIES];
+static MEOS_TLS int  n_DCHCache = 0;    /* current number of entries */
+static MEOS_TLS int  DCHCounter = 0;    /* aging-event counter */
 
-/* global cache for number format pictures */
-static NUMCacheEntry *NUMCache[NUM_CACHE_ENTRIES];
-static int  n_NUMCache = 0;    /* current number of entries */
-static int  NUMCounter = 0;    /* aging-event counter */
+/* global cache for number format pictures
+ * MEOS: per thread (MEOS_TLS), freed by #formatting_destroy_cache */
+static MEOS_TLS NUMCacheEntry *NUMCache[NUM_CACHE_ENTRIES];
+static MEOS_TLS int  n_NUMCache = 0;    /* current number of entries */
+static MEOS_TLS int  NUMCounter = 0;    /* aging-event counter */
+
+#if MEOS
+/*
+ * MEOS: Free the date/time and number format pictures the caches of this
+ * thread hold, which #meos_finalize calls as it frees the other caches
+ */
+void
+formatting_destroy_cache(void)
+{
+  for (int i = 0; i < n_DCHCache; i++)
+  {
+    pfree(DCHCache[i]);
+    DCHCache[i] = NULL;
+  }
+  n_DCHCache = 0;
+  DCHCounter = 0;
+  for (int i = 0; i < n_NUMCache; i++)
+  {
+    pfree(NUMCache[i]);
+    NUMCache[i] = NULL;
+  }
+  n_NUMCache = 0;
+  NUMCounter = 0;
+}
+#endif /* MEOS */
 
 /* ----------
  * For char->date/time conversion

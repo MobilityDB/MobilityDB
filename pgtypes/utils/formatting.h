@@ -36,4 +36,8 @@ extern bool pg_parse_datetime(text *date_txt, text *fmt, Oid collid,
   Node *escontext);
 extern bool datetime_format_has_tz(const char *fmt_str);
 
+#if MEOS
+extern void formatting_destroy_cache(void);
+#endif /* MEOS */
+
 #endif
