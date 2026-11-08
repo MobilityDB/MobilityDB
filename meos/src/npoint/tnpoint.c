@@ -43,6 +43,7 @@
 #include "temporal/set.h"
 #include "temporal/span.h"
 #include "temporal/spanset.h"
+#include "temporal/tsequence.h"
 #include "temporal/type_util.h"
 #include "geo/tgeo_spatialfuncs.h"
 #include "geo/tspatial_parser.h"
@@ -633,8 +634,20 @@ tnpointseq_tgeompointseq_cont(const TSequence *seq)
   if (fracs)
     pfree(fracs);
   lwline_free(lwline);
-  return tsequence_make_free(instants, ninsts, seq->period.lower_inc,
-    seq->period.upper_inc, interp, NORMALIZE_NO);
+  /* The instants are points of one route at increasing timestamps, the
+   * instants of the sequence and the vertices dated strictly between them,
+   * and the route is a planar line in the SRID of the network, which
+   * #ensure_valid_route tests when the network is read, so the sequence is
+   * valid by construction and is built without testing them again */
+  assert(ninsts > 0);
+#ifndef NDEBUG
+  for (int i = 1; i < ninsts; i++)
+    assert(instants[i - 1]->t < instants[i]->t);
+#endif /* NDEBUG */
+  TSequence *result = tsequence_make_exp1(instants, ninsts, ninsts,
+    seq->period.lower_inc, seq->period.upper_inc, interp, NORMALIZE_NO, NULL);
+  pfree_array((void **) instants, ninsts);
+  return result;
 }
 
 /**
