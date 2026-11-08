@@ -42,7 +42,7 @@
 CREATE FUNCTION tContains(geometry, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tContains($1, @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tContains($1, $2::@extschema@.tgeompoint) $$;
 
 /*****************************************************************************
  * tCovers
@@ -51,7 +51,7 @@ CREATE FUNCTION tContains(geometry, tpose)
 CREATE FUNCTION tCovers(geometry, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tCovers($1, @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tCovers($1, $2::@extschema@.tgeompoint) $$;
 
 /*****************************************************************************
  * tDisjoint
@@ -60,16 +60,16 @@ CREATE FUNCTION tCovers(geometry, tpose)
 CREATE FUNCTION tDisjoint(geometry, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint($1, @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tDisjoint($1, $2::@extschema@.tgeompoint) $$;
 CREATE FUNCTION tDisjoint(tpose, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.tgeompointOpr($1), $2) $$;
+  AS $$ SELECT @extschema@.tDisjoint($1::@extschema@.tgeompoint, $2) $$;
 CREATE FUNCTION tDisjoint(tpose, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDisjoint(@extschema@.tgeompointOpr($1),
-                          @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tDisjoint($1::@extschema@.tgeompoint,
+                          $2::@extschema@.tgeompoint) $$;
 
 /*****************************************************************************
  * tIntersects
@@ -78,16 +78,16 @@ CREATE FUNCTION tDisjoint(tpose, tpose)
 CREATE FUNCTION tIntersects(geometry, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects($1, @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tIntersects($1, $2::@extschema@.tgeompoint) $$;
 CREATE FUNCTION tIntersects(tpose, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.tgeompointOpr($1), $2) $$;
+  AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeompoint, $2) $$;
 CREATE FUNCTION tIntersects(tpose, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tIntersects(@extschema@.tgeompointOpr($1),
-                            @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tIntersects($1::@extschema@.tgeompoint,
+                            $2::@extschema@.tgeompoint) $$;
 
 /*****************************************************************************
  * tTouches
@@ -96,11 +96,11 @@ CREATE FUNCTION tIntersects(tpose, tpose)
 CREATE FUNCTION tTouches(geometry, tpose)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches($1, @extschema@.tgeompointOpr($2)) $$;
+  AS $$ SELECT @extschema@.tTouches($1, $2::@extschema@.tgeompoint) $$;
 CREATE FUNCTION tTouches(tpose, geometry)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tTouches(@extschema@.tgeompointOpr($1), $2) $$;
+  AS $$ SELECT @extschema@.tTouches($1::@extschema@.tgeompoint, $2) $$;
 
 /*****************************************************************************
  * tDwithin
@@ -109,21 +109,21 @@ CREATE FUNCTION tTouches(tpose, geometry)
 CREATE FUNCTION tDwithin(geometry, tpose, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1, @extschema@.tgeompointOpr($2), $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1, $2::@extschema@.tgeompoint, $3) $$;
 CREATE FUNCTION tDwithin(geography, tpose, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin($1, @extschema@.tgeogpointOpr($2), $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1, $2::@extschema@.tgeogpoint, $3) $$;
 CREATE FUNCTION tDwithin(tpose, geometry, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.tgeompointOpr($1), $2, $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeompoint, $2, $3) $$;
 CREATE FUNCTION tDwithin(tpose, geography, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.tgeogpointOpr($1), $2, $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeogpoint, $2, $3) $$;
 CREATE FUNCTION tDwithin(tpose, tpose, dist float)
   RETURNS tbool
   LANGUAGE SQL IMMUTABLE STRICT PARALLEL SAFE
-  AS $$ SELECT @extschema@.tDwithin(@extschema@.tgeompointOpr($1),
-                         @extschema@.tgeompointOpr($2), $3) $$;
+  AS $$ SELECT @extschema@.tDwithin($1::@extschema@.tgeompoint,
+                         $2::@extschema@.tgeompoint, $3) $$;

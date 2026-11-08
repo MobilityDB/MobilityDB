@@ -2757,20 +2757,38 @@ SELECT asEWKT(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01'::tgeogpoint);
 (1 row)
 
 SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "econtains" statement 1
+ econtains 
+-----------
+ t
+(1 row)
+
 SELECT eTouches(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "etouches" statement 1
+ etouches 
+----------
+ f
+(1 row)
+
 SELECT tContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "tcontains" statement 1
+           tcontains            
+--------------------------------
+ t@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
 SELECT eDisjoint(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01', geometry 'SRID=4326;Point(1 2)');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "edisjoint" statement 1
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT eDisjoint(tpose 'SRID=4326;Pose(Point(1 2),0.5)@2001-01-01', geography 'SRID=4326;Point(1 2)');
-ERROR:  Only geodetic coordinates supported
-CONTEXT:  SQL function "edisjoint" statement 1
+ edisjoint 
+-----------
+ f
+(1 row)
+
 SELECT convexHull(tpose 'GeodPose(Point(1 2),0.5)@2001-01-01');
-ERROR:  Only planar coordinates supported
-CONTEXT:  SQL function "convexhull" statement 1
+                     convexhull                     
+----------------------------------------------------
+ 0101000020E6100000000000000000F03F0000000000000040
+(1 row)
+
