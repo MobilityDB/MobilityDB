@@ -79,8 +79,11 @@ if(POINTCLOUD_PG_SRCS)
   target_include_directories(pg_pointcloud PRIVATE
     ${CMAKE_SOURCE_DIR}/meos/include
     ${CMAKE_SOURCE_DIR}/mobilitydb/include
-    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib)
-  # These wrappers include pc_api.h, which includes the generated pc_config.h.
+    ${CMAKE_SOURCE_DIR}/pointcloud-pg/lib
+    ${CMAKE_BINARY_DIR}/pointcloud-pg/lib)
+  # These wrappers include pc_api.h, which includes the generated pc_config.h,
+  # which meos/src/pointcloud/CMakeLists.txt writes in the build tree, in
+  # ${CMAKE_BINARY_DIR}/pointcloud-pg/lib.
   # Depend on the pointcloud target so that header exists before they compile,
   # instead of racing its autotools generation under a parallel build.
   add_dependencies(pg_pointcloud pointcloud)
