@@ -152,8 +152,8 @@ jobs:
           cmake --build h3-pg-build -j$(nproc)
           cmake --install h3-pg-build
           # Installing into the cluster needs root, and the configure below runs
-          # as builder and writes pointcloud-pg/lib/pc_config.h into the tree,
-          # so the workspace returns to that user.
+          # as builder and writes its build directory into the workspace, so
+          # the workspace returns to that user.
           chown -R builder "$GITHUB_WORKSPACE"
 
       - name: Configure with every family

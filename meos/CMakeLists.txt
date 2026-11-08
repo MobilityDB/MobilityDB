@@ -512,7 +512,7 @@ if(MEOS)
     install(
       FILES "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_api.h"
             "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/hashtable.h"
-            "${CMAKE_SOURCE_DIR}/pointcloud-pg/lib/pc_config.h"
+            "${CMAKE_BINARY_DIR}/pointcloud-pg/lib/pc_config.h"
       DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pointcloud")
   endif()
   if(RASTER)

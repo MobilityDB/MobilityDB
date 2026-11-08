@@ -1593,3 +1593,48 @@ SELECT tDwithin(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]',
  {[t@Mon Jan 01 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
 (1 row)
 
+SELECT tIntersects(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tIntersects(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02, Point(2.5 2.5)@2001-01-03]');
+                                           tintersects                                            
+--------------------------------------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDisjoint(tgeogpoint '{Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02}', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+                            tdisjoint                             
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tDisjoint(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint '{Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02}');
+                            tdisjoint                             
+------------------------------------------------------------------
+ {f@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST}
+(1 row)
+
+SELECT tIntersects(tgeogpoint '[Point(1.5 0)@2001-01-01, Point(1.5 1)@2001-01-02]', geography 'Point(1.5 0.5)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 12:00:00 2001 PST], (f@Mon Jan 01 12:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(geography 'Point(1.5 0.5)', tgeogpoint '[Point(1.5 0)@2001-01-01, Point(1.5 1)@2001-01-02]');
+                                                              tdisjoint                                                               
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 12:00:00 2001 PST], (t@Mon Jan 01 12:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDwithin(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(1.5 2.5)@2001-01-02]', geography 'Linestring(0 0,0 3)', 60000);
+                             tdwithin                             
+------------------------------------------------------------------
+ [t@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+/* A linear temporal geography point against a polygon is refused, as no kernel finds where a great circle crosses a geodesic edge */
+SELECT tIntersects(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))');
+ERROR:  Only planar coordinates supported
