@@ -246,8 +246,14 @@ GetWaysIndex(FILE *file)
 static bool
 get_ways_record(int64 rid, bool any_gid, ways_record *rec)
 {
-  /* The full file path in the first argument is defined in a global variable*/
-  FILE *file = fopen(WAYS_CSV, "r");
+  /* The full file path in the first argument is defined in a global variable.
+   * The file is read in binary mode because the index of #GetWaysIndex keeps
+   * the positions ftell answers and fseek returns to them, and on Windows a
+   * stream in text mode answers positions that are not the byte offsets of a
+   * file whose lines end in a newline alone, so the seek lands inside another
+   * line. A carriage return a line does end in is white space to the fscanf
+   * that reads the line. */
+  FILE *file = fopen(WAYS_CSV, "rb");
   if (! file)
   {
     meos_error(ERROR, MEOS_ERR_INTERNAL_TYPE_ERROR,

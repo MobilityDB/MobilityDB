@@ -7,9 +7,11 @@ name: Build MEOS on Windows (MSYS2/UCRT64)
 #   * cmake -DMEOS=ON resolves all dependencies under MSYS2 mingw-w64
 #     (json-c, proj).
 #   * The standalone libmeos.dll links cleanly.
-#   * Two smoke tests build and run: meos/test/temporal_test, and
+#   * Three smoke tests build and run: meos/test/temporal_test;
 #     meos/test/tzdata_test, which reads its zones from the time zone
-#     database compiled into libmeos on a host with no zone directory.
+#     database compiled into libmeos on a host with no zone directory; and
+#     meos/test/ways_index_test, which reads routes at their position in
+#     ways files whose lines end in a newline alone and in CR LF.
 #
 # Note: full MSVC support requires sweeping PGDLLEXPORT onto every public
 # extern declaration in meos.h / meos_*.h.  That is intentionally left as
@@ -165,3 +167,18 @@ jobs:
             -lmeos
           PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PWD/h3-install/bin:$PATH" ./meos-install/tzdata_test.exe \
             || (echo "tzdata_test.exe failed at runtime"; exit 1)
+
+      - name: Smoke test (routes read at their position in the ways file)
+        # The ways file is read at the positions ftell answers, which a stream
+        # in text mode on Windows answers differently from the byte offsets of
+        # a file whose lines end in a newline alone, so this job, not the Linux
+        # one, is where a reading of the file in text mode shows
+        run: |
+          gcc -Werror=implicit-function-declaration -Werror=implicit-int \
+            -I meos-install/include \
+            -L meos-install/lib \
+            -o meos-install/ways_index_test.exe \
+            meos/test/ways_index_test.c \
+            -lmeos
+          PATH="$PWD/meos-install/bin:$PWD/meos-install/lib:$PWD/build-meos:$PWD/h3-install/bin:$PATH" ./meos-install/ways_index_test.exe \
+            || (echo "ways_index_test.exe failed at runtime"; exit 1)
