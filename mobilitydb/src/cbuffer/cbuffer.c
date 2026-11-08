@@ -355,6 +355,23 @@ Cbuffer_to_geom(PG_FUNCTION_ARGS)
   PG_RETURN_GSERIALIZED_P(cbuffer_to_geom(cb));
 }
 
+PGDLLEXPORT Datum Cbuffer_to_geog(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Cbuffer_to_geog);
+/**
+ * @ingroup mobilitydb_cbuffer_base_conversion
+ * @brief Convert a circular buffer into a geography
+ * @sqlfn geography()
+ * @sqlop @p ::
+ */
+Datum
+Cbuffer_to_geog(PG_FUNCTION_ARGS)
+{
+  Cbuffer *value = PG_GETARG_CBUFFER_P(0);
+  GSERIALIZED *result = cbuffer_to_geog(value);
+  PG_FREE_IF_COPY(value, 0);
+  PG_RETURN_GSERIALIZED_P(result);
+}
+
 PGDLLEXPORT Datum Geom_to_cbuffer(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Geom_to_cbuffer);
 /**

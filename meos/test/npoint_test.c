@@ -237,17 +237,23 @@ int main(void)
   /* Conversion functions */
   printf("****************************************************************\n");
 
-  /* Npoint *geompoint_to_npoint(const GSERIALIZED *gs); */
-  npoint_result = geompoint_to_npoint(geom1);
+  /* Npoint *geompoint_to_npoint(const GSERIALIZED *gs, double tolerance); */
+  /* The point lies on no route, and a tolerance spanning the network
+   * answers the route nearest to it */
+  npoint_result = geompoint_to_npoint(geom1, 1.0e6);
   char_result = npoint_out(npoint_result, 6, &size_out);
-  printf("geompoint_to_npoint(%s): %s\n", geom1_out, char_result);
+  printf("geompoint_to_npoint(%s, 1.0e6): %s\n", geom1_out, char_result);
   free(npoint_result); free(char_result);
 
   /* Nsegment *geom_to_nsegment(const GSERIALIZED *gs); */
-  nsegment_result = geom_to_nsegment(geom1);
+  /* The point of a network point lies on its route */
+  GSERIALIZED *geom_route = npoint_to_geompoint(npoint1);
+  char *geom_route_out = geo_as_text(geom_route, 6, &size_out);
+  nsegment_result = geom_to_nsegment(geom_route);
   char_result = nsegment_out(nsegment_result, 6, &size_out);
-  printf("geom_to_nsegment(%s): %s\n", geom1_out, char_result);
+  printf("geom_to_nsegment(%s): %s\n", geom_route_out, char_result);
   free(nsegment_result); free(char_result);
+  free(geom_route); free(geom_route_out);
 
   /* GSERIALIZED *npoint_to_geompoint(const Npoint *np); */
   geom_result = npoint_to_geompoint(npoint1);
@@ -610,10 +616,14 @@ int main(void)
   printf("****************************************************************\n");
 
   /* Temporal *tgeompoint_to_tnpoint(const Temporal *temp); */
-  tnpoint_result = tgeompoint_to_tnpoint(tgeompt1);
+  /* The points of a temporal network point lie on its route */
+  Temporal *tgeompt_route = tnpoint_to_tgeompoint(tnpoint1);
+  char *tgeompt_route_out = tspatial_as_ewkt(tgeompt_route, 6, &size_out);
+  tnpoint_result = tgeompoint_to_tnpoint(tgeompt_route);
   char_result = tnpoint_out(tnpoint_result, 6, &size_out);
-  printf("tgeompoint_to_tnpoint(%s): %s\n", tgeompt1_out, char_result);
+  printf("tgeompoint_to_tnpoint(%s): %s\n", tgeompt_route_out, char_result);
   free(tnpoint_result); free(char_result);
+  free(tgeompt_route); free(tgeompt_route_out);
 
   /* Temporal *tnpoint_to_tgeompoint(const Temporal *temp); */
   tgeompt_result = tnpoint_to_tgeompoint(tnpoint1);

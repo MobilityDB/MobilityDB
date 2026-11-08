@@ -46,13 +46,17 @@
 /*****************************************************************************/
 
 /**
- * @brief Return the angle in degrees between 3 points
+ * @brief Return the angle in degrees by which the direction from p1 to p2
+ * turns to the direction from p2 to p3, 0 when it goes straight on and 180
+ * when it goes back
+ * @note The difference of the two azimuths of #azimuth_pt_pt, as the angle
+ * ST_Angle(p1, p2, p2, p3) of PostGIS between the vectors p1p2 and p2p3
  */
 static double
 pt_angle(POINT2D p1, POINT2D p2, POINT2D p3)
 {
   double result, az1 = 0, az2 = 0; /* make compilier quiet */
-  if (! azimuth_pt_pt(&p1, &p2, &az1) ||  ! azimuth_pt_pt(&p3, &p2, &az2))
+  if (! azimuth_pt_pt(&p1, &p2, &az1) ||  ! azimuth_pt_pt(&p2, &p3, &az2))
   {
     /* See doc-comment on meos_error in meos/include/meos.h: handler is
      * not guaranteed to abort. Return 0 explicitly rather than fall
@@ -270,7 +274,7 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
             else
             {
               /* Apply deceleration event */
-              curSpeed =
+              curSpeed = curSpeed *
                 meos_random_binomial20_half(prng_get_generation_rng()) / 20.0;
               noDecel++;
               if (verbosity == 3)
@@ -365,7 +369,9 @@ create_trip(LWLINE **lines, const double *maxSpeeds, const int *categories,
           travelTime = curDist / (curSpeed / 3.6);
           if (travelTime < P_EPSILON)
             travelTime = P_DEST_EXPMU;
-          t = t + (int) (travelTime * 1e6); /* microseconds */
+          /* Rounded up to the microsecond, so that no fraction is travelled
+           * faster than the current speed */
+          t = t + (TimestampTz) ceil(travelTime * 1e6);
           totalTravelTime += travelTime;
           twSumSpeed += travelTime * curSpeed;
           k++;

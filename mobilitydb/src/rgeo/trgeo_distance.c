@@ -128,6 +128,9 @@ PG_FUNCTION_INFO_V1(Tdistance_trgeometry_tpoint);
 Datum
 Tdistance_trgeometry_tpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -152,6 +155,9 @@ PG_FUNCTION_INFO_V1(Tdistance_tpoint_trgeometry);
 Datum
 Tdistance_tpoint_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -175,6 +181,9 @@ PG_FUNCTION_INFO_V1(Tdistance_trgeometry_trgeometry);
 Datum
 Tdistance_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -251,6 +260,9 @@ PG_FUNCTION_INFO_V1(NAI_trgeometry_tpoint);
 Datum
 NAI_trgeometry_tpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -274,6 +286,9 @@ PG_FUNCTION_INFO_V1(NAI_tpoint_trgeometry);
 Datum
 NAI_tpoint_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -297,6 +312,9 @@ PG_FUNCTION_INFO_V1(NAI_trgeometry_trgeometry);
 Datum
 NAI_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -422,6 +440,9 @@ PG_FUNCTION_INFO_V1(NAD_trgeometry_tpoint);
 Datum
 NAD_trgeometry_tpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -446,6 +467,9 @@ PG_FUNCTION_INFO_V1(NAD_tpoint_trgeometry);
 Datum
 NAD_tpoint_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -470,6 +494,9 @@ PG_FUNCTION_INFO_V1(NAD_trgeometry_trgeometry);
 Datum
 NAD_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -546,6 +573,9 @@ PG_FUNCTION_INFO_V1(Shortestline_trgeometry_tpoint);
 Datum
 Shortestline_trgeometry_tpoint(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -569,6 +599,9 @@ PG_FUNCTION_INFO_V1(Shortestline_tpoint_trgeometry);
 Datum
 Shortestline_tpoint_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */
@@ -592,6 +625,9 @@ PG_FUNCTION_INFO_V1(Shortestline_trgeometry_trgeometry);
 Datum
 Shortestline_trgeometry_trgeometry(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   /* Store fcinfo into a global variable */

@@ -125,6 +125,23 @@ Ts2cell_cell_to_point(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Ts2cell_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Ts2cell_to_tgeompoint);
+/**
+ * @ingroup mobilitydb_s2cell_conversion
+ * @brief Convert a temporal S2 cell into the temporal geometry point of its centre
+ * @sqlfn tgeompoint()
+ * @sqlop @p ::
+ */
+Datum
+Ts2cell_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = ts2cell_to_tgeompoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 PGDLLEXPORT Datum Ts2cell_cell_to_boundary(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Ts2cell_cell_to_boundary);
 /**

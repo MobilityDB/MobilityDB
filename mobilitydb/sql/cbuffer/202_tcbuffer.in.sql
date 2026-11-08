@@ -233,6 +233,10 @@ CREATE FUNCTION tgeompoint(tcbuffer)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(tcbuffer)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tcbuffer_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tfloat(tcbuffer)
   RETURNS tfloat
   AS 'MODULE_PATHNAME', 'Tcbuffer_to_tfloat'
@@ -248,6 +252,7 @@ CREATE FUNCTION tcbuffer(tgeometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (tcbuffer AS tgeompoint) WITH FUNCTION tgeompoint(tcbuffer);
+CREATE CAST (tcbuffer AS tgeogpoint) WITH FUNCTION tgeogpoint(tcbuffer);
 CREATE CAST (tcbuffer AS tfloat) WITH FUNCTION tfloat(tcbuffer);
 CREATE CAST (tgeompoint AS tcbuffer) WITH FUNCTION tcbuffer(tgeompoint);
 CREATE CAST (tgeometry AS tcbuffer) WITH FUNCTION tcbuffer(tgeometry);

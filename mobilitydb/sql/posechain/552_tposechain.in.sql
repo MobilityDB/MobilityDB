@@ -250,6 +250,18 @@ CREATE FUNCTION tpose(tposechain)
 
 CREATE CAST (tposechain AS tpose) WITH FUNCTION tpose(tposechain);
 
+CREATE FUNCTION tgeompoint(tposechain)
+  RETURNS tgeompoint
+  AS 'MODULE_PATHNAME', 'Tposechain_to_tgeompoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(tposechain)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Tposechain_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (tposechain AS tgeompoint) WITH FUNCTION tgeompoint(tposechain);
+CREATE CAST (tposechain AS tgeogpoint) WITH FUNCTION tgeogpoint(tposechain);
+
 /******************************************************************************
  * Accessor functions
  ******************************************************************************/

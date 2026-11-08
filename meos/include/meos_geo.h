@@ -505,6 +505,8 @@ extern Set *geoset_make(GSERIALIZED **values, int count);
 
 extern Set *geo_to_set(const GSERIALIZED *gs);
 extern GSERIALIZED *geoset_to_geo(const Set *s);
+extern Set *geomset_to_geogset(const Set *s);
+extern Set *geogset_to_geomset(const Set *s);
 
 /* Accessor functions */
 
@@ -566,6 +568,8 @@ extern STBox *spatialset_to_stbox(const Set *s);
 extern BOX3D *stbox_to_box3d(const STBox *box);
 extern GBOX *stbox_to_gbox(const STBox *box);
 extern GSERIALIZED *stbox_to_geo(const STBox *box);
+extern GSERIALIZED *stbox_to_geom(const STBox *box);
+extern GSERIALIZED *stbox_to_geog(const STBox *box);
 extern Span *stbox_to_tstzspan(const STBox *box);
 extern STBox *timestamptz_to_stbox(TimestampTz t);
 extern STBox *tstzset_to_stbox(const Set *s);

@@ -521,3 +521,15 @@ SELECT ts2cell(s2cell '47c3c', timestamptz '2001-01-01') <->
 SELECT ts2GridDistance(ts2cell(s2cell '47c3c', timestamptz '2001-01-01'),
   ts2cell(s2cell '47c3', timestamptz '2001-01-01'));
 ERROR:  The S2 cells must have the same level: 7, 6
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeompoint, 6);
+                              asewkt                              
+------------------------------------------------------------------
+ SRID=4326;POINT(4.365034 50.889171)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeogpoint, 6);
+                              asewkt                              
+------------------------------------------------------------------
+ SRID=4326;POINT(4.365034 50.889171)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+

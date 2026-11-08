@@ -2252,3 +2252,35 @@ SELECT volume(stbox 'STBOX Z((-1e308,-1e308,0),(1e308,1e308,1))');
 ERROR:  value out of range: overflow
 SELECT perimeter(stbox 'STBOX X((-1e308,0),(1e308,1))');
 ERROR:  value out of range: overflow
+SELECT ST_AsEWKT(stbox 'STBOX X((1,2),(1,2))'::geometry);
+ st_asewkt  
+------------
+ POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(stbox 'STBOX X((1,2),(1,2))'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(stbox 'SRID=4326;STBOX X((1,2),(1,2))'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT stbox 'SRID=3857;STBOX X((1,2),(1,2))'::geography;
+ERROR:  Only lon/lat coordinate systems are supported
+SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geometry);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+
+SELECT ST_AsEWKT(stbox 'GEODSTBOX X((1,2),(1,2))'::geography);
+      st_asewkt       
+----------------------
+ SRID=4326;POINT(1 2)
+(1 row)
+

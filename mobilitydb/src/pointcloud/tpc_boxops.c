@@ -1165,6 +1165,9 @@ PG_FUNCTION_INFO_V1(NAD_tpointcloud_tpointcloud);
 Datum
 NAD_tpointcloud_tpointcloud(PG_FUNCTION_ARGS)
 {
+  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),
+      PG_GETARG_DATUM(1)))
+    PG_RETURN_NULL();
   Temporal *temp1 = PG_GETARG_TEMPORAL_P(0);
   Temporal *temp2 = PG_GETARG_TEMPORAL_P(1);
   double result = nad_tpointcloud_tpointcloud(temp1, temp2);

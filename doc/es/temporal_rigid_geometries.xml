@@ -191,7 +191,10 @@ SELECT asText(tpose(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 				<para>Devuelve la trayectoria del centroide (antena) como un punto temporal</para>
 				<programlisting role="syntax" xml:space="preserve" format="linespecific">
 tgeompoint(trgeometry) → tgeompoint
+tgeogpoint(trgeometry) → tgeogpoint
+tgeography(trgeometry) → tgeography
 </programlisting>
+				<para>Las conversiones siguen la regla de <xref linkend="geo_geog_convert"/>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tgeompoint(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   [Pose(Point(0 0), 0.0)@2001-01-01, Pose(Point(10 0), 0.0)@2001-01-02]'));

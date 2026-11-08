@@ -167,6 +167,12 @@ SELECT round((nsegment 'nsegment(1,0.5,0.7)'::geometry)::nsegment, 6);
 SELECT round((nsegment 'nsegment(1,0.5,0.5)'::geometry)::nsegment, 6);
 
 SELECT geometry 'SRID=5676;Point(610.455019399524 528.508247341961)'::npoint;
+-- A point off the network is mapped only within a tolerance, onto the
+-- nearest route: route 29 is at 0.398 of this point and route 1 at 0.473
+SELECT ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5)::npoint;
+SELECT npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.3);
+SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 0.45), 6);
+SELECT round(npoint(ST_Translate(npoint 'npoint(1,0.2)'::geometry, 0, 0.5), 10), 6);
 
 SELECT geometry 'SRID=5676;LINESTRING(83.2832009065896 86.0903322231025,69.0807154867798 81.2081503681839,13.625699095428 97.5346013903618)'::nsegment;
 -- NULL
@@ -174,6 +180,9 @@ SELECT geometry 'SRID=5676;LINESTRING(416.346567736997 528.335344322874,610.4550
 /* Errors */
 SELECT geometry 'Point empty'::npoint;
 SELECT geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))'::nsegment;
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, -1);
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'NaN');
+SELECT npoint(npoint 'npoint(1,0.2)'::geometry, 'Infinity');
 
 -------------------------------------------------------------------------------
 -- Comparisons
@@ -242,3 +251,10 @@ SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(1,0.5,0.7)';
 SELECT nsegment 'nsegment(1,0.3,0.5)' >= nsegment 'nsegment(2,0.3,0.5)';
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT npoint 'Npoint(1, 0.5)'::geography;
+SELECT nsegment 'Nsegment(1, 0.5, 0.7)'::geography;

@@ -230,10 +230,24 @@ So is a triangle, a TIN and a polyhedral surface, each face a surface as a polyg
 | `POINT(4.5 4.5)`, a surface whose square has a hole about the point | `1.5` | true | the hole holds the point, `1.5` from its edge |
 | `POINT(4.5 4.5)`, that surface with a face filling the hole | `0` | true | another face holds the point |
 
-In three dimensions, a polygon, a triangle, a TIN or a polyhedral surface compares the given
-distance with a distance in doubles, so the answer can differ from the exact one where the two
-lie within its rounding. A geometry carrying an arc raises an error, as its distance in three
-dimensions does.
+In three dimensions, a triangle, a TIN, and a polygon or a polyhedral surface whose faces each lie
+exactly in a plane are answered exactly. A face is the region its rings bound in its plane, holes
+included. Two geometries are within the distance where two of their segments are, where a vertex of
+one lies within it of a face of the other with its foot inside the face, or where a segment of one
+crosses a face of the other; each is decided by exact signs on the input coordinates, and no point is
+constructed.
+
+| Geometries | Distance | Within | Why |
+|---|---|---|---|
+| `POINT Z(0 0 0)`, `TRIANGLE Z((1 0 0,0 1 0,0 0 1,1 0 0))` | `0.5773502691896257` | false | the foot lies inside the face on the plane `x + y + z = 1`, `1/sqrt(3)` away, just above this double |
+| `POINT Z(0 0 0)`, `TRIANGLE Z((1 0 0,0 1 0,0 0 1,1 0 0))` | `0.5773502691896258` | true | the next double |
+| a square at height 0, a larger triangle parallel to it at height 3 | `3` | true | the faces are parallel, and the distance is reached at every vertex of the square |
+| `POINT Z(4.5 4.5 1)`, a square with a hole about the point's foot | `1.8027756377319946` | false | the foot falls in the hole, so the nearest point is on its edge, `sqrt(3.25)` away, above this double |
+| `LINESTRING Z(1 1 -5,1 1 5)`, `TRIANGLE Z((0 0 0,4 0 0,0 4 0,0 0 0))` | `0` | true | the segment crosses the face, far from its edges |
+
+A polygon whose vertices do not lie exactly in one plane, and a solid, compare the given distance with
+a distance in doubles, so the answer can differ from the exact one where the two lie within its
+rounding. A geometry carrying an arc raises an error, as its distance in three dimensions does.
 
 ### 6.3 Relationships
 

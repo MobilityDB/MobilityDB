@@ -120,10 +120,15 @@ typedef struct
 #define MAX_LEN_SRS_RECORD 5120
 /* Location of the spatial_ref_sys.csv file, the one the build installs */
 char *SPATIAL_REF_SYS_CSV = MEOS_DATAROOTDIR "/spatial_ref_sys.csv";
+/* Copy of the path given to the last call of
+ * `meos_set_spatial_ref_sys_csv()` */
+static char *SPATIAL_REF_SYS_CSV_COPY = NULL;
 
 /**
  * @ingroup meos_setup
  * @brief Set the location of the SPATIAL_REF_SYS_CSV files
+ * @details The function keeps a copy of the path and frees the copy it kept
+ * for an earlier call, as #meos_set_ways_csv does.
  */
 void
 meos_set_spatial_ref_sys_csv(const char* path)
@@ -136,6 +141,8 @@ meos_set_spatial_ref_sys_csv(const char* path)
     return;
   }
   strcpy(copy, path);
+  free(SPATIAL_REF_SYS_CSV_COPY);
+  SPATIAL_REF_SYS_CSV_COPY = copy;
   SPATIAL_REF_SYS_CSV = copy;
 }
 #endif /* MEOS */

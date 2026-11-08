@@ -652,7 +652,7 @@ stbox_to_box3d(const STBox *box)
  * @ingroup meos_internal_geo_box_conversion
  * @brief Return a spatiotemporal box converted as a geometry/geography
  * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_to_geo()
+ * @csqlfn #Stbox_to_geom(), #Stbox_to_geog()
  */
 GSERIALIZED *
 stbox_geo(const STBox *box)
@@ -716,7 +716,6 @@ stbox_geo(const STBox *box)
  * @ingroup meos_geo_box_conversion
  * @brief Return a spatiotemporal box converted as a geometry/geography
  * @param[in] box Spatiotemporal box
- * @csqlfn #Stbox_to_geo()
  */
 GSERIALIZED *
 stbox_to_geo(const STBox *box)
@@ -726,6 +725,50 @@ stbox_to_geo(const STBox *box)
   if (! ensure_has_X(T_STBOX, box->flags))
     return NULL;
   return stbox_geo(box);
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a spatiotemporal box, planar or geodetic, into a geometry
+ * @details A geodetic box converts through #geog_to_geom, as every spatial type
+ * does
+ * @param[in] box Spatiotemporal box
+ * @errval NULL
+ * @csqlfn #Stbox_to_geom()
+ */
+GSERIALIZED *
+stbox_to_geom(const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  GSERIALIZED *geo = stbox_to_geo(box);
+  if (! geo || ! MEOS_FLAGS_GET_GEODETIC(box->flags))
+    return geo;
+  GSERIALIZED *result = geog_to_geom(geo);
+  pfree(geo);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_box_conversion
+ * @brief Convert a spatiotemporal box, planar or geodetic, into a geography
+ * @details A planar box converts through #geom_to_geog, as every spatial type
+ * does
+ * @param[in] box Spatiotemporal box
+ * @errval NULL
+ * @csqlfn #Stbox_to_geog()
+ */
+GSERIALIZED *
+stbox_to_geog(const STBox *box)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(box, NULL);
+  GSERIALIZED *geo = stbox_to_geo(box);
+  if (! geo || MEOS_FLAGS_GET_GEODETIC(box->flags))
+    return geo;
+  GSERIALIZED *result = geom_to_geog(geo);
+  pfree(geo);
+  return result;
 }
 
 /**

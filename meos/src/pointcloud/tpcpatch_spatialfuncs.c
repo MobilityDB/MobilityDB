@@ -125,6 +125,28 @@ pcpatch_to_geom(const Pcpatch *pa)
   return result;
 }
 
+/**
+ * @ingroup meos_pointcloud_base_conversion
+ * @brief Convert a point cloud patch into a geography
+ * @details The value converts through #pcpatch_to_geom and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] pa Value
+ * @errval NULL
+ * @csqlfn #Pcpatch_to_geog()
+ */
+GSERIALIZED *
+pcpatch_to_geog(const Pcpatch *pa)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pa, NULL);
+  GSERIALIZED *geom = pcpatch_to_geom(pa);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
+}
+
 /*****************************************************************************
  * Conversion of a temporal patch into a temporal geometry
  *****************************************************************************/
@@ -211,6 +233,28 @@ tpcpatch_to_tgeometry(const Temporal *temp)
       return (Temporal *) tpcpatchseqset_to_tgeometryseqset(
         (const TSequenceSet *) temp);
   }
+}
+
+/**
+ * @ingroup meos_pointcloud_conversion
+ * @brief Convert a temporal point cloud patch into a temporal geography
+ * @details The value converts through #tpcpatch_to_tgeometry and #tgeometry_to_tgeography, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Tpcpatch_to_tgeography()
+ */
+Temporal *
+tpcpatch_to_tgeography(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPCPATCH(temp, NULL);
+  Temporal *value = tpcpatch_to_tgeometry(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeometry_to_tgeography(value);
+  pfree(value);
+  return result;
 }
 
 /*****************************************************************************

@@ -134,3 +134,9 @@ SELECT tCovers(:flatpatch, :flatpatch);
 SELECT tTouches(:flatpatch, :flatpatch);
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT ST_AsEWKT(geography(pcpatch(pcpoint(1, 1, 1, 1), pcpoint(1, 2, 2, 2))));

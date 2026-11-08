@@ -697,3 +697,9 @@ SELECT splitEachNSpans(tnpoint '[Npoint(1, 0.2)@2001-01-01, Npoint(1, 0.4)@2001-
 -- A NULL operand of merge returns the other one
 SELECT merge(tnpoint 'Npoint(1, 0.5)@2001-01-01', NULL::tnpoint) = tnpoint 'Npoint(1, 0.5)@2001-01-01';
 SELECT merge(NULL::tnpoint, tnpoint 'Npoint(1, 0.5)@2001-01-01') = tnpoint 'Npoint(1, 0.5)@2001-01-01';
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT tnpoint 'Npoint(1, 0.5)@2001-01-01'::tgeogpoint;

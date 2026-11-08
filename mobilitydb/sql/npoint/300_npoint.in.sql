@@ -282,6 +282,10 @@ CREATE FUNCTION npoint(geometry)
   RETURNS npoint
   AS 'MODULE_PATHNAME', 'Geompoint_to_npoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION npoint(geometry, tolerance float)
+  RETURNS npoint
+  AS 'MODULE_PATHNAME', 'Geompoint_to_npoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (npoint AS geometry) WITH FUNCTION geometry(npoint);
 CREATE CAST (geometry AS npoint) WITH FUNCTION npoint(geometry);
@@ -296,6 +300,18 @@ CREATE FUNCTION nsegment(geometry)
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (nsegment AS geometry) WITH FUNCTION geometry(nsegment);
+
+CREATE FUNCTION geography(npoint)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Npoint_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION geography(nsegment)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Nsegment_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (npoint AS geography) WITH FUNCTION geography(npoint);
+CREATE CAST (nsegment AS geography) WITH FUNCTION geography(nsegment);
 CREATE CAST (geometry AS nsegment) WITH FUNCTION nsegment(geometry);
 
 CREATE FUNCTION stbox(npoint)

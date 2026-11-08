@@ -775,3 +775,10 @@ SELECT extent(temp) FROM (VALUES
 SELECT extent(temp) = extent(temp::stbox) FROM (VALUES
   (tcbuffer 'Cbuffer(Point(1 1), 0.5)@2001-01-01'),
   (tcbuffer '[Cbuffer(Point(2 2), 0.2)@2001-01-02, Cbuffer(Point(3 3), 0.4)@2001-01-03]')) t(temp);
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tcbuffer 'Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint);
+SELECT tcbuffer 'SRID=3857;Cbuffer(Point(1 2),1)@2001-01-01'::tgeogpoint;

@@ -85,6 +85,23 @@ Tpcpatch_to_tgeometry(PG_FUNCTION_ARGS)
   PG_RETURN_POINTER(result);
 }
 
+PGDLLEXPORT Datum Tpcpatch_to_tgeography(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcpatch_to_tgeography);
+/**
+ * @ingroup mobilitydb_pointcloud_conversion
+ * @brief Convert a temporal point cloud patch into a temporal geography
+ * @sqlfn tgeography()
+ * @sqlop @p ::
+ */
+Datum
+Tpcpatch_to_tgeography(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tpcpatch_to_tgeography(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Per-type accessors
  *****************************************************************************/

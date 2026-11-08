@@ -643,6 +643,33 @@ cbuffer_to_geom(const Cbuffer *cb)
 
 /**
  * @ingroup meos_cbuffer_base_conversion
+ * @brief Convert a circular buffer into a geography
+ * @details The value converts through #cbuffer_to_geom and #geom_to_geog, as every
+ * spatial type does. A geography has no curve, so the circle is read as the polygon
+ * of 32 segments per quadrant that PostGIS strokes it into.
+ * @param[in] cb Circular buffer
+ * @errval NULL
+ * @csqlfn #Cbuffer_to_geog()
+ */
+GSERIALIZED *
+cbuffer_to_geog(const Cbuffer *cb)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(cb, NULL);
+  GSERIALIZED *geom = cbuffer_to_geom(cb);
+  if (! geom)
+    return NULL;
+  LWGEOM *circle = lwgeom_from_gserialized(geom);
+  LWGEOM *stroked = lwgeom_stroke(circle, 32);
+  GSERIALIZED *polygon = geo_serialize(stroked);
+  lwgeom_free(circle); lwgeom_free(stroked); pfree(geom);
+  GSERIALIZED *result = geom_to_geog(polygon);
+  pfree(polygon);
+  return result;
+}
+
+/**
+ * @ingroup meos_cbuffer_base_conversion
  * @brief Convert a geometry into a circular buffer
  * @param[in] gs Geometry
  * @csqlfn #Geom_to_cbuffer()

@@ -178,6 +178,9 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
 
 - **whole-file SQL** at a fixed 50-bin position (`positions:` in `manifest.d/positions.yaml`):
   emits a complete `NNN_<family>_<behaviour>.in.sql`.
+  A family listing `geography:` has, after each statement of a listed name that
+  takes a geometry, the same statement over a geography and a temporal geography
+  point (`_geography_twins`): the temporal pose and the temporal pose chain.
 - **region-in-file** for C: emits the block between
   `GENERATED-BOXOPS-BEGIN/END`, `GENERATED-POSOPS-BEGIN/END`,
   `GENERATED-BOXBOX-BEGIN/END`, `GENERATED-NADOPS-BEGIN/END` and
@@ -250,7 +253,12 @@ into CI (`check-codegen.yml`, `--validate`/`--check`). It has **two output modes
   may override side keys (`sides:`); a side the kernel names by another token
   says it in `token:`, a side holding a `Datum` is `byval:`, and under
   `nadearth:` the temporal distance alone is followed by the procedure of its
-  operator.
+  operator. Every wrapper of these three templates whose two sides are temporal
+  values (35 over the temporal numbers, geometries, circular buffers, network
+  points, poses, pose chains, rigid geometries and point clouds) answers NULL
+  first where `temporal_slices_share_no_time` reads in their headers that they
+  share no time, for operands of one type, geodetic flag, Z flag and SRID, so
+  such values are not decompressed; other operands are read in full.
   The in-memory trees of MEOS take their constructors from the `indextrees:`
   axis (`manifest.d/indextrees.yaml`): each tree renders one constructor per
   box type of `boxes` from its template into the region between its

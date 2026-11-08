@@ -960,3 +960,15 @@ SELECT tpcpatch '01630000000000000002000000000000000000F03F000000000000F03F00000
 ERROR:  No schema registered for pcid 99
 LINE 1: SELECT tpcpatch '01630000000000000002000000000000000000F03F0...
                         ^
+SELECT numInstants((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz))::tgeometry);
+ numinstants 
+-------------
+           1
+(1 row)
+
+SELECT numInstants((tpcpatch(PC_Patch(ARRAY[PC_MakePoint(1, ARRAY[1.0, 1.0, 1.0]::float[]), PC_MakePoint(1, ARRAY[2.0, 2.0, 2.0]::float[])]), '2024-01-01'::timestamptz))::tgeography);
+ numinstants 
+-------------
+           1
+(1 row)
+

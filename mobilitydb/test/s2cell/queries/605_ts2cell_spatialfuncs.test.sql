@@ -427,3 +427,10 @@ SELECT ts2GridDistance(ts2cell(s2cell '47c3c', timestamptz '2001-01-01'),
   ts2cell(s2cell '47c3', timestamptz '2001-01-01'));
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeompoint, 6);
+SELECT asEWKT(ts2cell '47c3c3@2001-01-01'::tgeogpoint, 6);

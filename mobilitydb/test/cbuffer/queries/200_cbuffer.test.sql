@@ -181,3 +181,13 @@ SELECT cbufferTouches(cbuffer 'Cbuffer(Point(1 1),0)', cbuffer 'Cbuffer(Point(1 
 SELECT cbufferTouches(cbuffer 'Cbuffer(Point(1 1),0)', cbuffer 'Cbuffer(Point(2 2),0)');
 
 -------------------------------------------------------------------------------/
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT ST_SRID(cbuffer 'Cbuffer(Point(1 2),1)'::geography::geometry);
+SELECT ST_GeometryType(cbuffer 'Cbuffer(Point(1 2),1)'::geography::geometry);
+SELECT ST_NPoints(cbuffer 'Cbuffer(Point(1 2),1)'::geography::geometry);
+SELECT ST_AsEWKT(cbuffer 'Cbuffer(Point(1 2),0)'::geography);
+SELECT cbuffer 'SRID=3857;Cbuffer(Point(1 2),1)'::geography;

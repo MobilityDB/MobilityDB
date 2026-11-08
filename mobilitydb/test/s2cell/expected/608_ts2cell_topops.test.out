@@ -39,7 +39,7 @@ SELECT ST_Covers(
   cellToBoundary(s2cell '47c3c3')::geometry);
  st_covers 
 -----------
- f
+ t
 (1 row)
 
 SELECT ts2cell '47c3c3@2001-01-01' && stbox(s2cell '47c3c3');

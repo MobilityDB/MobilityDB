@@ -566,6 +566,28 @@ ts2cell_to_tbigint(const Temporal *temp)
   return tfunc_temporal(temp, &lfinfo);
 }
 
+/**
+ * @ingroup meos_s2cell_conversion
+ * @brief Convert a temporal S2 cell into the temporal geometry point of its centre
+ * @details The value converts through #tcellindex_cell_to_point and #tgeogpoint_to_tgeompoint, as every spatial type
+ * does
+ * @param[in] temp Temporal value
+ * @errval NULL
+ * @csqlfn #Ts2cell_to_tgeompoint()
+ */
+Temporal *
+ts2cell_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TS2CELL(temp, NULL);
+  Temporal *value = tcellindex_cell_to_point(temp);
+  if (! value)
+    return NULL;
+  Temporal *result = tgeogpoint_to_tgeompoint(value);
+  pfree(value);
+  return result;
+}
+
 /*****************************************************************************
  * Restriction functions
  *****************************************************************************/

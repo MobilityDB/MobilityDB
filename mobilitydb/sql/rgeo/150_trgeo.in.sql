@@ -220,14 +220,24 @@ CREATE FUNCTION tgeompoint(trgeometry)
   RETURNS tgeompoint
   AS 'MODULE_PATHNAME', 'Trgeometry_to_tgeompoint'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeogpoint(trgeometry)
+  RETURNS tgeogpoint
+  AS 'MODULE_PATHNAME', 'Trgeometry_to_tgeogpoint'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION tgeometry(trgeometry)
   RETURNS tgeometry
   AS 'MODULE_PATHNAME', 'Trgeometry_to_tgeometry'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION tgeography(trgeometry)
+  RETURNS tgeography
+  AS 'MODULE_PATHNAME', 'Trgeometry_to_tgeography'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE CAST (trgeometry AS tpose) WITH FUNCTION tpose(trgeometry);
 CREATE CAST (trgeometry AS tgeompoint) WITH FUNCTION tgeompoint(trgeometry);
 CREATE CAST (trgeometry AS tgeometry) WITH FUNCTION tgeometry(trgeometry);
+CREATE CAST (trgeometry AS tgeogpoint) WITH FUNCTION tgeogpoint(trgeometry);
+CREATE CAST (trgeometry AS tgeography) WITH FUNCTION tgeography(trgeometry);
 
 CREATE FUNCTION stbox(trgeometry)
   RETURNS stbox

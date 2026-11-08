@@ -157,6 +157,13 @@ CREATE FUNCTION geometry(pcpatch)
 
 CREATE CAST (pcpatch AS geometry) WITH FUNCTION geometry(pcpatch);
 
+CREATE FUNCTION geography(pcpatch)
+  RETURNS geography
+  AS 'MODULE_PATHNAME', 'Pcpatch_to_geog'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+
+CREATE CAST (pcpatch AS geography) WITH FUNCTION geography(pcpatch);
+
 /******************************************************************************
  * pcpoint — Comparison / B-tree / hash
  ******************************************************************************/

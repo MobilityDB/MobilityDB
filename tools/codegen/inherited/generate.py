@@ -1261,6 +1261,15 @@ def render_nadpairs_c(bt: dict) -> str:
             f"  {sides[s]['c']} {'' if sides[s].get('byval') else '*'}{v} = "
             f"{sides[s]['getarg']}({i});"
             for i, (s, v) in enumerate(zip((left, right), names)))
+        # Two temporal values sharing no time have no answer, which their
+        # headers tell without decompressing them
+        # (temporal_slices_share_no_time); values the kernel would refuse are
+        # read in full and refused by it
+        if all(sides[s]["getarg"] == "PG_GETARG_TEMPORAL_P"
+               for s in (left, right)):
+            decls = ("  if (temporal_slices_share_no_time(PG_GETARG_DATUM(0),\n"
+                     "      PG_GETARG_DATUM(1)))\n"
+                     "    PG_RETURN_NULL();\n" + decls)
         if left == right:
             kargs = names
         else:

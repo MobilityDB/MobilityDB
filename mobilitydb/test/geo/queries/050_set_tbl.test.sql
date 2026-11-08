@@ -226,3 +226,12 @@ SELECT ST_AsText(geometry(geomset '{"Point(1 1)", "Linestring(0 0,1 1)"}'));
 SELECT ST_AsText(geography(geogset '{"Point(1 1)", "Point(2 2)"}'));
 SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry) =
   ST_AsText(ST_Collect(ARRAY[geometry 'Point(1 1)', geometry 'Point(2 2)']));
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(geomset '{Point(1 2)}'::geogset);
+SELECT asEWKT(geomset 'SRID=4326;{Point(1 2), Point(3 4)}'::geogset);
+SELECT asEWKT(geogset '{Point(1 2)}'::geomset);
+SELECT geomset 'SRID=3857;{Point(1 2)}'::geogset;

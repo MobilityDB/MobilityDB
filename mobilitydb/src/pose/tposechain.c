@@ -126,6 +126,40 @@ Tposechain_to_tpose(PG_FUNCTION_ARGS)
   PG_RETURN_TEMPORAL_P(result);
 }
 
+PGDLLEXPORT Datum Tposechain_to_tgeompoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_to_tgeompoint);
+/**
+ * @ingroup mobilitydb_posechain_conversion
+ * @brief Convert a temporal pose chain into a temporal geometry point
+ * @sqlfn tgeompoint()
+ * @sqlop @p ::
+ */
+Datum
+Tposechain_to_tgeompoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_to_tgeompoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
+PGDLLEXPORT Datum Tposechain_to_tgeogpoint(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tposechain_to_tgeogpoint);
+/**
+ * @ingroup mobilitydb_posechain_conversion
+ * @brief Convert a temporal pose chain into a temporal geography point
+ * @sqlfn tgeogpoint()
+ * @sqlop @p ::
+ */
+Datum
+Tposechain_to_tgeogpoint(PG_FUNCTION_ARGS)
+{
+  Temporal *temp = PG_GETARG_TEMPORAL_P(0);
+  Temporal *result = tposechain_to_tgeogpoint(temp);
+  PG_FREE_IF_COPY(temp, 0);
+  PG_RETURN_TEMPORAL_P(result);
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/

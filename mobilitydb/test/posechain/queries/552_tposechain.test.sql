@@ -172,3 +172,13 @@ SELECT asText(tpose(translate(tposechain '[PoseChain(Pose(Point(1 1),0.3),Pose(P
 -- A NULL operand of merge returns the other one
 SELECT merge(tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01', NULL::tposechain) = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
 SELECT merge(NULL::tposechain, tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01') = tposechain 'PoseChain(Pose(Point(0 0), 0), Pose(Point(10 0), 0))@2001-01-01';
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+SELECT asEWKT(tposechain 'PoseChain(Pose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeompoint);
+SELECT asEWKT(tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01'::tgeogpoint);
+SELECT eContains(geometry 'SRID=4326;Polygon((0 0,5 0,5 5,0 5,0 0))', tposechain 'PoseChain(GeodPose(Point(1 2),0.5))@2001-01-01');

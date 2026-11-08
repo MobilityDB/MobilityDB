@@ -87,3 +87,10 @@ SELECT tDisjoint(tquadbin '{480fffffffffffff@2001-01-01, 481fffffffffffff@2001-0
   tquadbin '{481fffffffffffff@2001-01-01, 480fffffffffffff@2001-01-02}');
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- The conversions between geometry and geography
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeogpoint, 6);
+SELECT asEWKT(tquadbin '480fffffffffffff@2001-01-01'::tgeompoint, 6);

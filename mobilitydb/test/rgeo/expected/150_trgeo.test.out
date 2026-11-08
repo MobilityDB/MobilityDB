@@ -2717,3 +2717,17 @@ FROM (SELECT unnest(merge(
  POLYGON((3 2,3 3,2 3,2 2,3 2)) | {[Tue Jan 02 00:00:00 2001 PST, Tue Jan 02 00:00:00 2001 PST]}
 (2 rows)
 
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeogpoint);
+                      asewkt                       
+---------------------------------------------------
+ SRID=4326;POINT(1 2)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography);
+                              asewkt                               
+-------------------------------------------------------------------
+ SRID=4326;POLYGON((1 2,2 2,2 3,1 2))@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT trgeometry 'SRID=3857;Polygon((0 0,1 0,1 1,0 0));Pose(Point(1 2),0)@2001-01-01'::tgeography;
+ERROR:  Only lon/lat coordinate systems are supported

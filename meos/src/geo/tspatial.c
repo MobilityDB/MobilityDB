@@ -694,6 +694,64 @@ geoset_to_geo(const Set *s)
   return result;
 }
 
+/**
+ * @ingroup meos_geo_set_conversion
+ * @brief Convert a geometry set into a geography set
+ * @details Each value converts through #geom_to_geog, as every spatial type does
+ * @param[in] s Set
+ * @errval NULL
+ * @csqlfn #Geomset_to_geogset()
+ */
+Set *
+geomset_to_geogset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOMSET(s, NULL);
+  GSERIALIZED **values = palloc(sizeof(GSERIALIZED *) * s->count);
+  int count = 0;
+  for (int i = 0; i < s->count; i++)
+  {
+    values[count] = geom_to_geog(DatumGetGserializedP(SET_VAL_N(s, i)));
+    if (! values[count])
+      break;
+    count++;
+  }
+  Set *result = (count == s->count) ? geoset_make(values, count) : NULL;
+  for (int i = 0; i < count; i++)
+    pfree(values[i]);
+  pfree(values);
+  return result;
+}
+
+/**
+ * @ingroup meos_geo_set_conversion
+ * @brief Convert a geography set into a geometry set
+ * @details Each value converts through #geog_to_geom, as every spatial type does
+ * @param[in] s Set
+ * @errval NULL
+ * @csqlfn #Geogset_to_geomset()
+ */
+Set *
+geogset_to_geomset(const Set *s)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_GEOGSET(s, NULL);
+  GSERIALIZED **values = palloc(sizeof(GSERIALIZED *) * s->count);
+  int count = 0;
+  for (int i = 0; i < s->count; i++)
+  {
+    values[count] = geog_to_geom(DatumGetGserializedP(SET_VAL_N(s, i)));
+    if (! values[count])
+      break;
+    count++;
+  }
+  Set *result = (count == s->count) ? geoset_make(values, count) : NULL;
+  for (int i = 0; i < count; i++)
+    pfree(values[i]);
+  pfree(values);
+  return result;
+}
+
 /*****************************************************************************/
 
 /**

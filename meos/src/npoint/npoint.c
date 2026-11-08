@@ -1198,6 +1198,28 @@ npoint_to_geompoint(const Npoint *np)
 }
 
 /**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Convert a network point into a geography point
+ * @details The value converts through #npoint_to_geompoint and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] np Value
+ * @errval NULL
+ * @csqlfn #Npoint_to_geog()
+ */
+GSERIALIZED *
+npoint_to_geog(const Npoint *np)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(np, NULL);
+  GSERIALIZED *geom = npoint_to_geompoint(np);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
+}
+
+/**
  * @brief Return the stretch of a route between two positions
  * @details The stretch holds the points a temporal network point travelling it
  * passes, as #tnpointseq_tgeompointseq_cont states them: the points at the two
@@ -1259,6 +1281,85 @@ nsegment_to_geom(const Nsegment *ns)
 }
 
 /**
+ * @brief Return the distance within which a point lies on a route when it is
+ * a point MEOS constructs on that route
+ * @details A point at a position along a route is computed in doubles, so it
+ * lies off the route by the rounding of its coordinates, and the exact
+ * distance between them is almost never zero. The distance is the band of a
+ * constructed point the exact computation of MEOS admits,
+ * #MEOS_GEOM_TOLERANCE plus four units of rounding of the largest coordinate
+ * of the point, which no point lying genuinely off the route is within. It is
+ * the tolerance of the casts from a geometry to a network point and a network
+ * segment, which take no tolerance of their own.
+ * @param[in] gs Point
+ */
+double
+geompoint_route_band(const GSERIALIZED *gs)
+{
+  const POINT2D *p = GSERIALIZED_POINT2D_P(gs);
+  return MEOS_GEOM_TOLERANCE + 4.0 * DBL_EPSILON * Max(fabs(p->x), fabs(p->y));
+}
+
+/**
+ * @brief Keep a route as the nearest one to a point within a tolerance when
+ * it is nearer than the nearest one so far
+ * @details The step of #geompoint_to_npoint that both builds share, the
+ * MEOS build for every route of the ways CSV file and the PostgreSQL build
+ * for every route the ways table returns, so that the two builds decide with
+ * the same arithmetic. A route beyond the tolerance is no candidate, and of
+ * two equally near routes the one with the least identifier is kept.
+ * @param[in] gs Point
+ * @param[in] gid Identifier of the route
+ * @param[in] line Geometry of the route
+ * @param[in] tolerance Maximum distance between the point and the route
+ * @param[in,out] min_gid,min_dist,min_pos Route, distance and position of the
+ * nearest route so far, `min_dist` being `DBL_MAX` before the first one
+ */
+void
+route_nearest_update(const GSERIALIZED *gs, int64 gid,
+  const GSERIALIZED *line, double tolerance, int64 *min_gid,
+  double *min_dist, double *min_pos)
+{
+  if (geo_is_empty(line))
+    return;
+  /* A distance raising an error, -1.0, makes no candidate */
+  double dist = geom_distance2d(line, gs);
+  if (dist < 0.0 || dist > tolerance || dist > *min_dist ||
+      (dist == *min_dist && gid > *min_gid))
+    return;
+  /* A position raising an error makes no candidate either */
+  double pos = line_locate_point(line, gs);
+  if (pos < 0.0)
+    return;
+  *min_gid = gid;
+  *min_dist = dist;
+  *min_pos = pos;
+  return;
+}
+
+/**
+ * @ingroup meos_npoint_base_conversion
+ * @brief Convert a network segment into a geography
+ * @details The value converts through #nsegment_to_geom and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] ns Value
+ * @errval NULL
+ * @csqlfn #Nsegment_to_geog()
+ */
+GSERIALIZED *
+nsegment_to_geog(const Nsegment *ns)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ns, NULL);
+  GSERIALIZED *geom = nsegment_to_geom(ns);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
+}
+
+/**
  * @ingroup meos_npoint_base_conversion
  * @brief Transform a geometry into a network segment
  * @errval NULL
@@ -1286,7 +1387,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
   if (geomtype == POINTTYPE)
   {
     points = palloc0(sizeof(Npoint *));
-    np = geompoint_to_npoint(gs);
+    np = geompoint_to_npoint(gs, geompoint_route_band(gs));
     if (np)
       points[npoints++] = np;
   }
@@ -1298,7 +1399,7 @@ geom_to_nsegment(const GSERIALIZED *gs)
     {
       /* The composing points are from 1 to numcount */
       const GSERIALIZED *point = line_point_n(gs, i + 1);
-      np = geompoint_to_npoint(point);
+      np = geompoint_to_npoint(point, geompoint_route_band(point));
       if (np)
         points[npoints++] = np;
       /* Cannot pfree(point); */

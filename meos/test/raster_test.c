@@ -217,7 +217,7 @@ int main(void)
     size_t hexwkb_size;
     char *hexwkb = raster_as_hexwkb(rast, 0, &hexwkb_size);
     assert(hexwkb != NULL);
-    assert(hexwkb_size == strlen(hexwkb));
+    assert(hexwkb_size == strlen(hexwkb) + 1);
     Raster *rast1 = raster_from_hexwkb(hexwkb);
     assert(rast1 != NULL);
     assert(raster_num_bands(rast1) == nbands);
@@ -227,7 +227,7 @@ int main(void)
     size_t wkb_size;
     uint8_t *wkb = raster_as_wkb(rast, 0, &wkb_size);
     assert(wkb != NULL);
-    assert(wkb_size * 2 == hexwkb_size);
+    assert(wkb_size * 2 + 1 == hexwkb_size);
     Raster *rast2 = raster_from_wkb(wkb, wkb_size);
     assert(rast2 != NULL);
     assert(raster_num_bands(rast2) == nbands);

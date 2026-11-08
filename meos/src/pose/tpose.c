@@ -489,7 +489,8 @@ tposeseqset_from_base_tstzspanset(const Pose *pose, const SpanSet *ss,
  * @details The result is a temporal geometry point for a planar pose and a
  * temporal geography point for a geodetic pose
  * @param[in] temp Temporal pose
- * @csqlfn #Tpose_to_tpoint()
+ * @note The type of the result follows the pose, unlike #tpose_to_tgeompoint and
+ * #tpose_to_tgeogpoint
  */
 Temporal *
 tpose_to_tpoint(const Temporal *temp)
@@ -506,6 +507,52 @@ tpose_to_tpoint(const Temporal *temp)
   /* Position projection is affine: linear input -> linear output */
   lfinfo.reslinear = MEOS_FLAGS_LINEAR_INTERP(temp->flags);
   Temporal *result = tfunc_temporal(temp, &lfinfo);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_conversion
+ * @brief Convert a temporal pose, planar or geodetic, into a temporal geometry
+ * point
+ * @details A geodetic value converts through #tgeogpoint_to_tgeompoint, as every
+ * spatial type does
+ * @param[in] temp Temporal pose
+ * @errval NULL
+ * @csqlfn #Tpose_to_tgeompoint()
+ */
+Temporal *
+tpose_to_tgeompoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  Temporal *tpoint = tpose_to_tpoint(temp);
+  if (! tpoint || ! MEOS_FLAGS_GET_GEODETIC(tpoint->flags))
+    return tpoint;
+  Temporal *result = tgeogpoint_to_tgeompoint(tpoint);
+  pfree(tpoint);
+  return result;
+}
+
+/**
+ * @ingroup meos_pose_conversion
+ * @brief Convert a temporal pose, planar or geodetic, into a temporal geography
+ * point
+ * @details A planar value converts through #tgeompoint_to_tgeogpoint, as every
+ * spatial type does
+ * @param[in] temp Temporal pose
+ * @errval NULL
+ * @csqlfn #Tpose_to_tgeogpoint()
+ */
+Temporal *
+tpose_to_tgeogpoint(const Temporal *temp)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_TPOSE(temp, NULL);
+  Temporal *tpoint = tpose_to_tpoint(temp);
+  if (! tpoint || MEOS_FLAGS_GET_GEODETIC(tpoint->flags))
+    return tpoint;
+  Temporal *result = tgeompoint_to_tgeogpoint(tpoint);
+  pfree(tpoint);
   return result;
 }
 

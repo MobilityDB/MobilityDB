@@ -45,6 +45,7 @@
 #include <meos.h>
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"
+#include "npoint/ways_cache.h"
 
 /*****************************************************************************
  * Definitions for reading the ways CSV file
@@ -59,11 +60,15 @@
  * `meos_set_spatial_ref_sys_csv()`, so that a MEOS embedder points at a
  * deployment-specific network file. */
 char *WAYS_CSV = MEOS_DATAROOTDIR "/ways1000.csv";
+/* Copy of the path given to the last call of `meos_set_ways_csv()` */
+static char *WAYS_CSV_COPY = NULL;
 
 /**
  * @ingroup meos_setup
  * @brief Set the location of the ways CSV file used to resolve npoint route
  * geometries
+ * @details The function keeps a copy of the path and frees the copy it kept
+ * for an earlier call, as #meos_set_spatial_ref_sys_csv does.
  * @param[in] path Full path to the ways CSV file
  */
 void
@@ -77,92 +82,52 @@ meos_set_ways_csv(const char *path)
     return;
   }
   strcpy(copy, path);
+  free(WAYS_CSV_COPY);
+  WAYS_CSV_COPY = copy;
   WAYS_CSV = copy;
 }
 
+/* Global variable to hold the ways cache */
+static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
+
 /**
- * @brief Structure to represent a record in the ways CSV file
+ * @brief Structure to represent the position of a route in the ways CSV file
  */
 typedef struct
 {
   int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route */
-} ways_record;
+  long offset;            /**< Position of its line in the file */
+} WaysOffset;
 
 /**
- * @brief Structure to represent an entry in the ways cache
+ * @brief Structure to represent the index of the ways CSV file: the position
+ * of the line of every route, sorted by identifier and then by position, so
+ * that a route is read with one seek instead of a scan of the file
  */
-typedef struct struct_WaysCacheEntry
+typedef struct
 {
-  int64 gid;              /**< Identifier of the route */
-  GSERIALIZED *the_geom;  /**< Geometry of the route */
-  double length;          /**< Length of the route */
-  uint64_t hits;          /**< Number of hits of the route */
-} WaysCacheEntry;
+  char *path;             /**< File the index was built from */
+  WaysOffset *offsets;    /**< Positions of the routes */
+  int count;              /**< Number of routes */
+} WaysIndex;
 
-/* Number of items stored in the ways cache */
-#define WAYS_CACHE_SIZE 128
-
-/**
- * @brief The ways cache holds a fixed number of ways records read from the
- * ways CSV file
- * @note In normal usage we do not expect it to have many entries, so we
- * linearly scan the list
- */
-typedef struct struct_WaysCache
-{
-  WaysCacheEntry routes[WAYS_CACHE_SIZE];
-  uint32_t count;
-} WaysCache;
-
-/* Global variable to hold the ways cache */
-static MEOS_TLS WaysCache *MEOS_WAYS_CACHE = NULL;
+/* Global variable to hold the index of the ways CSV file */
+static MEOS_TLS WaysIndex *MEOS_WAYS_INDEX = NULL;
 
 /*****************************************************************************
  * Cache management functions
  *****************************************************************************/
 
 /**
- * @brief Free all the malloc'ed geometries stored in the ways cache and free
- * the cache
- */
-static void
-DestroyWaysCache(WaysCache *ways_cache)
-{
-  if (ways_cache)
-  {
-    for (uint32_t i = 0; i < ways_cache->count; i++)
-    {
-      if (ways_cache->routes[i].the_geom)
-        pfree(ways_cache->routes[i].the_geom);
-    }
-  }
-  pfree(ways_cache);
-  return;
-}
-
-/**
- * @brief Get the ways cache variable from the global variable
+ * @brief Get the ways cache from the global variable
  * @details If it does not exist, a new blank one is made and returned.
  */
 static WaysCache *
 GetWaysCache(void)
 {
-  WaysCache *ways_cache = MEOS_WAYS_CACHE;
-  if (! ways_cache)
-  {
-    /* Allocate memory */
-    ways_cache = palloc0(sizeof(WaysCache));
-    if (! ways_cache)
-    {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
-        "Unable to allocate space for the ways cache");
-      return NULL;
-    }
-  }
-  MEOS_WAYS_CACHE = ways_cache;
-  return ways_cache;
+  if (! MEOS_WAYS_CACHE)
+    MEOS_WAYS_CACHE = ways_cache_make();
+  return MEOS_WAYS_CACHE;
 }
 
 /**
@@ -175,93 +140,111 @@ meos_finalize_ways(void)
   /* Idempotency: only destroy a live cache, and null the slot so a
    * second finalize call does not double-free the cache and its
    * stored geometries. */
+  if (MEOS_WAYS_INDEX)
+  {
+    free(MEOS_WAYS_INDEX->path);
+    free(MEOS_WAYS_INDEX->offsets);
+    free(MEOS_WAYS_INDEX);
+    MEOS_WAYS_INDEX = NULL;
+  }
   if (! MEOS_WAYS_CACHE)
     return;
-  DestroyWaysCache(MEOS_WAYS_CACHE);
+  ways_cache_free(MEOS_WAYS_CACHE);
   MEOS_WAYS_CACHE = NULL;
 }
 
 /**
- * @brief Get a route from the ways cache, if not found return `NULL`
+ * @brief Comparison of the positions of two routes, by identifier and then
+ * by position in the file
  */
-static WaysCacheEntry *
-GetRouteFromWaysCache(WaysCache *ways_cache, int64 gid, bool any_gid)
+static int
+ways_offset_cmp(const void *a, const void *b)
 {
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-  for (uint32_t i = 0; i < ways_cache->count; i++)
+  const WaysOffset *wa = a, *wb = b;
+  if (wa->gid != wb->gid)
+    return wa->gid < wb->gid ? -1 : 1;
+  return wa->offset < wb->offset ? -1 : (wa->offset > wb->offset ? 1 : 0);
+}
+
+/**
+ * @brief Get the index of the ways CSV file, built with one scan of the file
+ * the first time a route is read from it and again when
+ * #meos_set_ways_csv names another file, as #GetWaysCache gets the cache
+ * @details The identifier of a line is read as #get_ways_record reads it,
+ * into a long long, which %lld fills on every data model
+ */
+static WaysIndex *
+GetWaysIndex(FILE *file)
+{
+  if (MEOS_WAYS_INDEX && strcmp(MEOS_WAYS_INDEX->path, WAYS_CSV) == 0)
+    return MEOS_WAYS_INDEX;
+  if (MEOS_WAYS_INDEX)
   {
-    if (any_gid || ways_cache->routes[i].gid == gid)
-    {
-      ways_cache->routes[i].hits++;
-      return &ways_cache->routes[i];
-    }
+    free(MEOS_WAYS_INDEX->path);
+    free(MEOS_WAYS_INDEX->offsets);
+    free(MEOS_WAYS_INDEX);
+    MEOS_WAYS_INDEX = NULL;
   }
-  return NULL;
-}
-
-/**
- * @brief Remove from the ways cache the route in a given position 
- */
-static void
-DeleteRouteFromWaysCache(WaysCache *ways_cache, uint32_t position)
-{
-  if (ways_cache->routes[position].the_geom)
-    pfree(ways_cache->routes[position].the_geom);
-  memset(&ways_cache->routes[position], 0, sizeof(WaysCacheEntry));
-  return;
-}
-
-/**
- * @brief Add a route to the ways cache
- */
-static WaysCacheEntry *
-AddRouteToWaysCache(WaysCache *ways_cache, ways_record *rec)
-{
-  assert(ways_cache); assert(rec);
-
-  /* If the cache is full, find the least used element and delete it */
-  uint32_t cache_position = ways_cache->count;
-  uint32_t hits = 1;
-  if (cache_position == WAYS_CACHE_SIZE)
+  WaysIndex *index = calloc(1, sizeof(WaysIndex));
+  int capacity = 1024;
+  index->offsets = malloc(sizeof(WaysOffset) * capacity);
+  index->path = malloc(strlen(WAYS_CSV) + 1);
+  if (! index->offsets || ! index->path)
   {
-    cache_position = 0;
-    hits = ways_cache->routes[0].hits;
-    for (uint32_t i = 1; i < WAYS_CACHE_SIZE; i++)
+    free(index->offsets); free(index->path); free(index);
+    meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+      "Cannot allocate the index of the ways file");
+    return NULL;
+  }
+  strcpy(index->path, WAYS_CSV);
+  rewind(file);
+  /* The line of a route starts with its identifier, the geometry being
+   * skipped up to the end of the line */
+  while (true)
+  {
+    long offset = ftell(file);
+    long long gidbuf;
+    if (fscanf(file, "%lld,", &gidbuf) != 1)
+      break;
+    int c;
+    while ((c = fgetc(file)) != EOF && c != '\n')
+      ;
+    if (index->count == capacity)
     {
-      if (ways_cache->routes[i].hits < hits)
+      capacity *= 2;
+      WaysOffset *offsets = realloc(index->offsets,
+        sizeof(WaysOffset) * capacity);
+      if (! offsets)
       {
-        cache_position = i;
-        hits = ways_cache->routes[i].hits;
+        free(index->offsets); free(index->path); free(index);
+        meos_error(ERROR, MEOS_ERR_MEMORY_ALLOC_ERROR,
+          "Cannot allocate the index of the ways file");
+        return NULL;
       }
+      index->offsets = offsets;
     }
-    DeleteRouteFromWaysCache(ways_cache, cache_position);
-    /* To avoid the element we are introduced now being evicted next (as it
-     * would have 1 hit, being most likely the lower one) we reuse the hits
-     * from the evicted position and add some extra buffer */
-    hits += 5;
+    index->offsets[index->count].gid = gidbuf;
+    index->offsets[index->count].offset = offset;
+    index->count++;
+    if (c == EOF)
+      break;
   }
-  else
-    ways_cache->count++;
-  assert(ways_cache->count <= WAYS_CACHE_SIZE);
-
-  /* Store everything in new cache entry */
-  assert(cache_position < WAYS_CACHE_SIZE);
-  ways_cache->routes[cache_position].gid = rec->gid;
-  ways_cache->routes[cache_position].the_geom = rec->the_geom;
-  ways_cache->routes[cache_position].length = rec->length;
-  ways_cache->routes[cache_position].hits = hits;
-
-  return &ways_cache->routes[cache_position];
+  qsort(index->offsets, index->count, sizeof(WaysOffset), ways_offset_cmp);
+  MEOS_WAYS_INDEX = index;
+  return index;
 }
 
 /**
  * @brief Access the ways CSV file to get the geometry of a route and compute
- * its length 
+ * its length
+ * @details The reading of the network the MEOS build gives to
+ * #ways_cache_lookup, as the PostgreSQL build reads the ways table.
  * @param[in] rid Route identifier
+ * @param[in] any_gid True when the record of any route is asked for
  * @param[out] rec Record to store on the cache
  */
 static bool
-get_ways_record(int64 rid, ways_record *rec)
+get_ways_record(int64 rid, bool any_gid, ways_record *rec)
 {
   /* The full file path in the first argument is defined in a global variable*/
   FILE *file = fopen(WAYS_CSV, "r");
@@ -274,7 +257,49 @@ get_ways_record(int64 rid, ways_record *rec)
   }
 
   bool result = false;
-  /* Continue reading the file */
+  /* A route of the file is read at its position, the first line of the
+   * route with a geometry that is not empty answering, as the scan below
+   * answers it */
+  if (! any_gid)
+  {
+    const WaysIndex *index = GetWaysIndex(file);
+    if (! index)
+    {
+      fclose(file);
+      return false;
+    }
+    int lo = 0, hi = index->count;
+    while (lo < hi)
+    {
+      int mid = lo + (hi - lo) / 2;
+      if (index->offsets[mid].gid < rid)
+        lo = mid + 1;
+      else
+        hi = mid;
+    }
+    for (int i = lo; i < index->count && index->offsets[i].gid == rid; i++)
+    {
+      char geo_buffer[MAX_LEN_GEOM];
+      long long gidbuf;
+      if (fseek(file, index->offsets[i].offset, SEEK_SET) != 0 ||
+          fscanf(file, "%lld,%100000s\n", &gidbuf, geo_buffer) != 2)
+        continue;
+      rec->gid = rid;
+      rec->the_geom = geom_in(geo_buffer, -1);
+      if (! geo_is_empty(rec->the_geom))
+      {
+        rec->length = geom_length(rec->the_geom);
+        result = true;
+        break;
+      }
+      pfree(rec->the_geom);
+    }
+    fclose(file);
+    return result;
+  }
+
+  /* The record of any route is the first line of the file with a geometry
+   * that is not empty */
   do
   {
     char geo_buffer[MAX_LEN_GEOM];
@@ -289,20 +314,17 @@ get_ways_record(int64 rid, ways_record *rec)
     }
 
     /* Ignore the records with NULL values or empty geometries */
-    if (read == 2 && rid == rec->gid)
+    if (read == 2)
     {
       /* Transform the geometry string into a geometry value */
       rec->the_geom = geom_in(geo_buffer, -1);
       if (! geo_is_empty(rec->the_geom))
       {
-        if (rec->gid == rid)
-        {
-          rec->length = geom_length(rec->the_geom);
-          result = true;
-          break;
-        }
+        rec->length = geom_length(rec->the_geom);
+        result = true;
+        break;
       }
-      free(rec->the_geom);
+      pfree(rec->the_geom);
     }
   } while (! feof(file));
 
@@ -313,30 +335,17 @@ get_ways_record(int64 rid, ways_record *rec)
 }
 
 /**
- * @brief Return true if a Ways entry was read from the ways cache,
- * return false otherwise
+ * @brief Return in the last argument the record of a route read from the
+ * ways cache, and return false when there is no such route
+ * @details The twin of the function of the PostgreSQL build in ways.c, both
+ * calling #ways_cache_lookup with their own reading of the network.
  */
 static bool
 route_lookup(int64 gid, bool any_gid, ways_record *rec)
 {
   /* Get or initialize the cache for this round */
-  WaysCache* ways_cache = GetWaysCache();
-  if (! ways_cache)
-    return false;
-
-  /* Add the route to the cache if it is not already there */
-  WaysCacheEntry *ways_entry = GetRouteFromWaysCache(ways_cache, gid, any_gid);
-  if (ways_entry == NULL)
-  {
-    if (! get_ways_record(gid, rec))
-      return false;
-    AddRouteToWaysCache(ways_cache, rec);
-    return true;
-  }
-  /* The route was found in the cache */
-  rec->gid = gid; rec->the_geom = ways_entry->the_geom;
-  rec->length = ways_entry->length;
-  return true;
+  WaysCache *ways_cache = GetWaysCache();
+  return ways_cache_lookup(ways_cache, gid, any_gid, get_ways_record, rec);
 }
 
 /*****************************************************************************
@@ -408,16 +417,25 @@ get_srid_ways(void)
 
 /**
  * @ingroup meos_npoint_base_conversion
- * @brief Transform a geometry into a network point
+ * @brief Transform a geometry into a network point located on the route
+ * nearest to it within a tolerance
+ * @details The route is the nearest one among those whose distance to the
+ * point is at most the tolerance, the one with the least identifier among
+ * equally near routes, and the position is the one of the point projected on
+ * that route. The result is `NULL` when no route is within the tolerance.
  * @param[in] gs Geometry
+ * @param[in] tolerance Maximum distance between the point and the route, in
+ * the units of the spatial reference system of the ways network
  * @csqlfn #Geompoint_to_npoint()
  */
 Npoint *
-geompoint_to_npoint(const GSERIALIZED *gs)
+geompoint_to_npoint(const GSERIALIZED *gs, double tolerance)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(gs, NULL);
-  if (! ensure_not_empty(gs) || ! ensure_point_type(gs))
+  if (! ensure_not_empty(gs) || ! ensure_point_type(gs) ||
+      ! ensure_finite(tolerance) ||
+      ! ensure_not_negative_datum(Float8GetDatum(tolerance), T_FLOAT8))
     return NULL;
   int32_t srid_geom = gserialized_get_srid(gs);
   int32_t srid_ways = get_srid_ways();
@@ -436,20 +454,12 @@ geompoint_to_npoint(const GSERIALIZED *gs)
 
   /* Record holding one line of the file */
   ways_record rec;
-  /* Minimum distance */
-  double min_dist = DBL_MAX;
-  /* Geometry with the shortest distance */
-  GSERIALIZED *the_geom = NULL;
-  /* Position in the geometry with the shortest distance */
-  double pos = 0;
+  /* Route, distance and position of the nearest route */
+  int64 min_gid = 0;
+  double min_dist = DBL_MAX, min_pos = 0.0;
   /* Read the file */
   do
   {
-    /* We need to reproduce the following SQL query for a given geometry geo
-     *   SELECT npoint(gid, ST_LineLocatePoint(the_geom, geo))
-     *   FROM public.ways WHERE ST_DWithin(the_geom, geo, MEOS_EPSILON)
-     *   ORDER BY ST_Distance(the_geom, geo) LIMIT 1;
-     */
     /* Buffer for reading the geometry string */
     char geo_buffer[MAX_LEN_GEOM];
     long long gidbuf; /* MEOS: %ld mismatches int64 on LLP64 (Windows) */
@@ -467,33 +477,9 @@ geompoint_to_npoint(const GSERIALIZED *gs)
     {
       /* Transform the geometry string into a geometry value */
       rec.the_geom = geom_in(geo_buffer, -1);
-      /* Continue if the geometry is empty */
-      if (geo_is_empty(rec.the_geom))
-      {
-        free(rec.the_geom);
-        continue;
-      }
-      /* Continue if the point is not in the line */
-      pos = line_locate_point(rec.the_geom, gs);
-      if (pos < 0)
-      {
-        free(rec.the_geom);
-        continue;
-      }
-      /* Compute minimal distance */
-      double dist = geom_distance2d(rec.the_geom, gs);
-      /* A distance raising an error, -1.0, makes no candidate, as a position
-       * raising one does above */
-      if (dist >= 0.0 && dist < min_dist)
-      {
-        min_dist = dist;
-        /* Previous previous candidate to shortest distance */
-        if (the_geom)
-          free(the_geom);
-        the_geom = rec.the_geom;
-      }
-      else
-        free(rec.the_geom);
+      route_nearest_update(gs, rec.gid, rec.the_geom, tolerance, &min_gid,
+        &min_dist, &min_pos);
+      pfree(rec.the_geom);
     }
   } while (! feof(file));
 
@@ -504,9 +490,7 @@ geompoint_to_npoint(const GSERIALIZED *gs)
   if (min_dist == DBL_MAX)
     return NULL;
 
-  Npoint *result = npoint_make(rec.gid, pos);
-  free(the_geom);
-  return result;
+  return npoint_make(min_gid, min_pos);
 }
 
 /*****************************************************************************/

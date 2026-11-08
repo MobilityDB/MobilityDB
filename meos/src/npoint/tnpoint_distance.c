@@ -124,6 +124,8 @@ tdistance_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 /**
  * @ingroup meos_npoint_dist
  * @brief Return the temporal distance between two temporal network points
+ * @details Operands sharing no time have no temporal distance, which
+ * #temporal_time_overlaps answers before either is located on its routes
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Tdistance_tnpoint_tnpoint()
  */
@@ -132,6 +134,9 @@ tdistance_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return NULL;
+
+  if (! temporal_time_overlaps(temp1, temp2))
     return NULL;
 
   Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);
@@ -326,6 +331,10 @@ nad_tnpoint_npoint(const Temporal *temp, const Npoint *np)
 /**
  * @ingroup meos_npoint_dist
  * @brief Return the nearest approach distance of two temporal network points
+ * @details Operands sharing no time have no nearest approach, which
+ * #temporal_time_overlaps answers before either is located on its routes.
+ * The others answer the nearest approach #nad_tgeo_tgeo measures for the
+ * temporal geometry points they travel.
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #NAD_tnpoint_tnpoint()
  * @errval -1.0
@@ -337,17 +346,19 @@ nad_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
     return -1.0;
 
-  int last_errno = meos_errno_reset();
-  Temporal *dist = tdistance_tnpoint_tnpoint(temp1, temp2);
-  /* The temporal distance is NULL where the operands share no time, which
-   * is an answer, and where it raises an error */
-  double result = DBL_MAX;
-  if (dist)
-  {
-    result = DatumGetFloat8(temporal_min_value(dist));
-    pfree(dist);
-  }
-  return distance_result(result, last_errno);
+  if (! temporal_time_overlaps(temp1, temp2))
+    return DBL_MAX;
+
+  Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);
+  Temporal *tpoint2 = tpoint1 ? tnpoint_to_tgeompoint(temp2) : NULL;
+  double result = -1.0;
+  if (tpoint2)
+    result = nad_tgeo_tgeo(tpoint1, tpoint2, true);
+  if (tpoint1)
+    pfree(tpoint1);
+  if (tpoint2)
+    pfree(tpoint2);
+  return result;
 }
 
 /*****************************************************************************
@@ -401,6 +412,8 @@ shortestline_tnpoint_npoint(const Temporal *temp, const Npoint *np)
  * @ingroup meos_npoint_dist
  * @brief Return the line connecting the nearest approach point between two
  * temporal networks
+ * @details Operands sharing no time have no nearest approach, which
+ * #temporal_time_overlaps answers before either is located on its routes
  * @param[in] temp1,temp2 Temporal points
  * @csqlfn #Shortestline_tnpoint_tnpoint()
  */
@@ -409,6 +422,9 @@ shortestline_tnpoint_tnpoint(const Temporal *temp1, const Temporal *temp2)
 {
   /* Ensure the validity of the arguments */
   if (! ensure_valid_tnpoint_tnpoint(temp1, temp2))
+    return NULL;
+
+  if (! temporal_time_overlaps(temp1, temp2))
     return NULL;
 
   Temporal *tpoint1 = tnpoint_to_tgeompoint(temp1);

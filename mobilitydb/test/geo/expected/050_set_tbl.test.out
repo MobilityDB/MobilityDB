@@ -567,3 +567,23 @@ SELECT ST_AsText(geomset '{"Point(1 1)", "Point(2 2)"}'::geometry) =
  t
 (1 row)
 
+SELECT asEWKT(geomset '{Point(1 2)}'::geogset);
+          asewkt          
+--------------------------
+ SRID=4326;{"POINT(1 2)"}
+(1 row)
+
+SELECT asEWKT(geomset 'SRID=4326;{Point(1 2), Point(3 4)}'::geogset);
+                 asewkt                 
+----------------------------------------
+ SRID=4326;{"POINT(1 2)", "POINT(3 4)"}
+(1 row)
+
+SELECT asEWKT(geogset '{Point(1 2)}'::geomset);
+          asewkt          
+--------------------------
+ SRID=4326;{"POINT(1 2)"}
+(1 row)
+
+SELECT geomset 'SRID=3857;{Point(1 2)}'::geogset;
+ERROR:  Only lon/lat coordinate systems are supported

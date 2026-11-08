@@ -53,8 +53,11 @@ jobs:
           os: ["ubuntu-24.04"]
           coverage: [0]
           cc: [gcc]
+          # The coverage build takes the newest PostgreSQL of the matrix: the
+          # JSON family requires PostgreSQL 18, and a coverage build on an
+          # older version measures and asserts MobilityDB without it.
           include:
-            - psql: 17
+            - psql: 18
               postgis: 3
               os: "ubuntu-24.04"
               coverage: 1

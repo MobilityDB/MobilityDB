@@ -741,6 +741,28 @@ posechain_to_point(const PoseChain *pc)
   return result;
 }
 
+/**
+ * @ingroup meos_posechain_base_conversion
+ * @brief Convert a pose chain into a geography point
+ * @details The value converts through #posechain_to_point and #geom_to_geog, as every spatial
+ * type does
+ * @param[in] pc Value
+ * @errval NULL
+ * @csqlfn #Posechain_to_geog()
+ */
+GSERIALIZED *
+posechain_to_geog(const PoseChain *pc)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(pc, NULL);
+  GSERIALIZED *geom = posechain_to_point(pc);
+  if (! geom)
+    return NULL;
+  GSERIALIZED *result = geom_to_geog(geom);
+  pfree(geom);
+  return result;
+}
+
 /*****************************************************************************
  * Accessor functions
  *****************************************************************************/
