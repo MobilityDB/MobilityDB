@@ -62,6 +62,14 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `route_point_tinstant` of `meos/src/npoint/tnpoint.c` and its calls, which take the point
   located on the route instead of a point array, the conversion along the route unchanged.
   MERGED as MobilityDB #3491 (`dd6c9ed0ef`).
+- **The conversion of a temporal network point sequence to a temporal geometry point builds its
+  sequence without validating its instants again**, outside the plan, as the owner decided on
+  2026-11-08 ("approve the rewrite"): branch `perf/tnpoint-conversion-unchecked-sequence` rewrites
+  `842c640e83` there, the closing `tsequence_make_free` of `tnpointseq_tgeompointseq_cont` in
+  `meos/src/npoint/tnpoint.c`, which `tsequence_make_exp1` replaces with its conditions as asserts.
+  It rests on the route validation the owner asked for first ("validate the routes at the ways
+  readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
+  each route as a planar line in the SRID of the network when the ways readers read it.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
