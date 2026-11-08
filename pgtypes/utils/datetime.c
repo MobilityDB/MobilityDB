@@ -406,6 +406,25 @@ GetCurrentDateTime(struct pg_tm *tm)
 }
 
 /*
+ * Cache of the current time broken down by #GetCurrentTimeUsec.
+ *
+ * The cache key must include both current time and current timezone.  By
+ * representing the timezone by just a pointer, we're assuming that
+ * distinct timezone settings could never have the same pointer value.
+ * This is true by virtue of the hashtable used inside pg_tzset();
+ * however, it might need another look if we ever allow entries in that
+ * hash to be recycled.
+ * MEOS: per thread (MEOS_TLS), as the session timezone it is read under.
+ * #meos_finalize_timezone recycles the entries of the hash, so
+ * #ClearTimeZoneAbbrevCache, which it calls, invalidates this cache too.
+ */
+static MEOS_TLS TimestampTz cache_ts = 0;
+static MEOS_TLS pg_tz *cache_timezone = NULL;
+static MEOS_TLS struct pg_tm cache_tm;
+static MEOS_TLS fsec_t cache_fsec;
+static MEOS_TLS int  cache_tz;
+
+/*
  * GetCurrentTimeUsec()
  *
  * Get the transaction start time ("now()") broken down as a struct pg_tm,
@@ -422,20 +441,6 @@ void
 GetCurrentTimeUsec(struct pg_tm *tm, fsec_t *fsec, int *tzp)
 {
   TimestampTz cur_ts = GetCurrentTimestamp();
-
-  /*
-   * The cache key must include both current time and current timezone.  By
-   * representing the timezone by just a pointer, we're assuming that
-   * distinct timezone settings could never have the same pointer value.
-   * This is true by virtue of the hashtable used inside pg_tzset();
-   * however, it might need another look if we ever allow entries in that
-   * hash to be recycled.
-   */
-  static TimestampTz cache_ts = 0;
-  static pg_tz *cache_timezone = NULL;
-  static struct pg_tm cache_tm;
-  static fsec_t cache_fsec;
-  static int  cache_tz;
 
   if (cur_ts != cache_ts || session_timezone != cache_timezone)
   {
@@ -3145,11 +3150,13 @@ pg_DecodeTimezoneAbbrev(int field, const char *lowtoken, int *ftype, int *offset
 
 /*
  * Reset tzabbrevcache after a change in session_timezone.
+ * MEOS: and the current time, which is read under that timezone
  */
 void
 ClearTimeZoneAbbrevCache(void)
 {
   memset(tzabbrevcache, 0, sizeof(tzabbrevcache));
+  cache_timezone = NULL;
 }
 
 /* pg_DecodeSpecial()
