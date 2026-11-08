@@ -216,3 +216,50 @@ PyMEOS #88, PyMEOS-CFFI `fd63bcce68`, MobilityAPI `cea483a57e`.
 | PyMEOS | text, WKB, hex WKB for every class; MF-JSON for temporal types; `as_ewkt` for the spatial ones | `tspatial_as_text` for the temporal spatial classes, `*_out` for the others; `Pose` and `Cbuffer` `pose_out` and `cbuffer_out` (hex) | CFFI pointer | no `from_ewkt`, `from_ewkb`, `from_hexewkb`, `as_ewkb`, `as_hexewkb`; `as_text` only on the spatial base types and sets; no `TRgeometry` string constructor, `trgeometry_out` its string |
 | PyMEOS-CFFI | readers take `bytes` and `str` alone (`geo_from_ewkb` also the SRID); every byte buffer returns `bytes` | n/a | n/a | rule 4: `*_as_hexwkb` and `*_as_hexewkb` return `(str, size)`, but for `geo_as_hexewkb`, `pcpoint_as_hexwkb`, `pcpatch_as_hexwkb` |
 | MobilityAPI | MobilityDB SQL: `asMFJSON`, `tgeompointFromMFJSON`, `asBinary`, `ST_AsGeoJSON` | n/a | SQL | its Spark dialect names `temporalAsMfjson` and `tgeompointFromMfjson` |
+
+### Every binding, every format
+
+A binding reaches a format through the names of chapter 18 of the manual
+(`portable_sql_porting_io`), the counterparts of the four functions a PostgreSQL type declares:
+`<type>FromText` and `asText` for the input and output functions, `<type>FromBinary`,
+`<type>FromHexWKB`, `asBinary` and `asHexWKB` for the receive and send functions, their `E` forms
+for a type carrying an SRID, and `<type>FromMFJSON` and `asMFJSON`. Each cell reads whether the
+binding's object layer defines the writer, then how many types it defines the reader for, out of
+the types whose reader MobilityDB's SQL declares; the last column lists the type support functions
+it defines under their C name, which the portable names replace. Rebuilt by `tools/io_matrix.py`
+(MobilityDB #3516) at MobilityDB `6a3f961397`, over each repository's default branch at the commit
+the table names, with the object-layer roots:
+
+```
+io_matrix.py --repo JMEOS=<JMEOS>:jmeos-core/src/main/java/types \
+  --repo MobilitySpark=<MobilitySpark>:src/main \
+  --repo MobilityFlink=<MobilityFlink>:binding/src/main \
+  --repo MobilityKafka=<MobilityKafka>:binding/src/main \
+  --repo GoMEOS=<GoMEOS>:types --repo MEOS.NET=<MEOS.NET>:MEOS.NET/Types \
+  --repo meos-rs=<meos-rs>:src --repo MEOS.js=<MEOS.js>:core/types \
+  --repo MobilityDuck=<MobilityDuck>:src \
+  --repo MobilityNebula=<MobilityNebula>:nes-plugins/MEOS \
+  --repo PyMEOS=<PyMEOS>:pymeos --repo PyMEOS-CFFI=<PyMEOS-CFFI>:pymeos_cffi \
+  --repo MobilityAPI=<MobilityAPI>:. [--check ASSESSMENT.md]
+```
+
+MobilitySpark, MobilityFlink and MobilityKafka commit no surface: their build generates it from
+the catalog and the JMEOS jar (`GENERATION.md` of each), so their rows are measured over the
+checkout their refresh chain leaves. PyMEOS-CFFI is the FFI layer PyMEOS calls, so its names are
+MEOS's C names by design.
+
+| Binding | commit | Text | EWKT | Binary | EWKB | HexWKB | HexEWKB | MFJSON | C-named type support functions |
+|---|---|---|---|---|---|---|---|---|---|
+| JMEOS | `77749f3274` | yes / 0 of 58 | yes / 0 of 30 | **no** / 0 of 59 | yes / 1 of 32 | yes / 50 of 59 | yes / 1 of 32 | yes / 6 of 20 | none |
+| MobilitySpark | `d5b6b90b61` | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) |
+| MobilityFlink | `c83f49db4c` | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) |
+| MobilityKafka | `94a52cd989` | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) | (no generated surface under the roots) |
+| GoMEOS | `4f46e0b834` | yes / 56 of 58 | yes / 30 of 30 | **no** / 0 of 59 | yes / 32 of 32 | yes / 57 of 59 | yes / 32 of 32 | yes / 20 of 20 | 59: `bigintset_in`, `bigintspan_in`, `bigintspanset_in`, `cbuffer_in`, `cbufferset_in`, `dateset_in`, ... |
+| MEOS.NET | `ac275c4bd7` | yes / 56 of 58 | yes / 30 of 30 | **no** / 0 of 59 | yes / 32 of 32 | yes / 57 of 59 | yes / 32 of 32 | yes / 20 of 20 | none |
+| meos-rs | `2b49f27223` | **no** / 0 of 58 | yes / 0 of 30 | **no** / 0 of 59 | **no** / 0 of 32 | yes / 12 of 59 | **no** / 0 of 32 | yes / 4 of 20 | none |
+| MEOS.js | `70fd65c931` | yes / 0 of 58 | yes / 0 of 30 | yes / 6 of 59 | yes / 2 of 32 | yes / 6 of 59 | yes / 2 of 32 | yes / 6 of 20 | none |
+| MobilityDuck | `43811961e9` | yes / 56 of 58 | yes / 29 of 30 | yes / 56 of 59 | yes / 31 of 32 | yes / 58 of 59 | yes / 31 of 32 | yes / 20 of 20 | 53: `bigintset_out`, `bigintspan_out`, `bigintspanset_out`, `cbuffer_out`, `cbufferset_out`, `dateset_out`, ... |
+| MobilityNebula | `d59600219b` | yes / 58 of 58 | yes / 30 of 30 | **no** / 0 of 59 | **no** / 0 of 32 | yes / 59 of 59 | yes / 32 of 32 | yes / 20 of 20 | none |
+| PyMEOS | `246b002178` | yes / 54 of 58 | yes / 7 of 30 | **no** / 0 of 59 | yes / 8 of 32 | yes / 54 of 59 | yes / 8 of 32 | yes / 20 of 20 | none |
+| PyMEOS-CFFI | `a8d4ba1d23` | **no** / 1 of 58 | **no** / 0 of 30 | **no** / 0 of 59 | **no** / 0 of 32 | **no** / 11 of 59 | **no** / 0 of 32 | **no** / 20 of 20 | 109: `bigintset_in`, `bigintset_out`, `bigintspan_in`, `bigintspan_out`, `bigintspanset_in`, `bigintspanset_out`, ... |
+| MobilityAPI | `877643bbe1` | **no** / 0 of 58 | **no** / 0 of 30 | **no** / 0 of 59 | **no** / 0 of 32 | **no** / 0 of 59 | **no** / 0 of 32 | yes / 1 of 20 | none |
