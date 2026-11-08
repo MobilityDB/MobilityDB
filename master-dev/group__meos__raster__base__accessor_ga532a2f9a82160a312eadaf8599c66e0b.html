@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: raquet_pixtype_from_string</title>
+<title>MobilityDB: meospixtype_name</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -85,13 +85,14 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga38a2f2e96977b63c4de2250b59000436.html#ga38a2f2e96977b63c4de2250b59000436">bandstats_min</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gae0f9ec84c53dae95f98748fa234cb9f2.html#gae0f9ec84c53dae95f98748fa234cb9f2">bandstats_stddev</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gaed07f33b89fa23e23935278b2ac92cc7.html#gaed07f33b89fa23e23935278b2ac92cc7">bandstats_sum</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga38b8e37bb4bd6eeaee0b54910149f4a5.html#ga38b8e37bb4bd6eeaee0b54910149f4a5">meospixtype_from_string</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_ga532a2f9a82160a312eadaf8599c66e0b.html#ga532a2f9a82160a312eadaf8599c66e0b">meospixtype_name</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gacdd6d1b79d0edd0a1a71df500d56373f.html#gacdd6d1b79d0edd0a1a71df500d56373f">raquet_band_has_nodata_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga81d9913ceb350ebf928ebd831edec983.html#ga81d9913ceb350ebf928ebd831edec983">raquet_band_nodata_value</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad4de3b8b86a4b73a5f864dbd47bfde8a.html#gad4de3b8b86a4b73a5f864dbd47bfde8a">raquet_band_pixel_type</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga2ca2fc75183c44687bd597a065203b86.html#ga2ca2fc75183c44687bd597a065203b86">raquet_height</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga35911269615c36fdcc6f59532ce62b66.html#ga35911269615c36fdcc6f59532ce62b66">raquet_mem_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gabdd0553e0737b0b27b99d857f3e150df.html#gabdd0553e0737b0b27b99d857f3e150df">raquet_pixels</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__raster__base__accessor_gaf2aecd92bec93e65dc1cf3f3055efb86.html#gaf2aecd92bec93e65dc1cf3f3055efb86">raquet_pixtype_from_string</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d">raquet_pixtype_size</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_ga989559bc1c8da80a36837071d22eedab.html#ga989559bc1c8da80a36837071d22eedab">raquet_quadbin</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__raster__base__accessor_gad1d550458722f56daf1b8a64ec557062.html#gad1d550458722f56daf1b8a64ec557062">raquet_width</a></td></tr>
@@ -117,34 +118,31 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaf2aecd92bec93e65dc1cf3f3055efb86" name="gaf2aecd92bec93e65dc1cf3f3055efb86"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaf2aecd92bec93e65dc1cf3f3055efb86">&#9670;&#160;</a></span>raquet_pixtype_from_string()</h2>
+<a id="ga532a2f9a82160a312eadaf8599c66e0b" name="ga532a2f9a82160a312eadaf8599c66e0b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga532a2f9a82160a312eadaf8599c66e0b">&#9670;&#160;</a></span>meospixtype_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a> raquet_pixtype_from_string </td>
+          <td class="memname">const char * meospixtype_name </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="meos__raster_8h_ab4899fb599b17f4121bb9a377d9dd040.html#ab4899fb599b17f4121bb9a377d9dd040">MeosPixType</a>&#160;</td>
+          <td class="paramname"><em>pixtype</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Return the pixel data type corresponding to a name. </p>
+<p>Return the name the RaQuet specification gives a pixel data type. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> type name: uint8, int8, uint16, int16, uint32, int32, uint64, int64, float16, float32, or float64 </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pixtype</td><td><a class="el" href="structPixel.html" title="A pixel of a raster band.">Pixel</a> data type </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>This is the parser counterpart of <a class="el" href="group__meos__raster__base__accessor_gad4de3b8b86a4b73a5f864dbd47bfde8a.html#gad4de3b8b86a4b73a5f864dbd47bfde8a" title="Return the name of the pixel data type of the band of a Raquet tile.">raquet_band_pixel_type()</a> </dd>
-<dd>
-The name is read without regard to case, so a name written either way carries into the constructors. The name <a class="el" href="group__meos__raster__base__accessor_gad4de3b8b86a4b73a5f864dbd47bfde8a.html#gad4de3b8b86a4b73a5f864dbd47bfde8a" title="Return the name of the pixel data type of the band of a Raquet tile.">raquet_band_pixel_type()</a> returns is the one the RaQuet specification writes, in lower case, so it compares equal to the <code>type</code> field of the tile a file holds </dd>
-<dd>
-The name PostGIS raster gives a pixel type is accepted for the same type, so the band type an <code>ST_BandPixelType</code> call reports carries into the constructors as it stands. Its <code>1BB</code>, <code>2BUI</code> and <code>4BUI</code> bound a pixel to less than a byte while occupying one, so they name a <code>uint8</code> band </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>This reads the name column of the catalog the way <a class="el" href="group__meos__raster__base__accessor_ga3d753a5a1074d72ee5ab110426852f9d.html#ga3d753a5a1074d72ee5ab110426852f9d" title="Return the size in bytes of a single pixel of the given type.">raquet_pixtype_size()</a> reads its size column, so a caller holding a code states the type through the one catalog rather than carrying a second mapping of its own </dd></dl>
 
 </div>
 </div>

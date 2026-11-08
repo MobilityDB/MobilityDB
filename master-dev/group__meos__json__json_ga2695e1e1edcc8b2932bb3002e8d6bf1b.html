@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: null_handle_type_from_string</title>
+<title>MobilityDB: nullhandletype_name</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -83,7 +83,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gacd83f535736acf9bf973725432be6f5c.html#gacd83f535736acf9bf973725432be6f5c">concat_tjsonb_tjsonb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga52c13e718707240ec1955b1fd1e1d62a.html#ga52c13e718707240ec1955b1fd1e1d62a">contains_tjsonb_jsonb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga670f2e9f887ecce14f705978e71ad036.html#ga670f2e9f887ecce14f705978e71ad036">contains_tjsonb_tjsonb</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__json_gaa84c514c05bac5f749a875da390f6540.html#gaa84c514c05bac5f749a875da390f6540">null_handle_type_from_string</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_gae43e512aa7d29c17913a6a03409d0e28.html#gae43e512aa7d29c17913a6a03409d0e28">nullhandletype_from_string</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="group__meos__json__json_ga2695e1e1edcc8b2932bb3002e8d6bf1b.html#ga2695e1e1edcc8b2932bb3002e8d6bf1b">nullhandletype_name</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga24f1507ac9b3019291c0bedffb41732b.html#ga24f1507ac9b3019291c0bedffb41732b">tjson_array_element</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga1394b71c3bc412cd978b0da67cacc5cf.html#ga1394b71c3bc412cd978b0da67cacc5cf">tjson_array_length</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__json__json_ga499ce103af98ba590c98268bf40d5621.html#ga499ce103af98ba590c98268bf40d5621">tjson_extract_path</a></td></tr>
@@ -126,29 +127,31 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="gaa84c514c05bac5f749a875da390f6540" name="gaa84c514c05bac5f749a875da390f6540"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#gaa84c514c05bac5f749a875da390f6540">&#9670;&#160;</a></span>null_handle_type_from_string()</h2>
+<a id="ga2695e1e1edcc8b2932bb3002e8d6bf1b" name="ga2695e1e1edcc8b2932bb3002e8d6bf1b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga2695e1e1edcc8b2932bb3002e8d6bf1b">&#9670;&#160;</a></span>nullhandletype_name()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="meos__json_8h_a5119ad52984dc87fea22d7c0f78e7f59.html#a5119ad52984dc87fea22d7c0f78e7f59">nullHandleType</a> null_handle_type_from_string </td>
+          <td class="memname">const char * nullhandletype_name </td>
           <td>(</td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>str</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="meos__json_8h_a5119ad52984dc87fea22d7c0f78e7f59.html#a5119ad52984dc87fea22d7c0f78e7f59">nullHandleType</a>&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get a nullHandleType value from a string. </p>
+<p>Return the name of the handling of a SQL NULL: <code>invalid_value</code>, <code>raise_exception</code>, <code>use_json_null</code>, <code>delete_key</code> or <code>return_null</code> </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">str</td><td>String </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">type</td><td>Handling of a SQL NULL </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section note"><dt>Note</dt><dd>This is the counterpart of <a class="el" href="group__meos__json__json_gae43e512aa7d29c17913a6a03409d0e28.html#gae43e512aa7d29c17913a6a03409d0e28" title="Return the handling of a SQL NULL corresponding to its name.">nullhandletype_from_string()</a> </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>On error return NULL </dd></dl>
 
 </div>
 </div>
