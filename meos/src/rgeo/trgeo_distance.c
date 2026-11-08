@@ -764,10 +764,15 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
       least = fmin(least, convex_motion_nad_exact(ops->refxy, ops->nref,
         pose1->data, pose2->data, ops->parts[j].xy, ops->parts[j].npts));
     int min = -1;
+    bool reached = false;
     for (int j = first; j < last; j++)
     {
       if (values[j] == ops->level)
+      {
+        /* The walk has put the least distance on a crossing of the level */
+        reached |= (values[j] == least);
         continue;
+      }
       if (values[j] < least)
       {
         values[j] = least;
@@ -776,7 +781,7 @@ dist_seq_least(const DistOps *ops, const TSequence *seq, TSequence *dist)
       if (min < 0 || values[j] < values[min])
         min = j;
     }
-    if (min < 0 || values[min] == least)
+    if (reached || min < 0 || values[min] == least)
       continue;
     double end1 = DBL_MAX, end2 = DBL_MAX;
     for (int j = 0; j < ops->nparts; j++)
@@ -933,6 +938,58 @@ dist_temporal(const DistOps *ops, const Temporal *temp1, const Temporal *temp2)
  * distance at each time, which the threshold functions such as
  * #tdwithin_trgeometry_geo() need.
  */
+/**
+ * @brief Set the operands of the distance between a temporal rigid geometry
+ * and a nonempty geometry
+ * @return False, with an error, if the body or a part of the geometry is not
+ * one the walk reads, see #dist_ref_body() and #dist_geo_parts()
+ */
+static bool
+dist_geo_ops_set(DistOps *ops, const Temporal *temp, const GSERIALIZED *gs,
+  double level)
+{
+  memset(ops, 0, sizeof(DistOps));
+  ops->ref1 = trgeometry_geom_p(temp);
+  ops->gs = gs;
+  ops->level = level;
+  if (! dist_ref_body(ops->ref1, &ops->body1))
+    return false;
+  ops->parts = dist_geo_parts(gs, &ops->nparts);
+  if (! ops->parts)
+  {
+    distrefpoly_free(&ops->body1);
+    return false;
+  }
+  /* The reference geometry is a polygon, see dist_ref_body() */
+  LWGEOM *ref = lwgeom_from_gserialized(ops->ref1);
+  const POINTARRAY *ring = lwgeom_as_lwpoly(ref)->rings[0];
+  DistPart body;
+  dist_part_points(&body, ring, 0, (int) ring->npoints - 1);
+  lwgeom_free(ref);
+  ops->refxy = body.xy;
+  ops->nref = body.npts;
+  return true;
+}
+
+/**
+ * @brief Free the operands that #dist_geo_ops_set() sets
+ */
+static void
+dist_geo_ops_free(DistOps *ops)
+{
+  pfree(ops->refxy);
+  dist_parts_free(ops->parts, ops->nparts);
+  distrefpoly_free(&ops->body1);
+}
+
+/**
+ * @brief Return the temporal distance between a temporal rigid geometry and
+ * a geometry
+ * @param[in] level Distance whose crossings are instants of the result, or a
+ * negative value.  Then the result is on the same side of @p level as the
+ * distance at each time, which the threshold functions such as
+ * #tdwithin_trgeometry_geo() need.
+ */
 Temporal *
 tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   double level)
@@ -943,33 +1000,14 @@ tdistance_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
   if (gserialized_is_empty(gs))
     return NULL;
   DistOps ops;
-  memset(&ops, 0, sizeof(DistOps));
-  ops.ref1 = trgeometry_geom_p(temp);
-  ops.gs = gs;
-  ops.level = level;
-  if (! dist_ref_body(ops.ref1, &ops.body1))
+  if (! dist_geo_ops_set(&ops, temp, gs, level))
     return NULL;
-  ops.parts = dist_geo_parts(gs, &ops.nparts);
-  Temporal *result = NULL;
-  if (ops.parts)
-  {
-    /* The reference geometry is a polygon, see dist_ref_body() */
-    LWGEOM *ref = lwgeom_from_gserialized(ops.ref1);
-    const POINTARRAY *ring = lwgeom_as_lwpoly(ref)->rings[0];
-    DistPart body;
-    dist_part_points(&body, ring, 0, (int) ring->npoints - 1);
-    lwgeom_free(ref);
-    ops.refxy = body.xy;
-    ops.nref = body.npts;
-    /* An error raised for one of the instants makes the answer NULL, as the
-     * entry functions of lifting.c answer it */
-    int last_errno = meos_errno_reset();
-    result = (Temporal *) lifting_result(dist_temporal(&ops, temp, NULL),
-      last_errno);
-    pfree(ops.refxy);
-    dist_parts_free(ops.parts, ops.nparts);
-  }
-  distrefpoly_free(&ops.body1);
+  /* An error raised for one of the instants makes the answer NULL, as the
+   * entry functions of lifting.c answer it */
+  int last_errno = meos_errno_reset();
+  Temporal *result = (Temporal *) lifting_result(dist_temporal(&ops, temp,
+    NULL), last_errno);
+  dist_geo_ops_free(&ops);
   return result;
 }
 
@@ -1147,6 +1185,116 @@ dist_ever_seq(const DistOps *ops, const TSequence *seq1,
         TSEQUENCE_INST_N(seq2, seq2->count - 1)) <= dist)
     result = 1;
   return result;
+}
+
+/**
+ * @brief Return 1 if a sequence of a temporal rigid geometry is ever within
+ * @p dist of the static geometry of @p ops, 0 if not, -1 if the walk fails
+ * @details The answer is that of the minimum of the distance #dist_seq()
+ * gives.  Without linear interpolation, its values are the distances at the
+ * instants.  With it, a segment that the center of the body keeps apart from
+ * a part, see #dist_segm_apart(), has no value within @p dist for that part.
+ * In a segment where the body does not turn, the least distance to a part is
+ * their nearest approach, the double nearest its exact value
+ * (#convex_motion_nad_exact), which #dist_seq_least() gives the distance, the
+ * ends of the segment included, and at the distance 0 it is 0 where they
+ * meet (#convex_motion_meet_exact).  A segment where the body turns needs the
+ * walk, and then #dist_seq() gives the distance of the sequence.
+ */
+static int
+dist_ever_seq_geo(const DistOps *ops, const TSequence *seq, double dist)
+{
+  if (seq->count == 1 || ! MEOS_FLAGS_LINEAR_INTERP(seq->flags))
+  {
+    for (int i = 0; i < seq->count; i++)
+      if (dist_instant(ops, TSEQUENCE_INST_N(seq, i), NULL) <= dist)
+        return 1;
+    return 0;
+  }
+  bool turns = false;
+  for (int i = 0; i < seq->count - 1; i++)
+  {
+    const Pose *pose1 = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq,
+      i)));
+    const Pose *pose2 = DatumGetPoseP(tinstant_value_p(TSEQUENCE_INST_N(seq,
+      i + 1)));
+    bool still = (pose1->data[2] == 0.0 && pose2->data[2] == 0.0);
+    DistMotion ma;
+    dist_segmotion(&ma, seq, i, true);
+    for (int k = 0; k < ops->nparts; k++)
+    {
+      DistSegm dseg;
+      distsegm_set(&dseg, &ma, &ops->parts[k].motion);
+      if (dist_segm_apart(&dseg, &ops->body1, &ops->parts[k].body, dist))
+        continue;
+      if (! still)
+      {
+        turns = true;
+        break;
+      }
+      /* At the distance 0 the question is whether they meet */
+      if (dist == 0.0 ?
+          convex_motion_meet_exact(ops->refxy, ops->nref, pose1->data,
+            pose2->data, ops->parts[k].xy, ops->parts[k].npts) :
+          convex_motion_nad_exact(ops->refxy, ops->nref, pose1->data,
+            pose2->data, ops->parts[k].xy, ops->parts[k].npts) <= dist)
+        return 1;
+    }
+  }
+  if (! turns)
+    return 0;
+  Temporal *tdist = dist_seq(ops, seq, NULL);
+  if (! tdist)
+    return -1;
+  int result = (DatumGetFloat8(temporal_min_value(tdist)) <= dist) ? 1 : 0;
+  pfree(tdist);
+  return result;
+}
+
+/**
+ * @brief Return 1 if a temporal rigid geometry and a geometry are ever within
+ * a distance, 0 if not, -1 on error
+ * @details The answer is that of the minimum of their temporal distance, as
+ * #tdistance_trgeometry_geo_intl() gives it, read sequence by sequence until
+ * the first one within @p dist, see #dist_ever_seq_geo().
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @param[in] dist Distance
+ * @pre The arguments are valid and planar, as the external entry tests
+ * them
+ */
+int
+edwithin_trgeometry_geo_intl(const Temporal *temp, const GSERIALIZED *gs,
+  double dist)
+{
+  assert(temp); assert(gs); assert(ensure_valid_trgeometry_geo(temp, gs));
+  assert(dist >= 0.0);
+  assert(! MEOS_FLAGS_GET_Z(temp->flags));
+  /* An empty geometry has no distance to a temporal value */
+  if (gserialized_is_empty(gs))
+    return -1;
+  DistOps ops;
+  if (! dist_geo_ops_set(&ops, temp, gs, -1.0))
+    return -1;
+  /* An error raised for one of the instants makes the answer -1, as the
+   * temporal distance is then NULL */
+  int last_errno = meos_errno_reset();
+  int result;
+  assert(temptype_subtype(temp->subtype));
+  if (temp->subtype == TINSTANT)
+    result = (dist_instant(&ops, (const TInstant *) temp, NULL) <= dist) ?
+      1 : 0;
+  else if (temp->subtype == TSEQUENCE)
+    result = dist_ever_seq_geo(&ops, (const TSequence *) temp, dist);
+  else /* TSEQUENCESET */
+  {
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    result = 0;
+    for (int i = 0; i < ss->count && result == 0; i++)
+      result = dist_ever_seq_geo(&ops, TSEQUENCESET_SEQ_N(ss, i), dist);
+  }
+  dist_geo_ops_free(&ops);
+  return lifting_result_int(result, last_errno);
 }
 
 /**

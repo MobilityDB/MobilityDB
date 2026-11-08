@@ -78,3 +78,87 @@ SELECT tDwithin(
  [t@Mon Jan 01 00:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]
 (1 row)
 
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 07:12:00 2001 PST, t@Mon Jan 01 14:24:00 2001 PST], (f@Mon Jan 01 14:24:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tIntersects(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 07:12:00 2001 PST, t@Mon Jan 01 14:24:00 2001 PST], (f@Mon Jan 01 14:24:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+                            tintersects                             
+--------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+                                                                             tintersects                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 09:36:00 2001 PST, t@Mon Jan 01 14:24:00 2001 PST], (f@Mon Jan 01 14:24:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 07:12:00 2001 PST, f@Mon Jan 01 14:24:00 2001 PST], (t@Mon Jan 01 14:24:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 07:12:00 2001 PST, f@Mon Jan 01 14:24:00 2001 PST], (t@Mon Jan 01 14:24:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 5,6 5,6 6,5 6,5 5))');
+                             tdisjoint                              
+--------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tDisjoint(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(10 0),0)@2001-01-01,Pose(Point(0 0),0)@2001-01-02]');
+                                                                              tdisjoint                                                                               
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, f@Mon Jan 01 09:36:00 2001 PST, f@Mon Jan 01 14:24:00 2001 PST], (t@Mon Jan 01 14:24:00 2001 PST, t@Tue Jan 02 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tIntersects(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))') = tDwithin(trgeometry 'Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))', 0.0);
+ ?column? 
+----------
+ t
+(1 row)
+
+SELECT tIntersects(trgeometry 'Polygon((-4 -4,4 -4,-2 2,-4 -4));[Pose(Point(-1 2),0)@2001-01-01,Pose(Point(2 -1),0)@2001-01-02,Pose(Point(8 -7),0)@2001-01-03]', geometry 'Point(1.5 -0.5)');
+                                                             tintersects                                                              
+--------------------------------------------------------------------------------------------------------------------------------------
+ {[t@Mon Jan 01 00:00:00 2001 PST, t@Tue Jan 02 06:00:00 2001 PST], (f@Tue Jan 02 06:00:00 2001 PST, f@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT round(tDistance(trgeometry 'Polygon((-4 -4,4 -4,-2 2,-4 -4));[Pose(Point(-1 2),0)@2001-01-01,Pose(Point(2 -1),0)@2001-01-02,Pose(Point(8 -7),0)@2001-01-03]', geometry 'Point(1.5 -0.5)'), 6);
+                                                  round                                                  
+---------------------------------------------------------------------------------------------------------
+ [0@Mon Jan 01 00:00:00 2001 PST, 0@Tue Jan 02 06:00:00 2001 PST, 6.363961@Wed Jan 03 00:00:00 2001 PST]
+(1 row)
+
+SELECT tDwithin(trgeometry 'Polygon((-3 0,3 -4,-3 3,-3 0));[Pose(Point(0 -3),0)@2001-01-01,Pose(Point(4 1),0)@2001-01-02,Pose(Point(0 1),0)@2001-01-03]', geometry 'Point(0 0)', 0.0);
+                                                                                                  tdwithin                                                                                                   
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ {[f@Mon Jan 01 00:00:00 2001 PST, t@Mon Jan 01 09:41:32.307692 2001 PST, t@Mon Jan 01 18:00:00 2001 PST], (f@Mon Jan 01 18:00:00 2001 PST, t@Tue Jan 02 15:00:00 2001 PST, t@Wed Jan 03 00:00:00 2001 PST]}
+(1 row)
+
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+                           tintersects                            
+------------------------------------------------------------------
+ [f@Mon Jan 01 00:00:00 2001 PST, f@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]', geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))') = tIntersects(trgeometry 'Interp=Step;Polygon((0 0,2 0,2 2,0 2,0 0));[Pose(Point(0 0),0)@2001-01-01,Pose(Point(10 0),0)@2001-01-02]'::tgeometry, geometry 'Polygon((5 0,6 0,6 1,5 1,5 0))');
+ ?column? 
+----------
+ t
+(1 row)
+

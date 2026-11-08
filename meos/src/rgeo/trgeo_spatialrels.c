@@ -53,6 +53,7 @@
 #include "rgeo/trgeo.h"
 #include "rgeo/trgeo_distance.h"
 #include "rgeo/trgeo_spatialfuncs.h"
+#include "rgeo/trgeo_spatialrels.h"
 
 /*****************************************************************************
  * Generic ever/always spatial relationship functions
@@ -372,8 +373,13 @@ ea_disjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool eve
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
   if (ever)
+  {
+    /* A body in linear motion is ever disjoint unless it is always in contact */
+    if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
+      return INVERT_RESULT(ea_dwithin_trgeometry_geo(temp, gs, 0.0, ALWAYS));
     return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_disjoint2d,
       EVER);
+  }
   /* aDisjoint(trgeo, geo) ≡ NOT eIntersects(trgeo, geo) */
   return INVERT_RESULT(eintersects_trgeometry_geo(temp, gs));
 }
@@ -429,6 +435,11 @@ ea_disjoint_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp, bool eve
 int
 ea_disjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, bool ever)
 {
+  /* See #ea_intersects_trgeometry_trgeometry */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+    return INVERT_RESULT(ea_dwithin_trgeometry_trgeometry(temp1, temp2, 0.0,
+      ! ever));
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_ne, ever);
 }
 
@@ -477,6 +488,10 @@ ea_intersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, bool e
 {
   if (! ensure_valid_trgeometry_geo(temp, gs) )
     return -1;
+  /* A body in linear motion meets a geometry between its poses as well, where
+   * the temporal distance reaches zero */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
+    return ea_dwithin_trgeometry_geo(temp, gs, 0.0, ever);
   return ea_spatialrel_trgeometry_poses_geo(temp, gs, &datum_geom_intersects2d,
     ever);
 }
@@ -534,6 +549,11 @@ int
 ea_intersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
   bool ever)
 {
+  /* Two bodies of which one moves linearly meet between their poses as well,
+   * where their temporal distance reaches zero */
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+    return ea_dwithin_trgeometry_trgeometry(temp1, temp2, 0.0, ever);
   return ea_spatialrel_tspatial_tspatial(temp1, temp2, &datum2_point_eq, ever);
 }
 
@@ -687,8 +707,11 @@ ea_dwithin_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs, double di
       ! ensure_has_not_Z(temp->temptype, temp->flags) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return -1;
-  return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, ever ? -1.0 : dist),
-    dist, ever);
+  /* The ever semantics stops at the first distance within the bound */
+  if (ever)
+    return edwithin_trgeometry_geo_intl(temp, gs, dist);
+  return ea_dwithin_tdist(tdistance_trgeometry_geo_intl(temp, gs, dist), dist,
+    ever);
 }
 
 /**
@@ -782,6 +805,167 @@ adwithin_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2, dou
   if (! ensure_finite(dist))
     return -1;
   return ea_dwithin_trgeometry_trgeometry(temp1, temp2, dist, ALWAYS);
+}
+
+/*****************************************************************************/
+
+/*****************************************************************************
+ * Temporal disjoint and intersects
+ *****************************************************************************/
+
+/**
+ * @brief Return a temporal Boolean that states whether a temporal rigid
+ * geometry and a geometry intersect or are disjoint
+ * @details A body in linear motion moves between its instants, which a temporal
+ * geometry cannot state, so the answer is that of its temporal distance, which
+ * has an instant at each time at which it reaches zero. The other interpolations
+ * hold their value between the instants and are those of the temporal geometry
+ * the body traces.
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @param[in] disjoint True for disjoint, false for intersects
+ */
+static Temporal *
+tinterrel_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs,
+  bool disjoint)
+{
+  if (! ensure_valid_trgeometry_geo(temp, gs))
+    return NULL;
+  if (MEOS_FLAGS_LINEAR_INTERP(temp->flags) && ! gserialized_is_empty(gs))
+  {
+    Temporal *within = tdwithin_trgeometry_geo(temp, gs, 0.0);
+    if (! disjoint || ! within)
+      return within;
+    Temporal *result = tnot_tbool(within);
+    pfree(within);
+    return result;
+  }
+  Temporal *tgeo = trgeometry_to_tgeometry(temp);
+  if (! tgeo)
+    return NULL;
+  Temporal *result = disjoint ? tdisjoint_tgeo_geo(tgeo, gs) :
+    tintersects_tgeo_geo(tgeo, gs);
+  pfree(tgeo);
+  return result;
+}
+
+/**
+ * @brief Return a temporal Boolean that states whether two temporal rigid
+ * geometries intersect or are disjoint
+ * @details See #tinterrel_trgeometry_geo
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @param[in] disjoint True for disjoint, false for intersects
+ */
+static Temporal *
+tinterrel_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2,
+  bool disjoint)
+{
+  if (! ensure_valid_trgeometry_trgeometry(temp1, temp2))
+    return NULL;
+  if (MEOS_FLAGS_LINEAR_INTERP(temp1->flags) ||
+      MEOS_FLAGS_LINEAR_INTERP(temp2->flags))
+  {
+    Temporal *within = tdwithin_trgeometry_trgeometry(temp1, temp2, 0.0);
+    if (! disjoint || ! within)
+      return within;
+    Temporal *result = tnot_tbool(within);
+    pfree(within);
+    return result;
+  }
+  Temporal *tgeo1 = trgeometry_to_tgeometry(temp1);
+  Temporal *tgeo2 = tgeo1 ? trgeometry_to_tgeometry(temp2) : NULL;
+  if (! tgeo2)
+  {
+    if (tgeo1)
+      pfree(tgeo1);
+    return NULL;
+  }
+  Temporal *result = disjoint ? tdisjoint_tgeo_tgeo(tgeo1, tgeo2) :
+    tintersects_tgeo_tgeo(tgeo1, tgeo2);
+  pfree(tgeo1); pfree(tgeo2);
+  return result;
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether a geometry and a
+ * temporal rigid geometry are disjoint
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Tdisjoint_geo_trgeometry()
+ */
+Temporal *
+tdisjoint_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return tinterrel_trgeometry_geo(temp, gs, true);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal rigid
+ * geometry and a geometry are disjoint
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @csqlfn #Tdisjoint_trgeometry_geo()
+ */
+Temporal *
+tdisjoint_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return tinterrel_trgeometry_geo(temp, gs, true);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether two temporal rigid
+ * geometries are disjoint
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @csqlfn #Tdisjoint_trgeometry_trgeometry()
+ */
+Temporal *
+tdisjoint_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
+{
+  return tinterrel_trgeometry_trgeometry(temp1, temp2, true);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether a geometry and a
+ * temporal rigid geometry intersect
+ * @param[in] gs Geometry
+ * @param[in] temp Temporal rigid geometry
+ * @csqlfn #Tintersects_geo_trgeometry()
+ */
+Temporal *
+tintersects_geo_trgeometry(const GSERIALIZED *gs, const Temporal *temp)
+{
+  return tinterrel_trgeometry_geo(temp, gs, false);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether a temporal rigid
+ * geometry and a geometry intersect
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] gs Geometry
+ * @csqlfn #Tintersects_trgeometry_geo()
+ */
+Temporal *
+tintersects_trgeometry_geo(const Temporal *temp, const GSERIALIZED *gs)
+{
+  return tinterrel_trgeometry_geo(temp, gs, false);
+}
+
+/**
+ * @ingroup meos_rgeo_rel_temp
+ * @brief Return a temporal Boolean that states whether two temporal rigid
+ * geometries intersect
+ * @param[in] temp1,temp2 Temporal rigid geometries
+ * @csqlfn #Tintersects_trgeometry_trgeometry()
+ */
+Temporal *
+tintersects_trgeometry_trgeometry(const Temporal *temp1, const Temporal *temp2)
+{
+  return tinterrel_trgeometry_trgeometry(temp1, temp2, false);
 }
 
 /*****************************************************************************/

@@ -53,6 +53,8 @@
 #include <string.h>
 /* PostgreSQL */
 #include <varatt.h>
+/* MEOS */
+#include "npoint/tnpoint.h"
 
 /* Bytes of route geometries the cache holds */
 #define WAYS_CACHE_GEOM_BYTES (8 * 1024 * 1024)
@@ -91,6 +93,9 @@ struct WaysCache
   int32 head;               /**< Entry used most recently */
   int32 tail;               /**< Entry used least recently */
   size_t geombytes;         /**< Bytes of the geometries held */
+  bool hassrid;             /**< True when a route was read */
+  int32_t srid;             /**< SRID of the routes read, which every route
+                                 of the network shares */
 };
 
 /*****************************************************************************/
@@ -310,6 +315,28 @@ ways_cache_free(WaysCache *cache)
 }
 
 /**
+ * @brief Return true when the geometry of a route read from the ways network
+ * is valid, and otherwise free it and return false
+ * @details Every route of the network shares the SRID of the first route the
+ * cache reads, as #npoint_srid presupposes
+ */
+static bool
+ways_cache_route_valid(WaysCache *cache, ways_record *rec)
+{
+  int32_t srid = cache->hassrid ? cache->srid :
+    gserialized_get_srid(rec->the_geom);
+  if (! ensure_valid_route(rec->the_geom, srid))
+  {
+    pfree(rec->the_geom);
+    rec->the_geom = NULL;
+    return false;
+  }
+  cache->hassrid = true;
+  cache->srid = srid;
+  return true;
+}
+
+/**
  * @brief Return in the last argument the record of a route, read from the
  * ways cache or else from the ways network, and return false when there is
  * no such route
@@ -331,7 +358,7 @@ ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid,
   int32 pos = any_gid ? cache->head : ways_cache_find(cache, gid);
   if (pos == WAYS_CACHE_NONE)
   {
-    if (! fetch(gid, any_gid, rec))
+    if (! fetch(gid, any_gid, rec) || ! ways_cache_route_valid(cache, rec))
       return false;
     /* Asked for any route, the network may answer one already there */
     pos = any_gid ? ways_cache_find(cache, rec->gid) : WAYS_CACHE_NONE;
@@ -345,7 +372,7 @@ ways_cache_lookup(WaysCache *cache, int64 gid, bool any_gid,
   else if (! cache->entries[pos].the_geom)
   {
     /* The entry is there but its geometry was released */
-    if (! fetch(gid, false, rec))
+    if (! fetch(gid, false, rec) || ! ways_cache_route_valid(cache, rec))
       return false;
     ways_cache_set_geom(cache, pos, rec->the_geom);
   }
