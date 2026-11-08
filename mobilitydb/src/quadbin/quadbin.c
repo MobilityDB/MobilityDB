@@ -36,10 +36,11 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+#include <pgtypes.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_quadbin.h>
+#include "temporal/type_util.h"
 #include "quadbin/quadbin.h"
 #include "pg_temporal/temporal.h"
 
@@ -131,29 +132,37 @@ PGDLLEXPORT Datum Quadbin_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Quadbin_recv);
 /**
  * @ingroup mobilitydb_quadbin_base_inout
- * @brief Receive a quadbin value over the binary wire protocol
+ * @brief Return a quadbin from its Well-Known Binary (WKB) representation,
+ * as #Span_recv reads a span
+ * @sqlfn quadbin_recv()
  */
 Datum
 Quadbin_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_QUADBIN(bigint_to_quadbin(pq_getmsgint64(buf)));
+  Quadbin result = quadbin_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_QUADBIN(result);
 }
 
 PGDLLEXPORT Datum Quadbin_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Quadbin_send);
 /**
  * @ingroup mobilitydb_quadbin_base_inout
- * @brief Send a quadbin value over the binary wire protocol
+ * @brief Return the Well-Known Binary (WKB) representation of a quadbin, as
+ * #Tbox_send writes a box carrying no SRID
+ * @sqlfn quadbin_send()
  */
 Datum
 Quadbin_send(PG_FUNCTION_ARGS)
 {
   Quadbin cell = PG_GETARG_QUADBIN(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint64(&buf, (int64) cell);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  size_t wkb_size;
+  uint8_t *wkb = quadbin_as_wkb(cell, 0, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************

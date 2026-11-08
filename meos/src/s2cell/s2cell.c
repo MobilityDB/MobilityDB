@@ -1340,7 +1340,7 @@ s2cell_in(const char *str)
  * @brief Return an S2 cell from a 64-bit integer, raising an error when the
  * integer encodes no cell
  * @param[in] i Integer
- * @csqlfn #Bigint_to_s2cell(), #S2cell_recv()
+ * @csqlfn #Bigint_to_s2cell()
  */
 S2CellId
 bigint_to_s2cell(int64 i)
@@ -1384,7 +1384,7 @@ s2cell_out(S2CellId cell, size_t *size_out)
  * @brief Return a S2 cell from its Well-Known Binary (WKB) representation
  * @param[in] wkb WKB string
  * @param[in] size Size of the string
- * @csqlfn #S2cell_from_wkb()
+ * @csqlfn #S2cell_from_wkb(), #S2cell_recv()
  */
 S2CellId
 s2cell_from_wkb(const uint8_t *wkb, size_t size)
@@ -1416,7 +1416,7 @@ s2cell_from_hexwkb(const char *hexwkb)
  * @param[in] cell Cell
  * @param[in] variant Output variant
  * @param[out] size_out Size of the output
- * @csqlfn #S2cell_as_wkb()
+ * @csqlfn #S2cell_as_wkb(), #S2cell_send()
  */
 uint8_t *
 s2cell_as_wkb(S2CellId cell, uint8_t variant, size_t *size_out)

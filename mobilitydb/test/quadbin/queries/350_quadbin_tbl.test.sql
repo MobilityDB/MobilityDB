@@ -40,6 +40,11 @@ CREATE TABLE tbl_quadbin_tmp AS TABLE tbl_quadbin WITH NO DATA;
 SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin_tmp t2 WHERE t1.k = t2.k AND t1.qb <> t2.qb;
 DROP TABLE tbl_quadbin_tmp;
 
+-- The send function writes the Well-Known Binary that asBinary writes
+SELECT COUNT(*) FILTER (WHERE quadbin_send(qb) = asBinary(qb)) AS same,
+  COUNT(*) FILTER (WHERE quadbin_send(qb) <> asBinary(qb)) AS different
+FROM tbl_quadbin;
+
 -------------------------------------------------------------------------------
 -- Validity predicates
 -------------------------------------------------------------------------------
