@@ -1,4 +1,4 @@
-<html><head><meta charset="UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s07.html" title="Planar and Geodetic Computations"><link rel="next" href="ch08s09.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s07.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><p>Operands of different dimensions read the dimensions both of them have, see <a class="xref" href="ch08s03.html" title="Operands of Different Dimensions">the section called “Operands of Different Dimensions”</a>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7313"></a><a class="indexterm" name="id7316"></a><p>Ever or always contains</p><pre class="programlisting">
+<html><head><meta charset="UTF-8"><title>Ever and Always Relationships</title><link rel="stylesheet" type="text/css" href="docbook.css"><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot"><link rel="home" href="index.html" title="MobilityDB 1.4 User's Manual"><link rel="up" href="ch08.html" title="Chapter 8. Temporal Geometry Types (Part 2)"><link rel="prev" href="ch08s07.html" title="Planar and Geodetic Computations"><link rel="next" href="ch08s09.html" title="Spatiotemporal Relationships"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Ever and Always Relationships</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="ch08s07.html">Prev</a> </td><th width="60%" align="center">Chapter 8. Temporal Geometry Types (Part 2)</th><td width="20%" align="right"> <a accesskey="n" href="ch08s09.html">Next</a></td></tr></table><hr></div><div class="sect1"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a name="tgeo_everalways_rels"></a>Ever and Always Relationships</h2></div></div></div><p>Operands of different dimensions read the dimensions both of them have, see <a class="xref" href="ch08s03.html" title="Operands of Different Dimensions">the section called “Operands of Different Dimensions”</a>.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="tgeo_eContains"></a><a class="indexterm" name="id7314"></a><a class="indexterm" name="id7317"></a><p>Ever or always contains</p><pre class="programlisting">
 eContains({geometry,tgeom},{geometry,tgeom}) → boolean
 aContains({geometry,tgeom},{geometry,tgeom}) → boolean
 </pre><p>This function returns true if the temporal geometry and the geometry ever or always intersect at their interior. Recall that a geometry does not contain things in its boundary and thus, polygons and lines do not contain lines and points lying in their boundary. Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> function in PostGIS.</p><pre class="programlisting">
@@ -14,7 +14,7 @@ SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eContains(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7325"></a><a class="indexterm" name="id7328"></a><p>Ever or always covers</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eCovers"></a><a class="indexterm" name="id7326"></a><a class="indexterm" name="id7329"></a><p>Ever or always covers</p><pre class="programlisting">
 eCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 aCovers({geometry,tgeom},{geometry,tgeom}) → boolean
 </pre><p>Please refer to the documentation of the <a class="ulink" href="https://postgis.net/docs/ST_Contains.html" target="_top">ST_Contains</a> and the <a class="ulink" href="https://postgis.net/docs/ST_Covers.html" target="_top">ST_Covers</a> function in PostGIS for detailed explanations about the difference between the two functions.</p><pre class="programlisting">
@@ -30,7 +30,7 @@ SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
 SELECT eCovers(geometry 'Polygon((1 1,1 3,3 3,3 1,1 1))',
   tgeometry '[Linestring(1 1,4 4)@2001-01-01, Point(3 3)@2001-01-04]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7338"></a><a class="indexterm" name="id7341"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDisjoint"></a><a class="indexterm" name="id7339"></a><a class="indexterm" name="id7342"></a><p>Is ever or always disjoint <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDisjoint({geo,tgeo},{geo,tgeo}) → boolean
@@ -42,14 +42,14 @@ SELECT eDisjoint(geometry 'Polygon((0 0,0 1,1 1,1 0,0 0))',
 SELECT eDisjoint(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeometry '[Linestring(1 1 1,2 2 2)@2001-01-01, Point(2 2 2)@2001-01-03]');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7362"></a><a class="indexterm" name="id7365"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+</pre></li><li class="listitem"><a name="tgeo_eDwithin"></a><a class="indexterm" name="id7363"></a><a class="indexterm" name="id7366"></a><p>Is ever or always at distance within <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eDwithin({geo,tgeo},{geo,tgeo},float) → boolean
 aDwithin({geometry,tgeom},{geometry,tgeom},float) → boolean
 eDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
-aDwithin(tgeog,tgeog,float,spheroid boolean=true) → boolean
-</pre><p>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used.</p><pre class="programlisting">
+aDwithin({geography,tgeog},{geography,tgeog},float,spheroid boolean=true) → boolean
+</pre><p>For geographies, the computation is done on the WGS 84 spheroid by default. If the last argument is false, a faster spherical calculation is used. Geographies are supported as stated in <a class="xref" href="ch08s07.html" title="Planar and Geodetic Computations">the section called “Planar and Geodetic Computations”</a>, so <code class="varname">aDwithin</code> of a temporal geography point with linear interpolation and a geography other than a point raises an error.</p><pre class="programlisting">
 SELECT eDwithin(geometry 'Point(1 1 1)',
   tgeompoint '[Point(0 0 0)@2001-01-01, Point(1 1 0)@2001-01-02]', 1);
 -- true
@@ -62,7 +62,10 @@ SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
 SELECT eDwithin(tgeogpoint '[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]',
   geography 'Point(0 0)', 110800, false);
 -- false
-</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7387"></a><a class="indexterm" name="id7390"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
+SELECT aDwithin(tgeogpoint 'Interp=Step;[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]',
+  geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
+-- true
+</pre></li><li class="listitem"><a name="tgeo_eIntersects"></a><a class="indexterm" name="id7390"></a><a class="indexterm" name="id7393"></a><p>Ever or always intersects <span class="inlinemediaobject"><img src="images/cube.svg" width="13"></span>
  <span class="inlinemediaobject"><img src="images/world.svg" width="13"></span>
 </p><pre class="programlisting">
 eIntersects({geo,tgeo},{geo,tgeo}) → boolean
@@ -74,7 +77,7 @@ SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 0,1 1 0,1 0 0,0 0 0))',
 SELECT eIntersects(geometry 'Polygon((0 0 0,0 1 1,1 1 1,1 0 0,0 0 0))',
   tgeompoint '[Point(0 0 1)@2001-01-01, Point(1 1 1)@2001-01-03)');
 -- true
-</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7411"></a><a class="indexterm" name="id7414"></a><p>Ever or always touches</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="tgeo_eTouches"></a><a class="indexterm" name="id7414"></a><a class="indexterm" name="id7417"></a><p>Ever or always touches</p><pre class="programlisting">
 eTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 aTouches({geometry,tgeom},{geometry,tgeom}) → boolean
 </pre><pre class="programlisting">
