@@ -390,7 +390,7 @@ int main(void)
     }
     /* Compute the distance outside Brussels Region */
     Temporal *minusgeom = tpoint_minus_geom(trip_rec.trip,
-      brussels_region.geom, NULL);
+      brussels_region.geom);
     if (minusgeom)
     {
       d = tpoint_length(minusgeom, true) / 1000;

@@ -48,6 +48,7 @@
 #include <time.h>
 #include <string.h>
 #include <meos.h>
+#include <pg_timestamp.h>
 
 #define MAX_NUM_INSTS 1000000
 /* Number of instants in a batch for printing a marker */
