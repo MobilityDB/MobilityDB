@@ -98,6 +98,7 @@
 /* PostgreSQL */
 #include <postgres.h>
 #include <varatt.h>
+#include <common/int.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_pose.h>
@@ -1125,34 +1126,44 @@ geopose_anchor_rotation(const GeoPoseAnchor *anchor, double lat_rad,
 /* A GeoPose_Instant is Unix time in milliseconds: Requirement 10 states it
  * "shall express Unix Time in seconds multiplied by 1,000, with the unit of
  * measure in milliseconds", and Annex C.2 that time values are encoded as
- * integers needing 64 bits. The offset comes from the one epoch constant the
- * codebase keeps, scaled from its seconds to those milliseconds. */
-#define GEOPOSE_UNIX_EPOCH_OFFSET_MS \
-  (((int64) DELTA_UNIX_POSTGRES_EPOCH) * 1000)
+ * integers needing 64 bits. The milliseconds scale the microseconds from the
+ * Unix epoch that #timestamptz_to_unix_us and #unix_us_to_timestamptz give
+ * every binding. */
 
 /**
  * @brief Convert a timestamp to a GeoPose_Instant (Unix milliseconds)
  * @details Rounds towards negative infinity so that the sub-millisecond
- * remainder of a pre-2000 timestamp is dropped the same way as that of a
- * post-2000 one, keeping the mapping monotonic.
+ * remainder of a timestamp before the Unix epoch is dropped the same way as
+ * that of one after it, keeping the mapping monotonic.
+ * @errval INT64_MAX
  */
 static int64
 geopose_instant_out(TimestampTz t)
 {
-  int64 us = (int64) t;
+  int64 us = timestamptz_to_unix_us(t);
+  if (us == INT64_MAX)
+    return INT64_MAX;
   int64 ms = us / 1000;
   if (us % 1000 != 0 && us < 0)
     ms -= 1;
-  return ms + GEOPOSE_UNIX_EPOCH_OFFSET_MS;
+  return ms;
 }
 
 /**
  * @brief Convert a GeoPose_Instant (Unix milliseconds) to a timestamp
+ * @errval DT_NOEND
  */
 static TimestampTz
 geopose_instant_in(int64 instant)
 {
-  return (TimestampTz) ((instant - GEOPOSE_UNIX_EPOCH_OFFSET_MS) * 1000);
+  int64 us;
+  if (unlikely(pg_mul_s64_overflow(instant, 1000, &us)))
+  {
+    meos_error(ERROR, MEOS_ERR_DATETIME_OUT_OF_RANGE,
+      "timestamp out of range");
+    return DT_NOEND;
+  }
+  return unix_us_to_timestamptz(us);
 }
 
 /**

@@ -1971,6 +1971,23 @@ tpoint_mvt(const Temporal *tpoint, const STBox *box, uint32_t extent,
  *****************************************************************************/
 
 /**
+ * @brief Return the seconds from the Unix epoch of a timestamp
+ * @details Rounds towards negative infinity the microseconds from the Unix
+ * epoch #timestamptz_to_unix_us gives, so that the sub-second remainder of a
+ * timestamp before the Unix epoch is dropped the same way as that of one after
+ * it, keeping the mapping monotonic
+ */
+static int64
+timestamptz_unix_seconds(TimestampTz t)
+{
+  int64 us = timestamptz_to_unix_us(t);
+  int64 s = us / USECS_PER_SEC;
+  if (us % USECS_PER_SEC != 0 && us < 0)
+    s -= 1;
+  return s;
+}
+
+/**
  * @brief Decouple the points and the timestamptz values of a temporal point
  * instant
  * @param[in] inst Temporal point
@@ -1983,7 +2000,7 @@ static GSERIALIZED *
 tpointinst_decouple(const TInstant *inst, int64 **timesarr, int *count)
 {
   int64 *times = palloc(sizeof(int64));
-  times[0] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
+  times[0] = timestamptz_unix_seconds(inst->t);
   *timesarr = times;
   *count = 1;
   return DatumGetGserializedP(tinstant_value(inst));
@@ -2008,7 +2025,7 @@ tpointseq_decouple_iter(const TSequence *seq, int64 *times)
     const TInstant *inst = TSEQUENCE_INST_N(seq, i);
     const GSERIALIZED *gs = DatumGetGserializedP(tinstant_value_p(inst));
     points[i] = lwgeom_from_gserialized(gs);
-    times[i] = (inst->t / 1000000) + DELTA_UNIX_POSTGRES_EPOCH;
+    times[i] = timestamptz_unix_seconds(inst->t);
   }
   interpType interp = MEOS_FLAGS_GET_INTERP(seq->flags);
   LWGEOM *result = lwpointarr_make_trajectory(points, seq->count, interp);
