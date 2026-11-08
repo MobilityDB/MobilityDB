@@ -694,6 +694,6 @@ SELECT aDwithin(tgeogpoint '[Point(1.5 0.4)@2001-01-01, Point(1.5 0.6)@2001-01-0
 SELECT aDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000, false);
 SELECT aDwithin(tgeogpoint '[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 0, false);
 SELECT aDwithin(geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', tgeogpoint '[Point(0.5 0.5)@2001-01-01, Point(2.5 0.5)@2001-01-02]', 0);
-/* On the spheroid a distance above zero is refused */
+-- On the spheroid, the default
 SELECT aDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
 
