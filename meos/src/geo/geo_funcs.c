@@ -4528,6 +4528,222 @@ convex_motion_nad_exact(const double *b, int nb, const double *p0,
   return result;
 }
 
+/** Greatest magnitude of a coordinate #convex_motion_meet_exact reads in
+ * doubles, so that no sum or product of its filter overflows */
+#define SUM_FILTER_MAXMAG 0x1p500
+/** Relative slack of the bound of #sum_point_orient, above the relative error
+ * of the few roundings that form it, about 2^-50 */
+#define SUM_FILTER_SLACK 0x1p-40
+/** Absolute margin of the bound of #sum_point_orient, above the error a
+ * gradual underflow adds to it */
+#define SUM_FILTER_TINY 0x1p-1000
+
+/**
+ * @brief A point of the plane whose coordinates are each the exact sum of two
+ * doubles, the rounded value and its error, see #two_sum
+ */
+typedef struct
+{
+  double x, y;               /**< Rounded coordinates */
+  double ex, ey;             /**< Errors of the rounding */
+} SumPoint;
+
+/**
+ * @brief Set @p p to the point (@p ax, @p ay) plus @p sign times the point
+ * (@p bx, @p by), exactly
+ */
+static inline void
+sum_point_set(SumPoint *p, double ax, double ay, double bx, double by,
+  int sign)
+{
+  two_sum(ax, sign * bx, &p->x, &p->ex);
+  two_sum(ay, sign * by, &p->y, &p->ey);
+}
+
+/**
+ * @brief Set the #WidePoint of the same coordinates as @p p
+ */
+static void
+sum_point_wide(const SumPoint *p, WidePoint *w)
+{
+  WideDyadic a, b;
+  wide_dyadic_set_double(&a, p->x);
+  wide_dyadic_set_double(&b, p->ex);
+  wide_dyadic_add(&a, &b, &w->x);
+  wide_dyadic_set_double(&a, p->y);
+  wide_dyadic_set_double(&b, p->ey);
+  wide_dyadic_add(&a, &b, &w->y);
+}
+
+/**
+ * @brief Return the sign of the cross product `(b - a) x (c - a)`, exactly
+ * @details The cross product is read in doubles on the rounded coordinates
+ * and answered where its magnitude exceeds a bound on its error, else by
+ * #wide_point_orient.  With `u = 2^-53`, rounding to the nearest:
+ * - A difference `d` of two rounded coordinates is within `2u |d|` of their
+ *   exact difference, so within `e_d = 2u |d| + |e1| + |e2|` of the
+ *   difference of the exact coordinates, `e1` and `e2` their errors.
+ * - A product `d d'` is then within `|d| e_d' + |d'| e_d + e_d e_d'` of the
+ *   exact one, and its rounding within `2u` of its magnitude.
+ * - The difference of the two products rounds within `2u` of its magnitude.
+ * The bound, the sum of these, is widened by #SUM_FILTER_SLACK and
+ * #SUM_FILTER_TINY for the roundings that form it and for underflow.
+ * @pre The coordinates are of magnitude at most #SUM_FILTER_MAXMAG
+ */
+static int
+sum_point_orient(const SumPoint *a, const SumPoint *b, const SumPoint *c)
+{
+  const double u2 = 0x1p-52;
+  double ux = b->x - a->x, uy = b->y - a->y;
+  double vx = c->x - a->x, vy = c->y - a->y;
+  double eux = u2 * fabs(ux) + fabs(a->ex) + fabs(b->ex);
+  double euy = u2 * fabs(uy) + fabs(a->ey) + fabs(b->ey);
+  double evx = u2 * fabs(vx) + fabs(a->ex) + fabs(c->ex);
+  double evy = u2 * fabs(vy) + fabs(a->ey) + fabs(c->ey);
+  double l = ux * vy, r = uy * vx, o = l - r;
+  double bound = fabs(ux) * evy + fabs(vy) * eux + eux * evy +
+    fabs(uy) * evx + fabs(vx) * euy + euy * evx +
+    u2 * (fabs(l) + fabs(r) + fabs(o));
+  if (fabs(o) > bound * (1.0 + SUM_FILTER_SLACK) + SUM_FILTER_TINY)
+    return (o > 0.0) ? 1 : -1;
+  WidePoint wa, wb, wc;
+  sum_point_wide(a, &wa);
+  sum_point_wide(b, &wb);
+  sum_point_wide(c, &wc);
+  return wide_point_orient(&wa, &wb, &wc);
+}
+
+/**
+ * @brief Return true if the point @p c, on the line of @p a and @p b, lies
+ * on the closed segment from @p a to @p b, see #wide_point_between
+ */
+static bool
+sum_point_between(const SumPoint *a, const SumPoint *b, const SumPoint *c)
+{
+  WidePoint wa, wb, wc;
+  sum_point_wide(a, &wa);
+  sum_point_wide(b, &wb);
+  sum_point_wide(c, &wc);
+  return wide_point_between(&wa, &wb, &wc);
+}
+
+/**
+ * @brief Return true if the closed segments from @p a to @p b and from @p c
+ * to @p d meet, by exact orientations, as #wide_segment_meet answers it
+ */
+static bool
+sum_segment_meet(const SumPoint *a, const SumPoint *b, const SumPoint *c,
+  const SumPoint *d)
+{
+  int o1 = sum_point_orient(a, b, c), o2 = sum_point_orient(a, b, d);
+  if (o1 * o2 > 0)
+    return false;
+  int o3 = sum_point_orient(c, d, a), o4 = sum_point_orient(c, d, b);
+  if (o1 * o2 < 0 && o3 * o4 < 0)
+    return true;
+  return (o1 == 0 && sum_point_between(a, b, c)) ||
+    (o2 == 0 && sum_point_between(a, b, d)) ||
+    (o3 == 0 && sum_point_between(c, d, a)) ||
+    (o4 == 0 && sum_point_between(c, d, b));
+}
+
+/**
+ * @brief Return true if the point @p q lies in the closed convex polygon of
+ * the @p n vertices @p poly, in either orientation, see #wide_point_in_convex
+ */
+static bool
+sum_point_in_convex(const SumPoint *q, const SumPoint *poly, int n)
+{
+  bool pos = false, neg = false;
+  for (int i = 0; i < n && ! (pos && neg); i++)
+  {
+    int s = sum_point_orient(&poly[i], &poly[(i + 1) % n], q);
+    pos |= (s > 0);
+    neg |= (s < 0);
+  }
+  return ! (pos && neg);
+}
+
+/**
+ * @brief Return true if a body that translates linearly and a body at rest
+ * meet at some time, decided exactly
+ * @details The answer is that of #convex_motion_nad_exact at 0: the bodies
+ * meet when they overlap at t = 0, a vertex of one in the other or an edge
+ * of one across an edge of the other, or when the path of a vertex of one
+ * meets an edge of the other.  These are the tests of that function, without
+ * the distances it computes where none holds, and each orientation is read
+ * in doubles first (#sum_point_orient).  A coordinate or a translation
+ * beyond #SUM_FILTER_MAXMAG goes to #convex_motion_nad_exact.
+ * @param[in] b,nb Vertices of the moving body, `x, y` pairs, the first not
+ * repeated at the end
+ * @param[in] p0,p1 Translation of the moving body at the start and the end
+ * @param[in] g,ng Vertices of the body at rest, `x, y` pairs, the first not
+ * repeated at the end
+ * @pre `nb, ng >= 1`; a body of three vertices or more is a convex polygon
+ */
+bool
+convex_motion_meet_exact(const double *b, int nb, const double *p0,
+  const double *p1, const double *g, int ng)
+{
+  assert(b); assert(p0); assert(p1); assert(g); assert(nb > 0);
+  assert(ng > 0);
+  /* The negation also refuses a NaN */
+  for (int c = 0; c < 2; c++)
+    if (! (fabs(p0[c]) <= SUM_FILTER_MAXMAG) ||
+        ! (fabs(p1[c]) <= SUM_FILTER_MAXMAG))
+      return convex_motion_nad_exact(b, nb, p0, p1, g, ng) == 0.0;
+  for (int i = 0; i < 2 * nb; i++)
+    if (! (fabs(b[i]) <= SUM_FILTER_MAXMAG))
+      return convex_motion_nad_exact(b, nb, p0, p1, g, ng) == 0.0;
+  for (int j = 0; j < 2 * ng; j++)
+    if (! (fabs(g[j]) <= SUM_FILTER_MAXMAG))
+      return convex_motion_nad_exact(b, nb, p0, p1, g, ng) == 0.0;
+
+  SumPoint *b0 = palloc(sizeof(SumPoint) * nb);
+  SumPoint *b1 = palloc(sizeof(SumPoint) * nb);
+  SumPoint *bref = palloc(sizeof(SumPoint) * nb);
+  SumPoint *gref = palloc(sizeof(SumPoint) * ng);
+  SumPoint *g0 = palloc(sizeof(SumPoint) * ng);
+  SumPoint *g1 = palloc(sizeof(SumPoint) * ng);
+  for (int i = 0; i < nb; i++)
+  {
+    sum_point_set(&b0[i], b[2 * i], b[2 * i + 1], p0[0], p0[1], 1);
+    sum_point_set(&b1[i], b[2 * i], b[2 * i + 1], p1[0], p1[1], 1);
+    sum_point_set(&bref[i], b[2 * i], b[2 * i + 1], 0.0, 0.0, 1);
+  }
+  for (int j = 0; j < ng; j++)
+  {
+    sum_point_set(&gref[j], g[2 * j], g[2 * j + 1], 0.0, 0.0, 1);
+    sum_point_set(&g0[j], g[2 * j], g[2 * j + 1], p0[0], p0[1], -1);
+    sum_point_set(&g1[j], g[2 * j], g[2 * j + 1], p1[0], p1[1], -1);
+  }
+  int eb = convex_nedges(nb), eg = convex_nedges(ng);
+  bool result = false;
+
+  /* An overlap at t = 0 */
+  for (int i = 0; ! result && ng > 2 && i < nb; i++)
+    result = sum_point_in_convex(&b0[i], gref, ng);
+  for (int j = 0; ! result && nb > 2 && j < ng; j++)
+    result = sum_point_in_convex(&gref[j], b0, nb);
+  for (int i = 0; ! result && i < eb; i++)
+    for (int j = 0; ! result && j < eg; j++)
+      result = sum_segment_meet(&b0[i], &b0[(i + 1) % nb], &gref[j],
+        &gref[(j + 1) % ng]);
+
+  /* The path of each vertex of one body to each edge of the other */
+  for (int i = 0; ! result && i < nb; i++)
+    for (int j = 0; ! result && j < eg; j++)
+      result = sum_segment_meet(&b0[i], &b1[i], &gref[j],
+        &gref[(j + 1) % ng]);
+  for (int j = 0; ! result && j < ng; j++)
+    for (int i = 0; ! result && i < eb; i++)
+      result = sum_segment_meet(&g0[j], &g1[j], &bref[i],
+        &bref[(i + 1) % nb]);
+
+  pfree(b0); pfree(b1); pfree(bref); pfree(gref); pfree(g0); pfree(g1);
+  return result;
+}
+
 /** Relative slack on either side of a comparison
  * #point_motion_dwithin_filter certifies, above the relative error of the at
  * most a few dozen roundings forming each side, about 2^-48 */

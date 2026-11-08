@@ -46,6 +46,8 @@ extern Temporal *tdistance_trgeometry_tpoint_intl(const Temporal *temp1,
   const Temporal *temp2, double level);
 extern Temporal *tdistance_trgeometry_trgeometry_intl(const Temporal *temp1,
   const Temporal *temp2, double level);
+extern int edwithin_trgeometry_geo_intl(const Temporal *temp,
+  const GSERIALIZED *gs, double dist);
 extern int edwithin_trgeometry_trgeometry_intl(const Temporal *temp1, const Temporal *temp2,
   double dist);
 
