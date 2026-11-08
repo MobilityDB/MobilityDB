@@ -80,6 +80,7 @@
 #include "utils/varlena.h"
 #include "utils/mb/pg_wchar.h"
 #include "utils/palloc.h"  /* MEOS: MemoryContext + MemoryContextSwitchTo (backend build) */
+#include "../../meos/include/meos_tls.h"  /* MEOS: MEOS_TLS */
 
 /* MEOS: the vendored memutils.h omits this backend global; declare it locally,
  * as dynahash.c and pg_locale.c do, so the extension can pin the static
@@ -2262,6 +2263,51 @@ executeNumericItemMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
 }
 
 /*
+ * According to SQL/JSON standard enumerate ISO formats for: date,
+ * timetz, time, timestamptz, timestamp.
+ *
+ * We also support ISO 8601 format (with "T") for timestamps, because
+ * to_json[b]() functions use this format.
+ */
+static const char *fmt_str[] =
+{
+  "yyyy-mm-dd",    /* date */
+  "HH24:MI:SS.USTZ",  /* timetz */
+  "HH24:MI:SSTZ",
+  "HH24:MI:SS.US",  /* time without tz */
+  "HH24:MI:SS",
+  "yyyy-mm-dd HH24:MI:SS.USTZ",  /* timestamptz */
+  "yyyy-mm-dd HH24:MI:SSTZ",
+  "yyyy-mm-dd\"T\"HH24:MI:SS.USTZ",
+  "yyyy-mm-dd\"T\"HH24:MI:SSTZ",
+  "yyyy-mm-dd HH24:MI:SS.US", /* timestamp without tz */
+  "yyyy-mm-dd HH24:MI:SS",
+  "yyyy-mm-dd\"T\"HH24:MI:SS.US",
+  "yyyy-mm-dd\"T\"HH24:MI:SS"
+};
+
+/* cache for format texts
+ * MEOS: per thread (MEOS_TLS), freed by #jsonpath_destroy_datetime_formats */
+static MEOS_TLS text *fmt_txt[lengthof(fmt_str)] = {0};
+
+#if MEOS
+/*
+ * MEOS: Free the format texts the .datetime() method of this thread built,
+ * which #meos_finalize calls as it frees the other caches
+ */
+void
+jsonpath_destroy_datetime_formats(void)
+{
+  for (size_t i = 0; i < lengthof(fmt_str); i++)
+  {
+    if (fmt_txt[i])
+      pfree(fmt_txt[i]);
+    fmt_txt[i] = NULL;
+  }
+}
+#endif /* MEOS */
+
+/*
  * Implementation of the .datetime() and related methods.
  *
  * Converts a string into a date/time value. The actual type is determined at
@@ -2333,33 +2379,6 @@ executeDateTimeMethod(JsonPathExecContext *cxt, JsonPathItem *jsp,
   }
   else
   {
-    /*
-     * According to SQL/JSON standard enumerate ISO formats for: date,
-     * timetz, time, timestamptz, timestamp.
-     *
-     * We also support ISO 8601 format (with "T") for timestamps, because
-     * to_json[b]() functions use this format.
-     */
-    static const char *fmt_str[] =
-    {
-      "yyyy-mm-dd",    /* date */
-      "HH24:MI:SS.USTZ",  /* timetz */
-      "HH24:MI:SSTZ",
-      "HH24:MI:SS.US",  /* time without tz */
-      "HH24:MI:SS",
-      "yyyy-mm-dd HH24:MI:SS.USTZ",  /* timestamptz */
-      "yyyy-mm-dd HH24:MI:SSTZ",
-      "yyyy-mm-dd\"T\"HH24:MI:SS.USTZ",
-      "yyyy-mm-dd\"T\"HH24:MI:SSTZ",
-      "yyyy-mm-dd HH24:MI:SS.US", /* timestamp without tz */
-      "yyyy-mm-dd HH24:MI:SS",
-      "yyyy-mm-dd\"T\"HH24:MI:SS.US",
-      "yyyy-mm-dd\"T\"HH24:MI:SS"
-    };
-
-    /* cache for format texts */
-    static text *fmt_txt[lengthof(fmt_str)] = {0};
-
     /*
      * Check for optional precision for methods other than .datetime() and
      * .date()
