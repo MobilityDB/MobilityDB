@@ -440,7 +440,7 @@ SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(180 0)@2001-01-03]', g
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Point(1 0)', 0);
 SELECT tDwithin(geography 'Point(1 0)', tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', 0);
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', tgeogpoint '[Point(1 0)@2001-01-01, Point(1 0)@2001-01-03]', 0);
-/* Errors */
+-- Against a polygon, on the spheroid
 SELECT tDwithin(tgeogpoint '[Point(0 0)@2001-01-01, Point(2 0)@2001-01-03]', geography 'Polygon((0 1,1 1,1 2,0 1))', 15000);
 
 -------------------------------------------------------------------------------
@@ -478,6 +478,9 @@ SELECT tIntersects(tgeogpoint '[Point(0.5 1.5)@2001-01-01, Point(2.5 1.5)@2001-0
 SELECT tIntersects(tgeogpoint '{[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02], [Point(-1 1.5)@2001-01-03, Point(4 1.5)@2001-01-04]}', geography 'MultiPolygon(((0 0,1 0,1 1,0 1,0 0)),((2 2,3 2,3 3,2 3,2 2)))');
 SELECT tDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000, false);
 SELECT tDwithin(tgeogpoint '[Point(-1 -0.0001)@2001-01-01, Point(1 -0.0001)@2001-01-02]', geography 'GeometryCollection(Point(1.5 1.5),Linestring(0 0,3 0))', 10000, false);
-/* On the spheroid a distance above zero is refused */
+-- On the spheroid, the default, and on the sphere, which answer differently at
+-- a latitude of 60 degrees
 SELECT tDwithin(tgeogpoint '[Point(0.5 2.5)@2001-01-01, Point(2.5 2.5)@2001-01-02]', geography 'Polygon((0 0,3 0,3 3,2 3,2 1,1 1,1 3,0 3,0 0))', 50000);
+SELECT tDwithin(tgeogpoint '[Point(-1 59.7)@2001-01-01, Point(4 59.8)@2001-01-02]', geography 'Polygon((0 60,3 60,3 63,2 63,2 61,1 61,1 63,0 63,0 60))', 22834, true);
+SELECT tDwithin(tgeogpoint '[Point(-1 59.7)@2001-01-01, Point(4 59.8)@2001-01-02]', geography 'Polygon((0 60,3 60,3 63,2 63,2 61,1 61,1 63,0 63,0 60))', 22834, false);
 
