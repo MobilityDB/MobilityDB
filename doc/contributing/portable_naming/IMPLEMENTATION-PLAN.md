@@ -73,6 +73,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   It rests on the route validation the owner asked for first ("validate the routes at the ways
   readers first, own PR"): MERGED as MobilityDB #3498 (`f595b9b9f9`), `ensure_valid_route` testing
   each route as a planar line in the SRID of the network when the ways readers read it.
+- **Each enumeration a host passes to MEOS names its values as text through one pair,
+  `<enum lowercased>_name` and `<enum lowercased>_from_string`**, outside the plan, as the owner
+  decided on 2026-11-08 ("approve the rewrite"): the pair of `MeosPixType` takes that name, so
+  branch `feat/enum-text-tokens` rewrites `c123cb1e00` there, the three uses of
+  `raquet_pixtype_name` / `raquet_pixtype_from_string` in `meos/src/raster/raster_rtcore.c`
+  (the note of `raster_band_pixel_type`, its call, and the call in `raster_pixtype`), which
+  `meospixtype_name` / `meospixtype_from_string` replace. The catalog states the pair of each
+  enumeration (`enums[].text`, MEOS-API #263), and a binding passes the values as text through it.
+  Head `dec34a02a1` on master `3bb9f756b5`.
 - **A span has the operators and the nearest approach distance of its temporal box** (Part VI,
   G68–G71): MobilityDB #3254, #3267, #3257 and #3279 are merged, and MobilityDuck registers the 24
   distance forms over a number span (#541) and tests them with the box operators (#539, #542). The
