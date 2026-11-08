@@ -41,6 +41,9 @@
 #include <common/pg_prng.h>
 #include <utils/formatting.h>
 #include <utils/jsonb.h>
+#if JSON
+  #include <utils/jsonpath.h>
+#endif
 /* Proj */
 #include <proj.h>
 /* PostGIS */
@@ -728,6 +731,8 @@ meos_finalize(void)
 #if JSON
   /* Finalize the list keeping the items to be freed after a JSON parsing */
   json_destroy_tofree();
+  /* Free the format texts the .datetime() method of a JSON path reads */
+  jsonpath_destroy_datetime_formats();
 #endif
 #if NPOINT
   /* Finalize Ways cache */
