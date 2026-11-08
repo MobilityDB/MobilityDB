@@ -375,3 +375,16 @@ FROM (SELECT
   geometry 'LineString(4.498 -2.698,4.619 3.741)' AS geo) t;
 
 -------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+-- A temporal rigid geometry in three dimensions has no distance yet, whatever
+-- the dimensions of the geometry
+-------------------------------------------------------------------------------
+
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+/* Errors */ SELECT tDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1)');
+/* Errors */ SELECT nearestApproachDistance(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+/* Errors */ SELECT nearestApproachInstant(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+/* Errors */ SELECT shortestLine(trgeometry 'Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1));[Pose(Point(0 0 0),1,0,0,0)@2001-01-01,Pose(Point(5 0 0),1,0,0,0)@2001-01-02]', geometry 'Point(1 1 1)');
+
+-------------------------------------------------------------------------------
