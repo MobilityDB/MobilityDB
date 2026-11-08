@@ -859,12 +859,11 @@ Tpoint_as_mvtgeom(PG_FUNCTION_ARGS)
   int32_t buffer = PG_GETARG_INT32(3);
   bool clip_geom = PG_GETARG_BOOL(4);
 
-  GSERIALIZED *geom;
   int64 *times; /* Timestamps are returned in Unix time */
   int count;
-  bool found = tpoint_as_mvtgeom(temp, bounds, extent, buffer, clip_geom,
-    &geom, &times, &count);
-  if (! found)
+  GSERIALIZED *geom = tpoint_as_mvtgeom(temp, bounds, extent, buffer,
+    clip_geom, &times, &count);
+  if (! geom)
   {
     PG_FREE_IF_COPY(temp, 0);
     PG_RETURN_NULL();
