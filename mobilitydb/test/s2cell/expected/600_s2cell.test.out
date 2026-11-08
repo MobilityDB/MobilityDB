@@ -36,6 +36,16 @@ SELECT s2cell '47c3c444c' = s2cell '47c3c444c0000000';
  t
 (1 row)
 
+SELECT s2cell_send(c) = asBinary(c)
+FROM (VALUES (s2cell '47c3c444c0000000'), (s2cell '47c3c444c0000004'),
+  (s2cell '54b5c9')) t(c);
+ ?column? 
+----------
+ t
+ t
+ t
+(3 rows)
+
 SELECT (s2cell '47c3c444c0000000')::bigint;
         int8         
 ---------------------

@@ -54,6 +54,12 @@ SELECT s2cell '47c3c444c0000000' = s2cell '47c3c444c0000000';
 -- cell parses back to that cell
 SELECT s2cell '47c3c444c' = s2cell '47c3c444c0000000';
 
+-- the send function writes the Well-Known Binary that asBinary writes, as
+-- 350_quadbin_tbl checks for a quadbin
+SELECT s2cell_send(c) = asBinary(c)
+FROM (VALUES (s2cell '47c3c444c0000000'), (s2cell '47c3c444c0000004'),
+  (s2cell '54b5c9')) t(c);
+
 -------------------------------------------------------------------------------
 -- Casts to and from bigint
 --
