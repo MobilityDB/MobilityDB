@@ -56,6 +56,9 @@ typedef struct pg_tzenum pg_tzenum;
 
 extern struct pg_tm *pg_localtime(const pg_time_t *timep, const pg_tz *tz);
 extern struct pg_tm *pg_gmtime(const pg_time_t *timep);
+#if MEOS
+extern void localtime_destroy_gmt(void);
+#endif /* MEOS */
 extern int  pg_next_dst_boundary(const pg_time_t *timep,
   long int *before_gmtoff, int *before_isdst, pg_time_t *boundary,
   long int *after_gmtoff, int *after_isdst, const pg_tz *tz);
