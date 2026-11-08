@@ -2183,7 +2183,7 @@ TJSONB_CONFIG = dict(
         "nullHandleType":  "NULL_RETURN",
         "MeosType":        "T_INT4",
     },
-    # null_handle_type_from_string returns a plain C enum by value (no
+    # nullhandletype_from_string returns a plain C enum by value (no
     # storage to free); route it through the same call-and-discard path as
     # BY_VALUE_SCALAR_TYPES.
     value_returns=["nullHandleType"],
@@ -2256,7 +2256,7 @@ TJSONB_CONFIG = dict(
         "tjsonb_in":                  {0: "tjs_seq_str"},
         "tjsonbinst_in":              {0: "tjs_inst_str"},
         "tjsonb_from_mfjson":         {0: "tjs_mfjson_str"},
-        "null_handle_type_from_string": {0: "null_handle_str1"},
+        "nullhandletype_from_string": {0: "null_handle_str1"},
         # jsonbset_in parses a SET literal, not a bare jsonb document.
         "jsonbset_in":                {0: "jsonbset_str1"},
         # The base-and-time constructors take the TIME set, not a jsonb one.

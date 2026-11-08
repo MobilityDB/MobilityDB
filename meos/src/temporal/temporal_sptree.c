@@ -2465,3 +2465,64 @@ sptree_nn_cursor_close(SPNNCursor *cursor)
 }
 
 /*****************************************************************************/
+
+/**
+ * @brief Global constant array of the names of the kinds of an in-memory
+ * space-partitioning index, corresponding to the enumeration SPTreeKind
+ * defined in file `meos.h`
+ */
+static const char *MEOS_SPTREEKIND_NAMES[] =
+{
+  [SPTREE_QUADTREE] = "quadtree",
+  [SPTREE_KDTREE] = "kdtree"
+};
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the name of the kind of an in-memory space-partitioning
+ * index: `quadtree` or `kdtree`
+ * @param[in] kind Kind of the index
+ * @note This is the counterpart of #sptreekind_from_string()
+ * @errval NULL
+ */
+const char *
+sptreekind_name(SPTreeKind kind)
+{
+  const int n = (int) (sizeof(MEOS_SPTREEKIND_NAMES) / sizeof(char *));
+  if ((int) kind < 0 || (int) kind >= n)
+  {
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "Unknown kind of space-partitioning index: %d", (int) kind);
+    return NULL;
+  }
+  return MEOS_SPTREEKIND_NAMES[kind];
+}
+
+/**
+ * @ingroup meos_temporal_box_index
+ * @brief Return the kind of an in-memory space-partitioning index
+ * corresponding to its name
+ * @details The name is read without regard to case
+ * @param[in] str Name of the kind: `quadtree` or `kdtree`
+ * @note This is the parser counterpart of #sptreekind_name()
+ * @errval -1
+ */
+SPTreeKind
+sptreekind_from_string(const char *str)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(str, (SPTreeKind) -1);
+
+  const int n = (int) (sizeof(MEOS_SPTREEKIND_NAMES) / sizeof(char *));
+  for (int i = 0; i < n; i++)
+  {
+    if (pg_strcasecmp(str, MEOS_SPTREEKIND_NAMES[i]) == 0)
+      return (SPTreeKind) i;
+  }
+  /* Error */
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+    "Unknown kind of space-partitioning index: %s", str);
+  return (SPTreeKind) -1;
+}
+
+/*****************************************************************************/
