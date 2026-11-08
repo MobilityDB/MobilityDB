@@ -1785,8 +1785,13 @@ executeBoolItem(JsonPathExecContext *cxt, JsonPathItem *jsp,
          */
         JsonLikeRegexContext lrcxt = {0};
         jspInitByBuffer(&larg, jsp->base, jsp->content.like_regex.expr);
-        return executePredicate(cxt, jsp, &larg, NULL, jb, false,
+        JsonPathBool res = executePredicate(cxt, jsp, &larg, NULL, jb, false,
           executeLikeRegex, &lrcxt);
+        /* MEOS: no memory context reclaims the pattern text, and the cache
+         * of compiled expressions holds its own copy of it */
+        if (lrcxt.regex)
+          pfree(lrcxt.regex);
+        return res;
       }
 
     case jpiExists:
