@@ -44,7 +44,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | Row | Task | State |
 |---|---|---|
 | TG12 | The distance of a concave, holed or surface body and to a concave or holed polygon | [its note](NON-CONVEX-DISTANCE.md) |
-| TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` as #3497, `contains`, `covers` and `touches` open |
+| TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` merged as #3497 (`266f7ed2bb`, `59f3e1305a`), `contains`, `covers` and `touches` open |
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
 | TG15 | `atGeometry`, `minusGeometry` over a geometry with holes | open |
 | TG16 | `transform`, `transformPipeline` | open, decision 3 |
