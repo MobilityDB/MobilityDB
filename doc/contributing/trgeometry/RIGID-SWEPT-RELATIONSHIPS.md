@@ -74,16 +74,24 @@ A U-shaped polygon `Polygon((0 0,5 0,5 3,4 3,4 1,1 1,1 3,0 3,0 0))` and a point 
 poses and come back in the same way, so a pose walk is the answer only for step and discrete
 interpolation.
 
-**The distance at zero, today.** `intersects` and `disjoint` are `dwithin` at distance 0, but the
-rigid temporal distance is not the double nearest the exact distance, and a contact on the
-boundary reads as apart or fails:
+**The distance at zero.** `intersects` and `disjoint` are `dwithin` at distance 0, so they need
+the rigid temporal distance to be the double nearest the exact distance and a contact on the
+boundary to read as 0. On the head of #3497 (`9ab3b8256c`) the witnesses read so, each as an
+instant and as a sequence that keeps the pose for a day:
 
 | Witness | Exact | `tDistance` |
 |---|---|---|
-| triangle `(0 0,6 0,0 6)` at pose `(1 0)`, point `(0 3)` | 1 | `0.9999999999999999` |
-| the same at pose `(0.5 0.25)` | 0.5 | `0.49999999999999983` |
-| the same at pose `(0 0)`, the point on an edge | 0 | `1.4802973661668753e-16` |
-| a 4x4 square at pose `(3 0)`, the point `(3 4)` on its top edge | 0 | error "failed at segment 0" |
+| triangle `(0 0,6 0,0 6)` at pose `(1 0)`, point `(0 3)` | 1 | `1` |
+| the same at pose `(0.5 0.25)` | 0.5 | `0.5` |
+| the same at pose `(0 0)`, the point on an edge | 0 | `0` |
+| a 4x4 square at pose `(3 0)`, the point `(3 4)` on its top edge | 0 | `0` |
+
+Two defects of the temporal distance at a contact, which a threshold of 0 meets, are fixed in
+#3497. `dist_seq_least` gave the instant of least value inside a segment the least distance and
+skipped the instants at the threshold, so with the least distance at the threshold it overwrote an
+unrelated extremum with 0. A contact that slides along an edge ended in the square root of the
+rounding of the zero of the next feature, a vertex: a body at the pose `(2 -1)` sliding along
+`(1.5 -0.5)` read 4.2e-8 at the end of the contact, where the distance is 0.
 
 The distance also refuses a reference geometry that is not a convex polygon (`dist_ref_body`,
 "... a convex polygon without holes") and a static polygon that is not convex or has holes
@@ -217,17 +225,22 @@ read edges and vertices only, so a non-convex body or a polygon with holes needs
 
 ## 8. Delivery
 
-In order, on the branch of #3347, each in place of the refusal it answers:
+In order, each in place of the refusal it answers:
 
-1. **The exact temporal distance of a rigid geometry**: the double nearest the exact distance at
-   every instant, and a contact on the boundary read as 0, judged by CGAL on the poses that do not
-   turn and by the bounded search of section 6 on those that do.
-2. **`intersects`, `disjoint` and `dwithin`** for linear motion from that distance, in the three
-   orders and the ever, always and temporal forms.
+1. **`intersects` and `disjoint`** for linear motion from the temporal distance at 0, in the three
+   orders and the ever, always and temporal forms, with the two defects of the distance at a
+   contact of section 3: #3497, based on master. `dwithin` already reads the distance; in #3497
+   `eDwithin` against a geometry stops at the first segment within the distance. CGAL judges the
+   1107 rows whose body does not turn and the bounded search of section 6 the 693 that turn;
+   `eIntersects` on the 1000 rows of a translating body costs 0.52 of GEOS 3.14 answering them
+   from the placed bodies.
+2. **The rigid-geometry commits of #3347**, the step and discrete path of the relationships at an
+   instant, rebased onto #3497, so the linear path and the path at the instants meet in one
+   `trgeo_spatialrels.c`.
 3. **`contains`, `covers` and `touches`**: the incidence functions, the stretch decision, the
    event rules, the chapter and the manual, the judge and the tests.
 
-The steps are separate topics; the committers decide whether the first two travel together.
+The steps are separate topics.
 
 ## 9. What is still to be measured
 
