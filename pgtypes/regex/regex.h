@@ -267,5 +267,10 @@ extern size_t pg_regerror(int errcode, const regex_t *preg, char *errbuf,
 extern regex_t *RE_compile_and_cache(text *text_re, int cflags, Oid collation);
 extern bool RE_compile_and_execute(text *text_re, char *dat, int dat_len,
   int cflags, Oid collation, int nmatch, regmatch_t *pmatch);
+#if MEOS
+extern void regexp_destroy_cache(void);
+/* regc_pg_locale.c */
+extern void pg_ctype_destroy_cache(void);
+#endif /* MEOS */
 
 #endif /* _PG_REGEX_H_ */
