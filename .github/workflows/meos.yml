@@ -80,7 +80,7 @@ jobs:
         run: |
           cd meos/examples
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o 01_hello_world 01_hello_world.c -L/usr/local/lib -lmeos
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o 01_hello_world 01_hello_world.c -L/usr/local/lib -lmeos
           ./01_hello_world
 
       - name: Compile every meos/examples program
@@ -98,7 +98,7 @@ jobs:
           found=0
           for f in $(git ls-files -- '*.c'); do
             echo "$f"
-            gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include \
+            gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include \
               $(pkg-config --cflags libpq) -o "${f%.c}" "$f" \
               -L/usr/local/lib -lmeos -lproj $(pkg-config --libs libpq) -lm
             found=$((found + 1))
@@ -121,12 +121,15 @@ jobs:
           # generated smoke suite that shares the suffix is never picked up.
           # Each program is named before it runs, so a failure names it, and
           # the count carries a floor, so a deleted test reddens the step
-          # instead of shrinking it in silence.
+          # instead of shrinking it in silence. A pointer of the wrong type and
+          # a pointer taken for an integer are errors, as GCC 14 makes them, so
+          # a call whose signature changed fails here with a compiler that only
+          # warns.
           found=0
           for f in $(git ls-files -- '*_test.c'); do
             t="${f%.c}"
             echo "./$t"
-            gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o "$t" "$f" -L/usr/local/lib -lmeos -lm
+            gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o "$t" "$f" -L/usr/local/lib -lmeos -lm
             "./$t"
             found=$((found + 1))
           done
@@ -139,36 +142,36 @@ jobs:
           # the CSV form tools/gen_test_csv.py writes from the same archives,
           # so the two suites answer their queries over one set of fixtures
           python3 ../../tools/gen_test_csv.py
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_geometry_read tbl_geometry_read.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_geometry_read tbl_geometry_read.c -L/usr/local/lib -lmeos -lm
           ./tbl_geometry_read
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_value_value tbl_value_value.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_value_value tbl_value_value.c -L/usr/local/lib -lmeos -lm
           ./tbl_value_value
           # The program reads the fixture it is given and takes the type from
           # its name, so the loop covers every temporal table the archives
           # carry, including the ones a family adds later
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_temporal tbl_temporal.c -L/usr/local/lib -lmeos -lm
           for f in csv/tbl_t*.csv; do ./tbl_temporal "$f" > /dev/null; done
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal_value tbl_temporal_value.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_temporal_value tbl_temporal_value.c -L/usr/local/lib -lmeos -lm
           ./tbl_temporal_value
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_temporal_temporal tbl_temporal_temporal.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_temporal_temporal tbl_temporal_temporal.c -L/usr/local/lib -lmeos -lm
           ./tbl_temporal_temporal
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint tbl_tpoint.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tpoint tbl_tpoint.c -L/usr/local/lib -lmeos -lm
           ./tbl_tpoint
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint_geo tbl_tpoint_geo.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tpoint_geo tbl_tpoint_geo.c -L/usr/local/lib -lmeos -lm
           ./tbl_tpoint_geo
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tpoint_tpoint tbl_tpoint_tpoint.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tpoint_tpoint tbl_tpoint_tpoint.c -L/usr/local/lib -lmeos -lm
           ./tbl_tpoint_tpoint
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tgeo_tgeo tbl_tgeo_tgeo.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tgeo_tgeo tbl_tgeo_tgeo.c -L/usr/local/lib -lmeos -lm
           ./tbl_tgeo_tgeo
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_geometry tbl_tcbuffer_geometry.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tcbuffer_geometry tbl_tcbuffer_geometry.c -L/usr/local/lib -lmeos -lm
           ./tbl_tcbuffer_geometry
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o tbl_tcbuffer_tcbuffer tbl_tcbuffer_tcbuffer.c -L/usr/local/lib -lmeos -lm
           ./tbl_tcbuffer_tcbuffer
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o cbuffer_exact_test cbuffer_exact_test.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o cbuffer_exact_test cbuffer_exact_test.c -L/usr/local/lib -lmeos -lm
           ./cbuffer_exact_test
           # The DE-9IM harness reaches the engine through the public geom_relate,
           # so it builds against the installed library like every program here
-          gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o relate_diff relate_diff.c -L/usr/local/lib -lmeos -lm
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -I/usr/local/include -o relate_diff relate_diff.c -L/usr/local/lib -lmeos -lm
           ./relate_diff < relate_corpus.txt
           ./relate_diff < relate_corpus_types.txt
 
@@ -206,7 +209,7 @@ jobs:
       - name: Build threaded_test under TSan
         run: |
           cd meos/test
-          gcc -Wall -g -O1 -fsanitize=thread \
+          gcc -Wall -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -Werror=int-conversion -g -O1 -fsanitize=thread \
             -I/usr/local/include -pthread \
             -o threaded_test threaded_test.c \
             -L/usr/local/lib -lmeos
