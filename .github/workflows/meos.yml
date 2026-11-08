@@ -47,6 +47,7 @@ jobs:
             libjson-c-dev \
             libgdal-dev \
             libh3-dev \
+            libpq-dev \
             libxml2-dev \
             zlib1g-dev
 
@@ -81,6 +82,32 @@ jobs:
           export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
           gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include -o 01_hello_world 01_hello_world.c -L/usr/local/lib -lmeos
           ./01_hello_world
+
+      - name: Compile every meos/examples program
+        run: |
+          cd meos/examples
+          # An example is the first program a user of MEOS compiles, and one
+          # that is compiled nowhere keeps calling whatever it called when it
+          # was written while the surface moves under it. The programs are the
+          # ones git tracks here, so an example is compiled the day it lands
+          # with no edit to this step; they are compiled and not run, since
+          # each reads data, a database or a network of its own. Each program
+          # is named before it compiles, so a failure names it, and the count
+          # carries a floor, so a deleted example reddens the step instead of
+          # shrinking it in silence.
+          found=0
+          for f in $(git ls-files -- '*.c'); do
+            echo "$f"
+            gcc -Wall -Werror=implicit-function-declaration -g -I/usr/local/include \
+              $(pkg-config --cflags libpq) -o "${f%.c}" "$f" \
+              -L/usr/local/lib -lmeos -lproj $(pkg-config --libs libpq) -lm
+            found=$((found + 1))
+          done
+          echo "$found meos/examples program(s) compiled"
+          if [ "$found" -lt "${MEOS_EXAMPLES_FLOOR:-57}" ]; then
+            echo "::error::$found meos/examples program(s), below the floor of ${MEOS_EXAMPLES_FLOOR:-57}"
+            exit 1
+          fi
 
       - name: Compile and run meos/test
         run: |
