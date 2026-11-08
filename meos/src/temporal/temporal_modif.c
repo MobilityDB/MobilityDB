@@ -2209,6 +2209,9 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
   /* Append the instant to the last sequence. The last sequence is stored
    * within the sequence set and thus its ownership cannot be transferred */
   TSequence *last = (TSequence *) TSEQUENCESET_SEQ_N(ss, ss->count - 1);
+  /* The instants of the last sequence before the append, which may modify it
+   * in place */
+  int lastcount = last->count;
   Temporal *temp = tsequence_append_tinstant1(last, inst, maxdist, maxt,
     expand, false);
   /* The result is a new value that belongs to this function, unless the
@@ -2254,13 +2257,16 @@ tsequenceset_append_tinstant(TSequenceSet *ss, const TInstant *inst,
     /* Copy the new sequence if its address is different from last */
     if (last != seq1)
       memcpy(last, seq1, VARSIZE(seq1));
+    /* The instants the last sequence gains, and those of the second sequence
+     * when the append yields two */
+    ss->totalcount += seq1->count - lastcount;
     /* Update the offsets array and the counts when adding two sequences */
     if (temp->subtype == TSEQUENCESET)
     {
       (TSEQUENCESET_OFFSETS_PTR(ss))[count - 1] =
         (TSEQUENCESET_OFFSETS_PTR(ss))[count - 2] + size_seq1;
       ss->count++;
-      ss->totalcount++;
+      ss->totalcount += seq2->count;
       last = (TSequence *) ((char *) last + size_seq1);
       memcpy(last, seq2, VARSIZE(seq2));
     }
