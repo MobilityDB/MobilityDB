@@ -266,9 +266,6 @@ CREATE FUNCTION eDwithin(tgeogpoint, tgeogpoint, dist float, spheroid boolean DE
 
 /*****************************************************************************/
 
--- NOTE: aDWithin for geographies is not provided since it is based on the
--- buffer of the geometry, which MEOS computes on the plane only (geom_buffer)
-
 CREATE FUNCTION aDwithin(geometry, tgeompoint, dist float)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_geo_tgeo'
@@ -285,6 +282,16 @@ CREATE FUNCTION aDwithin(tgeompoint, tgeompoint, dist float)
   SUPPORT tspatial_supportfn
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
+CREATE FUNCTION aDwithin(geography, tgeogpoint, dist float, spheroid boolean DEFAULT true)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_geo_tgeo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION aDwithin(tgeogpoint, geography, dist float, spheroid boolean DEFAULT true)
+  RETURNS boolean
+  AS 'MODULE_PATHNAME', 'Adwithin_tgeo_geo'
+  SUPPORT tspatial_supportfn
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 CREATE FUNCTION aDwithin(tgeogpoint, tgeogpoint, dist float, spheroid boolean DEFAULT true)
   RETURNS boolean
   AS 'MODULE_PATHNAME', 'Adwithin_tgeo_tgeo'

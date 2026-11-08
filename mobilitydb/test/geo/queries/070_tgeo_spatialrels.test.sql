@@ -593,3 +593,12 @@ SELECT eDisjoint(tgeometry 'SRID=5676;[Polygon((0 0 0,2 0 2,2 2 2,0 2 0,0 0 0))@
 -- A line that starts there, and a point off the plane above it
 SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Linestring(1 1 1,1 1 5)');
 SELECT eIntersects(tgeometry 'SRID=5676;[Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-01,Polygon((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1))@2001-01-02]', geometry 'SRID=5676;Point(1 1 5)');
+
+-------------------------------------------------------------------------------
+-- aDwithin of a temporal geography and a geography
+-------------------------------------------------------------------------------
+
+SELECT aDwithin(tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((5 5,6 5,6 6,5 6,5 5))@2001-01-02}', geography 'Polygon((0 0,3 0,3 3,0 3,0 0))', 50000);
+SELECT aDwithin(geography 'Polygon((0 0,3 0,3 3,0 3,0 0))', tgeography '{Polygon((0 0,1 0,1 1,0 1,0 0))@2001-01-01, Polygon((1 1,2 1,2 2,1 2,1 1))@2001-01-02}', 0);
+SELECT aDwithin(tgeography 'Interp=Step;[Point(0 1)@2001-01-01, Point(0 2)@2001-01-02]', geography 'Linestring(0 0,0 3)', 1, false);
+

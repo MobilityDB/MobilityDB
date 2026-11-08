@@ -2164,13 +2164,17 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
   /* Ensure the validity of the arguments. ensure_valid_tspatial_geo
    * already enforces that the temporal geo and the geometry have the
    * same geodetic flag, so geodetic coordinates are supported here the
-   * same way as in #Tdistance_tgeo_geo. A temporal geography point against
-   * a geography other than a point is rejected; non-point geometries are
-   * routed through the polygonal buffer below. */
+   * same way as in #Tdistance_tgeo_geo. A temporal geography point moving
+   * along great circles against a geography other than a point is rejected,
+   * since no kernel finds the instants at which a great circle crosses a
+   * geodesic edge; non-point geometries are routed through the polygonal
+   * buffer below. */
   if (! ensure_finite(dist))
     return NULL;
+  bool geodetic = MEOS_FLAGS_GET_GEODETIC(temp->flags);
   if (! ensure_valid_tspatial_geo(temp, gs) ||
       (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE &&
+        temp->subtype != TINSTANT && MEOS_FLAGS_LINEAR_INTERP(temp->flags) &&
         ! ensure_not_geodetic_geo(gs)) ||
       ! ensure_not_negative_datum(Float8GetDatum(dist), T_FLOAT8))
     return NULL;
@@ -2198,7 +2202,11 @@ tdwithin_tgeo_geo(const Temporal *temp, const GSERIALIZED *gs, double dist,
    * route through tIntersects on a polygonal d-expanded buffer of gs, the
    * polygonal approximation that the always-quantifier branch of
    * ea_dwithin_tgeo_geo also uses internally via geom_buffer. */
-  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE)
+  /* A temporal geography point that is constant between its instants takes the
+   * lifting below, as a temporal geography does, which reads the geodetic
+   * distance at each instant */
+  if (tpoint_type(temp->temptype) && gserialized_get_type(gs) != POINTTYPE &&
+      ! geodetic)
   {
     if (temp->temptype == T_TGEOMPOINT && temp->subtype != TINSTANT &&
         MEOS_FLAGS_GET_INTERP(temp->flags) == LINEAR &&

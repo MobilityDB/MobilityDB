@@ -574,13 +574,12 @@ spatialrel_families:
           - {l: tgeography, r: tgeography}
       - Touches
       - name: Dwithin
-        note: "NOTE: aDWithin for geographies is not provided since it is based on the\nbuffer of the geometry, which MEOS computes on the plane only (geom_buffer)"
         directions:
           - {l: geometry,  r: tgeometry}
           - {l: tgeometry, r: geometry}
           - {l: tgeometry, r: tgeometry}
-          - {l: geography,  r: tgeography, gap: true, spheroid: true, ever_only: true}
-          - {l: tgeography, r: geography, spheroid: true, ever_only: true}
+          - {l: geography,  r: tgeography, gap: true, spheroid: true}
+          - {l: tgeography, r: geography, spheroid: true}
           - {l: tgeography, r: tgeography, spheroid: true}
   - family:  tpoint
     impl:    native
@@ -610,13 +609,12 @@ spatialrel_families:
           - {l: geometry,   r: tgeompoint}
           - {l: tgeompoint, r: geometry}
       - name: Dwithin
-        note: "NOTE: aDWithin for geographies is not provided since it is based on the\nbuffer of the geometry, which MEOS computes on the plane only (geom_buffer)"
         directions:
           - {l: geometry,   r: tgeompoint}
           - {l: tgeompoint, r: geometry}
           - {l: tgeompoint, r: tgeompoint}
-          - {l: geography,  r: tgeogpoint, gap: true, spheroid: true, ever_only: true}
-          - {l: tgeogpoint, r: geography, spheroid: true, ever_only: true}
+          - {l: geography,  r: tgeogpoint, gap: true, spheroid: true}
+          - {l: tgeogpoint, r: geography, spheroid: true}
           - {l: tgeogpoint, r: tgeogpoint, spheroid: true}
   - family:  cbuffer
     impl:    native
