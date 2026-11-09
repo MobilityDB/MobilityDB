@@ -266,7 +266,6 @@ extern Temporal *ts2cell_from_mfjson(const char *mfjson);
 
 /* Constructors */
 
-extern Temporal *ts2cell_make(S2CellId value, TimestampTz t);
 extern TInstant *ts2cellinst_make(S2CellId value, TimestampTz t);
 extern Temporal *ts2cell_from_base_temp(S2CellId value, const Temporal *temp);
 extern TSequence *ts2cellseq_from_base_tstzset(S2CellId value, const Set *s);

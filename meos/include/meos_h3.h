@@ -176,7 +176,6 @@ extern char *th3index_out(const Temporal *temp, size_t *size_out);
 extern Temporal *th3index_from_mfjson(const char *mfjson);
 
 /* Constructors */
-extern Temporal *th3index_make(H3Index value, TimestampTz t);
 extern TInstant *th3indexinst_make(H3Index value, TimestampTz t);
 extern Temporal *th3index_from_base_temp(H3Index value, const Temporal *temp);
 extern TSequence *th3indexseq_from_base_tstzset(H3Index value, const Set *s);

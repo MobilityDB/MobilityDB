@@ -247,8 +247,8 @@ geodetic_segment_pair(char *seg, size_t segsz, char *dense, size_t densesz,
 static bool
 cells_adjacent(H3Index a, H3Index b)
 {
-  Temporal *ta = th3index_make(a, 0);
-  Temporal *tb = th3index_make(b, 0);
+  Temporal *ta = (Temporal *) th3indexinst_make(a, 0);
+  Temporal *tb = (Temporal *) th3indexinst_make(b, 0);
   Temporal *adj = (ta != NULL && tb != NULL) ?
     th3index_are_neighbor_cells(ta, tb) : NULL;
   bool result = (adj != NULL) && tbool_start_value(adj);

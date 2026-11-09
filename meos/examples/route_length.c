@@ -153,7 +153,7 @@ int main(void)
 
   /* Construct the trips */
   if (found)
-    printf("Route length: %7.3f\n", geom_length(rec.the_geom));
+    printf("Route length: %7.3f\n", geo_length(rec.the_geom, true));
   else
     printf("Route NOT FOUND: %ld\n", route);
 

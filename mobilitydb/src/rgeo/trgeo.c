@@ -618,13 +618,10 @@ Trgeometry_as_tsequence(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *interp_str = NULL;
+  interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    interp_str = text_to_cstring(interp_txt);
-  }
-  TSequence *result = trgeometry_as_tsequence(temp, interp_str);
+    interp = input_interp_string(fcinfo, 1);
+  TSequence *result = trgeometry_as_tsequence(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCE_P(result);
 }
@@ -645,13 +642,10 @@ Trgeometry_as_tsequenceset(PG_FUNCTION_ARGS)
     PG_RETURN_NULL();
 
   Temporal *temp = PG_GETARG_TEMPORAL_P(0);
-  char *interp_str = NULL;
+  interpType interp = INTERP_NONE;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
-  {
-    text *interp_txt = PG_GETARG_TEXT_P(1);
-    interp_str = text_to_cstring(interp_txt);
-  }
-  TSequenceSet *result = trgeometry_as_tsequenceset(temp, interp_str);
+    interp = input_interp_string(fcinfo, 1);
+  TSequenceSet *result = trgeometry_as_tsequenceset(temp, interp);
   PG_FREE_IF_COPY(temp, 0);
   PG_RETURN_TSEQUENCESET_P(result);
 }

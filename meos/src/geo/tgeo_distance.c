@@ -4677,7 +4677,7 @@ geography_shortestline_internal(const GSERIALIZED *gs1, const GSERIALIZED *gs2,
 }
 
 /**
- * @ingroup meos_geo_base_dist
+ * @ingroup meos_internal_geo_base_dist
  * @brief Return the line connecting the closest points of two geographies
  * @details The closest points are located on the sphere, as PostGIS
  * @p ST_ShortestLine over geographies locates them, the earth model setting

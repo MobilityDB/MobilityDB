@@ -50,6 +50,7 @@
 #include <meos_geo.h>
 #include <meos_internal.h>
 #include <meos_pointcloud.h>
+#include <meos_internal_geo.h>
 #include "temporal/temporal.h"  /* Temporal, TInstant */
 #include "temporal/meos_catalog.h"  /* T_TPCPOINT */
 #include "geo/tgeo_spatialfuncs.h"  /* geopoint_make */

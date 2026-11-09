@@ -45,6 +45,7 @@
 /* MEOS */
 #include <meos.h>
 #include <meos_internal.h>             /* for MEOS_FLAGS_GET_Z */
+#include <meos_internal_geo.h>
 #include "pointcloud/pcpatch.h"
 #include "pointcloud/pgsql_compat.h"
 #include "pointcloud/meos_schema_hook.h"

@@ -57,6 +57,7 @@
 #include <meos_geo.h>
 #include <meos_h3.h>
 #include <meos_quadbin.h>
+#include <meos_internal_geo.h>
 #include <meos_s2cell.h>
 
 /* Main program */

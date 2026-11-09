@@ -264,7 +264,6 @@ extern Temporal *tquadbin_from_mfjson(const char *mfjson);
 
 /* Constructors */
 
-extern Temporal *tquadbin_make(Quadbin value, TimestampTz t);
 extern TInstant *tquadbininst_make(Quadbin value, TimestampTz t);
 extern Temporal *tquadbin_from_base_temp(Quadbin value, const Temporal *temp);
 extern TSequence *tquadbinseq_from_base_tstzset(Quadbin value, const Set *s);

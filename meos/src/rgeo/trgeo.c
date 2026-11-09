@@ -1445,20 +1445,17 @@ trgeometry_as_tinstant(const Temporal *temp)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal sequence
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation string @nullable
+ * @param[in] interp Interpolation, `INTERP_NONE` for that of the value
  * @csqlfn #Trgeometry_as_tsequence()
  */
 TSequence *
-trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
+trgeometry_as_tsequence(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     if (temp->subtype == TSEQUENCE)
       interp = MEOS_FLAGS_GET_INTERP(temp->flags);
@@ -1467,8 +1464,11 @@ trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
   }
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequence *res = temporal_tsequence(tpose, interp);
+  pfree(tpose);
+  if (! res)
+    return NULL;
   TSequence *result = geo_tposeseq_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res); pfree(tpose);
+  pfree(res);
   return result;
 }
 
@@ -1476,20 +1476,17 @@ trgeometry_as_tsequence(const Temporal *temp, const char *interp_str)
  * @ingroup meos_rgeo_transf
  * @brief Return a temporal rigid geometry transformed to a temporal sequence set
  * @param[in] temp Temporal rigid geometry
- * @param[in] interp_str Interpolation string @nullable
+ * @param[in] interp Interpolation, `INTERP_NONE` for that of the value
  * @csqlfn #Trgeometry_as_tsequenceset()
  */
 TSequenceSet *
-trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str)
+trgeometry_as_tsequenceset(const Temporal *temp, interpType interp)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_TRGEOMETRY(temp, NULL);
 
-  interpType interp;
-  /* If the interpolation is not NULL */
-  if (interp_str)
-    interp = interptype_from_string(interp_str);
-  else
+  /* If the interpolation was not given */
+  if (interp == INTERP_NONE)
   {
     interp = MEOS_FLAGS_GET_INTERP(temp->flags);
     if (interp == INTERP_NONE || interp == DISCRETE)
@@ -1497,8 +1494,11 @@ trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str)
   }
   Temporal *tpose = trgeometry_to_tpose(temp);
   TSequenceSet *res = temporal_tsequenceset(tpose, interp);
+  pfree(tpose);
+  if (! res)
+    return NULL;
   TSequenceSet *result = geo_tposeseqset_to_trgeometry(trgeometry_geom_p(temp), res);
-  pfree(res); pfree(tpose);
+  pfree(res);
   return result;
 }
 
