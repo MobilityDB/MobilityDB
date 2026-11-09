@@ -94,10 +94,10 @@ SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromBinary(asBinary(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
-SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
+SELECT s2cellFromHexWKB('01550040E61000000000000000C9B554');
 /* Errors */
-SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
-SELECT s2cellFromHexWKB('01000000000000000000');
+SELECT s2cellFromHexWKB('01550040110F00000000000000C9B554');
+SELECT s2cellFromHexWKB('015500000000000000000000');
 
 -------------------------------------------------------------------------------
 -- Text round trip

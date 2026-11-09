@@ -33,7 +33,7 @@
  * @details A program that tests the @ref meos_typeof_hexwkb type
  * discriminator,
  * which peeks the MeosType tag from the header of a hex-encoded Well-Known
- * Binary (WKB) string of a set, span, span set, or temporal value.
+ * Binary (WKB) string of a set, span, span set, temporal value, or box.
  *
  * The program can be built as follows
  * @code
@@ -113,6 +113,13 @@ int main(void)
   val = intspanset_in("{[1,2],[4,5]}");
   hex = spanset_as_hexwkb(val, 0, &sz);
   check("intspanset", hex, T_INTSPANSET);
+  free(hex); free(val);
+
+  /* A box states its type in its header as every value whose body does not
+   * state it, as the sets above do */
+  val = tbox_in("TBOXINT XT([1, 3),[2001-01-01, 2001-01-02])");
+  hex = tbox_as_hexwkb(val, 0, &sz);
+  check("tbox", hex, T_TBOX);
   free(hex); free(val);
 
   /* Malformed input yields T_UNKNOWN without raising */

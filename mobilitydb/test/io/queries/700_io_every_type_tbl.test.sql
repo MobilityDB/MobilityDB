@@ -5810,9 +5810,9 @@ SELECT quadbinFromHexWKB(asHexWKB(quadbin '48427fffffffffff'))
        = quadbin '48427fffffffffff';
 SELECT quadbinFromHexWKB(asHexWKB(quadbin '480fffffffffffff', 'XDR'))
        = quadbin '480fffffffffffff';
-SELECT quadbinFromHexWKB('0140E6100000FFFFFFFFFF7F4248');
-SELECT quadbinFromHexWKB('0140110F0000FFFFFFFFFF7F4248');
-SELECT quadbinFromHexWKB('01003930000000000000');
+SELECT quadbinFromHexWKB('01470040E6100000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('01470040110F0000FFFFFFFFFF7F4248');
+SELECT quadbinFromHexWKB('014700003930000000000000');
 SELECT asText(quadbin '48427fffffffffff');
 SELECT quadbinFromText(asText(quadbin '48427fffffffffff'))
        = quadbin '48427fffffffffff';
@@ -7400,9 +7400,9 @@ SELECT s2cellFromBinary(asBinary(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromBinary(asBinary(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromHexWKB(asHexWKB(s2cell '54b5c9', 'XDR')) = s2cell '54b5c9';
-SELECT s2cellFromHexWKB('0140E61000000000000000C9B554');
-SELECT s2cellFromHexWKB('0140110F00000000000000C9B554');
-SELECT s2cellFromHexWKB('01000000000000000000');
+SELECT s2cellFromHexWKB('01550040E61000000000000000C9B554');
+SELECT s2cellFromHexWKB('01550040110F00000000000000C9B554');
+SELECT s2cellFromHexWKB('015500000000000000000000');
 SELECT asText(s2cell '47c3c444c');
 SELECT s2cellFromText(asText(s2cell '47c3c444c')) = s2cell '47c3c444c';
 SELECT s2cellFromText('54b5c9') = s2cell '54b5c9';

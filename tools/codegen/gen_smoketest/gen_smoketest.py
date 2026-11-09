@@ -1062,7 +1062,7 @@ TPOSE_CONFIG = dict(
     "[Pose(Point(0 0), 0.0)@2001-01-02, Pose(Point(1 0), 0.5)@2001-01-03]";
   char *poseset_wkt1 = "{\\"Pose(Point(0 0), 0.0)\\", \\"Pose(Point(1 1), 0.5)\\"}";
   char *pose_hexwkb1 =
-    "0101000000000000000000000000000000000000000000000000";
+    "01360001000000000000000000000000000000000000000000000000";
   /* pose_as_geopose() on SRID=4326;GEODPose(Point(2 49), 0.5) -- GeoPose
    * requires a geodetic pose, so the planar pose1 cannot be used. */
   char *pose_geopose1 =
@@ -1102,8 +1102,8 @@ TPOSE_CONFIG = dict(
     " PoseChain(Pose(Point(1 1), 0.5), Pose(Point(2 1), 0.5))@2001-01-03]";
   /* posechain_as_hexwkb() on posechain1. */
   char *posechain_hexwkb1 =
-    "0101020000000000000000000000000000000000000000000000000000000000"
-    "00000000F03F00000000000000000000000000000000";
+    "0152000102000000000000000000000000000000000000000000000000000000"
+    "000000000000F03F00000000000000000000000000000000";
   /* temporal_as_mfjson() on the tposechain1 sequence built below. */
   char *tposechain_mfjson1 =
     "{\\"type\\":\\"MovingPoseChain\\",\\"values\\":[[{\\"position\\":"
@@ -1326,7 +1326,7 @@ TCBUFFER_CONFIG = dict(
   char *tcbuffer_wkt1 =
     "[Cbuffer(Point(0 0), 0.5)@2001-01-02, Cbuffer(Point(1 0), 0.5)@2001-01-03]";
   char *cbuffer_hexwkb1 =
-    "0100000000000000F03F000000000000F03F000000000000E03F";
+    "01390000000000000000F03F000000000000F03F000000000000E03F";
   /* temporal_as_mfjson() on tcbuffer_wkt1's parsed value. */
   char *tcbuffer_mfjson1 =
     "{ \\"type\\": \\"MovingCircularBuffer\\", \\"values\\": [ "
@@ -1523,7 +1523,7 @@ TNPOINT_CONFIG = dict(
   char *npointset_wkt1 = "{\\"NPoint(1, 0.5)\\"}";
   char *tnpoint_wkt1 =
     "[NPoint(1, 0.0)@2001-01-02, NPoint(1, 0.5)@2001-01-03]";
-  char *npoint_hexwkb1 = "01010100000000000000000000000000E03F";
+  char *npoint_hexwkb1 = "013000010100000000000000000000000000E03F";
   /* temporal_as_mfjson() on tnpoint_wkt1's parsed value. */
   char *tnpoint_mfjson1 =
     "{ \\"type\\": \\"MovingNetworkPoint\\", \\"values\\": [ "
@@ -1951,7 +1951,8 @@ TGEOMETRY_CONFIG = dict(
    * literal; only geo_transform_pipeline needs its own writable copy. */
   char *pipeline1 = "+proj=pipeline +step +proj=noop";
   char *stbox_hexwkb1 =
-    "01010000000000000000000000000000244000000000000000000000000000002440";
+    "0119000100000000000000000000000000002440000000000000000000000000"
+    "00002440";
   char *stbox_wkt1 = "SRID=5676;STBOX X((0, 0), (10, 10))";
   char *tgeogpoint_wkt1 =
     "[SRID=4326;Point(2 49)@2001-01-02, SRID=4326;Point(3 49)@2001-01-03]";
