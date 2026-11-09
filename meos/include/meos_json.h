@@ -217,7 +217,6 @@ typedef enum
 /* Input and output functions */
 
 extern Set *jsonbset_in(const char *str);
-extern char *jsonbset_out(const Set *s, size_t *size_out);
 
 /* Constructor functions */
 
@@ -297,7 +296,6 @@ extern Set *union_set_jsonb(const Set *s, const Jsonb *jb);
 
 extern Temporal *tjsonb_from_mfjson(const char *str);
 extern Temporal *tjsonb_in(const char *str);
-extern char *tjsonb_out(const Temporal *temp, size_t *size_out);
 
 // Internal
 extern TInstant *tjsonbinst_in(const char *str);

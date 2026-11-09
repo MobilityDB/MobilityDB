@@ -4,7 +4,7 @@ name: MEOS UTF-8 smoke
 #
 # What this job pins:
 #   1. UTF-8 byte sequences round-trip through `text_in`/`text_out`,
-#      `ttext_in`/`ttext_out`, and `textset_in`/`textset_out` unchanged.
+#      `ttext_in`/`temporal_out`, and `textset_in`/`set_out` unchanged.
 #      The ttext / textset parsers only match ASCII delimiters
 #      (`"`, `,`, `}`, `]`, ...) and UTF-8 continuation bytes (>= 0x80)
 #      can never collide with them, so this is just byte-preservation.
@@ -116,7 +116,7 @@ jobs:
               Temporal *t = ttext_in("[\"Zürich\" @ 2001-01-01]");
               if (!t) { fprintf(stderr, "FAIL ttext_in NULL\n"); return 1; }
               size_t size;
-              char *out = ttext_out(t, &size);
+              char *out = temporal_out(t, 0, &size);
               expect_contains("ttext de", out, "Zürich");
               free(out); free(t);
             }
@@ -126,7 +126,7 @@ jobs:
               Temporal *t = ttext_in("[\"日本\" @ 2001-01-01]");
               if (!t) { fprintf(stderr, "FAIL ttext_in cjk NULL\n"); return 1; }
               size_t size;
-              char *out = ttext_out(t, &size);
+              char *out = temporal_out(t, 0, &size);
               expect_contains("ttext cjk", out, "日本");
               free(out); free(t);
             }
@@ -134,7 +134,7 @@ jobs:
               Temporal *t = ttext_in("[\"العربية\" @ 2001-01-01]");
               if (!t) { fprintf(stderr, "FAIL ttext_in ar NULL\n"); return 1; }
               size_t size;
-              char *out = ttext_out(t, &size);
+              char *out = temporal_out(t, 0, &size);
               expect_contains("ttext ar", out, "العربية");
               free(out); free(t);
             }
@@ -144,7 +144,7 @@ jobs:
               Set *s = textset_in("{\"Zürich\", \"日本\", \"العربية\", \"한국\"}");
               if (!s) { fprintf(stderr, "FAIL textset_in NULL\n"); return 1; }
               size_t size;
-              char *out = textset_out(s, &size);
+              char *out = set_out(s, 0, &size);
               expect_contains("textset de", out, "Zürich");
               expect_contains("textset cjk", out, "日本");
               expect_contains("textset ar", out, "العربية");

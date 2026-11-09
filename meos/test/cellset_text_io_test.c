@@ -29,16 +29,14 @@
 
 /**
  * @file
- * @brief A program that tests the typed text input and output of the cell
- * index sets
- * @details Each set type gives its text form through a typed public function
- * that
- * tests its argument, as intset_out does for an integer set. The program
- * verifies that quadbinset_out, s2cellset_out and h3indexset_out answer the
- * text their input reads back with no error left behind, that each reports a
- * null set with MEOS_ERR_INVALID_ARG and an integer set with
- * MEOS_ERR_INVALID_ARG_TYPE, and that quadbinset_in, s2cellset_in and
- * h3indexset_in report a null string with MEOS_ERR_INVALID_ARG.
+ * @brief A program that tests the text input and output of the cell index
+ * sets
+ * @details Each set type reads its text through a typed function, which the
+ * text needs since it does not state its type, and writes it through set_out,
+ * the writer of every set. The program verifies that set_out writes the text
+ * quadbinset_in, s2cellset_in and h3indexset_in read back with no error left
+ * behind, that it reports a null set with MEOS_ERR_INVALID_ARG, and that each
+ * input reports a null string with MEOS_ERR_INVALID_ARG.
  *
  * The program can be build as follows
  * @code
@@ -56,38 +54,30 @@
 #include <meos_s2cell.h>
 
 typedef Set *(*text_in_fn)(const char *);
-typedef char *(*text_out_fn)(const Set *, size_t *);
 
 /* Read a set, write it out, read the output back and write it again: the
  * two outputs agree, the first reading back what the input reads. Then the
- * output reports a null set and a set of another type, and the input a null
- * string. */
+ * output reports a null set, and the input a null string. The check of
+ * temporal_text_io_test, #check there, over sets */
 static void
-check(const char *name, text_in_fn in, text_out_fn out, const char *text,
-  const Set *other)
+check(const char *name, text_in_fn in, const char *text)
 {
   Set *s = in(text);
   assert(s && meos_errno() == 0);
   size_t size;
-  char *str1 = out(s, &size);
+  char *str1 = set_out(s, 0, &size);
   Set *back = str1 ? in(str1) : NULL;
-  char *str2 = back ? out(back, &size) : NULL;
+  char *str2 = back ? set_out(back, 0, &size) : NULL;
   printf("%s: %s, errno %d\n", name, str1 ? str1 : "NULL", meos_errno());
   assert(str1 && str2 && strcmp(str1, str2) == 0);
   assert(size == strlen(str2) + 1);
   assert(meos_errno() == 0);
   free(s); free(back); free(str1); free(str2);
 
-  char *res = out(NULL, &size);
-  printf("%s(NULL): %s, errno %d\n", name, res ? "a value" : "NULL",
+  char *res = set_out(NULL, 0, &size);
+  printf("set_out(NULL): %s, errno %d\n", res ? "a value" : "NULL",
     meos_errno());
   assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG);
-  meos_errno_reset();
-
-  res = out(other, &size);
-  printf("%s(intset): %s, errno %d\n", name, res ? "a value" : "NULL",
-    meos_errno());
-  assert(res == NULL && meos_errno() == MEOS_ERR_INVALID_ARG_TYPE);
   meos_errno_reset();
 
   Set *set = in(NULL);
@@ -106,17 +96,9 @@ int main(void)
   meos_initialize_timezone("UTC");
   meos_initialize_noexit_error_handler();
 
-  Set *intset = intset_in("{1, 2}");
-  assert(intset);
-
-  check("quadbinset_out", quadbinset_in, quadbinset_out,
-    "{480fffffffffffff, 48427fffffffffff}", intset);
-  check("s2cellset_out", s2cellset_in, s2cellset_out,
-    "{47c3c3, 54b5c9}", intset);
-  check("h3indexset_out", h3indexset_in, h3indexset_out,
-    "{880326b885fffff, 880326b88dfffff}", intset);
-
-  free(intset);
+  check("quadbinset", quadbinset_in, "{480fffffffffffff, 48427fffffffffff}");
+  check("s2cellset", s2cellset_in, "{47c3c3, 54b5c9}");
+  check("h3indexset", h3indexset_in, "{880326b885fffff, 880326b88dfffff}");
 
   /* Finalize MEOS */
   meos_finalize();

@@ -213,26 +213,29 @@ spanset_in(const char *str, MeosType spansettype)
 }
 
 /**
- * @ingroup meos_internal_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a span set
+ * @ingroup meos_setspan_inout
+ * @brief Return the Well-Known Text (WKT) representation of a span set, the
+ * output of every span set type, as #spanset_as_wkb writes its Well-Known
+ * Binary
  * @param[in] ss Span set
  * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out If not NULL, the size of the result, the terminating
- * null character included
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
  * @csqlfn #Spanset_out(), #Spanset_as_text()
  */
 char *
 spanset_out(const SpanSet *ss, int maxdd, size_t *size_out)
 {
-  assert(ss);
+  size_t str_size;
   /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(ss, NULL); VALIDATE_NOT_NULL(size_out, NULL);
   if (! ensure_not_negative(maxdd))
     return NULL;
 
   char **strings = palloc(sizeof(char *) * ss->count);
   for (int i = 0; i < ss->count; i++)
   {
-    strings[i] = span_out(SPANSET_SP_N(ss, i), maxdd, NULL);
+    strings[i] = span_out(SPANSET_SP_N(ss, i), maxdd, &str_size);
     if (! strings[i])
     {
       pfree_array((void **) strings, i);
@@ -317,94 +320,6 @@ tstzspanset_in(const char *str)
 
 /*****************************************************************************/
 
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of an integer span set
- * @param[in] ss Span set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Spanset_out(), #Spanset_as_text()
- */
-char *
-intspanset_out(const SpanSet *ss, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_INTSPANSET(ss, NULL);
-  return spanset_out(ss, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a big integer span set
- * @param[in] ss Span set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Spanset_out(), #Spanset_as_text()
- */
-char *
-bigintspanset_out(const SpanSet *ss, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_BIGINTSPANSET(ss, NULL);
-  return spanset_out(ss, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a float span set
- * @param[in] ss Span set
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Spanset_out(), #Spanset_as_text()
- */
-char *
-floatspanset_out(const SpanSet *ss, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_FLOATSPANSET(ss, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return spanset_out(ss, maxdd, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a date span set
- * @param[in] ss Span set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Spanset_out(), #Spanset_as_text()
- */
-char *
-datespanset_out(const SpanSet *ss, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_DATESPANSET(ss, NULL);
-  return spanset_out(ss, 0, size_out);
-}
-
-/**
- * @ingroup meos_setspan_inout
- * @brief Return the Well-Known Text (WKT) representation of a timpespantz span set
- * @param[in] ss Span set
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Spanset_out(), #Spanset_as_text()
- */
-char *
-tstzspanset_out(const SpanSet *ss, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TSTZSPANSET(ss, NULL);
-  return spanset_out(ss, 0, size_out);
-}
-
 /*****************************************************************************
  * Constructor functions
  ****************************************************************************/
@@ -432,6 +347,7 @@ SpanSet *
 spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
   bool order)
 {
+  size_t str_size;
   assert(spans); assert(count > 0); assert(count <= maxcount);
   /* Test the validity of the spans */
   if (! order)
@@ -443,8 +359,8 @@ spanset_make_exp(Span *spans, int count, int maxcount, bool normalize,
         (cmp == 0 && spans[i].upper_inc && spans[i + 1].lower_inc))
       {
         /* A span whose bound has no text form is written as empty */
-        char *str1 = span_out(&spans[i], OUT_MAX_DIGITS, NULL);
-        char *str2 = span_out(&spans[i + 1], OUT_MAX_DIGITS, NULL);
+        char *str1 = span_out(&spans[i], OUT_MAX_DIGITS, &str_size);
+        char *str2 = span_out(&spans[i + 1], OUT_MAX_DIGITS, &str_size);
         char pair[256];
         snprintf(pair, sizeof(pair), "%s, %s", str1 ? str1 : "",
           str2 ? str2 : "");

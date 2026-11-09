@@ -68,26 +68,6 @@ cbufferset_in(const char *str)
   return set_parse(&str, T_CBUFFERSET);
 }
 
-/**
- * @ingroup meos_cbuffer_set_inout
- * @brief Return the string representation of a circular buffer set
- * @param[in] s Set
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- * @csqlfn #Set_out()
- */
-char *
-cbufferset_out(const Set *s, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_CBUFFERSET(s, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return set_out(s, maxdd, size_out);
-}
-
 /*****************************************************************************
  * Constructor functions
  *****************************************************************************/

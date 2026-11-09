@@ -105,8 +105,9 @@ PG_FUNCTION_INFO_V1(Span_out);
 Datum
 Span_out(PG_FUNCTION_ARGS)
 {
+  size_t str_size;
   Span *s = PG_GETARG_SPAN_P(0);
-  PG_RETURN_CSTRING(span_out(s, OUT_DEFAULT_DECIMAL_DIGITS, NULL));
+  PG_RETURN_CSTRING(span_out(s, OUT_DEFAULT_DECIMAL_DIGITS, &str_size));
 }
 
 PGDLLEXPORT Datum Span_recv(PG_FUNCTION_ARGS);
@@ -160,11 +161,12 @@ PG_FUNCTION_INFO_V1(Span_as_text);
 Datum
 Span_as_text(PG_FUNCTION_ARGS)
 {
+  size_t str_size;
   Span *s = PG_GETARG_SPAN_P(0);
   int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
   if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
     dbl_dig_for_wkt = PG_GETARG_INT32(1);
-  char *str = span_out(s, dbl_dig_for_wkt, NULL);
+  char *str = span_out(s, dbl_dig_for_wkt, &str_size);
   text *result = cstring_to_text(str);
   pfree(str);
   PG_RETURN_TEXT_P(result);

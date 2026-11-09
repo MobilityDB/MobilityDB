@@ -181,7 +181,7 @@ int main(void){
   size_t size;
   text *a = text_in(\"x\"); char *b = text_out(a, &size);
   text *u = text_upper(a); text *l = text_lower(a); text *c = text_initcap(a);
-  Temporal *t = ttext_in(\"[\\\"x\\\"@2001-01-01]\"); char *o = ttext_out(t, &size);
+  Temporal *t = ttext_in(\"[\\\"x\\\"@2001-01-01]\"); char *o = temporal_out(t, 0, &size);
   (void)b;(void)u;(void)l;(void)c;(void)o;
   meos_finalize(); return 0;
 }" > "$pfx/t.c"

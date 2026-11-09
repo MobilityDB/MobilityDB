@@ -475,7 +475,6 @@ extern bool geo_same(const GSERIALIZED *gs1, const GSERIALIZED *gs2);
 
 extern Set *geogset_in(const char *str);
 extern Set *geomset_in(const char *str);
-extern char *spatialset_out(const Set *s, int maxdd, size_t *size_out);
 extern char *spatialset_as_text(const Set *set, int maxdd, size_t *size_out);
 extern uint8_t *spatialset_as_ewkb(const Set *s, uint8_t variant, size_t *size_out);
 extern char *spatialset_as_ewkt(const Set *set, int maxdd, size_t *size_out);
@@ -651,7 +650,6 @@ extern uint8_t *stbox_sortkey(const STBox *box, size_t *size);
 
 /* Input and output functions */
 
-extern char *tspatial_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern Temporal *tgeogpoint_from_mfjson(const char *str);
 extern Temporal *tgeogpoint_in(const char *str);
 extern Temporal *tgeography_from_mfjson(const char *mfjson);

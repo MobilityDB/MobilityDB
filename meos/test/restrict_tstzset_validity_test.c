@@ -132,7 +132,7 @@ int main(void)
   res = temporal_at_tstzset(temp, tstzset);
   assert(res != NULL);
   assert(meos_errno() == 0);
-  char *out = tint_out(res, &size_out);
+  char *out = temporal_out(res, 0, &size_out);
   printf("temporal_at_tstzset([1@2001-01-01, 2@2001-01-03], "
     "{2001-01-01, 2001-01-02}): %s\n", out);
   free(out); free(res);

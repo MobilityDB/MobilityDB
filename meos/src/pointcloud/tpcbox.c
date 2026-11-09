@@ -452,7 +452,7 @@ tpcbox_wkt_out(const TPCBox *box, bool extended, int maxdd, size_t *size_out)
   const char *boxtype = geodetic ? "GEODTPCBOX" : "TPCBOX";
   if (hast)
   {
-    period = span_out(&box->period, maxdd, NULL);
+    period = span_out(&box->period, maxdd, &part_size);
     if (! period)
     {
       pfree(str);

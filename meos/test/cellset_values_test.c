@@ -150,7 +150,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     Set *one = h3index_to_set(hv[i]);
-    char *str = h3indexset_out(one, &size_out);
+    char *str = set_out(one, 0, &size_out);
     printf("  value %d: %s\n", i, str);
     assert(str && strcmp(str, expected[i]) == 0);
     free(str); free(one);
