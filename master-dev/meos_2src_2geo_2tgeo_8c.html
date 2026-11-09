@@ -84,6 +84,9 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="tgeo__aggfuncs_8h_source.html">geo/tgeo_aggfuncs.h</a>&quot;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;liblwgeom.h&gt;</code><br />
+<code>#include &lt;gserialized2.h&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos_8h_source.html">meos.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal_8h_source.html">meos_internal.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="meos__internal__geo_8h_source.html">meos_internal_geo.h</a>&gt;</code><br />
@@ -219,6 +222,9 @@ Functions</h2></td></tr>
 <tr class="memitem:gacda4cc81539c7052705befb1ec426ec0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__constructor_gacda4cc81539c7052705befb1ec426ec0.html#gacda4cc81539c7052705befb1ec426ec0">tpointinst_make</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, TimestampTz <a class="el" href="trgeo__distance_8txt_abb5993ac027732cab8badd32f1507f44.html#abb5993ac027732cab8badd32f1507f44">t</a>)</td></tr>
 <tr class="memdesc:gacda4cc81539c7052705befb1ec426ec0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal point instant from a point and a timestamptz.  <a href="group__meos__geo__constructor_gacda4cc81539c7052705befb1ec426ec0.html#gacda4cc81539c7052705befb1ec426ec0">More...</a><br /></td></tr>
 <tr class="separator:gacda4cc81539c7052705befb1ec426ec0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ae54d8c8f5a6de2fe2a14020aa51009"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTInstant.html">TInstant</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="meos_2src_2geo_2tgeo_8c_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009">tpointinst_make_coords</a> (double x, double y, double z, bool hasz, bool geodetic, int32_t srid, TimestampTz <a class="el" href="trgeo__distance_8txt_abb5993ac027732cab8badd32f1507f44.html#abb5993ac027732cab8badd32f1507f44">t</a>)</td></tr>
+<tr class="memdesc:a6ae54d8c8f5a6de2fe2a14020aa51009"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal point instant from the coordinates of a point and a timestamptz.  <a href="meos_2src_2geo_2tgeo_8c_a6ae54d8c8f5a6de2fe2a14020aa51009.html#a6ae54d8c8f5a6de2fe2a14020aa51009">More...</a><br /></td></tr>
+<tr class="separator:a6ae54d8c8f5a6de2fe2a14020aa51009"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafe11d30604192e4ddcf7d1c90a711c6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structTSequence.html">TSequence</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__meos__geo__constructor_gafe11d30604192e4ddcf7d1c90a711c6e.html#gafe11d30604192e4ddcf7d1c90a711c6e">tpointseq_from_base_tstzset</a> (const <a class="el" href="structGSERIALIZED.html">GSERIALIZED</a> *gs, const <a class="el" href="structSet.html">Set</a> *s)</td></tr>
 <tr class="memdesc:gafe11d30604192e4ddcf7d1c90a711c6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a temporal geometry point discrete sequence from a point and a timestamptz set.  <a href="group__meos__geo__constructor_gafe11d30604192e4ddcf7d1c90a711c6e.html#gafe11d30604192e4ddcf7d1c90a711c6e">More...</a><br /></td></tr>
 <tr class="separator:gafe11d30604192e4ddcf7d1c90a711c6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
