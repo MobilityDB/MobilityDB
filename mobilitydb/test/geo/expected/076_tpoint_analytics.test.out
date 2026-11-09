@@ -1274,6 +1274,13 @@ FROM unnest(instants(tgeompoint '{Point(0 0)@2001-01-01 00:00:00, Point(5000 0)@
  t
 (1 row)
 
+SELECT asText(reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst)))
+FROM unnest(ARRAY[tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(0 0)@2001-01-01 00:00:00', tgeompoint 'Point(10 0)@2001-01-01 00:00:01', tgeompoint 'Point(10 0)@2001-01-01 00:00:01']) AS inst;
+                                       astext                                        
+-------------------------------------------------------------------------------------
+ [POINT(0 0)@Mon Jan 01 00:00:00 2001 PST, POINT(10 0)@Mon Jan 01 00:00:01 2001 PST]
+(1 row)
+
 /* Errors */
 SELECT reachabilityFilterAgg(inst, 100 ORDER BY getTimestamp(inst) DESC)
 FROM unnest(instants(tgeompoint '{Point(0 0)@2001-01-01, Point(1 1)@2001-01-02}')) AS inst;
