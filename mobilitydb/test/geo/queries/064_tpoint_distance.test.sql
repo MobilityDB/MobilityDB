@@ -972,5 +972,9 @@ SELECT merge(tgeompoint 'Point(0 0)@2001-01-01', tgeompoint 'Point(0 0 0)@2001-0
 SELECT tgeompoint 'SRID=3857;Point(0 0)@2001-01-01' |=| tgeompoint 'SRID=4326;Point(0 0)@2001-01-01';
 SELECT asText(NearestApproachInstant(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
 SELECT asText(shortestLine(tgeompoint '[Point(0 0 7)@2001-01-01, Point(2 0 7)@2001-01-03]', geometry 'Point(1 1)'));
+-- A 3D polyhedral surface is read in 2D as any 3D operand of a 2D value
+SELECT tDistance(tgeompoint '[Point(0 0)@2001-01-01, Point(3 0)@2001-01-02]', geometry 'PolyhedralSurface Z(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)))');
+SELECT round(nearestApproachDistance(tgeompoint '[Point(3 3)@2001-01-01, Point(4 4)@2001-01-02]', geometry 'PolyhedralSurface Z(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)))'), 6);
+SELECT round(geometry 'PolyhedralSurface Z(((0 0 1,2 0 1,2 2 1,0 2 1,0 0 1)))' |=| tgeompoint '[Point(3 3)@2001-01-01, Point(4 4)@2001-01-02]', 6);
 
 -------------------------------------------------------------------------------
