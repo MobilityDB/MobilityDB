@@ -79,7 +79,9 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   branch `clean/tnpoint-drop-zm-flags` rewrites `842c640e83` and rewrites `dd6c9ed0ef` there, the
   `route_point_tinstant` of `meos/src/npoint/tnpoint.c`, which takes no flags, and the Z and M
   flags `tnpointseq_tgeompointseq_cont` copies from the route, which `ensure_valid_route` keeps
-  empty.
+  empty. Head `707f4121fe` on master `95013f9609` holds its seven receipts (strict, Windows,
+  cppcheck, valgrind, smoke, speed, and the CGAL oracle 1111 of 1111). MERGED as MobilityDB #3526
+  (`be21561763`).
 - **Each enumeration a host passes to MEOS names its values as text through one pair,
   `<enum lowercased>_name` and `<enum lowercased>_from_string`**, outside the plan, as the owner
   decided on 2026-11-08 ("approve the rewrite"): the pair of `MeosPixType` takes that name, so
