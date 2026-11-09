@@ -734,7 +734,7 @@ json_validate(text *js, bool check_unique_keys, bool throw_error)
   {
     if (throw_error)
     {
-      meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+      meos_error(ERROR, MEOS_ERR_DUPLICATE_JSON_OBJECT_KEY_VALUE,
         "duplicate JSON object key value");
     }
     return false;      /* not unique keys */

@@ -2020,7 +2020,7 @@ uniqueifyJsonbObject(JsonbValue *object, bool unique_keys, bool skip_nulls)
     qsort_arg(object->val.object.pairs, object->val.object.nPairs, sizeof(JsonbPair),
           lengthCompareJsonbPair, &hasNonUniq);
   if (hasNonUniq && unique_keys)
-    meos_error(ERROR, MEOS_ERR_INTERNAL_ERROR,
+    meos_error(ERROR, MEOS_ERR_DUPLICATE_JSON_OBJECT_KEY_VALUE,
       "duplicate JSON object key value");
   if (hasNonUniq || skip_nulls)
   {
