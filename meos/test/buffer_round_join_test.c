@@ -37,7 +37,11 @@
  * exactly a point; a square at projected coordinates narrower than the
  * distance; and a rhombus whose coordinates span 2^1000, its offsets and
  * joins decided across that spread. Each buffer is a surface that covers the polygon it is taken of,
- * with no error, and the holed square's buffer also covers its hole.
+ * with no error, and the holed square's buffer also covers its hole. A band
+ * whose ends lie near 1e200, buffered by about 1e183, returns: past the
+ * range of the exact signs of its arcs they are declined. A line whose cap
+ * is two arcs one unit in the last place apart is answered, its signs held
+ * in numbers wider than expansions.
  *
  * The area of a buffer has a closed form where the polygon is a square, and
  * the buffers below answer it: the square at coordinates whose differences
@@ -58,6 +62,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <meos.h>
 #include <meos_geo.h>
 #include <meos_internal_geo.h>
@@ -121,6 +126,50 @@ buffer_area_is(const char *label, const char *wkt, double area)
   free(geo); free(buf);
 }
 
+/* The buffer of @p wkt by @p dist, as #buffer_box_holds takes it at
+ * coordinates whose squares no double holds, asserted to return within a
+ * few seconds of processor time: there the products of the exact signs of
+ * an arc meeting an offset pass 2^1000, and the signs are declined rather
+ * than carried on in expansions that only grow. What answers the buffer
+ * then is not judged here */
+static void
+buffer_returns(const char *label, const char *wkt, double dist)
+{
+  GSERIALIZED *geo = geom_in(wkt, -1);
+  assert(geo != NULL);
+  meos_errno_reset();
+  clock_t start = clock();
+  GSERIALIZED *buf = geom_buffer(geo, dist, "");
+  double secs = (double) (clock() - start) / CLOCKS_PER_SEC;
+  printf("geom_buffer(%s): returned in %s\n", label,
+    secs < 5.0 ? "under 5 s" : "5 s or more");
+  assert(secs < 5.0);
+  free(geo);
+  if (buf)
+    free(buf);
+}
+
+/* The buffer of @p wkt by @p dist, as #buffer_box_holds takes it, asserted
+ * to be answered with no error and to contain the first vertex of the line,
+ * which stands the whole distance inside it */
+static void
+buffer_holds_start(const char *label, const char *wkt, const char *start,
+  double dist)
+{
+  GSERIALIZED *geo = geom_in(wkt, -1);
+  GSERIALIZED *pt = geom_in(start, -1);
+  assert(geo != NULL && pt != NULL);
+  meos_errno_reset();
+  GSERIALIZED *buf = geom_buffer(geo, dist, "");
+  printf("geom_buffer(%s): %d, errno %d\n", label, buf != NULL, meos_errno());
+  assert(buf != NULL);
+  assert(meos_errno() == 0);
+  bool holds = geom_contains(buf, pt);
+  printf("  it contains the start of the line: %d\n", holds);
+  assert(holds);
+  free(geo); free(pt); free(buf);
+}
+
 int
 main(void)
 {
@@ -144,6 +193,21 @@ main(void)
   const char *spread = "Polygon((-1.0715086071862673e+301 1,0 0,"
     "1.0715086071862673e+301 1,0 2,-1.0715086071862673e+301 1))";
   buffer_box_holds("a rhombus whose coordinates span 2^1000", spread);
+
+  buffer_returns("a band 2e200 wide with a notch, by 2e183",
+    "Polygon((-1e200 -1,1e200 -1,1e200 1,0.1 1,0 0.5,-0.1 1,-1e200 1,"
+    "-1e200 -1))", 2.1245519712670684e+183);
+
+  /* The cap at its start is two arcs of one circle whose centres the
+   * offsets round one unit in the last place apart: the sign of their
+   * meeting is held only by numbers wider than expansions */
+  buffer_holds_start("a line whose cap is two arcs one ulp apart",
+    "LineString(979403.0128193274 814667.1888555789,"
+    "977964.507578686 815985.468285189,978638.7202668741 815940.6542353164,"
+    "979693.8684792126 814189.2127569565,"
+    "978005.5565088153 815192.5834514729,"
+    "979027.7235275264 815974.5523308413)",
+    "Point(979403.0128193274 814667.1888555789)", 0.054522116184764186);
 
   /* A square of side 10 by 1: its area, its perimeter by 1 and the disc */
   const double pi = 3.14159265358979323846;
