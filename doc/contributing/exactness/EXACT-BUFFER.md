@@ -123,13 +123,18 @@ items).
   natural areas at distance 1 (746.6M against 569M), 1.120 at 50, 1.004 on the joints and 1.017 on
   the jittered holes, and every other buffer cell at parity, lines at distance 1 0.728. There the native
   pass reads 537M with the certificate off and 746M with it on, so the certificate costs 209M
-  where parity leaves it about 31M: its pass over the written pieces reads 313M, the bound of each
-  arc piece 113M over 91 thousand arcs, the sweep of the grown boxes 65M, the ends of each pair 51M
-  and the loop over the pairs about 82M. Of its 264 892 pairs, only 20 928 reach a test. A separate
-  pass cannot reach 31M, its sweep alone reading 65M. So the next cut has two parts. The pieces are
-  paired by the arrangement's own sweep of the edges. And the bound of each arc piece is a cheap bound,
-  proven never to be smaller than H, which the margin and the test H < r read; the full bound is
-  computed only where a test needs it.
+  where parity leaves it about 31M. The buffer of each row runs twice in the probe (384
+  certificates for 192 rows), so per timed pass, its pass over the written pieces reads about
+  156M: the bound of each arc piece about 56M, the sweep of the grown boxes about 33M, the ends of
+  each pair about 26M and the loop over the pairs about 41M. That is about 1 660 instructions a
+  piece against a budget of about 250. Of the 264 892 pairs the sweep finds, 251 754 share an end
+  and are exactly each piece and its successor in its ring, and 13 128 do not. Only 20 928 pairs
+  reach a test. The chord bound H1 cannot stand in for the bound of an arc piece: on 84 866 of
+  88 192 arcs it is more than 16 times the smaller of H2 and H3. Removing the sweep and evaluating
+  H2 and H3 more cheaply still leaves about 100M, so the certificate must cost per test, not per
+  piece. Neighbours are read where the arrangement writes its rings, from ring order. Pieces that
+  share no end are read on the pairs its noding already sweeps, which today pad the boxes by D alone
+  and so need a margin that covers the arcs.
 - **MobilityDB #3523**, merged as `0b4cb5b029`, sorts once the nodes a box read of the buffer's
   node index gathers, rather than shifting each into place, where a box of n nodes costs n squared
   on a long piece. Shifting them puts the line cells above parity, 6.89, 4.38 and 7.66 at distances
