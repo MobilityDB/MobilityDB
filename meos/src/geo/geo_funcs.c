@@ -45,6 +45,7 @@
 #include <utils/float.h>
 #include <utils/memutils.h>  /* TopMemoryContext */
 #include <pgtypes.h>
+#include <port/pg_bitutils.h>
 /* PostGIS */
 #include "liblwgeom.h"
 #include "liblwgeom_internal.h"
@@ -916,6 +917,7 @@ grow_expansion(int elen, const double *e, double b, double *h)
 static int cross_product_sign_wide(double ax, double ay, double bx,
   double by, double cx, double cy, double dx, double dy);
 static inline int double_lowest_bit(double a);
+static inline int double_lowest_set_bit(double a);
 
 /**
  * @brief Add the cross product of the vectors B - A and D - C, exactly, into
@@ -1023,9 +1025,9 @@ cross_product_sign_exact(double ax, double ay, double bx, double by,
   {
     low[i] = INT_MAX;
     if (d[i] != 0.0)
-      low[i] = double_lowest_bit(d[i]);
+      low[i] = double_lowest_set_bit(d[i]);
     if (t[i] != 0.0)
-      low[i] = Min(low[i], double_lowest_bit(t[i]));
+      low[i] = Min(low[i], double_lowest_set_bit(t[i]));
   }
   if ((low[0] != INT_MAX && low[1] != INT_MAX && low[0] + low[1] < -1074) ||
       (low[2] != INT_MAX && low[3] != INT_MAX && low[2] + low[3] < -1074))
@@ -1673,6 +1675,28 @@ double_lowest_bit(double a)
 }
 
 /**
+ * @brief Return the exponent of the lowest set bit of a nonzero finite
+ * double, the largest power of two it is a multiple of
+ * @details A product, a sum or a scaling by a power of two is exact where the
+ * lowest set bit of the exact result is not below 2^-1074, which the lowest
+ * set bits of the operands bound. The unit in the last place
+ * (#double_lowest_bit) bounds it too, but up to 52 bits lower: 2 has its unit
+ * in the last place at 2^-51, so beside a value of 2^134 the scaling that
+ * brings the largest into [1, 2) moves it below a bound that its lowest set
+ * bit, 2^1, stays above
+ */
+static inline int
+double_lowest_set_bit(double a)
+{
+  uint64_t bits;
+  memcpy(&bits, &a, sizeof(bits));
+  uint64_t mant = bits & 0xFFFFFFFFFFFFFULL;
+  if ((bits >> 52) & 0x7FF)
+    mant |= 1ULL << 52;
+  return double_lowest_bit(a) + pg_rightmost_one_pos64(mant);
+}
+
+/**
  * @brief Return the exponent of a power of two, the multiplier of a product
  */
 static inline int
@@ -1702,10 +1726,11 @@ square_products_exact(const double *left, const double *right,
     if (left[j] == 0.0 || right[j] == 0.0)
       continue;
     int ef = double_pow2_exponent(factor[j]);
-    int la = double_lowest_bit(left[j]), lb = double_lowest_bit(right[j]);
-    if (la + lb + ef < -1074)
+    if (double_lowest_set_bit(left[j]) + double_lowest_set_bit(right[j]) +
+        ef < -1074)
       return false;
-    /* A double is below 2^53 times its lowest bit */
+    /* A double is below 2^53 times its unit in the last place */
+    int la = double_lowest_bit(left[j]), lb = double_lowest_bit(right[j]);
     if (la + lb + ef + 106 > 1016)
       return false;
   }
@@ -1950,9 +1975,9 @@ lowest_bits_range(const double *v, int n, int *low, int *high)
   {
     if (v[i] == 0.0)
       continue;
-    int lb = double_lowest_bit(v[i]);
+    int lb = double_lowest_set_bit(v[i]), ub = double_lowest_bit(v[i]);
     *low = (lb < *low) ? lb : *low;
-    *high = (lb > *high) ? lb : *high;
+    *high = (ub > *high) ? ub : *high;
   }
 }
 
@@ -2136,12 +2161,12 @@ point_distance_scale_exact(const double *d, const double *e, int ndims, int k,
 {
   for (int i = 0; i < ndims; i++)
   {
-    if (d[i] != 0.0 && double_lowest_bit(d[i]) + k < -1074)
+    if (d[i] != 0.0 && double_lowest_set_bit(d[i]) + k < -1074)
       return false;
-    if (e[i] != 0.0 && double_lowest_bit(e[i]) + k < -1074)
+    if (e[i] != 0.0 && double_lowest_set_bit(e[i]) + k < -1074)
       return false;
   }
-  return r == 0.0 || double_lowest_bit(r) + k >= -1074;
+  return r == 0.0 || double_lowest_set_bit(r) + k >= -1074;
 }
 
 static double point_distance_offset_inputs(const double *p, const double *q,
@@ -2483,18 +2508,22 @@ point_distance_offset_side(const double *p, const double *q, const double *d,
   }
   /* Scaling by 2^k, and halving, is exact where the lowest bit of the
    * result is not below 2^-1074, the scaled values below 2 */
-  int lc = (c == 0.0) ? INT_MAX : double_lowest_bit(c) + k;
-  int lg = double_lowest_bit(g) + k - 1;
+  int lc = (c == 0.0) ? INT_MAX : double_lowest_set_bit(c) + k;
+  int lg = double_lowest_set_bit(g) + k - 1;
   if (scaled && lc >= -1074 && lg >= -1074)
   {
     const double t[4] = {rs, c * f1 * f2, g * f1 * f2 / 2.0, rlos};
+    /* The range takes the lowest set bits below and the units in the last
+     * place above, as #lowest_bits_range takes them */
     if (lc != INT_MAX)
     {
+      int uc = double_lowest_bit(c) + k;
       low = (lc < low) ? lc : low;
-      high = (lc > high) ? lc : high;
+      high = (uc > high) ? uc : high;
     }
+    int ug = double_lowest_bit(g) + k - 1;
     low = (lg < low) ? lg : low;
-    high = (lg > high) ? lg : high;
+    high = (ug > high) ? ug : high;
     return point_distance_square_sign_given(d, e, ndims, t, nt,
       lowest_bits_exact(low, high));
   }
@@ -2913,7 +2942,7 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
      * double of the radius, every side is read on the input coordinates; the
      * first double of the radius is read below */
     if (! point_distance_scale_exact(d, e, ndims, k, 0.0) ||
-        (rlo != 0.0 && double_lowest_bit(rlo) + k < -1074))
+        (rlo != 0.0 && double_lowest_set_bit(rlo) + k < -1074))
       return point_distance_offset_inputs(p, q, ndims, r, rlo);
     /* Every scaled value is below 4, so its lowest bit is at most 2^-50 and
      * only the lowest one is tracked */
@@ -2925,20 +2954,20 @@ point_distance_offset_pair(const double *p, const double *q, int ndims,
       e[i] = e[i] * f1 * f2;
       sum += d[i] * d[i];
       if (d[i] != 0.0)
-        low = Min(low, double_lowest_bit(d[i]));
+        low = Min(low, double_lowest_set_bit(d[i]));
       if (e[i] != 0.0)
-        low = Min(low, double_lowest_bit(e[i]));
+        low = Min(low, double_lowest_set_bit(e[i]));
     }
     /* The radius scales exactly where its lowest bit stays above 2^-1074, and
      * otherwise lies far below the distance */
     rs = r * f1 * f2;
-    int lr = double_lowest_bit(r) + k;
+    int lr = double_lowest_set_bit(r) + k;
     scaled = (lr >= -1074);
     low = Min(low, lr);
     if (rlo != 0.0)
     {
       rlos = rlo * f1 * f2;
-      low = Min(low, double_lowest_bit(rlo) + k);
+      low = Min(low, double_lowest_set_bit(rlo) + k);
     }
 
     /* No farther apart than the radius: S - r^2 is not positive. The radius
@@ -6430,7 +6459,8 @@ linesegm_param_cmp(const double *a, const double *b, const double *p,
  * @details The path of #point_segment_distance_offset_exact where scaling the
  * coordinates would round a value or leave a product of four of them outside
  * the doubles, or where a difference overflows and a quarter of a coordinate
- * would round. Whether the nearest point is an end is the sign
+ * would round or the answer on the quarters falls below the normal doubles.
+ * Whether the nearest point is an end is the sign
  * #point_segment_dot_sign_inputs reads, an end is a pair of points
  * (#point_distance_offset_exact), and for the foot the answer is the smallest
  * double whose upper midpoint the distance less the radius does not pass
@@ -6567,7 +6597,7 @@ point_segment_scale_exact(const double *v, int n, int k)
 {
   for (int i = 0; i < n; i++)
   {
-    if (v[i] != 0.0 && double_lowest_bit(v[i]) + k < -268)
+    if (v[i] != 0.0 && double_lowest_set_bit(v[i]) + k < -268)
       return false;
   }
   return true;
@@ -6592,7 +6622,7 @@ point_segment_quarter_rounds(const double *p, const double *a,
   v[n++] = r;
   for (int i = 0; i < n; i++)
   {
-    if (v[i] != 0.0 && double_lowest_bit(v[i]) - 2 < -1074)
+    if (v[i] != 0.0 && double_lowest_set_bit(v[i]) - 2 < -1074)
       return true;
   }
   return false;
@@ -7323,7 +7353,10 @@ point_segment_distance_offset_exact(const double *p, const double *a,
   if ((sw == 2 || su == 2) && point_segment_quarter_rounds(p, a, b, ndims, r))
     return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   /* A difference beyond the largest double: a quarter of every value is
-   * exact and its differences are doubles, so solve there and scale back */
+   * exact and its differences are doubles, so solve there and scale back,
+   * which keeps the nearest double where the answer on the quarters is a
+   * normal double; below the normal doubles it rounded to fewer bits than
+   * four times it has, and every sign is read on the input coordinates */
   if (sw == 2 || su == 2)
   {
     double p4[3] = {0.0}, a4[3] = {0.0}, b4[3] = {0.0};
@@ -7333,8 +7366,11 @@ point_segment_distance_offset_exact(const double *p, const double *a,
       a4[i] = a[i] / 4.0;
       b4[i] = b[i] / 4.0;
     }
-    return point_segment_distance_offset_exact(p4, a4, b4, ndims, r / 4.0) *
-      4.0;
+    double result = point_segment_distance_offset_exact(p4, a4, b4, ndims,
+      r / 4.0);
+    if (isnan(result) || result >= DBL_MIN)
+      return result * 4.0;
+    return point_segment_distance_offset_inputs(p, a, b, ndims, r);
   }
   double maxd = (maxw > maxu) ? maxw : maxu;
   int k;
@@ -7447,8 +7483,8 @@ point_segment_distance_offset_exact(const double *p, const double *a,
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nn, &b2, sizeof(nn)); \
     /* A candidate or a half gap scaled below 2^-268: the input coordinates */ \
-    if ((cc != 0.0 && double_lowest_bit(cc) + k < -268) || \
-        (! isinf(nn) && double_lowest_bit(nn - cc) - 1 + k < -268)) \
+    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -268) || \
+        (! isinf(nn) && double_lowest_set_bit(nn - cc) - 1 + k < -268)) \
     { \
       (res) = point_segment_beyond_inputs(p, a, b, ndims, r, cc, nn, \
         (b1 & 1) != 0); \
@@ -7754,8 +7790,8 @@ segment_square_least(const double *pt[4][3], const int *near, int want,
       for (int cc = 0; cc < ndims; cc++)
       {
         double v = dv[i][j][cc], e = ev[i][j][cc];
-        if ((v != 0.0 && double_lowest_bit(v) + k < -179) ||
-            (e != 0.0 && double_lowest_bit(e) + k < -179))
+        if ((v != 0.0 && double_lowest_set_bit(v) + k < -179) ||
+            (e != 0.0 && double_lowest_set_bit(e) + k < -179))
           return -1;
         const double t[2] = {v * f1 * f2, e * f1 * f2};
         exact_sum_set(&sums[(3 * i + j) * ndims + cc], t, 2);
@@ -9251,8 +9287,8 @@ segment_interior_distance(const double *a, const double *b, const double *c,
     for (int i = 0; i < 3; i++)
     {
       double x = dv[j][i], y = ev[j][i];
-      if ((x != 0.0 && double_lowest_bit(x) + k < -179) ||
-          (y != 0.0 && double_lowest_bit(y) + k < -179))
+      if ((x != 0.0 && double_lowest_set_bit(x) + k < -179) ||
+          (y != 0.0 && double_lowest_set_bit(y) + k < -179))
         return segment_interior_wide(a, b, c, d, result);
       const double t[2] = {x * f1 * f2, y * f1 * f2};
       exact_sum_set(&sums[3 * j + i], t, 2);
@@ -9379,8 +9415,8 @@ segment_interior_distance(const double *a, const double *b, const double *c,
     uint64_t b1 = (bb), b2 = (bb) + 1; \
     memcpy(&cc, &b1, sizeof(cc)); \
     memcpy(&nx, &b2, sizeof(nx)); \
-    if ((cc != 0.0 && double_lowest_bit(cc) + k < -179) || \
-        (! isinf(nx) && double_lowest_bit(nx - cc) - 1 + k < -179)) \
+    if ((cc != 0.0 && double_lowest_set_bit(cc) + k < -179) || \
+        (! isinf(nx) && double_lowest_set_bit(nx - cc) - 1 + k < -179)) \
     { \
       wide = true; \
       (res) = false; \
