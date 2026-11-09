@@ -60,10 +60,26 @@ typedef enum
   MEOS_ERR_WKB_OUTPUT                 = 25, // WKB output error
   MEOS_ERR_GEOJSON_INPUT              = 26, // GEOJSON input error
   MEOS_ERR_GEOJSON_OUTPUT             = 27, // GEOJSON output error
-  MEOS_ERR_SQL_JSON_ERROR             = 28, // SQL JSON error
   MEOS_ERR_INVALID_REGULAR_EXPRESSION = 29, // Regular expression error
 
   MEOS_ERR_DATETIME_OUT_OF_RANGE      = 30, // Date or time value out of range
+
+  /* The classes of the SQL/JSON errors, each named after its PostgreSQL
+   * errcode */
+  MEOS_ERR_NON_NUMERIC_SQL_JSON_ITEM  = 31, // Non-numeric SQL/JSON item
+  MEOS_ERR_INVALID_ARGUMENT_FOR_SQL_JSON_DATETIME_FUNCTION = 32,
+    // Invalid argument for an SQL/JSON datetime function
+  MEOS_ERR_MORE_THAN_ONE_SQL_JSON_ITEM = 33, // More than one SQL/JSON item
+  MEOS_ERR_SINGLETON_SQL_JSON_ITEM_REQUIRED = 34,
+    // Singleton SQL/JSON item required
+  MEOS_ERR_SQL_JSON_ARRAY_NOT_FOUND   = 35, // SQL/JSON array not found
+  MEOS_ERR_INVALID_SQL_JSON_SUBSCRIPT = 36, // Invalid SQL/JSON subscript
+  MEOS_ERR_SQL_JSON_OBJECT_NOT_FOUND  = 37, // SQL/JSON object not found
+  MEOS_ERR_SQL_JSON_MEMBER_NOT_FOUND  = 38, // SQL/JSON member not found
+  MEOS_ERR_SQL_JSON_NUMBER_NOT_FOUND  = 39, // SQL/JSON number not found
+  MEOS_ERR_DUPLICATE_JSON_OBJECT_KEY_VALUE = 40,
+    // Duplicate JSON object key value
+  MEOS_ERR_UNDEFINED_OBJECT           = 41, // Undefined object
 } errorCode;
 
 /**

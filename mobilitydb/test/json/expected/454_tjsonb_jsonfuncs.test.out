@@ -675,5 +675,15 @@ SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
 ERROR:  The value of key "pos" is not a string
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 ERROR:  The lifted operation returned NULL
-SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
-ERROR:  XX000
+SELECT tjsonbPathExists(tjsonb '[{"a": [1]}@2001-01-01]', 'strict $.a.keyvalue()');
+ERROR:  2203C
+SELECT jsonb_path_exists(jsonb '{"a": [1]}', 'strict $.a.keyvalue()');
+ERROR:  2203C
+SELECT tjsonbPathExists(tjsonb '[{"a": "x"}@2001-01-01]', 'strict $.a.abs()');
+ERROR:  22036
+SELECT jsonb_path_exists(jsonb '{"a": "x"}', 'strict $.a.abs()');
+ERROR:  22036
+SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b');
+ERROR:  2203A
+SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b');
+ERROR:  2203A

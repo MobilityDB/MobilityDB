@@ -202,11 +202,17 @@ SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 xxx)\"}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":1}"@2001-01-01', text 'pos');
 SELECT tgeompoint(tjsonb '"{\"pos\":\"Point(1 1)\"}"@2001-01-01', text 'xxx');
 
--- An error whose MEOS code has no class of its own raises the internal error:
--- MEOS_ERR_SQL_JSON_ERROR stands for each of the SQL/JSON classes, so only
--- the state of the error is shown
+-- A jsonpath error raises the SQL/JSON class PostgreSQL gives it, each beside
+-- the same path on a jsonb, so only the state of the error is shown: an
+-- object not found (2203C), a non-numeric item (22036) and a member not found
+-- (2203A)
 \set VERBOSITY sqlstate
-SELECT tjsonb '[{"a": [1]}@2001-01-01]' @? 'strict $.a.keyvalue()';
+SELECT tjsonbPathExists(tjsonb '[{"a": [1]}@2001-01-01]', 'strict $.a.keyvalue()');
+SELECT jsonb_path_exists(jsonb '{"a": [1]}', 'strict $.a.keyvalue()');
+SELECT tjsonbPathExists(tjsonb '[{"a": "x"}@2001-01-01]', 'strict $.a.abs()');
+SELECT jsonb_path_exists(jsonb '{"a": "x"}', 'strict $.a.abs()');
+SELECT tjsonbPathExists(tjsonb '[{"a": 1}@2001-01-01]', 'strict $.b');
+SELECT jsonb_path_exists(jsonb '{"a": 1}', 'strict $.b');
 \set VERBOSITY default
 
 -------------------------------------------------------------------------------
