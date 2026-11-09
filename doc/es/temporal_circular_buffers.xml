@@ -276,6 +276,7 @@ transformPipeline(cbuffer,pipeline text,srid integer,
   is_forward boolean=true) → cbuffer
 </programlisting>
 					<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular de entrada tiene un SRID desconocido (representado por 0).</para>
+					<para>Un búfer circular es planar: su radio conserva su valor, que el sistema de destino lee en sus propias unidades. Un destino geográfico, dado por su SRID o por una canalización cuya salida son ángulos, leería un radio en metros como grados, y genera un error.</para>
 					<para>La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena:</para>
 				<para><varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname></para>
 				<para>El SRID del búfer circular de entrada se ignora y el SRID del búfer circular de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
@@ -284,12 +285,11 @@ SELECT asEWKT(transform(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)', 3812))
 -- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)
 </programlisting>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH test(cbuffer, pipeline) AS (
-  SELECT cbuffer 'Cbuffer(SRID=4326;Point(4.3525 50.846667),1)',
-    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(cbuffer, pipeline, 4326), pipeline,
-  4326, false), 6) FROM test;
--- SRID=4326;Cbuffer(POINT(4.3525 50.846667),1)
+SELECT asEWKT(transformPipeline(cbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+-- SRID=32631;Cbuffer(POINT(595032.295 5634012.833),1)
+SELECT transform(cbuffer 'SRID=25832;Cbuffer(Point(651337 6058377),10)', 4326);
+-- ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
 </programlisting>
 				</listitem>
 			</itemizedlist>
@@ -993,21 +993,20 @@ transform(tcbuffer,integer) → tcbuffer
 transformPipeline(tcbuffer,pipeline text,srid integer,
   is_forward boolean=true) → tcbuffer
 </programlisting>
-				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular temporal de entrada tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del búfer circular temporal de entrada se ignora y el SRID del búfer circular temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa.</para>
+				<para>La función <varname>transform</varname> especifica la transformación con un SRID de destino. Se genera un error cuando el búfer circular temporal de entrada tiene un SRID desconocido (representado por 0). La función <varname>transformPipeline</varname> especifica la transformación con una canalización de transformación de coordenadas definida representada con el siguiente formato de cadena: <varname>urn:ogc:def:coordinateOperation:AUTHORITY::CODE</varname>. El SRID del búfer circular temporal de entrada se ignora y el SRID del búfer circular temporal de salida se establecerá en cero a menos que se proporcione un valor a través del parámetro opcional <varname>srid</varname>. Como se indica en el último parámetro, la canalización se ejecuta de forma predeterminada en dirección hacia adelante; al establecer el parámetro en falso, la canalización se ejecuta en la dirección inversa. Un búfer circular temporal es planar, como lo es un búfer circular, por lo que un destino geográfico genera un error.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tcbuffer 'SRID=4326;Cbuffer(Point(4.35 50.85),1)@2001-01-01',
   3812));
 -- SRID=3812;Cbuffer(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01
 </programlisting>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
-WITH test(tcbuffer, pipeline) AS (
-  SELECT tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
-    Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
-    text 'urn:ogc:def:coordinateOperation:EPSG::16031' )
-SELECT asEWKT(transformPipeline(transformPipeline(tcbuffer, pipeline, 4326), pipeline,
-  4326, false), 6) FROM test;
-/* SRID=4326;{Cbuffer(POINT(4.3525 50.846667),1)@2001-01-01, 
-   Cbuffer(POINT(-0.1275 51.507222),2)@2001-01-02} */
+SELECT asEWKT(transformPipeline(tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+  Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+/* SRID=32631;{Cbuffer(POINT(595215.059 5633645.441),1)@2001-01-01,
+   Cbuffer(POINT(282970.182 5710870.493),2)@2001-01-02} */
+SELECT transform(tcbuffer 'SRID=25832;Cbuffer(Point(651337 6058377),10)@2001-01-01', 4326);
+-- ERROR:  A circular buffer is planar and cannot be transformed to a geographic reference system
 </programlisting>
 			</listitem>
 

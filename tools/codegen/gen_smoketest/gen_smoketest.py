@@ -1246,8 +1246,9 @@ TCBUFFER_CONFIG = dict(
         "tcbuffer_from_mfjson":      {0: "tcbuffer_mfjson1"},
         # A no-op PROJ pipeline is valid regardless of source/target SRID; the
         # default int32_t -> 0 target SRID is SRID_UNKNOWN, rejected by
-        # ensure_srid_known().
-        "cbuffer_transform_pipeline": {1: "pipeline1", 2: "4326"},
+        # ensure_srid_known(), and a circular buffer is planar, so the target
+        # is the projected SRID 3857, as for cbuffer_transform.
+        "cbuffer_transform_pipeline": {1: "pipeline1", 2: "3857"},
         "cbufferarr_to_geom":    {0: "cbufferarr1", 1: "2"},
         # cbufferset_make reads an array of values, unlike the array-of-
         # pointers inputs of its siblings, so cbufferarr2 holds values.

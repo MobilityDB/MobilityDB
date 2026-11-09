@@ -100,3 +100,17 @@ SELECT asText(tgeompoint(rotateZ(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, 
 SELECT tfloat(rotate(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]', 0.7, 1, 1)) = tfloat(tcbuffer '[Cbuffer(Point(1 1),0.5)@2001-01-01, Cbuffer(Point(3 2),1)@2001-01-02]');
 
 -------------------------------------------------------------------------------
+-- Transformations
+-- A temporal circular buffer is planar, so a geographic target is refused
+-------------------------------------------------------------------------------
+
+SELECT asEWKT(round(transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 32632), 3));
+SELECT asEWKT(transformPipeline(tcbuffer 'SRID=4326;{Cbuffer(Point(4.3525 50.846667),1)@2001-01-01,
+  Cbuffer(Point(-0.1275 51.507222),2)@2001-01-02}',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 32631), 3);
+/* Errors */
+SELECT transform(tcbuffer 'SRID=25832;[Cbuffer(Point(651337 6058377),10)@2001-01-01, Cbuffer(Point(651437 6058377),10)@2001-01-02]', 4326);
+SELECT transformPipeline(tcbuffer 'SRID=32631;Cbuffer(Point(595032 5634013),10)@2001-01-01',
+  'urn:ogc:def:coordinateOperation:EPSG::16031', 4326, false);
+
+-------------------------------------------------------------------------------
