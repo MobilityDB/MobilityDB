@@ -2708,7 +2708,7 @@ int main(void)
     "880326b885fffff@2001-01-02]");
   assert(cell != NULL);
   char *cell_text = tspatial_as_text(cell, 6, &size_out);
-  char *cell_out = tspatial_out(cell, 6, &size_out);
+  char *cell_out = temporal_out(cell, 6, &size_out);
   assert(cell_text != NULL); assert(cell_out != NULL);
   assert(meos_errno() == 0);
   printf("the WKT of a temporal cell index: %s\n", cell_text);

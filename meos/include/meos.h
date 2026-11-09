@@ -560,52 +560,39 @@ extern char *mobilitydb_full_version(size_t *size_out);
  *****************************************************************************/
 
 extern Set *bigintset_in(const char *str);
-extern char *bigintset_out(const Set *set, size_t *size_out);
 extern Span *bigintspan_expand(const Span *s, int64 value);
 extern Span *bigintspan_in(const char *str);
-extern char *bigintspan_out(const Span *s, size_t *size_out);
 extern SpanSet *bigintspanset_in(const char *str);
-extern char *bigintspanset_out(const SpanSet *ss, size_t *size_out);
 extern Set *dateset_in(const char *str);
-extern char *dateset_out(const Set *s, size_t *size_out);
 extern Span *datespan_in(const char *str);
-extern char *datespan_out(const Span *s, size_t *size_out);
 extern SpanSet *datespanset_in(const char *str);
-extern char *datespanset_out(const SpanSet *ss, size_t *size_out);
 extern Set *floatset_in(const char *str);
-extern char *floatset_out(const Set *set, int maxdd, size_t *size_out);
 extern Span *floatspan_expand(const Span *s, double value);
 extern Span *floatspan_in(const char *str);
-extern char *floatspan_out(const Span *s, int maxdd, size_t *size_out);
 extern SpanSet *floatspanset_in(const char *str);
-extern char *floatspanset_out(const SpanSet *ss, int maxdd, size_t *size_out);
 extern Set *intset_in(const char *str);
-extern char *intset_out(const Set *set, size_t *size_out);
 extern Span *intspan_expand(const Span *s, int32 value);
 extern Span *intspan_in(const char *str);
-extern char *intspan_out(const Span *s, size_t *size_out);
 extern SpanSet *intspanset_in(const char *str);
-extern char *intspanset_out(const SpanSet *ss, size_t *size_out);
 extern char *set_as_hexwkb(const Set *s, uint8_t variant, size_t *size_out);
 extern uint8_t *set_as_wkb(const Set *s, uint8_t variant, size_t *size_out);
 extern Set *set_from_hexwkb(const char *hexwkb);
 extern Set *set_from_wkb(const uint8_t *wkb, size_t size);
+extern char *set_out(const Set *s, int maxdd, size_t *size_out);
 extern char *span_as_hexwkb(const Span *s, uint8_t variant, size_t *size_out);
 extern uint8_t *span_as_wkb(const Span *s, uint8_t variant, size_t *size_out);
 extern Span *span_from_hexwkb(const char *hexwkb);
 extern Span *span_from_wkb(const uint8_t *wkb, size_t size);
+extern char *span_out(const Span *s, int maxdd, size_t *size_out);
 extern char *spanset_as_hexwkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
 extern uint8_t *spanset_as_wkb(const SpanSet *ss, uint8_t variant, size_t *size_out);
 extern SpanSet *spanset_from_hexwkb(const char *hexwkb);
 extern SpanSet *spanset_from_wkb(const uint8_t *wkb, size_t size);
+extern char *spanset_out(const SpanSet *ss, int maxdd, size_t *size_out);
 extern Set *textset_in(const char *str);
-extern char *textset_out(const Set *set, size_t *size_out);
 extern Set *tstzset_in(const char *str);
-extern char *tstzset_out(const Set *set, size_t *size_out);
 extern Span *tstzspan_in(const char *str);
-extern char *tstzspan_out(const Span *s, size_t *size_out);
 extern SpanSet *tstzspanset_in(const char *str);
-extern char *tstzspanset_out(const SpanSet *ss, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions for set and span types
@@ -1475,7 +1462,6 @@ extern uint8_t *tbox_sortkey(const TBox *box, size_t *size);
 
 extern Temporal *tbool_from_mfjson(const char *str);
 extern Temporal *tbool_in(const char *str);
-extern char *tbool_out(const Temporal *temp, size_t *size_out);
 extern char *temporal_as_hexwkb(const Temporal *temp, uint8_t variant, size_t *size_out);
 extern char *temporal_as_mfjson(const Temporal *temp, int option, int flags, int precision, const char *srs, size_t *size_out);
 extern uint8_t *temporal_as_wkb(const Temporal *temp, uint8_t variant, size_t *size_out);
@@ -1484,18 +1470,15 @@ extern const char *interptype_name(interpType interp);
 extern interpType interptype_from_string(const char *str);
 extern Temporal *temporal_from_hexwkb(const char *hexwkb);
 extern Temporal *temporal_from_wkb(const uint8_t *wkb, size_t size);
+extern char *temporal_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern Temporal *tfloat_from_mfjson(const char *str);
 extern Temporal *tfloat_in(const char *str);
-extern char *tfloat_out(const Temporal *temp, int maxdd, size_t *size_out);
 extern Temporal *tint_from_mfjson(const char *str);
 extern Temporal *tbigint_from_mfjson(const char *str);
 extern Temporal *tint_in(const char *str);
 extern Temporal *tbigint_in(const char *str);
-extern char *tint_out(const Temporal *temp, size_t *size_out);
-extern char *tbigint_out(const Temporal *temp, size_t *size_out);
 extern Temporal *ttext_from_mfjson(const char *str);
 extern Temporal *ttext_in(const char *str);
-extern char *ttext_out(const Temporal *temp, size_t *size_out);
 
 /*****************************************************************************
  * Constructor functions for temporal types

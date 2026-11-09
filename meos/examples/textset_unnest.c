@@ -131,7 +131,7 @@ int main(void)
   {
     Set *final = set_union_finalfn(state[i]);
     /* Print the accumulated set */
-    char *final_out = textset_out(final, &size_out);
+    char *final_out = set_out(final, 0, &size_out);
     printf("-------------------------------\n");
     printf("Set: %d, Number of elements: %d\n", i, final->count);
     printf("-------------------------------\n");

@@ -77,7 +77,7 @@ int main(void)
       &count);
 
   /* Print the input value to split */
-  char *tfloat_str = tfloat_out(tfloat, 3, &size_out);
+  char *tfloat_str = temporal_out(tfloat, 3, &size_out);
   printf("------------------\n");
   printf("| Value to split |\n");
   printf("------------------\n\n");
@@ -92,7 +92,7 @@ int main(void)
   for (i = 0; i < count; i++)
   {
     char *time_str = timesplit ? timestamptz_out(time_bins[i], &size_out) : "";
-    char *temp_str = tfloat_out(result[i], 3, &size_out);
+    char *temp_str = temporal_out(result[i], 3, &size_out);
     if (valuesplit)
       snprintf(output_buffer, sizeof(output_buffer), "%f, %s%s%s\n",
         value_bins[i], time_str, timesplit ? ", " : "", temp_str);

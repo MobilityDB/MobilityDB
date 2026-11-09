@@ -262,18 +262,18 @@ int main(void)
   assert(meos_errno() == MEOS_ERR_INVALID_ARG);
   meos_errno_reset();
   res = temporal_shift_scale_time(temp, shift, duration);
-  char *out = tint_out(res, &size_out);
+  char *out = temporal_out(res, 0, &size_out);
   printf("temporal_shift_scale_time(1 day, 4 days): %s, errno %d\n", out,
     meos_errno());
   assert(meos_errno() == 0);
   free(out); free(res);
   res = temporal_shift_time(temp, shift);
-  out = tint_out(res, &size_out);
+  out = temporal_out(res, 0, &size_out);
   printf("temporal_shift_time(1 day): %s, errno %d\n", out, meos_errno());
   assert(meos_errno() == 0);
   free(out); free(res);
   res = temporal_scale_time(temp, duration);
-  out = tint_out(res, &size_out);
+  out = temporal_out(res, 0, &size_out);
   printf("temporal_scale_time(4 days): %s, errno %d\n", out, meos_errno());
   assert(meos_errno() == 0);
   free(out); free(res); free(shift); free(duration);

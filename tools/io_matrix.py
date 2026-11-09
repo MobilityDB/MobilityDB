@@ -45,8 +45,7 @@ It is read from three sources, without a database:
   - the public MEOS headers (`meos*.h` but `meos_internal*.h`): a type's
     text reader `<type>_in` and writer `<type>_out`, its WKB reader
     `<type>_from_wkb` and writer `<type>_as_wkb`, or its family's
-    (`set_*`, `span_*`, `spanset_*`, `temporal_*`; `spatialset_out` and
-    `tspatial_out` for a type carrying an SRID);
+    (`set_*`, `span_*`, `spanset_*`, `temporal_*`, one writer per template);
   - optionally the MEOS-API catalog (`--catalog meos-idl.json`): the class of
     `typeEncodings` whose text readers name the type, or whose own reader is
     `<type>_in`, and its encodings.  Without a catalog the column reads
@@ -314,13 +313,7 @@ def row(name, temporal, functions, public, catalog, all_types):
     eforms = NA_NO_SRID
 
   fam = family(name, temporal)
-  spatial = has_srid or bool(e_present)
-  if fam == 'temporal':
-    out_family = 'tspatial_out' if spatial else 'temporal_out'
-  elif fam == 'set':
-    out_family = 'spatialset_out' if spatial else 'set_out'
-  else:
-    out_family = fam and fam + '_out'
+  out_family = fam and fam + '_out'
   text_in = pick(public, name + '_in')
   text_out = pick(public, name + '_out', out_family)
   wkb_in = pick(public, name + '_from_wkb', fam and fam + '_from_wkb')

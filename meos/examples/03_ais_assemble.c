@@ -224,8 +224,8 @@ int main(void)
   for (i = 0; i < numships; i++)
   {
     /* Write line in the CSV file */
-    char *trip_str = tspatial_out(trips[i].trip, 6, &size_out);
-    char *sog_str = tfloat_out(trips[i].SOG, 6, &size_out);
+    char *trip_str = temporal_out(trips[i].trip, 6, &size_out);
+    char *sog_str = temporal_out(trips[i].SOG, 6, &size_out);
     fprintf(file,"%ld,%s,%s\n", trips[i].MMSI, trip_str, sog_str);
     free(trip_str); free(sog_str);
   }

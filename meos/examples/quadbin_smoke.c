@@ -55,6 +55,8 @@ int main(void)
 {
   /* Initialize MEOS */
   meos_initialize();
+  /* Size of the strings the text writers return */
+  size_t size_out;
 
   /* A temporal quadbin value in WKT: two cells (hex of the 64-bit index)
    * sampled at two instants. 480fffffffffffff is the zoom-0 world cell;
@@ -62,22 +64,22 @@ int main(void)
   char *tquadbin_wkt =
     "{480fffffffffffff@2000-01-01, 48427fffffffffff@2000-01-02}";
   Temporal *tqb = tquadbin_in(tquadbin_wkt);
-  char *tqb_str = temporal_out(tqb, 0, NULL);
+  char *tqb_str = temporal_out(tqb, 0, &size_out);
   printf("Temporal quadbin: %s\n", tqb_str);
 
   /* Shared DGGS op: temporal resolution (tint) */
   Temporal *tres = tcellindex_get_resolution(tqb);
-  char *tres_str = temporal_out(tres, 0, NULL);
+  char *tres_str = temporal_out(tres, 0, &size_out);
   printf("getResolution:    %s\n", tres_str);
 
   /* Shared DGGS op: temporal cell centroid (tgeompoint, SRID 4326) */
   Temporal *tpt = tcellindex_cell_to_point(tqb);
-  char *tpt_str = temporal_out(tpt, 6, NULL);
+  char *tpt_str = temporal_out(tpt, 6, &size_out);
   printf("cellToPoint:      %s\n", tpt_str);
 
   /* Quadbin-unique op: temporal quadkey (ttext base-4 slippy-tile string) */
   Temporal *tqk = tquadbin_cell_to_quadkey(tqb);
-  char *tqk_str = temporal_out(tqk, 0, NULL);
+  char *tqk_str = temporal_out(tqk, 0, &size_out);
   printf("cellToQuadkey:    %s\n", tqk_str);
 
   /* Clean up */

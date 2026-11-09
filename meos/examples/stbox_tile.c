@@ -99,7 +99,7 @@ int main(void)
   for (int i = 0; i < count; i++)
   {
     char *tile_str = spacesplit ?
-      stbox_out(&boxes[i], 3, &size_out) : tstzspan_out(&spans[i], &size_out);
+      stbox_out(&boxes[i], 3, &size_out) : span_out(&spans[i], 0, &size_out);
     snprintf(output_buffer, MAX_LEN_LINE - 1, "%d: %s\n", i + 1, tile_str);
     printf("%s", output_buffer);
     free(tile_str);

@@ -504,25 +504,6 @@ tgeography_from_mfjson(const char *mfjson)
  * Output in WKT and EWKT format
  *****************************************************************************/
 
-/**
- * @ingroup meos_geo_inout
- * @brief Return the Well-Known Text (WKT) representation of a temporal geo
- * @param[in] temp Temporal geo
- * @param[in] maxdd Maximum number of decimal digits
- * @param[out] size_out Size of the result, the terminating null character
- * included
- */
-char *
-tspatial_out(const Temporal *temp, int maxdd, size_t *size_out)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_TSPATIAL(temp, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-  return temporal_out(temp, maxdd, size_out);
-}
-
 /*****************************************************************************
  * Constructors
  *****************************************************************************/

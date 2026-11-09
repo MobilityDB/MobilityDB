@@ -226,7 +226,6 @@ extern bool pose_ne(const Pose *pose1, const Pose *pose2);
 /* Input and output functions */
 
 extern Set *poseset_in(const char *str);
-extern char *poseset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 
@@ -520,7 +519,6 @@ extern double distance_posechain_stbox(const PoseChain *pc, const STBox *box);
 /* Input and output functions */
 
 extern Set *posechainset_in(const char *str);
-extern char *posechainset_out(const Set *s, int maxdd, size_t *size_out);
 
 /* Constructor functions */
 

@@ -55,13 +55,13 @@
 
 /* The set built from the values writes what the set read from the text
  * writes */
-#define CHECK_MAKE(fn, values, count, in, out, text) \
+#define CHECK_MAKE(fn, values, count, in, text) \
   do { \
     Set *made = fn(values, count); \
     Set *read = in(text); \
     size_t size; \
-    char *s1 = made ? out(made, &size) : NULL; \
-    char *s2 = out(read, &size); \
+    char *s1 = made ? set_out(made, 0, &size) : NULL; \
+    char *s2 = set_out(read, 0, &size); \
     printf(#fn ": %s, errno %d\n", s1 ? s1 : "NULL", meos_errno()); \
     assert(s1 && s2 && strcmp(s1, s2) == 0 && meos_errno() == 0); \
     free(s1); free(s2); free(made); free(read); \
@@ -97,21 +97,21 @@ int main(void)
   /* QUADBIN */
   Quadbin qv[] = {quadbin_in("48427fffffffffff"),
     quadbin_in("480fffffffffffff"), quadbin_in("48427fffffffffff")};
-  CHECK_MAKE(quadbinset_make, qv, 3, quadbinset_in, quadbinset_out,
+  CHECK_MAKE(quadbinset_make, qv, 3, quadbinset_in,
     "{480fffffffffffff, 48427fffffffffff}");
   CHECK_ERRORS(quadbinset_make, qv);
 
   /* S2 */
   S2CellId sv[] = {s2cell_in("54b5c9"), s2cell_in("47c3c3"),
     s2cell_in("54b5c9")};
-  CHECK_MAKE(s2cellset_make, sv, 3, s2cellset_in, s2cellset_out,
+  CHECK_MAKE(s2cellset_make, sv, 3, s2cellset_in,
     "{47c3c3, 54b5c9}");
   CHECK_ERRORS(s2cellset_make, sv);
 
   /* H3 */
   H3Index hv[] = {h3index_in("880326b88dfffff"),
     h3index_in("880326b885fffff"), h3index_in("880326b88dfffff")};
-  CHECK_MAKE(h3indexset_make, hv, 3, h3indexset_in, h3indexset_out,
+  CHECK_MAKE(h3indexset_make, hv, 3, h3indexset_in,
     "{880326b885fffff, 880326b88dfffff}");
   CHECK_ERRORS(h3indexset_make, hv);
 

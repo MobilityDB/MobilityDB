@@ -133,36 +133,31 @@ main(void)
     "{[1.5@2001-01-01, 2.5@2001-01-02], [3.5@2001-01-03, 4.5@2001-01-04]}"));
   Temporal *tstep = keep(tfloat_in(
     "Interp=Step;[1.5@2001-01-01, 2.5@2001-01-02]"));
-  CHECK(tfloat_out(tinst, 6, &size));
-  CHECK(tfloat_out(tseq, 6, &size));
-  CHECK(tfloat_out(tss, 6, &size));
-  CHECK(tfloat_out(tstep, 6, &size));
-  CHECK(tint_out(keep(tint_in("{1@2001-01-01, 2@2001-01-02}")), &size));
-  CHECK(tbool_out(keep(tbool_in("[true@2001-01-01, false@2001-01-02]")),
-    &size));
-  CHECK(ttext_out(keep(ttext_in("[\"a b\"@2001-01-01, \"c\"@2001-01-02]")),
-    &size));
-  CHECK(tbigint_out(keep(tbigint_in("1@2001-01-01")), &size));
+  CHECK(temporal_out(tinst, 6, &size));
+  CHECK(temporal_out(tseq, 6, &size));
+  CHECK(temporal_out(tss, 6, &size));
+  CHECK(temporal_out(tstep, 6, &size));
+  CHECK(temporal_out(keep(tint_in("{1@2001-01-01, 2@2001-01-02}")), 0, &size));
+  CHECK(temporal_out(keep(tbool_in("[true@2001-01-01, false@2001-01-02]")), 0, &size));
+  CHECK(temporal_out(keep(ttext_in("[\"a b\"@2001-01-01, \"c\"@2001-01-02]")), 0, &size));
+  CHECK(temporal_out(keep(tbigint_in("1@2001-01-01")), 0, &size));
   CHECK(temporal_as_mfjson(tseq, 0, 0, 6, NULL, &size));
   /* The flag of a pretty document, JSON_C_TO_STRING_PRETTY */
   CHECK(temporal_as_mfjson(tss, 1, 2, 6, NULL, &size));
 
   /* Sets, spans and span sets */
-  CHECK(intset_out(keep(intset_in("{1, 2, 3}")), &size));
-  CHECK(floatset_out(keep(floatset_in("{1.5, 2.5}")), 6, &size));
-  CHECK(textset_out(keep(textset_in("{\"a b\", c}")), &size));
-  CHECK(dateset_out(keep(dateset_in("{2001-01-01, 2001-01-02}")), &size));
-  CHECK(tstzset_out(keep(tstzset_in("{2001-01-01, 2001-01-02}")), &size));
-  CHECK(intspan_out(keep(intspan_in("[1, 3)")), &size));
-  CHECK(floatspan_out(keep(floatspan_in("[1.5, 2.5]")), 6, &size));
-  CHECK(bigintspan_out(keep(bigintspan_in("[1, 3)")), &size));
-  CHECK(tstzspan_out(keep(tstzspan_in("[2001-01-01, 2001-01-02]")), &size));
-  CHECK(floatspanset_out(keep(floatspanset_in("{[1.5, 2.5], [3.5, 4.5]}")), 6,
-    &size));
-  CHECK(tstzspanset_out(
-    keep(tstzspanset_in(
-      "{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}")),
-    &size));
+  CHECK(set_out(keep(intset_in("{1, 2, 3}")), 0, &size));
+  CHECK(set_out(keep(floatset_in("{1.5, 2.5}")), 6, &size));
+  CHECK(set_out(keep(textset_in("{\"a b\", c}")), 0, &size));
+  CHECK(set_out(keep(dateset_in("{2001-01-01, 2001-01-02}")), 0, &size));
+  CHECK(set_out(keep(tstzset_in("{2001-01-01, 2001-01-02}")), 0, &size));
+  CHECK(span_out(keep(intspan_in("[1, 3)")), 0, &size));
+  CHECK(span_out(keep(floatspan_in("[1.5, 2.5]")), 6, &size));
+  CHECK(span_out(keep(bigintspan_in("[1, 3)")), 0, &size));
+  CHECK(span_out(keep(tstzspan_in("[2001-01-01, 2001-01-02]")), 0, &size));
+  CHECK(spanset_out(keep(floatspanset_in("{[1.5, 2.5], [3.5, 4.5]}")), 6, &size));
+  CHECK(spanset_out(keep(tstzspanset_in(
+      "{[2001-01-01, 2001-01-02], [2001-01-03, 2001-01-04]}")), 0, &size));
 
   /* Boxes */
   CHECK(tbox_out(keep(tbox_in(
@@ -188,14 +183,14 @@ main(void)
     "[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]"));
   Temporal *tptstep = keep(tgeompoint_in(
     "SRID=4326;Interp=Step;[Point(1 1)@2001-01-01, Point(2 2)@2001-01-02]"));
-  CHECK(tspatial_out(tpt, 6, &size));
+  CHECK(temporal_out(tpt, 6, &size));
   CHECK(tspatial_as_text(tpt, 6, &size));
   CHECK(tspatial_as_ewkt(tpt, 6, &size));
   CHECK(tspatial_as_ewkt(tpt0, 6, &size));
   CHECK(tspatial_as_ewkt(tptstep, 6, &size));
   Set *gset = keep(geomset_in("SRID=4326;{Point(1 1), Point(2 2)}"));
   Set *gset0 = keep(geomset_in("{Point(1 1), Point(2 2)}"));
-  CHECK(spatialset_out(gset, 6, &size));
+  CHECK(set_out(gset, 6, &size));
   CHECK(spatialset_as_text(gset, 6, &size));
   CHECK(spatialset_as_ewkt(gset, 6, &size));
   CHECK(spatialset_as_ewkt(gset0, 6, &size));
@@ -206,8 +201,7 @@ main(void)
   CHECK(cbuffer_out(cb, 6, &size));
   CHECK(cbuffer_as_text(cb, 6, &size));
   CHECK(cbuffer_as_ewkt(cb, 6, &size));
-  CHECK(cbufferset_out(keep(cbufferset_in("{\"Cbuffer(Point(1 1), 0.5)\"}")), 6,
-    &size));
+  CHECK(set_out(keep(cbufferset_in("{\"Cbuffer(Point(1 1), 0.5)\"}")), 6, &size));
   CHECK(tspatial_as_ewkt(
     keep(tcbuffer_in("SRID=4326;[Cbuffer(Point(1 1), 0.5)@2001-01-01]")), 6,
     &size));
@@ -228,7 +222,7 @@ main(void)
   /* A GeoPose document describes a geodetic pose */
   Pose *gpose = keep(pose_in("Geodpose(Point(8 47), 0.5)"));
   CHECK(pose_as_geopose(gpose, BASIC_YPR, 6, &size));
-  CHECK(poseset_out(keep(poseset_in("{\"Pose(Point(1 1), 0.5)\"}")), 6, &size));
+  CHECK(set_out(keep(poseset_in("{\"Pose(Point(1 1), 0.5)\"}")), 6, &size));
   PoseChain *pc = keep(posechain_in(
     "SRID=4326;PoseChain(Pose(Point(1 1), 0.5),Pose(Point(2 2), 1))"));
   CHECK(posechain_out(pc, 6, &size));
@@ -252,14 +246,14 @@ main(void)
 
   /* Cells */
   CHECK(quadbin_out(quadbin_in("480fffffffffffff"), &size));
-  CHECK(th3index_out(keep(th3index_in("8a2a1072b59ffff@2001-01-01")), &size));
+  CHECK(temporal_out(keep(th3index_in("8a2a1072b59ffff@2001-01-01")), 0, &size));
 
   /* JSON values */
   Jsonb *jb = keep(jsonb_in("{\"a\": [1, 2], \"b\": \"c\"}"));
   CHECK(jsonb_out(jb, &size));
   CHECK(jsonb_to_cstring(jb, &size));
-  CHECK(jsonbset_out(keep(jsonbset_in("{\"{\\\"a\\\": 1}\"}")), &size));
-  CHECK(tjsonb_out(keep(tjsonb_in("\"{\\\"a\\\": 1}\"@2001-01-01")), &size));
+  CHECK(set_out(keep(jsonbset_in("{\"{\\\"a\\\": 1}\"}")), 0, &size));
+  CHECK(temporal_out(keep(tjsonb_in("\"{\\\"a\\\": 1}\"@2001-01-01")), 0, &size));
 
   /* Base values written by the PostgreSQL output functions */
   CHECK(bool_out(true, &size));
@@ -282,8 +276,8 @@ main(void)
   /* A null size_out is refused, as the hex WKB writers refuse it, by a MEOS
    * function and by a base type output of pgtypes */
   meos_errno_reset();
-  char *str = tfloat_out(tseq, 6, NULL);
-  printf("tfloat_out(..., NULL): %s, errno %d\n", str ? "a value" : "NULL",
+  char *str = temporal_out(tseq, 6, NULL);
+  printf("temporal_out(..., NULL): %s, errno %d\n", str ? "a value" : "NULL",
     meos_errno());
   if (str || meos_errno() != MEOS_ERR_INVALID_ARG)
     failures++;

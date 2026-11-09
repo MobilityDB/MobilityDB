@@ -236,8 +236,8 @@ int main(void)
   /* and reads back as the instant it was written from */
   Temporal *adv_inst_back = tpose_from_geopose(out);
   assert(adv_inst_back != NULL);
-  s1 = temporal_out(adv_inst, 6, NULL);
-  s2 = temporal_out(adv_inst_back, 6, NULL);
+  s1 = temporal_out(adv_inst, 6, &size_out);
+  s2 = temporal_out(adv_inst_back, 6, &size_out);
   printf("Advanced instant round trip: %s -> %s\n", s1, s2);
   assert(strcmp(s1, s2) == 0);
   free(s1); free(s2); free(adv_inst_back); free(out); free(adv_inst);
@@ -268,7 +268,7 @@ int main(void)
     "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-03]");
   assert(regular != NULL);
   assert(meos_errno() == 0);
-  s1 = temporal_out(regular, 6, NULL);
+  s1 = temporal_out(regular, 6, &size_out);
   printf("Regular value: %s\n", s1);
   free(s1);
 
@@ -325,7 +325,7 @@ int main(void)
     "Geodpose(Point(1 0), 0)@2026-01-02, Geodpose(Point(1 1), 0)@2026-01-05]");
   assert(irregular != NULL);
   assert(meos_errno() == 0);
-  s1 = temporal_out(irregular, 6, NULL);
+  s1 = temporal_out(irregular, 6, &size_out);
   printf("Irregular value: %s\n", s1);
   free(s1);
 
@@ -353,7 +353,7 @@ int main(void)
     strcmp(out, again) == 0 ? "yes" : "no");
   assert(strcmp(out, again) == 0);
   /* The instants a Series times are the instants of the value it came from */
-  s1 = temporal_out(irregular_back, 6, NULL);
+  s1 = temporal_out(irregular_back, 6, &size_out);
   printf("Irregular read back: %s\n", s1);
   assert(strstr(s1, "2026-01-05") != NULL);
   free(s1); free(again); free(out); free(irregular_back); free(irregular);
