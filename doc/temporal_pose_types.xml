@@ -373,6 +373,7 @@ SELECT quaternion(pose 'Pose(Point(1 1), 0)');
 				<listitem xml:id="pose_round">
 					<indexterm significance="normal"><primary><varname>round</varname></primary></indexterm>
 					<para>Round the point and the orientation of the pose to the number of decimal places</para>
+					<para>The rotation of a 3D pose is normalized to unit length after its components are rounded, so its components may have more decimal places than requested.</para>
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 round({pose,pose[],posechain},integer=0) &#8594; {pose,pose[],posechain}
 </programlisting>

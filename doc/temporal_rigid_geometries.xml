@@ -469,7 +469,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformations</title>
 
-		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> does not yet support a polyhedral surface, nor few digits for a rotation in three dimensions, and the transformation to another SRID, <varname>transform</varname> and <varname>transformPipeline</varname>, is not yet supported for a temporal rigid geometry.</para>
+		<para>The standard sequence-modifying functions apply: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> does not yet support a polyhedral surface, and the transformation to another SRID, <varname>transform</varname> and <varname>transformPipeline</varname>, is not yet supported for a temporal rigid geometry.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">

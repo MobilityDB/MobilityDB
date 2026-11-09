@@ -468,7 +468,7 @@ SELECT ST_AsText(twCentroid(trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
 	<sect1 xml:id="trgeometry_transformations">
 		<title>Transformaciones</title>
 
-		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> aún no admite una superficie poliédrica, ni pocos dígitos para una rotación en tres dimensiones, y la transformación a otro SRID, <varname>transform</varname> y <varname>transformPipeline</varname>, aún no se admite para una geometría rígida temporal.</para>
+		<para>Se aplican las funciones estándar de modificación de secuencias: <varname>round</varname>, <varname>setInterp</varname>, <varname>shiftTime</varname>, <varname>scaleTime</varname>, <varname>shiftScaleTime</varname>, <varname>deleteTimestamp</varname>, etc. <varname>round</varname> aún no admite una superficie poliédrica, y la transformación a otro SRID, <varname>transform</varname> y <varname>transformPipeline</varname>, aún no se admite para una geometría rígida temporal.</para>
 
 		<itemizedlist>
 			<listitem xml:id="trgeometry_round">

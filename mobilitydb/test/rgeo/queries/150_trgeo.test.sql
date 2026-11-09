@@ -188,6 +188,7 @@ SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));[Pose
 SELECT asText(setInterp(trgeometry 'Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.2)@2001-01-01, Pose(Point(1 1), 0.4)@2001-01-02, Pose(Point(1 1), 0.5)@2001-01-03], [Pose(Point(2 2), 0.6)@2001-01-04, Pose(Point(2 2), 0.6)@2001-01-05]}', 'linear'));
 
 SELECT asText(round(trgeometry 'Polygon((1 1,2 2,3 1,1 1));{[Pose(Point(1 1), 0.123456789)@2012-01-01, Pose(Point(1 1), 0.5)@2012-01-02)}', 6));
+SELECT asText(round(trgeometry 'Polygon((1 1 1,2 2 1,3 1 1,1 1 1));[Pose(Point(1 1 1), 1, 0, 0, 0)@2001-01-01, Pose(Point(1 1 1), 0.96, 0, 0, 0.28)@2001-01-02]', 1), 6);
 
 -------------------------------------------------------------------------------
 -- Append functions
