@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>MobilityDB: reachabilitystate_free</title>
+<title>MobilityDB: reachabilitystate_finish</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -101,9 +101,10 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a2acfaaf21ecf50e55bf99372460b9b95.html#a2acfaaf21ecf50e55bf99372460b9b95">reach_distance</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a5d0222e10e0a49d0fd83f1886d2e2254.html#a5d0222e10e0a49d0fd83f1886d2e2254">REACH_HEAD</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a90f56f563aa2ec63ca06589a8daa40d7.html#a90f56f563aa2ec63ca06589a8daa40d7">REACH_HEADER</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a0efaec6aad5fdc82cdc02d570e3404c2.html#a0efaec6aad5fdc82cdc02d570e3404c2">reachabilitystate_close</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga5eb438d8b48fc8d0dbdf706d7d6fccd5.html#ga5eb438d8b48fc8d0dbdf706d7d6fccd5">reachabilitystate_close</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_gad6415c93e022985323e62250f751c009.html#gad6415c93e022985323e62250f751c009">reachabilitystate_deserialize</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a2ef2c252256a6489527b346c9867fe07.html#a2ef2c252256a6489527b346c9867fe07">reachabilitystate_free</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_ae84bb4aa8fb3fe070591186c029f64fd.html#ae84bb4aa8fb3fe070591186c029f64fd">reachabilitystate_finish</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga9815cbe188c4cc101edeff1cb5957f4a.html#ga9815cbe188c4cc101edeff1cb5957f4a">reachabilitystate_free</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga7d603324c02cc501df442f98c0a87d0a.html#ga7d603324c02cc501df442f98c0a87d0a">reachabilitystate_instants</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="meos_2src_2temporal_2temporal__analytics_8c_a3bf4f6cb7e8940e55b42944a90809971.html#a3bf4f6cb7e8940e55b42944a90809971">reachabilitystate_keep</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__temporal__agg_ga8bf7bf50b4adb164e9415951d6e60178.html#ga8bf7bf50b4adb164e9415951d6e60178">reachabilitystate_kept</a></td></tr>
@@ -173,8 +174,8 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a2ef2c252256a6489527b346c9867fe07" name="a2ef2c252256a6489527b346c9867fe07"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ef2c252256a6489527b346c9867fe07">&#9670;&#160;</a></span>reachabilitystate_free()</h2>
+<a id="ae84bb4aa8fb3fe070591186c029f64fd" name="ae84bb4aa8fb3fe070591186c029f64fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae84bb4aa8fb3fe070591186c029f64fd">&#9670;&#160;</a></span>reachabilitystate_finish()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -183,11 +184,21 @@ $(function() {
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static void reachabilitystate_free </td>
+          <td class="memname">static <a class="el" href="structTInstant.html">TInstant</a> ** reachabilitystate_finish </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structReachabilityState.html">ReachabilityState</a> *&#160;</td>
-          <td class="paramname"><em>state</em></td><td>)</td>
+          <td class="paramname"><em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -197,7 +208,14 @@ $(function() {
 </table>
 </div><div class="memdoc">
 
-<p>Release a reachability state and every report it holds. </p>
+<p>Close the walk of a value and release its state: return the kept reports not yet handed back, whose ownership passes to the caller, or NULL when the reports are dropped whole, because more than half of them are unreachable from the report before. </p>
+<p >The close of a value, which has handed back no report before, is the close of a stream, <a class="el" href="group__meos__temporal__agg_ga5eb438d8b48fc8d0dbdf706d7d6fccd5.html#ga5eb438d8b48fc8d0dbdf706d7d6fccd5" title="Close the walk of a stream: choose the seed if fewer reports than the head arrived,...">reachabilitystate_close</a>, followed by the drop rule and <a class="el" href="group__meos__temporal__agg_ga9815cbe188c4cc101edeff1cb5957f4a.html#ga9815cbe188c4cc101edeff1cb5957f4a" title="Release a reachability state and every report it holds.">reachabilitystate_free</a> </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">state</td><td>State, which is released </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">count</td><td>Number of reports returned </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
