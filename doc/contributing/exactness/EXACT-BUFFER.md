@@ -119,15 +119,25 @@ items).
   certificate off, and natural areas at distance 1 read 750M against GEOS's 569M. Of the
   certificate's 397M there, the pairing takes 152M, the bound of each piece 155M, and the joins,
   the turns and the senses 63M; without the certificate the native pass reads about 571M, so the
-  arrangement itself owes the last of parity too.
+  arrangement itself owes the last of parity too. On #3532's head the certificate reads 1.313 on
+  natural areas at distance 1 (746.6M against 569M), 1.120 at 50, 1.004 on the joints and 1.017 on
+  the jittered holes, and every other buffer cell at parity, lines at distance 1 0.728. There the native
+  pass reads 537M with the certificate off and 746M with it on, so the certificate costs 209M
+  where parity leaves it about 31M: its pass over the written pieces reads 313M, the bound of each
+  arc piece 113M over 91 thousand arcs, the sweep of the grown boxes 65M, the ends of each pair 51M
+  and the loop over the pairs about 82M. Of its 264 892 pairs, only 20 928 reach a test. A separate
+  pass cannot reach 31M, its sweep alone reading 65M. So the next cut has two parts. The pieces are
+  paired by the arrangement's own sweep of the edges. And the bound of each arc piece is a cheap bound,
+  proven never to be smaller than H, which the margin and the test H < r read; the full bound is
+  computed only where a test needs it.
 - **MobilityDB #3523**, merged as `0b4cb5b029`, sorts once the nodes a box read of the buffer's
   node index gathers, rather than shifting each into place, where a box of n nodes costs n squared
   on a long piece. Shifting them puts the line cells above parity, 6.89, 4.38 and 7.66 at distances
   1, 50 and 500; sorting reads 0.269, 0.199 and 0.415, and every buffer cell stands at parity. Each read
   returns the same nodes in the same order by construction; CGAL agrees with 1 313 of 1 313 natural
   areas, 4 794 of 4 794 line queries and 27 056 of 27 056 line queries at distances near 1.
-- **The exact signs of arcs past their expansions' range** are MobilityDB #3532, on master
-  after #3523. Two of the polygons narrower than an ulp
+- **The exact signs of arcs past their expansions' range** are MobilityDB #3532, merged as
+  `f0ce0988a6`. Two of the polygons narrower than an ulp
   run past 300 s on master with the certificate off: one sign on the older path, its expansions
   hundreds of components long and every one NaN, products past 2^1000 having left the arena
   unsafe while six routines owning an arena never read it. Those six read their signs checked and,
