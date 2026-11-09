@@ -37,8 +37,8 @@
  * - argument validators for every supported operand pair,
  * - type-specific input parsers that delegate to the generic
  * int-8 parser but tag the result with `T_TH3INDEX`,
- * - type-specific constructors (`th3index_make`, `th3indexinst_make`,
- * `th3indexseq_make`, `th3indexseqset_make`),
+ * - type-specific constructors (`th3indexinst_make`, `th3indexseq_make`,
+ * `th3indexseqset_make`),
  * - type-specific accessors (`th3index_start_value`,
  * `th3index_end_value`, `th3index_value_n`, `th3index_values`,
  * `th3index_value_at_timestamptz`) that hide the Datum-packing
@@ -368,17 +368,6 @@ th3indexseqset_make(const TSequence **sequences, int count)
   if (! ensure_positive(count))
     return NULL;
   return tsequenceset_make((TSequence **) sequences, count, NORMALIZE);
-}
-
-/**
- * @ingroup meos_h3_constructor
- * @brief Shorthand constructor: the single-instant temporal H3 cell
- * @details Alias for `th3indexinst_make` — matches the cbuffer convention.
- */
-Temporal *
-th3index_make(H3Index value, TimestampTz t)
-{
-  return (Temporal *) th3indexinst_make(value, t);
 }
 
 /*****************************************************************************

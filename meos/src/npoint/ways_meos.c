@@ -43,6 +43,7 @@
 #include <liblwgeom.h>
 /* MEOS */
 #include <meos.h>
+#include <meos_internal_geo.h>
 #include "geo/tgeo_spatialfuncs.h"
 #include "npoint/tnpoint.h"
 #include "npoint/ways_cache.h"

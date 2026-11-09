@@ -38,8 +38,8 @@
  * - argument validators for every supported operand pair,
  * - type-specific input parsers that delegate to the generic int-8 parser
  * but tag the result with `T_TS2CELL`,
- * - type-specific constructors (`ts2cell_make`, `ts2cellinst_make`,
- * `ts2cellseq_make`, `ts2cellseqset_make`),
+ * - type-specific constructors (`ts2cellinst_make`, `ts2cellseq_make`,
+ * `ts2cellseqset_make`),
  * - type-specific accessors (`ts2cell_start_value`, `ts2cell_end_value`,
  * `ts2cell_value_n`, `ts2cell_values`, `ts2cell_value_at_timestamptz`)
  * that hide the Datum-packing convention from callers,
@@ -351,17 +351,6 @@ TSequenceSet *
 ts2cellseqset_make(const TSequence **sequences, int count)
 {
   return tsequenceset_make((TSequence **) sequences, count, NORMALIZE);
-}
-
-/**
- * @ingroup meos_s2cell_constructor
- * @brief Return the single-instant temporal S2 cell of a cell and a
- * timestamptz
- */
-Temporal *
-ts2cell_make(S2CellId value, TimestampTz t)
-{
-  return (Temporal *) ts2cellinst_make(value, t);
 }
 
 /*****************************************************************************

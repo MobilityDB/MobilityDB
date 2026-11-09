@@ -62,20 +62,6 @@
 
 /**
  * @ingroup meos_geo_restrict
- * @brief Return a temporal point restricted to a point
- * @param[in] temp Temporal value
- * @param[in] gs Value
- */
-Temporal *
-tpoint_at_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-}
-
-/**
- * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a geometry/geography
  * @param[in] temp Temporal value
  * @param[in] gs Value
@@ -87,20 +73,6 @@ tgeo_at_value(const Temporal *temp, GSERIALIZED *gs)
   /* Ensure the validity of the arguments */
   VALIDATE_TGEO(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
   return temporal_restrict_value(temp, PointerGetDatum(gs), REST_AT);
-}
-
-/**
- * @ingroup meos_geo_restrict
- * @brief Return a temporal point restricted to the complement of a point
- * @param[in] temp Temporal value
- * @param[in] gs Value
- */
-Temporal *
-tpoint_minus_value(const Temporal *temp, GSERIALIZED *gs)
-{
-  /* Ensure the validity of the arguments */
-  VALIDATE_TPOINT(temp, NULL); VALIDATE_NOT_NULL(gs, NULL);
-  return temporal_restrict_value(temp, PointerGetDatum(gs), REST_MINUS);
 }
 
 /**
@@ -2727,20 +2699,6 @@ tgeo_restrict_geom(const Temporal *temp, const GSERIALIZED *gs,
 
 /**
  * @ingroup meos_geo_restrict
- * @brief Return a temporal point restricted to a geometry
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
- * @note This function has a last parameter for the Z dimension which is not
- * available for temporal geometries
- */
-Temporal *
-tpoint_at_geom(const Temporal *temp, const GSERIALIZED *gs)
-{
-  return tgeo_restrict_geom(temp, gs, REST_AT);
-}
-
-/**
- * @ingroup meos_geo_restrict
  * @brief Return a temporal geo restricted to a geometry
  * @param[in] temp Temporal geo
  * @param[in] gs Geometry
@@ -2750,20 +2708,6 @@ Temporal *
 tgeo_at_geom(const Temporal *temp, const GSERIALIZED *gs)
 {
   return tgeo_restrict_geom(temp, gs, REST_AT);
-}
-
-/**
- * @ingroup meos_geo_restrict
- * @brief Return a temporal point restricted to the complement of a geometry
- * @param[in] temp Temporal point
- * @param[in] gs Geometry
- * @note This function has a last parameter for the Z dimension which is not
- * available for temporal geometries
- */
-Temporal *
-tpoint_minus_geom(const Temporal *temp, const GSERIALIZED *gs)
-{
-  return tgeo_restrict_geom(temp, gs, REST_MINUS);
 }
 
 /**

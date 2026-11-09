@@ -165,8 +165,8 @@ extern Temporal *trgeometry_rotate_z(const Temporal *temp, double angle);
 extern Temporal *trgeometry_set_interp(const Temporal *temp, interpType interp);
 extern Temporal *trgeometry_translate(const Temporal *temp, double deltax, double deltay, double deltaz);
 extern TInstant *trgeometry_as_tinstant(const Temporal *temp);
-extern TSequence *trgeometry_as_tsequence(const Temporal *temp, const char *interp_str);
-extern TSequenceSet *trgeometry_as_tsequenceset(const Temporal *temp, const char *interp_str);
+extern TSequence *trgeometry_as_tsequence(const Temporal *temp, interpType interp);
+extern TSequenceSet *trgeometry_as_tsequenceset(const Temporal *temp, interpType interp);
 
 /*****************************************************************************
  * Restriction functions

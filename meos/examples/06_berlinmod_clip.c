@@ -389,7 +389,7 @@ int main(void)
       }
     }
     /* Compute the distance outside Brussels Region */
-    Temporal *minusgeom = tpoint_minus_geom(trip_rec.trip,
+    Temporal *minusgeom = tgeo_minus_geom(trip_rec.trip,
       brussels_region.geom);
     if (minusgeom)
     {
