@@ -1506,7 +1506,7 @@ transformPipeline({tpose,tposechain},pipeline text,srid integer,
   is_forward boolean=true) &#8594; {tpose,tposechain}
 </programlisting>
 				<para>The chain of every instant is transformed as the corresponding static chain is, which is to say that only the outer link is transformed, as described for <link linkend="pose_transform"><varname>transform</varname></link>.</para>
-				<para>Each instant's pose is transformed as the corresponding static pose is, orientation correction included, as described for <link linkend="pose_transform"><varname>transform</varname></link>. The same holds for a <varname>poseset</varname>. A <varname>trgeometry</varname> pairs its poses with a reference geometry that shares their frame, and transformation to another SRID is not supported for it.</para>
+				<para>Each instant's pose is transformed as the corresponding static pose is, orientation correction included, as described for <link linkend="pose_transform"><varname>transform</varname></link>. The same holds for a <varname>poseset</varname>. A <varname>trgeometry</varname> transforms its poses in this way and keeps its reference geometry, as stated for <link linkend="trgeometry_transform"><varname>transform</varname></link>.</para>
 				<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asEWKT(transform(tpose 'SRID=4326;Pose(Point(4.35 50.85),1)@2001-01-01', 3812));
 -- SRID=3812;Pose(POINT(648679.0180353033 671067.0556381135),1)@2001-01-01

@@ -70,6 +70,7 @@
   #include "pose/posechain.h"
 #endif
 #if RGEO
+  #include <meos_rgeo.h>
   #include "rgeo/trgeo.h"
 #endif
 
@@ -881,24 +882,45 @@ tspatial_transf_pj(const Temporal *temp, int32_t srid_to, const LWPROJ *pj)
 
 #if RGEO
 /**
- * @brief Ensure that a spatiotemporal value is not a temporal rigid geometry
- * @details A transformation rebuilds the value from its transformed instants,
- * while a temporal rigid geometry also carries a reference geometry beside
- * them, whose frame must agree with that of the poses
- * @param[in] temp Spatiotemporal value
+ * @brief Ensure that a temporal rigid geometry may be placed in a reference
+ * system
+ * @details The body is placed in the plane of the reference system of its
+ * poses, which a geographic system does not have
+ * @param[in] srid Target SRID, may be @p SRID_UNKNOWN
  */
 static bool
-ensure_not_trgeometry(const Temporal *temp)
+ensure_trgeometry_srid_planar(int32_t srid)
 {
-  assert(temp);
-  if (temp->temptype == T_TRGEOMETRY)
+  if (srid != SRID_UNKNOWN && srid_is_latlong(srid))
   {
-    meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-      "Transformation to another SRID is not supported for type %s",
-      meostype_name(temp->temptype));
+    meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+      "A temporal rigid geometry is placed in the plane of the reference "
+      "system of its poses, which the geographic system %d does not have",
+      srid);
     return false;
   }
   return true;
+}
+
+/**
+ * @brief Return a temporal rigid geometry with the transformed temporal pose
+ * and its reference geometry
+ * @details The reference geometry is the shape of the body in its own frame,
+ * which a change of the reference system of the poses leaves as it is: it is
+ * kept, and takes the SRID of the transformed poses
+ * @param[in] temp Temporal rigid geometry
+ * @param[in] tpose Transformed temporal pose, freed by the function
+ */
+static Temporal *
+trgeometry_with_tpose(const Temporal *temp, Temporal *tpose)
+{
+  if (! tpose)
+    return NULL;
+  GSERIALIZED *gs = geo_copy(trgeometry_geom_p(temp));
+  gserialized_set_srid(gs, tspatial_srid(tpose));
+  Temporal *result = geometry_tpose_to_trgeometry(gs, tpose);
+  pfree(gs); pfree(tpose);
+  return result;
 }
 #endif /* RGEO */
 
@@ -915,8 +937,16 @@ tspatial_transform(const Temporal *temp, int32_t srid_to)
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL);
 #if RGEO
-  if (! ensure_not_trgeometry(temp))
-    return NULL;
+  /* The poses are transformed and the body is kept */
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    if (! ensure_trgeometry_srid_planar(srid_to))
+      return NULL;
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    Temporal *tpose_to = tspatial_transform(tpose, srid_to);
+    pfree(tpose);
+    return trgeometry_with_tpose(temp, tpose_to);
+  }
 #endif /* RGEO */
   int32_t srid_from = tspatial_srid(temp);
   if (! ensure_srid_known(srid_from) || ! ensure_srid_known(srid_to))
@@ -956,8 +986,17 @@ tspatial_transform_pipeline(const Temporal *temp, const char *pipelinestr,
   /* Ensure the validity of the arguments */
   VALIDATE_TSPATIAL(temp, NULL); VALIDATE_NOT_NULL(pipelinestr, NULL);
 #if RGEO
-  if (! ensure_not_trgeometry(temp))
-    return NULL;
+  /* The poses are transformed and the body is kept */
+  if (temp->temptype == T_TRGEOMETRY)
+  {
+    if (! ensure_trgeometry_srid_planar(srid))
+      return NULL;
+    Temporal *tpose = trgeometry_to_tpose(temp);
+    Temporal *tpose_to = tspatial_transform_pipeline(tpose, pipelinestr, srid,
+      is_forward);
+    pfree(tpose);
+    return trgeometry_with_tpose(temp, tpose_to);
+  }
 #endif /* RGEO */
   /* srid may legitimately be SRID_UNKNOWN for pipeline transformations:
    * the pipeline string itself encodes the destination CRS. So unlike the
