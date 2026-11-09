@@ -765,7 +765,7 @@ SELECT getTime(atStbox( trgeometry 'Polygon((0 0,1 0,1 1,0 1,0 0));
   stbox 'STBOX X((1, -1), (3, 1))'));
 -- {[2001-01-01, 2001-01-04]}
 </programlisting>
-				<para>A box with only a temporal component is not yet supported, and <varname>atTime</varname> answers that question; if the box has only a spatial component the temporal domain is preserved.</para>
+				<para>A box with only a temporal component restricts the time domain, as <varname>atTime</varname> does; if the box has only a spatial component the temporal domain is preserved.</para>
 			</listitem>
 
 		</itemizedlist>
