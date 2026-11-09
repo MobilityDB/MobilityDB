@@ -1,0 +1,53 @@
+COPY  tbl_s2cellset TO STDOUT (FORMAT BINARY);
+COPY 100
+DROP TABLE IF EXISTS tbl_s2cellset_tmp;
+NOTICE:  table "tbl_s2cellset_tmp" does not exist, skipping
+DROP TABLE
+CREATE TABLE tbl_s2cellset_tmp AS TABLE tbl_s2cellset WITH NO DATA;
+CREATE TABLE AS
+COPY  tbl_s2cellset_tmp FROM STDIN (FORMAT BINARY);
+COPY 100
+SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset_tmp t2 WHERE t1.k = t2.k AND t1.s <> t2.s;
+ count 
+-------
+     0
+(1 row)
+
+DROP TABLE tbl_s2cellset_tmp;
+DROP TABLE
+SELECT SUM(numValues(s)) FROM tbl_s2cellset;
+ sum 
+-----
+ 477
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cellset WHERE memSize(s) IS NOT NULL;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset t2 WHERE t1.s = t2.s;
+ count 
+-------
+    90
+(1 row)
+
+SELECT COUNT(*) FROM tbl_s2cellset t1, tbl_s2cellset t2 WHERE t1.s <> t2.s;
+ count 
+-------
+  8010
+(1 row)
+
+SELECT MAX(hash(s)) FROM tbl_s2cellset;
+    max     
+------------
+ 2067820929
+(1 row)
+
+SELECT MAX(hashExtended(s, 1)) FROM tbl_s2cellset;
+         max         
+---------------------
+ 8911930631274729521
+(1 row)
+

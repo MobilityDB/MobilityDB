@@ -15,6 +15,14 @@ SELECT COUNT(*) FROM tbl_quadbin t1, tbl_quadbin_tmp t2 WHERE t1.k = t2.k AND t1
 
 DROP TABLE tbl_quadbin_tmp;
 DROP TABLE
+SELECT COUNT(*) FILTER (WHERE quadbin_send(qb) = asBinary(qb)) AS same,
+  COUNT(*) FILTER (WHERE quadbin_send(qb) <> asBinary(qb)) AS different
+FROM tbl_quadbin;
+ same | different 
+------+-----------
+  100 |         0
+(1 row)
+
 SELECT COUNT(*) FROM tbl_quadbin WHERE NOT isValidCell(qb);
  count 
 -------

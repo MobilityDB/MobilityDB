@@ -36,10 +36,11 @@
 #include <postgres.h>
 #include <fmgr.h>
 #include <libpq/pqformat.h>
-#include <utils/builtins.h>
+#include <pgtypes.h>
 /* MEOS */
 #include <meos.h>
 #include <meos_s2cell.h>
+#include "temporal/type_util.h"
 #include "s2cell/s2cell.h"
 #include "pg_temporal/temporal.h"
 
@@ -131,29 +132,37 @@ PGDLLEXPORT Datum S2cell_recv(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_recv);
 /**
  * @ingroup mobilitydb_s2cell_base_inout
- * @brief Return an S2 cell received over the binary wire protocol
+ * @brief Return an S2 cell from its Well-Known Binary (WKB) representation,
+ * as #Span_recv reads a span
+ * @sqlfn s2cell_recv()
  */
 Datum
 S2cell_recv(PG_FUNCTION_ARGS)
 {
   StringInfo buf = (StringInfo) PG_GETARG_POINTER(0);
-  PG_RETURN_S2CELL(bigint_to_s2cell(pq_getmsgint64(buf)));
+  S2CellId result = s2cell_from_wkb((uint8_t *) buf->data, buf->len);
+  /* Set cursor to the end of buffer (so the backend is happy) */
+  buf->cursor = buf->len;
+  PG_RETURN_S2CELL(result);
 }
 
 PGDLLEXPORT Datum S2cell_send(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(S2cell_send);
 /**
  * @ingroup mobilitydb_s2cell_base_inout
- * @brief Send an S2 cell over the binary wire protocol
+ * @brief Return the Well-Known Binary (WKB) representation of an S2 cell, as
+ * #Tbox_send writes a box carrying no SRID
+ * @sqlfn s2cell_send()
  */
 Datum
 S2cell_send(PG_FUNCTION_ARGS)
 {
   S2CellId cell = PG_GETARG_S2CELL(0);
-  StringInfoData buf;
-  pq_begintypsend(&buf);
-  pq_sendint64(&buf, (int64) cell);
-  PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
+  size_t wkb_size;
+  uint8_t *wkb = s2cell_as_wkb(cell, 0, &wkb_size);
+  bytea *result = bstring2bytea(wkb, wkb_size);
+  pfree(wkb);
+  PG_RETURN_BYTEA_P(result);
 }
 
 /*****************************************************************************
