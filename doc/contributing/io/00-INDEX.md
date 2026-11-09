@@ -80,8 +80,9 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
    The `E` forms carry the SRID, as PostGIS `ST_AsEWKT` and `ST_AsEWKB` do, and every type
    carrying an SRID behaves alike in binary: `asBinary` and `asHexWKB` write PostGIS-compatible
    plain WKB, `asEWKB` and `asHexEWKB` its SRID (G40), the boxes `stbox` and `tpcbox` included.
-   A box writes its SRID in its text form: `stbox_out` and `tpcbox_out` write `SRID=n;`
-   ("matching the sibling (GEOD)STBOX text form"). A set or a temporal
+   A box writes its SRID as every other spatial type does (DECIDED BY THE OWNER 2026-11-09,
+   "asEWKT for boxes like tgeompoint"): `asText` writes the box without it and `asEWKT` with
+   `SRID=n;`, and `stboxFromText` and `tpcboxFromText` read both (IO-M2). A set or a temporal
    value carries its SRID in its bounding box, from which `spatialset_as_ewkt` and
    `tspatial_as_ewkt` write it for every spatial set and temporal type; a base value writes the
    SRID it stores (`cbuffer_as_ewkt`, `pose_as_ewkt`, `posechain_as_ewkt`, `geo_as_ewkt`) or the
