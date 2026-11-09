@@ -144,7 +144,7 @@ SELECT quaternion(pose 'Pose(Point Z(1 1 1), 0, 0, 0, 1)');
 -- (0,0,0,1)
 SELECT quaternion(pose 'Pose(Point(1 1), 0)');
 -- (1,0,0,0)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_transformations"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_round"></a><a class="indexterm" name="id10581"></a><p>Round the point and the orientation of the pose to the number of decimal places</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_transformations"></a>Transformations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_round"></a><a class="indexterm" name="id10581"></a><p>Round the point and the orientation of the pose to the number of decimal places</p><p>The rotation of a 3D pose is normalized to unit length after its components are rounded, so its components may have more decimal places than requested.</p><pre class="programlisting">
 round({pose,pose[],posechain},integer=0) → {pose,pose[],posechain}
 </pre><pre class="programlisting">
 SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
@@ -152,7 +152,7 @@ SELECT asText(round(pose(ST_Point(1.123456789,1.123456789), 0.123456789), 6));
 SELECT asText(round(ARRAY[pose(ST_Point(1.123456789,1.123456789), 0.123456789),
   pose(ST_Point(2.987654321,2.987654321), 0.987654321)], 6));
 -- {"Pose(POINT(1.123457 1.123457),0.123457)","Pose(POINT(2.987654 2.987654),0.987654)"}
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_srid"></a>Spatial Reference System</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_SRID"></a><a class="indexterm" name="id10591"></a><a class="indexterm" name="id10594"></a><p>Return or set the spatial reference identifier, which for a pose chain is the identifier of its outer frame</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_srid"></a>Spatial Reference System</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_SRID"></a><a class="indexterm" name="id10592"></a><a class="indexterm" name="id10595"></a><p>Return or set the spatial reference identifier, which for a pose chain is the identifier of its outer frame</p><pre class="programlisting">
 SRID({pose,posechain}) → integer
 setSRID({pose,posechain},integer) → {pose,posechain}
 </pre><pre class="programlisting">
@@ -160,7 +160,7 @@ SELECT SRID(pose 'Pose(SRID=5676;Point(1 1), 0.3)');
 -- 5676
 SELECT asEWKT(setSRID(pose 'Pose(Point(0 0),1)', 4326));
 -- SRID=4326;Pose(POINT(0 0),1)
-</pre></li><li class="listitem"><a name="pose_transform"></a><a class="indexterm" name="id10601"></a><a class="indexterm" name="id10604"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pose_transform"></a><a class="indexterm" name="id10602"></a><a class="indexterm" name="id10605"></a><p>Transform to a spatial reference identifier</p><pre class="programlisting">
 transform({pose,posechain},integer) → {pose,posechain}
 transformPipeline({pose,posechain},pipeline text,srid integer,
   is_forward boolean=true) → {pose,posechain}
@@ -188,7 +188,7 @@ WITH test(pose, pipeline) AS (
 SELECT asEWKT(transformPipeline(transformPipeline(pose, pipeline, 32631), pipeline, 4326,
   false), 6) FROM test;
 -- SRID=4326;Pose(POINT(4.3525 50.846667),1)
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_distance"></a>Distance Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_distance_op"></a><a class="indexterm" name="id10625"></a><p>Return the distance</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_distance"></a>Distance Operations</h3></div></div></div><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_distance_op"></a><a class="indexterm" name="id10626"></a><p>Return the distance</p><pre class="programlisting">
 distance({geo,pose},pose) → float
 distance(pose,{geo,pose}) → float
 distance({geo,posechain},posechain) → float
@@ -210,7 +210,7 @@ SELECT round(geometry 'Point empty' &lt;-&gt; pose 'Pose(Point(4 0),0)', 6);
 SELECT round(distance(posechain 'PoseChain(Pose(Point(1 0),0), Pose(Point(1 0),0))',
   geometry 'Point(5 0)'), 6);
 -- 3
-</pre></li><li class="listitem"><a name="pose_nearestApproachDistance"></a><a class="indexterm" name="id10635"></a><p>Return the nearest approach distance</p><pre class="programlisting">
+</pre></li><li class="listitem"><a name="pose_nearestApproachDistance"></a><a class="indexterm" name="id10636"></a><p>Return the nearest approach distance</p><pre class="programlisting">
 nearestApproachDistance({stbox,pose},{pose,stbox}) → float
 nearestApproachDistance({stbox,posechain},{posechain,stbox}) → float
 {stbox,pose} |=| {pose,stbox} → float
@@ -220,7 +220,7 @@ SELECT round(nearestApproachDistance(stbox 'STBOX X((1,-1),(3,1))', pose 'Pose(P
 -- 1
 SELECT round(pose 'Pose(Point(4 0),0)' |=| stbox 'STBOX X((1,-1),(3,1))', 6);
 -- 1
-</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_comparison"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) are available for poses. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on poses.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_comp"></a><a class="indexterm" name="id10648"></a><a class="indexterm" name="id10651"></a><a class="indexterm" name="id10654"></a><a class="indexterm" name="id10657"></a><a class="indexterm" name="id10660"></a><a class="indexterm" name="id10663"></a><p>Traditional comparisons</p><pre class="programlisting">
+</pre></li></ul></div></div><div class="sect2"><div class="titlepage"><div><div><h3 class="title"><a name="pose_comparison"></a>Comparisons</h3></div></div></div><p>The comparison operators (=, &lt;, and so on) are available for poses. Excepted the equality and inequality, the other comparison operators are not useful in the real world but allow B-tree indexes to be constructed on poses.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><a name="pose_comp"></a><a class="indexterm" name="id10649"></a><a class="indexterm" name="id10652"></a><a class="indexterm" name="id10655"></a><a class="indexterm" name="id10658"></a><a class="indexterm" name="id10661"></a><a class="indexterm" name="id10664"></a><p>Traditional comparisons</p><pre class="programlisting">
 {pose,posechain} {=, &lt;&gt;, &lt;, &gt;, &lt;=, &gt;=} {pose,posechain} → boolean
 </pre><p>The ordering compares the dimension, then the SRID, then the links in order, and last the number of links, so a chain precedes every chain that extends it.</p><pre class="programlisting">
 SELECT pose 'Pose(Point(3 3), 0.5)' = pose 'Pose(Point(3 3), 0.5)';
