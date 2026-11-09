@@ -2068,30 +2068,49 @@ temporal_tsequence(const Temporal *temp, interpType interp)
     return NULL;
 
   assert(temptype_subtype(temp->subtype));
-  switch (temp->subtype)
+  if (temp->subtype == TINSTANT)
+    return tinstant_as_tsequence((TInstant *) temp, interp);
+
+  /* A sequence set is a sequence when it has a single one */
+  const TSequence *seq;
+  if (temp->subtype == TSEQUENCE)
+    seq = (const TSequence *) temp;
+  else
   {
-    case TINSTANT:
-      return tinstant_as_tsequence((TInstant *) temp, interp);
-    case TSEQUENCE:
+    const TSequenceSet *ss = (const TSequenceSet *) temp;
+    if (ss->count != 1)
     {
-      interpType interp1 = MEOS_FLAGS_GET_INTERP(temp->flags);
-      if (interp1 == DISCRETE && interp != DISCRETE &&
-        ((TSequence *) temp)->count > 1)
-      {
-        /* The first character should be transformed to lowercase */
-        char *str = pstrdup(interptype_name(interp));
-        str[0] = tolower(str[0]);
-        meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
-          "Cannot transform input value to a temporal sequence with %s interpolation",
-          str);
-        return NULL;
-      }
-      /* Given the above test, the result subtype is TSequence */
-      return (TSequence *) tsequence_set_interp((TSequence *) temp, interp);
+      meos_error(ERROR, MEOS_ERR_INVALID_ARG_VALUE,
+        "Cannot transform input value to a temporal sequence");
+      return NULL;
     }
-    default: /* TSEQUENCESET */
-      return tsequenceset_as_tsequence((TSequenceSet *) temp);
+    seq = TSEQUENCESET_SEQ_N(ss, 0);
   }
+
+  /* The answer of tsequence_set_interp is a sequence set where the value is
+   * not one sequence in the interpolation asked for: a discrete sequence with
+   * several instants, or a step sequence that changes value, asked for a step
+   * or a linear one. A set of one sequence is answered as that sequence, a
+   * set of several is refused. */
+  Temporal *result = tsequence_set_interp(seq, interp);
+  if (! result || result->subtype == TSEQUENCE)
+    return (TSequence *) result;
+  const TSequenceSet *rss = (const TSequenceSet *) result;
+  if (rss->count == 1)
+  {
+    TSequence *result1 = tsequence_copy(TSEQUENCESET_SEQ_N(rss, 0));
+    pfree(result);
+    return result1;
+  }
+  pfree(result);
+  /* The first character should be transformed to lowercase */
+  char *str = pstrdup(interptype_name(interp));
+  str[0] = tolower(str[0]);
+  meos_error(ERROR, MEOS_ERR_INVALID_ARG_TYPE,
+    "Cannot transform input value to a temporal sequence with %s interpolation",
+    str);
+  pfree(str);
+  return NULL;
 }
 
 /**
@@ -2107,13 +2126,14 @@ temporal_as_tsequence(const Temporal *temp, interpType interp)
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(temp, NULL);
 
-  /* If the interpolation was not given */
+  /* If the interpolation was not given, keep the one of the value, an
+   * instant taking the default one of its type */
   if (interp == INTERP_NONE)
   {
-    if (temp->subtype == TSEQUENCE)
-      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
-    else
+    if (temp->subtype == TINSTANT)
       interp = MEOS_FLAGS_GET_CONTINUOUS(temp->flags) ? LINEAR : STEP;
+    else
+      interp = MEOS_FLAGS_GET_INTERP(temp->flags);
   }
   return temporal_tsequence(temp, interp);
 }

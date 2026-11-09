@@ -570,11 +570,17 @@ reachabilitystate_seed(ReachabilityState *state)
 }
 
 /**
+ * @ingroup meos_temporal_agg
  * @brief Release a reachability state and every report it holds
+ * @details A stream releases the state of a walk with this function after
+ * #reachabilitystate_close, having read its counts
+ * @param[in] state State @nullable
  */
-static void
+void
 reachabilitystate_free(ReachabilityState *state)
 {
+  if (! state)
+    return;
   if (state->previous)
     pfree(state->previous);
   if (state->anchor)
@@ -589,31 +595,29 @@ reachabilitystate_free(ReachabilityState *state)
 }
 
 /**
- * @brief Close the walk of a state: choose the seed if fewer reports than the
- * head arrived, and return the kept reports not yet handed back, whose
- * ownership passes to the caller, or NULL when the reports are dropped whole,
- * because more than half of them are unreachable from the report before
- * @param[in] state State, which keeps its counts and releases its reports
+ * @brief Close the walk of a value and release its state: return the kept
+ * reports not yet handed back, whose ownership passes to the caller, or NULL
+ * when the reports are dropped whole, because more than half of them are
+ * unreachable from the report before
+ * @details The close of a value, which has handed back no report before, is
+ * the close of a stream, #reachabilitystate_close, followed by the drop rule
+ * and #reachabilitystate_free
+ * @param[in] state State, which is released
  * @param[out] count Number of reports returned
  */
 static TInstant **
-reachabilitystate_close(ReachabilityState *state, int *count)
+reachabilitystate_finish(ReachabilityState *state, int *count)
 {
-  if (! state->seeded && state->nhead > 0)
-    reachabilitystate_seed(state);
-  TInstant **result = state->pending;
-  *count = state->npending;
-  state->pending = NULL;
-  state->npending = state->maxpending = 0;
+  TInstant **result = reachabilitystate_close(state, count);
   if (state->unreachable * 2 > state->reports)
   {
     for (int i = 0; i < *count; i++)
       pfree(result[i]);
-    if (result)
-      pfree(result);
+    pfree(result);
     *count = 0;
-    return NULL;
+    result = NULL;
   }
+  reachabilitystate_free(state);
   return result;
 }
 
@@ -720,11 +724,10 @@ temporal_reachability_filter_finalfn(ReachabilityState *state)
 {
   /* Ensure the validity of the arguments */
   VALIDATE_NOT_NULL(state, NULL);
-  int count;
-  TInstant **instants = reachabilitystate_close(state, &count);
   interpType interp = temptype_supports_linear(state->temptype) ?
     LINEAR : STEP;
-  reachabilitystate_free(state);
+  int count;
+  TInstant **instants = reachabilitystate_finish(state, &count);
   if (count == 0)
   {
     if (instants)
@@ -741,7 +744,7 @@ temporal_reachability_filter_finalfn(ReachabilityState *state)
  * back, and hand them back
  * @details A stream emits these reports after each call of
  * #temporal_reachability_filter_transfn, and the reports still held when the
- * stream closes are those that #temporal_reachability_filter_finalfn returns
+ * stream closes are those that #reachabilitystate_close hands back
  * @param[in,out] state State
  * @param[out] count Number of elements in the array
  * @return Array of the reports, empty when no report has been decided since
@@ -759,6 +762,33 @@ reachabilitystate_instants(ReachabilityState *state, int *count)
   state->pending = NULL;
   state->npending = state->maxpending = 0;
   return result;
+}
+
+/**
+ * @ingroup meos_temporal_agg
+ * @brief Close the walk of a stream: choose the seed if fewer reports than
+ * the head arrived, and hand back the kept reports not yet handed back
+ * @details A stream has emitted every report decided before it closes, so
+ * the reports are handed back whatever their share of unreachable reports,
+ * as #reachabilitystate_instants hands them back: the caller states that the
+ * reports are dropped whole from #reachabilitystate_unreachable and
+ * #reachabilitystate_reports, when more than half of them are unreachable
+ * from the report before. The state keeps its counts until
+ * #reachabilitystate_free releases it.
+ * @param[in,out] state State
+ * @param[out] count Number of elements in the array
+ * @return Array of the reports, whose ownership passes to the caller, empty
+ * when no kept report is left
+ * @errval NULL
+ */
+TInstant **
+reachabilitystate_close(ReachabilityState *state, int *count)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(state, NULL); VALIDATE_NOT_NULL(count, NULL);
+  if (! state->seeded && state->nhead > 0)
+    reachabilitystate_seed(state);
+  return reachabilitystate_instants(state, count);
 }
 
 /**
@@ -1054,8 +1084,7 @@ temporal_reachability_filter(const Temporal *temp, double maxspeed)
   if (! state)
     return NULL;
   int nkept;
-  TInstant **kept = reachabilitystate_close(state, &nkept);
-  reachabilitystate_free(state);
+  TInstant **kept = reachabilitystate_finish(state, &nkept);
   if (nkept == 0)
   {
     if (kept)

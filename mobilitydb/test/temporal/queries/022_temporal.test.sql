@@ -682,9 +682,16 @@ SELECT tfloatSeq(tfloat '{[1.5@2001-01-01, 2.5@2001-01-02, 1.5@2001-01-03],[3.5@
 
 -- With interpolation
 SELECT tfloatSeq(tfloat '{1@2001-01-01}', 'Linear');
+SELECT tfloatSeq(tfloat 'Interp=Step;[1@2001-01-01, 1@2001-01-02]', 'Linear');
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 1@2001-01-02]}', 'Linear');
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]}');
 SELECT tfloatSeqSet(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Linear');
+SELECT tfloatSeqSet(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]', 'Linear');
 /* Errors */
 SELECT tfloatSeq(tfloat '{1@2001-01-01, 2@2001-01-02}', 'Linear');
+SELECT tfloatSeq(tfloat 'Interp=Step;[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]', 'Linear');
+SELECT tfloatSeq(tfloat 'Interp=Step;{[1@2001-01-01, 2@2001-01-02, 2@2001-01-03]}', 'Linear');
+SELECT tfloatSeq(tfloat '{[1@2001-01-01, 2@2001-01-02]}', 'Step');
 
 SELECT ttextInst(ttext 'AAA@2001-01-01');
 SELECT ttextSeq(ttext 'AAA@2001-01-01');
