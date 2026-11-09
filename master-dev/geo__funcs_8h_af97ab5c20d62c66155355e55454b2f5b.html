@@ -96,8 +96,8 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa5948b556a6611f5f57c7bc99c108179.html#aa5948b556a6611f5f57c7bc99c108179">arcarc_crossing_terms</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a630c1baab285148ff0eec1e257ab7876.html#a630c1baab285148ff0eec1e257ab7876">arcarc_intersect</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_af1a2c874e33b7d1c58d560670942596e.html#af1a2c874e33b7d1c58d560670942596e">arcarc_intersect_points</a></td></tr>
-          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a6530b3564d192312a29ef75e864473a6.html#a6530b3564d192312a29ef75e864473a6">arcarc_meet_exact</a></td></tr>
-          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_a15011a2de8dbe32c9045be0917e7d857.html#a15011a2de8dbe32c9045be0917e7d857">arcarc_shared_point_signs</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a4a34f60b8c1c013af4150ce39c29f56b.html#a4a34f60b8c1c013af4150ce39c29f56b">arcarc_meet_exact</a></td></tr>
+          <tr><td class="navtabHL"><a class="navtab" href="geo__funcs_8h_af97ab5c20d62c66155355e55454b2f5b.html#af97ab5c20d62c66155355e55454b2f5b">arcarc_shared_point_signs</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_aa14ebc99353c20a7edbafc7127f74ae7.html#aa14ebc99353c20a7edbafc7127f74ae7">arcarc_within_exact</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_afdff9c5fe2991305c9d2b4b09d44d860.html#afdff9c5fe2991305c9d2b4b09d44d860">ArcarcTerm</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="geo__funcs_8h_a680e64fe53b8129dc82befe29b114d24.html#a680e64fe53b8129dc82befe29b114d24">arcsegm_cross</a></td></tr>
@@ -298,14 +298,14 @@ $(function() {
       </div>
    </td>
    <td valign="top" class="mempage">
-<a id="a15011a2de8dbe32c9045be0917e7d857" name="a15011a2de8dbe32c9045be0917e7d857"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15011a2de8dbe32c9045be0917e7d857">&#9670;&#160;</a></span>arcarc_shared_point_signs()</h2>
+<a id="af97ab5c20d62c66155355e55454b2f5b" name="af97ab5c20d62c66155355e55454b2f5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af97ab5c20d62c66155355e55454b2f5b">&#9670;&#160;</a></span>arcarc_shared_point_signs()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void arcarc_shared_point_signs </td>
+          <td class="memname">bool arcarc_shared_point_signs </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structEdge.html">Edge</a> *&#160;</td>
           <td class="paramname"><em>p</em>, </td>
@@ -365,6 +365,7 @@ $(function() {
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>False where neither expansions nor <a class="el" href="structWideDyadic.html" title="A dyadic rational sign * magnitude * 2^exp, the magnitude held in 64-bit limbs, the lowest first,...">WideDyadic</a> hold them exactly (<a class="el" href="meos_2src_2geo_2geo__funcs_8c_a299eeb0f9e147a935ebd4a11a12e91f8.html#a299eeb0f9e147a935ebd4a11a12e91f8">arcseg_x_sign_checked</a>) </dd></dl>
 </li>
 </ul>
 
