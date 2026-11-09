@@ -63,7 +63,12 @@ computed in five steps.
    neighbouring doubles, so no root of a rounded value decides it. Rounding is monotone, so the
    least of those doubles is the double nearest the least: two segments are nearest at an end of
    one of them, and `segment_distance_exact` answers the least of the four end distances,
-   comparing them on their exact squares and rounding the least alone.
+   comparing them on their exact squares and rounding the least alone. Two such squares are
+   compared as a polynomial of degree six in the differences of the coordinates and the errors
+   of their rounding (`segment_square_least`): in expansions where those values, scaled into
+   [1, 2), keep their lowest bit at or above 2^-179, and past that in `WideDyadic` of 200 limbs
+   (`polynomial_sign_wide`), so the comparison reads every finite double and never falls back
+   to squares rounded in doubles, which tie from 1e60.
 5. **A filter in doubles answers first.** Each kernel reads the question in doubles with a proven
    bound on their error and answers there where the bound clears (`point_distance_offset_dd`,
    `point_motion_dwithin_period_filter`); the exact stage runs only where it cannot. With ED19, a
@@ -80,6 +85,7 @@ computed in five steps.
 | two moving points | the interpolated points | the relative path over continuous time | `point_motion_nad_exact`, ED5 |
 | a moving disc whose radius changes | the disc at a microsecond | the centres, the radii and the timestamps | `point_motion_point_offset_exact`, ED10 |
 | a rigid body that does not turn | the body placed at the pose | the reference geometry and the position | `convex_motion_nad_exact`, ED19 |
+| two segments, the nearest of the four end distances | the four squares rounded | degree-six polynomials of the differences and their errors, in `WideDyadic` past the six-product bound | `segment_square_least`, `polynomial_sign_wide`, MobilityDB #3539 |
 | two segments in 3D, within a distance | the distance rounded | the end, the normal and the parameters inside both segments | `segment_interior_offset_sign`, ED21 |
 | a point, a segment or an arc against an arc, within a distance | the arc as a chord, the circle in doubles | the centre `c / w` and the squared radius from the three points of the arc | `point_arc_within_exact`, `arcsegm_within_exact`, `arcarc_within_exact`, ED22 |
 
