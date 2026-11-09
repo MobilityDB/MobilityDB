@@ -746,6 +746,8 @@ pose_parse(const char **str, bool end)
   /* Determine whether the pose has an SRID */
   int32_t srid;
   srid_parse(str, &srid);
+  /* White space may follow the SRID, as it may at the start of a value */
+  p_whitespace(str);
 
   /* Determine whether the pose is geodetic from its GeodPose / Pose prefix */
   bool geodetic = (pg_strncasecmp(*str, "GEODPOSE", 8) == 0);

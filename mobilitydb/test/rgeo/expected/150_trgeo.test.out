@@ -148,6 +148,50 @@ SELECT asEWKT(trgeometry 'SRID=5676,Interp=Step;Polygon((1 1,2 2,3 1,1 1));{[Pos
  SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Interp=Step;{[Pose(POINT(1 1),0.123457)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(1 1),0.523457)@Tue Jan 02 00:00:00 2001 PST, Pose(POINT(1 1),0.123457)@Wed Jan 03 00:00:00 2001 PST], [Pose(POINT(2 2),0.723457)@Thu Jan 04 00:00:00 2001 PST, Pose(POINT(2 2),0.723457)@Fri Jan 05 00:00:00 2001 PST]}
 (1 row)
 
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01');
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01, Pose(Point(2 2), 0.5)@2001-01-02]');
+                                                                   asewkt                                                                    
+---------------------------------------------------------------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));[Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST, Pose(POINT(2 2),0.5)@Tue Jan 02 00:00:00 2001 PST]
+(1 row)
+
+SELECT srid(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01'),
+  ST_SRID(geometry(trgeometry 'Polygon((1 1,2 2,3 1,1 1));SRID=5676;Pose(Point(1 1), 0.5)@2001-01-01'));
+ srid | st_srid 
+------+---------
+ 5676 |    5676
+(1 row)
+
+SELECT asEWKT(trgeometry E'Polygon((1 1,2 2,3 1,1 1));SRID=5676;\n  Pose(Point(1 1), 0.5)@2001-01-01');
+                                         asewkt                                         
+----------------------------------------------------------------------------------------
+ SRID=5676;POLYGON((1 1,2 2,3 1,1 1));Pose(POINT(1 1),0.5)@Mon Jan 01 00:00:00 2001 PST
+(1 row)
+
+SELECT asEWKT(pose E'SRID=5676;\n  Pose(Point(1 1), 0.5)');
+             asewkt             
+--------------------------------
+ SRID=5676;Pose(POINT(1 1),0.5)
+(1 row)
+
+SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(Point(1 1), 0.5)@2001-01-01, SRID=5676;Pose(Point(2 2), 0.5)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+LINE 1: SELECT asEWKT(trgeometry 'Polygon((1 1,2 2,3 1,1 1));[Pose(P...
+                                 ^
+SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, SRID=5676;Point(2 2)@2001-01-02]');
+ERROR:  Operation on mixed SRID
+LINE 1: SELECT asEWKT(tgeompoint '[Point(1 1)@2001-01-01, SRID=5676;...
+                                 ^
+/* Errors */
+SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));SRID=3812;Pose(Point(1 1), 0.5)@2001-01-01';
+ERROR:  The SRID of the pose (3812) does not match the SRID of the trgeometry (5676)
+LINE 2: SELECT trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));SRID...
+                          ^
 SELECT asMFJSON(trgeometry 'SRID=5676;Polygon((1 1,2 2,3 1,1 1));Pose(Point(1 1), 0.123456789)@2001-01-01', 6);
                                                                                                                                           asmfjson                                                                                                                                           
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
