@@ -433,9 +433,9 @@ typedef struct
 
 extern int arcsegm_meet_exact(double ax, double ay, double bx, double by,
   const Edge *arc, ArcsegMeet out[2]);
-extern void arcarc_shared_point_signs(const Edge *p, const Edge *q,
+extern bool arcarc_shared_point_signs(const Edge *p, const Edge *q,
   double jx, double jy, int *s1, int *sp, int *sq);
-extern void arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
+extern bool arcarc_meet_exact(const Edge *p, const Edge *q, int *meet,
   int within[2][2]);
 
 /* The terms #arcarc_crossing_terms hands, in this order */

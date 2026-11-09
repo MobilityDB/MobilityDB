@@ -450,6 +450,9 @@
 					<para><link linkend="box_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
 				</listitem>
 				<listitem>
+					<para><link linkend="stbox_asEWKT"><varname>asEWKT</varname></link>: Return the Extended Well-Known Text (EWKT) representation of a spatiotemporal box</para>
+				</listitem>
+				<listitem>
 					<para><link linkend="box_asBinary"><varname>asBinary</varname>, <varname>asHexWKB</varname></link>: Return the Well-Known Binary (WKB) or the Hexadecimal Well-Known Binary (HexWKB) representation</para>
 				</listitem>
 				<listitem>
@@ -457,6 +460,9 @@
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromText"><varname>boxFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+				</listitem>
+				<listitem>
+					<para><link linkend="stboxFromEWKT"><varname>stboxFromEWKT</varname></link>: Input of a spatiotemporal box from the Extended Well-Known Text (EWKT) representation</para>
 				</listitem>
 				<listitem>
 					<para><link linkend="boxFromBinary"><varname>boxFromBinary</varname>, <varname>boxFromHexWKB</varname></link>: Input from the Well-Known Binary (WKB) or from the Hexadecimal Well-Known Binary (HexWKB) representation</para>
@@ -3664,7 +3670,13 @@
 						<para><link linkend="tpcbox_asText"><varname>asText</varname></link>: Return the Well-Known Text (WKT) representation</para>
 					</listitem>
 					<listitem>
+						<para><link linkend="tpcbox_asEWKT"><varname>asEWKT</varname></link>: Return the Extended Well-Known Text (EWKT) representation of a point cloud box</para>
+					</listitem>
+					<listitem>
 						<para><link linkend="tpcboxFromText"><varname>tpcboxFromText</varname></link>: Input from the Well-Known Text (WKT) representation</para>
+					</listitem>
+					<listitem>
+						<para><link linkend="tpcboxFromEWKT"><varname>tpcboxFromEWKT</varname></link>: Input of a point cloud box from the Extended Well-Known Text (EWKT) representation</para>
 					</listitem>
 				</itemizedlist>
 			</sect3>

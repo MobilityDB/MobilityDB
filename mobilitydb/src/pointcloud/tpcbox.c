@@ -91,11 +91,35 @@ PGDLLEXPORT Datum Tpcbox_as_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_as_text);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
- * @brief Return the Well-Known Text (WKT) representation of a TPCBox
+ * @brief Return the Well-Known Text (WKT) representation of a TPCBox, without
+ * its SRID, as #Stbox_as_text writes a spatiotemporal box
  * @sqlfn asText()
  */
 Datum
 Tpcbox_as_text(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  TPCBox *box = PG_GETARG_TPCBOX_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = tpcbox_as_text(box, dbl_dig_for_wkt, &size_out);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Tpcbox_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Tpcbox_as_ewkt);
+/**
+ * @ingroup mobilitydb_pointcloud_box_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * TPCBox, as #Stbox_as_ewkt writes a spatiotemporal box
+ * @note It is the WKT representation prefixed with the SRID
+ * @sqlfn asEWKT()
+ */
+Datum
+Tpcbox_as_ewkt(PG_FUNCTION_ARGS)
 {
   size_t size_out;
   TPCBox *box = PG_GETARG_TPCBOX_P(0);
@@ -112,8 +136,9 @@ PGDLLEXPORT Datum Tpcbox_from_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Tpcbox_from_text);
 /**
  * @ingroup mobilitydb_pointcloud_box_inout
- * @brief Return a TPCBox from its Well-Known Text (WKT) representation
- * @sqlfn tpcboxFromText()
+ * @brief Return a TPCBox from its Well-Known Text (WKT) or Extended Well-Known
+ * Text (EWKT) representation, as #Stbox_from_text reads a spatiotemporal box
+ * @sqlfn tpcboxFromText(), tpcboxFromEWKT()
  */
 Datum
 Tpcbox_from_text(PG_FUNCTION_ARGS)

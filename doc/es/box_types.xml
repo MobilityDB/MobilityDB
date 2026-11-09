@@ -95,12 +95,29 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(box,maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15).</para>
+					<para>El argumento <varname>maxdecimaldigits</varname> se puede utilizar para definir el número máximo de decimales para la salida de los valores de coma flotante (por defecto 15). Como para todo tipo espacial, el texto de un <varname>stbox</varname> no escribe su SRID, que escribe <varname>asEWKT</varname>.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
+SELECT asText(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- STBOX X((1,1),(2,2))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stbox_asEWKT">
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Devuelve la representación de texto conocido extendido (EWKT) de un cuadro espaciotemporal</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKT(stbox,maxdecimaldigits integer=15) → text
+</programlisting>
+					<para>El resultado es el texto que escribe <varname>asText</varname> precedido del SRID del cuadro, como todo tipo espacial escribe su SRID en su representación extendida.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- SRID=3812;STBOX X((1,1),(2,2))
+SELECT asEWKT(stbox 'SRID=4326;GEODSTBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
+-- SRID=4326;GEODSTBOX Z((2,2,2),(3,3,3))
 </programlisting>
 				</listitem>
 
@@ -157,6 +174,19 @@ boxFromText(text) → box
 SELECT tboxFromText('TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 -- TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])
 SELECT stboxFromText('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+-- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stboxFromEWKT">
+					<indexterm significance="normal"><primary><varname>stboxFromEWKT</varname></primary></indexterm>
+					<para>Entrada de un cuadro espaciotemporal desde la representación de texto conocido extendido (EWKT)</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stboxFromEWKT(text) → stbox
+</programlisting>
+					<para>La función es la inversa de <varname>asEWKT</varname> y lee el SRID que indica el texto.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stboxFromEWKT('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
 -- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
 </programlisting>
 				</listitem>

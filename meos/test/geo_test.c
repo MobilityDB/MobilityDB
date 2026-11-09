@@ -3770,6 +3770,19 @@ int main(void)
   assert(meos_errno() != 0);
   meos_errno_reset();
   free(sbext); free(sbext_txt);
+
+  /* The text of a box writes no SRID, its EWKT writes it, as for every
+   * spatial type, and each states its size */
+  char *sb1_txt = stbox_as_text(sb1, 6, &size_out);
+  assert(sb1_txt != NULL);
+  assert(size_out == strlen(sb1_txt) + 1);
+  char *sb1_ewkt = stbox_out(sb1, 6, &size_out);
+  assert(sb1_ewkt != NULL);
+  assert(size_out == strlen(sb1_ewkt) + 1);
+  printf("stbox_as_text: %s, stbox_out: %s\n", sb1_txt, sb1_ewkt);
+  assert(strcmp(sb1_txt, "STBOX X((0,0),(2,2))") == 0);
+  assert(strcmp(sb1_ewkt, "SRID=4326;STBOX X((0,0),(2,2))") == 0);
+  free(sb1_txt); free(sb1_ewkt);
   free(sb1); free(sb2); free(sb3); free(sbt);
 
   /* A reversed line is a new geometry: the line it reverses keeps its vertex

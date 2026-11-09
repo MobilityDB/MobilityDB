@@ -182,25 +182,19 @@ stbox_in(const char *str)
 }
 
 /**
- * @ingroup meos_geo_box_inout
- * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
- * box
+ * @brief Return the text representation of a spatiotemporal box, prefixed
+ * with its SRID when `extended` is true and the box has a spatial dimension
+ * whose SRID is known, as #pose_wkt_out writes a pose
  * @param[in] box Spatiotemporal box
+ * @param[in] extended True for the Extended Well-Known Text (EWKT)
  * @param[in] maxdd Maximum number of decimal digits
  * @param[out] size_out Size of the result, the terminating null character
  * included
- * @csqlfn #Stbox_out(), #Stbox_as_text()
  */
-char *
-stbox_out(const STBox *box, int maxdd, size_t *size_out)
+static char *
+stbox_wkt_out(const STBox *box, bool extended, int maxdd, size_t *size_out)
 {
   size_t part_size;
-  /* Ensure the validity of the arguments */
-  VALIDATE_NOT_NULL(size_out, NULL);
-  VALIDATE_NOT_NULL(box, NULL);
-  if (! ensure_not_negative(maxdd))
-    return NULL;
-
   static size_t size = MAXSTBOXLEN + 1;
   char *xmin = NULL, *xmax = NULL, *ymin = NULL, *ymax = NULL, *zmin = NULL,
     *zmax = NULL, *period = NULL;
@@ -212,7 +206,7 @@ stbox_out(const STBox *box, int maxdd, size_t *size_out)
 
   char *str = palloc(size);
   char srid[18];
-  if (hasx && box->srid > 0)
+  if (extended && hasx && box->srid > 0)
     /* SRID_MAXIMUM is defined by PostGIS as 999999 */
     snprintf(srid, sizeof(srid), "SRID=%d;", box->srid);
   else
@@ -278,6 +272,49 @@ stbox_out(const STBox *box, int maxdd, size_t *size_out)
   if (hast)
     pfree(period);
   return cstring_size(str, size_out);
+}
+
+/**
+ * @ingroup meos_geo_box_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * spatiotemporal box, its text prefixed with its SRID
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @csqlfn #Stbox_out(), #Stbox_as_ewkt()
+ */
+char *
+stbox_out(const STBox *box, int maxdd, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+  return stbox_wkt_out(box, true, maxdd, size_out);
+}
+
+/**
+ * @ingroup meos_geo_box_inout
+ * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
+ * box, its text without its SRID, as #tspatial_as_text writes a spatiotemporal
+ * value
+ * @param[in] box Spatiotemporal box
+ * @param[in] maxdd Maximum number of decimal digits
+ * @param[out] size_out Size of the result, the terminating null character
+ * included
+ * @csqlfn #Stbox_as_text()
+ */
+char *
+stbox_as_text(const STBox *box, int maxdd, size_t *size_out)
+{
+  /* Ensure the validity of the arguments */
+  VALIDATE_NOT_NULL(size_out, NULL);
+  VALIDATE_NOT_NULL(box, NULL);
+  if (! ensure_not_negative(maxdd))
+    return NULL;
+  return stbox_wkt_out(box, false, maxdd, size_out);
 }
 
 /*****************************************************************************

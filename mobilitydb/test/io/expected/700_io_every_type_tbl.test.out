@@ -19422,9 +19422,9 @@ SELECT asHexEWKB(tpcboxX(0, 0, 10, 10, 5), 'XDR');
 (1 row)
 
 SELECT asText(tpcboxFromBinary(asBinary(tpcboxX(0, 0, 10, 10, 5))));
-                astext                 
----------------------------------------
- SRID=4326;TPCBOX(X((0,0),(10,10)), 5)
+           astext            
+-----------------------------
+ TPCBOX(X((0,0),(10,10)), 5)
 (1 row)
 
 SELECT tpcboxFromEWKB(asEWKB(tpcboxX(0, 0, 10, 10, 1)))

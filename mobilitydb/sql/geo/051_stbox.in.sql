@@ -79,6 +79,10 @@ CREATE FUNCTION stboxFromText(text)
   RETURNS stbox
   AS 'MODULE_PATHNAME', 'Stbox_from_text'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION stboxFromEWKT(text)
+  RETURNS stbox
+  AS 'MODULE_PATHNAME', 'Stbox_from_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION stboxFromHexWKB(text)
   RETURNS stbox
@@ -92,6 +96,10 @@ CREATE FUNCTION stboxFromHexEWKB(text)
 CREATE FUNCTION asText(stbox, maxdecimaldigits integer DEFAULT 15)
   RETURNS text
   AS 'MODULE_PATHNAME', 'Stbox_as_text'
+  LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
+CREATE FUNCTION asEWKT(stbox, maxdecimaldigits integer DEFAULT 15)
+  RETURNS text
+  AS 'MODULE_PATHNAME', 'Stbox_as_ewkt'
   LANGUAGE C IMMUTABLE STRICT PARALLEL SAFE;
 
 CREATE FUNCTION asBinary(stbox, endian text DEFAULT '')
