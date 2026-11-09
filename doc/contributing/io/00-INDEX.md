@@ -72,7 +72,7 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
    | PostgreSQL function | Direction | Portable functions | MEOS |
    |---|---|---|---|
    | `<type>_in(cstring)` | text → value | `<type>FromText(text)`; with an SRID also `<type>FromEWKT(text)` | `<type>_in`, the family's reader |
-   | `<type>_out(<type>)` | value → text | `asText(<type>)`; with an SRID also `asEWKT(<type>)` | `<type>_out`, `tspatial_out`, `spatialset_out` |
+   | `<type>_out(<type>)` | value → text | `asText(<type>)`; with an SRID also `asEWKT(<type>)` | `set_out`, `span_out`, `spanset_out`, `temporal_out`, the `<type>_out` of a base or box type |
    | `<type>_recv(internal)` | binary → value | `<type>FromBinary(bytea)`, `<type>FromHexWKB(text)`; with an SRID also `<type>FromEWKB(bytea)`, `<type>FromHexEWKB(text)` | `*_from_wkb`, `*_from_hexwkb` |
    | `<type>_send(<type>)` | value → binary | `asBinary(<type>)`, `asHexWKB(<type>)`; with an SRID also `asEWKB(<type>)`, `asHexEWKB(<type>)` | `*_as_wkb`, `*_as_hexwkb` |
    | none | MF-JSON → value, value → MF-JSON | `<type>FromMFJSON(text)`, `asMFJSON(<type>)` for a temporal type | `*_from_mfjson`, `temporal_as_mfjson` |
@@ -104,8 +104,9 @@ plan of MobilityDB #3287 (`doc/contributing/exactness/`).
    `temporal_out` are public and back both the output of each type and `asText`, as `tbox_out`
    does, and as `set_as_wkb` and `temporal_as_wkb` back `asBinary`; a separate `*_as_text`
    exists only where `asText` writes another text than the output of the type, as
-   `tspatial_as_text` writes WKT where `tspatial_out` writes hex WKB. The per-type writers that
-   repeat the template writer (`intset_out`, `tint_out`, ...) are not part of the API. A reader
+   `tspatial_as_text` writes WKT where `temporal_out` writes hex WKB. The per-type and per-class
+   writers that repeat the template writer (`intset_out`, `tint_out`, `spatialset_out`,
+   `tspatial_out`, ...) are not part of the API. A reader
    is one function per template where the format states the type, as WKB does
    (`set_from_wkb`, `temporal_from_wkb`), and one per type where it does not, as text does:
    `{1, 2}` is an `intset` or a `bigintset` and `1@2001-01-01` a `tint` or a `tfloat`, so
