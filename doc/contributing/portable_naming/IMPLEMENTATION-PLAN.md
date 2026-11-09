@@ -135,6 +135,15 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tbool_value_at_timestamptz`, `tint_value_at_timestamptz`, `tbigint_value_at_timestamptz`,
   `tfloat_value_at_timestamptz` and `ttext_value_at_timestamptz` that commit moved into
   `temporal_restrict.c`.
+- **The geometry of a temporal point in a vector tile** is the answer of `tpoint_as_mvtgeom`,
+  NULL when the point has no representation in the tile, beside the times of its vertices and
+  their count, as the owner ruled on 2026-11-08 ("reshape"), so the object layers generated from
+  the catalog read it as they read every value answered beside an array (row B24 of
+  `BINDINGS-PLAN.md`, and MEOS.NET's `TPoint.asMVTGeom`): branch
+  `feat/mvtgeom-answers-the-geometry` rewrites `2ed568d922`, the declaration of
+  `tpoint_as_mvtgeom` in `meos_geo.h` that answered a bool and wrote the geometry through
+  `GSERIALIZED **gsarr`. Snapping to integers and keeping a point on the tile origin follow in
+  their own pull request.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
   plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
   author); #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
