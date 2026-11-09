@@ -147,6 +147,18 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
   `tpoint_as_mvtgeom` in `meos_geo.h` that answered a bool and wrote the geometry through
   `GSERIALIZED **gsarr`. Snapping to integers and keeping a point on the tile origin follow in
   their own pull request.
+- **One public name per answer, and every interpolation an `interpType`**, so the object layers
+  generated from the catalog carry no name collision and no text interpolation (row B24 of
+  `BINDINGS-PLAN.md`), as the owner ruled on 2026-11-08 ("remove them", "B, make the halves
+  internal", "fix everything according to North Star"): branch `clean/cell-instant-shorthands`
+  removes `th3index_make`, `tquadbin_make`, `ts2cell_make`, `tpoint_at_geom`, `tpoint_at_value`,
+  `tpoint_minus_geom` and `tpoint_minus_value`, twins of `<cell>inst_make` and the `tgeo_`
+  restrictions; declares in `meos_internal_geo.h` the sixteen geom_/geog_ and 2d/3d halves that
+  `geo_area`, `geo_centroid`, `geo_length`, `geo_perimeter`, `geo_shortestline`,
+  `geom_dwithin`, `geom_intersects` and `geom_max_distance` choose between; and gives
+  `trgeometry_as_tsequence` and `trgeometry_as_tsequenceset` an `interpType interp`. It
+  rewrites `6e22d6c736`, the `@nullable` notes of their `interp_str` parameter in `trgeo.c`.
+  Strict-ci, cppcheck, Windows, valgrind and smoke receipts on master `0b4cb5b029`.
 - **Open pull requests** on 2026-10-30: MobilityDB #2861 (these notes), #3287 (the exactness
   plan), #3259 (a step of that plan) and #3200 (the box of a temporal point cloud instant, by its
   author); #785, #777 and #677 touch none of these names or functions; MEOS-API has none.
