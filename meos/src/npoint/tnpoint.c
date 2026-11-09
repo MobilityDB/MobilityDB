@@ -413,20 +413,6 @@ tnpointinst_tgeompointinst(const TInstant *inst)
 }
 
 /**
- * @brief Convert a temporal network point into a temporal geometry point
- */
-TSequence *
-tnpointseq_tgeompointseq_disc(const TSequence *seq)
-{
-  assert(seq); assert(seq->temptype == T_TNPOINT);
-  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
-  for (int i = 0; i < seq->count; i++)
-    instants[i] = tnpointinst_tgeompointinst(TSEQUENCE_INST_N(seq, i));
-  return tsequence_make_free(instants, seq->count, true, true, DISCRETE,
-    NORMALIZE_NO);
-}
-
-/**
  * @brief Return a temporal geometry point instant located at a point of a
  * route
  * @details The instant a point of a route makes, as
@@ -532,6 +518,63 @@ route_vertex_positions(const POINTARRAY *pa, int *count)
     cum += hypot(p2->x - p1->x, p2->y - p1->y);
     result[(*count)++] = cum / length;
   }
+  return result;
+}
+
+/**
+ * @brief Convert a temporal network point into a temporal geometry point
+ * @details Each instant is located on its route by #route_point_at, the
+ * point #tnpointinst_tgeompointinst gives, and a route is read once for the
+ * instants on it that follow one another, since the instants of a discrete
+ * sequence may be on different routes
+ */
+TSequence *
+tnpointseq_tgeompointseq_disc(const TSequence *seq)
+{
+  assert(seq); assert(seq->temptype == T_TNPOINT);
+  TInstant **instants = palloc(sizeof(TInstant *) * seq->count);
+  int64 rid = -1;
+  int32_t srid = SRID_UNKNOWN;
+  LWLINE *lwline = NULL;
+  double length = 0.0;
+  for (int i = 0; i < seq->count; i++)
+  {
+    const TInstant *inst = TSEQUENCE_INST_N(seq, i);
+    const Npoint *np = DatumGetNpointP(tinstant_value_p(inst));
+    if (! lwline || np->rid != rid)
+    {
+      /* A route that is found is not empty */
+      const GSERIALIZED *line = route_geom(np->rid);
+      if (lwline)
+        lwline_free(lwline);
+      if (! line)
+      {
+        pfree_array((void **) instants, i);
+        return NULL;
+      }
+      rid = np->rid;
+      srid = gserialized_get_srid(line);
+      lwline = (LWLINE *) lwgeom_from_gserialized(line);
+      length = ptarray_length_2d(lwline->points);
+    }
+    POINT4D pt;
+    route_point_at(lwline->points, length, np->pos, &pt);
+    instants[i] = route_point_tinstant(srid, &pt, inst->t);
+  }
+  lwline_free(lwline);
+  /* The instants are points of routes at the increasing timestamps of the
+   * sequence, and every route is a planar line in the SRID of the network,
+   * which #ensure_valid_route tests when the network is read, so the
+   * sequence is valid by construction and is built without testing them
+   * again */
+  assert(seq->count > 0);
+#ifndef NDEBUG
+  for (int i = 1; i < seq->count; i++)
+    assert(instants[i - 1]->t < instants[i]->t);
+#endif /* NDEBUG */
+  TSequence *result = tsequence_make_exp1(instants, seq->count, seq->count,
+    true, true, DISCRETE, NORMALIZE_NO, NULL);
+  pfree_array((void **) instants, seq->count);
   return result;
 }
 
