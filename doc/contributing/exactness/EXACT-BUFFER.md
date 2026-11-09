@@ -113,7 +113,28 @@ items).
   pairing of their edges and the checks on rings meeting and keeping their sense still read 1.11.
   The owner's direction is both halves together: the certificate's tests run inside the
   arrangement's own passes, on the pairs its noding already reads, and the arrangement itself is
-  made cheaper; filters ahead of the tests come after.
+  made cheaper; filters ahead of the tests come after. The certificate pairs the written pieces
+  themselves by one sweep of their grown boxes, an edge read against itself only where it has three
+  pieces or more: on 40 lines at distance 1 the native pass reads 182M instructions, 147M with the
+  certificate off, and natural areas at distance 1 read 750M against GEOS's 569M. Of the
+  certificate's 397M there, the pairing takes 152M, the bound of each piece 155M, and the joins,
+  the turns and the senses 63M; without the certificate the native pass reads about 571M, so the
+  arrangement itself owes the last of parity too.
+- **MobilityDB #3523** sorts once the nodes a box read of the buffer's node index gathers, which
+  master shifts into place one at a time, a box of n nodes costing n squared on a long piece. On master
+  that read alone puts the line cells above parity, 6.89, 4.38 and 7.66 at distances 1, 50 and 500;
+  with it they read 0.269, 0.199 and 0.415, and every buffer cell stands at parity. Each read
+  returns the same nodes in the same order by construction; CGAL agrees with 1 313 of 1 313 natural
+  areas, 4 794 of 4 794 line queries and 27 056 of 27 056 line queries at distances near 1.
+- **The exact signs of arcs past their expansions' range** are branch
+  `fix/exact-arc-signs-out-of-range`, its base #3523. Two of the polygons narrower than an ulp
+  run past 300 s on master with the certificate off: one sign on the older path, its expansions
+  hundreds of components long and every one NaN, products past 2^1000 having left the arena
+  unsafe while six routines owning an arena never read it. Those six read their signs checked and,
+  where expansions cannot tell one, compute again in `WideDyadic`, as `tower_pred_run` does for a
+  tower, declining only where that cannot hold them either; a sign untold through underflow, at
+  two arcs of one round cap whose centres lie an ulp apart, is answered rather than declined. CGAL
+  agrees with 1 313 of 1 313 natural areas and 4 794 of 4 794 line queries, no decline among them.
 - **MobilityDB #3259**, merged as `1755213c73`, places the four meetings of
   the offsets and circles in plain doubles (two offsets sharing a centre, two sharing none, an
   offset and a circle, two circles of one radius), the same bits as the filters under a bound that
