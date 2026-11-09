@@ -82,6 +82,7 @@ $(function() {
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_gabf96134abf6ad6a8fa530cfd0e5bf1b6.html#gabf96134abf6ad6a8fa530cfd0e5bf1b6">stbox_as_ewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_gaf5ecd2979e80c78464efbe2a296e8c9d.html#gaf5ecd2979e80c78464efbe2a296e8c9d">stbox_as_hexewkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_ga6c4dd207ee69cecc59aabd7e53a54a9b.html#ga6c4dd207ee69cecc59aabd7e53a54a9b">stbox_as_hexwkb</a></td></tr>
+          <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_ga31a6faf8fcf6ca14f182d989cfa7f0f3.html#ga31a6faf8fcf6ca14f182d989cfa7f0f3">stbox_as_text</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_ga403b8fea9473da4fa903bee72263d791.html#ga403b8fea9473da4fa903bee72263d791">stbox_as_wkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_gadb7ded669caa9172431273501dd16cf0.html#gadb7ded669caa9172431273501dd16cf0">stbox_from_hexwkb</a></td></tr>
           <tr><td class="navtab"><a class="navtab" href="group__meos__geo__box__inout_ga35462675567a55ea29ced4094a86673c.html#ga35462675567a55ea29ced4094a86673c">stbox_from_wkb</a></td></tr>
@@ -123,12 +124,12 @@ $(function() {
       </table>
 </div><div class="memdoc">
 
-<p>Return the Well-Known Text (WKT) representation of a spatiotemporal box. </p>
+<p>Return the Extended Well-Known Text (EWKT) representation of a spatiotemporal box, its text prefixed with its SRID. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">box</td><td>Spatiotemporal box </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">maxdd</td><td>Maximum number of decimal digits </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Size of the result, the terminating null character included @csqlfn <a class="el" href="group__mobilitydb__geo__box__inout_ga89ac3255c86856c61675fe0a645e8bce.html#ga89ac3255c86856c61675fe0a645e8bce" title="Return the Well-Known Text (WKT) representation of a spatiotemporal box @sqlfn stbox_out()">Stbox_out()</a>, <a class="el" href="group__mobilitydb__geo__box__inout_ga4bea3193f9187bb3359c06028f0aec52.html#ga4bea3193f9187bb3359c06028f0aec52" title="Return the Well-Known Text (WKT) representation of a spatiotemporal box @sqlfn asText()">Stbox_as_text()</a> </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">size_out</td><td>Size of the result, the terminating null character included @csqlfn <a class="el" href="group__mobilitydb__geo__box__inout_ga89ac3255c86856c61675fe0a645e8bce.html#ga89ac3255c86856c61675fe0a645e8bce" title="Return the Well-Known Text (WKT) representation of a spatiotemporal box @sqlfn stbox_out()">Stbox_out()</a>, <a class="el" href="group__mobilitydb__geo__box__inout_ga613cde5b71c096f38741cbb0aff83722.html#ga613cde5b71c096f38741cbb0aff83722" title="Return the Extended Well-Known Text (EWKT) representation of a spatiotemporal box,...">Stbox_as_ewkt()</a> </td></tr>
   </table>
   </dd>
 </dl>
