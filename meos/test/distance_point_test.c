@@ -88,7 +88,12 @@
  * The eighth asks a moving point against a geometry, whose nearest approach
  * is the distance of its path to the geometry: parallel segments one or two
  * units in the last place apart, the points of a multipoint, and a line its
- * path crosses, where the distance is 0.
+ * path crosses, where the distance is 0. The ninth asks a segment whose
+ * differences pass the largest double beside a point, in 2D, and beside the
+ * end of a segment, in 3D, at a distance below four times the smallest normal
+ * double. The last but one asks the nearest
+ * approach instant of a point passing a point far from the origin, the
+ * differences of whose coordinates span from 2 to twice its magnitude.
  *
  * Each part asks the nearest approach too, which reaches the same per-element
  * distance through the synchronous walk.
@@ -293,6 +298,33 @@ buffer_entry(double cx, double cy, double r, double px, double py,
   GSERIALIZED *gs = geom_in(buffer, -1);
   assert(temp != NULL && gs != NULL);
   assert(nad_tcbuffer_geo(temp, gs) == expected);
+  free(gs);
+  free(temp);
+}
+
+/**
+ * @brief Assert that a point moving from `(x, 0)` to `(x, 4)` over a day
+ * approaches the point `(-x, 2)` nearest at noon, halfway along its path
+ * @details Read as #buffer_entry reads a moving value against a point, on the
+ * nearest approach instant: the distances at the ends and at noon differ by
+ * 4, which a rounded square cannot tell from `4 x^2` where `x` is far beyond
+ * 2^27, so the exact comparison of the squares decides the instant
+ */
+static void
+far_pass_entry(double x)
+{
+  char path[256], point[128];
+  snprintf(path, sizeof(path), "[POINT(%.17g 0)@2001-01-01, "
+    "POINT(%.17g 4)@2001-01-02]", x, x);
+  snprintf(point, sizeof(point), "POINT(%.17g 2)", -x);
+  Temporal *temp = tgeompoint_in(path);
+  GSERIALIZED *gs = geom_in(point, -1);
+  assert(temp != NULL && gs != NULL);
+  TInstant *nai = nai_tgeo_geo(temp, gs, false);
+  assert(nai != NULL);
+  assert(temporal_start_timestamptz((Temporal *) nai) ==
+    timestamptz_in("2001-01-01 12:00:00+00", -1));
+  free(nai);
   free(gs);
   free(temp);
 }
@@ -777,6 +809,29 @@ int main(void)
   moving_entry("[POINT Z(-1 0 0)@2001-01-01, POINT Z(1 0 0)@2001-01-02]",
     "LINESTRING Z(0 -1 2,0 1 2)", 2.0);
   printf("%d distances in 3D answered as the nearest double\n", threed);
+
+  /* A segment whose differences pass the largest double beside a point at a
+   * distance below four times the smallest normal double, in 2D, and the end
+   * of a segment beside such a segment in 3D */
+  int below_normal = 2;
+  geometry_entry("LINESTRING(1.1803757535815242e+308 3.2047720125160916e-308,"
+    "-1.3187090408949148e+308 -1.580656146380418e-308)",
+    "POINT(-1.7740015395505862e-307 1.335588e-317)", 0x0.6caad5cfb3252p-1022);
+  geometry3d_entry("LINESTRING Z(-1.3030602490239442e+308 0 0,"
+    "9.903394292592213e+307 7.068922442867277e-308 0)",
+    "LINESTRING Z(-4.454708099646838e-308 -9 4.05998396468883e-308,0 0 0)",
+    0x1.ce18ed75a908dp-1022);
+  printf("%d distances below four times the smallest normal double answered "
+    "as the nearest double\n", below_normal);
+
+  /* A point passing a point far from the origin, whose differences of
+   * coordinates span from 2 to twice the magnitude */
+  const double far_pass[] = {1e17, 1e40, 1e50};
+  int passes = (int) (sizeof(far_pass) / sizeof(far_pass[0]));
+  for (int i = 0; i < passes; i++)
+    far_pass_entry(far_pass[i]);
+  printf("%d nearest approaches of a point passing a far point at noon\n",
+    passes);
 
   /* A coordinate that is infinite lies outside the domain of exact
    * computation, and the geometry holding one is refused when read */
