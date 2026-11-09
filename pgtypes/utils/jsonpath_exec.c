@@ -316,7 +316,7 @@ static JsonPathExecResult executeKeyValueMethod(JsonPathExecContext *cxt,
   JsonPathItem *jsp, JsonbValue *jb, JsonValueList *found);
 static JsonPathExecResult appendBoolResult(JsonPathExecContext *cxt,
   JsonPathItem *jsp, JsonValueList *found, JsonPathBool res);
-static void getJsonPathItem(JsonPathExecContext *cxt, JsonPathItem *item,
+static bool getJsonPathItem(JsonPathExecContext *cxt, JsonPathItem *item,
   JsonbValue *value);
 static JsonbValue *GetJsonPathVar(void *cxt, char *varName, int varNameLen,
   JsonbValue *baseObject, int *baseObjectId);
@@ -324,7 +324,7 @@ static int CountJsonPathVars(void *cxt);
 static void JsonItemFromDatum(Datum val, Oid typid, int32 typmod,
   JsonbValue *res);
 static void JsonbValueInitNumeric(JsonbValue *jbv, Numeric num);
-static void getJsonPathVariable(JsonPathExecContext *cxt,
+static bool getJsonPathVariable(JsonPathExecContext *cxt,
   JsonPathItem *variable, JsonbValue *value);
 static int  countVariablesFromJsonb(void *varsJsonb);
 static JsonbValue *getJsonPathVariableFromJsonb(void *varsJsonb, char *varName,
@@ -495,9 +495,16 @@ pg_jsonb_path_match(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   bool silent, bool tz)
 {
   JsonValueList found = {0};
-  (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
+  JsonPathExecResult res = executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
+  /* An error the execution raised leaves no item to read, as in
+   * #pg_jsonb_path_exists */
+  if (! silent && jperIsError(res))
+  {
+    JsonValueListClear(&found); json_reset_tofree();
+    return false;
+  }
   bool result = false, got = false;
   if (JsonValueListLength(&found) == 1)
   {
@@ -562,9 +569,16 @@ pg_jsonb_path_query_array(const Jsonb *jb, const JsonPath *jp,
   const Jsonb *vars, bool silent, bool tz)
 {
   JsonValueList found = {0};
-  (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
+  JsonPathExecResult res = executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
+  /* An error the execution raised leaves no item to read, as in
+   * #pg_jsonb_path_exists */
+  if (! silent && jperIsError(res))
+  {
+    JsonValueListClear(&found); json_reset_tofree();
+    return NULL;
+  }
   Jsonb *result = JsonbValueToJsonb(wrapItemsInArray(&found));
   JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
   return result;
@@ -614,9 +628,16 @@ pg_jsonb_path_query_first(const Jsonb *jb, const JsonPath *jp,
   const Jsonb *vars, bool silent, bool tz)
 {
   JsonValueList found = {0};
-  (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
+  JsonPathExecResult res = executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
+  /* An error the execution raised leaves no item to read, as in
+   * #pg_jsonb_path_exists */
+  if (! silent && jperIsError(res))
+  {
+    JsonValueListClear(&found); json_reset_tofree();
+    return NULL;
+  }
   Jsonb *result = (JsonValueListLength(&found) >= 1) ?
     JsonbValueToJsonb(JsonValueListHead(&found)) : NULL;
   JsonValueListClear(&found); json_reset_tofree(); /* free list nodes + tracked values */
@@ -675,9 +696,17 @@ pg_jsonb_path_query_all(const Jsonb *jb, const JsonPath *jp, const Jsonb *vars,
   assert(jb); assert(jp); assert(count);
 
   JsonValueList found = {0};
-  (void) executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
+  JsonPathExecResult res = executeJsonPath((JsonPath *) jp, (Jsonb *) vars,
     getJsonPathVariableFromJsonb, countVariablesFromJsonb, (Jsonb *) jb,
     ! silent, &found, tz);
+  /* An error the execution raised leaves no item to read, as in
+   * #pg_jsonb_path_exists */
+  if (! silent && jperIsError(res))
+  {
+    JsonValueListClear(&found); json_reset_tofree();
+    *count = 0;
+    return NULL;
+  }
   *count = JsonValueListLength(&found);
   if (*count <= 0)
     return NULL;
@@ -811,7 +840,15 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         }
         v = hasNext ? &vbuf : palloc(sizeof(*v));
         baseObject = cxt->baseObject;
-        getJsonPathItem(cxt, jsp, v);
+        /* An item whose value raised an error, a variable the variables do
+         * not hold, is not evaluated */
+        if (! getJsonPathItem(cxt, jsp, v))
+        {
+          if (! hasNext)
+            pfree(v);
+          cxt->baseObject = baseObject;
+          return jperError;
+        }
         res = executeNextItem(cxt, jsp, &elem, v, found, hasNext);
         /* v (palloc'd here) was appended to found; track it so the
          * jsonb_path_* caller reclaims it via json_reset_tofree() */
@@ -1053,9 +1090,12 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         {
           Assert(found);
           if (jspThrowErrors(cxt))
+          {
+            char *keystr = pnstrdup(key.val.string.val, key.val.string.len);
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
-              "JSON object does not contain key \"%s\"",
-              pnstrdup(key.val.string.val, key.val.string.len));
+              "JSON object does not contain key \"%s\"", keystr);
+            pfree(keystr);
+          }
           return jperError;
         }
       }
@@ -1156,14 +1196,15 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
         {
           char *tmp = pg_numeric_out(jb->val.numeric);
           double val = float8_in(tmp);
-          pfree(tmp);
           if (val == DBL_MAX)
           {
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "argument \"%s\" of jsonpath item method .%s() is invalid for type %s",
               tmp, jspOperationName(jsp->type), "double precision");
+            pfree(tmp);
             return jperError;
           }
+          pfree(tmp);
           if (isinf(val) || isnan(val))
           {
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
@@ -1178,14 +1219,15 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           /* cast string as double */
           char *tmp = pnstrdup(jb->val.string.val, jb->val.string.len);
           double val = float8_in(tmp);
-          pfree(tmp);
           if (val == DBL_MAX)
           {
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "argument \"%s\" of jsonpath item method .%s() is invalid for type double precision",
               tmp, jspOperationName(jsp->type));
+            pfree(tmp);
             return jperError;
           }
+          pfree(tmp);
           if (isinf(val) || isnan(val))
           {
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
@@ -1273,6 +1315,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "argument \"%s\" of jsonpath item method .%s() is invalid for type bigint",
               tmp, jspOperationName(jsp->type));
+            pfree(tmp);
             return jperError;
           }
           res = jperOk;
@@ -1282,7 +1325,6 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           /* cast string as bigint */
           char *tmp = pnstrdup(jb->val.string.val, jb->val.string.len);
           val = int64_in(tmp);
-          pfree(tmp);
           if (val == PG_INT64_MAX)
           {
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
@@ -1291,6 +1333,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             pfree(tmp);
             return jperError;
           }
+          pfree(tmp);
           res = jperOk;
         }
 
@@ -1487,6 +1530,7 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "argument \"%s\" of jsonpath item method .%s() is invalid for type numeric",
               numstr, jspOperationName(jsp->type));
+            pfree(numstr);
             return jperError;
           }
           pfree(numstr);
@@ -1512,12 +1556,13 @@ executeItemOptUnwrapTarget(JsonPathExecContext *cxt, JsonPathItem *jsp,
           val = pg_numeric_int4_opt_error(jb->val.numeric, &have_error);
           if (have_error)
           {
+            char *tmp = pg_numeric_out(jb->val.numeric);
             meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
               "argument \"%s\" of jsonpath item method .%s() is invalid for type integer",
-              pg_numeric_out(jb->val.numeric),
-              jspOperationName(jsp->type));
-           return jperError;
-         }
+              tmp, jspOperationName(jsp->type));
+            pfree(tmp);
+            return jperError;
+          }
          res = jperOk;
         }
         else if (jb->type == jbvString)
@@ -2915,9 +2960,10 @@ appendBoolResult(JsonPathExecContext *cxt, JsonPathItem *jsp,
 /*
  * Convert jsonpath's scalar or variable node to actual jsonb value.
  *
- * If node is a variable then its id returned, otherwise 0 returned.
+ * Return false after raising an error, which leaves the value unset, as
+ * #getJsonPathVariable does.
  */
-static void
+static bool
 getJsonPathItem(JsonPathExecContext *cxt, JsonPathItem *item,
   JsonbValue *value)
 {
@@ -2925,26 +2971,25 @@ getJsonPathItem(JsonPathExecContext *cxt, JsonPathItem *item,
   {
     case jpiNull:
       value->type = jbvNull;
-      return;
+      return true;
     case jpiBool:
       value->type = jbvBool;
       value->val.boolean = jspGetBool(item);
-      return;
+      return true;
     case jpiNumeric:
       value->type = jbvNumeric;
       value->val.numeric = jspGetNumeric(item);
-      return;
+      return true;
     case jpiString:
       value->type = jbvString;
       value->val.string.val = jspGetString(item, &value->val.string.len);
-      return;
+      return true;
     case jpiVariable:
-      getJsonPathVariable(cxt, item, value);
-      return;
+      return getJsonPathVariable(cxt, item, value);
     default:
       meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
         "unexpected jsonpath item type");
-      return;
+      return false;
  }
 }
 
@@ -3083,9 +3128,10 @@ JsonbValueInitNumeric(JsonbValue *jbv, Numeric num)
 }
 
 /*
- * Get the value of variable passed to jsonpath executor
+ * Get the value of variable passed to jsonpath executor, returning false
+ * after raising the error of a variable the variables do not hold
  */
-static void
+static bool
 getJsonPathVariable(JsonPathExecContext *cxt, JsonPathItem *variable,
   JsonbValue *value)
 {
@@ -3105,7 +3151,7 @@ getJsonPathVariable(JsonPathExecContext *cxt, JsonPathItem *variable,
     meos_error(ERROR, MEOS_ERR_SQL_JSON_ERROR,
       "could not find jsonpath variable \"%s\"", name);
     pfree(name);
-    return;
+    return false;
   }
   if (baseObjectId > 0)
   {
@@ -3114,7 +3160,7 @@ getJsonPathVariable(JsonPathExecContext *cxt, JsonPathItem *variable,
   }
   /* The item holds a copy of the value the callback allocates */
   pfree(v);
-  return;
+  return true;
 }
 
 /*
