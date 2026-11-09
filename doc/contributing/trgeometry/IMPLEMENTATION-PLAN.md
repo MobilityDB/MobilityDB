@@ -33,11 +33,11 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 
 | Row | Task | State |
 |---|---|---|
-| TG6 | An SRID stated before the pose in a literal is held rather than dropped, and `atStbox`, `minusStbox` take a box of time alone, as `atTime` does | open |
-| TG7 | `stops` over a `trgeometry` and a `tpose` answers, or its declaration goes | open, decision 2 |
-| TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | open |
-| TG9 | `round` of a 3D rotation keeps the quaternion of unit norm | open |
-| TG10 | `tDistance` of a 3D value and a 3D `tgeompoint` names the 3D refusal | open |
+| TG6 | An SRID stated before the pose in a literal is held rather than dropped, and `atStbox`, `minusStbox` take a box of time alone, as `atTime` does | merged as #3521 and #3522 |
+| TG7 | `stops` over a `trgeometry` and a `tpose` answers, or its declaration goes | merged as #3540, by decision 2 |
+| TG8 | `tIntersects`, `tDisjoint` of a 3D surface answer, or refuse in words of the type | #3543: a polyhedral surface, a TIN or a curve is forced to 2D without the geodetic walk, so `tIntersects` and `tDisjoint` answer in step interpolation and are refused in linear as having Z |
+| TG9 | `round` of a 3D rotation keeps the quaternion of unit norm | merged as #3520 |
+| TG10 | `tDistance` of a 3D value and a 3D `tgeompoint` names the 3D refusal | merged as #3519 |
 | TG11 | The relationships and `tDwithin`, `eDwithin`, `aDwithin` of a 2D value read a 3D operand in 2D, as `tgeo_different_dimensions` states | open |
 
 ## Refusals to lift
@@ -48,7 +48,7 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
 | TG13 | The relationships of a linear rigid geometry | [its note](RIGID-SWEPT-RELATIONSHIPS.md); `intersects` and `disjoint` merged as #3497 (`266f7ed2bb`, `59f3e1305a`), `contains`, `covers` and `touches` open |
 | TG14 | The distance to a collection and to a curve | open; to reconcile with [the note](NON-CONVEX-DISTANCE.md) |
 | TG15 | `atGeometry`, `minusGeometry` over a geometry with holes | open |
-| TG16 | `transform`, `transformPipeline` | open, decision 3 |
+| TG16 | `transform`, `transformPipeline` | #3541, by decision 3 |
 | TG17 | `asMFJSON`, `round` over a surface | open |
 | TG18 | The relationships and restrictions of a 3D value against a geometry with Z | open, reads Z by decision 1 |
 | TG19 | The distance of a value in 3D | open, decision 4 |
@@ -71,10 +71,16 @@ Each gap of [the assessment](ASSESSMENT.md) and the pull request that closes it,
    agree. The nuScenes bodies at z = 0 and z = 0.8 then never meet in 3D, and a question about the road
    goes through `force2D`, TG24. Containing, covering and touching have no such kernel, so they refuse Z
    as `ea_touches_tgeo_geo` does.
-2. **`stops`.** Answer it over the body, or remove the declaration.
-3. **`transform`.** A rigid body is rigid only in a metric the target SRID keeps. Either refuse it
-   and say why, or transform the reference geometry and the poses where the transformation is a
-   rigid motion.
+2. **`stops`: over the positions of the poses.** A temporal pose stops where its positions stay
+   within the area, as a temporal circular buffer stops where its centre does, so a pose turning in
+   place is one stop, and a temporal rigid geometry stops where its temporal pose does, keeping its
+   reference geometry. TG7.
+3. **`transform`: the poses, and the body in its own frame.** The reference geometry is the shape
+   of the body in its body frame, as AIS and GeoPose give it, so a change of the reference system
+   transforms the poses, each orientation turning by the convergence of the meridians at its
+   position, and keeps the reference geometry. The body is placed in the plane of its poses, so a
+   geographic target is refused. TG16. A circular buffer, planar for the same reason, refuses a
+   geographic target too (#3542), and the build requires PROJ 7.1 for `proj_degree_output`.
 4. **The distance in 3D.** Bodies gain faces, and a quaternion replaces the one angle the solver of
    `trgeo_distance.txt` is built on, so this is a new algorithm and a change to Chapter 4.
    **The recommendation** is to write its algorithm as a note of this plan before any code, and to
