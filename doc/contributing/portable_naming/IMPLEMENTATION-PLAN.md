@@ -76,7 +76,7 @@ and Flink surfaces with MobilityDB's, is measured at MobilityDB master `30a9a730
 - **The conversion of a temporal network point sequence to a temporal geometry point builds the
   points of the route in two dimensions**, outside the plan, as the owner decided on 2026-11-08
   ("do both PRs after the current task") and on 2026-11-09 ("go ahead with (b)"):
-  branch `clean/tnpoint-drop-zm-flags` rewrites `842c640e83` and `dd6c9ed0ef` there, the
+  branch `clean/tnpoint-drop-zm-flags` rewrites `842c640e83` and rewrites `dd6c9ed0ef` there, the
   `route_point_tinstant` of `meos/src/npoint/tnpoint.c`, which takes no flags, and the Z and M
   flags `tnpointseq_tgeompointseq_cont` copies from the route, which `ensure_valid_route` keeps
   empty.
