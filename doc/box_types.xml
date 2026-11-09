@@ -95,12 +95,29 @@ SELECT stbox 'SRID=4326;GEODSTBOX Z((1.0,2.0,3.0),(1.0,2.0,3.0))';
 					<programlisting role="syntax" xml:space="preserve" format="linespecific">
 asText(box,maxdecimaldigits integer=15) → text
 </programlisting>
-					<para>The <varname>maxdecimaldigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15).</para>
+					<para>The <varname>maxdecimaldigits</varname> argument can be used to set the maximum number of decimal places in the output of floating point values (default 15). As for every spatial type, the text of an <varname>stbox</varname> does not write its SRID, which <varname>asEWKT</varname> writes.</para>
 					<programlisting language="sql" xml:space="preserve" format="linespecific">
 SELECT asText(tbox 'TBOXFLOAT XT([1.123456789,2.123456789),[2001-01-01,2001-01-02))', 3);
 -- TBOXFLOAT XT([1.123, 2.123),[2001-01-01, 2001-01-02))
 SELECT asText(stbox 'STBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
 -- STBOX Z((2,2,2),(3,3,3))
+SELECT asText(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- STBOX X((1,1),(2,2))
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stbox_asEWKT">
+					<indexterm significance="normal"><primary><varname>asEWKT</varname></primary></indexterm>
+					<para>Return the Extended Well-Known Text (EWKT) representation of a spatiotemporal box</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+asEWKT(stbox,maxdecimaldigits integer=15) → text
+</programlisting>
+					<para>The result is the text <varname>asText</varname> writes prefixed with the SRID of the box, as every spatial type writes its SRID in its extended representation.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT asEWKT(stbox 'SRID=3812;STBOX X((1,1),(2,2))');
+-- SRID=3812;STBOX X((1,1),(2,2))
+SELECT asEWKT(stbox 'SRID=4326;GEODSTBOX Z((1.55,1.55,1.55),(2.55,2.55,2.55))', 0);
+-- SRID=4326;GEODSTBOX Z((2,2,2),(3,3,3))
 </programlisting>
 				</listitem>
 
@@ -157,6 +174,19 @@ boxFromText(text) → box
 SELECT tboxFromText('TBOXFLOAT XT([1,2],[2001-01-01,2001-01-02])');
 -- TBOXFLOAT XT([1, 2],[2001-01-01, 2001-01-02])
 SELECT stboxFromText('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+-- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
+</programlisting>
+				</listitem>
+
+				<listitem xml:id="stboxFromEWKT">
+					<indexterm significance="normal"><primary><varname>stboxFromEWKT</varname></primary></indexterm>
+					<para>Input of a spatiotemporal box from the Extended Well-Known Text (EWKT) representation</para>
+					<programlisting role="syntax" xml:space="preserve" format="linespecific">
+stboxFromEWKT(text) → stbox
+</programlisting>
+					<para>The function is the inverse of <varname>asEWKT</varname>, reading the SRID the text states.</para>
+					<programlisting language="sql" xml:space="preserve" format="linespecific">
+SELECT stboxFromEWKT('SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
 -- SRID=3812;STBOX XT(((1,1),(2,2)),[2001-01-01, 2001-01-02])
 </programlisting>
 				</listitem>

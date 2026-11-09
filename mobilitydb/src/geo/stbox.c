@@ -82,8 +82,10 @@ PGDLLEXPORT Datum Stbox_from_text(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(Stbox_from_text);
 /**
  * @ingroup mobilitydb_geo_box_inout
- * @brief Return a spatiotemporal box from its Well-Known Text (WKT) representation
- * @sqlfn stboxFromText()
+ * @brief Return a spatiotemporal box from its Well-Known Text (WKT) or
+ * Extended Well-Known Text (EWKT) representation, as #Cbuffer_from_ewkt reads
+ * a circular buffer
+ * @sqlfn stboxFromText(), stboxFromEWKT()
  */
 Datum
 Stbox_from_text(PG_FUNCTION_ARGS)
@@ -159,11 +161,34 @@ PG_FUNCTION_INFO_V1(Stbox_as_text);
 /**
  * @ingroup mobilitydb_geo_box_inout
  * @brief Return the Well-Known Text (WKT) representation of a spatiotemporal
- * box
+ * box, without its SRID, as #Cbuffer_as_text writes a circular buffer
  * @sqlfn asText()
  */
 Datum
 Stbox_as_text(PG_FUNCTION_ARGS)
+{
+  size_t size_out;
+  STBox *box = PG_GETARG_STBOX_P(0);
+  int dbl_dig_for_wkt = OUT_DEFAULT_DECIMAL_DIGITS;
+  if (PG_NARGS() > 1 && ! PG_ARGISNULL(1))
+    dbl_dig_for_wkt = PG_GETARG_INT32(1);
+  char *str = stbox_as_text(box, dbl_dig_for_wkt, &size_out);
+  text *result = cstring_to_text(str);
+  pfree(str);
+  PG_RETURN_TEXT_P(result);
+}
+
+PGDLLEXPORT Datum Stbox_as_ewkt(PG_FUNCTION_ARGS);
+PG_FUNCTION_INFO_V1(Stbox_as_ewkt);
+/**
+ * @ingroup mobilitydb_geo_box_inout
+ * @brief Return the Extended Well-Known Text (EWKT) representation of a
+ * spatiotemporal box, as #Cbuffer_as_ewkt writes a circular buffer
+ * @note It is the WKT representation prefixed with the SRID
+ * @sqlfn asEWKT()
+ */
+Datum
+Stbox_as_ewkt(PG_FUNCTION_ARGS)
 {
   size_t size_out;
   STBox *box = PG_GETARG_STBOX_P(0);

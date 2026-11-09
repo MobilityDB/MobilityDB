@@ -532,6 +532,7 @@ extern Set *spatialset_transform_pipeline(const Set *s, const char *pipelinestr,
 extern uint8_t *stbox_as_ewkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern char *stbox_as_hexewkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern char *stbox_as_hexwkb(const STBox *box, uint8_t variant, size_t *size_out);
+extern char *stbox_as_text(const STBox *box, int maxdd, size_t *size_out);
 extern uint8_t *stbox_as_wkb(const STBox *box, uint8_t variant, size_t *size_out);
 extern STBox *stbox_from_hexwkb(const char *hexwkb);
 extern STBox *stbox_from_wkb(const uint8_t *wkb, size_t size);

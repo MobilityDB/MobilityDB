@@ -85,6 +85,14 @@ DROP TABLE tbl_stbox3d_tmp;
 
 -- Maximum decimal digits
 SELECT asText(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
+SELECT asEWKT(stbox 'STBOX XT(((1.123456789,1.23456789),(2.12345678,2.123456789)),[2001-01-01,2001-01-02])', 6);
+
+-- The SRID is written by asEWKT, never by asText
+SELECT asText(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+SELECT asEWKT(stbox 'SRID=4326;STBOX XT(((1,1),(2,2)),[2001-01-01,2001-01-02])');
+SELECT asText(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])');
+SELECT asEWKT(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(2,2,2)),[2001-01-01,2001-01-02])');
+SELECT asEWKT(stbox 'SRID=4326;STBOX T([2001-01-01,2001-01-02])');
 
 SELECT stboxFromBinary(asBinary(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
 SELECT stboxFromHexWKB(asHexWKB(stbox 'SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])'));
@@ -97,6 +105,8 @@ SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromHexEWKB(asHexEWKB(b)) <> b;
 
 SELECT stboxFromText('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
 SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromText(asText(b)) <> asText(b)::stbox;
+SELECT stboxFromEWKT('SRID=7844;GEODSTBOX ZT(((1,1,1),(1,1,1)),[2001-01-01, 2001-01-01])');
+SELECT COUNT(*) FROM tbl_stbox WHERE stboxFromEWKT(asEWKT(b)) <> b;
 
 -------------------------------------------------------------------------------
 -- Constructors
