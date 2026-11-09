@@ -177,13 +177,13 @@ ensure_route_exists(int64 rid)
 
 /**
  * @brief Ensure that the geometry of a route read from the ways network is a
- * planar line without Z or M dimension in the spatial reference system of the
- * network
+ * planar line without Z or M dimension, with finite coordinates, in the
+ * spatial reference system of the network
  * @details The network points live on planar routes, so every function
  * reading a route presupposes this, which is tested once, when the route is
  * read. Composed of #ensure_line_type, #ensure_has_not_Z_geo,
- * #ensure_has_not_M_geo and #ensure_same_srid, as #ensure_valid_geo_geo is
- * composed of its tests.
+ * #ensure_has_not_M_geo, #ensure_finite_geo and #ensure_same_srid, as
+ * #ensure_valid_geo_geo is composed of its tests.
  * @param[in] line Geometry of the route
  * @param[in] srid SRID of the ways network
  */
@@ -192,7 +192,7 @@ ensure_valid_route(const GSERIALIZED *line, int32_t srid)
 {
   assert(line);
   if (! ensure_line_type(line) || ! ensure_has_not_Z_geo(line) ||
-      ! ensure_has_not_M_geo(line) ||
+      ! ensure_has_not_M_geo(line) || ! ensure_finite_geo(line) ||
       ! ensure_same_srid(gserialized_get_srid(line), srid))
     return false;
   return true;
